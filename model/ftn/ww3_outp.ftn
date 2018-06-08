@@ -1140,6 +1140,7 @@
       REAL                    :: SIN1(NK), SNL1(NK), SDS1(NK),         &
                                  SBT1(NK), STT1(NK), SIS1(NK),         &
                                  E1ALL(NK,6)
+      LOGICAL                 :: LBREAK
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      REAL                    :: LAMBDA(NSPEC)
@@ -1647,8 +1648,8 @@
 !/ST6                    IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 !/STX                    CALL W3SDSX
 !
-!/DB1                    CALL W3SDB1 ( A, WN2, DEPTH, EMEAN, FMEAN,   &
-!/DB1                                  WNMEAN,               XDB, DIA )
+!/DB1                    CALL W3SDB1 ( I, A, DEPTH, EMEAN, FMEAN,    &
+!/DB1                                  WNMEAN, CG, LBREAK, XDB, DIA )
 !/DBX                    CALL W3SDBX
                   END IF
                 IF ( FLSRCE(5) ) THEN

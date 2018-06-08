@@ -163,7 +163,6 @@
     then
       reg_programs="$reg_programs ww3_multi_esmf"
     fi
-
   fi
 
   # SYSTRK
@@ -224,7 +223,7 @@
     then
       par_programs="$par_programs ww3_multi_esmf"
     fi
-    if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" ]
+    if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" || [ -n "$(grep PDLIB $switch_file)"]
     then
       if [ ! -z "$(echo $par_programs | grep $prog)" ]
       then
@@ -286,7 +285,9 @@
     mkdir -p $main_dir/work_SEQ
     ./sort_switch -s -r switch
     sed -e 's/DIST/SHRD/g' \
+        -e 's/PDLIB //g'    \
         -e 's/OMPG //g'    \
+        -e 's/PDLIB //g'    \
         -e 's/OMPH //g'    \
         -e 's/OMPX //g'    \
         -e 's/MPI //g' switch > $main_dir/work_SEQ/switch.SEQ
@@ -344,6 +345,8 @@
     # make progs
     cd $main_dir/work_$MODE
     ln -sfn switch.$MODE switch
+    switch_file=$main_dir/work_$MODE/switch.$MODE
+    export switch_file
     # TODO: to not use w3_make
     # need to integrate the make_makefile/netcdf check/esmf/exec_type 
     $main_dir/bin/w3_make $progs
@@ -365,9 +368,6 @@
   do
     rsync -a $main_dir/exe_$MODE/ $main_dir/exe/
     rm -rf $main_dir/exe_$MODE
-    #ln -sfn ${temp_dir}_$MODE $temp_dir
-    #unlink $main_dir/work_$MODE/switch
-    #cp $main_dir/exe/switch.$MODE switch
   done
 
 

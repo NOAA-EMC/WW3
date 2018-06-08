@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-May-2017 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -25,6 +25,7 @@
 !/    01-Mar-2018 : RTD option add variable de-rotation,( version 6.02 )
 !/                  standard lat-lons and rotated grid
 !/                  metadata
+!/    06-Jun-2018 : Add DEBUG/SETUP                     ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -105,9 +106,12 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD
       USE W3INITMD, ONLY: WWVER, SWITCHES
+      USE W3ODATMD, ONLY: NAPROC
+!/DEBUG      USE W3ODATMD, only : IAPROC
 !/
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+!/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,      &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
@@ -151,6 +155,7 @@
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),         &
                                  VECTOR, TOGETHER
       INTEGER                 :: HasNC4
+      INTEGER                 :: eVal2, eVal3
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -193,6 +198,10 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
 !
+!/DEBUG      WRITE (NDSO,*) 'Before FLOGRD(2,1)=', FLOGRD(2,1)
+!/DEBUG      WRITE (NDSO,*) 'IAPROC=', IAPROC
+!/DEBUG      WRITE(740+IAPROC,*) 'Calling W3IOGO from ww3_ounf'
+!/DEBUG      FLUSH(740+IAPROC)
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
 !
       WRITE (NDSO,930)

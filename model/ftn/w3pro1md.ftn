@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2014 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination                         ( version 2.00 )
@@ -29,6 +29,7 @@
 !/    08-May-2014 : Implement tripolar grid for first order propagation
 !/                  scheme                              ( version 5.03 )
 !/                  (W. E. Rogers, NRL)
+!/    05-Jun-2018 : Add DEBUG                           ( version 6.04 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -866,6 +867,7 @@
       USE W3ADATMD, ONLY: IS0, IS2
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDST
+!/DEBUG      USE W3ODATMD, only : IAPROC
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -951,6 +953,16 @@
             VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)                   &
               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
             END DO
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 FACTH=', FACTH
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 CTHG0=', CTHG0
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 FDG=', FDG
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 FDDMAX=', FDDMAX
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 sum(FRK)=', sum(FRK)
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 sum(FRG)=', sum(FRG)
+!/DEBUG      WRITE(740+IAPROC,*) 'pro1 sum(DSDD)=', sum(DSDD)
+!/DEBUG      WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VCTH)=', sum(VCTH)
+!/DEBUG      FLUSH(740+IAPROC)
+
 !
 !/REFRX! 2.c @C/@x refraction and great-circle propagation
 !/REFRX          VCTH = 0.

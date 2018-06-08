@@ -167,7 +167,6 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-      LOGICAL, SAVE           :: FIRST = .TRUE.
   
    !  LOCAL VARIABLES
       REAL :: DMW(NK)

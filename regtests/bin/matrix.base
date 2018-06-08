@@ -1937,6 +1937,18 @@
     echo "$rtst -s MPI -w work_IC3_B2.5k_MPI -i input_IC3_B2.5k -f -p $mpi -n $np $ww3 ww3_tic1.2" >> matrix.body
   fi
 
+
+ if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]
+ then
+   echo ' ' >> matrix.body
+   echo "$rtst -s MPI -s NO_PDLIB -w work_a -g a -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s NO_PDLIB -w work_ma -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_b -g b -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_c -g c -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_mc -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+ fi
+
 # --------------------------------------------------------------------------- #
 # 3.  End of script output                                                    #
 # --------------------------------------------------------------------------- #

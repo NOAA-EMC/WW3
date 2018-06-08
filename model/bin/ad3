@@ -118,7 +118,12 @@
     path_i="$path_i/SCRIP"
   fi
 
-  sw_str=`cat $path_b/$switch`
+  if [ -z "$(env | grep switch_file)" ]
+  then
+    switch_file=$main_dir/bin/$switch
+  fi
+
+  sw_str=$(cat $switch_file)
 
   if [ ! -d $path_w ]
   then

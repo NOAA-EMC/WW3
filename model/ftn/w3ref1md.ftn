@@ -177,7 +177,6 @@
                          NRS, IK1
       INTEGER         :: ICALC
 !/S      INTEGER, SAVE           :: IENT = 0
-      LOGICAL, SAVE   :: FIRST = .TRUE.
       LOGICAL         :: IGBCOVERWRITE, IGSWELLMAX 
       REAL            :: R1, R2, R3, R4, R2X, R2Y, DEPTHIG
       REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &

@@ -82,13 +82,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Sep-2016 !
+!/                  | Last update :         06-Jun-2018 !
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
 !/    29-May-2006 : Adding buffering for MPI.           ( version 3.09 )
 !/    30-Jan-2007 : Fix memory leak.                    ( version 3.10 )
 !/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
+!/    06-Jun-2018 : Use W3PARALL/add DEBUGIOBC/PDLIB    ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -163,6 +164,7 @@
 !
       USE W3CSPCMD, ONLY: W3CSPC
       USE W3SERVMD, ONLY: EXTCDE
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -291,8 +293,7 @@
 !
           ISEA   = NBI2S(IOFF+I,2)
 !/SHRD          JSEA   = ISEA
-!/DIST          JSEA   = 1 + (ISEA-1)/NAPROC
-!/DIST          ISPROC = ISEA - (JSEA-1)*NAPROC
+!/DIST          CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
 !/DIST          IF ( ISPROC .NE. IAPROC ) CYCLE
 !/MPI          IT0    = MTAG0 + NRGRD**2 + SUM(NBI2G(1:J-1,:)) +      &
 !/MPI                                      SUM(NBI2G(J,1:IMOD-1))
@@ -476,6 +477,7 @@
       USE W3UPDTMD, ONLY: W3UBPT
       USE W3IOBCMD, ONLY: W3IOBC
       USE W3SERVMD, ONLY: EXTCDE
+!      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC_GLOB
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -506,6 +508,10 @@
 !/MPIT      LOGICAL                 :: FLAG
 !/
 !/S      CALL STRACE (IENT, 'WMIOBG')
+!/DEBUGIOBC      WRITE(740+IAPROC,*)  'Begin of W3IOBG'
+!/DEBUGIOBC      FLUSH(740+IAPROC)
+
+
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -654,9 +660,7 @@
 !/MPI                NSPEC  => SGRDS(J)%NSPEC
 !/MPI                DO I=1, NBI2G(IMOD,J)
 !/MPI                  ISEA   = NBI2S(IOFF+I,2)
-!/MPI                  JSEA   = 1 + (ISEA-1)/NAPROC
-!/MPI                  ISPROC = MDATAS(J)%CROOT - 1 + ISEA -          &
-!/MPI                                             (JSEA-1)*NAPROC
+!/MPI                  CALL INIT_GET_JSEA_ISPROC_GLOB(ISEA, J, JSEA, ISPROC)
 !/MPI                  NRQ    = NRQ + 1
 !/MPI                  ITAG   = IT0 + I
 !/MPI                  CALL MPI_IRECV ( SBPI(1,I), NSPEC,             &
@@ -856,6 +860,8 @@
 ! 5.  Successful update
 !
       IF ( PRESENT(DONE) ) DONE = .TRUE.
+!/DEBUGIOBC      WRITE(740+IAPROC,*)  'End of W3IOBG'
+!/DEBUGIOBC      FLUSH(740+IAPROC)
 !
       RETURN
 !
@@ -1122,6 +1128,7 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD, ONLY: DSEC21
+      USE W3PARALL, ONLY: INIT_GET_ISEA
 !
       IMPLICIT NONE
 !
@@ -1232,7 +1239,7 @@
         DO I=1, NR
 !
           JSEA   = HGSTGE(J,IMOD)%ISEND(I,1)
-          ISEA   = IAPROC + NAPROC*(JSEA-1)
+          CALL INIT_GET_ISEA(ISEA, JSEA)
 !/DIST          IP     = HGSTGE(J,IMOD)%ISEND(I,2)
           I1     = HGSTGE(J,IMOD)%ISEND(I,3)
           I2     = HGSTGE(J,IMOD)%ISEND(I,4)
@@ -1383,6 +1390,9 @@
       USE W3CSPCMD, ONLY: W3CSPC
       USE W3TIMEMD, ONLY: DSEC21
 !     USE W3SERVMD, ONLY: EXTCDE
+!/PDLIB      use yowNodepool, only: npa
+!/PDLIB      USE yowExchangeModule, only : PDLIB_exchange2Dreal
+      USE W3PARALL, ONLY : INIT_GET_ISEA
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -1702,7 +1712,7 @@
 !
         DO IS=1, NTOT
           JSEA   = HGSTGE(IMOD,J)%LJSEA(IS)
-          ISEA   = IAPROC + NAPROC*(JSEA-1)
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           DO I=1, NSPEC
             VA(I,JSEA) = SPEC2(I,IS) / SIG2(I) * CG(1+(I-1)/NTH,ISEA)
             END DO
@@ -1717,7 +1727,7 @@
 ! 
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !
-      RETURN
+!/PDLIB      CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
 !
 ! Formats
 !
@@ -2200,6 +2210,8 @@
       USE W3CSPCMD, ONLY: W3CSPC
       USE W3TIMEMD, ONLY: DSEC21
       USE W3SERVMD, ONLY: EXTCDE
+!/PDLIB      use yowNodepool, only: npa
+!/PDLIB      USE yowExchangeModule, only : PDLIB_exchange2Dreal
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -2495,8 +2507,8 @@
 ! 3.  Set flag if requested
 !
       IF ( PRESENT(DONE) ) DONE = .TRUE.
-!
-      RETURN
+!       
+!/PDLIB  CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
 !
 ! Formats
 !

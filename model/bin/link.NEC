@@ -116,8 +116,14 @@
   then
     if [ "$oasis_mod" = 'yes' ]
     then
+      if [ -z "$(env | grep OASISDIR)" ]
+      then
+        echo ''
+        echo "[ERROR] OASISDIR is not defined"
+        exit 1
+      fi
       echo "link with oasis"
-      libs="$libs $OASISDIR/lib/libpsmile.MPI1.a $OASISDIR/lib/libmct.a $OASISDIR/lib/libmpeu.a $OASISDIR/lib/libscrip.a" ;
+      libs="$libs $OASISDIR/lib/libpsmile.MPI1.a $OASISDIR/lib/libmct.a $OASISDIR/lib/libmpeu.a $OASISDIR/lib/libscrip.a"
     fi
   fi
 
@@ -129,6 +135,22 @@
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
            libs="$libs `$NETCDF_CONFIG --flibs`" ;;
     esac
+  fi
+
+  # parmetis library 
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] 
+  then
+    if [ "$pdlib_mod" = 'yes' ]
+    then
+      if [ -z "$(env | grep METIS_PATH)" ]
+      then
+        echo ''
+        echo "[ERROR] METIS_PATH is not defined"
+        exit 1
+      fi
+      echo "link with parmetis" 
+      libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
+    fi
   fi
 
   opt="$opt $EXTRA_LINK_OPTIONS"

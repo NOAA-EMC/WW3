@@ -3284,6 +3284,7 @@
             ELSE
               ! nearest point is masked
               ! set number of points to zero and return
+              NS = 0
               RETURN
             END IF
         CASE ('bilinr')

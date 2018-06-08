@@ -123,7 +123,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         06-Jun-2018 !
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
@@ -136,6 +136,7 @@
 !/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 4.07 )
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    06-Jun-2018 : Use W3PARALL                        ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -207,6 +208,7 @@
       USE W3ODATMD
       USE W3TRIAMD
       USE WMMDATMD
+      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
 !
       IMPLICIT NONE
 !
@@ -391,7 +393,7 @@
                     ( ABS(GRIDS(J)%MAPSTA(JVER(2),IVER(2))).GE.1 .OR.  &
                       RW(2).LT.0.05 ) .AND.      &
                     ( ABS(GRIDS(J)%MAPSTA(JVER(3),IVER(3))).GE.1 .OR.  &
-                      RW(3)   .LT.0.05 )
+                      RW(3).LT.0.05 )
           END IF
           NbRelevant=3
         ELSE
@@ -1087,6 +1089,8 @@
       USE W3GDATMD
       USE W3ODATMD
       USE WMMDATMD
+      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
+!      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC_GLOB
 !/SCRIP      USE WMSCRPMD
 !/SCRIP      USE SCRIP_INTERFACE
 !/
@@ -2835,6 +2839,7 @@
             MAPMSK = MOD(MAPST2/8,2)
             MAPST2 = MAPST2 - 8*MAPMSK
 
+
 !!HT: STMASK (logical) is used to start this up. We first use the point
 !!HT:        MAPTST that have been marked as used for boundary points in
 !!HT:        the corrsponding high-res grids.
@@ -2930,8 +2935,7 @@
                JJ     = TMPINT(ILOC,-1)
                HGSTGE(GDST,JJ)%NTOT = HGSTGE(GDST,JJ)%NTOT + 1
                ISEA   = TMPINT(ILOC,-2)
-!/DIST              JSEA   = 1 + (ISEA-1)/NAPROC
-!/DIST              ISPROC = ISEA - (JSEA-1)*NAPROC + CROOT - 1
+               CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
 !
                I1(JJ,ISPROC) = I1(JJ,ISPROC) + 1
                IF ( TMPLOG(ILOC) ) I2(JJ,ISPROC) = I2(JJ,ISPROC) + 1
@@ -2941,9 +2945,7 @@
 
                DO JR=1, TMPINT(ILOC,0)
                   ISEA   = TMPINT(ILOC,JR)
-!/DIST                JSEA   = 1 + (ISEA-1)/OUTPTS(JJ)%NAPROC
-!/DIST                ISPRO2 = ISEA - (JSEA-1)*OUTPTS(JJ)%NAPROC +    &
-!/DIST                                MDATAS(JJ)%CROOT - 1
+                  CALL INIT_GET_JSEA_ISPROC_GLOB(ISEA, JJ, JSEA, ISPRO2)
                   IF ( ISPRO2 .EQ. IMPROC ) THEN
                      HGSTGE(GDST,JJ)%NSND = HGSTGE(GDST,JJ)%NSND + 1
                      IF ( TMPLOG(ILOC) ) HGSTGE(GDST,JJ)%NSN1 =              &
@@ -3001,9 +3003,8 @@
                ISEA   = TMPINT(ILOC,-2)
                JJ     = TMPINT(ILOC,-1)
                NR0    = TMPINT(ILOC, 0)
-!/SHRD              JSEA   = ISEA
-!/DIST              JSEA   = 1 + (ISEA-1)/NAPROC
-!/DIST              ISPROC = ISEA - (JSEA-1)*NAPROC + CROOT - 1
+               CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+!/DIST              ISPROC = ISPROC + CROOT - 1
 !/DIST              FLGREC = ISPROC .EQ. IMPROC
 !
                IF ( TMPLOG(ILOC) ) THEN
@@ -3024,11 +3025,7 @@
                DO IJ=1, NR0
 
                   ISEA   = TMPINT(ILOC,IJ)
-!/SHRD                JSEA   = ISEA
-!/DIST                JSEA   = 1 + (ISEA-1)/OUTPTS(JJ)%NAPROC
-!/DIST                ISPRO2 = ISEA - (JSEA-1)*OUTPTS(JJ)%NAPROC      &
-!/DIST                              + MDATAS(JJ)%CROOT - 1
-!
+                  CALL INIT_GET_JSEA_ISPROC_GLOB(ISEA, JJ, JSEA, ISPRO2)
                   IF ( FLGREC ) HGSTGE(GDST,JJ)%IMPSRC(IREC,IJ) = ISPRO2
 
                   IF ( ISPRO2 .EQ. IMPROC ) THEN
@@ -3371,6 +3368,7 @@
       USE WMMDATMD
 !
       USE W3SERVMD, ONLY: EXTCDE
+!      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC_GLOB
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -3639,10 +3637,7 @@
                           JSEA   = 0
 !/MPI                          ISPROC = 1
                         ELSE
-                          JSEA   = 1 + (ISEA-1)/OUTPTS(J)%NAPROC
-!/MPI                          ISPROC = ISEA -                        &
-!/MPI                                      (JSEA-1)*OUTPTS(J)%NAPROC  &
-!/MPI                                           + MDATAS(J)%CROOT - 1
+                        CALL INIT_GET_JSEA_ISPROC_GLOB(ISEA, J, JSEA, ISPROC)
                         END IF
                       STORES(I,J)%AWG(NT,NA) = WGTH
                       STORES(I,J)%ISS(NT,NA) = ISEA

@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    11-Nov-1999 : Fortran 90 version.                 ( version 2.00 )
@@ -16,6 +16,7 @@
 !/    28-Feb-2013 : Adding cap at 0.5 in FWTABLE        ( version 4.08 )
 !/    20-Jan-2017 : Add parameters for ESMF             ( version 6.02 )
 !/    01-Mar-2018 : Add UNDEF parameter                 ( version 6.02 )
+!/    05-Jun-2018 : Add PDLIB parameters                ( version 6.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -70,7 +71,7 @@
       REAL, PARAMETER         :: sed_sg  = 2.65        
       REAL, PARAMETER         :: KAPPA = 0.40       !Von Karman's constant
 !
-      REAL, PARAMETER         :: PI     = 3.1415927
+      REAL, PARAMETER         :: PI     = 3.141592653589793
       REAL, PARAMETER         :: TPI    = 2.0 * PI
       REAL, PARAMETER         :: HPI    = 0.5 * PI
       REAL, PARAMETER         :: TPIINV = 1. / TPI
@@ -91,7 +92,14 @@
       REAL                     :: FWTABLE(0:SIZEFWTABLE)
       REAL                     :: DELAB
       REAL,    PARAMETER       :: ABMIN = -1. 
-      REAL, PRIVATE, PARAMETER  :: ABMAX = 8. 
+      REAL, PRIVATE, PARAMETER :: ABMAX = 8.
+      INTEGER, PARAMETER       :: srce_direct = 0
+      INTEGER, PARAMETER       :: srce_imp_post = 1
+      INTEGER, PARAMETER       :: srce_imp_pre = 2
+      INTEGER, PARAMETER       :: DEBUG_NODE = 1014
+      INTEGER, PARAMETER       :: DEBUG_ELEMENT = 50
+      LOGICAL                  :: LPDLIB = .FALSE. 
+      LOGICAL                  :: LSETUP
 !
 ! Parameters in support of running as ESMF component
 !

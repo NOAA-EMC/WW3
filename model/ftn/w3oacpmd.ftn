@@ -319,13 +319,14 @@
 !/                  |           V. Garnier              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          April-2016 |
+!/                  | Last update :         08-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/      Jul-2013 : Origination.                         ( version 4.18 )
 !/    April-2016 : Add coupling for unstructured grids  ( version 5.07 )
 !/                   (R. Baraille & J. Pianezze)
 !/    April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
+!/    08-Jun-2018 : use INIT_GET_ISEA                   ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -407,8 +408,8 @@
          ILA_PARAL(2) = NSEAL
          !
          DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+           CALL INIT_GET_ISEA(ISEA,JSEA)
+
             IX = MAPSF(ISEA,1)
             IY = MAPSF(ISEA,2)
             ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)

@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Mar-2018 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -97,6 +97,8 @@
 !/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
 !/    01-Mar-2018 : RTD poles info read from namelist   ( version 6.02 )
 !/    14-Mar-2018 : Option to read UNST boundary file   ( version 6.02 )
+!/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
+!/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -567,6 +569,11 @@
       ! STK_WN are the decays for Stokes drift partitions
       REAL                    :: STK_WN(25)
 
+!/DEBUGGRID       INTEGER     :: nbCase1, nbCase2, nbCase3,           &
+!/DEBUGGRID                      nbCase4, nbCase5, nbCase6,           &
+!/DEBUGGRID                      nbCase7, nbCase8
+!/DEBUGGRID       INTEGER     :: nbTMPSTA0, nbTMPSTA1, nbTMPSTA2
+!/DEBUGGRID       INTEGER     :: IAPROC
 !
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
 !/ST1      REAL                    :: CINP, CDIS, APM
@@ -714,13 +721,39 @@
 !/SMC      LOGICAL                 :: UNO3, AVERG 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
+           LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
+           LOGICAL :: JGS_TERMINATE_DIFFERENCE = .TRUE.
+           LOGICAL :: JGS_TERMINATE_NORM = .TRUE.
+           LOGICAL :: JGS_LIMITER = .FALSE.
+           LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
+           LOGICAL :: JGS_USE_JACOBI = .TRUE.
+           LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
+           LOGICAL :: UGOBCAUTO = .FALSE.
+           LOGICAL :: EXPFSN    = .TRUE.
+           LOGICAL :: EXPFSPSI  = .FALSE.
+           LOGICAL :: EXPFSFCT  = .FALSE.
+           LOGICAL :: IMPFSN    = .FALSE.
+           LOGICAL :: EXPTOTAL  = .FALSE.
+           LOGICAL :: IMPTOTAL  = .FALSE.
+           LOGICAL :: IMPREFRACTION = .FALSE.
+           LOGICAL :: IMPFREQSHIFT = .FALSE.
+           LOGICAL :: IMPSOURCE = .FALSE.
+           LOGICAL :: SETUP_APPLY_WLV = .FALSE.
+           INTEGER :: JGS_MAXITER=100
+           INTEGER :: nbSel
+           INTEGER :: UNSTSCHEMES(4)
+           INTEGER :: UNSTSCHEME
+           INTEGER :: JGS_NLEVEL = 0
+           REAL*8  :: JGS_PMIN = 0.
+           REAL*8  :: JGS_DIFF_THR = 1.E-10
+           REAL*8  :: JGS_NORM_THR = 1.E-20
+           REAL*8  :: SOLVERTHR_SETUP = 1.E-20
+           REAL*8  :: CRIT_DEP_SETUP = 0.
 !
            CHARACTER               :: UGOBCFILE*60
            REAL                    :: UGOBCDEPTH 
-           LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
-                                      EXPFSFCT,IMPFSN, UGOBCOK
-           INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
-!
+           LOGICAL                 :: UGOBCOK
+
 !/RTD      REAL                    :: PLAT, PLON
 !/RTD      LOGICAL                 :: UNROT
 !
@@ -783,7 +816,23 @@
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH, UGOBCFILE,          &
                            EXPFSN, EXPFSPSI, EXPFSFCT,                &
-                           IMPFSN
+                           IMPFSN, IMPTOTAL, EXPTOTAL,                &
+                           IMPREFRACTION, IMPFREQSHIFT,               &
+                           IMPSOURCE,                                 &
+                           JGS_TERMINATE_MAXITER,                     &
+                           JGS_TERMINATE_DIFFERENCE,                  &
+                           JGS_TERMINATE_NORM,                        &
+                           JGS_LIMITER,                               &
+                           JGS_USE_JACOBI,                            &
+                           JGS_BLOCK_GAUSS_SEIDEL,                    &
+                           JGS_MAXITER,                               &
+                           JGS_PMIN,                                  &
+                           JGS_DIFF_THR,                              &
+                           JGS_NORM_THR,                              &
+                           JGS_NLEVEL,                                &
+                           JGS_SOURCE_NONLINEAR,                      &
+                           SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
+                           CRIT_DEP_SETUP
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
@@ -832,6 +881,7 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  IO set-up.
 !
+!/DEBUGGRID      IAPROC = 1
       NDSI   = 10
       NDSS   = 90
       NDSM   = 20
@@ -1787,8 +1837,70 @@
        EXPFSPSI  = .FALSE.
        EXPFSFCT  = .FALSE.
        IMPFSN    = .FALSE.
+       IMPTOTAL  = .FALSE.
+       EXPTOTAL  = .FALSE. 
+       IMPREFRACTION = .FALSE.
+       IMPFREQSHIFT = .FALSE.
+       IMPSOURCE = .FALSE.
+       SETUP_APPLY_WLV = .FALSE.
+       SOLVERTHR_SETUP=1E-14
+       CRIT_DEP_SETUP=0.1
+       JGS_TERMINATE_MAXITER = .TRUE.
+       JGS_TERMINATE_DIFFERENCE = .TRUE.
+       JGS_TERMINATE_NORM = .FALSE.
+       JGS_LIMITER = .FALSE.
+       JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
+       JGS_USE_JACOBI = .TRUE.
+       JGS_MAXITER=100
+       JGS_PMIN = 1
+       JGS_DIFF_THR = 1.E-10
+       JGS_NORM_THR = 1.E-20
+       JGS_NLEVEL = 0
+       JGS_SOURCE_NONLINEAR = .FALSE.
 ! read data from the unstructured devoted namelist
-       CALL READNL ( NDSS, 'UNST', STATUS ) 
+       CALL READNL ( NDSS, 'UNST', STATUS )
+
+       B_JGS_USE_JACOBI = JGS_USE_JACOBI
+       B_JGS_TERMINATE_MAXITER = JGS_TERMINATE_MAXITER
+       B_JGS_TERMINATE_DIFFERENCE = JGS_TERMINATE_DIFFERENCE
+       B_JGS_TERMINATE_NORM = JGS_TERMINATE_NORM
+       B_JGS_LIMITER = JGS_LIMITER
+       B_JGS_BLOCK_GAUSS_SEIDEL = JGS_BLOCK_GAUSS_SEIDEL
+       B_JGS_MAXITER = JGS_MAXITER
+       B_JGS_PMIN = JGS_PMIN
+       B_JGS_DIFF_THR = JGS_DIFF_THR
+       B_JGS_NORM_THR = JGS_NORM_THR
+       B_JGS_NLEVEL = JGS_NLEVEL
+       B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
+
+       IF ((EXPFSN .eqv. .FALSE.).and.(EXPFSPSI .eqv. .FALSE.)     &
+           .and.(EXPFSFCT .eqv. .FALSE.)                           &
+           .and.(IMPFSN .eqv. .FALSE.)                             &
+           .and.(EXPTOTAL .eqv. .FALSE.)                           &
+           .and.(IMPTOTAL .eqv. .FALSE.)) THEN
+         EXPFSN=.TRUE. ! This is the default scheme ...
+       END IF
+       nbSel=0
+
+       IF (EXPFSN) nbSel=nbSel+1
+       IF (EXPFSPSI) nbSel=nbSel+1
+       IF (EXPFSFCT) nbSel=nbSel+1
+       IF (IMPFSN) nbSel=nbSel+1
+       IF (IMPTOTAL) nbSel=nbSel+1
+       IF (EXPTOTAL) nbSel=nbSel+1
+
+       IF (GTYPE .EQ. UNGTYPE) THEN
+         IF (nbSel .ne. 1) THEN
+           IF (nbSel .gt. 1) THEN
+             WRITE (NDSO,*) 'More than one scheme selected'
+           ELSE IF (nbSel .eq. 0) THEN
+             WRITE (NDSO,*) 'no scheme selected'
+           END IF
+           WRITE (NDSO,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
+           WRITE (NDSO,*)'IMPFSN, IMPTOTAL'
+           STOP
+         END IF
+       END IF
 !
 ! 6.m Select propagation scheme
 !
@@ -2362,7 +2474,21 @@
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
         WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH, TRIM(UGOBCFILE),     &
-                          EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN
+                          EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
+                          IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
+                          IMPSOURCE, SETUP_APPLY_WLV,                 &
+                          JGS_TERMINATE_MAXITER,                      &
+                          JGS_TERMINATE_DIFFERENCE,                   &
+                          JGS_TERMINATE_NORM,                         &
+                          JGS_LIMITER,                                &
+                          JGS_USE_JACOBI,                             &
+                          JGS_BLOCK_GAUSS_SEIDEL,                     &
+                          JGS_MAXITER,                                &
+                          JGS_PMIN,                                   &
+                          JGS_DIFF_THR,                               &
+                          JGS_NORM_THR,                               &
+                          JGS_NLEVEL,                                 &
+                          JGS_SOURCE_NONLINEAR
 !
         WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
                              US3D, I1US3D, I2US3D,                    & 
@@ -2565,19 +2691,20 @@
 !
 ! Propagation specific to unstructured grids
 !
+      DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
         UNSTSCHEMES(:)=0
         IF (EXPFSN)   UNSTSCHEMES(1)=1
         IF (EXPFSPSI) UNSTSCHEMES(2)=1
         IF (EXPFSFCT) UNSTSCHEMES(3)=1
         IF (IMPFSN)   UNSTSCHEMES(4)=1
-
+        UNSTSCHEME=-1
         DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
             UNSTSCHEME=IX
             EXIT
-            END IF
-          END DO
+          END IF
+        END DO
  
         SELECT CASE (UNSTSCHEME)
         CASE (1) 
@@ -2596,7 +2723,44 @@
 !
         IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
         WRITE (NDSO,2951) PNAME2
+        IF (IMPTOTAL) THEN
+          FSTOTALIMP = IMPTOTAL
+          PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
         END IF
+        IF (EXPTOTAL) THEN
+          FSTOTALEXP = EXPTOTAL 
+          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
+        END IF
+        IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
+          FSREFRACTION = .TRUE.
+          PNAME2 = 'Refraction done implicitly'
+          WRITE (NDSO,2951) PNAME2
+        ELSE
+          FSREFRACTION = .FALSE.
+        END IF
+        IF (IMPFREQSHIFT .and. IMPTOTAL .AND. FLCK) THEN
+          FSFREQSHIFT = .TRUE.
+          PNAME2 = 'Frequency shifting done implicitly'
+          WRITE (NDSO,2951) PNAME2
+        ELSE
+          FSFREQSHIFT = .FALSE.
+        END IF
+        IF (IMPSOURCE .and. IMPTOTAL .AND. FLSOU) THEN
+          FSSOURCE = .TRUE.
+          PNAME2 = 'Source terms integrated implicitly'
+          WRITE (NDSO,2951) PNAME2
+        ELSE
+          FSSOURCE = .FALSE.
+        END IF
+        IF (SETUP_APPLY_WLV) THEN
+          DO_CHANGE_WLV = SETUP_APPLY_WLV
+          PNAME2 = ' we change WLV'
+          WRITE (NDSO,2952) PNAME2
+        END IF
+        SOLVERTHR_STP = SOLVERTHR_SETUP
+        CRIT_DEP_STP  = CRIT_DEP_SETUP
+      END IF
+
 !
 ! 7.c Grid coordinates (branch here based on grid type)
 !
@@ -2846,6 +3010,11 @@
           CALL READMSH(NDSS,FNAME)
           ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
           ZBIN(:,1) = VSC*XYB(:,3)
+!/DEBUGSTP          WRITE(740,*) 'VSC=', VSC
+!/DEBUGSTP          WRITE(740,*) 'Printing ZBIN 1'
+!/DEBUGSTP          DO IX=1,NX
+!/DEBUGSTP            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
+!/DEBUGSTP          END DO
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
@@ -2859,11 +3028,19 @@
       ALLOCATE ( TMPSTA(NY,NX), TMPMAP(NY,NX) )
       TMPSTA = 0
 !
-      DO IY=1, NY
-        DO IX=1, NX
-          IF ( ZBIN(IX,IY) .LE. ZLIM ) TMPSTA(IY,IX) = 1
+!/DEBUGSTP          WRITE(740,*) 'Printing ZBIN 2'
+!/DEBUGSTP          DO IX=1,NX
+!/DEBUGSTP            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
+!/DEBUGSTP          END DO
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        TMPSTA = 1
+      ELSE
+        DO IY=1, NY
+          DO IX=1, NX
+            IF ( ZBIN(IX,IY) .LE. ZLIM ) TMPSTA(IY,IX) = 1
           END DO
         END DO
+      ENDIF
 !
 !Li   Suspended for SMC grid.  JGLi15Oct2014
       IF( RGLGRD ) THEN
@@ -3202,6 +3379,10 @@
         CALL READMSHOBC(NDSS,UGOBCFILE,TMPSTA,UGOBCOK)
        IF ((GTYPE.EQ.UNGTYPE).AND.UGOBCAUTO.AND.(.NOT.UGOBCOK))  &
           CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
+!/DEBUGSTP          WRITE(740,*) 'Printing ZBIN 4'
+!/DEBUGSTP          DO IX=1,NX
+!/DEBUGSTP            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
+!/DEBUGSTP          END DO
 !
 ! 8.b Determine where to get the data
 !
@@ -3211,6 +3392,7 @@
 !
 ! ... Data to be read in parts
 !
+!/DEBUGGRID             WRITE(740+IAPROC,*) 'FROM=', TRIM(FROM)
       IF ( FROM .EQ. 'PART' ) THEN
 !
 ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
@@ -3222,7 +3404,14 @@
           'TO READ DATA IN PARTS. STOPPING NOW (107).'
           CALL EXTCDE ( 107 )
         END IF
-
+!/DEBUGGRID       nbCase1=0
+!/DEBUGGRID       nbCase2=0
+!/DEBUGGRID       nbCase3=0
+!/DEBUGGRID       nbCase4=0
+!/DEBUGGRID       nbCase5=0
+!/DEBUGGRID       nbCase6=0
+!/DEBUGGRID       nbCase7=0
+!/DEBUGGRID       nbCase8=0
         DO ILOOP=1, 2
 !
           IF ( ILOOP .EQ. 1 ) THEN
@@ -3237,6 +3426,10 @@
           DO
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
+!/DEBUGGRID  		 WRITE(740+IAPROC,*) 'read IX=', IX
+!/DEBUGGRID  		 WRITE(740+IAPROC,*) 'read IY=', IY
+!/DEBUGGRID  		 WRITE(740+IAPROC,*) 'read CONNCT=', CONNCT
+
 !
 ! ... Check if last point reached.
 !
@@ -3253,6 +3446,8 @@
 !
 ! ... Check if intermediate points are to be added.
 !
+!/DEBUGGRID  		 WRITE(740+IAPROC,*) 'CONNCT=', CONNCT
+!/DEBUGGRID  		 WRITE(740+IAPROC,*) 'FIRST=', FIRST
             IF ( CONNCT .AND. .NOT.FIRST ) THEN
                 IDX    = IX - IXO
                 IDY    = IY - IYO
@@ -3285,6 +3480,7 @@
 ! ... Check if point itself is to be added
 !
             IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
+!/DEBUGGRID                nbCase2=nbCase2+1
                 TMPSTA(IY,IX) = NSTAT
               END IF
 !
@@ -3333,48 +3529,54 @@
                 IX1    = IX
                 IY1    = IY
 !
-                JJ     = TMPSTA(IY,IX)
-                TMPSTA(IY,IX) = NSTAT
-!
-                DO
-                  NBT    = 0
-!
-                  DO IX=MAX(1,IX1-J), MIN(IX1+J,NX)
-                    DO IY=MAX(1,IY1-J), MIN(IY1+J,NY)
-                      IF ( TMPSTA(IY,IX) .EQ. JJ ) THEN
-                          IF (IX.GT.1) THEN
-                              IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
-                                      .AND. TMPMAP(IY  ,IX-1).EQ.JJ )  &
-                              TMPSTA(IY,IX) = NSTAT
-                            END IF
-                          IF (IX.LT.NX) THEN
-                              IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
-                                      .AND. TMPMAP(IY  ,IX+1).EQ.JJ )  &
-                              TMPSTA(IY,IX) = NSTAT
-                            END IF
-                          IF (IY.LT.NY) THEN
-                              IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
-                                      .AND. TMPMAP(IY+1,IX  ).EQ.JJ )  &
-                              TMPSTA(IY,IX) = NSTAT
-                            END IF
-                          IF (IY.GT.1) THEN
-                              IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
-                                      .AND. TMPMAP(IY-1,IX  ).EQ.JJ )  &
-                               TMPSTA(IY,IX) = NSTAT
-                            END IF
-                          IF (TMPSTA(IY,IX).EQ.NSTAT) NBT = NBT + 1
+              JJ     = TMPSTA(IY,IX)
+!/DEBUGGRID             nbCase3=nbCase3 + 1
+              TMPSTA(IY,IX) = NSTAT
+              DO
+                NBT    = 0
+                DO IX=MAX(1,IX1-J), MIN(IX1+J,NX)
+                  DO IY=MAX(1,IY1-J), MIN(IY1+J,NY)
+                    IF ( TMPSTA(IY,IX) .EQ. JJ ) THEN
+                      IF (IX.GT.1) THEN
+                        IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
+                            .AND. TMPMAP(IY  ,IX-1).EQ.JJ ) THEN
+!/DEBUGGRID               nbCase4=nbCase4 + 1
+                          TMPSTA(IY,IX) = NSTAT
                         END IF
-                      END DO
-                    END DO
-!
-                IF ( NBT .NE. 0 ) THEN
-                    J      = J + 1
-                  ELSE
-                    EXIT
-                  END IF
+                      END IF
+                      IF (IX.LT.NX) THEN
+                        IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
+                            .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
+!/DEBUGGRID               nbCase5=nbCase5 + 1
+                          TMPSTA(IY,IX) = NSTAT
+		        END IF
+                      END IF
+                      IF (IY.LT.NY) THEN
+                        IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
+                            .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
+!/DEBUGGRID  	          nbCase6=nbCase6 + 1
+                          TMPSTA(IY,IX) = NSTAT
+		        END IF
+                      END IF
+                      IF (IY.GT.1) THEN
+                        IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
+                           .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
+!/DEBUGGRID               nbCase7=nbCase7 + 1
+                          TMPSTA(IY,IX) = NSTAT
+			END IF
+                      END IF
+                      IF (TMPSTA(IY,IX).EQ.NSTAT) NBT = NBT + 1
+                    END IF
+                  END DO
                 END DO
 !
+                IF ( NBT .NE. 0 ) THEN
+                  J = J + 1
+                ELSE
+                  EXIT
+                END IF
               END DO
+            END DO
 !
 ! ... Outer boundary excluded points
 !
@@ -3398,7 +3600,30 @@
 !
 ! ... Branch back input / excluded points ( ILOOP in 8.b )
 !
-          END DO           
+        END DO
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase1=', nbCase1
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase2=', nbCase2
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase3=', nbCase3
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase4=', nbCase4
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase5=', nbCase5
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase6=', nbCase6
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase7=', nbCase7
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbCase8=', nbCase8
+!/DEBUGGRID      nbTMPSTA0=0
+!/DEBUGGRID      nbTMPSTA1=0
+!/DEBUGGRID      nbTMPSTA2=0
+!/DEBUGGRID      DO IX=1,NX
+!/DEBUGGRID        DO IY=1,NY
+!/DEBUGGRID          WRITE(740+IAPROC,*) 'IX/IY/TMPSTA=', IX, IY, TMPSTA(IY,IX)
+!/DEBUGGRID          IF (TMPSTA(IY,IX) .eq. 0) nbTMPSTA0=nbTMPSTA0+1
+!/DEBUGGRID          IF (TMPSTA(IY,IX) .eq. 1) nbTMPSTA1=nbTMPSTA1+1
+!/DEBUGGRID          IF (TMPSTA(IY,IX) .eq. 2) nbTMPSTA2=nbTMPSTA2+1
+!/DEBUGGRID        END DO
+!/DEBUGGRID      END DO
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbTMPSTA0=', nbTMPSTA0
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbTMPSTA1=', nbTMPSTA1
+!/DEBUGGRID      WRITE(740+IAPROC,*) 'nbTMPSTA2=', nbTMPSTA2
+!/DEBUGGRID      FLUSH(740+IAPROC)
 !
         ELSE ! FROM .EQ. PART
 !
@@ -3606,10 +3831,15 @@
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 1, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Zb', 'm')
 !
+!/DEBUGSTP          WRITE(740,*) 'Printing ZBIN 5'
+!/DEBUGSTP          DO IX=1,NX
+!/DEBUGSTP            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
+!/DEBUGSTP          END DO
       TRNX   = 0.
       TRNY   = 0.
 !
-!Li  Shelter MAPSTA etc LLG definitions for SMC by logical RGLGRD 
+!Li  Shelter MAPSTA etc LLG definitions for SMC by logical RGLGRD !
+!AR  This is only .FALSE. for SMC ..
       IF( RGLGRD ) THEN
       ISEA   = 0
       DO IY=1, NY
@@ -3656,6 +3886,10 @@
 
           END DO
         END DO
+!/DEBUGSTP        DO ISEA=1,NSEA
+!/DEBUGSTP          WRITE(740,*) 'ISEA,ZB=', ISEA, ZB(ISEA)
+!/DEBUGSTP        END DO
+!/DEBUGSTP        FLUSH(740)
       ENDIF
 !!Li End of RGLGRD IF block
 !
@@ -4032,6 +4266,7 @@
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
 ! NB: this is updated with moving water levels in W3ULEV
+! AR: this is not anymore needed and will be deleted ...
 !
       IF (GTYPE.EQ.UNGTYPE) THEN 
         CALL SETUGIOBP 
@@ -4882,6 +5117,7 @@
                ' --------------------------------------------------')
   951 FORMAT ( '       Type of scheme (structured) :',1X,A)
  2951 FORMAT ( '       Type of scheme(unstructured):',1X,A)
+ 2952 FORMAT ( '             wave setup computation:',1X,A)
   952 FORMAT ( '                                    ',1X,A)
 !/PR1  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/)
 !/PR1 2953 FORMAT ( '  &PRO1 CFLTM =',F5.2,' /')
@@ -4918,8 +5154,23 @@
 !
  2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,        &
                ', UGOBCFILE=',A,','/                                   &
-               '        EXPFSN =',L3,', EXPFSPSI =',L3,', EXPFSFCT =', &
-               L3,', IMPFSN =',L3,' /' )
+               ',  EXPFSN =',L3,',EXPFSPSI =',L3,                     &
+               ',  EXPFSFCT =', L3,',IMPFSN =',L3,',EXPTOTAL=',L3,    &
+               ',  IMPTOTAL=',L3,',IMPREFRACTION=', L3,               &
+               ',  IMPFREQSHIFT=', L3,', IMPSOURCE=', L3,             &
+               ',  SETUP_APPLY_WLV=', L3,                             &
+               ',  JGS_TERMINATE_MAXITER=', L3,                       &
+               ',  JGS_TERMINATE_DIFFERENCE=', L3,                    &
+               ',  JGS_TERMINATE_NORM=', L3,                          &
+               ',  JGS_LIMITER=', L3,                                 &
+               ',  JGS_USE_JACOBI=', L3,                              &
+               ',  JGS_BLOCK_GAUSS_SEIDEL=', L3,                      &
+               ',  JGS_MAXITER=', I5,                                 &
+               ',  JGS_PMIN=', F8.3,                                  &
+               ',  JGS_DIFF_THR=', F8.3,                              &
+               ',  JGS_NORM_THR=', F8.3,                              &
+               ',  JGS_NLEVEL=', I3,                                  &
+               ',  JGS_SOURCE_NONLINEAR=', L3 / )
 !
   960 FORMAT (/'  Miscellaneous ',A/                                   &
                ' --------------------------------------------------')
@@ -5153,12 +5404,12 @@
   986 FORMAT ( '       Number of boundary points   :',I6/)
  1985 FORMAT ( '       No excluded points.'/)
  1986 FORMAT ( '       Number of excluded points   :',I6/)
-  987 FORMAT ( '         Nr.|  IX |  IY |  Long.  |   Lat.  '/        &
-               '       -----|-----|-----|---------|---------')
- 1987 FORMAT ( '         Nr.|  IX |  IY |     X     |     Y     '/    &
-               '       -----|-----|-----|-----------|-----------')
-  988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.2))
- 1988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.1,'E3'))
+  987 FORMAT ( '         Nr.|   IX  |   IY  |  Long.  |   Lat.  '/        &
+               '       -----|-------|-------|---------|---------')
+ 1987 FORMAT ( '         Nr.|   IX  |   IY  |     X     |     Y     '/    &
+               '       -----|-------|-------|-----------|-----------')
+  988 FORMAT ( '       ',I4,2(' |',I6),2(' |',F8.2))
+ 1988 FORMAT ( '       ',I4,2(' |',I6),2(' |',F8.1,'E3'))
   989 FORMAT ( ' ')
 !
   990 FORMAT (/'  Output boundary points : '/                         &

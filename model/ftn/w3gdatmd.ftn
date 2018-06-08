@@ -21,7 +21,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Jan-2018 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -83,6 +83,8 @@
 !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
 !/                  (T.J. Campbell, NRL)                ( version 6.02 )
 !/    07-Jan-2018 : Generalizes ICE100WIND to ICESCALES ( version 6.04 )
+!/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
+!/                  for unstructured grids              ( version 6.04 ) 
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -617,7 +619,7 @@
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
                             PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
                             IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
-		                    IICEDDISP, IICEFDISP
+                            IICEDDISP, IICEFDISP
 
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
@@ -643,7 +645,7 @@
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
         LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
-			                IICESMOOTH
+                            IICESMOOTH
         LOGICAL          :: FLAGLL
         LOGICAL          :: CMPRTRCK
         LOGICAL, POINTER :: FLAGST(:)
@@ -674,15 +676,21 @@
         INTEGER               :: NTRI
         DOUBLE PRECISION, POINTER         :: XYB(:,:)
         INTEGER, POINTER      :: TRIGP(:,:)
-        DOUBLE PRECISION, POINTER         :: LEN(:,:),SI(:), IEN(:,:)
+!/PDLIB        INTEGER               :: NBND_MAP
+!/PDLIB        INTEGER, POINTER      :: INDEX_MAP(:)
+!/PDLIB        INTEGER, POINTER      :: MAPSTA_LOC(:)
+        REAL(8), POINTER      :: LEN(:,:),SI(:), IEN(:,:)
 
         REAL                  :: MAXX, MAXY, DXYMAX
         REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
-        INTEGER               :: COUNTRI,COUNTOT,NNZ
-        INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), VNEIGH(:,:),  &
-                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBPA(:),     &
-                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
-        DOUBLE PRECISION, POINTER         :: TRIA(:)
+        INTEGER               :: COUNTRI,COUNTOT,NNZ, NBEDGE
+        INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), &
+                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBDP(:), IOBPA(:),   &
+!/PDLIB                          IOBPD_loc(:,:), IOBP_loc(:),                    &
+                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:),       &
+                                 I_DIAG(:), JA_IE(:,:,:)
+        INTEGER, POINTER      :: EDGES(:,:), NEIGH(:,:)
+        REAL(8), POINTER      :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
       END TYPE GRID
 !
@@ -842,7 +850,30 @@
       
 ! specific type for unstructured scheme
       TYPE SCHM
-         LOGICAL              :: FSN,FSPSI,FSFCT,FSNIMP
+         LOGICAL :: FSN          = .FALSE. 
+         LOGICAL :: FSPSI        = .FALSE. 
+         LOGICAL :: FSFCT        = .FALSE. 
+         LOGICAL :: FSNIMP       = .FALSE. 
+         LOGICAL :: FSTOTALIMP   = .FALSE. 
+         LOGICAL :: FSTOTALEXP   = .FALSE. 
+         LOGICAL :: FSREFRACTION = .FALSE. 
+         LOGICAL :: FSFREQSHIFT  = .FALSE. 
+         LOGICAL :: FSSOURCE     = .FALSE. 
+         LOGICAL :: DO_CHANGE_WLV 
+         REAL(8) :: SOLVERTHR_STP 
+         REAL(8) :: CRIT_DEP_STP
+         LOGICAL :: B_JGS_TERMINATE_MAXITER 
+         LOGICAL :: B_JGS_TERMINATE_DIFFERENCE 
+         LOGICAL :: B_JGS_TERMINATE_NORM 
+         LOGICAL :: B_JGS_LIMITER 
+         LOGICAL :: B_JGS_USE_JACOBI
+         LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL 
+         INTEGER :: B_JGS_MAXITER 
+         REAL*8  :: B_JGS_PMIN
+         REAL*8  :: B_JGS_DIFF_THR 
+         REAL*8  :: B_JGS_NORM_THR 
+         INTEGER :: B_JGS_NLEVEL
+         LOGICAL :: B_JGS_SOURCE_NONLINEAR 
       END TYPE SCHM    
 !      
 !
@@ -878,22 +909,30 @@
       INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:), USSPF(:)
       REAL,    POINTER        :: USSP_WN(:)
       REAL,    POINTER        :: REFLC(:,:)
-      INTEGER, POINTER        :: REFLD(:,:)    
+      INTEGER, POINTER        :: REFLD(:,:)
+      INTEGER, POINTER        :: NBEDGE
+      INTEGER, POINTER        :: EDGES(:,:), NEIGH(:,:)
 !
 ! Variables for unstructured grids 
 !
       INTEGER, POINTER        :: NTRI,COUNTRI,COUNTOT,NNZ
+      INTEGER                 :: optionCall = 3 ! take care all other options are basically wrong
 !  XYB may not be necessary now that we have XGRD and YGRD
 !  but these XGRD and YGRD should probably be double precision
       DOUBLE PRECISION, POINTER  ::     XYB(:,:)   
       INTEGER, POINTER        :: TRIGP(:,:)
-      DOUBLE PRECISION, POINTER  :: IEN(:,:), LEN(:,:), SI(:)
+!/PDLIB      INTEGER, POINTER        :: NBND_MAP
+!/PDLIB      INTEGER, POINTER        :: INDEX_MAP(:)
+!/PDLIB      INTEGER, POINTER        :: MAPSTA_LOC(:)
+      REAL(8), POINTER        :: IEN(:,:), LEN(:,:), SI(:)
       REAL, POINTER           :: ANGLE(:,:),ANGLE0(:,:)
-      INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),    &
-                                 POS_CELL(:), IOBP(:), IOBPD(:,:),     &
-                                 IAA(:), JAA(:), POSI(:,:),            &
-                                 VNEIGH(:,:), INDEX_CELL(:), IOBPA(:)
-      DOUBLE PRECISION, POINTER  :: TRIA(:)
+      INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),           &
+                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBDP(:), IOBPA(:),  &
+!/PDLIB                                 IOBPD_loc(:,:), IOBP_loc(:),          &
+                                 IAA(:), JAA(:), POSI(:,:),                   &
+                                 I_DIAG(:), JA_IE(:,:,:),                     &
+                                 INDEX_CELL(:)
+      REAL(8), POINTER        :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
@@ -1069,7 +1108,23 @@
 !/DB1      LOGICAL, POINTER        :: FDONLY
 !/
 !/ Data aliasing for structure SCHM(S)
-      LOGICAL, POINTER        :: FSN,FSPSI,FSFCT,FSNIMP
+      LOGICAL, POINTER  :: FSN,FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP
+      LOGICAL, POINTER  :: FSREFRACTION, FSFREQSHIFT, FSSOURCE
+      LOGICAL, POINTER  :: DO_CHANGE_WLV
+      REAL(8), POINTER  :: SOLVERTHR_STP
+      REAL(8), POINTER  :: CRIT_DEP_STP
+      LOGICAL, POINTER :: B_JGS_TERMINATE_MAXITER
+      LOGICAL, POINTER :: B_JGS_TERMINATE_DIFFERENCE
+      LOGICAL, POINTER :: B_JGS_TERMINATE_NORM
+      LOGICAL, POINTER :: B_JGS_LIMITER
+      LOGICAL, POINTER :: B_JGS_USE_JACOBI
+      LOGICAL, POINTER :: B_JGS_BLOCK_GAUSS_SEIDEL
+      INTEGER, POINTER :: B_JGS_MAXITER
+      REAL(8), POINTER :: B_JGS_PMIN
+      REAL(8), POINTER :: B_JGS_DIFF_THR
+      REAL(8), POINTER :: B_JGS_NORM_THR
+      INTEGER, POINTER :: B_JGS_NLEVEL
+      LOGICAL, POINTER :: B_JGS_SOURCE_NONLINEAR
 !/
 !/ Data aliasing for structure SICP(S)
 !/IS1      REAL, POINTER           :: IS1C1, IS1C2
@@ -1377,6 +1432,8 @@
                  GRIDS(IMOD)%HQFAC(MY,MX),   &
                  STAT=ISTAT                  )
       CHECK_ALLOC_STATUS ( ISTAT )
+!!/DEBUGINIT         WRITE(740+IAPROC,*) 'After alocation of MAPST2, MY=', MY, ' MX=', MX
+!!/DEBUGINIT         FLUSH(740+IAPROC)
 !/BT4    ALLOCATE ( GRIDS(IMOD)%SED_D50(0:MSEA), &
 !/BT4               GRIDS(IMOD)%SED_PSIC(0:MSEA),&
 !/BT4                 STAT=ISTAT                 )
@@ -1435,6 +1492,7 @@
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
       WRITE (NDST,9001)
 #endif
+!
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1      GRIDS(IMOD)%IGPARS(:)=0.
@@ -1892,6 +1950,9 @@
       FILEXT => GRIDS(IMOD)%FILEXT
       XYB    => GRIDS(IMOD)%XYB
       TRIGP  => GRIDS(IMOD)%TRIGP
+!/PDLIB      NBND_MAP => GRIDS(IMOD)%NBND_MAP
+!/PDLIB      INDEX_MAP => GRIDS(IMOD)%INDEX_MAP
+!/PDLIB      MAPSTA_LOC => GRIDS(IMOD)%MAPSTA_LOC
       NTRI     => GRIDS(IMOD)%NTRI
       COUNTRI     => GRIDS(IMOD)%COUNTRI
       SI     => GRIDS(IMOD)%SI
@@ -1902,7 +1963,6 @@
       ANGLE0     => GRIDS(IMOD)%ANGLE0
       CCON     => GRIDS(IMOD)%CCON
       COUNTCON     => GRIDS(IMOD)%COUNTCON
-      VNEIGH       => GRIDS(IMOD)%VNEIGH
       INDEX_CELL  => GRIDS(IMOD)%INDEX_CELL
       IE_CELL     => GRIDS(IMOD)%IE_CELL
       POS_CELL     => GRIDS(IMOD)%POS_CELL
@@ -1910,9 +1970,17 @@
       IAA      => GRIDS(IMOD)%IAA
       JAA      => GRIDS(IMOD)%JAA
       POSI     => GRIDS(IMOD)%POSI
+      I_DIAG     => GRIDS(IMOD)%I_DIAG
+      JA_IE     => GRIDS(IMOD)%JA_IE
+      NBEDGE    => GRIDS(IMOD)%NBEDGE
+      EDGES     => GRIDS(IMOD)%EDGES
+      NEIGH     => GRIDS(IMOD)%NEIGH
       NNZ      => GRIDS(IMOD)%NNZ
       IOBPD     => GRIDS(IMOD)%IOBPD
-      IOBPA    => GRIDS(IMOD)%IOBPA
+      IOBDP     => GRIDS(IMOD)%IOBDP
+      IOBPA     => GRIDS(IMOD)%IOBPA
+!/PDLIB      IOBP_loc     => GRIDS(IMOD)%IOBP_loc
+!/PDLIB      IOBPD_loc     => GRIDS(IMOD)%IOBPD_loc
       TRIA     => GRIDS(IMOD)%TRIA
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
       MAXX     => GRIDS(IMOD)%MAXX
@@ -2244,7 +2312,26 @@
        FSPSI => MPARS(IMOD)%SCHMS%FSPSI
        FSFCT => MPARS(IMOD)%SCHMS%FSFCT
        FSNIMP => MPARS(IMOD)%SCHMS%FSNIMP
-
+       FSTOTALIMP => MPARS(IMOD)%SCHMS%FSTOTALIMP
+       FSTOTALEXP => MPARS(IMOD)%SCHMS%FSTOTALEXP
+       FSREFRACTION => MPARS(IMOD)%SCHMS%FSREFRACTION
+       FSFREQSHIFT => MPARS(IMOD)%SCHMS%FSFREQSHIFT
+       FSSOURCE => MPARS(IMOD)%SCHMS%FSSOURCE
+       DO_CHANGE_WLV => MPARS(IMOD)%SCHMS%DO_CHANGE_WLV
+       SOLVERTHR_STP => MPARS(IMOD)%SCHMS%SOLVERTHR_STP
+       CRIT_DEP_STP => MPARS(IMOD)%SCHMS%CRIT_DEP_STP
+       B_JGS_TERMINATE_MAXITER => MPARS(IMOD)%SCHMS%B_JGS_TERMINATE_MAXITER
+       B_JGS_TERMINATE_DIFFERENCE => MPARS(IMOD)%SCHMS%B_JGS_TERMINATE_DIFFERENCE
+       B_JGS_TERMINATE_NORM => MPARS(IMOD)%SCHMS%B_JGS_TERMINATE_NORM
+       B_JGS_LIMITER => MPARS(IMOD)%SCHMS%B_JGS_LIMITER
+       B_JGS_USE_JACOBI => MPARS(IMOD)%SCHMS%B_JGS_USE_JACOBI
+       B_JGS_BLOCK_GAUSS_SEIDEL => MPARS(IMOD)%SCHMS%B_JGS_BLOCK_GAUSS_SEIDEL
+       B_JGS_MAXITER => MPARS(IMOD)%SCHMS%B_JGS_MAXITER
+       B_JGS_PMIN => MPARS(IMOD)%SCHMS%B_JGS_PMIN
+       B_JGS_DIFF_THR => MPARS(IMOD)%SCHMS%B_JGS_DIFF_THR
+       B_JGS_NORM_THR => MPARS(IMOD)%SCHMS%B_JGS_NORM_THR
+       B_JGS_NLEVEL => MPARS(IMOD)%SCHMS%B_JGS_NLEVEL
+       B_JGS_SOURCE_NONLINEAR => MPARS(IMOD)%SCHMS%B_JGS_SOURCE_NONLINEAR
       RETURN
 !
 ! Formats
@@ -2551,6 +2638,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3SERVMD, ONLY: EXTCDE
+!/MEMCHECK      USE MallocInfo_m
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -2560,6 +2648,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: IMOD, MTRI, MX, COUNTOTA, NNZ, NDSE, NDST
+!/MEMCHECK      type(MallInfo_t)        :: mallinfos
+      INTEGER                 :: IAPROC = 1
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -2584,9 +2674,14 @@
         WRITE (NDSE,1004)
         CALL EXTCDE (4)
         END IF
+!
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
       WRITE (NDST,9000) IMOD, MX, MTRI
 #endif
+
+!/MEMCHECK      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_UG_ALLOCATE SECTION 1'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
@@ -2602,15 +2697,17 @@
                  GRIDS(IMOD)%ANGLE0(MTRI,3),                        &
                  GRIDS(IMOD)%CCON(MX),                              &
                  GRIDS(IMOD)%COUNTCON(MX),                          &
-                 GRIDS(IMOD)%VNEIGH(MX,2*COUNTRI),                  &
                  GRIDS(IMOD)%INDEX_CELL(MX+1),                      &
                  GRIDS(IMOD)%IE_CELL(COUNTOTA),                     &
                  GRIDS(IMOD)%POS_CELL(COUNTOTA),                    &
                  GRIDS(IMOD)%IAA(NX+1),                             &
                  GRIDS(IMOD)%JAA(NNZ),                              &
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
+                 GRIDS(IMOD)%I_DIAG(NX),                            &
+                 GRIDS(IMOD)%JA_IE(3,3,MTRI),                       &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX),                         &
+                 GRIDS(IMOD)%IOBDP(MX),                             &
                  GRIDS(IMOD)%IOBPA(MX),                             &
                  STAT=ISTAT                                         )
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -2632,13 +2729,19 @@
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Update counters in grid
+!     Note that in the case of lon/lat grids, these quantities do not
+!     include the spherical coordinate metric (SPHERE=.FALSE.).
 !
       NTRI   = MTRI
       COUNTOT=COUNTOTA
-      GUGINIT  = .FALSE.
+      GRIDS(IMOD)%GUGINIT  = .TRUE.
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
       WRITE (NDST,9003)
 #endif
+!/MEMCHECK      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_UG_ALLOCATE SECTION 2'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
+
       RETURN
 !
 ! Formats

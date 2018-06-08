@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2018 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -49,6 +49,7 @@
 !/    27-Aug-2015 : Add ICEF,ICEH as output fields      ( version 5.10 )
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
+!/    05-Jun-2018 : Add DEBUGSTP/SETUP                  ( version 6.04 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -441,6 +442,9 @@
 !/IS2             FLG2D(1,9)=.TRUE.
 !/IS2           CASE('IC5')
 !/IS2             FLG2D(1,10)=.TRUE.
+!/SETUP           CASE('STP')
+!/SETUP             FLG2D(1,11)=.TRUE.
+!
 !
 ! Group 2
 !
@@ -1180,8 +1184,10 @@
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
+      USE W3ADATMD, ONLY: NSEALM
 !/S      USE W3SERVMD, ONLY: STRACE
 !
+      USE W3PARALL, ONLY : INIT_GET_ISEA
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1238,6 +1244,15 @@
 !/
 !/S      CALL STRACE (IENT, 'W3OUTG')
 !
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'NTH=', NTH
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'NK=', NK
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'NSPEC=', NSPEC
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'W3OUTG, initial A printing'
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'size(A,1)=', size(A,1)
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'size(A,2)=', size(A,2)
+!/DEBUGSTP    WRITE(740+IAPROC,*) 'size(A,3)=', size(A,3)
+!/DEBUGSTP    FLUSH(740+IAPROC)
       DO I=1,NOGRP 
         DO J=1,NGRPP
           FLOLOC(I,J) =   &
@@ -1374,8 +1389,7 @@
               ABST(JSEA) = ABST(JSEA) +                               &
                               A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
               END IF
-!/DIST          ISEA         = IAPROC + (JSEA-1)*NAPROC
-!/SHRD          ISEA         = JSEA
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             FACTOR     = MAX ( 0.5 , CG(IK,ISEA)/SIG(IK)*WN(IK,ISEA) )
             ABXX(JSEA) = ABXX(JSEA) + ((1.+EC2(ITH))*FACTOR-0.5) *    &
                                      A(ITH,IK,JSEA)
@@ -1394,8 +1408,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
 !
         DO JSEA=1, NSEAL
-!/DIST          ISEA         = IAPROC + (JSEA-1)*NAPROC
-!/SHRD          ISEA         = JSEA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           FACTOR       = DDEN(IK) / CG(IK,ISEA)
           EBD(IK,JSEA) = AB(JSEA) * FACTOR
           ET (JSEA)    = ET (JSEA) + EBD(IK,JSEA)
@@ -1770,8 +1783,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,EBAND)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA      = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
 !
 ! 3.a Directional mss parameters
 !     NB: the slope PDF is proportional to ell1=ETYY*EC2-2*ETXY*ECS+ETXX*ES2 = C*EC2-2*B*ECS+A*ES2
@@ -1817,8 +1829,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA   = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
@@ -1891,8 +1902,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FPISTR,FP1STR,FP1TST)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA       = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA       = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         EC  (JSEA) = EBD(NK,JSEA)
         FP0 (JSEA) = UNDEF
         IKP0(JSEA) = 0
@@ -1944,8 +1954,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
-!/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD          ISEA   = JSEA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           IF ( EC(JSEA) .LT. EBD(IK,JSEA) ) THEN
               EC  (JSEA) = EBD(IK,JSEA)
               IKP0(JSEA) = IK
@@ -1977,8 +1986,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA   = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IF ( IKP0(JSEA) .NE. 0 ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
 !/ST1        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
 !/ST3        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
@@ -1997,8 +2005,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,ILOW,ICEN,IHGH,EL,EH,DENOM)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA   = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         ILOW   = MAX (  1 , IKP0(JSEA)-1 )
         ICEN   = MAX (  1 , IKP0(JSEA)   )
         IHGH   = MIN ( NK , IKP0(JSEA)+1 )
@@ -2053,8 +2060,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
-!/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD          ISEA   = JSEA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           IF (IKP0(JSEA).NE.0) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
@@ -2068,8 +2074,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA   = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP0(JSEA).NE.UNDEF )                                     &
             THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
@@ -2087,8 +2092,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
-!/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD          ISEA   = JSEA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           IF ( FP1(JSEA).NE.UNDEF) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ESIN(ITH)
@@ -2102,7 +2106,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
 !
       DO JSEA =1, NSEAL
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IX          = MAPSF(ISEA,1)
         IY          = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .LE. 0 ) THEN
@@ -2117,8 +2121,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA)
 !
       DO JSEA=1, NSEAL
-!/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA   = JSEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP1(JSEA) .NE. UNDEF )                                   &
             THP1(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
@@ -2130,7 +2133,7 @@
 !
 !/T      WRITE (NDST,9050)
 !/T      DO JSEA =1, NSEAL
-!/T        ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/T        CALL INIT_GET_ISEA(ISEA, JSEA)
 !/T        IX     = MAPSF(ISEA,1)
 !/T        IY     = MAPSF(ISEA,2)
 !/T        IF ( HS(JSEA) .EQ. UNDEF ) THEN
@@ -2171,8 +2174,7 @@
 !/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA,IX,IY,I)
 !
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             IX          = MAPSF(ISEA,1)
             IY          = MAPSF(ISEA,2)
 !
@@ -2366,12 +2368,14 @@
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
                           TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-			  USSP
+                          USSP
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
                           FNMPRE, NOSWLL, NOEXTR
 !/
       USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, only : IAPROC
+!/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -2717,6 +2721,8 @@
 !/IS2                    WRITE (NDSOG ) ICEH(1:NSEA)
 !/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/IS2                    WRITE (NDSOG ) ICEF(1:NSEA)
+!/SETUP                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                   WRITE ( NDSOG ) ZETA_SETUP(1:NSEA)
 
 !
 !     Section 2)
@@ -2966,6 +2972,8 @@
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEH(1:NSEA)
 !/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10) THEN
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
+!/SETUP                 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                   READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ZETA_SETUP(1:NSEA)
 !
 !     Section 2)
 !

@@ -211,7 +211,7 @@
           CALL INSBS1( 2 )
           MATRICES  = 1
           END IF
-  END IF
+       END IF
 !
 ! 1.  Sets scattering term to zero
 !
@@ -485,7 +485,7 @@
       REAL            :: kbotx, kboty, kcurr, kcutoff, variance
       REAL            :: kbotxi, kbotyi, xk, yk
       DOUBLE PRECISION, ALLOCATABLE,DIMENSION(:,:) :: AMAT, V
-      DOUBLE PRECISION    , ALLOCATABLE,DIMENSION(:)   :: D
+      DOUBLE PRECISION, ALLOCATABLE,DIMENSION(:)   :: D
 !/
 !/ ------------------------------------------------------------------- /
 !/

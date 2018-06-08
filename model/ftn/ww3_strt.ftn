@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Mar-2012 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -27,6 +27,8 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    05-Jul-2011 : Revert to X-Y gaussian shape        ( version 4.01 )
 !/    06-Mar-2012 : Hardening output.                   ( version 4.07 )
+!/    06-Jun-2018 : Add DEBUGINIT/EXPORTWWM             ( version 6.04 )
+!/
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -216,6 +218,7 @@
 !/O5      REAL, ALLOCATABLE       :: E2OUT(:,:)
 !/O6      REAL, ALLOCATABLE       :: HSIG(:,:)
       CHARACTER               :: COMSTR*1, INXOUT*4
+!/EXPORTWWM      INTEGER                 :: ISPEC
       LOGICAL                 :: FLONE,NOSIX
 !/
 !/ ------------------------------------------------------------------- /
@@ -476,7 +479,13 @@
                 FACTOR = EXP ( -0.5 * RDSQR )
               END IF
 !
+!/EXPORTWWM     FACTOR = 1.
             VA(:,JSEA) = FACTOR * E21
+!/DEBUGINIT     WRITE(740+IAPROC,*) 'JSEA=', JSEA, '  FACTOR=', FACTOR
+!/DEBUGINIT     WRITE(740+IAPROC,*) '   sum(E21)=', sum(E21)
+!/DEBUGINIT     WRITE(740+IAPROC,*) '   sum(VA)=', sum(VA(:,JSEA))
+!
+
 !
             END DO
 !
@@ -698,15 +707,18 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9.  Convert E(sigma) to N(k)
 !
+!/DEBUGINIT       WRITE(740+IAPROC,*) 'ITYPE=', ITYPE
       IF ( ITYPE.NE.3 .AND. ITYPE.NE.5 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,990)
 !
 !/O6          ALLOCATE ( HSIG(NX,NY) )
 !/O6          HSIG   = 0.
 !
+!/DEBUGINIT       WRITE(740+IAPROC,*) 'Doing rescaling operation'
           DO JSEA=1, NSEAL
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
+!/DEBUGINIT       WRITE(740+IAPROC,*) ' rescal ISEA=', ISEA, ' JSEA=', JSEA
             DEPTH  = MAX ( DMIN , -ZB(ISEA) )
 !/O6            ETOT   = 0.
             DO IK=1, NK
@@ -722,7 +734,16 @@
 !/O6            IX     = MAPSF(ISEA,1)
 !/O6            IY     = MAPSF(ISEA,2)
 !/O6            HSIG(IX,IY) = 4. * SQRT ( ETOT * DTH )
-            END DO
+!/EXPORTWWM     IF (JSEA .eq. 1) THEN
+!/EXPORTWWM       DO ITH=1,NTH
+!/EXPORTWWM         DO IK=1,NK
+!/EXPORTWWM           ISPEC = ITH + NTH * (IK-1)
+!/EXPORTWWM           WRITE(10003) ITH, IK, VA(ISPEC,JSEA)
+!/EXPORTWWM         END DO
+!/EXPORTWWM       END DO
+!/EXPORTWWM       WRITE(740+IAPROC,*) 'FINAL : sum(VA)=', sum(VA(:,JSEA))
+!/EXPORTWWM     END IF
+          END DO
 !
 !/O6          ALLOCATE ( MAPO(NX,NY) )
 !/O6          DO IX=1, NX
@@ -734,9 +755,11 @@
 !/MPI      IF ( NAPROC .EQ. 1 ) THEN
 !/O6          NSX    = 1 + NX/35
 !/O6          NSY    = 1 + NY/35
+!/O6!/DEBUGINIT         Print *, 'Before call to PRTBLK'
 !/O6          IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
 !/O6                      (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
 !/O6                       1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
+!/O6!/DEBUGINIT         Print *, 'After call to PRTBLK'
 !/MPI        END IF
 !
         END IF
@@ -745,7 +768,16 @@
 !10.  Write restart file.
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,995)
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
+!/DEBUGINIT      FLUSH(740+IAPROC)
       CALL W3IORS ( INXOUT, NDSR, SIG(NK), INTYPE )
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
+!/DEBUGINIT      DO ISEA=1,NSEA
+!/DEBUGINIT        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VA)=', sum(VA(:,ISEA))
+!/DEBUGINIT      END DO
+!/DEBUGINIT      FLUSH(740+IAPROC)
 !
       GOTO 888
 !

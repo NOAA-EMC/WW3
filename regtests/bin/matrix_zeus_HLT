@@ -56,6 +56,10 @@
   echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
   echo ' '                                                  >> matrix.head
 
+# PARMETIS 
+  echo "  export METIS_PATH=/scratch3/NCEPDEV/stmp2/Jessica.Meixner/parmetis-4.0.3"            >> matrix.head
+  echo ' ' 
+
 # Compiler option. Choose appropriate compiler and set cmplOption to
 # y if using for the first time or using a different compiler
 
@@ -102,7 +106,7 @@
   export  multi06='y' # mww3_test_06 (curvilinear grid tests)
   export  multi07='y' # mww3_test_07 (unstructured grid tests)
   export  multi08='y' # mww3_test_08 (wind and ice tests)
-
+  export  pdlib='y' # unstructured grid tests with pdlib for domain decomposition and implicit solver
 
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 

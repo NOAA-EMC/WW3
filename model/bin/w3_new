@@ -343,7 +343,24 @@
                                    touch w3wavemd.ftn ;;
       'ogcm'  ) cd $main_dir/ftn ; touch w3ogcmmd.ftn
                                    touch w3wavemd.ftn ;;
-
+      'pdlib' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3initmd.ftn
+                                   touch w3iorsmd.ftn
+                                   touch w3netcdf.ftn
+                                   touch w3parall.ftn
+                                   touch w3srcemd.ftn
+                                   touch w3triamd.ftn
+                                   touch w3wavemd.ftn
+                                   touch w3wdatmd.ftn
+                                   touch wmmdatmd.ftn
+                                   touch ww3_shel.ftn ;;
+      'memck' ) cd $main_dir/ftn ; touch w3adatmd.ftn
+                                   touch w3gdatmd.ftn
+                                   touch w3initmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3profsmd_pdlib.ftn
+                                   touch w3wavemd.ftn
+                                   touch ww3_shel.ftn ;;
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done

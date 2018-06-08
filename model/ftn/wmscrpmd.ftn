@@ -403,7 +403,7 @@
       ENDIF
       IF( (NBADPNTS.GT.(NGOODPNTS/30)) .AND.L_MASTER )THEN
          WRITE(*,'(4x,A)')'Error: excessive SCRIP failure. Stopping.'
-         STOP
+         STOP 'wmscrpmd, case 1'
       ENDIF
 
 !.....step 2: allocate according to the size "n" determined above
@@ -767,12 +767,12 @@
         END DO
         DO IP=1,MNP
           IF (NBASSIGNEDCORNER(IP).NE.LISTNBCORNER(IP)) THEN
-            Print *, 'Incoherent number at IP=', IP
-            Print *, '  NbAssignedCorner(IP)=', NbAssignedCorner(IP)
-            Print *, '  ListNbCorner(IP)=', ListNbCorner(IP)
-            Print *, '  N_N=', NEIGHBOR_NEXT(IP), 'N_P=', NEIGHBOR_PREV(IP)
-            Print *, '  TrigIncd=', TrigIncd(IP)
-            STOP
+            WRITE(*,*) 'Incoherent number at IP=', IP
+            WRITE(*,*) '  NbAssignedCorner(IP)=', NbAssignedCorner(IP)
+            WRITE(*,*) '  ListNbCorner(IP)=', ListNbCorner(IP)
+            WRITE(*,*) '  N_N=', NEIGHBOR_NEXT(IP), 'N_P=', NEIGHBOR_PREV(IP)
+            WRITE(*,*) '  TrigIncd=', TrigIncd(IP)
+            STOP 'wmscrpmd, case 2'
           END IF
         END DO
 
@@ -1089,7 +1089,7 @@
             END IF
           END DO
         END DO
-        Print *, 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus
+        WRITE(*,*) 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus
       END IF
       END SUBROUTINE GET_SCRIP_INFO
 
@@ -1416,9 +1416,9 @@
           IF (IP2.GT.0) THEN
             IP3=NEIGHBOR_PREV(IP2)
             IF (ABS(IP3 - IP).GT.0) THEN
-              Print *, 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
-              Print *, 'We have a dramatic inconsistency'
-              STOP
+              WRITE(*,*) 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
+              WRITE(*,*) 'We have a dramatic inconsistency'
+              STOP 'wmscrpmd, case 3'
             END IF
           END IF
         END DO

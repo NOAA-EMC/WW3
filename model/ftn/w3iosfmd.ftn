@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         08-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    27-Jun-2006 : Origination.                        ( version 3.09 )
@@ -21,6 +21,8 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    06-Mar-2012 : Reparing test output under MPI.     ( version 4.07 )
+!/    08-Jun-2018 : use W3ADATMD, W3PARALL, INIT_GET_ISEA and 
+!/                            INIT_GET_JSEA_ISPROC      ( version 6.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -149,6 +151,8 @@
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NDST, OUTPTS, O6INIT,       &
                           ICPRT, DTPRT
       USE W3WDATMD, ONLY: VA, ASF
+      USE W3ADATMD, ONLY: NSEALM
+      USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
 !/T     USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
@@ -161,7 +165,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: DIMXP, NSEALM, JSEA, ISEA, IX, IY,   &
+      INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,           &
                                  IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
       INTEGER, SAVE           :: TSFAC = 7
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -179,7 +183,6 @@
       IF ( O6INIT ) THEN
           DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
         ELSE
-          NSEALM = 1 + (NSEA-1)/NAPROC
           ALLOCATE ( OUTPTS(IMOD)%OUT6%ICPRT(NSEALM+1,2) )
           ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
           O6INIT = .TRUE.
@@ -200,7 +203,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Check need for processing
 !
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         ICPRT(JSEA+1,2) = ICPRT(JSEA,2) 
@@ -373,6 +376,8 @@
                           IPASS => IPASS6, FLFORM, FNMPRE, OUTPTS,    &
                           IX0, IXN, IXS, IY0, IYN, IYS
       USE W3ADATMD, ONLY: DW, U10, U10D, CX, CY
+      USE W3ADATMD, ONLY: NSEALM
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
 !/MPI      USE W3ODATMD, ONLY: ICPRT, DTPRT, IT0PRT
 !
@@ -389,7 +394,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: I, J, IERR, ISEA, JSEA, JAPROC,      &
-                                 IX, IY, IP, IOFF, NSEALM, DTSIZ=0
+                                 IX, IY, IP, IOFF, DTSIZ=0
 !/MPI      INTEGER                 :: ICSIZ, IERR_MPI, IT,            &
 !/MPI                                 STATUS(MPI_STATUS_SIZE,1), JSLM
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -410,7 +415,6 @@
 !/S      CALL STRACE (IENT, 'W3IOSF')
 !
       IPASS  = IPASS + 1
-      NSEALM = 1 + (NSEA-1)/NAPROC
 !/MPI      ICSIZ  = 2 * ( NSEALM + 1 )
 !
 !/T      WRITE (NDST,9000) IPASS, FLFORM, NDSPT, IMOD, IAPROC, NAPPRT
@@ -540,8 +544,7 @@
 !
 ! 4.b Check for partitioned data at sea point
 !
-        JSEA   = 1 + (ISEA-1)/NAPROC
-        JAPROC = 1 + MOD(ISEA-1,NAPROC)
+        CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, JAPROC)
 !
         ICP   => PROC(JAPROC)%ICPRT
         DTP   => PROC(JAPROC)%DTPRT

@@ -621,7 +621,7 @@
 
         ! initialize timestart and timestop
         STARTJULDAY=0
-        STPJULDAY=100000000000
+        STPJULDAY=100000000
 
       END IF ! .NOT. FLGNML
 
@@ -1388,8 +1388,8 @@
 !/DIST        DISTSWITCH = .TRUE.
 !/TIDE        IF (DISTSWITCH) THEN 
 !/TIDE          TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
-!/MPI          CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
-!/MPI          CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
+!/MPI!/TIDE         CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
+!/MPI!/TIDE         CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
 !/TIDE          ALLOCATE(TIDALSTUFFA(TIDESIZ))
 !/TIDE          TIDALSTUFFA(:)=0.
 !/TIDE          END IF
@@ -1508,8 +1508,8 @@
 !
 !/TIDE     IF (DISTSWITCH) THEN 
 !/TIDE     IF (IAPROC.NE.NAPOUT)  THEN
-!/DIST       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
-!/DIST                       MPI_COMM_WORLD, IERR_MPI )
+!/DIST!/TIDE       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
+!/DIST!/TIDE                       MPI_COMM_WORLD, IERR_MPI )
 !/TIDE     ELSE
 !/TIDET           DO JX=1,NXL(IAPROC)
 !/TIDET             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
@@ -1523,8 +1523,8 @@
 !/TIDET           END DO       ! JX=1,NXL
 !/TIDE       DO JPC=1,NAPROC
 !/TIDE         IF (JPC .NE. NAPOUT )  THEN 
-!/DIST           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
-!/DIST                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
+!/DIST!/TIDE           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
+!/DIST!/TIDE                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
 !/TIDE           ! Now unpacks the 1-D array
 !/TIDE           IND=0
 !/TIDE           DO JX=1,NXL(JPC)
@@ -1552,7 +1552,7 @@
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
 
 !/TIDE   IF (DISTSWITCH) THEN 
-!/DIST     CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
+!/DIST!/TIDE     CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
 !/TIDE     DEALLOCATE(TIDALSTUFFA)
 !/TIDE   END IF
 
@@ -1690,7 +1690,6 @@
                     ELSE
                       IF (NDIMSVAR.EQ.3) THEN
                         IRET=NF90_GET_VAR(NCID,VARIDF(2),YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-
                       ELSE
                         IRET=NF90_GET_VAR(NCID,VARIDF(2),YC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
                         END IF
@@ -1812,7 +1811,6 @@
               END IF
 !
           ELSE IF (ITYPE.NE.5) THEN
-
 !
 ! ... One-component fields
 !

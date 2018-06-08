@@ -72,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Dec-2015 |
+!/                  | Last update :         08-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    22-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -94,6 +94,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    26-Dec-2012 : Initialize ASPTRK.                  ( version 4.11 )
 !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
+!/    08-Jun-2018 : use W3PARALL/INIT_GET_JSEA_ISPROC   ( version 6.04 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -201,6 +202,7 @@
 !/MPI      USE W3ODATMD, ONLY: IT0TRK, NRQTR, IRQTR
 !/
       USE W3TIMEMD
+      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
       USE w3SERVMD, ONLY : STRSPLIT
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -581,9 +583,7 @@
                   ISPROC = NAPTRK
 !/T3                  ISPT    = -99
                 ELSE
-!/SHRD                  JSEA   = ISEA
-!/DIST                  JSEA   = 1 + (ISEA-1)/NAPROC
-!/DIST                  ISPROC = ISEA - (JSEA-1)*NAPROC
+                  CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
 !/T3                  ISPT    = ISPROC
                 END IF
 !/MPI              IFROM  = ISPROC - 1

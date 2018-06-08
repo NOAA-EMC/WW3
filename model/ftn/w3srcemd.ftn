@@ -49,7 +49,9 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1,    &
+      SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
+                          SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
+                          ALPHA, WN1, CG1,                            &
                           D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
                           CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
@@ -63,6 +65,8 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
+!/                  |            A. Roland              | 
+!/                  |            M. Dutour Sikiric      | 
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         07-Jan-2018 |
 !/                  +-----------------------------------+
@@ -112,6 +116,8 @@
 !/    13-Dec-2015 : Implicit integration of Sice (F.A.) ( version 5.10 )
 !/    30-Jul-2017 : Adds TWS in interface               ( version 6.XX )
 !/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
+!/    01-Jan-2018 : Add implicit source term integration ( version 6.04 )
+!/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -348,6 +354,9 @@
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
                           ICESCALES, IICESMOOTH
+
+      USE W3GDATMD, ONLY: FSSOURCE, optionCall
+      USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
@@ -405,13 +414,22 @@
 !/XXX      USE W3SXXXMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
+!/PDLIB    USE W3PARALL, ONLY : Z_status_rev
+!/PDLIB    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES
+!/PDLIB    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
+!/PDLIB    USE W3GDATMD, ONLY: CLATS
+!/PDLIB    USE W3WDATMD, ONLY: VA
+!/PDLIB    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM 
 !/
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: IT, IX, IY, IMOD
+      INTEGER, INTENT(IN)     :: srce_call, IT, JSEA, IX, IY, IMOD
+      REAL, intent(in)        :: SPECOLD(NSPEC)
+      REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
+      LOGICAL, INTENT(OUT)    :: SHAVEIO
       REAL, INTENT(IN)        :: D_INP, U10ABS,     &
                                  U10DIR, AS, CX, CY, DTG, D50,PSIC,   &
                                  ICE, ICEH
@@ -492,7 +510,13 @@
 !/FLD2     REAL, SAVE              :: TAUNUX, TAUNUY
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
       LOGICAL                 :: SHAVE
+      LOGICAL                 :: LBREAK
       LOGICAL, SAVE           :: FIRST = .TRUE.
+      LOGICAL                 :: PrintDeltaSmDA
+      REAL                    :: eInc1, eInc2
+      REAL                    :: DeltaSRC(NSPEC), MAXDAC(NSPEC)
+!/PDLIB  REAL                 :: PreVS, eVS, eVD, FAK, DVS, SIDT
+!/PDLIB  INTEGER              :: ISP, IP, ISEA
 
 !/NNT      CHARACTER(LEN=17), SAVE :: FNAME = 'test_data_nnn.ww3'
 !/
@@ -501,6 +525,7 @@
 !/S      CALL STRACE (IENT, 'W3SRCE')
 !
 !/T      FLTEST = .TRUE.
+
 !
       DEPTH  = MAX ( DMIN , D_INP )
       IKS1 = 1
@@ -518,12 +543,19 @@
 !/SEED      VSLN = 0.
 !/ST0      VSIN = 0.
 !/ST0      VDIN = 0.
+!/ST3      VSIN = 0.
+!/ST3      VDIN = 0.
+!/ST4      VSIN = 0.
+!/ST4      VDIN = 0.
+
 !/NL0      VSNL = 0.
 !/NL0      VDNL = 0.
 !/ST0      VSDS = 0.
 !/ST0      VDDS = 0.
       VSBT = 0.
       VDBT = 0.
+!/DB1      VSDB = 0.
+!/DB1      VDDB = 0.
 !/IC1      VSIC = 0.
 !/IC1      VDIC = 0.
 !/IC2      VSIC = 0.
@@ -558,6 +590,9 @@
 !
 ! 1.a Set maximum change and wavenumber arrays.
 !
+!XP     = 0.15
+!FACP   = XP / PI * 0.62E-3 * TPI**4 / GRAV**2
+!
       DO IK=1, NK
         DAM(1+(IK-1)*NTH) = FACP / ( SIG(IK) * WN1(IK)**3 )
         WN2(1+(IK-1)*NTH) = WN1(IK)
@@ -589,9 +624,19 @@
       TAUWAY = 0.
       TAUSCX = 0.
       TAUSCY = 0.
-      TAUBBL(:)= 0.
-      TAUICE(:)= 0.
+      TAUBBL = 0.
+      TAUICE = 0.
       PHICE  = 0.
+
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECINIT)=', sum(SPECINIT)
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(VSIO)=', sum(VSIO)
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(VDIO)=', sum(VDIO)
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', USTAR
+!/DEBUGSRC     END IF
+
 !/ST4      BRLAMBDA(:)=0.
 !
 ! 1.c Set mean parameters
@@ -604,7 +649,7 @@
 !/ST2                   EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 !/ST3      TAUWX=0.
 !/ST3      TAUWY=0.
-!/ST3      IF ( FIRST ) THEN
+!/ST3      IF ( IT .eq. 0 ) THEN
 !/ST3          LLWS(:) = .TRUE.
 !/ST3          USTAR=0.
 !/ST3          USTDIR=0.
@@ -625,7 +670,7 @@
 !/ST3      TWS = 1./FMEANWS
 !/ST4      TAUWX=0.
 !/ST4      TAUWY=0.
-!/ST4      IF ( FIRST ) THEN
+!/ST4      IF ( IT .eq. 0 ) THEN
 !/ST4          LLWS(:) = .TRUE.
 !/ST4          USTAR=0.
 !/ST4          USTDIR=0.
@@ -633,10 +678,30 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+
+!/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value EMEAN=', EMEAN, ' FMEAN=', FMEAN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value FMEAN1=', FMEAN1, ' WNMEAN=', WNMEAN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value CD=', CD, ' Z0=', Z0
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value ALPHA=', CHARN, ' FMEANWS=', FMEANWS
+!/DEBUGSRC!/ST4        END IF
+
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 !/ST4        END IF
+!/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: U10DIR=', U10DIR, ' Z0=', Z0, ' CHARN=', CHARN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: USTAR=', USTAR, ' U10ABS=', U10ABS, ' AS=', AS
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: DRAT=', DRAT
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: TAUWX=', TAUWX, ' TAUWY=', TAUWY
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: TAUWAX=', TAUWAX, ' TAUWAY=', TAUWAY
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: min(CG1)=', minval(CG1), ' max(CG1)=', maxval(CG1)
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
+!/DEBUGSRC!/ST4        END IF
+
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
@@ -674,7 +739,7 @@
 !
 ! 1.f Prepare output file for !/NNT option
 !
-!/NNT      IF ( FIRST ) THEN
+!/NNT      IF ( IT .eq. 0 ) THEN
 !/NNT          J      = LEN_TRIM(FNMPRE)
 !/NNT          WRITE (FNAME(11:13),'(I3.3)') IAPROC
 !/NNT          OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',   &
@@ -709,6 +774,12 @@
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+
+!/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
+!/DEBUGSRC!/ST4        END IF
+
 !/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, USTAR, USTDIR, CD,             &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 !/STX        CALL W3SINX
@@ -721,8 +792,10 @@
 !/NL4        CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 !/NLX        CALL W3SNLX 
 !
+!/PDLIB    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/TR1        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
 !/TRX        CALL W3STRX
+!/PDLIB    ENDIF
 !
 ! 2.c Dissipation... except for ST4
 ! 2.c1   as in source term package
@@ -733,12 +806,22 @@
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 !/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
 !/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
+
+!/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
+!/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VDDS=', minval(VDDS), maxval(VDDS), sum(VDDS)
+!/DEBUGSRC!/ST4        END IF
+
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
-!/DB1        CALL W3SDB1 ( SPEC, WN2, DEPTH, EMEAN, FMEAN, WNMEAN,        &
-!/DB1                                                        VSDB, VDDB )
-!/DBX        CALL W3SDBX
+!/PDLIB    IF (.NOT. FSSOURCE) THEN
+!/PDLIB      IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
+!/DB1          CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
+!/DB1                                                   LBREAK, VSDB, VDDB )
+!/DBX          CALL W3SDBX
+!/PDLIB      ENDIF
+!/PDLIB    ENDIF
 !
 ! 2.c2   optional dissipation parameterisations
 !
@@ -750,6 +833,7 @@
 !
 ! 2.d Bottom interactions.
 !
+!/PDLIB    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
 !/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
 !/BT4                      BEDFORM, VSBT, VDBT, IX, IY )
@@ -760,11 +844,11 @@
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
 !/BS1                           TAUSCX, TAUSCY, VSBS, VDBS )
 !/BSX        CALL W3SBSX
+!/PDLIB      ENDIF
 !
 ! 2.e Additional sources.
 !
 !/XXX        CALL W3SXXX
-
 !
 ! 2.f Dump training data if necessary
 !
@@ -822,12 +906,13 @@
 !
 !/ST4        NKI    = MAX ( 2 , MIN ( NKH1 ,                           &
 !/ST4                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FFXFI* FMEAN1)) ) ) )
+
+        VS = 0
+        VD = 0
         DO IS=IS1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
                  + VSDS(IS) + VSBT(IS) 
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
-!/DB1          VS(IS) = VS(IS) + VSDB(IS)
-!/DBX          VS(IS) = VS(IS) + VSDB(IS)
 !/TR1          VS(IS) = VS(IS) + VSTR(IS)
 !/TRX          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
@@ -836,51 +921,174 @@
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS) 
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
-!/DB1          VD(IS) = VD(IS) + VDDB(IS)
-!/DBX          VD(IS) = VD(IS) + VDDB(IS)
 !/TR1          VD(IS) = VD(IS) + VDTR(IS)
 !/TRX          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
 !/BSX          VD(IS) = VD(IS) + VDBS(IS)
 !/XXX          VD(IS) = VD(IS) + VDXX(IS)
-          DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPEC(IS) , AFILT ) )
+          DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
           DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
                          1. + OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
-          END DO  ! end of loop on IS 
+!          IF (IX == DEBUG_NODE) THEN
+!            WRITE(*,'(A20,I10,10F30.10)') 'TIME STEP COMP', IS, DAMAX, DAM(IS), XREL*SPECINIT(IS), AFILT, AFAC, DT
+!          ENDIF
+        END DO  ! end of loop on IS 
 !
-        DT     = MAX ( 0.5 , DT )
+!        WRITE(*,*) 'NODE_NUMBER', IX
+!        IF (IX == DEBUG_NODE) WRITE(*,*) 'TIMINGS 1', DT 
+        DT     = MAX ( 0.5, DT )                   ! Here we have a hardlimit, which is not too usefull, at least not as a fixed constant
 !
         DTDYN  = DTDYN + DT
 !/T        DTRAW  = DT
-        IDT    = 1 + INT ( 0.99*(DTG-DTTOT)/DT )
-        DT     = (DTG-DTTOT)/REAL(IDT)
-        SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT
-        DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) )
+        IDT    = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations 
+        DT     = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
+        SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ... 
+        SHAVEIO = SHAVE
+        DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
+        IF (srce_call .eq. srce_imp_post) DT = DTG  ! for implicit part
         HDT    = OFFSET * DT
         DTTOT  = DTTOT + DT
 
+!/DEBUGSRC        IF (IX == DEBUG_NODE) WRITE(*,'(A20,2I10,5F20.10,L20)') 'TIMINGS 2', IDT, NSTEPS, DT, DTMIN, DTDYN, HDT, DTTOT, SHAVE
+!/DEBUGSRC        IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC          WRITE(740+IAPROC,*) '1: min/max/sum(VS)=', minval(VS), maxval(VS), sum(VS)
+!/DEBUGSRC          WRITE(740+IAPROC,*) '1: min/max/sum(VD)=', minval(VD), maxval(VD), sum(VD)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VDIN)=', minval(VDIN), maxval(VDIN), sum(VDIN)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VSLN)=', minval(VSLN), maxval(VSLN), sum(VSLN)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VDNL)=', minval(VDNL), maxval(VDNL), sum(VDNL)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
+!/DEBUGSRC          WRITE(740+IAPROC,*) 'min/max/sum(VDDS)=', minval(VDDS), maxval(VDDS), sum(VDDS)
+!/DEBUGSRC!/ST6          WRITE(740+IAPROC,*) 'min/max/sum(VSWL)=', minval(VSWL), maxval(VSWL), sum(VSWL)
+!/DEBUGSRC!/ST6          WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
+!/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
+!/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
+!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
+!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
+!/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
+!/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
+!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
+!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
+!/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
+!/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
+!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
+!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
+!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VSXX)=', minval(VSXX), maxval(VSXX), sum(VSXX)
+!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VDXX)=', minval(VDXX), maxval(VDXX), sum(VDXX)
+!/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
+!/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
+!/DEBUGSRC        END IF
+
+
+        IF (srce_call .eq. srce_imp_pre) THEN
+          PrintDeltaSmDA=.FALSE.
+          IF (PrintDeltaSmDA .eqv. .TRUE.) THEN
+            DO IS=1,NSPEC
+              DeltaSRC(IS) = VSIN(IS) - SPEC(IS)*VDIN(IS)
+            END DO
+            WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
+            WRITE(740+IAPROC,*) 'min/max/sum(DeltaIN)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+            !
+            DO IS=1,NSPEC
+              DeltaSRC(IS) = VSNL(IS) - SPEC(IS)*VDNL(IS)
+            END DO
+            WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
+            WRITE(740+IAPROC,*) 'min/max/sum(DeltaNL)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+            !
+            DO IS=1,NSPEC
+              DeltaSRC(IS) = VSDS(IS) - SPEC(IS)*VDDS(IS)
+            END DO
+            WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
+            WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+            !
+!            DO IS=1,NSPEC
+!              DeltaSRC(IS) = VSIC(IS) - SPEC(IS)*VDIC(IS)
+!            END DO
+            WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+          END IF
+     
+            IF (optionCall .eq. 1) THEN
+              CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
+            ELSE IF (optionCall .eq. 2) THEN
+              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+            ELSE IF (optionCall .eq. 3) THEN
+              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+            ENDIF
+            VSIO=VS
+            VDIO=VD
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS)
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. , VD))
+!/DEBUGSRC          END IF
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
+          RETURN ! return everything is done for the implicit ...
+        END IF ! srce_imp_pre
 !
 !/T        WRITE (NDST,9040) DTRAW, DT, SHAVE
 !
 ! 5.  Increment spectrum --------------------------------------------- *
 !
-        IF ( SHAVE ) THEN
-!
+        IF (srce_call .eq. srce_direct) THEN
+!          SHAVE = .FALSE. 
+!         IF (IX == DEBUG_NODE) THEN
+!            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'BEFORE', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
+!          ENDIF
+          IF ( SHAVE ) THEN
             DO IS=IS1, NSPECH
-              VS(IS) = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
-              VS(IS) = SIGN ( MIN (DAM(IS),ABS(VS(IS))) , VS(IS) )
-              SPEC(IS) = MAX ( 0. , SPEC(IS)+VS(IS) )
-              END DO
-!
+              eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
+              eInc2 = SIGN ( MIN (DAM(IS),ABS(eInc1)) , eInc1 )
+              SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc2 )
+            END DO
           ELSE
 !
             DO IS=IS1, NSPECH
-              VS(IS) = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
-              SPEC(IS) = MAX ( 0. , SPEC(IS)+VS(IS) )
-              END DO
-!
+              eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
+              SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+            END DO
           END IF
+!/DB1     DO IS=IS1, NSPECH
+!/DB1       eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
+!/DB1       SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+!/DB1     END DO
+!          IF (IX == DEBUG_NODE) THEN
+!            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'AFTER', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
+!          ENDIF
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL) 
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
+!/DEBUGSRC          IF (IX == DEBUG_NODE) THEN
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_direct : SHAVE = ', SHAVE
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_direct : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_direct : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_direct : sum(VSTOT)=', sum(VS)
+!/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_direct : sum(VDTOT)=', sum(MIN(0. , VD))
+!/DEBUGSRC          END IF
+        END IF
+
+
 !
 ! 5.b  Computes 
 !              atmos->wave flux PHIAW-------------------------------- *
@@ -982,7 +1190,7 @@
 !/ST6        IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 !
 ! 6.b Limiter for shallow water or Miche style criterion
-!     Last time step only !
+!     Last time step ONLY !
 !     uses true depth (D_INP) instead of limited depth 
 !
 !/MLIM        IF ( DTTOT .GE. 0.9999*DTG ) THEN
@@ -1032,8 +1240,19 @@
 !
 ! 7.  Check if integration complete ---------------------------------- *
 !
-        IF ( DTTOT .GE. 0.9999*DTG ) EXIT
-        END DO
+        IF (srce_call .eq. srce_imp_post) THEN
+          EXIT
+        ENDIF
+        IF ( DTTOT .GE. 0.9999*DTG ) THEN
+!          IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
+          EXIT
+        ENDIF
+        END DO ! INTEGRATIN LOOP
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
+!/DEBUGSRC       WRITE(740+IAPROC,*) '1 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
+!/DEBUGSRC     WRITE(740+IAPROC,*) 'DT=', DT, 'DTG=', DTG
 !
 ! ... End point dynamic integration - - - - - - - - - - - - - - - - - -
 !
@@ -1061,6 +1280,9 @@
 !     and final energy, plus wind input plus the SNL flux to high freq., 
 !     minus the energy lost to the bottom boundary layer (BBL) 
 !
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) '2 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
       EFINISH  = 0.
       MWXFINISH  = 0.
       MWYFINISH  = 0.
@@ -1102,7 +1324,12 @@
 !     INFLAGS2(4) is true if ice concentration was ever read during  
 !             this simulation
 !
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) '3 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
+
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
+
          IF (IICEDISP) THEN 
            ICECOEF2 = 1E-6
            CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
@@ -1210,6 +1437,10 @@
 !conditions (>10 m/s).  It is not recommended to use these at lower wind
 !in their current state.
 !
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) '4 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
+
 ! FLD1/2 requires the calculation of FPI: 
 !/FLD1      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
 !/FLD2      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
@@ -1231,6 +1462,10 @@
 !
 ! 12. includes shoreline reflection --------------------------------------------- *
 !
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
+
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
@@ -1250,10 +1485,16 @@
 !/REF1            END IF
 !/REF1          END IF
 !
-      FIRST  = .FALSE.
-      IF (IT.EQ.0) SPEC = SPECINIT
-!
+!/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
+!/DEBUGSRC       WRITE(740+IAPROC,*) '6 : sum(SPEC)=', sum(SPEC)
+!/DEBUGSRC     END IF
 
+      FIRST  = .FALSE.
+
+      IF (IT.EQ.0) SPEC = SPECINIT
+
+      SPEC = MAX(0., SPEC)      
+!
       RETURN
 !
 ! Formats
@@ -1299,7 +1540,7 @@
 !/ End of W3SRCE ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SRCE
-!/
+!/ ------------------------------------------------------------------- /
       SUBROUTINE CALC_FPI( A, CG, FPI, S )
 !/
 !/                  +-----------------------------------+
@@ -1307,10 +1548,12 @@
 !/                  |          Jessica Meixner          |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         6-July-2016 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    06-Jul-2016 : Origination                         ( version 5.12 )
+!/    06-Jul-2016 : Add SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3         
+!/                  Add optional DEBUGSRC/PDLIB           ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -1410,8 +1653,148 @@
       END IF
 
       END SUBROUTINE CALC_FPI
+!/ ------------------------------------------------------------------- /!
+      SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC, VS, VD)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : Put source term in matrix same as done always
+!  2. Method :
+!  3. Parameters :
 !
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
 !
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+        USE W3GDATMD, only : NTH, NK, NSPEC
+        IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+
+        INTEGER             :: ISP, ITH, IK, IS
+        REAL, INTENT(IN)    :: SPEC(NSPEC)
+        REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
+        DO IS=1,NSPEC
+          VD(IS) = MIN(0., VD(IS))
+        END DO
+      END SUBROUTINE
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE SIGN_VSD_PATANKAR_WW3(SPEC, VS, VD)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : Put source term in matrix Patankar style (experimental)
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+
+        USE W3GDATMD, only : NTH, NK, NSPEC
+        IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+        INTEGER             :: ISP, ITH, IK, IS
+        REAL, INTENT(IN)    :: SPEC(NSPEC)
+        REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
+        DO IS=1,NSPEC
+          VD(IS) = MIN(0., VD(IS))
+          VS(IS) = MAX(0., VS(IS))
+        END DO
+      END SUBROUTINE
+!/
 !/ End of module W3SRCEMD -------------------------------------------- /
 !/
       END MODULE W3SRCEMD

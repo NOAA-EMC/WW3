@@ -160,7 +160,6 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-      LOGICAL, SAVE           :: FIRST = .TRUE.
      
       COMPLEX    :: K           
       COMPLEX    :: SHH         

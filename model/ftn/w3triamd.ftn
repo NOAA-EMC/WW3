@@ -1,6 +1,6 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-MODULE W3TRIAMD
+      MODULE W3TRIAMD
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -65,7 +65,7 @@ MODULE W3TRIAMD
  PUBLIC
 !      USE CONSTANTS
 !      USE W3GDATMD, ONLY: W3NMOD, W3SETG
-!      USE W3ODATMD, ONLY: W3NO<UT, W3SETO, W3DMO5
+!      USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
 !      USE W3IOGRMD, ONLY: W3IOGR
 !     USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
 !!/S      USE W3SERVMD, ONLY: STRACE
@@ -94,6 +94,7 @@ MODULE W3TRIAMD
         integer,save, allocatable :: triangle_node(:,:)
         integer,save, allocatable :: edge(:,:)
         integer,save, allocatable :: edge_index(:,:)
+        integer,save, allocatable :: iobp_aux(:)
 
         INTEGER, SAVE                      :: N_OUTSIDE_BOUNDARY
         INTEGER, SAVE, ALLOCATABLE         :: OUTSIDE_BOUNDARY(:)
@@ -108,11 +109,13 @@ CONTAINS
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          25-Aug-2011|
+!/                  | Last update :          06-Jun-2018|
 !/                  +-----------------------------------+
 !/
 !/    15-Feb-2008 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+!/    06-Jun-2018 : Add DEBUGINIT/PDLIB/DEBUGSTP/DEBUGSETIOBP   
+!/                                                      ( version 6.04 )
 !/
 !
 !  1. Purpose :
@@ -174,6 +177,8 @@ CONTAINS
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
       USE W3GDATMD
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+      USE CONSTANTS, only: LPDLIB
+      USE W3ODATMD, ONLY: IAPROC
 !
       IMPLICIT NONE
 !/
@@ -185,7 +190,7 @@ CONTAINS
 !/ local parameters 
 !/      
       INTEGER                            :: i,j,k, NODES, NELTS, ID, KID
-      INTEGER                            :: ID1, ID2, KID1
+      INTEGER                            :: ID1, ID2, KID1, ITMP(3)
       INTEGER                            :: I1, I2, I3
       INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
       CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
@@ -198,6 +203,8 @@ CONTAINS
       INTEGER(KIND=4),ALLOCATABLE        :: IFOUND(:), VERTEX(:), BOUNDTMP(:)
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
       REAL                               :: z
+!/DEBUGINIT     WRITE(740+IAPROC,*) 'Beginning of READMSH routine'
+!/DEBUGINIT     FLUSH(740+IAPROC)
 
       OPEN(NDS,FILE = FNAME,STATUS='old')
       READ (NDS,'(A)') COMSTR
@@ -205,7 +212,8 @@ CONTAINS
       CALL NEXTLN(COMSTR, NDS, NDSE)
       READ(NDS,*) i,j,k
       CALL NEXTLN(COMSTR, NDS, NDSE)
-
+      LPDLIB = .FALSE.
+!/PDLIB LPDLIB = .TRUE.
 !
 ! read number of nodes and nodes from Gmsh files
 !
@@ -240,8 +248,9 @@ CONTAINS
 ! eltype = 2 : triangles
 !
         CASE (2)
-          J = J+ 1
-          READ(LINE,*)  Ind,eltype,ntag,tags,TRIGPTMP1(J,1), TRIGPTMP1(J,2), TRIGPTMP1(J,3)
+          J = J + 1
+          READ(LINE,*)  Ind,eltype,ntag,tags,ITMP
+          TRIGPTMP1(J,1:3) = ITMP
           END SELECT
 
         DEALLOCATE(TAGS)
@@ -291,17 +300,20 @@ CONTAINS
         I1 = TRIGPTMP1(I,1)
         I2 = TRIGPTMP1(I,2)
         I3 = TRIGPTMP1(I,3)
-        TRIGPTMP2(I,1)= VERTEX(I1)
-        TRIGPTMP2(I,2)= VERTEX(I2)
-        TRIGPTMP2(I,3)= VERTEX(I3)
+        TRIGPTMP2(I,1) = VERTEX(I1)
+        TRIGPTMP2(I,2) = VERTEX(I2)
+        TRIGPTMP2(I,3) = VERTEX(I3)
         END DO   
 !
-      DEALLOCATE( XYBTMP1, IFOUND,TRIGPTMP1)
+      DEALLOCATE(XYBTMP1, IFOUND,TRIGPTMP1)
       DEALLOCATE(VERTEX)
 !
 !count points connections to allocate array in W3DIMUG 
 !
       CALL COUNT(TRIGPTMP2)
+!/DEBUGINIT     WRITE(*,*) 'Call W3DIMUG from READMSH'
+!/DEBUGINIT     WRITE(740+IAPROC,*) 'Call W3DIMUG from READMSH'
+!/DEBUGINIT     FLUSH(740+IAPROC)
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
 !
 ! fills arrays
@@ -309,11 +321,18 @@ CONTAINS
       DO I = 1, NX
         XYB(I,1) = XYBTMP2(I,1) 
         XYB(I,2) = XYBTMP2(I,2) 
-        XYB(I,3)= XYBTMP2(I,3)
+        XYB(I,3) = XYBTMP2(I,3)
         END DO
-! XGRD AND YGRD ... these are allocated by W3DIMX  
+!
+!/DEBUGSTP    WRITE(740,*) 'Writing XYB(:,3)'
+!/DEBUGSTP    DO I=1,NX
+!/DEBUGSTP      WRITE(740,*) 'I,XYB(I,3)=', I, XYB(I,3)
+!/DEBUGSTP    END DO
+!/DEBUGSTP    FLUSH(740)
+!
       DO I=1, NTRI
-        TRIGP(I,:) = TRIGPTMP2(I,:)
+        ITMP = TRIGPTMP2(I,:)
+        TRIGP(I,:) = ITMP 
         END DO   
 !   
       DEALLOCATE(TRIGPTMP2,XYBTMP2)   
@@ -323,12 +342,88 @@ CONTAINS
       CALL SPATIAL_GRID    
       CALL NVECTRI
       CALL COORDMAX
-! READMSH is only called by ww3_grid, thus the grid index is always 1. 
+!
+!READMSH is only called by ww3_grid, thus the grid index is always 1. 
+!
       CALL AREA_SI(1)
+!
       CLOSE(NDS)
       END SUBROUTINE READMSH
 !/--------------------------------------------------------------------/
-
+      SUBROUTINE GET_BOUNDARY_STATUS(STATUS)
+      USE W3GDATMD, ONLY : TRIGP, NTRI, NX
+      IMPLICIT NONE
+      integer, intent(out) :: STATUS(NX)
+      INTEGER :: COLLECTED(NX), NEXTVERT(NX), PREVVERT(NX)
+      INTEGER :: ISFINISHED, INEXT, IPREV
+      INTEGER :: IPNEXT, IPPREV, ZNEXT, IP, I, IE
+      STATUS(:) = 0
+      DO IE=1,NTRI
+        DO I=1,3
+          IF (I.EQ.1) THEN
+            IPREV=3
+          ELSE
+            IPREV=I-1
+          END IF
+          IF (I.EQ.3) THEN
+            INEXT=1
+          ELSE
+            INEXT=I+1
+          END IF
+          IP=TRIGP(IE,I)
+          IPNEXT=TRIGP(IE,INEXT)
+          IPPREV=TRIGP(IE,IPREV)
+          IF (STATUS(IP).EQ.0) THEN
+            STATUS(IP)=1
+            PREVVERT(IP)=IPPREV
+            NEXTVERT(IP)=IPNEXT
+          END IF
+        END DO
+      END DO
+      STATUS(:)=0
+      DO
+        COLLECTED(:)=0
+        DO IE=1,NTRI
+          DO I=1,3
+            IF (I.EQ.1) THEN
+              IPREV=3
+            ELSE
+              IPREV=I-1
+            END IF
+            IF (I.EQ.3) THEN
+              INEXT=1
+            ELSE
+              INEXT=I+1
+            END IF
+            IP=TRIGP(IE,I)
+            IPNEXT=TRIGP(IE,INEXT)
+            IPPREV=TRIGP(IE,IPREV)
+            IF (STATUS(IP).eq.0) THEN
+              ZNEXT=NEXTVERT(IP)
+              IF (ZNEXT.eq.IPPREV) THEN
+                COLLECTED(IP)=1
+                NEXTVERT(IP)=IPNEXT
+                IF (NEXTVERT(IP).eq.PREVVERT(IP)) THEN
+                  STATUS(IP)=1
+                END IF
+              END IF
+            END IF
+          END DO
+        END DO
+        ISFINISHED=1
+        DO IP=1,NX
+          IF ((COLLECTED(IP).eq.0).and.(STATUS(IP).eq.0)) THEN
+            STATUS(IP)=-1
+          END IF
+          IF (STATUS(IP).eq.0) THEN
+            ISFINISHED=0
+          END IF
+        END DO
+        IF (ISFINISHED.eq.1) THEN
+          EXIT
+        END IF
+      END DO
+      END SUBROUTINE
 
 !/ -------------------------------------------------------------------/
       SUBROUTINE READMSHOBC(NDS, FNAME, TMPSTA, UGOBCOK) 
@@ -482,8 +577,8 @@ CONTAINS
 !
 !  9. Switches :
 !
-! 10. Source code :     
-      USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
+! 10. Source code :
+      USE W3GDATMD, ONLY: NX, NY, CCON, COUNTCON, IOBP
 
 !/S      USE W3SERVMD, ONLY: STRACE
       
@@ -499,11 +594,12 @@ CONTAINS
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IBC,IX
+      INTEGER                 :: IBC,IX,IP
 
 !/S      CALL STRACE (IENT, 'UG_GETOPENBOUNDARY')      
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
+           !write(*,*) 'TEST', IX, TMPSTA(1,IX), CCON(IX), COUNTCON(IX), ZBIN(1,IX), ZLIM
            IF (IX.NE.0) THEN  ! There was a bug in the mesh conversion, OUTSIDE_BOUNDARY(IBC) should not be zero 
              IF ((TMPSTA(1,IX).EQ.1).AND.(CCON(IX) .LT. COUNTCON(IX))  &
                .AND.(ZBIN(1,IX).LT.ZLIM))  TMPSTA(1,IX)=2  
@@ -519,7 +615,8 @@ CONTAINS
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |      A. Roland  and F. Ardhuin    |
+!/                  |      A. Roland  (BGS IT&E GbmH)   |
+!/                  |      F. Ardhuin (IFREMER)         | 
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          31-Aug-2011|
 !/                  +-----------------------------------+
@@ -565,8 +662,8 @@ CONTAINS
          USE W3GDATMD  
 !/S      USE W3SERVMD, ONLY: STRACE
          IMPLICIT NONE
-!        
-!local parameters        
+!	 
+!local parameters	 
 ! 
          REAL              :: TL1, TL2, TL3, TMPTRIGP
          INTEGER           :: I1, I2, I3
@@ -583,153 +680,33 @@ CONTAINS
 !
 ! cross product of edge-vector  (orientated anticlockwise)
 !                                   
-                   TRIA(K) = 0.5d0*( (XYB(I2,2)-XYB(I1,2))      &     !  (Y2-Y1)
-                                    *(XYB(I1,1)-XYB(I3,1))      &     ! *(X1-X3)
-                                    +(XYB(I3,2)-XYB(I1,2))      &     !  (Y3-Y1)*(X2-X1)
-                                    *(XYB(I2,1)-XYB(I1,1))      )
+                   TRIA(K) = REAL( (XYB(I2,2)-XYB(I1,2))      &     !  (Y2-Y1)
+                                  *(XYB(I1,1)-XYB(I3,1))      &     ! *(X1-X3)
+                                  +(XYB(I3,2)-XYB(I1,2))      &     !  (Y3-Y1)*(X2-X1)
+                                  *(XYB(I2,1)-XYB(I1,1))      )*0.5
 !
 ! test on negative triangle area, which means that the orientiation is not as assumed to be anticw. 
 ! therefore we swap the nodes !!! 
 !      
-                  IF (TRIA(K) < 0.d0) THEN
+                  IF (TRIA(K) .lt. TINY(1.)) THEN
          TMPTRIGP = TRIGP(K,2)
          TRIGP(K,2) = TRIGP(K,3)
          TRIGP(K,3) = TMPTRIGP
          I2 = TRIGP(K,2)
          I3 = TRIGP(K,3)
          TRIA(K) = -1.d0*TRIA(K)
+         STOP 'WRONG TRIANGLE' 
          END IF    
        END DO
      END SUBROUTINE
 !/--------------------------------------------------------------------/
 !
 !/--------------------------------------------------------------------/
-     SUBROUTINE DIFFERENCE
-!/ ------------------------------------------------------------------- 
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland               |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2007|
-!/                  +-----------------------------------+
-!/
-!/    15-Nov-2007 : Origination.                        ( version 3.13 )
-!/
-!
-!  1. Purpose :
-!
-!      Calculate interpolation coefficient used gradient computation.
-!
-!  2. Method :
-!
-!     The interpolation coefficient are inspired by cross product.
-!     The estimation uses Gauss' formula: the area integral of the gradient
-!       is equal to the flux through the boundary. This formula is applied 
-!       on individual triangles. 
-!     The gradient at each grid node is then the angle-weighted sum of the 
-!       gradients in each triangle. 
-!       
-!
-!  3. Parameters :
-!
-!  4. Subroutines used :
-!
-!  5. Called by :
-!
-!       Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      READTRI    Subr. Internal Unstructured mesh definition.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!  7. Remarks :
-!     
-!     This part of code is adapted from the WWM wave model develop at the Darmstadt University
-!     (Aaron Roland)
-!     The gradients to be calculated are for depth and currents.
-!     The three arrays  DW, CX and CY are allocated from 0 to NSEA and assuming that 
-!     DW(0)=0.,CX(0)=0.,CY(0)=0. (MAPFS(1,IX) = 0 for the contour and land points) to abide by the 
-!     structure of the array which are used through the code. So gradients could be irregular near 
-!     the border. The interpolation coefficient reckoned in this subroutine consider this artificial 
-!     discontinuity of value (between point on the border and point close to the border) and then
-!     restore true gradients. 
-!
-!
-!  8. Structure :
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /       
-       USE W3GDATMD 
-!/S      USE W3SERVMD, ONLY: STRACE
-       IMPLICIT NONE
-
-!
-!local parameter 
-!
-         INTEGER           :: I1, I2, I3
-         REAL              :: X1(3), X2(3), X3(3)
-         INTEGER           :: K
-         REAL              :: FACT
-!/S        INTEGER                      ::  IENT = 0 
-!/ ------------------------------------------------------------------- /       
-
-!/S      CALL STRACE (IENT, 'DIFFERENCE')
-
-   DO K = 1, NTRI 
-     I1 = TRIGP(K,1)
-     I2 = TRIGP(K,2)
-     I3 = TRIGP(K,3)
-!
-! counters which stands for occurence of a vertex in the whole triangle list, i.e the number of its
-! connected triangle
-!                  
-     X1(:) = XYB(I1,:)
-     X2(:) = XYB(I2,:)
-     X3(:) = XYB(I3,:)
-!
-! test to see if vertices are on the contour. if it is so, its coordinates are nullyfied
-! this is perform to get better gradients at grid points near the contour.
-!                 
-     IF ((MAPSTA(1,I1).EQ.0).OR.(MAPSTA(1,I2).EQ.0)) THEN
-       X1(:) = 0. 
-       X2(:) = 0.
-       END IF    
-      IF ((MAPSTA(1,I1).EQ.0).OR.(MAPSTA(1,I3).EQ.0)) THEN
-        X1(:) = 0. 
-        X3(:) = 0.
-        END IF
-      IF ((MAPSTA(1,I3).EQ.0).OR.(MAPSTA(1,I2).EQ.0)) THEN
-        X2(:) = 0. 
-        X3(:) = 0.
-        END IF
-
-      FACT = 1./(2*REAL(TRIA(K)))
-!
-! interpolation coefficient: these are the components of the normals to the 
-! triangle sides, multiplied by the side length and divided by 2 times the 
-! triangle area
-!                                  
-      CROSSDIFF(1,K) = REAL(X2(2) - X3(2)) * FACT
-      CROSSDIFF(2,K) = REAL(X3(2) - X1(2)) * FACT
-      CROSSDIFF(3,K) = REAL(X1(2) - X2(2)) * FACT
-      CROSSDIFF(4,K) = REAL(X3(1) - X2(1)) * FACT
-      CROSSDIFF(5,K) = REAL(X1(1) - X3(1)) * FACT
-      CROSSDIFF(6,K) = REAL(X2(1) - X1(1)) * FACT
-
-      END DO
-END SUBROUTINE
-
-!/--------------------------------------------------------------------
-
     SUBROUTINE NVECTRI
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland              |
+!/                  |           A. Roland               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          15-May-2008|
 !/                  +-----------------------------------+
@@ -772,19 +749,17 @@ END SUBROUTINE
     USE CONSTANTS
 
          IMPLICIT NONE
-         
 !
 !local parameter 
-!        
-         
+!	 
          INTEGER :: IP, IE
          INTEGER :: I1, I2, I3, I11, I22, I33
          REAL*8    :: P1(2), P2(2), P3(2)
          REAL*8    :: R1(2), R2(2), R3(2)
          REAL*8    :: N1(2), N2(2), N3(2)
-         REAL*8    :: TMP(3)
-         REAL*8    :: TMPINV(3)
-!/S        INTEGER                      ::  IENT = 0     
+	 REAL*8    :: TMP(3)
+	 REAL*8    :: TMPINV(3)
+!/S        INTEGER                      ::  IENT = 0 	 
 !/ ------------------------------------------------------------------- /   
 !/S      CALL STRACE (IENT, 'NVECTRI')   
 
@@ -832,25 +807,6 @@ END SUBROUTINE
             IEN(IE,5) = N3(1)
             IEN(IE,6) = N3(2)
     
-            TMP(1)  = DOT_PRODUCT(R3,-R2)
-            TMP(2)  = DOT_PRODUCT(R1,-R3)
-            TMP(3)  = DOT_PRODUCT(R2,-R1)
-
-            TMPINV(1) = 1./ (LEN(IE,2) * LEN(IE,3))
-            TMPINV(2) = 1./ (LEN(IE,1) * LEN(IE,3))
-            TMPINV(3) = 1./ (LEN(IE,2) * LEN(IE,1))
-
-            TMP(1)  = DOT_PRODUCT(R3,-R2) * TMPINV(1)
-            TMP(2)  = DOT_PRODUCT(R1,-R3) * TMPINV(2)
-            TMP(3)  = DOT_PRODUCT(R2,-R1) * TMPINV(3)
-!
-!  angles used in gradients computation 
-!     
-            ANGLE0(IE,1) = ACOS(TMP(1))
-            ANGLE0(IE,2) = ACOS(TMP(2))
-            ANGLE0(IE,3) = ACOS(TMP(3))
-            !WRITE(997,*) 'IE, ANGLE:',IE,ANGLE0(IE,1:3)*RADE
-            !TRIA03(IE)=TRIA(IE)*1./3.
          END DO
  
      END SUBROUTINE
@@ -863,6 +819,7 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           A. Roland               | 
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          15-May-2008|
@@ -885,7 +842,7 @@ END SUBROUTINE
 !       COUNTRI      Int    O   Maximum number of connected triangle 
 !                               for a given points
 !       COUNTOT      Int    O   Global number of triangle connection 
-!                               for the whole grid.     
+!                               for the whole grid.   	
 !     ----------------------------------------------------------------
 !  4. Subroutines used :
 !
@@ -1082,122 +1039,62 @@ END SUBROUTINE
 !/ local parameters   
 
          INTEGER :: COUNTER,ifound,alreadyfound
-         INTEGER :: I, J, K
+         INTEGER :: I, J, K, II
          INTEGER :: IP, IE, POS, POS_I, POS_J, POS_K, IP_I, IP_J, IP_K
-         INTEGER :: I1, I2, I3, IP2
+         INTEGER :: I1, I2, I3, IP2, CHILF(NX)
          INTEGER :: TMP(NX), CELLVERTEX(NX,COUNTRI,2)
          INTEGER :: COUNT_MAX
          DOUBLE PRECISION   :: TRIA03
          INTEGER, ALLOCATABLE :: PTABLE(:,:)
-         !DOUBLE PRECISION ,  PARAMETER            :: ONE      = 1.0d
-         !DOUBLE PRECISION ,  PARAMETER            :: THREE    = 3.0d
-         DOUBLE PRECISION, PARAMETER :: ONETHIRD = 0.33333333333333333333333333333333333333333333333 !ONETHIRD = ONE/THREE
+
 !/S        INTEGER                      ::  IENT = 0    
 !/ ------------------------------------------------------------------- /      
 
 !/S      CALL STRACE (IENT, 'AREA_SI')
-         
+
+         WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
+
          SI(:) = 0.D0
 !
-! calculate the number of triangle connected to a point and reckon the surface of a dual cell
-! Ask Aron: Should be uptated with water levels ???         
-!
-         DO IP = 1, NX
-           COUNTER = 0
-           DO IE = 1, NTRI  
-             IF (IP == TRIGP(IE,1) .OR. IP == TRIGP(IE,2) .OR. IP== TRIGP(IE,3)) THEN
-               COUNTER = COUNTER + 1
-               CCON(IP) = COUNTER
-               TRIA03 = ONETHIRD * TRIA(IE)
-               SI(IP) = SI(IP) +  ONETHIRD * TRIA(IE) 
-               END IF
-             END DO
-           END DO 
-              
-         CELLVERTEX(:,:,:) = 0
-         VNEIGH(:,:) = 0
-!
-          DO IP = 1, NX
-            COUNTER = 0
-            ifound = 0
- !
- ! first step of the storage, for a given vertex, the triangle it belongs to and the vertex position
- ! are stored  
- !
-            DO IE = 1, NTRI
-              IF (IP == TRIGP(IE,1)) THEN
-                COUNTER = COUNTER + 1
-                CELLVERTEX(IP,COUNTER,1) = IE
-                CELLVERTEX(IP,COUNTER,2) = 1
-                DO IP2=2,3
-                  alreadyfound = 0
-                  DO I=1,ifound
-                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
-                    END DO
-                  IF (alreadyfound.EQ.0) THEN 
-                    ifound=ifound+1
-                    VNEIGH(IP,ifound)=TRIGP(IE,IP2)
-                    END IF
-                  END DO
-               END IF
-              
-             IF (IP == TRIGP(IE,2)) THEN
-               COUNTER = COUNTER + 1
-               CELLVERTEX(IP,COUNTER,1) = IE
-               CELLVERTEX(IP,COUNTER,2) = 2
-                DO IP2=3,4
-                  alreadyfound = 0
-                  DO I=1,ifound
-                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,MOD(IP2-1,3)+1)) alreadyfound=alreadyfound+1
-                    END DO
-                  IF (alreadyfound.EQ.0) THEN 
-                    ifound=ifound+1
-                    VNEIGH(IP,ifound)=TRIGP(IE,MOD(IP2-1,3)+1)
-                    END IF
-                  END DO
-                END IF
-              
-             IF (IP == TRIGP(IE,3)) THEN
-               COUNTER = COUNTER + 1
-               CELLVERTEX(IP,COUNTER,1) = IE
-               CELLVERTEX(IP,COUNTER,2) = 3
-                DO IP2=1,2
-                  alreadyfound = 0
-                  DO I=1,ifound
-                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
-                    END DO
-                  IF (alreadyfound.EQ.0) THEN 
-                    ifound=ifound+1
-                    VNEIGH(IP,ifound)=TRIGP(IE,IP2)
-                    END IF
-                  END DO
-                END IF
-             END DO
-!
-! COUNTCON is a counter on connected points. In comparison with the number of connected triangle
-! CCON, it will enable to spot whether a point belong to the contour
-!         
-           COUNTCON(IP)=ifound
-          
-           do I=2,ifound
-              do J=1,i-1
-              if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) THEN 
-                 COUNTCON(IP)=COUNTCON(IP)-1
-                 ! WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
-                 END IF
-              enddo
-           enddo
-          
-         END DO
-          
-         J = 0
+         CCON(:) = 0     ! Number of connected Elements
+         DO IE = 1 , NTRI 
+           I1 = TRIGP(IE,1)
+           I2 = TRIGP(IE,2)
+           I3 = TRIGP(IE,3)
+           CCON(I1) = CCON(I1) + 1
+           CCON(I2) = CCON(I2) + 1
+           CCON(I3) = CCON(I3) + 1
+           TRIA03 = 1./3. * TRIA(IE)
+           SI(I1) = SI(I1) + TRIA03
+           SI(I2) = SI(I2) + TRIA03
+           SI(I3) = SI(I3) + TRIA03
+           ENDDO
+
+         CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
+                               ! and the Position of the position of the Node in the Element Index
+
+         WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
+
+         CHILF             = 0
+
+         DO IE = 1, NTRI 
+           DO J=1,3
+             I = TRIGP(IE,J)!INE(J,IE)
+             CHILF(I) = CHILF(I)+1
+             CELLVERTEX(I,CHILF(I),1) = IE
+             CELLVERTEX(I,CHILF(I),2) = J
+           END DO
+         ENDDO
+
+         WRITE(*,'("+TRACE......",A)') 'COMPUTE IE_CELL and POS_CELL'
 !
 ! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
 ! the global index is J . From now, all the computation step based on these arrays must
 ! abide by the conservation of the 2 loop algorithm (points + connected triangles)
 ! AR: I will change this now to pointers in order to omit fix loop structure for the LTS stuff ...
-!          
+!	   
          INDEX_CELL(1)=1
+         J = 0
          DO IP = 1, NX
            DO I = 1, CCON(IP)
              J = J + 1
@@ -1206,6 +1103,8 @@ END SUBROUTINE
            END DO
            INDEX_CELL(IP+1)=J+1
          END DO
+
+         IF (.NOT. FSNIMP) RETURN
 
          J = 0
          DO IP = 1, NX 
@@ -1498,6 +1397,7 @@ END SUBROUTINE
        END IF
      ENDDO
      END SUBROUTINE IS_IN_UNGRID
+!/ -------------------------------------------------------------------
      SUBROUTINE IS_IN_UNGRID2(IMOD, XTIN, YTIN, FORCE, ITOUT, IS, JS, RW)
 !/ -------------------------------------------------------------------
 !/                  +-----------------------------------+
@@ -1710,13 +1610,12 @@ END SUBROUTINE
  
      ENDIF
      END SUBROUTINE IS_IN_UNGRID2
-
-
 !/ ------------------------------------------------------------------- / 
       SUBROUTINE UG_GRADIENTS (PARAM, DIFFX, DIFFY)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
+!/                  |           A. Roland               | 
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          14-Oct-2013|
 !/                  +-----------------------------------+
@@ -1725,12 +1624,12 @@ END SUBROUTINE
 !/    31-Oct-2010 : Merging of 4.03 with 3.14-Ifremer   ( version 4.04 )
 !/    08-Nov-2011 : Correction for zero grad. on contour( version 4.04 )
 !/    14-Oct-2013 : Correction  of latitude factor      ( version 4.12 )
+!/    01-Mai-2018 : Using linear shape function for gradients [ version 6.04)
 !/      
 !
 !  1. purpose: calculate gradients at a point via its connection.
-!  2. Method : using 3D plan definition and angular redistribution
-!      
-!    
+!  2. Method : using linear shape function this is a basis on which 
+!              all advection schemes in Roland (2008) are checked. 
 !
 !  3. Parameters :
 !     PARAM : depth or current field (indices 0 to NSEA) 
@@ -1751,7 +1650,6 @@ END SUBROUTINE
 !  7. Remarks :
 !     
 !      This subroutine is adjusted from WWM code (Aaron Roland)
-
 !
 !  8. Structure :
 !
@@ -1759,8 +1657,13 @@ END SUBROUTINE
 !
 ! 10. Source code :     
       USE CONSTANTS
-      USE W3GDATMD, ONLY : CROSSDIFF, TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
-                           MAPSTA, ANGLE, FLAGLL,  IOBP
+      USE W3GDATMD, ONLY : TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
+                           MAPSTA, ANGLE, FLAGLL,  IOBP, IEN, TRIA, NSEAL, NTRI 
+      USE W3ADATMD, ONLY : NSEALM
+!/PDLIB     USE yowElementpool
+!/PDLIB     use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
+!/PDLIB      USE yowExchangeModule, only : PDLIB_exchange1Dreal
+
       IMPLICIT NONE     
       
       
@@ -1769,71 +1672,128 @@ END SUBROUTINE
  
 ! local parameters      
       
-      INTEGER              :: VERTICES(3)
-      INTEGER              :: COUNTER(NX)
+      INTEGER              :: VERTICES(3), NI(3), NI_GL(3)
       REAL                 :: TMP1(3), TMP2(3)
-      INTEGER              :: I, IX
+      INTEGER              :: I, IX, IE, IE_GL
       REAL                 :: VAR(3), FACT, LATMEAN
       REAL                 :: DIFFXTMP, DIFFYTMP
-      REAL, PARAMETER      :: ONETHIRD = 0.3333333333
+      REAL                 :: DEDX(3), DEDY(3)
+      REAL                 :: DVDXIE, DVDYIE
+      REAL                 :: WEI(NX), WEI_LOCAL(NSEAL)
        
-!initialisation step      
-      COUNTER(:) = 0.
-      DIFFX(:,:) = 0.              
-      DIFFY(:,:) = 0. 
+     DIFFX = 0.              
+     DIFFY = 0. 
 !
      IF (FLAGLL) THEN 
        FACT=1./(DERA*RADIUS)
      ELSE
        FACT=1.
-       END IF
-     DO I = 1, NTRI
-       VERTICES(1) = TRIGP(I,1)
-       VERTICES(2) = TRIGP(I,2)
-       VERTICES(3) = TRIGP(I,3)
-!
-!   CLATIS is 1/COS(latitute) 
-!   this may give funny results close to the pole ... 
-!
-       LATMEAN = ONETHIRD * ( CLATIS(MAPFS(1,VERTICES(1)))  & 
-                             +CLATIS(MAPFS(1,VERTICES(2)))  &
-                             +CLATIS(MAPFS(1,VERTICES(3))) )
- 
-       VAR(1) = PARAM(MAPFS(1,VERTICES(1)))* FACT
-       VAR(2) = PARAM(MAPFS(1,VERTICES(2)))* FACT
-       VAR(3) = PARAM(MAPFS(1,VERTICES(3)))* FACT
-     
-       TMP1(:)  = CROSSDIFF(1:3, I)
-       TMP2(:)  = CROSSDIFF(4:6, I)
+     END IF
 
-! Slopes in a triangle : 
-! denom=(x(1)-x(2))*(y(3)-y(2))-(y(2)-y(1))*(x(2)-x(3));
-! denom is 2*area
-!dz/dy= -((z(2)-z(1))*(x(2)-x(3))-(z(3)-z(2))*(x(1)-x(2)))/denom;
-!dz/dx=  ((z(2)-z(1))*(y(2)-y(3))+(z(3)-z(2))*(y(1)-y(2)))/denom;
-!dz/dx=  (z(1)*(y(3)-y(2))+z(2)*(y(1)-y(3))+z(3)*(y(2)-y(1)))/(2*area);
-!dz/dy= -(z(1)*(x(3)-x(2))+z(2)*(x(1)-x(3))+z(3)*(x(2)-x(1)))/(2*area);
-
-       DIFFXTMP = DOT_PRODUCT(VAR(:),TMP1(:)) * LATMEAN
-       DIFFYTMP = DOT_PRODUCT(VAR(:),TMP2(:)) 
-
-! calculate global gradients via all the connection contributions.
-       DIFFX(1,VERTICES(:)) = DIFFX(1,VERTICES(:)) + DIFFXTMP * ANGLE(I,:)
-       DIFFY(1,VERTICES(:)) = DIFFY(1,VERTICES(:)) + DIFFYTMP * ANGLE(I,:) 
+!/PDLIB     IF (.NOT. LPDLIB) THEN
+       WEI = 0.
+       DO IE = 1, NTRI
+         NI = TRIGP(IE,:)
+         LATMEAN = 1./3. * SUM(CLATIS(MAPFS(1,NI)))
+         WEI(NI) = WEI(NI) + 2.*TRIA(IE)
+         IF (TRIA(IE) .LT. TINY(1.)) THEN
+           WRITE(*,*) 'AREA SMALLER ZERO', IE, NTRI, TRIA(IE)
+           STOP
+         ENDIF
+         DEDX(1)     = IEN(IE,1)
+         DEDX(2)     = IEN(IE,3)
+         DEDX(3)     = IEN(IE,5)
+         DEDY(1)     = IEN(IE,2)
+         DEDY(2)     = IEN(IE,4)
+         DEDY(3)     = IEN(IE,6)
+         VAR         = PARAM(MAPFS(1,NI)) * FACT
+         DVDXIE      = DOT_PRODUCT( VAR,DEDX)
+         DVDYIE      = DOT_PRODUCT( VAR,DEDY)
+         DIFFX(1,NI) = DIFFX(1,NI) + DVDXIE * LATMEAN 
+         DIFFY(1,NI) = DIFFY(1,NI) + DVDYIE
        END DO
-!
-! Sets gradient to 0 on the contour 
-!
-       DO IX = 1,NX
-         IF (IOBP(IX).EQ. 0 ) THEN
-           DIFFX(1,IX)  =  0.     
-           DIFFY(1,IX)  =  0.
-           END IF
-         END DO 
+       DIFFX(1,:) = DIFFX(1,:)/WEI
+       DIFFY(1,:) = DIFFY(1,:)/WEI
+!/PDLIB     ELSE
+!/PDLIB       WEI_LOCAL = 0.
+!/PDLIB       DO IE = 1, NE 
+!/PDLIB         NI      = INE(:,IE)
+!/PDLIB         IE_GL   = IELG(IE)
+!/PDLIB         NI_GL   = INE_GLOBAL(:,IE_GL)
+!/PDLIB         LATMEAN = 1./3. * SUM(CLATIS(MAPFS(1,NI_GL)))
+!/PDLIB         WEI_LOCAL(NI) = WEI_LOCAL(NI) + 2.*PDLIB_TRIA(IE)
+!/PDLIB         IF (PDLIB_TRIA(IE) .LT. TINY(1.)) THEN
+!/PDLIB           WRITE(*,*) 'AREA SMALLER ZERO', IE, NTRI, PDLIB_TRIA(IE)
+!/PDLIB           STOP
+!/PDLIB         ENDIF
+!/PDLIB         DEDX(1)     = PDLIB_IEN(1,IE)
+!/PDLIB         DEDX(2)     = PDLIB_IEN(3,IE)
+!/PDLIB         DEDX(3)     = PDLIB_IEN(5,IE)
+!/PDLIB         DEDY(1)     = PDLIB_IEN(2,IE)
+!/PDLIB         DEDY(2)     = PDLIB_IEN(4,IE)
+!/PDLIB         DEDY(3)     = PDLIB_IEN(6,IE)
+!/PDLIB         VAR         = PARAM(MAPFS(1,NI_GL)) * FACT
+!/PDLIB         DVDXIE      = DOT_PRODUCT(VAR,DEDX)
+!/PDLIB         DVDYIE      = DOT_PRODUCT(VAR,DEDY)
+!/PDLIB         DIFFX(1,NI) = DIFFX(1,NI) + DVDXIE * LATMEAN ! AR: This must be correctly computer later ... 
+!/PDLIB         DIFFY(1,NI) = DIFFY(1,NI) + DVDYIE
+!/PDLIB       END DO
+!/PDLIB       DIFFX(1,:) = DIFFX(1,:)/WEI_LOCAL
+!/PDLIB       DIFFY(1,:) = DIFFY(1,:)/WEI_LOCAL
+!/PDLIB     ENDIF
+!/PDLIB  CALL PDLIB_exchange1Dreal(DIFFX(1,1:NPA))
+!/PDLIB  CALL PDLIB_exchange1Dreal(DIFFY(1,1:NPA))
+     
 !
     END SUBROUTINE UG_GRADIENTS
 !/ ------------------------------------------------------------------- /    
     SUBROUTINE W3NESTUG(DISTMIN,FLOK)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : UGTYPE nesting initialization  
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
     USE W3ODATMD, ONLY: NBI, NDSE, ISBPI, XBPI, YBPI
     USE W3GDATMD, ONLY: NX, XYB, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
 
@@ -1907,63 +1867,56 @@ END SUBROUTINE
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |       Mathieu Dutour Sikiric      |
-!/                  |       Fabrice Ardhuin             |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Apr-2016 |
+!/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
-!/    18-Apr-2016 : Origination.                        ( version 5.10 )
+!/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose :
-!
-!     Detects points on the model boundary. Status = 0 is a boundary node
-!
+!  1. Purpose : setup boundary pointer 
 !  2. Method :
-!
-!     
-!
 !  3. Parameters :
 !
-!     ----------------------------------------------------------------
-!
-!     Local variables.
+!     Parameter list
 !     ----------------------------------------------------------------
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
 !
-
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
 !  5. Called by :
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      WW3_GRID  Prog. WW3_GRID Grid preprocessor
-!      W3ULEV    Subr. W3UPDTMD Water level update
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
-!
-!       None.
-!
-!  7. Remarks :
-!
+!  7. Remarks
 !  8. Structure :
-!
-!
 !  9. Switches :
 !
-!       !/S     Enable subroutine tracing.
+!     !/S  Enable subroutine tracing.
 !
+! 10. Source code :
 !
-! 10. Source code :     
 !/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
 !/
 !
       USE CONSTANTS
 !
 !
       USE W3GDATMD, ONLY: NX, NTRI, TRIGP 
+      USE W3ODATMD, ONLY: IAPROC
 
 
       IMPLICIT NONE
@@ -1980,23 +1933,28 @@ END SUBROUTINE
       INTEGER :: INEXT(3), IPREV(3)
       INTEGER          :: ZNEXT, IP, I, IE, IPNEXT, IPPREV, COUNT
       integer nb0, nb1, nbM1
-      STATUS(:) = -1
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 1'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+      STATUS = -1
       INEXT=(/ 2, 3, 1 /) !IPREV=1+MOD(I+1,3)
       IPREV=(/ 3, 1, 2 /) !INEXT=1+MOD(I,3)
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 2'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
       DO IE=1,NTRI 
 ! If one of the points of the triangle is masked out (land) then do as if triangle does not exist... 
-        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
+!        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
         DO I=1,3
           IP=TRIGP(IE,I)
-          IPNEXT=TRIGP(IE,INEXT(I))
-          IPPREV=TRIGP(IE,IPREV(I))
+          CALL TRIANG_INDEXES(I, IPNEXT, IPPREV)
+          !IPNEXT=TRIGP(IE,INEXT(I))
+          !IPPREV=TRIGP(IE,IPREV(I))
           IF (STATUS(IP).EQ.-1) THEN
             STATUS(IP)=1
             PREVVERT(IP)=IPPREV
             NEXTVERT(IP)=IPNEXT
             END IF
           END DO
-        ENDIF
+!        ENDIF
         END DO
       STATUS(:)=-1
  !
@@ -2005,11 +1963,12 @@ END SUBROUTINE
         COUNT = COUNT + 1
         COLLECTED(:)=0
         DO IE=1,NTRI
-        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
+!        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
           DO I=1,3
             IP=TRIGP(IE,I)
-            IPNEXT=TRIGP(IE,INEXT(I))
-            IPPREV=TRIGP(IE,IPREV(I))
+            CALL TRIANG_INDEXES(I, IPNEXT, IPPREV)
+            !IPNEXT=TRIGP(IE,INEXT(I))
+            !IPPREV=TRIGP(IE,IPREV(I))
             IF (STATUS(IP).EQ.-1) THEN
               ZNEXT=NEXTVERT(IP)
               IF (ZNEXT.EQ.IPPREV) THEN
@@ -2021,7 +1980,7 @@ END SUBROUTINE
                 END IF
               END IF
             END DO
-            END IF ! end of test on MASK
+!            END IF ! end of test on MASK
           END DO
 !
 ! Checks that all nodes have been treated ...
@@ -2043,13 +2002,427 @@ END SUBROUTINE
           EXIT
         END IF
       END DO
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 3'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+
+      STATUS = 1 
+      CALL GET_BOUNDARY(NX, NTRI, TRIGP, STATUS, PREVVERT, NEXTVERT)
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 4'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+!      DO IP= 1, NX
+!        WRITE(12000,*) IP, STATUS(IP)
+!      ENDDO
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 5'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+
 !#ifdef MPI_PARALL_GRID
 !      CALL exchange_p2di(STATUS)
 !#endif
+!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 6'
+!/DEBUGSETIOBP      FLUSH(740+IAPROC)
       END SUBROUTINE SET_IOBP
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE GET_BOUNDARY(MNP, MNE, TRIGP, IOBP, NEIGHBOR_PREV,       &
+     &   NEIGHBOR_NEXT)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : find boundary points 
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+        USE W3SERVMD, ONLY: EXTCDE
+        IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+
+        INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
+        INTEGER, INTENT(INOUT)          :: IOBP(MNP)
+        INTEGER, INTENT(INOUT)          :: NEIGHBOR_PREV(MNP)
+        INTEGER, INTENT(INOUT)          :: NEIGHBOR_NEXT(MNP)
+
+        INTEGER, POINTER :: STATUS(:)
+        INTEGER, POINTER :: COLLECTED(:)
+        INTEGER, POINTER :: NEXTVERT(:)
+        INTEGER, POINTER :: PREVVERT(:)
+
+        INTEGER :: IE, I, IP, IP2, IP3
+        INTEGER :: ISFINISHED, INEXT, IPREV, ISTAT
+        INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
+
+        ALLOCATE(STATUS(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        NEIGHBOR_NEXT = 0
+        NEIGHBOR_PREV = 0
+!  Now computing the next items
+        STATUS = 0
+        NEXTVERT = 0
+        PREVVERT = 0
+
+        DO IE=1,MNE
+          DO I=1,3
+            CALL TRIANG_INDEXES(I, INEXT, IPREV)
+            IP=TRIGP(IE,I)
+            IPNEXT=TRIGP(IE,INEXT)
+            IPPREV=TRIGP(IE,IPREV)
+            IF (STATUS(IP).EQ.0) THEN
+              STATUS(IP)=1
+              PREVVERT(IP)=IPPREV
+              NEXTVERT(IP)=IPNEXT
+            END IF
+          END DO
+        END DO
+        STATUS(:)=0
+        DO
+          COLLECTED(:)=0
+          DO IE=1,MNE
+            DO I=1,3
+              CALL TRIANG_INDEXES(I, INEXT, IPREV)
+              IP=TRIGP(IE,I)
+              IPNEXT=TRIGP(IE,INEXT)
+              IPPREV=TRIGP(IE,IPREV)
+              IF (STATUS(IP).EQ.0) THEN
+                ZNEXT=NEXTVERT(IP)
+                IF (ZNEXT.EQ.IPPREV) THEN
+                  COLLECTED(IP)=1
+                  NEXTVERT(IP)=IPNEXT
+                  IF (NEXTVERT(IP).EQ.PREVVERT(IP)) THEN
+                    STATUS(IP)=1
+                  END IF
+                END IF
+              END IF
+            END DO
+          END DO
+
+          ISFINISHED=1
+          DO IP=1,MNP
+            IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
+              STATUS(IP)=-1
+              NEIGHBOR_NEXT(IP)=NEXTVERT(IP)
+            END IF
+            IF (STATUS(IP).EQ.0) THEN
+              ISFINISHED=0
+            END IF
+          END DO
+          IF (ISFINISHED.EQ.1) THEN
+            EXIT
+          END IF
+        END DO
+
+!  Now computing the prev items
+        STATUS = 0
+        NEXTVERT = 0
+        PREVVERT = 0
+        DO IE=1,MNE
+          DO I=1,3
+            CALL TRIANG_INDEXES(I, INEXT, IPREV)
+            IP=TRIGP(IE,I)
+            IPNEXT=TRIGP(IE,INEXT)
+            IPPREV=TRIGP(IE,IPREV)
+            IF (STATUS(IP).EQ.0) THEN
+              STATUS(IP)=1
+              PREVVERT(IP)=IPPREV
+              NEXTVERT(IP)=IPNEXT
+            END IF
+          END DO
+        END DO
+        STATUS(:)=0
+        DO
+          COLLECTED(:)=0
+          DO IE=1,MNE
+            DO I=1,3
+              CALL TRIANG_INDEXES(I, INEXT, IPREV)
+              IP=TRIGP(IE,I)
+              IPNEXT=TRIGP(IE,INEXT)
+              IPPREV=TRIGP(IE,IPREV)
+              IF (STATUS(IP).EQ.0) THEN
+                ZPREV=PREVVERT(IP)
+                IF (ZPREV.EQ.IPNEXT) THEN
+                  COLLECTED(IP)=1
+                  PREVVERT(IP)=IPPREV
+                  IF (PREVVERT(IP).EQ.NEXTVERT(IP)) THEN
+                    STATUS(IP)=1
+                  END IF
+                END IF
+              END IF
+            END DO
+          END DO
+
+          ISFINISHED=1
+          DO IP=1,MNP
+            IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
+              STATUS(IP)=-1
+              NEIGHBOR_PREV(IP)=PREVVERT(IP)     ! new code
+            END IF
+            IF (STATUS(IP).EQ.0) THEN
+              ISFINISHED=0
+            END IF
+          END DO
+          IF (ISFINISHED.EQ.1) THEN
+            EXIT
+          END IF
+        END DO
+!  Now making checks
+        DO IP=1,MNP
+          IP2=NEIGHBOR_NEXT(IP)
+          IF (IP2.GT.0) THEN
+            IP3=NEIGHBOR_PREV(IP2)
+            IF (ABS(IP3 - IP).GT.0) THEN
+              WRITE(*,*) 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
+              WRITE(*,*) 'We have a dramatic inconsistency'
+              STOP
+            END IF
+          END IF
+        END DO
+!   Now assigning the boundary IOBP array
+        DO IP=1,MNP
+          IF (STATUS(IP).EQ.-1 .AND. IOBP(IP) .EQ. 1) THEN
+            IOBP(IP)=0
+          END IF
+        END DO
+
+        DEALLOCATE(STATUS, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(COLLECTED, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(NEXTVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(PREVVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+
+      END SUBROUTINE
 
 !/ ------------------------------------------------------------------- /
-   SUBROUTINE SETUGIOBP ( )    
+
+      SUBROUTINE TRIANG_INDEXES(I, INEXT, IPREV)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : set indices of the triangle
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+!
+        INTEGER, INTENT(IN)  :: I
+        INTEGER, INTENT(OUT) :: INEXT, IPREV
+        IF (I.EQ.1) THEN
+          INEXT=3
+        ELSE
+          INEXT=I-1
+        END IF
+        IF (I.EQ.3) THEN
+          IPREV=1
+        ELSE
+          IPREV=I+1
+        END IF
+      END SUBROUTINE
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE GET_INTERFACE()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : get interface nodes of the wetting and drying part
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+        USE CONSTANTS, ONLY : LPDLIB
+        USE W3GDATMD, ONLY : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
+!/PDLIB     USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
+!/PDLIB     USE yowElementpool, only: INE
+        IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+
+        INTEGER :: I, J, IP, IE
+!/PDLIB      IF (LPDLIB) THEN
+!/PDLIB      DO IP = 1, NSEAL
+!/PDLIB        IF (IOBP(IP) .GT. 0 .AND. IOBDP(IP) .EQ. 0) CYCLE
+!/PDLIB        IOBP(IP) = 1
+!/PDLIB        DO I = 1, PDLIB_CCON(IP)
+!/PDLIB          IE = PDLIB_IE_CELL2(I,IP)
+!/PDLIB          IF (ANY(IOBDP(INE(:,IE)) .EQ. 0)) THEN
+!/PDLIB             IOBP(IP) = -1
+!/PDLIB            CYCLE
+!/PDLIB          ENDIF
+!/PDLIB        ENDDO
+!/PDLIB      ENDDO
+!/PDLIB      !CALL EXCHANGE_....
+!/PDLIB      ELSE
+      J = 0
+      DO IP = 1, NSEAL
+        IF (IOBP(IP) .GT. 0 .AND. IOBDP(IP) .EQ. 0) CYCLE
+        IOBP(IP) = 1
+        DO I = 1, CCON(IP)
+          J = J + 1 
+          IE = IE_CELL(J)
+          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
+             IOBP(IP) = -1
+            CYCLE
+          ENDIF
+        ENDDO
+      ENDDO
+!/PDLIB ENDIF
+   
+   END SUBROUTINE
+!/ ------------------------------------------------------------------- /
+   SUBROUTINE SETUGIOBP ( )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2122,6 +2495,7 @@ END SUBROUTINE
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
       USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, only : IAPROC
 !/S      USE W3SERVMD, ONLY: STRACE
       
       IMPLICIT NONE
@@ -2139,45 +2513,50 @@ END SUBROUTINE
       REAL (KIND = 8)         :: DYP1, DYP2, DYP3, eDet1, eDet2, EVX, EVY
       REAL(KIND=8), PARAMETER :: THR    = TINY(1.)
       INTEGER                 :: I1, I2, I3
-      INTEGER                 :: TRILAND(NTRI)
-      REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
+      INTEGER                 :: ITMP(NX), NEXTVERT(NX), PREVVERT(NX)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/ ------------------------------------------------------------------- /                                     
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
 !      
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 1'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
       
-!/S      CALL STRACE (IENT, 'SETUGIOBP')    
-
+!/S      CALL STRACE (IENT, 'SETUGIOBP')
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Searches for boundary points
 ! 
-      CALL SET_IOBP (MAPSTA(1,:), IOBP) 
-
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 2'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+      ITMP = MAPSTA(1,:)
+      CALL SET_IOBP (ITMP, IOBP) 
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 3'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Defines directions pointing into land or sea 
 ! 
       IOBPD(:,:)=0
       IOBPA(:)=0
+!
       DO IP=1,NX 
         IF ((MAPSTA(1,IP).EQ.2).AND.(IOBP(IP).EQ.0)) IOBPA(IP)=1
-        END DO
+      END DO
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 4'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 
       DO IE=1,NTRI
         I1   =   TRIGP(IE,1)
         I2   =   TRIGP(IE,2)
         I3   =   TRIGP(IE,3)
-        IF ((MAPSTA(1,I1).GE.1).AND.(MAPSTA(1,I2).GE.1).AND.(MAPSTA(1,I3).GE.1)) THEN 
-          DXP1 =   IEN(IE,6)
-          DYP1 = - IEN(IE,5)
-          DXP2 =   IEN(IE,2)
-          DYP2 = - IEN(IE,1)
-          DXP3 =   IEN(IE,4)
-          DYP3 = - IEN(IE,3)
-!AR: ... modifly wave direction by currents ...
+        DXP1 =   IEN(IE,6)
+        DYP1 = - IEN(IE,5)
+        DXP2 =   IEN(IE,2)
+        DYP2 = - IEN(IE,1)
+        DXP3 =   IEN(IE,4)
+        DYP3 = - IEN(IE,3)
         DO ITH=1,NTH
           EVX=ECOS(ITH)
           EVY=ESIN(ITH)
@@ -2203,31 +2582,23 @@ END SUBROUTINE
               y2 = - DYP2
               IP =   I3
             END IF
-!AR: MDS please check if the new thr can pose a problem ...
-            IF (IOBP(IP) .eq. 0) THEN
+            IF (IOBP(IP) .eq. 0) THEN ! physical boundary 
               eDet1 = THR-x1*EVY+y1*EVX
               eDet2 = THR+x2*EVY-y2*EVX
               IF ((eDet1.gt.0.).and.(eDet2.gt.0.)) THEN
                 IOBPD(ITH,IP)=1
               ENDIF 
-            ELSE ! land boundary ...
+            ELSE ! water ...
               IOBPD(ITH,IP)=1
             END IF
           END DO
         END DO
-        END IF 
       END DO
-!      DO IP = 1, MNP
-!        IF ( (LBCWA .OR. LBCSP) ) THEN
-!          IF ( IOBP(IP) == 2 .OR. IOBP(IP) == 4) THEN
-!            IOBWB(IP) = 0
-!            IOBPD(:,IP) = 1
-!          ENDIF
-!        END IF
-!        IF ( IOBP(IP) == 3 .OR. IOBP(IP) == 4) THEN ! If Neumann boundary condition is given set IOBP to 3
-!          IOBPD(:,IP) = 1 ! Update Neumann nodes ...
-!        END IF
-!      END DO
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+      DO IP = 1, NX 
+        IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
+      END DO
 !2do: recode for mpi 
 !        IF (LBCWA .OR. LBCSP) THEN
 !          IF (.NOT. ANY(IOBP .EQ. 2)) THEN
@@ -2242,12 +2613,11 @@ END SUBROUTINE
 !        IOBPD(ID,:) = iwild
 !      ENDDO
 !#endif
-
-
-!
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 7'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Updates the reflection direction and sharp / flat shoreline angle
-!
+
 !/REF1 ! 
 !/REF1 ! Finds the shoreline direction from IOBPD
 !/REF1 !
@@ -2269,6 +2639,8 @@ END SUBROUTINE
 !/REF1              REFLC(1,MAPFS(1,IP))= REFPARS(1)
 !/REF1              END IF
 !/REF1            END DO
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 8'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
           
 
 !DO IX=1,NX
@@ -2277,90 +2649,15 @@ END SUBROUTINE
 !ENDDO 
 !ENDDO
 !CLOSE(996)
-
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !
 ! Recomputes the angles used in the gradients estimation 
-!
-
-!
-! MAP FOR LAND POINTS    
 ! 
-       TRILAND(:) = 0
-       DO IE = 1, NTRI
-         I1 = TRIGP(IE,1)
-         I2 = TRIGP(IE,2)
-         I3 = TRIGP(IE,3)
+!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 10'
+!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !
-!! MAP FOR TRIANGLE STATUS: 
-!     TRILAND=0     ->sea triangle
-!     TRILAND=1 , 2 -> contour
-!     TRILAND=3     -> land
-
-     
-          IF ((MAPSTA(1,I1).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I2).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I3).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
-          END DO
-!
-! Now calculate the angle of action of a vertex (see gradients in w3updtmd.ftn)
-! If a triangle is connected to the contour, the angle of each vertex is not
-! taken into account when interpolating gradients.
-!
-        ANGLETOT(:) = 0. ! TPI
-        DO IE = 1, NTRI 
-          TRILAND(IE)=MIN(TRILAND(IE),1)
-          I1 = TRIGP(IE,1)
-          I2 = TRIGP(IE,2)
-          I3 = TRIGP(IE,3) 
-          IF (TRILAND(IE) .EQ. 0) THEN  
-            ANGLETOT(I1) = ANGLETOT(I1) + ANGLE0(IE,1)
-            ANGLETOT(I2) = ANGLETOT(I2) + ANGLE0(IE,2)
-            ANGLETOT(I3) = ANGLETOT(I3) + ANGLE0(IE,3)
-            END IF
-          END DO
-
-      DO IP = 1, NX
-        IF (ANGLETOT(IP) .NE. 0)  THEN 
-           ANGLETOTINV(IP) = 1./ANGLETOT(IP)
-        ELSE 
-          ANGLETOTINV(IP) = 0.
-          END IF
-        END DO
-!
-      DO IE = 1, NTRI
-        I1 = TRIGP(IE,1)
-        I2 = TRIGP(IE,2)
-        I3 = TRIGP(IE,3) 
-!
-! Angles for land triangles are set to zero
-!
-        ANGLE(IE,1) = ANGLE0(IE,1)*ANGLETOTINV(I1)*(1-TRILAND(IE))
-        ANGLE(IE,2) = ANGLE0(IE,2)*ANGLETOTINV(I2)*(1-TRILAND(IE))
-        ANGLE(IE,3) = ANGLE0(IE,3)*ANGLETOTINV(I3)*(1-TRILAND(IE))
-        !WRITE(998,*) 'IE, ANGLE:',IE,I1,I2,I3,ANGLE(IE,1:3),ANGLETOT(I1)*RADE,TRILAND(IE)
-
-        END DO
-
-!       END IF
-
-      CALL DIFFERENCE
-
       RETURN    
       END SUBROUTINE SETUGIOBP
-
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE LINE_ANGLE( x1, y1, x2, y2, angle )
-        implicit none
-        real (kind = 8) x1, y1, x2, y2
-        real (kind = 8) angle
-        real (kind = 8) dx, dy
-        
-        dx = x2 - x1
-        dy = y2 - y1
-        angle = atan2( dy, dx )
-        if ( angle < 0.0d0 ) angle = 8.0d0 * atan(1.0d0) + angle
-        
-        return
-      END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 END MODULE W3TRIAMD

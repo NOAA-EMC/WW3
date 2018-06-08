@@ -91,11 +91,12 @@
 !/                  !            F. Ardhuin             !
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jun-2011 |
+!/                  | Last update :         08-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    03-Oct-2007 : Origination.                        ( version 3.13 )
 !/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
+!/    08-Jun-2018 : use STRACE and FLUSH                ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -156,6 +157,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE W3ODATMD, ONLY: IAPROC
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
@@ -187,7 +189,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SPR3')
+!/S      CALL STRACE (IENT, 'W3SPR4')
 !
       UNZ    = MAX ( 0.01 , U )
       USTAR  = MAX ( 0.0001 , USTAR )
@@ -374,6 +376,7 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ODATMD, ONLY: NDST
+      USE W3ODATMD, ONLY: IAPROC
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT
 !
@@ -459,8 +462,10 @@
         AORB = AORB + EB             * DDEN(IK) / CG(IK)  !deep water only
         END DO
 
-      UORB = 2*SQRT(UORB)                  ! significant orbital amplitude
-      AORB1 = 2*AORB**(1-0.5*SSWELLF(6))   ! half the significant wave height ... if SWELLF(6)=1
+      UORB  = 2*SQRT(UORB)                  ! significant orbital amplitude
+      AORB1 = 2*AORB**(1-0.5*SSWELLF(6))    ! half the significant wave height ... if SWELLF(6)=1
+      !WRITE(740+IAPROC,*) EB, EBX, EBY, UORB, AORB1, NU_AIR, 4*UORB*AORB1/NU_AIR
+      !CALL FLUSH(740+IAPROC)
       RE = 4*UORB*AORB1 / NU_AIR           ! Reynolds number 
 !
 ! Defines the swell dissipation based on the "Reynolds number"
@@ -1537,19 +1542,20 @@
       RETURN
       END SUBROUTINE CALC_USTAR
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, S,      &
-                         D, IX, IY, BRLAMBDA, WHITECAP )
+      SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, SRHS,      &
+                         DDIAG, IX, IY, BRLAMBDA, WHITECAP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Nov-2013 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Clean up from common ST3-ST4 routine( version 3.14-Ifremer )
 !/    23-Jan-2012 : Add output of lambdas to be used in SIN
 !/    13-Nov-2013 : Reduced frequency range with IG1 switch 
+!/    06-Jun-2018 : Add optional DEBUGSRC              ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -1566,6 +1572,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       IX, IY    Int   I   Grid Index 
 !       A         R.A.  I   Action density spectrum (1-D).
 !       K         R.A.  I   Wavenumber for entire spectrum.          *)
 !       USTAR     Real  I   Friction velocity.
@@ -1607,7 +1614,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, TPI, RADE
+      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, TPI, RADE, DEBUG_NODE
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
                           SSDSC, EC2, ES2, ESC,                      &
                           SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
@@ -1628,10 +1635,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      INTEGER, OPTIONAL, INTENT(IN) :: IX, IY
       REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),            &
                                  DEPTH, USTAR, USDIR 
-      INTEGER, INTENT(IN)     :: IX, IY
-      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), BRLAMBDA(NSPEC)
+      REAL, INTENT(OUT)       :: SRHS(NSPEC), DDIAG(NSPEC), BRLAMBDA(NSPEC)
       REAL, INTENT(OUT)       :: WHITECAP(1:4)
 !/
 !/ ------------------------------------------------------------------- /
@@ -1682,7 +1689,7 @@
       S1=0.; E1=0.
       NTIMES=0;IKSUP=0;IMSSMAX=0
       DK=0.; HS=0.; KBAR=0.; DCK=0.; EFDF=0.
-      BTH0=0.; BTH=0.; BTH0S=0.
+      BTH0=0.; BTH=0.; BTH0S=0.; DDIAG=0.; SRHS=0.; PB=0.
       BTHS=0.; SBK=0.; SBKT=0.; MSSSUM(:,:)=0.
 !/T0  DOUT=0.
       QB=0.; S2=0.;PB=0.; PB2=0.
@@ -1693,6 +1700,8 @@
       BREAKFRACTION=0.
       RENEWALFREQ=0.
       IK1=1
+
+      !IF (IX == DEBUG_NODE) WRITE(*,'(A20,4F20.10)') 'ST4 DISSIP ANFANG', SUM(SRHS), SUM(DDIAG)
 !/IG1  IK1=NINT(IGPARS(5))+1
 
 !
@@ -1702,28 +1711,34 @@
 !
 ! 2.a  Case of a direction-dependent breaking term (TEST441) 
 !
-        S  =0.
-        D  =0.
-        PB =0.
-        EPSR=SQRT(SSDSBR)
+        EPSR = SQRT(SSDSBR)
 !
 ! 2.a.1 Computes saturation
 !
-        SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
+        SDSNTH = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
         MSSLONG(:,:) = 0.
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
 !
-        BTH(:)=0.
+        BTH(:) = 0.
+
         DO  IK=IK1, NK
+
           FACSAT=SIG(IK)*K(IK)**3*DTH
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
           ASUM = SUM(A(IS0+1:IS0+NTH))
           BTH0(IK)=ASUM*FACSAT
+
           IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
             BTH(IS0+1:IS0+NTH)=BTH0(IK)
           ELSE
+
+!/DEBUGSRC          IF(IX == DEBUG_NODE) THEN
+!/DEBUGSRC            WRITE(*,'(A10,I10,5F20.10)') 'ST4 D1', IK, K(IK), BTH0(IK), SUM(BTH(IS0+1:IS0+NTH)), FACSAT, ASUM 
+!/DEBUGSRC            WRITE(*,'(A10,10F20.10)') 'SSDSC', SSDSC
+!/DEBUGSRC          ENDIF
+
 !
 ! straining effect: first finds the mean direction of mss, then applies cos^2
 !                   straining
@@ -1765,11 +1780,13 @@
               MSSSUM  (IK,2)  = MSSSUM(IK,4)*COS(MSSD)**2   &
                        -2*MSSSUM(IK,5)*SIN(MSSD)*COS(MSSD)+MSSSUM(IK,3)*SIN(MSSD)**2 
 
+              END IF ! SSDSC(8).GT.0) THEN
 
-              END IF
-            DO ITH=1,NTH            ! partial integration
-              IS=ITH+(IK-1)*NTH
-!
+
+              DO ITH=1,NTH            ! partial integration
+
+                IS=ITH+(IK-1)*NTH
+! 
 ! Testing straining effect of long waves on short waves
 ! extended from Longuet-Higgins and Stewart (JFM 1960, eq. 2.27) the amplitude modulation 
 ! in deep water is equal to the long wave slope k*a cos(theta1-theta2)
@@ -1778,7 +1795,7 @@
 ! 
 ! Note: SSDSC(8) is 2 times the MTF: close to 4x2=8 for very small ka but can be 20 or larger for ak~0.1
 !
-              IF (SSDSC(8).GT.0) THEN 
+                IF (SSDSC(8).GT.0) THEN 
 !
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
@@ -1788,8 +1805,8 @@
                 FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 
-              BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
-                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
+                BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
+                       A(IS0+SATINDICES(:,ITH)) )*FACSAT
 !              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
 !                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
               END DO
@@ -1800,7 +1817,12 @@
               BTH0(IK)=MAXVAL(BTH(IS0+1:IS0+NTH))
               END IF
             END IF
-          END DO
+
+!/DEBUGSRC            IF(IX == DEBUG_NODE) THEN
+!/DEBUGSRC              WRITE(*,'(A10,I10,10F20.10)') 'ST4 D2', IK, BTH0(IK), SUM(BTH(IS0+1:IS0+NTH))
+!/DEBUGSRC            ENDIF
+
+          END DO !NK END
 ! 
 !   Optional smoothing of B and B0 over frequencies
 ! 
@@ -1882,9 +1904,15 @@
 !
           COEF2=SSDSC(2) * SIG(IK)*(1-SSDSC(6))/(COEF1*COEF1)
           COEF3=-2.*SIG(IK)*K(IK)*FACTURB
-          D((IK-1)*NTH+1:IK*NTH) = SDIAGISO + &
+          DDIAG((IK-1)*NTH+1:IK*NTH) = SDIAGISO + &
                                    COEF2*((MAX(0.,BTH((IK-1)*NTH+1:IK*NTH)-COEF1))**SSDSP) 
+!            IF (IX == DEBUG_NODE) THEN
+!              WRITE(*,'(A10,I10,10F15.6)') 'ST4 D3',IK,BTH0(IK),SUM(BTH((IK-1)*NTH+1:IK*NTH)),COEF1,COEF2,COEF3,SSDSP,SDIAGISO
+!            ENDIF
           END DO
+
+          !IF(IX == DEBUG_NODE) WRITE(*,'(A20,4F15.6)') 'ST4 DISSIP 1', SUM(SRHS), SUM(DDIAG), SUM(BTH)
+
 !
 ! Computes Breaking probability
 !
@@ -1902,11 +1930,11 @@
 ! 2.b             Computes spontaneous breaking for T500 //////////////
 !
       IF (SSDSBCK.GT.0) THEN ! test for (Filipot et al. 2010)'s disspation source term
-        E1 =0.
-        HS =0.  
-        S  =0.
-        D  =0.
-        PB2=0.
+        E1 = 0.
+        HS = 0.  
+        SRHS  = 0.
+        DDIAG = 0.
+        PB2  = 0.
 !
 ! Computes Wavenumber spectrum E1 integrated over direction and computes dk
 !
@@ -2026,10 +2054,10 @@
         DO IK = 1, NK 
           ASUM = (SUM(A(((IK-1)*NTH+1):(IK*NTH)))*DTH)
           IF (ASUM.GT.1.E-8) THEN
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) D(IS)  = S1(IK)/ASUM
+            FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = S1(IK)/ASUM
             FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = S2(IK)/ASUM
           ELSE
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) D(IS)  = 0.
+            FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = 0.
             FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
             END IF  
           IF (PB2(1+(IK-1)*NTH).GT.0.001) THEN 
@@ -2087,15 +2115,16 @@
 !
 ! Add effects
 !
-          SBK(IS)  = D(IS)*A(IS)
+          SBK(IS)   = DDIAG(IS)*A(IS)
           SBKT(IK)  = SBKT(IK) + SBK(IS)
-          D(IS) = D(IS) + (SSDSC(3)*RENEWALFREQ+DTURB) 
+          DDIAG(IS) = DDIAG(IS) + (SSDSC(3)*RENEWALFREQ+DTURB) 
           END DO
         END DO
 !
 ! COMPUTES SOURCES TERM from diagonal term
 !
-      S = D * A
+      SRHS = DDIAG * A
+      !IF(IX == DEBUG_NODE) WRITE(*,'(A10,4F20.10)') 'ST4 DISSIP 2', SUM(SRHS), SUM(DDIAG), SSDSC(3)*RENEWALFREQ, DTURB
 !
 ! Adds non-diagonal part: high and low frequency generation 
 !
@@ -2105,7 +2134,7 @@
             DO ITH=1,NTH 
               IS2=ITH+(IK2-1)*NTH
               IS=ITH+(IK-1)*NTH
-              S(IS) = S(IS) + SSDSC(1)*ABS(SBK(IS2))/DIKCUMUL
+              SRHS(IS) = SRHS(IS) + SSDSC(1)*ABS(SBK(IS2))/DIKCUMUL
               END DO
             END DO
           END DO
@@ -2117,11 +2146,12 @@
           NKM=IKM-(IK2+DIKCUMUL)+1
           FACHF=SSDSC(9)/FLOAT(NKM*NTH)
           DO IK = IK2+DIKCUMUL, IKM
-            S((IK-1)*NTH+1:IK*NTH) = S((IK-1)*NTH+1:IK*NTH) + ABS(SBKT(IK2))*FACHF
+            SRHS((IK-1)*NTH+1:IK*NTH) = SRHS((IK-1)*NTH+1:IK*NTH) + ABS(SBKT(IK2))*FACHF
             END DO
           END DO
         END IF
 
+        !IF(IX == DEBUG_NODE) WRITE(*,'(A10,4F20.10)') 'ST4 DISSIP 3', SUM(SRHS), SUM(DDIAG), SUM(A)
 !
 !  COMPUTES WHITECAP PARAMETERS
 !

@@ -755,7 +755,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    06-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -763,6 +763,7 @@
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    11-Mar-2015 : Allow non-error exit (iexit=0)      ( version 5.04 )
 !/    20-Jan-2017 : Add optional MPI communicator arg   ( version 6.02 )
+!/    06-Jun-2018 : Add optional MPI                    ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -860,6 +861,32 @@
 !/MPI          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
 !/MPI          CALL MPI_FINALIZE (IERR_MPI )
 !/MPI        ELSE ! error state
+!/MPI          WRITE(*,*) 'w3servmd MPI_ABORT, IEXIT=', IEXIT
+!/MPI          IF (PRESENT(UNIT)) THEN
+!/MPI            WRITE(*,*) 'w3servmd UNIT=', UNIT
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'UNIT missing'
+!/MPI          END IF
+!/MPI          IF (PRESENT(MSG)) THEN
+!/MPI            WRITE(*,*) 'w3servmd MSG=', MSG
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'MSG missing'
+!/MPI          END IF
+!/MPI          IF (PRESENT(FILE)) THEN
+!/MPI            WRITE(*,*) 'w3servmd FILE=', FILE
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'FILE missing'
+!/MPI          END IF
+!/MPI          IF (PRESENT(LINE)) THEN
+!/MPI            WRITE(*,*) 'w3servmd LINE=', LINE
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'LINE missing'
+!/MPI          END IF
+!/MPI          IF (PRESENT(COMM)) THEN
+!/MPI            WRITE(*,*) 'w3servmd COMM=', COMM
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'COMM missing'
+!/MPI          END IF
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
 !/MPI      END IF

@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -39,6 +39,7 @@
 !/                  and ICE (ice concentration).
 !/    01-Mar-2018 : Include UNDEF from constants.ftn to ( version 6.02 )
 !/                  avoid circular referencing in w3servmd
+!/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -334,7 +335,9 @@
                                  DPO(:), WAO(:), WDO(:), ASO(:),      &
                                  CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
                                  ICEFO(:), SPCO(:,:)
-        CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
+        REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
+
+        CHARACTER(LEN=13), POINTER :: PTNME(:), GRDID(:)
         LOGICAL               :: O2INIT
 !/MPI        LOGICAL               :: O2IRQI
       END TYPE OTYPE2
@@ -434,7 +437,9 @@
                                  DPO(:), WAO(:), WDO(:), ASO(:),      &
                                  CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
                                  ICEFO(:), SPCO(:,:)
-      CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
+      REAL, POINTER           :: ZET_SETO(:)
+!
+      CHARACTER(LEN=13), POINTER :: PTNME(:), GRDID(:)
       LOGICAL, POINTER        :: O2INIT
 !/MPI        LOGICAL, POINTER      :: O2IRQI
 !/
@@ -658,6 +663,7 @@
 !/BT4      IDOUT( 1, 8)  = 'Sediment diam D50   '
 !/IS2      IDOUT( 1, 9)  = 'ice thickness   '
 !/IS2      IDOUT( 1, 10) = 'Avg. ice floe diam. '
+!/SETUP    IDOUT( 1, 11)  = 'wave induced setup'
 !
 ! 2) Standard mean wave parameters
 !
@@ -936,6 +942,7 @@
                  OUTPTS(IMOD)%OUT2%GRDID(NPT)      ,                  &
                  OUTPTS(IMOD)%OUT2%DPO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%WAO(NPT)        ,                  &
+                 OUTPTS(IMOD)%OUT2%ZET_SETO(NPT)   ,                  &
                  OUTPTS(IMOD)%OUT2%WDO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%ASO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%CAO(NPT)        ,                  &
@@ -1505,6 +1512,7 @@
           PTIFAC => OUTPTS(IMOD)%OUT2%PTIFAC
           DPO    => OUTPTS(IMOD)%OUT2%DPO
           WAO    => OUTPTS(IMOD)%OUT2%WAO
+          ZET_SETO => OUTPTS(IMOD)%OUT2%ZET_SETO
           WDO    => OUTPTS(IMOD)%OUT2%WDO
           ASO    => OUTPTS(IMOD)%OUT2%ASO
           CAO    => OUTPTS(IMOD)%OUT2%CAO

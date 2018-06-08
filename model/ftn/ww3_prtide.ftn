@@ -6,11 +6,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Oct-2013 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    29-Mar-2013 : Creation                            ( version 4.11 )   
-!/    17-Oct-2013 : Manages missing data for UNST grids ( version 4.12 )   
+!/    17-Oct-2013 : Manages missing data for UNST grids ( version 4.12 )
+!/    06-Jun-2018 : COMPUTE VNEIGH: calculate the number of connected 
+!/                  triangles for a given point         ( version 6.04 )   
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -146,6 +148,8 @@
       REAL             :: WLEVTIDE, TIDE_ARG, WLEVTIDE2(1)
       REAL(KIND=8)     :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
       REAL             :: TIDE_FX(44),UX(44),VX(44), AMPCOS, AMPSIN
+      INTEGER          :: IE, NI(3), IP, IP2, II, IFOUND, ALREADYFOUND
+      INTEGER, ALLOCATABLE :: VNEIGH(:,:), CONN(:)
       LOGICAL          :: TIDEFILL
 !/
 !/ ------------------------------------------------------------------- /
@@ -261,6 +265,88 @@
       CALL W3FLDTIDE1 ( 'READ',  NDSF, NDST, NDSE, NX, NY, IDFLD, IERR )
       CALL W3FLDTIDE2 ( 'READ',  NDSF, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
       CLOSE(NDSF)
+      
+!
+!     COMPUTE VNEIGH 
+!
+      ALLOCATE(CONN(NX))
+
+      COUNTRI = 0
+      COUNTOT = 0
+      CONN(:) = 0
+!
+!calculate the number of connected triangles for a given point.
+!
+      DO IE = 1, NX
+        NI = IEN(IE,:)
+        CONN(NI) = CONN(NI) + 1
+      ENDDO
+      COUNTRI = MAXVAL(CONN)
+
+      ALLOCATE(VNEIGH(NX,2*COUNTRI))
+      VNEIGH(:,:) = 0
+!
+      J = 0
+      DO IP = 1, NX
+        ifound = 0
+        DO II = 1, CCON(IP)
+          J = J + 1
+          IE = IE_CELL(J)
+
+          IF (IP == TRIGP(IE,1)) THEN
+            DO IP2=2,3
+              alreadyfound = 0
+              DO I=1,ifound
+                IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
+                END DO
+              IF (alreadyfound.EQ.0) THEN
+                ifound=ifound+1
+                VNEIGH(IP,ifound)=TRIGP(IE,IP2)
+                END IF
+              END DO
+           END IF
+
+         IF (IP == TRIGP(IE,2)) THEN
+            DO IP2=3,4
+              alreadyfound = 0
+              DO I=1,ifound
+                IF (VNEIGH(IP,I).EQ.TRIGP(IE,MOD(IP2-1,3)+1)) alreadyfound=alreadyfound+1
+                END DO
+              IF (alreadyfound.EQ.0) THEN
+                ifound=ifound+1
+                VNEIGH(IP,ifound)=TRIGP(IE,MOD(IP2-1,3)+1)
+                END IF
+              END DO
+            END IF
+
+         IF (IP == TRIGP(IE,3)) THEN
+            DO IP2=1,2
+              alreadyfound = 0
+              DO I=1,ifound
+                IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
+                END DO
+              IF (alreadyfound.EQ.0) THEN
+                ifound=ifound+1
+                VNEIGH(IP,ifound)=TRIGP(IE,IP2)
+                END IF
+              END DO
+            END IF
+        END DO ! CCON
+!
+! COUNTCON is a counter on connected points. In comparison with the number of connected triangle
+! CCON, it will enable to spot whether a point belong to the contour
+!         
+        COUNTCON(IP)=ifound
+
+        do I=2,ifound
+           do J=1,i-1
+           if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) THEN
+              COUNTCON(IP)=COUNTCON(IP)-1
+              ! WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
+              END IF
+           enddo
+        enddo
+      END DO !NX   
 !
 ! Counts the number of tidal constituents
 !

@@ -41,7 +41,6 @@
   echo ' '
 
 
-
 # 1.b Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ $# -eq 0 ]
@@ -85,7 +84,10 @@
   fi
 
   # switch file
-  switch_file=$main_dir/bin/switch
+  if [ -z "$(env | grep switch_file)" ]
+  then
+    switch_file=$main_dir/bin/switch
+  fi
   if [ ! -e $switch_file ] || [ ! -r $switch_file ]
   then
     echo ' '
@@ -132,7 +134,8 @@
 # 1.e Set regular and netCDF progs - - - - - - - - - - - - - - - - - - - - - -
 
 # GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
-  reg_programs="ww3_grid"
+#  reg_programs = non-NetCDF programs
+  reg_programs="ww3_grid" 
   reg_programs="$reg_programs ww3_strt"
   reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_outf"
@@ -142,16 +145,15 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
-  reg_programs="$reg_programs ww3_uprstr"
-  reg_programs="$reg_programs libww3"
+  reg_programs="$reg_programs ww3_uprstr" 
 
 # PRNC OUNF OUNP BOUNC TRNC
+# cdf_programs = NetCDF programs
   cdf_programs="ww3_prnc"
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
   cdf_programs="$cdf_programs ww3_trnc"
-
 
   # PRTIDE
   if [ -n "`grep TIDE $switch_file`" ]
@@ -160,10 +162,11 @@
   fi
 
   # MULTI MULTI_ESMF SBS1
-  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
+  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
+    cdf_programs="$cdf_programs libww3"
     if [ $ESMFMKFILE ]
     then
       cdf_programs="$cdf_programs ww3_multi_esmf"
@@ -171,6 +174,7 @@
   else
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
+    reg_programs="$reg_programs libww3"
     if [ $ESMFMKFILE ]
     then
       reg_programs="$reg_programs ww3_multi_esmf"
@@ -193,15 +197,20 @@
   fi
 
   # SHEL PREP GSPL
-  if [ -n "`grep OASIS $switch_file`" ]
+  if [ -n "`grep OASIS $switch_file`" ] || [ -n "`grep PDLIB $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_gspl"
+    cdf_programs="$cdf_programs ww3_prep"
+  else
+    reg_programs="$reg_programs ww3_gspl"
+    reg_programs="$reg_programs ww3_prep"
+  fi
+
+  if [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
-    cdf_programs="$cdf_programs ww3_prep"
-    cdf_programs="$cdf_programs ww3_gspl"
   else
     reg_programs="$reg_programs ww3_shel"
-    reg_programs="$reg_programs ww3_prep"
-    reg_programs="$reg_programs ww3_gspl"
   fi
 
   # if no progs in argument
@@ -601,6 +610,15 @@ EOF
         export oasis_mod='yes'
       fi
       export oasis_mod
+
+      pdlib_mod=no
+      if [ -n "`grep PDLIB $switch_file`" ]
+      then
+        export pdlib_mod='yes'
+      fi
+      export pdlib_mod
+
+
 
       # if esmf is included in program name, then the compile
       # requires DIST and NOPA switches and the ESMFMKFILE is

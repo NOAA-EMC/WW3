@@ -697,6 +697,7 @@
                                  XTR(NTH,NK), XDS(NTH,NK), XDB(NTH,NK),&
                                  XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
                                  XWL(NTH,NK), XIS(NTH,NK)
+      LOGICAL                 :: LBREAK
 !/ST3      LOGICAL                :: LLWS(NTH,NK) 
 !/ST4      LOGICAL                :: LLWS(NTH,NK)
 !/ST4      REAL                   :: LAMBDA(NSPEC)
@@ -1004,8 +1005,8 @@
 !/ST6                IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 !/STX                CALL W3SDSX
 !
-!/DB1                CALL W3SDB1 ( A, WN2, DEPTH, EMEAN, FMEAN, WNMEAN,  &
-!/DB1                                                            XDB, DIA )
+!/DB1                CALL W3SDB1 ( J, A, DEPTH, EMEAN, FMEAN, WNMEAN, CG, &
+!/DB1                                                            LBREAK, XDB, DIA )
 !/DBX                CALL W3SDBX
 !
               END IF

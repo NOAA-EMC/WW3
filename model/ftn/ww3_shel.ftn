@@ -7,7 +7,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-May-2015 |
+!/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -48,6 +48,7 @@
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    11-May-2015 : Checks dates for output types       ( version 5.08 )
+!/    06-Jun-2018 : Add PDLIB/MEMCHECK/NETCDF_QAD/DEBUGINIT ( version 6.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -229,10 +230,12 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+!/PDLIB      USE CONSTANTS, ONLY: LPDLIB
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, W3NDAT, W3DIMW, W3SETW
 !/OASIS      USE W3WDATMD, ONLY: TIME00, TIMEEND
       USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
+!/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
       USE W3IDATMD
 !/OASIS      USE W3ODATMD, ONLY: DTOUT
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
@@ -246,9 +249,15 @@
 !/
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT
+      USE W3WDATMD, ONLY: TIME, VA
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
+!/MEMCHECK      USE MallocInfo_m
+!/NETCDF_QAD      USE W3NETCDF, only : TIME0_NETCDF_QAD
+!/NETCDF_QAD      USE W3NETCDF, only : TIMEN_NETCDF_QAD
+
+
 !/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/OASIS USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
 !/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE,      &
@@ -336,6 +345,7 @@
       DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
                     'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1',  &
                     'DT2', 'MOV' /
+      FLGR2 = .FALSE.  
 !
 !     IF (FLAGLL) THEN
 !         FACTOR = 1.
@@ -356,6 +366,7 @@
 !
 !/PALM      PALMED=1
 !/OASIS     OASISED=1
+!/PDLIB     LPDLIB = .TRUE.
 !  
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3NDAT (    6, 6 )
@@ -368,6 +379,10 @@
       CALL W3SETA ( 1, 6, 6 )
       CALL W3SETO ( 1, 6, 6 )
       CALL W3SETI ( 1, 6, 6 )
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
 !/SHRD      NAPROC = 1
 !/SHRD      IAPROC = 1
@@ -376,7 +391,9 @@
 !/OASIS   CALL CPL_OASIS_INIT(MPI_COMM)
 !/OASIS ELSE
 !/PALM  IF (PALMED.EQ.0) THEN 
+!/DEBUGINIT      write(740+IAPROC,*), 'Before MPI_INIT, ww3_shel'
 !/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/DEBUGINIT      write(740+IAPROC,*), 'After MPI_INIT, ww3_shel'
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/PALM  ELSE
 !/PALM ! what if PALM but not MPI ???
@@ -388,16 +405,23 @@
 !/NCC      MPI_COMM = MPI_COMM_WW
 !
 !/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
+!/DEBUGINIT      write(740+IAPROC,*) 'After MPI_COMM_SIZE, NAPROC=', NAPROC
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
 !/MPI      IAPROC = IAPROC + 1
 !
 !/NCO/!     IF ( IAPROC .EQ. 1 ) CALL W3TAGB                         &
 !/NCO/!                         ('WAVEFCST',1998,0007,0050,'NP21   ')
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  IO set-up
 ! 1.a For shell
 !
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 1'
+!/DEBUGINIT      FLUSH(740+IAPROC)
       NDSI   = 10
       NDSS   = 90
       NDSO   =  6
@@ -424,6 +448,8 @@
       NDSF(5)  = 15
       NDSF(6)  = 16
       NDSF(7)  = 17
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 2'
+!/DEBUGINIT      FLUSH(740+IAPROC)
 !
 !/NCO/!
 !/NCO/! Redo according to NCO
@@ -459,10 +485,17 @@
         END IF
 !
       JJ     = LEN_TRIM(FNMPRE)
-      OPEN (NDSI,FILE=FNMPRE(:JJ)//'ww3_shel.inp',STATUS='OLD',       &
-            ERR=2000,IOSTAT=IERR)
+!/DEBUGINIT      WRITE(740+IAPROC,*) ' FNMPRE=', TRIM(FNMPRE)
+!/DEBUGINIT      FLUSH(740+IAPROC)
+      OPEN (NDSI,FILE=FNMPRE(:JJ)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
       REWIND (NDSI)
-      READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before read 2002, case 1'
+!/DEBUGINIT      FLUSH(740+IAPROC)
+!AR: I changed the error handling for err=2002, see commit message ...
+      READ (NDSI,'(A)') COMSTR
+!/DEBUGINIT      WRITE(740+IAPROC,*) ' COMSTR=', COMSTR
+!/DEBUGINIT      WRITE(740+IAPROC,*) ' After read 2002, case 1'
+!/DEBUGINIT      FLUSH(740+IAPROC)
       IF (COMSTR.EQ.' ') COMSTR = '$'
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
@@ -515,6 +548,8 @@
       FLLSTL = .FALSE. ! This is associated with J.EQ.1 (wlev)
       FLLSTI = .FALSE. ! This is associated with J.EQ.4 (ice)
       FLLST_ALL = .FALSE. ! For all
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 3'
+!/DEBUGINIT      FLUSH(740+IAPROC)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Define input fields
@@ -533,10 +568,23 @@
 !/BT9      JFIRST=-7
 !/IC4      JFIRST=-7
 
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 4'
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'JFIRST=', JFIRST
+!/DEBUGINIT      FLUSH(740+IAPROC)
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2a'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
       DO J=JFIRST, 7
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
         IF ( J .LT. 4 ) THEN
-            READ (NDSI,*,END=2001,ERR=2002) FLAGTFC, FLH(J)
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before read 2002, case 2 J=', J
+!/DEBUGINIT      FLUSH(740+IAPROC)
+            READ (NDSI,*) FLAGTFC, FLH(J)
+!/DEBUGINIT      WRITE(740+IAPROC,*) ' After read 2002, case 2'
+!/DEBUGINIT      WRITE(740+IAPROC,*) '    FLAGTFC=', FLAGTFC, ' FLH=', FLH(J)
+!/DEBUGINIT      FLUSH(740+IAPROC)
             IF (FLAGTFC.EQ.'T') THEN 
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
@@ -551,7 +599,13 @@
             END IF
             FLH(J) = FLH(J) .AND. INFLAGS1(J)
           ELSE
-            READ (NDSI,*,END=2001,ERR=2002) FLAGTFC
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before read 2002, case 3'
+!/DEBUGINIT      FLUSH(740+IAPROC)
+! TJH            READ (NDSI,*,END=2001,ERR=2002) INFLAGS1(J)
+            READ (NDSI,*) FLAGTFC
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'J=', J, 'FLAGTFC=',FLAGTFC
+!/DEBUGINIT      WRITE(740+IAPROC,*) ' After read 2002, case 3'
+!/DEBUGINIT      FLUSH(740+IAPROC)
             FLH(J) = .FALSE.
             IF (FLAGTFC.EQ.'T') THEN 
               INFLAGS1(J)=.TRUE.
@@ -580,7 +634,13 @@
         END IF
         IF ( IAPROC .EQ. NAPOUT )                                     &
               WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
-        END DO
+      END DO
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2b'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 5'
+!/DEBUGINIT      FLUSH(740+IAPROC)
 !
       INFLAGS1(8) = .FALSE.
       FLH(8)   = .FALSE.
@@ -612,21 +672,38 @@
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930)
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) TIME0
+!/DEBUGINIT      write(740+IAPROC,*), 'Before read 2002, case 4'
+      READ (NDSI,*) TIME0
+!/DEBUGINIT      write(740+IAPROC,*), ' After read 2002, case 4'
       CALL STME21 ( TIME0 , DTME21 )
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) DTME21
       TIME = TIME0
+!
 !/OASIS      TIME00 = TIME0
+!/NETCDF_QAD      TIME0_NETCDF_QAD = TIME0
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2c'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
+
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) TIMEN
+!/DEBUGINIT      write(740+IAPROC,*), 'Before read 2002, case 5'
+      READ (NDSI,*) TIMEN
+!/DEBUGINIT      write(740+IAPROC,*), ' After read 2002, case 5'
 !/OASIS      TIMEEND = TIMEN
+!/NETCDF_QAD      TIMEN_NETCDF_QAD = TIMEN
       CALL STME21 ( TIMEN , DTME21 )
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
 !
       DTTST  = DSEC21 ( TIME0 , TIMEN )
       IF ( DTTST .LE. 0. ) GOTO 2003
+!/DEBUGINIT      write(740+IAPROC,*), 'ww3_shel, step 6'
 !
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2d'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4.  Define output
 !
@@ -637,9 +714,13 @@
           FACTOR = 1.E-3
         END IF
 !
+!/DEBUGINIT      write(740+IAPROC,*), 'ww3_shel, step 7'
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) IOSTYP
+!/DEBUGINIT      write(740+IAPROC,*), 'Before read 2002, case 6'
+      READ (NDSI,*) IOSTYP
+!/DEBUGINIT      write(740+IAPROC,*), ' After read 2002, case 6'
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
+!/DEBUGINIT      write(740+IAPROC,*), 'ww3_shel, step 8'
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
           IF ( IOSTYP .EQ. 0 ) THEN
@@ -655,7 +736,8 @@
           ELSE
               WRITE (NDSO,940) 'IOSTYP NOT RECOGNIZED'
           END IF
-        END IF
+      END IF
+!/DEBUGINIT      write(740+IAPROC,*), 'ww3_shel, step 9'
 !
 ! 4.a Loop over types
 !
@@ -663,13 +745,21 @@
 !
       NOTYPE = 6
 !/COU      NOTYPE = 7
+!/DEBUGINIT      write(740+IAPROC,*), 'Before NOTYPE loop'
       DO J = 1, NOTYPE
 !
 ! 4.b Process standard line
 !
+!/DEBUGINIT        write(740+IAPROC,*), 'J=', J, '/ NOTYPE=', NOTYPE
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,*,END=2001,ERR=2002) (ODAT(I),I=5*(J-1)+1,5*J)
+!/DEBUGINIT        write(740+IAPROC,*), 'Before read 2002, case 7'
+        READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!/DEBUGINIT        write(740+IAPROC,*), ' After read 2002, case 7'
         ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
+!
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
         IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
@@ -706,6 +796,7 @@
                   END IF
               END IF
 !
+!/DEBUGINIT            write(740+IAPROC,*), 'Case analysis'
             IF ( J .EQ. 1 ) THEN
 !
 ! 4.c Type 1: fields of mean wave parameters
@@ -740,7 +831,9 @@
                   NPTS   = 0
                   DO
                     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                    READ (NDSI2,*,END=2001,ERR=2002) XX, YY, PN
+!/DEBUGINIT                    write(740+IAPROC,*), 'Before read 2002, case 8'
+                    READ (NDSI2,*) XX, YY, PN
+!/DEBUGINIT                    write(740+IAPROC,*), ' After read 2002, case 8'
                     IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
                         BACKSPACE (NDSI)
                         READ (NDSI,'(A)') LINE
@@ -791,7 +884,9 @@
 ! 4.e Type 3: track output
 !
                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                READ (NDSI,*,END=2001,ERR=2002) TFLAGI
+!/DEBUGINIT                write(740+IAPROC,*), 'Before read 2002, case 8'
+                READ (NDSI,*) TFLAGI
+!/DEBUGINIT                write(740+IAPROC,*), ' After read 2002, case 8'
 !
                 IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
                 IF ( IAPROC .EQ. NAPOUT ) THEN
@@ -817,7 +912,10 @@
 !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
 !
                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                READ (NDSI,*,END=2001,ERR=2002) IPRT, PRTFRM
+!/DEBUGINIT                write(740+IAPROC,*), 'Before reading IPRT'
+!/DEBUGINIT                write(740+IAPROC,*), 'Before read 2002, case 9'
+                READ (NDSI,*) IPRT, PRTFRM
+!/DEBUGINIT                write(740+IAPROC,*), ' After read 2002, case 9'
 !
                 IF ( IAPROC .EQ. NAPOUT ) THEN
                     IF ( PRTFRM ) THEN
@@ -845,6 +943,10 @@
         END DO
 !
       IF ( NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2f'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 !/T      WRITE (NDST,9040) ODAT
 !/T      WRITE (NDST,9041) FLGRD
@@ -872,6 +974,10 @@
           CONTINUE
         ENDIF
       ENDDO
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Initializations
@@ -887,6 +993,7 @@
 !
 
           DO J=JFIRST, 4
+!/DEBUGINIT     write(740+IAPROC,*), 'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J) 
             IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
                 IF ( FLH(J) ) THEN
                     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
@@ -921,6 +1028,10 @@
 !
         END IF
 
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 4'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
+
 !
 ! 5.b Wave model
 !
@@ -932,9 +1043,25 @@
 !/TIDE        IF (FLAGSTIDE(2)) CALL W3FLDTIDE1 ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
 !/TIDE        END IF
 ! 
-     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
+     CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
                    FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
+
+!      IF (MINVAL(VA) .LT. 0.) THEN
+!        WRITE(740+IAPROC,*) 'NEGATIVE ACTION SHELL 3b', MINVAL(VA)
+!        CALL FLUSH(740+IAPROC)
+!        CALL EXTCDE(665)
+!      ENDIF
+!      IF (SUM(VA) .NE. SUM(VA)) THEN
+!        WRITE(740+IAPROC,*) 'NAN in ACTION SHEL1', SUM(VA)
+!        CALL FLUSH(740+IAPROC)
+!        CALL EXTCDE(666)
+!      ENDIF
+
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
 !/TIDE      IF (FLAGSTIDE(1)) CALL W3FLDTIDE2 ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), 1, IERR )
 !/TIDE      IF (FLAGSTIDE(2)) CALL W3FLDTIDE2 ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), 1, IERR )
@@ -953,7 +1080,9 @@
 !
           DO
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-            READ (NDSI,*,END=2001,ERR=2002) IDTST
+!/DEBUGINIT            write(740+IAPROC,*), 'Before read 2002, case 10'
+            READ (NDSI,*) IDTST
+!/DEBUGINIT            write(740+IAPROC,*), ' After read 2002, case 10'
 
             IF ( IDTST.NE.IDSTR(-7) .AND. IDTST.NE.IDSTR(-6) .AND.   &
                  IDTST.NE.IDSTR(-5) .AND. IDTST.NE.IDSTR(-4) .AND.   &
@@ -981,26 +1110,38 @@
                   NH(J)    = NH(J) + 1
                   IF ( NH(J) .GT. NHMAX ) GOTO 2006
                   IF ( J .LE. 1  ) THEN ! water levels, etc. : get HS
-                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+!/DEBUGINIT                     write(740+IAPROC,*), 'Before read 2002, case 11'
+                     READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HS(NH(J),J)
+!/DEBUGINIT                     write(740+IAPROC,*), ' After read 2002, case 11'
                     ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+!/DEBUGINIT                     write(740+IAPROC,*), 'Before read 2002, case 12'
+                     READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J)
+!/DEBUGINIT                     write(740+IAPROC,*), ' After read 2002, case 12'
                     ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+!/DEBUGINIT                     write(740+IAPROC,*), 'Before read 2002, case 13'
+                     READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J), HS(NH(J),J)
+!/DEBUGINIT                     write(740+IAPROC,*), ' After read 2002, case 13'
                     ELSE IF ( J .EQ. 4 ) THEN ! ice: HA and HD
-                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+!/DEBUGINIT                     write(740+IAPROC,*), 'Before read 2002, case 14'
+                     READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J)
+!/DEBUGINIT                     write(740+IAPROC,*), ' After read 2002, case 14'
                     END IF
                 END IF
               END DO
 !
             END DO
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 6'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
 ! ... End of loop, output
 !
@@ -1068,6 +1209,17 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
 !
+!      IF (MINVAL(VA) .LT. 0.) THEN
+!        WRITE(740+IAPROC,*) 'NEGATIVE ACTION SHELL 3c', MINVAL(VA)
+!        CALL FLUSH(740+IAPROC)
+!        CALL EXTCDE(665)
+!      ENDIF
+!      IF (SUM(VA) .NE. SUM(VA)) THEN
+!        WRITE(740+IAPROC,*) 'NAN in ACTION SHEL2', SUM(VA)
+!        CALL FLUSH(740+IAPROC)
+!        CALL EXTCDE(666)
+!      ENDIF
+
       IF ( .NOT. FLFLG ) THEN
 !
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
@@ -1080,6 +1232,7 @@
         END IF
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 7.  Model with input
+
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
 !
@@ -1133,12 +1286,21 @@
 !/T                        IDSTR(7), INFLAGS1(7), T2N,       &
 !/T                        IDSTR(8), INFLAGS1(8), TG0, TGN
 !
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 7'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
+
 
       DO J=JFIRST,8
 !
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL UPDATE', J
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
+
         IF ( INFLAGS1(J) ) THEN
 !
 ! 7.a.2 Check if update is needed
+!
             IF (.NOT.FLAGSC(J)) THEN 
               TTT(1) = TFN(1,J)
               TTT(2) = TFN(2,J)
@@ -1465,6 +1627,11 @@
         END DO ! J=JFIRST,8
 !
 ! update the next assimilation data time
+!
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 8'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 
       TDN = TTIME
       CALL TICK21 ( TDN, 1. )
@@ -1503,6 +1670,10 @@
       CALL W3WAVE ( 1, TIME0                                          &
 !/OASIS             ,.TRUE., .FALSE., MPI_COMM                        &
                   )
+
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 9'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+!/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
       ! The following lines prevents us from trying to read past the end 
       ! of the files. This feature existed in v3.14.
@@ -1546,6 +1717,10 @@
 !
 ! 7.e Check times
 !
+!/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 10'
+!/MEMCHECK      call getMallocInfo(mallinfos)
+
+
       DTTST  = DSEC21 ( TIME0 , TIMEN )
       IF ( DTTST .GT. 0. ) GOTO 700
 !

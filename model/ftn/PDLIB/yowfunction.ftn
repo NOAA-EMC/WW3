@@ -1,0 +1,150 @@
+!> \file yowpdlibmain.F90
+!> \brief initialization
+!> \author Thomas Huxhorn
+!> \date 2011-2012
+module yowfunction
+  CONTAINS
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE PDLIB_ABORT(istat)
+      IMPLICIT NONE
+      integer, intent(in) :: istat
+      Print *, 'Error with istat=', istat
+      CALL ABORT
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+  SUBROUTINE ComputeListNP_ListNPA_ListIPLG_Kernel
+    USE W3ODATMD, only : IAPROC, NAPROC
+    USE W3ADATMD, ONLY: MPI_COMM_WCMP
+    USE yowDatapool, only: rtype, istatus
+    USE yowNodepool, only: npa, np, iplg
+    USE yowNodepool, only: ListNP, ListNPA, ListIPLG
+    IMPLICIT NONE
+    INCLUDE "mpif.h"
+    integer IPROC, idx, IP, len, istat, sumNP, ierr
+    integer, allocatable :: iVect(:)
+    !
+    ! Computing ListNP and ListNPA
+    !
+    allocate(ListNP(NAPROC), ListNPA(NAPROC), iVect(2), stat=istat)
+    IF (istat /= 0) CALL PDLIB_ABORT(1)
+    IF (IAPROC .eq. 1) THEN
+      ListNP(1)=np
+      ListNPA(1)=npa
+      DO IPROC=2,NAPROC
+        CALL MPI_RECV(iVect,2,MPI_INTEGER, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+        ListNP(IPROC)=iVect(1)
+        ListNPA(IPROC)=iVect(2)
+      END DO
+      DO IPROC=2,NAPROC
+        CALL MPI_SEND(ListNP, NAPROC,MPI_INTEGER, iProc-1, 20, MPI_COMM_WCMP, ierr)
+        CALL MPI_SEND(ListNPA,NAPROC,MPI_INTEGER, iProc-1, 21, MPI_COMM_WCMP, ierr)
+      END DO
+    ELSE
+      iVect(1)=np
+      iVect(2)=npa
+      CALL MPI_SEND(iVect,2,MPI_INTEGER, 0, 19, MPI_COMM_WCMP, ierr)
+      CALL MPI_RECV(ListNP ,NAPROC,MPI_INTEGER, 0, 20, MPI_COMM_WCMP, istatus, ierr)
+      CALL MPI_RECV(ListNPA,NAPROC,MPI_INTEGER, 0, 21, MPI_COMM_WCMP, istatus, ierr)
+    END IF
+    deallocate(iVect)
+    !
+    ! ListIPLG
+    !
+    sumNP=sum(ListNPA)
+    allocate(ListIPLG(sumNP), stat=istat)
+    IF (istat /= 0) CALL PDLIB_ABORT(2)
+    IF (IAPROC .eq. 1) THEN
+      idx=0
+      DO IP=1,NPA
+        idx=idx+1
+        ListIPLG(IP)=iplg(IP)
+      END DO
+      DO IPROC=2,NAPROC
+        len=ListNPA(IPROC)
+        allocate(iVect(len), stat=istat)
+        IF (istat /= 0) CALL PDLIB_ABORT(3)
+        CALL MPI_RECV(iVect,len,MPI_INTEGER, iProc-1, 269, MPI_COMM_WCMP, istatus, ierr)
+        DO IP=1,len
+          idx=idx+1
+          ListIPLG(idx)=iVect(IP)
+        END DO
+        deallocate(iVect)
+      END DO
+      DO IPROC=2,NAPROC
+        CALL MPI_SEND(ListIPLG, sumNP,MPI_INTEGER, iProc-1, 271, MPI_COMM_WCMP, ierr)
+      END DO
+    ELSE
+      CALL MPI_SEND(iplg, npa,MPI_INTEGER, 0, 269, MPI_COMM_WCMP, ierr)
+      CALL MPI_RECV(ListIPLG,sumNP,MPI_INTEGER, 0, 271, MPI_COMM_WCMP, istatus, ierr)
+    END IF
+  END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+    SUBROUTINE ComputeListNP_ListNPA_ListIPLG
+    USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
+    USE yowDatapool, only: rtype, istatus
+    USE yowNodepool, only: npa, np, iplg
+    USE yowNodepool, only: ListNP, ListNPA, ListIPLG
+    IMPLICIT NONE
+    INCLUDE "mpif.h"
+    INTEGER sumNP, iProc, ierr, istat
+!    Print *, 'Before ComputeListNP_ListNPA_Kernel'
+    IF (IAPROC .le. NAPROC) THEN
+      CALL ComputeListNP_ListNPA_ListIPLG_Kernel    
+    END IF
+!    Print *, 'IAPROC=', IAPROC
+    IF (IAPROC .eq. 1) THEN
+!      Print *, 'Doing the send'
+      sumNP=sum(ListNPA)
+      DO iProc=NAPROC+1,NTPROC
+!        Print *, 'Before send 1, iProc=', iProc
+        CALL MPI_SEND(ListNP, NAPROC,MPI_INTEGER, iProc-1, 20, MPI_COMM_WAVE, ierr)
+!        Print *, 'Before send 2, iProc=', iProc
+        CALL MPI_SEND(ListNPA,NAPROC,MPI_INTEGER, iProc-1, 21, MPI_COMM_WAVE, ierr)
+!        Print *, 'Before send 3, iProc=', iProc
+        CALL MPI_SEND(ListIPLG, sumNP,MPI_INTEGER, iProc-1, 271, MPI_COMM_WAVE, ierr)
+      END DO
+    END IF
+    IF (IAPROC .gt. NAPROC) THEN
+!      Print *, 'Before receiving of data IAPROC=', IAPROC
+      allocate(ListNP(NAPROC), ListNPA(NAPROC), stat=istat)
+      CALL MPI_RECV(ListNP ,NAPROC,MPI_INTEGER, 0, 20, MPI_COMM_WAVE, istatus, ierr)
+      CALL MPI_RECV(ListNPA,NAPROC,MPI_INTEGER, 0, 21, MPI_COMM_WAVE, istatus, ierr)
+      sumNP=sum(ListNPA)
+      allocate(ListIPLG(sumNP), stat=istat)
+      CALL MPI_RECV(ListIPLG,sumNP,MPI_INTEGER, 0, 271, MPI_COMM_WAVE, istatus, ierr)
+    END IF
+    END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+  SUBROUTINE ComputeBoundaryInformation
+    use yowNodepool, only: ListNP, ListNPA, ListIPLG
+    USE W3GDATMD, ONLY: IOBP
+    USE W3ODATMD, only : IAPROC, NAPROC
+    IMPLICIT NONE
+    integer ListFirst(NAPROC), NbSend(NAPROC)
+    integer IPROC, eSend, IP, IP_glob, NPAloc
+    ListFirst=0
+    DO IPROC=2,NAPROC
+      ListFirst(iProc)=ListFirst(iProc-1) + ListNPA(iProc-1)
+    END DO
+    DO IPROC=1,NAPROC
+      NPAloc=ListNPA(IPROC)
+      eSend=0
+      DO IP=1,NPAloc
+        IP_glob=ListIPLG(IP + ListFirst(IPROC))
+        IF (IOBP(IP_glob) .eq. 1) THEN
+          eSend=eSend + 1
+        END IF
+      END DO
+      NbSend(IPROC)=eSend
+    END DO
+  END SUBROUTINE
+end module yowfunction

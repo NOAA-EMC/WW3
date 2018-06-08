@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2001 : Origination.                        ( version 2.00 )
@@ -32,6 +32,7 @@
 !/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
+!/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -622,6 +623,8 @@
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
                           DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
                           ICEFO, SPCO, NAPROC
+!/SETUP      USE W3WDATMD, ONLY: ZETA_SETUP
+!/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/MPI      USE W3ODATMD, ONLY: IRQPO2
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -711,14 +714,18 @@
 !
 ! Interpolate ice depth wind and current
 !
-        ICEFO(I) = 0
-        DO J=1, 4
-          ISEA = MAPFS(IY(J),IX(J))        
+        IF (.NOT. LPDLIB) THEN
+          ICEFO(I) = 0
+          DO J=1, 4
+            ISEA = MAPFS(IY(J),IX(J))
 !/DIST          JSEA = 1 + (ISEA-1)/NAPROC
 !/SHRD          JSEA = ISEA
-        
-          ICEFO(I) = ICEFO(I) + RD(J)*ICEF(JSEA)
-        END DO
+            ICEFO(I) = ICEFO(I) + RD(J)*ICEF(JSEA)
+          END DO
+        ELSE
+          ICEFO(I) = RD(1)*ICEF(IS(1)) + RD(2)*ICEF(IS(2)) +          &
+                   RD(3)*ICEF(IS(3)) + RD(4)*ICEF(IS(4))
+        END IF
 
         ICEO(I) = RD(1)*ICE(IS(1)) + RD(2)*ICE(IS(2)) +               &
                  RD(3)*ICE(IS(3)) + RD(4)*ICE(IS(4))
@@ -728,6 +735,10 @@
 !
         DPO(I) = RD(1)*DW(IS(1)) + RD(2)*DW(IS(2)) +                  &
                  RD(3)*DW(IS(3)) + RD(4)*DW(IS(4))
+!/SETUP        DPO(I) = RD(1)*ZETA_SETUP(IS(1)) +                     &
+!/SETUP                 RD(2)*ZETA_SETUP(IS(2)) +                     &
+!/SETUP                 RD(3)*ZETA_SETUP(IS(3)) +                     &
+!/SETUP                 RD(4)*ZETA_SETUP(IS(4))
 !
         WNDX   = RD(1) * UA(IS(1)) * COS(UD(IS(1))) +                 &
                  RD(2) * UA(IS(2)) * COS(UD(IS(2))) +                 &
@@ -928,6 +939,7 @@
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
                           GRDID, ICEO, ICEHO, ICEFO
+!/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1070,11 +1082,13 @@
              IL(I) = 0
              WRITE (NDSOP)                                            &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
+!/SETUP             ZET_SETO(I),                                      &
                     ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
                     ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
           ELSE
              READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
+!/SETUP             ZET_SETO(I),                                      &
                     ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
                     ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
           END IF

@@ -1,12 +1,13 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3ADATMD
+!/MEMCHECK        USE MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Jul-2017 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -35,6 +36,7 @@
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    01-May-2017 : Adds directional MSS parameters     ( version 6.02 )
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
+!/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -475,6 +477,7 @@
 !/MPI                                 WW3_FIELD_VEC, WW3_SPEC_VEC,         &
 !/MPI                                 NRQSG1 = 0, NRQSG2, IBFLOC, ISPLOC,  &
 !/MPI                                 NSPLOC
+!/PDLIB      INTEGER               :: NBFIELD, PDLIB_MPI_TYPE
 !/MPI        INTEGER               :: BSTAT(MPIBUF), BISPL(MPIBUF)
 !/MPI        INTEGER, POINTER      :: IRQSG1(:,:), IRQSG2(:,:)
 !/MPI        REAL, POINTER         :: GSTORE(:,:), SSTORE(:,:)
@@ -594,6 +597,9 @@
       INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
       REAL, POINTER           :: ALPHA(:,:)
       LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
+
+!/MEMCHECK      type(MallInfo_t)        :: mallinfos
+
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -652,6 +658,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS
       USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: IAPROC
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -792,6 +799,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY : LPDLIB
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
                           NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
                           USSPF, GTYPE, UNGTYPE
@@ -812,7 +820,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: JGRID, NXXX
+      INTEGER                 :: JGRID, NXXX, NSEAL_tmp
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3DIMA')
@@ -820,6 +828,10 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Test input and module status
 !
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 0'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
       IF ( PRESENT(D_ONLY) ) THEN
           FL_ALL = .NOT. D_ONLY
         ELSE
@@ -845,15 +857,19 @@
 !
       JGRID  = IGRID
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 1'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !     Call W3SETA to assure of pointes FLCUR an FLWND
 !
       CALL W3SETA ( IMOD, NDSE, NDST )
-!
-!/SHRD      NSEALM = NSEA
-!/DIST      NSEALM = 1 + (NSEA-1)/NAPROC
+
+! 
+!AR: Check this below more ... 
       NXXX   = NSEALM * NAPROC
 !
 !     Output and input parameteres by output type
@@ -874,6 +890,10 @@
                  WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
                  WADATS(IMOD)%AS(0:NSEA) , STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 !     Water level WLV stored in W3WDATMD
 !     Ice concentration ICE stored in W3WDATMD
@@ -886,6 +906,9 @@
 !    are allocated in W3MPIO only as needed to keep the memory
 !    footprint down.
 !
+      IF (NSEALM .eq. 0) THEN
+        NSEALM=NSEA
+      END IF
       ALLOCATE ( WADATS(IMOD)%HS   (NSEALM), WADATS(IMOD)%WLM (NSEALM), &
                  WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM), &
                  WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM), &
@@ -917,17 +940,25 @@
       WADATS(IMOD)%HMAXD = UNDEF
       WADATS(IMOD)%HCMAXE= UNDEF
       WADATS(IMOD)%HCMAXD= UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! 3) Frequency-dependent standard parameters
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
 !                    and read by w3iogr, which is called before W3DIMA. 
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before the EF allocation'
+!/DEBUGINIT      WRITE(740+IAPROC,*) 'E3DF=', E3DF(1,1)
       IF (  E3DF(1,1).GT.0 ) THEN
+!/DEBUGINIT        WRITE(740+IAPROC,*) 'Now the allocation'
           ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)),    &
                    STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+!/DEBUGINIT      FLUSH(740+IAPROC)
       IF (  E3DF(1,2).GT.0 ) THEN
           ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)),  &
                    STAT=ISTAT )
@@ -954,6 +985,10 @@
       IF (  E3DF(1,3).GT.0 ) WADATS(IMOD)%STH1M   = UNDEF
       IF (  E3DF(1,4).GT.0 ) WADATS(IMOD)%TH2M    = UNDEF
       IF (  E3DF(1,5).GT.0 ) WADATS(IMOD)%STH2M   = UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 4'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 
 !
 ! 4) Spectral Partitions parameters
@@ -1003,6 +1038,11 @@
       WADATS(IMOD)%TAUWNX   = UNDEF
       WADATS(IMOD)%TAUWNY   = UNDEF
       WADATS(IMOD)%WHITECAP = UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 5'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
 !
 ! 6) Wave-ocean layer
 !
@@ -1061,6 +1101,10 @@
       IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
       IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
       IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 6'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! 7) Wave-bottom layer
 !
@@ -1078,6 +1122,10 @@
       WADATS(IMOD)%BEDFORMS = UNDEF
       WADATS(IMOD)%PHIBBL = UNDEF
       WADATS(IMOD)%TAUBBL = UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 7'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! 8) Spectrum parameters
 !
@@ -1093,6 +1141,9 @@
       WADATS(IMOD)%MSCX   = UNDEF
       WADATS(IMOD)%MSCY   = UNDEF
       WADATS(IMOD)%MSCD   = UNDEF
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 8'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! 9) Numerical diagnostics
 !
@@ -1109,6 +1160,10 @@
       WADATS(IMOD)%CFLXYMAX = UNDEF
       WADATS(IMOD)%CFLTHMAX = UNDEF
       WADATS(IMOD)%CFLKMAX  = UNDEF
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 9'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! 10) User defined
 !
@@ -1125,6 +1180,9 @@
 !/IC3     ALLOCATE (WADATS(IMOD)%IC3WN_I(0:NK+1,0:300), STAT=ISTAT )
 !/IC3     CHECK_ALLOC_STATUS ( ISTAT )
 
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 10'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
       IF ( FL_ALL ) THEN
 !
@@ -1159,15 +1217,34 @@
                      WADATS(IMOD)%ATRNY(NY*NX,-1:1) , STAT=ISTAT      )
           CHECK_ALLOC_STATUS ( ISTAT )
 !
-          ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,                      &
-                     WADATS(IMOD)%DDDY(NY,NX)  ,                      &
-                     WADATS(IMOD)%DCDX(0:NK+1,NY,NX)  ,               &
-                     WADATS(IMOD)%DCDY(0:NK+1,NY,NX)  ,               &
-                     WADATS(IMOD)%DCXDX(NY,NX) ,                      &
-                     WADATS(IMOD)%DCYDX(NY,NX) ,                      &
-                     WADATS(IMOD)%DCXDY(NY,NX) ,                      &
-                     WADATS(IMOD)%DCYDY(NY,NX) , STAT=ISTAT           )
+          IF (.NOT. LPDLIB) THEN
+            ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,                      &
+                       WADATS(IMOD)%DDDY(NY,NX)  ,                      &
+                       WADATS(IMOD)%DCDX(0:NK+1,NY,NX)  ,               &
+                       WADATS(IMOD)%DCDY(0:NK+1,NY,NX)  ,               &
+                       WADATS(IMOD)%DCXDX(NY,NX) ,                      &
+                       WADATS(IMOD)%DCYDX(NY,NX) ,                      &
+                       WADATS(IMOD)%DCXDY(NY,NX) ,                      &
+                       WADATS(IMOD)%DCYDY(NY,NX) , STAT=ISTAT           )
+          ELSE
+            ALLOCATE ( WADATS(IMOD)%DDDX(NY,NSEAL)  ,                      &
+                       WADATS(IMOD)%DDDY(NY,NSEAL)  ,                      &
+                       WADATS(IMOD)%DCDX(0:NK+1,NY,NSEAL)  ,               &
+                       WADATS(IMOD)%DCDY(0:NK+1,NY,NSEAL)  ,               &
+                       WADATS(IMOD)%DCXDX(NY,NSEAL) ,                      &
+                       WADATS(IMOD)%DCYDX(NY,NSEAL) ,                      &
+                       WADATS(IMOD)%DCXDY(NY,NSEAL) ,                      &
+                       WADATS(IMOD)%DCYDY(NY,NSEAL) , STAT=ISTAT           )
+          ENDIF
           CHECK_ALLOC_STATUS ( ISTAT )
+          WADATS(IMOD)%DDDX = 0.
+          WADATS(IMOD)%DDDY = 0.
+          WADATS(IMOD)%DCDX = 0.
+          WADATS(IMOD)%DCDY = 0.
+          WADATS(IMOD)%DCXDX = 0.
+          WADATS(IMOD)%DCYDX = 0.
+          WADATS(IMOD)%DCXDY = 0.
+          WADATS(IMOD)%DCYDY = 0.
 !
 !/SMC          ALLOCATE ( WADATS(IMOD)%DHDX(NSEA) ,                        &
 !/SMC                     WADATS(IMOD)%DHDY(NSEA) ,                        &
@@ -1223,6 +1300,11 @@
         END IF
 !
       WADATS(IMOD)%AINIT  = .TRUE.
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 11'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
 !
 !/T      WRITE (NDST,9001)
 !
@@ -1230,6 +1312,11 @@
 ! 3.  Point to allocated arrays
 !
       CALL W3SETA ( IMOD, NDSE, NDST )
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 12'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
 !
 !/T      WRITE (NDST,9002)
 !
@@ -1242,6 +1329,10 @@
 ! 5.  Restore previous grid setting if necessary
 !
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
+ 
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA END'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
       RETURN
 !
@@ -1335,8 +1426,6 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-!/SHRD      NSEALM = NSEA
-!/DIST      NSEALM = 1 + (NSEA-1)/NAPROC
       NXXX   = NSEALM * NAPROC
 !
       IF ( OUTFLAGS( 2, 1) ) THEN
@@ -1995,6 +2084,10 @@
 ! 5.  Restore previous grid setting if necessary
 !
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
+
+!/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3XDMA'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
       RETURN
 !

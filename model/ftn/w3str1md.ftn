@@ -290,7 +290,6 @@
 !     XISLN :     log of XIS
 !
 !/S      INTEGER, SAVE           :: IENT = 0
-      LOGICAL, SAVE           :: FIRST = .TRUE.
       INTEGER I1, I2, ID, IDDUM, II, IS, ISM, ISM1, ISMAX, &
               ISP, ISP1, ITH, IK
       REAL    AUX1, AUX2, BIPH, C0, CM, DEP, DEP_2, DEP_3, E0, EM, HS, &

@@ -1,0 +1,51 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.17 Test script for WW-III, unstructured grid.                     #
+# Solvers:                                                                  #
+#  > Explicit                                                               #
+#      > Conventional method  (ww3_grid_a.inp)                              #
+#      > block explicit  (ww3_grid_b.inp)                                   #
+#  > Implicit (domain decomposition) (ww3_grid_c.inp)                       #
+# Grid:                                                                     # 
+# Shinnecock Inlet                                                          #
+# --------------------------------------------------------------------------#
+# This grid is taken from an ADCIRC example problem, see:                   #
+#  http://adcirc.org/home/documentation/example-problems/shinnecock-inlet-ny#
+#  -with-tidal-forcing-example/                                             #
+# "This example problem was developed as part of study of tidal hydrodynami-#
+# -cs in the vicinity of Shinnecock Inlet, NY, at the U.S. Army Corps of En-#
+# -gineers Coastal Hydraulics Laboratory                                    #
+#   (Williams et al., 1998; Morang, 1999; Miliello et al., 2000)."          #
+#Grid Sizes                                                                 #
+#===========================================================================#
+# #of Nodes |  # of Elements  |  lowest res  |  # of open boundary nodes    #
+#---------------------------------------------------------------------------#
+#   3,070   |      5,855      |    ~75 m     |            75                #
+#---------------------------------------------------------------------------#
+#                                                                           #
+#  Field Forcing: Water level (ASCII), Current (NetCDF) and Wind (ASCII)    #
+#  Lateral Forcing: open boundary condtion (ASCII)                          #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#F90 NOGRB TRKNC NOPA LRB4 DIST MPI SCRIP MLIM PR3 UQ NC4 FLX0 PDLIB LN1 ST4#
+#STAB0 NL1 BT4 DB1 TR0 BS0 IS0 IC0 REF0 XX0 WCUR WNT2 WNX1 RWND CRT1 CRX1 O0#
+# O1 O2 O2a O2b O2c O3 O4 O5 O6 O7                                          #
+#                                                                           #
+#  -the domain decomposition and implicit scheme need PDLIB switch          #
+#                                                                           #
+#   The choice of propagation schemes for unstructured grids is done via    #
+#   namelists.                                                              #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test -c Intel -S -s MPI -s NO_PDLIB -w work_a -g a -f -p       #
+#   mpirun -n 24 ../model ww3_tp2.17                                        #
+#                                                                           #
+#                   Ali Abdolali, Aron Roland, Jessica Meixner, May 2018    #
+#                                                   Last Mod : May 2018     #
+#                                                                           #
+#############################################################################

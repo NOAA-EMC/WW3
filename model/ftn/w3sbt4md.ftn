@@ -546,7 +546,7 @@
       DO IK=1, NK
         CONST2=DDEN(IK)/CG(IK) &         !Jacobian to get energy in band
                *GRAV/(SIG(IK)/WN(IK))    ! coefficient to get momentum
-        DSUM(IK)=-FW*UORB*CBETA(IK) !*WSUB(ISUB)
+        DSUM(IK)=-FW*UORB*CBETA(IK)      !*WSUB(ISUB)
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
           D(IS)=DSUM(IK)

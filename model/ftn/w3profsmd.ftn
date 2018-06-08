@@ -186,6 +186,11 @@
       VLCFLX = 0.
       VLCFLY = 0.
 !
+! 1.c Set depth 
+!
+      CALL SETDEPTH
+!
+!
 ! 2.  Calculate velocities ---------------- *
 ! 
       DO ISEA=1, NSEA
@@ -266,6 +271,7 @@
 !/
 !/    01-Mar-2011 : Origination.                        ( version 3.14 )
 !/    20-Jun-2013 : Computes only up to NKCFL for tests ( version 4.10 )
+!/     1-Jun-2017 : Rewrite routine for performance     ( version 5.xx ) 
 !/
 !  1. Purpose :
 !
@@ -390,23 +396,24 @@
 !
 ! 2.  Calculate advection velocities: group speed ---------------- *
 ! 
-          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
-            DO J=1,3
-              IP2=TRIGP(IE,J)
-              ISEA2=MAPFS(IP2)
-              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
-              C(IP2,2) = CSIN * CG(IK,ISEA2)
+!AR: needs to be rewritten for speed ... single node computation is costly ... 
+!          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+!            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
+!            DO J=1,3
+!              IP2=TRIGP(IE,J)
+!              ISEA2=MAPFS(IP2)
+!              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
+!              C(IP2,2) = CSIN * CG(IK,ISEA2)
 !/MGP              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
 !/MGP              C(IP2,2) = C(IP2,2) - CCURY*VGY
-              IF ( FLCUR ) THEN   
-                IF (IOBP(IP2) .EQ. 1) THEN                                  
-                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
-                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
-                  END IF    
-                END IF  ! end of ( FLCUR )
-              END DO
-            END DO
+!              IF ( FLCUR ) THEN   
+!                IF (IOBP(IP2) .EQ. 1) THEN                                  
+!                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
+!                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
+!                  END IF    
+!                END IF  ! end of ( FLCUR )
+!              END DO
+!            END DO
 !
 !3.     Calculate K-Values and contour based quantities ...
 !
@@ -498,7 +505,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBPA, XYB
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -602,11 +609,11 @@
            DO IP = 1, NX
              DTMAXEXP = 1E10 ! initialize to large number 
 ! Does take into account boundary points in CFL calculation 
-             IF (IOBP(IP) .EQ. 1) THEN
+!             IF (IOBP(IP) .EQ. 1) THEN
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
                !IF (IK .EQ. 1 .AND. DT/DTMAXEXP .GT. 1) WRITE(12312,*) IP, IOBP(IP), DT/DTMAXEXP
-               ENDIF
+!               ENDIF
              END DO ! IP
 !/T! Test output
 !/T              WRITE(994,'(A)') 'dir.    Node    step needed step used long.   lat.  depth'
@@ -646,8 +653,8 @@
 ! IOBPD=0  : waves coming from land
 ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) &
-                       + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values 
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)*IOBDP(IP)) 
+                       !+ AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values 
                END DO
 !
              AC = U
@@ -836,6 +843,7 @@
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
              DO IP = 1, NX
+!               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(IOBPD(ITH,IP)))) ! This corrects the CFL on the boundary ... I have omitted this by now due to increased oszillations when using all physics ...
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
@@ -1226,7 +1234,6 @@
 !/ ------------------------------------------------------------------- /  
 
       SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
-     
 !/
 !/
 !/                  +-----------------------------------+
@@ -1512,6 +1519,82 @@
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
       END SUBROUTINE W3XYPFSFCT2 
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE SETDEPTH
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        01-June-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-June-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : Init pdlib part
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      USE CONSTANTS, ONLY : LPDLIB
+      USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+      USE W3ADATMD, ONLY: DW
+
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+!
+      INTEGER :: JSEA, ISEA, IX, IP
+      REAL*8, PARAMETER :: DTHR = 10E-6
+
+      IOBDP = 1
+      DO IP=1,NX
+        IF (DW(IP) .LT. DMIN + DTHR) IOBDP(IP) = 0
+        !WRITE(*,*) ip, ip_glob, MAPSTA(1,IP_glob), IOBP(IP_glob), DW(ISEA), DMIN
+      END DO
+
+     END SUBROUTINE
 
 !/ ------------------------------------------------------------------- /
         
@@ -3901,7 +3984,7 @@ END MODULE W3PROFSMD
 !     ipar(2) can be 0, 1, 2, please don't use 3
 !
       if (ipar(2).gt.2) then
-         print *, 'I can not do both left and right preconditioning.'
+         WRITE(*,*) 'I can not do both left and right preconditioning.'
          return
       endif
 
@@ -3933,17 +4016,17 @@ END MODULE W3PROFSMD
          goto 10
       else if (ipar(1).le.0) then
          if (ipar(1).eq.0) then
-!            print *, 'Iterative sovler has satisfied convergence test.'
+!            WRITE(*,*) 'Iterative sovler has satisfied convergence test.'
          else if (ipar(1).eq.-1) then
-             print *, 'Iterative solver has iterated too many times.'
+             WRITE(*,*) 'Iterative solver has iterated too many times.'
          else if (ipar(1).eq.-2) then
-            print *, 'Iterative solver was not given enough work space.'
-            print *, 'The work space should at least have ', ipar(4), &
+            WRITE(*,*) 'Iterative solver was not given enough work space.'
+            WRITE(*,*) 'The work space should at least have ', ipar(4), &
      &           ' elements.'
          else if (ipar(1).eq.-3) then
-            print *, 'Iterative sovler is facing a break-down.'
+            WRITE(*,*) 'Iterative sovler is facing a break-down.'
          else
-            print *, 'Iterative solver terminated. code =', ipar(1)
+            WRITE(*,*) 'Iterative solver terminated. code =', ipar(1)
          endif
       endif
       end

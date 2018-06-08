@@ -72,7 +72,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-03-19'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-06-08'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -88,7 +88,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2014 |
+!/                  | Last update :         05-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -139,6 +139,8 @@
 !/    06-Mar-2014 : Writes out a help message on error  ( version 4.18 )
 !/    10-Mar-2014 : Add IC2 parameters                  ( version 5.01 )
 !/    29-May-2014 : Add IC3 parameters                  ( version 5.01 )
+!/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
+!/                  for unstructured grids              ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -231,6 +233,8 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
+!/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
+!/MEMCHECK      USE MallocInfo_m
 !
       IMPLICIT NONE
 !
@@ -273,6 +277,13 @@
 !/
 !/S      CALL STRACE (IENT, 'W3IOGR')
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 1'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
+
       MESSAGE =(/ '     MOD DEF FILE WAS GENERATED WITH A DIFFERENT    ', &
                   '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.  ', &
                   '     MAKE SURE WW3_GRID IS COMPILED WITH SAME SWITCH', &
@@ -355,6 +366,8 @@
       FNAMEP = TNAMEP
       FNAMEG = TNAMEG
       FNAMEI = TNAMEI
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 2'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      FLTEST = .TRUE.
 !/NL2      FLSNL2 = .TRUE.
@@ -379,6 +392,8 @@
           CALL EXTCDE ( 1 )
         END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 3'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
       WRITE  = INXOUT .EQ. 'WRITE'
 !
 !/T      WRITE (NDST,9000) INXOUT, WRITE, NDSM, IGRD, TEMPXT
@@ -386,12 +401,18 @@
       CALL W3SETO ( IGRD, NDSE, NDST )
       CALL W3SETG ( IGRD, NDSE, NDST )
       FILEXT = TEMPXT
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 4'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
 ! open file ---------------------------------------------------------- *
 !
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
+!AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:J)//'mod_def.'//FILEXT(:I)
       IF ( WRITE ) THEN
           OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
                 FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
@@ -401,6 +422,8 @@
         ENDIF
 !
       REWIND ( NDSM )
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 5, WRITE=', WRITE
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 ! Dimensions and test information --------------------------------------
 !
@@ -534,11 +557,19 @@
 !/T          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
 !
         ENDIF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 6'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
 !
 ! Parameters in modules  --------------------------------------------- *
 !                                                   Module W3GDAT GRID
 !
       ALLOCATE ( MAPTMP(NY,NX) )
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
       IF ( WRITE ) THEN
           MAPTMP = MAPSTA + 8*MAPST2
@@ -556,12 +587,27 @@
                    XGRD, YGRD
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
-                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
+                FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
+                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
+                NTRI,COUNTOT, COUNTRI, NNZ,                           &
+                B_JGS_TERMINATE_MAXITER,                              &
+                B_JGS_TERMINATE_DIFFERENCE,                           &
+                B_JGS_TERMINATE_NORM,                                 &
+                B_JGS_LIMITER,                                        &
+                B_JGS_BLOCK_GAUSS_SEIDEL,                             &
+                B_JGS_USE_JACOBI,                                     &
+                B_JGS_MAXITER,                                        &
+                B_JGS_PMIN,                                           &
+                B_JGS_DIFF_THR,                                       &
+                B_JGS_NORM_THR,                                       &
+                B_JGS_NLEVEL,                                         &
+                B_JGS_SOURCE_NONLINEAR
               WRITE (NDSM)                                            &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
-                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
-                POS_CELL, IOBP, IOBPA, IOBPD, IAA, JAA, POSI
+                LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
+                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
+                POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
             END SELECT !GTYPE
 !
           WRITE (NDSM)                                                &
@@ -595,13 +641,23 @@
 !!        WRITE(NDSM)                                                 &
 !!             COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.1'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.2'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
           IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
 !/SMC                                 , NCel, NUFc, NVFc, NRLv         &
 !/ARC                                 , NARC, NBAC, NSPEC              &
                                       )
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.3'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 ! Reads different kind of information depending on grid type
 !
@@ -622,23 +678,64 @@
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
             CASE (UNGTYPE) 
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.4'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
-                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
+                FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
+                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
+                NTRI,COUNTOT, COUNTRI, NNZ,                           &
+                B_JGS_TERMINATE_MAXITER,                              &
+                B_JGS_TERMINATE_DIFFERENCE,                           &
+                B_JGS_TERMINATE_NORM,                                 &
+                B_JGS_LIMITER,                                        &
+                B_JGS_BLOCK_GAUSS_SEIDEL,                             &
+                B_JGS_USE_JACOBI,                                     &
+                B_JGS_MAXITER,                                        &
+                B_JGS_PMIN,                                           &
+                B_JGS_DIFF_THR,                                       &
+                B_JGS_NORM_THR,                                       &
+                B_JGS_NLEVEL,                                         &
+                B_JGS_SOURCE_NONLINEAR
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.5, GUGINIT=', GUGINIT
+!/DEBUGIOGR     FLUSH(740+IAPROC)
               IF (.NOT. GUGINIT) THEN
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'Before call to W3DIMUG from W3IOGR'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
                 CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
-                END IF
+              END IF
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
-                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
-                POS_CELL, IOBP, IOBPA, IOBPD, IAA, JAA, POSI
+                LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
+                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
+                POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6.4'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
                 XGRD(1,:)=XYB(:,1)
                 YGRD(1,:)=XYB(:,2)
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.7'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
             END SELECT !GTYPE
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.8'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
           IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST ) 
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.9'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.10'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     NLvCel, NLvUFc, NLvVFc
@@ -651,12 +748,18 @@
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     CTRNX,  CTRNY,  CLATF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.11'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
           MAPSTA = MOD(MAPTMP+2,8) - 2
           MAPST2 = (MAPTMP-MAPSTA) / 8
           MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.12'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
           IF ( TRFLAG .NE. 0 ) THEN
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
             END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.13'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
@@ -664,15 +767,31 @@
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
                IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC,  &
                IICEDDISP, IICEHDISP, IICEFDISP 
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.15'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/SEC1         READ (NDSM) NITERSEC1
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.16'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/RTD !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
 !/RTD          READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
 !/RTD
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.17'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
         END IF
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
+
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 8'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
 !/T      WRITE (NDST,9011) 'MAPSTA'
@@ -698,6 +817,8 @@
 !/T            END DO
 !/T        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 9'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
       DEALLOCATE ( MAPTMP )
 !
 !/T      WRITE (NDST,9015) DTCFL, DTCFLI, DTMAX, DTMIN,               &
@@ -723,6 +844,8 @@
                XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
                FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
         END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 10'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      WRITE (NDST,9030) (MAPWN(I),I=1,8), (MAPTH(I),I=1,8), DTH*RADE, &
 !/T             (TH(I)*RADE,I=1,4), (ESIN(I),I=1,4), (ECOS(I),I=1,4),    &
@@ -744,6 +867,8 @@
           CLOSE (NDSM)
           RETURN
         END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 11'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 ! Parameters for output boundary points ------------------------------ *
 !                                                 Module W3ODATMD OUT5
@@ -756,6 +881,8 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                XBPO, YBPO, RDBPO, IPBPO, ISBPO
         END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 12'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      WRITE (NDST,9020)
 !/T      DO I=1, NFBPO
@@ -777,6 +904,8 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
         END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 13'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      WRITE (NDST,9025) IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
 !
@@ -820,6 +949,8 @@
 !/IC4         READ   (NDSM)                                                &
 !/IC4                IC4PARS,IC4_KI,IC4_FC
         END IF
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 14'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
 !/T                        FACSD, FHMAX
@@ -849,6 +980,8 @@
 !
 !/FLX3      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 15'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/FLX4      IF ( WRITE ) THEN
 !/FLX4          WRITE (NDSM)                            FLX4A0
 !/FLX4        ELSE
@@ -888,6 +1021,8 @@
 !/ST2          FLINP  = .TRUE.
 !/ST2        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 16'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/ST2      IF ( FLTEST ) WRITE (NDST,9050)                            &
 !/ST2           ZWIND, FSWELL, CDSA0, CDSA1, CDSA2,                   &
 !/ST2           SDSALN, CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, &
@@ -913,6 +1048,8 @@
 !/ST3            END IF
 !/ST3        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 17'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/ST4      IF ( WRITE ) THEN
 !/ST4          CALL INSIN4(.TRUE.)
 !/ST4          WRITE (NDSM)                                           &
@@ -944,6 +1081,8 @@
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 18'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/ST6      IF ( WRITE ) THEN
 !/ST6          WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
 !/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1
@@ -955,6 +1094,8 @@
 !
 ! ... Nonlinear interactions
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 19'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/NL1      IF ( WRITE ) THEN
 !/NL1          WRITE (NDSM)                                           &
 !/NL1                SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
@@ -978,6 +1119,8 @@
 !/NL2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
 !/NL2        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 20'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/NL2      IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
 !/NL2      IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
 !
@@ -1004,6 +1147,8 @@
 !/NL3                       SNLL, SNLM, SNLT, SNLCD, SNLCS
 !/NL3        END IF
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 21'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/NL3      IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
 !/NL3                                      SNLSFD, SNLSFS
 !/NL3      IF ( FLTEST ) THEN
@@ -1040,6 +1185,8 @@
 !
 ! Layered barriers needed for file management in xnl_init
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 22'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !/MPI      IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
 !/MPI          DO IP=1, IAPROC-1
 !/MPI            CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
@@ -1073,6 +1220,12 @@
 !
 ! ... Depth induced breaking ...
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 23'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+
 !/DB1      IF ( WRITE ) THEN
 !/DB1          WRITE (NDSM)                                           &
 !/DB1                 SDBC1, SDBC2, FDONLY
@@ -1101,6 +1254,8 @@
 !
 ! Propagation scheme ------------------------------------------------- *
 !                                                 Module W3GDATMD PROP
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 24'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
 !
 !/PR2      IF ( WRITE ) THEN
 !/PR2          WRITE (NDSM) DTME, CLATMN
@@ -1145,6 +1300,8 @@
 ! Interpolation tables ( fill locally ) ----------------------------- *
 !                                                      Module W3DISPMD
 !
+!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 25'
+!/DEBUGIOGR     FLUSH(740+IAPROC)
       IF ( .NOT.WRITE .AND. .NOT.FLDISP ) THEN
 !/T          WRITE (NDST,9070)
           CALL DISTAB
@@ -1152,6 +1309,10 @@
         END IF
 !
       CLOSE ( NDSM )
+
+!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
+!/MEMCHECK       call getMallocInfo(mallinfos)
+!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
       RETURN
 !

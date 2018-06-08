@@ -73,8 +73,6 @@
       REAL,    PARAMETER      :: TAUWMAX = 2.2361 !SQRT(5.)
       REAL, DIMENSION(:)   , ALLOCATABLE :: XSTRESS,YSTRESS
 !/
-      LOGICAL, SAVE , PRIVATE :: FIRST = .TRUE.
-!/
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS, WNMEAN,     &

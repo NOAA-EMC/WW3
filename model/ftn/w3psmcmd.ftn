@@ -652,7 +652,7 @@
 !/                  | Refraction and great-cirle turning |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:    23 Mar 2016      |
+!/                  | Last modified:    06-Jun-2018      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Origination.                        ( version 1.00 )
@@ -662,6 +662,7 @@
 !/    26-Jul-2011 : Tidy up refraction schemes.         ( version 1.40 )
 !/    28-Jul-2011 : Finalise with old refraction.       ( version 1.50 )
 !/    23-Mar-2016 : Add current option in refraction.   ( version 2.30 )
+!/    06-Jun-2018 : Add DEBUGDCXDX                      ( version 6.04 )
 !/
 !/
 !  1. Purpose :
@@ -2319,6 +2320,7 @@
        CXCY(1:NSEA)= CX(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
+!/DEBUGDCXDX        WRITE(740+IAPROC,*) 'Before assigning DCXDX to ZERO'
        DCXDX = 0.0
        DCXDY = 0.0
 
@@ -2351,6 +2353,7 @@
            DCXDY(j:j+m-1,i:i+k-1)  = GrHy(n)
 
        END DO
+!/DEBUGDCXDX        WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
 
 !!   Assign current CY speed to CXCY and set negative cells.
 !      CXCY(-9:0) = 0.0
