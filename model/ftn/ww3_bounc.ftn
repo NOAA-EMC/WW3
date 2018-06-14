@@ -7,14 +7,16 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Oct-2016 |
+!/                  | Last update :         15-May-2018 |
 !/                  +-----------------------------------+
 !/
-!/    24-May-2013 : Adaptation from ww3_bound.ftn    ( version 4.08 )
-!/     1-Apr-2015 : Add checks on lat lon xfr        ( version 5.05 )
-!/    11-May-2015 : Allow use of cartesian grids     ( version 5.08 )
-!/    17-Aug-2016 : Bug correction on RDBPO          ( version 5.10 ) 
-!/    20-Oct-2016 : Error statement updates          ( version 5.15 )
+!/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
+!/     1-Apr-2015 : Add checks on lat lon xfr           ( version 5.05 )
+!/    11-May-2015 : Allow use of cartesian grids        ( version 5.08 )
+!/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 ) 
+!/    20-Oct-2016 : Error statement updates             ( version 5.15 )
+!/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
+!/    15-May-2018 : Add namelist feature                ( version 6.XX )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -95,7 +97,7 @@
       USE CONSTANTS
       USE W3WDATMD, ONLY: W3NDAT, W3SETW
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
-      USE W3ODATMD, ONLY: W3NOUT, W3SETO, FLBPI
+      USE W3ODATMD, ONLY: W3NOUT, W3SETO, FNMPRE
 
       USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, GNAME, W3NMOD, W3SETG,     &
                           NSEA, MAPSTA, XYB, GTYPE, XGRD, YGRD, X0, Y0, &
@@ -105,6 +107,7 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3TIMEMD
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_SPHERE
+      USE W3NMLBOUNCMD
       USE NETCDF
 !/S      USE W3SERVMD, ONLY : STRACE
 
@@ -117,46 +120,43 @@
 !/ Local parameters
 !/
 
-! character
-      CHARACTER                           :: COMSTR*1, LINE*512
-      CHARACTER*5                         :: INXOUT
-      CHARACTER*10                        :: VERTEST  ! = 'III  1.03 '
-      CHARACTER*32                        :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
-      CHARACTER*512, ALLOCATABLE          :: SPECFILES(:)
-      CHARACTER*512                       :: FILENAME
-      CHARACTER*14                        :: TIME_STR
-
-! index
-      INTEGER                             :: IX, IY, ISEA, I,JJ,IP,IP1,J,IT,              &
-                                             NDSI,NDSM, NDSI2,NDSS,NDSB, NDSC, NDSTRC,    &
-                                             NTRACE, NK1,NTH1,NT1, NSPEC1, NBI, NBI2,     &
-                                             NKI, NTHI, NTI, NBO, NBO2, IERR, INTERP,     &
-                                             ILOOP, IFMIN, IFMIN2, IFMAX, VERBOSE, IBO
+      TYPE(NML_BOUND_T)       :: NML_BOUND
+!
+      INTEGER                 :: IX, IY, ISEA, I,JJ,IP,IP1,J,IT,       &
+                                 NDSI,NDSM, NDSI2,NDSS,NDSB, NDSC,     &
+                                 NDSTRC, NTRACE, NK1,NTH1,NT1, NSPEC1, &
+                                 NBI, NBI2, NKI, NTHI, NTI, NBO, NBO2, &
+                                 IERR, INTERP, ILOOP, IFMIN, IFMIN2,   &
+                                 IFMAX, VERBOSE, IBO, IRET, ICODE, NDSL
+      INTEGER                 :: TIME(2), TIME2(2), VARID(12),         &
+                                 REFDATE(8), CURDATE(8)
 !/S      INTEGER, SAVE           :: IENT = 0
-
-! arrays
-      INTEGER                             :: TIME2(2)
-      REAL, ALLOCATABLE                   :: SPEC2D(:,:,:,:), LATS(:), LONS(:)
-      REAL, ALLOCATABLE                   :: FREQ(:), THETA(:)
-      REAL                                :: FR1I, TH1I
-      REAL, ALLOCATABLE                   :: XBPI(:), YBPI(:), RDBPI(:,:),        &
-                                             XBPO(:), YBPO(:), RDBPO(:,:),        &
-                                             ABPIN(:,:), ABPIN2(:,:,:) 
-      INTEGER, ALLOCATABLE                :: IPBPI(:,:), IPBPO(:,:)
-      REAL                                :: DMIN, DIST, DMIN2, COS1, DLON, DLAT, DLA, DLO
-
-! netCDF
-      INTEGER                             :: iret, ICODE, varid(12)
-      CHARACTER, ALLOCATABLE              :: station(:,:)
-      INTEGER, ALLOCATABLE                :: ncid(:), dimid(:,:), dimln(:,:)
-      DOUBLE PRECISION, ALLOCATABLE       :: times(:)
-      CHARACTER(120)                      :: timeunits 
-      INTEGER                             :: dateref, yref, mref, dref
-      INTEGER                             :: TIME(2)
-      DOUBLE PRECISION                    :: datecur, datetmp
-      REAL                                :: is, imn, ih
-      INTEGER                             :: id, im, iyy
-
+!
+      INTEGER, ALLOCATABLE    :: IPBPI(:,:), IPBPO(:,:), NCID(:),      &
+                                 DIMID(:,:), DIMLN(:,:)
+!
+      REAL                    :: FR1I, TH1I, FACTOR, OFFSET, DMIN,     &
+                                 DIST, DMIN2, COS1, DLON, DLAT, DLO
+!
+      REAL, ALLOCATABLE       :: SPEC2D(:,:,:,:), LATS(:), LONS(:),    &
+                                 FREQ(:), THETA(:),                    &
+                                 XBPI(:), YBPI(:), RDBPI(:,:),         &
+                                 XBPO(:), YBPO(:), RDBPO(:,:),         &
+                                 ABPIN(:,:), ABPIN2(:,:,:)
+!
+      DOUBLE PRECISION        :: REFJULDAY, CURJULDAY
+      DOUBLE PRECISION, ALLOCATABLE       :: TIMES(:)
+!
+      CHARACTER               :: COMSTR*1, LINE*512, FILENAME*512,     &
+                                 INXOUT*5, FILE*128
+      CHARACTER*50            :: TIMEUNITS, CALENDAR
+      CHARACTER*10            :: VERTEST  ! = 'III  1.03 '
+      CHARACTER*32            :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
+      CHARACTER*512, ALLOCATABLE          :: SPECFILES(:)
+      CHARACTER, ALLOCATABLE              :: STATION(:,:)
+!
+      LOGICAL                 :: FLGNML
+!
 !/
 !/ ------------------------------------------------------------------- /
 
@@ -178,12 +178,15 @@
       NDSC   = 44
       NDSM   = 20
       NDSS   = 30
+      NDSL   = 50
 !
       NDSTRC =  6
       NTRACE = 10
       CALL ITRACE ( NDSTRC, NTRACE )
 !
 !/S      CALL STRACE (IENT, 'W3BOUNC')
+!
+      WRITE (NDSO,900)
 !
 
 !
@@ -193,68 +196,103 @@
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
 !
-! 3. Read input file
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 3.  Read requests from input file.
 !
-      OPEN(NDSI,FILE='ww3_bounc.inp',status='old')
-      READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
-      IF (COMSTR.EQ.' ') COMSTR = '$'
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) INXOUT
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) INTERP
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) VERBOSE
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+
 !
-      NBO2 = 0          
+! process ww3_bounc namelist
 !
-!     ILOOP = 1 to count NBO2
-!     ILOOP = 2 to read the file names
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_bounc.nml", EXIST=FLGNML) 
+      IF (FLGNML) THEN
+        ! Read namelist
+        CALL W3NMLBOUNC (NDSI, TRIM(FNMPRE)//'ww3_bounc.nml', NML_BOUND, IERR)
+
+        INXOUT = NML_BOUND%MODE
+        INTERP = NML_BOUND%INTERP
+        VERBOSE = NML_BOUND%VERBOSE
+        FILE = NML_BOUND%FILE
+
+        NBO2 = 0          
+        OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+        REWIND (NDSL)
+        READ (NDSL,*,END=801,ERR=802) SPECFILES(I)
+        NBO2 = NBO2 + 1
+        CLOSE(NDSL)
+
+      END IF ! FLGNML
+
 !
-      DO ILOOP = 1, 2
-        OPEN (NDSS,FILE='ww3_bounc.scratch',FORM='FORMATTED',          &
-              status='UNKNOWN')
-        IF ( ILOOP .EQ. 1 ) THEN
-          NDSI2 = NDSI
-        ELSE
-          NDSI2 = NDSS
-          ALLOCATE(SPECFILES(NBO2))
-          NBO2=0
-        ENDIF
- 
-        NBO2=0
-!       Read input file names
-        DO 
-          CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-          READ (NDSI2,'(A512)') FILENAME
-          JJ     = LEN_TRIM(FILENAME)
+! process old ww3_bounc.inp format
+!
+      IF (.NOT. FLGNML) THEN
+        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bounc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
+        REWIND (NDSI)
+
+        READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+        IF (COMSTR.EQ.' ') COMSTR = '$'
+        WRITE (NDSO,901) COMSTR
+
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) INXOUT
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) INTERP
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) VERBOSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!
+        NBO2 = 0          
+!
+!       ILOOP = 1 to count NBO2
+!       ILOOP = 2 to read the file names
+!
+        DO ILOOP = 1, 2
+          OPEN (NDSS,FILE='ww3_bounc.scratch',FORM='FORMATTED',          &
+                status='UNKNOWN')
           IF ( ILOOP .EQ. 1 ) THEN
-            BACKSPACE (NDSI)
-            READ (NDSI,'(A)') LINE
-            WRITE (NDSS,'(A)') LINE
-          END IF
-          IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT 
-          NBO2=NBO2+1
-          IF (ILOOP.EQ.1) CYCLE 
-          SPECFILES(NBO2)=FILENAME
-        END DO 
+            NDSI2 = NDSI
+          ELSE
+            NDSI2 = NDSS
+            ALLOCATE(SPECFILES(NBO2))
+            NBO2=0
+          ENDIF
+ 
+          NBO2=0
+!         Read input file names
+          DO 
+            CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
+            READ (NDSI2,'(A512)') FILENAME
+            JJ     = LEN_TRIM(FILENAME)
+            IF ( ILOOP .EQ. 1 ) THEN
+              BACKSPACE (NDSI)
+              READ (NDSI,'(A)') LINE
+              WRITE (NDSS,'(A)') LINE
+            END IF
+            IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT 
+            NBO2=NBO2+1
+            IF (ILOOP.EQ.1) CYCLE 
+            SPECFILES(NBO2)=FILENAME
+          END DO 
 !
-! ... End of ILOOP loop
+          IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS) 
 !
-        IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS) 
+          IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
+        END DO ! ILOOP = 1, 2
+        CLOSE(NDSI)
 
-        IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
-      END DO ! ILOOP = 1, 2
-      CLOSE(NDSI)
+      END IF ! .NOT. FLGNML
+
+
 
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4. Tests the reading of the file
 !
       IF ( INXOUT.EQ.'READ') THEN 
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='old')
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
-        IF ( IDTST .NE. IDSTRBC ) GOTO 2003
+        IF ( IDTST .NE. IDSTRBC ) GOTO 803
         WRITE(NDSO,940) VERTEST
         WRITE(NDSO,941) IDTST
         IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
@@ -282,7 +320,7 @@
           IF (IERR.EQ.0) THEN 
             IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
             DO IP=1, NBI2
-              READ (NDSB,END=2003,ERR=2004) ABPIN(:,IP)
+              READ (NDSB,END=803,ERR=804) ABPIN(:,IP)
             END DO
           END IF
         END DO
@@ -292,6 +330,7 @@
 !
       IF ( INXOUT.EQ.'WRITE') THEN 
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5. Defines position of active boundary points
 !
         NBO = 0
@@ -325,137 +364,145 @@
         END DO
 
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
-        ALLOCATE(dimid(NBO2,3),dimln(NBO2,3),ncid(NBO2))
+        ALLOCATE(DIMID(NBO2,3),DIMLN(NBO2,3),NCID(NBO2))
 
-        ALLOCATE(lats(NBO2),lons(NBO2),station(16,NBO2))
+        ALLOCATE(LATS(NBO2),LONS(NBO2),STATION(16,NBO2))
 
         DO IP=1,NBO2
           ! open file
-          OPEN(NDSC,FILE=trim(SPECFILES(IP)),FORM='UNFORMATTED',      &
+          OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),FORM='UNFORMATTED',      &
                status='old',iostat=ICODE)
           IF (ICODE.NE.0) THEN 
-            WRITE(NDSO,950) trim(SPECFILES(IP))
-            lons(IP)=-999.
-            lats(IP)=-999.
+            WRITE(NDSO,950) TRIM(SPECFILES(IP))
+            LONS(IP)=-999.
+            LATS(IP)=-999.
             STOP
           END IF
  
-          iret=nf90_open(trim(SPECFILES(IP)),nf90_nowrite,ncid(IP))
-          WRITE(6,*) 'Opening file:',trim(SPECFILES(IP))
-          call check_err(iret)
+          IRET=NF90_OPEN(TRIM(SPECFILES(IP)),NF90_NOWRITE,NCID(IP))
+          WRITE(6,*) 'Opening file:',TRIM(SPECFILES(IP))
+          CALL CHECK_ERR(IRET)
           
           ! dimensions
-          iret=nf90_inq_dimid(ncid(IP),'time',dimid(IP,1))
-          call check_err(iret)
-          iret=nf90_inq_dimid(ncid(IP),'frequency',dimid(IP,2))
-          call check_err(iret)
-          iret=nf90_inq_dimid(ncid(IP),'direction',dimid(IP,3))
-          call check_err(iret)
-          iret=nf90_inquire_dimension(ncid(IP),dimid(IP,1),len=dimln(IP,1))
-          call check_err(iret)
-          iret=nf90_inquire_dimension(ncid(IP),dimid(IP,2),len=dimln(IP,2))
-          call check_err(iret)
-          iret=nf90_inquire_dimension(ncid(IP),dimid(IP,3),len=dimln(IP,3))
-          call check_err(iret)
+          IRET=NF90_INQ_DIMID(NCID(IP),'time',DIMID(IP,1))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQ_DIMID(NCID(IP),'frequency',DIMID(IP,2))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQ_DIMID(NCID(IP),'direction',DIMID(IP,3))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQUIRE_DIMENSION(NCID(IP),DIMID(IP,1),len=DIMLN(IP,1))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQUIRE_DIMENSION(NCID(IP),DIMID(IP,2),len=DIMLN(IP,2))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQUIRE_DIMENSION(NCID(IP),DIMID(IP,3),len=DIMLN(IP,3))
+          CALL CHECK_ERR(IRET)
 
-          NTI=dimln(IP,1)
-          NKI=dimln(IP,2)
-          NTHI=dimln(IP,3)
+          NTI=DIMLN(IP,1)
+          NKI=DIMLN(IP,2)
+          NTHI=DIMLN(IP,3)
 
           IF (IP.EQ.1) THEN
             NT1=NTI
             NK1=NKI
             NTH1=NTHI
             NSPEC1  = NK1 * NTH1
-            ALLOCATE(times(NT1))
+            ALLOCATE(TIMES(NT1))
             ALLOCATE (FREQ(NK1),THETA(NTH1))
             ALLOCATE (SPEC2D(NTH1,NK1,NT1,NBO2))
             ALLOCATE (ABPIN2(NK*NTH1,NT1,NBO2))
 
-            ! read time variable
-            iret=nf90_inq_varid(ncid(IP), 'time', varid(1))
-            iret=nf90_get_var(ncid(IP), varid(1), times(:))
-            iret=nf90_get_att(ncid(IP), varid(1),'units',timeunits)
+            ! instanciates time
+            REFDATE(:)=0.
+            IRET=NF90_INQ_VARID(NCID(IP),"time",VARID(1))
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_VAR(NCID(IP), VARID(1), TIMES(:))
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_ATT(NCID(IP),VARID(1),"calendar",CALENDAR)
+            IF ( IRET/=NF90_NOERR ) THEN 
+              WRITE(NDSE,951)
+            ELSE IF ((INDEX(CALENDAR, "standard").EQ.0) .AND. &
+                     (INDEX(CALENDAR, "gregorian").EQ.0)) THEN
+              WRITE(NDSE,952)
+            END IF
+            IRET=NF90_GET_ATT(NCID(IP),VARID(1),"units",TIMEUNITS)
+            CALL U2D(TIMEUNITS,REFDATE,IERR)
+            CALL D2J(REFDATE,REFJULDAY,IERR)
 
-            ! time reference
-            IF (index(timeunits, "seconds").NE.0) THEN
-              read(timeunits(15:18),'(I4.4)') yref
-              read(timeunits(20:21),'(I2.2)') mref
-              read(timeunits(23:24),'(I2.2)') dref
-            ELSE IF (index(timeunits, "days").NE.0) THEN
-              read(timeunits(12:15),'(I4.4)') yref
-              read(timeunits(17:18),'(I2.2)') mref
-              read(timeunits(20:21),'(I2.2)') dref
-            END IF
-            dateref=julday(dref,mref,yref)
           ELSE 
-            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) THEN 
-               WRITE(NDSE,*) 'ERROR: inconsistent spectral dimension',NKI,NTHI,'in file ', &
-                trim(SPECFILES(IP)),' compared to ',NK1,NT1,' in first file'
-               STOP 
-               END IF  
-            END IF
+            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) GOTO 805
+          END IF
 
           ! position variables : lon/lat or x/y
           IF ( FLAGLL ) THEN
-            !WRITE (NDSO,951)
-            iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))
-            call check_err(iret)
-            iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
-            call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'longitude', varid(3))        
-            call check_err(iret)
-            iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
-            call check_err(iret)
+            IRET=NF90_INQ_VARID(NCID(IP), 'latitude', VARID(2))
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_VAR(NCID(IP), VARID(2), LATS(IP))
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_INQ_VARID(NCID(IP), 'longitude', VARID(3))        
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_VAR(NCID(IP), VARID(3), LONS(IP))
+            CALL CHECK_ERR(IRET)
           ELSE
-            !WRITE (NDSO,952)
-            iret=nf90_inq_varid(ncid(IP), 'y', varid(2))        
-            call check_err(iret)
-            iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
-            call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'x', varid(3))        
-            call check_err(iret)
-            iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
-            call check_err(iret)
+            IRET=NF90_INQ_VARID(NCID(IP), 'y', VARID(2))        
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_VAR(NCID(IP), VARID(2), LATS(IP))
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_INQ_VARID(NCID(IP), 'x', VARID(3))        
+            CALL CHECK_ERR(IRET)
+            IRET=NF90_GET_VAR(NCID(IP), VARID(3), LONS(IP))
+            CALL CHECK_ERR(IRET)
           END IF
 
           ! freq and dir variables
-          iret=nf90_inq_varid(ncid(IP),"frequency",varid(4))
-          call check_err(iret)
-          iret=nf90_get_var(ncid(IP),varid(4),FREQ)
-          call check_err(iret)
-          iret=nf90_inq_varid(ncid(IP),"direction",varid(5))
-          call check_err(iret)
-          iret=nf90_get_var(ncid(IP),varid(5),THETA)
-          call check_err(iret)
+          IRET=NF90_INQ_VARID(NCID(IP),"frequency",VARID(4))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_GET_VAR(NCID(IP),VARID(4),FREQ)
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_INQ_VARID(NCID(IP),"direction",VARID(5))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_GET_VAR(NCID(IP),VARID(5),THETA)
+          CALL CHECK_ERR(IRET)
           THETA=(PI/180)*THETA
 
-          iret = nf90_inq_varid(ncid(IP), 'station_name', varid(6)) 
-          call check_err(iret)
-          iret = nf90_get_var(ncid(IP), varid(6), station(IP,:),      &
-                              start=(/1,1/),count=(/16,1/))
-          call check_err(iret)
+          ! 2D spectra depending on station name or lat/lon 
+          IRET=NF90_INQ_VARID(NCID(IP),"efth",VARID(7))
+          IF (IRET.NE.0) IRET=NF90_INQ_VARID(NCID(IP),"Efth",VARID(7))
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_GET_ATT(NCID(IP),VARID(7),"scale_factor",FACTOR)
+          IF (IRET.NE.0) FACTOR=1.
+          IRET=NF90_GET_ATT(NCID(IP),VARID(7),"add_offset",OFFSET)
+          IF (IRET.NE.0) OFFSET=0.
+          IRET = NF90_INQ_VARID(NCID(IP), 'station_name', VARID(6)) 
+          IF (IRET.NE.0) THEN
+            ! efth(time, frequency, direction, latitude, longitude)
+            IRET=NF90_GET_VAR(NCID(IP),VARID(7),SPEC2D(:,:,:,IP),       &
+                              start=(/1,1,1,1/),count=(/1,1,NTHI,NKI,NTI/))
+            CALL CHECK_ERR(IRET)
+          ELSE
+            ! efth(time, station, frequency, direction)
+            IRET=NF90_GET_VAR(NCID(IP),VARID(7),SPEC2D(:,:,:,IP),       &
+                              start=(/1,1,1,1/),count=(/NTHI,NKI,1,NTI/))
+            CALL CHECK_ERR(IRET)
+          END IF
+          ! apply scale_factor and add_offset
+          SPEC2D=(SPEC2D*FACTOR)+OFFSET
 
-
-          iret=nf90_inq_varid(ncid(IP),"efth",varid(7))
-          if (iret.ne.0 ) iret=nf90_inq_varid(ncid(IP),"Efth",varid(7))
-          call check_err(iret)
-          iret=nf90_get_var(ncid(IP),varid(7),SPEC2D(:,:,:,IP),       &
-                            start=(/1,1,1,1/),count=(/NTHI,NKI,1,NTI/))
-          call check_err(iret)
-          iret=nf90_close(ncid(IP))
-          call check_err(iret)
+         
+          ! close spectra file
+          IRET=NF90_CLOSE(NCID(IP))
+          CALL CHECK_ERR(IRET)
 !
         END DO ! IP=1,NBO2
 
 
 
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6. Defines frequency range in spectra
 !
 
         ! Checks consistency of NK
-        IF (NKI.GT.NK) GOTO 2008
+        IF (NKI.GT.NK) GOTO 806
 !
         ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
         ! such that source spec SPEC (read in input) links with output spec
@@ -467,14 +514,14 @@
 !        IFMAX2=NK ! index of last freq. in output spectrum
 !
         ! Checks consistency of XFR
-        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
+        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 807
 !
         ! Checks consistency of NTH
         ! WARNING: check is only done on number of directions, no check 
         ! is done on the relative offset of first direction in terms of 
         ! the directional increment [-0.5,0.5] (last parameter of the 
         ! spectral definition in ww3_grid.inp, on second active line) 
-        IF (NTHI.NE.NTH) GOTO 2007
+        IF (NTHI.NE.NTH) GOTO 808
 !
         IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
           DO J=1,MIN(NK1,NK)
@@ -500,7 +547,9 @@
             END IF
           END DO 
         END IF 
+
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 7. Loops on files and instanciate ABPIN2
 !
         DO IP=1,NBO2
@@ -523,9 +572,8 @@
           END IF 
         END DO ! IP=1,NBO2
 
-
-
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8. Writes header
 !
 !       Writes header in nest.ww3 file 
@@ -572,6 +620,7 @@
 
 
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9. Computes linear interpolation coefficient between the nearest 2 points
 !
           IF (INTERP.GT.1.AND.NBO2.GT.1) THEN 
@@ -594,7 +643,7 @@
                   *(LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))) &
                   + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
                   *(LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))) )/(DIST**2)
-              END IF
+            END IF
             !COS2=( (XBPO(IP1)-LONS(IPBPO(IP1,2)))  &
             !      *(LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))
             !      + (YBPO(IP1)-LATS(IPBPO(IP1,2)))  &
@@ -605,7 +654,7 @@
             ! in this case: nearest point
             RDBPO(IP1,1)=1.
             RDBPO(IP1,2:4)=0.
-            END IF
+          END IF
           IF (VERBOSE.GE.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
           IF (VERBOSE.GE.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
           !IF (VERBOSE.GE.1) WRITE(NDSO,*) 'RDBP:',COS1,DIST,DLON,DLO,DLAT,XBPO(IP1)-360.,LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2))
@@ -618,29 +667,21 @@
 
 
 !
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 10. Loops on times and files and write to nest.ww3
 !          
         DO IT=1,NT1
-          datetmp=times(IT)
-          IF (index(timeunits, "seconds").NE.0) datetmp=times(IT)/86400.
-          datecur=datetmp+dateref
-          call caldat(int(datecur),id,im,iyy)
- 
-          ih=(datecur-INT(datecur))*24.
-          IF (ABS(ih-NINT(ih)).LT.1.E-5) ih=NINT(ih)
+          CURJULDAY=TIMES(IT)
+          IF (INDEX(TIMEUNITS, "seconds").NE.0)   CURJULDAY=CURJULDAY/86400.
+          IF (INDEX(TIMEUNITS, "minutes").NE.0)   CURJULDAY=CURJULDAY/1440.
+          IF (INDEX(TIMEUNITS, "hours").NE.0)     CURJULDAY=CURJULDAY/24. 
+          CURJULDAY=REFJULDAY+CURJULDAY
 
-          imn=(ih-INT(ih))*60.
-          IF (ABS(imn-NINT(imn)).LT.1.E-5) imn=NINT(imn)
+          ! convert julday to date and time
+          CALL J2D(CURJULDAY,CURDATE,IERR)
+          CALL D2T(CURDATE,TIME,IERR)
 
-          is=(imn-INT(imn))*60.
-          IF (ABS(is-NINT(is)).LT.1.E-5) is=NINT(is)
-
-          WRITE(TIME_STR,'(I4.4,5I2.2)') INT(iyy), INT(im), INT(id), &
-                                        INT(ih), INT(imn), INT(is)
-
-          read(TIME_STR(1:8),'(I8.8)') TIME(1)
-          read(TIME_STR(9:14),'(I6.6)') TIME(2)
-
+          ! write to output file nest.ww3
           WRITE(NDSO,'(A,2I9,A,I6,A)') 'Writing boundary data for time:', TIME, ' at ',NBO2,' points'
           WRITE(NDSB,IOSTAT=IERR) TIME, NBO2
           DO IP=1, NBO2
@@ -648,45 +689,63 @@
           END DO
         END DO ! IT=0,NT1
         CLOSE(NDSB)
+
       END IF ! INXOUT.EQ.'WRITE'
-      STOP
+
+      GOTO 888
+
 !
 ! Escape locations read errors :
 !
 
- 2001 CONTINUE
+ 801 CONTINUE
       WRITE (NDSE,1001)
       CALL EXTCDE ( 61 )
 !
- 2002 CONTINUE
+ 802 CONTINUE
       WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 62 )
 !
- 2003 CONTINUE
+ 803 CONTINUE
       WRITE (NDSE,1003) IDTST, IDSTRBC
       CALL EXTCDE ( 63 )
 !
- 2004 CONTINUE
+ 804 CONTINUE
       WRITE (NDSE,1004)
       CALL EXTCDE ( 64 )
 !
- 2005 CONTINUE
-      WRITE (NDSE,1005) IERR
+ 805 CONTINUE
+      WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1
       CALL EXTCDE ( 65 )
 !
- 2006 CONTINUE
-      WRITE (NDSE,1006) XFR
+ 806 CONTINUE
+      WRITE (NDSE,1006) NK, NKI
       CALL EXTCDE ( 66 )
 !
- 2007 CONTINUE
-      WRITE (NDSE,1007) NTH, NTHI
+ 807 CONTINUE
+      WRITE (NDSE,1007) XFR
       CALL EXTCDE ( 67 )
 !
- 2008 CONTINUE
-      WRITE (NDSE,1008) NK, NKI
+ 808 CONTINUE
+      WRITE (NDSE,1008) NTH, NTHI
       CALL EXTCDE ( 68 )
 !
- 2222 CONTINUE
+ 809 CONTINUE
+      WRITE (NDSE,1009) IERR
+      CALL EXTCDE ( 69 )
+!
+!
+  888 CONTINUE
+      WRITE (NDSO,999)
+
+
+!
+! Formats
+!
+  900 FORMAT (/15X,'   *** WAVEWATCH III Bounday input prep. ***   '/ &
+               15X,'==============================================='/)
+!
+  901 FORMAT ( '  Comment character is ''',A,''''/)
 !
   920 FORMAT ( '  Grid name : ',A/)
 !
@@ -696,16 +755,20 @@
 !
   950 FORMAT ( '  Spectra File does not exist : ',A/)
 !
-  951 FORMAT ( '  Location expected as spherical (lon/lat) in Spectra &
-                  file'/)
+  951 FORMAT (/' *** WAVEWATCH III WARNING IN W3BOUNC : '/            &
+               '     CALENDAR ATTRIBUTE NOT DEFINED'/                 &
+               '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
 !
-  952 FORMAT ( '  Location expected as cartesian (x/y) in Spectra     &
-                  file'/)
+  952 FORMAT (/' *** WAVEWATCH III WARNING IN W3BOUNC : '/            &
+               '     CALENDAR ATTRIBUTE NOT MATCH'/                   &
+               '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
 !
- 1900 FORMAT ( '  Writing boundary data for time : ',I8.8, I6.6/      &
-               '  for this number of positions   : ',I4)
+  999 FORMAT (/'  End of program '/                                   &
+               ' ========================================='/          &
+               '         WAVEWATCH III Boundary input '/)
 !
-!
+
+
  1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUNC : '/              &
                '     PREMATURE END OF INPUT FILE'/)
 !
@@ -721,41 +784,49 @@
                '     PREMATURE END OF NEST FILE'/)
 !
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ERROR IN READING SPECTRUM FROM NEST FILE'/       &
-               '     IOSTAT =',I5/)
+               '     INCONSISTENT SPECTRAL DIMENSION FOR FILE ',A/    &
+               '     ILLEGAL NKI =',I3,' DIFFERS FROM NK1 =',I3/      &
+               '     ILLEGAL NTHI =',I3,' DIFFERS FROM NTH1 =',I3/)
 !
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL XFR, XFR =',F12.6/)
-!
- 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
-!
- 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
                '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
                '     IT WILL BE MANAGED SOON BY SPCONV')
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+               '     ILLEGAL XFR CALCULATED FROM FREQ(2)/FREQ(1)'/    &
+               '     XFR DEFINED FROM MOD_DEF.WW3 =',F12.6/)
+!
+ 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
+!
+ 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
+               '     ERROR IN OPENING SPEC FILE'/                     &
+               '     IOSTAT =',I5/)
+!
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/
-  END PROGRAM W3BOUNC
+     END PROGRAM W3BOUNC
 !/ ------------------------------------------------------------------- /
 
 
 !==============================================================================
 
-SUBROUTINE check_err(iret)
+     SUBROUTINE CHECK_ERR(IRET)
 
-  USE NETCDF
-  implicit none
+     USE NETCDF
 
-  integer iret
+     IMPLICIT NONE
 
-  if (iret .ne. NF90_NOERR) then
-     print *, nf90_strerror(iret)
-     stop
-  endif
-  return
+     INTEGER IRET
 
-END SUBROUTINE check_err
+     IF (IRET .NE. NF90_NOERR) THEN
+       WRITE(*,*) NF90_STRERROR(IRET)
+       STOP
+     END IF
+     RETURN
+
+     END SUBROUTINE CHECK_ERR
 
 !==============================================================================
 

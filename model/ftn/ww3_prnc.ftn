@@ -200,17 +200,14 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/MPI      INTEGER                 :: IERR_MPI
-
-      INTEGER, ALLOCATABLE    :: NXL(:)
+      TYPE(NML_FORCING_T)     :: NML_FORCING
+      TYPE(NML_FILE_T)        :: NML_FILE
+      TYPE(T_GSU)             :: GSI
+!
       INTEGER                 :: NTI, NDSEN, IND
-      CHARACTER(LEN=1024)     :: STRFIELDSNAME
-      CHARACTER(LEN=100)      :: FIELDSNAME(4)
-      CHARACTER(LEN=1024)     :: STRDIMSNAME
-      CHARACTER(LEN=100)      :: DIMSNAME(2)
       INTEGER                 :: NIDIMS, NFIELDS
       INTEGER                 :: JPC
-      INTEGER(KIND=4)         :: IX, IY, JX, NXLM
+      INTEGER                 :: IX, IY, JX, NXLM
       INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, NFCOMP,        &
                                  TIME(2), TIMESTART(2), TIMESTOP(2),  &
@@ -221,33 +218,54 @@
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
                                  NDAT, JJ, IS(4), JS(4)
       INTEGER                 :: ILAND = -999
+      INTEGER                 :: ICLO
+      INTEGER                 :: GTYPEDUM = 0
+      INTEGER                 :: NCID, IRET,                            &
+                                 NDIMSGRID, NDIMSVAR, VARIDTMP, VARIDF(50)
+      INTEGER                 :: NUMDIMS
+      INTEGER                 :: DIMSVAR(4)
+      INTEGER                 :: DIMLN(5)
+      INTEGER                 :: I,ITIME
+      INTEGER                 :: REFDATE(8),CURDATE(8),STARTDATE(8),STPDATE(8)
+!/MPI      INTEGER                 :: IERR_MPI
 !/O15      INTEGER                 :: NDSTIME
+!/S      INTEGER, SAVE           :: IENT = 0
+!/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
+!/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
+!
+      INTEGER, ALLOCATABLE    :: NXL(:)
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
                                  IY21(:,:), IY22(:,:),                &
                                  JX21(:,:), JX22(:,:),                &
                                  JY21(:,:), JY22(:,:), MAPOVR(:,:)
       INTEGER, ALLOCATABLE    :: MASK(:,:)
-      TYPE(T_GSU)             :: GSI
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
-!/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
 !/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
+!
+
+
+
       REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI,        &
                                  X, Y, FACTOR, EFAC, NODATA, RW(4)
       REAL                    :: ACC = 0.05
+      REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
+      REAL                    :: FILLVALUE, TIMEDELAY
+!
       REAL, ALLOCATABLE       :: RD11(:,:), RD21(:,:),                &
                                  RD12(:,:), RD22(:,:),                &
                                  XD11(:,:), XD21(:,:),                &
                                  XD12(:,:), XD22(:,:),                &
                                  FX(:,:), FY(:,:), FA(:,:),           &
                                  A1(:,:), A2(:,:), A3(:,:)
-      REAL, POINTER           :: ALA(:,:), ALO(:,:)
       REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
-      REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
-      LOGICAL                 :: INGRID, FLGNML
-      LOGICAL                 :: FLSTAB, FLBERG, CLO(2), FLTIME, FLHDR
-      INTEGER                 :: ICLO
-!/T      LOGICAL                 :: FLMOD
+!
+      REAL, POINTER           :: ALA(:,:), ALO(:,:)
+!
+      DOUBLE PRECISION        :: REFJULDAY, CURJULDAY, STARTJULDAY, STPJULDAY
+!
+      CHARACTER*1024          :: STRFIELDSNAME
+      CHARACTER*100           :: FIELDSNAME(4)
+      CHARACTER*1024          :: STRDIMSNAME
+      CHARACTER*100           :: DIMSNAME(2)
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*80, NAMEF*80, IDTIME2*23
@@ -255,46 +273,45 @@
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(6)
-      INTEGER                 :: GTYPEDUM = 0
+      CHARACTER*20            :: DIMNAME(5)
+      CHARACTER*50            :: TIMEUNITS, CALENDAR
 !
-      INTEGER               :: NCID, IRET,                            &
-                               NDIMSGRID, NDIMSVAR, VARIDTMP, VARIDF(50)
-      INTEGER               :: NUMDIMS
-      INTEGER               :: DIMSVAR(4)
-      INTEGER               :: DIMLN(5)
-      CHARACTER*20          :: DIMNAME(5)
-      CHARACTER*50          :: TIMEUNITS, CALENDAR
-      REAL                  :: FILLVALUE, TIMEDELAY
-      INTEGER               :: I,ITIME
-      INTEGER               :: REFDATE(8),CURDATE(8),STARTDATE(8),STPDATE(8)
-      DOUBLE PRECISION      :: REFJULDAY, CURJULDAY, STARTJULDAY, STPJULDAY
+      LOGICAL                 :: INGRID, FLGNML
+      LOGICAL                 :: FLSTAB, FLBERG, CLO(2), FLTIME, FLHDR
+!/T      LOGICAL                 :: FLMOD
+
+
+
 !
 ! Variables used in tidal analysis
-      DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
+!
       INTEGER                 :: TIDESIZ, K, L
-      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
       INTEGER                 :: TIDALSTUFF
+      INTEGER                 :: TIDEFLAG
+!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
 !/TIDE      INTEGER                       :: TIDE_NDEF, TIDE_ITREND
-!/TIDE      DOUBLE PRECISION, ALLOCATABLE :: SDEV0(:), SDEV(:), RMSR(:), &
-!/TIDE                                       RMSR0(:), RMSRP(:), RESMAX(:)
-!/TIDE      REAL, ALLOCATABLE             :: SSQ(:), RES(:)
-!/TIDE      INTEGER, ALLOCATABLE          :: IMAX(:)
-!/TIDE      REAL                          :: TIDE_LAT
-      REAL, ALLOCATABLE         :: TIDE_DATA_ALL(:,:,:)
-      INTEGER                   :: TIDEFLAG
-      CHARACTER                 :: TIDECONSTNAMES*1024
-      CHARACTER(LEN=100)        :: LIST(70)
-      LOGICAL                   :: TIDESWITCH, DISTSWITCH 
-
-      type(NML_FORCING_T)            :: NML_FORCING
-      type(NML_FILE_T)               :: NML_FILE
-
 !/TIDET      INTEGER, PARAMETER      :: LRB = 4
 !/TIDET      INTEGER(KIND=8)         :: RPOS
 !/TIDET      INTEGER                 ::   LRECL, NREC
+!
+!/TIDE      INTEGER, ALLOCATABLE          :: IMAX(:)
+!
+!/TIDE      REAL                          :: TIDE_LAT
+!
+      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
+      REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:)
+!/TIDE      REAL, ALLOCATABLE             :: SSQ(:), RES(:)
 !/TIDET      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
-!/TIDET      CHARACTER(LEN=21)       :: FNAMETXT
-!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
+!
+      DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
+!/TIDE      DOUBLE PRECISION, ALLOCATABLE :: SDEV0(:), SDEV(:), RMSR(:), &
+!/TIDE                                       RMSR0(:), RMSRP(:), RESMAX(:)
+!
+      CHARACTER*1024          :: TIDECONSTNAMES
+      CHARACTER*100           :: LIST(70)
+!/TIDET      CHARACTER*21            :: FNAMETXT
+!
+      LOGICAL                 :: TIDESWITCH, DISTSWITCH 
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
@@ -555,7 +572,7 @@
             IFLD    = 5
           ELSE
             WRITE (NDSE,1030) IDFLD
-            CALL EXTCDE ( 1 )
+            CALL EXTCDE ( 30 )
           END IF
 
         ! Check grid and tidal component
@@ -581,7 +598,7 @@
           NFCOMP = 2
         ELSE
           WRITE (NDSE,1031) IDTYPE
-          CALL EXTCDE ( 2 )
+          CALL EXTCDE ( 31 )
         END IF
 !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -612,7 +629,7 @@
           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIMESHIFT
           IF (TIMESHIFT(1).LT.10000000) THEN
             WRITE (NDSE,1035) TIME
-            CALL EXTCDE ( 4 )
+            CALL EXTCDE ( 35 )
           END IF
         END IF
         ! Read netcdf filename
@@ -684,35 +701,7 @@
         WRITE(NDSE,1029)
       END IF
       IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
-      IF (INDEX(TIMEUNITS, "seconds").NE.0) THEN
-        read(TIMEUNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) REFDATE(1)
-        read(TIMEUNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(2)
-        read(TIMEUNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(3)
-        read(TIMEUNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(5)
-        read(TIMEUNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(6)
-        read(TIMEUNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(7)
-      ELSE IF (INDEX(TIMEUNITS, "days").NE.0) THEN
-        read(TIMEUNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) REFDATE(1)
-        read(TIMEUNITS(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(2)
-        read(TIMEUNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(3)
-        read(TIMEUNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(5)
-        read(TIMEUNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(6)
-        read(TIMEUNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(7)
-      ELSE IF (INDEX(TIMEUNITS, "hours").NE.0) THEN
-        read(TIMEUNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) REFDATE(1)
-        read(TIMEUNITS(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(2)
-        read(TIMEUNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(3)
-        read(TIMEUNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(5)
-        read(TIMEUNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(6)
-        read(TIMEUNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(7)
-      ELSE IF (INDEX(TIMEUNITS, "minutes").NE.0) THEN
-        read(TIMEUNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) REFDATE(1)
-        read(TIMEUNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(2)
-        read(TIMEUNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(3)
-        read(TIMEUNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(5)
-        read(TIMEUNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(6)
-        read(TIMEUNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) REFDATE(7)
-      END IF
+      CALL U2D(TIMEUNITS,REFDATE,IERR)
       CALL D2J(REFDATE,REFJULDAY,IERR)
 
       ! gets variables ids, dimensions and fillvalue
@@ -728,7 +717,10 @@
           CALL CHECK_ERR(IRET)
         END DO
         IRET=NF90_GET_ATT(NCID,VARIDF(I),"_FillValue", FILLVALUE)
-        CALL CHECK_ERR(IRET)
+        IF ( IRET/=NF90_NOERR ) THEN 
+          WRITE(NDSE,1027) TRIM(FIELDSNAME(I))
+          CALL EXTCDE ( 27 )
+        END IF
       END DO
 
       ! instanciates generic variables dimensions
@@ -844,12 +836,12 @@
         ! check latitude values order
         IF ((GTYPE .EQ. RLGTYPE) .AND. (Y0I.GT.YNI)) THEN
           WRITE (NDSE,1032)
-          CALL EXTCDE ( 2 )
+          CALL EXTCDE ( 32 )
         END IF
 
         IF (NXI.LT.2 .OR. NYI.LT.2) THEN
           WRITE (NDSE,1036) NXI, NYI
-          CALL EXTCDE ( 5 )
+          CALL EXTCDE ( 36 )
         END IF
         ALLOCATE ( MASK(NXI,NYI) )
         MASK   = 1
@@ -871,11 +863,11 @@
               DATTYP, RECLDT, NODATA
         IF (DATTYP.LT.0 .OR. DATTYP.GT.2) THEN
           WRITE (NDSE,1033) DATTYP
-          CALL EXTCDE ( 6 )
+          CALL EXTCDE ( 33 )
         END IF
         IF (RECLDT.LE.0) THEN
           WRITE (NDSE,1034) RECLDT
-          CALL EXTCDE ( 7 )
+          CALL EXTCDE ( 34 )
         END IF
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,934) IDSTR3(DATTYP+1), RECLDT, NODATA
         WRITE (IDFLD,935) DATTYP
@@ -1049,7 +1041,7 @@
                   NXJ(J), NYJ(J), CLO(J)
             IF (NXJ(J).LT.2 .OR. NYJ(J).LT.2) THEN
                 WRITE (NDSE,1036) NXJ(J), NYJ(J)
-                CALL EXTCDE ( 10 )
+                CALL EXTCDE ( 36 )
               END IF
             IF ( ALLOCATED(MASK) ) DEALLOCATE (MASK)
             ALLOCATE ( MASK(NXJ(J),NYJ(J)) )
@@ -1323,7 +1315,7 @@
         IRET=NF90_GET_VAR(NCID,VARIDTMP,ALLTIMES,start=(/1/))
         CALL CHECK_ERR(IRET)
         IF (INDEX(TIMEUNITS, "seconds").NE.0)   ALLTIMES=ALLTIMES/86400.
-        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/1440.
+        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/3600.
         IF (INDEX(TIMEUNITS, "hours").NE.0)   ALLTIMES=ALLTIMES/24.
         ALLTIMES=REFJULDAY+ALLTIMES
 
@@ -2020,7 +2012,7 @@
       CALL EXTCDE ( 43 )
 !
   804 CONTINUE
-      WRITE (NDSE,1004)
+      WRITE (NDSE,1004) TRIM(TIMEUNITS)
       CALL EXTCDE ( 44 )
 !
   805 CONTINUE
@@ -2191,11 +2183,15 @@
 !
  1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     PREMATURE END OF TIME ATTRIBUTE '/               &
-               '     FROM INPUT DATA FILE'/)
+               '     ',A/                                             &
+               '     DIFFERS FROM CONVENTION ISO8601 '/               &
+               '     XXX since YYYY-MM-DD hh:mm:ss'/)
 !
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ERROR IN READING OF TIME ATTRIBUTE '/            &
-               '     FROM INPUT DATA FILE'/                           &
+               '     ',A/                                             &
+               '     DIFFERS FROM CONVENTION ISO8601 '/               &
+               '     XXX since YYYY-MM-DD hh:mm:ss'/                  &
                '     IOSTAT =',I5/)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
@@ -2203,8 +2199,11 @@
  1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     NO GRID SELECTED'/)
 !
+ 1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+               '     _FillValue ATTRIBUTE NOT DEFINED FOR : ',A/)
+!
  1028 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
-               '     CALENDAR ATTRIBUTE NOT DEFINED'/                 &
+               '     calendar ATTRIBUTE NOT DEFINED'/                 &
                '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
  1029 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
                '     CALENDAR ATTRIBUTE NOT MATCH'/                   &
@@ -2313,21 +2312,24 @@
 
 END PROGRAM W3PRNC
 
-!*********************************************************************
+!==============================================================================
 
-  subroutine CHECK_ERR(IRET)
+  SUBROUTINE CHECK_ERR(IRET)
 
   USE NETCDF
 
-  implicit none
+  IMPLICIT NONE
 
-  integer IRET
+  INTEGER IRET
 
-  if (IRET .ne. NF90_NOERR) then
-     print *, NF90_strerror(IRET)
-     stop
-  endif
-  return
-  END subroutine CHECK_ERR
+  IF (IRET .NE. NF90_NOERR) THEN
+     WRITE(*,*) NF90_STRERROR(IRET)
+     STOP
+  END IF
+  RETURN
+
+  END SUBROUTINE CHECK_ERR
+
+!==============================================================================
 
 

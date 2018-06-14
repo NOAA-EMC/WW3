@@ -78,7 +78,8 @@
       USE WMWAVEMD, ONLY: WMWAVE
       USE WMFINLMD, ONLY: WMFINL
 !/
-      USE WMMDATMD, ONLY: MDSS, NMPROC, IMPROC, NMPSCR, NRGRD, ETIME
+      USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, &
+                          NMPROC, IMPROC, NMPSCR, NRGRD, ETIME
 !/
       IMPLICIT NONE
 !
@@ -114,24 +115,24 @@
 !
 ! ... Log and screen output, no separate test output file
 !
-!     CALL WMINIT ( 8, 9, 6, 6, 6, 'ww3_multi.inp', MPI_COMM )
+!     CALL WMINIT ( MDSI, MDSO, MDSS, MDST, MDSE, 'ww3_multi.inp', MPI_COMM )
 !
 ! ... Screen output disabled
 !
-!     CALL WMINIT ( 8, 9, 9, 6, 6, 'ww3_multi.inp', MPI_COMM )
+!     CALL WMINIT ( MDSI, MDSO, MDSO, MDST, MDSE, 'ww3_multi.inp', MPI_COMM )
 !
 ! ... Separate test output file and file preamble defined
 !
-!     CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', MPI_COMM,        &
+!     CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM,        &
 !                   './data/' )
 !
 ! ... Separate test output file
 !
       INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML) 
       IF (FLGNML) THEN
-        CALL WMINITNML ( 8, 9, 6, 10, 6, 'ww3_multi.nml', MPI_COMM )
+        CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
       ELSE
-        CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', MPI_COMM )
+        CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM )
       END IF
 !
 

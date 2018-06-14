@@ -58,15 +58,6 @@ $
 $ Type 6 : Separated wave field data - - - - - - - 
     20110101 000000 0  20110102 000000
 $
-$ Type 7 : Coupling wave field data - - - - - - -  
-$          Same format as Type 1
-    20110101 000000 600  20110102 000000
-$    D C W D W  I H L T T  T C F D S  D H T L T  S W W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$    P U N T L  C S   0    M G P I P  P S P P H  I S S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$    T R D   V  E     2    1 E   R R    P P P P  P P F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
-$
-     F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F T F F  F F F
-$
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
 $ string 'LEV' 'CUR' ''WND', date and time information (yyyymmdd

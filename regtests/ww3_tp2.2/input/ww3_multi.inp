@@ -9,28 +9,9 @@ $
    T  T
 $
    19680606 000000  86400  19680618 000000
-$ (1) Forcing Fields
-  F
-$ (2) Standard mean wave Parameters 
-  T
-$ HS WL T2 T1 T01 FP DM SP DP
-  T  F  F  T  F  F  T  T  F 
-$ (3) Frequency-dependent parameters
-  F
-$ (4) Spectral Partition Parameters
-  F
-$ (5) Atmosphere-waves layer
-  F
-$ (6) Wave-Ocean layer
-  F
-$ (7) Wave-bottom layer
-  F
-$ (8) Spectrum parameters
-  F
-$ (9) Numerical diagnostics
-  F
-$ (10) User defined (NOEXTR flags needed)
-  F
+$
+ N
+ HS T0M1 DIR SPR
 $
    19680606 000000  21600  19680618 000000
      0.0   0.0   'LEFT'

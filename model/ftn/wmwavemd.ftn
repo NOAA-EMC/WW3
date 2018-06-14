@@ -210,7 +210,7 @@
                           NAPPNT, NOPTS, UNIPTS
 !/MPI      USE W3ODATMD, ONLY: NRQPO, IRQPO1
       USE W3IDATMD, ONLY: INFLAGS1
-      USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, IMPROC,       &
+      USE WMMDATMD, ONLY: MDSO, MDSS, MDST, MDSE, IMPROC,             &
                           NMPROC, NMPSCR, NMPERR, NMPTST, NMPLOG,     &
                           STIME, ETIME, NMV, TMV, AMV, DMV,           &
                           NRGRD, NRGRP, GRANK, INGRP, GRDHGH, GRDEQL, &

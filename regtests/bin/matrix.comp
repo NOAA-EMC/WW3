@@ -21,7 +21,9 @@
 
   home_dir=`pwd`
   base_dir='.'
-  comp_dir='../../trunk/regtests'
+  comp_dir='../../EMC_ww3_master/regtests'
+  rm -rf $home_dir/output
+  rm -f $home_dir/matrixDiff.out
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 
@@ -103,11 +105,18 @@
 # 3.  Looping over work directories                                           #
 # --------------------------------------------------------------------------- #
 
-        cases=`ls -d work*`
+        cases=$(find . -maxdepth 1 -type d -name "work*")
+        # skip to next tst if no work directory
+        echo 'run : ' $cases
+        if [ -z "$cases" ] ; then 
+          echo "skip"
+          continue
+        fi
 
         for run in $cases
         do
-
+          echo 'run : ' $run
+          output="$home_dir/output/$tst/$run"
           numDiff=0
           numSame=0
           numSkipped=0
@@ -207,7 +216,7 @@
                   if [ "$do" = 'y' ]
                   then
 
-# 5.b Formatted file, use diff end exclude lines ...
+# 5.b Formatted file, use diff and exclude lines
 
                     if [ "$form" = 'f' ]
                     then
@@ -234,6 +243,11 @@
                       fi
                       if [ -f diff_tempfile ]
                       then
+                        basename="$(basename $file)"
+                        mkdir -p $output
+                        cat $file > $output/${basename}_base.txt
+                        cat $return_comp/$run/$file > $output/${basename}_comp.txt
+                        cat diff_tempfile > $output/${basename}_diff.txt
                         echo "     $file differ. " >> $home_dir/fulldiff.tmp 
                         diffFiles=`echo "$diffFiles $file"`
                         isIdentical=0
@@ -244,14 +258,23 @@
                         let "numSame += 1"
                       fi
 
-# 5.c Formatted file, use diff end exclude lines ...
+# 5.c Unformatted file, use ncdump and diff
 
                     else
                       cmp=`cmp $file -s $return_comp/$run/$file # > diff_tempfile 2> dev/null`
                       case $? in
                        0) echo "     $file are identical (binary)"  >> $home_dir/fulldiff.tmp ; let "numSame += 1" ;;
                        1) echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; isIdentical=0; let "numDiff += 1"
-                          diffFiles=`echo "$diffFiles $file (binary)"` ;;
+                          diffFiles=`echo "$diffFiles $file (binary)"`
+                          extension="$(echo ${file##*.})"
+                          basename="$(basename $file)"
+
+                          if [ "$extension" = "nc" ] ; then
+                            mkdir -p $output
+                            ncdump $file > $output/${basename}_base.txt
+                            ncdump $return_comp/$run/$file > $output/${basename}_comp.txt
+                            diff $output/${basename}_base.txt $output/${basename}_comp.txt > $output/${basename}_diff.txt
+                          fi ;;
                        *) echo "     $file error in binary compare" >> $home_dir/fulldiff.tmp ; isIdentical=0 ;;
                       esac
 
@@ -337,6 +360,18 @@
   cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.out
   cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.out
 
+  for file in $(find $home_dir/output -name "*diff*")
+  do
+    echo "***" >> $home_dir/matrixDiff.out
+    echo $file >> $home_dir/matrixDiff.out
+    echo "***" >> $home_dir/matrixDiff.out
+    cat $file >> $home_dir/matrixDiff.out
+    echo ""  >> $home_dir/matrixDiff.out
+    echo ""  >> $home_dir/matrixDiff.out
+    echo ""  >> $home_dir/matrixDiff.out
+  done
+
+
   rm -f $home_dir/header.tmp
   rm -f $home_dir/isIdenticalList.tmp
   rm -f $home_dir/notIdenticalList.tmp
@@ -359,6 +394,7 @@
   echo ' '
   echo " Saved summary to $home_dir/matrixCompSummary.out"
   echo " Saved full output to $home_dir/matrixCompFull.out"
+  echo " Saved diff output to $home_dir/matrixDiff.out"
   echo ' '
 
 

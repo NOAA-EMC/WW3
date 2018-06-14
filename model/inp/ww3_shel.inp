@@ -1,5 +1,5 @@
 $ -------------------------------------------------------------------- $
-$ WAVEWATCH III shell input file                                       $
+$ WAVEWATCH III shel input file                                        $
 $ -------------------------------------------------------------------- $
 $ Define input to be used with F/T/C flag for use or nor or coupling and
 $ T/F flag for definition as a homogeneous field.

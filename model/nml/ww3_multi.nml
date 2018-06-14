@@ -1,254 +1,288 @@
 ! -------------------------------------------------------------------- !
-! Define top-level model parameters via domain_def_nml namelist
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     domain%nrinp  =  0  ! Number of grids defining input fields.
-!     domain%nrgrd  =  1  ! Number of wave model grids.
-!     domain%nmove  =  1  ! Number of moving grid inputs.
-!     domain%unipts =  f  ! Flag for using unified point output file.
-!     domain%iostyp =  1  ! Output server type as in ww3_shel.nml
-!     domain%upproc =  f  ! Flag for dedicated process for unified point output.
-!     domain%pshare =  f  ! Flag for grids sharing dedicated output processes.
-!     domain%flghg1 =  f  ! Flag for masking computation in two-way nesting
-!     domain%flghg2 =  f  ! Flag for masking at printout time
-!     domain%start  = '19680606 000000'  ! Start date for the entire model 
-!     domain%stop   = '19680607 000000'  ! Stop date for the entire model
+! WAVEWATCH III - ww3_multi.nml - multi-grid model                     !
 ! -------------------------------------------------------------------- !
-&domain_def_nml
-  domain%nrinp  = 3
-  domain%nrgrd  = 5
-  domain%unipts = t
-  domain%start  = '20100101 120000'
-  domain%stop   = '20101231 000000'
-/
-
 
 
 ! -------------------------------------------------------------------- !
-! Define each input grid via the input_grid_nml namelist
-! * namelist must be terminated with /
-! * index i must match indexes from 1 to domain%nrinp
-! * input(i)%name must be set for each active input grid i
-! * definitions & defaults:
-!     input(i)%name                  = 'unset'
-!     input(i)%forcing%water_levels  = f
-!     input(i)%forcing%currents      = f
-!     input(i)%forcing%winds         = f
-!     input(i)%forcing%ice_conc      = f
-!     input(i)%forcing%ice_param1    = f
-!     input(i)%forcing%ice_param2    = f
-!     input(i)%forcing%ice_param3    = f
-!     input(i)%forcing%ice_param4    = f
-!     input(i)%forcing%ice_param5    = f
-!     input(i)%forcing%mud_density   = f
-!     input(i)%forcing%mud_thickness = f
-!     input(i)%forcing%mud_viscosity = f
-!     input(i)%assim%mean            = f
-!     input(i)%assim%spec1d          = f
-!     input(i)%assim%spec2d          = f
-! -------------------------------------------------------------------- !
-&input_grid_nml
-
-  input(1)%name                  = 'atm'
-  input(1)%forcing%winds         = t
-  input(1)%forcing%mud_viscosity = t
-  input(1)%assim%mean            = t
-
-  input(2)%name                  = 'ocn'
-  input(2)%forcing%water_levels  = t
-  input(2)%forcing%currents      = t
-
-  input(3)%name                  = 'ice'
-  input(3)%forcing%ice_conc      = t
-  input(3)%forcing%ice_param1    = t
-  input(3)%forcing%ice_param2    = t
-
-/
-
-
-
-! -------------------------------------------------------------------- !
-! Define each model grid via the model_grid_nml namelist
-! * namelist must be terminated with /
-! * index i must match indexes from 1 to domain%nrgrd
-! * model(i)%name must be set for each active model grid i
-! * definitions & defaults:
-!     model(i)%name                  = 'unset'
-!     model(i)%forcing%water_levels  = 'no'
-!     model(i)%forcing%currents      = 'no'
-!     model(i)%forcing%winds         = 'no'
-!     model(i)%forcing%ice_conc      = 'no'
-!     model(i)%forcing%ice_param1    = 'no'
-!     model(i)%forcing%ice_param2    = 'no'
-!     model(i)%forcing%ice_param3    = 'no'
-!     model(i)%forcing%ice_param4    = 'no'
-!     model(i)%forcing%ice_param5    = 'no'
-!     model(i)%forcing%mud_density   = 'no'
-!     model(i)%forcing%mud_thickness = 'no'
-!     model(i)%forcing%mud_viscosity = 'no'
-!     model(i)%assim%mean            = 'no'
-!     model(i)%assim%spec1d          = 'no'
-!     model(i)%assim%spec2d          = 'no'
-!     model(i)%resource%rank_id      = i
-!     model(i)%resource%group_id     = 1
-!     model(i)%resource%sibling_id   = 0
-!     model(i)%resource%comm_frac    = 0.00,1.00
-!     model(i)%resource%bound_flag   = f
+! Define top-level model parameters via DOMAIN_NML namelist
 !
-!     model(4)%forcing = 'no' 'no' 'no' 'no' 'no' 'no'
+! * IOSTYP defines the output server mode for parallel implementation.
+!             0 : No data server processes, direct access output from
+!                 each process (requires true parallel file system).
+!             1 : No data server process. All output for each type 
+!                 performed by process that performs computations too.
+!             2 : Last process is reserved for all output, and does no
+!                 computing.
+!             3 : Multiple dedicated output processes.
 !
-!     model(2)%resource = 1 1 0 0.00 1.00 f
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     DOMAIN%NRINP  =  0  ! Number of grids defining input fields.
+!     DOMAIN%NRGRD  =  1  ! Number of wave model grids.
+!     DOMAIN%UNIPTS =  F  ! Flag for using unified point output file.
+!     DOMAIN%IOSTYP =  1  ! Output server type
+!     DOMAIN%UPPROC =  F  ! Flag for dedicated process for unified point output.
+!     DOMAIN%PSHARE =  F  ! Flag for grids sharing dedicated output processes.
+!     DOMAIN%FLGHG1 =  F  ! Flag for masking computation in two-way nesting
+!     DOMAIN%FLGHG2 =  F  ! Flag for masking at printout time
+!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model 
+!     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
-&model_grid_nml
-
-  model(1)%name                  = 'grd1'
-  model(1)%forcing%winds         = 'atm'
-  model(1)%forcing%currents      = 'ocn'
-  model(1)%forcing%water_levels  = 'ocn'
-
-  model(2)%name                  = 'grd2'
-  model(2)%forcing%winds         = 'atm'
-  model(2)%forcing%currents      = 'ocn'
-  model(2)%forcing%water_levels  = 'ocn'
-  model(2)%forcing%ice_conc      = 'ice'
-
-  model(3)%name                  = 'grd3'
-  model(3)%forcing%winds         = 'atm'
-  model(3)%forcing%currents      = 'ocn'
-  model(3)%forcing%water_levels  = 'ocn'
-  model(3)%forcing%ice_conc      = 'ice'
-
-  model(4)%name = 'grd4'
-  model(5)%name = 'grd5'
-
-  model(4)%forcing = 'ocn' 'ocn' 'atm' 'ice' 'ice' 'ice'
-  model(5)%forcing = 'ocn' 'ocn' 'atm' 'ice' 'ice' 'ice'
+&DOMAIN_NML
+  DOMAIN%NRINP  = 3
+  DOMAIN%NRGRD  = 5
+  DOMAIN%UNIPTS = T
+  DOMAIN%START  = '20100101 120000'
+  DOMAIN%STOP   = '20101231 000000'
+/
 
 
-  model(1)%resource = 1 1 0 0.00 0.50 t
-  model(2)%resource = 2 1 0 0.25 0.75 f
-  model(3)%resource = 3 1 0 0.50 1.00 f
-  model(4)%resource = 4 1 0 0.00 1.00 f
-  model(5)%resource = 4 1 0 0.00 1.00 f
 
-  model(5)%resource%bound_flag = t
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRINP
+! * INPUT(I)%NAME must be set for each active input grid I
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     INPUT(I)%NAME                  = 'unset'
+!     INPUT(I)%FORCING%WATER_LEVELS  = F
+!     INPUT(I)%FORCING%CURRENTS      = F
+!     INPUT(I)%FORCING%WINDS         = F
+!     INPUT(I)%FORCING%ICE_CONC      = F
+!     INPUT(I)%FORCING%ICE_PARAM1    = F
+!     INPUT(I)%FORCING%ICE_PARAM2    = F
+!     INPUT(I)%FORCING%ICE_PARAM3    = F
+!     INPUT(I)%FORCING%ICE_PARAM4    = F
+!     INPUT(I)%FORCING%ICE_PARAM5    = F
+!     INPUT(I)%FORCING%MUD_DENSITY   = F
+!     INPUT(I)%FORCING%MUD_THICKNESS = F
+!     INPUT(I)%FORCING%MUD_VISCOSITY = F
+!     INPUT(I)%ASSIM%MEAN            = F
+!     INPUT(I)%ASSIM%SPEC1D          = F
+!     INPUT(I)%ASSIM%SPEC2D          = F
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+
+  INPUT(1)%NAME                  = 'atm'
+  INPUT(1)%FORCING%WINDS         = T
+  INPUT(1)%FORCING%MUD_VISCOSITY = T
+  INPUT(1)%ASSIM%MEAN            = T
+
+  INPUT(2)%NAME                  = 'ocn'
+  INPUT(2)%FORCING%WATER_LEVELS  = T
+  INPUT(2)%FORCING%CURRENTS      = T
+
+  INPUT(3)%NAME                  = 'ice'
+  INPUT(3)%FORCING%ICE_CONC      = T
+  INPUT(3)%FORCING%ICE_PARAM1    = T
+  INPUT(3)%FORCING%ICE_PARAM2    = T
+
+/
+
+
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * MODEL(I)%NAME must be set for each active model grid I
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     MODEL(I)%NAME                  = 'unset'
+!     MODEL(I)%FORCING%WATER_LEVELS  = 'no'
+!     MODEL(I)%FORCING%CURRENTS      = 'no'
+!     MODEL(I)%FORCING%WINDS         = 'no'
+!     MODEL(I)%FORCING%ICE_CONC      = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM1    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM2    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM3    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM4    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM5    = 'no'
+!     MODEL(I)%FORCING%MUD_DENSITY   = 'no'
+!     MODEL(I)%FORCING%MUD_THICKNESS = 'no'
+!     MODEL(I)%FORCING%MUD_VISCOSITY = 'no'
+!     MODEL(I)%ASSIM%MEAN            = 'no'
+!     MODEL(I)%ASSIM%SPEC1d          = 'no'
+!     MODEL(I)%ASSIM%SPEC2d          = 'no'
+!     MODEL(I)%RESOURCE%RANK_ID      = I
+!     MODEL(I)%RESOURCE%GROUP_ID     = 1
+!     MODEL(I)%RESOURCE%SIBLING_ID   = 0
+!     MODEL(I)%RESOURCE%COMM_FRAC    = 0.00,1.00
+!     MODEL(I)%RESOURCE%BOUND_FLAG   = F
+!
+!     MODEL(4)%FORCING = 'no' 'no' 'no' 'no' 'no' 'no'
+!
+!     MODEL(2)%RESOURCE = 1 1 0 0.00 1.00 f
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+
+  MODEL(1)%NAME                  = 'grd1'
+  MODEL(1)%FORCING%WINDS         = 'atm'
+  MODEL(1)%FORCING%CURRENTS      = 'ocn'
+  MODEL(1)%FORCING%WATER_LEVELS  = 'ocn'
+
+  MODEL(2)%NAME                  = 'grd2'
+  MODEL(2)%FORCING%WINDS         = 'atm'
+  MODEL(2)%FORCING%CURRENTS      = 'ocn'
+  MODEL(2)%FORCING%WATER_LEVELS  = 'ocn'
+  MODEL(2)%FORCING%ICE_CONC      = 'ice'
+
+  MODEL(3)%NAME                  = 'grd3'
+  MODEL(3)%FORCING%WINDS         = 'atm'
+  MODEL(3)%FORCING%CURRENTS      = 'ocn'
+  MODEL(3)%FORCING%WATER_LEVELS  = 'ocn'
+  MODEL(3)%FORCING%ICE_CONC      = 'ice'
+
+  MODEL(4)%NAME = 'grd4'
+  MODEL(5)%NAME = 'grd5'
+
+  MODEL(4)%FORCING = 'ocn' 'ocn' 'atm' 'ice' 'ice' 'ice'
+  MODEL(5)%FORCING = 'ocn' 'ocn' 'atm' 'ice' 'ice' 'ice'
+
+
+  MODEL(1)%RESOURCE = 1 1 0 0.00 0.50 t
+  MODEL(2)%RESOURCE = 2 1 0 0.25 0.75 f
+  MODEL(3)%RESOURCE = 3 1 0 0.50 1.00 f
+  MODEL(4)%RESOURCE = 4 1 0 0.00 1.00 f
+  MODEL(5)%RESOURCE = 4 1 0 0.00 1.00 f
+
+  MODEL(5)%RESOURCE%BOUND_FLAG = t
 
 /
 
 
 ! -------------------------------------------------------------------- !
-! Define the output types point parameters via output_type_nml namelist
-! * namelist must be terminated with /
-! * index i must match indexes from 1 to domain%nrgrd
-! * alltype will apply the output types for all the model grids
-! * type(i) will apply the output types for the model grid number i
-! * need domain%unipts equal true to use a unified point output file
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * ALLTYPE will apply the output types for all the model grids
+! * ITYPE(I) will apply the output types for the model grid number I
+! * need DOMAIN%UNIPTS equal true to use a unified point output file
 ! * the point file is a space separated values per line : lon lat 'name'
 ! * the full list of field names is : 
 !  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
 !  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
 !  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S
 !  USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
-! * output track file formatted (t) or unformated (f)
-! * definitions & defaults:
-!     alltype%point%name         =  'unset'
-!     alltype%point%file         =  'unset'
-!     alltype%field%list         =  'unset'
-!     alltype%track%format       =  t
-!     alltype%partition%x0       =  0
-!     alltype%partition%xn       =  0
-!     alltype%partition%nx       =  0
-!     alltype%partition%y0       =  0
-!     alltype%partition%yn       =  0
-!     alltype%partition%ny       =  0
-!     alltype%partition%format   =  t
+! * output track file formatted (T) or unformated (F)
 !
-!     type(3)%track%format       =  f
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     ALLTYPE%FIELD%LIST         =  'unset'
+!     ALLTYPE%POINT%NAME         =  'unset'
+!     ALLTYPE%POINT%FILE         =  'points.list'
+!     ALLTYPE%TRACK%FORMAT       =  T
+!     ALLTYPE%PARTITION%X0       =  0
+!     ALLTYPE%PARTITION%XN       =  0
+!     ALLTYPE%PARTITION%NX       =  0
+!     ALLTYPE%PARTITION%Y0       =  0
+!     ALLTYPE%PARTITION%YN       =  0
+!     ALLTYPE%PARTITION%NY       =  0
+!     ALLTYPE%PARTITION%FORMAT   =  T
+!
+!     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
-&output_type_nml
-  alltype%point%name     = 'points'
-  alltype%point%file     = 'points.list'
-  alltype%field%list     = 'HS DIR SPR'
+&OUTPUT_TYPE_NML
+  ALLTYPE%POINT%NAME     = 'points'
+  ALLTYPE%FIELD%LIST     = 'HS DIR SPR'
 
-  type(3)%field%list     = 'HS DIR SPR WND ICE CUR LEV'
+  ITYPE(1)%FIELD%LIST    = 'HS DIR SPR WND ICE CUR LEV'
 /
 
 
 
 ! -------------------------------------------------------------------- !
-! Define output dates via output_date_nml namelist
-! * namelist must be terminated with /
-! * index i must match indexes from 1 to domain%nrgrd
-! * alldate will apply the output dates for all the model grids
-! * date(i) will apply the output dates for the model grid number i
+! Define output dates via OUTPUT_DATE_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * ALLDATE will apply the output dates for all the model grids
+! * IDATE(I) will apply the output dates for the model grid number i
 ! * start and stop times are with format 'yyyymmdd hhmmss'
 ! * if time stride is equal '0', then output is disabled
 ! * time stride is given in seconds
 ! * it is possible to overwrite a global output date for a given grid
-! * definitions & defaults:
-!     alldate%field%start         =  '19680606 000000'
-!     alldate%field%stride        =  '0'
-!     alldate%field%stop          =  '19680607 000000'
-!     alldate%point%start         =  '19680606 000000'
-!     alldate%point%stride        =  '0'
-!     alldate%point%stop          =  '19680607 000000'
-!     alldate%track%start         =  '19680606 000000'
-!     alldate%track%stride        =  '0'
-!     alldate%track%stop          =  '19680607 000000'
-!     alldate%restart%start       =  '19680606 000000'
-!     alldate%restart%stride      =  '0'
-!     alldate%restart%stop        =  '19680607 000000'
-!     alldate%boundary%start      =  '19680606 000000'
-!     alldate%boundary%stride     =  '0'
-!     alldate%boundary%stop       =  '19680607 000000'
-!     alldate%partition%start     =  '19680606 000000'
-!     alldate%partition%stride    =  '0'
-!     alldate%partition%stop      =  '19680607 000000'
-!     
-!     alldate%restart             =  '19680606 000000' '0' '19680607 000000'
 !
-!     date(3)%partition%startdate =  '19680606 000000' 
-! -------------------------------------------------------------------- !
-&output_date_nml
-  alldate%field%start  = '20100101 000000'
-  alldate%field%stride = '3600'
-  alldate%field%stop   = '20101231 000000'
-  alldate%point%start  = '20100101 000000'
-  alldate%point%stride = '3600'
-  alldate%point%stop   = '20101231 000000'
-
-  alldate%restart      = '20101231 000000' '43200' '20501231 000000'
-
-  date(5)%partition%start  = '20100601 000000' 
-  date(5)%partition%stride = '3600' 
-  date(5)%partition%start  = '20101201 000000' 
-/
-
-
-
-
-! -------------------------------------------------------------------- !
-! Define homogeneous input via homonegenous_input_nml namelist
 ! * namelist must be terminated with /
-! * index i must match indexes from 1 to domain%nrgrd
-! * the number of moving grid inputs is defined by domain_def%nmove
-! * each homogeneous input must start from index 1 to nmove
-! * if speed is equal 0, then the moving grid is desactivated
 ! * definitions & defaults:
-!     homogeneous%n_moving             =  0
-!     homogeneous(1)%moving%start      =  '19680606 000000'
-!     homogeneous(1)%moving%speed      =  0
-!     homogeneous(1)%moving%direction  =  0
-!     homogeneous(1)%moving%gradient   =  0
-!     ...
-!     homogeneous(3)%moving%start      =  '19680606 000000'
+!     ALLDATE%FIELD%START         =  '19680606 000000'
+!     ALLDATE%FIELD%STRIDE        =  '0'
+!     ALLDATE%FIELD%STOP          =  '19680607 000000'
+!     ALLDATE%POINT%START         =  '19680606 000000'
+!     ALLDATE%POINT%STRIDE        =  '0'
+!     ALLDATE%POINT%STOP          =  '19680607 000000'
+!     ALLDATE%TRACK%START         =  '19680606 000000'
+!     ALLDATE%TRACK%STRIDE        =  '0'
+!     ALLDATE%TRACK%STOP          =  '19680607 000000'
+!     ALLDATE%RESTART%START       =  '19680606 000000'
+!     ALLDATE%RESTART%STRIDE      =  '0'
+!     ALLDATE%RESTART%STOP        =  '19680607 000000'
+!     ALLDATE%BOUNDARY%START      =  '19680606 000000'
+!     ALLDATE%BOUNDARY%STRIDE     =  '0'
+!     ALLDATE%BOUNDARY%STOP       =  '19680607 000000'
+!     ALLDATE%PARTITION%START     =  '19680606 000000'
+!     ALLDATE%PARTITION%STRIDE    =  '0'
+!     ALLDATE%PARTITION%STOP      =  '19680607 000000'
+!     
+!     ALLDATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
+!
+!     IDATE(3)%PARTITION%START    =  '19680606 000000' 
 ! -------------------------------------------------------------------- !
-&homogeneous_input_nml
-  homogeneous(1)%moving%start      =  '20100610 000000'
-  homogeneous(1)%moving%speed      =  5.
-  homogeneous(1)%moving%direction  =  90.
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD%START         = '20100101 000000'
+  ALLDATE%FIELD%STRIDE        = '3600'
+  ALLDATE%FIELD%STOP          = '20101231 000000'
+  ALLDATE%POINT%START         = '20100101 000000'
+  ALLDATE%POINT%STRIDE        = '3600'
+  ALLDATE%POINT%STOP          = '20101231 000000'
+
+  ALLDATE%RESTART             = '20101231 000000' '43200' '20501231 000000'
+
+  IDATE(5)%PARTITION%START    = '20100601 000000' 
+  IDATE(5)%PARTITION%STRIDE   = '3600' 
+  IDATE(5)%PARTITION%START    = '20101201 000000' 
 /
 
+
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_NUMBER_NML and HOMOG_INPUT_NML namelist
+!
+! * the number of each homogeneous input is defined by HOMOG_NUMBER
+! * the total number of homogeneous input is automatically calculated
+! * the homogeneous input must start from index 1 to N
+! * if VALUE1 is equal 0, then the homogeneous input is desactivated
+! * NAME can only be MOV
+! * each homogeneous input is defined over a maximum of 3 values detailled below :
+!     - MOV is defined by speed and direction
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     HOMOG_NUMBER%N_MOV            =  0
+!
+!     HOMOG_INPUT(I)%NAME           =  'unset'
+!     HOMOG_INPUT(I)%DATE           =  '19680606 000000'
+!     HOMOG_INPUT(I)%VALUE1         =  0
+!     HOMOG_INPUT(I)%VALUE2         =  0
+!     HOMOG_INPUT(I)%VALUE3         =  0
+! -------------------------------------------------------------------- !
+&HOMOG_NUMBER_NML
+  HOMOG_NUMBER%N_MOV        = 1
+/
+
+&HOMOG_INPUT_NML
+  HOMOG_INPUT(1)%NAME       = 'MOV'
+  HOMOG_INPUT(1)%DATE       ='20100610 000000'
+  HOMOG_INPUT(1)%VALUE1     = 5.
+  HOMOG_INPUT(1)%VALUE2     = 90.
+/
+
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
 
 
 

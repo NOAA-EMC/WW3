@@ -881,7 +881,7 @@
                prop=
              source="$pdlibcode $pdlibyow $db $bt $setupcode $stx $nlx $btx $is wmmdatmd w3parall w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux='constants w3servmd w3timemd w3cspcmd' ;;
+                aux='constants w3servmd w3timemd w3cspcmd w3nmlbouncmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
@@ -912,7 +912,7 @@
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $couplmd $agcmmd $ogcmmd $igcmmd"
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode"
-                aux="$aux $pdlibyow" ;;
+                aux="$aux w3nmlshelmd $pdlibyow" ;;
     ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]
                then
@@ -976,7 +976,7 @@
              source="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd'
-                aux="$aux" ;;
+                aux="$aux w3nmlounfmd" ;;
      ww3_outp) IDstring='Point output'
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -991,7 +991,7 @@
              source="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd'
-                aux="$aux" ;;
+                aux="$aux w3nmlounpmd" ;;
      ww3_trck) IDstring='Track output post'
                core=
                data="$memcode w3gdatmd w3odatmd"
@@ -1005,7 +1005,7 @@
                prop=
              source=
                  IO=
-                aux="constants w3servmd w3timemd w3gsrumd" ;;
+                aux="constants w3servmd w3timemd w3gsrumd w3nmltrncmd" ;;
      ww3_grib) IDstring='Gridded output (GRIB)'
                core=
                data="w3parall wmmdatmd w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -1224,7 +1224,8 @@
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
                WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD \
                w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD W3IGCMMD \
-               W3NMLMULTIMD W3NMLPRNCMD W3NMLOUNFMD W3NMLOUNPMD
+               W3NMLMULTIMD W3NMLPRNCMD W3NMLOUNFMD W3NMLOUNPMD W3NMLTRNCMD \
+               W3NMLBOUNCMD W3NMLSHELMD
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1334,6 +1335,11 @@
          'W3IGCMMD'     ) modtest=w3igcmmd.o ;;
          'W3NMLMULTIMD' ) modtest=w3nmlmultimd.o ;;
          'W3NMLPRNCMD' ) modtest=w3nmlprncmd.o ;;
+         'W3NMLOUNFMD' ) modtest=w3nmlounfmd.o ;;
+         'W3NMLOUNPMD' ) modtest=w3nmlounpmd.o ;;
+         'W3NMLTRNCMD' ) modtest=w3nmltrncmd.o ;;
+         'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
+         'W3NMLSHELMD' ) modtest=w3nmlshelmd.o ;;
          'W3NETCDF'     ) modtest=w3netcdf.o ;;
          'yowfunction'  ) modtest=yowfunction.o ;;
          'yowDatapool'  ) modtest=yowdatapool.o ;;
@@ -1347,9 +1353,6 @@
          'PDLIB_FIELD_VEC'   ) modtest=pdlib_field_vec.o ;;
          'PDLIB_W3PROFSMD'    ) modtest=w3profsmd_pdlib.o ;;
          'W3PARALL'     ) modtest=w3parall.o ;;
-         'W3IGCMMD'     ) modtest=w3igcmmd.o ;;
-         'W3NMLMULTIMD' ) modtest=w3nmlmultimd.o ;;
-         'W3NMLPRNCMD' ) modtest=w3nmlprncmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]

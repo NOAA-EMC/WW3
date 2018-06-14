@@ -29,7 +29,7 @@ CC          = icc
 AR          = ar
 ARFLAGS     = -ruv
 F90COMP     = -CB -O0 -fpe0 -traceback -assume byterecl -convert big_endian
-F90LINK     = -O0 -Zp8
+F90LINK     = -O0
 #
 # MPI library
 MPI         = $(shell which mpiifort)

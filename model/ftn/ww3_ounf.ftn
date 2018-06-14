@@ -25,6 +25,7 @@
 !/    01-Mar-2018 : RTD option add variable de-rotation,( version 6.02 )
 !/                  standard lat-lons and rotated grid
 !/                  metadata
+!/    15-May-2018 : Add namelist feature                ( version 6.XX )
 !/    06-Jun-2018 : Add DEBUG/SETUP                     ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -39,12 +40,10 @@
 !  2. Method :
 !
 !     Data is read from the grid output file out_grd.ww3 (raw data)
-!     and from the file ww3_ounf.inp ( NDSI, output requests ).
+!     and from the file ww3_ounf.nml or ww3_ounf.inp (NDSI)
 !     Model definition and raw data files are read using WAVEWATCH III
 !     subroutines. Extra global NetCDF attributes may be read from 
-!     NC_globatt.inp
-!
-!     Could be merged with ww3_outf.ftn if NOAA/NCEP agrees (hence type 4)
+!     ASCII file NC_globatt.inp.
 !
 !     Output types :
 !      4 : NetCDF files
@@ -104,7 +103,7 @@
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD
+      USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD, W3FLGRDFLAG
       USE W3INITMD, ONLY: WWVER, SWITCHES
       USE W3ODATMD, ONLY: NAPROC
 !/DEBUG      USE W3ODATMD, only : IAPROC
@@ -113,7 +112,7 @@
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
-                          THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,      &
+                          THS, FP0, THP0, DTDYN, FCUT,                 &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           TAUOX, TAUOY, TAUWIX,                        &
@@ -126,10 +125,10 @@
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
                           WN, USSP
-      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT, UNDEF,&
-                          FLOGRD, FNMPRE, NOSWLL, NOGE
+      USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
+                          UNDEF, FLOGRD, FNMPRE
 !
-
+      USE W3NMLOUNFMD
       USE NETCDF
 
       IMPLICIT NONE
@@ -138,24 +137,31 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NDSI, NDSM, NDSOG,                       &
-                                 NDSTRC, NTRACE, IERR, I, J, I1F, I2F,    &
-                                 TOUT(2), TDUM(2), IOTEST, NOUT, IFI, IFJ,&
-                                 NCTYPE, IX1, IXN, IY1, IYN,              &
-                                 IOUT, S3, iret,                          &
-                                 NBIPART, CNTIPART, NCVARTYPE, IPART,     &
-                                 NCIDS(NOGRP,NGRPP,6)
-      INTEGER                 :: iyc, imc, idc, ihc, iminc, isc
-      CHARACTER*30            :: stopdate
+      TYPE(NML_FIELD_T)       :: NML_FIELD
+      TYPE(NML_FILE_T)        :: NML_FILE
+!
+      INTEGER                 :: NDSI, NDSM, NDSOG,                    &
+                                 NDSTRC, NTRACE, IERR, I, I1F, I2F,    &
+                                 IOTEST, NOUT,                         &
+                                 IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
+                                 IOUT, S3, IRET, HASNC4,               &
+                                 NBIPART, CNTIPART, NCVARTYPE, IPART
+      INTEGER                 :: TOUT(2), TDUM(2),                     &
+                                 NCIDS(NOGRP,NGRPP,6), STOPDATE(8)
+!
       INTEGER, ALLOCATABLE    :: TABIPART(:)
+!
 !/S      INTEGER, SAVE           :: IENT = 0
+!
       REAL                    :: DTREQ, DTEST
-      CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,          &
-                                 FILEPREFIX*30, STRINGIPART*30
-      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),         &
-                                 VECTOR, TOGETHER
-      INTEGER                 :: HasNC4
-      INTEGER                 :: eVal2, eVal3
+!
+      CHARACTER*30            :: STRSTOPDATE, FILEPREFIX, STRINGIPART
+      CHARACTER*1024          :: FLDOUT
+      CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
+!
+      LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
+                                 VECTOR, TOGETHER, FLGNML
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -182,13 +188,6 @@
 !
       WRITE (NDSO,900)
 !
-      J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_ounf.inp',STATUS='OLD',       &
-            ERR=800,IOSTAT=IERR)
-      READ (NDSI,'(A)',END=801,ERR=802) COMSTR
-      IF (COMSTR.EQ.' ') COMSTR = '$'
-      WRITE (NDSO,901) COMSTR
-!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Read model definition file.
 !
@@ -213,44 +212,110 @@
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4.  Read requests from input file.
-!     Output times
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+
+!
+! process ww3_ounf namelist
+!
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounf.nml", EXIST=FLGNML) 
+      IF (FLGNML) THEN
+        ! Read namelist
+        CALL W3NMLOUNF (NDSI, TRIM(FNMPRE)//'ww3_ounf.nml', NML_FIELD, NML_FILE, IERR)
+
+! 4.1 Time setup
+        READ(NML_FIELD%TIMESTRIDE, *)  DTREQ
+        READ(NML_FIELD%TIMECOUNT, *)   NOUT
+        READ(NML_FIELD%TIMESTART, *)   TOUT(1), TOUT(2)
+
+! 4.2 Output fields
+        FLDOUT = NML_FIELD%LIST
+        CALL W3FLGRDFLAG ( NDSO, SCREEN, NDSE, FLDOUT, FLG1D,       &
+                           FLG2D, 1, 1, IERR )
+        IF (IERR.NE.0) GOTO 800 
+
+! 4.3 Output type
+        NCTYPE = NML_FILE%NETCDF
+        NCVARTYPE = NML_FIELD%TYPE
+        STRINGIPART = NML_FIELD%PARTITION
+        TOGETHER = NML_FIELD%SAMEFILE
+        FILEPREFIX = NML_FILE%PREFIX
+        S3 = NML_FIELD%TIMESPLIT
+        IX1 = NML_FILE%IX0
+        IXN = NML_FILE%IXN 
+        IY1 = NML_FILE%IY0 
+        IYN = NML_FILE%IYN
+
+      END IF ! FLGNML
+
+!
+! process old ww3_ounf.inp format
+!
+      IF (.NOT. FLGNML) THEN
+        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_ounf.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
+        REWIND (NDSI)
+
+        READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+        IF (COMSTR.EQ.' ') COMSTR = '$'
+        WRITE (NDSO,901) COMSTR
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+
+! 4.1 Time setup
+        READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+
+! 4.2 Output fields
+        CALL W3READFLGRD ( NDSI, NDSO, SCREEN, NDSE, COMSTR, FLG1D,      &
+                           FLG2D, 1, 1, IERR )
+        IF (IERR.NE.0) GOTO 800 
+
+! 4.3 Output type
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) NCTYPE, NCVARTYPE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) TOGETHER
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        FILEPREFIX= 'ww3.'
+        READ (NDSI,*,END=801,ERR=802) FILEPREFIX
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) S3
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
+
+        CLOSE(NDSI,ERR=800,IOSTAT=IERR)
+
+      END IF ! .NOT. FLGNML
+
+!
+
+! 4.1 Time setup
       DTREQ  = MAX ( 0. , DTREQ )
       IF ( DTREQ.EQ.0. ) NOUT = 1
       NOUT   = MAX ( 1 , NOUT )
-!
       CALL STME21 ( TOUT , IDTIME )
       WRITE (NDSO,940) IDTIME
-!
       TDUM = 0
       CALL TICK21 ( TDUM , DTREQ )
       CALL STME21 ( TDUM , IDTIME )
       IF ( DTREQ .GE. 86400. ) THEN
-          WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
-        ELSE
-          IDDDAY = '           '
-        END IF
+        WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
+      ELSE
+        IDDDAY = '           '
+      END IF
       IDTIME(1:11) = IDDDAY
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
 
 
-! 4.1 Output fields
-      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
-                         FLREQ, 1, 1, IERR )
-      IF (IERR.NE.0) GOTO 800 
-
-! 4.2 Output of output fields
+! 4.2 Output fields
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
-          IF ( FLREQ(IFI,IFJ) ) THEN
+          IF ( FLG2D(IFI,IFJ) ) THEN
             IF ( FLOGRD(IFI,IFJ) ) THEN
               WRITE (NDSO,946) IDOUT(IFI,IFJ), ' '
             ELSE
               WRITE (NDSO,946) IDOUT(IFI,IFJ), '*** NOT AVAILABLE ***'
-              FLREQ(IFI,IFJ) = .FALSE.
+              FLG2D(IFI,IFJ) = .FALSE.
             END IF
           END IF
         END DO
@@ -258,10 +323,6 @@
 
 
 ! 4.3 Output type
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) NCTYPE, NCVARTYPE
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
       NBIPART=0
       DO I=1,29
         IF ((STRINGIPART(I:I+1).EQ.'0').OR.(STRINGIPART(I:I+1).EQ.'1')      &
@@ -277,36 +338,24 @@
             .OR.(STRINGIPART(I:I+1).EQ.'2').OR.(STRINGIPART(I:I+1).EQ.'3')  &
             .OR.(STRINGIPART(I:I+1).EQ.'4').OR.(STRINGIPART(I:I+1).EQ.'5')) THEN
           CNTIPART=CNTIPART+1
-          read(STRINGIPART(I:I+1),'(I1)') TABIPART(CNTIPART)
+          READ(STRINGIPART(I:I+1),'(I1)') TABIPART(CNTIPART)
         END IF
       END DO
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) TOGETHER
-
+!
       IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
         WRITE (NDSE,1010) NCTYPE
         CALL EXTCDE ( 1 )
       END IF
       ! if NCTYPE = 4 checking that it is compiled with NC4
-      HasNC4=0
-!/NC4      HasNC4=1
-      IF ((HasNC4 .eq. 0).and.(NCTYPE.eq.4)) THEN
+      HASNC4=0
+!/NC4      HASNC4=1
+      IF ((HASNC4 .EQ. 0).AND.(NCTYPE.EQ.4)) THEN
         WRITE (NDSE,1012)
         CALL EXTCDE ( 1 )
       END IF
-      !IPART  = MAX ( 0 , MIN ( NOSWLL , IPART ) )
-
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      FILEPREFIX= 'ww3.'
-      READ (NDSI,*,END=801,ERR=802) FILEPREFIX
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
       ! S3 defines the number of characters in the date for the filename
       ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDTHHZ ...
-      READ (NDSI,*,END=801,ERR=802) S3
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802)                                   &
-            IX1, IXN, IY1, IYN
       IX1    = MAX ( IX1 , 1 )
       IXN    = MIN ( IXN , NX )
       IY1    = MAX ( IY1 , 1 )
@@ -314,29 +363,6 @@
       VECTOR = .TRUE.
       WRITE (NDSO,3940) IX1, IXN, IY1, IYN
 
-
-! 4.4 Output of output fields
-      WRITE (NDSO,945)
-      DO IFI=1, NOGRP
-        DO IFJ=1, NGRPP
-          IF ( FLREQ(IFI,IFJ) ) THEN
-            IF ( FLOGRD(IFI,IFJ) ) THEN
-              WRITE (NDSO,946) IDOUT(IFI,IFJ), ' '
-            ELSE
-              WRITE (NDSO,946) IDOUT(IFI,IFJ), '*** NOT AVAILABLE ***'
-              FLREQ(IFI,IFJ) = .FALSE.
-            END IF
-          END IF
-        END DO
-      END DO
-!
-      !IF ( FLOG(4) ) THEN
-      !    IF ( IPART .EQ. 0 ) THEN
-      !        WRITE (NDSO,948)
-      !      ELSE
-      !        WRITE (NDSO,949) IPART
-      !      END IF
-      !  END IF
 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -373,17 +399,12 @@
 ! 5.1.2  Processes the variable value for the time step IOUT
         CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
                       E3DF, P2MSF, US3DF, USSPF, NCTYPE, TOGETHER, NCVARTYPE,&
-                      FLREQ, NCIDS, S3, stopdate )
+                      FLG2D, NCIDS, S3, STRSTOPDATE )
 
 ! 5.1.3 Defines the stop date
-        iyc=TOUT(1)/10000
-        imc=(TOUT(1)-iyc*10000)/100
-        idc=TOUT(1)-iyc*10000-100*imc
-        ihc=TOUT(2)/10000
-        iminc=(TOUT(2)-ihc*10000)/100
-        isc=TOUT(2)-ihc*10000-100*iminc
-        ! Puts the start and stop date in global attributes
-        WRITE(stopdate,'(I4.4,A,4(I2.2,A),I2.2)') iyc,'-',imc,'-',idc,' ',ihc,':',iminc,':',isc 
+        CALL T2D(TOUT,STOPDATE,IERR)
+        WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
+              '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7) 
 
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
@@ -391,39 +412,39 @@
 
 
 ! 5.2 Closes the netCDF file
-      IF (TOGETHER .AND. ncids(1,1,1).NE.0) THEN
-        iret = nf90_redef(ncids(1,1,1))
-        call check_err(iret)
-        iret=nf90_put_att(ncids(1,1,1),NF90_GLOBAL,'stop_date',stopdate)
-        call check_err(iret)
-        iret=nf90_close(ncids(1,1,1))
-        call check_err(iret)
+      IF (TOGETHER .AND. NCIDS(1,1,1).NE.0) THEN
+        IRET = NF90_REDEF(NCIDS(1,1,1))
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCIDS(1,1,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_CLOSE(NCIDS(1,1,1))
+        CALL CHECK_ERR(IRET)
       END IF
 !
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
-          IF ( FLREQ(IFI,IFJ) ) THEN
+          IF ( FLG2D(IFI,IFJ) ) THEN
             IF ( FLOGRD(IFI,IFJ) ) THEN
               IF (.NOT. TOGETHER) THEN
-                IF (ncids(IFI,IFJ,1).NE.0) THEN
-                  iret = nf90_redef(ncids(IFI,IFJ,1))
-                  call check_err(iret)
-                  iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
-                  call check_err(iret)
-                  iret=nf90_close(ncids(IFI,IFJ,1))
-                  call check_err(iret)
+                IF (NCIDS(IFI,IFJ,1).NE.0) THEN
+                  IRET = NF90_REDEF(NCIDS(IFI,IFJ,1))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_CLOSE(NCIDS(IFI,IFJ,1))
+                  CALL CHECK_ERR(IRET)
                 END IF ! NCIDS
                 ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
                 IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
                   DO IPART=1,5
-                    IF (ncids(IFI,IFJ,IPART+1).NE.0) THEN
-                      iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
-                      call check_err(iret)
-                      iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
-                      call check_err(iret)
+                    IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
+                      IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
+                      CALL CHECK_ERR(IRET)
+                      IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                      CALL CHECK_ERR(IRET)
 
-                      iret=nf90_close(ncids(IFI,IFJ,IPART+1))
-                      call check_err(iret)
+                      IRET=NF90_CLOSE(NCIDS(IFI,IFJ,IPART+1))
+                      CALL CHECK_ERR(IRET)
                     END IF ! NCIDS
                   END DO ! IPART
                 END IF ! partition
@@ -433,18 +454,18 @@
                 IF ( ((IFI.EQ.6).AND.(IFJ.EQ.8)) .OR.                 &
                      ((IFI.EQ.6).AND.(IFJ.EQ.9)) .OR.                 &
                      (IFI.EQ.3) ) THEN
-                  IF (ncids(IFI,IFJ,1).NE.0) THEN
-                    iret = nf90_redef(ncids(IFI,IFJ,1))
-                    call check_err(iret)
-                    iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
-                    call check_err(iret)
-                    iret=nf90_close(ncids(IFI,IFJ,1))
-                    call check_err(iret)
+                  IF (NCIDS(IFI,IFJ,1).NE.0) THEN
+                    IRET = NF90_REDEF(NCIDS(IFI,IFJ,1))
+                    CALL CHECK_ERR(IRET)
+                    IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                    CALL CHECK_ERR(IRET)
+                    IRET=NF90_CLOSE(NCIDS(IFI,IFJ,1))
+                    CALL CHECK_ERR(IRET)
                   END IF ! NCIDS
                 END IF ! IFI
               END IF ! TOGETHER
             END IF ! FLOGRD
-          END IF ! FLREQ
+          END IF ! FLG2D
         END DO ! IFJ
       END DO ! IFI
 
@@ -496,7 +517,7 @@
  3940 FORMAT ( '      X range : ',2I7/                                &
                '      Y range : ',2I7)
 !
-  970 FORMAT (//'  Generating files '/                                &
+  970 FORMAT (/'  Generating files '/                                 &
                ' --------------------------------------------------')
   971 FORMAT ( '      Files for ',A)
 !
@@ -518,7 +539,7 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
  1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
-               '     NCTYPE = 4 but ww3_ounf is compiled without NC4'/)
+               '     NCTYPE = 4 BUT NOT COMPILED WITH NC4'/)
 !/
 !/ Internal subroutine W3EXNC ---------------------------------------- /
 !/
@@ -526,7 +547,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,             &
                           FILEPREFIX, E3DF, P2MSF, US3DF, USSPF,NCTYPE, &
-                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS, S3, stopdate )
+                          TOGETHER, NCVARTYPEI, FLG2D, NCIDS, S3, STRSTOPDATE )
 !/
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
@@ -605,7 +626,7 @@
       USE W3SERVMD, ONLY : W3S2XY
 !/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
-      USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2, GNAME
+      USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2
       USE NETCDF
       IMPLICIT NONE
 
@@ -618,63 +639,61 @@
                                  USSPF(2), NCTYPE, NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
-      LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
+      LOGICAL, INTENT(IN)     :: FLG2D(NOGRP,NGRPP)
       INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6), S3
-      CHARACTER*30,INTENT(IN) :: stopdate
+      CHARACTER*30,INTENT(IN) :: STRSTOPDATE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IFI, IFJ,    &
-                                 MFILL, I, ISEA, IX, IY,      &
+      INTEGER                 :: IFI, IFJ, MFILL, I, ISEA, IX, IY,     &
                                  I1, J1, IPART, INDEXIPART
-      INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY)
-      ! Make the below allocatable to avoid stack overflow on some machines
-      INTEGER(KIND=2), ALLOCATABLE :: MX1(:,:), MXX(:,:), MYY(:,:),            &
-                                     MXY(:,:), MAPOUT(:,:)
-      REAL   (KIND=4), ALLOCATABLE :: MX1R(:,:), MXXR(:,:), MYYR(:,:),         &
-                                      MXYR(:,:)
-      REAL   (KIND=4)         :: MFILLR
+      INTEGER                 :: S1, S2, S4, S5, NCID, COORDTYPE,      & 
+                                 MAPSTAOUT, NDSDAT, VMIN, VMAX,        &
+                                 NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
+                                 IVAR1, IDVAROUT, NCVARTYPE
+      INTEGER                 :: DIMID(6), VARID(300), START(4),       &
+                                 COUNT(4), DIMLN(6),START1D(2),        &
+                                 COUNT1D(2), DIMFIELD(3),              &
+                                 STARTDATE(8), CURDATE(8), REFDATE(8), &
+                                 MAP(NX+1,NY), MP2(NX+1,NY)
 !
-      INTEGER                 :: S1, S2, S4, S5, NCID, COORDTYPE,               & 
-                                 MAPSTAOUT, NDSDAT,                            &
-                                 NFIELD, N, IRET, IK,                          &
-                                 dimid(6), varid(300), extradim, ivar,         &
-                                 ivar1, idvarout, start(4),count(4),     &
-                                 dimln(6),start1D(2), count1D(2), dimfield(3), &
-                                 iyc, imc, idc, ihc, iminc, isc, NCVARTYPE
-!/NC4    INTEGER                  :: deflate=1
-
-     INTEGER(KIND=4)          :: VMIN, VMAX
-
-      INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
-
-      CHARACTER*80            :: varnm(8),varnl(8)
-      CHARACTER*120           :: varns(8),varnc(8),varng(8),varnd(8),str2
-      CHARACTER*20            :: unitvar(3),FORMAT1
-      CHARACTER*30            :: startdate
-
-      DOUBLE PRECISION        :: timenc
-      REAL,DIMENSION(:),  ALLOCATABLE    :: lon, lat, freq
-      REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2D, lat2D, AnglD2D
-!/RTD      REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2Deq, lat2Deq
-
+!/NC4    INTEGER                  :: DEFLATE=1
 !/S      INTEGER, SAVE           :: IENT   =   0
-      REAL                    :: FSC, FSC3, CABS, UABS
+!
+      INTEGER, ALLOCATABLE    :: TRIGP2(:,:)
       ! Make the below allocatable to avoid stack overflow on some machines 
-      REAL, ALLOCATABLE       :: X1(:,:), X2(:,:),                    &
-                                 XX(:,:), XY(:,:),                    &
-                                 XK(:,:,:), XXK(:,:,:),               &
-                                 XYK(:,:,:)
+      INTEGER(KIND=2), ALLOCATABLE    :: MX1(:,:), MXX(:,:), MYY(:,:), &
+                                         MXY(:,:), MAPOUT(:,:)
+!
+      REAL                    :: FSC, FSC3, CABS, UABS, MFILLR
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
+!
+      REAL,DIMENSION(:),  ALLOCATABLE    :: LON, LAT, FREQ
+      REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2D, LAT2D, ANGLD2D
+      ! Make the below allocatable to avoid stack overflow on some machines 
+      REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
+                                 XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    & 
+                                 MX1R(:,:), MXXR(:,:), MYYR(:,:),      &
+                                 MXYR(:,:)
+!
+      DOUBLE PRECISION        :: OUTJULDAY
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
-      LOGICAL                 :: FLFRQ, FLDIR
-      LOGICAL                 :: CUSTOMFRQ=.FALSE.
-!/T      LOGICAL                 :: LTEMP(NGRPP)
-      CHARACTER               :: FNAMENC*50,                          &
+!
+      CHARACTER*80            :: VARNM(8),VARNL(8)
+      CHARACTER*120           :: VARNS(8),VARNC(8),VARNG(8), VARND(8), &
+                                 STR2
+      CHARACTER*20            :: UNITVAR(3),FORMAT1
+      CHARACTER*30            :: STRSTARTDATE
+      CHARACTER               :: FNAMENC*50,                           &
                                  ENAME*6,FORMF*11, UNITS*20, UNITS2*20
       CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
+!
+      LOGICAL                 :: FLFRQ, FLDIR
+      LOGICAL                 :: CUSTOMFRQ=.FALSE.
+!/T      LOGICAL                 :: LTEMP(NGRPP)
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -682,11 +701,10 @@
 !/S      CALL STRACE (IENT, 'W3EXNC')
 !
 !/T      DO IFI=1, NOGRP 
-!/T        LTEMP  = FLREQ(IFI,:)
+!/T        LTEMP  = FLG2D(IFI,:)
 !/T        WRITE (NDST,9000) IFI, LTEMP
 !/T        END DO
-!/T      WRITE (NDST,9001) NCTYPE, IX1, IXN, IY1, IYN,               &
-!/T                        VECTOR
+!/T      WRITE (NDST,9001) NCTYPE, IX1, IXN, IY1, IYN, VECTOR
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -703,6 +721,9 @@
       MAPSTAOUT = 1
       NCVARTYPE  = NCVARTYPEI
       NDSDAT=30
+!
+!
+      CALL U2D('days since 1990-01-01 00:00:00',REFDATE,IERR)
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT
@@ -758,17 +779,17 @@
         DO IFJ=1, NGRPP
           ENAME='      '
           ! If the flag for the variable IFI of the group IFJ is .TRUE.
-          IF ( FLREQ(IFI,IFJ) ) THEN
+          IF ( FLG2D(IFI,IFJ) ) THEN
             ! Instanciates the partition array
             INDEXIPART=1
             IPART=TABIPART(INDEXIPART)
-            varns(:)=''
+            VARNS(:)=''
 
 
 !  Loop over IPART for partition variables
 555         CONTINUE
 
-            ! Initializes the index of field and group at the first flag FLREQ at .TRUE.
+            ! Initializes the index of field and group at the first flag FLG2D at .TRUE.
             IF (I1.EQ.0) I1=IFI
             IF (J1.EQ.0) J1=IFJ
             FORMF  = '(1X,32I5)'
@@ -789,14 +810,14 @@
               ENAME  = '.dpt'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DW(1:NSEA)        &
                                                             , MAPSF, X1 )
-              varnm(1)='dpt'
-              varnl(1)='depth'
-              varns(1)='depth'
-              varng(1)='depth'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = -90000 
-              vmax = 140000
+              VARNM(1)='dpt'
+              VARNL(1)='depth'
+              VARNS(1)='depth'
+              VARNG(1)='depth'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = -90000 
+              VMAX = 140000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
@@ -827,28 +848,28 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
               !                                          , MAPSF, X2 )
               NFIELD=2
-              varnm(1)='ucur'
-              varnm(2)='vcur'
-              varnl(1)='eastward current'
-              varnl(2)='northward current'
-              varns(1)='eastward_sea_water_velocity'
-              varns(2)='northward_sea_water_velocity'
-              varng(1)='eastward_sea_water_velocity'
-              varng(2)='northward_sea_water_velocity'
-              varnc(1)='cur=sqrt(U**2+V**2)'
-              varnc(2)='cur=sqrt(U**2+V**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='ucur'
+              VARNM(2)='vcur'
+              VARNL(1)='eastward current'
+              VARNL(2)='northward current'
+              VARNS(1)='eastward_sea_water_velocity'
+              VARNS(2)='northward_sea_water_velocity'
+              VARNG(1)='eastward_sea_water_velocity'
+              VARNG(2)='northward_sea_water_velocity'
+              VARNC(1)='cur=sqrt(U**2+V**2)'
+              VARNC(2)='cur=sqrt(U**2+V**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -990
-              vmax =  990
+              VMIN = -990
+              VMAX =  990
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
@@ -879,28 +900,28 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
               !                                          , MAPSF, X2 )
               NFIELD=2
-              varnm(1)='uwnd'
-              varnm(2)='vwnd'
-              varnl(1)='eastward_wind'
-              varnl(2)='northward_wind'
-              varns(1)='eastward_wind'
-              varns(2)='northward_wind'
-              varng(1)='eastward_wind'
-              varng(2)='northward_wind'
-              varnc(1)='wind=sqrt(U10**2+V10**2)'
-              varnc(2)='wind=sqrt(U10**2+V10**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uwnd'
+              VARNM(2)='vwnd'
+              VARNL(1)='eastward_wind'
+              VARNL(2)='northward_wind'
+              VARNS(1)='eastward_wind'
+              VARNS(2)='northward_wind'
+              VARNG(1)='eastward_wind'
+              VARNG(2)='northward_wind'
+              VARNC(1)='wind=sqrt(U10**2+V10**2)'
+              VARNC(2)='wind=sqrt(U10**2+V10**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -990
-              vmax =  990
+              VMIN = -990
+              VMAX =  990
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.1
@@ -909,14 +930,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AS(1:NSEA)        &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='ast'
-              varnl(1)='air sea temperature difference'
-              varns(1)='air_sea_temperature_difference'
-              varng(1)='air_sea_temperature_difference'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0    
-              vmax = 4000
+              VARNM(1)='ast'
+              VARNL(1)='air sea temperature difference'
+              VARNS(1)='air_sea_temperature_difference'
+              VARNG(1)='air_sea_temperature_difference'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0    
+              VMAX = 4000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.01
@@ -924,14 +945,14 @@
               ENAME  = '.wlv'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLV   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wlv'
-              varnl(1)='sea surface height above sea level'
-              varns(1)='sea_surface_height_above_sea_level'
-              varng(1)='sea_surface_height_above_sea_level'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 10000
+              VARNM(1)='wlv'
+              VARNL(1)='sea surface height above sea level'
+              VARNS(1)='sea_surface_height_above_sea_level'
+              VARNG(1)='sea_surface_height_above_sea_level'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
@@ -939,14 +960,14 @@
               ENAME  = '.ice'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='ice'
-              varnl(1)='sea ice area fraction'
-              varns(1)='sea_ice_area_fraction'
-              varng(1)='sea_ice_area_fraction'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 1000
+              VARNM(1)='ice'
+              VARNL(1)='sea ice area fraction'
+              VARNS(1)='sea_ice_area_fraction'
+              VARNG(1)='sea_ice_area_fraction'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 1000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
               FSC    = 0.0001
@@ -955,14 +976,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BERG   , MAPSF, X1 )
               WHERE ( X1.NE.UNDEF) X1 = X1*0.1
               NFIELD=1
-              varnm(1)='ibg'
-              varnl(1)='icebergs_damping'
-              varns(1)='icebergs_induced_attenuation_scale_for_waves'
-              varng(1)='icebergs_damping'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='ibg'
+              VARNL(1)='icebergs_damping'
+              VARNS(1)='icebergs_induced_attenuation_scale_for_waves'
+              VARNG(1)='icebergs_damping'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
 !/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
 !/BT4              FSC    = 0.001
@@ -971,14 +992,14 @@
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
 !/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
-!/BT4              varnm(1)='d50'
-!/BT4              varnl(1)='grain_size'
-!/BT4              varns(1)='sediment_grain_size'
-!/BT4              varng(1)='sediment_grain_size'
-!/BT4              varnc(1)=''
-!/BT4              varnd(1)=''
-!/BT4              vmin = -10000
-!/BT4              vmax = 32000
+!/BT4              VARNM(1)='d50'
+!/BT4              VARNL(1)='grain_size'
+!/BT4              VARNS(1)='sediment_grain_size'
+!/BT4              VARNG(1)='sediment_grain_size'
+!/BT4              VARNC(1)=''
+!/BT4              VARND(1)=''
+!/BT4              VMIN = -10000
+!/BT4              VMAX = 32000
 !
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
 !/IS2              FSC = 0.001
@@ -986,14 +1007,14 @@
 !/IS2              ENAME = '.ic1'
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH  , MAPSF, X1 )
 !/IS2              NFIELD=1
-!/IS2              varnm(1)='ic1'
-!/IS2              varnl(1)='ice thickness'
-!/IS2              varns(1)='ice_thickness'
-!/IS2              varng(1)='ice_thickness'
-!/IS2              varnc(1)=''
-!/IS2              varnd(1)=''
-!/IS2              vmin = 0
-!/IS2              vmax = 30000
+!/IS2              VARNM(1)='ic1'
+!/IS2              VARNL(1)='ice thickness'
+!/IS2              VARNS(1)='ice_thickness'
+!/IS2              VARNG(1)='ice_thickness'
+!/IS2              VARNC(1)=''
+!/IS2              VARND(1)=''
+!/IS2              VMIN = 0
+!/IS2              VMAX = 30000
 !
 !
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
@@ -1002,14 +1023,14 @@
 !/IS2              ENAME = '.ic5'
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF  , MAPSF, X1 )
 !/IS2              NFIELD=1
-!/IS2              varnm(1)='ic5'
-!/IS2              varnl(1)='maximum floe diameter'
-!/IS2              varns(1)='maximum_ice_floe_diameter'
-!/IS2              varng(1)='maximum_ice_floe_diameter'
-!/IS2              varnc(1)=''
-!/IS2              varnd(1)=''
-!/IS2              vmin = 0
-!/IS2              vmax = 30000
+!/IS2              VARNM(1)='ic5'
+!/IS2              VARNL(1)='maximum floe diameter'
+!/IS2              VARNS(1)='maximum_ice_floe_diameter'
+!/IS2              VARNG(1)='maximum_ice_floe_diameter'
+!/IS2              VARNC(1)=''
+!/IS2              VARND(1)=''
+!/IS2              VMIN = 0
+!/IS2              VMAX = 30000
 
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
 !
@@ -1020,14 +1041,14 @@
               ENAME  = '.hs'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HS    , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hs'
-              varnl(1)='significant height of wind and swell waves'
-              varns(1)='sea_surface_wave_significant_height' 
-              varng(1)='significant_wave_height'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='hs'
+              VARNL(1)='significant height of wind and swell waves'
+              VARNS(1)='sea_surface_wave_significant_height' 
+              VARNG(1)='significant_wave_height'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 1.
@@ -1035,14 +1056,14 @@
               ENAME  = '.lm'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLM, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='lm'
-              varnl(1)='mean wave length'
-              varns(1)='mean_wave_length' 
-              varng(1)='mean_wave_length' 
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 3200
+              VARNM(1)='lm'
+              VARNL(1)='mean wave length'
+              VARNS(1)='mean_wave_length' 
+              VARNG(1)='mean_wave_length' 
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 3200
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.01
@@ -1050,15 +1071,15 @@
               ENAME  = '.t02'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T02, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='t02'
-              varnl(1)='mean period T02'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance_' // &
+              VARNM(1)='t02'
+              VARNL(1)='mean period T02'
+              VARNS(1)='sea_surface_wind_wave_mean_period_from_variance_' // &
                        'spectral_density_second_frequency_moment'
-              varng(1)='mean_period_t02'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 5000
+              VARNG(1)='mean_period_t02'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 5000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.01
@@ -1066,15 +1087,15 @@
               ENAME  = '.t0m1'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T0M1, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='t0m1'
-              varnl(1)='mean period T0m1'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance' // &
+              VARNM(1)='t0m1'
+              VARNL(1)='mean period T0m1'
+              VARNS(1)='sea_surface_wind_wave_mean_period_from_variance' // &
                        '_spectral_density_inverse_frequency_moment'
-              varng(1)='mean_period_t0m1'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 5000
+              VARNG(1)='mean_period_t0m1'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 5000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.01
@@ -1082,15 +1103,15 @@
               ENAME  = '.t01'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T01   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='t01'
-              varnl(1)='mean period T01'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance' // &
+              VARNM(1)='t01'
+              VARNL(1)='mean period T01'
+              VARNS(1)='sea_surface_wind_wave_mean_period_from_variance' // &
                        '_spectral_density_first_frequency_moment' 
-              varng(1)='mean_period_t01'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 5000
+              VARNG(1)='mean_period_t01'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 5000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
@@ -1098,14 +1119,14 @@
               ENAME  = '.fp'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FP0   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='fp'
-              varnl(1)='wave peak frequency'
-              varns(1)='sea_surface_wave_peak_frequency'
-              varng(1)='dominant_wave_frequency'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 10000
+              VARNM(1)='fp'
+              VARNL(1)='wave peak frequency'
+              VARNS(1)='sea_surface_wave_peak_frequency'
+              VARNG(1)='dominant_wave_frequency'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
               FSC    = 0.1
@@ -1120,20 +1141,20 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='dir'
-              varnl(1)='wave mean direction'
-              varns(1)='sea_surface_wave_from_direction'
-              varng(1)='wave_from_direction'
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='dir'
+              VARNL(1)='wave mean direction'
+              VARNS(1)='sea_surface_wave_from_direction'
+              VARNG(1)='wave_from_direction'
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0
-              vmax = 3600
+              VMIN = 0
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
               FSC    = 0.1
@@ -1141,14 +1162,14 @@
               ENAME  = '.spr'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THS   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='spr'
-              varnl(1)='directional spread'
-              varns(1)='sea_surface_wave_directional_spread'
-              varng(1)='directional_spread'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 900
+              VARNM(1)='spr'
+              VARNL(1)='directional spread'
+              VARNS(1)='sea_surface_wave_directional_spread'
+              VARNG(1)='directional_spread'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 900
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
               FSC    = 1.
@@ -1163,20 +1184,20 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='dp'
-              varnl(1)='peak direction'
-              varns(1)='sea_surface_wave_peak_direction'
-              varng(1)='dominant_wave_direction'
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='dp'
+              VARNL(1)='peak direction'
+              VARNS(1)='sea_surface_wave_peak_direction'
+              VARNG(1)='dominant_wave_direction'
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0 
-              vmax = 360
+              VMIN = 0 
+              VMAX = 360
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
               FSC    = 0.0002
@@ -1184,14 +1205,14 @@
               ENAME  = '.hig'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HSIG, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hig'
-              varnl(1)='infragravity_wave_height'
-              varns(1)='sea_surface_wave_infragravity_significant_height' 
-              varng(1)='infragravity_significant_wave_height' 
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 5000
+              VARNM(1)='hig'
+              VARNL(1)='infragravity_wave_height'
+              VARNS(1)='sea_surface_wave_infragravity_significant_height' 
+              VARNG(1)='infragravity_significant_wave_height' 
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 5000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
               FSC    = 0.002
@@ -1199,14 +1220,14 @@
               ENAME  = '.mxe'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXE, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='stmaxe'
-              varnl(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
-              varns(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
-              varng(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='stmaxe'
+              VARNL(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              VARNS(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              VARNG(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
               FSC    = 0.002
@@ -1214,14 +1235,14 @@
               ENAME  = '.mxes'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='stmaxd'
-              varnl(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
-              varns(1)='std of expected maximum sea surface elevation (nonlinear,2nd order)'
-              varng(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='stmaxd'
+              VARNL(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+              VARNS(1)='std of expected maximum sea surface elevation (nonlinear,2nd order)'
+              VARNG(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
               FSC    = 0.002
@@ -1229,14 +1250,14 @@
               ENAME  = '.mxh'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXE, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hmaxe'
-              varnl(1)='expected maximum wave height (linear, 1st order)'
-              varns(1)='expected maximum wave height (linear, 1st order)'
-              varng(1)='expected maximum wave height (linear, 1st order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='hmaxe'
+              VARNL(1)='expected maximum wave height (linear, 1st order)'
+              VARNS(1)='expected maximum wave height (linear, 1st order)'
+              VARNG(1)='expected maximum wave height (linear, 1st order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
               FSC    = 0.002
@@ -1244,14 +1265,14 @@
               ENAME  = '.mxhc'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXE, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hcmaxe'
-              varnl(1)='expected maximum wave height from crest (linear, 1st order)'
-              varns(1)='expected maximum wave height from crest (linear, 1st order)'
-              varng(1)='expected maximum wave height from crest (linear, 1st order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='hcmaxe'
+              VARNL(1)='expected maximum wave height from crest (linear, 1st order)'
+              VARNS(1)='expected maximum wave height from crest (linear, 1st order)'
+              VARNG(1)='expected maximum wave height from crest (linear, 1st order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
               FSC    = 0.002
@@ -1259,14 +1280,14 @@
               ENAME  = '.sdmh'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hmaxd'
-              varnl(1)='STD of maximum wave height (linear, 1st order)'
-              varns(1)='STD of maximum wave height (linear, 1st order)'
-              varng(1)='STD of maximum wave height (linear, 1st order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='hmaxd'
+              VARNL(1)='STD of maximum wave height (linear, 1st order)'
+              VARNS(1)='STD of maximum wave height (linear, 1st order)'
+              VARNG(1)='STD of maximum wave height (linear, 1st order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
               FSC    = 0.002
@@ -1274,36 +1295,36 @@
               ENAME  = '.sdmhc'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hcmaxd'
-              varnl(1)='STD of maximum wave height from crest (linear, 1st order)'
-              varns(1)='STD of maximum wave height from crest (linear, 1st order)'
-              varng(1)='STD of maximum wave height from crest (linear, 1st order)'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='hcmaxd'
+              VARNL(1)='STD of maximum wave height from crest (linear, 1st order)'
+              VARNS(1)='STD of maximum wave height from crest (linear, 1st order)'
+              VARNG(1)='STD of maximum wave height from crest (linear, 1st order)'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
               NFIELD = 1
-              varnm(1)='ef'
-              varnl(1)='wave_elevation_spectrum'
-              varng(1)=varns(1)
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='ef'
+              VARNL(1)='wave_elevation_spectrum'
+              VARNG(1)=VARNS(1)
+              VARNC(1)=''
+              VARND(1)=''
               IF (NCVARTYPE.LE.3) THEN 
                 UNITS  = 'log10(m2 s+1E-12)'
-                varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+                VARNS(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
                 FSC     = 0.0004
               ELSE
                 UNITS  = 'm2 s'
-                varns(1)='power_spectral_density_of_surface_elevation'
+                VARNS(1)='power_spectral_density_of_surface_elevation'
                 FSC     = 1.
                 END IF
               ENAME  = '.ef'
-              varng(1)=varns(1)
-              varng(1)=varns(1)
+              VARNG(1)=VARNS(1)
+              VARNG(1)=VARNS(1)
               I1F=E3DF(2,1)
               I2F=E3DF(3,1)
               DO IK=I1F,I2F
@@ -1311,25 +1332,25 @@
                 IF (NCVARTYPE.EQ.2) WHERE ( XX.GE.0.) XX = ALOG10(XX+1E-12)
                 XK(:,:,IK)=XX
                 END DO
-              vmin = -30000
-              vmax = 32000
+              VMIN = -30000
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
               NFIELD = 1
               FSC     = 0.1
-              varnm(1)='th1m'
-              varnl(1)='mean wave direction frequency spectrum'
-              varns(1)='sea_surface_wave_from_direction_frequency_spectrum'
-              varng(1)=varns(1)
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='th1m'
+              VARNL(1)='mean wave direction frequency spectrum'
+              VARNS(1)='sea_surface_wave_from_direction_frequency_spectrum'
+              VARNG(1)=VARNS(1)
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS  = 'degree'
               ENAME  = '.th1m'
@@ -1341,20 +1362,20 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH1M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
-              vmin = 0 
-              vmax = 3600
+              VMIN = 0 
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
               NFIELD = 1
               FSC     = 0.01
-              varnm(1)='sth1m'
-              varnl(1)='spreading frequency spectrum'
-              varns(1)='sea_surface_wave_spreading_spectrum'
-              varng(1)=varns(1)
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='sth1m'
+              VARNL(1)='spreading frequency spectrum'
+              VARNS(1)='sea_surface_wave_spreading_spectrum'
+              VARNG(1)=VARNS(1)
+              VARNC(1)=''
+              VARND(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth1m'
               I1F=E3DF(2,3)
@@ -1363,25 +1384,25 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,STH1M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
-              vmin = 0 
-              vmax = 9000
+              VMIN = 0 
+              VMAX = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
               NFIELD = 1
               FSC     = 0.1
-              varnm(1)='th2m'
-              varnl(1)='second mean wave direction frequency spectrum'
-              varns(1)='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
-              varng(1)=varns(1)
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='th2m'
+              VARNL(1)='second mean wave direction frequency spectrum'
+              VARNS(1)='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
+              VARNG(1)=VARNS(1)
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS  = 'degree'
               ENAME  = '.th2m'
@@ -1393,20 +1414,20 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH2M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
-              vmin = 0 
-              vmax = 3600
+              VMIN = 0 
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
               NFIELD = 1
               FSC     = 0.01
-              varnm(1)='sth2m'
-              varnl(1)='second spreading frequency spectrum'
-              varns(1)='sea_surface_wave_spreading_spectrum_from_second_moments'
-              varng(1)=varns(1)
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='sth2m'
+              VARNL(1)='second spreading frequency spectrum'
+              VARNS(1)='sea_surface_wave_spreading_spectrum_from_second_moments'
+              VARNG(1)=VARNS(1)
+              VARNC(1)=''
+              VARND(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth2m'
               I1F=E3DF(2,5)
@@ -1415,8 +1436,8 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,STH2M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
-              vmin = 0 
-              vmax = 9000
+              VMIN = 0 
+              VMAX = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
               ! Information for spectral
@@ -1431,14 +1452,14 @@
                 XK(:,:,IK)=XX
                 END DO
               NFIELD=1
-              varnm(1)='wn'
-              varnl(1)='wave numbers'
-              varns(1)='wave_numbers'
-              varng(1)='wave_numbers'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='wn'
+              VARNL(1)='wave numbers'
+              VARNS(1)='wave_numbers'
+              VARNG(1)='wave_numbers'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.002
@@ -1446,14 +1467,14 @@
               WRITE(ENAME,'(A4,I1)') '.phs',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A3,I1)') 'phs',IPART 
-              WRITE(varnl(1),'(A,I1)') 'wave significant height partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
-              WRITE(varng(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              WRITE(VARNM(1),'(A3,I1)') 'phs',IPART 
+              WRITE(VARNL(1),'(A,I1)') 'wave significant height partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
+              WRITE(VARNG(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
@@ -1461,14 +1482,14 @@
               WRITE(ENAME,'(A4,I1)') '.ptp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A3,I1)') 'ptp',IPART 
-              WRITE(varnl(1),'(A,I1)') 'peak period partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
-              WRITE(varng(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 10000
+              WRITE(VARNM(1),'(A3,I1)') 'ptp',IPART 
+              WRITE(VARNL(1),'(A,I1)') 'peak period partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 1.
@@ -1476,14 +1497,14 @@
               WRITE(ENAME,'(A4,I1)') '.plp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A3,I1)') 'plp',IPART 
-              WRITE(varnl(1),'(A,I1)') 'peak wave length partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'peak_wave_length_partition_',IPART
-              WRITE(varng(1),'(A,I1)') 'peak_wave_length_partition_',IPART
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 10000
+              WRITE(VARNM(1),'(A3,I1)') 'plp',IPART 
+              WRITE(VARNL(1),'(A,I1)') 'peak wave length partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'peak_wave_length_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') 'peak_wave_length_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 1.
@@ -1498,20 +1519,20 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PDIR(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A4,I1)') 'pdir',IPART 
-              WRITE(varnl(1),'(A,I1)') 'wave mean direction partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
-              WRITE(varng(1),'(A,I1)') 'wave_from_direction_partition_',IPART
-              varnc(1)=''
-              varnd(1)=''
+              WRITE(VARNM(1),'(A4,I1)') 'pdir',IPART 
+              WRITE(VARNL(1),'(A,I1)') 'wave mean direction partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') 'wave_from_direction_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0 
-              vmax = 360
+              VMIN = 0 
+              VMAX = 360
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.1
@@ -1519,14 +1540,14 @@
               WRITE(ENAME,'(A5,I1)') '.pspr',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A4,I1)') 'pspr',IPART 
-              WRITE(varnl(1),'(A,I1)') 'directional spread partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
-              WRITE(varng(1),'(A,I1)') 'directional_spread_partition_',IPART
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 900
+              WRITE(VARNM(1),'(A4,I1)') 'pspr',IPART 
+              WRITE(VARNL(1),'(A,I1)') 'directional spread partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') 'directional_spread_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 900
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
@@ -1534,14 +1555,14 @@
               WRITE(ENAME,'(A4,I1)') '.pws',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A3,I1)') 'pws',IPART
-              WRITE(varnl(1),'(A,I1)') 'wind sea fraction in partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
-              WRITE(varng(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 1000
+              WRITE(VARNM(1),'(A3,I1)') 'pws',IPART
+              WRITE(VARNL(1),'(A,I1)') 'wind sea fraction in partition ',IPART 
+              WRITE(VARNS(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
+              WRITE(VARNG(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 1000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
               FSC    = 0.001
@@ -1549,14 +1570,14 @@
               ENAME  = '.tws'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWST(:), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='tws'
-              varnl(1)='wind sea fraction'
-              varns(1)='wind_sea_fraction'
-              varng(1)='wind_sea_fraction'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 1000
+              VARNM(1)='tws'
+              VARNL(1)='wind sea fraction'
+              VARNS(1)='wind_sea_fraction'
+              VARNG(1)='wind_sea_fraction'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 1000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
               FSC    = 1.
@@ -1564,14 +1585,14 @@
               ENAME  = '.pnr'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PNR(:), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='pnr'
-              varnl(1)='number of wave partitions'
-              varns(1)='number_of_wave_partitions'
-              varng(1)='number_of_wave_partitions'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 100
+              VARNM(1)='pnr'
+              VARNL(1)='number of wave partitions'
+              VARNS(1)='number_of_wave_partitions'
+              VARNG(1)='number_of_wave_partitions'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 100
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01
@@ -1608,28 +1629,28 @@
               !CALL W3S2XY (NSEA,NSEA,NX+1,NY, UST   (1:NSEA) , MAPSF, X1 )
               !CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA) , MAPSF, X2 )
               NFIELD=2
-              varnm(1)='uust'
-              varnm(2)='vust'
-              varnl(1)='eastward friction velocity'
-              varnl(2)='northward friction velocity'
-              varns(1)='eastward_friction_velocity'
-              varns(2)='northward_friction_velocity'
-              varng(1)='eastward_friction_velocity'
-              varng(2)='northward_friction_velocity'
-              varnc(1)='ust=sqrt(uust**2+vust**2)'
-              varnc(2)='ust=sqrt(uust**2+vust**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uust'
+              VARNM(2)='vust'
+              VARNL(1)='eastward friction velocity'
+              VARNL(2)='northward friction velocity'
+              VARNS(1)='eastward_friction_velocity'
+              VARNS(2)='northward_friction_velocity'
+              VARNG(1)='eastward_friction_velocity'
+              VARNG(2)='northward_friction_velocity'
+              VARNC(1)='ust=sqrt(uust**2+vust**2)'
+              VARNC(2)='ust=sqrt(uust**2+vust**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -9900
-              vmax =  9900
+              VMIN = -9900
+              VMAX =  9900
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 1.E-5
@@ -1637,14 +1658,14 @@
               ENAME  = '.cha'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='cha'
-              varnl(1)='charnock coefficient for surface roughness length for momentum in air'
-              varns(1)='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
-              varng(1)='charnock_coefficient'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32700
+              VARNM(1)='cha'
+              VARNL(1)='charnock coefficient for surface roughness length for momentum in air'
+              VARNS(1)='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+              VARNG(1)='charnock_coefficient'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32700
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1           !0.01
@@ -1653,14 +1674,14 @@
               CGE=CGE*0.001  ! from W / m to kW / m 
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE(1:NSEA), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='cge'
-              varnl(1)='wave energy flux'
-              varns(1)='sea_surface_wind_wave_energy_flux'
-              varng(1)='wave_energy_flux'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 9990
+              VARNM(1)='cge'
+              VARNL(1)='wave energy flux'
+              VARNS(1)='sea_surface_wind_wave_energy_flux'
+              VARNG(1)='wave_energy_flux'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 9990
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
@@ -1669,14 +1690,14 @@
               ENAME  = '.faw'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='faw'
-              varnl(1)='wind to wave energy flux'
-              varns(1)='wind_mixing_energy_flux_into_sea_water'
-              varng(1)='wind_to_wave_energy_flux'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 9990
+              VARNM(1)='faw'
+              VARNL(1)='wind to wave energy flux'
+              VARNS(1)='wind_mixing_energy_flux_into_sea_water'
+              VARNG(1)='wind_to_wave_energy_flux'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 9990
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.000001
@@ -1704,28 +1725,28 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX, MAPSF, X1 )
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY, MAPSF, X2 )
               NFIELD=2
-              varnm(1)='utaw'
-              varnm(2)='vtaw'
-              varnl(1)='eastward wave supported wind stress'
-              varnl(2)='northward wave supported wind stress'
-              varns(1)='eastward_wave_supported_wind_stress'
-              varns(2)='northward_wave_supported_wind_stress'
-              varng(1)='eastward_wave_supported_wind_stress'
-              varng(2)='northward_wave_supported_wind_stress'
-              varnc(1)='taw=sqrt(utaw**2+vtaw**2)'
-              varnc(2)='taw=sqrt(utaw**2+vtaw**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utaw'
+              VARNM(2)='vtaw'
+              VARNL(1)='eastward wave supported wind stress'
+              VARNL(2)='northward wave supported wind stress'
+              VARNS(1)='eastward_wave_supported_wind_stress'
+              VARNS(2)='northward_wave_supported_wind_stress'
+              VARNG(1)='eastward_wave_supported_wind_stress'
+              VARNG(2)='northward_wave_supported_wind_stress'
+              VARNC(1)='taw=sqrt(utaw**2+vtaw**2)'
+              VARNC(2)='taw=sqrt(utaw**2+vtaw**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -32000
-              vmax =  32000
+              VMIN = -32000
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.0001
@@ -1738,28 +1759,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)     &
                                                         , MAPSF, XY )
               NFIELD=2
-              varnm(1)='utwa'
-              varnm(2)='vtwa'
-              varnl(1)='eastward wave to wind stress'
-              varnl(2)='northward wave to wind stress'
-              varns(1)='eastward_wave_to_wind_stress'
-              varns(2)='northward_wave_to_wind_stress'
-              varng(1)='eastward_wave_to_wind_stress'
-              varng(2)='northward_wave_to_wind_stress'
-              varnc(1)='twa=sqrt(utwa**2+vtwa**2)'
-              varnc(2)='twa=sqrt(utwa**2+vtwa**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utwa'
+              VARNM(2)='vtwa'
+              VARNL(1)='eastward wave to wind stress'
+              VARNL(2)='northward wave to wind stress'
+              VARNS(1)='eastward_wave_to_wind_stress'
+              VARNS(2)='northward_wave_to_wind_stress'
+              VARNG(1)='eastward_wave_to_wind_stress'
+              VARNG(2)='northward_wave_to_wind_stress'
+              VARNC(1)='twa=sqrt(utwa**2+vtwa**2)'
+              VARNC(2)='twa=sqrt(utwa**2+vtwa**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -32000
-              vmax =  32000
+              VMIN = -32000
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
               FSC    = 0.0001
@@ -1768,14 +1789,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wcc'
-              varnl(1)='whitecap coverage'         
-              varns(1)='whitecap_coverage'
-              varng(1)='whitecap_coverage'            
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 10000
+              VARNM(1)='wcc'
+              VARNL(1)='whitecap coverage'         
+              VARNS(1)='whitecap_coverage'
+              VARNG(1)='whitecap_coverage'            
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
               FSC    = 0.001
@@ -1784,14 +1805,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2) &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wcf'
-              varnl(1)='whitecap foam thickness' 
-              varns(1)='whitecap_foam_thickness'
-              varng(1)='whitecap_foam_thickness' 
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 10000
+              VARNM(1)='wcf'
+              VARNL(1)='whitecap foam thickness' 
+              VARNS(1)='whitecap_foam_thickness'
+              VARNG(1)='whitecap_foam_thickness' 
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
               FSC    = 0.002 
@@ -1800,14 +1821,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3) &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wch'
-              varnl(1)='significant breaking wave height'
-              varns(1)='significant_breaking_wave_height'
-              varng(1)='significant_breaking_wave_height'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='wch'
+              VARNL(1)='significant breaking wave height'
+              VARNS(1)='significant_breaking_wave_height'
+              VARNG(1)='significant_breaking_wave_height'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
               FSC    = 0.0001
@@ -1816,14 +1837,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4) &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wcm'
-              varnl(1)='whitecap moment'  
-              varns(1)='whitecap_moment'   
-              varng(1)='whitecap_moment'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 10000
+              VARNM(1)='wcm'
+              VARNL(1)='whitecap moment'  
+              VARNS(1)='whitecap_moment'   
+              VARNG(1)='whitecap_moment'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               FSC    = 0.002
@@ -1831,14 +1852,14 @@
               ENAME  = '.fws'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TWS(1:NSEA), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='fws'
-              varnl(1)='Wind_sea_mean_period_T0M1'
-              varns(1)='Wind_sea_mean_period_T0M1'
-              varng(1)='Wind_sea_mean_period_T0M1'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 32000
+              VARNM(1)='fws'
+              VARNL(1)='Wind_sea_mean_period_T0M1'
+              VARNS(1)='Wind_sea_mean_period_T0M1'
+              VARNG(1)='Wind_sea_mean_period_T0M1'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 10.
@@ -1855,30 +1876,30 @@
                                                         , MAPSF, XY )
 
               NFIELD=3
-              varnm(1)='sxx'
-              varnm(2)='syy'
-              varnm(3)='sxy'
-              varnl(1)='Radiation stress component Sxx'
-              varnl(2)='Radiation stress component Syy'
-              varnl(3)='Radiation stress component Sxy'
-              varns(1)='Radiation_stress_component_Sxx'
-              varns(2)='Radiation_stress_component_Syy'
-              varns(3)='Radiation_stress_component_Sxy'
-              varns(1)='radiation_stress_component_sxx'
-              varns(2)='radiation_stress_component_syy'
-              varns(3)='radiation_stress_component_sxy'
-              varnc(1)=''
-              varnc(2)=''
-              varnc(3)=''
-              varnd(1)=''
-              varnd(2)=''
-              varnd(3)=''
+              VARNM(1)='sxx'
+              VARNM(2)='syy'
+              VARNM(3)='sxy'
+              VARNL(1)='Radiation stress component Sxx'
+              VARNL(2)='Radiation stress component Syy'
+              VARNL(3)='Radiation stress component Sxy'
+              VARNS(1)='Radiation_stress_component_Sxx'
+              VARNS(2)='Radiation_stress_component_Syy'
+              VARNS(3)='Radiation_stress_component_Sxy'
+              VARNS(1)='radiation_stress_component_sxx'
+              VARNS(2)='radiation_stress_component_syy'
+              VARNS(3)='radiation_stress_component_sxy'
+              VARNC(1)=''
+              VARNC(2)=''
+              VARNC(3)=''
+              VARND(1)=''
+              VARND(2)=''
+              VARND(3)=''
 !/RTD              ! Override standard direction comment
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
-!/RTD                varnd(3) = 'Rotated Pole Grid North'
-              vmin = -3000.
-              vmax = 3000     
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(3) = 'Rotated Pole Grid North'
+              VMIN = -3000.
+              VMAX = 3000     
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.000001
@@ -1891,28 +1912,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)        &
                                                         , MAPSF, XY )
               NFIELD=2
-              varnm(1)='utwo'
-              varnm(2)='vtwo'
-              varnl(1)='eastward wave to ocean stress'
-              varnl(2)='northward wave to ocean stress'
-              varns(1)='eastward_wave_to_ocean_stress'
-              varns(2)='northward_wave_to_ocean_stress'
-              varng(1)='eastward_wave_to_ocean_stress'
-              varng(2)='northward_wave_to_ocean_stress'
-              varnc(1)='two=sqrt(utwo**2+vtwo**2)'
-              varnc(2)='two=sqrt(utwo**2+vtwo**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utwo'
+              VARNM(2)='vtwo'
+              VARNL(1)='eastward wave to ocean stress'
+              VARNL(2)='northward wave to ocean stress'
+              VARNS(1)='eastward_wave_to_ocean_stress'
+              VARNS(2)='northward_wave_to_ocean_stress'
+              VARNG(1)='eastward_wave_to_ocean_stress'
+              VARNG(2)='northward_wave_to_ocean_stress'
+              VARNC(1)='two=sqrt(utwo**2+vtwo**2)'
+              VARNC(2)='two=sqrt(utwo**2+vtwo**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -32000 
-              vmax =  32000
+              VMIN = -32000 
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
@@ -1921,14 +1942,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BHD(1:NSEA)    &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='bhd'
-              varnl(1)='radiation pressure (Bernouilli Head)'
-              varns(1)='radiation_pressure'
-              varng(1)='radiation_pressure'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 1000
+              VARNM(1)='bhd'
+              VARNL(1)='radiation pressure (Bernouilli Head)'
+              VARNS(1)='radiation_pressure'
+              VARNG(1)='radiation_pressure'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 1000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
@@ -1941,14 +1962,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='foc'
-              varnl(1)='wave to ocean energy flux'
-              varns(1)='wave_to_ocean_energy_flux'
-              varng(1)='wave_to_ocean_energy_flux'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 9990
+              VARNM(1)='foc'
+              VARNL(1)='wave to ocean energy flux'
+              VARNS(1)='wave_to_ocean_energy_flux'
+              VARNG(1)='wave_to_ocean_energy_flux'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 9990
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.001
@@ -1973,27 +1994,27 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSX,MAPSF, X1 )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSY,MAPSF, X2 )
               NFIELD=2
-              varnm(1)='utus'
-              varnm(2)='vtus'
-              varnl(1)='eastward stokes transport'
-              varnl(2)='northward stokes transport'
-              varns(1)='eastward_stokes_transport'
-              varns(2)='northward_stokes_transport'
-              varng(1)='eastward_stokes_transport'
-              varng(2)='northward_stokes_transport'
-              varnc(1)='tus=sqrt(utus**2+vtus**2)'
-              varnc(2)='tus=sqrt(utus**2+vtus**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utus'
+              VARNM(2)='vtus'
+              VARNL(1)='eastward stokes transport'
+              VARNL(2)='northward stokes transport'
+              VARNS(1)='eastward_stokes_transport'
+              VARNS(2)='northward_stokes_transport'
+              VARNG(1)='eastward_stokes_transport'
+              VARNG(2)='northward_stokes_transport'
+              VARNC(1)='tus=sqrt(utus**2+vtus**2)'
+              VARNC(2)='tus=sqrt(utus**2+vtus**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -9900 
+              VMIN = -9900 
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.0005
@@ -2025,28 +2046,28 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSX,MAPSF, X1 )
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSY,MAPSF, X2 )
               NFIELD=2
-              varnm(1)='uuss'
-              varnm(2)='vuss'
-              varnl(1)='eastward surface stokes drift'
-              varnl(2)='northward surface stokes drift'
-              varns(1)='eastward_surface_stokes_drift'
-              varns(2)='northward_surface_stokes_drift'
-              varng(1)='eastward_surface_stokes_drift'
-              varng(2)='northward_surface_stokes_drift'
-              varnc(1)='uss=sqrt(uuss**2+vuss**2)'
-              WRITE(varnc(2),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uuss'
+              VARNM(2)='vuss'
+              VARNL(1)='eastward surface stokes drift'
+              VARNL(2)='northward surface stokes drift'
+              VARNS(1)='eastward_surface_stokes_drift'
+              VARNS(2)='northward_surface_stokes_drift'
+              VARNG(1)='eastward_surface_stokes_drift'
+              VARNG(2)='northward_surface_stokes_drift'
+              VARNC(1)='uss=sqrt(uuss**2+vuss**2)'
+              WRITE(VARNC(2),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -9900 
-              vmax =  9900
+              VMIN = -9900 
+              VMAX =  9900
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
               NFIELD=2
@@ -2054,20 +2075,20 @@
               ENAME  = '.p2s'
               UNITS  = 'm4'
               UNITS2 = 's-1'
-              varnm(1)='fp2s'
-              varnm(2)='pp2s'
-              varnl(1)='power spectral density of equivalent surface pressure'
-              varnl(2)='peak period of power spectral density of equivalent surface pressure'
-              varns(1)='power_spectral_density_of_equivalent_surface_pressure'
-              varns(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
-              varng(1)='power_spectral_density_of_equivalent_surface_pressure'
-              varng(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
-              varnc(1)=''
-              varnc(2)=''
-              varnd(1)=''
-              varnd(2)=''
-              vmin = -15000 
-              vmax = 32000
+              VARNM(1)='fp2s'
+              VARNM(2)='pp2s'
+              VARNL(1)='power spectral density of equivalent surface pressure'
+              VARNL(2)='peak period of power spectral density of equivalent surface pressure'
+              VARNS(1)='power_spectral_density_of_equivalent_surface_pressure'
+              VARNS(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+              VARNG(1)='power_spectral_density_of_equivalent_surface_pressure'
+              VARNG(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+              VARNC(1)=''
+              VARNC(2)=''
+              VARND(1)=''
+              VARND(2)=''
+              VMIN = -15000 
+              VMAX = 32000
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PRMS(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TPMS(1:NSEA)        &
@@ -2077,25 +2098,25 @@
               ! Information for spectral distribution of surface Stokes drift (2nd file)
               FLFRQ=.TRUE.
               NFIELD=2
-              varnm(1)='uusf'
-              varnm(2)='vusf'
-              varnl(1)='eastward spectral variance of surface stokes drift'
-              varnl(2)='northward spectral variance of surface stokes drift'
-              varns(1)='eastward_spectral_variance_of_surface_stokes_drift'
-              varns(2)='northward_spectral_variance_of_surface_stokes_drift'
-              varng(1)='eastward_spectral_variance_of_surface_stokes_drift'
-              varng(2)='northward_spectral_variance_of_surface_stokes_drift'
-              varnc(1)='usf=sqrt(uusf**2+vusf**2)'
-              varnc(2)='usf=sqrt(uusf**2+vusf**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uusf'
+              VARNM(2)='vusf'
+              VARNL(1)='eastward spectral variance of surface stokes drift'
+              VARNL(2)='northward spectral variance of surface stokes drift'
+              VARNS(1)='eastward_spectral_variance_of_surface_stokes_drift'
+              VARNS(2)='northward_spectral_variance_of_surface_stokes_drift'
+              VARNG(1)='eastward_spectral_variance_of_surface_stokes_drift'
+              VARNG(2)='northward_spectral_variance_of_surface_stokes_drift'
+              VARNC(1)='usf=sqrt(uusf**2+vusf**2)'
+              VARNC(2)='usf=sqrt(uusf**2+vusf**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS   = 'm s-1 Hz-1'
               I1F=US3DF(2)
@@ -2111,20 +2132,20 @@
               FSC    = 0.0005
               ENAME  = '.usf'
 
-              vmin = -9900 
-              vmax =  9900
+              VMIN = -9900 
+              VMAX =  9900
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                 ! Information for spectral microseismic generation data (2nd file)
                 FLFRQ=.TRUE.
                 NFIELD=1
                 FSC    = 0.0004
-                varnm(1)='p2l'
-                varnl(1)='base ten logarithm of power spectral density of equivalent surface pressure'
-                varns(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
-                varng(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
-                varnc(1)=''
-                varnd(1)=''
+                VARNM(1)='p2l'
+                VARNL(1)='base ten logarithm of power spectral density of equivalent surface pressure'
+                VARNS(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+                VARNG(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+                VARNC(1)=''
+                VARND(1)=''
                 ENAME  = '.p2l'
                 I1F=P2MSF(2)
                 I2F=P2MSF(3)
@@ -2140,8 +2161,8 @@
                 
                   XK(:,:,IK)=XX
                   END DO
-              vmin = -30000 
-              vmax = 30000
+              VMIN = -30000 
+              VMAX = 30000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
               FSC    = 0.000001
@@ -2154,28 +2175,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUICE(1:NSEA,2)        &
                                                         , MAPSF, XY )
               NFIELD=2
-              varnm(1)='utic'
-              varnm(2)='vtic'
-              varnl(1)='eastward wave to sea ice stress'
-              varnl(2)='northward wave to sea ice stress'
-              varns(1)='eastward_wave_to_sea_ice_stress'
-              varns(2)='northward_wave_to_sea_ice_stress'
-              varng(1)='eastward_wave_to_sea_ice_stress'
-              varng(2)='northward_wave_to_sea_ice_stress'
-              varnc(1)='two=sqrt(utwo**2+vtwo**2)'
-              varnc(2)='two=sqrt(utwo**2+vtwo**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utic'
+              VARNM(2)='vtic'
+              VARNL(1)='eastward wave to sea ice stress'
+              VARNL(2)='northward wave to sea ice stress'
+              VARNS(1)='eastward_wave_to_sea_ice_stress'
+              VARNS(2)='northward_wave_to_sea_ice_stress'
+              VARNG(1)='eastward_wave_to_sea_ice_stress'
+              VARNG(2)='northward_wave_to_sea_ice_stress'
+              VARNC(1)='two=sqrt(utwo**2+vtwo**2)'
+              VARNC(2)='two=sqrt(utwo**2+vtwo**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -32000 
-              vmax =  32000
+              VMIN = -32000 
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
@@ -2188,14 +2209,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHICE(1:NSEA)    &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='fic'
-              varnl(1)='wave to sea ice energy flux'
-              varns(1)='wave_to_sea_ice_energy_flux'
-              varng(1)='wave_to_sea_ice_energy_flux'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 9990
+              VARNM(1)='fic'
+              VARNL(1)='wave to sea ice energy flux'
+              VARNS(1)='wave_to_sea_ice_energy_flux'
+              VARNG(1)='wave_to_sea_ice_energy_flux'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 9990
 
            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
               ! Information for spectral distribution of surface Stokes drift (2nd file)
@@ -2204,25 +2225,25 @@
                  CUSTOMFRQ=.TRUE.
               ENDIF
               NFIELD=2
-              varnm(1)='ussp'
-              varnm(2)='vssp'
-              varnl(1)='eastward partitioned surface stokes drift'
-              varnl(2)='northward partitioned surface stokes drift'
-              varns(1)='eastward_partitioned_surface_stokes_drift'
-              varns(2)='northward_partitioned_surface_stokes_drift'
-              varng(1)='eastward_partitioned_surface_stokes_drift'
-              varng(2)='northward_partitioned_surface_stokes_drift'
-              varnc(1)='usp=sqrt(ussp**2+vssp**2)'
-              varnc(2)='usp=sqrt(ussp**2+vssp**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='ussp'
+              VARNM(2)='vssp'
+              VARNL(1)='eastward partitioned surface stokes drift'
+              VARNL(2)='northward partitioned surface stokes drift'
+              VARNS(1)='eastward_partitioned_surface_stokes_drift'
+              VARNS(2)='northward_partitioned_surface_stokes_drift'
+              VARNG(1)='eastward_partitioned_surface_stokes_drift'
+              VARNG(2)='northward_partitioned_surface_stokes_drift'
+              VARNC(1)='usp=sqrt(ussp**2+vssp**2)'
+              VARNC(2)='usp=sqrt(ussp**2+vssp**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS   = 'm s-1'
               I1F=1
@@ -2251,28 +2272,28 @@
                                                         , MAPSF, XY )
 
               NFIELD=2
-              varnm(1)='uabr'
-              varnm(2)='vabr'
-              varnl(1)='rms of bottom displacement amplitude zonal'
-              varnl(2)='rms of bottom displacement amplitude meridional'
-              varns(1)='rms_of_bottom_displacement_amplitude_zonal'
-              varns(2)='rms_of_bottom_displacement_amplitude_meridional'
-              varng(1)='rms_of_bottom_displacement_amplitude_zonal'
-              varng(2)='rms_of_bottom_displacement_amplitude_meridional'
-              varnc(1)='abr=sqrt(uabr**2+vabr**2)'
-              varnc(2)='abr=sqrt(uabr**2+vabr**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uabr'
+              VARNM(2)='vabr'
+              VARNL(1)='rms of bottom displacement amplitude zonal'
+              VARNL(2)='rms of bottom displacement amplitude meridional'
+              VARNS(1)='rms_of_bottom_displacement_amplitude_zonal'
+              VARNS(2)='rms_of_bottom_displacement_amplitude_meridional'
+              VARNG(1)='rms_of_bottom_displacement_amplitude_zonal'
+              VARNG(2)='rms_of_bottom_displacement_amplitude_meridional'
+              VARNC(1)='abr=sqrt(uabr**2+vabr**2)'
+              VARNC(2)='abr=sqrt(uabr**2+vabr**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -18000
-              vmax = 18000
+              VMIN = -18000
+              VMAX = 18000
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
@@ -2286,28 +2307,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
                                                         , MAPSF, XY )
               NFIELD=2
-              varnm(1)='uubr'
-              varnm(2)='vubr'
-              varnl(1)='rms of bottom velocity amplitude zonal'
-              varnl(2)='rms of bottom velocity amplitude meridional'
-              varns(1)='rms_of_bottom_velocity_amplitude_zonal'
-              varns(2)='rms_of_bottom_velocity_amplitude_meridional'
-              varng(1)='rms_of_bottom_velocity_amplitude_zonal'
-              varng(2)='rms_of_bottom_velocity_amplitude_meridional'
-              varnc(1)='ubr=sqrt(uubr**2+vubr**2)'
-              varnc(2)='ubr=sqrt(uubr**2+vubr**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='uubr'
+              VARNM(2)='vubr'
+              VARNL(1)='rms of bottom velocity amplitude zonal'
+              VARNL(2)='rms of bottom velocity amplitude meridional'
+              VARNS(1)='rms_of_bottom_velocity_amplitude_zonal'
+              VARNS(2)='rms_of_bottom_velocity_amplitude_meridional'
+              VARNG(1)='rms_of_bottom_velocity_amplitude_zonal'
+              VARNG(2)='rms_of_bottom_velocity_amplitude_meridional'
+              VARNC(1)='ubr=sqrt(uubr**2+vubr**2)'
+              VARNC(2)='ubr=sqrt(uubr**2+vubr**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -18000 
-              vmax = 18000
+              VMIN = -18000 
+              VMAX = 18000
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.001
@@ -2323,34 +2344,34 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3)    &
                                                         , MAPSF, XY )
               NFIELD=3
-              varnm(1)='bed'
-              varnm(2)='ripplex'
-              varnm(3)='rippley'
-              varnl(1)='bottom roughness'
-              varnl(2)='eastward sea bottom ripple wavelength'
-              varnl(3)='northward sea bottom ripple wavelength'
-              varns(1)='sea bottom roughness length'
-              varns(2)='eastward_ripple_wavelength'
-              varns(3)='northward_ripple_wavelength'
-              varng(1)='ripple_wavelength'
-              varng(2)='eastward_ripple_wavelength'
-              varng(3)='northward_ripple_wavelength'
-              varnc(1)='ripple_length=sqrt(ripplex**2+rippley**2)'
-              varnc(2)='ripple_length=sqrt(ripplex**2+rippley**2)'
-              varnc(3)='ripple_length=sqrt(ripplex**2+rippley**2)'
-              varnd(1)=''
-              varnd(2)=''
-              varnd(3)=''
+              VARNM(1)='bed'
+              VARNM(2)='ripplex'
+              VARNM(3)='rippley'
+              VARNL(1)='bottom roughness'
+              VARNL(2)='eastward sea bottom ripple wavelength'
+              VARNL(3)='northward sea bottom ripple wavelength'
+              VARNS(1)='sea bottom roughness length'
+              VARNS(2)='eastward_ripple_wavelength'
+              VARNS(3)='northward_ripple_wavelength'
+              VARNG(1)='ripple_wavelength'
+              VARNG(2)='eastward_ripple_wavelength'
+              VARNG(3)='northward_ripple_wavelength'
+              VARNC(1)='ripple_length=sqrt(ripplex**2+rippley**2)'
+              VARNC(2)='ripple_length=sqrt(ripplex**2+rippley**2)'
+              VARNC(3)='ripple_length=sqrt(ripplex**2+rippley**2)'
+              VARND(1)=''
+              VARND(2)=''
+              VARND(3)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(2) = 'True North'
-!/RTD                varnd(3) = 'True North'
+!/RTD                VARND(2) = 'True North'
+!/RTD                VARND(3) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
-!/RTD                varnd(3) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(3) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0
-              vmax = 30000
+              VMIN = 0
+              VMAX = 30000
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.1
@@ -2359,14 +2380,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBBL(1:NSEA)    &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='fbb'
-              varnl(1)='wave dissipation in bbl'
-              varns(1)='wave_energy_dissipation_in_bottom_boundary_layer'
-              varng(1)='wave_dissipation_in_bbl'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 9990
+              VARNM(1)='fbb'
+              VARNL(1)='wave dissipation in bbl'
+              VARNS(1)='wave_energy_dissipation_in_bottom_boundary_layer'
+              VARNG(1)='wave_dissipation_in_bbl'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 9990
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.000001
@@ -2380,28 +2401,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2) &
                                                         , MAPSF, XY )
               NFIELD=2
-              varnm(1)='utbb'
-              varnm(2)='vtbb'
-              varnl(1)='eastward wave to bbl stress'
-              varnl(2)='northward wave to bbl stress'
-              varns(1)='eastward_wave_to_bottom_boundary_layer_stress'
-              varns(2)='northward_wave_to_bottom_boundary_layer_stress'
-              varng(1)='eastward_wave_to_bbl_stress'
-              varng(2)='northward_wave_to_bbl_stress'
-              varnc(1)='tbb=sqrt(utbb**2+vtbb**2)'
-              varnc(2)='tbb=sqrt(utbb**2+vtbb**2)'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='utbb'
+              VARNM(2)='vtbb'
+              VARNL(1)='eastward wave to bbl stress'
+              VARNL(2)='northward wave to bbl stress'
+              VARNS(1)='eastward_wave_to_bottom_boundary_layer_stress'
+              VARNS(2)='northward_wave_to_bottom_boundary_layer_stress'
+              VARNG(1)='eastward_wave_to_bbl_stress'
+              VARNG(2)='northward_wave_to_bbl_stress'
+              VARNC(1)='tbb=sqrt(utbb**2+vtbb**2)'
+              VARNC(2)='tbb=sqrt(utbb**2+vtbb**2)'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = -32000 
-              vmax =  32000
+              VMIN = -32000 
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.00001
@@ -2412,28 +2433,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
               NFIELD=2
-              varnm(1)='mssx'
-              varnm(2)='mssy'
-              varnl(1)='x-direction mean square slope'
-              varnl(2)='y-direction mean square slope'
-              varns(1)='x_mean_square_slope'
-              varns(2)='y_mean_square_slope'
-              varng(1)='x_mean_square_slope'
-              varng(2)='y_mean_square_slope'
-              varnc(1)='mss=mssx+mssy'
-              WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='mssx'
+              VARNM(2)='mssy'
+              VARNL(1)='x-direction mean square slope'
+              VARNL(2)='y-direction mean square slope'
+              VARNS(1)='x_mean_square_slope'
+              VARNS(2)='y_mean_square_slope'
+              VARNG(1)='x_mean_square_slope'
+              VARNG(2)='y_mean_square_slope'
+              VARNC(1)='mss=mssx+mssy'
+              WRITE(VARNC(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0 
-              vmax = 30000
+              VMIN = 0 
+              VMAX = 30000
 !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 1E-7     
@@ -2444,28 +2465,28 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCY,MAPSF, XY )
               NFIELD=2
-              varnm(1)='mscx'
-              varnm(2)='mscy'
-              varnl(1)='eastward phillips constant'
-              varnl(2)='northward phillips constant'
-              varns(1)='eastward_phillips_constant'
-              varns(2)='northward_phillips_constant'
-              varng(1)='eastward_phillips_constant'
-              varng(2)='northward_phillips_constant'
-              varnc(1)='msc=mscx+mscy'
-              varnc(2)='msc=mscx+mscy'
-              varnd(1)=''
-              varnd(2)=''
+              VARNM(1)='mscx'
+              VARNM(2)='mscy'
+              VARNL(1)='eastward phillips constant'
+              VARNL(2)='northward phillips constant'
+              VARNS(1)='eastward_phillips_constant'
+              VARNS(2)='northward_phillips_constant'
+              VARNG(1)='eastward_phillips_constant'
+              VARNG(2)='northward_phillips_constant'
+              VARNC(1)='msc=mscx+mscy'
+              VARNC(2)='msc=mscx+mscy'
+              VARND(1)=''
+              VARND(2)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
-!/RTD                varnd(2) = 'True North'
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
-!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0 
-              vmax = 30000
+              VMIN = 0 
+              VMAX = 30000
 !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
@@ -2480,20 +2501,20 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSD   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='mssd'
-              varnl(1)='x direction for mss'
-              varns(1)='sea_surface_wave_dominant_mean_square_slope_direction'
-              varng(1)='sea_surface_wave_dominant_mean_square_slope_direction'
-              WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
-              varnd(1)=''
+              VARNM(1)='mssd'
+              VARNL(1)='x direction for mss'
+              VARNS(1)='sea_surface_wave_dominant_mean_square_slope_direction'
+              VARNG(1)='sea_surface_wave_dominant_mean_square_slope_direction'
+              WRITE(VARNC(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0
-              vmax = 3600
+              VMIN = 0
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.1
@@ -2508,20 +2529,20 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCD   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='mscd'
-              varnl(1)='x direction for msc'
-              varns(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
-              varng(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
-              varnc(1)=''
-              varnd(1)=''
+              VARNM(1)='mscd'
+              VARNL(1)='x direction for msc'
+              VARNS(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+              VARNG(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+              VARNC(1)=''
+              VARND(1)=''
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
-!/RTD                varnd(1) = 'True North'
+!/RTD                VARND(1) = 'True North'
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              vmin = 0
-              vmax = 3600
+              VMIN = 0
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.1
@@ -2534,14 +2555,14 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DTDYN , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='dtd'
-              varnl(1)='dynamic time step'
-              varns(1)='dynamic_time_step'
-              varng(1)='dynamic_time_step'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='dtd'
+              VARNL(1)='dynamic time step'
+              VARNS(1)='dynamic_time_step'
+              VARNG(1)='dynamic_time_step'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.001
@@ -2549,14 +2570,14 @@
               ENAME  = '.fc'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FCUT  , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='fc'
-              varnl(1)='cut off frequency'
-              varns(1)='cut_off_frequency'
-              varng(1)='cut_off_frequency'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 8000
+              VARNM(1)='fc'
+              VARNL(1)='cut off frequency'
+              VARNS(1)='cut_off_frequency'
+              VARNG(1)='cut_off_frequency'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 8000
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.01
@@ -2564,14 +2585,14 @@
               ENAME  = '.cfx'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX  , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='cfx'
-              varnl(1)='maximum cfl for spatial advection'
-              varns(1)='maximum_cfl_for_spatial_advection'
-              varng(1)='maximum_cfl_for_spatial_advection'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='cfx'
+              VARNL(1)='maximum cfl for spatial advection'
+              VARNS(1)='maximum_cfl_for_spatial_advection'
+              VARNG(1)='maximum_cfl_for_spatial_advection'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.01
@@ -2579,14 +2600,14 @@
               ENAME  = '.cfd'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX  , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='cfd'
-              varnl(1)='maximum cfl for direction advection'
-              varns(1)='maximum_cfl_for_direction_advection'
-              varng(1)='maximum_cfl_for_direction_advection'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='cfd'
+              VARNL(1)='maximum cfl for direction advection'
+              VARNS(1)='maximum_cfl_for_direction_advection'
+              VARNG(1)='maximum_cfl_for_direction_advection'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.01
@@ -2594,14 +2615,14 @@
               ENAME  = '.cfk'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLKMAX  , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='cfk'
-              varnl(1)='maximum cfl for frequency advection'
-              varns(1)='maximum_cfl_for_frequency_advection'
-              varng(1)='maximum_cfl_for_frequency_advection'
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0 
-              vmax = 32000
+              VARNM(1)='cfk'
+              VARNL(1)='maximum cfl for frequency advection'
+              VARNS(1)='maximum_cfl_for_frequency_advection'
+              VARNG(1)='maximum_cfl_for_frequency_advection'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0 
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 10 ) THEN
               FSC    = 0.1
@@ -2610,14 +2631,14 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
                                                         , MAPSF, X1 )
               NFIELD=1
-              WRITE (varnm(1),'(A1,I2.2)') 'u', IFJ
-              WRITE (varnl(1),'(A12,I2.2)') 'User_defined', IFJ
-              WRITE (varns(1),'(A12,I2.2)') 'User_defined', IFJ
-              WRITE (varng(1),'(A12,I2.2)') 'user_defined', IFJ
-              varnc(1)=''
-              varnd(1)=''
-              vmin = 0
-              vmax = 9990
+              WRITE (VARNM(1),'(A1,I2.2)') 'u', IFJ
+              WRITE (VARNL(1),'(A12,I2.2)') 'User_defined', IFJ
+              WRITE (VARNS(1),'(A12,I2.2)') 'User_defined', IFJ
+              WRITE (VARNG(1),'(A12,I2.2)') 'user_defined', IFJ
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 9990
 !
             ELSE
               WRITE (NDSE,999) IFI, IFJ
@@ -2678,59 +2699,59 @@
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
               UNITVAR(:)=UNITS
-              dimln(4)=I2F-I1F+1
-              extradim=1
+              DIMLN(4)=I2F-I1F+1
+              EXTRADIM=1
             ELSE
-              dimln(4)=0
-              extradim=0
+              DIMLN(4)=0
+              EXTRADIM=0
             END IF 
 
             ! If regular grid, initializes the lat/lon or x/y dimension lengths
             IF (GTYPE.NE.UNGTYPE) THEN 
-              dimln(2)=IXN-IX1+1
-              dimln(3)=IYN-IY1+1
+              DIMLN(2)=IXN-IX1+1
+              DIMLN(3)=IYN-IY1+1
             ! If unstructured mesh, initializes the nelem,tri dimension lengths
             ELSE
-              dimln(2)=IXN-IX1+1
-              dimln(3)=NTRI
+              DIMLN(2)=IXN-IX1+1
+              DIMLN(3)=NTRI
             ENDIF
 
             ! Defines index of first field variable
-            ivar1=3+extradim+(COORDTYPE-1)+MAPSTAOUT
+            IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
 
 
 ! 2.4 Gets the netcdf id
 
-            OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=iret)
+            OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=IRET)
             IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
-              IF (iret.EQ.0) THEN
+              IF (IRET.EQ.0) THEN
                 ! close old file
                 IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
-                  iret = nf90_redef(ncids(1,1,1))
-                  call check_err(iret)
-                  iret=nf90_put_att(ncids(1,1,1),NF90_GLOBAL,'stop_date',stopdate)
-                  call check_err(iret)
-                  iret=nf90_close(ncids(1,1,1))
-                  call check_err(iret)
+                  IRET = NF90_REDEF(NCIDS(1,1,1))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCIDS(1,1,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_CLOSE(NCIDS(1,1,1))
+                  CALL CHECK_ERR(IRET)
                 END IF
-                ncid=0
+                NCID=0
               ELSE
-                ncid=ncids(1,1,1)
+                NCID=NCIDS(1,1,1)
               END IF
             ELSE ! TOGETHER AND NOR FLFRQ
-              IF (iret.EQ.0) THEN
+              IF (IRET.EQ.0) THEN
                 ! close old file
                 IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
-                  iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
-                  call check_err(iret)
-                  iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
-                  call check_err(iret)
-                  iret=nf90_close(ncids(IFI,IFJ,IPART+1))
-                  call check_err(iret)
+                  IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_CLOSE(NCIDS(IFI,IFJ,IPART+1))
+                  CALL CHECK_ERR(IRET)
                 END IF
-                ncid=0
+                NCID=0
               ELSE
-                ncid=ncids(IFI,IFJ,IPART+1)
+                NCID=NCIDS(IFI,IFJ,IPART+1)
               END IF
             END IF
                         
@@ -2739,64 +2760,67 @@
             IF (NCID.EQ.0) THEN 
 
               ! Initializes the time dimension length
-              dimln(1)=1
+              DIMLN(1)=1
 
               ! If NOT unstructure mesh (i.e. regular grid)
               IF (GTYPE.NE.UNGTYPE) THEN      
                 ! If spherical coordinate
                 IF (FLAGLL) THEN 
-                  varnm(NFIELD+1)='Longitude'
-                  varnm(NFIELD+2)='Latitude'
+                  VARNM(NFIELD+1)='Longitude'
+                  VARNM(NFIELD+2)='Latitude'
                 ! If cartesian coordinate
                 ELSE
-                  varnm(NFIELD+1)='x'
-                  varnm(NFIELD+2)='y'
+                  VARNM(NFIELD+1)='x'
+                  VARNM(NFIELD+2)='y'
                 END IF
               END IF   
 
 
+
+
+
               ! Initializes the time iteration counter n
-              n=1
+              N=1
 
 ! 2.5.1 Creates the NetCDF file 
 
-              CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
-                          extradim,NCTYPE,MAPSTAOUT)
+              CALL W3CRNC(FNAMENC,NCID,DIMID,DIMLN,VARID, &
+                          EXTRADIM,NCTYPE,MAPSTAOUT)
 
               ! Saves the ncid to keep the file opened to write all the variables
               ! and open/close at each time step
               IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
-                ncids(1,1,1)=ncid
+                NCIDS(1,1,1)=NCID
               ELSE
-                ncids(IFI,IFJ,IPART+1)=ncid
+                NCIDS(IFI,IFJ,IPART+1)=NCID
               END IF
 
               ! If curvilinear grid, instanciates lat / lon
               IF (GTYPE.EQ.CLGTYPE) THEN
-                IF (.NOT.ALLOCATED(lon2D)) ALLOCATE(lon2D(NX,NY),lat2D(NX,NY))
-                lon2D=TRANSPOSE(XGRD)
-                lat2D=TRANSPOSE(YGRD)
-                iret=nf90_put_att(ncid,NF90_GLOBAL, &
+                IF (.NOT.ALLOCATED(LON2D)) ALLOCATE(LON2D(NX,NY),LAT2D(NX,NY))
+                LON2D=TRANSPOSE(XGRD)
+                LAT2D=TRANSPOSE(YGRD)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                      'latitude_resolution','n/a')
-                call check_err(iret)
-                iret=nf90_put_att(ncid,NF90_GLOBAL, &
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                      'longitude_resolution','n/a')
-                call check_err(iret)
+                CALL CHECK_ERR(IRET)
               ! If NOT curvilinear grid,
               ELSE 
-                ! instanciates lon with X/lon for regular grid or nodes for unstructured mesh
-                IF (.NOT.ALLOCATED(lon)) ALLOCATE(lon(NX))
+                ! instanciates lon with x/lon for regular grid or nodes for unstructured mesh
+                IF (.NOT.ALLOCATED(LON)) ALLOCATE(LON(NX))
 !/RTD                ! 2d longitude array for standard grid coordinates
-!/RTD                IF (.NOT.ALLOCATED(lon2D)) ALLOCATE(lon2D(NX,NY),lon2Deq(NX,NY),AnglD2D(NX,NY))
-                IF (.NOT.ALLOCATED(lat)) THEN 
-                  ! If regular grid, instanciates lat with Y/lat
+!/RTD                IF (.NOT.ALLOCATED(LON2D)) ALLOCATE(LON2D(NX,NY),LON2DEQ(NX,NY),ANGLD2D(NX,NY))
+                IF (.NOT.ALLOCATED(LAT)) THEN 
+                  ! If regular grid, instanciates lat with y/lat
                   IF (GTYPE.EQ.RLGTYPE) THEN 
-                    ALLOCATE(lat(NY))
+                    ALLOCATE(LAT(NY))
 !/RTD                    ! 2d latitude array for standard grid coordinates
-!/RTD                    IF (.NOT.ALLOCATED(lat2D)) ALLOCATE(lat2D(NX,NY),lat2Deq(NX,NY))
+!/RTD                    IF (.NOT.ALLOCATED(LAT2D)) ALLOCATE(LAT2D(NX,NY),LAT2DEQ(NX,NY))
                   ! If unstructured mesh, instanciates lat with nodes
                   ELSE 
-                    ALLOCATE(lat(NX))
+                    ALLOCATE(LAT(NX))
                   END IF 
                 END IF
               END IF
@@ -2810,129 +2834,124 @@
                 SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SY)) ))
                 X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(X0)) ))
                 Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(Y0)) ))
-                DO i=1,NX
-                  lon(i)=REAL(X0D+SXD*DBLE(i-1))
-!/RTD                  lon2Deq(i,1:NY)=lon(i)
+                DO I=1,NX
+                  LON(I)=REAL(X0D+SXD*DBLE(I-1))
+!/RTD                  LON2DEQ(I,1:NY)=LON(I)
                 END DO
-                DO i=1,NY
-                  lat(i)=REAL(Y0D+SYD*DBLE(i-1))
-!/RTD                  lat2Deq(1:NX,i)=lat(i)
+                DO I=1,NY
+                  LAT(I)=REAL(Y0D+SYD*DBLE(I-1))
+!/RTD                  LAT2DEQ(1:NX,I)=LAT(I)
                 END DO
 !/RTD                ! Calculate the standard grid coordinates
-!/RTD                DO i=1,NX
-!/RTD                  CALL W3EQTOLL(lat2Deq(i,1:NY), lon2Deq(i,1:NY), lat2D(i,1:NY), &
-!/RTD                                 lon2D(i,1:NY), AnglD2D(i,1:NY), PoLat, PoLon, NY)
+!/RTD                DO I=1,NX
+!/RTD                  CALL W3EQTOLL(LAT2DEQ(I,1:NY), LON2DEQ(I,1:NY), LAT2D(I,1:NY), &
+!/RTD                                 LON2D(I,1:NY), ANGLD2D(I,1:NY), POLAT, POLON, NY)
 !/RTD                END DO   
-                WRITE(str2,*) SY
-                str2=ADJUSTL(str2)
-                iret=nf90_put_att(ncid,NF90_GLOBAL,   &
-                         'latitude_resolution', TRIM(str2))
-                call check_err(iret)
-                WRITE(str2,*) SX 
-                str2=ADJUSTL(str2)
-                iret=nf90_put_att(ncid,NF90_GLOBAL,   &
-                         'longitude_resolution',TRIM(str2))
-                call check_err(iret)
+                WRITE(STR2,*) SY
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+                         'latitude_resolution', TRIM(STR2))
+                CALL CHECK_ERR(IRET)
+                WRITE(STR2,*) SX 
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+                         'longitude_resolution',TRIM(STR2))
+                CALL CHECK_ERR(IRET)
               END IF
 
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN 
-                lon(:)=XYB(:,1) 
-                lat(:)=XYB(:,2)
+                LON(:)=XYB(:,1) 
+                LAT(:)=XYB(:,2)
                 IF (.NOT.ALLOCATED(TRIGP2)) ALLOCATE(TRIGP2(3,NTRI))
-                dimln(2)=NX
-                dimln(3)=NTRI
+                DIMLN(2)=NX
+                DIMLN(3)=NTRI
                 TRIGP2=TRANSPOSE(TRIGP)
-                iret=nf90_put_att(ncid,NF90_GLOBAL, &
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                      'latitude_resolution','n/a')
-                call check_err(iret)
-                iret=nf90_put_att(ncid,NF90_GLOBAL, &
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                      'longitude_resolution','n/a')
-                call check_err(iret)
+                CALL CHECK_ERR(IRET)
               END IF
 
               ! Finishes declaration part in file by adding geographical bounds
-              WRITE(str2,*) MINVAL(YGRD)
-              str2=ADJUSTL(str2)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-                   'southernmost_latitude',TRIM(str2))
-              call check_err(iret)
-              WRITE(str2,*) MAXVAL(YGRD)
-              str2=ADJUSTL(str2)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-                   'northernmost_latitude',TRIM(str2))
-              call check_err(iret)
-              WRITE(str2,*) MINVAL(XGRD)
-              str2=ADJUSTL(str2)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-                  'westernmost_longitude',TRIM(str2))
-              call check_err(iret)
-              WRITE(str2,*) MAXVAL(XGRD)
-              str2=ADJUSTL(str2)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-                  'easternmost_longitude',TRIM(str2))
-              call check_err(iret)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
+              WRITE(STR2,*) MINVAL(YGRD)
+              STR2=ADJUSTL(STR2)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                   'southernmost_latitude',TRIM(STR2))
+              CALL CHECK_ERR(IRET)
+              WRITE(STR2,*) MAXVAL(YGRD)
+              STR2=ADJUSTL(STR2)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                   'northernmost_latitude',TRIM(STR2))
+              CALL CHECK_ERR(IRET)
+              WRITE(STR2,*) MINVAL(XGRD)
+              STR2=ADJUSTL(STR2)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                  'westernmost_longitude',TRIM(STR2))
+              CALL CHECK_ERR(IRET)
+              WRITE(STR2,*) MAXVAL(XGRD)
+              STR2=ADJUSTL(STR2)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                  'easternmost_longitude',TRIM(STR2))
+              CALL CHECK_ERR(IRET)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                   'minimum_altitude','-12000 m')
-              call check_err(iret)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
+              CALL CHECK_ERR(IRET)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                   'maximum_altitude','9000 m')
-              call check_err(iret)
-              iret=nf90_put_att(ncid,NF90_GLOBAL,  &
+              CALL CHECK_ERR(IRET)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                   'altitude_resolution','n/a')
-              call check_err(iret)
+              CALL CHECK_ERR(IRET)
 
-!/RTD                  iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-!/RTD                      'grid_north_pole_latitude',PoLat)
-!/RTD                  iret=nf90_put_att(ncid,NF90_GLOBAL,  &
-!/RTD                      'grid_north_pole_longitude',PoLon)
+!/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+!/RTD                      'grid_north_pole_latitude',POLAT)
+!/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+!/RTD                      'grid_north_pole_longitude',POLON)
 
-              iyc=TIME(1)/10000
-              imc=(TIME(1)-iyc*10000)/100
-              idc=TIME(1)-iyc*10000-100*imc
-              ihc=TIME(2)/10000
-              iminc=(TIME(2)-ihc*10000)/100
-              isc=TIME(2)-ihc*10000-100*iminc
-              WRITE(startdate,'(I4.4,A,4(I2.2,A),I2.2)')           &
-                    iyc,'-',imc,'-',idc,' ',ihc,':',iminc,':',isc
+              CALL T2D(TIME,STARTDATE,IERR)
+              WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
+                    STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
 
               ! End of define mode of NetCDF file
-              iret = nf90_enddef(ncid)
-              call check_err(iret)
+              IRET = NF90_ENDDEF(NCID)
+              CALL CHECK_ERR(IRET)
 
 ! 2.5.3 Writes longitudes, latitudes, triangles, frequency and status map (mapsta) to netcdf file
 
               ! If regular grid
               IF (GTYPE.EQ.RLGTYPE) THEN 
-                iret=nf90_put_var(ncid,varid(1),lon(IX1:IXN))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(2),lat(IY1:IYN))
-                call check_err(iret)
-!/RTD                iret=nf90_put_var(ncid,varid(291),lon2D(IX1:IXN,IY1:IYN))
-!/RTD                call check_err(iret)
-!/RTD                iret=nf90_put_var(ncid,varid(292),lat2D(IX1:IXN,IY1:IYN))
-!/RTD                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(1),LON(IX1:IXN))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(IY1:IYN))
+                CALL CHECK_ERR(IRET)
+!/RTD                IRET=NF90_PUT_VAR(NCID,VARID(291),LON2D(IX1:IXN,IY1:IYN))
+!/RTD                CALL CHECK_ERR(IRET)
+!/RTD                IRET=NF90_PUT_VAR(NCID,VARID(292),LAT2D(IX1:IXN,IY1:IYN))
+!/RTD                CALL CHECK_ERR(IRET)
               END IF
 
               ! If spherical grid
               IF (GTYPE.EQ.CLGTYPE) THEN 
-                iret=nf90_put_var(ncid,varid(1),lon2D(IX1:IXN,IY1:IYN))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(2),lat2D(IX1:IXN,IY1:IYN))
-                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(1),LON2D(IX1:IXN,IY1:IYN))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(2),LAT2D(IX1:IXN,IY1:IYN))
+                CALL CHECK_ERR(IRET)
               END IF
 
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN 
-                iret=nf90_put_var(ncid,varid(1),lon(IX1:IXN))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(2),lat(IX1:IXN))
-                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(1),LON(IX1:IXN))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(IX1:IXN))
+                CALL CHECK_ERR(IRET)
               END IF
 
               ! Writes frequencies to netcdf file
-              IF (extradim.EQ.1) THEN
-                ALLOCATE(freq(I2F-I1F+1))
+              IF (EXTRADIM.EQ.1) THEN
+                ALLOCATE(FREQ(I2F-I1F+1))
                 !BGR Here is where we should tell it what frequencies are.
                 IF (CUSTOMFRQ) THEN
                    DO i=1,usspf(2)
@@ -2940,117 +2959,117 @@
                    ENDDO
                 ELSE
                    DO i=1,I2F-I1F+1
-                      freq(i)=SIG(I1F-1+i)*TPIINV
+                      FREQ(i)=SIG(I1F-1+i)*TPIINV
                    END DO
                 ENDIF
-                iret=nf90_put_var(ncid,varid(3),freq)
-                call check_err(iret)
-                DEALLOCATE(freq)
+                IRET=NF90_PUT_VAR(NCID,VARID(3),FREQ)
+                CALL CHECK_ERR(IRET)
+                DEALLOCATE(FREQ)
               END IF
 
               ! Writes triangles to netcdf file
               IF (GTYPE.EQ.UNGTYPE) THEN
-                iret=nf90_put_var(ncid,varid(4+extradim),TRIGP2)
-                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(4+EXTRADIM),TRIGP2)
+                CALL CHECK_ERR(IRET)
               END IF
 
               ! Writes status map array at variable index 2+1+coordtype+idim-4
               IF (MAPSTAOUT.EQ.1) THEN 
-                idvarout=varid(3+extradim+(COORDTYPE-1)+MAPSTAOUT) 
-                start(1)=1
-                start(2)=1
-                count(1)=IXN-IX1+1
-                count(2)=IYN-IY1+1
+                IDVAROUT=VARID(3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT) 
+                START(1)=1
+                START(2)=1
+                COUNT(1)=IXN-IX1+1
+                COUNT(2)=IYN-IY1+1
                 IF (GTYPE.NE.UNGTYPE) THEN
-                  iret=nf90_put_var(ncid,idvarout,MAPOUT(IX1:IXN,IY1:IYN), &
-                                     (/start(1:2)/),(/count(1:2)/))
+                  IRET=NF90_PUT_VAR(NCID,IDVAROUT,MAPOUT(IX1:IXN,IY1:IYN), &
+                                     (/START(1:2)/),(/COUNT(1:2)/))
                 ELSE
-                  iret=nf90_put_var(ncid,idvarout,MAPOUT(IX1:IXN,1),(/start(1)/),(/count(1)/))
+                  IRET=NF90_PUT_VAR(NCID,IDVAROUT,MAPOUT(IX1:IXN,1),(/START(1)/),(/COUNT(1)/))
                 ENDIF
-                call check_err(iret)
+                CALL CHECK_ERR(IRET)
               END IF
 
               WRITE (NDSO,973) FNAMENC
 
-! 2.5.4  Defines the field(lon,lat,time) of the variable (i.e. ucur,vcur for current variable)
+! 2.5.4  Defines the field(LON,LAT,time) of the variable (i.e. ucur,vcur for current variable)
 
-              iret = nf90_redef(ncid)
-              call check_err(iret)
+              IRET = NF90_REDEF(NCID)
+              CALL CHECK_ERR(IRET)
               DO I=1,NFIELD
-                ivar=ivar1+I
+                IVAR=IVAR1+I
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
-                    iret=nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
-!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                    IRET=NF90_DEF_VAR(NCID,VARNM(I), NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   ELSE
-                    iret=nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
-!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                    IRET=NF90_DEF_VAR(NCID,VARNM(I), NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   END IF
-                  call check_err(iret)
+                  CALL CHECK_ERR(IRET)
                 ELSE
-                  dimfield(1)=dimid(2)
-                  dimfield(2)=dimid(4)
-                  dimfield(3)=dimid(5)
+                  DIMFIELD(1)=DIMID(2)
+                  DIMFIELD(2)=DIMID(4)
+                  DIMFIELD(3)=DIMID(5)
                   IF (NCVARTYPE.EQ.2) THEN 
-                    iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
-!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                    IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   ELSE 
-                    iret = nf90_def_var(ncid,varnm(I), nf90_float, dimfield(1:2+extradim), varid(ivar))
-!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                    IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   END IF  
-                  call check_err(iret)                      
+                  CALL CHECK_ERR(IRET)                      
                 END IF
 !
-                iret=nf90_put_att(ncid,varid(ivar),'long_name',varnl(I))
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'standard_name',varns(I))
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
-                call check_err(iret)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name',VARNS(I))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'globwave_name',VARNG(I))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units',UNITVAR(I))
+                CALL CHECK_ERR(IRET)
                 IF (NCVARTYPE.EQ.2) THEN 
-                  iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
                 ELSE 
-                  iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_FLOAT)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
                   FSC=1.
                   FSC3=1.
                 END IF
-                call check_err(iret)
+                CALL CHECK_ERR(IRET)
                 IF (I.LE.2) THEN 
-                  iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
                 ELSE
-                  iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC3)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
                 ENDIF 
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'add_offset',0.)
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'valid_min',vmin)
-                call check_err(iret)
-                iret=nf90_put_att(ncid,varid(ivar),'valid_max',vmax)
-                call check_err(iret)
-                IF (varnc(I).NE.'') THEN
-                  iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
-                  call check_err(iret)
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'add_offset',0.)
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',VMIN)
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',VMAX)
+                CALL CHECK_ERR(IRET)
+                IF (VARNC(I).NE.'') THEN
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'comment',VARNC(I))
+                  CALL CHECK_ERR(IRET)
                 END IF
-                IF (varnd(I).NE.'') THEN
-                  iret=nf90_put_att(ncid,varid(ivar),'direction_reference',varnd(I))
-                  call check_err(iret)
+                IF (VARND(I).NE.'') THEN
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'direction_reference',VARND(I))
+                  CALL CHECK_ERR(IRET)
                 END IF
 !/RTD
 !/RTD                  ! Add grid mapping attribute for rotated pole grids:
-!/RTD                  iret=nf90_put_att(ncid,varid(ivar),'grid_mapping',    &
+!/RTD                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
 !/RTD                                    'rotated_pole')
-!/RTD                  call check_err(iret)
+!/RTD                  CALL CHECK_ERR(IRET)
 !/RTD
               END DO
 !
               ! put start date in global attribute
-              iret=nf90_put_att(ncid,NF90_GLOBAL,'start_date',startdate)
-              call check_err(iret)
+              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'start_date',STRSTARTDATE)
+              CALL CHECK_ERR(IRET)
 !
-              iret = nf90_enddef(ncid)
-              call check_err(iret)
+              IRET = NF90_ENDDEF(NCID)
+              CALL CHECK_ERR(IRET)
 
 
 ! 2.6 Append data to the existing file
@@ -3061,32 +3080,32 @@
 
               ! If it is an unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
-                iret=NF90_INQ_VARID (ncid, 'tri', varid(4+extradim))
-                call check_err(iret)
+                IRET=NF90_INQ_VARID (NCID, 'tri', VARID(4+EXTRADIM))
+                CALL CHECK_ERR(IRET)
               ! If it is a regular grid
               ELSE
                 ! If it is spherical coordinate
                 IF (FLAGLL) THEN
-                  iret=NF90_INQ_DIMID (ncid, 'longitude', dimid(2))
-                  iret=NF90_INQ_VARID (ncid, 'longitude', varid(1))
-                  iret=NF90_INQ_DIMID (ncid, 'latitude', dimid(3))
-                  iret=NF90_INQ_VARID (ncid, 'latitude', varid(2))
+                  IRET=NF90_INQ_DIMID (NCID, 'longitude', DIMID(2))
+                  IRET=NF90_INQ_VARID (NCID, 'longitude', VARID(1))
+                  IRET=NF90_INQ_DIMID (NCID, 'latitude', DIMID(3))
+                  IRET=NF90_INQ_VARID (NCID, 'latitude', VARID(2))
                 ! If it is cartesian coordinate
                 ELSE
-                  iret=NF90_INQ_DIMID (ncid, 'x', dimid(2))
-                  iret=NF90_INQ_VARID (ncid, 'x', varid(1))
-                  iret=NF90_INQ_DIMID (ncid, 'y', dimid(3)) 
-                  iret=NF90_INQ_VARID (ncid, 'y', varid(1))
+                  IRET=NF90_INQ_DIMID (NCID, 'x', DIMID(2))
+                  IRET=NF90_INQ_VARID (NCID, 'x', VARID(1))
+                  IRET=NF90_INQ_DIMID (NCID, 'y', DIMID(3)) 
+                  IRET=NF90_INQ_VARID (NCID, 'y', VARID(1))
                 END IF 
-                call check_err(iret)
+                CALL CHECK_ERR(IRET)
               END IF
               ! Get the dimension time
-              iret=NF90_INQ_DIMID (ncid, 'time', dimid(4+extradim))
-              iret=NF90_INQUIRE_DIMENSION (ncid, dimid(4+extradim),len=n)
-              call check_err(iret)
-              iret=NF90_INQ_VARID (ncid, 'time', varid(3+extradim))
+              IRET=NF90_INQ_DIMID (NCID, 'time', DIMID(4+EXTRADIM))
+              IRET=NF90_INQUIRE_DIMENSION (NCID, DIMID(4+EXTRADIM),len=N)
+              CALL CHECK_ERR(IRET)
+              IRET=NF90_INQ_VARID (NCID, 'time', VARID(3+EXTRADIM))
               ! Get the dimension f
-              IF (extradim.EQ.1) iret=NF90_INQ_DIMID (ncid, 'f', dimid(4))
+              IF (EXTRADIM.EQ.1) IRET=NF90_INQ_DIMID (NCID, 'f', DIMID(4))
 
 ! 2.6.2 Increments the time step for existing file
 
@@ -3098,138 +3117,130 @@
 ! 2.6.3 Defines or gets the variables identifiers
 
               ! If it is the first time step, define all the variables and attributes
-              IF (n.EQ.1) THEN 
-                iret = nf90_redef(ncid)
-                call check_err(iret)
+              IF (N.EQ.1) THEN 
+                IRET = NF90_REDEF(NCID)
+                CALL CHECK_ERR(IRET)
 
                 ! Loops on all the fields of the variable (i.e. ucur/vcur for current)
                 DO I=1,NFIELD
-                  ivar=ivar1+I
+                  IVAR=IVAR1+I
                   IF (COORDTYPE.EQ.1) THEN
                     IF (NCVARTYPE.EQ.2) THEN 
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     ELSE
-                      iret = nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     END IF
                   ELSE
-                    dimfield(1)=dimid(2)
-                    dimfield(2)=dimid(4)
-                    dimfield(3)=dimid(5)
+                    DIMFIELD(1)=DIMID(2)
+                    DIMFIELD(2)=DIMID(4)
+                    DIMFIELD(3)=DIMID(5)
                     IF (NCVARTYPE.EQ.2) THEN 
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     ELSE
-                      iret = nf90_def_var(ncid,varnm(I), nf90_float, dimfield(1:2+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     END IF
                   END IF
-                  call check_err(iret)
+                  CALL CHECK_ERR(IRET)
 !
-                  iret=nf90_put_att(ncid,varid(ivar),'long_name',varnl(I))
-                  iret=nf90_put_att(ncid,varid(ivar),'standard_name',varns(I))
-                  call check_err(iret)
-                  iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
-                  iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
-                  call check_err(iret)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name',VARNS(I))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'globwave_name',VARNG(I))
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units',UNITVAR(I))
+                  CALL CHECK_ERR(IRET)
 !
                   IF (NCVARTYPE.EQ.2) THEN 
-                    iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
+                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
                   ELSE 
-                    iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_FLOAT)
+                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
                     FSC=1.
                     FSC3=1.
                   END IF
-                  call check_err(iret)
+                  CALL CHECK_ERR(IRET)
 !
                   IF (I.LE.2) THEN 
-                    iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
                   ELSE
-                    iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC3)
+                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
                   ENDIF 
-                  call check_err(iret)
+                  CALL CHECK_ERR(IRET)
 !
-                  iret=nf90_put_att(ncid,varid(ivar),'add_offset',0.)
-                  call check_err(iret)
-                  iret=nf90_put_att(ncid,varid(ivar),'valid_min',vmin)
-                  call check_err(iret)
-                  iret=nf90_put_att(ncid,varid(ivar),'valid_max',vmax)
-                  call check_err(iret)
-                  IF (varnc(I).NE.'') THEN
-                    iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
-                    call check_err(iret)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'add_offset',0.)
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',VMIN)
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',VMAX)
+                  CALL CHECK_ERR(IRET)
+                  IF (VARNC(I).NE.'') THEN
+                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'comment',VARNC(I))
+                    CALL CHECK_ERR(IRET)
                   END IF
-                  IF (varnd(I).NE.'') THEN
-                    iret=nf90_put_att(ncid,varid(ivar),'direction_reference',varnd(I))
-                    call check_err(iret)
+                  IF (VARND(I).NE.'') THEN
+                    iret=NF90_PUT_ATT(NCID,VARID(IVAR),'direction_reference',VARND(I))
+                    CALL CHECK_ERR(IRET)
                   END IF
 !/RTD
 !/RTD                  ! Add grid mapping attribute for rotated pole grids:
-!/RTD                  iret=nf90_put_att(ncid,varid(ivar),'grid_mapping',    &
+!/RTD                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
 !/RTD                                    'rotated_pole')
-!/RTD                  call check_err(iret)
+!/RTD                  CALL CHECK_ERR(IRET)
 !/RTD
                 END DO
-                iret = nf90_enddef(ncid)
-                call check_err(iret)
+                IRET = NF90_ENDDEF(NCID)
+                CALL CHECK_ERR(IRET)
 
-              ! If it is not the first time step, get all varid from the netcdf file opened
+              ! If it is not the first time step, get all VARID from the netcdf file opened
               ELSE 
-                iret=nf90_redef(ncid)
-                call check_err(iret)
+                IRET=NF90_REDEF(NCID)
+                CALL CHECK_ERR(IRET)
                 DO I=1,NFIELD
-                  ivar=ivar1+I
-                  iret=NF90_INQ_VARID (ncid, varnm(I), varid(ivar))
-                  call check_err(iret)
+                  IVAR=IVAR1+I
+                  IRET=NF90_INQ_VARID (NCID, VARNM(I), VARID(IVAR))
+                  CALL CHECK_ERR(IRET)
                 END DO  
-                iret=nf90_enddef(ncid)
-                call check_err(iret)            
-              END IF !   n.EQ.1
+                IRET=NF90_ENDDEF(NCID)
+                CALL CHECK_ERR(IRET)            
+              END IF !   N.EQ.1
             END IF  ! IERR.EQ.0
               
 ! 2.6.4 Defines the current time step and index
      
-            iyc=TIME(1)/10000
-            imc=(TIME(1)-iyc*10000)/100
-            idc=TIME(1)-iyc*10000-100*imc
-            ihc=TIME(2)/10000
-            iminc=(TIME(2)-ihc*10000)/100
-            isc=TIME(2)-ihc*10000-100*iminc
-!
-            timenc=DBLE(julday(idc,imc,iyc)) - DBLE(julday(1,1,1990))              &
-                   + DBLE((ihc + DBLE((iminc + DBLE(isc /60.)) /60.)) /24.)
+            CALL T2D(TIME,CURDATE,IERR)
+            OUTJULDAY=TSUB(REFDATE,CURDATE)
+            WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
+                    'Writing new record ', ENAME(2:) ,'number ',N,                  & 
+                    ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
+                    ':',CURDATE(6),':',CURDATE(7),' in file ',TRIM(FNAMENC)
 
-!
 
-            WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')       &
-                    'Writing new record ', ENAME(2:) ,'number ',n, & 
-                    ' for ',iyc,':',imc,':',idc,'T',ihc,':',iminc,':',isc,         &
-                    ' in file ',TRIM(FNAMENC)
 
             ! Defines starting point and size of arrays to be written
-            start(1)=1
-            start(2)=1
-            start(3)=1
-            start(4)=1
+            START(1)=1
+            START(2)=1
+            START(3)=1
+            START(4)=1
 
             ! Sets time index 
-            start(3+1-COORDTYPE+extradim)=n
-            count(1)=IXN-IX1+1
-            count(2)=IYN-IY1+1
-            count(3)=1
-            count(4)=1
-            start1D(1)=1
-            start1D(2)=n
-            count1D(1)=IXN-IX1+1
-            count1D(2)=1
+            START(3+1-COORDTYPE+EXTRADIM)=N
+            COUNT(1)=IXN-IX1+1
+            COUNT(2)=IYN-IY1+1
+            COUNT(3)=1
+            COUNT(4)=1
+            START1D(1)=1
+            START1D(2)=N
+            COUNT1D(1)=IXN-IX1+1
+            COUNT1D(2)=1
 
             ! Puts time in NetCDF file
             IF((IFI.EQ.I1.AND.IFJ.EQ.J1.AND.TOGETHER)  &
                .OR.(.NOT.TOGETHER).OR.FLFRQ) THEN
-              ivar1=3+extradim+(COORDTYPE-1)+MAPSTAOUT
-              iret=nf90_put_var(ncid,varid(3+extradim),timenc,(/n/))
-              call check_err(iret)
+              IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
+              IRET=NF90_PUT_VAR(NCID,VARID(3+EXTRADIM),OUTJULDAY,(/N/))
+              CALL CHECK_ERR(IRET)
             END IF
 
 ! 2.6.5 Puts field(s) in NetCDF file
@@ -3251,19 +3262,19 @@
                   END DO
                 END DO
 
-                iret=nf90_put_var(ncid,varid(ivar1+1),              &
-                        MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+2),            &
-                        MYY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+3),            &
-                        MXY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),              &
+                        MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),            &
+                        MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),            &
+                        MXY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
 ! NFIELD=2
               ELSE IF (NFIELD.EQ.2 ) THEN 
-! extradim=0
-                IF (extradim.EQ.0) THEN   
+! EXTRADIM=0
+                IF (EXTRADIM.EQ.0) THEN   
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
                       IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
@@ -3275,17 +3286,17 @@
                       END IF
                     END DO
                   END DO
-                  iret=nf90_put_var(ncid,varid(ivar1+1),             &
-                            MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-                  iret=nf90_put_var(ncid,varid(ivar1+2),           &
-                          MYY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-! extradim=1
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),             &
+                            MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),           &
+                          MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+! EXTRADIM=1
                 ELSE
-                  start(3+1-COORDTYPE)=0
+                  START(3+1-COORDTYPE)=0
                   DO IK=I1F,I2F
-                    start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
+                    START(3+1-COORDTYPE)=START(3+1-COORDTYPE)+1
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
@@ -3297,16 +3308,16 @@
                         END IF
                       END DO
                     END DO
-                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                            MXX(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
-                    iret=nf90_put_var(ncid,varid(ivar1+2),             &
-                            MYY(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                            MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),             &
+                            MYY(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
                   END DO
-                END IF  ! extradim
+                END IF  ! EXTRADIM
 ! NFIELD=1
               ELSE 
-! extradim=0
-                IF (extradim.EQ.0) THEN   
+! EXTRADIM=0
+                IF (EXTRADIM.EQ.0) THEN   
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
                       IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
@@ -3316,14 +3327,14 @@
                       END IF
                     END DO
                   END DO
-                  iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                          MX1(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-! extradim=1
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                          MX1(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+! EXTRADIM=1
                 ELSE
-                  start(3+1-COORDTYPE)=0
+                  START(3+1-COORDTYPE)=0
                   DO IK=I1F,I2F
-                    start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
+                    START(3+1-COORDTYPE)=START(3+1-COORDTYPE)+1
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
@@ -3333,11 +3344,11 @@
                         END IF
                       END DO
                     END DO
-                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                        MX1(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
-                    call check_err(iret)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                        MX1(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
+                    CALL CHECK_ERR(IRET)
                   END DO
-                END IF   ! extradim
+                END IF   ! EXTRADIM
               END IF   ! NFIELD
 !
 ! Real output (NCVARTYPE.GE.3)
@@ -3358,19 +3369,19 @@
                   END DO
                 END DO
 
-                iret=nf90_put_var(ncid,varid(ivar1+1),              &
-                        MXXR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+2),            &
-                        MYYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+3),            &
-                        MXYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),              &
+                        MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),            &
+                        MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),            &
+                        MXYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                CALL CHECK_ERR(IRET)
 ! NFIELD=2
               ELSE IF (NFIELD.EQ.2 ) THEN 
-! extradim=0
-                IF (extradim.EQ.0) THEN   
+! EXTRADIM=0
+                IF (EXTRADIM.EQ.0) THEN   
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
                       IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
@@ -3382,17 +3393,17 @@
                       END IF
                     END DO
                   END DO
-                  iret=nf90_put_var(ncid,varid(ivar1+1),             &
-                            MXXR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-                  iret=nf90_put_var(ncid,varid(ivar1+2),           &
-                          MYYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-! extradim=1
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),             &
+                            MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),           &
+                          MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+! EXTRADIM=1
                 ELSE
-                  start(4-COORDTYPE)=0
+                  START(4-COORDTYPE)=0
                   DO IK=I1F,I2F
-                    start(4-COORDTYPE)=start(4-COORDTYPE)+1
+                    START(4-COORDTYPE)=START(4-COORDTYPE)+1
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
@@ -3404,16 +3415,16 @@
                         END IF
                       END DO
                     END DO
-                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                            MXXR(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
-                    iret=nf90_put_var(ncid,varid(ivar1+2),             &
-                            MYYR(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                            MXXR(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),             &
+                            MYYR(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
                   END DO
-                END IF  ! extradim
+                END IF  ! EXTRADIM
 ! NFIELD=1
               ELSE 
-! extradim=0
-                IF (extradim.EQ.0) THEN   
+! EXTRADIM=0
+                IF (EXTRADIM.EQ.0) THEN   
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
                       IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
@@ -3423,14 +3434,14 @@
                       END IF
                     END DO
                   END DO
-                  iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                          MX1R(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                  call check_err(iret)
-! extradim=1
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                          MX1R(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                  CALL CHECK_ERR(IRET)
+! EXTRADIM=1
                 ELSE
-                  start(4-COORDTYPE)=0
+                  START(4-COORDTYPE)=0
                   DO IK=I1F,I2F
-                    start(4-COORDTYPE)=start(4-COORDTYPE)+1
+                    START(4-COORDTYPE)=START(4-COORDTYPE)+1
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
@@ -3440,16 +3451,16 @@
                         END IF
                       END DO
                     END DO
-                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
-                        MX1R(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
-                    call check_err(iret)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                        MX1R(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
+                    CALL CHECK_ERR(IRET)
                   END DO
-                END IF   ! extradim
+                END IF   ! EXTRADIM
               END IF   ! NFIELD
             END IF   ! NCVARTYPE
 
             ! updates the variable index
-            ivar1=ivar1+NFIELD
+            IVAR1=IVAR1+NFIELD
 
 
             ! Loops over IPART for partition variables
@@ -3465,7 +3476,7 @@
               INDEXIPART=1
             END IF
 !      
-          END IF  ! FLREQ(IFI,IFJ)
+          END IF  ! FLG2D(IFI,IFJ)
         END DO  ! IFI=1, NOGRP
       END DO  ! IFJ=1, NGRPP
 !
@@ -3473,9 +3484,9 @@
       DEALLOCATE(X1, X2, XX, XY, XK, XXK, XYK)
       DEALLOCATE(MX1, MXX, MYY, MXY, MAPOUT)
       DEALLOCATE(MX1R, MXXR, MYYR, MXYR)
-      IF (ALLOCATED(lon)) DEALLOCATE(lon, lat)
-      IF (ALLOCATED(lon2D)) DEALLOCATE(lon2D, lat2D)
-!/RTD      IF (ALLOCATED(lon2Deq)) DEALLOCATE(lat2Deq, lon2Deq, AnglD2D)
+      IF (ALLOCATED(LON)) DEALLOCATE(LON, LAT)
+      IF (ALLOCATED(LON2D)) DEALLOCATE(LON2D, LAT2D)
+!/RTD      IF (ALLOCATED(LON2DEQ)) DEALLOCATE(LAT2DEQ, LON2DEQ, ANGLD2D)
 !
       RETURN
 !
@@ -3487,7 +3498,7 @@
 !
 ! Formats
 !
-  973 FORMAT ( 'NEW NetCDF file was created ',A)
+  973 FORMAT ( 'NEW NETCDF FILE WAS CREATED ',A)
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXNC :'/                &
                '     PLEASE UPDATE FIELDS !!! '/                      &
                '     IFI = ',I2, '- IFJ = ',I2/)
@@ -3518,78 +3529,81 @@
 
 
 !--------------------------------------------------------------------------    
-      SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid,  &
-                         extradim, NCTYPE, mapstaout )
+      SUBROUTINE W3CRNC (NCFILE, NCID, DIMID, DIMLN, VARID,  &
+                         EXTRADIM, NCTYPE, MAPSTAOUT )
       USE W3GDATMD
       USE NETCDF
-      USE W3ODATMD, ONLY: NDSO, NDSE, NDST
+      USE W3TIMEMD
 
-      implicit none
+      IMPLICIT NONE
       
 
 
-      INTEGER, INTENT(IN)               :: extradim
+      INTEGER, INTENT(IN)               :: EXTRADIM
       INTEGER, INTENT(IN)               :: NCTYPE
-      character*(*), INTENT(IN)         :: ncfile
-      integer, INTENT(OUT)              :: ncid
-      integer, INTENT(OUT)              :: dimid(6)
-      integer, INTENT(IN)               :: dimln(6)
-      integer, INTENT(OUT)              :: varid(300)
-      INTEGER, INTENT(IN)               :: mapstaout
+      CHARACTER*(*), INTENT(IN)         :: NCFILE
+      INTEGER, INTENT(OUT)              :: NCID
+      INTEGER, INTENT(OUT)              :: DIMID(6)
+      INTEGER, INTENT(IN)               :: DIMLN(6)
+      INTEGER, INTENT(OUT)              :: VARID(300)
+      INTEGER, INTENT(IN)               :: MAPSTAOUT
 !
-!   Local variables
+!/ ------------------------------------------------------------------- /
+!   Local parameters
 !
-      INTEGER                           :: ivar,iret,dimtri(2)
-!/NC4    INTEGER                           :: deflate=1
-      CHARACTER                         :: attname*120,attval*120
-      INTEGER                           :: icode,strl,strl2
+      INTEGER                           :: IVAR,IRET,ICODE,STRL,STRL2
+      INTEGER                           :: DIMTRI(2)
+!/NC4    INTEGER                           :: DEFLATE=1
+!
+      CHARACTER                         :: ATTNAME*120,ATTVAL*120
+
 
 !      
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  iret = nf90_create(trim(ncfile), NF90_CLOBBER, ncid)
-!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(trim(ncfile), NF90_NETCDF4, ncid)
-      call check_err(iret)
+      IF(NCTYPE.EQ.3)  IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
+!/NC4      IF(NCTYPE.EQ.4) IRET = NF90_CREATE(TRIM(NCFILE), NF90_NETCDF4, NCID)
+      CALL CHECK_ERR(IRET)
 !
 ! Define dimensions
 !
-      iret = nf90_def_dim(ncid, 'level', dimln(1), dimid(1))
+      IRET = NF90_DEF_DIM(NCID, 'level', DIMLN(1), DIMID(1))
 
 !
 ! Regular structured case
 !
       IF (GTYPE.NE.UNGTYPE) THEN 
         IF (FLAGLL) THEN
-          iret = nf90_def_dim(ncid, 'longitude', dimln(2), dimid(2))
-          iret = nf90_def_dim(ncid, 'latitude', dimln(3), dimid(3))
+          IRET = NF90_DEF_DIM(NCID, 'longitude', DIMLN(2), DIMID(2))
+          IRET = NF90_DEF_DIM(NCID, 'latitude', DIMLN(3), DIMID(3))
         ELSE                     
-          iret = nf90_def_dim(ncid, 'x', dimln(2), dimid(2))
-          iret = nf90_def_dim(ncid, 'y', dimln(3), dimid(3))
+          IRET = NF90_DEF_DIM(NCID, 'x', DIMLN(2), DIMID(2))
+          IRET = NF90_DEF_DIM(NCID, 'y', DIMLN(3), DIMID(3))
           END IF
-        call check_err(iret)
+        CALL CHECK_ERR(IRET)
 !
 ! Unstructured case
 !
       ELSE
-        iret = nf90_def_dim(ncid, 'node', dimln(2), dimid(2))
-        iret = nf90_def_dim(ncid, 'element', dimln(3), dimid(3))
-        call check_err(iret)
+        IRET = NF90_DEF_DIM(NCID, 'node', DIMLN(2), DIMID(2))
+        IRET = NF90_DEF_DIM(NCID, 'element', DIMLN(3), DIMID(3))
+        CALL CHECK_ERR(IRET)
       ENDIF
 !
 !
 
 
-      IF (extradim.EQ.1) THEN
-        iret = nf90_def_dim(ncid, 'f', dimln(4), dimid(4))
-        call check_err(iret)
+      IF (EXTRADIM.EQ.1) THEN
+        IRET = NF90_DEF_DIM(NCID, 'f', DIMLN(4), DIMID(4))
+        CALL CHECK_ERR(IRET)
       ENDIF
 
-      iret = nf90_def_dim(ncid, 'time',nf90_unlimited, dimid(4+extradim))
-      call check_err(iret)
+      IRET = NF90_DEF_DIM(NCID, 'time',NF90_UNLIMITED, DIMID(4+EXTRADIM))
+      CALL CHECK_ERR(IRET)
 
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        iret = nf90_def_dim(ncid, 'noel',3, dimid(5+extradim))
-        call check_err(iret)
+        IRET = NF90_DEF_DIM(NCID, 'noel',3, DIMID(5+EXTRADIM))
+        CALL CHECK_ERR(IRET)
       ENDIF
 
       
@@ -3599,215 +3613,216 @@
       IF (FLAGLL) THEN 
 !longitude
         IF (GTYPE.EQ.RLGTYPE) THEN 
-          iret = nf90_def_var(ncid, 'longitude', nf90_float, dimid(2), varid(1))
-          iret = nf90_def_var(ncid, 'latitude', nf90_float, dimid(3), varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(3), VARID(2))
         ELSE IF (GTYPE.EQ.CLGTYPE) THEN
-          iret = nf90_def_var(ncid, 'longitude', nf90_float, (/ dimid(2), dimid(3)/), &
-                                                                            varid(1))
-          iret = nf90_def_var(ncid, 'latitude', nf90_float, (/ dimid(2), dimid(3)/), &
-                                                                            varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
+                                                                            VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
+                                                                            VARID(2))
         ELSE
-          iret = nf90_def_var(ncid, 'longitude', nf90_float, dimid(2), varid(1))
-          iret = nf90_def_var(ncid, 'latitude', nf90_float, dimid(2), varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(2), VARID(2))
           END IF
-        iret=nf90_put_att(ncid,varid(1),'units','degree_east')
-        iret=nf90_put_att(ncid,varid(1),'long_name','longitude')
-        iret=nf90_put_att(ncid,varid(1),'standard_name','longitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'units','degree_east')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','longitude')
 !/RTD        ! Override the above for RTD pole:
-!/RTD        iret=nf90_put_att(ncid,varid(1),'long_name','longitude in rotated pole grid')
-!/RTD        iret=nf90_put_att(ncid,varid(1),'standard_name','grid_longitude')
-        iret=nf90_put_att(ncid,varid(1),'valid_min',-180.0)
-        iret=nf90_put_att(ncid,varid(1),'valid_max',360.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude in rotated pole grid')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','grid_longitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_min',-180.0)
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_max',360.)
 !
-        iret=nf90_put_att(ncid,varid(2),'units','degree_north')
-        iret=nf90_put_att(ncid,varid(2),'long_name','latitude')
-        iret=nf90_put_att(ncid,varid(2),'standard_name','latitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'units','degree_north')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','latitude')
 !/RTD        ! Override the above for RTD pole:
-!/RTD        iret=nf90_put_att(ncid,varid(2),'long_name','latitude in rotated pole grid')
-!/RTD        iret=nf90_put_att(ncid,varid(2),'standard_name','grid_latitude')
-        iret=nf90_put_att(ncid,varid(2),'valid_min',-90.0)
-        iret=nf90_put_att(ncid,varid(2),'valid_max',180.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude in rotated pole grid')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','grid_latitude')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_min',-90.0)
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',180.)
 !
 !/RTD        !Add secondary coordinate system linking rotated grid back to standard lat-lon
-!/RTD        iret = nf90_def_var(ncid, 'standard_longitude', nf90_float, (/ dimid(2), dimid(3)/), &
+!/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
 !/RTD                             varid(291))
-!/RTD        iret=nf90_put_att(ncid,varid(291),'units','degree_east')
-!/RTD        iret=nf90_put_att(ncid,varid(291),'long_name','longitude')
-!/RTD        iret=nf90_put_att(ncid,varid(291),'standard_name','longitude')
-!/RTD        iret=nf90_put_att(ncid,varid(291),'valid_min',-180.0)
-!/RTD        iret=nf90_put_att(ncid,varid(291),'valid_max',360.)
-!/RTD        iret = nf90_def_var(ncid, 'standard_latitude', nf90_float, (/ dimid(2), dimid(3)/), &
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'units','degree_east')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'long_name','longitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'standard_name','longitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'valid_min',-180.0)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'valid_max',360.)
+!/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_latitude', nf90_float, (/ DIMID(2), DIMID(3)/), &
 !/RTD                             varid(292))
-!/RTD        iret=nf90_put_att(ncid,varid(292),'units','degree_north')
-!/RTD        iret=nf90_put_att(ncid,varid(292),'long_name','latitude')
-!/RTD        iret=nf90_put_att(ncid,varid(292),'standard_name','latitude')
-!/RTD        iret=nf90_put_att(ncid,varid(292),'valid_min',-90.0)
-!/RTD        iret=nf90_put_att(ncid,varid(292),'valid_max',180.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'units','degree_north')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'long_name','latitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'standard_name','latitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'valid_min',-90.0)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'valid_max',180.)
 !/RTD
 !/RTD        ! Add rotated pole grid mapping variable (dummy scalar variable
 !/RTD        ! used to simply store rotated pole information; see CF1.6 conventions).
-!/RTD        iret=nf90_def_var(ncid, 'rotated_pole', nf90_char, varid(293))
-!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_north_pole_latitude',PoLat)
-!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_north_pole_longitude',PoLon)
-!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_mapping_name',              &
+!/RTD        IRET=NF90_DEF_VAR(NCID, 'rotated_pole', NF90_CHAR, VARID(293))
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_north_pole_latitude',POLAT)
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_north_pole_longitude',POLON)
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_mapping_name',              &
 !/RTD                                   'rotated_latitude_longitude')
 !
       ELSE 
         IF (GTYPE.EQ.RLGTYPE) THEN 
-          iret = nf90_def_var(ncid, 'x', nf90_float, dimid(2), varid(1))
-          iret = nf90_def_var(ncid, 'y', nf90_float, dimid(3), varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, DIMID(2), VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, DIMID(3), VARID(2))
         ELSE IF (GTYPE.EQ.CLGTYPE) THEN 
-          iret = nf90_def_var(ncid, 'x', nf90_float, (/ dimid(2), dimid(3)/), &
-                                                                            varid(1))
-          iret = nf90_def_var(ncid, 'y', nf90_float, (/ dimid(2), dimid(3)/), &
-                                                                            varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
+                                                                            VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
+                                                                            VARID(2))
         ELSE
-          iret = nf90_def_var(ncid, 'x', nf90_float, dimid(2), varid(1))
-          iret = nf90_def_var(ncid, 'y', nf90_float, dimid(2), varid(2))
+          IRET = NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, DIMID(2), VARID(1))
+          IRET = NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, DIMID(2), VARID(2))
           END IF
 !
-        iret=nf90_put_att(ncid,varid(1),'units','m')
-        iret=nf90_put_att(ncid,varid(1),'long_name','x')
-        iret=nf90_put_att(ncid,varid(2),'units','m')
-        iret=nf90_put_att(ncid,varid(2),'long_name','y')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'units','m')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','x')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'units','m')
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','y')
 !
       END IF  ! FLAGLL
 !
-      iret=nf90_put_att(ncid,varid(1),'axis','X')    
-      iret=nf90_put_att(ncid,varid(2),'axis','Y')
-!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
-!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','X')    
+      IRET=NF90_PUT_ATT(NCID,VARID(2),'axis','Y')
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
 
 !
 ! frequency
 !
-      if (extradim.EQ.1) THEN
-        iret = nf90_def_var(ncid, 'f', nf90_float, dimid(4), varid(3))
-!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3), 1, 1, deflate)
-        CALL check_err(iret)
-        iret=nf90_put_att(ncid,varid(3),'long_name','wave_frequency')
-        call check_err(iret)
-        iret=nf90_put_att(ncid,varid(3),'standard_name','wave_frequency')
-        call check_err(iret)
-        iret=nf90_put_att(ncid,varid(3),'units','s-1')
-        call check_err(iret)
-        iret=nf90_put_att(ncid,varid(3),'axis','Hz')
-        call check_err(iret)
+      if (EXTRADIM.EQ.1) THEN
+        IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(3))
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','wave_frequency')
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','wave_frequency')
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(3),'units','s-1')
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(3),'axis','Hz')
+        CALL CHECK_ERR(IRET)
       END IF
 
 
 !
 !  time
 !
-      iret = nf90_def_var(ncid, 'time', nf90_double, dimid(4+extradim), varid(3+extradim))
-!/NC4      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3+extradim), 1, 1, deflate)
-      call check_err(iret)
-      iret=nf90_put_att(ncid,varid(3+extradim),'long_name','julian day (UT)')
-      call check_err(iret)
-      iret=nf90_put_att(ncid,varid(3+extradim),'standard_name','time')
-      call check_err(iret)
-      iret=nf90_put_att(ncid,varid(3+extradim),'units','days since 1990-01-01 00:00:00')
-      call check_err(iret)
-      iret=nf90_put_att(ncid,varid(3+extradim),'conventions', &
+      IRET = NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, DIMID(4+EXTRADIM), VARID(3+EXTRADIM))
+!/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3+EXTRADIM), 1, 1, DEFLATE)
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'long_name','julian day (UT)')
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'standard_name','time')
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'calendar','standard')
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'units','days since 1990-01-01 00:00:00')
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'conventions', &
         'relative julian days with decimal part (as parts of the day )')
-      iret=nf90_put_att(ncid,varid(3+extradim),'axis','T')
-      call check_err(iret)
+      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'axis','T')
+      CALL CHECK_ERR(IRET)
  
 !
 ! triangles for irregular grids
 !
       IF (GTYPE.EQ.UNGTYPE) THEN
-        ivar=3+extradim+1
-        dimtri(1)=dimid(4+extradim+1)
-        dimtri(2)=dimid(3)
-        iret = nf90_def_var(ncid, 'tri', nf90_int, dimtri, varid(ivar))
-!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+        IVAR=3+EXTRADIM+1
+        DIMTRI(1)=DIMID(4+EXTRADIM+1)
+        DIMTRI(2)=DIMID(3)
+        IRET = NF90_DEF_VAR(NCID, 'tri', NF90_INT, DIMTRI, VARID(IVAR))
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
       END IF
 !
 !  Status map: useful for grid combination
 !
       IF (MAPSTAOUT.EQ.1) THEN 
         IF (GTYPE.EQ.UNGTYPE) THEN 
-          ivar=5+extradim
-          iret = nf90_def_var(ncid,'MAPSTA', nf90_short,(/ dimid(2) /), varid(ivar)) 
+          IVAR=5+EXTRADIM
+          IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(IVAR)) 
         ELSE 
-          ivar=4+extradim
-          iret = nf90_def_var(ncid,'MAPSTA', nf90_short,(/ dimid(2) , dimid(3) /), &
-                                                                       varid(ivar)) 
+          IVAR=4+EXTRADIM
+          IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) , DIMID(3) /), &
+                                                                       VARID(IVAR)) 
           ENDIF
-!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !
-        iret=nf90_put_att(ncid,varid(ivar),'long_name','status map')
-        iret=nf90_put_att(ncid,varid(ivar),'standard_name','status map')
-        iret=nf90_put_att(ncid,varid(ivar),'units','1')
-        call check_err(iret)
-        iret=nf90_put_att(ncid,varid(ivar),'valid_min',-32)
-        call check_err(iret)
-        iret=nf90_put_att(ncid,varid(ivar),'valid_max',32)
-        call check_err(iret)
+        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name','status map')
+        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name','status map')
+        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units','1')
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',-32)
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',32)
+        CALL CHECK_ERR(IRET)
       END IF
 
 !
 ! Global attributes
 !
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
-      call check_err(iret)
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
-      call check_err(iret)
-!/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
-!/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
-!/ST4    IF (BBETA.NE.1.43)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
-!/ST4    IF(SSDSC(7).NE.0.3)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
+      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
+      CALL CHECK_ERR(IRET)
+!/ST4    IF (ZZWND.NE.10)      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
+!/ST4    IF (AALPHA.NE.0.0095) IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
+!/ST4    IF (BBETA.NE.1.43)    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
+!/ST4    IF(SSDSC(7).NE.0.3)   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 ! ... TO BE CONTINUED ... 
-      open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
+      open(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
       IF (ICODE.EQ.0) THEN
-        DO WHILE (icode.EQ.0)
-          read(994,'(a)',iostat=icode) attname
-          read(994,'(a)',iostat=icode) attval
+        DO WHILE (ICODE.EQ.0)
+          read(994,'(a)',iostat=ICODE) ATTNAME
+          read(994,'(a)',iostat=ICODE) ATTVAL
           IF (ICODE.EQ.0) THEN
-            strl=LEN_TRIM(attname)
-            strl2=LEN_TRIM(attval)
-            iret=nf90_put_att(ncid,NF90_GLOBAL,attname(1:strl),attval(1:strl2))
-            call check_err(iret)
+            STRL=LEN_TRIM(ATTNAME)
+            STRL2=LEN_TRIM(ATTVAL)
+            IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,ATTNAME(1:STRL),ATTVAL(1:STRL2))
+            CALL CHECK_ERR(IRET)
           END IF
         END DO
       ENDIF
       CLOSE(994)
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'product_name' ,TRIM(ncfile))   
-      call check_err(iret)
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'area',TRIM(GNAME))
-      call check_err(iret)
+      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'product_name' ,TRIM(NCFILE))   
+      CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'area',TRIM(GNAME))
+      CALL CHECK_ERR(IRET)
 
       RETURN
 
       END SUBROUTINE W3CRNC 
 
+!==============================================================================
 
-!--------------------------------------------------------------------------
-!--------------------------------------------------------------------------
+  SUBROUTINE CHECK_ERR(IRET)
 
-      subroutine check_err(iret)
-   
-      USE NETCDF
+  USE NETCDF
 
-      implicit none
+  IMPLICIT NONE
 
-      integer iret
+  INTEGER IRET
 
-      if (iret .ne. NF90_NOERR) then
-         print *, nf90_strerror(iret)
-         stop
-      endif
-      return
-      END subroutine check_err
+  IF (IRET .NE. NF90_NOERR) THEN
+     WRITE(*,*) NF90_STRERROR(IRET)
+     STOP
+  END IF
+  RETURN
 
-!--------------------------------------------------------------------------
-!--------------------------------------------------------------------------
+  END SUBROUTINE CHECK_ERR
+
+!==============================================================================
 
 !/
 !/ End of W3OUNF ----------------------------------------------------- /
 !/
       END PROGRAM W3OUNF
+
 
   
 

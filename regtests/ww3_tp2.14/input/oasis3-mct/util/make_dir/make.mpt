@@ -28,7 +28,7 @@ f           = $(F90)
 CC          = icc
 AR          = ar
 ARFLAGS     = -ruv
-F90COMP     =  -fast -assume byterecl -convert big_endian
+F90COMP     =  -O3 -fp-model precise -assume byterecl -convert big_endian
 F90LINK     =  -O2
 #
 # MPI library

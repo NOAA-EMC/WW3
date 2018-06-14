@@ -485,7 +485,6 @@ then
       ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
     fi
 
-    ofile="$path_w/`basename $ifile .inp`.out"
 
     if [ ! -f $path_e/$prog ]
     then
@@ -503,13 +502,16 @@ then
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`.out"
     else
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`.out"
     fi
 
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
+
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
@@ -585,20 +587,20 @@ then
       gu="_$g"
     fi
 
-    ofile="$path_w/`basename $ifile .inp`${gu}.out"
-
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`${gu}.out"
     else
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`${gu}.out"
     fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
 
     if [ $multi -eq 2 ]
     then
@@ -681,20 +683,20 @@ then
       gu="_$g"
     fi
 
-    ofile="$path_w/`basename $ifile .inp`${gu}.out"
-
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`${gu}.out"
     else
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`${gu}.out"
     fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
 
     if [ $multi -eq 2 ]
     then
@@ -777,20 +779,20 @@ then
       gu="_$g"
     fi
 
-    ofile="$path_w/`basename $ifile .inp`${gu}.out"
-
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`${gu}.out"
     else
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`${gu}.out"
     fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
 
     if [ $multi -eq 2 ]
     then
@@ -877,20 +879,22 @@ then
     for ifile in $inputs
     do
 
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`.out"
-      echo "   Processing $ifile for $otype"
-      echo "   Screen output routed to $ofile"
-
       # link conf file
       if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
+        otype="`basename $ifile .nml | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .nml`.out"
       else
         \rm -f $prog.inp
         \ln -s $ifile $prog.inp
+        otype="`basename $ifile .inp | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .inp`.out"
       fi
+
+      echo "   Processing $ifile for $otype"
+      echo "   Screen output routed to $ofile"
 
       if [ $multi -eq 2 ]
       then
@@ -979,20 +983,22 @@ then
     for ifile in $inputs
     do
 
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`.out"
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-
       # link conf file
       if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
+        otype="`basename $ifile .nml | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .nml`.out"
       else
         \rm -f $prog.inp
         \ln -s $ifile $prog.inp
+        otype="`basename $ifile .inp | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .inp`.out"
       fi
+
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
 
       if [ $multi -eq 2 ]
       then
@@ -1077,7 +1083,8 @@ fi
 if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
 then
   ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
-  files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
+  files_p="points.list"
+  files_p="$files_p $(cat ${ifile} | grep -i 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 )"
 else
   ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
 fi
@@ -1122,7 +1129,7 @@ then
   ofile="$path_w/$prog.out"
 
   # link conf file
-  if [ $multi -ge 1 ] && [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
   then
     \rm -f $prog.nml
     \ln -s $ifile $prog.nml
@@ -1130,6 +1137,7 @@ then
     do
       if [ -e ${path_i}/${file_p} ]
       then
+        \rm -f ${file_p}
         \ln -s ${path_i}/${file_p} .
       fi
     done
@@ -1261,20 +1269,22 @@ then
     exit 1
   fi
 
-  ofile="$path_w/`basename $ifile .inp`.out"
 
   # link conf file
   if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
   then
     \rm -f $prog.nml
     \ln -s $ifile $prog.nml
+    ofile="$path_w/`basename $ifile .nml`.out"
   else
     \rm -f $prog.inp
     \ln -s $ifile $prog.inp
+    ofile="$path_w/`basename $ifile .inp`.out"
   fi
 
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
+
   if $path_e/$prog > $ofile
   then
     \rm -f $prog.inp
@@ -1390,20 +1400,22 @@ then
     for ifile in $inputs
     do
 
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-
       # link conf file
       if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
+        otype="`basename $ifile .nml | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .nml`${gu}.out"
       else
         \rm -f $prog.inp
         \ln -s $ifile $prog.inp
+        otype="`basename $ifile .inp | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .inp`${gu}.out"
       fi
+
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
 
       if [ $multi -eq 2 ]
       then
@@ -1565,20 +1577,22 @@ then
     for ifile in $inputs
     do
 
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-
       # link conf file
       if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
+        otype="`basename $ifile .nml | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .nml`${gu}.out"
       else
         \rm -f $prog.inp
         \ln -s $ifile $prog.inp
+        otype="`basename $ifile .inp | sed s/^${prog}_//`"
+        ofile="$path_w/`basename $ifile .inp`${gu}.out"
       fi
+
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
 
       if [ $multi -eq 2 ]
       then
@@ -1698,20 +1712,23 @@ then
       errmsg "$ifile not found"
       exit 1
     fi
-    otype="`basename $ifile .inp | sed s/^${prog}_//`"
-    ofile="$path_w/`basename $ifile .inp`.out"
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
 
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
+      otype="`basename $ifile .nml | sed s/^${prog}_//`"
+      ofile="$path_w/`basename $ifile .nml`.out"
     else
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
+      otype="`basename $ifile .inp | sed s/^${prog}_//`"
+      ofile="$path_w/`basename $ifile .inp`.out"
     fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
 
     if [ $multi -eq 2 ]
     then
@@ -1790,20 +1807,22 @@ then
     exit 1
   fi
 
-  ofile="$path_w/`basename $ifile .inp`.out"
 
   # link conf file
   if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
   then
     \rm -f $prog.nml
     \ln -s $ifile $prog.nml
+    ofile="$path_w/`basename $ifile .nml`.out"
   else
     \rm -f $prog.inp
     \ln -s $ifile $prog.inp
+    ofile="$path_w/`basename $ifile .inp`.out"
   fi
 
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
+
   if [ $pmpi ]
   then
     if [ $nproc ]

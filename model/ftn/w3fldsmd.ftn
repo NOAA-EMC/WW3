@@ -2009,6 +2009,7 @@
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    04-Sep-2003 : Bug fix par. list declaration.      ( version 3.04 )
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
+!/    15-May-2018 : Allow homog ice.                    ( version 6.XX )
 !/
 !  1. Purpose :
 !
@@ -2036,6 +2037,8 @@
 !                           1 : water levels
 !                           2 : currents
 !                           3 : winds
+!                           4 : ice
+!                           8 : moving grid
 !       NDST    Int.   I   Unit number test output.
 !       NDSE    Int.   I   Unit number error messages.
 !                          (No output if NDSE < 0).
@@ -2105,9 +2108,9 @@
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, MX, MY, NX, NY,       &
                                  T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:8,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,-7:4), HD(NHM,-7:4), HS(NHM,-7:4),  &
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:8), HD(NHM,-7:8), HS(NHM,-7:8),  &
                                  FX0(MX,MY), FY0(MX,MY), FS0(MX,MY),  &
                                  FXN(MX,MY), FYN(MX,MY), FSN(MX,MY)
 !/
@@ -2133,8 +2136,7 @@
 !
 ! Test field ID number for validity
 !
-!old: IF ( J.LE.0 .OR. J .GT.3 ) GOTO 801
-      IF ( J.LT.-7 .OR. J .GT.3 ) GOTO 801
+      IF ( J.LT.-7 .OR. J .GT.8 ) GOTO 801
       FLFRST = TFN(1) .EQ. -1
 !
 !/T      WRITE (NDST,9001) FLFRST
@@ -2175,17 +2177,16 @@
         IF ( NH .NE. 0. ) THEN
             TFN(1) = THO(1,J,1)
             TFN(2) = THO(2,J,1)
-!
-            IF ( J.GE.(-7).AND.(J.LE.1)) THEN
+! ic* md* lev ice
+            IF ( ( J.LE.1 ) .OR. ( J.EQ.4) ) THEN
                 DO IX=1, NX
                   DO IY=1, NY
-                    FSN(IX,IY) = HS(1,J)
-
+                    FSN(IX,IY) = HA(1,J)
                     END DO
                   END DO
-!/T                WRITE (NDST,9050) HS(1,J)
+!/T                WRITE (NDST,9050) HA(1,J)
               END IF
-!
+! cur
             IF ( J .EQ. 2 ) THEN
                 DIR    = ( 270. - HD(1,J) ) * DERA
                 X      = HA(1,J) * COS(DIR)
@@ -2198,7 +2199,7 @@
                   END DO
 !/T                WRITE (NDST,9050) X, Y
               END IF
-!
+! wnd
             IF ( J .EQ. 3 ) THEN
                 DIR    = ( 270. - HD(1,J) ) * DERA
                 X      = HA(1,J) * COS(DIR)
@@ -2237,9 +2238,17 @@
 !
 ! Check time
 !
-        DTTST  = DSEC21 ( T0 , TFN )
-        IF ( J.GE.(-7).AND.(J.LE.1).AND.FLFRST .AND. DTTST.EQ.0. ) EXIT
-        IF ( DTTST .GT. 0. ) EXIT
+
+          DTTST  = DSEC21 ( T0 , TFN )
+
+          ! exit if field time is later than run time
+          IF ( DTTST .GT. 0. ) EXIT
+          ! exit if field is ic* or md* or lev or ice
+          ! and first forcing field has been stored 
+          ! at start run time
+          IF ( J.LE.(1).OR.(J.EQ.4) ) THEN
+            IF (FLFRST .AND. DTTST.EQ.0. ) EXIT
+          END IF
         END DO
 !
 ! Check if first field
@@ -2392,9 +2401,9 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:8,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,-7:4), HD(NHM,-7:4), A0, AN, D0, DN
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:8), HD(NHM,-7:8), A0, AN, D0, DN
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters

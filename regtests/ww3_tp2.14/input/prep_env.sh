@@ -46,6 +46,6 @@ echo '   copy ww3 model inputs'
 cd $path_w
 cp ../input/r-ww3.nc.$swtstr r-ww3.nc
 cd ../input
-ln -sf ww3_shel.inp.$swtstr ww3_shel.inp
+ln -sf ww3_shel_${swtstr}.inp ww3_shel.inp
 
 echo ''

@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         15-May-2018 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -42,6 +42,7 @@
 !/    20-Jan-2017 : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
+!/    15-May-2018 : Update namelist                     ( version 6.XX )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -355,23 +356,23 @@
 !/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
-      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, INPUTS, IINIT, IIDATA,  &
-                          FLCUR, FLWIND, JFIRST
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI,  &
-                          FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
-                          NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
+      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, INPUTS, IINIT,  &
+                          JFIRST
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, FLOUT, TONEXT, FLBPI,  &
+                          FLBPO, NFBPO, NBI, NDS, IAPROC,     &
+                          NAPFLD, NAPPNT, NAPTRK, NAPBPT,     &
                           NAPPRT, NAPROC, FNMPRE, OUTPTS, NDST, NDSE, &
                           NOPTS, IOSTYP, UNIPTS, UPPROC, DTOUT,       &
-                          TOLAST, NOTYPE, NOGE
+                          TOLAST, NOTYPE
       USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, MDSF, MDSUP,  &
-                          IMPROC, NMPROC, NMPSCR, NMPERR, NMPTST,     &
+                          IMPROC, NMPROC, NMPSCR, NMPERR,     &
                           NMPLOG, NMPUPT, STIME, ETIME, NMV, NMVMAX,  &
                           TMV, AMV, DMV, NRGRD, NRINP, NRGRP, GRANK,  &
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
                           INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
+!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -3023,7 +3024,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         15-May-2018 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -3066,6 +3067,7 @@
 !/    20-Jan-2017 : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
+!/    15-May-2018 : Update namelist                     ( version 6.XX )
 !/
 !  1. Purpose :
 !
@@ -3283,23 +3285,23 @@
 !/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
-      USE W3IDATMD, ONLY: INFLAGS1, INPUTS, IINIT, IIDATA, FLCUR,     &
-                          FLWIND, JFIRST, INFLAGS2
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI,  &
-                          FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
-                          NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
+      USE W3IDATMD, ONLY: INFLAGS1, INPUTS, IINIT,      &
+                          JFIRST, INFLAGS2
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, FLOUT, TONEXT, FLBPI,  &
+                          FLBPO, NFBPO, NBI, NDS, IAPROC,     &
+                          NAPFLD, NAPPNT, NAPTRK,  NAPBPT,     &
                           NAPPRT, NAPROC, FNMPRE, OUTPTS, NDST, NDSE, &
                           NOPTS, IOSTYP, UNIPTS, UPPROC, DTOUT,       &
-                          TOLAST, NOTYPE, NOGE
+                          TOLAST, NOTYPE
       USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, MDSF, MDSUP,  &
-                          IMPROC, NMPROC, NMPSCR, NMPERR, NMPTST,     &
+                          IMPROC, NMPROC, NMPSCR, NMPERR,     &
                           NMPLOG, NMPUPT, STIME, ETIME, NMV, NMVMAX,  &
                           TMV, AMV, DMV, NRGRD, NRINP, NRGRP, GRANK,  &
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
                           INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
+!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -3321,31 +3323,52 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: MDSE2, IERR, I,J,K, NMOVE, TTIME(2), &
-                                 ILOOP, SCRATCH, RNKMIN,              &
-                                 RNKMAX, RNKTMP, GRPMIN, GRPMAX, II,  &
-                                 NDSREC, NDSFND, NPTS, JJ, IP1, IPN,  &
-                                 MPI_COMM_LOC, NMPSC2, JJJ, TOUT(2),  &
-                                 TLST(2), NCPROC, NPOUTT, NAPLOC,     &
-                                 NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
-                                 IFT
-      INTEGER                 :: STMPT(2), ETMPT(2)
+      TYPE(NML_DOMAIN_T)                      :: NML_DOMAIN
+      TYPE(NML_INPUT_GRID_T), ALLOCATABLE     :: NML_INPUT_GRID(:) 
+      TYPE(NML_MODEL_GRID_T), ALLOCATABLE     :: NML_MODEL_GRID(:) 
+      TYPE(NML_OUTPUT_TYPE_T), ALLOCATABLE    :: NML_OUTPUT_TYPE(:)
+      TYPE(NML_OUTPUT_DATE_T), ALLOCATABLE    :: NML_OUTPUT_DATE(:)
+      TYPE(NML_HOMOG_COUNT_T)                 :: NML_HOMOG_COUNT
+      TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE    :: NML_HOMOG_INPUT(:)
+!
+      TYPE OT2TPE
+        INTEGER                    :: NPTS
+        REAL, POINTER              :: X(:), Y(:)
+        CHARACTER(LEN=10), POINTER :: PNAMES(:)
+      END TYPE OT2TPE
+!
+      TYPE(OT2TPE), ALLOCATABLE    :: OT2(:)
+!
+      INTEGER                 :: MDSE2, IERR, I,J,K, N_MOV, N_TOT,     &
+                                 SCRATCH, RNKMIN, RNKMAX, RNKTMP,      &
+                                 GRPMIN, GRPMAX, II, NDSREC, NDSFND,   &
+                                 NPTS, JJ, IP1, IPN, MPI_COMM_LOC,     &
+                                 NMPSC2, JJJ, NCPROC, NPOUTT, NAPLOC,  &
+                                 NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW, &
+                                 IFT, ILOOP
+      INTEGER                 :: TTIME(2), TOUT(2), STMPT(2), ETMPT(2),&
+                                 TLST(2)
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
-                                 TMPRNK(:), TMPGRP(:), NINGRP(:),     &
-                                 TMOVE(:,:), LOADMP(:,:), IPRT(:,:),  &
+!
+      INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),     &
+                                 TMPRNK(:), TMPGRP(:), NINGRP(:),      &
+                                 TMOVE(:,:), LOADMP(:,:), IPRT(:,:),   &
                                  NDPOUT(:)
+!
       REAL                    :: DTTST, XX, YY
 !/MPRF      REAL                    :: PRFT0, PRFTN
 !/MPRF      REAL(KIND=8)            :: get_memory
-      REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
+!
+      REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),       &
                                  RP1(:), RPN(:)
+!
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
                                  FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
                                  FLG1D(:), CPLINP(:)
+!
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=256)      :: TMPLINE, TEST
       CHARACTER(LEN=3)        :: IDSTR(-7:7), IDTST
@@ -3361,28 +3384,13 @@
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
-
       CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
       CHARACTER(LEN=30)       :: IDOTYP(7)
-      CHARACTER(LEN=80)       :: TNAME
-      CHARACTER(LEN=80)       :: LINE
+      CHARACTER(LEN=80)       :: TNAME, LINE
       CHARACTER(LEN=1024)     :: FLDOUT
 !
-      type(DOMAIN_DEF_T)                      :: DOMAIN_DEF
-      type(INPUT_GRID_T), ALLOCATABLE         :: INPUT_GRID(:) 
-      type(MODEL_GRID_T), ALLOCATABLE         :: MODEL_GRID(:) 
-      type(OUTPUT_TYPE_T), ALLOCATABLE        :: OUTPUT_TYPE(:)
-      type(OUTPUT_DATE_T), ALLOCATABLE        :: OUTPUT_DATE(:)
-      type(HOMOGENEOUS_INPUT_T), ALLOCATABLE  :: HOMOGENEOUS_INPUT(:)
-!
-      TYPE OT2TPE
-        INTEGER                    :: NPTS
-        REAL, POINTER              :: X(:), Y(:)
-        CHARACTER(LEN=10), POINTER :: PNAMES(:)
-      END TYPE OT2TPE
-!
-      TYPE(OT2TPE), ALLOCATABLE    :: OT2(:)
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -3479,15 +3487,15 @@
           WRITE (MDSS,910)  IFNAME, MDSI
 !
       ! process ww3_multi namelist input
-      CALL W3NMLMULTIDEF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, DOMAIN_DEF, IERR)
-      ALLOCATE(INPUT_GRID(DOMAIN_DEF%NRINP))
-      ALLOCATE(MODEL_GRID(DOMAIN_DEF%NRGRD)) 
-      ALLOCATE(OUTPUT_TYPE(DOMAIN_DEF%NRGRD))
-      ALLOCATE(OUTPUT_DATE(DOMAIN_DEF%NRGRD))
-      ALLOCATE(HOMOGENEOUS_INPUT(DOMAIN_DEF%NMOVE))
+      CALL W3NMLMULTIDEF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, NML_DOMAIN, IERR)
+      ALLOCATE(NML_INPUT_GRID(NML_DOMAIN%NRINP))
+      ALLOCATE(NML_MODEL_GRID(NML_DOMAIN%NRGRD)) 
+      ALLOCATE(NML_OUTPUT_TYPE(NML_DOMAIN%NRGRD))
+      ALLOCATE(NML_OUTPUT_DATE(NML_DOMAIN%NRGRD))
+!
       CALL W3NMLMULTICONF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, &
-                          DOMAIN_DEF, INPUT_GRID, MODEL_GRID, OUTPUT_TYPE, &
-                          OUTPUT_DATE, HOMOGENEOUS_INPUT, IERR) 
+                          NML_DOMAIN, NML_INPUT_GRID, NML_MODEL_GRID, NML_OUTPUT_TYPE, &
+                          NML_OUTPUT_DATE, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR) 
       IF (IERR.NE.0) THEN
         write (*,'(2a)') 'ERROR: error occured while processing ', IFNAME
         CALL exit (IERR)
@@ -3548,13 +3556,12 @@
 !     Note: grid for consolidated point output always generated.
 !     Processor set as in W3INIT to minimize communication in WMIOPO
 !
-      NRINP  = DOMAIN_DEF%NRINP
-      NRGRD  = DOMAIN_DEF%NRGRD
-      NMOVE  = DOMAIN_DEF%NMOVE
-      UNIPTS = DOMAIN_DEF%UNIPTS
-      IOSTYP = DOMAIN_DEF%IOSTYP
-      UPPROC = DOMAIN_DEF%UPPROC
-      PSHARE = DOMAIN_DEF%PSHARE
+      NRINP = NML_DOMAIN%NRINP
+      NRGRD = NML_DOMAIN%NRGRD
+      UNIPTS = NML_DOMAIN%UNIPTS
+      IOSTYP = NML_DOMAIN%IOSTYP
+      UPPROC = NML_DOMAIN%UPPROC
+      PSHARE = NML_DOMAIN%PSHARE
 
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
 !
@@ -3670,22 +3677,22 @@
 !
         CALL W3SETI ( -I, MDSE, MDST )
         INFLAGS1 = .FALSE.
-        MNAMES(-I)   = INPUT_GRID(I)%NAME 
-        INFLAGS1(-7) = INPUT_GRID(I)%FORCING%ICE_PARAM1
-        INFLAGS1(-6) = INPUT_GRID(I)%FORCING%ICE_PARAM2
-        INFLAGS1(-5) = INPUT_GRID(I)%FORCING%ICE_PARAM3
-        INFLAGS1(-4) = INPUT_GRID(I)%FORCING%ICE_PARAM4
-        INFLAGS1(-3) = INPUT_GRID(I)%FORCING%ICE_PARAM5
-        INFLAGS1(-2) = INPUT_GRID(I)%FORCING%MUD_DENSITY
-        INFLAGS1(-1) = INPUT_GRID(I)%FORCING%MUD_THICKNESS
-        INFLAGS1(0)  = INPUT_GRID(I)%FORCING%MUD_VISCOSITY
-        INFLAGS1(1)  = INPUT_GRID(I)%FORCING%WATER_LEVELS
-        INFLAGS1(2)  = INPUT_GRID(I)%FORCING%CURRENTS
-        INFLAGS1(3)  = INPUT_GRID(I)%FORCING%WINDS
-        INFLAGS1(4)  = INPUT_GRID(I)%FORCING%ICE_CONC
-        INFLAGS1(5)  = INPUT_GRID(I)%ASSIM%MEAN
-        INFLAGS1(6)  = INPUT_GRID(I)%ASSIM%SPEC1D
-        INFLAGS1(7)  = INPUT_GRID(I)%ASSIM%SPEC2D
+        MNAMES(-I) = NML_INPUT_GRID(I)%NAME 
+        INFLAGS1(-7) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM1
+        INFLAGS1(-6) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM2
+        INFLAGS1(-5) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM3
+        INFLAGS1(-4) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM4
+        INFLAGS1(-3) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM5
+        INFLAGS1(-2) = NML_INPUT_GRID(I)%FORCING%MUD_DENSITY
+        INFLAGS1(-1) = NML_INPUT_GRID(I)%FORCING%MUD_THICKNESS
+        INFLAGS1(0) = NML_INPUT_GRID(I)%FORCING%MUD_VISCOSITY
+        INFLAGS1(1) = NML_INPUT_GRID(I)%FORCING%WATER_LEVELS
+        INFLAGS1(2) = NML_INPUT_GRID(I)%FORCING%CURRENTS
+        INFLAGS1(3) = NML_INPUT_GRID(I)%FORCING%WINDS
+        INFLAGS1(4) = NML_INPUT_GRID(I)%FORCING%ICE_CONC
+        INFLAGS1(5) = NML_INPUT_GRID(I)%ASSIM%MEAN
+        INFLAGS1(6) = NML_INPUT_GRID(I)%ASSIM%SPEC1D
+        INFLAGS1(7) = NML_INPUT_GRID(I)%ASSIM%SPEC2D
       END DO
 !
 ! 3.a.2 Unified point output grid.
@@ -3698,7 +3705,7 @@
           NDST   = MDST
           NDSE   = MDSE
 !
-          MNAMES(0) = OUTPUT_TYPE(1)%POINT%NAME
+          MNAMES(0) = NML_OUTPUT_TYPE(1)%POINT%NAME
 !
           IF ( IOSTYP .LE. 1 ) THEN
               NMPUPT = MAX(1,NMPROC-2)
@@ -3711,27 +3718,27 @@
 ! 3.a.3 Read wave grids
 !
       DO I=1,NRGRD
-        MNAMES(NRGRD+I)    = MODEL_GRID(I)%NAME
-        INAMES(NRGRD+I,-7) = MODEL_GRID(I)%FORCING%ICE_PARAM1
-        INAMES(NRGRD+I,-6) = MODEL_GRID(I)%FORCING%ICE_PARAM2
-        INAMES(NRGRD+I,-5) = MODEL_GRID(I)%FORCING%ICE_PARAM3
-        INAMES(NRGRD+I,-4) = MODEL_GRID(I)%FORCING%ICE_PARAM4
-        INAMES(NRGRD+I,-3) = MODEL_GRID(I)%FORCING%ICE_PARAM5
-        INAMES(NRGRD+I,-2) = MODEL_GRID(I)%FORCING%MUD_DENSITY
-        INAMES(NRGRD+I,-1) = MODEL_GRID(I)%FORCING%MUD_THICKNESS
-        INAMES(NRGRD+I,0)  = MODEL_GRID(I)%FORCING%MUD_VISCOSITY
-        INAMES(NRGRD+I,1)  = MODEL_GRID(I)%FORCING%WATER_LEVELS
-        INAMES(NRGRD+I,2)  = MODEL_GRID(I)%FORCING%CURRENTS
-        INAMES(NRGRD+I,3)  = MODEL_GRID(I)%FORCING%WINDS
-        INAMES(NRGRD+I,4)  = MODEL_GRID(I)%FORCING%ICE_CONC
-        INAMES(NRGRD+I,5)  = MODEL_GRID(I)%ASSIM%MEAN
-        INAMES(NRGRD+I,6)  = MODEL_GRID(I)%ASSIM%SPEC1D
-        INAMES(NRGRD+I,7)  = MODEL_GRID(I)%ASSIM%SPEC2D
-        TMPRNK(NRGRD+I)    = MODEL_GRID(I)%RESOURCE%RANK_ID
-        TMPGRP(NRGRD+I)    = MODEL_GRID(I)%RESOURCE%GROUP_ID
-        RP1(NRGRD+I)       = MODEL_GRID(I)%RESOURCE%COMM_FRAC(1)
-        RPN(NRGRD+I)       = MODEL_GRID(I)%RESOURCE%COMM_FRAC(2)
-        BCDTMP(NRGRD+I)    = MODEL_GRID(i)%RESOURCE%BOUND_FLAG
+        MNAMES(NRGRD+I) = NML_MODEL_GRID(I)%NAME
+        INAMES(NRGRD+I,-7) = NML_MODEL_GRID(I)%FORCING%ICE_PARAM1
+        INAMES(NRGRD+I,-6) = NML_MODEL_GRID(I)%FORCING%ICE_PARAM2
+        INAMES(NRGRD+I,-5) = NML_MODEL_GRID(I)%FORCING%ICE_PARAM3
+        INAMES(NRGRD+I,-4) = NML_MODEL_GRID(I)%FORCING%ICE_PARAM4
+        INAMES(NRGRD+I,-3) = NML_MODEL_GRID(I)%FORCING%ICE_PARAM5
+        INAMES(NRGRD+I,-2) = NML_MODEL_GRID(I)%FORCING%MUD_DENSITY
+        INAMES(NRGRD+I,-1) = NML_MODEL_GRID(I)%FORCING%MUD_THICKNESS
+        INAMES(NRGRD+I,0) = NML_MODEL_GRID(I)%FORCING%MUD_VISCOSITY
+        INAMES(NRGRD+I,1) = NML_MODEL_GRID(I)%FORCING%WATER_LEVELS
+        INAMES(NRGRD+I,2) = NML_MODEL_GRID(I)%FORCING%CURRENTS
+        INAMES(NRGRD+I,3) = NML_MODEL_GRID(I)%FORCING%WINDS
+        INAMES(NRGRD+I,4) = NML_MODEL_GRID(I)%FORCING%ICE_CONC
+        INAMES(NRGRD+I,5) = NML_MODEL_GRID(I)%ASSIM%MEAN
+        INAMES(NRGRD+I,6) = NML_MODEL_GRID(I)%ASSIM%SPEC1D
+        INAMES(NRGRD+I,7) = NML_MODEL_GRID(I)%ASSIM%SPEC2D
+        TMPRNK(NRGRD+I) = NML_MODEL_GRID(I)%RESOURCE%RANK_ID
+        TMPGRP(NRGRD+I) = NML_MODEL_GRID(I)%RESOURCE%GROUP_ID
+        RP1(NRGRD+I) = NML_MODEL_GRID(I)%RESOURCE%COMM_FRAC(1)
+        RPN(NRGRD+I) = NML_MODEL_GRID(I)%RESOURCE%COMM_FRAC(2)
+        BCDTMP(NRGRD+I) = NML_MODEL_GRID(I)%RESOURCE%BOUND_FLAG
 !
         RP1(NRGRD+I) = MAX ( 0. , MIN ( 1. , RP1(NRGRD+I) ) )
         RPN(NRGRD+I) = MAX ( RP1(NRGRD+I) , MIN ( 1. , RPN(NRGRD+I) ) )
@@ -4045,11 +4052,11 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,940)
 !              
       IF (IS_ESMF_COMPONENT) THEN
-          READ(DOMAIN_DEF%START, *) STMPT 
-          READ(DOMAIN_DEF%STOP, *) ETMPT
+          READ(NML_DOMAIN%START, *) STMPT 
+          READ(NML_DOMAIN%STOP, *) ETMPT
         ELSE
-          READ(DOMAIN_DEF%START, *) STIME 
-          READ(DOMAIN_DEF%STOP, *) ETIME
+          READ(NML_DOMAIN%START, *) STIME 
+          READ(NML_DOMAIN%STOP, *) ETIME
         END IF
       CALL STME21 ( STIME , DTME21 )
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
@@ -4063,8 +4070,8 @@
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,943)
 !              
-      FLGHG1 = DOMAIN_DEF%FLGHG1
-      FLGHG2 = DOMAIN_DEF%FLGHG2
+      FLGHG1 = NML_DOMAIN%FLGHG1
+      FLGHG2 = NML_DOMAIN%FLGHG2
       FLGHG2 = FLGHG1 .AND. FLGHG2
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
@@ -4092,31 +4099,37 @@
         NOTYPE = 6
 !/COU      NOTYPE = 7
 
-        READ(OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
-        READ(OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
-        READ(OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
-        READ(OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
-        READ(OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
-        READ(OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
-        READ(OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
-        READ(OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
-        READ(OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)
-        READ(OUTPUT_DATE(I)%RESTART%START, *)   ODAT(16,I), ODAT(17,I)
-        READ(OUTPUT_DATE(I)%RESTART%STRIDE, *)  ODAT(18,I)
-        READ(OUTPUT_DATE(I)%RESTART%STOP, *)    ODAT(19,I), ODAT(20,I)
-        READ(OUTPUT_DATE(I)%BOUNDARY%START, *)   ODAT(21,I), ODAT(22,I)
-        READ(OUTPUT_DATE(I)%BOUNDARY%STRIDE, *)  ODAT(23,I)
-        READ(OUTPUT_DATE(I)%BOUNDARY%STOP, *)    ODAT(24,I), ODAT(25,I)
-        READ(OUTPUT_DATE(I)%PARTITION%START, *)   ODAT(26,I), ODAT(27,I)
-        READ(OUTPUT_DATE(I)%PARTITION%STRIDE, *)  ODAT(28,I)
-        READ(OUTPUT_DATE(I)%PARTITION%STOP, *)    ODAT(29,I), ODAT(30,I)
+        READ(NML_OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
+        READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
+        READ(NML_OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
+        READ(NML_OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
+        READ(NML_OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
+        READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
+        READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
+        READ(NML_OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
+        READ(NML_OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART%START, *)   ODAT(16,I), ODAT(17,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART%STRIDE, *)  ODAT(18,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART%STOP, *)    ODAT(19,I), ODAT(20,I)
+        READ(NML_OUTPUT_DATE(I)%BOUNDARY%START, *)   ODAT(21,I), ODAT(22,I)
+        READ(NML_OUTPUT_DATE(I)%BOUNDARY%STRIDE, *)  ODAT(23,I)
+        READ(NML_OUTPUT_DATE(I)%BOUNDARY%STOP, *)    ODAT(24,I), ODAT(25,I)
+        READ(NML_OUTPUT_DATE(I)%PARTITION%START, *)   ODAT(26,I), ODAT(27,I)
+        READ(NML_OUTPUT_DATE(I)%PARTITION%STRIDE, *)  ODAT(28,I)
+        READ(NML_OUTPUT_DATE(I)%PARTITION%STOP, *)    ODAT(29,I), ODAT(30,I)
 !/COU! NOT YET IMPLEMENTED
-!/COU        READ(OUTPUT_DATE(I)%COUPLING%START, *)   ODAT(31,I), ODAT(32,I)
-!/COU        READ(OUTPUT_DATE(I)%COUPLING%STRIDE, *)  ODAT(33,I)
-!/COU        READ(OUTPUT_DATE(I)%COUPLING%STOP, *)    ODAT(34,I), ODAT(35,I)
+!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%START, *)   ODAT(31,I), ODAT(32,I)
+!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%STRIDE, *)  ODAT(33,I)
+!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%STOP, *)    ODAT(34,I), ODAT(35,I)
 
         ! set the time stride at 0 or more
         ODAT(3,I) = MAX ( 0 , ODAT(3,I) )
+        ODAT(8,I) = MAX ( 0 , ODAT(8,I) )
+        ODAT(13,I) = MAX ( 0 , ODAT(13,I) )
+        ODAT(18,I) = MAX ( 0 , ODAT(18,I) )
+        ODAT(23,I) = MAX ( 0 , ODAT(23,I) )
+        ODAT(28,I) = MAX ( 0 , ODAT(28,I) )
+!/COU        ODAT(33,I) = MAX ( 0 , ODAT(33,I) )
 
         ! define the time of the output point grid (index 0) as the   &
         ! time of the first grid which should be the larger one by convention
@@ -4168,7 +4181,7 @@
 ! 5.c Type 1: fields of mean wave parameters
 !
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
-                FLDOUT = OUTPUT_TYPE(I)%FIELD%LIST
+                FLDOUT = NML_OUTPUT_TYPE(I)%FIELD%LIST
                 CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
                                    FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
@@ -4185,7 +4198,7 @@
                 END IF
 
                 ! if the point file is not set
-                IF ( TRIM(OUTPUT_TYPE(I)%POINT%FILE).EQ.'unset' ) THEN
+                IF ( TRIM(NML_OUTPUT_TYPE(I)%POINT%FILE).EQ.'unset' ) THEN
                   ! and if output also disabled, cycle to the next output type J
                   IF ( ODAT(8,I).EQ.0 ) THEN
                     ALLOCATE ( OT2(I)%X(1), OT2(I)%Y(1), OT2(I)%PNAMES(1) )
@@ -4201,11 +4214,11 @@
 !
                 IF ( UNIPTS .AND. I.GE.2 ) THEN
                   DO K=1,I-1
-                    IF ( OUTPUT_TYPE(K)%POINT%FILE.NE.OUTPUT_TYPE(I)%POINT%FILE ) GOTO 2053
+                    IF ( NML_OUTPUT_TYPE(K)%POINT%FILE.NE.NML_OUTPUT_TYPE(I)%POINT%FILE ) GOTO 2053
                   END DO
                 END IF
-                OPEN (MDSI, file=TRIM(FNMPRE)//TRIM(OUTPUT_TYPE(I)%POINT%FILE), &
-                      form='formatted', status='old', iostat=IERR)
+                OPEN (MDSI, file=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE(I)%POINT%FILE), &
+                      FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
 
                 ! first loop to count the number of points
                 ! second loop to allocate the array and store the points
@@ -4275,7 +4288,7 @@
 !
 ! 5.e Type 3: track output
 !
-                TFLAGI = OUTPUT_TYPE(I)%TRACK%FORMAT
+                TFLAGI = NML_OUTPUT_TYPE(I)%TRACK%FORMAT
                 IF ( TFLAGI ) THEN
                     MDS(11,I) =  ABS(MDS(11,I))
                   ELSE
@@ -4301,13 +4314,13 @@
 !
 ! 5.h Type 6: partitioned wave field data
 !
-                IPRT(1,I) = OUTPUT_TYPE(I)%PARTITION%X0
-                IPRT(2,I) = OUTPUT_TYPE(I)%PARTITION%XN
-                IPRT(3,I) = OUTPUT_TYPE(I)%PARTITION%NX
-                IPRT(4,I) = OUTPUT_TYPE(I)%PARTITION%Y0
-                IPRT(5,I) = OUTPUT_TYPE(I)%PARTITION%YN
-                IPRT(6,I) = OUTPUT_TYPE(I)%PARTITION%NY
-                LPRT(I) = OUTPUT_TYPE(I)%PARTITION%FORMAT
+                IPRT(1,I) = NML_OUTPUT_TYPE(I)%PARTITION%X0
+                IPRT(2,I) = NML_OUTPUT_TYPE(I)%PARTITION%XN
+                IPRT(3,I) = NML_OUTPUT_TYPE(I)%PARTITION%NX
+                IPRT(4,I) = NML_OUTPUT_TYPE(I)%PARTITION%Y0
+                IPRT(5,I) = NML_OUTPUT_TYPE(I)%PARTITION%YN
+                IPRT(6,I) = NML_OUTPUT_TYPE(I)%PARTITION%NY
+                LPRT(I) = NML_OUTPUT_TYPE(I)%PARTITION%FORMAT
                 IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                     WRITE (MDSS,961) IPRT(:,I)
                     IF ( .NOT. LPRT(I) ) THEN
@@ -4323,7 +4336,7 @@
 !
 ! 5.i Type 7: coupling
 !
-!/COU              FLDOUT = OUTPUT_TYPE(I)%COUPLING%LIST
+!/COU              FLDOUT = NML_OUTPUT_TYPE(I)%COUPLING%LIST
 !/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
 !/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,I)=FLG2D
@@ -4364,21 +4377,33 @@
               WRITE (MDSS,966) 'Continuous grid movement data'
             END IF
 !
-          IF ( NMOVE .EQ. 0 ) GOTO 2060
-          ALLOCATE ( TMOVE(2,NMOVE), AMOVE(NMOVE), DMOVE(NMOVE) )
-          DO I=1,NMOVE
-            READ(HOMOGENEOUS_INPUT(I)%MOVING%START, * ) TMOVE(:,I)
-            AMOVE(I) = HOMOGENEOUS_INPUT(I)%MOVING%SPEED
-            DMOVE(I) = HOMOGENEOUS_INPUT(I)%MOVING%DIRECTION
-            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
-                WRITE (MDSS,968) I, TMOVE(:,I), AMOVE(I), DMOVE(I)
+          N_MOV  = NML_HOMOG_COUNT%N_MOV
+          N_TOT = NML_HOMOG_COUNT%N_TOT
+
+          IF ( N_MOV .EQ. 0 ) GOTO 2060
+          IF ( N_MOV .GT. 99 ) GOTO 2061
+
+          ALLOCATE ( TMOVE(2,N_MOV), AMOVE(N_MOV), DMOVE(N_MOV) )
+!
+          DO I=1,N_TOT
+            READ(NML_HOMOG_INPUT(I)%NAME,*) IDTST
+              SELECT CASE (IDTST)
+              CASE ('MOV')
+                READ(NML_HOMOG_INPUT(I)%DATE,*) TMOVE(:,I)
+                AMOVE(I) = NML_HOMOG_INPUT(I)%VALUE1
+                DMOVE(I) = NML_HOMOG_INPUT(I)%VALUE2
+                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
+                  WRITE (MDSS,968) I, TMOVE(:,I), AMOVE(I), DMOVE(I)
+              CASE DEFAULT
+                GOTO 2062
+              END SELECT
           END DO
 !
-          NMVMAX = NMOVE
+          NMVMAX = N_MOV
           DO I=1, NRGRD
             CALL W3SETG ( I, MDSE, MDST )
             CALL WMSETM ( I, MDSE, MDST )
-            NMV    = NMOVE
+            NMV    = N_MOV
             CALL WMDIMD ( I, MDSE, MDST, 0 )
             DO II=1, NMV
               TMV(:,4,II) = TMOVE(:,II)
@@ -4607,9 +4632,11 @@
 !
           ELSE
 !
+            ! set last proc for point and disable point for the grid
             IF ( UNIPTS ) THEN
                 WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
                 OUTSTR(2) = STOUT
+                ODAT(8,I) = 0
                 IF ( UPPROC ) II = II - 1
               END IF
 !
@@ -5479,6 +5506,10 @@
       CALL EXTCDE ( 2003 )
       RETURN
 !
+ 2104 CONTINUE
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1104) IERR
+      CALL EXTCDE ( 1104 )
+!
  2004 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1004) IERR
       CALL EXTCDE ( 2004 )
@@ -5548,6 +5579,16 @@
  2060 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
       CALL EXTCDE ( 2060 )
+      RETURN
+!
+ 2061 CONTINUE
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1061) IDTST, N_MOV
+      CALL EXTCDE ( 2061 )
+      RETURN
+!
+ 2062 CONTINUE
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1062) IDTST
+      CALL EXTCDE ( 2062 )
       RETURN
 !
  2070 CONTINUE
@@ -5690,68 +5731,76 @@
   999 FORMAT ( ' ========== END OF MWW3 INITIALIZATION (WMINITNML) ===', &
                '============================'/)
 !
- 1003 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
                '     PREMATURE END OF POINT FILE'/)
-! 
- 1004 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
-               '     ERROR IN READING FROM POINT FILE'/               &
+!
+ 1104 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     ERROR IN OPENING POINT FILE'/                     &
                '     IOSTAT =',I5/)
- 1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
-               '     ERROR IN OPENING LOG FILE'/                      &
+!
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     ERROR IN READING FROM POINT FILE'/                &
                '     IOSTAT =',I5/)
- 1011 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
-               '     ERROR IN OPENING TEST FILE'/                     &
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     ERROR IN OPENING LOG FILE'/                       &
                '     IOSTAT =',I5/)
- 1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
+ 1011 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     ERROR IN OPENING TEST FILE'/                      &
+               '     IOSTAT =',I5/)
+ 1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
                '     ILLEGAL NUMBER OF GRIDS ( < 1 ) '/)
- 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
+ 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
                '     ILLEGAL NUMBER OF INPUT GRIDS ( < 0 ) '/)
- 1030 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
-               '     INPUT GRID NAME NOT FOUND '/                     &
-               '     WAVE GRID  : ',A/                                &
+ 1030 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     INPUT GRID NAME NOT FOUND '/                      &
+               '     WAVE GRID  : ',A/                                 &
                '     INPUT NAME : ',A/)
- 1031 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/           &
-               '     REQUESTED INPUT TYPE NOT FOUND IN INPUT GRID '/  &
-               '     INPUT GRID : ',A/                                &
+ 1031 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : *** '/         &
+               '     REQUESTED INPUT TYPE NOT FOUND IN INPUT GRID '/   &
+               '     INPUT GRID : ',A/                                 &
                '     INPUT TYPE : ',I8/)
- 1032 FORMAT (/' *** WAVEWATCH III WARNING IN WMINITNML : *** '/         &
+ 1032 FORMAT (/' *** WAVEWATCH III WARNING IN WMINITNML : *** '/       &
                '     INPUT GRID ',A,' NOT USED '/)
- 1040 FORMAT ( ' *** WAVEWATCH III WARNING IN W3MLTI : ***'/          &
+ 1040 FORMAT ( ' *** WAVEWATCH III WARNING IN W3MLTI : ***'/           &
                '     POSSIBLE LOAD IMBALANCE GROUP',I3,' :',2I6/)
-!1040 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+!1040 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
 !              '     ILLEGAL TIME INTERVAL'/)
- 1050 FORMAT (/' *** WAVEWATCH III WARNING IN W3MLTI : ***'/          &
-               '     UNIFIED POINT OUTPUT BUT NO OUTPUT'/             &
+ 1050 FORMAT (/' *** WAVEWATCH III WARNING IN W3MLTI : ***'/           &
+               '     UNIFIED POINT OUTPUT BUT NO OUTPUT'/              &
                '     UNIFIED POINT OUTPUT DISABLED'/)
- 1051 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+ 1051 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
                '     ILLEGAL MODEL ID [',A,']'/)
- 1052 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+ 1052 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
                '     ILLEGAL OUTPUT TYPE',I10/)
- 1053 FORMAT (/' *** WAVEWATCH III WARNING IN W3MLTI : ***'/          &
-         '     OUTPUT POINTS FOR INDIVIDUAL GRIDS CANNOT BE DEFINED'/ &
+ 1053 FORMAT (/' *** WAVEWATCH III WARNING IN W3MLTI : ***'/           &
+         '     OUTPUT POINTS FOR INDIVIDUAL GRIDS CANNOT BE DEFINED'/  &
                '     WHEN UNIFIED POINT OUTPUT IS REQUESTED'/)
- 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+ 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
          '     POINT OUTPUT ACTIVATED, BUT NO POINTS DEFINED'/)
- 1055 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+ 1055 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
          '     POINT OUTPUT ACTIVATED, BUT NO FILE DEFINED'/)
- 1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+ 1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
                '     NO MOVING GRID DATA PRESENT'/)
- 1070 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : ***'/            &
+ 1061 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
+               '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+ 1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/             &
+               '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
+ 1070 FORMAT (/' *** WAVEWATCH III ERROR IN WMINITNML : ***'/          &
                '     ALL GRIDS ARE NOT USING THE SAME COORDINATE SYSTEM'/)
- 1080 FORMAT (/' *** BOUNDARY DATA READ, WILL NOT DUMP, GRID :',I4,   &
+ 1080 FORMAT (/' *** BOUNDARY DATA READ, WILL NOT DUMP, GRID :',I4,    &
                ' ***')
  1081 FORMAT (/' *** NO BOUNDARY DATA TO DUMP, GRID :',I4,' ***')
  1082 FORMAT ( '  No boundary data dump for grid',I3/)
 !
-!/T 9000 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS    : ',5I6/            &
+!/T 9000 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS    : ',5I6/          &
 !/T               '               INPUT FILE NAME : ',A)
 !
-!/T 9020 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR GRIDS (',A,')'/    &
+!/T 9020 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR GRIDS (',A,')'/  &
 !/T                               15X,'GRID MDS(1-13)',43X,'NTRACE')
 !/T 9021 FORMAT (14X,16I4)
-!/T 9022 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR INTPUT FILES'/     &
+!/T 9022 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR INTPUT FILES'/   &
 !/T                               15X,'GRID MDSF(JFIRST-7)')
-!/T 9030 FORMAT ( ' TEST WMINITNML : FILE EXTENSIONS, INPUT FLAGS,',     &
+!/T 9030 FORMAT ( ' TEST WMINITNML : FILE EXTENSIONS, INPUT FLAGS,',   &
 !/T               ' RANK AND GROUP, PROC RANGE')
 !/T 9031 FORMAT ( '            ',I3,1X,A,20L2,2I4,2F6.2)
 !/T 9032 FORMAT ( ' TEST WMINITNML : PROCESSED RANK NUMBERS')

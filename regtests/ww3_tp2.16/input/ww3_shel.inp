@@ -67,46 +67,8 @@ $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual. If the first flag is 'N' then a namelist
 $ is read. See ww3_ounf.inp for an example
 $
-$ (1) Forcing Fields
-  T
-$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
-  F   F   T   F   F   F   F   F   F   F
-$ (2) Standard mean wave Parameters
-  T
-$ HS  LM  T02 T0M1 T01 FP DIR SPR DP
-  T   F   F   F   T   F   F   F   F
-$ (3) Frequency-dependent parameters
-  T
-$ EF TH1M STH1M TH2M STH2M WN
-  F  F  F  F  F  F
-$ (4) Spectral Partition Parameters
-  T
-$ PHS PTP PLP PDIR PSPR PWS TWS PNR
-  F   F   F   F   F   F   F   F
-$ (5) Atmosphere-waves layer
-  T
-$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
-  F   F   F   F   F   F   F   F   F   F
-$ (6) Wave-Ocean layer
-  T
-$ SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
-  F   F   F   F   F   F   F   F   F   F   F
-$ (7) Wave-bottom layer
-  T
-$ ABR UBR BED FBB TBB
-  F   F   F   F   F
-$ (8) Spectrum parameters
-  T
-$ MSS MSC
-  F   F
-$ (9) Numerical diagnostics
-  T
-$ DTD FC  CFX CFD CFK
-  F   F   F   F   F
-$ (10) User defined (NOEXTR flags needed)
-  T
-$  US1  US2
-  F   F
+ N
+ WND HS T01 
 $
 $----------------------------------------------------------------
 $

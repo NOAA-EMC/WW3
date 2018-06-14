@@ -1,0 +1,620 @@
+#include "w3macros.h" 
+!/ ------------------------------------------------------------------- /
+      MODULE W3NMLOUNFMD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!/    For updates see subroutines.
+!/
+!  1. Purpose :
+!
+!     Manages namelists from configuration file ww3_ounf.nml for ww3_ounf program
+!
+!/ ------------------------------------------------------------------- /
+
+  ! module defaults
+  IMPLICIT NONE
+
+  PUBLIC
+
+  ! field structure
+  TYPE NML_FIELD_T
+    CHARACTER(15)               :: TIMESTART
+    CHARACTER(15)               :: TIMESTRIDE
+    CHARACTER(15)               :: TIMECOUNT
+    INTEGER                     :: TIMESPLIT
+    CHARACTER(1024)             :: LIST
+    CHARACTER(15)               :: PARTITION
+    LOGICAL                     :: SAMEFILE
+    INTEGER                     :: TYPE
+  END TYPE NML_FIELD_T
+
+  ! file structure
+  TYPE NML_FILE_T
+    CHARACTER(256)              :: PREFIX
+    INTEGER                     :: NETCDF
+    INTEGER                     :: IX0
+    INTEGER                     :: IXN
+    INTEGER                     :: IY0
+    INTEGER                     :: IYN
+  END TYPE NML_FILE_T
+
+  ! miscellaneous
+  CHARACTER(256)                :: MSG
+
+
+
+
+  CONTAINS
+!/ ------------------------------------------------------------------- /
+  SUBROUTINE W3NMLOUNF (NDSI, INFILE, NML_FIELD, NML_FILE, IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Reads all the namelist to define the output field
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NDSI        Int.
+!      INFILE      Char.
+!      NML_FIELD   type.
+!      NML_FILE    type.
+!      IERR        Int.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!      READ_FIELD_NML
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_OUNF  Prog.   N/A    Postprocess output fields.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: NDSE
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    INTEGER, INTENT(IN)                         :: NDSI
+    CHARACTER*(*), INTENT(IN)                   :: INFILE
+    TYPE(NML_FIELD_T), INTENT(INOUT)            :: NML_FIELD
+    TYPE(NML_FILE_T), INTENT(INOUT)             :: NML_FILE
+    INTEGER, INTENT(OUT)                        :: IERR
+!/S      INTEGER, SAVE                             :: IENT = 0
+
+    IERR = 0
+!/S      CALL STRACE (IENT, 'W3NMLOUNF')
+
+    ! open input file
+    OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
+    END IF
+
+    ! read field namelist
+    CALL READ_FIELD_NML (NDSI, NML_FIELD, IERR)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A)') 'ERROR: error occured in READ_FIELD_NML'
+      RETURN
+    END IF
+!/T    CALL REPORT_FIELD_NML (NML_FIELD)
+
+    ! read file namelist
+    CALL READ_FILE_NML (NDSI, NML_FILE, IERR)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A)') 'ERROR: error occured in READ_FILE_NML'
+      RETURN
+    END IF
+!/T    CALL REPORT_FILE_NML (NML_FILE)
+
+
+    ! close namelist file
+    CLOSE (NDSI)
+
+  END SUBROUTINE W3NMLOUNF
+
+
+!/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE READ_FIELD_NML (NDSI, NML_FIELD, IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NDSI         Int.
+!      NML_FIELD    Type.
+!      IERR         Int.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: NDSE
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    INTEGER, INTENT(IN)                 :: NDSI
+    TYPE(NML_FIELD_T), INTENT(INOUT)    :: NML_FIELD
+    INTEGER, INTENT(OUT)                :: IERR
+
+    ! locals
+    TYPE(NML_FIELD_T) :: FIELD
+    NAMELIST /FIELD_NML/ FIELD
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+    IERR = 0
+!/S      CALL STRACE (IENT, 'READ_FIELD_NML')
+
+    ! set default values for field structure
+    FIELD%TIMESTART  = '19000101 000000'
+    FIELD%TIMESTRIDE = '0'
+    FIELD%TIMECOUNT  = '1000000000'
+    FIELD%TIMESPLIT  = 6
+    FIELD%LIST       = 'unset'
+    FIELD%PARTITION  = '0 1 2 3'
+    FIELD%SAMEFILE   = .TRUE.
+    FIELD%TYPE       = 3
+
+    ! read field namelist
+    REWIND (NDSI)
+    READ (NDSI, nml=FIELD_NML, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A,/A)') &
+        'ERROR: READ_FIELD_NML: namelist read error', &
+        'ERROR: '//TRIM(MSG)
+      RETURN
+    END IF
+
+    ! save namelist
+    NML_FIELD = FIELD
+
+  END SUBROUTINE READ_FIELD_NML
+
+!/ ------------------------------------------------------------------- /
+
+
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE READ_FILE_NML (NDSI, NML_FILE, IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NDSI         Int.
+!      NML_FILE     Type.
+!      IERR         Int.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: NDSE
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    INTEGER, INTENT(IN)                 :: NDSI
+    TYPE(NML_FILE_T), INTENT(INOUT)     :: NML_FILE
+    INTEGER, INTENT(OUT)                :: IERR
+
+    ! locals
+    TYPE(NML_FILE_T) :: FILE
+    NAMELIST /FILE_NML/ FILE
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+    IERR = 0
+!/S      CALL STRACE (IENT, 'READ_FILE_NML')
+
+    ! set default values for file structure
+    FILE%PREFIX    = 'ww3.'
+    FILE%NETCDF    = 3
+    FILE%IX0       = 1
+    FILE%IXN       = 1000000000
+    FILE%IY0       = 1
+    FILE%IYN       = 1000000000
+
+    ! read file namelist
+    REWIND (NDSI)
+    READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A,/A)') &
+        'ERROR: READ_FILE_NML: namelist read error', &
+        'ERROR: '//TRIM(MSG)
+      RETURN
+    END IF
+
+    ! save namelist
+    NML_FILE = FILE
+
+  END SUBROUTINE READ_FILE_NML
+
+!/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE REPORT_FIELD_NML (NML_FIELD)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NML_FIELD  Type.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: SCREEN
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    TYPE(NML_FIELD_T), INTENT(IN) :: NML_FIELD
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+!/S      CALL STRACE (IENT, 'REPORT_FIELD_NML')
+
+      WRITE (MSG,'(A)') 'FIELD % '
+      WRITE (SCREEN,'(A)')
+      WRITE (SCREEN,10) TRIM(MSG),'TIMESTART  = ', TRIM(NML_FIELD%TIMESTART)
+      WRITE (SCREEN,10) TRIM(MSG),'TIMESTRIDE = ', TRIM(NML_FIELD%TIMESTRIDE)
+      WRITE (SCREEN,10) TRIM(MSG),'TIMECOUNT  = ', TRIM(NML_FIELD%TIMECOUNT)
+
+      WRITE (SCREEN,11) TRIM(MSG),'TIMESPLIT  = ', NML_FIELD%TIMESPLIT
+      WRITE (SCREEN,10) TRIM(MSG),'LIST       = ', TRIM(NML_FIELD%LIST)
+      WRITE (SCREEN,10) TRIM(MSG),'PARTITION  = ', TRIM(NML_FIELD%PARTITION)
+      WRITE (SCREEN,13) TRIM(MSG),'SAMEFILE   = ', NML_FIELD%SAMEFILE
+      WRITE (SCREEN,11) TRIM(MSG),'TYPE       = ', NML_FIELD%TYPE
+
+
+10  FORMAT (A,2X,A,A)
+11  FORMAT (A,2X,A,I1)
+13  FORMAT (A,2X,A,L1)
+
+  END SUBROUTINE REPORT_FIELD_NML
+
+!/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE REPORT_FILE_NML (NML_FILE)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NML_FILE  Type.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: SCREEN
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    TYPE(NML_FILE_T), INTENT(IN) :: NML_FILE
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+!/S      CALL STRACE (IENT, 'REPORT_FILE_NML')
+
+      WRITE (MSG,'(A)') 'FILE % '
+      WRITE (SCREEN,'(A)')
+      WRITE (SCREEN,10) TRIM(MSG),'PREFIX    = ', TRIM(NML_FILE%PREFIX)
+      WRITE (SCREEN,11) TRIM(MSG),'NETCDF    = ', NML_FILE%NETCDF
+      WRITE (SCREEN,11) TRIM(MSG),'IX0       = ', NML_FILE%IX0
+      WRITE (SCREEN,11) TRIM(MSG),'IXN       = ', NML_FILE%IXN
+      WRITE (SCREEN,11) TRIM(MSG),'IY0       = ', NML_FILE%IY0
+      WRITE (SCREEN,11) TRIM(MSG),'IYN       = ', NML_FILE%IYN
+
+10  FORMAT (A,2X,A,A)
+11  FORMAT (A,2X,A,I1)
+
+  END SUBROUTINE REPORT_FILE_NML
+
+!/ ------------------------------------------------------------------- /
+
+
+
+
+
+END MODULE W3NMLOUNFMD
+
+!/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

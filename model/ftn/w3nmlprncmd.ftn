@@ -156,14 +156,14 @@
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-      WRITE (NDSE,'(a)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
       RETURN
     END IF
 
     ! read forcing namelist
     CALL READ_FORCING_NML (NDSI, NML_FORCING, IERR)
     IF (IERR.NE.0) THEN
-      WRITE (NDSE,'(a)') 'ERROR: error occured in READ_FORCING_NML'
+      WRITE (NDSE,'(A)') 'ERROR: error occured in READ_FORCING_NML'
       RETURN
     END IF
 !/T    CALL REPORT_FORCING_NML (NML_FORCING)
@@ -171,7 +171,7 @@
     ! read file namelist
     CALL READ_FILE_NML (NDSI, NML_FILE, IERR)
     IF (IERR.NE.0) THEN
-      WRITE (NDSE,'(a)') 'ERROR: error occured in READ_FILE_NML'
+      WRITE (NDSE,'(A)') 'ERROR: error occured in READ_FILE_NML'
       RETURN
     END IF
 !/T    CALL REPORT_FILE_NML (NML_FILE)
@@ -297,7 +297,7 @@
     REWIND (NDSI)
     READ (NDSI, nml=FORCING_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-      WRITE (NDSE,'(a,/a)') &
+      WRITE (NDSE,'(A,/A)') &
         'ERROR: READ_FORCING_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
       RETURN
@@ -400,7 +400,7 @@
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'READ_FORCING_NML')
+!/S      CALL STRACE (IENT, 'READ_FILE_NML')
 
     ! set default values for file structure
     FILE%FILENAME  = 'unset'
@@ -415,7 +415,7 @@
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-      WRITE (NDSE,'(a,/a)') &
+      WRITE (NDSE,'(A,/A)') &
         'ERROR: READ_FILE_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
       RETURN
@@ -500,7 +500,7 @@
     TYPE(NML_FORCING_T), INTENT(IN) :: NML_FORCING
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'W3NMLPRNC')
+!/S      CALL STRACE (IENT, 'REPORT_FORCING_NML')
 
       WRITE (MSG,'(A)') 'FORCING % '
       WRITE (SCREEN,'(A)')
@@ -608,7 +608,7 @@
     TYPE(NML_FILE_T), INTENT(IN) :: NML_FILE
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'W3NMLPRNC')
+!/S      CALL STRACE (IENT, 'REPORT_FILE_NML')
 
       WRITE (MSG,'(A)') 'FILE % '
       WRITE (SCREEN,'(A)')

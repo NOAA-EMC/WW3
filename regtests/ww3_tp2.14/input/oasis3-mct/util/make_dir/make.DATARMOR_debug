@@ -28,8 +28,8 @@ f           = $(F90)
 CC          = icc
 AR          = ar
 ARFLAGS     = -ruv
-F90COMP     = -xCORE-AVX2 -O0 -fno-alias -fp-model precise -assume byterecl -convert big_endian -no-fma -ip -CB -fpe0 -traceback -check bounds -check uninit -ftrapuv -warn -warn interface -debug -check all -implicitnone -warn all -fp-stack-check -heap-arrays
-F90LINK     = -O0 -xCORE-AVX2 -Zp8 -tpp7
+F90COMP     = -xCORE-AVX2 -O0 -fno-alias -fp-model precise -assume byterecl -convert big_endian -no-fma -ip -CB -fpe0 -traceback -ftrapuv -debug -check all -check noarg_temp_created -implicitnone -warn all -fp-stack-check -heap-arrays
+F90LINK     = -O0 -xCORE-AVX2
 #
 # MPI library
 MPI         = $(shell which ifort)

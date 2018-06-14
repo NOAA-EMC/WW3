@@ -91,7 +91,7 @@ $                              1 : Nondimensional in terms of U10
 $                              2 : Nondimensional in terms of U*
 $                             3-5: like 0-2 with f normalized with fp.
 $
-   4  0  0  T T T T T T  0
+   4  0  0  T T T T T T T  0
 $
 $ The transfer file contains records with the following contents.
 $
@@ -109,6 +109,7 @@ $ - Sin(f,theta) if requested                  |           |
 $ - Snl(f,theta) if requested                  |           |
 $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
+$ - Sice(f,theta) if requested                 |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
 $

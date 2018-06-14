@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Sep-2012 |
+!/                  | Last update :         15-May-2018 |
 !/                  +-----------------------------------+
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -47,6 +47,8 @@
 !      D2J       Subr. Public   Convert date array to julian date
 !      J2D       Subr. Public   Convert julian date to date array
 !      T2D       Subr. Public   Convert time array to date array
+!      TSUB      I.D.  Public   Substract two time arrays in days
+!      U2D       Subr. Public   Convert time units attribute to date array
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -1041,7 +1043,10 @@
 !
 !  4. Subroutines used :
 !
-!       None.
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
 !
 !  5. Called by :
 !
@@ -1064,6 +1069,12 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'T2D')
+!
         DAT(1)=TIME(1)/10000
         DAT(2)=(TIME(1)-DAT(1)*10000)/100
         DAT(3)=TIME(1)-DAT(1)*10000-100*DAT(2)
@@ -1109,7 +1120,10 @@
 !
 !  4. Subroutines used :
 !
-!       None.
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
 !
 !  5. Called by :
 !
@@ -1132,6 +1146,12 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'D2T')
+!
         TIME(1)=DAT(1)*10000+DAT(2)*100+DAT(3)
         TIME(2)=DAT(5)*10000+DAT(6)*100+DAT(7)
         IERR=0
@@ -1159,6 +1179,16 @@
 !
 !     Converts proleptic Gregorian date array to Julian Day
 !
+!
+! * UDUNITS standard : mixed Gregorian/Julian  calendar  system.   
+!                      Dates  prior to 1582-10-15 are assumed to use
+!                      the Julian calendar, which was introduced by Julius Caesar
+!                      in 46 BCE and is based on a year that is exactly 365.25 days
+!                      long.  Dates on and after 1582-10-15 are assumed to use  the
+!                      Gregorian calendar, which was introduced on that date and is
+!                      based on a year that is exactly 365.2425 days long.  (A year
+!                      is  actually  approximately 365.242198781 days long.)
+!
 ! * There is no year zero
 ! * Julian Day must be non-negative
 ! * Julian Day starts at noon; while Civil Calendar date starts at midnight
@@ -1174,7 +1204,10 @@
 !
 !  4. Subroutines used :
 !
-!       None.
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
 !
 !  5. Called by :
 !
@@ -1201,16 +1234,19 @@
    INTEGER                 :: YEAR, MONTH, DAY, UTC, HOUR, MINUTE
    REAL                    :: SECOND
    INTEGER                 :: A, Y, M, JDN
+!/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
-
+!/
+!/S      CALL STRACE (IENT, 'D2J')
+!
    YEAR   = DAT(1)                        ! Year
    MONTH  = DAT(2)                        ! Month
    DAY    = DAT(3)                        ! Day
    UTC    = DAT(4)*60                     ! Delta from UTC, convert from minutes to seconds
    HOUR   = DAT(5)                        ! Hour
    MINUTE = DAT(6)                        ! Minute
-   SECOND = DAT(7)-UTC+DAT(8)/1000.0d0    ! Second   ! correction for time zone and milliseconds
+   SECOND = DAT(7)-UTC+DAT(8)/1000.d0     ! Second   ! correction for time zone and milliseconds
 
    JULIAN = -HUGE(99999)                  ! this is the date if an error occurs and IERR is < 0
 
@@ -1230,7 +1266,7 @@
    JDN=DAY + (153*M+2)/5 + 365*Y + Y/4 - Y/100 + Y/400 - 32045  !  with integer truncation
 
 !  Finding the Julian date given the JDN (Julian day number) and time of day
-   JULIAN=JDN + DBLE(HOUR-12)/24.0d0 + DBLE(MINUTE)/1440.0d0 + SECOND/86400.0d0
+   JULIAN=DBLE(JDN) + DBLE(HOUR-12)/24.0d0 + DBLE(MINUTE)/1440.0d0 + DBLE(SECOND)/86400.0d0
 
    ! Check if Julian Day is non-negative
    IF(JULIAN.lt.0.d0) THEN                  
@@ -1277,7 +1313,10 @@
 !
 !  4. Subroutines used :
 !
-!       None.
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
 !
 !  5. Called by :
 !
@@ -1306,9 +1345,12 @@
    REAL                      :: SECOND
    INTEGER                   :: YEAR, MONTH, DAY, HOUR, MINUTE
    INTEGER                   :: JALPHA,JA,JB,JC,JD,JE,IJUL
+!/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
-
+!/
+!/S      CALL STRACE (IENT, 'J2D')
+!
    IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
       IERR=1
       RETURN
@@ -1381,6 +1423,284 @@
 !/ End of J2D ----------------------------------------------------- /
 !/
       END SUBROUTINE J2D
+
+!/ ------------------------------------------------------------------- /
+      DOUBLE PRECISION FUNCTION TSUB ( T1, T2 )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!/    15-May-2018 : Origination                         ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Substract two time arrays to get the time difference in days
+!     in a way to avoid decimal approximation error
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       T1       I.A.     I   Time array
+!       T2       I.A.     I   Time array
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Any routine.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: T1(8), T2(8)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: A1, B1, C1, D1, A2, B2, C2, D2
+      DOUBLE PRECISION        :: E1, E2
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'TSUB')
+!
+! Convert dates and times :
+!
+      A1 = (14-T1(2))/12
+      B1 = T1(1) + 4800 - A1
+      C1 = T1(2) + 12*A1 - 3
+      D1 = T1(3) + (153*C1 + 2)/5 + 365*B1 + B1/4 -B1/100 + B1/400
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+!
+      A2 = (14-T2(2))/12
+      B2 = T2(1) + 4800 - A2
+      C2 = T2(2) + 12*A2 - 3
+      D2 = T2(3) + (153*C2 + 2)/5 + 365*B2 + B2/4 -B2/100 + B2/400
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+!
+      TSUB = DBLE(D2-D1) + (E2-E1)/86400.0d0
+!
+      RETURN
+!/
+!/ End of TSUB ------------------------------------------------------- /
+!/
+      END FUNCTION TSUB
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE U2D(UNITS,DAT,IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-May-2018 |
+!/                  +-----------------------------------+
+!/
+!/    15-May-2018 : Origination                         ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Convert time units attribute to date array
+!
+! * units attribute must respect convention ISO8601
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       UNITS    Char     I   Units attribute
+!       DAT      I.A.     O   Time array like returned by DATE_AND_TIME(3f)
+!       IERR     Integer  O   Error code returned
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: NDSE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+   CHARACTER(*),INTENT(IN)       :: UNITS    ! Units attribute
+   INTEGER,INTENT(OUT)           :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
+   INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
+                                             ! Otherwise returnb 1
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'U2D')
+!
+
+! seconds
+      IF (INDEX(UNITS, "seconds").NE.0) THEN
+        ! seconds since YYYY-MM-DD hh:mm:ss
+        IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
+          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! seconds since YYYY-M-D h:m:s
+        ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
+          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+
+! days
+      ELSE IF (INDEX(UNITS, "days").NE.0) THEN
+        ! days since YYYY-MM-DD hh:mm:ss
+        IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
+          READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! days since YYYY-M-D h:m:s
+        ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.18) THEN
+          READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(17:17),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(19:19),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(21:21),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(23:23),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(25:25),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+
+! hours
+      ELSE IF (INDEX(UNITS, "hours").NE.0) THEN
+        ! hours since YYYY-MM-DD hh:mm:ss
+        IF (INDEX(UNITS, "-", .TRUE.).EQ.20) THEN
+          READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! hours since YYYY-M-D h:m:s
+        ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
+          READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(18:18),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+
+! minutes
+      ELSE IF (INDEX(UNITS, "minutes").NE.0) THEN
+        ! minutes since YYYY-MM-DD hh:mm:ss
+        IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
+          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! minutes since YYYY-M-D h:m:s
+        ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
+          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+
+! nothing
+      ELSE
+        GOTO 804
+      END IF
+!
+      GOTO 888
+!
+! Error escape locations
+!
+  804 CONTINUE
+      WRITE (NDSE,1004) TRIM(UNITS)
+      CALL EXTCDE ( 44 )
+!
+  805 CONTINUE
+      WRITE (NDSE,1005) IERR
+      CALL EXTCDE ( 45 )
+!
+  888 CONTINUE
+
+!
+! Formats
+!
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TIMEMD : '/               &
+               '     PREMATURE END OF TIME ATTRIBUTE '/                 &
+               '     ',A/                                               &
+               '     DIFFERS FROM CONVENTION ISO8601 '/                 &
+               '     XXX since YYYY-MM-DD hh:mm:ss'/)
+!
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3TIMEMD : '/               &
+               '     ERROR IN READING OF TIME ATTRIBUTE '/              &
+               '     ',A/                                               &
+               '     DIFFERS FROM CONVENTION ISO8601 '/                 &
+               '     XXX since YYYY-MM-DD hh:mm:ss'/                    &
+               '     IOSTAT =',I5/)
+!
+      RETURN
+!/
+!/ End of U2D ----------------------------------------------------- /
+!/
+      END SUBROUTINE U2D
+
+
+!/ ------------------------------------------------------------------- /
 
 
 !/

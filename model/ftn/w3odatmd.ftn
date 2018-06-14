@@ -764,7 +764,7 @@
 !
 ! 8) Spectrum parameters
 !
-      NOGE(8) = 2
+      NOGE(8) = 4
 !
       IDOUT( 8, 1)  = 'Mean square slopes  '
       IDOUT( 8, 2)  = 'Phillips tail const'

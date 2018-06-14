@@ -291,7 +291,7 @@
 !/ Conventional declarations
 !/
       INTEGER                 :: NMDATA = -1, IMDATA = -1
-      INTEGER                 :: MDSI, MDSO = 6, MDSS = 6, MDST = 6,  &
+      INTEGER                 :: MDSI = 8, MDSO = 9, MDSS = 6, MDST = 6,  &
                                  MDSE = 6, MDSUP, NMPROC = 1,         &
                                  IMPROC = 1, NMPLOG = 1, NMPSCR = 1,  &
                                  NMPTST = 1, NMPERR = 1, NMPUPT = 1,  &

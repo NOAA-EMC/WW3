@@ -223,7 +223,7 @@
     then
       par_programs="$par_programs ww3_multi_esmf"
     fi
-    if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" || [ -n "$(grep PDLIB $switch_file)"]
+    if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" ] || [ -n "$(grep PDLIB $switch_file)"]
     then
       if [ ! -z "$(echo $par_programs | grep $prog)" ]
       then
@@ -358,6 +358,7 @@
     mv switch.$MODE $main_dir/exe/
     rm -rf $main_dir/exe_$MODE
     mv $main_dir/exe $main_dir/exe_$MODE
+    rm -rf ${temp_dir}_$MODE
     mv $temp_dir  ${temp_dir}_$MODE
 
   done

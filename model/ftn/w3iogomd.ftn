@@ -288,7 +288,7 @@
 !/
 !  1. Purpose :
 !
-!     Fills in FLG2D and FLG2D2 arrays from ASCII input file
+!     Fills in FLG1D and FLG2D arrays from ASCII input file
 !
 !  3. Parameters :
 !
@@ -296,9 +296,10 @@
 !     ----------------------------------------------------------------
 !       NDSI    Int.   I   Input file logical unit number
 !       NDSO    Int.   I   Output file logical unit number
+!       NDSS    Int.   I   Screen file logical unit number
 !       NDSEN   R.A.   I   Error output file logical unit number
 !       COMSTR  Char   I   Comment string, usually '$'
-!       FLG     L.A.   O   1D array of flags for groups
+!       FLG1D   L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
 !       IAPROC  Int.   I   index of current processor 
 !       NAPOUT  Int.   I   index of processor for output (screen)
@@ -631,7 +632,7 @@
              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
            END SELECT
 !
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLOG
+          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
 !
           IOUT=IOUT+1
 !
@@ -639,7 +640,7 @@
 !
       END IF
 !
-      IF ( NDSS.NE.NDSO .AND. IAPROC .EQ. NAPOUT ) THEN
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         FLT    = .TRUE.
         DO IFI=1, NOGRP
           DO IFJ=1, NGRPP
@@ -649,12 +650,12 @@
                 FLT    = .FALSE.
               ELSE
                 WRITE (NDSO,1946) IDOUT(IFI,IFJ)
-                END IF
               END IF
-            END DO
+            END IF
           END DO
+        END DO
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
-          END IF
+      END IF
 !
       RETURN 
 !
@@ -723,21 +724,21 @@
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
-!/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
+!/    17-Feb-2016 : New version for namelist use        ( version 5.11 )
 !/
 !  1. Purpose :
 !
-!     Fills in FLG2D and FLG2D2 arrays from ASCII input file
+!     Fills in FLG1D and FLG2D arrays from ASCII input file
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       NDSI    Int.   I   Input file logical unit number
 !       NDSO    Int.   I   Output file logical unit number
+!       NDSS    Int.   I   Screen file logical unit number
 !       NDSEN   R.A.   I   Error output file logical unit number
 !       FLDOUT  Cha.   I   List of field names
-!       FLG     L.A.   O   1D array of flags for groups
+!       FLG1D   L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
 !       IAPROC  Int.   I   index of current processor 
 !       NAPOUT  Int.   I   index of processor for output (screen)
@@ -1034,7 +1035,7 @@
 !
       END DO 
 !
-      IF ( NDSS.NE.NDSO .AND. IAPROC .EQ. NAPOUT ) THEN
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         FLT    = .TRUE.
         DO IFI=1, NOGRP
           DO IFJ=1, NGRPP
@@ -1047,7 +1048,7 @@
               END IF
             END IF
           END DO
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLOG
+          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
         END DO
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       END IF
