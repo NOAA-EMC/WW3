@@ -97,7 +97,7 @@
 !/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
 !/    01-Mar-2018 : RTD poles info read from namelist   ( version 6.02 )
 !/    14-Mar-2018 : Option to read UNST boundary file   ( version 6.02 )
-!/    15-May-2018 : Dry sea points over zlim            ( version 6.XX )
+!/    15-May-2018 : Dry sea points over zlim            ( version 6.05 )
 !/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
 !/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
 !/

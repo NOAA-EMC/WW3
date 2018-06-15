@@ -16,7 +16,7 @@
 !/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 ) 
 !/    20-Oct-2016 : Error statement updates             ( version 5.15 )
 !/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
-!/    15-May-2018 : Add namelist feature                ( version 6.XX )
+!/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

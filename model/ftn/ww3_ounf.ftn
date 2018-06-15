@@ -25,7 +25,7 @@
 !/    01-Mar-2018 : RTD option add variable de-rotation,( version 6.02 )
 !/                  standard lat-lons and rotated grid
 !/                  metadata
-!/    15-May-2018 : Add namelist feature                ( version 6.XX )
+!/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/    06-Jun-2018 : Add DEBUG/SETUP                     ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),

@@ -199,7 +199,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !
 !  1. Purpose :
 !
@@ -321,7 +321,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 
 !  1. Purpose :
 !
@@ -494,7 +494,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 
 !  1. Purpose :
 !
@@ -622,7 +622,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -766,7 +766,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -912,7 +912,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1061,7 +1061,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1226,7 +1226,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1366,7 +1366,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1462,7 +1462,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1570,7 +1570,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1686,7 +1686,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1792,7 +1792,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -1904,7 +1904,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.XX )
+!/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/
 !  1. Purpose :
 !
