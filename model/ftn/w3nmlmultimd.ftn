@@ -1972,7 +1972,7 @@
 
     IF (NML_HOMOG_COUNT%N_TOT .NE. 0) THEN
       DO I=1,NML_HOMOG_COUNT%N_TOT
-        WRITE (MSG,'(A,I,A)') 'HOMOG_INPUT(',I,') % '
+        WRITE (MSG,'(A,I5,A)') 'HOMOG_INPUT(',I,') % '
         WRITE (MDSS,'(A)')
         WRITE (MDSS,10) TRIM(MSG),'NAME      = ', TRIM(NML_HOMOG_INPUT(I)%NAME)
         WRITE (MDSS,10) TRIM(MSG),'DATE      = ', TRIM(NML_HOMOG_INPUT(I)%DATE)
