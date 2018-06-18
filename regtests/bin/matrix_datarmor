@@ -103,6 +103,7 @@
   export   hur1mg='y' # Hurricane with one moving grid
   export    shwtr='y' # shallow water tests
   export    unstr='y' # unstructured grid tests
+  export    pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
   export    smcgr='y' # SMC/Rotated grid test
   export   mudice='y' # Mud/Ice and wave interaction tests 
   export   infgrv='y' # Second harmonic generation tests

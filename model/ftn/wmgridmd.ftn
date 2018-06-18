@@ -2936,6 +2936,7 @@
                HGSTGE(GDST,JJ)%NTOT = HGSTGE(GDST,JJ)%NTOT + 1
                ISEA   = TMPINT(ILOC,-2)
                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+!/DIST             ISPROC = ISPROC + CROOT - 1
 !
                I1(JJ,ISPROC) = I1(JJ,ISPROC) + 1
                IF ( TMPLOG(ILOC) ) I2(JJ,ISPROC) = I2(JJ,ISPROC) + 1

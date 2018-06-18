@@ -2669,7 +2669,6 @@
 !/MPI              IH     = 0
 !
 !/MPI              DO I0=1, NAPROC
-!/MPI                WRITE(740+IAPROC,*) 'I0=', I0
 !/MPI                IT     = IT0
 !/MPI                IFROM  = I0 - 1
 !

@@ -1018,20 +1018,74 @@
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
+!/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_GET_JSEA_ISPROC_GLOB(ISEA, J, JSEA, ISPROC)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           Aron Roland             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         14-Jun-2018 |
+!/                  +-----------------------------------+
+!/
+!/    06-Jun-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose :
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
       USE CONSTANTS, ONLY: LPDLIB
       USE W3ODATMD, ONLY: OUTPTS
-!      USE WMMDATMD, ONLY: MDATAS
       USE W3GDATMD, ONLY: GTYPE, GRIDS, UNGTYPE
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
       IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
       integer, intent(in) :: ISEA, J
       integer, intent(out) :: JSEA, ISPROC
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC_GLOB')
       integer nb
       IF (.NOT. LPDLIB) THEN
         nb=OUTPTS(J)%NAPROC
         JSEA   = 1 + (ISEA-1)/nb
         ISPROC=1
-!/MPI        ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
+!/DIST        ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
       ELSE
 !/PDLIB      IF (GRIDS(J)%GTYPE .ne. UNGTYPE) THEN       
 !/PDLIB        nb=OUTPTS(J)%NAPROC
@@ -1042,7 +1096,10 @@
 !/PDLIB        ISPROC = MDATAS(J)%SEA_IPGL_TO_PROC(ISEA)
 !/PDLIB      ENDIF
       ENDIF
-      END SUBROUTINE
+!/
+!/ End of INIT_GET_JSEA_ISPROC_GLOB  ---------------------------------- /
+!/
+      END SUBROUTINE INIT_GET_JSEA_ISPROC_GLOB
 !/
 !/ End of module WMMDATMD -------------------------------------------- /
 !/

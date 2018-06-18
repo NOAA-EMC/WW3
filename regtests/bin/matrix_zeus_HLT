@@ -49,15 +49,12 @@
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-# Netcdf modules
+# Netcdf and Parmetis modules & variables
 
   echo "  module load netcdf/4.3.0"                         >> matrix.head
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
-  echo ' '                                                  >> matrix.head
-
-# PARMETIS 
-  echo "  export METIS_PATH=/scratch3/NCEPDEV/stmp2/Jessica.Meixner/parmetis-4.0.3"            >> matrix.head
+  echo "  export METIS_PATH=/scratch3/NCEPDEV/stmp2/Jessica.Meixner/parmetis-4.0.3"   >> matrix.head
   echo ' ' 
 
 # Compiler option. Choose appropriate compiler and set cmplOption to
@@ -95,6 +92,7 @@
   export   hur1mg='y' # Hurricane with one moving grid
   export    shwtr='y' # shallow water tests
   export    unstr='y' # unstructured grid tests
+  export    pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
   export    smcgr='y' # SMC/Rotated grid test
   export   mudice='y' # Mud/Ice and wave interaction tests 
   export   infgrv='y' # Second harmonic generation tests
@@ -106,7 +104,6 @@
   export  multi06='y' # mww3_test_06 (curvilinear grid tests)
   export  multi07='y' # mww3_test_07 (unstructured grid tests)
   export  multi08='y' # mww3_test_08 (wind and ice tests)
-  export  pdlib='y' # unstructured grid tests with pdlib for domain decomposition and implicit solver
 
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 

@@ -1814,7 +1814,7 @@
 !
             VA(:,JSEA) = 0.
 !
-!/T3            CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG(1), ' ',    &
+!/T3            CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
 !/T3                 TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'Before' )
 !
 ! 2.e Redistribute discrete action density
@@ -1893,7 +1893,7 @@
 !/T3              OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CG(IK,ISEA)
 !/T3              END DO
 !
-!/T3            CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG(1), ' ',    &
+!/T3            CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
 !/T3                 TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'After' )
 !
 !/T2          ELSE

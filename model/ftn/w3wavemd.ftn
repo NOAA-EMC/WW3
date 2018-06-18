@@ -1648,7 +1648,7 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
 
-                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
+!/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
 
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
@@ -1803,12 +1803,9 @@
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
-!!Li            CALL W3GATH ( ISPEC, FIELD )
-                IF (.NOT. LPDLIB .or.(GTYPE.ne.UNGTYPE)) THEN
-                  CALL W3GATH ( ISPEC, FIELD )
-                END IF
+                IF (.NOT.LPDLIB .AND. RGLGRD) CALL W3GATH ( ISPEC, FIELD )
 !/SMC !!Li   Otherwise use SMC sub to gether field
-!/SMC           CALL W3GATHSMC ( ISPEC, FIELD )
+!/SMC                CALL W3GATHSMC ( ISPEC, FIELD )
 !
                 IF (GTYPE .NE. UNGTYPE) THEN
 !/PR1             CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
@@ -1831,9 +1828,7 @@
 !/MPI             END IF
 !!Li              CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
                 END IF
-                IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
-                  CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
-                END IF
+                IF (.NOT.LPDLIB .AND. RGLGRD) CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
 !/SMC !!Li   Otherwise use SMC sub to scatter field
 !/SMC           CALL W3SCATSMC ( ISPEC, MAPSTA, FIELD )
 !
