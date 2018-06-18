@@ -238,13 +238,13 @@
   then
     echo -e "\n Creating wwatch3.$ID.model.tar and copying to archive location..."
     cd $ww3_dir
-    tar cf ${ww3_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn --exclude=wwatch3.env
+    tar --exclude=.svn --exclude=wwatch3.env -cf ${ww3_dir}/arc/wwatch3.$ID.model.tar model
   fi
   if test "$make_reg" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.regtests.tar and copying to archive location..."
     cd $ww3_dir
-    tar cf ${ww3_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
+    tar --exclude=.svn -cf ${ww3_dir}/arc/wwatch3.$ID.regtests.tar regtests
   fi
 
 
