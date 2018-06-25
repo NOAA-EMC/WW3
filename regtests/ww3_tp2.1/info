@@ -51,12 +51,12 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                             -s PR1   ../ ww3_tp2.1        #
-#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../ ww3_tp2.1        # 
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.1   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.1   # 
 #  ./bin/run_test -g c        -n 3 -p mpirun -s PR3_UQ_MPI \                #          
-#       -w work_c_curv ../ ww3_tp2.1                                        #
+#       -w work_c_curv ../model ww3_tp2.1                                   #
 #  ./bin/run_test -g b_pseudo -n 3 -p mpirun -s PR3_UQ_MPI \                #          
-#       -w work_b_curv ../ ww3_tp2.1                                        #
+#       -w work_b_curv ../model ww3_tp2.1                                   #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Dec 2013     #

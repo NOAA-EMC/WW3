@@ -31,7 +31,7 @@
 !
 ! * The FORCING flag can be  : F for "no forcing"
 !                              T for "external forcing file"
-!                              H for "homogenous forcing input"
+!                              H for "homogeneous forcing input"
 !                              C for "coupled forcing field"
 !
 ! * homogeneous forcing is not available for ICE_CONC
@@ -41,23 +41,24 @@
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     FORCING%WATER_LEVELS  = F
-!     FORCING%CURRENTS      = F
-!     FORCING%WINDS         = F
-!     FORCING%ICE_CONC      = F
-!     FORCING%ICE_PARAM1    = F
-!     FORCING%ICE_PARAM2    = F
-!     FORCING%ICE_PARAM3    = F
-!     FORCING%ICE_PARAM4    = F
-!     FORCING%ICE_PARAM5    = F
-!     FORCING%MUD_DENSITY   = F
-!     FORCING%MUD_THICKNESS = F
-!     FORCING%MUD_VISCOSITY = F
-!     ASSIM%MEAN            = F
-!     ASSIM%SPEC1D          = F
-!     ASSIM%SPEC2D          = F
+!     INPUT%FORCING%WATER_LEVELS  = F
+!     INPUT%FORCING%CURRENTS      = F
+!     INPUT%FORCING%WINDS         = F
+!     INPUT%FORCING%ICE_CONC      = F
+!     INPUT%FORCING%ICE_PARAM1    = F
+!     INPUT%FORCING%ICE_PARAM2    = F
+!     INPUT%FORCING%ICE_PARAM3    = F
+!     INPUT%FORCING%ICE_PARAM4    = F
+!     INPUT%FORCING%ICE_PARAM5    = F
+!     INPUT%FORCING%MUD_DENSITY   = F
+!     INPUT%FORCING%MUD_THICKNESS = F
+!     INPUT%FORCING%MUD_VISCOSITY = F
+!     INPUT%ASSIM%MEAN            = F
+!     INPUT%ASSIM%SPEC1D          = F
+!     INPUT%ASSIM%SPEC2D          = F
 ! -------------------------------------------------------------------- !
 &INPUT_NML
+  INPUT%FORCING%WINDS         = C
 /
 
 ! -------------------------------------------------------------------- !
@@ -101,6 +102,8 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
+  TYPE%COUPLING%SENT       = 'ACHA'
+  TYPE%COUPLING%RECEIVED   = 'WND'
 /
 
 ! -------------------------------------------------------------------- !
@@ -138,6 +141,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
   DATE%FIELD          = '20110902 000000' '180' '20110902 010000'
+  DATE%COUPLING       = '20110902 000000' '180' '20110902 010000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -186,15 +190,9 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_WND                =  1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'WND'
-  HOMOG_INPUT(1)%DATE        = ' '
-  HOMOG_INPUT(1)%VALUE1      = 
-  HOMOG_INPUT(1)%VALUE2      = 
-  HOMOG_INPUT(1)%VALUE3      = 
 /
 
 

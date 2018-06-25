@@ -51,20 +51,20 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 # ./bin/run_test -m grdset_d                -s PR3_UQ \                     #
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # (above test is designed to fail : SCRIP is needed for irregular grids)    #
 # ./bin/run_test -m grdset_d                -s PR3_UQ_SCRIP \               #
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP \           #
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI_SCRIPNC \         #            
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPIBDI_SCRIPNC \      #          
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d                -s PR3_UQ_SCRIP_T38 \           #          
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP_T38 \       #         
-#      ./../ mww3_test_06                                                   #
+#      ../model mww3_test_06                                                #
 #                                                                           #
 #                                              Erick Rogers,   Nov 2013     #
 #                                                                           #

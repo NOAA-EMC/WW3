@@ -4,9 +4,9 @@ SUBROUTINE read_dimgrid (nlon,nlat,data_filename,w_unit)
   USE netcdf
   IMPLICIT NONE
   !
-  INTEGER                  :: i,j,k,w_unit
+  INTEGER                  :: i,w_unit
   !
-  INTEGER                  :: il_file_id,il_grid_id,il_lon_id, &
+  INTEGER                  :: il_file_id,il_lon_id, &
      il_lat_id,il_indice_id, &
      lon_dims,lat_dims,imask_dims
   !

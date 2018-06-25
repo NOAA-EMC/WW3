@@ -18,7 +18,7 @@
 #   * Presently not added in regresssion text matrix.                       #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test        ../ ww3_tp1.7                                      #
+#  ./bin/run_test        ../model ww3_tp1.7                                 #
 #                                                                           #
 #                                             Fabrice Ardhuin, Sep 2013     #
 #                                                   Last Mod : Dec 2013     #

@@ -248,56 +248,90 @@ EOF
 # 4. Model directories                                                        #
 # --------------------------------------------------------------------------- #
 
+  if [ -d $main_dir ]
+  then
+    if [ -e $main_dir/nuopc.mk ]
+    then
+      rm -f $main_dir/nuopc.mk
+    fi
+    # clean up bin
+    if [ -d $main_dir/bin ]
+    then
+      echo "   Clean up $main_dir/bin"
+      cd $main_dir/bin
+      rm -f switch.old switch.HOLD switch.hold
+      for type in DIST SHRD OMP HYB MPI SEQ
+      do
+        rm -f switch.old_${type} switch.${type}
+      done
+    fi
+    # clean up ftn & aux
+    for folder in ftn aux
+    do
+      if [ -d $main_dir/$folder ]
+      then
+        echo "   Clean up $main_dir/$folder"
+        rm -f $main_dir/$folder/makefile
+        for type in DIST SHRD OMP HYB MPI SEQ
+        do
+          rm -f $main_dir/$folder/makefile_${type}
+        done
+      fi
+    done
+    # clean up work & mod & obj & tmp
+    for folder in work mod obj tmp
+    do
+      if [ -d $main_dir/$folder ] || [ -L $main_dir/$folder ]
+      then
+        echo "   Remove $main_dir/$folder"
+        rm -fr $main_dir/$folder
+      fi
+      for type in DIST SHRD OMP HYB MPI SEQ
+      do
+        if [ -d $main_dir/${folder}_${type} ]
+        then
+          echo "   Remove $main_dir/${folder}_${type}"
+          rm -fr $main_dir/${folder}_${type}
+        fi
+      done
+   done
+
+  else
+    echo "   Directory does not exist: $main_dir"
+  fi
+
+# --------------------------------------------------------------------------- #
+# 5. Setup settings                                                           #
+# --------------------------------------------------------------------------- #
+
   if [ $cleanup_model ]
   then
     if [ -d $main_dir ]
     then
-      if [ -e $main_dir/nuopc.mk ]
-      then
-        rm -f $main_dir/nuopc.mk
-      fi
-      # clean up bin
       if [ -d $main_dir/bin ]
       then
         echo "   Clean up $main_dir/bin"
         cd $main_dir/bin
-        rm -f w3adc w3list w3prnt w3split comp link 
-        rm -f switch switch.old switch.HOLD switch.hold
-        for type in DIST SHRD OMP HYB MPI SEQ
-        do
-          rm -f switch.old_${type} switch.${type}
-        done
+        rm -f w3adc w3list w3prnt w3split
+        rm -f comp link switch
       fi
-      # clean up ftn & aux
-      for folder in ftn aux
+    # clean up exe
+    for folder in exe
+    do
+      if [ -d $main_dir/$folder ] || [ -L $main_dir/$folder ]
+      then
+        echo "   Remove $main_dir/$folder"
+        rm -fr $main_dir/$folder
+      fi
+      for type in DIST SHRD OMP HYB MPI SEQ
       do
-        if [ -d $main_dir/$folder ]
+        if [ -d $main_dir/${folder}_${type} ]
         then
-          echo "   Clean up $main_dir/$folder"
-          rm -f $main_dir/$folder/makefile
-          for type in DIST SHRD OMP HYB MPI SEQ
-          do
-            rm -f $main_dir/$folder/makefile_${type}
-          done
+          echo "   Remove $main_dir/${folder}_${type}"
+          rm -fr $main_dir/${folder}_${type}
         fi
       done
-      # clean up work & mod & obj & tmp & exe
-      for folder in work mod obj tmp exe
-      do
-        if [ -d $main_dir/$folder ] || [ -L $main_dir/$folder ]
-        then
-          echo "   Remove $main_dir/$folder"
-          rm -fr $main_dir/$folder
-        fi
-        for type in DIST SHRD OMP HYB MPI SEQ
-        do
-          if [ -d $main_dir/${folder}_${type} ]
-          then
-            echo "   Remove $main_dir/${folder}_${type}"
-            rm -fr $main_dir/${folder}_${type}
-          fi
-        done
-     done
+   done
 
     else
       echo "   Directory does not exist: $main_dir"
@@ -305,7 +339,7 @@ EOF
   fi
 
 # --------------------------------------------------------------------------- #
-# 5. Regtests directories                                                      #
+# 6. Regtests directories                                                      #
 # --------------------------------------------------------------------------- #
 
   if [ $cleanup_regtests ]

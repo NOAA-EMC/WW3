@@ -1358,9 +1358,9 @@
       IERR=0
    END IF
 
-   CALL DATE_AND_TIME(values=TIMEZONE)          ! Get the timezone
-   TZ=TIMEZONE(4)
-   !TZ=0                                        ! Force to UTC timezone
+   !CALL DATE_AND_TIME(values=TIMEZONE)         ! Get the timezone
+   !TZ=TIMEZONE(4)
+   TZ=0                                         ! Force to UTC timezone
 
    IJUL=IDINT(JULIAN)                           ! Integral Julian Day
    SECOND=SNGL((JULIAN-DBLE(IJUL))*SECDAY)      ! Seconds from beginning of Jul. Day

@@ -82,29 +82,29 @@
 #     + switch_MPI                                                          #
 #                                                                           #
 # - Examples:                                                               #
-#     bin/run_test -c gnu        -i input_IC3_A0.5k ../ ww3_tic1.2          #
-#     bin/run_test -c gnu        -i input_IC3_A1.0k ../ ww3_tic1.2          #
-#     bin/run_test -c gnu        -i input_IC3_A2.5k ../ ww3_tic1.2          #
-#     bin/run_test -c gnu        -i input_IC3_B0.5k ../ ww3_tic1.2          #
-#     bin/run_test -c gnu        -i input_IC3_B1.0k ../ ww3_tic1.2          #
-#     bin/run_test -c gnu        -i input_IC3_B2.5k ../ ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_A0.5k ../model ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_A1.0k ../model ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_A2.5k ../model ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_B0.5k ../model ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_B1.0k ../model ww3_tic1.2          #
+#     bin/run_test -c gnu   -i input_IC3_B2.5k ../model ww3_tic1.2          #
 #                                                                           #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A0.5k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A1.0k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A2.5k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B0.5k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B1.0k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B2.5k \       #
-#                                                       ../ ww3_tic1.2      #
+#                                                  ../model ww3_tic1.2      #
 #                                                                           #
-#     bin/run_test -c Portland   -i input_IC3_CHENG ../ ww3_tic1.2          #
-#     bin/run_test -c Portland   -i input_IC3_V1_h  ../ ww3_tic1.2          #
-#     bin/run_test -c Portland   -i input_IC3_V1_G  ../ ww3_tic1.2          #
+#     bin/run_test -c Portland   -i input_IC3_CHENG ../model ww3_tic1.2     #
+#     bin/run_test -c Portland   -i input_IC3_V1_h  ../model ww3_tic1.2     #
+#     bin/run_test -c Portland   -i input_IC3_V1_G  ../model ww3_tic1.2     #
 #                                                                           #            
 #                                               Stefan Zieger, Nov 2013     #
 #                                            Clarence Collins, Sep 2016     #

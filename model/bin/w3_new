@@ -338,11 +338,34 @@
                                    touch wminitmd.ftn
                                    touch wmwavemd.ftn
                                    touch wmfinlmd.ftn ;;
-      'coupl' ) cd $main_dir/ftn ; touch w3oacpmd.ftn ;;
+      'cou' )   cd $main_dir/ftn ; touch w3iogomd.ftn
+                                   touch w3nmlmultimd.ftn 
+                                   touch w3nmlshelmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch wminitmd.ftn
+                                   touch ww3_shel.ftn ;;
+      'oasis' ) cd $main_dir/ftn ; touch w3oacpmd.ftn
+                                   touch w3fldsmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch w3wdatmd.ftn
+                                   touch ww3_shel.ftn ;;
       'agcm'  ) cd $main_dir/ftn ; touch w3agcmmd.ftn
-                                   touch w3wavemd.ftn ;;
+                                   touch w3fldsmd.ftn
+                                   touch w3iogomd.ftn
+                                   touch w3oacpmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch ww3_shel.ftn ;;
       'ogcm'  ) cd $main_dir/ftn ; touch w3ogcmmd.ftn
+                                   touch w3fldsmd.ftn
+                                   touch w3iogomd.ftn
+                                   touch w3oacpmd.ftn
+                                   touch w3updtmd.ftn
                                    touch w3wavemd.ftn ;;
+      'igcm'  ) cd $main_dir/ftn ; touch w3igcmmd.ftn
+                                   touch w3fldsmd.ftn
+                                   touch w3oacpmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch ww3_shel.ftn ;;
       'pdlib' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3initmd.ftn
                                    touch w3iorsmd.ftn

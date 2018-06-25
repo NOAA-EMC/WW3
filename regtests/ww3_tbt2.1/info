@@ -63,10 +63,10 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI -w BT8_MPI ../ ww3_tbt2.1       #
-#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI -w BT9_MPI ../ ww3_tbt2.1       #
-#  ./bin/run_test                -s BT8     -w BT8_SER ../ ww3_tbt2.1       #
-#  ./bin/run_test                -s BT9     -w BT9_SER ../ ww3_tbt2.1       #
+#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI -w BT8_MPI ../model ww3_tbt2.1  #
+#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI -w BT9_MPI ../model ww3_tbt2.1  #
+#  ./bin/run_test                -s BT8     -w BT8_SER ../model ww3_tbt2.1  #
+#  ./bin/run_test                -s BT9     -w BT9_SER ../model ww3_tbt2.1  #
 #  On a workstation of 2010 vintage, the run-times for the above 4 test     #
 #     cases are as follows: 18 s, 11 s, 38 s, 23 s                          #
 #                                                                           #

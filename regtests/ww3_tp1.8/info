@@ -31,8 +31,8 @@
 #     Results are probably as good with time steps: 2 0.5 0.5 0.2           #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test                             ../ ww3_tp1.8                 #
-#  ./bin/run_test -i input_BJ -w work_BJ      ../ ww3_tp1.8                 #
+#  ./bin/run_test                             ../model ww3_tp1.8            #
+#  ./bin/run_test -i input_BJ -w work_BJ      ../model ww3_tp1.8            #
 #                                                                           #
 #                           Matthias Delpey, Fabrice Ardhuin,  Nov 2013     #
 #                                                   Last Mod : Nov 2013     #

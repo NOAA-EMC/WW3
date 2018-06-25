@@ -397,23 +397,25 @@
 ! 2.  Calculate advection velocities: group speed ---------------- *
 ! 
 !AR: needs to be rewritten for speed ... single node computation is costly ... 
-!          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-!            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
-!            DO J=1,3
-!              IP2=TRIGP(IE,J)
-!              ISEA2=MAPFS(IP2)
-!              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
-!              C(IP2,2) = CSIN * CG(IK,ISEA2)
+!MA: you are right but now it is only called if CFX and UNST for CFL profiling
+
+          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
+            DO J=1,3
+              IP2=TRIGP(IE,J)
+              ISEA2=MAPFS(IP2)
+              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
+              C(IP2,2) = CSIN * CG(IK,ISEA2)
 !/MGP              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
 !/MGP              C(IP2,2) = C(IP2,2) - CCURY*VGY
-!              IF ( FLCUR ) THEN   
-!                IF (IOBP(IP2) .EQ. 1) THEN                                  
-!                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
-!                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
-!                  END IF    
-!                END IF  ! end of ( FLCUR )
-!              END DO
-!            END DO
+              IF ( FLCUR ) THEN   
+                IF (IOBP(IP2) .EQ. 1) THEN                                  
+                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
+                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
+                  END IF    
+                END IF  ! end of ( FLCUR )
+              END DO
+            END DO
 !
 !3.     Calculate K-Values and contour based quantities ...
 !

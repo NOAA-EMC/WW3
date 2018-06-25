@@ -311,6 +311,11 @@
       progs=$par_progs
     fi
 
+    if [ "$MODES" == "SEQ" ]
+    then
+      progs="$seq_progs $par_progs"
+    fi
+
     echo ' '
     echo "[INFO] $MODE progs : $progs"
     echo ' '

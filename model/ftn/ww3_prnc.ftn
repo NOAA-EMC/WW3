@@ -417,65 +417,65 @@
          ! Read namelist
          CALL W3NMLPRNC (NDSI, TRIM(FNMPRE)//'ww3_prnc.nml', NML_FORCING, NML_FILE, IERR)
          ! Check field
-         IF      (NML_FORCING%FIELD%ICE_PARAM1 .EQV. .TRUE.) THEN
+         IF      (NML_FORCING%FIELD%ICE_PARAM1) THEN
            IDFLD = 'IC1'
            IFLD = -7
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM2 .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM2) THEN
            IDFLD = 'IC2'
            IFLD = -6
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM3 .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM3) THEN
            IDFLD = 'IC3'
            IFLD = -5
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM4 .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM4) THEN
            IDFLD = 'IC4'
            IFLD = -4
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM5 .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM5) THEN
            IDFLD = 'IC5'
            IFLD = -3
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_DENSITY .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_DENSITY) THEN
            IDFLD = 'MDN'
            IFLD = -2
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_THICKNESS .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_THICKNESS) THEN
            IDFLD = 'MTH'
            IFLD = -1
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_VISCOSITY .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_VISCOSITY) THEN
            IDFLD = 'MVS'
            IFLD = 0
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_CONC .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_CONC) THEN
            IDFLD = 'ICE'
            IFLD = 1
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_BERG .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_BERG) THEN
            IDFLD = 'ISI'
            IFLD = 1
            FLBERG = .TRUE.
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WATER_LEVELS .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%WATER_LEVELS) THEN
            IDFLD = 'LEV'
            IFLD = 2
-           NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WINDS .EQV. .TRUE.) THEN
+           NFIELDS = 1
+         ELSE IF (NML_FORCING%FIELD%WINDS) THEN
            IDFLD = 'WND'
            IFLD = 3
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WINDS_AST .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%WINDS_AST) THEN
            IDFLD = 'WNS'
            IFLD = 3
            FLSTAB = .TRUE.
            NFIELDS = 3
-         ELSE IF (NML_FORCING%FIELD%CURRENTS .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%CURRENTS) THEN
            IDFLD = 'CUR'
            IFLD = 4
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%DATA_ASSIM .EQV. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%DATA_ASSIM) THEN
            IDFLD = 'DAT'
            IFLD = 5
            ITYPE = 5
@@ -485,9 +485,9 @@
          END IF ! NML_FORCING
 
         ! Check grid asis/latlon
-        IF (NML_FORCING%GRID%ASIS .EQV. .TRUE.) THEN
+        IF (NML_FORCING%GRID%ASIS) THEN
           ITYPE = 1
-        ELSE IF (NML_FORCING%GRID%LATLON .EQV. .TRUE.) THEN
+        ELSE IF (NML_FORCING%GRID%LATLON) THEN
           ITYPE = 2
          ELSE
            GOTO 811
@@ -495,7 +495,8 @@
 
         ! Check tidal component
         TIDEFLAG = 0
-        IF (TRIM(NML_FORCING%TIDAL).NE.'unset') THEN
+        IF (TRIM(NML_FORCING%TIDAL).NE.'unset' .AND. &
+            TRIM(NML_FORCING%TIDAL).NE.'UNSET') THEN
           TIDEFLAG = 1
           ITYPE = 6
           LIST(:)=''
@@ -620,7 +621,7 @@
         CALL STRSPLIT(STRFIELDSNAME,FIELDSNAME)
         ! Counts the number of variables
         NFIELDS=0
-        DO WHILE (len_trim(FIELDSNAME(NFIELDS+1)).NE.0)
+        DO WHILE (LEN_TRIM(FIELDSNAME(NFIELDS+1)).NE.0)
           NFIELDS=NFIELDS+1
         END DO
         ! time flag and start date

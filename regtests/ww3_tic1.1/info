@@ -100,48 +100,54 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 #                                                                           #
-# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1_156x3 ../ ww3_tic1.1   #
-# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1_156x3 ../ ww3_tic1.1   #
-# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1_156x3 ../ ww3_tic1.1   #
-# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1_156x3 ../ ww3_tic1.1   #
-# ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../ ww3_tic1.1         #
-# ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../ ww3_tic1.1         #
-# ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1_156x3                  #
+#                ../model ww3_tic1.1                                        #
+# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1_156x3                  #
+#                ../model ww3_tic1.1                                        #
+# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1_156x3                  #
+#                ../model ww3_tic1.1                                        #
+# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1_156x3                  #
+#                ../model ww3_tic1.1                                        #
+# ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../model ww3_tic1.1    #
 #                                                                           #
-# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
-#      -i input_IC2_ifr -c gnu_debug  ../ ww3_tic1.1                        #
-# bin/run_test -g 1000m_nondisp -c gnu_debug \                              #
+# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr             #
+#      -i input_IC2_ifr -c gnu_debug  ../model ww3_tic1.1                   #
+# bin/run_test -g 1000m_nondisp -c gnu_debug                                #
 #      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../model ww3_tic1.1 #
-# ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../ ww3_tic1.1         #
-# ./bin/run_test -w work_IC2_nondisp_SMPL -i input_IC2_nondisp ../ \        #
-#       ww3_tic1.1                                                          #
-# ./bin/run_test -g 1000m -w work_IC2_nrl_1000m -i input_IC2_nrl ../ \      #
-#       ww3_tic1.1                                                          #
-# ./bin/run_test -g 1000m_nondisp -w work_IC2_nrl_1000m_nondisp  \          #
-#       -i input_IC2_nrl ../ ww3_tic1.1                                     #
+# ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../model ww3_tic1.1    #
+# ./bin/run_test -w work_IC2_nondisp_SMPL -i input_IC2_nondisp              #
+#       ../model ww3_tic1.1                                                 #
+# ./bin/run_test -g 1000m -w work_IC2_nrl_1000m -i input_IC2_nrl            #
+#       ../model ww3_tic1.1                                                 #
+# ./bin/run_test -g 1000m_nondisp -w work_IC2_nrl_1000m_nondisp             #
+#       -i input_IC2_nrl ../model ww3_tic1.1                                #
 #                                                                           #
-# ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../ ww3_tic1.1         #
-# ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../ ww3_tic1.1         #
-# ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../ ww3_tic1.1         #
+# ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../model ww3_tic1.1    #
+# ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../model ww3_tic1.1    #
 #                                                                           #
-# ./bin/run_test -w work_IC3_nondisp -i input_IC3_nondisp ../ ww3_tic1.1    #
+# ./bin/run_test -w work_IC3_nondisp -i input_IC3_nondisp                   #
+#                ../model ww3_tic1.1                                        #
 #                                                                           #
-# ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/M3 ../ ww3_tic1.1     #
+# ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/M3                    #
+#                ../model ww3_tic1.1                                        #
 #                                                                           #
-# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_CHENG \                     #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_CHENG                       #
 #        -w work_IC3_CGICE_CHENG -i input_IC3NL ../model ww3_tic1.1         #
-# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_CHENG \                      #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_CHENG                        #
 #        -w work_IC3_CGOW_CHENG -i input_IC3NL ../model ww3_tic1.1          #
-# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_NOCHENG \                    #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_NOCHENG                      #
 #        -w work_IC3_CGOW_NOCHENG -i input_IC3NL ../model ww3_tic1.1        #
-# ./bin/run_test -g CGICE_NOCHENG -w work_IC3_CGICE_NOCHENG_TT \            #
+# ./bin/run_test -g CGICE_NOCHENG -w work_IC3_CGICE_NOCHENG_TT              #
 #        -i input_IC3 ../model ww3_tic1.1                                   #
-# ./bin/run_test -g CGOW_NOCHENG -w work_IC3_CGOW_NOCHENG_TT \              #
+# ./bin/run_test -g CGOW_NOCHENG -w work_IC3_CGOW_NOCHENG_TT                #
 #        -i input_IC3 ../model ww3_tic1.1                                   #
 #                                                                           #
 # The following is removed, since the code no long supports this            #
 #    combination (CGICE=TRUE + CHENG=FALSE + namelist input) :              #
-# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG \                   #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG                     #
 #        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #

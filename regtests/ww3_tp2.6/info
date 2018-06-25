@@ -16,8 +16,8 @@
 # - No other optional switches should be used.                              #
 #                                                                           #
 #  Sample run_test commands :                                               #
-#  ./bin/run_test                             -s ST0   ../ ww3_tp2.6        #
-#  ./bin/run_test                             -s ST4   ../ ww3_tp2.6        #
+#  ./bin/run_test                        -s ST0   ../model ww3_tp2.6        #
+#  ./bin/run_test                        -s ST4   ../model ww3_tp2.6        #
 #                                                                           #
 #                             Aron Roland and Fabrice Ardhuin, Jan 2011     #
 #                                                   Last Mod : Dec 2013     #

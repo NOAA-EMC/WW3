@@ -33,7 +33,7 @@
 !
 ! * The FORCING flag can be  : F for "no forcing"
 !                              T for "external forcing file"
-!                              H for "homogenous forcing input"
+!                              H for "homogeneous forcing input"
 !                              C for "coupled forcing field"
 !
 ! * homogeneous forcing is not available for ICE_CONC

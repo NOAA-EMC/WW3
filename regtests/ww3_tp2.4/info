@@ -39,11 +39,11 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                             -s PR1   ../ ww3_tp2.4        #
-#  ./bin/run_test -g curv                     -s PR1   ../ ww3_tp2.4        #
-#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../ ww3_tp2.4        #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.4   #
+#  ./bin/run_test -g curv                     -s PR1   ../model ww3_tp2.4   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.4   #
 #  ./bin/run_test -g curv -n 3 -p mpirun      -s PR3_UQ_MPI \               #          
-#       -w work_curv   ../ ww3_tp2.4                                        #
+#       -w work_curv   ../model ww3_tp2.4                                   #
 #                                                                           #
 #                                             W. Erick Rogers, Nov 2009     #
 #                                             Naval Research Laboratory     #

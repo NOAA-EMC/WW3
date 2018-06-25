@@ -1,27 +1,42 @@
-
+#############################################################################
+#                                                                           #
 # mww3_test_08 : regtest for ww3_multi with wind and ice input              #
 #                                                                           #
 # For recommended switches, please refer to switch files in the input       #
-# directories 
+# directories                                                               #
+#                                                                           #
+# Available input directories are as follows:                               #
+# Directory                Grid Set      Example below                      #
+#  /input/                  grdset_a      (E1), (E2)                        #
+#  /i_highres_multi/        grdset_a      (E6)                              #
+#  /i_highres_shel/         N/A           (E4)                              #
+#  /i_highres_shel_IC1/     N/A                                             #
+#  /i_lowres_multi/         grdset_a      (E5)                              #
+#  /i_lowres_shel/          N/A           (E3)                              #
+#  /i_lowres_shel_IC1/      N/A                                             #
+#                                                                           #
+# In case of /input/ , there are alternative switches:                      #
+#  S1) switch                                                               #
+#  S2) switch_ST4_PR3_UQ_MPI    (example E2 below)                          #
+#  S3) switch_ST4_PR3_UQ_IS2_MPI                                            #
+#                                                                           #
+#  E1) ./bin/run_test                                       -p mpirun -n 3  #
+#                     -m grdset_a ../model mww3_test_08                     #
+#  E2) ./bin/run_test -s ST4_PR3_UQ_MPI                     -p mpirun -n 3  #
+#                     -m grdset_a ../model mww3_test_08                     #
+#  E3) ./bin/run_test -w w_lowres_shel  -i i_lowres_shel    -p mpirun -n 3  #
+#                     ../model mww3_test_08                                 #
+#  E4) ./bin/run_test -w w_highres_shel -i i_highres_shel   -p mpirun -n 3  #
+#                     ../model mww3_test_08                                 #
+#  E5) ./bin/run_test -i i_lowres_multi  -w w_lowres_multi  -p mpirun -n 3  #
+#                     -m grdset_a ../model mww3_test_08                     #
+#  E6) ./bin/run_test -i i_highres_multi -w w_highres_multi -p mpirun -n 3  #
+#                     -m grdset_a ../model mww3_test_08                     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
 
-Available input directories are as follows: 
-Directory                Grid Set      Example below
-/input/                  grdset_a      (E1), (E2)
-/i_highres_multi/        grdset_a      (E6)
-/i_highres_shel/         N/A           (E4)
-/i_highres_shel_IC1/     N/A
-/i_lowres_multi/         grdset_a      (E5)
-/i_lowres_shel/          N/A           (E3)
-/i_lowres_shel_IC1/      N/A
-
-In case of /input/ , there are alternative switches: 
-S1) switch
-S2) switch_ST4_PR3_UQ_MPI    (example E2 below)
-S3) switch_ST4_PR3_UQ_IS2_MPI
-
-E1) ./bin/run_test                                       -p mpirun -n 3 -m grdset_a ../model mww3_test_08
-E2) ./bin/run_test -s ST4_PR3_UQ_MPI                     -p mpirun -n 3 -m grdset_a ../model mww3_test_08
-E3) ./bin/run_test -w w_lowres_shel  -i i_lowres_shel    -p mpirun -n 3             ../model mww3_test_08
-E4) ./bin/run_test -w w_highres_shel -i i_highres_shel   -p mpirun -n 3             ../model mww3_test_08
-E5) ./bin/run_test -i i_lowres_multi  -w w_lowres_multi  -p mpirun -n 3 -m grdset_a ../model mww3_test_08
-E6) ./bin/run_test -i i_highres_multi -w w_highres_multi -p mpirun -n 3 -m grdset_a ../model mww3_test_08

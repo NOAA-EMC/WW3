@@ -38,6 +38,7 @@ then
 fi
 cp -r data_regtests/ww3_tp2.14/input/oasis3-mct/doc/* regtests/ww3_tp2.14/input/oasis3-mct/doc/ 
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc.OAS*CM regtests/ww3_tp2.14/input/toy/
+cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 

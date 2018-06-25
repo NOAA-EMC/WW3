@@ -148,7 +148,7 @@ do
   -N) nml_input=1 ;;
   -o) shift; outopt="$1" ;;
   -O) pomp=1 ;;
-  -p) shift; runcmd="$1" ; pmpi=1 ;;
+  -p) shift; runcmd="$1" ; runcmd1=$runcmd ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
@@ -738,6 +738,8 @@ then
 if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
 then
   ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  files_p="spec.list"
+  files_p="$files_p $(cat ${ifile} | grep -i 'bound%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 )"
 else
   ifile="`ls $path_i/$prog.inp 2>/dev/null`"
 fi
@@ -782,6 +784,14 @@ then
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
+      for file_p in ${files_p}
+      do
+        if [ -e ${path_i}/${file_p} ]
+        then
+          \rm -f ${file_p}
+          \ln -s ${path_i}/${file_p} .
+        fi
+      done
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
       ofile="$path_w/`basename $ifile .nml`${gu}.out"
@@ -1190,7 +1200,8 @@ then
 
   if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
   then
-    if $runcmd $path_e/$prgb : -np $nproc $path_w/toy_model | tee $ofile
+    halfnproc=$(($nproc / 2))
+    if $runcmd1 -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
     then
       \rm -f track_i.ww3
       \rm -f $prog.inp

@@ -27,9 +27,9 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -s ST1  -w work_ST1 ../ ww3_ts1                           #
-#  ./bin/run_test -s ST2  -w work_ST2 ../ ww3_ts1                           #
-#  ./bin/run_test -c gnu -o netcdf ../ ww3_ts1                              #
+#  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                      #
+#  ./bin/run_test -s ST2  -w work_ST2 ../model ww3_ts1                      #
+#  ./bin/run_test -c gnu -o netcdf ../model ww3_ts1                         #
 #                                                                           #
 #  ./bin/run_test -i input_icesct/IC0 -o both ../model ww3_ts1              #
 #  ./bin/run_test -i input_icesct/IC1 -w work_IC1 ../model ww3_ts1          #

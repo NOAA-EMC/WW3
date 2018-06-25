@@ -1538,7 +1538,6 @@
 !
 ! Estimation of the local maximum CFL for XY propagation
 !
-!/T           FLOGRD(9,3)=.TRUE.
 !/T           WRITE(NDSE,*) 'Computing CFLs .... ',NSEAL
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'FLOGRD(9,3) = ', FLOGRD(9,3)
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'UGDTUPDATE=', UGDTUPDATE
@@ -1554,10 +1553,12 @@
 !
                       DO JSEA=1, NSEAL
                         CALL INIT_GET_ISEA(ISEA, JSEA)
-!/T                     IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
 !/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
-!!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
-!!/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+!/PR3                        IF ( FLOGRD(9,3) ) THEN
+!/T                          IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
+!/PR3                          CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
+!/PR3                                         MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+!/PR3                        END IF
 !/PR3                      ELSE 
 !/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
 !/PR3                                       CFLXYMAX(JSEA), VGX, VGY )
@@ -1591,24 +1592,26 @@
 
 !
 !/T       IF (GTYPE .EQ. UNGTYPE) THEN 
-!/T         DTCFL1(:)=1.
-!/T         DO ISEA=1,NSEA
-!/T           INDSORT(ISEA)=FLOAT(ISEA)
-!/T           DTCFL1(ISEA)=DTG/CFLXYMAX(ISEA)
+!/T         IF ( FLOGRD(9,3) ) THEN
+!/T           DTCFL1(:)=1.
+!/T           DO JSEA=1,NSEAL
+!/T             INDSORT(JSEA)=FLOAT(JSEA)
+!/T             DTCFL1(JSEA)=DTG/CFLXYMAX(JSEA)
 !/T           END DO
-!/T         CALL SSORT1 (DTCFL1, INDSORT, NSEAL, 2)
-!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,*) 'Nodes requesting smallest timesteps:'
-!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10I10)')   'Nodes      ',NINT(INDSORT(1:10))
-!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10F10.2)') 'time steps ',DTCFL1(1:10)
-!/T         DO JSEA = 1, MIN(NSEAL,200) 
-!/T           ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
-!/T           IX     = MAPSF(ISEA,1)
-!/T           IF (JSEA.EQ.1) &
-!/T             WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-!/T           WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
+!/T           CALL SSORT1 (DTCFL1, INDSORT, NSEAL, 2)
+!/T           IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,*) 'Nodes requesting smallest timesteps:'
+!/T           IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10I10)')   'Nodes      ',NINT(INDSORT(1:10))
+!/T           IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10F10.2)') 'time steps ',DTCFL1(1:10)
+!/T           DO JSEA = 1, MIN(NSEAL,200) 
+!/T             ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
+!/T             IX     = MAPSF(ISEA,1)
+!/T             IF (JSEA.EQ.1) &
+!/T               WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
+!/T             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
 !/T           END DO ! JSEA
-!/T         CLOSE(995)
+!/T           CLOSE(995)
 !/T         END IF
+!/T       END IF
 !
 ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
 ! 3.6.1 Preparations
@@ -1946,7 +1949,7 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
 
-                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
+!/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
 
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN

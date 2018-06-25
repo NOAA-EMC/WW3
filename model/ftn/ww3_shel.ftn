@@ -690,11 +690,8 @@
           END IF
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
         END DO
-
-!/COU          IF ( (FLAGSC(1).EQV..TRUE. .AND. INFLAGS1(2).EQV..TRUE. .AND. FLAGSC(2).EQV..FALSE.) .OR. \
-!/COU               (FLAGSC(2).EQV..TRUE. .AND. INFLAGS1(1).EQV..TRUE. .AND. FLAGSC(1).EQV..FALSE.) ) THEN
-!/COU            GOTO 2102
-!/COU          END IF
+!/COU          IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
+!/COU          IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
 
         INFLAGS1(8) = .FALSE.
         FLH(8)   = .FALSE.
@@ -1099,11 +1096,8 @@
           END IF
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
         END DO
-
-!/COU          IF ( (FLAGSC(1).EQV..TRUE. .AND. INFLAGS1(2).EQV..TRUE. .AND. FLAGSC(2).EQV..FALSE.) .OR. \
-!/COU               (FLAGSC(2).EQV..TRUE. .AND. INFLAGS1(1).EQV..TRUE. .AND. FLAGSC(1).EQV..FALSE.) ) THEN
-!/COU            GOTO 2102
-!/COU          END IF
+!/COU          IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
+!/COU          IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2b'
 !/MEMCHECK       call getMallocInfo(mallinfos)

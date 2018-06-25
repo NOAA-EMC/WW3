@@ -1343,8 +1343,8 @@
 !/T 9000 FORMAT (' TEST W3FLDG : INXOUT     : ',A/                    &
 !/T              '               IDFLD      : ',A/                    &
 !/T              '               NDS(T/E)   :',3I4/                   &
-!/T              '               MX, MY     :',2I4/                   &
-!/T              '               NX, NY     :',2I4/                   &
+!/T              '               MX, MY     :',2I8/                   &
+!/T              '               NX, NY     :',2I8/                   &
 !/T              '               TF0        :',I9.8,I7.6/             &
 !/T              '               TFN        :',I9.8,I7.6/             &
 !/T              '               IERR       :',I4)

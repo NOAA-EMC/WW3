@@ -13,7 +13,6 @@
 !     BOUND%FILE                 = 'spec.list'        ! input _spec.nc listing file
 ! -------------------------------------------------------------------- !
 &BOUND_NML
-  BOUND%FILE        = '../input/spec.list
 /
 
 

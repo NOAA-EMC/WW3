@@ -44,9 +44,9 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                             -s PR1   ../ ww3_tp2.3        #
-#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../ ww3_tp2.3        #
-#  ./bin/run_test -o netcdf            -s PR3_UQ_NC4   ../ ww3_tp2.3        #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.3   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.3   #
+#  ./bin/run_test -o netcdf            -s PR3_UQ_NC4   ../model ww3_tp2.3   #
 #   (Note: Make sure that appropariate env variables are set for using      #
 #   netcdf procesessing. See w3_make in $WW3_DIR/bin for details )          #
 #                                                                           #

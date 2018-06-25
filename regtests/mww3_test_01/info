@@ -39,7 +39,7 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test  -n 3 -p mpirun -s PR3_UQ_MPI ../ mww3_test_01            #
+#  ./bin/run_test  -n 3 -p mpirun -s PR3_UQ_MPI ../model mww3_test_01       #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Aug 2013     #

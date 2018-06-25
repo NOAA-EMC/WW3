@@ -62,10 +62,10 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI ../ ww3_tbt1.1                  #
-#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI ../ ww3_tbt1.1                  #
-#  ./bin/run_test                -s BT8     ../ ww3_tbt1.1                  #
-#  ./bin/run_test                -s BT9     ../ ww3_tbt1.1                  #
+#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI ../model ww3_tbt1.1             #
+#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI ../model ww3_tbt1.1             #
+#  ./bin/run_test                -s BT8     ../model ww3_tbt1.1             #
+#  ./bin/run_test                -s BT9     ../model ww3_tbt1.1             #
 #                                                                           #
 #                                              Mark Orzech, Nov 2012        #
 #                                              Erick Rogers, Nov 2013       #

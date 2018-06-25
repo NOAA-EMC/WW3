@@ -10,18 +10,11 @@
   USE netcdf
   IMPLICIT NONE
   !
-  INTEGER                  :: i,j,k,w_unit
+  INTEGER                  :: w_unit
   !
-  INTEGER                  :: il_file_id,il_grid_id,il_lon_id, &
-                              il_lat_id,il_clo_id,il_cla_id,il_srf_id,il_indice_id, &
-                              lon_dims,lat_dims,clo_dims,cla_dims,&
-                              imask_dims
+  INTEGER                  :: il_file_id,il_lon_id, &
+                              il_lat_id,il_clo_id,il_cla_id,il_srf_id,il_indice_id
   !
-  INTEGER, DIMENSION(NF90_MAX_VAR_DIMS) :: lon_dims_ids,lat_dims_ids,clo_dims_ids,&
-                                           cla_dims_ids,imask_dims_ids,lon_dims_len,&
-                                           lat_dims_len,clo_dims_len,cla_dims_len,&
-                                           imask_dims_len  
-  !               
   INTEGER, INTENT(in)     :: nlon,nlat,corners_ij_lus
   !
   CHARACTER(len=30)        :: data_filename

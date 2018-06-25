@@ -2140,16 +2140,16 @@
 !/T        IF ( HS(JSEA) .EQ. UNDEF ) THEN
 !/T            WRITE (NDST,9051) ISEA, IX, IY
 !/T          ELSE IF ( WLM(JSEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA)
+!/T            WRITE (NDST,9052) ISEA, IX, IY, HS(JSEA)
 !/T          ELSE IF ( FP0(JSEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T            WRITE (NDST,9053) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
 !/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA)
 !/T          ELSE IF ( FP1(JSEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T            WRITE (NDST,9054) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
 !/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
 !/T                   THP0(JSEA)
 !/T          ELSE
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T            WRITE (NDST,9055) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
 !/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
 !/T                   THP0(JSEA), FP1(JSEA), THP1(JSEA)
 !/T          END IF
@@ -2234,7 +2234,12 @@
 !
 !/T 9050 FORMAT (' TEST W3OUTG : ISEA, IX, IY, HS, L, Tm, THm, THs',     &
 !/T              ', FP0, THP0, FP1, THP1')
-!/T 9051 FORMAT (2X,I8,2I4,F6.2,F7.1,F6.2,2F6.1,2(F6.3,F6.0))
+!/T 9051 FORMAT (2X,I8,2I8)
+!/T 9052 FORMAT (2X,I8,2I8,F6.2)
+!/T 9053 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1)
+!/T 9054 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1,F6.3,F6.0)
+!/T 9055 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1,2(F6.3,F6.0))
+
 !/
 !/ End of W3OUTG ----------------------------------------------------- /
 !/

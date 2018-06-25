@@ -114,13 +114,13 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 #  ./bin/run_test -m grdset_a -n 3 -p mpirun -s PR3_UQ_MPI -w work_a \      #
-#                                         ../ mww3_test_03                  #
+#                                         ../model mww3_test_03             #
 #  ./bin/run_test -m grdset_b -n 3 -p mpirun -s PR3_UQ_MPI -w work_b \      #
-#                                         ../ mww3_test_03                  #
+#                                         ../model mww3_test_03             #
 #  ./bin/run_test -m grdset_c -n 3 -p mpirun -s PR3_UQ_MPI -w work_c \      #
-#                                         ../ mww3_test_03                  #
+#                                         ../model mww3_test_03             #
 #  ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI -w work_d \      #
-#                                         ../ mww3_test_03                  #
+#                                         ../model mww3_test_03             #
 #  ./bin/run_test ../ -m grdset_c -c gnu_debug -o netcdf mww3_test_03       #
 #                                                                           #
 #                                              Hendrik Tolman, Feb 2006     #

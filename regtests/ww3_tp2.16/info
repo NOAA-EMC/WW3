@@ -27,8 +27,8 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                           ../ ww3_tp2.16                  #
-#  ./bin/run_test -n 3 -p mpirun -f         ../ ww3_tp2.16                  #
+#  ./bin/run_test                      ../model ww3_tp2.16                  #
+#  ./bin/run_test -n 3 -p mpirun -f    ../model ww3_tp2.16                  #
 #                                                                           #
 #                                                Jian-Guo Li,  Aug 2017     #
 #                                                     U. K.  Met Office     #

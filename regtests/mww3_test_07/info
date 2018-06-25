@@ -19,8 +19,8 @@
 # Remarks :                                                                 #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test -m grdset               ../ mww3_test_07                  #
-#  ./bin/run_test -m grdset  -o netcdf    ../ mww3_test_07                  #
+#  ./bin/run_test -m grdset               ../model mww3_test_07             #
+#  ./bin/run_test -m grdset  -o netcdf    ../model mww3_test_07             #
 #                                                                           #
 #                                             Fabrice Ardhuin, Dec 2011     #
 #                                                   Last Mod : Dec 2013     #

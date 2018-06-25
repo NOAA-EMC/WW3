@@ -105,7 +105,6 @@ EOF
 if [ "${mode}" != "WRITE" ];  then       echo "  BOUND%MODE        =  '${mode}'" >> $nmlfile; fi
 if [ "$interp" != "2" ];  then           echo "  BOUND%INTERP      =  $interp" >> $nmlfile; fi
 if [ "$verbose" != "1" ];  then          echo "  BOUND%VERBOSE     =  $verbose" >> $nmlfile; fi
-                                         echo "  BOUND%FILE        = '../input/spec.list" >> $nmlfile 
 
 cat >> $nmlfile << EOF
 /

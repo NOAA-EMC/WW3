@@ -38,9 +38,9 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -s PR1    -w work_PR1    ../ ww3_tp1.5                    #
-#  ./bin/run_test -s PR2_UQ -w work_PR2_UQ ../ ww3_tp1.5                    #
-#  ./bin/run_test -s PR3_UQ -w work_PR3_UQ ../ ww3_tp1.5                    #
+#  ./bin/run_test -s PR1    -w work_PR1    ../model ww3_tp1.5               #
+#  ./bin/run_test -s PR2_UQ -w work_PR2_UQ ../model ww3_tp1.5               #
+#  ./bin/run_test -s PR3_UQ -w work_PR3_UQ ../model ww3_tp1.5               #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Aug 2013     #

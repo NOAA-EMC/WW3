@@ -45,10 +45,11 @@
 #                                                                           #
 #  Example run_test command(s):                                             #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -w work_IC1 -i input_IC1 ../ ww3_tic2.1                   #
+#  ./bin/run_test -w work_IC1 -i input_IC1 ../model ww3_tic2.1              #
 #  ./bin/run_test -w work_IC2IS2 -c gnu_debug -i input_IC2IS2               #
 #                                     ../model ww3_tic2.1                   #
-#  ./bin/run_test -p mpirun -n 3 -w work_IC4 -i input_IC4 ../ ww3_tic2.1    #
+#  ./bin/run_test -p mpirun -n 3 -w work_IC4 -i input_IC4                   #
+#                                     ../model ww3_tic2.1                   #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #

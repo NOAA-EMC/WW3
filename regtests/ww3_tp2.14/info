@@ -68,13 +68,14 @@
 #       - remark : define a makefile with the same ww3 comp&link extension  #
 #                                                                           #
 #  Sample run_test commands :                                               #
-#   (Note: Altix and mpirun commands differ by local system)                #
-#  ./bin/run_test -C OASIS -c Altix -s OASACM -o netcdf -w work_OASACM      #
-#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
-#  ./bin/run_test -C OASIS -c Altix -s OASOCM -o netcdf -w work_OASOCM      # 
-#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
-#  ./bin/run_test -C OASIS -c Altix -s OASICM -o netcdf -w work_OASICM      #
-#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
+#(Note: Altix and mpirun commands differ by local system)                   #
+#                                                                           #
+#  ./bin/run_test -C OASIS -c Altix -s OASACM -f -o netcdf -w work_OASACM   #
+#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
+#  ./bin/run_test -C OASIS -c Altix -s OASOCM -f -o netcdf -w work_OASOCM   # 
+#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
+#  ./bin/run_test -C OASIS -c Altix -s OASICM -f -o netcdf -w work_OASICM   #
+#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
 #                                                                           #
 #                                             M. Accensi, Feb 2015          #
 #                                             Ifremer Institute             #

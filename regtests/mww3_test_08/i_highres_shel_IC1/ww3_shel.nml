@@ -31,7 +31,7 @@
 !
 ! * The FORCING flag can be  : F for "no forcing"
 !                              T for "external forcing file"
-!                              H for "homogenous forcing input"
+!                              H for "homogeneous forcing input"
 !                              C for "coupled forcing field"
 !
 ! * homogeneous forcing is not available for ICE_CONC
@@ -41,21 +41,21 @@
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     FORCING%WATER_LEVELS  = F
-!     FORCING%CURRENTS      = F
-!     FORCING%WINDS         = F
-!     FORCING%ICE_CONC      = F
-!     FORCING%ICE_PARAM1    = F
-!     FORCING%ICE_PARAM2    = F
-!     FORCING%ICE_PARAM3    = F
-!     FORCING%ICE_PARAM4    = F
-!     FORCING%ICE_PARAM5    = F
-!     FORCING%MUD_DENSITY   = F
-!     FORCING%MUD_THICKNESS = F
-!     FORCING%MUD_VISCOSITY = F
-!     ASSIM%MEAN            = F
-!     ASSIM%SPEC1D          = F
-!     ASSIM%SPEC2D          = F
+!     INPUT%FORCING%WATER_LEVELS  = F
+!     INPUT%FORCING%CURRENTS      = F
+!     INPUT%FORCING%WINDS         = F
+!     INPUT%FORCING%ICE_CONC      = F
+!     INPUT%FORCING%ICE_PARAM1    = F
+!     INPUT%FORCING%ICE_PARAM2    = F
+!     INPUT%FORCING%ICE_PARAM3    = F
+!     INPUT%FORCING%ICE_PARAM4    = F
+!     INPUT%FORCING%ICE_PARAM5    = F
+!     INPUT%FORCING%MUD_DENSITY   = F
+!     INPUT%FORCING%MUD_THICKNESS = F
+!     INPUT%FORCING%MUD_VISCOSITY = F
+!     INPUT%ASSIM%MEAN            = F
+!     INPUT%ASSIM%SPEC1D          = F
+!     INPUT%ASSIM%SPEC2D          = F
 ! -------------------------------------------------------------------- !
 &INPUT_NML
   INPUT%FORCING%ICE_PARAM1    = H

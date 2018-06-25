@@ -84,13 +84,13 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 # ./bin/run_test -g curv -m grdset_a -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP \   #          
-#       -w work_ap_PR3_MPI_SCRIP ../ mww3_test_02                           #
+#       -w work_ap_PR3_MPI_SCRIP ../model mww3_test_02                      #
 # ./bin/run_test -g curv -m grdset_b -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP \   #          
-#       -w work_bp_PR3_MPI_SCRIP ../ mww3_test_02                           #
+#       -w work_bp_PR3_MPI_SCRIP ../model mww3_test_02                      #
 # ./bin/run_test -g curv -m grdset_c -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP \   #          
-#       -w work_cp_PR3_MPI_SCRIP ../ mww3_test_02                           #
+#       -w work_cp_PR3_MPI_SCRIP ../model mww3_test_02                      #
 # ./bin/run_test -g curv -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP \   #          
-#       -w work_dp_PR3_MPI_SCRIP ../ mww3_test_02                           #
+#       -w work_dp_PR3_MPI_SCRIP ../model mww3_test_02                      #
 #                                                                           #
 #                                              Hendrik Tolman, Sep 2005     #
 #                                              Erick Rogers,   Jun 2011     #

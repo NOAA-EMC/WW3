@@ -606,7 +606,7 @@
               WRITE (NDSO,943) 'Bulletins, ASCII format'
               J      = LEN_TRIM(FNMPRE)
               DO IJ = 1,NOPTS
-                IF ( COUNT(FLREQ .EQV. .TRUE. )  .GT. 1 ) THEN
+                IF ( COUNT(FLREQ)  .GT. 1 ) THEN
 ! ... This version only allows single point output for bulletins
                   WRITE (NDSE,1012) OTYPE
                   CALL EXTCDE ( 45 )

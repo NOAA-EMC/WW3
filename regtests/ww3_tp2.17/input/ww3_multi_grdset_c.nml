@@ -61,6 +61,28 @@
 !
 ! * index I must match indexes from 1 to DOMAIN%NRGRD
 ! * MODEL(I)%NAME must be set for each active model grid I
+! * FORCING can be set as :
+!    - 'no'          : This input is not used.
+!    - 'native'      : This grid has its own input files, e.g. grid
+!                      grdX (mod_def.grdX) uses ice.grdX.
+!    - 'INPUT%NAME'  : Take input from the grid identified by
+!                      INPUT%NAME.
+! * RESOURCE%RANK_ID : Rank number of grid (internally sorted and reassigned).
+! * RESOURCE%GROUP_ID : Group number (internally reassigned so that different
+!                                     ranks result in different group numbers).
+! * RESOURCE%COMM_FRAC : Fraction of communicator (processes) used for this grid.
+! * RESOURCE%BOUND_FLAG : Flag identifying dumping of boundary data used by this
+!                         grid. If true, the file nest.MODID is generated.
+!
+! * Limitations relevant to irregular (curvilinear) grids:
+!   1) Equal rank is not supported when one or more is an irregular
+!       grid. Use non-equal rank instead. (see wmgridmd.ftn)
+!   2) Non-native input grids: feature is not supported when either
+!      an input grid or computational grids is irregular.
+!      (see wmupdtmd.ftn)
+!   3) Irregular grids with unified point output: This is supported
+!      but the feature has not been verified for accuracy.
+!      (see wmiopomd.ftn)
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
@@ -82,13 +104,12 @@
 !     MODEL(I)%ASSIM%SPEC2d          = 'no'
 !     MODEL(I)%RESOURCE%RANK_ID      = I
 !     MODEL(I)%RESOURCE%GROUP_ID     = 1
-!     MODEL(I)%RESOURCE%SIBLING_ID   = 0
 !     MODEL(I)%RESOURCE%COMM_FRAC    = 0.00,1.00
 !     MODEL(I)%RESOURCE%BOUND_FLAG   = F
 !
 !     MODEL(4)%FORCING = 'no' 'no' 'no' 'no' 'no' 'no'
 !
-!     MODEL(2)%RESOURCE = 1 1 0 0.00 1.00 f
+!     MODEL(2)%RESOURCE = 1 1 0.00 1.00 F
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'inlc'

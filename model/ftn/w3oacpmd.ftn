@@ -367,6 +367,7 @@
       USE W3GDATMD, ONLY: NSEAL,NSEA, NX, NY, MAPSTA, MAPSF, GTYPE, &
                         & UNGTYPE, RLGTYPE, CLGTYPE
       USE W3ODATMD, ONLY: NAPROC, IAPROC
+      USE W3PARALL, ONLY : INIT_GET_ISEA
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list

@@ -279,7 +279,8 @@ fi
 
 # coupling date
 il=$(($il+1))
-if [ $(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2 | wc -c) -eq 6 ]
+yyyymmdd=$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)
+if [ ${#yyyymmdd} -eq 8 ]
 then
   coupling=T
   echo 'coupling date'
@@ -526,7 +527,7 @@ cat >> $nmlfile << EOF
 !
 ! * The FORCING flag can be  : F for "no forcing"
 !                              T for "external forcing file"
-!                              H for "homogenous forcing input"
+!                              H for "homogeneous forcing input"
 !                              C for "coupled forcing field"
 !
 ! * homogeneous forcing is not available for ICE_CONC
@@ -536,21 +537,21 @@ cat >> $nmlfile << EOF
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     FORCING%WATER_LEVELS  = F
-!     FORCING%CURRENTS      = F
-!     FORCING%WINDS         = F
-!     FORCING%ICE_CONC      = F
-!     FORCING%ICE_PARAM1    = F
-!     FORCING%ICE_PARAM2    = F
-!     FORCING%ICE_PARAM3    = F
-!     FORCING%ICE_PARAM4    = F
-!     FORCING%ICE_PARAM5    = F
-!     FORCING%MUD_DENSITY   = F
-!     FORCING%MUD_THICKNESS = F
-!     FORCING%MUD_VISCOSITY = F
-!     ASSIM%MEAN            = F
-!     ASSIM%SPEC1D          = F
-!     ASSIM%SPEC2D          = F
+!     INPUT%FORCING%WATER_LEVELS  = F
+!     INPUT%FORCING%CURRENTS      = F
+!     INPUT%FORCING%WINDS         = F
+!     INPUT%FORCING%ICE_CONC      = F
+!     INPUT%FORCING%ICE_PARAM1    = F
+!     INPUT%FORCING%ICE_PARAM2    = F
+!     INPUT%FORCING%ICE_PARAM3    = F
+!     INPUT%FORCING%ICE_PARAM4    = F
+!     INPUT%FORCING%ICE_PARAM5    = F
+!     INPUT%FORCING%MUD_DENSITY   = F
+!     INPUT%FORCING%MUD_THICKNESS = F
+!     INPUT%FORCING%MUD_VISCOSITY = F
+!     INPUT%ASSIM%MEAN            = F
+!     INPUT%ASSIM%SPEC1D          = F
+!     INPUT%ASSIM%SPEC2D          = F
 ! -------------------------------------------------------------------- !
 &INPUT_NML
 EOF
@@ -562,69 +563,69 @@ then
 # ice param1
   if [ "${forc[1,1]}" = "T" ] ; then
     if [ "${forc[1,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ICE_PARAM1    = H" >> $nmlfile
-    elif [ "${forc[1,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM1    = T" >> $nmlfile
-    elif [ "${forc[1,2]}" = "C" ] ; then  echo "  INPUT%FORCING%ICE_PARAM1    = C" >> $nmlfile; fi
+    elif [ "${forc[1,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM1    = T" >> $nmlfile; fi
+  elif [ "${forc[1,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ICE_PARAM1    = C" >> $nmlfile
   fi
   
 # ice param2
   if [ "${forc[2,1]}" = "T" ] ; then
     if [ "${forc[2,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ICE_PARAM2    = H" >> $nmlfile
-    elif [ "${forc[2,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM2    = T" >> $nmlfile
-    elif [ "${forc[2,2]}" = "C" ] ; then  echo "  INPUT%FORCING%ICE_PARAM2    = C" >> $nmlfile; fi
+    elif [ "${forc[2,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM2    = T" >> $nmlfile; fi
+  elif [ "${forc[2,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ICE_PARAM2    = C" >> $nmlfile
   fi
 # ice param3
   if [ "${forc[3,1]}" = "T" ] ; then
     if [ "${forc[3,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ICE_PARAM3    = H" >> $nmlfile
-    elif [ "${forc[3,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM3    = T" >> $nmlfile
-    elif [ "${forc[3,2]}" = "C" ] ; then  echo "  INPUT%FORCING%ICE_PARAM3    = C" >> $nmlfile; fi
+    elif [ "${forc[3,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM3    = T" >> $nmlfile; fi
+  elif [ "${forc[3,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ICE_PARAM3    = C" >> $nmlfile
   fi
 # ice param4
   if [ "${forc[4,1]}" = "T" ] ; then
     if [ "${forc[4,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ICE_PARAM4    = H" >> $nmlfile
-    elif [ "${forc[4,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM4    = T" >> $nmlfile
-    elif [ "${forc[4,2]}" = "C" ] ; then  echo "  INPUT%FORCING%ICE_PARAM4    = C" >> $nmlfile; fi
+    elif [ "${forc[4,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM4    = T" >> $nmlfile; fi
+  elif [ "${forc[4,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ICE_PARAM4    = C" >> $nmlfile
   fi
 # ice param5
   if [ "${forc[5,1]}" = "T" ] ; then
     if [ "${forc[5,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ICE_PARAM5    = H" >> $nmlfile
-    elif [ "${forc[5,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM5    = T" >> $nmlfile
-    elif [ "${forc[5,2]}" = "C" ] ; then  echo "  INPUT%FORCING%ICE_PARAM5    = C" >> $nmlfile; fi
+    elif [ "${forc[5,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ICE_PARAM5    = T" >> $nmlfile; fi
+  elif [ "${forc[5,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ICE_PARAM5    = C" >> $nmlfile
   fi
 # mud density
   if [ "${forc[6,1]}" = "T" ] ; then
     if [ "${forc[6,2]}" = "T" ] ; then    echo "  INPUT%FORCING%MUD_DENSITY   = H" >> $nmlfile
-    elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_DENSITY   = T" >> $nmlfile
-    elif [ "${forc[6,2]}" = "C" ] ; then  echo "  INPUT%FORCING%MUD_DENSITY   = C" >> $nmlfile; fi
+    elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_DENSITY   = T" >> $nmlfile; fi
+  elif [ "${forc[6,1]}" = "C" ] ; then    echo "  INPUT%FORCING%MUD_DENSITY   = C" >> $nmlfile
   fi
 # mud thickness
   if [ "${forc[7,1]}" = "T" ] ; then
     if [ "${forc[7,2]}" = "T" ] ; then    echo "  INPUT%FORCING%MUD_THICKNESS = H" >> $nmlfile
-    elif [ "${forc[7,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_THICKNESS = T" >> $nmlfile
-    elif [ "${forc[7,2]}" = "C" ] ; then  echo "  INPUT%FORCING%MUD_THICKNESS = C" >> $nmlfile; fi
+    elif [ "${forc[7,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_THICKNESS = T" >> $nmlfile; fi
+  elif [ "${forc[7,1]}" = "C" ] ; then    echo "  INPUT%FORCING%MUD_THICKNESS = C" >> $nmlfile
   fi
 # mud viscosity
   if [ "${forc[8,1]}" = "T" ] ; then
     if [ "${forc[8,2]}" = "T" ] ; then    echo "  INPUT%FORCING%MUD_VISCOSITY = H" >> $nmlfile
-    elif [ "${forc[8,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_VISCOSITY = T" >> $nmlfile
-    elif [ "${forc[8,2]}" = "C" ] ; then  echo "  INPUT%FORCING%MUD_VISCOSITY = C" >> $nmlfile; fi
+    elif [ "${forc[8,2]}" = "F" ] ; then  echo "  INPUT%FORCING%MUD_VISCOSITY = T" >> $nmlfile; fi
+  elif [ "${forc[8,1]}" = "C" ] ; then    echo "  INPUT%FORCING%MUD_VISCOSITY = C" >> $nmlfile
   fi
 # water levels
   if [ "${forc[9,1]}" = "T" ] ; then
     if [ "${forc[9,2]}" = "T" ] ; then    echo "  INPUT%FORCING%WATER_LEVELS  = H" >> $nmlfile
-    elif [ "${forc[9,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WATER_LEVELS  = T" >> $nmlfile
-    elif [ "${forc[9,2]}" = "C" ] ; then  echo "  INPUT%FORCING%WATER_LEVELS  = C" >> $nmlfile; fi
+    elif [ "${forc[9,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WATER_LEVELS  = T" >> $nmlfile; fi
+  elif [ "${forc[9,1]}" = "C" ] ; then    echo "  INPUT%FORCING%WATER_LEVELS  = C" >> $nmlfile
   fi
 # currents
   if [ "${forc[10,1]}" = "T" ] ; then
     if [ "${forc[10,2]}" = "T" ] ; then    echo "  INPUT%FORCING%CURRENTS      = H" >> $nmlfile
-    elif [ "${forc[10,2]}" = "F" ] ; then  echo "  INPUT%FORCING%CURRENTS      = T" >> $nmlfile
-    elif [ "${forc[10,2]}" = "C" ] ; then  echo "  INPUT%FORCING%CURRENTS      = C" >> $nmlfile; fi
+    elif [ "${forc[10,2]}" = "F" ] ; then  echo "  INPUT%FORCING%CURRENTS      = T" >> $nmlfile; fi
+  elif [ "${forc[10,1]}" = "C" ] ; then    echo "  INPUT%FORCING%CURRENTS      = C" >> $nmlfile
   fi
 # winds
   if [ "${forc[11,1]}" = "T" ] ; then
     if [ "${forc[11,2]}" = "T" ] ; then    echo "  INPUT%FORCING%WINDS         = H" >> $nmlfile
-    elif [ "${forc[11,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = T" >> $nmlfile
-    elif [ "${forc[11,2]}" = "C" ] ; then  echo "  INPUT%FORCING%WINDS         = C" >> $nmlfile; fi
+    elif [ "${forc[11,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = T" >> $nmlfile; fi
+  elif [ "${forc[11,1]}" = "C" ] ; then    echo "  INPUT%FORCING%WINDS         = C" >> $nmlfile
   fi
 # ice
   if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = T" >> $nmlfile; fi

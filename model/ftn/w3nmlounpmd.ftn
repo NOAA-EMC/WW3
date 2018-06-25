@@ -192,7 +192,7 @@
       WRITE (NDSE,'(A)') 'ERROR: error occured in READ_SPECTRA_NML'
       RETURN
     END IF
-!/T    CALL REPORT_SPECTRA_NML (NML_FILE)
+!/T    CALL REPORT_SPECTRA_NML (NML_SPECTRA)
 
     ! read param namelist
     CALL READ_PARAM_NML (NDSI, NML_PARAM, IERR)
@@ -200,7 +200,7 @@
       WRITE (NDSE,'(A)') 'ERROR: error occured in READ_PARAM_NML'
       RETURN
     END IF
-!/T    CALL REPORT_PARAM_NML (NML_FILE)
+!/T    CALL REPORT_PARAM_NML (NML_PARAM)
 
     ! read source namelist
     CALL READ_SOURCE_NML (NDSI, NML_SOURCE, IERR)
@@ -208,7 +208,7 @@
       WRITE (NDSE,'(A)') 'ERROR: error occured in READ_SOURCE_NML'
       RETURN
     END IF
-!/T    CALL REPORT_SOURCE_NML (NML_FILE)
+!/T    CALL REPORT_SOURCE_NML (NML_SOURCE)
 
     ! close namelist file
     CLOSE (NDSI)

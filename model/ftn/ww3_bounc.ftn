@@ -216,8 +216,16 @@
         NBO2 = 0          
         OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
         REWIND (NDSL)
-        READ (NDSL,*,END=801,ERR=802) SPECFILES(I)
-        NBO2 = NBO2 + 1
+        DO
+          READ (NDSL,*,END=400,ERR=802)
+          NBO2 = NBO2 + 1
+        END DO
+        400 CONTINUE
+        ALLOCATE(SPECFILES(NBO2))
+        REWIND (NDSL)
+        DO I=1,NBO2
+          READ (NDSL,'(A512)',END=801,ERR=802) SPECFILES(I)
+        END DO
         CLOSE(NDSL)
 
       END IF ! FLGNML

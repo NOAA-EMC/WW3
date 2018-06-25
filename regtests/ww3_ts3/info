@@ -121,11 +121,11 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
-#  ./bin/run_test  -s ST1_PR1 -w work_ST1_PR1 ../ ww3_ts3                   #
+#  ./bin/run_test  -s ST1_PR1 -w work_ST1_PR1 ../model ww3_ts3              #
 #  ./bin/run_test  -s ST1_PR1_OMP -w work_ST1_PR1_OMP -f -O -n 3  \         #
-#                                             ../ ww3_ts3                   #
+#                                             ../model ww3_ts3              #
 #  ./bin/run_test  -s ST1_PR1_MPI -w work_ST1_PR1_MPI -f -p mpirun -n 3  \  #
-#                                             ../ ww3_ts3                   #
+#                                             ../model ww3_ts3              #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
 #                                                   Last Mod : Dec 2013     #
