@@ -672,6 +672,7 @@
 !
       REAL,DIMENSION(:),  ALLOCATABLE    :: LON, LAT, FREQ
       REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2D, LAT2D, ANGLD2D
+!/RTD      REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2DEQ, LAT2DEQ
       ! Make the below allocatable to avoid stack overflow on some machines 
       REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
                                  XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    & 

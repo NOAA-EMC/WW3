@@ -583,7 +583,8 @@
          echo -e '-----------------------------------'
          files='ad3_test ad3 w3_make w3_new make_makefile.sh'
          cd $src_dir/model/${ldir}
-         files="$files switch.gen `ls comp.*` `ls link.*`"
+         #files="$files switch.gen `ls comp.*` `ls link.*`"
+         files="$files `ls comp.*` `ls link.*`"
          cd $main_dir/${ldir} ;;
       2) echo -e 'Other :'
          echo -e '-------' 
@@ -611,33 +612,35 @@
   tnr_lnk=$(($tnr_lnk + $nr_lnk))
 
 # 4.b comp and link shell scripts  - - - - - - - - - - - - - - - - - - - - - -
-    nr_lnk=0
-    nr_old=0
-
-    echo -e ' '
-    echo -e 'Compile and link shell scripts :'
-    echo -e '--------------------------------'
-
-    for file in switch comp link
-    do
-      if [ -f $file ]
-      then
-        echo -e "   File $file exists (will not be modified)." >> ${main_dir}/tmp/${ldir}_setup.out
-        nr_old=$(($nr_old + 1))
-      else
-        nr_lnk=$(($nr_lnk + 1))
-        echo -e "   File $file does not exists." >> ${main_dir}/tmp/${ldir}_setup.out
-        echo -e "      Copied from $file.gen (has to be modified by user)" >> ${main_dir}/tmp/${ldir}_setup.out
-        cp $file.gen $file
-      fi
-    done
-    echo -e "  This section: $nr_old existing (old) links or files found"
-    echo -e "  This section: $nr_lnk files copied"
-    tnr_lnk=$(($tnr_lnk + $nr_lnk))
-    tnr_old=$(($tnr_old + $nr_old))
-
-    chmod 744 comp link
-    chmod 644 switch
+# Updating this to force the user to pick switch, comp and link instead of 
+# automatically picking comp/link/switch.gen (which have been deleted)
+#    nr_lnk=0
+#    nr_old=0
+#
+#    echo -e ' '
+#    echo -e 'Compile and link shell scripts :'
+#    echo -e '--------------------------------'
+#
+#    for file in switch comp link
+#    do
+#      if [ -f $file ]
+#      then
+#        echo -e "   File $file exists (will not be modified)." >> ${main_dir}/tmp/${ldir}_setup.out
+#        nr_old=$(($nr_old + 1))
+#      else
+#        nr_lnk=$(($nr_lnk + 1))
+#        echo -e "   File $file does not exists." >> ${main_dir}/tmp/${ldir}_setup.out
+#        echo -e "      Copied from $file.gen (has to be modified by user)" >> ${main_dir}/tmp/${ldir}_setup.out
+#        cp $file.gen $file
+#      fi
+#    done
+#    echo -e "  This section: $nr_old existing (old) links or files found"
+#    echo -e "  This section: $nr_lnk files copied"
+#    tnr_lnk=$(($tnr_lnk + $nr_lnk))
+#    tnr_old=$(($tnr_old + $nr_old))
+#
+#    chmod 744 comp link
+#    chmod 644 switch
 
 
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
@@ -687,7 +690,7 @@
       3) echo -e ' Subroutines (.f90) :'
          echo -e ' --------------------' ; files=`ls *.f90`  ;;
       4) echo -e ' Other :'
-         echo -e ' -------' ; files=`echo -e $all_files | sed -e "s/SCRIP//g"` ;;
+         echo -e ' -------' ; files=`echo -e $all_files | sed -e "s/SCRIP//g" | sed -e "s/PDLIB//g"` ;;
     esac
     cd $main_dir/ftn
 
@@ -1063,13 +1066,13 @@
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`"
 
-# 8.a comp link and switch
-
-  echo -e ' '
-  echo -e ' Setting up links to comp link and switch ...'
-  ln -sf ../bin/switch
-  ln -sf ../bin/comp
-  ln -sf ../bin/link
+## 8.a comp link and switch
+#  Requiring user to do this, so this is no more. 
+#  echo -e ' '
+#  echo -e ' Setting up links to comp link and switch ...'
+#  ln -sf ../bin/switch
+#  ln -sf ../bin/comp
+#  ln -sf ../bin/link
 
 # 8.b selected GrADS scripts
 
