@@ -16,6 +16,7 @@
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    21-Jun-2018 : Add FSWND input for SMC grid. JGLi  ( version 6.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -331,6 +332,7 @@
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    21-Jun-2018 : Add FSWND input for SMC grid. JGLi  ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -381,6 +383,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS, NAUXGR, IGRID, W3SETG, NX, NY
+!/SMC      USE W3GDATMD, ONLY: FSWND, NSEA
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -499,10 +502,17 @@
         END IF
 !
       IF ( FLCUR  ) THEN
+!/SMC       IF( FSWND ) THEN
+!/SMC          ALLOCATE ( INPUTS(IMOD)%CX0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%CY0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%CXN(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
+!/SMC       ELSE
           ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
                      INPUTS(IMOD)%CY0(NX,NY) ,              &
                      INPUTS(IMOD)%CXN(NX,NY) ,              &
                      INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
+!/SMC       ENDIF
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
@@ -518,12 +528,21 @@
 !/TIDE        END IF
 !
       IF ( FLWIND ) THEN
+!/SMC       IF( FSWND ) THEN
+!/SMC          ALLOCATE ( INPUTS(IMOD)%WX0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%WY0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%DT0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%WXN(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%WYN(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
+!/SMC       ELSE
           ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
                      INPUTS(IMOD)%WY0(NX,NY) ,              &
                      INPUTS(IMOD)%DT0(NX,NY) ,              &
                      INPUTS(IMOD)%WXN(NX,NY) ,              &
                      INPUTS(IMOD)%WYN(NX,NY) ,              &
                      INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
+!/SMC       ENDIF
           CHECK_ALLOC_STATUS ( ISTAT )
           INPUTS(IMOD)%DT0 = 0.
           INPUTS(IMOD)%DTN = 0.

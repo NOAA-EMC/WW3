@@ -328,7 +328,8 @@ $                           ISHFT  : Shift number of i-index, default 0
 $                           JEQT   : Shift number of j-index, default 0  
 $                           NBISMC : No. of input boundary points,    0  
 $                           UNO3   : Use 3rd order advection scheme, .FALSE.
-$                           UNO3   : Add extra spatial averaging,    .FALSE.
+$                           AVERG  : Add extra spatial averaging,    .FALSE.
+$                           SEAWND : Use sea-point only wind input.  .FALSE.
 $ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
 $
 $ Rotated pole ------------------------------------------------------ $

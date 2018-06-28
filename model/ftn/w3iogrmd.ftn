@@ -11,11 +11,6 @@
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
-!/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
-!/    16-Sep-2013 : Add Arctic part in SMC grid.        ( version 4.11 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
-!/                  trunk                               ( version 4.13 )
-!/    20-Aug-2016 : Add IOBPA                           ( version 5.12 )
 !/
 !  1. Purpose :
 !
@@ -72,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-06-08'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-07-28'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -133,12 +128,17 @@
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
+!/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
 !/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.11 )
 !/    01-Jul-2013 : Document UQ / UNO switches in file  ( version 4.12 )
 !/    10-Sep-2013 : Add IG1 parameters                  ( version 4.12 )
+!/    16-Sep-2013 : Add Arctic part in SMC grid.        ( version 4.12 )
+!/    11-Nov-2013 : Make SMC and RTD grids compatible.  ( version 4.13 )
 !/    06-Mar-2014 : Writes out a help message on error  ( version 4.18 )
 !/    10-Mar-2014 : Add IC2 parameters                  ( version 5.01 )
 !/    29-May-2014 : Add IC3 parameters                  ( version 5.01 )
+!/    20-Aug-2016 : Add IOBPA                           ( version 5.12 )
+!/    08-Mar-2018 : Add FSWND for SMC grid.             ( version 6.02 )
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 )
 !/
@@ -1276,10 +1276,10 @@
 !/PR3      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
 !
 !/SMC      IF ( WRITE ) THEN
-!/SMC          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG
+!/SMC          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
 !/SMC        ELSE
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                       DTME, CLATMN, Refran, FUNO3, FVERG
+!/SMC                       DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
 !/SMC        END IF
 !
 !/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran

@@ -83,6 +83,7 @@
 !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
 !/                  (T.J. Campbell, NRL)                ( version 6.02 )
 !/    07-Jan-2018 : Generalizes ICE100WIND to ICESCALES ( version 6.04 )
+!/    26-Mar-2018 : Add FSWND optional variable.  JGLi  ( version 6.02 )
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 ) 
 !/
@@ -214,6 +215,7 @@
 !      FLSOU     Log.  Public   Flag for source term calcualtion.
 !      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
+!      FSWND     Log.  Public   Flag for sea-point only wind input on SMC grid.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
 !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
@@ -718,7 +720,7 @@
 !/PR2        REAL                  :: DTME, CLATMN
 !/PR3        REAL                  :: WDCG, WDTH
 !/SMC        REAL                  :: DTME, CLATMN, Refran
-!/SMC        LOGICAL               :: FUNO3, FVERG 
+!/SMC        LOGICAL               :: FUNO3, FVERG, FSWND 
       END TYPE PROP
 !
       TYPE FLDP
@@ -1022,7 +1024,7 @@
 !/PR2      REAL, POINTER           :: DTME, CLATMN
 !/PR3      REAL, POINTER           :: WDCG, WDTH
 !/SMC      REAL, POINTER           :: DTME, CLATMN, Refran
-!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG 
+!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG, FSWND 
 !/
 !/ Data aliasses for structure FLDP(S)
 !/
@@ -2112,6 +2114,7 @@
 !/SMC      Refran => MPARS(IMOD)%PROPS%Refran
 !/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3 
 !/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG 
+!/SMC      FSWND  => MPARS(IMOD)%PROPS%FSWND
 !
 !     Structure FLDP
 !

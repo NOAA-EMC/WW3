@@ -53,6 +53,7 @@
 !/                  ICEF and ICEDMAX at the first time step
 !/                  and add ICEH initialization in W3UICE.
 !/    13-Jan-2016 : Changed initial value of ICEDMAX    ( version 5.08 )
+!/    26-Mar-2018 : Sea-point only Wnd/Cur input.  JGLi ( version 6.04 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -141,6 +142,7 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
 !/    23-Mar-2016 : SMC grid Arctic part adjustment.    ( version 5.18 )
+!/    26-Mar-2018 : Sea-point only current on SMC grid. ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -204,6 +206,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
 !/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
+!/SMC      USE W3GDATMD, ONLY: FSWND 
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CX, CY, CA0, CAI, CD0, CDI
       USE W3IDATMD, ONLY: TC0, CX0, CY0, TCN, CXN, CYN
@@ -239,8 +242,16 @@
 !
       IF ( FLFRST ) THEN
           DO ISEA=1, NSEA
+!/SMC !!Li  For sea-point SMC grid current, the 1-D current is stored on
+!/SMC !!Li  2-D CX0(NSEA, 1) variable. 
+!/SMC        IF( FSWND ) THEN
+!/SMC            IX = ISEA 
+!/SMC            IY = 1
+!/SMC        ELSE
             IX        = MAPSF(ISEA,1)
             IY        = MAPSF(ISEA,2)
+!/SMC        ENDIF
+
             CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
             CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
             IF ( CA0(ISEA) .GT. 1.E-7) THEN
@@ -396,6 +407,7 @@
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
 !/    27-May-2014 : Adding OMPG parallelizations dir.   ( version 5.02 )
 !/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
+!/    26-Mar-2018 : Sea-point only wind for SMC grid.   ( version 6.xx )
 !/
 !  1. Purpose :
 !
@@ -470,6 +482,7 @@
 !/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
 !/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
+!/SMC      USE W3GDATMD, ONLY: FSWND 
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ADATMD, ONLY: DW, CX, CY, UA, UD, U10, U10D, AS,          &
                           UA0, UAI, UD0, UDI, AS0, ASI
@@ -501,8 +514,16 @@
 !
       IF ( FLFRST ) THEN
           DO ISEA=1, NSEA
+!/SMC !!Li  For sea-point only SMC grid wind 1-D wind is stored on
+!/SMC !!Li  2-D WX0(NSEA, 1) variable.
+!/SMC        IF( FSWND ) THEN
+!/SMC            IX = ISEA 
+!/SMC            IY = 1
+!/SMC        ELSE
             IX        = MAPSF(ISEA,1)
             IY        = MAPSF(ISEA,2)
+!/SMC        ENDIF
+
             UA0(ISEA) = SQRT ( WX0(IX,IY)**2 + WY0(IX,IY)**2 )
             UAI(ISEA) = SQRT ( WXN(IX,IY)**2 + WYN(IX,IY)**2 )
             IF ( UA0(ISEA) .GT. 1.E-7) THEN

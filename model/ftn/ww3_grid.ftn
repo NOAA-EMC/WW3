@@ -73,8 +73,7 @@
 !/    16-Sep-2011 : Clean up.                           ( version 4.05 )
 !/    01-Dec-2011 : New namelist for reflection         ( version 4.05 )
 !/    01-Mar-2012 : Bug correction for NLPROP in ST2    ( version 4.05 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid.    ( version 4.06 ) 
-!/                  (Jian-Guo Li, UK Met Office) 
+!/    12-Jun-2012 : Add /RTD rotated grid option. JGLi  ( version 4.06 ) 
 !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
 !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.07 )
 !/    02-Sep-2012 : Clean up of reflection and UG grids ( version 4.08 )
@@ -84,8 +83,7 @@
 !/    01-Jun-2013 : Adding namelist for spectral output ( version 4.10 )
 !/    12-Sep-2013 : Adding Arctic part for SMC grid.    ( version 4.11 )
 !/    01-Nov-2013 : Changed UG list name to UNST        ( version 4.12 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
-!/                  trunk                               ( version 4.13 )
+!/    11-Nov-2013 : Make SMC and RTD option compatible. ( version 4.13 )
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
@@ -97,7 +95,8 @@
 !/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
 !/    01-Mar-2018 : RTD poles info read from namelist   ( version 6.02 )
 !/    14-Mar-2018 : Option to read UNST boundary file   ( version 6.02 )
-!/    15-May-2018 : Dry sea points over zlim            ( version 6.05 )
+!/    26-Mar-2018 : Sea-point only Wnd/Cur input. JGLi  ( version 6.02 )
+!/    15-May-2018 : Dry sea points over zlim            ( version 6.04 )
 !/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
 !/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
 !/
@@ -313,8 +312,8 @@
 !     the polar Arctic part above 86N to the existing SMC grid and uses
 !     a map-east reference direction for this extra polar region.
 !     Because the map-east direction changes with latitude and longitude
-!     the wave spectra defined to the map-east direction could not mixed
-!     up with the conventional spectra defined to the local east
+!     the wave spectra defined to the map-east direction could not be 
+!     mixed up with the conventional spectra defined to the local east
 !     direction.  A rotation sub is provided for convertion from one to
 !     another.  Propagation part will be calculated together, including
 !     the boundary cells.  The boundary cells are then updated by
@@ -324,7 +323,9 @@
 !     For convenience, Arctic cellls are all base level cells and are
 !     appended to the end of the global cells.  If refined cells were
 !     used in the Arctic part, it would not be kept all together, making
-!     the sub-loops much more complicated.
+!     the sub-loops much more complicated. If refined resolution cells
+!     are required for a Arctic regional model, users may consider use
+!     the rotated SMC grid options (RTD and SMC).
 !
 !     For more information about the SMC grid, please refer to  
 !     Li, J.G. (2012) Propagation of Ocean Surface Waves on a Spherical
@@ -719,7 +720,7 @@
 !/PR2      REAL                    :: DTIME
 !
 !/SMC      REAL                    :: DTIME, RFMAXD, SYMR, YJ0R
-!/SMC      LOGICAL                 :: UNO3, AVERG 
+!/SMC      LOGICAL                 :: UNO3, AVERG, SEAWND 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
@@ -812,7 +813,7 @@
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !
 !/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG, &
-!/SMC                      LvSMC, ISHFT, JEQT,   NBISMC
+!/SMC                      LvSMC, ISHFT, JEQT,   NBISMC, SEAWND 
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH, UGOBCFILE,          &
@@ -1967,6 +1968,7 @@
 !/SMC      RFMAXD = 80.0
 !/SMC      UNO3   = .FALSE.
 !/SMC      AVERG  = .FALSE.
+!/SMC      SEAWND = .FALSE.
 !
 !/PR3      WDTHCG = 1.5
 !/PR3      WDTHTH = WDTHCG
@@ -2008,10 +2010,13 @@
 !/SMC      Refran = RFMAXD * DERA 
 !/SMC      FUNO3  = UNO3
 !/SMC      FVERG  = AVERG
+!/SMC      FSWND  = SEAWND
 !/SMC      IF( UNO3 ) WRITE (NDSO,*)                  &
 !/SMC        " Advection use 3rd order UNO3 instead of UNO2 scheme."
-!/SMC      IF( AVERG) WRITE (NDSO,*)                  &
+!/SMC      IF( AVERG ) WRITE (NDSO,*)                 &
 !/SMC        " Extra 1-2-1 average smoothing activated on SMC grid."
+!/SMC      IF( SEAWND ) WRITE (NDSO,*)                & 
+!/SMC        " Sea-point only wind input is required for SMC grid. "
 !/SMC      NRLv = LvSMC 
 !/SMC      WRITE (NDSO,4001) NRLv
 !/SMC      WRITE (NDSO,4002) JEQT
@@ -2471,7 +2476,7 @@
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/SMC          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN, RFMAXD, UNO3, &
-!/SMC                            AVERG, LvSMC, NBISMC, ISHFT,  JEQT
+!/SMC                      AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND 
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
         WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH, TRIM(UGOBCFILE),     &
@@ -4112,12 +4117,12 @@
 !/ARC          CTHG0S(NCel)=0.0
 !/ARC       
 !
-!/RTD !Li  Assign rotated grid angle for all sea points.  JGLi01Feb2016
-!/RTD      DO ISEA=1,NSEA
-!/RTD        IX = MAPSF(ISEA,1)
-!/RTD        IY = MAPSF(ISEA,2)
-!/RTD        AnglD(ISEA) = AnglDin(IX,IY)
-!/RTD      END DO
+!/RTD !Li   Assign rotated grid angle for all sea points.  JGLi01Feb2016
+!/RTD       DO ISEA=1,NSEA
+!/RTD          IX = MAPSF(ISEA,1)
+!/RTD          IY = MAPSF(ISEA,2)
+!/RTD          AnglD(ISEA) = AnglDin(IX,IY)
+!/RTD       END DO
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -5146,7 +5151,8 @@
 !/SMC               '        LATMIN =',F5.1,', RFMAXD =', F9.2/     & 
 !/SMC               '        UNO3   =',L5,  ', AVERG  =',L5/        &
 !/SMC               '        LvSMC  =',i5,  ', NBISMC =',i9/        &
-!/SMC               '        ISHFT  =',i5,  ', JEQT   =',i9, ' /')
+!/SMC               '        ISHFT  =',i5,  ', JEQT   =',i9/        &
+!/SMC               '        SEAWND =',L5, ' /')
 !
 !/PR3  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/      &
 !/PR3               '       Averaging area factor Cg    :',F8.2)
