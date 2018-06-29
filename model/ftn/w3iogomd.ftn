@@ -1544,8 +1544,8 @@
         END DO
 !
 ! Start of Space-Time Extremes Section
-     IF ( STEXU .GT. 0. .OR. STEYU .GT. 0. .OR. STEDU .GT. 0. ) THEN
-
+     IF ( ( STEXU .GT. 0. .AND. STEYU .GT. 0. ) &
+                                      .OR. ( STEDU .GT. 0. ) ) THEN
 !  Space-Time extremes 
 !    (for references:
 !     - Krogstad et al, OMAE 2004 
@@ -1661,19 +1661,19 @@
           END IF           
 !
 !  Space domain size (user-defined or default) 
-        IF ( STEXU .GT. 0 ) THEN
+        IF ( STEXU .GT. 0 .AND. STEYU .GT. 0 ) THEN
           STEX = STEXU
           STEY = STEYU
-          ELSE
-          STEX = 1000.
-          STEY = 1000.
-          END IF
+        ELSE
+          STEX = 0.
+          STEY = 0.
+        END IF
 ! 
 !  Time domain size (user-defined or default)
         IF ( STEDU .GT. 0 ) THEN
           STED = STEDU
           ELSE
-          STED = 1200.
+          STED = 0.
           END IF
 !
 !  Average numbers of waves in the space-time domain (Volume+Sides+Borders)
@@ -1706,34 +1706,32 @@
 ! Mode of the Adler&Taylor distribution
 ! (normalized on the standard deviation = Hs/4)
 ! Time extremes
-      IF (NV(JSEA) .GT. 1.E-7) THEN
-        IF ((STEX .EQ. 0) .AND. (STEY .EQ. 0)) THEN
-          MODE(JSEA) = SQRT(2*LOG(NB(JSEA)))
+      IF ((STEX .EQ. 0) .AND. (STEY .EQ. 0)) THEN
+        MODE(JSEA) = SQRT(2.*LOG(NB(JSEA)))
 ! Space extremes (strictly for STEX*STEY >> WL02X*WL02Y)
-        ELSEIF (STED .EQ. 0) THEN
-          MODE(JSEA) = SQRT(2*LOG(NS(JSEA))+LOG(2*LOG(NS(JSEA))+       &
-                       LOG(2*LOG(NS(JSEA)))))
+      ELSEIF (STED .EQ. 0) THEN
+        MODE(JSEA) = SQRT(2.*LOG(NS(JSEA))+LOG(2.*LOG(NS(JSEA))+     &
+                     LOG(2.*LOG(NS(JSEA)))))
 ! Space-time extremes (strictly for STEX*STEY >> WL02X*WL02Y)
-        ELSE
-          MODE(JSEA) = SQRT(2*LOG(NV(JSEA))+2*LOG(2*LOG(NV(JSEA))+     &
-           2*LOG(2*LOG(NV(JSEA)))))
-          ENDIF
+      ELSE
+        MODE(JSEA) = SQRT(2.*LOG(NV(JSEA))+2.*LOG(2.*LOG(NV(JSEA))+  &
+         2.*LOG(2.*LOG(NV(JSEA)))))
+      ENDIF
 !
 ! Expected maximum sea surface elevation in the ST domain - nonlinear
 ! (in meters, Hs/4=SQRT(ET(JSEA)))
-        STMAXE(JSEA) = SQRT(ET(JSEA)) *                                &
-            ( MODE(JSEA)+0.5*MU(JSEA)*MODE(JSEA)**2 +                  &
-            0.5772*(1+MU(JSEA)*MODE(JSEA)) /                           &
-            (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
-            (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )
+      STMAXE(JSEA) = SQRT(ET(JSEA)) *                                &
+          ( MODE(JSEA)+0.5*MU(JSEA)*MODE(JSEA)**2 +                  &
+          0.5772*(1+MU(JSEA)*MODE(JSEA)) /                           &
+          (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
+          (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )
 !
 ! Standard deviation of the maximum sea surface elevation in ST domain 
 !  - nonlinear (in meters, Hs/4=SQRT(ET(JSEA)))  
-        STMAXD(JSEA) =  SQRT(ET(JSEA)) *                               &
-            ( PI*(1+MU(JSEA)*MODE(JSEA))/SQRT(6.) /                    &
-            (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
-            (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )   
-      ENDIF
+      STMAXD(JSEA) =  SQRT(ET(JSEA)) *                               &
+          ( PI*(1+MU(JSEA)*MODE(JSEA))/SQRT(6.) /                    &
+          (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
+          (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )   
 !        
 ! Autocovariance (time) function (normalized on the maximum, i.e. total
 ! variance)

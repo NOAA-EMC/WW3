@@ -2080,7 +2080,8 @@
       WCOR1  = 99. 
       WCOR2  = 0.
 ! Variables for Space-Time Extremes
-!  Default negative values make w3iogomd use local grid size
+!  Default negative values make w3iogomd switch off space-time extremes
+!  forces user to provide NAMELIST if wanting to compute STE parameters
       STDX = -1. 
       STDY = -1. 
       STDT = -1. 
