@@ -60,6 +60,10 @@
   then
     path_i="$path_i/SCRIP"
   fi
+  if [ ${name:0:3} = 'yow' ]
+  then
+    path_i="$path_i/PDLIB"
+  fi
 
   sw_str=`cat $path_b/$switch`
 
@@ -114,9 +118,9 @@
   if [ "$w3adc" = 'yes' ]
   then
 
-    echo "1 $compress"                             > w3adc.inp
-    echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp
-    echo "'$sw_str'"                              >> w3adc.inp
+    echo "1 $compress"                             > w3adc.inp.$name
+    echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp.$name
+    echo "'$sw_str'"                              >> w3adc.inp.$name
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -127,15 +131,15 @@
     if [ "$itst" != '0' ]
     then
       echo '-- input file w3adc.inp -------------------------------------------'
-      cat w3adc.inp
+      cat w3adc.inp.$name
       echo '-- end of file ----------------------------------------------------'
     fi
 
-    $path_b/w3adc < w3adc.inp
+    $path_b/w3adc < w3adc.inp.$name
 
   fi
 
-  rm -f w3adc.inp
+  rm -f w3adc.inp.$name
   rm -f $name.f90
  
 # End of ad3 ---------------------------------------------------------------- #

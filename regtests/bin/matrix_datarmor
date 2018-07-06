@@ -66,6 +66,7 @@
 
 # PARMETIS 
   echo "  export METIS_PATH=/appli/parmetis/4.0.3-intel-cc-17.0.2.174"            >> matrix.head
+  echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' '
 
 # Compiler option. Choose appropriate compiler and set cmplOption to

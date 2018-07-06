@@ -70,6 +70,7 @@ model/bin/switch.old_SHRD
 model/bin/switch.old_HYB
 model/bin/switch.old_OMP
 model/bin/switch.old_SEQ
+model/bin/switch.old_MPI
 model/bin/w3adc
 model/bin/w3list
 model/bin/w3prnt

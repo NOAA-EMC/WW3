@@ -117,6 +117,10 @@
   then
     path_i="$path_i/SCRIP"
   fi
+  if [ ${name:0:3} = 'yow' ]
+  then
+    path_i="$path_i/PDLIB"
+  fi
 
   if [ -z "$(env | grep switch_file)" ]
   then
@@ -206,9 +210,9 @@
   if [ "$w3adc" = 'yes' ]
   then
 
-    echo "0 $compress"                             > w3adc.inp
-    echo "'$path_i/$name.ftn' '$name.$fext'"      >> w3adc.inp
-    echo "'$sw_str'"                              >> w3adc.inp
+    echo "0 $compress"                             > w3adc.inp.$name
+    echo "'$path_i/$name.ftn' '$name.$fext'"      >> w3adc.inp.$name
+    echo "'$sw_str'"                              >> w3adc.inp.$name
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -219,15 +223,15 @@
     if [ "$itst" != '0' ]
     then
       echo '-- input file w3adc.inp -------------------------------------------'
-      cat w3adc.inp
+      cat w3adc.inp.$name
       echo '-- end of file ----------------------------------------------------'
     fi
 
-    $path_b/w3adc < w3adc.inp > w3adc.out 2> w3adc.err
+    $path_b/w3adc < w3adc.inp.$name > w3adc.out.$name 2> w3adc.err.$name
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 
-    ad3_tst="`grep ERROR w3adc.out`"
+    ad3_tst="`grep ERROR w3adc.out.$name`"
     if [ -n "$ad3_tst" ]
     then
       echo '      *** w3adc error ***'
@@ -238,24 +242,24 @@
     then
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (1)."
-      cat w3adc.out ; cat w3adc.err  ; exit 4
+      cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
 
     if [ "`wc -l $name.$fext | awk '{ print $1}'`" -lt '2'  ]
     then
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (2)."
-      cat w3adc.out ; cat w3adc.err  ; exit 4
+      cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
 
     if [ "$itst" != '0' ]
     then
-      cat w3adc.out
+      cat w3adc.out.$name
     fi
 
 # 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    rm -f w3adc.*
+    rm -f w3adc.*.$name
 
 # 2.e Add switches in w3initmd - - - - - - - - - - - - - - - - - - - - - -
 
@@ -316,18 +320,18 @@ then
 
   error='0'
 
-  if $path_b/comp $name > comp.out 2> comp.err
+  if $path_b/comp $name > comp.out.$name 2> comp.err.$name
   then
-    rm -f comp.err
-    rm -f comp.out
+    rm -f comp.err.$name
+    rm -f comp.out.$name
 
 # 3.b Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if [ -f comp.stat ]
+    if [ -f comp.stat.$name ]
     then
-      nr_err=`grep ERROR comp.stat | awk '{ print $2 }'`
-      nr_war=`grep WARNING comp.stat | awk '{ print $2 }'`
-      rm -f comp.stat
+      nr_err=`grep ERROR comp.stat.$name | awk '{ print $2 }'`
+      nr_war=`grep WARNING comp.stat.$name | awk '{ print $2 }'`
+      rm -f comp.stat.$name
       if [ "$nr_err" != '0' ]
       then
         echo "      $nr_err errors found, see $path_w/$name.l"
@@ -381,11 +385,11 @@ then
     echo '      *** compile error ***'
     echo '          error in comp'
     echo '--- comp output -------------------------------------------------'
-    cat comp.out
+    cat comp.out.$name
     echo '--- comp error output -------------------------------------------'
-    cat comp.err
+    cat comp.err.$name
     echo '-----------------------------------------------------------------'
-    rm -f comp.*
+    rm -f comp.*.$name
     error='6'
   fi
 

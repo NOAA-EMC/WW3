@@ -55,6 +55,7 @@
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
   echo "  export METIS_PATH=/scratch3/NCEPDEV/stmp2/Jessica.Meixner/parmetis-4.0.3"   >> matrix.head
+  echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' ' 
 
 # Compiler option. Choose appropriate compiler and set cmplOption to

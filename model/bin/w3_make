@@ -689,7 +689,9 @@ EOF
 
       path_m=$main_dir/mod
       export path_m
-      if make -f makefile $target
+      # WW3_PARCOMPN is an environment variable to set the parallel make tasks
+      # it defaults to 4
+      if make -j ${WW3_PARCOMPN:-4} -f makefile $target
       then
         echo ' '
       else
