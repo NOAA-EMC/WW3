@@ -149,7 +149,7 @@
 !      W3DMO5    Subr.   Id.    Set array dims for output type 5.
 !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
 !      STRACE    Subr.   Id.    Subroutine tracing.
-!      NEXTLN    Subr.   Id.    Get next line from input filw
+!      NEXTLN    Subr.   Id.    Get next line from input file
 !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
 !      DISTAB    Subr. W3DISPMD Make tables for solution of the
 !                               dispersion relation.
@@ -840,7 +840,7 @@
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
                       ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
-                      ICEHDISP, ICEDDISP, ICEFDISP
+                      ICEHDISP, ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
