@@ -69,6 +69,9 @@
 !/                  remapping coefficients              ( version 6.02 )
 !/    25-Jan-2017 : Fix index offsets for MASK in W3GRMP and W3GRMC.
 !/                  Change redist to nearpt in W3GRMC.  ( version 6.03 )
+!/    31-Oct-2017 : Add optional MASK input for W3CGDM. ( version 6.03 )
+!/    18-Jul-2018 : Add fall back to NFD = 2 in W3CGDM for metric
+!/                  calculations where GSQRL < 0.       ( version 6.05 )
 !/
 !  1. Purpose :
 !
@@ -3998,8 +4001,8 @@
       INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
-      INTEGER, ALLOCATABLE :: K(:,:,:)
-      REAL(8), ALLOCATABLE :: C(:,:,:)
+      INTEGER, ALLOCATABLE :: K(:,:,:), K2(:,:,:)
+      REAL(8), ALLOCATABLE :: C(:,:,:), C2(:,:,:)
       REAL(8) :: GPPCL, GQQCL, GPQCL
       REAL(8) :: GSQRL, HPFCL, HQFCL
       REAL(8) :: APPCL, AQQCL, APQCL
@@ -4114,6 +4117,19 @@
             END IF
         END IF
       CALL GET_FDW3 ( N, M, K, C )
+
+      ALLOCATE ( K2(0:2,0:2,1:2), C2(0:2,0:2,1:2), STAT=ISTAT )
+      IF ( ISTAT .NE. 0 ) THEN
+          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+          'finite difference coeff allocation for N=2 failed'
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+        END IF
+      CALL GET_FDW3 ( 2, M, K2, C2 )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Compute optional return quantities
@@ -4167,6 +4183,52 @@
                   DYDQL = DYDQL*FACY
                 END IF
               GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+              IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
+!                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
+!                 'W3CGDM WARNING -- NFD = ',N, &
+!                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
+!                 ' computing metrics using NFD = 2'
+                  IF ( PRESENT(DX) ) THEN
+                      DXDPL = DX
+                      DYDPL = ZERO
+                    ELSE
+                      CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                                  MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+                      IF ( ISTAT .NE. 0 ) THEN
+                          IF ( PRESENT(RC) ) THEN
+                              RC = ISTAT
+                              RETURN
+                            ELSE
+                              CALL EXTCDE (ISTAT)
+                            END IF
+                        END IF
+                    END IF
+                  IF ( PRESENT(DY) ) THEN
+                      DXDQL = ZERO
+                      DYDQL = DY
+                    ELSE
+                      CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                                  MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+                      IF ( ISTAT .NE. 0 ) THEN
+                          IF ( PRESENT(RC) ) THEN
+                              RC = ISTAT
+                              RETURN
+                            ELSE
+                              CALL EXTCDE (ISTAT)
+                            END IF
+                        END IF
+                    END IF
+                  IF ( LLG .AND. SPHR ) THEN
+                      FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+                      DXDPL = DXDPL*FACX
+                      DYDPL = DYDPL*FACY
+                      DXDQL = DXDQL*FACX
+                      DYDQL = DYDQL*FACY
+                    END IF
+                  GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+                END IF
               IF ( GSQRL .LT. ZERO ) THEN
                   ISTAT = 1
                   WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
@@ -4232,7 +4294,7 @@
 ! -------------------------------------------------------------------- /
 ! 4.  Clean up
 !
-      DEALLOCATE ( K, C )
+      DEALLOCATE ( K, C, K2, C2 )
 
       END SUBROUTINE W3CGDM_R4
 !/
@@ -4290,8 +4352,8 @@
       INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
-      INTEGER, ALLOCATABLE :: K(:,:,:)
-      REAL(8), ALLOCATABLE :: C(:,:,:)
+      INTEGER, ALLOCATABLE :: K(:,:,:), K2(:,:,:)
+      REAL(8), ALLOCATABLE :: C(:,:,:), C2(:,:,:)
       REAL(8) :: GPPCL, GQQCL, GPQCL
       REAL(8) :: GSQRL, HPFCL, HQFCL
       REAL(8) :: APPCL, AQQCL, APQCL
@@ -4406,6 +4468,19 @@
             END IF
         END IF
       CALL GET_FDW3 ( N, M, K, C )
+
+      ALLOCATE ( K2(0:2,0:2,1:2), C2(0:2,0:2,1:2), STAT=ISTAT )
+      IF ( ISTAT .NE. 0 ) THEN
+          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+          'finite difference coeff allocation for N=2 failed'
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+        END IF
+      CALL GET_FDW3 ( 2, M, K2, C2 )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Compute optional return quantities
@@ -4459,6 +4534,52 @@
                   DYDQL = DYDQL*FACY
                 END IF
               GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+              IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
+!                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
+!                 'W3CGDM WARNING -- NFD = ',N, &
+!                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
+!                 ' computing metrics using NFD = 2'
+                  IF ( PRESENT(DX) ) THEN
+                      DXDPL = DX
+                      DYDPL = ZERO
+                    ELSE
+                      CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                                  MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+                      IF ( ISTAT .NE. 0 ) THEN
+                          IF ( PRESENT(RC) ) THEN
+                              RC = ISTAT
+                              RETURN
+                            ELSE
+                              CALL EXTCDE (ISTAT)
+                            END IF
+                        END IF
+                    END IF
+                  IF ( PRESENT(DY) ) THEN
+                      DXDQL = ZERO
+                      DYDQL = DY
+                    ELSE
+                      CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                                  MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+                      IF ( ISTAT .NE. 0 ) THEN
+                          IF ( PRESENT(RC) ) THEN
+                              RC = ISTAT
+                              RETURN
+                            ELSE
+                              CALL EXTCDE (ISTAT)
+                            END IF
+                        END IF
+                    END IF
+                  IF ( LLG .AND. SPHR ) THEN
+                      FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+                      DXDPL = DXDPL*FACX
+                      DYDPL = DYDPL*FACY
+                      DXDQL = DXDQL*FACX
+                      DYDQL = DYDQL*FACY
+                    END IF
+                  GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+                END IF
               IF ( GSQRL .LT. ZERO ) THEN
                   ISTAT = 1
                   WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
@@ -4525,7 +4646,7 @@
 ! -------------------------------------------------------------------- /
 ! 4.  Clean up
 !
-      DEALLOCATE ( K, C )
+      DEALLOCATE ( K, C, K2, C2 )
 
       END SUBROUTINE W3CGDM_R8
 !/
