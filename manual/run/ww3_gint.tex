@@ -14,7 +14,10 @@ This post processor program takes field data from several overlapping grids
 and produces a unified output file. The different model definition and field
 output files are identified by the unique identifier associated with each
 specific grid. At this moment the program works with curvilinear and
-rectilinear grids.
+rectilinear grids. A weights file {\file WHTGRIDINT.bin} is written 
+that can be read in subsequent runs using identical origin-destination grids, 
+saving substantial time in cases using large number of input grids and/or 
+high-resolution target grids.
 
 \inpfile{ww3_gint.tex}
 

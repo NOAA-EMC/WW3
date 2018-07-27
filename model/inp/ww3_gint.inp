@@ -28,6 +28,9 @@ $ Upon execution of the code an out_grd.grd4 is generated via
 $ interpolation of output fields from the various out_grd.grdN
 $ (N varying from 1 to 3) files.
 $
+$ Choice of no extrapolation [0] or to extrapolate [1] with wet points [2]
+ 0
+$
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $ 
