@@ -66,7 +66,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SREF(A, CG, WN, EMEAN, FMEAN, DEPTH, CX1, CY1, REFLC, REFLD,     &
-                         DELX, DELY, DELA, TRNX, TRNY, BERG, DT,  IX, IY,S)
+                         TRNX, TRNY, BERG, DT,  IX, IY,S)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -148,9 +148,10 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN,  &
-                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
-                          SIG2, DSII, IOBPD, GTYPE, UNGTYPE
-!/IG1  USE W3GDATMD, ONLY : IGPARS, XYB
+                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, FLAGLL, &
+                          SIG2, DSII, IOBPD, GTYPE, UNGTYPE, MAPFS, CLGTYPE, RLGTYPE
+      USE W3GDATMD, ONLY : XYB, CLATS, HPFAC, HQFAC, SX, SY, SI
+!/IG1 USE W3GDATMD, ONLY : IGPARS
 !/IG1  USE W3GIG1MD
 !/IG1  USE W3CANOMD, ONLY : W3ADD2NDORDER
 !/IG1  USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
@@ -166,7 +167,7 @@
       REAL, INTENT(INOUT)     :: A(NSPEC)
       REAL, INTENT(IN)        :: CX1, CY1, DT
       INTEGER, INTENT(IN)     :: REFLD(6), IX, IY
-      REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
+      REAL, INTENT(IN)        :: REFLC(4), TRNX, &
                                  TRNY, BERG
       REAL, INTENT(OUT)       :: S(NSPEC)
 !/
@@ -175,10 +176,11 @@
 !/ 
       INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, ITH2X, ITH2Y, &
                          NRS, IK1
-      INTEGER         :: ICALC
+      INTEGER         :: ISEA, ICALC
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL         :: IGBCOVERWRITE, IGSWELLMAX 
       REAL            :: R1, R2, R3, R4, R2X, R2Y, DEPTHIG
+      REAL            :: DELA, DELX, DELY, FACX
       REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &
                          RAMP1, RAMP2, RAMP4, MICHEFAC, SLOPE
      REAL             :: HS, HIG, HIG1, HIG2, EB, SB, EMEANA, FMEAN2,   &
@@ -202,6 +204,33 @@
       EMEANA  = 0.
       FMEANA  = 0.
       FMEAN2  = 0.
+
+      DELX=1. 
+      DELY=1. 
+        IF (GTYPE .EQ. UNGTYPE) THEN
+          IF (FLAGLL) THEN
+            FACX   =  1./(DERA * RADIUS) 
+          ELSE 
+            FACX   =  1.
+          END IF
+        END IF
+
+      ISEA = MAPFS (IY,IX) 
+      IF (GTYPE.EQ.RLGTYPE) THEN 
+        DELX=SX*CLATS(ISEA)/FACX
+        DELY=SY/FACX
+        END IF
+      IF (GTYPE.EQ.CLGTYPE) THEN 
+      ! Maybe what follows works also for RLGTYPE ... to be verified
+        DELX=HPFAC(IY,IX)/ FACX
+        DELY=HQFAC(IY,IX)/ FACX 
+        END IF
+
+      IF (GTYPE.EQ.UNGTYPE) THEN 
+        DELX=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+        DELY=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+        END IF
+
       IK1=1
 !/IG1  IK1=NINT(IGPARS(5))+1
 !/IG1  NSPECIGSTART = NINT(IGPARS(5))*NTH
@@ -222,7 +251,6 @@
 ! 1.  Sets reflection term to zero
 !
       ICALC=1
-      S = 0.
 !/IG1      STMP1 = 0.
 !/IG1      STMP2 = 0.
       HS=4.*SQRT(EMEANA)
@@ -236,6 +264,7 @@
 !/IG1! resets IG band energy to zero
 !/IG1!
 !/IG1      DO ICALC=1,2 
+      S = 0.
 !/IG1        IF (IGBCOVERWRITE) A(1:NSPECIGSTART)=0.
 !/IG1        IF (ICALC.EQ.1) A=ATMP2
 !/IG1        IF (ICALC.EQ.2) THEN 
@@ -321,9 +350,10 @@
 !/IG1! Correction: gives a frequency shape ... 
 !/IG1!
 !/IG1              IF (IK.LT.IK1) THEN 
-!/IG1                EFIG1=EFIG1*IGFAC1*1.2*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
+!/IG1 ! The 1.5 exponent of Ardhuin et al. 2014 (see figure 8.a) was probably too high  ... now reduced to 1.0
+!/IG1                EFIG1=EFIG1*IGFAC1*1.2*MIN(1.,0.013/(SIG(IK)*TPIINV))**1.0  
 !/IG1              ELSE 
-!/IG1                EFIG1=EFIG1*IGFAC2*1.2*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
+!/IG1                EFIG1=EFIG1*IGFAC2*1.2*MIN(1.,0.013/(SIG(IK)*TPIINV))**1.0
 !/IG1                END IF
 !/IG1!
 !/IG1! Conversion to action spectral density A(k,theta), assuming isotropic dir. 
@@ -378,10 +408,9 @@
             RAMP2=RAMP0*REFLC(2)
             END IF
 !
-! Special treatment for unstructured grids
+! Special treatment for unstructured grids when not using source term 
 !
-          IF (GTYPE.EQ.UNGTYPE) THEN 
-! FA: this do loop should be commented if reflection method changed ... 
+          IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN 
             DO ITH=1, NTH
               ISPECI=ITH+(IK-1)*NTH
               A(ISPECI)=A(ISPECI)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
@@ -491,7 +520,6 @@
                   END DO  ! ITH2=1,NTH
                 END IF  ! (R1.GT.0.AND.R2.GT.0) 
               END DO  ! ITH=1,NTH
-            
             END IF  ! UNGTYPE
 
           END DO ! loop on IK
@@ -546,6 +574,7 @@
             END DO
           END DO
         END IF
+
 !/IG1     IF (ICALC.EQ.1) THEN 
 !/IG1        STMP1(NSPECIGSTART+1:NSPEC) = S(NSPECIGSTART+1:NSPEC)
 !/IG1     ELSE

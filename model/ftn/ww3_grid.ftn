@@ -631,7 +631,7 @@
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
-!/REF1                                 REFFREQPOW
+!/REF1                                 REFFREQPOW, REFUNSTSOURCE
 !
 !/IG1  LOGICAL                 :: IGSWELLMAX, IGBCOVERWRITE
 !/IG1  INTEGER                 :: IGMETHOD, IGADDOUTP, IGSOURCE,      &
@@ -859,7 +859,7 @@
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
-!/REF1                          REFFREQPOW
+!/REF1                          REFFREQPOW, REFUNSTSOURCE
 !/
 !/RTD      NAMELIST /ROTD/ PLAT, PLON, UNROT
 !/
@@ -2164,6 +2164,7 @@
 !/REF1      REFSLOPE=0.22
 !/REF1      REFSUBGRID=0.
 !/REF1      REFICEBERG=0.
+!/REF1      REFUNSTSOURCE=0.
 !
 !/REF1      CALL READNL ( NDSS, 'REF1', STATUS )
 !/REF1      WRITE (NDSO,969) STATUS
@@ -2508,7 +2509,7 @@
 !
 !/REF1         WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
 !/REF1                    REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
-!/REF1                    REFICEBERG, REFCOSP_STRAIGHT
+!/REF1                    REFICEBERG, REFCOSP_STRAIGHT, REFUNSTSOURCE
 !
 !/IG1         WRITE(NDSO,2977) IGMETHOD, IGADDOUTP, IGSOURCE,         &
 !/IG1                    IGSTERMS, IGBCOVERWRITE, IGSWELLMAX,         &
@@ -3793,7 +3794,7 @@
       FFACBERG=FACBERG
 !/REF1      REFPARS(1)=REFCOAST
 !/REF1      REFPARS(2)=REFSUBGRID
-!/REF1      REFPARS(3)=0.
+!/REF1      REFPARS(3)=REFUNSTSOURCE
 !/REF1      REFPARS(4)=REFICEBERG
 !/REF1      REFPARS(6)=REFFREQ
 !/REF1      REFPARS(7)=REFSLOPE

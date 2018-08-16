@@ -594,14 +594,18 @@ CONTAINS
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IBC,IX,IP
-
+      INTEGER                 ::  IBC, IX
+      INTEGER                 ::  MASK(NX), STATUS(NX)
+!
+      MASK(:)=1
+      CALL SET_IOBP (MASK, STATUS)
+!        
 !/S      CALL STRACE (IENT, 'UG_GETOPENBOUNDARY')      
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
-           !write(*,*) 'TEST', IX, TMPSTA(1,IX), CCON(IX), COUNTCON(IX), ZBIN(1,IX), ZLIM
+           !write(*,*) 'TEST1', IX, TMPSTA(1,IX), CCON(IX), COUNTCON(IX), ZBIN(1,IX), ZLIM
            IF (IX.NE.0) THEN  ! There was a bug in the mesh conversion, OUTSIDE_BOUNDARY(IBC) should not be zero 
-             IF ((TMPSTA(1,IX).EQ.1).AND.(CCON(IX) .LT. COUNTCON(IX))  &
+             IF ((TMPSTA(1,IX).EQ.1).AND.(STATUS(IX).EQ.0)  &
                .AND.(ZBIN(1,IX).LT.ZLIM))  TMPSTA(1,IX)=2  
             END IF       
           END DO     
@@ -2543,6 +2547,7 @@ END SUBROUTINE
 !
       DO IP=1,NX 
         IF ((MAPSTA(1,IP).EQ.2).AND.(IOBP(IP).EQ.0)) IOBPA(IP)=1
+!WRITE(600,*) IP,ITMP(IP),IOBP(IP),IOBPA(IP)
       END DO
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 4'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
@@ -2586,6 +2591,7 @@ END SUBROUTINE
               eDet1 = THR-x1*EVY+y1*EVX
               eDet2 = THR+x2*EVY-y2*EVX
               IF ((eDet1.gt.0.).and.(eDet2.gt.0.)) THEN
+! this is the case of waves going towards the boundary ...
                 IOBPD(ITH,IP)=1
               ENDIF 
             ELSE ! water ...
@@ -2597,7 +2603,8 @@ END SUBROUTINE
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
       DO IP = 1, NX 
-        IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
+!FA debug:  IOBPD(:,IP) = 0 to let the energy in the boundary 
+       IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 0
       END DO
 !2do: recode for mpi 
 !        IF (LBCWA .OR. LBCSP) THEN
@@ -2645,10 +2652,10 @@ END SUBROUTINE
 
 !DO IX=1,NX
 !DO ITH=1,NTH
-! IF (IOBP(IX).EQ.0) WRITE(996,*) IX,ITH,IOBP(IX),IOBPA(IX),IOBPD(ITH,IX) !,REFLD(1:2,MAPFS(1,IX))
+!  WRITE(500+IAPROC,*) IX,ITH,IOBP(IX),IOBPA(IX),IOBPD(ITH,IX) !,REFLD(1:2,MAPFS(1,IX))
 !ENDDO 
 !ENDDO
-!CLOSE(996)
+
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !

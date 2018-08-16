@@ -353,7 +353,7 @@
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
-                          ICESCALES, IICESMOOTH
+                          ICESCALES, IICESMOOTH, REFPARS
 
       USE W3GDATMD, ONLY: FSSOURCE, optionCall
       USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
@@ -525,7 +525,6 @@
 !/S      CALL STRACE (IENT, 'W3SRCE')
 !
 !/T      FLTEST = .TRUE.
-
 !
       DEPTH  = MAX ( DMIN , D_INP )
       IKS1 = 1
@@ -739,7 +738,7 @@
 !
 ! 1.f Prepare output file for !/NNT option
 !
-!/NNT      IF ( IT .eq. 0 ) THEN
+!/NNT      IF ( IT .EQ. 0 ) THEN
 !/NNT          J      = LEN_TRIM(FNMPRE)
 !/NNT          WRITE (FNAME(11:13),'(I3.3)') IAPROC
 !/NNT          OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',   &
@@ -1465,23 +1464,23 @@
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
 !/DEBUGSRC     END IF
-
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
-!/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
+!/REF1                        REFLEC, REFLED, TRNX, TRNY,  &
 !/REF1                        BERG, DTG, IX, IY,  VREF )
-!/REF1          SPEC(:) = SPEC(:)+DTG*VREF(:) 
-!/REF1        ELSE
 !/REF1! Treatment specific to unstructured grids: Dirichlet boundary condition
-!/REF1! the energies in directions from shore are set to zero. 
-!/REF1          IF (GTYPE.EQ.UNGTYPE) THEN 
-!/REF1          IF (IOBP(IX).EQ.0) THEN 
-!/REF1            DO IK=1, NK 
-!/REF1              DO ITH=1, NTH
-!/REF1                IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH)=0.
-!/REF1                END DO
-!/REF1              END DO 
-!/REF1            END IF
+!/REF1! the energies in directions from shore are set to the reflected value
+!/REF1          IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN 
+!/REF1            IF (IOBP(IX).EQ.0) THEN 
+!/REF1              DO IK=1, NK 
+!/REF1                DO ITH=1, NTH
+!/REF1                  IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
+!/REF1                  END DO
+!/REF1                END DO 
+!/REF1              END IF
+!/REF1          ELSE
+!/REF1! If not, we have a Neuman boundary condition with the source term feeding energy
+!/REF1            SPEC(:) = SPEC(:)+DTG*VREF(:) 
 !/REF1            END IF
 !/REF1          END IF
 !

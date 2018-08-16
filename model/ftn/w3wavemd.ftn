@@ -430,6 +430,7 @@
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
+      INTEGER                 :: IXrel
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
                                  DTL0, DTI0, DTI10, DTI50,            &
                                  DTGA, DTG, DTGpre, DTRES,            &
@@ -1556,8 +1557,10 @@
 !/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
 !/PR3                        IF ( FLOGRD(9,3) ) THEN
 !/T                          IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
+!/PDLIB                      IF (.NOT. LPDLIB) THEN
 !/PR3                          CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
 !/PR3                                         MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+!/PDLIB                      ENDIF
 !/PR3                        END IF
 !/PR3                      ELSE 
 !/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
@@ -1654,50 +1657,32 @@
 !/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
 
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-                  DEPTH  = MAX ( DMIN , DW(ISEA) )
-!/PDLIB                  IF(LPDLIB) THEN
-!/PR1!/PDLIB                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR1!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR1!/PDLIB                           DDDX(IY,IX), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR1!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR1!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR1!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA))
-!/PR2!/PDLIB                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR2!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR2!/PDLIB                           DDDX(IY,JSEA), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR2!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR2!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR2!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA))
-!/PR3!/PDLIB                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR3!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR3!/PDLIB                           DDDX(IY,JSEA), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR3!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR3!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR3!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA), &
-!/PR3!/PDLIB                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
-!/PRX!/PDLIB                      CALL W3KTPX
-!/PDLIB                  ELSE
+                           DEPTH  = MAX ( DMIN , DW(ISEA) )
+                           IF (LPDLIB) THEN
+                             IXrel = JSEA
+                           ELSE
+                             IXrel = IX
+                           END IF
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR1                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
+!/PR1                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR1                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR1                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR1                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 !/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR2                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
+!/PR2                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR2                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR2                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR2                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 !/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
+!/PR3                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR3                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR3                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR3                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
 !/PRX                      CALL W3KTPX
-!/PDLIB                   ENDIF
 !
 !/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
 !/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
@@ -1956,49 +1941,31 @@
 
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-!/PDLIB                  IF (LPDLIB) THEN
-!/PR1!/PDLIB                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR1!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR1!/PDLIB                           DDDX(IY,JSEA), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR1!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR1!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR1!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA))
-!/PR2!/PDLIB                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR2!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR2!/PDLIB                           DDDX(IY,IX), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR2!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR2!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR2!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA))
-!/PR3!/PDLIB                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR3!/PDLIB                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR3!/PDLIB                           DDDX(IY,JSEA), DDDY(IY,JSEA), CX(ISEA),       &
-!/PR3!/PDLIB                           CY(ISEA), DCXDX(IY,JSEA), DCXDY(IY,JSEA),     &
-!/PR3!/PDLIB                           DCYDX(IY,JSEA), DCYDY(IY,JSEA),               &
-!/PR3!/PDLIB                           DCDX(:,IY,JSEA), DCDY(:,IY,JSEA), VA(:,JSEA), &
-!/PR3!/PDLIB                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
-!/PRX!/PDLIB                      CALL W3KTPX
-!/PDLIB                  ELSE
-!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR1                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
-!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR2                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
-!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
-!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX),               &
-!/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
+                           IF (LPDLIB) THEN
+                             IXrel = JSEA
+                           ELSE
+                             IXrel = IX
+                           END IF
+!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+!/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+!/PR1                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR1                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR1                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR1                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+!/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+!/PR2                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR2                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR2                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR2                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+!/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+!/PR3                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
+!/PR3                           CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
+!/PR3                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
+!/PR3                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 !/PRX                      CALL W3KTPX
-!/PDLIB                    ENDIF
 !
 !/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
 !/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &

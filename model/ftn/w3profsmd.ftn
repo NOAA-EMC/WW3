@@ -507,7 +507,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB, REFPARS
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -652,18 +652,19 @@
 
              DO IP = 1, NX
 !
-! IOBPD=0  : waves coming from land
+! IOBPD=0  : waves coming from land (or outside grid) 
 ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)*IOBDP(IP)) 
-                       !+ AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values 
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP))
+!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
                END DO
 !
-             AC = U
-!
-! 5 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
 !
              IF ( FLBPI ) THEN 
+!
+! 4.1 In this case the boundary is read from the nest.ww3 file 
+!
                RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
                RD2=RD20
                IF ( RD2 .GT. 0.001 ) THEN
@@ -676,16 +677,28 @@
 !
 ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
 !
-              DO IBI=1, NBI
+               DO IBI=1, NBI
                  IP    = MAPSF(ISBPI(IBI),1)
                  BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                              / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
-                 AC(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
+                 U(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
                           BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
                  END DO
+             ELSE
+!
+! 4.2 In this case the boundary is given by the initial conditions (e.g. in regtest tp2.7) 
+!
+               DO IP=1, NX
+                 U(IP) = AC(IP)*DBLE(IOBPA(IP)*(1-IOBPD(ITH,IP)))  
+                 END DO
                END IF  
-           END DO ! IT        
-!      CALL EXTCDE ( 99 )
+!
+! 5. Update of the spectrum
+!
+             AC = U
+!
+           END DO ! End of loop on time steps        
+!        CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
@@ -744,7 +757,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ
+                            IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ, REFPARS
        USE W3WDATMD, ONLY: TIME     
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -786,7 +799,7 @@
 !:
 ! local double
 !
-         REAL*8  :: UTILDE 
+         REAL*8  :: UTILDE, BOUNDARY_FORCING
          REAL*8  :: FT, CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
@@ -891,36 +904,50 @@
                ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
              END DO
 
-              DO IP = 1, NX
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*IOBPD(ITH,IP)  &
-                       + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected data
+             DO IP = 1, NX
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*IOBPD(ITH,IP) 
+!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
                END DO
+!
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+!
+             IF ( FLBPI ) THEN 
+!
+! 4.1 In this case the boundary is read from the nest.ww3 file 
+!
+               RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+               RD2=RD20
+               IF ( RD2 .GT. 0.001 ) THEN
+                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
+                 RD1    = 1. - RD2
+               ELSE
+                 RD1    = 0.
+                 RD2    = 1.
+                 END IF
+!
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
+!
+               DO IBI=1, NBI
+                 IP    = MAPSF(ISBPI(IBI),1)
+                 BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
+                 U(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
+                          BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
+                 END DO
+             ELSE
+!
+! 4.2 In this case the boundary is given by the initial conditions (e.g. in regtest tp2.7) 
+!
+               DO IP=1, NX
+                 U(IP) = AC(IP)*DBLE(IOBPA(IP)*(1-IOBPD(ITH,IP)))  
+                 END DO
+               END IF  
+!
+! 5. Update of the spectrum
 !
              AC = U
 !
-! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
-!
-            IF ( FLBPI ) THEN 
-             RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-             RD2=RD20
-             IF ( RD2 .GT. 0.001 ) THEN
-                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
-                 RD1    = 1. - RD2
-              ELSE
-                 RD1    = 0.
-                 RD2    = 1.
-              END IF
-!
-! Time interpolation as done in rect grids
-!
-               DO IBI=1, NBI
-                     IP    = MAPSF(ISBPI(IBI),1)
-                     AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             *IOBPA(IP)*(1-IOBPD(ITH,IP))/ CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-               ENDDO
-             END IF  
-!          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
-           END DO ! IT        
+           END DO ! End of loop on time steps      
 !      CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
@@ -983,7 +1010,7 @@
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
-                            TRIA, NNZ
+                            TRIA, NNZ, REFPARS
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -1026,6 +1053,7 @@
 !:
 ! local double
 !
+         REAL*8  :: BOUNDARY_FORCING
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: U(NX)
          REAL*8  :: DTMAXGL
@@ -1186,50 +1214,61 @@
            WRITE(*,*) 'AU, FLJAU, FLJU', SUM(AU), SUM(FLJAU), SUM(FLJU)
          END IF
 
-          DO IP = 1,NX
-            U(IP) = MAX(0.d0,X(IP))*IOBPD(ITH,IP)  &
-                       + DBLE(AC(IP))*(1-IOBPD(ITH,IP))  ! restores reflected boundary
-
-            END DO
-
+         DO IP = 1,NX
+           U(IP) = MAX(0.d0,X(IP))*IOBPD(ITH,IP)
+!/REF1           IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+           END DO
+!
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+!
+         IF ( FLBPI ) THEN 
+!
+! 4.1 In this case the boundary is read from the nest.ww3 file 
+!
+           RD1=RD10
+           RD2=RD20
+           IF ( RD2 .GT. 0.001 ) THEN
+             RD2    = MIN(1.,MAX(0.,RD1/RD2))
+             RD1    = 1. - RD2
+           ELSE
+             RD1    = 0.
+             RD2    = 1.
+             END IF
+!
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
+!
+           DO IBI=1, NBI
+             IP    = MAPSF(ISBPI(IBI),1)
+             BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                                 / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
+             U(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
+                     BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
+             END DO
+         ELSE
+!
+! 4.2 In this case the boundary is given by the initial conditions (e.g. in regtest tp2.7) 
+!
+           DO IP=1, NX
+             U(IP) = AC(IP)*DBLE(IOBPA(IP)*(1-IOBPD(ITH,IP)))  
+             END DO
+           END IF  
+!
+! 5. Update of the spectrum
+!
+         AC = REAL(U)
 !        IF (SUM(AC) .GT. 0. ) THEN
-        IF (.FALSE.) THEN
-          WRITE(*,*) 'SOLUTION'
-          WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
-          WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
-          WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
-          WRITE(*,*) 'ASPAR, JAA, IAA', SUM(ASPAR), SUM(JAA), SUM(IAA)
-          WRITE(*,*) 'AU, FLJAU, FLJU', SUM(AU), SUM(FLJAU), SUM(FLJU)
-        END IF
-
-          AC = REAL(U)
-!
-! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
-!
-            IF ( FLBPI ) THEN 
-             RD1=RD10
-             RD2=RD20
-             IF ( RD2 .GT. 0.001 ) THEN
-                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
-                 RD1    = 1. - RD2
-              ELSE
-                 RD1    = 0.
-                 RD2    = 1.
-              END IF
-!
-! Time interpolation as done in rect grids
-!
-               DO IBI=1, NBI
-                 IP    = MAPSF(ISBPI(IBI),1)
-                 AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                           *IOBPA(IP)*(1-IOBPD(ITH,IP)) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-                 END DO
-             END IF  
-!          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
+!        IF (.FALSE.) THEN
+!          WRITE(*,*) 'SOLUTION'
+!          WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
+!          WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
+!          WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
+!          WRITE(*,*) 'ASPAR, JAA, IAA', SUM(ASPAR), SUM(JAA), SUM(IAA)
+!          WRITE(*,*) 'AU, FLJAU, FLJU', SUM(AU), SUM(FLJAU), SUM(FLJU)
+!        END IF
 
 !      CALL EXTCDE ( 99 )
 !/
-!/ End of W3XYPFSN ----------------------------------------------------- /
+!/ End of W3XYPFSNIMP------------------------------------------------- /
 !/
       END SUBROUTINE W3XYPFSNIMP
       
@@ -1285,7 +1324,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA, REFPARS
        USE W3WDATMD, ONLY: TIME               
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -1328,7 +1367,7 @@
 !:
 ! local double
 !
-         REAL*8  :: UTILDE 
+         REAL*8  :: UTILDE, BOUNDARY_FORCING
          REAL*8  :: FT, CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
@@ -1487,35 +1526,48 @@
 !
 ! IOBPD is the switch for removing energy coming from the shoreline 
 !
-              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP)) &
-                       + DBLE(AC(IP))*(1-IOBPD(ITH,IP))  ! restores reflected boundary 
-              END DO
-            AC = U
+              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP)) !/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+               END DO
 !
-! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
 !
-            IF ( FLBPI ) THEN 
-             RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-             RD2=RD20
-             IF ( RD2 .GT. 0.001 ) THEN
+             IF ( FLBPI ) THEN 
+!
+! 4.1 In this case the boundary is read from the nest.ww3 file 
+!
+               RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+               RD2=RD20
+               IF ( RD2 .GT. 0.001 ) THEN
                  RD2    = MIN(1.,MAX(0.,RD1/RD2))
                  RD1    = 1. - RD2
-              ELSE
+               ELSE
                  RD1    = 0.
                  RD2    = 1.
-              END IF
+                 END IF
 !
-! Time interpolation as done in rect grids
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
 !
                DO IBI=1, NBI
-                     IP    = MAPSF(ISBPI(IBI),1)
-                     AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             *IOBPA(IP)*(1-IOBPD(ITH,IP))/ CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-               ENDDO
-             END IF  
-!          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
-
-           END DO ! IT        
+                 IP    = MAPSF(ISBPI(IBI),1)
+                 BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
+                 U(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
+                          BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
+                 END DO
+             ELSE
+!
+! 4.2 In this case the boundary is given by the initial conditions (e.g. in regtest tp2.7) 
+!
+               DO IP=1, NX
+                 U(IP) = AC(IP)*DBLE(IOBPA(IP)*(1-IOBPD(ITH,IP)))  
+                 END DO
+               END IF  
+!
+! 5. Update of the spectrum
+!
+             AC = REAL(U)
+!
+           END DO ! End of loop on time steps      
 !      CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
