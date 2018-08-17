@@ -1044,6 +1044,8 @@ fi
 
 # 3.f Main program ---------------------------------------------------------- #
 
+cp $path_i/bottomspectrum.inp .
+
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
@@ -1534,7 +1536,7 @@ fi
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-# select inp/nml files
+# select inp/nml format for input file to program $prog
 if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
 then
   inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"

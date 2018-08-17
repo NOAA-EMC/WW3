@@ -1578,6 +1578,7 @@
 !
             END DO
 
+WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
 
 !
 ! Computes 2nd order spectrum 

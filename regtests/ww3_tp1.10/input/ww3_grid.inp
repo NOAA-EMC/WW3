@@ -1,0 +1,41 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D PROPAGATION SCATTERING    '
+$
+   1.1 0.04 24 120 0.
+$
+   F T F F F T
+  400. 80. 80. 1.
+$
+  &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   51    3
+ 2000. 2000.  1.
+  0.  -2000.  1.
+$
+  -5. 5.75  10  -20. 2 1 '(....)' 'UNIT' 'input'
+$
+  1080*1
+$
+   10 3 1 '(....)' 'PART' 'mapsta.inp'
+$ Input boundary points ---------------------------------------------- $
+$   An unlimited number of lines identifying points at which input 
+$   boundary conditions are to be defined. If the actual input data is
+$   not defined in the actual wave model run, the initial conditions
+$   will be applied as constant boundary conditions. Each line contains:
+$     Discrete grid counters (IX,IY) of the active point and a
+$     connect flag. If this flag is true, and the present and previous
+$     point are on a grid line or diagonal, all intermediate points
+$     are also defined as boundary points.
+$
+   50    2   F
+$
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

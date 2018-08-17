@@ -142,7 +142,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, RREF, &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, &
                           REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
         SIG2, DSII
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -199,19 +199,17 @@
 !     *** initialization, including reading data from files. ***
 !     **********************************************************
 !
-      IF ( RREF(3)) THEN
-        IF ( FIRST ) THEN
-          CALL INSBS1( 1 )
-          FIRST  = .FALSE.
-          END IF
-        IF (( (ABS(CX1)+ABS(CY1)).EQ.0.).AND.(MATRICES.EQ.0) ) THEN
-          kwmin=MAX(MAX(dkbx,dkby),SIG(1)**2/GRAV)
-          kwmax=MIN(nkbx*dkbx,nkby*dkby)*0.25
-          WRITE(*,*) 'k range:',kwmin,kwmax,SIG(1)**2/GRAV
-          CALL INSBS1( 2 )
-          MATRICES  = 1
-          END IF
-       END IF
+      IF ( FIRST ) THEN
+        CALL INSBS1( 1 )
+        FIRST  = .FALSE.
+        END IF
+      IF (( (ABS(CX1)+ABS(CY1)).EQ.0.).AND.(MATRICES.EQ.0) ) THEN
+        kwmin=MAX(MAX(dkbx,dkby),SIG(1)**2/GRAV)
+        kwmax=MIN(nkbx*dkbx,nkby*dkby)*0.25
+        WRITE(*,*) 'k range:',kwmin,kwmax,SIG(1)**2/GRAV
+        CALL INSBS1( 2 )
+        MATRICES  = 1
+        END IF
 !
 ! 1.  Sets scattering term to zero
 !
@@ -222,14 +220,16 @@
 !
 ! 3.  Bottom scattering ================================================== *
 !
-      IF ( DEPTH*WN(1) .LE. 6 .AND. RREF(3) ) THEN
+      IF ( DEPTH*WN(1) .LE. 6 ) THEN 
 !
 ! 3.a Ardhuin and Herbers JFM 2000: no current
 !
         IF ((ABS(CX1)+ABS(CY1).EQ.0.).AND.(MATRICES.EQ.1)) THEN 
           DO IK=1,NK
             KD=WN(IK)*DEPTH
-            IF (KD.LT.6) THEN 
+            IF ( KD .LE. 6 .AND.WN(IK).LT.kwmax ) THEN
+! Test on kwmax means that scattering is not computed if interaction goes beyond the shortest resolved 
+! bottom component. This should probably be replaced by a warning... 
               Kfactor=(WN(IK)**4)*SIG(IK)*pi*4.             &      
                    /(SINH(2*KD)*(2*KD+SINH(2*KD)))
               kscaled=(nkscat-2)*(WN(IK)-kwmin)/(kwmax-kwmin)
@@ -581,7 +581,7 @@
          ALLOCATE(V(NTH,NTH))
          ALLOCATE(D(NTH))
          DO I=0,nkscat-1
-           AMAT(:,:)=SCATMATA(I,:,:1)
+           AMAT(:,:)=SCATMATA(I,:,:)
 !
 !diagonalizes the matrix A
 !D is a vector with the eigenvalues, V is the matrix made of the 

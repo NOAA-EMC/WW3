@@ -112,8 +112,7 @@
 # ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../model ww3_tic1.1    #
 # ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../model ww3_tic1.1    #
 #                                                                           #
-# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr             #
-#      -i input_IC2_ifr -c gnu_debug  ../model ww3_tic1.1                   #
+# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr -i input_IC2_ifr -c gnu_debug  ../model ww3_tic1.1                  
 # bin/run_test -g 1000m_nondisp -c gnu_debug                                #
 #      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../model ww3_tic1.1 #
 # ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../model ww3_tic1.1    #

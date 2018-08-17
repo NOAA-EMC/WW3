@@ -1,0 +1,32 @@
+#############################################################################
+#                                                                           #
+# ww3_tp1.10 Test script for WW-III, one-dimensional propagation.           #
+#           Bottom scattering  beach        œ                               #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS1 !/XX0                         #
+#                        Select bottom scattering option.                   #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+#   * input options :                                                       #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  ./bin/run_test  -o netcdf ../model ww3_tp2.10                            # 
+#                                                                           #
+#                                            Fabrice Ardhuin,  Aug 2018     #
+#                                                   Last Mod : Nov 2018     #
+#                                                                           #
+#    Copyright 2018 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
