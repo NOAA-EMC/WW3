@@ -226,7 +226,7 @@
 #sort:s_ice:
       s_ice  ) TY='one'
                ID='ice sink term'
-               OK='IC0 IC1 IC2 IC3 IC4' ;;
+               OK='IC0 IC1 IC2 IC3 IC4 IC5' ;;
 #sort:s_is:
       s_is  ) TY='one'
                ID='ice scattering term'
@@ -728,6 +728,7 @@
    IC2) ic='w3sic2md' ;;
    IC3) ic='w3sic3md' ;;
    IC4) ic='w3sic4md' ;;
+   IC5) ic='w3sic5md' ;;
   esac
 
   is=$NULL
@@ -1288,6 +1289,7 @@
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;
          'W3SIC4MD'     ) modtest=w3sic4md.o ;;
+         'W3SIC5MD'     ) modtest=w3sic5md.o ;;
          'W3SIS1MD'     ) modtest=w3sis1md.o ;;
          'W3SIS2MD'     ) modtest=w3sis2md.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;

@@ -51,6 +51,7 @@
 !/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
 !/                  (in source terms)
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -110,7 +111,7 @@
 !     - Transfer file written to ww3.yymmddhh.spc with multiple
 !       spectra and times in file. yymmddhh relates to first
 !       output (NDSTAB).
-!     - !/IC1 !/IC2 !/IC3 are not included in dissipation term
+!     - !/IC1 !/IC2 !/IC3 !/IC5 are not included in dissipation term
 !       FIXME: ICE is a dummy variable at the moment
 !              Include ice parameters in point output file out_pnt.ww3
 !              Ice coupling to SIN, SDS and SIC similar to w3srcemd.ftn
@@ -967,6 +968,7 @@
 !/IC1      WRITE(NDSO,3960)
 !/IC2      WRITE(NDSO,3960)
 !/IC3      WRITE(NDSO,3960)
+!/IC5      WRITE(NDSO,3960)
 !
         CALL T2D(TIME,STARTDATE,IERR)
         WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2), &
@@ -1300,6 +1302,9 @@
 !/IC3 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
 !/IC3               '     Ice source terms !/IC3 skipped'/            &
 !/IC3               '     in dissipation term.'/)
+!/IC5 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
+!/IC5               '     Ice source terms !/IC5 skipped'/            &
+!/IC5               '     in dissipation term.'/)
 !/
 !/ Internal subroutine W3EXNC ---------------------------------------- /
 !/

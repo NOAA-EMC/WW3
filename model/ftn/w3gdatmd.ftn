@@ -86,6 +86,7 @@
 !/    26-Mar-2018 : Add FSWND optional variable.  JGLi  ( version 6.02 )
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 ) 
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -671,6 +672,7 @@
 !/IC4        INTEGER, POINTER      :: IC4PARS(:)
 !/IC4        REAL, POINTER         :: IC4_KI(:)
 !/IC4        REAL, POINTER         :: IC4_FC(:)
+!/IC5        REAL,    POINTER      :: IC5PARS(:)
 !/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
 ! unstructured data
@@ -948,6 +950,7 @@
 !/IC4      INTEGER, POINTER        :: IC4PARS(:)
 !/IC4      REAL, POINTER           :: IC4_KI(:)
 !/IC4      REAL, POINTER           :: IC4_FC(:)
+!/IC5      REAL,    POINTER        :: IC5PARS(:)
 !/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
@@ -1489,6 +1492,8 @@
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC4       ALLOCATE ( GRIDS(IMOD)%IC4_FC(NIC4), STAT=ISTAT )
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
+!/IC5       ALLOCATE ( GRIDS(IMOD)%IC5PARS(8), STAT=ISTAT )
+!/IC5       CHECK_ALLOC_STATUS ( ISTAT )
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(24), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
@@ -1904,6 +1909,7 @@
 !/IC4      IC4PARS => GRIDS(IMOD)%IC4PARS
 !/IC4      IC4_KI => GRIDS(IMOD)%IC4_KI
 !/IC4      IC4_FC => GRIDS(IMOD)%IC4_FC
+!/IC5      IC5PARS => GRIDS(IMOD)%IC5PARS
 !/IS2      IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY

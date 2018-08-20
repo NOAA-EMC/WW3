@@ -551,6 +551,7 @@
 !/                  (F. Ardhuin)
 !/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -645,6 +646,7 @@
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
 !/IC4      USE W3SIC4MD
+!/IC5      USE W3SIC5MD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/TRX      USE W3STRXMD
@@ -1020,6 +1022,7 @@
 !/IC2                              CG_ICE, ALPHA_LIU, R )
 !/IC3                CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 !/IC4                CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA ) 
+!/IC5                CALL W3SIC5 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 
 !/BT4                    IX=1    ! to be fixed later 
 !/BT4                    IY=1    ! to be fixed later 

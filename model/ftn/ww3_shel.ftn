@@ -553,6 +553,7 @@
 !/BT8      JFIRST=-7
 !/BT9      JFIRST=-7
 !/IC4      JFIRST=-7
+!/IC5      JFIRST=-7
 
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 4'
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'JFIRST=', JFIRST

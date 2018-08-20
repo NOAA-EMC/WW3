@@ -5,7 +5,7 @@
 #  (this test was previously known as ice_test6)                            #
 #                                                                           #
 # For recommended switches, please refer to switch files in the input       #
-# directories input_IC1, input_IC2, input_IC3, input_IC4                    #
+# directories input_IC1, input_IC2, input_IC3, input_IC4, input_IC5         #
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
@@ -51,6 +51,10 @@
 #            IC4METHOD = 5 - Simple ki step function                        #
 #            IC4METHOD = 6 - Simple ki step function via namelist           #
 #            IC4METHOD = 7 - Doble et al. (GRL 2015)                        #
+#          IC5 = Mosig et al. (JGR 2015), dissipation is caused by          #
+#                interaction between waves and ice, where ice layer is      #
+#                represented as a continuous viscoelastic layer             #
+#                                                                           #
 #   Scattering of waves by ice floes will be treated separately from        #
 #   IC1/IC2/IC3/IC4 and and is not included in this test case.              #
 #                                                                           #
@@ -149,6 +153,13 @@
 # ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG                     #
 #        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
 #                                                                           #
+#  IC5:                                                                     #
+# ./bin/run_test -g 350m  -w w350m_IC5  -i input_IC5 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m -w w1000m_IC5 -i input_IC5 ../model ww3_tic1.1    #
+# ./bin/run_test -g 2500m -w w2500m_IC5 -i input_IC5 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m  -w w1000m_IC5  -i input_IC5 -o both              #
+#       ../model ww3_tic1.1                                                 #
+#                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
 #                                     updated: Erick Rogers, Nov 2013       #
@@ -157,7 +168,8 @@
 #                                     updated: Fabrice Ardhuin, Sep 2014    #
 #                                     updated: Clarence Collins, Dec 2015   #
 #                                     updated: Erick Rogers, Apr 2016       #
-#                                last updated: Jessica Meixner, May 2016    #
+#                                     updated: Jessica Meixner, May 2016    #
+#                                last updated: Qingxiang Liu, Jul 2018      #
 #    Copyright 2009-2014 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #

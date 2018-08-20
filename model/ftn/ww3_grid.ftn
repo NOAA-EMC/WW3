@@ -99,6 +99,7 @@
 !/    15-May-2018 : Dry sea points over zlim            ( version 6.04 )
 !/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
 !/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -446,6 +447,8 @@
 !                  (Wang and Shen JGR 2010)
 !     !/IC4   Sink term for empirical, frequency-dependent attenuation
 !                   in ice (Wadhams et al. 1988: JGR 93 (C6) 6799-6818)
+!     !/IC5   Sink term for interaction with ice (Mosig et al. method)
+!                  (Mosig et al. 2015: JGR)
 !
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
@@ -652,6 +655,10 @@
 
 !/IC4  INTEGER                 :: IC4METHOD
 !/IC4  REAL                    :: IC4KI(NIC4), IC4FC(NIC4)
+!
+!/IC5  REAL                    :: IC5MINIG, IC5MINWT,                  &
+!/IC5                             IC5MAXKRATIO, IC5MAXKI, IC5MINHW,    &
+!/IC5                             IC5MAXITER, IC5RKICK, IC5KFILTER
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -770,6 +777,9 @@
 !/IC3                      IC3CHENG, USECGICE, IC3HILIM, IC3KILIM,      &
 !/IC3                      IC3VISC, IC3ELAS, IC3DENS, IC3HICE
 !/IC4      NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
+!/IC5      NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
+!/IC5                       IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK,&
+!/IC5                       IC5KFILTER
 !/IG1      NAMELIST /SIG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -1118,6 +1128,8 @@
 !/IC3      FLIC   = .TRUE.
 !/IC4      NRIC   = NRIC + 1
 !/IC4      FLIC   = .TRUE.
+!/IC5      NRIC   = NRIC + 1
+!/IC5      FLIC   = .TRUE.
 !
 !/IS1      NRIS   = NRIS + 1
 !/IS1      FLIS   = .TRUE.
@@ -1829,6 +1841,11 @@
 !/IC4            //'Empirical method.','        '&
 !/IC4            //'Required field input: ice parameters (varies).'
 !
+!/IC5      WRITE (NDSO,935)
+!/IC5      WRITE(NDSO,'(A/A/)')'    Sice will be calculated using '&
+!/IC5            //'Mosig et al. method.','        '&
+!/IC5            //'Required field input: ice parameters 1, 2, 3 and 4.'
+!
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
@@ -2214,7 +2231,15 @@
 !/IC4       IC4METHOD = 1 !switch for methods within IC4
 !/IC4       IC4KI=0.0
 !/IC4       IC4FC=0.0
-
+!
+!/IC5       IC5MINIG      = 1.
+!/IC5       IC5MINWT      = 0.
+!/IC5       IC5MAXKRATIO  = 1E9
+!/IC5       IC5MAXKI      = 100.
+!/IC5       IC5MINHW      = 300.
+!/IC5       IC5MAXITER    = 100.
+!/IC5       IC5RKICK      = 0.
+!/IC5       IC5KFILTER    = 0.0025
 !
 !/IC2      CALL READNL ( NDSS, 'SIC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
@@ -2224,6 +2249,12 @@
 !
 !/IC4      CALL READNL ( NDSS, 'SIC4 ', STATUS )
 !/IC4      WRITE (NDSO,971) STATUS
+!
+!/IC5      CALL READNL ( NDSS, 'SIC5 ', STATUS )
+!/IC5      WRITE (NDSO,971) STATUS
+!/IC5      WRITE (NDSO,2971) IC5MINIG, IC5MINWT, IC5MAXKRATIO,         &
+!/IC5                        IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK, &
+!/IC5                        IC5KFILTER
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -2527,6 +2558,10 @@
 !/IC3                          IC3HICE, IC3VISC, IC3DENS, IC3ELAS
 !
 !/IC4         WRITE(NDSO,NML=SIC4)
+!
+!/IC5         WRITE(NDSO,2981) IC5MINIG, IC5MINWT, IC5MAXKRATIO,       &
+!/IC5                          IC5MAXKI, IC5MINHW, IC5MAXITER,         &
+!/IC5                          IC5RKICK, IC5KFILTER
 !
 !/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
 !
@@ -4243,6 +4278,16 @@
 !/IC4      IC4_KI=IC4KI
 !/IC4      IC4_FC=IC4FC
 !
+!/IC5       IC5PARS(:)=0.
+!/IC5       IC5PARS(1)=IC5MINIG
+!/IC5       IC5PARS(2)=IC5MINWT
+!/IC5       IC5PARS(3)=IC5MAXKRATIO
+!/IC5       IC5PARS(4)=IC5MAXKI
+!/IC5       IC5PARS(5)=IC5MINHW
+!/IC5       IC5PARS(6)=IC5MAXITER
+!/IC5       IC5PARS(7)=IC5RKICK
+!/IC5       IC5PARS(8)=IC5KFILTER
+!
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = IS2BACKSCAT
 !/IS2      IS2PARS(3)=0.
@@ -5075,6 +5120,9 @@
 !/IC4  935 FORMAT (/'  Dissipation via ice parameters (SIC4).'&
 !/IC4           ,/' --------------------------------------------------')
 !
+!/IC5  935 FORMAT (/'  Dissipation via ice parameters (SIC5).'&
+!/IC5           ,/' --------------------------------------------------')
+!
 !/IS0 944 FORMAT  (/'  Ice scattering not defined.'/)
 !/IS1 945 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS1              ' --------------------------------------------------')
@@ -5227,6 +5275,17 @@
 !/IC3               ' --------------------------------------------------')
 !/IC4  971 FORMAT (/'  Empirical wave-ice physics   ',A/      &
 !/IC4               ' --------------------------------------------------')
+!/IC5  971 FORMAT (/'  Visco-elastic ice layer (SIC5) ',A/      &
+!/IC5               ' --------------------------------------------------')
+!/IC5 2971 FORMAT ( '       Min. Ice shear modulus G     : ', E10.1/, &
+!/IC5               '       Min. Wave period T           : ', F7.2/,  &
+!/IC5               '       Max. Wavenumber Ratio (Ko/Kr): ', E10.1/, &
+!/IC5               '       Max. Attenu. Rate (Ki)       : ', E10.1/, &
+!/IC5               '       Min. Water depth (d)         : ', F5.0/,  &
+!/IC5               '       Max. # of Newton Iter.       : ', F5.0/,  &
+!/IC5               '       Use Rand. Kick               : ', F5.0/,  &
+!/IC5               '       Excluded Imag. Corridor      : ', F9.4/ )
+!
  8972 FORMAT ( '       Wind input reduction factor in presence of ', &
                /'         ice :',F6.2, &
                /'         (0.0==> no reduction and 1.0==> no wind', &
@@ -5268,6 +5327,12 @@
                '        IC3KILIM = ',E9.2,', IC3HICE = ',E9.2,        &
                ', IC3VISC = ',E9.2,','/                               &
                '        IC3DENS = ',E9.2,', IC3ELAS = ',E9.2,' /')
+!
+ 2981 FORMAT ( '  &SIC5 IC5MINIG = ', E9.2, ', IC5MINWT = ', F5.2,    &
+               ', IC5MAXKRATIO = ', E9.2, ','/                        &
+               '        IC5MAXKI = ', E9.2, ', IC5MINHW = ', F4.0,    &
+               ', IC5MAXITER = ', F4.0, ','/                          &
+               '        IC5RKICK = ', F2.0, ', IC5KFILTER = ', F7.4,' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1,', PMOVE =',F6.3,','/           &
@@ -5775,6 +5840,8 @@
 !/IC3                         READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
 !/IC4                        CASE('SIC4 ') 
 !/IC4                         READ (NDS,NML=SIC4,END=801,ERR=802,IOSTAT=J)
+!/IC5                        CASE('SIC5 ') 
+!/IC5                         READ (NDS,NML=SIC5,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

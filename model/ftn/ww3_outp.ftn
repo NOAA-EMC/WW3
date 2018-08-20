@@ -58,7 +58,7 @@
 !/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
 !/                  (in source terms)
 !/    27-Jun-2017 : Expanding WMO table to 2 digits JHA ( version 6.02 )
-
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -143,7 +143,7 @@
 !     - Transfder file written to ww3.yymmddhh.spc with multiple
 !       spectra and times in file. yymmddhh relates to first
 !       output (NDSTAB).
-!     - !/IC1 !/IC2 !/IC3 !/IC4 are not included in dissipation term
+!     - !/IC1 !/IC2 !/IC3 !/IC4 !/IC5 are not included in dissipation term
 !       FIXME: ICE is a dummy variable at the moment
 !              Include ice parameters in point output file out_pnt.ww3
 !              Ice coupling to SIN, SDS and SIC similar to w3srcemd.ftn
@@ -676,6 +676,7 @@
 !/IC2      WRITE(NDSO,3960)
 !/IC3      WRITE(NDSO,3960)
 !/IC4      WRITE(NDSO,3960)
+!/IC5      WRITE(NDSO,3960)
 
       DO
         DTEST  = DSEC21 ( TIME , TOUT )
@@ -883,6 +884,9 @@
 !/IC4 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
 !/IC4               '     Ice source terms !/IC4 skipped'/            &
 !/IC4               '     in dissipation term.'/)
+!/IC5 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
+!/IC5               '     Ice source terms !/IC5 skipped'/            &
+!/IC5               '     in dissipation term.'/)
 !
 !/
 !/ Internal subroutine W3EXPO ---------------------------------------- /

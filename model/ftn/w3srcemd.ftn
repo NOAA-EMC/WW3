@@ -116,8 +116,9 @@
 !/    13-Dec-2015 : Implicit integration of Sice (F.A.) ( version 5.10 )
 !/    30-Jul-2017 : Adds TWS in interface               ( version 6.04 )
 !/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
-!/    01-Jan-2018 : Add implicit source term integration ( version 6.04 )
+!/    01-Jan-2018 : Add implicit source term integration ( version 6.04)
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -320,6 +321,8 @@
 !             viscoelastic sea ice model (Wang and Shen 2010).
 !     !/IC4   Dissipation via interaction with ice as a function of freq.
 !             (empirical/parametric methods)
+!     !/IC5   Dissipation via interaction with ice according to a
+!             viscoelastic sea ice model (Mosig et al. 2015).
 !     !/DB0   No depth-limited breaking.                 ( Choose one )
 !     !/DB1   Battjes-Janssen depth-limited breaking.
 !     !/DBX   User-defined bottom friction.
@@ -400,6 +403,7 @@
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
 !/IC4      USE W3SIC4MD
+!/IC5      USE W3SIC5MD
 !/IS1      USE W3SIS1MD
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY : IS2PARS
@@ -489,6 +493,7 @@
 !/IC2                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC3                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC4                                 VSIC(NSPEC), VDIC(NSPEC),            &
+!/IC5                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
@@ -563,6 +568,8 @@
 !/IC3      VDIC = 0.
 !/IC4      VSIC = 0.
 !/IC4      VDIC = 0.
+!/IC5      VSIC = 0.
+!/IC5      VDIC = 0.
 !
 !/IS1      VSIR = 0.
 !/IS1      VDIR = 0.
@@ -1358,6 +1365,7 @@
 !/IC2                              IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
+!/IC5      CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
    SPEC2 = SPEC
@@ -1374,6 +1382,7 @@
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC3             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC4             ATT=EXP(ICE*VDIC(IS)*DTG)
+!/IC5             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IS1             ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
 !/IS2             ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
 !/IS2             IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
