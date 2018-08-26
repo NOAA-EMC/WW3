@@ -119,6 +119,7 @@
 !/    01-Jan-2018 : Add implicit source term integration ( version 6.04)
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -418,6 +419,7 @@
 !/XXX      USE W3SXXXMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
+!/UOST      USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
 !/PDLIB    USE W3PARALL, ONLY : Z_status_rev
 !/PDLIB    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES
 !/PDLIB    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
@@ -504,6 +506,7 @@
 !/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
 !/IS2                                 VSIR(NSPEC), VDIR(NSPEC),VDIR2(NSPEC), &
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
+!/UOST                                 VSUO(NSPEC), VDUO(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 !/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
@@ -568,6 +571,8 @@
 !/IC3      VDIC = 0.
 !/IC4      VSIC = 0.
 !/IC4      VDIC = 0.
+!/UOST      VSUO = 0.
+!/UOST      VDUO = 0.
 !/IC5      VSIC = 0.
 !/IC5      VDIC = 0.
 !
@@ -852,11 +857,17 @@
 !/BSX        CALL W3SBSX
 !/PDLIB      ENDIF
 !
-! 2.e Additional sources.
+! 2.e Unresolved Obstacles Source Term
+!
+!/UOST        ! UNRESOLVED OBSTACLES
+!/UOST        CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
+!/UOST                                       U10ABS, U10DIR, VSUO, VDUO)
+!
+! 2.f Additional sources.
 !
 !/XXX        CALL W3SXXX
 !
-! 2.f Dump training data if necessary
+! 2.g Dump training data if necessary
 !
 !/NNT        WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
 !/NNT        WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
@@ -924,6 +935,7 @@
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/XXX          VS(IS) = VS(IS) + VSXX(IS)
+!/UOST         VS(IS) = VS(IS) + VSUO(IS)
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS) 
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
@@ -932,6 +944,7 @@
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
 !/BSX          VD(IS) = VD(IS) + VDBS(IS)
 !/XXX          VD(IS) = VD(IS) + VDXX(IS)
+!/UOST         VD(IS) = VD(IS) + VDUO(IS)
           DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
           DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &

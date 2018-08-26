@@ -87,6 +87,7 @@
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 ) 
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -828,6 +829,12 @@
 !/DB1        LOGICAL               :: FDONLY
 !/DBX        REAL                  :: DUMMY
       END TYPE SDBP
+
+!/UOST      TYPE UOSTP
+!/UOST        CHARACTER(LEN=256)    :: UOSTFILELOCAL, UOSTFILESHADOW
+!/UOST        REAL              :: UOSTFACTORLOCAL, UOSTFACTORSHADOW
+!/UOST      END TYPE UOSTP
+
 !
       TYPE STRP
 !/TR0        REAL                  :: DUMMY
@@ -892,6 +899,7 @@
         TYPE(SNLP)            :: SNLPS
         TYPE(SBTP)            :: SBTPS
         TYPE(SDBP)            :: SDBPS
+!/UOST        TYPE(UOSTP)            :: UOSTPS
         TYPE(STRP)            :: STRPS
         TYPE(SBSP)            :: SBSPS
         TYPE(SICP)            :: SICPS
@@ -1111,6 +1119,10 @@
 !/
 !/DB1      REAL, POINTER           :: SDBC1, SDBC2
 !/DB1      LOGICAL, POINTER        :: FDONLY
+!/
+!/UOST!/ Data aliases for structure UOSTP(S)
+!/UOST      CHARACTER(LEN=:), POINTER   :: UOSTFILELOCAL, UOSTFILESHADOW
+!/UOST      REAL, POINTER           :: UOSTFACTORLOCAL, UOSTFACTORSHADOW
 !/
 !/ Data aliasing for structure SCHM(S)
       LOGICAL, POINTER  :: FSN,FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP
@@ -2310,6 +2322,12 @@
 !/DB1      SDBC1  => MPARS(IMOD)%SDBPS%SDBC1
 !/DB1      SDBC2  => MPARS(IMOD)%SDBPS%SDBC2
 !/DB1      FDONLY => MPARS(IMOD)%SDBPS%FDONLY
+!
+!
+!/UOST      UOSTFILELOCAL => MPARS(IMOD)%UOSTPS%UOSTFILELOCAL
+!/UOST      UOSTFILESHADOW => MPARS(IMOD)%UOSTPS%UOSTFILESHADOW
+!/UOST      UOSTFACTORLOCAL => MPARS(IMOD)%UOSTPS%UOSTFACTORLOCAL
+!/UOST      UOSTFACTORSHADOW => MPARS(IMOD)%UOSTPS%UOSTFACTORSHADOW
 !
 !     Structure SICPS
 !

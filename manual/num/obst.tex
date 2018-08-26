@@ -1,15 +1,22 @@
 \vsssub
 \subsubsection{~Unresolved obstacles} \label{sub:num_obst}
-\conthead{\ws}{H. L. Tolman}
+\conthead{\ws}{H. L. Tolman, L. Mentaschi}
 
 \noindent
 Even at the time of the original tuning of \ws\ version 1.15
 \citep{tol:OMB02a}, it was clear that unresolved islands groups are a major
 source of local wave model errors. This was illustrated in some more detail in
-\citet[][Fig.~3]{tol:Waves01a}, and \citet[][Fig.~8]{tol:WaF02}. In \ws, a
-methodology from \swan\ \citep{art:BRH99,man:SWAN3} was adopted to apply the
-effects of unresolved obstacles at the cell boundaries of the spatial grid
-within the numerical scheme. In this approach, the numerical fluxes between
+\citet[][Fig.~3]{tol:Waves01a}, and \citet[][Fig.~8]{tol:WaF02}. 
+In \ws, two approaches are available for the parameterization
+of unresolved obstacles. The first, originally from \swan\ \citep{art:BRH99,man:SWAN3},
+applies the effects of unresolved obstacles at the cell boundaries of the spatial grid
+within the numerical scheme, and is established for regular grids. 
+The second approach, proposed by \citep{art:Mentaschi2015b}, is based on source terms,
+and can be applied to different types of mesh.
+In this section the first approach is presented, while for a description of the
+second approach the reader is referred to section \ref{sec:UOST}.
+
+In the propagation-based approach, the numerical fluxes between
 cells through their common boundary are suppressed according to the degree of
 obstruction provided by the unresolved obstacle. In this approach, the
 numerical propagation scheme of the \uq\ scheme of Eq.~(\ref{eq:uq_xy_tot}) is

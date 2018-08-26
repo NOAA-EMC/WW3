@@ -274,6 +274,7 @@
                     'data (assimilation) ' /
       DATA IDSTR3 / 'mean parameters', '1D spectra     ',             &
                     '2D spectra     ' /
+      NULLIFY ( ALA, ALO )
 !
 !/NCO/!     CALL W3TAGB('WAVEPREP',1998,0007,0050,'NP21   ')
 !

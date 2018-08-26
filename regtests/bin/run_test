@@ -850,7 +850,6 @@ fi
 
 if [ $? = 0 ]
 then
-
   echo ' '
   echo '+---------------------+'
   echo '| Prep forcing fields |'
@@ -954,7 +953,6 @@ fi
 
 if [ $? = 0 ]
 then
-
   echo ' '
   echo '+-------------------------------+'
   echo '| Prep of NetCDF forcing fields |'

@@ -100,6 +100,7 @@
 !/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
 !/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -449,6 +450,8 @@
 !                   in ice (Wadhams et al. 1988: JGR 93 (C6) 6799-6818)
 !     !/IC5   Sink term for interaction with ice (Mosig et al. method)
 !                  (Mosig et al. 2015: JGR)
+!
+!     !/UOST  Unresolved Obstacles Source Term (UOST), Mentaschi et al. 2015
 !
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
@@ -819,9 +822,11 @@
 !/BT4                      RIPFAC2, RIPFAC3, RIPFAC4, SIGDEPTH,            &
 !/BT4                      BOTROUGHMIN, BOTROUGHFAC
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
+!/UOST     NAMELIST /UOST/ UOSTFILELOCAL, UOSTFILESHADOW,             &
+!/UOST                     UOSTFACTORLOCAL, UOSTFACTORSHADOW
+!
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
-!
 !/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG, &
 !/SMC                      LvSMC, ISHFT, JEQT,   NBISMC, SEAWND 
 ! 
@@ -1805,6 +1810,16 @@
 !/DB1      SDBC2  = BJGAM
 !/DB1      FDONLY = BJFLAG
 !
+!
+!/UOST      UOSTFILELOCAL = 'obstructions_local.'//ADJUSTL(TRIM(GNAME))//'.in'
+!/UOST      UOSTFILESHADOW = 'obstructions_shadow.'//ADJUSTL(TRIM(GNAME))//'.in'
+!/UOST      UOSTFACTORLOCAL = 1
+!/UOST      UOSTFACTORSHADOW = 1
+!/UOST      CALL READNL ( NDSS, 'UOST', STATUS )
+!/UOST      WRITE (NDSO,4500) STATUS
+!/UOST      WRITE (NDSO,4501) ADJUSTL(TRIM(UOSTFILELOCAL)), ADJUSTL(TRIM(UOSTFILESHADOW)), &
+!/UOST                UOSTFACTORLOCAL, UOSTFACTORSHADOW
+!
 ! 6.i Define Str.
 !
 !/TR0      WRITE (NDSO,930)
@@ -2570,6 +2585,9 @@
 !/IS2                    IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
 !/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1, IS2ANDISB, &
 !/IS2                    IS2ANDISE, IS2ANDISD, IS2ANDISN
+!
+!/UOST         WRITE (NDSO, 4502) ADJUSTL(TRIM(UOSTFILELOCAL)), ADJUSTL(TRIM(UOSTFILESHADOW)), &
+!/UOST                   UOSTFACTORLOCAL, UOSTFACTORSHADOW
 
 !
         IF ( FLCOMB ) THEN
@@ -5170,6 +5188,14 @@
 !/IS2               ', IS2BREAKF =',F5.2,', IS2WIM1 =',F5.2,','/    &
 !/IS2               ', IS2ANDISB =',L3,', IS2ANDISE =',F5.2,        &
 !/IS2               ', IS2ANDISD =',E11.3,', IS2ANDISN=',F5.2, ' /')
+!/UOST 4500 FORMAT (/' Unresolved Obstacles Source Term (UOST) ',A,/ &
+!/UOST              ' --------------------------------------------------')
+!/UOST 4501 FORMAT ('    local alpha-beta file:  ',A,    &
+!/UOST              '    shadow alpha-beta file: ',A,/    &
+!/UOST              '    local calibration factor: ',F5.2,  &
+!/UOST              '    shadow calibration factor: ',F5.2)
+!/UOST 4502 FORMAT ('  &UOST UOSTFILELOCAL = ',A,', UOSTFILESHADOW = ',A,/ &
+!/UOST              '        UOSTFACTORLOCAL = ',F5.2', UOSTFACTORSHADOW = ',F5.2,' /')
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -5820,6 +5846,8 @@
 !/IS2                          READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
 !/DB1                          READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
+!/UOST                        CASE('UOST')
+!/UOST                          READ (NDS,NML=UOST,END=801,ERR=802,IOSTAT=J)
 !/PR1                        CASE('PRO1')
 !/PR1                          READ (NDS,NML=PRO1,END=801,ERR=802,IOSTAT=J)
 !/PR2                        CASE('PRO2')

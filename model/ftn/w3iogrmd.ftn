@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-07-28'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-08-26'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -142,6 +142,7 @@
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -234,6 +235,7 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
+!/UOST      USE W3UOSTMD, ONLY: UOST_INITGRID, UOST_LOAD
 !/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
 !/MEMCHECK      USE MallocInfo_m
 !
@@ -760,6 +762,11 @@
           IF ( TRFLAG .NE. 0 ) THEN
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
             END IF
+!/UOST          ! UOST (Unresolved Obstacles Source Term) is enabled.
+!/UOST          ! setting TRNX, TRNY to null values
+!/UOST          TRNX = 1
+!/UOST          TRNY = 1
+
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.13'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
@@ -846,6 +853,7 @@
                XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
                FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
         END IF
+
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 10'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
 !
@@ -1241,6 +1249,21 @@
 !/DB1        END IF
 !
 !/DB1      IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
+
+!/UOST      IF ( WRITE ) THEN
+!/UOST          WRITE (NDSM), UOSTFILELOCAL, UOSTFILESHADOW,           &
+!/UOST                        UOSTFACTORLOCAL, UOSTFACTORSHADOW
+!/UOST        ELSE
+!/UOST          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/UOST                 UOSTFILELOCAL, UOSTFILESHADOW,                  &
+!/UOST                 UOSTFACTORLOCAL, UOSTFACTORSHADOW
+!/UOST          CALL UOST_INITGRID(IGRD, FILEXT, NX, NY, NK, NTH, TH, DTMAX, &
+!/UOST                            UOSTFILELOCAL, UOSTFILESHADOW,       &
+!/UOST                            UOSTFACTORLOCAL, UOSTFACTORSHADOW)
+!/UOST          CALL UOST_LOAD(IGRD)
+
+!/UOST        END IF
+
 !
 !/IS1      IF ( WRITE ) THEN
 !/IS1          WRITE (NDSM)                            IS1C1, IS1C2

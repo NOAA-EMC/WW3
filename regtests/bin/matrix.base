@@ -1823,7 +1823,6 @@
     then
       echo "$rtst -s ST6_PR3_UNO_OMP -w work_ST6_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
     fi
-
 # - - - - - - - - - - - - 
 
   fi
@@ -1951,6 +1950,15 @@
    echo "$rtst -s MPI -s PDLIB -w work_c -g c -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
    echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
    echo "$rtst -s MPI -s PDLIB -w work_mc -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+ fi
+
+#Unresolved Obstacles Source Term (UOST) 
+ if [ "$uost" = 'y' ]
+ then
+   echo ' ' >> matrix.body
+   echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
+   echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
+   echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
  fi
 
 # --------------------------------------------------------------------------- #

@@ -1,0 +1,23 @@
+$ WAVEWATCH III Field preprocessor input file
+$ -------------------------------------------
+$ 'WND' significa che i dati riguardano il vento
+$ 'LL' significa che i campi sono definiti su una griglia regolare longitude-latitude
+$ 'AI':  Transfer field ’as is’. 
+$ T T significa, il tempo è incluso nel file e che il file ha headers.
+  'WND' 'LL' T T
+$ longitudine inizio/fine/numero di punti   latitudine inizio/fine/numero di punti
+     4.2 14.6  13  29.2 38.8 12
+$wnd
+$ vedi la guida a pag. 80
+$ 'NAME': apre il file per nome
+$ 4: parametro IDLA, "reads line by line top to bottom, single statement" (vedi pag 80 del manuale)
+$ 2: parametro IDFM, "fixed format with above fixed description" (vedi pag 80 del manuale)
+$ (I8, I7) è il formato fortran dell'header con la data
+$ (16F5.2) è il formato fortran dei dati: in questo caso 16 float con 5 cifre di cui 2 decimali
+$  'NAME' 4 2 '(I8,I7)' '(1F6.6)'
+  'NAME' 3 2 '(I8,I7)' '(1F6.6)'
+$ 20 è lo unit number
+$ wind.raw è il nome del file dei dati
+    20 '../input_rg_multi/wind.raw'
+$ End of input file
+

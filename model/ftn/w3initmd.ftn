@@ -55,6 +55,7 @@
 !/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.01 )
 !/    01-May-2017 : Adds directional MSS parameters     ( version 6.04 )
 !/    05-Jun-2018 : Adds PDLIB/MEMCHECK/DEBUG           ( version 6.04 )
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -376,6 +377,7 @@
 !/TIMINGS      USE W3PARALL, ONLY: PRINT_MY_TIME
 !/PDLIB!/DEBUGCOH     USE PDLIB_W3PROFSMD, ONLY: ALL_VA_INTEGRAL_PRINT, TEST_MPI_STATUS
 !/PDLIB!/DEBUGINIT    USE PDLIB_W3PROFSMD, ONLY: PRINT_WN_STATISTIC
+!/UOST     USE W3UOSTMD, ONLY: UOST_SETGRID, UOST_INITIALIZE
 !/
       IMPLICIT NONE
 !
@@ -437,6 +439,10 @@
       CALL W3SETW ( IMOD, MDS(2), MDS(3) )
       CALL W3SETA ( IMOD, MDS(2), MDS(3) )
       CALL W3SETI ( IMOD, MDS(2), MDS(3) )
+!/UOST      IF ( .NOT. IsMulti ) THEN
+!/UOST        CALL UOST_INITIALIZE(1)
+!/UOST      END IF
+!/UOST      CALL UOST_SETGRID(IMOD)
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 2")
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'Beginning of W3INIT'
 !/DEBUGINIT      WRITE(740+IAPROC,*) '  FLGR2(10,1)=', FLGR2(10,1)

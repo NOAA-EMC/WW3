@@ -1905,15 +1905,19 @@
 !/SCRIPNC                        GSRC = GRDHGH(GDST,JJ)
 !/SCRIPNC                        IF ( ASSOCIATED(ALLWGTS(GSRC)%WGTDATA) ) THEN
 !/SCRIPNC                            DO KDST=1, DST_GRID_SIZE
-!/SCRIPNC                                IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%W) ) THEN
-!/SCRIPNC                                    DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
-!/SCRIPNC                                    CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                                  END IF
-!/SCRIPNC                                IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%K) ) THEN
-!/SCRIPNC                                    DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
-!/SCRIPNC                                    CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                                  END IF
-!/SCRIPNC                              END DO
+!/SCRIPNC
+!/SCRIPNC  !#########################################################################################
+!/SCRIPNC  !menta: for some reason gfortran complains that these lines are too long. Unindenting them
+!/SCRIPNC                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%W) ) THEN
+!/SCRIPNC                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
+!/SCRIPNC                        CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                      END IF
+!/SCRIPNC                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%K) ) THEN
+!/SCRIPNC                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
+!/SCRIPNC                        CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                    END IF
+!/SCRIPNC  !#########################################################################################
+!/SCRIPNC                            END DO
 !/SCRIPNC                            DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
 !/SCRIPNC                            CHECK_DEALLOC_STATUS ( ISTAT )
 !/SCRIPNC                            NULLIFY ( ALLWGTS(GSRC)%WGTDATA )

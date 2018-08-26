@@ -43,6 +43,7 @@
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
+!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -377,6 +378,7 @@
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
+!/UOST      USE W3UOSTMD, ONLY: UOST_INITIALIZE
 !/
       IMPLICIT NONE
 !
@@ -645,6 +647,7 @@
       CALL W3NOUT (        MDSE2, MDST )
       CALL W3NINP (        MDSE2, MDST ) 
       CALL WMNDAT (        MDSE2, MDST ) 
+!/UOST      CALL UOST_INITIALIZE(NRGRD)
 !
 ! 2.c Set up I/O for individual models (initial)
 !

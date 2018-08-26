@@ -1,0 +1,22 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+'nest'
+   1.1  0.066667  25  24  0.
+   F T T T F T
+   3600. 100. 900. 10.
+  &PRO3 WDTHCG = 0.5, WDTHTH = 0.5 /
+  &MISC FLAGTR = 2 /
+&UOST 
+   UOSTFILELOCAL = '../input_rg_multi/obstructions_local.large.in', 
+   UOSTFILESHADOW = '../input_rg_multi/obstructions_shadow.large.in' /
+END OF NAMELISTS
+'RECT' T 'NONE'
+13	 12
+0.4   0.4   1.0
+6.0   32.0   1.0
+-0.10   2.50  30  0.001  1  1 '(....)'  NAME  '../input_rg_multi/nest.depth_ascii'
+40  0.010000  1  1  '(....)'  NAME  '../input_rg_multi/nest.obstr_lev1'
+50   1   1   '(....)'   NAME '../input_rg_multi/nest.mask'
+     0.    0.    0.    0.       0

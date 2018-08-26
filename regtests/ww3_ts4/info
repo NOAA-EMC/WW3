@@ -1,0 +1,23 @@
+###############################################################################
+#                                                                             #
+#  Regression test for the                                                    #
+#       Unresolved Obstacles Source Term (UOST, Mentaschi et al. 2015, 2018)  #
+#                                                                             # 
+#  input_ug: test on triangular meshes                                        # 
+#  input_re_shel: test on regular grids, with ww3_shel                        # 
+#  input_re_multi: test on regular grids, with ww3_multi                      # 
+#                                                                             #
+#  The swich file used for this test is minimal, with all the other           #
+#  source terms  disabled.                                                    #
+#                                                                             # 
+#  To launch these tests use the commands:                                    # 
+# ./bin/run_test -c <Compiler> -S -w work_rg_shel -i input_rg_shel \          #
+#                         ../model ww3_ts4                                    #
+# ./bin/run_test -c Intel -S -w work_rg_multi -i input_rg_multi -m grdset \   # 
+#                         ../model ww3_ts4                                    #
+# ./bin/run_test -c Intel -S -w work_ug -i input_ug ../model ww3_ts4          #
+#                                                                             #
+#                                                                             #
+#                                                                             #
+#                                                  Mentaschi August 2018      #
+###############################################################################

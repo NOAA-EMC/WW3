@@ -1,0 +1,139 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III shell input file                                       $
+$ -------------------------------------------------------------------- $
+$ Define input to be used with flag for use and flag for definition
+$ as a homogeneous field (first three only); eight input lines.
+$
+   F F     Ice parameter 1
+   F F     Ice parameter 2
+   F F     Ice parameter 3
+   F F     Ice parameter 4
+   F F     Ice parameter 5
+   F F     Mud parameter 1
+   F F     Mud parameter 2
+   F F     Mud parameter 3
+   F F     Water levels
+   F F     Currents
+   F F     Winds
+   F       Ice concentrations
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+$ Time frame of calculations ----------------------------------------- $
+$ - Starting time in yyyymmdd hhmmss format.
+$ - Ending time in yyyymmdd hhmmss format.
+$
+  20000101 000000 
+  20000103 000000
+$
+$ Define output data ------------------------------------------------- $
+$
+$ Define output server mode. This is used only in the parallel version
+$ of the model. To keep the input file consistent, it is always needed.
+$ IOSTYP = 1 is generally recommended. IOSTYP > 2 may be more efficient
+$ for massively parallel computations. Only IOSTYP = 0 requires a true
+$ parallel file system like GPFS.
+$
+$    IOSTYP = 0 : No data server processes, direct access output from
+$                 each process (requirese true parallel file system).
+$             1 : No data server process. All output for each type 
+$                 performed by process that performes computations too.
+$             2 : Last process is reserved for all output, and does no
+$                 computing.
+$             3 : Multiple dedicated output processes.
+$
+   1
+$
+$ Five output types are available (see below). All output types share
+$ a similar format for the first input line:
+$ - first time in yyyymmdd hhmmss format, output interval (s), and 
+$   last time in yyyymmdd hhmmss format (all integers).
+$ Output is disabled by setting the output interval to 0.
+$
+$ Type 1 : Fields of mean wave parameters
+$          Standard line and line with logical flags to activate output
+$          fields as defined in section 2.4 of the manual. The logical
+$          flags are not supplied if no output is requested. The logical
+$          flags can be placed on multiple consecutive lines. However,
+$          the total number and order of the logical flags is fixed.
+$                               The raw data file is out_grd.ww3, 
+$                               see w3iogo.ftn for additional doc.
+$
+   20000101 000000  3600  20100101 000000
+$----------------------------------------------------------------
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 of the manual. If the first flag is 'N' then a namelist
+$ is read. See ww3_ounf.inp for an example
+$
+  N
+  HS WND DPT DIR
+$
+$
+$----------------------------------------------------------------
+$
+$ Type 2 : Point output
+$          Standard line and a number of lines identifying the 
+$          longitude, latitude and name (C*10) of output points.
+$          The list is closed by defining a point with the name
+$          'STOPSTRING'. No point info read if no point output is
+$          requested (i.e., no 'STOPSTRING' needed).
+$          Example for spherical grid.
+$                               The raw data file is out_pnt.ww3, 
+$                               see w3iogo.ftn for additional doc.
+$
+$   NOTE : Spaces may be included in the name, but this is not
+$          advised, because it will break the GrADS utility to 
+$          plots spectra and source terms, and will make it more
+$          diffucult to use point names in data files.
+$
+$ Points
+   20000101 000000  10800  20000102 000000
+      10       34     'center'
+      11       33     'pt2'
+       0.E3     0.E3  'STOPSTRING'
+$
+$ Type 3 : Output along  track.
+$          Flag for formatted input file.
+$                         The data files are track_i.ww3 and
+$                         track_o.ww3, see w3iotr.ftn for ad. doc.
+$
+   20130801 000000 0 20130815 000000
+$     F
+$
+$ Type 4 : Restart files (no additional data required).
+$                               The data file is restartN.ww3, see
+$                               w3iors.ftn for additional doc.
+$
+   20130801 000000  0 20130815 000000
+$
+$ Type 5 : Boundary data (no additional data required).
+$                               The data file is nestN.ww3, see
+$                               w3iobp.ftn for additional doc.
+$
+   20130801 000000  0  20130815 000000
+$
+$ Type 6 : Separated wave field data (dummy for now).
+$          First, last step IX and IY, flag for formatted file
+$
+   20130801 000000  0  20130815 000000
+$      0 999 1 0 999 1 T
+$
+$ Homogeneous field data --------------------------------------------- $
+$ Homogeneous fields can be defined by a list of lines containing an ID
+$ string 'LEV' 'CUR' 'WND', date and time information (yyyymmdd
+$ hhmmss), value (S.I. units), direction (current and wind, oceanogr.
+$ convention degrees)) and air-sea temparature difference (degrees C).
+$ 'STP' is mandatory stop string.
+$ Also defined here are the speed with which the grid is moved
+$ continuously, ID string 'MOV', parameters as for 'CUR'.
+$
+$  'LEV' 19680606 010000    1.00
+$  'CUR' 19680606 073125    2.0    25.
+$  'WND' 19680606 000000   20.    145.    2.0
+$  'MOV' 19680606 013000    4.0    25.
+   'STP'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
