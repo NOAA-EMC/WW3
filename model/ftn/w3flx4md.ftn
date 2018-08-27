@@ -6,25 +6,27 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |           S. Zieger               |
+!/                  |           Q. Liu                  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Mar-2011 |
+!/                  | Last update :         24-Nov-2017 |
 !/                  +-----------------------------------+
 !/
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    15-Mar-2011 : Implementation of Hwang (2011)
 !/                  parameterization.
+!/    24-Nov_2017 : Modifying CDFAC                     ( Q. Liu)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
 !     Flux/stress computations according to Hwang ( 2011).
-!     
-!     References: 
+!
+!     References:
 !          Hwang 2011: J Atmos Ocean Tech 28(3)  436-443
 !
 !  2. Variables and types :
@@ -33,7 +35,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      W3FLX4    Subr. Public   Stresses according to Hwang (JGR, 2011)
+!      W3FLX4    Subr. Public   Stresses according to Hwang (JTech, 2011)
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -157,10 +159,10 @@
 !     U10 greater than 50.33 m/s.
 !
       IF (U10 .GE. 50.33) THEN
-         UST = 202.6 * SQRT(FLX4A0)
+         UST = 2.026 * SQRT(FLX4A0)
          CD  = (UST/U10)**2
       ELSE
-         CD  = FLX4A0 * ( 8.058 + 0.967*U10 - 0.016*U10**2 )
+         CD  = FLX4A0 * ( 8.058 + 0.967*U10 - 0.016*U10**2 ) * 1E-4
          UST = U10 * SQRT(CD)
       END IF
 !

@@ -1,0 +1,51 @@
+# @ ================================================================== @
+The Ocean Engineering Center at the University of Melbourne, closely
+collaborating with the U.S. Naval Research Laboratory, has put
+extensive research effort into the development of source terms for
+spectral wave models, such as the ST6 source term package (Sin, Sds,
+Sswl), IC5 (Sice). A new nonlinear term based on the Generalized Kenitic
+Equation is also under preparation.
+
+# @ ================================================================== @
+Since version 6.05, we run ST6 in two different ways (By default,
+    UPROXY = 32 * UST):
+
+# @ ------------------------------------------------------------------ @
+1) [switch_UoM_nl1] for ST6+DIA (**the default setup of ST6**)
+   Namelist values:
+
+   &FLX4 CDFAC = 1.0 /
+   &SIN6 SINA0 = 0.090, SINFC = 6.00 /
+   &SDS6 SDSA1 = 4.75E-06, SDSA2 = 7E-05 /
+   &SWL6 SWLB1 = 0.41E-02 /
+
+# @ ------------------------------------------------------------------ @
+2.a) [switch_UoM_nl3] for ST6+GMD
+   Namelist values:
+
+$
+$ ST6 parameters
+$
+   &FLX4 CDFAC = 1.0 /
+   &SIN6 SINA0 = 0.05, SINFC = 6.00 /
+   &SDS6 SDSA1 = 4.75E-06, SDSA2 = 7E-05 /
+   &SWL6 SWLB1 = 6E-3 /
+$
+$ G35 for ST6
+$
+   &SNL3 NQDEF =  5, MSC =  0.00,  NSC = -3.50 /
+   &ANL3 QPARMS = 0.127, 0.000,   3.0, 0.488E+08, 0.000E+00 ,
+                  0.127, 0.097,  21.0, 0.126E+09, 0.000E+00 ,
+                  0.233, 0.098,  26.5, 0.620E+08, 0.000E+00 ,
+                  0.283, 0.237,  24.7, 0.283E+08, 0.000E+00 ,
+                  0.355, 0.183,   0.0, 0.117E+08, 0.000E+00 /
+
+# @ ------------------------------------------------------------------ @
+2.b) [switch_UoM_nl3s] for ST6+GMD+Nonlinear filter
+
+   Same as 2.a) but **NLS** is included in the switch file, which is
+   helpful to suppress the spurious high-frequency noise in the wave
+   spectrum when a high-resolution spectral grid is used (say,
+   Δθ <= 5 deg).
+
+# @ ================================================================== @

@@ -87,6 +87,8 @@
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 ) 
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    20-Aug-2018:  Extra namelist variables for ST6    ( version 6.06)
+!/                  (Q. Liu, UoM)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/
@@ -781,7 +783,8 @@
 !/ST4        REAL                  :: ZZWND
 !/ST4        REAL                  :: SSDSCOS, SSDSDTH, SSDSBR2, SSDSBM(0:4)
 !
-!/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
+!/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
+!/ST6                                 SIN6WS, SIN6FC
 !/ST6        INTEGER               :: SDS6P1, SDS6P2
 !/ST6        LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
 !
@@ -1083,7 +1086,8 @@
 !/ST4                                 SSWELLF(:), SSDSC(:), SSDSBR,        &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
 !/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
-!/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
+!/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
+!/ST6                                 SIN6WS, SIN6FC
 !/ST6      INTEGER, POINTER        :: SDS6P1, SDS6P2
 !/ST6      LOGICAL, POINTER        :: SDS6ET, SWL6S6, SWL6CSTB1
       REAL, POINTER           :: WWNMEANPTAIL, SSTXFTFTAIL
@@ -2249,6 +2253,8 @@
 !/ST4      SSINBR   => MPARS(IMOD)%SRCPS%SSINBR
 !
 !/ST6      SIN6A0 => MPARS(IMOD)%SRCPS%SIN6A0
+!/ST6      SIN6WS => MPARS(IMOD)%SRCPS%SIN6WS
+!/ST6      SIN6FC => MPARS(IMOD)%SRCPS%SIN6FC
 !/ST6      SDS6ET => MPARS(IMOD)%SRCPS%SDS6ET
 !/ST6      SDS6A1 => MPARS(IMOD)%SRCPS%SDS6A1
 !/ST6      SDS6P1 => MPARS(IMOD)%SRCPS%SDS6P1

@@ -1052,7 +1052,7 @@
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-             source="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $stx $nlx $btx $tr $bs $xx $is $ic"
+             source="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $st $nlx $btx $tr $bs $xx $is $ic"
                  IO='w3iogrmd w3iopomd'
                 aux="constants $uostmd w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
       ww3_systrk) IDstring='Wave system tracking postprocessor'

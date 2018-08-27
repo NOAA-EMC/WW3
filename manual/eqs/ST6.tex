@@ -2,7 +2,7 @@
 \subsubsection{~$S_{in} + S_{ds}$: Zieger et al. 2015} \label{sec:ST6}
 \vsssub
 
-\opthead{ST6}{AUSWEX, Lake George}{A. Babanin, I. Young, M. Donelan, E. Rogers, S. Zieger}
+\opthead{ST6}{AUSWEX, Lake George}{A. Babanin, I. Young, M. Donelan, E. Rogers, S. Zieger, Q. Liu}
 
 \noindent
 This version implements observation-based physics for deep-water source/sink terms. These include wind input
@@ -26,20 +26,20 @@ which signifies nonlinear behavior of the wind-input source function;
 \citep{art:Dea06,art:Bea07} (the last feature was not implemented in here).
 Following \citet{art:RBW12}, this input source term is formulated as
 \begin{eqnarray}
-S_{in}(k,\theta) & = & \frac{\rho_a}{\rho_w}\, \sigma\,\gamma(k,\theta)\,N(k,\theta)  ,
+\cS_{in}(k,\theta) & = & \frac{\rho_a}{\rho_w}\, \sigma\,\gamma(k,\theta)\,N(k,\theta)  ,
 \label{eq:ST601} \\ \gamma(k,\theta) &=& G\,\sqrt{B_n}\,W  ,
 \label{eq:ST602} \\
 G                &=& 2.8-\Bigl (1+\tanh (10\sqrt{B_n}W-11) \Bigr)  ,
 \label{eq:ST603} \\
 B_n              &=& A(k)\,N(k)\sigma\,k^3  ,
 \label{eq:ST604} \\
-W                &=& \left (\frac{U}{c}\,-\,1 \right )^2  .
+W                &=& \left (\frac{U_s}{c}\,-\,1 \right )^2  .
 \label{eq:ST605}
 \end{eqnarray}
 
 \noindent
 In (\ref{eq:ST601})$-$(\ref{eq:ST605}) $\rho_a$ and $\rho_w$ are densities
-of air and water, respectively, $U$ is wind speed, $c$ refers to
+of air and water, respectively, $U_s$ is the scaling wind speed, $c$ refers to
 wave phase speed, $\sigma$ is radian frequency and $k$
 is wavenumber. The spectral saturation (\ref{eq:ST604}), introduced
 by \citet{art:Phi84}, is a spectral measure of steepness $ak$.  The
@@ -51,9 +51,16 @@ where $N_{\max}(k)=\max\bigl \{N(k,\theta)\bigr \}$, for all
 directions $\theta\in[0,2\pi]$ \citep{art:BS87}.
 
 \citet{art:Dea06} parameterized the growth rate (\ref{eq:ST602}) in terms
-of winds 10\,m above the mean surface. Wave models typically employ friction
-velocity $u_\star=\tau/\rho_a$. Wind speed scaling $U=28 u_\star$ is adopted
-from \citet{art:Sea81} and \citet{art:KHH84} following equation (\ref{eq:Snyder}).
+of winds 10\,m above the mean surface. Wave models, however, typically employ friction
+velocity $u_\star=\tau/\rho_a$ to assure a consistent fetch law across
+different wind speeds \citep[][p. 253]{bk:WAM94}. Therefore, \citet{art:RBW12}
+advocated using an approximation
+\begin{equation}
+U_s = U_{10} \simeq \Upsilon u_{\ast},\ \mathrm{and}\ \Upsilon = 28
+\label{eq:Upsilon}
+\end{equation}
+by following \citet{art:KHH84}.
+
 \begin{eqnarray}
 W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U}{c}\ \cos(\theta-\theta_w)-1
 \right \}  , \label{eq:ST606-1} \\
@@ -111,7 +118,7 @@ which has a greater impact at high frequencies and only little impact on the
 energy-dominant part of the spectrum. The value of $\mu$ is dynamically
 calculated by iteration at each integration time step \citep{art:Tea10}.
 
-The drag coefficient is given by 
+The drag coefficient is given by
 \begin{equation}\label{eq:ST607}
 C_d \times 10^4 = 8.058 + 0.967 U_{10} - 0.016 U_{10}^2 ,
 \end{equation}
@@ -121,7 +128,7 @@ implemented as switch {\code FLX4}. The parameterization was proposed by
 for extreme winds, of the sea drag at wind speeds in excess of 30\,m~s$^{-1}$.
 To prevent $u_\star$ from dropping to zero at very strong winds
 ($U_{10}\ge50.33$m~s$^{-1}$) expression (\ref{eq:ST607}) was modified to yield
-$u_\star=2.026$m~s $^{-1}$. {\it Important!} In ST6, bulk adjustment to any
+$u_\star=2.026$m~s $^{-1}$. {\it Important!} In {\code ST6}, bulk adjustment to any
 uniform bias in the wind input field is done in terms of the wind stress
 parameter $u_\star$ rather than $U_{10}$. In order to achieve that, the
 factor in expression $C_d \times 10^4$ on the left hand side of
@@ -135,8 +142,7 @@ The viscous drag coefficient,
 was parameterized by \citet{art:Tea10} as a function of wind speed using
 data from \citet{art:BP98}.
 
-
-\paragraph{Negative Input.} Apart from the positive input, ST6 also has a 
+\paragraph{Negative Input.} Apart from the positive input, {\code ST6} also has a
 negative input term in order to attenuate growth of waves in those parts
 of wave spectrum where adverse component of the wind stress is present
 (\ref{eq:ST606-1}--\ref{eq:ST606-2}). The growth rate for adverse winds
@@ -144,7 +150,6 @@ is negative \citep{pro:Don99} and is applied after the constraint of
 the wave-supported stress $\tau_w$ is met. The value of $a_0$
 (in \ref{eq:ST606}) is a tuning parameter in the parameterization of the
 input and is adjustable through the {\F SIN6} namelist parameter {\code  SINA0}.
-
 
 
 \noindent
@@ -161,11 +166,11 @@ short waves affected by longer waves
 (\citeauthor{art:Mea06}, \citeyear{art:Mea06};\linebreak
  \citeauthor{art:Bea07}, \citeyear{art:Bea07}),
 (iv) bimodal distribution of the directional spreading of the dissipation
-\citep{art:YB06,art:Bea10} (the last feature was not implemented in ST6).
+\citep{art:YB06,art:Bea10} (the last feature was not implemented in {\code ST6}).
 Following \citet{art:RBW12}, the whitecapping dissipation term is
 implemented as:
 \begin{equation}\label{eq:ST620}
-  S_{ds}(k,\theta) = \Bigl [ T_1(k,\theta) + T_2(k,\theta) \Bigr ]\ N(k,\theta) ,
+  \cS_{ds}(k,\theta) = \Bigl [ T_1(k,\theta) + T_2(k,\theta) \Bigr ]\ N(k,\theta) ,
 \end{equation}
 
 \noindent
@@ -177,26 +182,17 @@ term $T_1$ is the only breaking-dissipation term if this frequency is at or belo
 the spectral peak. Once the peak moves below this particular frequency, $T_2$
 becomes active and progressively more important as the peak downshifts further.
 
-
-The threshold spectral density $F_{\mathrm{T}}$ is calculated as 
+The threshold spectral density $F_{\mathrm{T}}$ is calculated as
 \begin{equation}\label{eq:ST621}
   F_{\mathrm{T}}(k)=\frac{\varepsilon_{\mathrm{T}}}{A(k)\,k^3}  ,
-\end{equation} 
+\end{equation}
 where $k$ is the wavenumber and with
 $\varepsilon_{\mathrm{T}}=0.035^2$ being an empirical constant
-\citep{art:Bea07,bk:Bab11}.
-
-\begin{equation}\label{eq:ST621}
-  F_{\mathrm{T}}(k)=\frac{\varepsilon_{\mathrm{T}}}{A(k)\,k^3}  .
-\end{equation}
-
-\noindent
-Let the level of exceedence above the critical threshold spectral density (at
-which stage wave breaking is predominant) be defined as
-$\Delta(k)=F(k)-F_{\mathrm{T}}(k)$. Furthermore, let $\mathcal{F}(k)$ be a
-generic spectral density used for normalization, then the inherent breaking
-component can be calculated as
-
+\citep{art:Bea07,bk:Bab11}. Let the level of exceedence above the critical
+threshold spectral density (at which stage wave breaking is predominant) be
+defined as $\Delta(k)=F(k)-F_{\mathrm{T}}(k)$. Furthermore, let
+$\mathcal{F}(k)$ be a generic spectral density used for normalization,
+then the inherent breaking component can be calculated as
 \begin{equation}\label{eq:ST622}
 T_1(k)=a_1 A(k)\frac{\sigma}{2\pi} \left [ \frac{\Delta(k)}{\mathcal{F}(k)}
 \right ]^{p_1}  .
@@ -227,36 +223,46 @@ narrowness parameter is set to unity $A(k)\approx 1$ in Eqs.
 
 % -------------------------------------------------------------------
 \begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|c|} \hline \hline
-Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,\WWver \\
+\footnotesize
+\begin{threeparttable}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers.\,\WWver \\
 \hline
-  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         \\
-  $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    \\
-  $p_1$            &  SDSP1       & SDS6     &  4       &  4         \\
-  $a_2$            &  SDSA2       & SDS6     & 8.74E-6  & 5.24E-6    \\
-  $p_2$            &  SDSP2       & SDS6     &  4       &  4         \\
+  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         & T          \\
+  $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    & 4.75E-6    \\
+  $p_1$            &  SDSP1       & SDS6     &  4       &  4         & 4          \\
+  $a_2$            &  SDSA2       & SDS6     & 8.74E-6  & 5.24E-6    & 7.00E-5    \\
+  $p_2$            &  SDSP2       & SDS6     &  4       &  4         & 4          \\
 \hline
-  $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       \\
-  $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         \\
-  $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     \\
-  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    \\
+  $\Upsilon$\tnote{\textdagger}       &  SINWS       & SIN6     & n/a      & n/a        & 32.0       \\
+  $N_{hf}$\tnote{\textdagger}         &  SINFC       & SIN6     & n/a      & n/a        & 6.0        \\
+  $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       & 0.09       \\
+  $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         & F          \\
+  $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     & 0.0041     \\
+  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    & 1.0        \\
 \hline
-  $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    \\
+  $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    & 3.00E7    \\
  \hline \hline
-\end{tabular} \end{center}
-\caption{Summary of calibration parameters for ST6 source terms.
-         Values tabulated represent default model settings.
+\end{tabular}
+\begin{tablenotes}
+	\item[\textdagger] In WW3 version 4.18 and 5.16, $\Upsilon = 28.0$
+            and $N_{hf} = 6.0$ were hard-coded in {\code ST6} module.
+\end{tablenotes}
+\end{threeparttable} \end{center}
+\caption{Summary of calibration parameters for {\code ST6} when it is applied with
+         the {\code DIA} nonlinear solver (section~\ref{sec:NL1}). Values tabulated represent default model settings.
          Abbreviation ``n/a'' indicates that the variable is not applicable
          in that release of the code.}
 \label{tab:ST601} \botline \end{table}
 % -------------------------------------------------------------------
 
 \citet{art:RBW12} calibrated the dissipation terms based on duration-limited
-academic tests. Calibration coefficients used in ST6 and listed in
+academic tests. Calibration coefficients used in {\code ST6} and listed in
 Table~\ref{tab:ST601} differ somewhat from those of \citet{art:RBW12}
 mainly due to the fact that the wave-supported stress $\vec{\tau}_w$
-is implemented in the form of vector components and the scaling model
-for wind speed is customizable in the wind input parameterization.
+is implemented in the form of vector components and the non-breaking swell
+dissipation (\ref{eq:ST624}) was previously not accounted for in
+\citet{art:RBW12}.
 
 \paragraph{Swell Dissipation.} In the absence of wave breaking,
 other mechanisms of wave attenuation are present. Here, they are
@@ -269,7 +275,7 @@ at the front face of the spectrum, or even at the peak in case of
 the full Pierson-Moscowitz development.
 
 \begin{equation}\label{eq:ST624}
-  S_{swl}(k,\theta) = -\frac{2}{3}b_1 \sigma\ \sqrt{B_n}\ N(k,\theta).
+  \cS_{swl}(k,\theta) = -\frac{2}{3}b_1 \sigma\ \sqrt{B_n}\ N(k,\theta).
 \end{equation}
 
 \noindent
@@ -290,11 +296,100 @@ is customizable through the {\F SWL6} namelist parameter {\code SWLB1}
 (see Table~\ref{tab:ST601}).
 
 \noindent
+\paragraph{Updates since vers.\,\WWver} Following \citet{art:RBW12}, the
+scaling wind speed $U_s = 28u_{\ast}$ (\ref{eq:Upsilon}) were adopted in
+vers. 4.18 and vers. 5.16 (Table~\ref{tab:ST601}). Such configurations of {\code ST6} have been proven
+skillful for different spatial scales and under different weather
+conditions \citep[e.g.][]{art:ZBRY15, liu2017}. \citet[][their Fig. 5]{art:ZBRY15},
+however, also suggested {\code ST6} (vers. 4.18 and vers. 5.16) was inclined to
+overestimate the energy level of the high-frequency tail of the spectrum,
+indicating an inaccurate balance of different source terms in this
+specific frequency range.
+
+Rogers (2014, unpublished work) found that using $U_s = 32u_{\ast}$ (i.e.,
+$\Upsilon = 32$) could improve model skills in estimating tail level in
+the {\code ST6} implementation in SWAN [see also \citet{Rogers2017}]. Following
+this, \citet{Liu2018} carried out a thorough recalibration of {\code ST6} with WW3,
+and the new set of parameters (i.e., $a_0,\ a_1,\ a_2,\ B_1$) is summarized
+in the last column of Table~\ref{tab:ST601}. The updated {\code ST6} package not
+only performs well in predicting commonly-used bulk wave parameters (e.g.,
+significant wave height and wave period) but also yields a clearly-improved
+estimation of high-frequency energy level (in terms of saturation spectrum
+and mean square slope). In the duration-limited test, the omnidirectional
+frequency spectrum $E(f)$ from the recalibrated {\code ST6} shows a clear transition
+behavior from the power law of approximately $f^{-4}$ to the power law of
+about $f^{-5}$, comparable to previous field studies \citep{Forristall1981}.
+
+% -------------------------------------------------------------------
+\begin{table}[htbp]
+	\footnotesize
+	\begin{center}
+	\begin{tabular}{|l|c|c|c|c|} \hline \hline
+            {\code ST6} & $a_0$ & $a_1$ & $a_2$ & $B_1$\\
+                        & 0.05 & $4.75 \times 10^{-6}$ & $7.00 \times 10^{-5}$ & $6.00 \times 10^{-3}$  \\
+            \hline
+            {\code GMD} & $\lambda$ & $\mu$ & $\theta_{12}\ (^{\circ})$ & $C_{deep}$  \\
+                        & $0.127$ & $0.000$ & $\ 3.0$ & $4.88 \times 10^7$            \\
+		        & $0.127$ & $0.097$ & $21.0$ & $1.26 \times 10^8$             \\
+		        & $0.233$ & $0.098$ & $26.5$ & $6.20 \times 10^7$             \\
+		        & $0.283$ & $0.237$ & $24.7$ & $2.83 \times 10^7$             \\
+		        & $0.355$ & $0.183$ & $-$ & $1.17 \times 10^7$                \\
+            \hline \hline
+	\end{tabular}
+	\end{center}
+        \caption{Summary of calibration parameters for {\code ST6} when it is applied with the {\code GMD} nonlinear solver (or specifically, {\code G35})}
+	\label{tab:ST602}
+	\botline
+\end{table}
+% -------------------------------------------------------------------
+
+Apart from applying {\code ST6} with the {\code DIA} (section~\ref{sec:NL1}) nonlinear solver, \citet{Liu2018}
+also made an attempt to run {\code ST6} with the {\code GMD} parameterization of $S_{nl}$
+(section~\ref{sec:NL3}). As a first step, only the {\code GMD} configuration with
+5 quadruplets and a three-parameter quadruplet definition
+\citep[i.e., {\code G35} in][]{tol:OMOD13d} was adopted. The tunable parameters
+of the {\code GMD} which were specifically optimized for {\code ST6} by using the holistic
+genetic optimization technique designed by \citet{tol:OMOD13e}, and the
+corresponding tunable parameters of {\code ST6} are summarized in
+Table~\ref{tab:ST602}\footnote{For the fifth quadruplet layout of {\code GMD} shown
+in Table~\ref{tab:ST602}, the three-parameter $(\lambda,\ \mu,\ \theta_{12})$
+quadruplet definition degrades to a two-parameter $(\lambda,\ \mu)$ form, and
+$\theta_{12}$ is implied by the value of $\mu$ \citep{tol:OMOD13d}. Accordingly,
+a combination of {\code ST6+GMD} and the conservative nonlinear high-frequency
+filter of \citet{tol:OMOD11} [see also section~\ref{sec:NLS}] might be
+necessary to stabilize the model integration, particularly for high-resolution
+spectral grid (say, $\Delta \theta < 5^{\circ}$).}\footnote{Unlike
+Table~\ref{tab:ST601}, here we only show important parameters of {\code ST6} and
+{\code GMD}. The reader is refered to {\code bin/README.UoM} for the detailed
+set up of namelist variables for this specific model configuration.}.
+\citet{Liu2018} demonstrated that in the duration-limited test, the
+{\code GMD}-simulated $E(f)$ is in excellent agreement with that from the exact
+ solutions of $S_{nl}$(e.g., {\code WRT}; section~\ref{sec:NL2}) \citep[see also][]{tol:OMOD13d}]. In a 1-yr global
+hindcast, the {\code DIA}-based model overestimates the low-frequency wave energy
+(wave period $T > 16$ s) by 90\%. Such model errors are reduced significantly
+by the {\code GMD} to $\sim$20\%. It is noteworthy that the computational expense
+of the {\code GMD} approach presented in Table~\ref{tab:ST602}, however, is about
+5 times larger than that of the {\code DIA}.
+
+To flexibly control the high-frequency extent of the prognostic frequency
+region, we introduced
+\begin{equation}
+f_{hf} = N_{hf}/T_{m0, -1}
+\end{equation}
+in vers.\,\WWver, where $f_{hf}$ is the cut-off high-frequency limit
+(\ref{eq:tail_E_f}), $T_{m0,-1}$ is the mean wave period defined in
+(\ref{eq:Tm0m1}). $N_{hf}$ is set through a namelist parameter SINFC
+(Table~\ref{tab:ST601}), and a negative $N_{hf}$ (say, $N_{hf} = -1$)
+means \emph{the high-frequency spectral tail evolves freely without any
+prescribed slope.}
+
+\noindent
 \paragraph{Bulk Adjustments.} The source term
 {\code ST6} has been calibrated with flux parameterization {\code FLX4}.
 Bulk adjustment to the wind filed can be achieved by re-scaling the drag
 parameterization {\code FLX4} through the {\F FLX4} namelist parameter {\code
- CDFAC=1.0E-4}.  This has a similar effect to tuning variable
+ CDFAC=1.0E-4}\footnote{This was changed to {\code CDFAC=1.0} since vers.\,\WWver\ as the magnitude $10^{-4}$ was hard-coded
+in {\code FLX4} module. (Table~\ref{tab:ST601})}. This has a similar effect to tuning variable
 $\beta_{max}$ in {\code ST4} source term package, equations
 (\ref{eq:SinWAM4}) and (\ref{eq:tauhfint}), which is customizable
 through namelist parameter {\code BETAMAX} (see section
@@ -308,11 +403,11 @@ for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In global
 hindcast, the coefficient for the negative input can be used to tune
 the bulk of wave height in scatter comparisons, whereas the scaling
 coefficient for swell dissipation primarily effect large sea states.
-When the discrete interaction approximation (DIA) is used to compute the four-wave
+When the discrete interaction approximation ({\code DIA}) is used to compute the four-wave
 interaction the default value for the proportionality constant changes to
-$C=3.00\;10^7$.
+$C=3.00\times10^7$.
 
-\textrm{\textit{\underline{Limitations of the code:}}} In cases where the
-minimum time step for dynamical source term integration is much smaller
-than the overall time step (i.e. less than 1/15th) the model becomes unstable.
-The issue is known and will be removed in a future revision.
+\textrm{\textit{\underline{Limitations of the code:}}} For vers. 4.18 and
+vers. 5.16, in cases where the minimum time step for dynamical source term
+integration is much smaller than the overall time step (i.e. less than
+1/15th) the model becomes unstable. The issue has been solved since vers.\,\WWver.

@@ -1626,7 +1626,7 @@
 !/ST4                                  DAIR/DWAT, ASO(J), UDIRR,      &
 !/ST4                            Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
 !/ST4                            XIN, DIA, LLWS, IX, IY, LAMBDA )
-!/ST6                    CALL W3SIN6 (A, CG, WN2, USTAR, UDIRR, CD,   &
+!/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,   &
 !/ST6                          TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 !/STX                    CALL W3SINX
                   END IF

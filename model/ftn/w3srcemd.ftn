@@ -508,7 +508,6 @@
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
 !/UOST                                 VSUO(NSPEC), VDUO(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
-!/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      REAL                    :: BRLAMBDA(NSPEC)
@@ -584,8 +583,6 @@
 !
 !/ST6      VSWL = 0.
 !/ST6      VDWL = 0.
-!/ST6      SWL  = 0.
-!/ST6      DWL  = 0.
 !
 !/ST0      ZWND   = 10.
 !/ST1      ZWND   = 10.
@@ -746,7 +743,11 @@
 !/ST4      FAGE   = 0.
 !/ST4      FHIGH  = MAX( (FFXFM + FAGE ) * MAX(FMEAN1,FMEANWS), FFXPM / USTAR)
 !/ST4      FHIGI  = FFXFA * FMEAN1
-!/ST6      FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
+!/ST6      IF (FXFM .LE. 0) THEN
+!/ST6          FHIGH = SIG(NK)
+!/ST6      ELSE
+!/ST6          FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
+!/ST6      ENDIF
 !
 ! 1.f Prepare output file for !/NNT option
 !
@@ -791,7 +792,7 @@
 !/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
 !/DEBUGSRC!/ST4        END IF
 
-!/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, USTAR, USTDIR, CD,             &
+!/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD,     &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 !/STX        CALL W3SINX
 !
@@ -837,9 +838,7 @@
 ! 2.c2   optional dissipation parameterisations
 !
 !/ST6        IF (SWL6S6) THEN
-!/ST6           CALL W3SWL6 ( SPEC, CG1, WN1,       SWL,  DWL )
-!/ST6           VSWL = VSWL + SWL
-!/ST6           VDWL = VDWL + DWL
+!/ST6           CALL W3SWL6 ( SPEC, CG1, WN1, VSWL, VDWL )
 !/ST6        END IF
 !
 ! 2.d Bottom interactions.
@@ -1202,7 +1201,11 @@
 !/ST4        NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
 !/ST4                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 !
-!/ST6        FHIGH  = SIG(NK)
+!/ST6        IF (FXFM .LE. 0) THEN
+!/ST6            FHIGH = SIG(NK)
+!/ST6        ELSE
+!/ST6            FHIGH = MIN ( SIG(NK), MAX(FXFM * FMEAN, FXPM / USTAR) )
+!/ST6        ENDIF
 !/ST6        NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
 !/ST6                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 !

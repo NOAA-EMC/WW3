@@ -100,6 +100,7 @@
 !/    06-Jun-2018 : add Implicit grid parameters for unstructured grids
 !/                  add DEBUGGRID/DEBUGSTP              ( version 6.04 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -714,7 +715,8 @@
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
 !/ST4                                 SDSBM4, SDSLFGEN, SDSHFGEN
 !
-!/ST6      REAL                    :: SINA0, SDSA1, SDSA2, SWLB1
+!/ST6      REAL                    :: SINA0, SINWS, SINFC,                 &
+!/ST6                                 SDSA1, SDSA2, SWLB1
 !/ST6      INTEGER                 :: SDSP1, SDSP2
 !/ST6      LOGICAL                 :: SDSET, CSTB1
 !
@@ -814,7 +816,7 @@
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
 !/ST4                      SDSHFGEN, SDSLFGEN, WHITECAPWIDTH, FXINCUT, FXDSCUT
-!/ST6      NAMELIST /SIN6/ SINA0
+!/ST6      NAMELIST /SIN6/ SINA0, SINWS, SINFC
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6      NAMELIST /SWL6/ SWLB1, CSTB1
 !/BT1      NAMELIST /SBT1/ GAMMA
@@ -1270,7 +1272,7 @@
 !/FLX3      CD_MAX =    CDMAX
 !/FLX3      CAP_ID =    CTYPE
 !
-!/FLX4      CDFAC  = 1.0E-4
+!/FLX4      CDFAC  = 1.0
 !/FLX4      CALL READNL ( NDSS, 'FLX4', STATUS )
 !/FLX4      WRITE (NDSO,810) STATUS
 !/FLX4      WRITE (NDSO,811) CDFAC
@@ -1337,6 +1339,8 @@
 !/ST4      SINBR   = 0.
 !
 !/ST6      SINA0  = 0.09
+!/ST6      SINWS  = 32.0
+!/ST6      SINFC  = 6.0
 !
 !/ST1      CALL READNL ( NDSS, 'SIN1', STATUS )
 !/ST1      WRITE (NDSO,920) STATUS
@@ -1406,9 +1410,11 @@
 !/ST6      CALL READNL ( NDSS, 'SIN6', STATUS )
 !/ST6      WRITE (NDSO,920) STATUS
 !/ST6      SIN6A0 = SINA0
+!/ST6      SIN6WS = SINWS
+!/ST6      SIN6FC = SINFC
 !/ST6      J = 1
 !/ST6      IF ( SIN6A0.LE.0. ) J = 2
-!/ST6      WRITE (NDSO,921) YESXNO(J), SIN6A0
+!/ST6      WRITE (NDSO,921) YESXNO(J), SIN6A0, SIN6WS, SIN6FC
 !
 ! 6.e Define Snl.
 !
@@ -1634,12 +1640,12 @@
 !/ST4      SDSLFGEN  = 0.
 !
 !/ST6      SDSET  = .TRUE.
-!/ST6      SDSA1  = 3.74E-7
+!/ST6      SDSA1  = 4.75E-06
 !/ST6      SDSP1  = 4
-!/ST6      SDSA2  = 5.24E-6
+!/ST6      SDSA2  = 7.00E-05
 !/ST6      SDSP2  = 4
 !/ST6      CSTB1  = .FALSE.
-!/ST6      SWLB1  = 0.0032
+!/ST6      SWLB1  = 0.41E-02
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -2459,7 +2465,7 @@
       IF ( FLNMLO ) THEN
         WRITE (NDSO,917)
 !/FLX3          WRITE (NDSO,2810) CDMAX*1.E3, CTYPE
-!/FLX4          WRITE (NDSO,2810) CDFAC*1.E4
+!/FLX4          WRITE (NDSO,2810) CDFAC
 !/LN1          WRITE (NDSO,2820) CLIN, RFPM, RFHF
 !/ST1          WRITE (NDSO,2920) CINP
         IF ( .NOT. FLSTB2 ) THEN
@@ -2474,7 +2480,7 @@
 !/ST4          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
 !/ST4            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
 !/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
-!/ST6          WRITE (NDSO,2920) SINA0
+!/ST6          WRITE (NDSO,2920) SINA0, SINWS, SINFC
 !/NL1          WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
 !/NL1                            SNLCS1, SNLCS2, SNLCS3
 !/NL2          WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -2647,7 +2653,7 @@
 ! ... High frequency cut-off
 !
       FXFM   = 2.5
-!/ST6       FXFM   = 6.0
+!/ST6       FXFM   = SIN6FC
       FXPM   = 4.0
       FXPM   = FXPM * GRAV / 28.
       FXFM   = FXFM * TPI
@@ -4860,7 +4866,7 @@
 !/FLX4  810 FORMAT (/'  Stresses (Hwang 2011) ',A/                     &
 !/FLX4        ' --------------------------------------------------')
 !/FLX4  811 FORMAT ( '       drag coefficient scaling    :',E11.4    /)
-!/FLX4 2810 FORMAT ( '  &FLX4 CDFAC =',F6.3,'E-4 /')
+!/FLX4 2810 FORMAT ( '  &FLX4 CDFAC =',F6.3,' /')
 !/FLX3  811 FORMAT ( '       Max Cd * 10^3               :',F8.2/     &
 !/FLX3               '       Cap type                    : ',A/)
 !/FLX3 2810 FORMAT ( '  &FLX3 CDMAX =',F6.2,'E-3 , CTYPE = ',I1,' /')
@@ -4942,8 +4948,10 @@
 !/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
 !/ST6         ' --------------------------------------------------')
 !/ST6  921 FORMAT ( '  negative wind input active       :  ',A/    &
-!/ST6               '    attenuation factor             :  ',F6.2/ )
-!/ST6 2920 FORMAT ( '  &SIN6 SINA0 =',F6.3,' /')
+!/ST6               '  attenuation factor               :  ',F6.2/ &
+!/ST6               '  wind speed scaling factor        :  ',F6.2/ &
+!/ST6               '  frequency cut-off factor         :  ',F6.2/)
+!/ST6 2920 FORMAT ( '  &SIN6 SINA0 =', F6.3, ', SINWS =', F6.2, ', SINFC =', F6.2, ' /')
 !
 !/STX  920 FORMAT (/'  Experimental wind input.'/)
 !

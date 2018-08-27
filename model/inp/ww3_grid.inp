@@ -88,7 +88,9 @@ $                           SWELLF5 : Relative viscous decay below threshold
 $                             Z0RAT : roughness for oscil. flow / mean flow 
 $   BYDRZ input         : Namelist SIN6
 $                          SINA0    : factor for negative input
-$                          SINU10   : wind speed scaling option
+$                          SINWS    : wind speed scaling option
+$                          SINFC    : high-frequency extent of the
+$                                     prognostic frequency region
 $
 $ Nonlinear interactions - - - - - - - - - - - - - - - - - - - - - - -
 $   Discrete I.A.       : Namelist SNL1
