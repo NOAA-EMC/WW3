@@ -48,15 +48,22 @@ by halving both the longitude and latitude grid lengths. Any cell
 on this refined level can be further divided into another 4 quarterly
 cells. This refinement can go on as required, resulting in multi-resolution
 grids in a few refined levels. For consistency, the single resolution
-SMC grid is considered to have only one level. Wind forcing will remain
-to be at the base level resolution for all SMC grids (one level or
-multi-level) and it will be interpolated on to the refined levels
-(if any) inside the WW3 model. The normal regular grid input files,
-such as the water depth, land-sea masks, and sub-grid obstruction,
+SMC grid is considered to have only one level.  The normal regular grid input 
+files, such as the water depth, land-sea masks, and sub-grid obstruction,
 are no longer required, replaced with sea-point only cell and face arrays
 and a sub-grid obstruction file.  The water depth is stored in the cell array 
 in the last (5-th) column as an integer in meter.  The masks will be defined  
 inside ww3\_grid with the sea-point cell array.
+
+Wind and ocean current (if any) forcing can be applied using a regular grid at the base 
+resolution as default input forcing for any SMC grid (single or multi-level). 
+It will be interpolated on to the refined levels (if any) inside the model.
+One option of sea-point only wind and current input for SMC grid can be 
+switched on by the {\code SEAWND} logical variable in the {/F PSMC} namelist.  
+This sea-point only option not only removes the need to interpolate the wind 
+(and current, if any) inside the model but also allows different resolution wind 
+(and current) forcings to be mixed up and interpolated to multi-resolution cells 
+directly, making it a truly multi-resolution model. 
 
 \begin{figure}
 \centerline{\epsfig{file=./num/smcelary.eps,angle=0,width=3.in}}
@@ -122,27 +129,37 @@ grid water depth, land-sea masks, and sub-grid obstruction input files
 are no longer required and they are replaced with SMC grid sea point only 
 files (depth is stored in the cell array and subgrid obstruction in 
 G50GObstr.dat).  The depth and land-sea mask input lines in ww3\_grid.in 
-are, however, kept for passing parameters, such as the minimumu depth.
+are, however, kept for passing parameters, such as the minimum depth.
 Due to the merges at high latitudes and refined resolutions if any,
 regular grid mapping arrays are modified slightly for consistency
 with the SMC grid cells. 
 Refer to the regression test \emph{regtests/ww3\_tp2.10}
 for an example of a 3-level SMC grid model for the Lake Erie.
 
-Output for the SMC grid can be processed by the ww3\_outf program
+Output post processing for SMC grid models has been developed for
+ww3\_ounf and ww3\_outf. For ww3\_ounf the user can choose between
+retrieving multi-resolution information at native model grid sea-points,
+or generating regular grids at any of the resolution levels set in
+the model grid definition. The ww3\_outf program processes SMC grid data
 as either the fully expanded regular lat-lon grid output at the base
-resolution level or as ASCII output at all SMC grid cell points (type-4).
-The regular grid format output can be viewed as other regular grid
-output but the refined resolution cells have been converted into 
-corresponding base resolution cells for a multi-resolution grid. 
-The all cell ASCII output gives field values at the cell center
-so its resolution conforms with the SMC grid. Visualization of the
-all cell ASCII output can be done with the aid of the input cell array
-file because the output cell sequency is the same as the input cell
-array. The IDL script g50smcswhglb.pro is an example program to plot
-the global 50km SMC grid SWH output. It uses the projection files
-produced by g50smcgrids.pro. Users are encouraged to develop their
-own grid-generating and post-processing programs in other languages.
+resolution level or as ASCII output at all SMC grid sea-points (type-4).
+For regular grid outputs, parameter values are determined
+using an area-weighted average of all SMC grid cells overlapping the chosen
+output cell boundaries. Sea-point data latitudes and longtitudes 
+correspond to the native model grid cell centres. For ww3\_ounf
+sea-point outputs, variables describing cell sizes are also provided
+in the netCDF file.
+
+Visualization tools for sea-point outputs are not provided with this
+code release; however some examples are available from the Met Office
+on request. For netCDF sea-point outputs a python based GUI tool has
+been developed. Visualization of the all cell ASCII output can be done
+with the aid of the input cell array file because the output cell 
+sequence is the same as the input cell array. The IDL script 
+g50smcswhglb.pro is an example program to plot the global 50km SMC grid
+SWH output. It uses the projection files produced by g50smcgrids.pro. 
+Users are encouraged to develop their own grid-generating and 
+post-processing programs in other languages.
 
 It is recommended to read the smc\_docs/SMC\_Grid\_Guide.pdf for
 more information or to contact \url{Jian-Guo.Li@metoffice.gov.uk} 

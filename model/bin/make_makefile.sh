@@ -546,12 +546,13 @@
       echo ' ' ; exit 9
   fi
 
+  smco=$NULL
   case $g_switch in
    PR0) pr=$NULL ;;
    PR1) pr='w3profsmd w3pro1md' ;;
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
-   SMC) pr='w3psmcmd' ;;
+   SMC) pr='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
   esac 
 
   case $p_switch in
@@ -987,7 +988,7 @@
              source="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux="constants $uostmd w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
-                aux="$aux w3nmlounfmd" ;;
+                aux="$aux w3nmlounfmd $smco" ;;
      ww3_outp) IDstring='Point output'
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -1350,6 +1351,7 @@
          'PDLIB_FIELD_VEC'   ) modtest=pdlib_field_vec.o ;;
          'PDLIB_W3PROFSMD'   ) modtest=w3profsmd_pdlib.o ;;
          'W3PARALL'     ) modtest=w3parall.o ;;
+         'W3SMCOMD'     ) modtest=w3smcomd.o ;;
          *              ) modfound=no ;; 
       esac
 

@@ -43,7 +43,15 @@
     INTEGER                     :: IXN
     INTEGER                     :: IY0
     INTEGER                     :: IYN
+!/SMC    INTEGER                     :: SMCTYPE
+!/SMC    REAL                        :: SXO
+!/SMC    REAL                        :: SYO
+!/SMC    REAL                        :: EXO
+!/SMC    REAL                        :: EYO
+!/SMC    INTEGER                     :: CELFAC
+!/SMC    REAL                        :: NOVAL
   END TYPE NML_FILE_T
+
 
   ! miscellaneous
   CHARACTER(256)                :: MSG
@@ -336,6 +344,7 @@
 
     USE W3ODATMD, ONLY: NDSE
 !/S      USE W3SERVMD, ONLY: STRACE
+!/SMC    USE CONSTANTS, ONLY: UNDEF
 
     IMPLICIT NONE
 
@@ -358,6 +367,15 @@
     FILE%IXN       = 1000000000
     FILE%IY0       = 1
     FILE%IYN       = 1000000000
+
+    ! defaults for SMC output
+!/SMC    FILE%SXO       = -999.9
+!/SMC    FILE%SYO       = -999.9
+!/SMC    FILE%EXO       = -999.9
+!/SMC    FILE%EYO       = -999.9
+!/SMC    FILE%CELFAC    = 1
+!/SMC    FILE%SMCTYPE   = 1
+!/SMC    FILE%NOVAL     = UNDEF
 
     ! read file namelist
     REWIND (NDSI)
