@@ -196,7 +196,7 @@
                                  IERR, I, TOUT(2), NOUT, TDUM(2),     &
                                  NREQ, IPOINT, ITYPE, OTYPE, NDSTAB,  &
                                  IOTEST, IK, ITH, IOUT, J, DIMXP,     &
-                                 NDSBUL, NDSCSV, ICSV, IJ
+                                 DIMP, NDSBUL, NDSCSV, ICSV, IJ
 !/NCO       INTEGER                 :: NDSCBUL
       INTEGER                 :: ISCALE = 0
       INTEGER                 :: TIMEV(2)
@@ -284,8 +284,10 @@
           M2KM = 1.E-3
         END IF
 !
+      DIMP   = 15
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
-      ALLOCATE ( XPART(6,0:DIMXP) )
+      ALLOCATE ( XPART(DIMP,0:DIMXP) )
+      XPART  = UNDEF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -1418,8 +1420,8 @@
 !
 ! spectral partitioning
 !
-            IF ( ITYPE.EQ.4 ) CALL W3PART                             &
-                ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
+            IF ( ITYPE.EQ.4 ) CALL W3PART                              &
+               ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMP, DIMXP )
 !
 ! nondimensional parameters
 !
@@ -2132,8 +2134,8 @@
                       END DO
 !
                   ELSEIF ( OTYPE .GE. 2 ) THEN
-                      CALL W3BULL (NPART, XPART, DIMXP, UABS, UDIR, &
-                              J, IOUT, TIMEV )
+                      CALL W3BULL (NPART, XPART, DIMP, DIMXP, UABS,   &
+                                   UDIR, J, IOUT, TIMEV )
 !
                     IF ( FLAGLL ) THEN
                       X = M2KM * PTLOC(1,J)

@@ -124,10 +124,11 @@
 !/
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
-     USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
+      USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
+                          PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,      &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
@@ -326,7 +327,7 @@
 !
         IF ( IFI.EQ.6 .AND. IFJ.EQ.1 ) THEN ! Radiation stresses needs 3D variable setting
             IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 3
-          ELSE IF ( IFI.EQ.4 .AND. IFJ.LE.6 ) THEN
+          ELSE IF ( IFI.EQ.4 .AND. IFJ.LE.NOGE(4) ) THEN
             IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + NOSWLL + 1 ! Partitioned parameters
           ELSE IF ( IFI.EQ.1 .AND. IFJ .EQ. 2 ) THEN
             IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! Current vector
@@ -1101,6 +1102,54 @@
                 FLONE = .TRUE.
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR , MAPSF, X1 )
 !
+!     Partitioned peak direction
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.9 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PTHP0(:,I),       &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!     Partitioned peakedness
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.10 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PQP(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned peak enhancement factor
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.11 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PPE(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned gaussian frequency spread
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.12 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PGW(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned spectral width
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.13 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PSW(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
 !     Friction velocity
 !
               ELSE IF ( J.EQ.5 .AND. K.EQ.1 ) THEN
@@ -1141,6 +1190,12 @@
                 FLTWO = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWNX, MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWNY, MAPSF, XY )
+!
+!     Peakedness
+!
+              ELSE IF ( J.EQ.8 .AND. K.EQ.5 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, QP    , MAPSF, X1 )
 !
 !     Average source term time step
 !
@@ -1209,6 +1264,7 @@
                                                         , MAPSF, X1 )
 !
               ELSE
+                WRITE (NDSE,990) J, K
                 WRITE (NDSE,999)
                 CALL EXTCDE ( 1 )
 !
@@ -1266,6 +1322,8 @@
               1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
   951 FORMAT (1X,2F10.5,2I8)
 !
+  990 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/           &
+               '     GROUP',I2,' PARAMETER',I3,' NOT LISTED '    )
   999 FORMAT (/' *** WAVEWATCH III ERROR IN GXEXGO :'/                &
                '     PLEASE UPDATE FIELDS !!! '/)
 !

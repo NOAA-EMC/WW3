@@ -41,7 +41,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3BULL                                                &
-          ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
+          ( NPART, XPART, DIMP, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
@@ -140,10 +140,10 @@
       PARAMETER     ( DDMMAX =  15.   )
       PARAMETER     ( DDWMAX =  30.   )
       PARAMETER     ( AGEMIN =   0.8  )
-      INTEGER, INTENT(IN)     :: NPART, DIMXP, IOUT 
+      INTEGER, INTENT(IN)     :: NPART, DIMP, DIMXP, IOUT 
       INTEGER, INTENT(INOUT)  :: TIMEV(2)
       REAL, INTENT(IN)        :: UABS,    &
-                                 UD, XPART(6,0:DIMXP)
+                                 UD, XPART(DIMP,0:DIMXP)
       INTEGER                 :: IPG1,IPI(NPMAX), ILEN(NPMAX), IP,     &
                                  IPNOW, IFLD, INOTAB, IPNT, ITAB,      &
                                  DOUTP, FCSTI, NZERO

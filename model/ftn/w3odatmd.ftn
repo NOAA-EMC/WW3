@@ -667,7 +667,7 @@
 !
 ! 2) Standard mean wave parameters
 !
-      NOGE(2) = 9
+      NOGE(2) = 16
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -704,16 +704,25 @@
 !
 ! 4) Spectral Partitions parameters
 !
-      NOGE(4) = 8
+      NOGE(4) = 17
 !
-      IDOUT( 4, 1)  = 'Part. wave heigt    '
+      IDOUT( 4, 1)  = 'Part. wave height   '
       IDOUT( 4, 2)  = 'Part. peak period   '
-      IDOUT( 4, 3)  = 'Part. peak wave l.  '
+      IDOUT( 4, 3)  = 'Part. peak wave len.'
       IDOUT( 4, 4)  = 'Part. mean direction'
       IDOUT( 4, 5)  = 'Part. dir. spread   '
       IDOUT( 4, 6)  = 'Part. wind sea frac.'
       IDOUT( 4, 7)  = 'Total wind sea frac.'
       IDOUT( 4, 8)  = 'Number of partitions'
+      IDOUT( 4, 9)  = 'Part. peak direction'
+      IDOUT( 4,10)  = 'Part. peakedness    '
+      IDOUT( 4,11)  = 'Part. peak enh. fac.'
+      IDOUT( 4,12)  = 'Part. gaussian width'
+      IDOUT( 4,13)  = 'Part. spectral width'
+      IDOUT( 4,14)  = 'Part. mean per. (-1)'
+      IDOUT( 4,15)  = 'Part. mean per. (+1)'
+      IDOUT( 4,16)  = 'Part. mean per. (+2)'
+      IDOUT( 4,17)  = 'Part. peak density  '
 !
 ! 5) Atmosphere-waves layer
 !
@@ -764,12 +773,13 @@
 !
 ! 8) Spectrum parameters
 !
-      NOGE(8) = 4
+      NOGE(8) = 5
 !
       IDOUT( 8, 1)  = 'Mean square slopes  '
       IDOUT( 8, 2)  = 'Phillips tail const'
       IDOUT( 8, 3)  = 'Slope direction     '
       IDOUT( 8, 4)  = 'Tail slope direction'
+      IDOUT( 8, 5)  = 'Goda peakedness parm'
 !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
 !      IDOUT( 8, 4)  = 'Surf grad correl XT'
 !      IDOUT( 8, 5)  = 'Surf grad correl YT'
@@ -777,7 +787,6 @@
 !      IDOUT( 8, 7)  = 'Surface crest param'
 !      IDOUT( 8, 3)  = '3rd spectral moment '
 !      IDOUT( 8, 4)  = '4th spectral moment '
-!      IDOUT( 8, 5)  = 'Goda peakedness parm'
 !      IDOUT( 8, 6)  = 'Kurtosis            '
 !      IDOUT( 8, 7)  = 'Skewness            '
 !

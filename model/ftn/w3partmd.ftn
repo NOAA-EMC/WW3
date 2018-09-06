@@ -73,7 +73,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMXP )
+      SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMP, DIMXP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -112,6 +112,7 @@
 !                                but no partitions.
 !       XP      R.A.   O   Parameters describing partitions.
 !                          Entry '0' contains entire spectrum.
+!       DIMP    Int.   I   First dimension of XP.
 !       DIMXP   Int.   I   Second dimension of XP.
 !     ----------------------------------------------------------------
 !
@@ -154,10 +155,10 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(OUT)          :: NP
-      INTEGER, INTENT(IN)           :: DIMXP
+      INTEGER, INTENT(IN)           :: DIMP, DIMXP
       REAL, INTENT(IN)              :: SPEC(NK,NTH), WN(NK), UABS,    &
                                        UDIR, DEPTH
-      REAL, INTENT(OUT)             :: XP(6,0:DIMXP)
+      REAL, INTENT(OUT)             :: XP(DIMP,0:DIMXP)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -170,7 +171,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: ZP(NSPEC), ZMIN, ZMAX, Z(NSPEC),     &
                                  FACT, WSMAX, HSMAX
-      REAL                    :: TP(6,DIMXP)
+      REAL                    :: TP(DIMP,DIMXP)
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -217,7 +218,7 @@
 !     NP and NX initialized inside routine.
 !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-                    NP, XP, DIMXP, PMAP )
+                    NP, XP, DIMP, DIMXP, PMAP )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Sort and recombine wind seas as needed
@@ -250,7 +251,7 @@
           END DO
 !
           CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-                        NP, XP, DIMXP, PMAP )
+                        NP, XP, DIMP, DIMXP, PMAP )
           IF ( NP .LE. 1 ) RETURN
 !
           TP(:,1:NP)  = XP(:,1:NP)
@@ -884,7 +885,7 @@
       END SUBROUTINE PT_FLD
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
-                          NPO, XP, DIMXP, PMAP )
+                          NPO, XP, DIMP, DIMXP, PMAP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -918,6 +919,7 @@
 !       WN      R.A.   I   Wavenumebers for each frequency.
 !       NPO     Int.   O   Number of partitions with mean parameters.
 !       XP      R.A.   O   Array with output parameters.
+!       DIMP    int.   I   Fist dimesion of XP.
 !       DIMXP   int.   I   Second dimesion of XP.
 !       PMAP    I.A.   O   Mapping between orig. and combined partitions
 !     ----------------------------------------------------------------
@@ -947,10 +949,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP
+      INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMP, DIMXP
       INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
       REAL, INTENT(IN)        :: ZP(NSPEC), DEPTH, UABS, UDIR, WN(NK)
-      REAL, INTENT(OUT)       :: XP(6,0:DIMXP)
+      REAL, INTENT(OUT)       :: XP(DIMP,0:DIMXP)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -962,8 +964,12 @@
                                  SUME(0:NPI), SUMEW(0:NPI),           &
                                  SUMEX(0:NPI), SUMEY(0:NPI),          &
                                  EFPMAX(0:NPI), FCDIR(NTH)
+      REAL,DIMENSION(0:NPI)   :: SUME1, SUME2, SUMQP
       REAL                    :: HS, XL, XH, XL2, XH2, EL, EH, DENOM, &
                                  SIGP, WNP, CGP, UPAR, C(NK), RD, FACT
+      REAL                    :: QP, M0, M1, M2, FSPRD, EPM_FP, ALP_PM
+      REAL                    :: Y, YHAT, XHAT, SUMXY, SUMYLOGY, NUMER,&
+                                 SUMY, SUMXXY, SUMXYLOGY, SUMEXP, SUMEYP
 !/
 !/S      CALL STRACE (IENT, 'PTMEAN')
 !
@@ -983,6 +989,11 @@
       SUMFX  = 0.
       SUMFY  = 0.
       SUME   = 0.
+!
+      SUME1  = 0.  !/ first spectral moment
+      SUME2  = 0.  !/ second spectral moment
+      SUMQP  = 0.  !/ peakedness parameter
+!
       SUMEW  = 0.
       SUMEX  = 0.
       SUMEY  = 0.
@@ -1037,6 +1048,10 @@
       DO IP=0, NPI
         DO IK=1, NK
           SUME (IP) = SUME (IP) + SUMF (IK,IP) * DSII(IK)
+          SUMQP(IP) = SUMQP(IP) + SUMF (IK,IP)**2 * DSII(IK) * SIG(IK)
+          SUME1(IP) = SUME1(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)
+          SUME2(IP) = SUME2(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)**2
+
           SUMEW(IP) = SUMEW(IP) + SUMFW(IK,IP) * DSII(IK)
           SUMEX(IP) = SUMEX(IP) + SUMFX(IK,IP) * DSII(IK)
           SUMEY(IP) = SUMEY(IP) + SUMFY(IK,IP) * DSII(IK)
@@ -1046,6 +1061,9 @@
             END IF
           END DO
         SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTE
+        SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * FTE
+        SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * FTE
+        SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTE
         SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTE
         SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTE
         SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTE
@@ -1058,34 +1076,120 @@
 !
       DO IP=0, NPI
 !
-        HS     = 4. * SQRT ( MAX(SUME(IP) * DTH * TPIINV,0.) )
+        SUMEXP = 0.
+        SUMEYP = 0.
+!
+        M0 = SUME(IP)  * DTH * TPIINV
+        HS     = 4. * SQRT ( MAX( M0 , 0. ) )
         IF ( HS .LT. HSPMIN ) CYCLE
 !
-        XL     = 1./XFR - 1.
-        XH     =  XFR - 1.
+        IF ( NPO .GE. DIMXP ) GOTO 2000
+        NPO = NPO + 1
+        IF (IP.GT.0)THEN
+           IF(NPO.LT.1)CYCLE
+           PMAP(NPO) = IP
+        ENDIF
+!
+        M1 = SUME1(IP) * DTH * TPIINV**2
+        M2 = SUME2(IP) * DTH * TPIINV**3
+        QP = SUMQP(IP) *(DTH * TPIINV)**2
+!       M1 = MAX( M1, 1.E-7 )
+!       M2 = MAX( M2, 1.E-7 )
+!
+        XL     = 1. / XFR - 1.
+        XH     = XFR - 1.
         XL2    = XL**2
         XH2    = XH**2
         EL     = SUMF(IFPMAX(IP)-1,IP) - SUMF(IFPMAX(IP),IP)
         EH     = SUMF(IFPMAX(IP)+1,IP) - SUMF(IFPMAX(IP),IP)
         DENOM  = XL*EH - XH*EL
-        SIGP   = SIG(IFPMAX(IP)) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )   &
-                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+        SIGP   = SIG(IFPMAX(IP))
+        IF (DENOM.NE.0.) THEN
+           SIGP   = SIGP *( 1. + 0.5 * ( XL2*EH - XH2*EL ) &
+                         / SIGN ( ABS(DENOM) , DENOM ) )
+        END IF
         CALL WAVNU1 ( SIGP, DEPTH, WNP, CGP )
 !
-        IF ( NPO .GE. DIMXP ) GOTO 2000
-        NPO       = NPO + 1
-        IF (IP.GT.0)THEN
-           IF(NPO.LT.1)CYCLE
-           PMAP(NPO) = IP
-        ENDIF
+     !/ --- Parabolic fit around the spectral peak ---
+        IK = IFPMAX(IP)
+        EFPMAX(IP) = SUMF(IK,IP) * DTH
+        IF (IK.GT.1 .AND. IK.LT.NK) THEN
+          EL    = SUMF(IK-1,IP) * DTH
+          EH    = SUMF(IK+1,IP) * DTH
+          NUMER = 0.125 * ( EL - EH )**2
+          DENOM = EL - 2. * EFPMAX(IP) + EH
+          IF (DENOM.NE.0.) EFPMAX(IP) = EFPMAX(IP)         &
+                          - NUMER / SIGN( ABS(DENOM),DENOM )
+        END IF
+!
+     !/ --- Weighted least-squares regression to estimate frequency
+     !/     spread (FSPRD) to an exponential function:
+     !/              E(f) = A * exp(-1/2*(f-fp)/B)**2             ,
+     !/     where B is frequency spread and  E(f) is used for
+     !/     weighting to avoid greater weights to smalll values
+     !/     in ordinary least-square fit. ---
+        FSPRD     = UNDEF
+        SUMY      = 0.
+        SUMXY     = 0.
+        SUMXXY    = 0.
+        SUMYLOGY  = 0.
+        SUMXYLOGY = 0.
+!
+        DO IK=1, NK
+          Y = SUMF(IK,IP)*DTH
+        ! --- sums for weighted least-squares ---
+          IF (Y.GE.1.E-15) THEN
+            YHAT = LOG(Y)
+            XHAT = -0.5 * ( (SIG(IK)-SIGP)*TPIINV )**2
+            SUMY      = SUMY + Y
+            SUMXY     = SUMXY + XHAT * YHAT
+            SUMXXY    = SUMXXY + XHAT * XHAT * Y
+            SUMYLOGY  = SUMYLOGY + Y * YHAT
+            SUMXYLOGY = SUMXYLOGY + SUMXY * YHAT
+          END IF
+        END DO
+!
+        NUMER = SUMY * SUMXXY - SUMXY**2
+        DENOM = SUMY * SUMXYLOGY - SUMXY * SUMYLOGY
+        IF (DENOM.NE.0.)  FSPRD = SQRT( NUMER / SIGN(ABS(DENOM),DENOM) )
+!
+        SUMEXP = SUMFX(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
+        SUMEYP = SUMFY(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
+!
+     !/ --- Significant wave height ---
         XP(1,NPO) = HS
+     !/ --- Peak wave period ---
         XP(2,NPO) = TPI / SIGP
+     !/ --- Peak wave length ---
         XP(3,NPO) = TPI / WNP
+     !/ --- Mean wave direction ---
         XP(4,NPO) = MOD( 630.-ATAN2(SUMEY(IP),SUMEX(IP))*RADE , 360. )
+     !/ --- Mean directional spread ---
         XP(5,NPO) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
                 MAX(0.,(SUMEX(IP)**2+SUMEY(IP)**2)/SUME(IP)**2) ) ) ) )
-
+     !/ --- Wind sea fraction ---
         XP(6,NPO) = SUMEW(IP) / SUME(IP)
+     !/ --- Peak wave direction ---
+        XP(7,NPO) =  MOD(630.-ATAN2(SUMEYP,SUMEXP)*RADE , 360.)
+     !/ --- Spectral width (Longuet-Higgins 1975) ---
+        XP(8,NPO) = SQRT( MAX( 1. , M2*M0 / M1**2 ) - 1. )
+     !/ --- JONSWAP peak enhancement parameter (E(fp)/EPM(fp))---
+     !  EPM_FMX = ALPHA_PM_FMX * GRAV**2 * TPI * SIGP**-5 * EXP(-5/4)
+        ALP_PM = 0.3125 * HS**2 * (SIGP)**4
+        EPM_FP = ALP_PM * TPI * (SIGP**-5) * 2.865048E-1
+        XP(9,NPO) = MAX( EFPMAX(IP) / EPM_FP , 1.0 )
+     !/ --- peakedness parameter (Goda 1970) ---
+        XP(10,NPO) = 2. * QP / M0**2
+     !/ --- gaussian frequency width ---
+        XP(11,NPO) = FSPRD
+!    !/ --- TBC ---
+!       XP(12,NPO) = UNDEF
+!    !/ --- TBC ---
+!       XP(13,NPO) = M0 / M1
+!    !/ --- TBC ---
+!       XP(14,NPO) = SQRT( M0 / M2 )
+!    !/ --- peak spectral density (one-dimensional) ---
+!       XP(15,NPO) = EFPMAX(IP)
 !
         END DO
 !

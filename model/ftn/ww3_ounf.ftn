@@ -107,7 +107,7 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD, W3FLGRDFLAG
       USE W3INITMD, ONLY: WWVER, SWITCHES
-      USE W3ODATMD, ONLY: NAPROC, NOSWLL
+      USE W3ODATMD, ONLY: NAPROC
 !/DEBUG      USE W3ODATMD, only : IAPROC
 !/
       USE W3GDATMD
@@ -117,6 +117,7 @@
                           THS, FP0, THP0, DTDYN, FCUT,                 &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
+                          PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
@@ -128,7 +129,7 @@
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
                           WN, USSP
       USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
-                          UNDEF, FLOGRD, FNMPRE
+                          UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       USE W3NMLOUNFMD
       USE NETCDF
@@ -515,8 +516,8 @@
                   CALL CHECK_ERR(IRET)
                 END IF ! NCIDS
                 ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
-                IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
-                  DO IPART=1,5
+                IF ((IFI.EQ.4).AND.(IFJ.LE.NOGE(IFI))) THEN
+                  DO IPART=1,NOSWLL
                     IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
                       IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
                       CALL CHECK_ERR(IRET)
@@ -1785,7 +1786,7 @@
               VMAX = 10000
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
-              FSC    = 1.
+              FSC    = 0.1
               UNITS  = 'degree'
               WRITE(ENAME,'(A5,I1)') '.pdir',IPART
 !/RTD                ! Rotate direction back to standard pole
@@ -1813,8 +1814,8 @@
 !/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
-              VMIN = 0 
-              VMAX = 360
+              VMIN = 0
+              VMAX = 3600
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.1
@@ -1899,6 +1900,128 @@
               VARND(1)=''
               VMIN = 0 
               VMAX = 100
+!
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9 ) THEN
+              FSC    = 0.1
+              UNITS  = 'degree'
+              WRITE(ENAME,'(A4,I1)') '.pdp',IPART
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP0(:,IPART), AnglD, .FALSE.)
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( PTHP0(:,IPART), X1, .TRUE. )
+              ELSE
+                DO ISEA=1, NSEA
+                  IF ( PTHP0(ISEA,IPART) .NE. UNDEF ) THEN
+                    PTHP0(ISEA,IPART) = MOD ( 630-RADE*PTHP0(ISEA,IPART) , 360. )
+                    END IF
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTHP0(:,IPART), MAPSF, X1 )
+              END IF
+              NFIELD=1
+              WRITE(VARNM(1),'(A3,I1)') 'pdp',IPART
+              WRITE(VARNL(1),'(A,I1)') &
+                 'peak direction partition ',IPART
+              WRITE(VARNS(1),'(A,I1)') &
+                 'sea_surface_wave_peak_from_direction_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') &
+                  'dominant_wave_from_direction_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                VARND(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
+              VMIN = 0
+              VMAX = 3600
+!
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
+              FSC    = 0.01
+              UNITS  = '1'
+              WRITE(ENAME,'(A4,I1)') '.pqp',IPART
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( PQP(:,IPART), X1 )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PQP(:,IPART), MAPSF, X1 )
+              ENDIF
+              NFIELD=1
+              WRITE(VARNM(1),'(A3,I1)') 'pqp',IPART
+              WRITE(VARNL(1),'(A,I1)') 'peakedness partition ',IPART
+              WRITE(VARNS(1),'(A,I1)') &
+                  'sea_surface_wave_peakedness_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') &
+                  'wave_peakedness_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
+!
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
+              FSC    = 0.01
+              UNITS  = '1'
+              WRITE(ENAME,'(A4,I1)') '.ppe',IPART
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( PPE(:,IPART), X1 )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PPE(:,IPART), MAPSF, X1 )
+              ENDIF
+              NFIELD=1
+              WRITE(VARNM(1),'(A3,I1)') 'ppe',IPART
+              WRITE(VARNL(1),'(A,I1)') &
+                  'peak enhancement factor partition ',IPART
+              WRITE(VARNS(1),'(A,I1)') &
+                  'wave_peak_enhancement_factor_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') &
+                  'wave_peak_enhancement_factor_partition_',IPART
+              VARNC(1)='JONSWAP peak enhancement factor'
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
+!
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
+              FSC    = 0.0001
+              UNITS  = 's-1'
+              WRITE(ENAME,'(A4,I1)') '.pgw',IPART
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( PGW(:,IPART), X1 )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PGW(:,IPART), MAPSF, X1 )
+              ENDIF
+              NFIELD=1
+              WRITE(VARNM(1),'(A3,I1)') 'pgw',IPART
+              WRITE(VARNL(1),'(A,I1)') &
+                  'frequency width partition ',IPART
+              WRITE(VARNS(1),'(A,I1)') &
+                  'Gaussian_frequency_spread_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') &
+                  'Gaussian_frequency_spread_partition_',IPART
+              VARNC(1)='Gaussian least-square fit to ' // &
+                       'omni-directional spectral partition'
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
+!
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
+              FSC    = 0.0001
+              UNITS  = '1'
+              WRITE(ENAME,'(A4,I1)') '.psw',IPART
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( PSW(:,IPART), X1 )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSW(:,IPART), MAPSF, X1 )
+              ENDIF
+              NFIELD=1
+              WRITE(VARNM(1),'(A3,I1)') 'psw',IPART
+              WRITE(VARNL(1),'(A,I1)') 'spectral width partition ',IPART
+              WRITE(VARNS(1),'(A,I1)') &
+                  'sea_surface_wave_spectral_width_partition_',IPART
+              WRITE(VARNG(1),'(A,I1)') &
+                  'wave_spectral_width_partition_',IPART
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01
@@ -2962,6 +3085,25 @@
 !/RTD              END IF
               VMIN = 0
               VMAX = 3600
+!
+             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
+              FSC    = 0.001
+              UNITS  = '1'
+              ENAME  = '.qp'
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( QP, X1 )
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QP, MAPSF, X1 )
+              ENDIF
+              NFIELD=1
+              VARNM(1)='qp'
+              VARNL(1)='peakedness'
+              VARNS(1)='sea_surface_wave_peakedness'
+              VARNG(1)='wave_peakedness'
+              VARNC(1)='Goda wave peakedness parameter'
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.1
@@ -4353,7 +4495,7 @@
 
 
             ! Loops over IPART for partition variables
-            IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
+            IF ((IFI.EQ.4).AND.(IFJ.LE.NOGE(IFI))) THEN
 560           CONTINUE
               IF (INDEXIPART.LT.NBIPART) THEN
                 INDEXIPART=INDEXIPART+1

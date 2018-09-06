@@ -192,7 +192,7 @@
                                  IERR, I, NOUT, NREQ, ITYPE, OTYPE,   &
                                  IPOINT, IOTEST, ITH, IOUT, J, DIMXP, &
                                  ICODE, STRL, STRL2, FLWW3, NBFILEOUT,&
-                                 S5, S3, NBSTATION, NCTYPE,           &
+                                 S5, S3, NBSTATION, NCTYPE, DIMP,     &
                                  NCFLUSH, NFL, MFL, IFL, NREQL, NOUTL,&
                                  NDSEN, ONE, TWO, IRET, IP
       INTEGER                 :: ISCALE = 0
@@ -310,8 +310,10 @@
         M2KM = 1.E-3
       END IF
 !
+      DIMP   = 11+4           ! .EQV. DIMP in w3iosfmd.ftn
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
-      ALLOCATE ( XPART(6,0:DIMXP) )
+      ALLOCATE ( XPART(DIMP,0:DIMXP) )
+      XPART = UNDEF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -1835,7 +1837,8 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
 ! 3.c spectral partitioning
 !
           IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
-            CALL W3PART( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
+            CALL W3PART( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, &
+                                                       DIMP, DIMXP )
           END IF
 !
 ! 3.d nondimensional parameters

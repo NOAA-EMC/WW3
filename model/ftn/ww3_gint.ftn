@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |SX
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         31-Aug-2018 |
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
@@ -18,6 +18,7 @@
 !/    30-Apr-2014 : Add group 3 (M. Accensi)            ( version 5.00 )
 !/    26-Jul-2018 : Write weights file WHTGRIDINT.bin
 !/                  (F.Ardhuin, M.Accensi, J.H.Alves)   ( version 6.05 )
+!/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
 !/
 !   1. Purpose : 
 !
@@ -89,7 +90,7 @@
         USE W3ADATMD, ONLY : W3DIMA, W3NAUX, W3SETA
         USE W3GDATMD
         USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, FLOGRD,      &
-                             NAPROC, NOSWLL
+                             NAPROC, NOSWLL, IDOUT
         USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
         USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
@@ -749,13 +750,38 @@
 !
 ! 5.c Setup the output flag options for the target grid
 !
-        WRITE (NDSO,910) 
+        WRITE (NDSO,910)
         DO I = 1, NOGRP
           OUTPTS(NG)%OUT1%FLOGRD(I,:) = OUTPTS(1)%OUT1%FLOGRD(I,:)
           WRITE (NDSO,911) I
-          WRITE (NDSO, 912) (OUTPTS(NG)%OUT1%FLOGRD(I,J),J=1,NGRPP)
+          IF (I.LT.9) THEN
+            WRITE (NDSO, 912) (OUTPTS(NG)%OUT1%FLOGRD(I,J),J=1,NGRPP)
+           ELSE
+            WRITE (NDSO, 913)
+          END IF
         END DO
-        WRITE (NDSO, 913) 
+        WRITE (NDSO, 915)
+!
+!     Print output flags in human readable from. Mark
+!     groups that do not make sense to interpolate to
+!     target grid (e.g. Groups 9, 10).
+!
+        DO I=1, NOGRP
+         DO J=1, NGRPP
+           IF ( OUTPTS(NG)%OUT1%FLOGRD(I,J) ) THEN
+             IF ( I .EQ. 4 .AND. J .EQ. 8 ) THEN
+               WRITE (NDSO, 916) I,IDOUT(I,J), '*** NOT IMPLEMENTED ***'
+               OUTPTS(NG)%OUT1%FLOGRD(I,J) = .FALSE.
+             ELSE IF ( I .LE. 8 ) THEN
+               WRITE (NDSO, 916) I,IDOUT(I,J), ' '
+             ELSE
+               WRITE (NDSO, 916) I,IDOUT(I,J), '*** NOT IMPLEMENTED ***'
+               OUTPTS(NG)%OUT1%FLOGRD(I,J) = .FALSE.
+             END IF
+           END IF
+         END DO
+        END DO
+        WRITE (NDSO, 915)
 !
 ! 5.d Carry out interpolation in an infinite loop till appropriate 
 !     time steps are interpolated 
@@ -837,16 +863,19 @@
                     ' target grids do not match',/                             &
                   '  The Min. no. of partitions from input grids =',I5/        &
                   '        The no. of partitions for target grid =',I5/        &
-                  '  Interpolation will be limited to the smaller number of',  &
-                  ' the partitions, rest will be marked undefined')  
+                  '  Interpolation will be limited to the smaller',            &
+                  ' number of the partitions,',/                               &
+                  '  rest will be marked undefined.'                           )
  908    FORMAT (/'  Preparing interpolation weights for output grid ' /        &
                  '  Total number of wet points for interpolation ',I6/)
  909    FORMAT (/'  *** WARNING !! No interpolation points at ',2(I5)/)
  910    FORMAT (/'  Interpolating fields .... '/)
  911    FORMAT ('     Output group   ', I5)
  912    FORMAT ('     Output variable flags are -> ',7(5L2,1X))
- 913    FORMAT ( '   --------------------------------------------------------')
+ 913    FORMAT ('     Output variables skipped')
  914    FORMAT ( '        OUTPUT TIME : ',A)
+ 915    FORMAT ( '   ------------------------------------------------')
+ 916    FORMAT ( I5,A,2X,A)
  950    FORMAT (/'  End of file reached'/)
  999    FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
                  15X,'==============================================='/)
@@ -914,64 +943,83 @@
 !/ -------------------------------------------------------------------------/
         USE W3ADATMD
         USE W3WDATMD
+        USE W3ODATMD, ONLY: NOGE
         USE W3IOGOMD, ONLY: W3IOGO
         USE W3GDATMD, ONLY: E3DF, NK
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
-        INTEGER, INTENT(IN)     :: NGRD, NSEA, NOSWLL_MIN
+        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN
 !/
 !/ Local Parameters
 !/
-        INTEGER                 :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,  &
-                                   IY, ISWLL, ICAP, IBED, IFREQ, IK
-        INTEGER                 :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,     &
-                                   NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,         &
-                                   LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,         &
-                                   MAPICET, MAPDRYT, MAPMSKT, MAPLNDT
-        INTEGER                 :: SUMGRD
-        REAL                    :: VAR1, VAR2, WT
+        INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
+                         IY, ISWLL, ICAP, IBED, IFREQ, IK
+        INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
+                         NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
+                         LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
+                         MAPICET, MAPDRYT, MAPMSKT, MAPLNDT
+        INTEGER       :: SUMGRD
+        REAL          :: VAR1, VAR2, WT
 ! Local group 1 variables
-        REAL                    :: DWAUX, CXAUX, CYAUX, UAAUX, UDAUX, ASAUX,   &
-                                   WLVAUX, ICEAUX, ICEHAUX, ICEFAUX, BERGAUX,  &
-                                   SED_D50AUX, SUMWT1(10) 
-! Local group2 variables
-        REAL                    :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,     &
-                                   FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1, &
-                                   THP0AUX2, SUMWT2(10)
-! Local group3 variables
-        REAL                    :: EFAUX(E3DF(2,1):E3DF(3,1)),                 &
-                                   TH1MAUX(E3DF(2,2):E3DF(3,2)),               &
-                                   STH1MAUX(E3DF(2,3):E3DF(3,3)),              &
-                                   TH2MAUX(E3DF(2,4):E3DF(3,4)),               &
-                                   STH2MAUX(E3DF(2,5):E3DF(3,5)), WNAUX(1:NK), &
-                                   SUMWT3A(E3DF(2,1):E3DF(3,1)),               &
-                                   SUMWT3B(E3DF(2,2):E3DF(3,2)),               &
-                                   SUMWT3C(E3DF(2,3):E3DF(3,3)),               &
-                                   SUMWT3D(E3DF(2,4):E3DF(3,4)),               &
-                                   SUMWT3E(E3DF(2,5):E3DF(3,5)),               &
-                                   SUMWT3F(1:NK)
-! Local group4 variables
-        REAL                    :: PHSAUX(0:NOSWLL_MIN), PTPAUX(0:NOSWLL_MIN), &
-                                   PLPAUX(0:NOSWLL_MIN), PSIAUX(0:NOSWLL_MIN), &
-                                   PWSAUX(0:NOSWLL_MIN), PDIRAUX1(0:NOSWLL_MIN),&
-                                   PWSTAUX, PDIRAUX2(0:NOSWLL_MIN),             &
-                                   SUMWT4(10,0:NOSWLL_MIN)
+        REAL          :: DWAUX, CXAUX, CYAUX, UAAUX, UDAUX, ASAUX,     &
+                         WLVAUX, ICEAUX, ICEHAUX, ICEFAUX, BERGAUX,    &
+                         SED_D50AUX, SUMWT1(NOGE(1))
+! Local group 2 variables
+        REAL          :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,       &
+                         FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1,   &
+                         THP0AUX2, HSIGAUX, STMAXEAUX,STMAXDAUX,       &
+                         HMAXEAUX, HCMAXEAUX, HMAXDAUX, HCMAXDAUX,     &
+                         SUMWT2(NOGE(2))
+! Local group 3 variables
+        REAL          :: EFAUX(E3DF(2,1):E3DF(3,1)),                   &
+                         TH1MAUX(E3DF(2,2):E3DF(3,2)),                 &
+                         STH1MAUX(E3DF(2,3):E3DF(3,3)),                &
+                         TH2MAUX(E3DF(2,4):E3DF(3,4)),                 &
+                         STH2MAUX(E3DF(2,5):E3DF(3,5)), WNAUX(1:NK),   &
+                         SUMWT3A(E3DF(2,1):E3DF(3,1)),                 &
+                         SUMWT3B(E3DF(2,2):E3DF(3,2)),                 &
+                         SUMWT3C(E3DF(2,3):E3DF(3,3)),                 &
+                         SUMWT3D(E3DF(2,4):E3DF(3,4)),                 &
+                         SUMWT3E(E3DF(2,5):E3DF(3,5)),                 &
+                         SUMWT3F(1:NK)
+! Local group 4 variables
+        REAL          :: PHSAUX(0:NOSWLL_MIN), PTPAUX(0:NOSWLL_MIN),   &
+                         PLPAUX(0:NOSWLL_MIN), PSIAUX(0:NOSWLL_MIN),   &
+                         PWSAUX(0:NOSWLL_MIN), PDIRAUX1(0:NOSWLL_MIN), &
+                         PWSTAUX, PDIRAUX2(0:NOSWLL_MIN),              &
+                         PTHP0AUX1(0:NOSWLL_MIN),                      &
+                         PTHP0AUX2(0:NOSWLL_MIN),                      &
+                         PQPAUX(0:NOSWLL_MIN), PPEAUX(0:NOSWLL_MIN),   &
+                         PGWAUX(0:NOSWLL_MIN), PSWAUX(0:NOSWLL_MIN),   &
+                         PT0M1AUX(0:NOSWLL_MIN), PT1AUX(0:NOSWLL_MIN), &
+                         PT2AUX(0:NOSWLL_MIN), PEPAUX(0:NOSWLL_MIN),   &
+                         SUMWT4(NOGE(4),0:NOSWLL_MIN)
 ! Local group 5 variables
-        REAL                    :: USTAUX1, USTAUX2, CHARNAUX, CGEAUX,         &
-                                   PHIAWAUX, TAUWIXAUX, TAUWIYAUX, TAUWNXAUX,  &
-                                   TAUWNYAUX, WHITECAPAUX(4), SUMWT5(10),      &
-                                   SUMWTC(4)
+        REAL          :: USTAUX1, USTAUX2, CHARNAUX, CGEAUX,           &
+                         PHIAWAUX, TAUWIXAUX, TAUWIYAUX, TAUWNXAUX,    &
+                         TAUWNYAUX, WHITECAPAUX(4), SUMWT5(NOGE(5)),   &
+                         SUMWTC(4)
 ! Local group 6 variables
-        REAL                    :: SXXAUX, SYYAUX, SXYAUX, TAUOXAUX, TAUOYAUX, &
-                                   BHDAUX, PHIOCAUX, TUSXAUX, TUSYAUX, USSXAUX,&
-                                   USSYAUX, PRMSAUX, TPMSAUX, SUMWT6(10)
+        REAL          :: SXXAUX, SYYAUX, SXYAUX, TAUOXAUX, TAUOYAUX,   &
+                         BHDAUX, PHIOCAUX, TUSXAUX, TUSYAUX, USSXAUX,  &
+                         USSYAUX, PRMSAUX, TPMSAUX, SUMWT6(NOGE(6)),   &
+                         TAUICEAUX(2), PHICEAUX,                       &
+                         US3DAUX(2*NK), SUMWT68(2*NK),                 &
+                         P2SMSAUX(P2MSF(2):P2MSF(3)),                  &
+                         SUMWT69(P2MSF(2):P2MSF(3)),                   &
+                         USSPAUX(2*NK), SUMWT612(2*NK)
 ! Local Group 7 variables
-        REAL                    :: ABAAUX, ABDAUX, UBAAUX, UBDAUX, PHIBBLAUX,  &
-                                   BEDFORMSAUX(3), TAUBBLAUX(2), SUMWT7(10),   &
-                                   SUMWTB(3)
-        LOGICAL                 :: ACTIVE
-        LOGICAL                 :: USEGRID(NGRD)
+        REAL          :: ABAAUX, ABDAUX, UBAAUX, UBDAUX, PHIBBLAUX,    &
+                         BEDFORMSAUX(3), TAUBBLAUX(2),                 &
+                         SUMWT7(NOGE(7)), SUMWTB(3)
+! Local group 8 variables
+        REAL          :: MSSXAUX, MSSYAUX, MSCXAUX, MSCYAUX, MSSDAUX1, &
+                         MSSDAUX2, MSCDAUX1, MSCDAUX2, QPAUX,          &
+                         SUMWT8(NOGE(8))
+!/
+        LOGICAL       :: ACTIVE
+        LOGICAL       :: USEGRID(NGRD)
 !/
 !
 !-------------------------------------------------------------------
@@ -1000,9 +1048,16 @@
         T0M1     = UNDEF
         T01      = UNDEF
         FP0      = UNDEF
-        THM      = UNDEF 
+        THM      = UNDEF
         THS      = UNDEF
         THP0     = UNDEF
+        HSIG     = UNDEF
+        STMAXE   = UNDEF
+        STMAXD   = UNDEF
+        HMAXE    = UNDEF
+        HCMAXE   = UNDEF
+        HMAXD    = UNDEF
+        HCMAXD   = UNDEF
 !
 ! Group 3 variables
 !
@@ -1023,6 +1078,15 @@
         PWS      = UNDEF
         PWST     = UNDEF
         PNR      = UNDEF
+        PTHP0    = UNDEF
+        PQP      = UNDEF
+        PPE      = UNDEF
+        PGW      = UNDEF
+        PSW      = UNDEF
+        PT0M1    = UNDEF
+        PT1      = UNDEF
+        PT2      = UNDEF
+        PEP      = UNDEF
 !
 ! Group 5 variables
 !
@@ -1052,6 +1116,11 @@
         USSY     = UNDEF
         PRMS     = UNDEF
         TPMS     = UNDEF
+        US3D     = UNDEF
+        P2SMS    = UNDEF
+        TAUICE   = UNDEF
+        PHICE    = UNDEF
+        USSP     = UNDEF
 !
 ! Group 7 variables
 !
@@ -1063,11 +1132,21 @@
         PHIBBL   = UNDEF
         TAUBBL   = UNDEF
 !
+! Group 8 variables
+!
+        MSSX     = UNDEF
+        MSSY     = UNDEF
+        MSCX     = UNDEF
+        MSCY     = UNDEF
+        MSSD     = UNDEF
+        MSCD     = UNDEF
+        QP       = UNDEF
+!
 !-------------------------------------------------------------------
 ! 2.  Loop through output points
 !
         DO ISEA = 1, NSEA
-!          
+!
           IX = MAPSF(ISEA,1)
           IY = MAPSF(ISEA,2)
           MAPICE = MOD(MAPST2(IY,IX),2) 
@@ -1152,7 +1231,7 @@
 ! Second loop to do the actual interpolation
 !
             DO IG = 1,GR_INTS(ISEA)%NGRDS
-!                
+!
               IF ( USEGRID(IG) ) THEN
 !
                 IGRID = GR_INTS(ISEA)%GDID(IG)
@@ -1176,7 +1255,7 @@
                 ICEHAUX     = UNDEF
                 ICEFAUX     = UNDEF
                 SUMWT1      = 0
-!   
+!
 ! Group 2 variables
 !
                 HSAUX       = UNDEF
@@ -1190,6 +1269,13 @@
                 THSAUX      = UNDEF
                 THP0AUX1    = UNDEF
                 THP0AUX2    = UNDEF
+                HSIGAUX     = UNDEF
+                STMAXEAUX   = UNDEF
+                STMAXDAUX   = UNDEF
+                HMAXEAUX    = UNDEF
+                HCMAXEAUX   = UNDEF
+                HMAXDAUX    = UNDEF
+                HCMAXDAUX   = UNDEF
                 SUMWT2      = 0
 !
 ! Group 3 variables
@@ -1217,6 +1303,16 @@
                 PSIAUX      = UNDEF
                 PWSAUX      = UNDEF
                 PWSTAUX     = UNDEF
+                PTHP0AUX1   = UNDEF
+                PTHP0AUX2   = UNDEF
+                PQPAUX      = UNDEF
+                PPEAUX      = UNDEF
+                PGWAUX      = UNDEF
+                PSWAUX      = UNDEF
+                PT0M1AUX    = UNDEF
+                PT1AUX      = UNDEF
+                PT2AUX      = UNDEF
+                PEPAUX      = UNDEF
                 SUMWT4      = 0
 !
 ! Group 5 variables
@@ -1249,6 +1345,14 @@
                 USSYAUX     = UNDEF
                 PRMSAUX     = UNDEF
                 TPMSAUX     = UNDEF
+                P2SMSAUX    = UNDEF
+                US3DAUX     = UNDEF
+                PHICEAUX    = UNDEF
+                TAUICEAUX   = UNDEF
+                USSPAUX     = UNDEF
+                SUMWT69     = 0
+                SUMWT68     = 0
+                SUMWT612    = 0
                 SUMWT6      = 0
 !
 ! Group 7 variables
@@ -1262,6 +1366,19 @@
                 TAUBBLAUX   = UNDEF
                 SUMWT7      = 0
                 SUMWTB      = 0
+!
+! Group 8 variables
+!
+                MSSXAUX     = UNDEF
+                MSSYAUX     = UNDEF
+                MSCXAUX     = UNDEF
+                MSCYAUX     = UNDEF
+                MSSDAUX1    = UNDEF
+                MSSDAUX2    = UNDEF
+                MSCDAUX1    = UNDEF
+                MSCDAUX2    = UNDEF
+                QPAUX       = UNDEF
+                SUMWT8      = 0
 !
 ! Loop through the points per grid to obtain interpolated values
 !
@@ -1386,7 +1503,7 @@
 !/IS2                      END IF
 !/IS2                    END IF
 !/IS2                  END IF
-!   
+!
 ! Group 2 variables
 !
                   IF ( FLOGRD(2,1) .AND. ACTIVE ) THEN
@@ -1493,7 +1610,63 @@
                       END IF
                     END IF
                   END IF
-!   
+!
+                  IF ( FLOGRD(2,10) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%HSIG(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(10) = SUMWT2(10) + WT
+                      IF ( HSIGAUX .EQ. UNDEF )   HSIGAUX = 0.
+                      HSIGAUX = HSIGAUX + WADATS(IGRID)%HSIG(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,11) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%STMAXE(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(11) = SUMWT2(11) + WT
+                      IF ( STMAXEAUX .EQ. UNDEF )   STMAXEAUX = 0.
+                      STMAXEAUX = STMAXEAUX + WADATS(IGRID)%STMAXE(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,12) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%STMAXD(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(12) = SUMWT2(12) + WT
+                      IF ( STMAXDAUX .EQ. UNDEF )   STMAXDAUX = 0.
+                      STMAXDAUX = STMAXDAUX + WADATS(IGRID)%STMAXD(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,13) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%HMAXE(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(13) = SUMWT2(13) + WT
+                      IF ( HMAXEAUX .EQ. UNDEF )   HMAXEAUX = 0.
+                      HMAXEAUX = HMAXEAUX + WADATS(IGRID)%HMAXE(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,14) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%HCMAXE(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(14) = SUMWT2(14) + WT
+                      IF ( HCMAXEAUX .EQ. UNDEF ) HCMAXEAUX = 0.
+                      HCMAXEAUX = HCMAXEAUX + WADATS(IGRID)%HCMAXE(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,15) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%HMAXD(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(15) = SUMWT2(15) + WT
+                      IF ( HMAXDAUX .EQ. UNDEF )   HMAXDAUX = 0.
+                      HMAXDAUX = HMAXDAUX + WADATS(IGRID)%HMAXD(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,16) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%HCMAXD(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(16) = SUMWT2(16) + WT
+                      IF ( HCMAXDAUX .EQ. UNDEF )   HCMAXDAUX = 0.
+                      HCMAXDAUX = HCMAXDAUX + WADATS(IGRID)%HCMAXD(GSEA)*WT
+                    END IF
+                  END IF
+!
 ! Group 3 variables
 !
                   IF ( FLOGRD(3,1) .AND. ACTIVE ) THEN
@@ -1574,7 +1747,7 @@
                       END IF
                     END DO
                   END IF
-!   
+!
 ! Group 4 variables
 !
                   DO ISWLL = 0, NOSWLL_MIN
@@ -1656,7 +1829,94 @@
                       END IF
                     END IF
 !
-                  END DO
+                    IF ( FLOGRD(4,9) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PTHP0(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(9,ISWLL) = SUMWT4(9,ISWLL) + WT
+                        IF (PTHP0AUX1(ISWLL).EQ.UNDEF)                 &
+                                                   PTHP0AUX1(ISWLL) = 0.
+                        IF (PTHP0AUX2(ISWLL).EQ.UNDEF)                 &
+                                                   PTHP0AUX2(ISWLL) = 0.
+                        PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL) +          &
+                              COS ( WADATS(IGRID)%PTHP0(GSEA,ISWLL) )*WT
+                        PTHP0AUX2(ISWLL) = PTHP0AUX2(ISWLL) +          &
+                              SIN ( WADATS(IGRID)%PTHP0(GSEA,ISWLL) )*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,10) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PQP(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(10,ISWLL) = SUMWT4(10,ISWLL) + WT
+                        IF ( PQPAUX(ISWLL).EQ.UNDEF ) PQPAUX(ISWLL) = 0.
+                        PQPAUX(ISWLL) = PQPAUX(ISWLL) +                &
+                                        WADATS(IGRID)%PQP(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,11) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PPE(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(11,ISWLL) = SUMWT4(11,ISWLL) + WT
+                        IF ( PPEAUX(ISWLL).EQ.UNDEF ) PPEAUX(ISWLL) = 0.
+                        PPEAUX(ISWLL) = PPEAUX(ISWLL) +                &
+                                        WADATS(IGRID)%PPE(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,12) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PGW(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(12,ISWLL) = SUMWT4(12,ISWLL) + WT
+                        IF ( PGWAUX(ISWLL).EQ.UNDEF ) PGWAUX(ISWLL) = 0.
+                        PGWAUX(ISWLL) = PGWAUX(ISWLL) +                &
+                                        WADATS(IGRID)%PGW(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,13) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PSW(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(13,ISWLL) = SUMWT4(13,ISWLL) + WT
+                        IF ( PSWAUX(ISWLL).EQ.UNDEF ) PSWAUX(ISWLL) = 0.
+                        PSWAUX(ISWLL) = PSWAUX(ISWLL) +                &
+                                        WADATS(IGRID)%PSW(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,14) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PT0M1(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(14,ISWLL) = SUMWT4(14,ISWLL) + WT
+                        IF ( PT0M1AUX(ISWLL).EQ.UNDEF )                &
+                                                    PT0M1AUX(ISWLL) = 0.
+                        PT0M1AUX(ISWLL) = PT0M1AUX(ISWLL) +            &
+                                      WADATS(IGRID)%PT0M1(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,15) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PT1(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(15,ISWLL) = SUMWT4(15,ISWLL) + WT
+                        IF ( PT1AUX(ISWLL).EQ.UNDEF ) PT1AUX(ISWLL) = 0.
+                        PT1AUX(ISWLL) = PT1AUX(ISWLL) +                &
+                                        WADATS(IGRID)%PT1(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,16) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PT2(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(16,ISWLL) = SUMWT4(16,ISWLL) + WT
+                        IF ( PT2AUX(ISWLL).EQ.UNDEF ) PT2AUX(ISWLL) = 0.
+                        PT2AUX(ISWLL) = PT2AUX(ISWLL) +                &
+                                        WADATS(IGRID)%PT2(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                    IF ( FLOGRD(4,17) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PEP(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(17,ISWLL) = SUMWT4(17,ISWLL) + WT
+                        IF ( PEPAUX(ISWLL).EQ.UNDEF ) PEPAUX(ISWLL) = 0.
+                        PEPAUX(ISWLL) = PEPAUX(ISWLL) +                &
+                                        WADATS(IGRID)%PEP(GSEA,ISWLL)*WT
+                      END IF
+                    END IF
+!
+                  END DO !/ ISWLL = 0, NOSWLL_MIN
 !
                   IF ( FLOGRD(4,7) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%PWST(GSEA) .NE. UNDEF ) THEN
@@ -1668,7 +1928,7 @@
                       END IF
                     END IF
                   END IF
-!   
+!
 ! Group 5 variables
 !
                   IF ( FLOGRD(5,1) ) THEN
@@ -1759,7 +2019,7 @@
                     END IF
 !
                   END DO
-!   
+!
 ! Group 6 variables
 !
                   IF ( FLOGRD(6,1) .AND. ACTIVE ) THEN
@@ -1850,7 +2110,74 @@
                       END IF
                     END IF
                   END IF
-!   
+!
+                  IF ( FLOGRD(6,8) .AND. ACTIVE .AND. US3DF(1).GT.0 ) THEN
+                    DO IK = US3DF(2),US3DF(3)
+                      IF ( WADATS(IGRID)%US3D(GSEA,IK) .NE. UNDEF ) THEN
+                        SUMWT68(IK) = SUMWT68(IK) + WT
+                        IF ( US3DAUX(IK) .EQ. UNDEF )   US3DAUX(IK) = 0.
+                        US3DAUX(IK) = US3DAUX(IK) +                    &
+                                          WADATS(IGRID)%US3D(GSEA,IK)*WT
+                      END IF
+                      IF ( WADATS(IGRID)%US3D(GSEA,NK+IK) .NE. UNDEF ) THEN
+                        SUMWT68(NK+IK) = SUMWT68(NK+IK) + WT
+                        IF ( US3DAUX(NK+IK) .EQ. UNDEF )               &
+                                                     US3DAUX(NK+IK) = 0.
+                        US3DAUX(NK+IK) = US3DAUX(NK+IK) +            &
+                                     WADATS(IGRID)%US3D(GSEA,NK+IK)*WT
+                      END IF
+                    END DO
+                  END IF
+!
+                  IF ( FLOGRD(6,9) .AND. ACTIVE .AND. P2MSF(1).GT.0) THEN
+                    DO IK = P2MSF(2),P2MSF(3)
+                      IF ( WADATS(IGRID)%P2SMS(GSEA,IK) .NE. UNDEF ) THEN
+                        SUMWT69(IK) = SUMWT69(IK) + WT
+                        IF ( P2SMSAUX(IK) .EQ. UNDEF ) P2SMSAUX(IK) = 0.
+                        P2SMSAUX(IK) = P2SMSAUX(IK) +                  &
+                                         WADATS(IGRID)%P2SMS(GSEA,IK)*WT
+                      END IF
+                    END DO
+                  END IF
+!
+                  IF ( FLOGRD(6,10) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%TAUICE(GSEA,1) .NE. UNDEF ) THEN
+                      SUMWT6(10) = SUMWT6(10) + WT
+                      IF ( TAUICEAUX(1) .EQ. UNDEF ) TAUICEAUX(1) = 0.
+                      IF ( TAUICEAUX(2) .EQ. UNDEF ) TAUICEAUX(2) = 0.
+                      TAUICEAUX(1) = TAUICEAUX(1) +                    &
+                                         WADATS(IGRID)%TAUICE(GSEA,1)*WT
+                      TAUICEAUX(2) = TAUICEAUX(2) +                    &
+                                         WADATS(IGRID)%TAUICE(GSEA,2)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(6,11) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%PHICE(GSEA) .NE. UNDEF ) THEN
+                      SUMWT6(11) = SUMWT6(11) + WT
+                      IF ( PHICEAUX.EQ.UNDEF ) PHICEAUX = 0.
+                      PHICEAUX = PHICEAUX + WADATS(IGRID)%PHICE(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(6,12) .AND. ACTIVE .AND. USSPF(1).GT.0 ) THEN
+                    DO IK = 1,USSPF(2)
+                      IF ( WADATS(IGRID)%USSP(GSEA,IK) .NE. UNDEF ) THEN
+                        SUMWT612(IK) = SUMWT612(IK) + WT
+                        IF ( USSPAUX(IK) .EQ. UNDEF ) USSPAUX(IK) = 0.
+                        USSPAUX(IK) = USSPAUX(IK) +                  &
+                                        WADATS(IGRID)%USSP(GSEA,IK)*WT
+                      END IF
+                      IF ( WADATS(IGRID)%USSP(GSEA,NK+IK) .NE. UNDEF ) THEN
+                        SUMWT612(NK+IK) = SUMWT612(NK+IK) + WT
+                        IF ( USSPAUX(NK+IK) .EQ. UNDEF )             &
+                                                   USSPAUX(NK+IK) = 0.
+                        USSPAUX(NK+IK) = USSPAUX(NK+IK) +            &
+                                     WADATS(IGRID)%USSP(GSEA,NK+IK)*WT
+                      END IF
+                    END DO
+                  END IF
+!
 ! Group 7 variables
 !
                   IF ( FLOGRD(7,1) .AND. ACTIVE ) THEN
@@ -1920,12 +2247,67 @@
                     END IF
                   END IF
 !
-                END DO
+! Group 8 variables
+!
+                  IF ( FLOGRD(8,1) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%MSSX(GSEA) .NE. UNDEF ) THEN
+                      SUMWT8(1) = SUMWT8(1) + WT
+                      IF ( MSSXAUX .EQ. UNDEF )   MSSXAUX = 0.
+                      IF ( MSSYAUX .EQ. UNDEF )   MSSYAUX = 0.
+                      MSSXAUX = MSSXAUX + WADATS(IGRID)%MSSX(GSEA)*WT
+                      MSSYAUX = MSSYAUX + WADATS(IGRID)%MSSY(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(8,2) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%MSCX(GSEA) .NE. UNDEF ) THEN
+                      SUMWT8(2) = SUMWT8(2) + WT
+                      IF ( MSCXAUX .EQ. UNDEF )   MSCXAUX = 0.
+                      IF ( MSCYAUX .EQ. UNDEF )   MSCYAUX = 0.
+                      MSCXAUX = MSCXAUX + WADATS(IGRID)%MSSX(GSEA)*WT
+                      MSCYAUX = MSCYAUX + WADATS(IGRID)%MSSY(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(8,3) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%MSSD(GSEA) .NE. UNDEF ) THEN
+                      SUMWT8(3) = SUMWT8(3) + WT
+                      IF ( MSSDAUX1 .EQ. UNDEF )   MSSDAUX1 = 0.
+                      IF ( MSSDAUX2 .EQ. UNDEF )   MSSDAUX2 = 0.
+                      MSSDAUX1 = MSSDAUX1 +                           &
+                                 COS ( WADATS(IGRID)%MSSD(GSEA) )*WT
+                      MSSDAUX2 = MSSDAUX2 +                           &
+                                 SIN ( WADATS(IGRID)%MSSD(GSEA) )*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(8,4) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%MSCD(GSEA) .NE. UNDEF ) THEN
+                      SUMWT8(4) = SUMWT8(4) + WT
+                      IF ( MSCDAUX1 .EQ. UNDEF )   MSCDAUX1 = 0.
+                      IF ( MSCDAUX2 .EQ. UNDEF )   MSCDAUX2 = 0.
+                      MSCDAUX1 = MSCDAUX1 +                           &
+                                 COS ( WADATS(IGRID)%MSCD(GSEA) )*WT
+                      MSCDAUX2 = MSCDAUX2 +                           &
+                                 SIN ( WADATS(IGRID)%MSCD(GSEA) )*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(8,5) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%QP(GSEA) .NE. UNDEF ) THEN
+                      SUMWT8(5) = SUMWT8(5) + WT
+                      IF ( QPAUX .EQ. UNDEF )   QPAUX = 0.
+                      QPAUX = QPAUX + WADATS(IGRID)%QP(GSEA)*WT
+                    END IF
+                  END IF
+!
+! End of loop through the points per grid to obtain interpolated values
+                END DO   !/ IPTS = 1, ...
 !
 ! Save temp. interpolated variables in proper variables
 ! (weighted by the number of grids)
 !
-!   
+!
 ! Group 1 variables
 !
                 IF ( DWAUX .NE. UNDEF ) THEN
@@ -2023,7 +2405,7 @@
 !/IS2                    ICEF(ISEA) = ICEF(ISEA) + ICEFAUX / REAL( SUMGRD )
 !/IS2                  END IF
 !/IS2                END IF
-!   
+!
 ! Group 2 variables
 !
                 IF ( HSAUX .NE. UNDEF ) THEN
@@ -2116,7 +2498,49 @@
                     THP0(ISEA) = ATAN2 ( THP0AUX2, THP0AUX1 )
                   END IF
                 END IF
-!   
+!
+                IF ( HSIGAUX .NE. UNDEF ) THEN
+                  IF ( HSIG(ISEA) .EQ. UNDEF )   HSIG(ISEA) = 0.
+                  HSIG(ISEA) = HSIG(ISEA) +                            &
+                               HSIGAUX / REAL( SUMWT2(10)+SUMGRD )
+                END IF
+!
+                IF ( STMAXEAUX .NE. UNDEF ) THEN
+                  IF ( STMAXE(ISEA) .EQ. UNDEF )   STMAXE(ISEA) = 0.
+                  STMAXE(ISEA) = STMAXE(ISEA) +                        &
+                               STMAXEAUX / REAL( SUMWT2(11) + SUMGRD )
+                END IF
+!
+                IF ( STMAXDAUX .NE. UNDEF ) THEN
+                  IF ( STMAXD(ISEA) .EQ. UNDEF )   STMAXD(ISEA) = 0.
+                  STMAXD(ISEA) = STMAXD(ISEA) +                        &
+                                 STMAXDAUX / REAL( SUMWT2(12) + SUMGRD )
+                END IF
+!
+                IF ( HMAXEAUX .NE. UNDEF ) THEN
+                  IF ( HMAXE(ISEA) .EQ. UNDEF )   HMAXE(ISEA) = 0.
+                  HMAXE(ISEA) = HMAXE(ISEA) +                          &
+                                HMAXEAUX / REAL( SUMWT2(13) + SUMGRD )
+                END IF
+!
+                IF ( HCMAXEAUX .NE. UNDEF ) THEN
+                  IF ( HCMAXE(ISEA) .EQ. UNDEF )   HCMAXE(ISEA) = 0.
+                  HCMAXE(ISEA) = HCMAXE(ISEA) +                        &
+                                 HCMAXEAUX / REAL( SUMWT2(14) + SUMGRD )
+                END IF
+!
+                IF ( HMAXDAUX .NE. UNDEF ) THEN
+                  IF ( HMAXD(ISEA) .EQ. UNDEF )   HMAXD(ISEA) = 0.
+                  HMAXD(ISEA) = HMAXD(ISEA)  +                         &
+                                HMAXDAUX / REAL( SUMWT2(15) + SUMGRD )
+                END IF
+!
+                IF ( HCMAXDAUX .NE. UNDEF ) THEN
+                  IF ( HCMAXD(ISEA) .EQ. UNDEF )   HCMAXD(ISEA) = 0.
+                  HCMAXD(ISEA) = HCMAXD(ISEA) +                        &
+                                 HCMAXDAUX / REAL( SUMWT2(16) + SUMGRD )
+                END IF
+!
 ! Group 3 variables
 !
                 IF (  E3DF(1,1).GT.0 ) THEN
@@ -2200,7 +2624,7 @@
                     END IF
                   END IF
                 END DO
-!   
+!
 ! Group 4 variables
 !
                 DO ISWLL = 0, NOSWLL_MIN
@@ -2271,7 +2695,86 @@
                     END IF
                   END IF
 !
-                END DO
+                  IF ( PTHP0AUX1(ISWLL) .NE. UNDEF ) THEN
+                    PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL)                &
+                                        / REAL( SUMWT4(9,ISWLL)+SUMGRD )
+                    PTHP0AUX2(ISWLL) = PTHP0AUX2(ISWLL)                &
+                                        / REAL( SUMWT4(9,ISWLL)+SUMGRD )
+                    IF ( PTHP0(ISEA,ISWLL) .NE. UNDEF ) THEN
+                      PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL) +            &
+                                               COS ( PTHP0(ISEA,ISWLL) )
+                      PTHP0AUX2(ISWLL) = PTHP0AUX2(ISWLL) +            &
+                                               SIN ( PTHP0(ISEA,ISWLL) )
+                    END IF
+                    PTHP0(ISEA,ISWLL) =                                &
+                            ATAN2 ( PTHP0AUX2(ISWLL), PTHP0AUX1(ISWLL) )
+                  END IF
+!
+                  IF ( PQPAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PQP(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PQP(ISEA,ISWLL) = 0.
+                    PQP(ISEA,ISWLL) = PQP(ISEA,ISWLL) +                &
+                         PQPAUX(ISWLL) / REAL( SUMWT4(10,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PPEAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PPE(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PPE(ISEA,ISWLL) = 0.
+                    PPE(ISEA,ISWLL) = PPE(ISEA,ISWLL) +                &
+                         PPEAUX(ISWLL) / REAL( SUMWT4(11,ISWLL)+SUMGRD )
+
+                  END IF
+!
+                  IF ( PGWAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PGW(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PGW(ISEA,ISWLL) = 0.
+                    PGW(ISEA,ISWLL) = PGW(ISEA,ISWLL) +                &
+                         PGWAUX(ISWLL) / REAL( SUMWT4(12,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PSWAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PSW(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PSW(ISEA,ISWLL) = 0.
+                    PSW(ISEA,ISWLL) = PSW(ISEA,ISWLL) +                &
+                         PSWAUX(ISWLL) / REAL( SUMWT4(13,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PT0M1AUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PT0M1(ISEA,ISWLL) .EQ. UNDEF )                &
+                                                  PT0M1(ISEA,ISWLL) = 0.
+                    PT0M1(ISEA,ISWLL) = PT0M1(ISEA,ISWLL) +            &
+                       PT0M1AUX(ISWLL) / REAL( SUMWT4(14,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PT1AUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PT1(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PT1(ISEA,ISWLL) = 0.
+                    PT1(ISEA,ISWLL) = PT1(ISEA,ISWLL) +                &
+                         PT1AUX(ISWLL) / REAL( SUMWT4(15,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PT2AUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PT2(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PT2(ISEA,ISWLL) = 0.
+                    PT2(ISEA,ISWLL) = PT2(ISEA,ISWLL) +                &
+                         PT2AUX(ISWLL) / REAL( SUMWT4(16,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PEPAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PEP(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PEP(ISEA,ISWLL) = 0.
+                    PEP(ISEA,ISWLL) = PEP(ISEA,ISWLL) +                &
+                         PEPAUX(ISWLL) / REAL( SUMWT4(17,ISWLL)+SUMGRD )
+                  END IF
+!
+                  IF ( PEPAUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PEP(ISEA,ISWLL) .EQ. UNDEF )                  &
+                                                    PEP(ISEA,ISWLL) = 0.
+                    PEP(ISEA,ISWLL) = PEP(ISEA,ISWLL) +                &
+                         PEPAUX(ISWLL) / REAL( SUMWT4(17,ISWLL)+SUMGRD )
+                  END IF
+!
+                END DO  !/ ISWLL = 0, NOSWLL_MIN
 !
                 IF ( PWSTAUX .NE. UNDEF ) THEN
                   PWSTAUX = PWSTAUX / SUMWT4(7,0)
@@ -2281,7 +2784,7 @@
                     PWST(ISEA) = PWST(ISEA) + PWSTAUX / REAL( SUMGRD )
                   END IF
                 END IF
-!   
+!
 ! Group 5 variables
 !
                 IF ( USTAUX1 .NE. UNDEF ) THEN
@@ -2358,7 +2861,7 @@
                     END IF
                   END IF
                 END DO
-!   
+!
 ! Group 6 variables
 !
                 IF ( SXXAUX .NE. UNDEF ) THEN
@@ -2441,7 +2944,64 @@
                     TPMS(ISEA) = TPMS(ISEA) + TPMSAUX / REAL( SUMGRD )
                   END IF
                 END IF
-!   
+!
+                IF ( US3DF(1).GT.0 ) THEN
+                  DO IK = US3DF(2),US3DF(3)
+                    IF ( US3DAUX(IK) .NE. UNDEF ) THEN
+                      IF ( US3D(ISEA,IK) .EQ. UNDEF ) US3D(ISEA,IK) = 0.
+                      US3D(ISEA,IK) = US3D(ISEA,IK) +                  &
+                              US3DAUX(IK) / REAL( SUMWT68(IK) + SUMGRD )
+                    END IF
+                    IF ( US3DAUX(NK+IK) .NE. UNDEF ) THEN
+                      IF ( US3D(ISEA,NK+IK) .EQ. UNDEF )               &
+                                                   US3D(ISEA,NK+IK) = 0.
+                      US3D(ISEA,NK+IK) = US3D(ISEA,NK+IK) +            &
+                        US3DAUX(NK+IK) / REAL( SUMWT68(NK+IK) + SUMGRD )
+                    END IF
+                  END DO
+                END IF
+!
+                IF ( P2MSF(1).GT.0 ) THEN
+                  DO IK = P2MSF(2),P2MSF(3)
+                    IF ( P2SMSAUX(IK) .NE. UNDEF ) THEN
+                      IF ( P2SMS(ISEA,IK).EQ.UNDEF ) P2SMS(ISEA,IK) = 0.
+                      P2SMS(ISEA,IK) = P2SMS(ISEA,IK) +                &
+                             P2SMSAUX(IK) / REAL( SUMWT69(IK) + SUMGRD )
+                    END IF
+                  END DO
+                END IF
+!
+                IF ( TAUICEAUX(1) .NE. UNDEF ) THEN
+                  IF ( TAUICE(ISEA,1) .EQ. UNDEF )   TAUICE(ISEA,1) = 0.
+                  IF ( TAUICE(ISEA,2) .EQ. UNDEF )   TAUICE(ISEA,2) = 0.
+                  TAUICE(ISEA,1) = TAUICE(ISEA,1) +                    &
+                              TAUICEAUX(1) / REAL( SUMWT6(10) + SUMGRD )
+                  TAUICE(ISEA,2) = TAUICE(ISEA,2) +                    &
+                              TAUICEAUX(2) / REAL( SUMWT6(10) + SUMGRD )
+                END IF
+!
+                IF ( PHICEAUX .NE. UNDEF ) THEN
+                  IF ( PHICE(ISEA) .EQ. UNDEF )   PHICE(ISEA) = 0.
+                  PHICE(ISEA) = PHICE(ISEA) +                          &
+                                  PHICEAUX / REAL( SUMWT6(11) + SUMGRD )
+                END IF
+!
+                IF ( USSPF(1).GT.0 ) THEN
+                  DO IK = 1,USSPF(2)
+                    IF ( USSPAUX(IK) .NE. UNDEF ) THEN
+                      IF ( USSP(ISEA,IK) .EQ. UNDEF ) USSP(ISEA,IK) = 0.
+                      USSP(ISEA,IK) = USSP(ISEA,IK) +                  &
+                             USSPAUX(IK) / REAL( SUMWT612(IK) + SUMGRD )
+                    END IF
+                    IF ( USSPAUX(NK+IK) .NE. UNDEF ) THEN
+                      IF ( USSP(ISEA,NK+IK) .EQ. UNDEF )               &
+                                                   USSP(ISEA,NK+IK) = 0.
+                      USSP(ISEA,NK+IK) = USSP(ISEA,NK+IK) +            &
+                       USSPAUX(NK+IK) / REAL( SUMWT612(NK+IK) + SUMGRD )
+                    END IF
+                  END DO
+                END IF
+!
 ! Group 7 variables
 !
                 IF ( ABAAUX .NE. UNDEF ) THEN
@@ -2496,21 +3056,73 @@
                     TAUBBL(ISEA,1) = TAUBBLAUX(1) / REAL( SUMGRD )
                     TAUBBL(ISEA,2) = TAUBBLAUX(2) / REAL( SUMGRD )
                   ELSE
-                    TAUBBL(ISEA,1) = TAUBBL(ISEA,1) +                          &
+                    TAUBBL(ISEA,1) = TAUBBL(ISEA,1) +                  &
                            TAUBBLAUX(1) / REAL( SUMGRD )
-                    TAUBBL(ISEA,2) = TAUBBL(ISEA,2) +                          &
+                    TAUBBL(ISEA,2) = TAUBBL(ISEA,2) +                  &
                            TAUBBLAUX(2) / REAL( SUMGRD )
                   END IF
                 END IF
 !
-              END IF
+! Group 8 variables
 !
-            END DO
+                IF ( MSSXAUX .NE. UNDEF ) THEN
+                  IF ( MSSX(ISEA) .EQ. UNDEF )   MSSX(ISEA) = 0.
+                  MSSX(ISEA) = MSSX(ISEA) +                            &
+                               MSSXAUX / REAL( SUMWT8(1)+SUMGRD )
+                END IF
+!
+                IF ( MSSYAUX .NE. UNDEF ) THEN
+                  IF ( MSSY(ISEA) .EQ. UNDEF )   MSSY(ISEA) = 0.
+                  MSSY(ISEA) = MSSY(ISEA) +                            &
+                               MSSYAUX / REAL( SUMWT8(1)+SUMGRD )
+                END IF
+!
+                IF ( MSCXAUX .NE. UNDEF ) THEN
+                  IF ( MSCX(ISEA) .EQ. UNDEF )   MSCX(ISEA) = 0.
+                  MSCX(ISEA) = MSCX(ISEA) +                            &
+                               MSCXAUX / REAL( SUMWT8(2)+SUMGRD )
+                END IF
+!
+                IF ( MSCYAUX .NE. UNDEF ) THEN
+                  IF ( MSCY(ISEA) .EQ. UNDEF )   MSCY(ISEA) = 0.
+                  MSCY(ISEA) = MSCY(ISEA) +                            &
+                               MSCYAUX / REAL( SUMWT8(2)+SUMGRD )
+                END IF
+!
+                IF ( MSSDAUX1 .NE. UNDEF .AND. MSSDAUX2 .NE. UNDEF ) THEN
+                  MSSDAUX1 = MSSDAUX1 / REAL( SUMWT8(3)+SUMGRD )
+                  MSSDAUX2 = MSSDAUX2 / REAL( SUMWT8(3)+SUMGRD )
+                  IF ( MSSD(ISEA) .NE. UNDEF ) THEN
+                    MSSDAUX1 = MSSDAUX1 + COS ( MSSD(ISEA) )
+                    MSSDAUX2 = MSSDAUX2 + SIN ( MSSD(ISEA) )
+                  END IF
+                  MSSD(ISEA) = ATAN2 ( MSSDAUX2, MSSDAUX1 )
+                END IF
+!
+                IF ( MSCDAUX1 .NE. UNDEF .AND. MSCDAUX2 .NE. UNDEF ) THEN
+                  MSCDAUX1 = MSCDAUX1 / REAL( SUMWT8(4)+SUMGRD )
+                  MSCDAUX2 = MSCDAUX2 / REAL( SUMWT8(4)+SUMGRD )
+                  IF ( MSCD(ISEA) .NE. UNDEF ) THEN
+                    MSCDAUX1 = MSCDAUX1 + COS ( MSCD(ISEA) )
+                    MSCDAUX2 = MSCDAUX2 + SIN ( MSCD(ISEA) )
+                  END IF
+                  MSCD(ISEA) = ATAN2 ( MSCDAUX2, MSCDAUX1 )
+                END IF
+!
+                IF ( QPAUX .NE. UNDEF ) THEN
+                  IF ( QP(ISEA) .EQ. UNDEF )   QP(ISEA) = 0.
+                  QP(ISEA) = QP(ISEA) + QPAUX / REAL( SUMWT8(5)+SUMGRD )
+                END IF
+!
+              END IF !/ ( USEGRID(IG) )
+!
+! End of Second loop
+            END DO !/ IG = 1, GR_INTS
 !
 ! Convert select variables back to polar notation. This is done because just
 ! prior to writing to file the w3iogo routine converts these variables 
 ! from polar to cartesian coordinates
-! 
+!
             IF ( UA(ISEA) .NE. UNDEF ) THEN
               VAR1 = UA(ISEA)
               VAR2 = UD(ISEA)
@@ -2523,25 +3135,26 @@
               VAR2 = USTDIR(ISEA)
               UST(ISEA) = SQRT ( VAR1**2 + VAR2**2 )
               USTDIR(ISEA) = ATAN2 ( VAR2, VAR1 )
-            END IF 
+            END IF
 !
             IF ( ABA(ISEA) .NE. UNDEF ) THEN
               VAR1 = ABA(ISEA)
               VAR2 = ABD(ISEA)
               ABA(ISEA) = SQRT ( VAR1**2 + VAR2**2 )
               ABD(ISEA) = ATAN2 ( VAR2, VAR1 )
-            END IF 
+            END IF
 !
             IF ( UBA(ISEA) .NE. UNDEF ) THEN
               VAR1 = UBA(ISEA)
               VAR2 = UBD(ISEA)
               UBA(ISEA) = SQRT ( VAR1**2 + VAR2**2 )
               UBD(ISEA) = ATAN2 ( VAR2, VAR1 )
-            END IF 
+            END IF
 !
-          END IF 
+          END IF
 !
-        END DO
+!/ End of main loop through output points
+        END DO   !/ ISEA = 1, NSEA
 !
 !------------------------------------------------------------------------------
 ! 3. Write out interpolated data to target output file

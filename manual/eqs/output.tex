@@ -18,11 +18,11 @@ parameter within its group. Groups are defined according to Table
  I   & Forcing Fields & 10 \\
  II  & Mean Wave Parameters & 16 \\ 
  III & Spectrum Parameters & 6 \\
- IV  & Partitions Parameters & 8 \\
+ IV  & Partitions Parameters & 17 \\
  V   & Atmosphere-Waves Layer & 10 \\
  VI  & Wave-Ocean Layer & 11 \\
  VII & Wave-Bottom Layer & 5 \\
- VIII& Spectrum parameters & 6 \\
+ VIII& Spectrum parameters & 5 \\
  IX  & Numerical Diagnostics & 5 \\
  X   & User Defined & 2 \\ \hline
 \end{tabular} \end{center}
@@ -127,7 +127,7 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \item \textbf{MXH}  Max wave height (STE)
 \item \textbf{MXHC}  Max wave height from crest (STE)
 \item \textbf{SDMH}  St Dev of MXC (STE)
-\item \textbf{SDMHC} St Dev of MXHC (STE)           
+\item \textbf{SDMHC} St Dev of MXHC (STE)
 \end{list}
 
 \item{Spectral parameters (first 5 moments and wavenumbers). 
@@ -205,8 +205,22 @@ U_p = C_{mult} U_{10} \cos ( \theta - \theta_w )  \:\:\: . \label{eq:Up}
 \end{equation}
 The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
 \item \textbf{TWS} Wind sea fraction of the entire spectrum.
-\item \textbf{PNR} Number of partitions found in the spectrum. \label{out:last_part}
+\item \textbf{PNR} Number of partitions found in the spectrum.
+\item \textbf{PDP} Peak direction of partitions of the spectrum.
+\item \textbf{PQP} Goda peakedness of partitions of the spectrum.
+\item \textbf{PPE} JONSWAP peak enhancement factor of partitions
+      of the spectrum. It is a measure of amplification
+      of the spectral peak to the peak of the corresponding
+      \citeauthor{art:PM64} spectrum.
+\item \textbf{PGW} Gaussian frequency width (Hz) of partitions of the spectrum.
+      Least-square fit of a Gaussian spectrum to the one-dimensional spectral partition.
+\item \textbf{PSW} Spectral width of partitions of the spectrum \citep{art:LH84}
+%\item \textbf{PTE} Wave energy period of partitions of the spectrum [see Eq.~(\ref{eq:Tm0m1})] (NOT PLUGGED YET)
+%\item \textbf{PT1} Mean wave period of partitions of the spectrum [see Eq.~(\ref{eq:Tm})] (NOT PLUGGED YET)
+%\item \textbf{PT2} Wave zero-upcrossing period of partitions of the spectrum [see Eq.~(\ref{eq:Tm02})] (NOT PLUGGED YET)
+%\item \textbf{PEP} Wave peak spectral density of partitions (NOT PLUGGED YET)
 \end{list}
+
 
 \item{Atmosphere-waves layer}
 \begin{list}{\arabic{outpars})\hfill}
@@ -304,10 +318,12 @@ Note that US3D=1 must be set in the ww3\_grid.inp OUTS namelist in order to acti
 
 \item \textbf{MSS} Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
 \item \textbf{MSC} Spectral tail level (without dimensions) 
-\item \textbf{WL02}  East/X North/Y mean wavelength component
-\item \textbf{AXT}   Correl sea surface gradients (x,t)
-\item \textbf{AYT}   Correl sea surface gradients (y,t)
-\item \textbf{AXY}   Correl sea surface gradients (x,y)
+\item \textbf{MSD} Mean square slope direction
+\item \textbf{MCD} Spectral tail direction
+\item \textbf{QP}  Peakedness parameter \citep{art:G70}
+      \begin{equation} Q_p = \frac{2}{E^2} \int_0^{2\pi} \int_0^\infty
+      \sigma\:F(\sigma,\theta)^2\:d\sigma\:d\theta \: \label{eq:qp}
+      \end{equation}
 \end{list}
 
 \item{Numerical diagnostics }

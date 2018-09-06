@@ -165,7 +165,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,           &
+      INTEGER                 :: DIMP, DIMXP, JSEA, ISEA, IX, IY,     &
                                  IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
       INTEGER, SAVE           :: TSFAC = 7
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -177,8 +177,9 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
 !
+      DIMP = 11+4
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
-      ALLOCATE ( XP(6,0:DIMXP) )
+      ALLOCATE ( XP(DIMP,0:DIMXP) )
 !
       IF ( O6INIT ) THEN
           DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
@@ -191,9 +192,9 @@
       ICPRT(1,2) = 1
 !
       TMPSIZ = TSFAC * NSEAL
-      ALLOCATE ( TMP(6,TMPSIZ) )
+      ALLOCATE ( TMP(DIMP,TMPSIZ) )
 !
-!/T      WRITE (NDST,9000) DIMXP, TMPSIZ
+!/T      WRITE (NDST,9000) DIMP, DIMXP, TMPSIZ
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Loop over sea points
@@ -234,7 +235,7 @@
           STOP 'CRITICAL ERROR IN DEPTH ARRAY'
         END IF
         CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
-                      NP, XP, DIMXP )
+                      NP, XP, DIMP, DIMXP )
 !
 ! -------------------------------------------------------------------- /
 ! 5.  Store results (temp)
@@ -244,12 +245,12 @@
             ICPRT(JSEA+1,2) = ICPRT(JSEA,2) + NP + 1
 !
             IF ( ICPRT(JSEA,2)+NP .GT. TMPSIZ ) THEN
-                ALLOCATE ( TMP2(6,TMPSIZ) )
+                ALLOCATE ( TMP2(DIMP,TMPSIZ) )
                 TMP2   = TMP
                 DEALLOCATE ( TMP ) 
                 OLDSIZ = TMPSIZ
                 TMPSIZ = TMPSIZ + MAX ( TSFAC*NSEAL , DIMXP )
-                ALLOCATE ( TMP(6,TMPSIZ) )
+                ALLOCATE ( TMP(DIMP,TMPSIZ) )
                 TMP(:,1:OLDSIZ) = TMP2(:,1:OLDSIZ)
                 TMP(:,OLDSIZ+1:) = 0.
                 DEALLOCATE ( TMP2 ) 
@@ -271,7 +272,7 @@
 !/T      WRITE (NDST,9061) (CMPLX(JSEA,ICPRT(JSEA,:)),JSEA=1,MIN(100,NSEAL))
 !/T      WRITE (NDST,9062) FINSIZ
 !
-      ALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT(6,MAX(1,FINSIZ)) )
+      ALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT(DIMP,MAX(1,FINSIZ)) )
       DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
       IF ( FINSIZ .GT. 0 ) THEN
           DTPRT = TMP(:,1:FINSIZ)
@@ -285,7 +286,7 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3CPRT : DIMXP, TMPSIZ    :',2I6)
+!/T 9000 FORMAT (' TEST W3CPRT : DIMP, DIMXP, TMPSIZ    :',I2,2I6)
 !/T 9050 FORMAT (' TEST W3CPRT : POINT',I4,', STORAGE',2I6)
 !/T 9060 FORMAT (' TEST W3CPRT : COUNTERS FOR STORAGE (JSEA,NP,ST):')
 !/T 9061 FORMAT (100('             ',5(2F9.0)/))

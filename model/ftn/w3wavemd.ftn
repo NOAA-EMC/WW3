@@ -583,7 +583,7 @@
           .OR. FLCK .OR. FSFREQSHIFT )
 !
       FLPFLD = .FALSE.
-      DO J=1,8
+      DO J=1,NOGE(4)
         FLPFLD = FLPFLD .OR. FLOGRD(4,J) .OR. FLOGR2(4,J)
         END DO
 !
