@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # make_makefile.sh : Generates the makefile for WAVEWATCH based on switch     #
 #                    settings                                                 #
@@ -93,13 +93,13 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in uost mach nco grib mcp c90 nec netcdf scrip scripnc \
+  for type in mach nco grib mcp c90 nec netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
               wind windx rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
-              cou oasis agcm ogcm igcm trknc setup pdlib memck
+              cou oasis agcm ogcm igcm trknc setup pdlib memck uost
   do
     case $type in
 #sort:mach:
@@ -116,10 +116,10 @@
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
 #sort:mcp:
-      mcp    ) TY='upto2'
+      mcp    ) TY='upto1'
                ID='model coupling protocol'
-               TS='NOPA'
-               OK='NOPA PALM NCC' ;;
+               TS='NCC'
+               OK='NCC' ;;
 #sort:c90:
       c90    ) TY='upto1'
                ID='Cray C90 compiler directives'
@@ -376,7 +376,7 @@
                TS='SETUP'
                OK='SETUP' ;;
 #sort:uost:
-      uost   ) TY='uost'
+      uost   ) TY='upto1'
                ID='unresolved obstacles source term'
                TS='UOST'
                OK='UOST' ;;
@@ -454,17 +454,6 @@
       sw2="`echo $s_found | awk '{ print $2 }'`"
     fi
 
-    if [ "$type" = 'mcp' ] && [ "$n_found" -gt '1' ]
-    then
-      sw1="`echo $s_found | awk '{ print $1 }'`"
-      sw2="`echo $s_found | awk '{ print $2 }'`"
-      if [ "$sw1" = 'NOPA' ]
-      then
-        sw=$sw2
-      else
-        sw=$sw1
-      fi
-    fi
 
     case $type in
       shared ) shared=$sw ;;

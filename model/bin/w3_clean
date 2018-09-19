@@ -98,6 +98,8 @@ EOF
 # 1.b Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
+  # source again in case of updated wwatch3.env
+  source $(dirname $0)/w3_setenv 
   main_dir=$WWATCH3_DIR
   temp_dir=$WWATCH3_TMP
   source=$WWATCH3_SOURCE

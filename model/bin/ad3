@@ -320,13 +320,28 @@ then
 
   error='0'
 
-  if $path_b/comp $name > comp.out.$name 2> comp.err.$name
+  $path_b/comp $name > comp.out.$name 2> comp.err.$name
+  OK="$?"
+
+
+# 3.b Error escape location  - - - - - - - - - - - - - - - - - - - - - - - - -
+  if [ "$OK" != '0' ]
   then
-    rm -f comp.err.$name
-    rm -f comp.out.$name
+    echo '      *** compile error ***'
+    echo '          error in comp'
+    echo '--- comp output -------------------------------------------------'
+    cat comp.out.$name
+    echo '--- comp error output -------------------------------------------'
+    cat comp.err.$name
+    echo '-----------------------------------------------------------------'
+    error='6'
+    rm -f comp.stat.$name
+  fi
+  rm -f comp.out.$name
+  rm -f comp.err.$name
 
-# 3.b Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# 3.c Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if [ -f comp.stat.$name ]
     then
       nr_err=`grep ERROR comp.stat.$name | awk '{ print $2 }'`
@@ -345,13 +360,13 @@ then
       fi
     else
       echo '      *** compile error ***'
-      echo '          file comp.stat not found'
+      echo "          file comp.stat.$name not found"
       error='5'
       nr_err='1'
       rm -f $name.o
     fi
 
-# 3.c process object file  - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 3.d process object file  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     if [ "$nr_err" != '0' ] && [ ! -f $name.o ] && [ "$error" = '0' ]
     then
@@ -379,19 +394,6 @@ then
 # Note: the need for moving the .mod file and therefore the printing of the
 #       $mod depend on the compiler behavior.
 
-# 3.d Error escape location  - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  else
-    echo '      *** compile error ***'
-    echo '          error in comp'
-    echo '--- comp output -------------------------------------------------'
-    cat comp.out.$name
-    echo '--- comp error output -------------------------------------------'
-    cat comp.err.$name
-    echo '-----------------------------------------------------------------'
-    rm -f comp.*.$name
-    error='6'
-  fi
 
 # 3.e process output files - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -1042,7 +1042,10 @@ fi
 
 # 3.f Main program ---------------------------------------------------------- #
 
-cp $path_i/bottomspectrum.inp .
+if [ -e $path_i/bottomspectrum.inp ]
+then  
+  cp $path_i/bottomspectrum.inp .
+fi
 
 if [ $multi -ge 1 ]
 then
@@ -1145,10 +1148,12 @@ then
     \ln -s $ifile $prog.nml
     for file_p in ${files_p}
     do
+      echo $path_i/$file_p
       if [ -e ${path_i}/${file_p} ]
       then
         \rm -f ${file_p}
         \ln -s ${path_i}/${file_p} .
+        ls
       fi
     done
   else

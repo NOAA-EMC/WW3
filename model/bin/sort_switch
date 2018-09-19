@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # sort_switch: Script to unify the way the switches are ordered in the switch #
 #              file, while checking and correcting for missing switches.      #
@@ -303,10 +303,10 @@ EOF
    
     done
 
-#   if [ "$verbose" ]
-#   then
-#     echo "    $key $i_fnd $found [$OK]"
-#   fi
+   if [ "$verbose" ]
+   then
+     echo "    $key $i_fnd $found [$OK]"
+   fi
 
 # 3.d Too many switches found (error)
 
@@ -361,7 +361,7 @@ EOF
 
 # 3.e.4 unknown default
 
-     *  ) echo 'ooops' ; exit 99 ;;
+     *  ) echo "[error in sort_switch] unknown type $TY" ; exit 99 ;;
     esac
 
     if [ "$verbose" ]
