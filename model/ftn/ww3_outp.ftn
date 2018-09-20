@@ -179,7 +179,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
-                          ICEO, ICEHO, ICEFO
+                          ICEO, ICEHO, ICEFO, DIMP
       USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 !/NCO       USE W3BULLMD, ONLY: CASCBLINE
@@ -196,7 +196,7 @@
                                  IERR, I, TOUT(2), NOUT, TDUM(2),     &
                                  NREQ, IPOINT, ITYPE, OTYPE, NDSTAB,  &
                                  IOTEST, IK, ITH, IOUT, J, DIMXP,     &
-                                 DIMP, NDSBUL, NDSCSV, ICSV, IJ
+                                 NDSBUL, NDSCSV, ICSV, IJ
 !/NCO       INTEGER                 :: NDSCBUL
       INTEGER                 :: ISCALE = 0
       INTEGER                 :: TIMEV(2)
@@ -284,7 +284,6 @@
           M2KM = 1.E-3
         END IF
 !
-      DIMP   = 15
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
       ALLOCATE ( XPART(DIMP,0:DIMXP) )
       XPART  = UNDEF
@@ -1421,7 +1420,7 @@
 ! spectral partitioning
 !
             IF ( ITYPE.EQ.4 ) CALL W3PART                              &
-               ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMP, DIMXP )
+               ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
 !
 ! nondimensional parameters
 !
@@ -2134,7 +2133,7 @@
                       END DO
 !
                   ELSEIF ( OTYPE .GE. 2 ) THEN
-                      CALL W3BULL (NPART, XPART, DIMP, DIMXP, UABS,   &
+                      CALL W3BULL (NPART, XPART, DIMXP, UABS,         &
                                    UDIR, J, IOUT, TIMEV )
 !
                     IF ( FLAGLL ) THEN
@@ -2241,7 +2240,7 @@
   943 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
               1X,I3,F7.1,F5.1,f6.1,F5.2,F6.1)
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
-  942 FORMAT (I3,3F8.2,2F9.2,F7.2)
+  942 FORMAT (I3,3F8.2,2F9.2,10F7.2)
 !
 ! 
 !/NCO  960 FORMAT ( 'Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/              &

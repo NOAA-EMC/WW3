@@ -401,6 +401,14 @@ $                           FLC    : Flag for combining wind seas in
 $                                    partitioning.
 $                           NOSW   : Number of partitioned swell fields
 $                                    in field output.
+$                           PTM    : Partioning method:
+$                                     1 : Default WW3
+$                                     2 : Watershedding + wind cutoff
+$                                     3 : Watershedding only
+$                                     4 : Wind speed cutoff only
+$                                     5 : High/Low band cutoff (see PTFC)
+$                           PTFC   : Cutouf frequency for High/Low band
+$                                    partioning (PTM=5). Default = 0.1Hz
 $                           FMICHE : Constant in Miche limiter.
 $                           STDX   : Space-Time Extremes X-Length
 $                           STDY   : Space-Time Extremes Y-Length

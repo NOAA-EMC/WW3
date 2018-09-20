@@ -128,6 +128,7 @@
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
+                          PTM1, PT1, PT2, PEP,                         &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,      &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -1090,21 +1091,9 @@
                                                    MAPSF, XA(:,:,I) )
                   END DO
 !
-!     Total wind sea fraction
-!
-              ELSE IF ( J.EQ.4 .AND. K.EQ.7 ) THEN
-                FLONE = .TRUE.
-                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST ,MAPSF, X1 )
-!
-!     Number of partitions
-!
-              ELSE IF ( J.EQ.4 .AND. K.EQ.8 ) THEN
-                FLONE = .TRUE.
-                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR , MAPSF, X1 )
-!
 !     Partitioned peak direction
 !
-              ELSE IF ( J.EQ.4 .AND. K.EQ.9 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.7 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PTHP0(:,I),       &
@@ -1113,7 +1102,7 @@
 !
 !     Partitioned peakedness
 !
-              ELSE IF ( J.EQ.4 .AND. K.EQ.10 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.8 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PQP(:,I),         &
@@ -1123,7 +1112,7 @@
 !
 !     Partitioned peak enhancement factor
 !
-              ELSE IF ( J.EQ.4 .AND. K.EQ.11 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.9 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PPE(:,I),         &
@@ -1133,7 +1122,7 @@
 !
 !     Partitioned gaussian frequency spread
 !
-              ELSE IF ( J.EQ.4 .AND. K.EQ.12 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.10 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PGW(:,I),         &
@@ -1143,12 +1132,64 @@
 !
 !     Partitioned spectral width
 !
-              ELSE IF ( J.EQ.4 .AND. K.EQ.13 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.11 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PSW(:,I),         &
                                                    MAPSF, XA(:,:,I) )
                   END DO
+!
+!
+!     Partitioned mean energy period (-1)
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.12 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PTM1(:,I),        &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned mean wave period (+1)
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.13 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PT1(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned mean wave period (+2)
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.14 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PT2(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!
+!     Partitioned peak density
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.15 ) THEN
+                FLPRT = .TRUE.
+                DO I=0, NOSWLL
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PEP(:,I),         &
+                                                   MAPSF, XA(:,:,I) )
+                  END DO
+!
+!     Total wind sea fraction
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.16 ) THEN
+                FLONE = .TRUE.
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST ,MAPSF, X1 )
+!
+!     Number of partitions
+!
+              ELSE IF ( J.EQ.4 .AND. K.EQ.17 ) THEN
+                FLONE = .TRUE.
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR , MAPSF, X1 )
 !
 !     Friction velocity
 !

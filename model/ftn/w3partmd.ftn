@@ -7,7 +7,7 @@
 !/                  |          Barbara  Tracy           |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Dec-2010 |
+!/                  | Last update :         23-Jul-2018 |
 !/                  +-----------------------------------+
 !/
 !/    01-Nov-2006 : Origination.                        ( version 3.10 )
@@ -18,7 +18,8 @@
 !/    02-Dec-2010 : Adding a mapping PMAP between       ( version 3.14 )
 !/                  original and combined partitions
 !/                  ( M. Szyszka )
-!/
+!/    23-Jul-2018 : Added alternative partitioning      ( version 6.05 )
+!/                  methods (C. Bunney, UKMO)
 !  1. Purpose :
 !
 !     Spectral partitioning according to the watershed method.
@@ -64,7 +65,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3ODATMD, ONLY: IHMAX, HSPMIN, WSMULT
+      USE W3ODATMD, ONLY: IHMAX, HSPMIN, WSMULT, DIMP, PTMETH, PTFCUT
 !
       PUBLIC
 !
@@ -73,7 +74,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMP, DIMXP )
+      SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMXP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -112,7 +113,6 @@
 !                                but no partitions.
 !       XP      R.A.   O   Parameters describing partitions.
 !                          Entry '0' contains entire spectrum.
-!       DIMP    Int.   I   First dimension of XP.
 !       DIMXP   Int.   I   Second dimension of XP.
 !     ----------------------------------------------------------------
 !
@@ -130,7 +130,24 @@
 !  7. Remarks :
 !
 !     - To achieve minimum storage but guaranteed storage of all 
-!       partitions DIMXP = ((NK+1)/2) * ((NTH-1)/2)
+!       partitions DIMXP = ((NK+1)/2) * ((NTH-1)/2) unless specified
+!       otherwise below.
+!
+!     This version of W3PART contains alternate Met Office partitioning
+!     methods, selected at runtime using the PTMETH namlist variable:
+!         1) Standard WW3 partitioning
+!         2) Met Office extended partitioning using split-partitions
+!            (removes the wind sea part of any swell partiton and combines
+!            with total wind sea partition).
+!         3) Met Office "wave systems" - no classification or combining of
+!            wind sea partitions. All partitions output and ordered simply
+!            by wave height.
+!         4) Classic, simple wave age based partitioning generating
+!            a single wind sea and swell partition. [DIMXP = 2]
+!         5) 2-band partitioning; produces hi and low freqency band partitions
+!            using a user-defined cutoff frequency (PTFCUT). [DIMXP = 2]
+!
+!     (Chris Bunney, UK Met Office, Jul 2018)
 !
 !  8. Structure :
 !
@@ -146,7 +163,7 @@
       USE CONSTANTS
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH
       USE W3ODATMD, ONLY: WSCUT, FLCOMB
 !
       IMPLICIT NONE
@@ -155,7 +172,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(OUT)          :: NP
-      INTEGER, INTENT(IN)           :: DIMP, DIMXP
+      INTEGER, INTENT(IN)           :: DIMXP
       REAL, INTENT(IN)              :: SPEC(NK,NTH), WN(NK), UABS,    &
                                        UDIR, DEPTH
       REAL, INTENT(OUT)             :: XP(DIMP,0:DIMXP)
@@ -172,6 +189,8 @@
       REAL                    :: ZP(NSPEC), ZMIN, ZMAX, Z(NSPEC),     &
                                  FACT, WSMAX, HSMAX
       REAL                    :: TP(DIMP,DIMXP)
+      INTEGER                 :: IK, WIND_PART    ! ChrisB; added for new
+      REAL                    :: C, UPAR, SIGCUT  ! UKMO partioning methods
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -188,6 +207,69 @@
       DO ITH=1, NTH
         ZP(1+(ITH-1)*NK:ITH*NK) = SPEC(:,ITH)
         END DO
+
+!
+! PTMETH == 4 : Do simple partitioning based solely on the
+! wave age criterion (produces one swell and one wind sea only):
+!
+      IF( PTMETH .EQ. 4 ) THEN
+        DO IK=1, NK
+          DO ITH=1, NTH
+             ISP = IK + (ITH-1) * NK ! index into partition array IMO
+
+             UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
+             C = SIG(IK) / WN(IK)
+
+             IF( UPAR .LE. C ) THEN
+               ! Is swell:
+               IMO(ISP) = 2
+             ELSE
+               ! Is wind sea:
+               IMO(ISP) = 1
+             ENDIF
+          ENDDO
+        ENDDO
+
+        ! We have a max of up to two partitions:
+        NP_MAX=2
+
+        ! Calculate mean parameters:
+        CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
+                    NP, XP, DIMXP, PMAP )
+
+        ! No more processing required, return:
+        RETURN
+      ENDIF ! PTMETH == 4
+!
+! PTMETH == 5 : produce "high" and "low" band partitions 
+! using a frequency cutoff:
+!
+      IF( PTMETH .EQ. 5 ) THEN
+        SIGCUT = TPI * PTFCUT
+        DO IK = 1, NK
+          ! If bin center <= freq cutoff then mark as "low band".
+          IF(SIG(IK) .LE. SIGCUT) THEN
+            IP = 2
+          ELSE
+            IP = 1
+          ENDIF
+       
+          DO ITH=1, NTH
+            ISP = IK + (ITH-1) * NK ! index into partition array IMO
+            IMO(ISP) = IP
+          ENDDO
+        ENDDO
+
+        ! We only ever have 2 partitions:
+        NP_MAX=2
+
+        ! Calculate mean parameters:
+        CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
+                    NP, XP, DIMXP, PMAP )
+
+        ! No more processing required, return:
+        RETURN
+      ENDIF ! PTMETH == 5
 !
 ! 1.b Invert spectrum and 'digitize'
 !
@@ -218,14 +300,65 @@
 !     NP and NX initialized inside routine.
 !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-                    NP, XP, DIMP, DIMXP, PMAP )
+                    NP, XP, DIMXP, PMAP )
+!
+! 2.d PTMETH == 2: move the wind sea part of the partitions into a
+!     seperate partition and recalculate the mean parameters.
+! 
+      IF ( NP .GT. 0 .AND. PTMETH .EQ. 2 ) THEN
+         WIND_PART = NP_MAX
+
+          DO IK=1, NK
+            DO ITH=1, NTH
+               ISP = IK + (ITH-1) * NK ! index into partition array IMO
+               UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
+               C = SIG(IK) / WN(IK)
+
+               IF( C .LT. UPAR ) THEN
+                  ! Bin is wind forced - mark as new wind partition:
+                  WIND_PART = NP_MAX + 1
+
+                  ! Update status map to show new wind partition
+                  IMO(ISP) = WIND_PART
+               ENDIF
+            ENDDO
+          ENDDO
+
+          IF( WIND_PART .NE. NP_MAX ) THEN
+             ! Some bins were marked as wind sea - recalculate
+             ! integrated parameters:
+             NP_MAX = WIND_PART
+             CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,     &
+                    NP, XP, DIMXP, PMAP )
+          ENDIF
+      ENDIF
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Sort and recombine wind seas as needed
 ! 3.a Sort by wind sea fraction
 !
       IF ( NP .LE. 1 ) RETURN
-!
+
+      ! -----------------------------------------------------------------
+      ! PTMETH == 3: Don't classify or combine any partitions as wind sea.
+      ! Simply sort by HS and return.
+      ! -----------------------------------------------------------------
+      IF( PTMETH .EQ. 3 ) THEN
+        TP(:,1:NP)  = XP(:,1:NP)
+        XP(:,1:NP)  = 0.
+
+        DO IP=1, NP
+          IT          = MAXLOC(TP(1,1:NP))
+          XP(:,IP)    = TP(:,IT(1))
+          TP(1,IT(1)) = -1.
+        END DO
+
+        RETURN ! Don't process any further
+      ENDIF ! PTMETH == 3
+     
+      ! -----------------------------------------------------------------
+      ! PTMETH == 1: Default WW3 partitioning.
+      ! -----------------------------------------------------------------
       TP(:,1:NP)  = XP(:,1:NP)
       XP(:,1:NP)  = 0.
       INDEX(1:NP) = 0
@@ -251,7 +384,7 @@
           END DO
 !
           CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-                        NP, XP, DIMP, DIMXP, PMAP )
+                        NP, XP, DIMXP, PMAP )
           IF ( NP .LE. 1 ) RETURN
 !
           TP(:,1:NP)  = XP(:,1:NP)
@@ -885,7 +1018,7 @@
       END SUBROUTINE PT_FLD
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
-                          NPO, XP, DIMP, DIMXP, PMAP )
+                          NPO, XP, DIMXP, PMAP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -919,8 +1052,7 @@
 !       WN      R.A.   I   Wavenumebers for each frequency.
 !       NPO     Int.   O   Number of partitions with mean parameters.
 !       XP      R.A.   O   Array with output parameters.
-!       DIMP    int.   I   Fist dimesion of XP.
-!       DIMXP   int.   I   Second dimesion of XP.
+!       DIMXP   int.   I   Second dimension of XP.
 !       PMAP    I.A.   O   Mapping between orig. and combined partitions
 !     ----------------------------------------------------------------
 !
@@ -949,7 +1081,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMP, DIMXP
+      INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP
       INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
       REAL, INTENT(IN)        :: ZP(NSPEC), DEPTH, UABS, UDIR, WN(NK)
       REAL, INTENT(OUT)       :: XP(DIMP,0:DIMXP)
@@ -964,12 +1096,13 @@
                                  SUME(0:NPI), SUMEW(0:NPI),           &
                                  SUMEX(0:NPI), SUMEY(0:NPI),          &
                                  EFPMAX(0:NPI), FCDIR(NTH)
-      REAL,DIMENSION(0:NPI)   :: SUME1, SUME2, SUMQP
+      REAL,DIMENSION(0:NPI)   :: SUME1, SUME2, SUMEM1, SUMQP
       REAL                    :: HS, XL, XH, XL2, XH2, EL, EH, DENOM, &
                                  SIGP, WNP, CGP, UPAR, C(NK), RD, FACT
-      REAL                    :: QP, M0, M1, M2, FSPRD, EPM_FP, ALP_PM
+      REAL                    :: QP, M0, M1, M2, MM1, FSPRD, EPM_FP, ALP_PM
       REAL                    :: Y, YHAT, XHAT, SUMXY, SUMYLOGY, NUMER,&
                                  SUMY, SUMXXY, SUMXYLOGY, SUMEXP, SUMEYP
+      REAL                    :: FTEII
 !/
 !/S      CALL STRACE (IENT, 'PTMEAN')
 !
@@ -992,6 +1125,7 @@
 !
       SUME1  = 0.  !/ first spectral moment
       SUME2  = 0.  !/ second spectral moment
+      SUMEM1 = 0.  !/ inverse spectral moment
       SUMQP  = 0.  !/ peakedness parameter
 !
       SUMEW  = 0.
@@ -1051,6 +1185,7 @@
           SUMQP(IP) = SUMQP(IP) + SUMF (IK,IP)**2 * DSII(IK) * SIG(IK)
           SUME1(IP) = SUME1(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)
           SUME2(IP) = SUME2(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)**2
+          SUMEM1(IP) = SUMEM1(IP) + SUMF (IK,IP) * DSII(IK) / SIG(IK)
 
           SUMEW(IP) = SUMEW(IP) + SUMFW(IK,IP) * DSII(IK)
           SUMEX(IP) = SUMEX(IP) + SUMFX(IK,IP) * DSII(IK)
@@ -1060,13 +1195,35 @@
               EFPMAX(IP) = SUMF(IK,IP)
             END IF
           END DO
-        SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTE
-        SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * FTE
-        SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * FTE
-        SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTE
-        SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTE
-        SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTE
-        SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTE
+
+        !SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTE
+        !SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * FTE
+        !SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * FTE
+        !SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) * FTE
+        !SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTE
+        !SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTE
+        !SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTE
+        !SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTE
+        ! Met Office: Proposed bugfix for tail calculations, previously
+        !  PT1 and PT2 values were found to be too low when using the
+        !  FTE scaling factor for the tail. I think there are two issues:
+        !  1. energy spectrum is scaled in radian frequency space above by DSII.
+        !     This needs to be consistent and FTE contains a DTH*SIG(NK)
+        !     factor that is not used in the DSII scaled calcs above
+        !  2. the tail fit calcs for period parameters needs to follow
+        !     the form used in w3iogomd and scaling should be
+        !     based on the relationship between FTE and FT1, FTTR etc.
+        !     as per w3iogomd and ww3_grid
+        FTEII = FTE / (DTH * SIG(NK)) 
+        SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTEII
+        SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * SIG(NK) * FTEII * (0.3333 / 0.25)
+        SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * SIG(NK)**2 * FTEII * (0.5 / 0.25)
+        SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) / SIG(NK) * FTEII * (0.2 / 0.25)
+        SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTEII
+        SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTEII
+        SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTEII
+        SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTEII
+
         END DO
 !
 ! -------------------------------------------------------------------- /
@@ -1081,7 +1238,17 @@
 !
         M0 = SUME(IP)  * DTH * TPIINV
         HS     = 4. * SQRT ( MAX( M0 , 0. ) )
-        IF ( HS .LT. HSPMIN ) CYCLE
+        IF ( HS .LT. HSPMIN ) THEN
+          ! For wind cutoff and 2-band partitioning methods, keep the 
+          ! partition, but set the integrated parameters to UNDEF
+          ! for Hs values less that HSPMIN:
+          IF( PTMETH .EQ. 4 .OR. PTMETH .EQ. 5 ) THEN
+             NPO = NPO + 1
+             XP(:,NPO) = UNDEF
+             XP(6,NPO) = 0.0 ! Set wind sea frac to zero
+          ENDIF
+          CYCLE
+        ENDIF
 !
         IF ( NPO .GE. DIMXP ) GOTO 2000
         NPO = NPO + 1
@@ -1092,6 +1259,7 @@
 !
         M1 = SUME1(IP) * DTH * TPIINV**2
         M2 = SUME2(IP) * DTH * TPIINV**3
+        MM1 = SUMEM1(IP) * DTH
         QP = SUMQP(IP) *(DTH * TPIINV)**2
 !       M1 = MAX( M1, 1.E-7 )
 !       M2 = MAX( M2, 1.E-7 )
@@ -1176,20 +1344,20 @@
      !/ --- JONSWAP peak enhancement parameter (E(fp)/EPM(fp))---
      !  EPM_FMX = ALPHA_PM_FMX * GRAV**2 * TPI * SIGP**-5 * EXP(-5/4)
         ALP_PM = 0.3125 * HS**2 * (SIGP)**4
-        EPM_FP = ALP_PM * TPI * (SIGP**-5) * 2.865048E-1
+        EPM_FP = ALP_PM * TPI * (SIGP**(-5)) * 2.865048E-1
         XP(9,NPO) = MAX( EFPMAX(IP) / EPM_FP , 1.0 )
      !/ --- peakedness parameter (Goda 1970) ---
         XP(10,NPO) = 2. * QP / M0**2
      !/ --- gaussian frequency width ---
         XP(11,NPO) = FSPRD
-!    !/ --- TBC ---
-!       XP(12,NPO) = UNDEF
-!    !/ --- TBC ---
-!       XP(13,NPO) = M0 / M1
-!    !/ --- TBC ---
-!       XP(14,NPO) = SQRT( M0 / M2 )
-!    !/ --- peak spectral density (one-dimensional) ---
-!       XP(15,NPO) = EFPMAX(IP)
+     !/ --- wave energy period (inverse moment) ---
+        XP(12,NPO) = MM1 / M0
+     !/ --- mean wave period (first moment) ---
+        XP(13,NPO) = M0 / M1
+     !/ --- zero-upcrossing period (second moment) ---
+        XP(14,NPO) = SQRT( M0 / M2 )
+     !/ --- peak spectral density (one-dimensional) ---
+        XP(15,NPO) = EFPMAX(IP)
 !
         END DO
 !

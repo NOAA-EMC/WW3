@@ -992,7 +992,7 @@
                          PTHP0AUX2(0:NOSWLL_MIN),                      &
                          PQPAUX(0:NOSWLL_MIN), PPEAUX(0:NOSWLL_MIN),   &
                          PGWAUX(0:NOSWLL_MIN), PSWAUX(0:NOSWLL_MIN),   &
-                         PT0M1AUX(0:NOSWLL_MIN), PT1AUX(0:NOSWLL_MIN), &
+                         PTM1AUX(0:NOSWLL_MIN), PT1AUX(0:NOSWLL_MIN), &
                          PT2AUX(0:NOSWLL_MIN), PEPAUX(0:NOSWLL_MIN),   &
                          SUMWT4(NOGE(4),0:NOSWLL_MIN)
 ! Local group 5 variables
@@ -1083,7 +1083,7 @@
         PPE      = UNDEF
         PGW      = UNDEF
         PSW      = UNDEF
-        PT0M1    = UNDEF
+        PTM1     = UNDEF
         PT1      = UNDEF
         PT2      = UNDEF
         PEP      = UNDEF
@@ -1309,7 +1309,7 @@
                 PPEAUX      = UNDEF
                 PGWAUX      = UNDEF
                 PSWAUX      = UNDEF
-                PT0M1AUX    = UNDEF
+                PTM1AUX     = UNDEF
                 PT1AUX      = UNDEF
                 PT2AUX      = UNDEF
                 PEPAUX      = UNDEF
@@ -1829,9 +1829,9 @@
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,9) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,7) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PTHP0(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(9,ISWLL) = SUMWT4(9,ISWLL) + WT
+                        SUMWT4(7,ISWLL) = SUMWT4(7,ISWLL) + WT
                         IF (PTHP0AUX1(ISWLL).EQ.UNDEF)                 &
                                                    PTHP0AUX1(ISWLL) = 0.
                         IF (PTHP0AUX2(ISWLL).EQ.UNDEF)                 &
@@ -1843,73 +1843,73 @@
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,10) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,8) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PQP(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(10,ISWLL) = SUMWT4(10,ISWLL) + WT
+                        SUMWT4(8,ISWLL) = SUMWT4(8,ISWLL) + WT
                         IF ( PQPAUX(ISWLL).EQ.UNDEF ) PQPAUX(ISWLL) = 0.
                         PQPAUX(ISWLL) = PQPAUX(ISWLL) +                &
                                         WADATS(IGRID)%PQP(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,11) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,9) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PPE(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(11,ISWLL) = SUMWT4(11,ISWLL) + WT
+                        SUMWT4(9,ISWLL) = SUMWT4(9,ISWLL) + WT
                         IF ( PPEAUX(ISWLL).EQ.UNDEF ) PPEAUX(ISWLL) = 0.
                         PPEAUX(ISWLL) = PPEAUX(ISWLL) +                &
                                         WADATS(IGRID)%PPE(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,12) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,10) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PGW(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(12,ISWLL) = SUMWT4(12,ISWLL) + WT
+                        SUMWT4(10,ISWLL) = SUMWT4(10,ISWLL) + WT
                         IF ( PGWAUX(ISWLL).EQ.UNDEF ) PGWAUX(ISWLL) = 0.
                         PGWAUX(ISWLL) = PGWAUX(ISWLL) +                &
                                         WADATS(IGRID)%PGW(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,13) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,11) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PSW(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(13,ISWLL) = SUMWT4(13,ISWLL) + WT
+                        SUMWT4(11,ISWLL) = SUMWT4(11,ISWLL) + WT
                         IF ( PSWAUX(ISWLL).EQ.UNDEF ) PSWAUX(ISWLL) = 0.
                         PSWAUX(ISWLL) = PSWAUX(ISWLL) +                &
                                         WADATS(IGRID)%PSW(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,14) .AND. ACTIVE ) THEN
-                      IF ( WADATS(IGRID)%PT0M1(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(14,ISWLL) = SUMWT4(14,ISWLL) + WT
-                        IF ( PT0M1AUX(ISWLL).EQ.UNDEF )                &
-                                                    PT0M1AUX(ISWLL) = 0.
-                        PT0M1AUX(ISWLL) = PT0M1AUX(ISWLL) +            &
-                                      WADATS(IGRID)%PT0M1(GSEA,ISWLL)*WT
+                    IF ( FLOGRD(4,12) .AND. ACTIVE ) THEN
+                      IF ( WADATS(IGRID)%PTM1(GSEA,ISWLL) .NE. UNDEF ) THEN
+                        SUMWT4(12,ISWLL) = SUMWT4(12,ISWLL) + WT
+                        IF ( PTM1AUX(ISWLL).EQ.UNDEF )                &
+                                                    PTM1AUX(ISWLL) = 0.
+                        PTM1AUX(ISWLL) = PTM1AUX(ISWLL) +            &
+                                      WADATS(IGRID)%PTM1(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,15) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,13) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PT1(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(15,ISWLL) = SUMWT4(15,ISWLL) + WT
+                        SUMWT4(13,ISWLL) = SUMWT4(13,ISWLL) + WT
                         IF ( PT1AUX(ISWLL).EQ.UNDEF ) PT1AUX(ISWLL) = 0.
                         PT1AUX(ISWLL) = PT1AUX(ISWLL) +                &
                                         WADATS(IGRID)%PT1(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,16) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,14) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PT2(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(16,ISWLL) = SUMWT4(16,ISWLL) + WT
+                        SUMWT4(14,ISWLL) = SUMWT4(14,ISWLL) + WT
                         IF ( PT2AUX(ISWLL).EQ.UNDEF ) PT2AUX(ISWLL) = 0.
                         PT2AUX(ISWLL) = PT2AUX(ISWLL) +                &
                                         WADATS(IGRID)%PT2(GSEA,ISWLL)*WT
                       END IF
                     END IF
 !
-                    IF ( FLOGRD(4,17) .AND. ACTIVE ) THEN
+                    IF ( FLOGRD(4,15) .AND. ACTIVE ) THEN
                       IF ( WADATS(IGRID)%PEP(GSEA,ISWLL) .NE. UNDEF ) THEN
-                        SUMWT4(17,ISWLL) = SUMWT4(17,ISWLL) + WT
+                        SUMWT4(15,ISWLL) = SUMWT4(15,ISWLL) + WT
                         IF ( PEPAUX(ISWLL).EQ.UNDEF ) PEPAUX(ISWLL) = 0.
                         PEPAUX(ISWLL) = PEPAUX(ISWLL) +                &
                                         WADATS(IGRID)%PEP(GSEA,ISWLL)*WT
@@ -1918,9 +1918,9 @@
 !
                   END DO !/ ISWLL = 0, NOSWLL_MIN
 !
-                  IF ( FLOGRD(4,7) .AND. ACTIVE ) THEN
+                  IF ( FLOGRD(4,16) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%PWST(GSEA) .NE. UNDEF ) THEN
-                        SUMWT4(7,0) = SUMWT4(7,0) + WT
+                        SUMWT4(16,0) = SUMWT4(16,0) + WT
                       IF ( PWSTAUX .EQ. UNDEF ) THEN
                         PWSTAUX = WADATS(IGRID)%PWST(GSEA)*WT
                       ELSE
@@ -2697,9 +2697,9 @@
 !
                   IF ( PTHP0AUX1(ISWLL) .NE. UNDEF ) THEN
                     PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL)                &
-                                        / REAL( SUMWT4(9,ISWLL)+SUMGRD )
+                                        / REAL( SUMWT4(7,ISWLL)+SUMGRD )
                     PTHP0AUX2(ISWLL) = PTHP0AUX2(ISWLL)                &
-                                        / REAL( SUMWT4(9,ISWLL)+SUMGRD )
+                                        / REAL( SUMWT4(7,ISWLL)+SUMGRD )
                     IF ( PTHP0(ISEA,ISWLL) .NE. UNDEF ) THEN
                       PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL) +            &
                                                COS ( PTHP0(ISEA,ISWLL) )
@@ -2714,14 +2714,14 @@
                     IF ( PQP(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PQP(ISEA,ISWLL) = 0.
                     PQP(ISEA,ISWLL) = PQP(ISEA,ISWLL) +                &
-                         PQPAUX(ISWLL) / REAL( SUMWT4(10,ISWLL)+SUMGRD )
+                         PQPAUX(ISWLL) / REAL( SUMWT4(8,ISWLL)+SUMGRD )
                   END IF
 !
                   IF ( PPEAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PPE(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PPE(ISEA,ISWLL) = 0.
                     PPE(ISEA,ISWLL) = PPE(ISEA,ISWLL) +                &
-                         PPEAUX(ISWLL) / REAL( SUMWT4(11,ISWLL)+SUMGRD )
+                         PPEAUX(ISWLL) / REAL( SUMWT4(9,ISWLL)+SUMGRD )
 
                   END IF
 !
@@ -2729,55 +2729,48 @@
                     IF ( PGW(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PGW(ISEA,ISWLL) = 0.
                     PGW(ISEA,ISWLL) = PGW(ISEA,ISWLL) +                &
-                         PGWAUX(ISWLL) / REAL( SUMWT4(12,ISWLL)+SUMGRD )
+                         PGWAUX(ISWLL) / REAL( SUMWT4(10,ISWLL)+SUMGRD )
                   END IF
 !
                   IF ( PSWAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PSW(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PSW(ISEA,ISWLL) = 0.
                     PSW(ISEA,ISWLL) = PSW(ISEA,ISWLL) +                &
-                         PSWAUX(ISWLL) / REAL( SUMWT4(13,ISWLL)+SUMGRD )
+                         PSWAUX(ISWLL) / REAL( SUMWT4(11,ISWLL)+SUMGRD )
                   END IF
 !
-                  IF ( PT0M1AUX(ISWLL) .NE. UNDEF ) THEN
-                    IF ( PT0M1(ISEA,ISWLL) .EQ. UNDEF )                &
-                                                  PT0M1(ISEA,ISWLL) = 0.
-                    PT0M1(ISEA,ISWLL) = PT0M1(ISEA,ISWLL) +            &
-                       PT0M1AUX(ISWLL) / REAL( SUMWT4(14,ISWLL)+SUMGRD )
+                  IF ( PTM1AUX(ISWLL) .NE. UNDEF ) THEN
+                    IF ( PTM1(ISEA,ISWLL) .EQ. UNDEF )                &
+                                                  PTM1(ISEA,ISWLL) = 0.
+                    PTM1(ISEA,ISWLL) = PTM1(ISEA,ISWLL) +            &
+                       PTM1AUX(ISWLL) / REAL( SUMWT4(12,ISWLL)+SUMGRD )
                   END IF
 !
                   IF ( PT1AUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PT1(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PT1(ISEA,ISWLL) = 0.
                     PT1(ISEA,ISWLL) = PT1(ISEA,ISWLL) +                &
-                         PT1AUX(ISWLL) / REAL( SUMWT4(15,ISWLL)+SUMGRD )
+                         PT1AUX(ISWLL) / REAL( SUMWT4(13,ISWLL)+SUMGRD )
                   END IF
 !
                   IF ( PT2AUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PT2(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PT2(ISEA,ISWLL) = 0.
                     PT2(ISEA,ISWLL) = PT2(ISEA,ISWLL) +                &
-                         PT2AUX(ISWLL) / REAL( SUMWT4(16,ISWLL)+SUMGRD )
+                         PT2AUX(ISWLL) / REAL( SUMWT4(14,ISWLL)+SUMGRD )
                   END IF
 !
                   IF ( PEPAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PEP(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PEP(ISEA,ISWLL) = 0.
                     PEP(ISEA,ISWLL) = PEP(ISEA,ISWLL) +                &
-                         PEPAUX(ISWLL) / REAL( SUMWT4(17,ISWLL)+SUMGRD )
-                  END IF
-!
-                  IF ( PEPAUX(ISWLL) .NE. UNDEF ) THEN
-                    IF ( PEP(ISEA,ISWLL) .EQ. UNDEF )                  &
-                                                    PEP(ISEA,ISWLL) = 0.
-                    PEP(ISEA,ISWLL) = PEP(ISEA,ISWLL) +                &
-                         PEPAUX(ISWLL) / REAL( SUMWT4(17,ISWLL)+SUMGRD )
+                         PEPAUX(ISWLL) / REAL( SUMWT4(15,ISWLL)+SUMGRD )
                   END IF
 !
                 END DO  !/ ISWLL = 0, NOSWLL_MIN
 !
                 IF ( PWSTAUX .NE. UNDEF ) THEN
-                  PWSTAUX = PWSTAUX / SUMWT4(7,0)
+                  PWSTAUX = PWSTAUX / SUMWT4(16,0)
                   IF ( PWST(ISEA) .EQ. UNDEF )  THEN
                     PWST(ISEA) = PWSTAUX / REAL( SUMGRD )
                   ELSE

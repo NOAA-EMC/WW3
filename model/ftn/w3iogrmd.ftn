@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-08-26'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-09-20'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -141,6 +141,8 @@
 !/    08-Mar-2018 : Add FSWND for SMC grid.             ( version 6.02 )
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
 !/                  for unstructured grids              ( version 6.04 )
+!/    27-Jul-2018 : Added PTMETH and PTFCUT parameters  ( version 6.05 )
+!/                  (C. Bunney, UKMO)
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
@@ -909,10 +911,12 @@
 !
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
-                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
+                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
+                PTMETH, PTFCUT
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
+                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
+                PTMETH, PTFCUT
         END IF
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 13'
 !/DEBUGIOGR     FLUSH(740+IAPROC)

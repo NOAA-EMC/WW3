@@ -17,7 +17,7 @@
 !/
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC, FLAGLL
-      USE W3ODATMD, ONLY: NOPTS, PTLOC, PTNME
+      USE W3ODATMD, ONLY: NOPTS, PTLOC, PTNME, DIMP
       USE CONSTANTS, ONLY: PI, TPI
       USE W3WDATMD, ONLY: TIME
       USE W3TIMEMD, ONLY: DSEC21
@@ -41,7 +41,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3BULL                                                &
-          ( NPART, XPART, DIMP, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
+          ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
@@ -140,7 +140,7 @@
       PARAMETER     ( DDMMAX =  15.   )
       PARAMETER     ( DDWMAX =  30.   )
       PARAMETER     ( AGEMIN =   0.8  )
-      INTEGER, INTENT(IN)     :: NPART, DIMP, DIMXP, IOUT 
+      INTEGER, INTENT(IN)     :: NPART, DIMXP, IOUT 
       INTEGER, INTENT(INOUT)  :: TIMEV(2)
       REAL, INTENT(IN)        :: UABS,    &
                                  UD, XPART(DIMP,0:DIMXP)

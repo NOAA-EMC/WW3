@@ -155,7 +155,7 @@
       USE W3WDATMD, ONLY: W3SETW, W3NDAT
 !/NL1      USE W3ADATMD, ONLY: W3SETA, W3NAUX
       USE W3ODATMD, ONLY: W3SETO, W3NOUT
-      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT, DIMP
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOPOMD, ONLY: W3IOPO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
@@ -192,7 +192,7 @@
                                  IERR, I, NOUT, NREQ, ITYPE, OTYPE,   &
                                  IPOINT, IOTEST, ITH, IOUT, J, DIMXP, &
                                  ICODE, STRL, STRL2, FLWW3, NBFILEOUT,&
-                                 S5, S3, NBSTATION, NCTYPE, DIMP,     &
+                                 S5, S3, NBSTATION, NCTYPE,           &
                                  NCFLUSH, NFL, MFL, IFL, NREQL, NOUTL,&
                                  NDSEN, ONE, TWO, IRET, IP
       INTEGER                 :: ISCALE = 0
@@ -310,7 +310,6 @@
         M2KM = 1.E-3
       END IF
 !
-      DIMP   = 11+4           ! .EQV. DIMP in w3iosfmd.ftn
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
       ALLOCATE ( XPART(DIMP,0:DIMXP) )
       XPART = UNDEF
@@ -1838,7 +1837,7 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
 !
           IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
             CALL W3PART( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, &
-                                                       DIMP, DIMXP )
+                                                       DIMXP )
           END IF
 !
 ! 3.d nondimensional parameters
@@ -2297,6 +2296,9 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
               IRET=NF90_PUT_VAR(NCID,VARID(15),XPART(4,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
               IRET=NF90_PUT_VAR(NCID,VARID(16),XPART(5,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
               IRET=NF90_PUT_VAR(NCID,VARID(17),XPART(6,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+              IRET=NF90_PUT_VAR(NCID,VARID(18),XPART(12,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+              IRET=NF90_PUT_VAR(NCID,VARID(19),XPART(13,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+              IRET=NF90_PUT_VAR(NCID,VARID(20),XPART(14,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
 !
             END IF
 
@@ -3412,6 +3414,49 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
         IRET=NF90_PUT_ATT(NCID,VARID(17),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(17),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(17),'associates','time station npart')
+
+!TM10
+         IRET=nf90_def_var(ncid, 'tm10', NF90_FLOAT,(/dimid(4),dimid(2),dimid(1)/),varid(18))
+!/NC4        IF (NCTYPE.EQ.4) IRET=nf90_def_var_deflate(ncid, varid(18), 1, 1, deflate)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'long_name','mean wave period from spectral moments (-1,0)')
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'standard_name','mean_wave_period_tm10')
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'globwave_name','mean_wave_period_tm10')
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'units','seconds')
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'scale_factor',1.)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'add_offset',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'valid_min',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'valid_max',30.)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'_FillValue',NF90_FILL_FLOAT)
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'content','TXY')
+        IRET=NF90_PUT_ATT(NCID,VARID(18),'associates','time station npart')
+!T01
+         IRET=nf90_def_var(ncid, 't01', NF90_FLOAT,(/dimid(4),dimid(2),dimid(1)/),varid(19))
+!/NC4        IF (NCTYPE.EQ.4) IRET=nf90_def_var_deflate(ncid, varid(19), 1, 1, deflate)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'long_name','mean wave period from spectral moments (0,1)')
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'standard_name','mean_wave_period_t01')
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'globwave_name','mean_wave_period_t01')
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'units','seconds')
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'scale_factor',1.)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'add_offset',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'valid_min',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'valid_max',30.)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'_FillValue',NF90_FILL_FLOAT)
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'content','TXY')
+        IRET=NF90_PUT_ATT(NCID,VARID(19),'associates','time station npart')
+!T02
+         IRET=nf90_def_var(ncid, 't02', NF90_FLOAT,(/dimid(4),dimid(2),dimid(1)/),varid(20))
+!/NC4        IF (NCTYPE.EQ.4) IRET=nf90_def_var_deflate(ncid, varid(20), 1, 1, deflate)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'long_name','mean wave period from spectral moments (0,2)')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'standard_name','mean_wave_period_t02')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'globwave_name','mean_wave_period_t02')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'units','seconds')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'scale_factor',1.)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'add_offset',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'valid_min',0.)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'valid_max',30.)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'_FillValue',NF90_FILL_FLOAT)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'content','TXY')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'associates','time station npart')
 
         ! NF90_ENDDEF function
         IRET=NF90_ENDDEF(NCID)

@@ -1246,7 +1246,7 @@
 !
 !     Total wind sea fraction
 !
-              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
@@ -1254,7 +1254,7 @@
 !
 !     Number of fields in partition
 !
-              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255

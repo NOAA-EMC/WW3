@@ -515,27 +515,27 @@
              FLG2D(4,5)=.TRUE.
            CASE('PWS')
              FLG2D(4,6)=.TRUE.
-           CASE('TWS')
-             FLG2D(4,7)=.TRUE.
-           CASE('PNR')
-             FLG2D(4,8)=.TRUE.
            CASE('PDP')
-             FLG2D(4,9)=.TRUE.
+             FLG2D(4,7)=.TRUE.
            CASE('PQP')
-             FLG2D(4,10)=.TRUE.
+             FLG2D(4,8)=.TRUE.
            CASE('PPE')
-             FLG2D(4,11)=.TRUE.
+             FLG2D(4,9)=.TRUE.
            CASE('PGW')
-             FLG2D(4,12)=.TRUE.
+             FLG2D(4,10)=.TRUE.
            CASE('PSW')
-             FLG2D(4,13)=.TRUE.
-           CASE('PT0M1')
-             FLG2D(4,14)=.TRUE.
+             FLG2D(4,11)=.TRUE.
+           CASE('PTM1')
+             FLG2D(4,12)=.TRUE.
            CASE('PT1')
-             FLG2D(4,15)=.TRUE.
+             FLG2D(4,13)=.TRUE.
            CASE('PT2')
-             FLG2D(4,16)=.TRUE.
+             FLG2D(4,14)=.TRUE.
            CASE('PEP')
+             FLG2D(4,15)=.TRUE.
+           CASE('TWS')
+             FLG2D(4,16)=.TRUE.
+           CASE('PNR')
              FLG2D(4,17)=.TRUE.
 !
 ! Group 5
@@ -933,27 +933,27 @@
            FLG2D(4,5)=.TRUE.
          CASE('PWS')
            FLG2D(4,6)=.TRUE.
-         CASE('TWS')
-           FLG2D(4,7)=.TRUE.
-         CASE('PNR')
-           FLG2D(4,8)=.TRUE.
          CASE('PDP')
-           FLG2D(4,9)=.TRUE.
+           FLG2D(4,7)=.TRUE.
          CASE('PQP')
-           FLG2D(4,10)=.TRUE.
+           FLG2D(4,8)=.TRUE.
          CASE('PPE')
-           FLG2D(4,11)=.TRUE.
+           FLG2D(4,9)=.TRUE.
          CASE('PGW')
-           FLG2D(4,12)=.TRUE.
+           FLG2D(4,10)=.TRUE.
          CASE('PSW')
-           FLG2D(4,13)=.TRUE.
-         CASE('PT0M1')
-           FLG2D(4,14)=.TRUE.
+           FLG2D(4,11)=.TRUE.
+         CASE('PTM1')
+           FLG2D(4,12)=.TRUE.
          CASE('PT1')
-           FLG2D(4,15)=.TRUE.
+           FLG2D(4,13)=.TRUE.
          CASE('PT2')
-           FLG2D(4,16)=.TRUE.
+           FLG2D(4,14)=.TRUE.
          CASE('PEP')
+           FLG2D(4,15)=.TRUE.
+         CASE('TWS')
+           FLG2D(4,16)=.TRUE.
+         CASE('PNR')
            FLG2D(4,17)=.TRUE.
 !
 ! Group 5
@@ -1221,7 +1221,7 @@
                           BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
                           TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
                           HCMAXE, HMAXE, HCMAXD, HMAXD, USSP, QP, PQP,&
-                          PTHP0, PPE, PGW, PSW, PT0M1, PT1, PT2, PEP
+                          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
@@ -2217,7 +2217,7 @@
           PPE    = UNDEF
           PGW    = UNDEF
           PSW    = UNDEF
-          PT0M1  = UNDEF
+          PTM1   = UNDEF
           PT1    = UNDEF
           PT2    = UNDEF
           PEP    = UNDEF
@@ -2245,21 +2245,24 @@
                     PLP(JSEA,0) = DTPRT(3,I)
                     ! (PDIR is already in degrees nautical - convert back to
                     !  Cartesian in radians to maintain internal convention)
-                    PDIR(JSEA,0) = (270. - DTPRT(4,I)) * DERA
+                    IF(DTPRT(4,I) .NE. UNDEF) THEN
+                      PDIR(JSEA,0) = (270. - DTPRT(4,I)) * DERA
+                    ENDIF
                     PSI(JSEA,0) = DTPRT(5,I)
                     PWS(JSEA,0) = DTPRT(6,I)
                     ! (PTHP0 is already in degrees nautical - convert back to
                     !  Cartesian in radians to maintain internal convention)
-                    PTHP0(JSEA,0) = (270. - DTPRT(7,I)) * DERA
+                    IF(DTPRT(7,I) .NE. UNDEF) THEN
+                      PTHP0(JSEA,0) = (270. - DTPRT(7,I)) * DERA
+                    ENDIF
                     PSW(JSEA,0) = DTPRT(8,I)
                     PPE(JSEA,0) = DTPRT(9,I)
                     PQP(JSEA,0) = DTPRT(10,I)
                     PGW(JSEA,0) = DTPRT(11,I)
-!/ TBC              PT0M1(JSEA,0) = DTPRT(  ,I)
-!/                  PT0M1(JSEA,0) = DTPRT(  ,I)
-!/                  PT1(JSEA,0) = DTPRT(  ,I)
-!/                  PT2(JSEA,0) = DTPRT(  ,I)
-!/                  PEP(JSEA,0) = DTPRT(  ,I)
+                    PTM1(JSEA,0) = DTPRT(12,I)
+                    PT1(JSEA,0) = DTPRT(13,I)
+                    PT2(JSEA,0) = DTPRT(14,I)
+                    PEP(JSEA,0) = DTPRT(15,I)
                     I      = I + 1
                   END IF
                 DO J=1, NOSWLL
@@ -2269,21 +2272,24 @@
                   PLP(JSEA,J) = DTPRT(3,I)
                   ! (PDIR is already in degrees nautical - convert back to
                   !  Cartesian in radians to maintain internal convention)
-                  PDIR(JSEA,J) = (270. - DTPRT(4,I)) * DERA
+                  IF(DTPRT(4,I) .NE. UNDEF) THEN
+                    PDIR(JSEA,J) = (270. - DTPRT(4,I)) * DERA
+                  ENDIF
                   PSI(JSEA,J) = DTPRT(5,I)
                   PWS(JSEA,J) = DTPRT(6,I)
                   ! (PTHP0 is already in degrees nautical - convert back to
                   !  Cartesian in radians to maintain internal convention)
-                  PTHP0(JSEA,J) = (270. - DTPRT(7,I)) * DERA
+                  IF(DTPRT(7,I) .NE. UNDEF) THEN
+                    PTHP0(JSEA,J) = (270. - DTPRT(7,I)) * DERA
+                  ENDIF
                   PSW(JSEA,J) = DTPRT(8,I)
                   PPE(JSEA,J) = DTPRT(9,I)
                   PQP(JSEA,J) = DTPRT(10,I)
                   PGW(JSEA,J) = DTPRT(11,I)
-!/ TBC            PT0M1(JSEA,J) = DTPRT(  ,I)
-!/                PT0M1(JSEA,J) = DTPRT(  ,I)
-!/                PT1(JSEA,J) = DTPRT(  ,I)
-!/                PT2(JSEA,J) = DTPRT(  ,I)
-!/                PEP(JSEA,J) = DTPRT(  ,I)
+                  PTM1(JSEA,J) = DTPRT(12,I)
+                  PT1(JSEA,J) = DTPRT(13,I)
+                  PT2(JSEA,J) = DTPRT(14,I)
+                  PEP(JSEA,J) = DTPRT(15,I)
                   I      = I + 1
                   END DO
               END IF
@@ -2442,7 +2448,7 @@
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,     &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
-                          PTHP0, PQP, PPE, PGW, PSW, PT0M1, PT1, PT2,  &
+                          PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2,  &
                           PEP, USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,    &
                           PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,        &
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
@@ -2643,17 +2649,17 @@
                 IF ( FLOGRD( 4, 4) ) PDIR (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 5) ) PSI (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 6) ) PWS (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4, 7) ) PWST(ISEA  ) = UNDEF
-                IF ( FLOGRD( 4, 8) ) PNR (ISEA  ) = UNDEF
-                IF ( FLOGRD( 4, 9) ) PTHP0(ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,10) ) PQP (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,11) ) PPE(ISEA,:)  = UNDEF
-                IF ( FLOGRD( 4,12) ) PGW(ISEA,:)  = UNDEF
-                IF ( FLOGRD( 4,13) ) PSW (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,14) ) PT0M1(ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,15) ) PT1 (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,16) ) PT2 (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4,17) ) PEP (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 7) ) PTHP0(ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 8) ) PQP (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 9) ) PPE(ISEA,:)  = UNDEF
+                IF ( FLOGRD( 4,10) ) PGW(ISEA,:)  = UNDEF
+                IF ( FLOGRD( 4,11) ) PSW (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4,12) ) PTM1(ISEA,:) = UNDEF
+                IF ( FLOGRD( 4,13) ) PT1 (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4,14) ) PT2 (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4,15) ) PEP (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4,16) ) PWST(ISEA  ) = UNDEF
+                IF ( FLOGRD( 4,17) ) PNR (ISEA  ) = UNDEF
 !
                 IF ( FLOGRD( 5, 2) ) CHARN (ISEA) = UNDEF
                 IF ( FLOGRD( 5, 3) ) CGE   (ISEA) = UNDEF
@@ -2884,27 +2890,27 @@
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                     WRITE ( NDSOG ) PWS(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
-                    WRITE ( NDSOG ) PWST(1:NSEA)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
-                    WRITE ( NDSOG ) PNR(1:NSEA)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9 ) THEN
                     WRITE ( NDSOG ) PTHP0(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8  ) THEN
                     WRITE ( NDSOG ) PQP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9  ) THEN
                     WRITE ( NDSOG ) PPE(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
                     WRITE ( NDSOG ) PGW(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
                     WRITE ( NDSOG ) PSW(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
-                    WRITE ( NDSOG ) PT0M1(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
+                    WRITE ( NDSOG ) PTM1(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
                     WRITE ( NDSOG ) PT1(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
                     WRITE ( NDSOG ) PT2(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
                     WRITE ( NDSOG ) PEP(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
+                    WRITE ( NDSOG ) PWST(1:NSEA)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
+                    WRITE ( NDSOG ) PNR(1:NSEA)
 !
 !     Section 5)
 !
@@ -3175,36 +3181,36 @@
                                                   PWS(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                          PWST(1:NSEA)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) PNR(1:NSEA)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                 PTHP0(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8  ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PQP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9  ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PPE(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PGW(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PSW(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                PT0M1(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
+                                                 PTM1(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PT1(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PT2(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PEP(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                          PWST(1:NSEA)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) PNR(1:NSEA)
 !
 !     Section 5)
 !

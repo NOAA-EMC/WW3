@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         27-Jul-2018 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -40,6 +40,9 @@
 !/    01-Mar-2018 : Include UNDEF from constants.ftn to ( version 6.02 )
 !/                  avoid circular referencing in w3servmd
 !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
+!/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
+!/                  for alternative partition methods.
+!/                  (C. Bunney, UKMO)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -66,6 +69,8 @@
 !      NOTYPE    I.P.  Public   Number of output types
 !      NOEXTR    I.P.  Public   Number of extra (user available) 
 !                               output fields.
+!      DIMP      I.P.  Public   Number of parameters in partition
+!                               output group
 !      IDOUT     C.A.  Public   ID strings for output fields.
 !      FNMPRE    Char  Public   File name preamble.
 !      UNDEF     Real  Public   Value for undefined parameters in
@@ -304,6 +309,7 @@
 !
       INTEGER, PARAMETER      :: NOGRP = 10
       INTEGER, PARAMETER      :: NGRPP = 20
+      INTEGER, PARAMETER      :: DIMP = 15
       INTEGER                 :: NOGE(NOGRP)
       INTEGER                 :: NOTYPE
       INTEGER, PARAMETER      :: NOEXTR=  2
@@ -382,6 +388,8 @@
         REAL                  :: HSPMIN, WSMULT, WSCUT
         REAL, POINTER         :: DTPRT(:,:)
         LOGICAL               :: FLFORM, FLCOMB, O6INIT
+        INTEGER               :: PTMETH   ! C. Bunney; Partitioning method
+        REAL                  :: PTFCUT   ! C. Bunney; Part. 5 freq cut
       END TYPE OTYPE6
 !/
       TYPE OUTPUT
@@ -482,6 +490,8 @@
                                  IY0, IYN, IYS, ICPRT(:,:)
       REAL, POINTER           :: HSPMIN, WSMULT, WSCUT, DTPRT(:,:)
       LOGICAL, POINTER        :: FLFORM, FLCOMB, O6INIT
+      INTEGER, POINTER        :: PTMETH   ! C. Bunney; Partitioning method
+      REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -712,17 +722,17 @@
       IDOUT( 4, 4)  = 'Part. mean direction'
       IDOUT( 4, 5)  = 'Part. dir. spread   '
       IDOUT( 4, 6)  = 'Part. wind sea frac.'
-      IDOUT( 4, 7)  = 'Total wind sea frac.'
-      IDOUT( 4, 8)  = 'Number of partitions'
-      IDOUT( 4, 9)  = 'Part. peak direction'
-      IDOUT( 4,10)  = 'Part. peakedness    '
-      IDOUT( 4,11)  = 'Part. peak enh. fac.'
-      IDOUT( 4,12)  = 'Part. gaussian width'
-      IDOUT( 4,13)  = 'Part. spectral width'
-      IDOUT( 4,14)  = 'Part. mean per. (-1)'
-      IDOUT( 4,15)  = 'Part. mean per. (+1)'
-      IDOUT( 4,16)  = 'Part. mean per. (+2)'
-      IDOUT( 4,17)  = 'Part. peak density  '
+      IDOUT( 4, 7)  = 'Part. peak direction'
+      IDOUT( 4, 8)  = 'Part. peakedness    '
+      IDOUT( 4, 9)  = 'Part. peak enh. fac.'
+      IDOUT( 4,10)  = 'Part. gaussian width'
+      IDOUT( 4,11)  = 'Part. spectral width'
+      IDOUT( 4,12)  = 'Part. mean per. (-1)'
+      IDOUT( 4,13)  = 'Part. mean per. (+1)'
+      IDOUT( 4,14)  = 'Part. mean per. (+2)'
+      IDOUT( 4,15)  = 'Part. peak density  '
+      IDOUT( 4,16)  = 'Total wind sea frac.'
+      IDOUT( 4,17)  = 'Number of partitions'
 !
 ! 5) Atmosphere-waves layer
 !
@@ -1632,6 +1642,8 @@
       ICPRT  => OUTPTS(IMOD)%OUT6%ICPRT
       DTPRT  => OUTPTS(IMOD)%OUT6%DTPRT
       FLCOMB => OUTPTS(IMOD)%OUT6%FLCOMB
+      PTMETH => OUTPTS(IMOD)%OUT6%PTMETH
+      PTFCUT => OUTPTS(IMOD)%OUT6%PTFCUT
       FLFORM => OUTPTS(IMOD)%OUT6%FLFORM
       O6INIT => OUTPTS(IMOD)%OUT6%O6INIT
 !

@@ -186,10 +186,10 @@ MODULE PDLIB_FIELD_VEC
         IH = IH + NOSWLL + 1
       END IF
       IF ( FLGRDALL( 4, 7) ) THEN
-        IH = IH + 1
+        IH = IH + NOSWLL + 1
       END IF
       IF ( FLGRDALL( 4, 8) ) THEN
-        IH = IH + 1
+        IH = IH + NOSWLL + 1
       END IF
       IF ( FLGRDALL( 4, 9) ) THEN
         IH = IH + NOSWLL + 1
@@ -213,10 +213,10 @@ MODULE PDLIB_FIELD_VEC
         IH = IH + NOSWLL + 1
       END IF
       IF ( FLGRDALL( 4,16) ) THEN
-        IH = IH + NOSWLL + 1
+        IH = IH + 1
       END IF
       IF ( FLGRDALL( 4,17) ) THEN
-        IH = IH + NOSWLL + 1
+        IH = IH + 1
       END IF
       IF ( FLGRDALL( 5, 1) ) THEN
         IH = IH + 1
@@ -851,7 +851,7 @@ MODULE PDLIB_FIELD_VEC
                           BEDFORMS, PHIBBL, TAUBBL, T01,         &
                           P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
                           STH2M, HSIG, TAUICE, PHICE, PTHP0, PQP,&
-                          PPE, PGW, PSW, PT0M1, PT1, PT2, PEP,   &
+                          PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
                           QP, MSSD, MSCD, STMAXE, STMAXD, HMAXE, &
                           HCMAXE, HMAXD, HCMAXD
       USE W3GDATMD, ONLY: NK, NSEAL
@@ -1055,66 +1055,66 @@ MODULE PDLIB_FIELD_VEC
               END DO
             END IF
             IF ( FLGRDALL( 4, 7) ) THEN
-              IH = IH + 1
-              Arrexch(IH,JSEA)=PWST(JSEA)
-            END IF
-            IF ( FLGRDALL( 4, 8) ) THEN
-              IH = IH + 1
-              Arrexch(IH,JSEA)=PNR(JSEA)
-            END IF
-            IF ( FLGRDALL( 4, 9) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PTHP0(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,10) ) THEN
+            IF ( FLGRDALL( 4, 8) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PQP(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,11) ) THEN
+            IF ( FLGRDALL( 4, 9) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PPE(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,12) ) THEN
+            IF ( FLGRDALL( 4,10) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PGW(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,13) ) THEN
+            IF ( FLGRDALL( 4,11) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PSW(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,14) ) THEN
+            IF ( FLGRDALL( 4,12) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
-                Arrexch(IH,JSEA)=PT0M1(JSEA,IK)
+                Arrexch(IH,JSEA)=PTM1(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,15) ) THEN
+            IF ( FLGRDALL( 4,13) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PT1(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,16) ) THEN
+            IF ( FLGRDALL( 4,14) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PT2(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 4,17) ) THEN
+            IF ( FLGRDALL( 4,15) ) THEN
               DO IK=0, NOSWLL
                 IH = IH + 1
                 Arrexch(IH,JSEA)=PEP(JSEA,IK)
               END DO
+            END IF
+            IF ( FLGRDALL( 4,16) ) THEN
+              IH = IH + 1
+              Arrexch(IH,JSEA)=PWST(JSEA)
+            END IF
+            IF ( FLGRDALL( 4,17) ) THEN
+              IH = IH + 1
+              Arrexch(IH,JSEA)=PNR(JSEA)
             END IF
             IF ( FLGRDALL( 5, 1) ) THEN
               IH = IH + 1
@@ -1512,66 +1512,66 @@ MODULE PDLIB_FIELD_VEC
                 END DO
               END IF
               IF ( FLGRDALL( 4, 7) ) THEN
-                IH = IH + 1
-                PWST(1:NSEA) = ARRtotal(IH,:)
-              END IF
-              IF ( FLGRDALL( 4, 8) ) THEN
-                IH = IH + 1
-                PNR(1:NSEA) = ARRtotal(IH,:)
-              END IF
-              IF ( FLGRDALL( 4, 9) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PTHP0(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,10) ) THEN
+              IF ( FLGRDALL( 4, 8) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PQP(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,11) ) THEN
+              IF ( FLGRDALL( 4, 9) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PPE(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,12) ) THEN
+              IF ( FLGRDALL( 4,10) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PGW(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,13) ) THEN
+              IF ( FLGRDALL( 4,11) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PSW(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,14) ) THEN
+              IF ( FLGRDALL( 4,12) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
-                  PT0M1(1:NSEA,K) = ARRtotal(IH,:)
+                  PTM1(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,15) ) THEN
+              IF ( FLGRDALL( 4,13) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PT1(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,16) ) THEN
+              IF ( FLGRDALL( 4,14) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PT2(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 4,17) ) THEN
+              IF ( FLGRDALL( 4,15) ) THEN
                 DO K=0, NOSWLL
                   IH = IH + 1
                   PEP(1:NSEA,K) = ARRtotal(IH,:)
                 END DO
+              END IF
+              IF ( FLGRDALL( 4,16) ) THEN
+                IH = IH + 1
+                PWST(1:NSEA) = ARRtotal(IH,:)
+              END IF
+              IF ( FLGRDALL( 4,17) ) THEN
+                IH = IH + 1
+                PNR(1:NSEA) = ARRtotal(IH,:)
               END IF
               IF ( FLGRDALL( 5, 1) ) THEN
                 IH = IH + 1

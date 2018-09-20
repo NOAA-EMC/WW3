@@ -513,7 +513,7 @@
       USE W3ODATMD, ONLY: NBI, NBI2, NFBPO, NBO, NBO2, FLBPI, FLBPO,  &
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
                           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB,       &
-                          NOSWLL
+                          NOSWLL, PTMETH, PTFCUT
       USE W3TIMEMD, ONLY: NOLEAP
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
@@ -681,6 +681,9 @@
 !
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
+      INTEGER                 :: PTM   ! Partitioning method
+      REAL                    :: PTFC  ! Part. cut off freq (for method 5)
+      CHARACTER               :: PMNAME*45, PMNAM2*45  ! Part. method desc.
 !/FLD1      INTEGER                 :: TAILTYPE
 !/FLD1      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLD2      INTEGER                 :: TAILTYPE
@@ -857,7 +860,8 @@
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
                       ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
-                      ICEHDISP, ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR
+                      ICEHDISP, ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR, &
+                      PTM, PTFC
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -2113,6 +2117,8 @@
       FLC    = .TRUE.
       TRCKCMPR = .TRUE.
       NOSW   = 5
+      PTM    = 1    ! Default to standard WW3 partitioning. C. Bunney
+      PTFC   = 0.1  ! Part. method 5 cutoff freq default. C. Bunney
       FMICHE = 1.6
       RWNDC  = 1.
       WCOR1  = 99. 
@@ -2419,12 +2425,41 @@
       WSCUT  = MIN ( 1.0001 , MAX ( 0. , WSC ) )
       FLCOMB = FLC
       NOSWLL = MAX ( 1 , NOSW )
+      PTMETH = PTM  ! Partitioning method. Chris Bunney (Jan 2016)
+      PTFCUT = PTFC ! Freq cutoff for partitiong method 5
+      PMNAM2 = ""
+      IF( PTMETH .EQ. 1 ) THEN
+        PMNAME = "WW3 default"
+      ELSE IF( PTMETH .EQ. 2 ) THEN
+        PMNAME = "Watershedding plus wind cut-off"
+      ELSE IF( PTMETH .EQ. 3 ) THEN
+        PMNAME = "Watershedding only"
+        WSCUT = 0.0	! We don't want to classify by ws frac
+        PMNAM2 = "WSC set to 0.0"
+      ELSE IF( PTMETH .EQ. 4 ) THEN
+        PMNAME = "Wind speed cut-off only"
+        PMNAM2 = "WSC set to 0.0, NOSW set to 1"
+        WSCUT = 0.0	! We don't want to classify by ws frac
+        NOSWLL = 1	! Only ever one swell
+      ELSE IF( PTMETH .EQ. 5 ) THEN
+        WRITE(PMNAME, '("2-Band hi/low cutoff at ", F4.2,"Hz")') PTFCUT
+        PMNAM2 = "WSC set to 0.0, NOSW set to 1"
+        WSCUT = 0.0	! We don't want to classify by ws frac
+        NOSWLL = 1	! Only ever one swell
+      ELSE
+        WRITE( NDSE, * )                                                &
+          "*** Error - unknown partitioing method (PTM)! ***"
+        CALL EXIT(1)
+      ENDIF
+
         IF ( FLCOMB ) THEN
           J      = 1
         ELSE
           J      = 2
         END IF
       WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J), NOSWLL
+      WRITE (NDSO,5971) PMNAME
+      IF( PMNAM2 .NE. "" ) WRITE (NDSO,5972) PMNAM2
 !!    WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J)
 !
       FHMAX  = MAX ( 0.01 , FMICHE )
@@ -5302,6 +5337,9 @@
 !
 !/IG1  970 FORMAT (/'  Second order and infragravity waves  ',A/      &
 !/IG1               ' --------------------------------------------------')
+!
+ 5971 FORMAT ('       Paritioning method          :  ',A)
+ 5972 FORMAT ('       Namelist options overridden :  ',A)
 !
 !/IC2  971 FORMAT (/'  Boundary layer below ice  ',A/      &
 !/IC2               ' --------------------------------------------------')

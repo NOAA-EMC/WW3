@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         08-Jun-2018 |
+!/                  | Last update :         25-Jul-2018 |
 !/                  +-----------------------------------+
 !/
 !/    27-Jun-2006 : Origination.                        ( version 3.09 )
@@ -23,6 +23,8 @@
 !/    06-Mar-2012 : Reparing test output under MPI.     ( version 4.07 )
 !/    08-Jun-2018 : use W3ADATMD, W3PARALL, INIT_GET_ISEA and 
 !/                            INIT_GET_JSEA_ISPROC      ( version 6.04 )
+!/    25-Jul-2018 : Changed DIMXP size for partitioning ( version 6.05 )
+!/                  methods 4 and 5. (C Bunney, UKMO)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -88,11 +90,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Mar-2007 !
+!/                  | Last update :         25-Jul-2018 !
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2006 : Origination.                        ( version 3.10 )
 !/    24-Mar-2007 : Add pars for entire spectrum.       ( version 3.11 )
+!/    25-Jul-2018 : Changed DIMXP size for partitioning ( version 6.05 )
+!/                  methods 4 and 5. (C Bunney, UKMO)
 !/
 !  1. Purpose :
 !
@@ -149,7 +153,7 @@
       USE W3GDATMD, ONLY: NSEA, NSEAL, MAPSF, MAPSTA, NK, NTH, SIG
       USE W3ADATMD, ONLY: WN, CG, U10, U10D, DW
       USE W3ODATMD, ONLY: IAPROC, NAPROC, OUTPTS, O6INIT,       &
-                          ICPRT, DTPRT
+                          ICPRT, DTPRT, DIMP, PTMETH
       USE W3WDATMD, ONLY: VA, ASF
       USE W3ADATMD, ONLY: NSEALM
       USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
@@ -165,7 +169,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: DIMP, DIMXP, JSEA, ISEA, IX, IY,     &
+      INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
                                  IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
       INTEGER, SAVE           :: TSFAC = 7
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -177,8 +181,14 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
 !
-      DIMP = 11+4
-      DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
+      IF(PTMETH .EQ. 4 .OR. PTMETH .EQ. 5) THEN
+        ! Partitioning methods 4 and 5 only ever create 2 partitions
+        ! C. Bunney, 25-Jul-18
+        DIMXP = 2
+      ELSE
+        DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
+      ENDIF
+
       ALLOCATE ( XP(DIMP,0:DIMXP) )
 !
       IF ( O6INIT ) THEN
@@ -235,7 +245,7 @@
           STOP 'CRITICAL ERROR IN DEPTH ARRAY'
         END IF
         CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
-                      NP, XP, DIMP, DIMXP )
+                      NP, XP, DIMXP )
 !
 ! -------------------------------------------------------------------- /
 ! 5.  Store results (temp)
@@ -375,7 +385,7 @@
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPROC, NAPPRT, NAPERR, &
                           IPASS => IPASS6, FLFORM, FNMPRE, OUTPTS,    &
-                          IX0, IXN, IXS, IY0, IYN, IYS
+                          IX0, IXN, IXS, IY0, IYN, IYS, DIMP
       USE W3ADATMD, ONLY: DW, U10, U10D, CX, CY
       USE W3ADATMD, ONLY: NSEALM
       USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
@@ -529,11 +539,11 @@
 !
 !/MPIT            WRITE (NDST,9031)  JAPROC, DTSIZ
 !
-!/MPI            ALLOCATE ( PROC(JAPROC)%DTPRT(6,MAX(1,DTSIZ)) )
+!/MPI            ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
 !/MPI            DTP   => PROC(JAPROC)%DTPRT
 !/MPI            IT     = IT0PRT + NAPROC + JAPROC - 1
 !/MPI            IF ( DTSIZ .GT. 0 ) CALL MPI_RECV                    &
-!/MPI                          ( DTP, 6*DTSIZ, MPI_REAL, JAPROC-1,    &
+!/MPI                          ( DTP, DIMP*DTSIZ, MPI_REAL, JAPROC-1, &
 !/MPI                            IT, MPI_COMM_WAVE, STATUS, IERR_MPI )
 !
         END DO

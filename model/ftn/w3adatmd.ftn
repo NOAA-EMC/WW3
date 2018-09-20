@@ -192,7 +192,7 @@
 !      PPE       R.A.  Public   JONSWAP peak enhancement factor of partition.
 !      PGW       R.A.  Public   Gaussian frequency width of partition.
 !      PSW       R.A.  Public   Spectral width of partition.
-!      PT0M1     R.A.  Public   Mean wave period (m0,-1) of partition.
+!      PTM1      R.A.  Public   Mean wave period (m-1,0) of partition.
 !      PT1       R.A.  Public   Mean wave period (m0,1) of partition.
 !      PT2       R.A.  Public   Mean wave period (m0,2) of partition.
 !      PEP       R.A.  Public   Peak spectral density of partition.
@@ -382,13 +382,13 @@
                                  PDIR(:,:),  PSI(:,:),  PWS(:,:),     &
                                  PWST(:),  PNR(:), PGW(:,:),          &
                                  PTHP0(:,:), PQP(:,:), PPE(:,:),      &
-                                 PSW(:,:), PT0M1(:,:), PT1(:,:),      &
+                                 PSW(:,:), PTM1(:,:), PT1(:,:),       &
                                  PT2(:,:), PEP(:,:)
         REAL, POINTER         :: XPHS(:,:), XPTP(:,:), XPLP(:,:),     &
                                  XPDIR(:,:), XPSI(:,:), XPWS(:,:),    &
                                  XPWST(:), XPNR(:), XPGW(:,:),        &
                                  XPTHP0(:,:), XPQP(:,:), XPPE(:,:),   &
-                                 XPSW(:,:), XPT0M1(:,:), XPT1(:,:),   &
+                                 XPSW(:,:), XPTM1(:,:), XPT1(:,:),    &
                                  XPT2(:,:), XPEP(:,:)
 !
 ! Output fields group 5)
@@ -534,7 +534,7 @@
                                  PDIR(:,:), PSI(:,:), PWS(:,:),       &
                                  PWST(:), PNR(:), PGW(:,:), PSW(:,:), &
                                  PTHP0(:,:), PQP(:,:), PPE(:,:),      &
-                                 PT0M1(:,:), PT1(:,:), PT2(:,:),PEP(:,:)
+                                 PTM1(:,:), PT1(:,:), PT2(:,:),PEP(:,:)
 !
       REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
                                  TAUWIX(:), TAUWIY(:), TAUWNX(:),     &
@@ -1026,7 +1026,7 @@
                  WADATS(IMOD)%PPE(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PGW(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PSW(NSEALM,0:NOSWLL),                   &
-                 WADATS(IMOD)%PT0M1(NSEALM,0:NOSWLL),                 &
+                 WADATS(IMOD)%PTM1(NSEALM,0:NOSWLL),                  &
                  WADATS(IMOD)%PT1(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PT2(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PEP(NSEALM,0:NOSWLL),                   &
@@ -1046,7 +1046,7 @@
       WADATS(IMOD)%PPE    = UNDEF
       WADATS(IMOD)%PGW    = UNDEF
       WADATS(IMOD)%PSW    = UNDEF
-      WADATS(IMOD)%PT0M1  = UNDEF
+      WADATS(IMOD)%PTM1   = UNDEF
       WADATS(IMOD)%PT1    = UNDEF
       WADATS(IMOD)%PT2    = UNDEF
       WADATS(IMOD)%PEP    = UNDEF
@@ -1713,22 +1713,6 @@
         END IF
 !
       IF ( OUTFLAGS( 4, 7) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPWST(NXXX), STAT=ISTAT )
-          CHECK_ALLOC_STATUS ( ISTAT )
-        ELSE
-          ALLOCATE ( WADATS(IMOD)%XPWST(1), STAT=ISTAT )
-          CHECK_ALLOC_STATUS ( ISTAT )
-        END IF
-!
-      IF ( OUTFLAGS( 4, 8) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPNR(NXXX), STAT=ISTAT )
-          CHECK_ALLOC_STATUS ( ISTAT )
-        ELSE
-          ALLOCATE ( WADATS(IMOD)%XPNR(1), STAT=ISTAT )
-          CHECK_ALLOC_STATUS ( ISTAT )
-        END IF
-!
-      IF ( OUTFLAGS( 4, 9) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPTHP0(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1736,7 +1720,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( OUTFLAGS( 4,10) ) THEN
+      IF ( OUTFLAGS( 4, 8) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPQP(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1744,7 +1728,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( OUTFLAGS( 4,11) ) THEN
+      IF ( OUTFLAGS( 4, 9) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPPE(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1752,7 +1736,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( OUTFLAGS( 4,12) ) THEN
+      IF ( OUTFLAGS( 4,10) ) THEN
          ALLOCATE ( WADATS(IMOD)%XPGW(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
@@ -1760,7 +1744,7 @@
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
 !
-      IF ( OUTFLAGS( 4,13) ) THEN
+      IF ( OUTFLAGS( 4,11) ) THEN
          ALLOCATE ( WADATS(IMOD)%XPSW(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
@@ -1768,15 +1752,15 @@
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
 !
-      IF ( OUTFLAGS( 4,14) ) THEN
-         ALLOCATE ( WADATS(IMOD)%XPT0M1(NXXX,0:NOSWLL), STAT=ISTAT )
+      IF ( OUTFLAGS( 4,12) ) THEN
+         ALLOCATE ( WADATS(IMOD)%XPTM1(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
-         ALLOCATE ( WADATS(IMOD)%XPT0M1(1,1), STAT=ISTAT )
+         ALLOCATE ( WADATS(IMOD)%XPTM1(1,1), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
 !
-      IF ( OUTFLAGS( 4,15) ) THEN
+      IF ( OUTFLAGS( 4,13) ) THEN
          ALLOCATE ( WADATS(IMOD)%XPT1(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
@@ -1784,7 +1768,7 @@
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
 !
-      IF ( OUTFLAGS( 4,16) ) THEN
+      IF ( OUTFLAGS( 4,14) ) THEN
          ALLOCATE ( WADATS(IMOD)%XPT2(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
@@ -1792,13 +1776,29 @@
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
 !
-      IF ( OUTFLAGS( 4,17) ) THEN
+      IF ( OUTFLAGS( 4,15) ) THEN
          ALLOCATE ( WADATS(IMOD)%XPEP(NXXX,0:NOSWLL), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        ELSE
          ALLOCATE ( WADATS(IMOD)%XPEP(1,1), STAT=ISTAT )
          CHECK_ALLOC_STATUS ( ISTAT )
        END IF
+!
+      IF ( OUTFLAGS( 4,16) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPWST(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPWST(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
+      IF ( OUTFLAGS( 4,17) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPNR(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPNR(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
       WADATS(IMOD)%XPHS   = UNDEF
       WADATS(IMOD)%XPTP   = UNDEF
@@ -1813,7 +1813,7 @@
       WADATS(IMOD)%XPPE   = UNDEF
       WADATS(IMOD)%XPGW   = UNDEF
       WADATS(IMOD)%XPSW   = UNDEF
-      WADATS(IMOD)%XPT0M1 = UNDEF
+      WADATS(IMOD)%XPTM1  = UNDEF
       WADATS(IMOD)%XPT1   = UNDEF
       WADATS(IMOD)%XPT2   = UNDEF
       WADATS(IMOD)%XPEP   = UNDEF
@@ -2651,7 +2651,7 @@
           PPE    => WADATS(IMOD)%PPE
           PGW    => WADATS(IMOD)%PGW
           PSW    => WADATS(IMOD)%PSW
-          PT0M1  => WADATS(IMOD)%PT0M1
+          PTM1   => WADATS(IMOD)%PTM1
           PT1    => WADATS(IMOD)%PT1
           PT2    => WADATS(IMOD)%PT2
           PEP    => WADATS(IMOD)%PEP
@@ -2951,7 +2951,7 @@
           PPE    => WADATS(IMOD)%XPPE
           PGW    => WADATS(IMOD)%XPGW
           PSW    => WADATS(IMOD)%XPSW
-          PT0M1  => WADATS(IMOD)%XPT0M1
+          PTM1   => WADATS(IMOD)%XPTM1
           PT1    => WADATS(IMOD)%XPT1
           PT2    => WADATS(IMOD)%XPT2
           PEP    => WADATS(IMOD)%XPEP
