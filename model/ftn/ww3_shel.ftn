@@ -1,7 +1,6 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-!/NOPA     PROGRAM W3SHEL
-!/PALM     SUBROUTINE W3SHEL()
+       PROGRAM W3SHEL
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -51,6 +50,7 @@
 !/    26-Mar-2018 : Sea-point only Wnd/Cur input. JGLi  ( version 6.02 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/    06-Jun-2018 : Add PDLIB/MEMCHECK/NETCDF_QAD/DEBUGINIT ( version 6.04 )
+!/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -269,7 +269,6 @@
       IMPLICIT NONE
 !
 !/MPI      INCLUDE "mpif.h"
-!/PALM     INCLUDE "palmlib.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETER statements
@@ -296,7 +295,6 @@
                              NODATA(5:7), ODAT(35), IPRT(6) = 0,       &
                              STARTDATE(8), STOPDATE(8), IHH(-7:8)
 !/OASIS      INTEGER             :: OASISED
-!/PALM      INTEGER             :: PALMED
 !/COU      INTEGER             :: OFL
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
@@ -370,7 +368,6 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 0.  Set up data structures
 !
-!/PALM      PALMED=1
 !/OASIS     OASISED=1
 !/PDLIB     LPDLIB = .TRUE.
 !  
@@ -396,15 +393,10 @@
 !/OASIS IF (OASISED.EQ.1) THEN
 !/OASIS   CALL CPL_OASIS_INIT(MPI_COMM)
 !/OASIS ELSE
-!/PALM  IF (PALMED.EQ.0) THEN 
 !/DEBUGINIT      write(740+IAPROC,*), 'Before MPI_INIT, ww3_shel'
 !/MPI      CALL MPI_INIT      ( IERR_MPI )
 !/DEBUGINIT      write(740+IAPROC,*), 'After MPI_INIT, ww3_shel'
 !/MPI      MPI_COMM = MPI_COMM_WORLD
-!/PALM  ELSE
-!/PALM ! what if PALM but not MPI ???
-!/PALM      MPI_COMM = PL_COMM_EXEC
-!/PALM  ENDIF
 !/OASIS END IF
 !
 !/NCC      CALL WW_CMP_START
@@ -2313,9 +2305,7 @@
 !/OASIS      IF (OASISED.EQ.1) THEN
 !/OASIS        CALL CPL_OASIS_FINALIZE
 !/OASIS      ELSE
-!/PALM      IF (PALMED.EQ.0) THEN 
 !/MPI        CALL MPI_FINALIZE  ( IERR_MPI )
-!/PALM      END IF
 !/OASIS      END IF
 !
 !
@@ -2482,5 +2472,4 @@
 !/
 !/ End of W3SHEL ----------------------------------------------------- /
 !/
-!/NOPA     END PROGRAM W3SHEL
-!/PALM     END SUBROUTINE W3SHEL
+       END PROGRAM W3SHEL

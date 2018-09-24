@@ -535,7 +535,6 @@
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
                                  IST, NKI, NTHI, NRIC, NRIS, I,       &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
-!/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
 !/O1      INTEGER             :: IBI, IP0, IPN, IPH, IPI
       INTEGER                 :: NCOL =  78

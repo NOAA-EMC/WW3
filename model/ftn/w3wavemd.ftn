@@ -79,6 +79,7 @@
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.08 )
+!/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -247,6 +248,7 @@
 !/    06-Jun-2018 : Add PDLIB/MEMCHECK/SETUP/NETCDF_QAD/TIMING
 !/                  OASIS/DEBUGINIT/DEBUGSRC/DEBUGRUN/DEBUGCOH
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
+!/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -398,8 +400,6 @@
 !/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
 !/OASICM      USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
 
-!/PALM USE palmlib          !interface for palm coupler
-!/PALM USE palm_user_param  !min_palm_time_a etc ...
 !/PDLIB      USE PDLIB_FIELD_VEC, only : DO_OUTPUT_EXCHANGES
 !/TIMINGS    USE W3PARALL, only : PRINT_MY_TIME
 !
@@ -477,17 +477,6 @@
 !
 !/SBS      CHARACTER(LEN=30)       :: FOUTNAME
 !
-!/PALM integer ::il_err, palm_time_a,palm_time_b
-!/PALM real,allocatable ::vecta(:),vectb(:)
-!/PALM real,allocatable ::vectg(:),vecth(:),vecti(:)
-!/PALM real,allocatable ::vectj(:),vectk(:),vectl(:)
-!/PALM real,allocatable ::vectm(:),vectn(:),vectp(:)
-!/PALM real,allocatable ::vectq(:),vectr(:),vects(:)
-!/PALM real,allocatable ::vectwlm(:)
-!/PALM real,allocatable ::vectt(:),vectu(:)
-!/PALM  CHARACTER(LEN=PL_LNAME) :: cl_object, cl_space
-!/PALM  INTEGER                :: PALMED
-!/PALM  LOGICAL :: MEL03
 !/T     REAL             :: INDSORT(NSEA), DTCFL1(NSEA)
 !/
 !/ARC  !Li   Temperature spectra for Arctic boundary update.
@@ -508,7 +497,6 @@
 !
 !/OMPX      FLOMP  = .TRUE.
 !
-!/PALM      PALMED = 1
 !/COU      SCREEN   =  333
 !
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'W3WAVE, step 1'
@@ -543,14 +531,6 @@
 !
       ALLOCATE(TAUWX(NSEAL), TAUWY(NSEAL))
 !/REFRX      ALLOCATE(CIK(NSEAL))
-!
-!/PALM     ALLOCATE(vecta(1:NSEAL),vectb(1:NSEAL))
-!/PALM     ALLOCATE(vectg(1:NSEAL),vecth(1:NSEAL),vecti(1:NSEAL))
-!/PALM     ALLOCATE(vectj(1:NSEAL),vectk(1:NSEAL),vectl(1:NSEAL))
-!/PALM     ALLOCATE(vectm(1:NSEAL),vectn(1:NSEAL),vectp(1:NSEAL))
-!/PALM     ALLOCATE(vectq(1:NSEAL),vectr(1:NSEAL),vects(1:NSEAL))
-!/PALM     ALLOCATE(vectwlm(1:NSEAL))
-!/PALM     ALLOCATE(vectt(1:NSEAL),vectu(1:NSEAL))
 !
       IF ( PRESENT(STAMP) ) THEN
           TSTAMP = STAMP
@@ -994,37 +974,6 @@
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 
           IF ( FLCUR  ) THEN
-!/PALM !
-!/PALM ! Getting currents AND water levels from coupler
-!/PALM !
-!/PALM write(*,*)'PALM:ww this is before goingto 3.1  ',itime,iaproc
-!/PALM PALM_TIME_a=ITIME
-!/PALM if((palm_time_a.ge.min_palm_time_a).and.(palm_time_a.le.max_palm_time_a))then
-!/PALM if (iaproc==1)write(*,*)'PALM:ww wavemd : palm_time_a',palm_time_a
-!/PALM !get  du cx
-!/PALM if (iaproc==1)write(*,*)'PALM:ww will get cx cy',palm_time_a,itime
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectcx'
-!
-!/PALM CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cx, il_err)
-!
-!/PALM! get du cy
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectcy'
-!
-!/PALM CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cy, il_err)
-!
-!/PALM if(iaproc==1)write(*,*)'PALM:ww got cx',palm_time_a,itime,cx(100),cy(100)
-!/PALM! get du wlv
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectwlv'
-!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, wlv, il_err)
-!/PALM if(iaproc==1)write(*,*)'PALM:ww got wlv',palm_time_a,itime,wlv(100)
-!/PALM endif
-!/PALM !
-!/PALM ! End of current and water level update from coupler
-!/PALM !
-!/PALM IF (PALMED.EQ.0) THEN
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.4'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before UCUR")
@@ -1041,8 +990,6 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 3b '
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-
-!/PALM ENDIF
             IF (GTYPE .NE. UNGTYPE) THEN       
               IF( RGLGRD ) THEN
               CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
@@ -2159,40 +2106,8 @@
 !/SEC1       END DO
 !/SEC1       IF (IT.GT.0) DTG=DTGTEMP
 !
-!
-! PALM COUPLER Calls
-!
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.19'
 !/DEBUGRUN        FLUSH(740+IAPROC)
-
-!/PALM  DO JSEA=1, NSEAL
-!/PALM    CALL INIT_GET_ISEA(ISEA, JSEA)
-!/PALM!  vecta(JSEA)=ust(ISEA)
-!/PALM!  vectb(JSEA)=ustdir(ISEA)
-!/PALM  vecta(JSEA)=0.0
-!/PALM  vectb(JSEA)=0.0
-!/PALM  END DO
-!
-!/PALM write(*,*)'suis dans w3wavemd, print iaproc,vecta,vectb',iaproc
-!/PALM write(*,*)'PALM:ww this is where you send vecta',itime
-! this may be the mistake
-!modif ac 060410
-!/PALM  palm_time_b=ITIME
-!fin modif ac
-!/PALM if (iaproc==1) write(*,*)'palm_time_b,min_palm_time_b,max_palm_time_b',palm_time_b,min_palm_time_b,max_palm_time_b
-!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
-!/PALM if (iaproc==1) write(*,*)'send ust plam_time_b iaproc',palm_time_b,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecta'
-!/PALM if (iaproc==1) write(*,*)'PALM:ww will send vecta',palm_time_b,itime
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecta, il_err)
-!/PALM if (iaproc==1) write(*,*)'PALM:ww sent vecta',palm_time_b,itime
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectb'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectb, il_err)
-!/PALM if (iaproc==1)write(*,*)'PALM:ww sent vectb',palm_time_b,itime
-!/PALM  endif
-!
 !/DEBUGRUN      DO JSEA = 1, NSEAL
 !/DEBUGRUN        DO IS = 1, NSPEC
 !/DEBUGRUN          IF (VA(IS, JSEA) .LT. 0.) THEN
@@ -2207,101 +2122,9 @@
 !/DEBUGRUN        STOP
 !/DEBUGRUN      ENDIF
 !
-!/PALM !modif ac pour tester avec ma version de mellor 2003
-!/PALM  MEL03=.FALSE.
-!/PALM  if (iaproc==1)write(*,*)'PALM:ww coucou here calculating vect g,h,i,j,k,l at itime=',itime,iaproc
-!/PALM  if (iaproc==1)write(*,*)'PALM:ww this is where you send vect g,h,i,j,k,l',itime,palm_time_b,iaproc
-!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
-!/PALM  IF (MEL03) THEN
-!/PALM  if (iaproc==1) write(*,*)'je suis dans le if de MEL03'
-!/PALM  DO JSEA=1, NSEAL
-!/PALM  CALL INIT_GET_ISEA(ISEA, JSEA)
-!/PALM  vectg(JSEA)=WLV(ISEA)
-!/PALM  vecth(JSEA)=T0M1(ISEA)
-!/PALM  vecti(JSEA)=HS(ISEA)
-!/PALM  vectj(JSEA)=THM(ISEA)
-!/PALM  vectk(JSEA)=TAUWX(ISEA)
-!/PALM  vectl(JSEA)=TAUWY(ISEA)
-!/PALM  END DO
-!/PALM  ELSE
-!/PALM  if (iaproc==1) write(*,*)'je suis dans le else de MEL03'
-!/PALM  DO JSEA=1, NSEAL
-!/PALM  CALL INIT_GET_ISEA(ISEA, JSEA)
-!/PALM  vectg(JSEA)=WLV(ISEA)
-!/PALM  vecth(JSEA)=T0M1(ISEA)
-!/PALM  vecti(JSEA)=HS(ISEA)
-!/PALM  vectj(JSEA)=THM(ISEA)
-!/PALM  vectk(JSEA)=BHD(ISEA)
-!/PALM  vectl(JSEA)=TAUOX(ISEA)
-!/PALM  vectm(JSEA)=TAUOY(ISEA)
-!/PALM  vectn(JSEA)=TAUWX(ISEA)
-!/PALM  vectp(JSEA)=TAUWY(ISEA)
-!/PALM  vectq(JSEA)=UBA(ISEA)
-!/PALM  vectr(JSEA)=UBD(ISEA)
-!/PALM  vects(JSEA)=PHIOC(ISEA)
-!/PALM  vectt(JSEA)=TAUWIX(ISEA)
-!/PALM  vectu(JSEA)=TAUWIY(ISEA)
-!/PALM  vectwlm(JSEA)=WLM(ISEA)
-!/PALM  END DO
-!/PALM  END IF
-!/PALM  end if
-!/PALM  if (iaproc==1) write(*,*)'HS: 1933-2008',HS(1933:2008)
-!/PALM !fin modif ac
-!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectg'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectg, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecth'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecth, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecti'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecti, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectj'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectj, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectk'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectk, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectl'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectl, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectm'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectm, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectn'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectn, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectp'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectp, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectq'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectq, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectr'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectr, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vects'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vects, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectt'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectt, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectu'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectu, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectwlm'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectwlm, il_err)
-!/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs wlm',palm_time_b,itime,iaproc
-!/PALM  endif
-!
-!
 ! 3.8 Update global time step.
 !     (Branch point FLDRY, IT=0)
 !
-!/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After PALM business")
-!/TIMINGS         CALL PRINT_MY_TIME("After PALM business")
   380     CONTINUE
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.20'
@@ -2719,14 +2542,6 @@
       IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
 !
       DEALLOCATE(TAUWX, TAUWY)
-!
-!/PALM     DEALLOCATE(vecta,vectb)
-!/PALM     DEALLOCATE(vectg,vecth,vecti)
-!/PALM     DEALLOCATE(vectj,vectk,vectl)
-!/PALM     DEALLOCATE(vectm,vectn,vectp)
-!/PALM     DEALLOCATE(vectq,vectr,vects)
-!/PALM     DEALLOCATE(vectwlm)
-!/PALM     DEALLOCATE(vectt,vectu)
 !
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE END W3WAVE'
 !/MEMCHECK       call getMallocInfo(mallinfos)

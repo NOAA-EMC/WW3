@@ -95,12 +95,6 @@
     opt="$opt -I$OASISDIR/build/lib/psmile.MPI1"
   fi
 
-  # palm coupler include dir
-  if [ "$palm_mod" = 'yes' ]
-  then
-    opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
-  fi
-
   # netcdf include dir
   if [ "$netcdf_compile" = 'yes' ]
   then

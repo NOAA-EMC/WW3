@@ -597,13 +597,6 @@ EOF
       fi
       export omp_mod
 
-      palm_mod=no
-      if [ -n "`grep PALM $switch_file`" ] 
-      then
-        export palm_mod='yes'
-      fi
-      export palm_mod
-
       oasis_mod=no
       if [ -n "`grep OASIS $switch_file`" ] 
       then
@@ -621,7 +614,7 @@ EOF
 
 
       # if esmf is included in program name, then the compile
-      # requires DIST and NOPA switches and the ESMFMKFILE is
+      # requires DIST switch and the ESMFMKFILE is
       # processed to get required ESMF compile options
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
@@ -629,13 +622,6 @@ EOF
         then
           echo ' '
           echo "*** DIST switch must be set when compiling with ESMF ***"
-          echo ' '
-          exit 1
-        fi
-        if [ -z "`grep NOPA $switch_file`" ] 
-        then
-          echo ' '
-          echo "*** NOPA switch must be set when compiling with ESMF ***"
           echo ' '
           exit 1
         fi

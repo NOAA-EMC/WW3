@@ -80,7 +80,7 @@ progs='ww3_grid ww3_bound ww3_prep ww3_prnc ww3_multi ww3_sbs1 ww3_outf ww3_ounf
 
 # SWITCH file
 # Source term and propagation scheme choices for switch file
-GEN="F90 NCO NOPA LRB4"
+GEN="F90 NCO LRB4"
 GRB="NCEP2"
 SCRIP="SCRIP SCRIPNC"
 NC="NC4"

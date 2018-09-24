@@ -166,7 +166,7 @@
 !
 !      DRAT      R.A.  Public   Density ration air/water. Was
 !                               placeholder only. Now scalar in W3SRCE,
-!      TAUWX/Y   R.A.  Public   Stresses particularly for PALM.
+!      TAUWX/Y   R.A.  Public   Stresses.
 !
 !    Derivatives in space ....
 !

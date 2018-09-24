@@ -19,7 +19,6 @@
 #                         3: Switch smoothing off to reproduce 2.           #
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
-#   !/NOPA                                                                  #
 #   !/F90 !/NOGRB !/SHRD !/FLX2                                             #
 #   !/BT8   Muddy bed (Dalrymple & Liu).                                    #
 #      or                                                                   #
