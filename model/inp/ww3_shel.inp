@@ -156,9 +156,9 @@ $  T  T  4     8   PQP        PQP   Goda peakdedness parameter of partition.
 $  T  T  4     9   PPE        PPE   JONSWAP peak enhancement factor of partition.
 $  T  T  4    10   PGW        PGW   Gaussian frequency width of partition.
 $  T  T  4    11   PSW        PSW   Spectral width of partition.
-$  T  T  4    12   PTM1       PTM1  Mean wave period (m-1,0) of partition.
-$  T  T  4    13   PT1        PT1   Mean wave period (m0,1) of partition.
-$  T  T  4    14   PT2        PT2   Mean wave period (m0,2) of partition.
+$  T  T  4    12   PTM1       PTM10 Mean wave period (m-1,0) of partition.
+$  T  T  4    13   PT1        PT01  Mean wave period (m0,1) of partition.
+$  T  T  4    14   PT2        PT02  Mean wave period (m0,2) of partition.
 $  T  T  4    15   PEP        PEP   Peak spectral density of partition.
 $  T  T  4    16   PWST       TWS   Total wind sea fraction.
 $  T  T  4    17   PNR        PNR   Number of partitions.
@@ -241,8 +241,8 @@ $ EF TH1M STH1M TH2M STH2M WN
   T   T   T   F   F   F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PDIR PSPR PWS TWS PNR PTHP0 PQP PPE PGW PSW PTM1 PT1 PT2 PEP
-  T   T   T   T    T    T   T   T   T     T   T   T   T   T    T   T   T
+$ PHS PTP PLP PDIR PSPR PNR PTHP0 PQP PPE PGW PSW PTM10 PT01 PT02 PEP PWS TWS 
+  T   T   T   T    T    T   T     T   T   T   T   T     T    T    T   T   T
 $ (5) Atmosphere-waves layer
   T
 $ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS

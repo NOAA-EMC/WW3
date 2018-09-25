@@ -525,11 +525,11 @@
              FLG2D(4,10)=.TRUE.
            CASE('PSW')
              FLG2D(4,11)=.TRUE.
-           CASE('PTM1')
+           CASE('PTM10')
              FLG2D(4,12)=.TRUE.
-           CASE('PT1')
+           CASE('PT01')
              FLG2D(4,13)=.TRUE.
-           CASE('PT2')
+           CASE('PT02')
              FLG2D(4,14)=.TRUE.
            CASE('PEP')
              FLG2D(4,15)=.TRUE.
@@ -943,11 +943,11 @@
            FLG2D(4,10)=.TRUE.
          CASE('PSW')
            FLG2D(4,11)=.TRUE.
-         CASE('PTM1')
+         CASE('PTM10')
            FLG2D(4,12)=.TRUE.
-         CASE('PT1')
+         CASE('PT01')
            FLG2D(4,13)=.TRUE.
-         CASE('PT2')
+         CASE('PT02')
            FLG2D(4,14)=.TRUE.
          CASE('PEP')
            FLG2D(4,15)=.TRUE.
