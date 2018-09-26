@@ -8,7 +8,7 @@
 !/                  |            A. Chawla              |
 !/                  |           J.-H. Alves             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2013 |
+!/                  | Last update :         26-Jul-2018 |
 !/                  +-----------------------------------+
 !/
 !/    01-Nov-1999 : Final FORTRAN 77        ( version 1.18 + error fix )
@@ -32,6 +32,8 @@
 !/    01-Mar-2013 : Adding double-index output fields   ( version 4.11 )
 !/                  (J-Henrique Alves)
 !/    01-Dec-2016 : Adding lambert conformal grid       ( version 6.01 ) 
+!/                  (J.H. Alves)
+!/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 ) 
 !/                  (J.H. Alves)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -337,10 +339,11 @@
       READ (NDSI,*,END=801,ERR=802) FTIME, CID, PID, GID, GDS, GDTN
 ! 
 ! Check if grid type is curvilinear, and only go on if Lambert conformal 
+! or PolarStereo
 ! 
       IF ( GTYPE .EQ. CLGTYPE ) THEN 
 !/NCEP2! Allowing code to work with Lambert conformal grids 
-!/NCEP2      IF ( GDTN .NE. 30 ) THEN 
+!/NCEP2      IF ( GDTN .NE. 30 .OR. GDTN .NE. 20 ) THEN 
         WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
         'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING' 
         CALL EXTCDE ( 1 ) 
@@ -348,14 +351,19 @@
       END IF 
 ! 
 ! 
-! Coded up to now only for Lamber conformal grids (GDTN=30) 
-! For regular grids use GDTN=0 
+! Coded up to now only for Lamber conformal grids (GDTN=30) or 
+! PolarStereo (GDTN=20). For regular grids use GDTN=0 
 ! 
 !/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
 !/NCEP2! This is a Lambert conformal grid, read projection parameters 
 !/NCEP2        CALL NEXTLN ( COMSTR , NDSI , NDSE ) 
 !/NCEP2        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          & 
 !/NCEP2                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP 
+!/NCEP2             ELSEIF ( GDTN .EQ. 20 ) THEN
+!/NCEP2               CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/NCEP2               READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,   &
+!/NCEP2                                             SCNMOD
+
 !/NCEP2      ENDIF 
 !
       CALL STME21 ( FTIME , IDTIME )
@@ -515,25 +523,27 @@
 !       ( 4) Interpretation of list for optional points definition (Code Table 3.11)
 !       ( 5) Grid definition template number (Code Table 3.1)
 !
-!/NCEP2      IF ( GDTN .EQ. 30 .AND. GTYPE .EQ. CLGTYPE ) THEN 
-!/NCEP2! Using here the Lambert conformal NDFD grid for NCEP/GLW model use only 
-!/NCEP2         IGDS     = 0 ! Defined in code  
-!/NCEP2         IGDS(2)  = NX*NY 
-!/NCEP2         IGDS(5)=GDTN 
-!/NCEP2         IDEFNUM  = 1 
-!/NCEP2         IDEFLIST = 0 
-!/NCEP2       ELSEIF ( GDTN .EQ. 0 ) THEN 
-!/NCEP2         IGDS     = 0 
-!/NCEP2         IGDS(2)  = NX*NY 
-!/NCEP2         IDEFNUM  = 0 
-!/NCEP2         IDEFLIST = 0 
-!/NCEP2       ELSE 
-!/NCEP2         WRITE(NDSE,*)'PROGRAM W3GRIB: SUPPORT FOR CHOSEN '// & 
-!/NCEP2         'GRIB2 GRID DEFINITION TEMPLATE NOT YET IMPLEMENTED' 
-!/NCEP2         CALL EXTCDE ( 2 ) 
-!/NCEP2       ENDIF 
+!/NCEP2         IGDS     = 0 ! Defined in code
+!/NCEP2         IGDS(2)  = NX*NY
+!/NCEP2         IDEFNUM  = 0
+!/NCEP2         IDEFLIST = 0
+!/NCEP2         IGDS(5)=GDTN
+!/NCEP2       IF ( GDTN .EQ. 30 .AND. GTYPE .EQ. CLGTYPE ) THEN
+!/NCEP2         IDEFNUM  = 1
+!/NCEP2         WRITE (NDSO,1011) 'LAMBERTCONF'
+!/NCEP2       ELSEIF ( GDTN .EQ. 20 .AND. GTYPE .EQ. CLGTYPE ) THEN
+!/NCEP2         WRITE (NDSO,1011) 'POLARSTEREO'
+!/NCEP2       ELSEIF ( GDTN .EQ. 0 ) THEN
+!/NCEP2         WRITE (NDSO,1011) 'LLRECTILINEAR'
+!/NCEP2       ELSE
+!/NCEP2         WRITE(NDSE,*)'PROGRAM WAVEGRIB2: SUPPORT FOR CHOSEN '// &
+!/NCEP2         'GRIB2 GRID DEFINITION TEMPLATE NOT YET IMPLEMENTED'
+!/NCEP2         CALL EXTCDE ( 2 )
+!/NCEP2       ENDIF
 !
 ! ... Set GRIB2 KGDS elements
+!
+! General parameters for all grids
 !       ( 1) Coordinate system (6 = spherical coordinate system with radius of 6,371,229 m)
 !       ( 2) 
 !       ( 3)
@@ -543,52 +553,100 @@
 !       ( 7)
 !       ( 8) Number of points along parallel
 !       ( 9) Number of points along meridian
+!/NCEP2      KGDS( 1) = 6
+!/NCEP2      KGDS( 8) = NX
+!/NCEP2      KGDS( 9) = NY
+!
+!/NCEP2      IF ( GDTN .EQ. 30 ) THEN
+!
+! Lambert Conformal grid
+!       (10) Latitude of first grid point
+!       (11) Longitude of first grid point
+!       (12) Resolution and component flags 
+!       (13) Latitude where DX and DY are specified
+!       (14) Longitude of orientation
+!       (15) Increment of longitude
+!       (16) Increment of latitude
+!       (17) Projection center flag
+!       (18) Scanning mode
+!       (19) First latitude of secant cone 
+!       (20) Second latitude of secant cone
+!       (21) Latitude of southern pole
+!       (22) Longitude of southern pole
+!
+!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
+!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
+!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
+!/NCEP2        KGDS(11)=KNINT(1000000.*X0)
+!/NCEP2        Y0 = YGRD(1,1)
+!/NCEP2        YN = YGRD(NY,NX)
+!/NCEP2        Y0N = YGRD(NY,1)
+!/NCEP2        KGDS(10)=KNINT(1000000.*Y0)
+!/NCEP2        KGDS(12)=0
+!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1)
+!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
+!/NCEP2        KGDS(15)=KNINT(1000000*DSX)
+!/NCEP2        KGDS(16)=KNINT(1000000*DSY)
+!/NCEP2        KGDS(17)=0
+!/NCEP2        KGDS(18)=SCNMOD
+!/NCEP2        KGDS(19)=DBLE(1000000.*LATIN1)
+!/NCEP2        KGDS(20)=DBLE(1000000.*LATIN2)
+!/NCEP2        KGDS(21)=DBLE(1000000.*LATSP)
+!/NCEP2        KGDS(22)=DBLE(1000000.*LONSP)
+!
+!/NCEP2      ELSEIF (GDTN .EQ. 20 ) THEN
+!
+! PolarStereo grid
+!       (10) Latitude of first grid point
+!       (11) Longitude of first grid point
+!       (12) Res and component flags
+!       (13) Latitude where DX and DY are specified
+!       (14) Longitude of orientation
+!       (15) Increment of longitude
+!       (16) Increment of latitude
+!       (17) Projection center flag
+!       (18) Scanning mode
+!
+!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
+!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
+!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
+!/NCEP2        KGDS(11)=KNINT(1000000.*X0)
+!/NCEP2        Y0 = YGRD(1,1)
+!/NCEP2        YN = YGRD(NY,NX)
+!/NCEP2        Y0N = YGRD(NY,1)
+!/NCEP2        KGDS(10)=KNINT(1000000.*Y0)
+!/NCEP2        KGDS(12)=0
+!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1)
+!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
+!/NCEP2        KGDS(15)=KNINT(1000000*DSX)
+!/NCEP2        KGDS(16)=KNINT(1000000*DSY)
+!/NCEP2        KGDS(17)=0
+!/NCEP2        KGDS(18)=SCNMOD
+!
+!/NCEP2      ELSEIF (GDTN .EQ. 0 ) THEN
+!
+! Lat Lon rectilinear grid
 !       (10)
 !       (11)
 !       (12) Latitude of first grid point
 !       (13) Longitude of first grid point
-!       (14) Res and comp flags
+!       (14) Res and component flags
 !       (15) Latitude of last grid point
 !       (16) Longitude of last grid point
 !       (17) Increment of longitude
 !       (18) Increment of latitude
 !       (19) Scanning mode
 !
-!/NCEP2      KGDS( 1) = 6
-!/NCEP2      KGDS( 8) = NX
-!/NCEP2      KGDS( 9) = NY
-!/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
-!/NCEP2! Using here the Lambert conformal NDFD grid for NCEP/GLW model use only 
-!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.) 
-!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.) 
-!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.) 
-!/NCEP2        KGDS(11)=KNINT(1000000.*X0) 
-!/NCEP2        Y0 = YGRD(1,1) 
-!/NCEP2        YN = YGRD(NY,NX) 
-!/NCEP2        Y0N = YGRD(NY,1) 
-!/NCEP2        KGDS(10)=KNINT(1000000.*Y0) 
-!/NCEP2        KGDS(12)=0 
-!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1) 
-!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
-!/NCEP2        KGDS(15)=KNINT(1000000*DSX) 
-!/NCEP2        KGDS(16)=KNINT(1000000*DSY) 
-!/NCEP2        KGDS(17)=0 
-!/NCEP2        KGDS(18)=SCNMOD  
-!/NCEP2        KGDS(19)=DBLE(1000000.*LATIN1) 
-!/NCEP2        KGDS(20)=DBLE(1000000.*LATIN2) 
-!/NCEP2        KGDS(21)=DBLE(1000000.*LATSP) 
-!/NCEP2        KGDS(22)=DBLE(1000000.*LONSP)
-!/NCEP2      ELSEIF (GDTN .EQ. 0 ) THEN 
-!/NCEP2        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY))) 
-!/NCEP2        X0 = MOD(X0 + 360.,360.) 
-!/NCEP2        KGDS(13) = KNINT(1000000.*X0) 
-!/NCEP2        KGDS(14) = 48 
-!/NCEP2        KGDS(15) = KNINT(1000000.*Y0) 
-!/NCEP2        XN = MOD(X0+REAL(NX-1)*SX + 360., 360.) 
-!/NCEP2        KGDS(16) = KNINT(1000000.*XN) 
-!/NCEP2        KGDS(17) = KNINT(1000000.*SX) 
-!/NCEP2        KGDS(18) = KNINT(1000000.*SY) 
-!/NCEP2      ENDIF 
+!/NCEP2        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY)))
+!/NCEP2        X0 = MOD(X0 + 360.,360.)
+!/NCEP2        KGDS(13) = KNINT(1000000.*X0)
+!/NCEP2        KGDS(14) = 48
+!/NCEP2        KGDS(15) = KNINT(1000000.*Y0)
+!/NCEP2        XN = MOD(X0+REAL(NX-1)*SX + 360., 360.)
+!/NCEP2        KGDS(16) = KNINT(1000000.*XN)
+!/NCEP2        KGDS(17) = KNINT(1000000.*SX)
+!/NCEP2        KGDS(18) = KNINT(1000000.*SY)
+!/NCEP2      ENDIF
 !
 ! ... Set GRIB2 PDS elements
 !     KPDSNUM   (0 indicates forecast at a horizontal level)
@@ -803,6 +861,7 @@
 !
  1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRIB : '/          &
                '     GRIB REQUIRES SPHERICAL GRID'/)
+ 1011 FORMAT (/' CHOSEN GRID TYPE: : ',A/)
 !/
 !/ Internal subroutine W3EXGB ---------------------------------------- /
 !/
@@ -952,8 +1011,8 @@
             IF ( IFI .EQ. 1 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
-!/NCEP2                KPDS(1) = 255
+!/NCEP2                KPDS(2) = 14 
+!/NCEP2                KPDS(1) = 4  
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, DW(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1030,7 +1089,7 @@
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255 
-!/NCEP2                KPDS(1) = 255 
+!/NCEP2                KPDS(1) = 3   
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, AS(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1065,7 +1124,7 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  2 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 193
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLM   , MAPSF, X1 )
 !
 !     Mean wave period (based on second moment)
@@ -1179,8 +1238,8 @@
                 FLPRT = .TRUE.
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  255
-!/NCEP2                KPDS5B  =  255
+!/NCEP2                KPDS5A  =  193
+!/NCEP2                KPDS5B  =  193
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PLP(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1220,8 +1279,8 @@
                 FLPRT = .TRUE.
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  255
-!/NCEP2                KPDS5B  =  255
+!/NCEP2                KPDS5A  =  32 
+!/NCEP2                KPDS5B  =  33 
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PSI(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1265,7 +1324,7 @@
               ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ.  1 ) THEN
                 FLTWO = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 17 
 !/NCEP2                KPDS(1) = 1
 !/RTD                ! Rotate x,y vector back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST, USTDIR, AnglD)

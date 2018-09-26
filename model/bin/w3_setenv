@@ -209,7 +209,11 @@ EOF
     mkdir -p $temp_dir
   fi
 
-  # env file
-  export WWATCH3_ENV=$path_bin/wwatch3.env
+  if [ -z ${WWATCH3_ENV} ]
+  then
+    # env file
+    echo " Exporting WWATCH3_ENV=$path_bin/wwatch3.env"
+    export WWATCH3_ENV=$path_bin/wwatch3.env
+  fi
 
 # End of w3_setenv ----------------------------------------------------------- #

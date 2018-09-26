@@ -1031,7 +1031,7 @@ C$OMP END PARALLEL
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), parameter ::
-     &     max_subseg = 100     ! max number of subsegments per segment
+     &     max_subseg = 500     ! max number of subsegments per segment
                                 ! to prevent infinite loop
 
 
