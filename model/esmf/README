@@ -51,7 +51,7 @@ ESMFMKFILE is required to get the ESMF compile options.  Specifically,
 ESMF_F90COMPILEPATHS is used in comp to set the include paths required for the
 ESMF modules.
 
-The ESMF build requires DIST switches.
+The ESMF build requires DIST switch.
 
 
 

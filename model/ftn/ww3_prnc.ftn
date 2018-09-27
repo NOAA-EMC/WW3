@@ -506,12 +506,17 @@
         ! Check file name, dimensions, variables
         NFCOMP = 1 ! not anymore used 'F1' 'F2' ?
         NAMEF=TRIM(NML_FILE%FILENAME)
-        NIDIMS = 2
         DIMSNAME(1)=NML_FILE%LONGITUDE
         DIMSNAME(2)=NML_FILE%LATITUDE
         DO I=1,NFIELDS
           FIELDSNAME(I)=NML_FILE%VAR(I)
         END DO
+        ! Counts the number of dimensions
+        NIDIMS=0
+        DO I=1,2
+          IF (LEN_TRIM(DIMSNAME(I)).NE.0) NIDIMS=NIDIMS+1
+        END DO
+
 
         ! Check time start and stop
         READ(NML_FORCING%TIMESTART,*) TIMESTART
@@ -2311,25 +2316,29 @@
 !/ End of W3PRNC ----------------------------------------------------- /
 !/
 
-END PROGRAM W3PRNC
+     END PROGRAM W3PRNC
 
 !==============================================================================
 
-  SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERR(IRET)
 
-  USE NETCDF
+      USE NETCDF
+      USE W3ODATMD, ONLY: NDSE
+      USE W3SERVMD, ONLY: EXTCDE
 
-  IMPLICIT NONE
+      IMPLICIT NONE
 
-  INTEGER IRET
+      INTEGER IRET
 
-  IF (IRET .NE. NF90_NOERR) THEN
-     WRITE(*,*) NF90_STRERROR(IRET)
-     STOP
-  END IF
-  RETURN
+      IF (IRET .NE. NF90_NOERR) THEN
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN PRNC :'
+        WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+        WRITE(*,*) NF90_STRERROR(IRET)
+        CALL EXTCDE ( 59 )
+      END IF
+      RETURN
 
-  END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERR
 
 !==============================================================================
 

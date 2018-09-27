@@ -6,7 +6,7 @@ $ --------------------------------------------------------------------
 $
 $ Time, time increment and number of outputs.
 $
-  20000101 000000  3600  20000107 000000
+  20000101 000000  3600  1000000
 $
 $ Request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual.

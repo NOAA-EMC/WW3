@@ -34,7 +34,7 @@
 /
 
 ! -------------------------------------------------------------------- !
-! Define the content of the input file via FILE_NML namelist
+! Define the content of the output file via FILE_NML namelist
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
@@ -51,6 +51,33 @@
   FILE%IYN           = 2
 /
 
+! -------------------------------------------------------------------- !
+! Define the content of the output file via SMC_NML namelist
+!
+! * For SMC grids, IX0, IXN, IY0 and IYN from FILE_NML are not used.
+!   Two types of output are available: 
+! *   TYPE=1: Flat 1D "seapoint" array of grid cells.
+! *   TYPE=2: Re-gridded regular grid with cell sizes being an integer
+! *           multiple of the smallest SMC grid cells size.
+!
+! * Note that the first/last longitudes and latitudes will be adjusted
+!  to snap to the underlying SMC grid edges. CELFAC is only used for
+!  type 2 output and defines the output cell sizes as an integer
+!  multiple of the smallest SMC Grid cell size. CELFAC should be a
+!  power of 2, e.g: 1,2,4,8,16, etc...
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     SMC%TYPE          = 1              ! SMC Grid type (1 or 2)
+!     SMC%SXO           = -999.9         ! First longitude
+!     SMC%EXO           = -999.9         ! Last longitude
+!     SMC%SYO           = -999.9         ! First latitude
+!     SMC%EYO           = -999.9         ! Last latitude
+!     SMC%CELFAC        = 1              ! Cell size factor (SMCTYPE=2 only)
+!     SMC%NOVAL         = UNDEF          ! Fill value for wet cells with no data
+! -------------------------------------------------------------------- !
+&SMC_NML
+/
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !

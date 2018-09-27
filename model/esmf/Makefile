@@ -26,30 +26,27 @@ include $(ESMFMKFILE)
 
 ################################################################################
 
-ifeq ($(WW3_COMP),gnu)
- ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
-else
+# pgi
 ifeq ($(WW3_COMP),Portland)
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
-else
-ifeq ($(WW3_COMP),Intel)
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
+# intel
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","theia" "Intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else
-ifeq ($(WW3_COMP),theia)
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_phase2" "wcoss_cray"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else
-ifeq ($(WW3_COMP),wcoss_phase2)
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else
-ifeq ($(WW3_COMP),wcoss_cray)
+# mpt
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","mpt" "datarmor_mpt" "datarmor_mpt_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+# gnu
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","gnu" "datarmor_gnu" "datarmor_gnu_debug"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
+# error
 else
  $(error Unsupported WW3_COMP: $(WW3_COMP))
-endif
-endif
-endif
-endif
-endif
 endif
 
 ################################################################################

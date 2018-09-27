@@ -452,8 +452,8 @@
 ! Computes RMS orbital amplitudes 
 !     
         UORB2 = 2*UORB
-        UORB = SQRT(MAX(1.0D-7,UORB2))
-        AORB = SQRT(MAX(1.0D-7,2*AORB))
+        UORB = SQRT(MAX(1.0E-7,UORB2))
+        AORB = SQRT(MAX(1.0E-7,2*AORB))
 !
 ! Computes potential ripple wavelength, 1.7 = 2 * sqrt(2) * 0.6
 ! Based on Ardhuin et al. (JGR 2002): lambda = 0.6 * d_1/3 

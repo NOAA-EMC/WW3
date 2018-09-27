@@ -21,7 +21,7 @@
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
   DOMAIN%NRINP  = 1
-  DOMAIN%NRGRD	 = 3
+  DOMAIN%NRGRD	= 3
   DOMAIN%UNIPTS = T
   DOMAIN%UPPROC = T
   DOMAIN%PSHARE = T

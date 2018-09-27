@@ -538,18 +538,15 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                      &
           WRITE (MDSS,910)  IFNAME, MDSI
 !
-      JJ     = LEN_TRIM(FNMPRE)
-      OPEN (MDSI,FILE=FNMPRE(:JJ)//IFNAME,STATUS='OLD',ERR=2000,      &
+      OPEN (MDSI,FILE=TRIM(FNMPRE)//IFNAME,STATUS='OLD',ERR=2000,      &
             IOSTAT=IERR)
       REWIND (MDSI)
       READ (MDSI,'(A)',END=2001,ERR=2002) COMSTR
       IF (COMSTR.EQ.' ') COMSTR = '$'
       CALL WMUSET ( MDSS, MDSS, MDSI, .TRUE., 'INP',                  &
-                    FNMPRE(:JJ)//IFNAME, 'Model control input file')
+                    TRIM(FNMPRE)//IFNAME, 'Model control input file')
 !
 ! 1.d Log and test files
-!
-      JJ     = LEN_TRIM(FNMPRE)
 !
       LFILE  = 'log.mww3'
       IW     = 1 + INT ( LOG10 ( REAL(NMPROC) + 0.5 ) )
@@ -560,12 +557,11 @@
 !/MPRF       WRITE (PFILE,FORMAT) 'prf.', IMPROC, '.mww3'
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
-          OPEN (MDSO,FILE=FNMPRE(:JJ)//LFILE,ERR=2010,IOSTAT=IERR)
-!         OPEN (MDSO,FILE='/var/tmp/'//LFILE,ERR=2010,IOSTAT=IERR)
+          OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,ERR=2010,IOSTAT=IERR)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
               WRITE (MDSS,911)  LFILE, MDSO
           CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'OUT',              &
-                        FNMPRE(:JJ)//LFILE, 'Log file')
+                        TRIM(FNMPRE)//LFILE, 'Log file')
         ELSE
           CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'XXX',              &
                        'Log file on other processors')
@@ -573,16 +569,16 @@
 !
       IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
           IFT    = LEN_TRIM(TFILE)
-          OPEN (MDST,FILE=FNMPRE(:JJ)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
+          OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
           CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
-                        FNMPRE(:JJ)//TFILE(:IFT), 'Test output file')
+                        TRIM(FNMPRE)//TFILE(:IFT), 'Test output file')
         END IF
 !
 !/MPRF      IFT    = LEN_TRIM(PFILE)
 !/MPRF      CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
 !/MPRF      CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
-!/MPRF                    FNMPRE(:JJ)//PFILE(:IFT), 'Profiling file')
-!/MPRF      OPEN (MDSP,FILE=FNMPRE(:JJ)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
+!/MPRF                    TRIM(FNMPRE)//PFILE(:IFT), 'Profiling file')
+!/MPRF      OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
 !
 ! 1.e Initial and test output
 !
@@ -669,7 +665,7 @@
                     DESC='Recyclable I/O (mod_def etc.)' )
       CALL WMUGET ( MDSE, MDST, SCRATCH, 'SCR' )
       CALL WMUSET ( MDSE, MDST, SCRATCH, .TRUE., DESC='Scratch file', &
-                    NAME=FNMPRE(:JJ)//'ww3_multi.scratch' )
+                    NAME=TRIM(FNMPRE)//'ww3_multi.scratch' )
 !
       IF(MDST.EQ.NDSREC)THEN
          IF   ( IMPROC .EQ. NMPERR )                                  &
@@ -1165,16 +1161,15 @@
 ! 5.d Type 2: point output
 !
                 DO ILOOP=1, 2
-                  JJ     = LEN_TRIM(FNMPRE)
                   IF ( ILOOP .EQ. 1 ) THEN
                       MDSI2  = MDSI
                       IF ( IMPROC .EQ. 1 ) OPEN                       &
-                         (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_multi.scratch')
+                         (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_multi.scratch')
                     ELSE
                       MDSI2  = SCRATCH
 !/MPI                      CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
                       OPEN                                            &
-                         (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_multi.scratch')
+                         (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_multi.scratch')
                       REWIND (SCRATCH)
                       IF (NPTS.GT.0) THEN
                          ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
@@ -1262,6 +1257,8 @@
                         WRITE (MDSS,960) 'output', 'FORMATTED'
                       END IF
                   END IF
+
+!!/COU! NOT YET IMPLEMENTED
 !
 !!/COU              ELSE IF ( J .EQ. 7 ) THEN
 !
@@ -1407,16 +1404,15 @@
 ! 5.m Type 2: point output
 !
                 DO ILOOP=1, 2
-                  JJ     = LEN_TRIM(FNMPRE)
                   IF ( ILOOP .EQ. 1 ) THEN
                       MDSI2  = MDSI
                       IF ( IMPROC .EQ. 1 ) OPEN                       &
-                         (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_multi.scratch')
+                         (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_multi.scratch')
                     ELSE
                       MDSI2  = SCRATCH
 !/MPI                      CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
                       OPEN                                            &
-                         (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_multi.scratch')
+                         (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_multi.scratch')
                       REWIND (SCRATCH)
                       DEALLOCATE ( OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES )
                       ALLOCATE ( OT2(I)%X(OT2(I)%NPTS),               &
@@ -1539,15 +1535,14 @@
 !
 !/MPI          CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
           DO ILOOP=1, 2
-            JJ     = LEN_TRIM(FNMPRE)
             IF ( ILOOP .EQ. 1 ) THEN
                 MDSI2  = MDSI
                 IF ( IMPROC .EQ. 1 )                                  &
-                    OPEN (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
+                    OPEN (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
               ELSE
                 MDSI2  = SCRATCH
 !/MPI                CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
-                OPEN (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
+                OPEN (SCRATCH,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
                 REWIND (SCRATCH)
                 ALLOCATE ( TMOVE(2,NMOVE), AMOVE(NMOVE), DMOVE(NMOVE) )
                 IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )            &
@@ -1650,10 +1645,9 @@
             END IF
           IF ( NMPUPT .EQ. IMPROC ) THEN
               II     = LEN_TRIM(MNAMES(0))
-              JJ     = LEN_TRIM(FNMPRE)
               CALL WMUGET ( MDSS, MDST, MDSUP, 'OUT' )
               CALL WMUSET ( MDSS, MDST, MDSUP, .TRUE., 'OUT',         &
-                           FNMPRE(:JJ)//'out_pnt.'//MNAMES(0)(1:II),  &
+                           TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
                            'Unified point output')
             END IF
         END IF
@@ -2070,7 +2064,7 @@
 !
         IF ( MDS(7,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPFLD ) THEN
-                TNAME  = FNMPRE(:JJ)//'out_grd.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'out_grd.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(7,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(7,I), .FALSE. )
@@ -2080,7 +2074,7 @@
 !
         IF ( MDS(8,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPPNT ) THEN
-                TNAME  = FNMPRE(:JJ)//'out_pnt.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'out_pnt.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(8,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(8,I), .FALSE. )
@@ -2090,7 +2084,7 @@
 !
         IF ( MDS(9,I) .NE. -1 ) THEN
             IF ( FLBPI ) THEN
-                TNAME  = FNMPRE(:JJ)//'nest.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'nest.' // FILEXT(:II)
                 CALL WMUSET ( MDSE, MDST, MDS(9,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE, MDST, MDS(9,I), .FALSE. )
@@ -2100,7 +2094,7 @@
 !
         IF ( MDS(10,I) .NE. -1 ) THEN
             IF ( FLBPO .AND. IAPROC.EQ.NAPBPT ) THEN
-                TNAME  = FNMPRE(:JJ)//'nestN.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'nestN.' // FILEXT(:II)
                 DO J=0, NFBPO-1
                   WRITE (TNAME(JJ+5:JJ+5),'(I1)') J + 1
                   CALL WMUSET ( MDSE, MDST, MDS(10,I)+J, .TRUE.,      &
@@ -2118,13 +2112,13 @@
           END IF
 !
         IF ( MDS(11,I) .NE. -1 ) THEN
-            TNAME  = FNMPRE(:JJ)//'track_i.' // FILEXT(:II)
+            TNAME  = TRIM(FNMPRE)//'track_i.' // FILEXT(:II)
             CALL WMUSET ( MDSE,MDST, MDS(11,I), .TRUE., NAME=TNAME )
           END IF
 !
         IF ( MDS(12,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPTRK ) THEN
-                TNAME  = FNMPRE(:JJ)//'track_o.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'track_o.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(12,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(12,I), .FALSE. )
@@ -2134,7 +2128,7 @@
 !
         IF ( MDS(13,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPPRT ) THEN
-                TNAME  = FNMPRE(:JJ)//'partition.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'partition.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(13,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(13,I), .FALSE. )
@@ -2178,7 +2172,7 @@
           END DO
 !
 ! ..... Adjust input flags for other than native or CPL input,
-!       and initialize input arrays onse set at a time as needed.
+!       and initialize input arrays one set at a time as needed.
 !
         IF ( SIZE(INFLAGS1) .NE. SIZE(TFLAGS) ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMINIT: ', &
@@ -2388,11 +2382,10 @@
 !
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
-              JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                             MDSE2, NX, NY, GTYPE, IERR,               &
-                            MNAMES(-I), FNMPRE(:JJ) )
+                            MNAMES(-I), TRIM(FNMPRE) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                    WRITE (MDSS,985) IDFLDS(J)
@@ -2480,13 +2473,12 @@
             CALL WMUSET ( MDSE, MDST, NDS(9), .FALSE. )
             IF ( BCDUMP(I) .AND. IAPROC.EQ.NAPBPT ) THEN
                 J            = LEN_TRIM(FILEXT)
-                JJ           = LEN_TRIM(FNMPRE)
                 TNAME(1:5)   = 'nest.'
                 TNAME(6:5+J) = FILEXT(1:J)
                 J      = J + 5
                 CALL WMUGET ( MDSE, MDST, NDS(9), 'OUT' )
                 CALL WMUSET ( MDSE, MDST, NDS(9), .TRUE.,             &
-                              NAME=FNMPRE(:JJ)//TNAME(1:J),           &
+                              NAME=TRIM(FNMPRE)//TNAME(1:J),           &
                               DESC='Output data file (nest dump)' )
                 MDS(9,I) = NDSFND
               ELSE
@@ -3310,6 +3302,7 @@
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
       USE W3NMLMULTIMD
+!/UOST      USE W3UOSTMD, ONLY: UOST_INITIALIZE
 !/
       IMPLICIT NONE
 !
@@ -3397,6 +3390,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+
       DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
                     'ice param. 3 ' , 'ice param. 4 ' ,               &
                     'ice param. 5 ' ,                                 &
@@ -3500,8 +3494,8 @@
                           NML_DOMAIN, NML_INPUT_GRID, NML_MODEL_GRID, NML_OUTPUT_TYPE, &
                           NML_OUTPUT_DATE, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR) 
       IF (IERR.NE.0) THEN
-        write (*,'(2a)') 'ERROR: error occured while processing ', IFNAME
-        CALL exit (IERR)
+        WRITE (*,'(2A)') 'ERROR: error occured while processing ', IFNAME
+        CALL EXIT (IERR)
       END IF
 
 
@@ -3607,6 +3601,7 @@
       CALL W3NOUT (        MDSE2, MDST )
       CALL W3NINP (        MDSE2, MDST ) 
       CALL WMNDAT (        MDSE2, MDST ) 
+!/UOST      CALL UOST_INITIALIZE(NRGRD)
 !
 ! 2.c Set up I/O for individual models (initial)
 !
@@ -3988,10 +3983,14 @@
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
         DO J=JFIRST, 4
-          IF ( INFLAGS1(J) ) THEN
+          IF ( INFLAGS1(J) .AND. INPMAP(I,J) .EQ. 0 ) THEN
               ACTION(J) = 'native'
-            ELSE IF ( INPMAP(I,J) .NE. 0 ) THEN
+            ELSE IF ( INFLAGS1(J) .AND. INPMAP(I,J) .EQ. -999 ) THEN
+              ACTION(J) = 'native'
+            ELSE IF ( INPMAP(I,J) .GT. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
+            ELSE IF ( INPMAP(I,J) .LT. 0 ) THEN
+              ACTION(J) = MNAMES( INPMAP(I,J))
             END IF
           END DO
         ACTION(5:9) = '-     '
@@ -4230,7 +4229,7 @@
                   REWIND (MDSI)
 !
                   IF ( ILOOP.EQ.2) THEN
-                    IF ( SIZE(OT2(I)%X).NE.OT2(I)%NPTS .AND. OT2(I)%NPTS.GT.0 ) THEN
+                    IF ( OT2(I)%NPTS.GT.0 ) THEN
                       ALLOCATE ( OT2(I)%X(OT2(I)%NPTS),               &
                                  OT2(I)%Y(OT2(I)%NPTS),               &
                                  OT2(I)%PNAMES(OT2(I)%NPTS) )
@@ -4452,7 +4451,6 @@
             END IF
           IF ( NMPUPT .EQ. IMPROC ) THEN
               II     = LEN_TRIM(MNAMES(0))
-              JJ     = LEN_TRIM(FNMPRE)
               CALL WMUGET ( MDSS, MDST, MDSUP, 'OUT' )
               CALL WMUSET ( MDSS, MDST, MDSUP, .TRUE., 'OUT',         &
                            TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
@@ -4981,7 +4979,7 @@
           IF ( MDSF(I,J) .NE. -1 ) CALL WMUINQ ( MDSE, MDST, MDSF(I,J) )
           END DO
 !
-! ..... Adjust input flags for other than native input,
+! ..... Adjust input flags for other than native or CPL input,
 !       and initialize input arrays one set at a time as needed.
 !
         IF ( SIZE(INFLAGS1) .NE. SIZE(TFLAGS) ) THEN
@@ -5192,7 +5190,6 @@
 !
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
-              JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                             MDSE2, NX, NY, GTYPE, IERR,               &
@@ -5217,6 +5214,7 @@
 !
       DO I=1, NRGRD
         DO J=JFIRST, 7
+          IF ( INPMAP(I,J) .LT. 0 ) IDINP(I,J) = IDINP( INPMAP(I,J),J)
           IF ( INPMAP(I,J) .GT. 0 ) IDINP(I,J) = IDINP(-INPMAP(I,J),J)
           END DO
         END DO
@@ -5283,7 +5281,6 @@
             CALL WMUSET ( MDSE, MDST, NDS(9), .FALSE. )
             IF ( BCDUMP(I) .AND. IAPROC.EQ.NAPBPT ) THEN
                 J            = LEN_TRIM(FILEXT)
-                JJ           = LEN_TRIM(FNMPRE)
                 TNAME(1:5)   = 'nest.'
                 TNAME(6:5+J) = FILEXT(1:J)
                 J      = J + 5
@@ -5512,6 +5509,7 @@
  2104 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1104) IERR
       CALL EXTCDE ( 1104 )
+      RETURN
 !
  2004 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1004) IERR

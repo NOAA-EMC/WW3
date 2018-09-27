@@ -164,13 +164,13 @@
   MODEL(5)%FORCING = 'ocn' 'ocn' 'atm' 'ice' 'ice' 'ice'
 
 
-  MODEL(1)%RESOURCE = 1 1 0.00 0.50 t
-  MODEL(2)%RESOURCE = 2 1 0.25 0.75 f
-  MODEL(3)%RESOURCE = 3 1 0.50 1.00 f
-  MODEL(4)%RESOURCE = 4 1 0.00 1.00 f
-  MODEL(5)%RESOURCE = 4 1 0.00 1.00 f
+  MODEL(1)%RESOURCE = 1 1 0.00 0.50 T
+  MODEL(2)%RESOURCE = 2 1 0.25 0.75 F
+  MODEL(3)%RESOURCE = 3 1 0.50 1.00 F
+  MODEL(4)%RESOURCE = 4 1 0.00 1.00 F
+  MODEL(5)%RESOURCE = 4 1 0.00 1.00 F
 
-  MODEL(5)%RESOURCE%BOUND_FLAG = t
+  MODEL(5)%RESOURCE%BOUND_FLAG = T
 
 /
 
@@ -270,9 +270,9 @@
 
 
 ! -------------------------------------------------------------------- !
-! Define homogeneous input via HOMOG_NUMBER_NML and HOMOG_INPUT_NML namelist
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
 !
-! * the number of each homogeneous input is defined by HOMOG_NUMBER
+! * the number of each homogeneous input is defined by HOMOG_COUNT
 ! * the total number of homogeneous input is automatically calculated
 ! * the homogeneous input must start from index 1 to N
 ! * if VALUE1 is equal 0, then the homogeneous input is desactivated
@@ -282,7 +282,7 @@
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     HOMOG_NUMBER%N_MOV            =  0
+!     HOMOG_COUNT%N_MOV             =  0
 !
 !     HOMOG_INPUT(I)%NAME           =  'unset'
 !     HOMOG_INPUT(I)%DATE           =  '19680606 000000'
@@ -290,8 +290,8 @@
 !     HOMOG_INPUT(I)%VALUE2         =  0
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
-&HOMOG_NUMBER_NML
-  HOMOG_NUMBER%N_MOV        = 1
+&HOMOG_COUNT_NML
+  HOMOG_COUNT%N_MOV         = 1
 /
 
 &HOMOG_INPUT_NML
@@ -305,9 +305,3 @@
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
-
-
-
-
-
-

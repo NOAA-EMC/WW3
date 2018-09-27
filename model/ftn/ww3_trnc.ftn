@@ -79,7 +79,7 @@
       INTEGER                 :: NDSI, NDSINP,                        &
                                  NDSOUT, NDSTRC, NTRACE,              &
                                  NSPEC, IERR, MK, MTH, IT,            &
-                                 ILOC, ISPEC, J, S3, HASNC4, IOUT,    &
+                                 ILOC, ISPEC, S3, HASNC4, IOUT,       &
                                  IRET, NCTYPE,NCID, ITH
 
       INTEGER                 :: TIME(2), TOUT(2), NOUT, TDUM(2),     &
@@ -341,10 +341,6 @@
   801 CONTINUE
       WRITE (NDSE,1001)
       CALL EXTCDE ( 11 )
-!
-  802 CONTINUE
-      WRITE (NDSE,1002) IERR
-      CALL EXTCDE ( 12 )
 !
   805 CONTINUE
       WRITE (NDSE,1004) IERR
@@ -770,7 +766,8 @@
       CHARACTER*(*), INTENT(IN)         :: NCFILE
       INTEGER, INTENT(IN)               :: DIMLN(:)
       INTEGER, INTENT(OUT)              :: DIMID(:), VARID(:), NCID
-      INTEGER                           :: IRET, DEFLATE=1
+      INTEGER                           :: IRET
+!/NC4      INTEGER                           :: DEFLATE=1
 
 !
 ! Creation in netCDF3 or netCDF4
@@ -1058,29 +1055,34 @@
 
 !==============================================================================
 
-  SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERR(IRET)
 
-  USE NETCDF
+      USE NETCDF
+      USE W3ODATMD, ONLY: NDSE
+      USE W3SERVMD, ONLY: EXTCDE
 
-  IMPLICIT NONE
+      IMPLICIT NONE
 
-  INTEGER IRET
+      INTEGER IRET
 
-  IF (IRET .NE. NF90_NOERR) THEN
-     WRITE(*,*) NF90_STRERROR(IRET)
-     STOP
-  END IF
-  RETURN
+      IF (IRET .NE. NF90_NOERR) THEN
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN TRNC :'
+        WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+        WRITE(*,*) NF90_STRERROR(IRET)
+        CALL EXTCDE ( 59 )
+      END IF
+      RETURN
 
-  END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERR
 
 !==============================================================================
+
 
 !/
 !/ End of W3TRNC ----------------------------------------------------- /
 !/
-      END PROGRAM W3TRNC
+     END PROGRAM W3TRNC
 
-  
+
 
 

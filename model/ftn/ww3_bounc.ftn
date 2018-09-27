@@ -381,10 +381,9 @@
           OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),FORM='UNFORMATTED',      &
                status='old',iostat=ICODE)
           IF (ICODE.NE.0) THEN 
-            WRITE(NDSO,950) TRIM(SPECFILES(IP))
             LONS(IP)=-999.
             LATS(IP)=-999.
-            STOP
+            GOTO 810
           END IF
  
           IRET=NF90_OPEN(TRIM(SPECFILES(IP)),NF90_NOWRITE,NCID(IP))
@@ -742,6 +741,9 @@
       WRITE (NDSE,1009) IERR
       CALL EXTCDE ( 69 )
 !
+ 810 CONTINUE
+      WRITE (NDSE,1010) TRIM(SPECFILES(IP))
+      CALL EXTCDE ( 70 )
 !
   888 CONTINUE
       WRITE (NDSO,999)
@@ -761,8 +763,6 @@
 !
   941 FORMAT ( '  File type : ',A/)
 !
-  950 FORMAT ( '  Spectra File does not exist : ',A/)
-!
   951 FORMAT (/' *** WAVEWATCH III WARNING IN W3BOUNC : '/            &
                '     CALENDAR ATTRIBUTE NOT DEFINED'/                 &
                '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
@@ -775,8 +775,6 @@
                ' ========================================='/          &
                '         WAVEWATCH III Boundary input '/)
 !
-
-
  1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUNC : '/              &
                '     PREMATURE END OF INPUT FILE'/)
 !
@@ -811,6 +809,10 @@
                '     ERROR IN OPENING SPEC FILE'/                     &
                '     IOSTAT =',I5/)
 !
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
+               '     SPEC FILE DOES NOT EXIST : ',A/)
+!
+!
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/
@@ -820,21 +822,25 @@
 
 !==============================================================================
 
-     SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERR(IRET)
 
-     USE NETCDF
+      USE NETCDF
+      USE W3ODATMD, ONLY: NDSE
+      USE W3SERVMD, ONLY: EXTCDE
 
-     IMPLICIT NONE
+      IMPLICIT NONE
 
-     INTEGER IRET
+      INTEGER IRET
 
-     IF (IRET .NE. NF90_NOERR) THEN
-       WRITE(*,*) NF90_STRERROR(IRET)
-       STOP
-     END IF
-     RETURN
+      IF (IRET .NE. NF90_NOERR) THEN
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN BOUNC :'
+        WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+        WRITE(*,*) NF90_STRERROR(IRET)
+        CALL EXTCDE ( 59 )
+      END IF
+      RETURN
 
-     END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERR
 
 !==============================================================================
 

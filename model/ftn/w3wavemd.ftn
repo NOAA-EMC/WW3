@@ -1362,7 +1362,7 @@
 !/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
           D50=0.0002
           REFLEC(:)=0.
-          REFLED(:)=0.
+          REFLED(:)=0
           PSIC=0.
 !/PDLIB          VSTOT = 0.
 !/PDLIB          VDTOT = 0.
@@ -1949,7 +1949,7 @@
 !
             D50=0.0002
             REFLEC(:)=0.
-            REFLED(:)=0.
+            REFLED(:)=0
             PSIC=0.
 !/PDLIB!/DEBUGSRC          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
 !/PDLIB!/DEBUGSRC          CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD before W3SRCE_IMP_POST")

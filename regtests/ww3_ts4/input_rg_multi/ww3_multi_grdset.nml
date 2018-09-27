@@ -1,0 +1,232 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     DOMAIN%NRINP  =  0  ! Number of grids defining input fields.
+!     DOMAIN%NRGRD  =  1  ! Number of wave model grids.
+!     DOMAIN%UNIPTS =  F  ! Flag for using unified point output file.
+!     DOMAIN%IOSTYP =  1  ! Output server type as in ww3_shel.nml
+!     DOMAIN%UPPROC =  F  ! Flag for dedicated process for unified point output.
+!     DOMAIN%PSHARE =  F  ! Flag for grids sharing dedicated output processes.
+!     DOMAIN%FLGHG1 =  F  ! Flag for masking computation in two-way nesting
+!     DOMAIN%FLGHG2 =  F  ! Flag for masking at printout time
+!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model 
+!     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%NRINP  = 1
+  DOMAIN%NRGRD	= 2
+  DOMAIN%PSHARE = T
+  DOMAIN%FLGHG1 = T
+  DOMAIN%START  = '20000101 000000'
+  DOMAIN%STOP   = '20000103 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRINP
+! * INPUT(I)%NAME must be set for each active input grid I
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     INPUT(I)%NAME                  = 'unset'
+!     INPUT(I)%FORCING%WATER_LEVELS  = F
+!     INPUT(I)%FORCING%CURRENTS      = F
+!     INPUT(I)%FORCING%WINDS         = F
+!     INPUT(I)%FORCING%ICE_CONC      = F
+!     INPUT(I)%FORCING%ICE_PARAM1    = F
+!     INPUT(I)%FORCING%ICE_PARAM2    = F
+!     INPUT(I)%FORCING%ICE_PARAM3    = F
+!     INPUT(I)%FORCING%ICE_PARAM4    = F
+!     INPUT(I)%FORCING%ICE_PARAM5    = F
+!     INPUT(I)%FORCING%MUD_DENSITY   = F
+!     INPUT(I)%FORCING%MUD_THICKNESS = F
+!     INPUT(I)%FORCING%MUD_VISCOSITY = F
+!     INPUT(I)%ASSIM%MEAN            = F
+!     INPUT(I)%ASSIM%SPEC1D          = F
+!     INPUT(I)%ASSIM%SPEC2D          = F
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+  INPUT(1)%NAME                  = 'wind'
+  INPUT(1)%FORCING%WINDS         = T
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * MODEL(I)%NAME must be set for each active model grid I
+! * FORCING can be set as :
+!    - 'no'          : This input is not used.
+!    - 'native'      : This grid has its own input files, e.g. grid
+!                      grdX (mod_def.grdX) uses ice.grdX.
+!    - 'INPUT%NAME'  : Take input from the grid identified by
+!                      INPUT%NAME.
+! * RESOURCE%RANK_ID : Rank number of grid (internally sorted and reassigned).
+! * RESOURCE%GROUP_ID : Group number (internally reassigned so that different
+!                                     ranks result in different group numbers).
+! * RESOURCE%COMM_FRAC : Fraction of communicator (processes) used for this grid.
+! * RESOURCE%BOUND_FLAG : Flag identifying dumping of boundary data used by this
+!                         grid. If true, the file nest.MODID is generated.
+!
+! * Limitations relevant to irregular (curvilinear) grids:
+!   1) Equal rank is not supported when one or more is an irregular
+!       grid. Use non-equal rank instead. (see wmgridmd.ftn)
+!   2) Non-native input grids: feature is not supported when either
+!      an input grid or computational grids is irregular.
+!      (see wmupdtmd.ftn)
+!   3) Irregular grids with unified point output: This is supported
+!      but the feature has not been verified for accuracy.
+!      (see wmiopomd.ftn)
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     MODEL(I)%NAME                  = 'unset'
+!     MODEL(I)%FORCING%WATER_LEVELS  = 'no'
+!     MODEL(I)%FORCING%CURRENTS      = 'no'
+!     MODEL(I)%FORCING%WINDS         = 'no'
+!     MODEL(I)%FORCING%ICE_CONC      = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM1    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM2    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM3    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM4    = 'no'
+!     MODEL(I)%FORCING%ICE_PARAM5    = 'no'
+!     MODEL(I)%FORCING%MUD_DENSITY   = 'no'
+!     MODEL(I)%FORCING%MUD_THICKNESS = 'no'
+!     MODEL(I)%FORCING%MUD_VISCOSITY = 'no'
+!     MODEL(I)%ASSIM%MEAN            = 'no'
+!     MODEL(I)%ASSIM%SPEC1d          = 'no'
+!     MODEL(I)%ASSIM%SPEC2d          = 'no'
+!     MODEL(I)%RESOURCE%RANK_ID      = I
+!     MODEL(I)%RESOURCE%GROUP_ID     = 1
+!     MODEL(I)%RESOURCE%COMM_FRAC    = 0.00,1.00
+!     MODEL(I)%RESOURCE%BOUND_FLAG   = F
+!
+!     MODEL(4)%FORCING = 'no' 'no' 'no' 'no' 'no' 'no'
+!
+!     MODEL(2)%RESOURCE = 1 1 0.00 1.00 F
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'large'
+  MODEL(1)%FORCING%WINDS         = 'wind'
+  MODEL(2)%NAME                  = 'nest'
+  MODEL(2)%FORCING%WINDS         = 'wind'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * ALLTYPE will apply the output types for all the model grids
+! * ITYPE(I) will apply the output types for the model grid number I
+! * need DOMAIN%UNIPTS equal true to use a unified point output file
+! * the point file is a space separated values per line : lon lat 'name'
+! * the full list of field names is : 
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
+!  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
+!  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S
+!  USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+! * output track file formatted (T) or unformated (F)
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     ALLTYPE%FIELD%LIST         =  'unset'
+!     ALLTYPE%POINT%NAME         =  'unset'
+!     ALLTYPE%POINT%FILE         =  'points.list'
+!     ALLTYPE%TRACK%FORMAT       =  T
+!     ALLTYPE%PARTITION%X0       =  0
+!     ALLTYPE%PARTITION%XN       =  0
+!     ALLTYPE%PARTITION%NX       =  0
+!     ALLTYPE%PARTITION%Y0       =  0
+!     ALLTYPE%PARTITION%YN       =  0
+!     ALLTYPE%PARTITION%NY       =  0
+!     ALLTYPE%PARTITION%FORMAT   =  T
+!
+!     ITYPE(3)%TRACK%FORMAT      =  F
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'HS FP DP DIR SPR'
+  ITYPE(1)%POINT%FILE      = 'points_1.list'
+  ITYPE(2)%POINT%FILE      = 'points_2.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+!
+! * index I must match indexes from 1 to DOMAIN%NRGRD
+! * ALLDATE will apply the output dates for all the model grids
+! * IDATE(I) will apply the output dates for the model grid number i
+! * start and stop times are with format 'yyyymmdd hhmmss'
+! * if time stride is equal '0', then output is disabled
+! * time stride is given in seconds
+! * it is possible to overwrite a global output date for a given grid
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     ALLDATE%FIELD%START         =  '19680606 000000'
+!     ALLDATE%FIELD%STRIDE        =  '0'
+!     ALLDATE%FIELD%STOP          =  '19680607 000000'
+!     ALLDATE%POINT%START         =  '19680606 000000'
+!     ALLDATE%POINT%STRIDE        =  '0'
+!     ALLDATE%POINT%STOP          =  '19680607 000000'
+!     ALLDATE%TRACK%START         =  '19680606 000000'
+!     ALLDATE%TRACK%STRIDE        =  '0'
+!     ALLDATE%TRACK%STOP          =  '19680607 000000'
+!     ALLDATE%RESTART%START       =  '19680606 000000'
+!     ALLDATE%RESTART%STRIDE      =  '0'
+!     ALLDATE%RESTART%STOP        =  '19680607 000000'
+!     ALLDATE%BOUNDARY%START      =  '19680606 000000'
+!     ALLDATE%BOUNDARY%STRIDE     =  '0'
+!     ALLDATE%BOUNDARY%STOP       =  '19680607 000000'
+!     ALLDATE%PARTITION%START     =  '19680606 000000'
+!     ALLDATE%PARTITION%STRIDE    =  '0'
+!     ALLDATE%PARTITION%STOP      =  '19680607 000000'
+!     
+!     ALLDATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
+!
+!     IDATE(3)%PARTITION%START    =  '19680606 000000' 
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20000101 000000' '3600' '20000103 000000'
+  IDATE(1)%POINT         = '20000101 000000' '3600' '20000103 000000'
+  IDATE(2)%POINT         = '20000101 000000' '3600' '20000103 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+!
+! * the number of each homogeneous input is defined by HOMOG_COUNT
+! * the total number of homogeneous input is automatically calculated
+! * the homogeneous input must start from index 1 to N
+! * if VALUE1 is equal 0, then the homogeneous input is desactivated
+! * NAME can only be MOV
+! * each homogeneous input is defined over a maximum of 3 values detailled below :
+!     - MOV is defined by speed and direction
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     HOMOG_COUNT%N_MOV            =  0
+!
+!     HOMOG_INPUT(I)%NAME           =  'unset'
+!     HOMOG_INPUT(I)%DATE           =  '19680606 000000'
+!     HOMOG_INPUT(I)%VALUE1         =  0
+!     HOMOG_INPUT(I)%VALUE2         =  0
+!     HOMOG_INPUT(I)%VALUE3         =  0
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

@@ -754,9 +754,9 @@
         READ(NML_OUTPUT_DATE%PARTITION%START, *)   ODAT(26), ODAT(27)
         READ(NML_OUTPUT_DATE%PARTITION%STRIDE, *)  ODAT(28)
         READ(NML_OUTPUT_DATE%PARTITION%STOP, *)    ODAT(29), ODAT(30)
-!/COU        READ(NML_OUTPUT_DATE%COUPLING%START, *)   ODAT(31), ODAT(32)
-!/COU        READ(NML_OUTPUT_DATE%COUPLING%STRIDE, *)  ODAT(33)
-!/COU        READ(NML_OUTPUT_DATE%COUPLING%STOP, *)    ODAT(34), ODAT(35)
+        READ(NML_OUTPUT_DATE%COUPLING%START, *)   ODAT(31), ODAT(32)
+        READ(NML_OUTPUT_DATE%COUPLING%STRIDE, *)  ODAT(33)
+        READ(NML_OUTPUT_DATE%COUPLING%STOP, *)    ODAT(34), ODAT(35)
 
         ! set the time stride at 0 or more
         ODAT(3) = MAX ( 0 , ODAT(3) )
@@ -765,7 +765,7 @@
         ODAT(18) = MAX ( 0 , ODAT(18) )
         ODAT(23) = MAX ( 0 , ODAT(23) )
         ODAT(28) = MAX ( 0 , ODAT(28) )
-!/COU        ODAT(33) = MAX ( 0 , ODAT(33) )
+        ODAT(33) = MAX ( 0 , ODAT(33) )
 
 ! 2.5 Output types
 
@@ -796,9 +796,9 @@
 !
                 IF ( ILOOP.EQ.2) THEN
                   NPTS = IPTS
-                  IF ( SIZE(X).NE.NPTS .AND. NPTS.GT.0 ) THEN
+                  IF ( NPTS.GT.0 ) THEN
                     ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
-                    IPTS = 0  ! reset it to use it as a counter for loop 2
+                    IPTS = 0 ! reset counter to be reused for next do loop
                   ELSE
                     ALLOCATE ( X(1), Y(1), PNAMES(1) )
                     GOTO 2054
@@ -1213,11 +1213,13 @@
                   OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
                   REWIND (NDSS)
 !
-                  IF ( SIZE(X).NE.NPTS .AND. NPTS.GT.0 ) THEN
-                    ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
-                  ELSE
-                    ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                    GOTO 2054 
+                  IF ( .NOT.ALLOCATED(X) ) THEN
+                    IF ( NPTS.GT.0 ) THEN
+                      ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                    ELSE
+                      ALLOCATE ( X(1), Y(1), PNAMES(1) )
+                      GOTO 2054 
+                    END IF
                   END IF
                 END IF
 !

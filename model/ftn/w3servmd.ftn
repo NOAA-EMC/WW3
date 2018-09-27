@@ -864,28 +864,28 @@
 !/MPI          WRITE(*,*) 'w3servmd MPI_ABORT, IEXIT=', IEXIT
 !/MPI          IF (PRESENT(UNIT)) THEN
 !/MPI            WRITE(*,*) 'w3servmd UNIT=', UNIT
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'UNIT missing'
+!!/MPI          ELSE
+!!/MPI            WRITE(*,*) 'UNIT missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(MSG)) THEN
 !/MPI            WRITE(*,*) 'w3servmd MSG=', MSG
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'MSG missing'
+!!/MPI          ELSE
+!!/MPI            WRITE(*,*) 'MSG missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(FILE)) THEN
 !/MPI            WRITE(*,*) 'w3servmd FILE=', FILE
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'FILE missing'
+!!/MPI          ELSE
+!!/MPI            WRITE(*,*) 'FILE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(LINE)) THEN
 !/MPI            WRITE(*,*) 'w3servmd LINE=', LINE
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'LINE missing'
+!!/MPI          ELSE
+!!/MPI            WRITE(*,*) 'LINE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(COMM)) THEN
 !/MPI            WRITE(*,*) 'w3servmd COMM=', COMM
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'COMM missing'
+!!/MPI          ELSE
+!!/MPI            WRITE(*,*) 'COMM missing'
 !/MPI          END IF
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
@@ -1139,11 +1139,11 @@
 ! 1. Initialise local constants
 ! Scale lambda pole to range -180 to 180 degs
       LAMBDA_POLE_KEEP=LAMBDA_POLE
-      IF (LAMBDA_POLE.LE.-180.0) LAMBDA_POLE=LAMBDA_POLE+360.0
-      IF (LAMBDA_POLE.GT. 180.0) LAMBDA_POLE=LAMBDA_POLE-360.0
+      IF (LAMBDA_POLE.LE.-180.0) LAMBDA_POLE=LAMBDA_POLE+360.D0
+      IF (LAMBDA_POLE.GT. 180.0) LAMBDA_POLE=LAMBDA_POLE-360.D0
 
 ! Latitude of zeroth meridian
-      LAMBDA_ZERO=LAMBDA_POLE+180.0
+      LAMBDA_ZERO=LAMBDA_POLE+180.D0
 ! Sine and cosine of latitude of eq pole
       IF (PHI_POLE >= 0.0) THEN
         SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
@@ -1160,8 +1160,8 @@
 ! Scale longitude to range -180 to +180 degs
 
         A_LAMBDA=LAMBDA(I)-LAMBDA_ZERO
-        IF(A_LAMBDA.GT. 180.0) A_LAMBDA=A_LAMBDA-360.
-        IF(A_LAMBDA.LE.-180.0) A_LAMBDA=A_LAMBDA+360.
+        IF(A_LAMBDA.GT. 180.0) A_LAMBDA=A_LAMBDA-360.D0
+        IF(A_LAMBDA.LE.-180.0) A_LAMBDA=A_LAMBDA+360.D0
 
 ! Convert latitude & longitude to radians
 
@@ -1172,8 +1172,8 @@
 
         ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
        &    +SIN_PHI_POLE*SIN(A_PHI)
-        ARG=MIN(ARG, 1.0)
-        ARG=MAX(ARG,-1.0)
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
         E_PHI=ASIN(ARG)
         PHI_EQ(I)=RECIP_PI_OVER_180*E_PHI
 
@@ -1183,19 +1183,19 @@
        &       +COS_PHI_POLE*SIN(A_PHI)
         TERM2 = COS(E_PHI)
         IF(TERM2 .LT. SMALL) THEN
-          E_LAMBDA=0.0
+          E_LAMBDA=0.D0
         ELSE
           ARG=TERM1/TERM2
-          ARG=MIN(ARG, 1.0)
-          ARG=MAX(ARG,-1.0)
+          ARG=MIN(ARG, 1.D0)
+          ARG=MAX(ARG,-1.D0)
           E_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
           E_LAMBDA=SIGN(E_LAMBDA,A_LAMBDA)
         ENDIF
 
 ! Scale longitude to range 0 to 360 degs
 
-        IF(E_LAMBDA.GE.360.0) E_LAMBDA=E_LAMBDA-360.0
-        IF(E_LAMBDA.LT.  0.0) E_LAMBDA=E_LAMBDA+360.0
+        IF(E_LAMBDA.GE.360.0) E_LAMBDA=E_LAMBDA-360.D0
+        IF(E_LAMBDA.LT.  0.0) E_LAMBDA=E_LAMBDA+360.D0
         LAMBDA_EQ(I)=E_LAMBDA
 
 !Li  Calculate turning angle for standard wind velocity
@@ -1207,8 +1207,8 @@
         TERM2=SIN(E_LAMBDA)
         ARG= SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE      &
        &    +COS(A_LAMBDA)*COS(E_LAMBDA)
-        ARG=MIN(ARG, 1.0)
-        ARG=MAX(ARG,-1.0)
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
         TERM1=RECIP_PI_OVER_180*ACOS(ARG)
         ANGLED(I)=SIGN(TERM1,TERM2)
 !Li
@@ -1284,7 +1284,7 @@
 ! 1. Initialise local constants
 
 ! Latitude of zeroth meridian
-      LAMBDA_ZERO=LAMBDA_POLE+180.0
+      LAMBDA_ZERO=LAMBDA_POLE+180.D0
 ! Sine and cosine of latitude of eq pole
       IF (PHI_POLE >= 0.0) THEN
         SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
@@ -1301,8 +1301,8 @@
 ! Scale eq longitude to range -180 to +180 degs
 
         E_LAMBDA=LAMBDA_EQ(I)
-        IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.0
-        IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.0
+        IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.D0
+        IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.D0
 
 ! Convert eq latitude & longitude to radians
 
@@ -1313,8 +1313,8 @@
 
         ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
        &   +SIN_PHI_POLE*SIN(E_PHI)
-        ARG=MIN(ARG, 1.0)
-        ARG=MAX(ARG,-1.0)
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
         A_PHI=ASIN(ARG)
         PHI(I)=RECIP_PI_OVER_180*A_PHI
 
@@ -1324,11 +1324,11 @@
        &       -SIN(E_PHI)*COS_PHI_POLE
         TERM2 = COS(A_PHI)
         IF(TERM2.LT.SMALL) THEN
-          A_LAMBDA=0.0
+          A_LAMBDA=0.D0
         ELSE
           ARG=TERM1/TERM2
-          ARG=MIN(ARG, 1.0)
-          ARG=MAX(ARG,-1.0)
+          ARG=MIN(ARG, 1.D0)
+          ARG=MAX(ARG,-1.D0)
           A_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
           A_LAMBDA=SIGN(A_LAMBDA,E_LAMBDA)
           A_LAMBDA=A_LAMBDA+LAMBDA_ZERO
@@ -1336,8 +1336,8 @@
 
 ! Scale longitude to range 0 to 360 degs
 
-        IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.0
-        IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.0
+        IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.D0
+        IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.D0
         LAMBDA(I)=A_LAMBDA
 
 !Li  Calculate turning angle for standard wind velocity
@@ -1349,8 +1349,8 @@
         TERM2=SIN(E_LAMBDA)
         ARG=SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE     &
        &           +COS(A_LAMBDA)*COS(E_LAMBDA)
-        ARG=MIN(ARG, 1.0)
-        ARG=MAX(ARG,-1.0)
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
         TERM1=RECIP_PI_OVER_180*ACOS(ARG)
         ANGLED(I)=SIGN(TERM1,TERM2)
 !Li

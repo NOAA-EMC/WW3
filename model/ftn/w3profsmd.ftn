@@ -433,7 +433,7 @@
             KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians 
 
             KTMP        = KELEM ! Copy
-            NM          = - 1.D0/MIN(-THR,SUM(MIN(0.d0,KTMP))) ! N-Values 
+            NM          = - REAL(1.D0/MIN(-THR,SUM(MIN(0.d0,KTMP)))) ! N-Values 
             KELEM       = MAX(0.d0,KTMP)
 
             KKSUM = KKSUM  +  KELEM(IV)

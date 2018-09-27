@@ -146,6 +146,7 @@
 !/
       TYPE(NML_FIELD_T)       :: NML_FIELD
       TYPE(NML_FILE_T)        :: NML_FILE
+      TYPE(NML_SMC_T)         :: NML_SMC
 !
       INTEGER                 :: NDSI, NDSM, NDSOG,                    &
                                  NDSTRC, NTRACE, IERR, I, I1F, I2F,    &
@@ -232,7 +233,8 @@
       INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounf.nml", EXIST=FLGNML) 
       IF (FLGNML) THEN
         ! Read namelist
-        CALL W3NMLOUNF (NDSI, TRIM(FNMPRE)//'ww3_ounf.nml', NML_FIELD, NML_FILE, IERR)
+        CALL W3NMLOUNF (NDSI, TRIM(FNMPRE)//'ww3_ounf.nml', NML_FIELD, &
+                        NML_FILE, NML_SMC, IERR)
 
 ! 4.1 Time setup
         READ(NML_FIELD%TIMESTRIDE, *)  DTREQ
@@ -253,13 +255,13 @@
         FILEPREFIX = NML_FILE%PREFIX
         S3 = NML_FIELD%TIMESPLIT
         IF(SMCGRD) THEN
-!/SMC          SMCTYPE = NML_FILE%SMCTYPE
-!/SMC          SXO = NML_FILE%SXO
-!/SMC          SYO = NML_FILE%SYO
-!/SMC          EXO = NML_FILE%EXO
-!/SMC          EYO = NML_FILE%EYO
-!/SMC          CELFAC = NML_FILE%CELFAC
-!/SMC          NOVAL = NML_FILE%NOVAL
+!/SMC          SMCTYPE = NML_SMC%TYPE
+!/SMC          SXO = NML_SMC%SXO
+!/SMC          SYO = NML_SMC%SYO
+!/SMC          EXO = NML_SMC%EXO
+!/SMC          EYO = NML_SMC%EYO
+!/SMC          CELFAC = NML_SMC%CELFAC
+!/SMC          NOVAL = NML_SMC%NOVAL
         ELSE
           IX1 = NML_FILE%IX0
           IXN = NML_FILE%IXN 
@@ -588,14 +590,9 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I7)
+               '      Number of requests : ',I10)
   944 FORMAT (/'      End of file reached '/)
-!
-  945 FORMAT (/'  Requested output fields : '/                        &
-               ' --------------------------------------------------')
   946 FORMAT ( '      ',A,2X,A)
-  948 FORMAT (/'         Partitioned field data for wind seas')
-  949 FORMAT (/'         Partitioned field data for swell field',I2)
 !
  3940 FORMAT ( '      X range : ',2I7/                                &
                '      Y range : ',2I7)
@@ -754,8 +751,8 @@
 !/ Local parameters
 !/
       INTEGER                 :: IFI, IFJ, MFILL, I, J, ISEA, IX, IY,  &
-                                 I1, J1, IPART, INDEXIPART
-      INTEGER                 :: S1, S2, S4, S5, NCID, COORDTYPE,      & 
+                                 I1, J1, IPART, INDEXIPART, COORDTYPE
+      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
                                  MAPSTAOUT, NDSDAT, VMIN, VMAX,        &
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
                                  IVAR1, IDVAROUT, NCVARTYPE
@@ -794,11 +791,11 @@
       CHARACTER*20            :: UNITVAR(3),FORMAT1
       CHARACTER*30            :: STRSTARTDATE
       CHARACTER               :: FNAMENC*50,                           &
-                                 ENAME*8,FORMF*11, UNITS*20, UNITS2*20
+                                 ENAME*6,FORMF*11, UNITS*24, UNITS2*24
       CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
 !
-      LOGICAL                 :: FLFRQ, FLDIR
+      LOGICAL                 :: FLFRQ, FLDIR, FEXIST, FREMOVE
       LOGICAL                 :: CUSTOMFRQ=.FALSE.
 !/T      LOGICAL                 :: LTEMP(NGRPP)
 
@@ -848,6 +845,7 @@
       ENDIF
       NCVARTYPE  = NCVARTYPEI
       NDSDAT=30
+      NCID = 0
 !
 !
       CALL U2D('days since 1990-01-01 00:00:00',REFDATE,IERR)
@@ -2488,7 +2486,7 @@
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD                VARND(3) = 'Rotated Pole Grid North'
-              VMIN = -3000.
+              VMIN = -3000
               VMAX = 3000     
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
@@ -3405,44 +3403,54 @@
             IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
 
 
-! 2.4 Gets the netcdf id
+! 2.4.1 Save the id of the previous file
 
-            OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=IRET)
             IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
-              IF (IRET.EQ.0) THEN
-                ! close old file
-                IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
-                  IRET = NF90_REDEF(NCIDS(1,1,1))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_ATT(NCIDS(1,1,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_CLOSE(NCIDS(1,1,1))
-                  CALL CHECK_ERR(IRET)
-                END IF
-                NCID=0
-              ELSE
-                NCID=NCIDS(1,1,1)
+              OLDNCID = NCIDS(1,1,1)
+            ELSE
+              OLDNCID = NCIDS(IFI,IFJ,IPART+1)
+            END IF
+
+
+! 2.4.2 Remove the new file (if not created by the run)
+
+            INQUIRE(FILE=FNAMENC, EXIST=FEXIST)
+            IF (FEXIST) THEN
+              FREMOVE = .FALSE.
+              ! time splitted condition
+              IF (INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
+                ! all variables in the samefile
+                IF (TOGETHER.AND.(.NOT.FLFRQ).AND.NCID.EQ.0) FREMOVE = .TRUE.
+                ! a file per variable
+                IF (.NOT.TOGETHER.OR.FLFRQ) FREMOVE = .TRUE.
               END IF
-            ELSE ! TOGETHER AND NOR FLFRQ
-              IF (IRET.EQ.0) THEN
-                ! close old file
-                IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
-                  IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_CLOSE(NCIDS(IFI,IFJ,IPART+1))
-                  CALL CHECK_ERR(IRET)
-                END IF
-                NCID=0
+
+              IF (FREMOVE) THEN
+                OPEN(UNIT=1234, IOSTAT=IRET, FILE=FNAMENC, STATUS='old')
+                IF (IRET == 0) CLOSE(1234, STATUS='delete')
+                FEXIST=.FALSE.
               ELSE
-                NCID=NCIDS(IFI,IFJ,IPART+1)
+                NCID = OLDNCID
               END IF
             END IF
-                        
+
+! 2.4.3 Finalize the previous file (if a new one will be created)
+
+            IF (.NOT.FEXIST) THEN 
+              IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
+                IRET = NF90_REDEF(OLDNCID)
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(OLDNCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_CLOSE(OLDNCID)
+                CALL CHECK_ERR(IRET)
+              END IF
+            END IF
+
+
 ! 2.5 Creates the netcdf file
 
-            IF (NCID.EQ.0) THEN 
+            IF (.NOT.FEXIST) THEN 
 
               ! Initializes the time dimension length
               DIMLN(1)=1
@@ -3613,12 +3621,12 @@
 !/RTD                    CALL W3EQTOLL(LAT2DEQ(I,1:NY), LON2DEQ(I,1:NY), LAT2D(I,1:NY), &
 !/RTD                                   LON2D(I,1:NY), ANGLD2D(I,1:NY), POLAT, POLON, NY)
 !/RTD                  END DO   
-                  WRITE(STR2,*) SY
+                  WRITE(STR2,'(F12.0)') SY
                   STR2=ADJUSTL(STR2)
                   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
                            'latitude_resolution', TRIM(STR2))
                   CALL CHECK_ERR(IRET)
-                  WRITE(STR2,*) SX 
+                  WRITE(STR2,'(F12.0)') SX 
                   STR2=ADJUSTL(STR2)
                   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
                            'longitude_resolution',TRIM(STR2))
@@ -3644,9 +3652,9 @@
 
               ! Finishes declaration part in file by adding geographical bounds
               IF(SMCGRD) THEN
-                WRITE(str2,'(F12.7)') MINVAL(lat)
+                WRITE(STR2,'(F12.0)') MINVAL(LAT)
               ELSE
-                WRITE(str2,'(F12.7)') MINVAL(YGRD)
+                WRITE(STR2,'(F12.0)') MINVAL(YGRD)
               ENDIF
               STR2=ADJUSTL(STR2)
               IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
@@ -3654,9 +3662,9 @@
               CALL CHECK_ERR(IRET)
 
               IF(SMCGRD) THEN
-                WRITE(str2,'(F12.7)') MAXVAL(lat)
+                WRITE(STR2,'(F12.0)') MAXVAL(LAT)
               ELSE
-                WRITE(str2,'(F12.7)') MAXVAL(YGRD)
+                WRITE(STR2,'(F12.0)') MAXVAL(YGRD)
               ENDIF
               STR2=ADJUSTL(STR2)
               IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
@@ -3664,9 +3672,9 @@
               CALL CHECK_ERR(IRET)
 
               IF(SMCGRD) THEN
-                WRITE(str2,'(F12.7)') MINVAL(lon)
+                WRITE(STR2,'(F12.0)') MINVAL(LON)
               ELSE
-                WRITE(str2,'(F12.7)') MINVAL(XGRD)
+                WRITE(STR2,'(F12.0)') MINVAL(XGRD)
               ENDIF
               STR2=ADJUSTL(STR2)
               IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
@@ -3675,9 +3683,9 @@
 
 
               IF(SMCGRD) THEN
-                WRITE(str2,'(F12.7)') MAXVAL(lon)
+                WRITE(STR2,'(F12.0)') MAXVAL(LON)
               ELSE
-                WRITE(str2,'(F12.7)') MAXVAL(XGRD)
+                WRITE(STR2,'(F12.0)') MAXVAL(XGRD)
               ENDIF
               STR2=ADJUSTL(STR2)
               IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
@@ -3711,16 +3719,16 @@
               ! If regular grid
               IF (GTYPE.EQ.RLGTYPE) THEN 
                 IF(SMCGRD) THEN ! CB: shelter original code from SMC grid
-!/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(1),lon(:))
-!/SMC                  call CHECK_ERR(IRET)
-!/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(2),lat(:))
-!/SMC                  call CHECK_ERR(IRET)
+!/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
+!/SMC                  CALL CHECK_ERR(IRET)
+!/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(:))
+!/SMC                  CALL CHECK_ERR(IRET)
 !/SMC                  IF(SMCTYPE .EQ. 1) THEN
 !/SMC                    ! For type 1 SCM file also put lat/lons and cell sizes:
-!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(299),smccx)
-!/SMC                    call CHECK_ERR(IRET)
-!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(300),smccy)
-!/SMC                    call CHECK_ERR(IRET)
+!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(299),SMCCX)
+!/SMC                    CALL CHECK_ERR(IRET)
+!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(300),SMCCY)
+!/SMC                    CALL CHECK_ERR(IRET)
 !/SMC                  ENDIF
                 ELSE ! SMCGRD
                   IRET=NF90_PUT_VAR(NCID,VARID(1),LON(IX1:IXN))
@@ -3895,7 +3903,7 @@
 
 ! 2.6 Append data to the existing file
 
-            ELSE  ! NCID.EQ.0
+            ELSE  ! FEXIST
 
 ! 2.6.1 Get the dimensions from the netcdf header
 
@@ -3981,10 +3989,10 @@
 !/SMC                        ENDIF
                       ELSE
                         IRET = NF90_DEF_VAR(NCID,VARNM(I), NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                        CALL CHECK_ERR(IRET) !CB
+                        CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET) ! CB
+!/NC4                      CALL CHECK_ERR(IRET)
                     END IF
                   ELSE
                     DIMFIELD(1)=DIMID(2)
@@ -5034,30 +5042,35 @@
 
 !==============================================================================
 
-  SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERR(IRET)
 
-  USE NETCDF
+      USE NETCDF
+      USE W3ODATMD, ONLY: NDSE
+      USE W3SERVMD, ONLY: EXTCDE
 
-  IMPLICIT NONE
+      IMPLICIT NONE
 
-  INTEGER IRET
+      INTEGER IRET
 
-  IF (IRET .NE. NF90_NOERR) THEN
-     WRITE(*,*) NF90_STRERROR(IRET)
-     STOP
-  END IF
-  RETURN
+      IF (IRET .NE. NF90_NOERR) THEN
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN OUNF :'
+        WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+        WRITE(*,*) NF90_STRERROR(IRET)
+        CALL EXTCDE ( 59 )
+      END IF
+      RETURN
 
-  END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERR
 
 !==============================================================================
+
 
 !/
 !/ End of W3OUNF ----------------------------------------------------- /
 !/
-      END PROGRAM W3OUNF
+     END PROGRAM W3OUNF
 
 
-  
+
 
 

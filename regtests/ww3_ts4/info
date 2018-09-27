@@ -7,7 +7,7 @@
 #  input_re_shel: test on regular grids, with ww3_shel                        # 
 #  input_re_multi: test on regular grids, with ww3_multi                      # 
 #                                                                             #
-#  The swich file used for this test is minimal, with all the other           #
+#  The switch file used for this test is minimal, with all the other          #
 #  source terms  disabled.                                                    #
 #                                                                             # 
 #  To launch these tests use the commands:                                    # 

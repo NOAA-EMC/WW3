@@ -1373,7 +1373,7 @@
         resi=abs(b(i)-sum)
 !      TIDE_MF addition
         q(i,N2)=b(i)-sum
-        res=max(res,resi)
+        res=max(res,REAL(resi))
         ssq=ssq+resi**2
       enddo
 ! compute variances, covariances, these may need to be given dimension

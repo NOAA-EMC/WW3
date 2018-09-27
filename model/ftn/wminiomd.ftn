@@ -728,10 +728,12 @@
 !
 !/MPI            END IF
 !
+!/MPI              DEALLOCATE ( STATUS )
+!
 ! ..... Go on based on FLAGOK
 !
 !/MPI          IF ( FLAGOK ) THEN
-!/MPI              DEALLOCATE ( STATUS, MDATAS(IMOD)%IRQBPG )
+!/MPI              DEALLOCATE ( MDATAS(IMOD)%IRQBPG )
 !/MPI              NRQ    = 0
 !/MPI            ELSE
 !/MPI              RETURN

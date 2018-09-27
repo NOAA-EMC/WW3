@@ -112,17 +112,6 @@
        *        ) libs= ;;
   esac
 
-  # palm coupler archive
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ]
-    then
-    if [ "$palm_mod" = 'yes' ]
-       then
-       comp=ar
-       opt="-rv $prog.a"
-       prog="$prog.a"
-    fi
-  fi
-
   # oasis coupler archive
   if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || \
      [ "$prog" = 'ww3_prnc' ] || [ "$prog" = 'ww3_prep' ] || [ "$prog" = 'ww3_prtide' ] || \

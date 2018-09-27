@@ -95,11 +95,43 @@ timesplit="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut 
 echo $timesplit
 
 il=$(($il+1))
-ix0="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-ixn="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
-iy0="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
-iyn="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
-echo $ix0 $ixn $iy0 $iyn
+nf=$(echo ${lines[$il]} | awk -F' ' '{print NF}' )
+if [ $nf -gt 1 ]
+then
+  ix0="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  ixn="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+  iy0="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
+  iyn="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo $ix0 $ixn $iy0 $iyn
+  smctype=1
+  sx0=-999.9
+  sy0=-999.9
+  ex0=-999.9
+  ey0=-999.9
+  celfac=1
+  noval=-999.9
+else
+  smctype="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo $smctype
+  il=$(($il+1))
+  sx0="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  sy0="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+  ex0="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
+  ey0="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
+  celfac=1
+  echo $sx0 $sy0 $ex0 $e0
+  if [ $smctype -eq 2 ]
+  then
+    celfac="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo $celfac
+  fi
+  noval=-999.9
+  echo $noval
+  ix0=1
+  ixn=1000000
+  iy0=1
+  iyn=1000000
+fi
 
 
 #------------------------------
@@ -142,13 +174,13 @@ cat >> $nmlfile << EOF
 EOF
 
 if [ "${timestart[*]}" != "19000101 000000" ];  then  echo "  FIELD%TIMESTART        =  '${timestart[@]}'" >> $nmlfile; fi
-if [ "$timestride" != "0" ];  then  echo "  FIELD%TIMESTRIDE       =  '$timestride'" >> $nmlfile; fi
-if [ $timecount -lt 10000 ];  then  echo "  FIELD%TIMECOUNT        =  '$timecount'" >> $nmlfile; fi
-if [ "$timesplit" != 6 ];  then  echo "  FIELD%TIMESPLIT        =  $timesplit" >> $nmlfile; fi
-if [ "$timestride" != "0" ];  then  echo "  FIELD%LIST             =  '$list'" >> $nmlfile; fi
-if [ "$partition" != "0 1 2 3" ];  then  echo "  FIELD%PARTITION        =  '$partition'" >> $nmlfile; fi
-if [ "$samefile" != T ];  then  echo "  FIELD%SAMEFILE         =  $samefile" >> $nmlfile; fi
-if [ "$type" != 3 ];  then  echo "  FIELD%TYPE             =  $type" >> $nmlfile; fi
+if [ "$timestride" != "0" ];                    then  echo "  FIELD%TIMESTRIDE       =  '$timestride'" >> $nmlfile; fi
+if [ $timecount -lt 10000 ];                    then  echo "  FIELD%TIMECOUNT        =  '$timecount'" >> $nmlfile; fi
+if [ "$timesplit" != 6 ];                       then  echo "  FIELD%TIMESPLIT        =  $timesplit" >> $nmlfile; fi
+if [ "$timestride" != "0" ];                    then  echo "  FIELD%LIST             =  '$list'" >> $nmlfile; fi
+if [ "$partition" != "0 1 2 3" ];               then  echo "  FIELD%PARTITION        =  '$partition'" >> $nmlfile; fi
+if [ "$samefile" != T ];                        then  echo "  FIELD%SAMEFILE         =  $samefile" >> $nmlfile; fi
+if [ "$type" != 3 ];                            then  echo "  FIELD%TYPE             =  $type" >> $nmlfile; fi
 
 
 # file namelist
@@ -156,7 +188,7 @@ cat >> $nmlfile << EOF
 /
 
 ! -------------------------------------------------------------------- !
-! Define the content of the input file via FILE_NML namelist
+! Define the content of the output file via FILE_NML namelist
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
@@ -170,17 +202,54 @@ cat >> $nmlfile << EOF
 &FILE_NML
 EOF
 
-if [ "$prefix" != "ww3." ];  then  echo "  FILE%PREFIX        = '$prefix'" >> $nmlfile; fi
-if [ "$netcdf" != 3 ];  then  echo "  FILE%NETCDF        = $netcdf" >> $nmlfile; fi
-if [ "$ix0" != 1 ];  then  echo "  FILE%IX0           = $ix0" >> $nmlfile; fi
+if [ "$prefix" != "ww3." ];                            then  echo "  FILE%PREFIX        = '$prefix'" >> $nmlfile; fi
+if [ "$netcdf" != 3 ];                                 then  echo "  FILE%NETCDF        = $netcdf" >> $nmlfile; fi
+if [ "$ix0" != 1 ];                                    then  echo "  FILE%IX0           = $ix0" >> $nmlfile; fi
 if [ "$ixn" != 1000000000 ] && [ "$ixn" != 1000000 ];  then  echo "  FILE%IXN           = $ixn" >> $nmlfile; fi
-if [ "$iy0" != 1 ];  then  echo "  FILE%IY0           = $iy0" >> $nmlfile; fi
+if [ "$iy0" != 1 ];                                    then  echo "  FILE%IY0           = $iy0" >> $nmlfile; fi
 if [ "$iyn" != 1000000000 ] && [ "$iyn" != 1000000 ];  then  echo "  FILE%IYN           = $iyn" >> $nmlfile; fi
-
 
 cat >> $nmlfile << EOF
 /
 
+! -------------------------------------------------------------------- !
+! Define the content of the output file via SMC_NML namelist
+!
+! * For SMC grids, IX0, IXN, IY0 and IYN from FILE_NML are not used.
+!   Two types of output are available: 
+! *   TYPE=1: Flat 1D "seapoint" array of grid cells.
+! *   TYPE=2: Re-gridded regular grid with cell sizes being an integer
+! *           multiple of the smallest SMC grid cells size.
+!
+! * Note that the first/last longitudes and latitudes will be adjusted
+!  to snap to the underlying SMC grid edges. CELFAC is only used for
+!  type 2 output and defines the output cell sizes as an integer
+!  multiple of the smallest SMC Grid cell size. CELFAC should be a
+!  power of 2, e.g: 1,2,4,8,16, etc...
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     SMC%TYPE          = 1              ! SMC Grid type (1 or 2)
+!     SMC%SXO           = -999.9         ! First longitude
+!     SMC%EXO           = -999.9         ! Last longitude
+!     SMC%SYO           = -999.9         ! First latitude
+!     SMC%EYO           = -999.9         ! Last latitude
+!     SMC%CELFAC        = 1              ! Cell size factor (SMCTYPE=2 only)
+!     SMC%NOVAL         = UNDEF          ! Fill value for wet cells with no data
+! -------------------------------------------------------------------- !
+&SMC_NML
+EOF
+
+if [ "$smctype" != 1 ];    then  echo "  SMC%TYPE        = $smctype" >> $nmlfile; fi
+if [ "$sx0" != -999.9 ];   then  echo "  SMC%SX0         = $sx0" >> $nmlfile; fi
+if [ "$sy0" != -999.9 ];   then  echo "  SMC%SY0         = $sy0" >> $nmlfile; fi
+if [ "$ex0" != -999.9 ];   then  echo "  SMC%EX0         = $ex0" >> $nmlfile; fi
+if [ "$ey0" != -999.9 ];   then  echo "  SMC%EY0         = $ey0" >> $nmlfile; fi
+if [ "$celfac" != 1 ];     then  echo "  SMC%CELFAC      = $celfac" >> $nmlfile; fi
+if [ "$noval" != -999.9 ]; then  echo "  SMC%NOVAL       = $noval" >> $nmlfile; fi
+
+cat >> $nmlfile << EOF
+/
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !

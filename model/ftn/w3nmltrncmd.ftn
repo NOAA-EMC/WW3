@@ -33,7 +33,7 @@
 
   ! file structure
   TYPE NML_FILE_T
-    CHARACTER(256)              :: PREFIX
+    CHARACTER(30)               :: PREFIX
     INTEGER                     :: NETCDF
   END TYPE NML_FILE_T
 

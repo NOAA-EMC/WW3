@@ -740,7 +740,7 @@
     END DO
 
     ! save namelist
-    NML_INPUT_GRID = INPUT
+    NML_INPUT_GRID = INPUT(1:NRINP)
 
 10  FORMAT (A,I0,A)
 
@@ -885,7 +885,7 @@
     END DO
 
     ! save namelist
-    NML_MODEL_GRID = MODEL
+    NML_MODEL_GRID = MODEL(1:NRGRD)
 
 10  FORMAT (A,I0,A)
 
@@ -1035,7 +1035,7 @@
     END IF
 
     ! save namelist
-    NML_OUTPUT_TYPE = ITYPE
+    NML_OUTPUT_TYPE = ITYPE(1:NRGRD)
 
    
   END SUBROUTINE READ_OUTPUT_TYPE_NML
@@ -1200,7 +1200,7 @@
     END IF
 
     ! save namelist
-    NML_OUTPUT_DATE = IDATE
+    NML_OUTPUT_DATE = IDATE(1:NRGRD)
 
 
   END SUBROUTINE READ_OUTPUT_DATE_NML

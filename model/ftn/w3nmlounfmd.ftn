@@ -37,21 +37,24 @@
 
   ! file structure
   TYPE NML_FILE_T
-    CHARACTER(256)              :: PREFIX
+    CHARACTER(30)               :: PREFIX
     INTEGER                     :: NETCDF
     INTEGER                     :: IX0
     INTEGER                     :: IXN
     INTEGER                     :: IY0
     INTEGER                     :: IYN
-!/SMC    INTEGER                     :: SMCTYPE
-!/SMC    REAL                        :: SXO
-!/SMC    REAL                        :: SYO
-!/SMC    REAL                        :: EXO
-!/SMC    REAL                        :: EYO
-!/SMC    INTEGER                     :: CELFAC
-!/SMC    REAL                        :: NOVAL
   END TYPE NML_FILE_T
 
+  ! smc grid structure
+  TYPE NML_SMC_T
+    INTEGER                     :: TYPE
+    REAL                        :: SXO
+    REAL                        :: SYO
+    REAL                        :: EXO
+    REAL                        :: EYO
+    INTEGER                     :: CELFAC
+    REAL                        :: NOVAL
+  END TYPE NML_SMC_T
 
   ! miscellaneous
   CHARACTER(256)                :: MSG
@@ -61,7 +64,7 @@
 
   CONTAINS
 !/ ------------------------------------------------------------------- /
-  SUBROUTINE W3NMLOUNF (NDSI, INFILE, NML_FIELD, NML_FILE, IERR)
+  SUBROUTINE W3NMLOUNF (NDSI, INFILE, NML_FIELD, NML_FILE, NML_SMC, IERR)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -88,6 +91,7 @@
 !      INFILE      Char.
 !      NML_FIELD   type.
 !      NML_FILE    type.
+!      NML_SMC     type.
 !      IERR        Int.
 !     ----------------------------------------------------------------
 !
@@ -133,6 +137,7 @@
     CHARACTER*(*), INTENT(IN)                   :: INFILE
     TYPE(NML_FIELD_T), INTENT(INOUT)            :: NML_FIELD
     TYPE(NML_FILE_T), INTENT(INOUT)             :: NML_FILE
+    TYPE(NML_SMC_T), INTENT(INOUT)              :: NML_SMC
     INTEGER, INTENT(OUT)                        :: IERR
 !/S      INTEGER, SAVE                             :: IENT = 0
 
@@ -161,6 +166,14 @@
       RETURN
     END IF
 !/T    CALL REPORT_FILE_NML (NML_FILE)
+
+    ! read smc namelist
+    CALL READ_SMC_NML (NDSI, NML_SMC, IERR)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A)') 'ERROR: error occured in READ_SMC_NML'
+      RETURN
+    END IF
+!/T    CALL REPORT_SMC_NML (NML_SMC)
 
 
     ! close namelist file
@@ -368,15 +381,6 @@
     FILE%IY0       = 1
     FILE%IYN       = 1000000000
 
-    ! defaults for SMC output
-!/SMC    FILE%SXO       = -999.9
-!/SMC    FILE%SYO       = -999.9
-!/SMC    FILE%EXO       = -999.9
-!/SMC    FILE%EYO       = -999.9
-!/SMC    FILE%CELFAC    = 1
-!/SMC    FILE%SMCTYPE   = 1
-!/SMC    FILE%NOVAL     = UNDEF
-
     ! read file namelist
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
@@ -395,6 +399,110 @@
 !/ ------------------------------------------------------------------- /
 
 
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE READ_SMC_NML (NDSI, NML_SMC, IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         19-Sep-2018 |
+!/                  +-----------------------------------+
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NDSI         Int.
+!      NML_SMC      Type.
+!      IERR         Int.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: NDSE
+!/S      USE W3SERVMD, ONLY: STRACE
+         USE CONSTANTS, ONLY: UNDEF
+
+    IMPLICIT NONE
+
+    INTEGER, INTENT(IN)                 :: NDSI
+    TYPE(NML_SMC_T), INTENT(INOUT)      :: NML_SMC
+    INTEGER, INTENT(OUT)                :: IERR
+
+    ! locals
+    TYPE(NML_SMC_T) :: SMC
+    NAMELIST /SMC_NML/ SMC
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+    IERR = 0
+!/S      CALL STRACE (IENT, 'READ_SMC_NML')
+
+    ! set default values for smc structure
+    SMC%SXO       = -999.9
+    SMC%SYO       = -999.9
+    SMC%EXO       = -999.9
+    SMC%EYO       = -999.9
+    SMC%CELFAC    = 1
+    SMC%TYPE      = 1
+    SMC%NOVAL     = UNDEF
+
+    ! read smc namelist
+    REWIND (NDSI)
+    READ (NDSI, nml=SMC_NML, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,'(A,/A)') &
+        'ERROR: READ_SMC_NML: namelist read error', &
+        'ERROR: '//TRIM(MSG)
+      RETURN
+    END IF
+
+    ! save namelist
+    NML_SMC = SMC
+
+  END SUBROUTINE READ_SMC_NML
+
+!/ ------------------------------------------------------------------- /
 
 
 
@@ -578,6 +686,91 @@
 
 !/ ------------------------------------------------------------------- /
 
+
+!/ ------------------------------------------------------------------- /
+
+  SUBROUTINE REPORT_SMC_NML (NML_SMC)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         19-Sep-2018 |
+!/                  +-----------------------------------+
+!/
+!/
+!  1. Purpose :
+!
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      NML_SMC   Type.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      TYPE  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMLOUNF Subr.   N/A    Namelist configuration routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+
+    USE W3ODATMD, ONLY: SCREEN
+!/S      USE W3SERVMD, ONLY: STRACE
+
+    IMPLICIT NONE
+
+    TYPE(NML_SMC_T), INTENT(IN) :: NML_SMC
+!/S      INTEGER, SAVE                           :: IENT = 0
+
+!/S      CALL STRACE (IENT, 'REPORT_SMC_NML')
+
+      WRITE (MSG,'(A)') 'SMC % '
+      WRITE (SCREEN,'(A)')
+      WRITE (SCREEN,11) TRIM(MSG),'TYPE      = ', NML_SMC%TYPE
+      WRITE (SCREEN,14) TRIM(MSG),'SXO       = ', NML_SMC%SXO
+      WRITE (SCREEN,14) TRIM(MSG),'SYO       = ', NML_SMC%SYO
+      WRITE (SCREEN,14) TRIM(MSG),'EXO       = ', NML_SMC%EXO
+      WRITE (SCREEN,14) TRIM(MSG),'EYO       = ', NML_SMC%EYO
+      WRITE (SCREEN,11) TRIM(MSG),'CELFAC    = ', NML_SMC%CELFAC
+      WRITE (SCREEN,14) TRIM(MSG),'NOVAL     = ', NML_SMC%NOVAL
+
+11  FORMAT (A,2X,A,I1)
+14  FORMAT (A,2X,A,F5.2)
+
+  END SUBROUTINE REPORT_SMC_NML
+
+!/ ------------------------------------------------------------------- /
 
 
 

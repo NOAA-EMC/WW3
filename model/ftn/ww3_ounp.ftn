@@ -227,7 +227,7 @@
       CHARACTER(LEN=100),ALLOCATABLE      :: POINTLIST(:)
       CHARACTER(LEN=128),ALLOCATABLE      :: NCFILE(:)
 !
-      LOGICAL                 :: FLFORM, FLSRCE(7)
+      LOGICAL                 :: FLSRCE(7)
       LOGICAL                 :: TOGETHER, ORDER, FLGNML
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
 !
@@ -1152,8 +1152,6 @@
       END DO ! IFL=1,NFL
 !
       GOTO 888
-
-
 !
 ! Escape locations read errors :
 !
@@ -1211,22 +1209,19 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I4)
+               '      Number of requests : ',I8)
   942 FORMAT (/'  Output type ',I2,' :'/                              &
                ' --------------------------------------------------'/ &
                '      ',A, I3 /)
   943 FORMAT ( '      Subtype   : ',A)
   944 FORMAT ( '                  ',A)
 !/O14   945 FORMAT ( '      ',I5,3X,A,2F10.2,3X,A)
-  948 FORMAT ( '      Data for ',A)
   949 FORMAT (/'      End of file reached '/)
 !
   950 FORMAT (/'  Requested output for ',I6,' points : '/             &
                ' --------------------------------------------------')
   951 FORMAT ( '      ',A,2F10.2)
   953 FORMAT ( '      ',A,2(F8.1,'E3'))
-  952 FORMAT (/'  Output times :'/                                    &
-               ' --------------------------------------------------')
   954 FORMAT (/'      New time step      : ',A)
   955 FORMAT ( '  Processing time : ', 2I8, ' in ', I4, 'files. Step '&
                I4, 'out of ', I4, 'pass ', I4)
@@ -1234,24 +1229,14 @@
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
- 1943 FORMAT ( '      File name : ',A,' (',A,')')
- 1944 FORMAT ('''',A,'''',1X,3I6,1X,'''',A,'''')
- 1945 FORMAT (8E10.3)
- 1946 FORMAT (7E11.3)
- 1947 FORMAT ( '      File name : ',A)
+! 1947 FORMAT ( '      File name : ',A)
 !
  2940 FORMAT ( '      Table output : ',A/                             &
                '      File name    : ',A)
 !
  3940 FORMAT ( '                        ',A)
- 3944 FORMAT ('''',A,'''',1X,3I6,6L2)
- 3945 FORMAT (8E10.3)
- 3946 FORMAT (7E11.3)
  5940 FORMAT ( '      Buffer will be flushed every ',I6,' steps.')
  5950 FORMAT ( '      Point already exists, it will be skipped : ', A)
-!
-  960 FORMAT (//'  Output for ',A/                                    &
-               ' --------------------------------------------------')
 !
   999 FORMAT (/'  End of program '/                                   &
                ' ========================================='/          &
@@ -1584,8 +1569,6 @@
 !
             END DO
 
-WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
-
 !
 ! Computes 2nd order spectrum 
 !
@@ -1628,21 +1611,12 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
           CALL CHECK_ERR(IRET)
         END DO
 ! 
-        IF ( FLFORM ) THEN
-          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
-          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),PTLOC(1,INDREQ(1:NREQ)),(/IOUT,1/))
-          CALL CHECK_ERR(IRET)
-          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
-          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),PTLOC(2,INDREQ(1:NREQ)),(/IOUT,1/))
-          CALL CHECK_ERR(IRET)
-        ELSE
-          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
-          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/IOUT,1/))
-          CALL CHECK_ERR(IRET)
-          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
-          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/IOUT,1/))
-          CALL CHECK_ERR(IRET)
-        END IF
+        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
+        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/IOUT,1/))
+        CALL CHECK_ERR(IRET)
+        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
+        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/IOUT,1/))
+        CALL CHECK_ERR(IRET)
 !             
         DO J1=1,NREQ
           UDIR1(J1)  = MOD ( 270. - WDO(INDREQ(J1))*RADE , 360. )
@@ -2254,13 +2228,8 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
               CALL CHECK_ERR(IRET)
               IRET=NF90_PUT_VAR(NCID,VARID(2),PTNME(J),start=(/1,J1/),count=(/LEN_TRIM(PTNME(J)) ,1/))
               IF (FLWW3.NE.0) IRET=NF90_PUT_VAR(NCID,VARID(3),FLWW3,(/J1,IOUT/))
-              IF ( FLFORM ) THEN
-                IRET=NF90_PUT_VAR(NCID,VARID(4),PTLOC(1,J),(/J1,IOUT/))
-                IRET=NF90_PUT_VAR(NCID,VARID(5),PTLOC(2,J),(/J1,IOUT/))
-              ELSE
-                IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
-                IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
-              END IF
+              IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
+              IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR,(/J1,IOUT/))
@@ -2556,13 +2525,8 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
               IRET=NF90_PUT_VAR(NCID,VARID(27),J,(/J1/))
               IRET=NF90_PUT_VAR(NCID,VARID(2),PTNME(J),start=(/1,J1/),count=(/LEN_TRIM(PTNME(J)) ,1/))
               IF (FLWW3.NE.0) IRET=NF90_PUT_VAR(NCID,VARID(3),FLWW3,(/J1,IOUT/))
-              IF ( FLFORM ) THEN
-                IRET=NF90_PUT_VAR(NCID,VARID(4),PTLOC(1,J),(/J1,IOUT/))
-                IRET=NF90_PUT_VAR(NCID,VARID(5),PTLOC(2,J),(/J1,IOUT/))
-              ELSE
-                IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
-                IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
-              END IF
+              IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
+              IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(10),DPO(J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(11),WAO(J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(12),UDIR,(/J1,IOUT/))
@@ -4986,27 +4950,29 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
 !
       RETURN
 
-
       END SUBROUTINE W3CRNC 
-
 
 !==============================================================================
 
-  SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERR(IRET)
 
-  USE NETCDF
+      USE NETCDF
+      USE W3ODATMD, ONLY: NDSE
+      USE W3SERVMD, ONLY: EXTCDE
 
-  IMPLICIT NONE
+      IMPLICIT NONE
 
-  INTEGER IRET
+      INTEGER IRET
 
-  IF (IRET .NE. NF90_NOERR) THEN
-     WRITE(*,*) NF90_STRERROR(IRET)
-     STOP
-  END IF
-  RETURN
+      IF (IRET .NE. NF90_NOERR) THEN
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN OUNP :'
+        WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+        WRITE(*,*) NF90_STRERROR(IRET)
+        CALL EXTCDE ( 59 )
+      END IF
+      RETURN
 
-  END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERR
 
 !==============================================================================
 
@@ -5014,7 +4980,7 @@ WRITE(6,*) 'TOTO:',J,MINVAL(SPCO(:,J)),MAXVAL(SPCO(:,J))
 !/
 !/ End of W3OUNP ----------------------------------------------------- /
 !/
-      END PROGRAM W3OUNP
+     END PROGRAM W3OUNP
 
 
 

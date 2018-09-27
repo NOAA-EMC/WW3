@@ -451,7 +451,7 @@ cat >> $nmlfile << EOF
 EOF
 
 if [ "$nrinp" != 0 ];                       then  echo "  DOMAIN%NRINP  = $nrinp" >> $nmlfile; fi
-if [ "$nrgrd" != 1 ];                       then  echo "  DOMAIN%NRGRD	 = $nrgrd" >> $nmlfile; fi
+if [ "$nrgrd" != 1 ];                       then  echo "  DOMAIN%NRGRD	= $nrgrd" >> $nmlfile; fi
 if [ "$unipts" != "F" ];                    then  echo "  DOMAIN%UNIPTS = $unipts" >> $nmlfile; fi
 if [ "$iostyp" != 1 ];                      then  echo "  DOMAIN%IOSTYP = $iostyp" >> $nmlfile; fi
 if [ "$upproc" != "F" ];                    then  echo "  DOMAIN%UPPROC = $upproc" >> $nmlfile; fi

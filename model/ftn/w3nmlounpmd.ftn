@@ -59,7 +59,7 @@
     INTEGER                     :: OUTPUT
     REAL                        :: SCALE_FAC
     REAL                        :: OUTPUT_FAC
-    REAL                        :: TABLE_FAC
+    INTEGER                     :: TABLE_FAC
     LOGICAL                     :: SPECTRUM
     LOGICAL                     :: INPUT
     LOGICAL                     :: INTERACTIONS
@@ -1145,7 +1145,7 @@
       WRITE (SCREEN,11) TRIM(MSG),'OUTPUT       = ', NML_SOURCE%OUTPUT
       WRITE (SCREEN,14) TRIM(MSG),'SCALE_FAC    = ', NML_SOURCE%SCALE_FAC
       WRITE (SCREEN,14) TRIM(MSG),'OUTPUT_FAC   = ', NML_SOURCE%OUTPUT_FAC
-      WRITE (SCREEN,14) TRIM(MSG),'TABLE_FAC    = ', NML_SOURCE%TABLE_FAC
+      WRITE (SCREEN,11) TRIM(MSG),'TABLE_FAC    = ', NML_SOURCE%TABLE_FAC
       WRITE (SCREEN,13) TRIM(MSG),'SPECTRUM     = ', NML_SOURCE%SPECTRUM
       WRITE (SCREEN,13) TRIM(MSG),'INPUT        = ', NML_SOURCE%INPUT
       WRITE (SCREEN,13) TRIM(MSG),'INTERACTIONS = ', NML_SOURCE%INTERACTIONS

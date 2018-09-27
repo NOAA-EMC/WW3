@@ -23,7 +23,7 @@ C
 *
       INTEGER     MMLINE, NLPAGE, NOPAGE
 *
-      PARAMETER ( MMLINE = 5000 )
+      PARAMETER ( MMLINE = 50000 )
       PARAMETER ( NLPAGE =   60 )
       PARAMETER ( NOPAGE =   55 )
 *

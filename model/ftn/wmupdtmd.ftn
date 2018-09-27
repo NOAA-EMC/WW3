@@ -1100,7 +1100,7 @@
 !  7. Remarks :
 !
 !     - Grid pointers for output grid need to be set externally.
-!     - If input grid does not cover point of target grid, taget grid 
+!     - If input grid does not cover point of target grid, target grid 
 !       values are set to UNDEF.
 !
 !  8. Structure :
@@ -1650,7 +1650,7 @@
 !  7. Remarks :
 !
 !     - Grid pointers for output grid need to be set externally.
-!     - If input grid does not cover point of target grid, taget grid 
+!     - If input grid does not cover point of target grid, target grid 
 !       values are set to UNDEF.
 !
 !  8. Structure :

@@ -5695,7 +5695,7 @@
  1043 FORMAT ( '       Space-time extremes Dt      :',F8.2)
  1044 FORMAT ( '       Space-time extremes Dt set to default 1200 s')
 !
- 1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
+ 1100 FORMAT (/'  Status map, printed in',I6,' part(s) '/             &
                ' -----------------------------------'/)
  1101 FORMAT (2X,180I2)
  1102 FORMAT ( '  Legend : '/                                         &
@@ -5704,13 +5704,13 @@
                '    1 : Sea point             '/                      &
                '    2 : Active boundary point '/                      &
                '    3 : Excluded point        '/)
- 1103 FORMAT (/'  Obstruction map ',A1,', printed in',I3,' part(s) '/ &
+ 1103 FORMAT (/'  Obstruction map ',A1,', printed in',I6,' part(s) '/ &
                ' ---------------------------------------------'/)
  1104 FORMAT ( '  Legend : '/                                         &
                ' --------------------------------'/                   &
                '    fraction of obstruction * 10 '/)
 
- 1105 FORMAT (/'  Shoreline slope, printed in',I3,' part(s) '/ &
+ 1105 FORMAT (/'  Shoreline slope, printed in',I6,' part(s) '/ &
                ' ---------------------------------------------'/)
  1106 FORMAT ( '  Legend : '/                                         &
                ' --------------------------------'/                   &

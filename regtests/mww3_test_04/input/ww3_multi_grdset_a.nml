@@ -20,7 +20,7 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%NRGRD	 = 3
+  DOMAIN%NRGRD	= 3
   DOMAIN%UPPROC = T
   DOMAIN%PSHARE = T
   DOMAIN%FLGHG1 = T

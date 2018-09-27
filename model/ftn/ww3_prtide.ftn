@@ -127,7 +127,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NDSI, NDSF, NDSM, NDSDAT, NDSTRC, NTRACE,  &
-                                 IERR, IFLD, ITYPE, I, J, IX, IY, NFCOMP,   &
+                                 IERR, IFLD, ITYPE, I, JJ, J, IX, IY, NFCOMP,   &
                                  TIME(2), DTTST, JX,                        &
                                  NXI, NYI, NXJ(2), NYJ(2),                  &
                                  TIDE_START(2), PRTIDE_DT, TIDE_END(2)
@@ -267,24 +267,11 @@
       CLOSE(NDSF)
       
 !
-!     COMPUTE VNEIGH 
-!
-      ALLOCATE(CONN(NX))
-
-      COUNTRI = 0
-      COUNTOT = 0
-      CONN(:) = 0
-!
-!calculate the number of connected triangles for a given point.
-!
-      DO IE = 1, NX
-        NI = TRIGP(IE,:)
-        CONN(NI) = CONN(NI) + 1
-      ENDDO
-      COUNTRI = MAXVAL(CONN)
-
+      COUNTRI = MAXVAL(CCON)
       ALLOCATE(VNEIGH(NX,2*COUNTRI))
+      ALLOCATE(CONN(NX))
       VNEIGH(:,:) = 0
+      CONN(:) = 0
 !
       J = 0
       DO IP = 1, NX
@@ -292,7 +279,6 @@
         DO II = 1, CCON(IP)
           J = J + 1
           IE = IE_CELL(J)
-
           IF (IP == TRIGP(IE,1)) THEN
             DO IP2=2,3
               ALREADYFOUND = 0
@@ -332,21 +318,21 @@
               END DO
             END IF
         END DO ! CCON
-!
-! COUNTCON is a counter on connected points. In comparison with the number of connected triangle
+! CONN is a counter on connected points. In comparison with the number of connected triangle
 ! CCON, it will enable to spot whether a point belong to the contour
 !         
-        COUNTCON(IP)=IFOUND
-
+        CONN(IP)=IFOUND
         do I=2,IFOUND
-           do J=1,i-1
-           if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) THEN
+           do JJ=1,i-1
+           if (VNEIGH(IP,JJ).EQ. VNEIGH(IP,I)) THEN
               COUNTCON(IP)=COUNTCON(IP)-1
-              ! WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
+              VNEIGH(IP,I:IFOUND)=VNEIGH(IP,I+1:IFOUND+1)  ! removes the double point
+              ! WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,JJ),VNEIGH(IP,I)
               END IF
            enddo
         enddo
       END DO !NX   
+
 !
 ! Counts the number of tidal constituents
 !
