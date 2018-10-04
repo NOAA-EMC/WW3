@@ -699,6 +699,18 @@
         INTEGER, POINTER      :: EDGES(:,:), NEIGH(:,:)
         REAL(8), POINTER      :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
+
+!/UOST         CHARACTER(LEN=256)      :: UOSTFILELOCAL, UOSTFILESHADOW
+!/UOST         LOGICAL, ALLOCATABLE    :: UOST_LCL_OBSTRUCTED(:,:), UOST_SHD_OBSTRUCTED(:,:)
+!/UOST         INTEGER*1, ALLOCATABLE  :: UOSTLOCALALPHA(:,:,:,:), UOSTLOCALBETA(:,:,:,:)
+!/UOST         INTEGER*1, ALLOCATABLE  :: UOSTSHADOWALPHA(:,:,:,:), UOSTSHADOWBETA(:,:,:,:)
+!/UOST         REAL*4, ALLOCATABLE     :: UOSTCELLSIZE(:,:,:)
+!/UOST         REAL                    :: UOSTABMULTFACTOR = 100
+!/UOST         REAL                    :: UOSTCELLSIZEFACTOR = 1000
+!/UOST         REAL                    :: UOSTLOCALFACTOR = 1
+!/UOST         REAL                    :: UOSTSHADOWFACTOR = 1
+!/UOST         LOGICAL                 :: UOSTENABLED = .true.
+
       END TYPE GRID
 !
       TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction

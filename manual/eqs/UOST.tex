@@ -104,19 +104,21 @@ the user is referred to \cite{art:Mentaschi2018a}.
 \cite{art:Mentaschi2018c} provides the documentation of the software and of its architecture,
 along with use guidance and illustrative examples. 
 
-\textbf{Time step settings.} To work properly on a given cell, 
-UOST needs a source-term time step lower
-or equal to the critical CFL time step of the cell.
-In \ws\
-this limitation is alleviated by the presence of a time step limiter
-acting cell by cell
-(see section \ref{sub:source}).
-In unstructured meshes with many small cells along highly resolved coastlines,
-the limiter, in combination with UOST, can lead 
-in such small cells to constantly small time steps, which may have some effect on the 
-computational cost of the simulation.
-To reduce this problem the user can set alphaBetaLab in order to
-neglect cells smaller than a user-defined threshold.
+\textbf{Time step settings.} 
+In \ws\ the source terms are applied at the end of each global time step.
+Therefore, to work properly on a given cell, 
+UOST needs a global time step lower
+or equal to the critical CFL time step of the cell, 
+i.e., the amount of time needed by the fastest spectral component to entirely cross the cell.
+Otherwise, part of the energy will leak through the cell without being blocked \citep{art:Mentaschi2018a}.
+
+In unstructured grids with cells of very different sizes, the application of UOST to 
+all the cells, including the smallest ones, may come with an excedingly small global time step
+that would affect the economy of the model. 
+To avoid this problem the user can set alphaBetaLab in order to
+neglect cells smaller than a user-defined threshold, and then set in \ws\
+a global time step equal to the critical CFL time step related with that threshold 
+\citep{art:Mentaschi2018c}.
 
 
 \begin{table} \begin{center}

@@ -11,11 +11,19 @@
 #  source terms  disabled.                                                    #
 #                                                                             # 
 #  To launch these tests use the commands:                                    # 
+# for Serial (SHARED)							      #
 # ./bin/run_test -c <Compiler> -S -w work_rg_shel -i input_rg_shel \          #
 #                         ../model ww3_ts4                                    #
-# ./bin/run_test -c Intel -S -w work_rg_multi -i input_rg_multi -m grdset \   # 
-#                         ../model ww3_ts4                                    #
-# ./bin/run_test -c Intel -S -w work_ug -i input_ug ../model ww3_ts4          #
+# ./bin/run_test -c <Compiler> -S -w work_rg_multi -i input_rg_multi -m   \   # 
+#                         grdset ../model ww3_ts4                             #
+# ./bin/run_test -c <Compiler> -S -w work_ug -i input_ug ../model ww3_ts4     #
+# for Parallel (MPI DIST)						      #
+# ./bin/run_test -c <Compiler> -S -s MPI -w work_rg_shel -i  \                #
+#                       input_rg_shel ../model ww3_ts4                        #
+# ./bin/run_test -c <Compiler> -S -s MPI -w work_rg_multi -i input_rg_multi \ # 
+#                       -m  grdset ../model ww3_ts4                           #
+# ./bin/run_test -c <Compiler> -S -s MPI -w work_ug -i input_ug ../model \    #
+#  ww3_ts4                                                                    #
 #                                                                             #
 #                                                                             #
 #                                                                             #

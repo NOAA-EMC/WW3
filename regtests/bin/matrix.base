@@ -1940,7 +1940,7 @@
     echo "$rtst -s MPI -w work_IC3_B2.5k_MPI -i input_IC3_B2.5k -f -p $mpi -n $np $ww3 ww3_tic1.2" >> matrix.body
   fi
 
-
+ # unstructured grid with PDLIB for domain decomposition and implicit solver
  if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
@@ -1952,13 +1952,19 @@
    echo "$rtst -s MPI -s PDLIB -w work_mc -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
  fi
 
-#Unresolved Obstacles Source Term (UOST) 
- if [ "$uost" = 'y' ]
+ #Unresolved Obstacles Source Term (UOST) 
+ if [ "$uost" = 'y' ] 
  then
    echo ' ' >> matrix.body
-   echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
-   echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
-   echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
+   if [ "$dist" = 'y' ]
+     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_ug_MPI -i input_ug $ww3 ww3_ts4" >> matrix.body
+   else 
+     echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
+   fi
  fi
 
 # --------------------------------------------------------------------------- #
