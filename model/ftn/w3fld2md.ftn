@@ -12,6 +12,8 @@
 !/    16-May-2014 : Finalizing                          (version 4.18)
 !/    19-Mar-2015 : Extending for non-10 m winds        (version 5.12)
 !/    27-Jul-2016 : Added Charnock output (J.Meixner)   (version 5.12)
+!/    22-Jun-2018 : Minor modification for application in shallow water.
+!/                                        (X.Chen)      (version 6.06)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -398,17 +400,25 @@
                      wnd_effect = wnd_z_proj - CP(K)
                      SCIN = A1 * wnd_effect * ABS( wnd_effect ) * DAIR / DWAT * &
                           WN(K) / CP(K)
+                  ! -- Original version assumed g/Cp = sig,(a.k.a in deep water.)
+                  !   TAUINTX(K) = TAUINTX(K) + SPC2(K,T) * SCIN &
+                  !        * COS( TH(T) ) / CP(K) * DTH
+                  !   TAUINTY(K) = TAUINTY(K) + SPC2(K,T) * SCIN &
+                  !        * SIN( TH(T) ) / CP(K) * DTH
+                     
                      TAUINTX(K) = TAUINTX(K) + SPC2(K,T) * SCIN &
-                          * COS( TH(T) ) / CP(K) * DTH
+                          * COS( TH(T) ) *SIG2(K) * DTH
                      TAUINTY(K) = TAUINTY(K) + SPC2(K,T) * SCIN &
-                          * SIN( TH(T) ) / CP(K) * DTH
+                          * SIN( TH(T) ) *SIG2(K) * DTH
                   ENDDO
                ENDDO
                TAUYW = 0.0
                TAUXW = 0.0
                DO K = 1, NKT
-                  TAUXW = TAUXW + DWAT * GRAV * DWN(K) * TAUINTX(K)
-                  TAUYW = TAUYW + DWAT * GRAV * DWN(K) * TAUINTY(K)
+                !  TAUXW = TAUXW + DWAT * GRAV * DWN(K) * TAUINTX(K)
+                !  TAUYW = TAUYW + DWAT * GRAV * DWN(K) * TAUINTY(K)
+                  TAUXW = TAUXW + DWAT * DWN(K) * TAUINTX(K)
+                  TAUYW = TAUYW + DWAT * DWN(K) * TAUINTY(K)
                ENDDO
                CDF = ( SQRT(TAUXW**2.0+TAUYW**2.0) / DAIR ) / wnd_10_mag**2.0
                !|---------------------------------------------------------------------|
