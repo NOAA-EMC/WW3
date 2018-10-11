@@ -55,6 +55,7 @@
 !/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.01 )
 !/    01-May-2017 : Adds directional MSS parameters     ( version 6.04 )
 !/    05-Jun-2018 : Adds PDLIB/MEMCHECK/DEBUG           ( version 6.04 )
+!/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -1894,7 +1895,7 @@
 !/MPI                          STH2M, HSIG, PHICE, TAUICE, USSP,      &
 !/MPI                          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,  &
 !/MPI                          HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW, &
-!/MPI                          PTM1, PT1, PT2, PEP
+!/MPI                          PTM1, PT1, PT2, PEP, WBT
 
 !/MPI      USE W3GDATMD, ONLY: NK
 !/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
@@ -2118,6 +2119,14 @@
 !/MPI      CALL MPI_SEND_INIT (HCMAXD (1),NSEALM , MPI_REAL, IROOT,    &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 !/MPIT      WRITE (NDST,9011) IH, ' 2/16', IROOT, IT, IRQGO(IH), IERR
+!/MPI                END IF
+!
+!/MPI              IF ( FLGRDALL( 2, 17) ) THEN
+!/MPI                  IH     = IH + 1
+!/MPI                  IT     = IT + 1
+!/MPI      CALL MPI_SEND_INIT (WBT  (1),NSEALM , MPI_REAL, IROOT,    &
+!/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+!/MPIT      WRITE (NDST,9011) IH, ' 2/17', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
 !/MPI              IF ( FLGRDALL( 3, 1) ) THEN 
@@ -2910,6 +2919,14 @@
 !/MPI      CALL MPI_RECV_INIT (HCMAXD(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
 !/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, ' 2/16', IFROM, IT, IRQGO2(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL( 2, 17) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI      CALL MPI_RECV_INIT (WBT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+!/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, ' 2/17', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
 !/MPI                IF ( FLGRDALL( 3, 1) ) THEN 

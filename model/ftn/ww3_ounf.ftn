@@ -30,6 +30,7 @@
 !/    27-Jun-2018 : Updated to handle SMC output.       ( version 6.05 )
 !/    26-Jul-2018 : Changed reading of TABIPART         ( version 6.05 )
 !/    12-Sep-2018 : Added extra partitioned fields      ( version 6.06 )
+!/    25-Sep-2018 : Add WBT parameter                   ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -129,7 +130,7 @@
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-                          WN, USSP
+                          WN, USSP, WBT
       USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -1562,6 +1563,25 @@
               VARND(1)=''
               VMIN = 0
               VMAX = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
+              FSC    = 0.001
+              UNITS  = '1'
+              ENAME  = '.wbt'
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( WBT, X1 )
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1 )
+              END IF
+              NFIELD=1
+              VARNM(1)='wbt'
+              VARNL(1)='domiant wave breaking probability'
+              VARNS(1)='domiant_wave_breaking_probability'
+              VARNG(1)='domiant_wave_breaking_probability'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 1000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral

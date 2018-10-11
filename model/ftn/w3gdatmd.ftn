@@ -90,6 +90,7 @@
 !/    20-Aug-2018:  Extra namelist variables for ST6    ( version 6.06)
 !/                  (Q. Liu, UoM)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -229,6 +230,8 @@
 !      GNAME     C*30  Public   Grid name.
 !      FILEXT    C*13  Public   Extension of WAVEWATCH III file names
 !                               default in 'ww3'.
+!      BTBETA    Real  Public   The constant used for separating wind sea
+!                               and swell when we estimate WBT
 !     ----------------------------------------------------------------
 !
 !     All elements of SGRD are aliased to pointers with the same
@@ -625,7 +628,7 @@
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
                             PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
                             IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
-                            IICEDDISP, IICEFDISP
+                            IICEDDISP, IICEFDISP, BTBETA
 
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
@@ -990,7 +993,8 @@
                                  DTMIN, DMIN, CTMAX, FICE0, FICEN,     &
                                  FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
                                  IICEHMIN, IICEHINIT, ICESCALES(:),    &
-                                 IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP
+                                 IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP, &
+                                 BTBETA
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: PoLat, PoLon
 !/RTD        REAL, POINTER         :: AnglD(:)
@@ -1970,6 +1974,7 @@
       STEXU  => GRIDS(IMOD)%STEXU
       STEYU  => GRIDS(IMOD)%STEYU
       STEDU  => GRIDS(IMOD)%STEDU
+      BTBETA => GRIDS(IMOD)%BTBETA
 !
       GINIT  => GRIDS(IMOD)%GINIT
       GUGINIT  => GRIDS(IMOD)%GUGINIT      

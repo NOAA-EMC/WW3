@@ -970,7 +970,7 @@
                          FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1,   &
                          THP0AUX2, HSIGAUX, STMAXEAUX,STMAXDAUX,       &
                          HMAXEAUX, HCMAXEAUX, HMAXDAUX, HCMAXDAUX,     &
-                         SUMWT2(NOGE(2))
+                         WBTAUX, SUMWT2(NOGE(2))
 ! Local group 3 variables
         REAL          :: EFAUX(E3DF(2,1):E3DF(3,1)),                   &
                          TH1MAUX(E3DF(2,2):E3DF(3,2)),                 &
@@ -1058,6 +1058,7 @@
         HCMAXE   = UNDEF
         HMAXD    = UNDEF
         HCMAXD   = UNDEF
+        WBT      = UNDEF
 !
 ! Group 3 variables
 !
@@ -1276,6 +1277,7 @@
                 HCMAXEAUX   = UNDEF
                 HMAXDAUX    = UNDEF
                 HCMAXDAUX   = UNDEF
+                WBTAUX      = UNDEF
                 SUMWT2      = 0
 !
 ! Group 3 variables
@@ -1664,6 +1666,14 @@
                       SUMWT2(16) = SUMWT2(16) + WT
                       IF ( HCMAXDAUX .EQ. UNDEF )   HCMAXDAUX = 0.
                       HCMAXDAUX = HCMAXDAUX + WADATS(IGRID)%HCMAXD(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,17) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%WBT(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(17) = SUMWT2(17) + WT
+                      IF ( WBTAUX .EQ. UNDEF )   WBTAUX = 0.
+                      WBTAUX = WBTAUX + WADATS(IGRID)%WBT(GSEA)*WT
                     END IF
                   END IF
 !
@@ -2539,6 +2549,12 @@
                   IF ( HCMAXD(ISEA) .EQ. UNDEF )   HCMAXD(ISEA) = 0.
                   HCMAXD(ISEA) = HCMAXD(ISEA) +                        &
                                  HCMAXDAUX / REAL( SUMWT2(16) + SUMGRD )
+                END IF
+!
+                IF ( WBTAUX .NE. UNDEF ) THEN
+                  IF ( WBT(ISEA) .EQ. UNDEF )   WBT(ISEA) = 0.
+                  WBT(ISEA) = WBT(ISEA) +                            &
+                               WBTAUX / REAL( SUMWT2(17)+SUMGRD )
                 END IF
 !
 ! Group 3 variables

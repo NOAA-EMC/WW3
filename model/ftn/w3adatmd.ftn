@@ -37,6 +37,7 @@
 !/    01-May-2017 : Adds directional MSS parameters     ( version 6.02 )
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
+!/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -113,6 +114,8 @@
 !      HMAXD     R.A.  Public   Std of HMAXE
 !      HCMAXE    R.A.  Public   Expected maximum wave height (from crest)
 !      HCMAXD    R.A.  Public   STD of HCMAXE
+!      WBT       R.A.  Public   Dominant wave breaking probability
+!                               (b_T in Babanin et al. (2001, JGR))
 !
 !      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
 !      TWS       R.A.  Public   Wind sea period (used for flux parameterizations)
@@ -361,13 +364,13 @@
                                  THS(:),  THP0(:),  FP1(:), THP1(:), &
                                  HSIG(:), STMAXE(:), STMAXD(:),      &
                                  HMAXE(:), HCMAXE(:), HMAXD(:),      &
-                                 HCMAXD(:), QP(:)
+                                 HCMAXD(:), QP(:), WBT(:)
         REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
                                  XT01 (:), XFP0(:), XTHM(:),          &
                                  XTHS(:), XTHP0(:), XFP1(:), XTHP1(:),&
                                  XHSIG(:), XSTMAXE(:), XSTMAXD(:),    &
                                  XHMAXE(:), XHCMAXE(:), XHMAXD(:),    &
-                                 XHCMAXD(:), XQP(:)
+                                 XHCMAXD(:), XQP(:), XWBT(:)
 !
 ! Output fields group 3)
 !
@@ -525,7 +528,8 @@
                                  T01 (:), FP0(:), THM(:), THS(:),     &
                                  THP0(:), FP1(:), THP1(:), HSIG(:),   &
                                  STMAXE(:), STMAXD(:), HMAXE(:),      &
-                                 HCMAXE(:), HMAXD(:), HCMAXD(:), QP(:)
+                                 HCMAXE(:), HMAXD(:), HCMAXD(:), QP(:),&
+                                 WBT(:)
 !
       REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
                                  TH2M(:,:), STH2M(:,:)
@@ -938,6 +942,7 @@
                  WADATS(IMOD)%HMAXE(NSEALM), WADATS(IMOD)%HMAXD(NSEALM),&
                  WADATS(IMOD)%HCMAXE(NSEALM),                           &
                  WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
+                 WADATS(IMOD)%WBT(NSEALM),                              &
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !
@@ -960,6 +965,7 @@
       WADATS(IMOD)%HCMAXE= UNDEF
       WADATS(IMOD)%HCMAXD= UNDEF
       WADATS(IMOD)%QP     = UNDEF
+      WADATS(IMOD)%WBT    = UNDEF
 
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -1583,6 +1589,14 @@
           ALLOCATE ( WADATS(IMOD)%XHCMAXD(1) )
         END IF
 !
+      IF ( OUTFLAGS( 2, 17) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XWBT (NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XWBT (1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
 !     IF ( OUTFLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
 !         CHECK_ALLOC_STATUS ( ISTAT )
@@ -1615,6 +1629,7 @@
       WADATS(IMOD)%XHMAXD = UNDEF
       WADATS(IMOD)%XHCMAXE= UNDEF
       WADATS(IMOD)%XHCMAXD= UNDEF
+      WADATS(IMOD)%XWBT   = UNDEF
 !     WADATS(IMOD)%XFP1   = UNDEF
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
@@ -2631,6 +2646,7 @@
           HCMAXE => WADATS(IMOD)%HCMAXE
           HCMAXD => WADATS(IMOD)%HCMAXD
           QP     => WADATS(IMOD)%QP
+          WBT    => WADATS(IMOD)%WBT
 !
           EF     => WADATS(IMOD)%EF
           TH1M   => WADATS(IMOD)%TH1M
@@ -2929,6 +2945,7 @@
           HCMAXE => WADATS(IMOD)%XHCMAXE
           HCMAXD => WADATS(IMOD)%XHCMAXD
           QP     => WADATS(IMOD)%XQP
+          WBT    => WADATS(IMOD)%XWBT
 !         FP1    => WADATS(IMOD)%XFP1
 !         THP1   => WADATS(IMOD)%XTHP1
 !

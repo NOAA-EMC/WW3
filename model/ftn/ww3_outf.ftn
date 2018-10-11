@@ -129,7 +129,7 @@
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
-                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD
+                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -1067,6 +1067,17 @@
                    XS1    = HCMAXD
                 ELSE
                   CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1)
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = '1'
+                ENAME  = '.wbt'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = WBT
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1)
                 ENDIF
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN

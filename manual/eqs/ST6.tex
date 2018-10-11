@@ -1,5 +1,5 @@
 \vsssub
-\subsubsection{~$S_{in} + S_{ds}$: Zieger et al. 2015} \label{sec:ST6}
+\subsubsection{~$S_{in} + S_{ds}$: Rogers et al. 2012 \& Zieger et al. 2015} \label{sec:ST6}
 \vsssub
 
 \opthead{ST6}{AUSWEX, Lake George}{A. Babanin, I. Young, M. Donelan, E. Rogers, S. Zieger, Q. Liu}
@@ -382,6 +382,30 @@ in vers.\,\WWver, where $f_{hf}$ is the cut-off high-frequency limit
 (Table~\ref{tab:ST601}), and a negative $N_{hf}$ (say, $N_{hf} = -1$)
 means \emph{the high-frequency spectral tail evolves freely without any
 prescribed slope.}
+
+\noindent
+\paragraph{Dominant Wave Breaking Probability}
+Following \citet[][their Fig.~12]{art:BBY01}, the dominant wave breaking probability $b_T$ can be estimated from the wave spectrum $F(f, \theta)$ according to the following parametric form
+\begin{equation}
+b_T = 85.1 \Big[ (\epsilon_p - 0.055) (1 + H_s / d) \Big]^{2.33},
+\label{eq:bt}
+\end{equation}
+where $H_s$ is the significant wave height, $d$ is the water depth, $\epsilon_p$ is the significant steepness of the spectral peak, given by
+\begin{equation}
+%\left \lbrace
+\begin{array}{rcl}
+\epsilon_p &=& H_p k_p / 2\\
+H_p &=& 4 \Big[\int_{0}^{2\pi} \int_{0.7f_p}^{1.3f_p} F(f, \theta) \mathrm{d}f \mathrm{d}\theta \Big]^{1/2}
+\label{eq:steepness}
+\end{array}
+%\right.
+\end{equation}
+where $k_p$ and $f_p$ are the peak wavenumber and frequency, respectively. Note that only the contribution from wind seas is considered when we calculate $H_s$, $H_p$ and $f_p$ ($k_p$) from $F(f, \theta)$ (Eqs. \ref{eq:bt} and \ref{eq:steepness}). Following \citet{Janssen1989} and \citet{Bidlot2001}, we consider spectral components as wind seas when
+\begin{equation}
+\frac{c(k)}{U_{10} \cos (\theta - \theta_u)}  < \beta_w,
+\label{eq:beta}
+\end{equation}
+where $c(k)$ is the phase velocity, $U_{10}$ is the wind speed at 10 m above the sea surface, $\theta_u$ is the wind direction and $\beta_w$ is the constant wind forcing parameter. We implemented $\beta_w$ as a tunable parameter (the {\F MISC} namelist parameter {\code BTBET}), and used $\beta_w=1.2$ by default.
 
 \noindent
 \paragraph{Bulk Adjustments.} The source term

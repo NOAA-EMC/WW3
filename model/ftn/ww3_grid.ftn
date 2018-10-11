@@ -102,6 +102,7 @@
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -676,7 +677,7 @@
                                  LICE, XSEED, XR, HSPM, WSM, WSC, STDX,&
                                  STDY, STDT, ICEHMIN, ICEHFAC, ICEHINIT, &
                                  ICESLN, ICEWIND, ICESNL, ICESDS,        &
-                                 ICEHDISP, ICEFDISP, ICEDDISP
+                                 ICEHDISP, ICEFDISP, ICEDDISP, BTBET
 !
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
@@ -860,7 +861,7 @@
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
                       ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
                       ICEHDISP, ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR, &
-                      PTM, PTFC
+                      PTM, PTFC, BTBET
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -2122,6 +2123,7 @@
       RWNDC  = 1.
       WCOR1  = 99. 
       WCOR2  = 0.
+      BTBET  = 1.2 ! β for c / [U cos(θ - φ)] < β
 ! Variables for Space-Time Extremes
 !  Default negative values make w3iogomd switch off space-time extremes
 !  forces user to provide NAMELIST if wanting to compute STE parameters
@@ -2368,6 +2370,8 @@
       IICEFDISP  = ICEFDISP
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
+!
+      BTBETA = MIN(MAX (1., BTBET), 2.)
 !
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
@@ -2638,7 +2642,8 @@
                                 STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
                                 ICEHINIT, ICEDISP, ICEHDISP,          &
                                 ICESLN, ICEWIND, ICESNL, ICESDS,      &
-                                ICEDDISP,ICEFDISP, NOLEAP, TRCKCMPR
+                                ICEDDISP,ICEFDISP, NOLEAP, TRCKCMPR,  &
+                                BTBETA
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
@@ -2647,7 +2652,8 @@
                                 STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
                                 ICEHINIT, ICEDISP, ICEHDISP,          &
                                 ICESLN, ICEWIND, ICESNL, ICESDS,      &
-                                ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR
+                                ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR, &
+                                BTBETA
           END IF
 !
 !/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
@@ -4899,7 +4905,7 @@
 !/FLX3        ' --------------------------------------------------')
 !/FLX4  810 FORMAT (/'  Stresses (Hwang 2011) ',A/                     &
 !/FLX4        ' --------------------------------------------------')
-!/FLX4  811 FORMAT ( '       drag coefficient scaling    :',E11.4    /)
+!/FLX4  811 FORMAT ( '       drag coefficient scaling    :',F8.2    /)
 !/FLX4 2810 FORMAT ( '  &FLX4 CDFAC =',F6.3,' /')
 !/FLX3  811 FORMAT ( '       Max Cd * 10^3               :',F8.2/     &
 !/FLX3               '       Cap type                    : ',A/)
@@ -5422,7 +5428,8 @@
                '        ICESLN = ',F6.2,', ICEWIND = ',F6.2,          &
                      ', ICESNL = ',F6.2,', ICESDS = ',F5.2,','/       &
                '        ICEDDISP = ',F5.2,', ICEFDISP = ',F5.2,       &
-                     ', NOLEAP = ',L3,' , TRCKCMPR = ',L3,' /')
+                     ', NOLEAP = ',L3,' , TRCKCMPR = ', L3,','/       &
+               '        BTBET  = ', F6.2, ' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  

@@ -33,27 +33,28 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    05-Feb-2011 : Implement unstructured grid        ( version 3.14.3 )
-!/                  (A. Roland and F. Ardhuin) 
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/                  (A. Roland and F. Ardhuin)
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    15-Apr-2013 : New subroutine to read param. names ( version 4.11 )
 !/    21-Aug-2013 : Bug correction in W3IOGO: UBR, ABR  ( version 4.11 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    27-Aug-2015 : Add ICEF,ICEH as output fields      ( version 5.10 )
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
 !/    05-Jun-2018 : Add DEBUGSTP/SETUP                  ( version 6.04 )
+!/    22-Aug-2018 : Add WBT output parameter            ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -137,7 +138,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLGD, FLG2 ) 
+      SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLGD, FLG2 )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -173,7 +174,7 @@
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      W3INIT    Subr.   N/A    
+!      W3INIT    Subr.   N/A
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -225,7 +226,7 @@
 
       DO I=1,5
         IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) THEN
-          IF (FLGRD(3,I).OR.FLGR2(3,I)) THEN 
+          IF (FLGRD(3,I).OR.FLGR2(3,I)) THEN
              WRITE(NDSEN,1008) VARNAME1(I),VARNAME2(I)
           END IF
           FLGRD(3,I)=.FALSE.
@@ -254,12 +255,12 @@
         FLGR2(6,9)=.FALSE.
       END IF
 !
-      FLGD(3) = .FALSE. 
-      FLG2(3) = .FALSE. 
+      FLGD(3) = .FALSE.
+      FLG2(3) = .FALSE.
       IF(ANY(FLGRD(3,:))) FLGD(3)=.TRUE.
       IF(ANY(FLGR2(3,:))) FLG2(3)=.TRUE.
-      FLGD(6) = .FALSE. 
-      FLG2(6) = .FALSE. 
+      FLGD(6) = .FALSE.
+      FLG2(6) = .FALSE.
       IF(ANY(FLGRD(6,:))) FLGD(6)=.TRUE.
       IF(ANY(FLGR2(6,:))) FLG2(6)=.TRUE.
 !
@@ -267,13 +268,13 @@
 !
  1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
                '     PARAMETER ',A,' not allowed: need to set',        &
-               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)'   & 
+               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)'   &
                ' with proper bounds' )
 !
       END SUBROUTINE W3FLGRDUPDT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3READFLGRD ( NDSI , NDSO, NDSS, NDSEN, COMSTR,      &
-                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR) 
+                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -284,7 +285,7 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/
 !  1. Purpose :
 !
@@ -301,7 +302,7 @@
 !       COMSTR  Char   I   Comment string, usually '$'
 !       FLG1D   L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
-!       IAPROC  Int.   I   index of current processor 
+!       IAPROC  Int.   I   index of current processor
 !       NAPOUT  Int.   I   index of processor for output (screen)
 !       IERR    Int.   O   Error message number
 !     ----------------------------------------------------------------
@@ -369,22 +370,22 @@
 ! 1.  Initialize flags -------------------------------------- *
 !
       IERR=0
-      FLG2D(:,:)=.FALSE. ! Initialize FLG2D 
-      FLG1D(:)=.FALSE. ! Initialize FLOG 
+      FLG2D(:,:)=.FALSE. ! Initialize FLG2D
+      FLG1D(:)=.FALSE. ! Initialize FLOG
       NAMES =.FALSE.
-!        
+!
       DO IFI=1,NOGRP ! Loop over field output groups
 !
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
         READ (NDSI,*,END=2001,ERR=2002) AFLG
-        IF (AFLG.EQ.'T') THEN 
-          FLG1D(IFI)=.TRUE. 
-        ELSE IF (AFLG.EQ.'F') THEN 
+        IF (AFLG.EQ.'T') THEN
+          FLG1D(IFI)=.TRUE.
+        ELSE IF (AFLG.EQ.'F') THEN
           FLG1D(IFI)=.FALSE.
-        ELSE IF (AFLG.EQ.'N') THEN 
+        ELSE IF (AFLG.EQ.'N') THEN
           NAMES=.TRUE.
           EXIT
-        ELSE 
+        ELSE
           IERR=1
           GOTO 2005
           END IF
@@ -400,11 +401,11 @@
              IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
                                FLG2D(IFI,IFJ)=.TRUE.
           ENDDO
-          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI 
+          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
          ENDIF
         END DO
 !
-      IF (NAMES) THEN 
+      IF (NAMES) THEN
 !
 ! 2. Reads and splits list of output field names
 !
@@ -414,9 +415,9 @@
         CALL STRSPLIT(FLDOUT,OUT_NAMES)
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
-          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
+          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))
 !
-! 2. Matches names with expected ... 
+! 2. Matches names with expected ...
 !
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
@@ -485,6 +486,8 @@
              FLG2D(2,15)=.TRUE.
            CASE('SDMHC')
              FLG2D(2,16)=.TRUE.
+           CASE('WBT')
+             FLG2D(2,17)=.TRUE.
 !
 ! Group 3
 !
@@ -584,7 +587,7 @@
            CASE('P2S')
              FLG2D(6,7)=.TRUE.
            CASE('USF')
-             IF (US3DF(1).GE.1) THEN 
+             IF (US3DF(1).GE.1) THEN
                FLG2D(6,8)=.TRUE.
              ELSE
                WRITE(NDSEN,1008) 'USF','US3D'
@@ -656,7 +659,7 @@
 !
           IOUT=IOUT+1
 !
-        END DO 
+        END DO
 !
       END IF
 !
@@ -677,24 +680,24 @@
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       END IF
 !
-      RETURN 
+      RETURN
 !
  2001 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1001)
-      RETURN 
+      RETURN
  2002 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1002) IFI, IERR
-      RETURN 
+      RETURN
  2003 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1003) IERR
-      RETURN 
+      RETURN
 !2004 CONTINUE ! replaced by warning in code ....
  2005 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1005) AFLG
-      RETURN 
+      RETURN
  2006 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1006) IFI,IERR
-      RETURN 
+      RETURN
 !
  1945 FORMAT ( '            Fields   : ',A)
  1946 FORMAT ( '                       ',A)
@@ -732,7 +735,7 @@
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDOUT,      &
-                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR) 
+                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -743,7 +746,7 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    17-Feb-2016 : New version for namelist use        ( version 5.11 )
 !/
 !  1. Purpose :
@@ -760,7 +763,7 @@
 !       FLDOUT  Cha.   I   List of field names
 !       FLG1D   L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
-!       IAPROC  Int.   I   index of current processor 
+!       IAPROC  Int.   I   index of current processor
 !       NAPOUT  Int.   I   index of processor for output (screen)
 !       IERR    Int.   O   Error message number
 !     ----------------------------------------------------------------
@@ -827,8 +830,8 @@
 ! 1.  Initialize flags -------------------------------------- *
 !
       IERR=0
-      FLG2D(:,:)=.FALSE. ! Initialize FLG2D 
-      FLG1D(:)=.FALSE. ! Initialize FLOG 
+      FLG2D(:,:)=.FALSE. ! Initialize FLG2D
+      FLG1D(:)=.FALSE. ! Initialize FLOG
 !
 ! 2. Splits list of output field names
 !
@@ -836,9 +839,9 @@
         CALL STRSPLIT(FLDOUT,OUT_NAMES)
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
-          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
+          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))
 !
-! 2. Matches names with expected ... 
+! 2. Matches names with expected ...
 !
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
@@ -903,6 +906,8 @@
            FLG2D(2,15)=.TRUE.
          CASE('SDMHC')
            FLG2D(2,16)=.TRUE.
+         CASE('WBT')
+           FLG2D(2,17)=.TRUE.
 !
 ! Group 3
 !
@@ -1002,7 +1007,7 @@
          CASE('P2S')
            FLG2D(6,7)=.TRUE.
          CASE('USF')
-           IF (US3DF(1).GE.1) THEN 
+           IF (US3DF(1).GE.1) THEN
              FLG2D(6,8)=.TRUE.
            ELSE
              WRITE(NDSEN,1008) 'USF','US3D'
@@ -1073,7 +1078,7 @@
 !
         IOUT=IOUT+1
 !
-      END DO 
+      END DO
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
         FLT    = .TRUE.
@@ -1093,7 +1098,7 @@
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       END IF
 !
-      RETURN 
+      RETURN
 !
  1945 FORMAT ( '            Fields   : ',A)
  1946 FORMAT ( '                       ',A)
@@ -1133,12 +1138,13 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    10-Apr-2015 : Remove unused variables             ( version 5.08 )
 !/    10-Jan-2017 : Separate Stokes drift calculation   ( version 6.01 )
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
+!/    22-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -1221,7 +1227,8 @@
                           BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
                           TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
                           HCMAXE, HMAXE, HCMAXD, HMAXD, USSP, QP, PQP,&
-                          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP
+                          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,  &
+                          WBT
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
@@ -1264,8 +1271,8 @@
                                  ETTPMM(NSEAL), ETF(NSEAL),           &
                                  ET1(NSEAL), ABX2M(NSEAL),            &
                                  ABY2M(NSEAL), ABXM(NSEAL),           &
-                                 ABYM(NSEAL), ABXYM(NSEAL),           & 
-                                 MSSXM(NSEAL), MSSYM(NSEAL),          & 
+                                 ABYM(NSEAL), ABXYM(NSEAL),           &
+                                 MSSXM(NSEAL), MSSYM(NSEAL),          &
                                  MSSXTM(NSEAL), MSSYTM(NSEAL),        &
                                  MSSXYM(NSEAL), THMP(NSEAL),          &
                                  T02P(NSEAL), NV(NSEAL), NS(NSEAL),   &
@@ -1294,13 +1301,13 @@
 !/DEBUGSTP    WRITE(740+IAPROC,*) 'size(A,2)=', size(A,2)
 !/DEBUGSTP    WRITE(740+IAPROC,*) 'size(A,3)=', size(A,3)
 !/DEBUGSTP    FLUSH(740+IAPROC)
-      DO I=1,NOGRP 
+      DO I=1,NOGRP
         DO J=1,NGRPP
           FLOLOC(I,J) =   &
              ((FLOUTG.AND.FLOGRD(I,J)).OR.(FLOUTG2.AND.FLOGR2(I,J)))
           END DO
         END DO
-! 
+!
       FXPMC  = 0.66 * GRAV / 28.
       HSMIN  = HSMIN
       FT1    =  0.3333 * SIG(NK)**2 * DTH * SIG(NK)
@@ -1392,6 +1399,7 @@
       HCMAXD = UNDEF
       HMAXD = UNDEF
       QP    = UNDEF
+      WBT    = UNDEF
 !
       FP1    = UNDEF
       THP1   = UNDEF
@@ -1428,7 +1436,7 @@
             ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)
             ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
             ABYX(JSEA) = ABYX(JSEA) + A(ITH,IK,JSEA)*ESC(ITH)
-            IF (ITH.LE.NTH/2) THEN 
+            IF (ITH.LE.NTH/2) THEN
               ABST(JSEA) = ABST(JSEA) +                               &
                               A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
               END IF
@@ -1474,15 +1482,15 @@
           IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN 
             ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR           &
                      *WN(IK,ISEA)**2
-          ELSE 
-            IF (SIG(MAX(IK-1,1))*0.5*(1+XFR).LT.0.4*TPI) THEN 
+          ELSE
+            IF (SIG(MAX(IK-1,1))*0.5*(1+XFR).LT.0.4*TPI) THEN
               ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR         &
                      *(SIG(IK)*0.5*(1+1/XFR)-(0.4*TPI))/DSII(IK)     &
                      *WN(IK,ISEA)**2
               FACTOR2       = SIG(IK)**5/(GRAV**2)/DSII(IK)
               ETMSSCL(JSEA) = AB(JSEA)*FACTOR*FACTOR2
               END IF
-            END IF  
+            END IF
 !
           UBS(JSEA) = UBS(JSEA) + AB(JSEA) * SIG(IK)**2
 !
@@ -1494,22 +1502,22 @@
           FACTOR2 = DTH*2/(TPI**2)                        &
                     * SIG(IK)                             &
                     * (TPI*SIG(IK)/CG(IK,ISEA))**2        &  ! Jacobian^2 to get E(f,th) from A(k,th)
-                    * ABST(JSEA) 
+                    * ABST(JSEA)
 !
 !   Integration over seismic radian frequency : *2*dsigma
 !
-          PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
+          PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK)
           IF ( FLOLOC (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
-            P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
+            P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI
           IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
-            ETTPMM(JSEA) = FACTOR2 
+            ETTPMM(JSEA) = FACTOR2
             TPMS(JSEA) = TPI/SIG(IK)
-            END IF 
+            END IF
 
 !
 ! Directional moments in the last freq. band
 !
-          IF (IK.EQ.NK) THEN 
+          IF (IK.EQ.NK) THEN
             FACTOR2       = SIG(IK)**5/(GRAV**2)/DSII(IK)
             ETUSCX(JSEA)  = ABX(JSEA)*FACTOR*FACTOR2
             ETUSCY(JSEA)  = ABY(JSEA)*FACTOR*FACTOR2
@@ -1526,16 +1534,16 @@
             MSCD(JSEA)=0.5*ATAN2(2*MB,MA-MC)
 
             MSCX(JSEA)= MA*COS(MSCD(JSEA))**2   &
-                       +2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2 
+                       +2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2
             MSCY(JSEA)= MC*COS(MSCD(JSEA))**2   &
-                       -2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2 
+                       -2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2
             END IF
 !
 ! Deep water limits
 !
           KD    = MAX ( 0.001 , WN(IK,ISEA) * DW(ISEA) )
           IF ( KD .LT. 6. ) THEN
-            FKD       = FACTOR / SINH(KD)**2 
+            FKD       = FACTOR / SINH(KD)**2
             ABR(JSEA) = ABR(JSEA) + AB(JSEA) * FKD
             ABA(JSEA) = ABA(JSEA) + ABX(JSEA) * FKD
             ABD(JSEA) = ABD(JSEA) + ABY(JSEA) * FKD
@@ -1545,7 +1553,7 @@
             USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
             BHD(JSEA) = BHD(JSEA) +                             &
                 GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
-          ELSE 
+          ELSE
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
             END IF
 !
@@ -1589,16 +1597,16 @@
 ! Start of Space-Time Extremes Section
      IF ( ( STEXU .GT. 0. .AND. STEYU .GT. 0. ) &
                                       .OR. ( STEDU .GT. 0. ) ) THEN
-!  Space-Time extremes 
+!  Space-Time extremes
 !    (for references:
-!     - Krogstad et al, OMAE 2004 
+!     - Krogstad et al, OMAE 2004
 !     - Baxevani and Rychlik, OE 2006
 !     - Adler and Taylor, 2007
 !     - Fedele, JPO 2012
 !     - Fedele et al, OM 2013
 !     - Benetazzo et al, JPO 2015)
 !
-!  Compute spectral parameters wrt the mean wave direction 
+!  Compute spectral parameters wrt the mean wave direction
 !  (no tail contribution - Prognostic)
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
@@ -1653,7 +1661,7 @@
           MSSXM(JSEA)  = MSSXM(JSEA) + ABX2M(JSEA)*FACTOR*             &
             WN(IK,ISEA)**2
           MSSYM(JSEA)  = MSSYM(JSEA) + ABY2M(JSEA)*FACTOR*             &
-            WN(IK,ISEA)**2 
+            WN(IK,ISEA)**2
           MSSXTM(JSEA)  = MSSXTM(JSEA) + ABXM(JSEA)*FACTOR*WN(IK,ISEA)* &
             SIG(IK)
           MSSYTM(JSEA)  = MSSYTM(JSEA) + ABYM(JSEA)*FACTOR*WN(IK,ISEA)* &
@@ -1670,7 +1678,7 @@
 !
         DO JSEA=1, NSEAL
 !/DIST        ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/SHRD        ISEA      = JSEA 
+!/SHRD        ISEA      = JSEA
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
 !
@@ -1696,14 +1704,14 @@
           ENDIF
         IF ((MSSXM(JSEA) .GT. 1.E-7) .AND. (MSSYM(JSEA) .GT. 1.E-7)) THEN
           ALPXY(JSEA) = MSSXYM(JSEA) / (SQRT(MSSXM(JSEA) * MSSYM(JSEA)))
-          ENDIF  
+          ENDIF
 !
 !  Short-crestedness parameter
         IF (MSSXM(JSEA) .GT. 1.E-7)  THEN
           SCREST(JSEA) = SQRT(MSSYM(JSEA)/MSSXM(JSEA))
           END IF
 !
-!  Space domain size (user-defined or default) 
+!  Space domain size (user-defined or default)
         IF ( STEXU .GT. 0 .AND. STEYU .GT. 0 ) THEN
           STEX = STEXU
           STEY = STEYU
@@ -1711,7 +1719,7 @@
           STEX = 0.
           STEY = 0.
         END IF
-! 
+!
 !  Time domain size (user-defined or default)
         IF ( STEDU .GT. 0 ) THEN
           STED = STEDU
@@ -1736,7 +1744,7 @@
                         STED/T02P(JSEA)
           END IF
 !
-! Integral measure of wave steepness (Fedele & Tayfun, 2009) MU, as a 
+! Integral measure of wave steepness (Fedele & Tayfun, 2009) MU, as a
 ! function of the spectral width parameter NI (Longuet-Higgins, 1985)
         IF (ET1(JSEA) .GT. 1.E-7) THEN
           NI(JSEA) = SQRT(ET(JSEA)*ET02(JSEA)/ET1(JSEA)**2 - 1)
@@ -1769,16 +1777,16 @@
           (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
           (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )
 !
-! Standard deviation of the maximum sea surface elevation in ST domain 
-!  - nonlinear (in meters, Hs/4=SQRT(ET(JSEA)))  
+! Standard deviation of the maximum sea surface elevation in ST domain
+!  - nonlinear (in meters, Hs/4=SQRT(ET(JSEA)))
       STMAXD(JSEA) =  SQRT(ET(JSEA)) *                               &
           ( PI*(1+MU(JSEA)*MODE(JSEA))/SQRT(6.) /                    &
           (MODE(JSEA)-(2*NV(JSEA)*MODE(JSEA)+NS(JSEA)) /             &
-          (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )   
-!        
+          (NV(JSEA)*MODE(JSEA)**2+NS(JSEA)*MODE(JSEA)+NB(JSEA))) )
+!
 ! Autocovariance (time) function (normalized on the maximum, i.e. total
 ! variance)
-      IF (T02P(JSEA) .GT. 1.E-7) THEN 
+      IF (T02P(JSEA) .GT. 1.E-7) THEN
         TLPHI(JSEA) = 0.3*T02P(JSEA)
         DO ITL = 1, 21
           DO IK = 1, NK-3, 4
@@ -1786,9 +1794,9 @@
                  (XFR**3*EBD(IK+3,JSEA)*COS(XFR**3*SIG(IK)*TLPHI(JSEA))+    &
                  XFR**2*EBD(IK+2,JSEA)*COS(XFR**2*SIG(IK)*TLPHI(JSEA))+     &
                  XFR*EBD(IK+1,JSEA)*COS(XFR*SIG(IK)*TLPHI(JSEA)) +          &
-                 EBD(IK,JSEA)*COS(SIG(IK)*TLPHI(JSEA)))*DSII(IK) 
+                 EBD(IK,JSEA)*COS(SIG(IK)*TLPHI(JSEA)))*DSII(IK)
              ENDDO
-          TLPHI(JSEA) = TLPHI(JSEA) + T02P(JSEA)/20.    
+          TLPHI(JSEA) = TLPHI(JSEA) + T02P(JSEA)/20.
           ENDDO
           PHI(:,JSEA) = PHI(:,JSEA)/ET(JSEA)
 !
@@ -1819,7 +1827,7 @@
 
 ! End of Space-Time Extremes Section
      ENDIF
-
+!
 ! 3.  Finalize computation of mean parameters ------------------------ *
 !
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,EBAND)
@@ -1835,9 +1843,9 @@
 !     From matlab script: C2=C.*cos(t0)^2-2.*B.*sin(t0).*cos(t0)+A.*sin(t0).^2;
          MSSD(JSEA)=0.5*(ATAN2(2*ETXY(JSEA),ETXX(JSEA)-ETYY(JSEA)))
          MSSX(JSEA)  = ETXX(JSEA)*COS(MSSD(JSEA))**2   &
-                       +2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETYY(JSEA)*SIN(MSSD(JSEA))**2 
+                       +2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETYY(JSEA)*SIN(MSSD(JSEA))**2
          MSSY(JSEA)  = ETYY(JSEA)*COS(MSSD(JSEA))**2   &
-                       -2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETXX(JSEA)*SIN(MSSD(JSEA))**2 
+                       -2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETXX(JSEA)*SIN(MSSD(JSEA))**2
 !
 ! 3.b Add tail
 !     ( DTH * SIG absorbed in FTxx )
@@ -1912,16 +1920,16 @@
                 UBD(JSEA) = 0.
               ENDIF
             UBA(JSEA) = UBR(JSEA)
-            CGE(JSEA) = DWAT*GRAV*ETF(JSEA) 
+            CGE(JSEA) = DWAT*GRAV*ETF(JSEA)
             IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
-              T02(JSEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) ) 
+              T02(JSEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) )
               T01(JSEA) = TPI * ET(JSEA) / ET1(JSEA)
             ELSE
               T02(JSEA) = TPI / SIG(NK)
               T01(JSEA)= T02(JSEA)
               ENDIF
 !
-!  Add here USERO(JSEA,1) ... 
+!  Add here USERO(JSEA,1) ...
 !
           END IF
         END DO
@@ -1959,7 +1967,7 @@
 !/ST2        IKP1(JSEA) = NK
 !/ST2        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
 !/ST2        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
-!/ST2        FP1TST     = MAX ( 0.003 , FP1STR * UST(ISEA) / GRAV ) 
+!/ST2        FP1TST     = MAX ( 0.003 , FP1STR * UST(ISEA) / GRAV )
 !/ST2        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
 !/ST2            FP1 (JSEA) = TPIINV * FP1TST
 !/ST2            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
@@ -2309,7 +2317,10 @@
          CALL CALC_U3STOKES(A,2)
       ENDIF
 !
-
+! Dominant wave breaking probability
+!
+      IF (FLOLOC(2, 17)) CALL CALC_WBT(A)
+!
       RETURN
 !
 ! Formats
@@ -2353,15 +2364,16 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    31-Oct-2010 : Implement unstructured grids        ( version 3.14 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    05-Feb-2011 : Renumbering of output fields        ( version 3.14 )
-!/                  (F. Ardhuin) 
+!/                  (F. Ardhuin)
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    21-Aug-2013 : Added missing cos,sin for UBA, ABA  ( version 4.11 )
 !/    27-Nov-2013 : Management of coupling output       ( version 4.18 )
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
+!/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -2444,7 +2456,8 @@
       USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, ICEF, ICEH, BERG,    &
                           UST,  USTDIR, ASF
       USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
-      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
+      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
+                          WBT
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,     &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
@@ -2487,7 +2500,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
                                  AUX3(NSEA), AUX4(NSEA)
-!/ARC      REAL                    :: UDARC 
+!/ARC      REAL                    :: UDARC
       CHARACTER(LEN=30)       :: IDTST, TNAME
       CHARACTER(LEN=10)       :: VERTST
 !/
@@ -2636,6 +2649,7 @@
                 IF ( FLOGRD( 2,14) ) HCMAXE(ISEA) = UNDEF
                 IF ( FLOGRD( 2,15) ) HMAXD (ISEA) = UNDEF
                 IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
+                IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
 !
                 IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
                 IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
@@ -2859,6 +2873,8 @@
                     WRITE ( NDSOG ) HMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
                     WRITE ( NDSOG ) HCMAXD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
+                    WRITE ( NDSOG ) WBT(1:NSEA)
 !
 !     Section 3)
 !
@@ -3137,6 +3153,8 @@
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                          HCMAXD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WBT(1:NSEA)
 !
 !     Section 3)
 !
@@ -3290,7 +3308,7 @@
                                    US3D(1:NSEA,US3DF(2):US3DF(3))
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
                                    US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
-                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN 
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)     &
                                      P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
                   ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
@@ -3496,7 +3514,7 @@
 !
 !     Option 1: USS_SWITCH == 1
 !               This method is for outputing the Stokes drift frequency
-!               spectrum for spectral frequency bands as defined by the 
+!               spectrum for spectral frequency bands as defined by the
 !               WW3 computation spectral frequency grid.
 !               Output Quantity: Stokes drift frequency spectrum [m/s/Hz]
 !                                X and Y componenets.
@@ -3577,7 +3595,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IK, ITH, ISEA, JSEA 
+      INTEGER                 :: IK, ITH, ISEA, JSEA
       INTEGER                 :: IKST, IKFI, IB, NB
       INTEGER                 :: STKBND_INDEX
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -3603,7 +3621,7 @@
       !                    ranges for each partition can be user       |
       !                    defined at run-time.                        |
       !----------------------------------------------------------------|
-      
+
       if (USS_SWITCH==1) then
          IKST=US3DF(2)!Start at US3DF(2)
          IKFI=US3DF(3)!End at US3DF(3)
@@ -3657,15 +3675,15 @@
 !
             KD    = MAX ( 0.001 , WN(IK,ISEA) * DW(ISEA) )
             IF ( KD .LT. 6. ) THEN
-               FKD       = FACTOR / SINH(KD)**2 
+               FKD       = FACTOR / SINH(KD)**2
                USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
-            ELSE 
+            ELSE
                USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
             END IF
 !
 !
-          !USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO               
-          !USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO         
+          !USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO
+          !USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO
 !
 ! Fills the 3D Stokes drift spectrum array or surface Stokes partitions
 !
@@ -3698,6 +3716,239 @@
 !----------------------------------------------------- /
 !/
       END SUBROUTINE CALC_U3STOKES
-!/ End of module W3IOGOMD -------------------------------------------- /
 !/
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE CALC_WBT (A)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           Q. Liu                  |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         24-Aug-2018 |
+!/                  +-----------------------------------+
+!/
+!/    24-Aug-2018 : Origination.                       ( version 6.06 )
+!/
+!  1. Purpose :
+!
+!     Estimate the dominant wave breaking probability b_T based on
+!     the empirical parameterization proposed by Babanin et al. (2001).
+!     From their Fig. 12, we have
+!
+!         b_T = 85.1 * [(εp - 0.055) * (1 + H_s/d)]^2.33,
+!
+!     where ε is the significant steepness of the spectral peak, H_s is
+!     the significant wave height, d is the water depth.
+!
+!     For more details, please see
+!         Banner et al.  2000: JPO,      30,  3145 -  3160.
+!         Babanin et al. 2001: JGR, 106(C6), 11569 - 11676.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       A       R.A.   I   Input wave action spectra N(j, θ, k)
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3OUTG    Subr. Public   Calculate mean parameters.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3DISPMD, ONLY: WAVNU1
+      USE W3ADATMD, ONLY: U10, U10D, WBT
+      USE W3ADATMD, ONLY: CG, WN, DW
+      USE W3GDATMD, ONLY: NK, NTH, NSEAL, SIG, ESIN, ECOS, DTH, DSII, &
+                          FTE, XFR, MAPSF, MAPSTA
+      USE W3GDATMD, ONLY: BTBETA
+      USE W3PARALL, ONLY: INIT_GET_ISEA
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)     :: A  (NTH, NK, 0:NSEAL)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!
+      INTEGER              :: FPOPT = 0
+!
+      INTEGER              :: IK, ITH, ISEA, JSEA, IKM, IKL, IKH, IX, IY
+      REAL                 :: TDPT, TU10, TUDIR, SINU, COSU, TC, TFORCE
+      REAL                 :: ESIG(NK) ! E(σ)
+      REAL                 :: FACTOR, ET, HS, ETP, HSP, SIGP, KP, &
+                              CGP, WSTP
+      REAL                 :: XL, XH, XL2, XH2, EL, EH, DENOM
+      REAL                 :: TWBT
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'CALC_U3STOKES')
+!
+      DO JSEA = 1, NSEAL
+! JSEA 2 ISEA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
+!
+! check the status of this grid point [escape if this point is excluded]
+!
+          IX = MAPSF(ISEA,1)
+          IY = MAPSF(ISEA,2)
+          IF ( MAPSTA(IY,IX) .LE. 0 ) CYCLE
+!
+! Wind info. is required to select wind sea partition from the wave
+! spectrum. Two wind velocities are availabe:
+! - U10 & U10D   (w3adatmd)
+! - UST & USTDIR (w3wdatmd)
+!     * U10D & USTDIR are not really the same when swell are present.
+!
+! Following Janssen et al. (1989) and Bidlot (2001), spectral components
+! are considered to be subject to local wind forcing when
+!
+!          c / [U cos(θ - φ)] < β,
+!
+! where c is the phase velocity c = σ/k, φ is the wind direction, U is
+! the wind speed U10, (sometimes approximated by U10≅ 28 * ust), β is
+! the constant forcing parameter with β∈ [1.0, 2.0]. By default, we use
+! β = 1.2(Bidlot 2001).
+!
+          TDPT  = DW(ISEA)                     ! water depth d
+          TU10  = U10(ISEA)                    ! wind velocity U10
+          TUDIR = U10D(ISEA)                   ! wind direction φ (rad)
+          SINU  = SIN(TUDIR)                   ! sinφ
+          COSU  = COS(TUDIR)                   ! cosφ
+!
+          ESIG  = 0.                           ! E(σ)
+          ET    = 0.                           ! ΣE(σ)δσ
+          ETP   = 0.                           ! ΣE(σ)δσ at peak only
+!
+          DO IK = 1, NK
+              TC     = SIG(IK) / WN(IK, ISEA)  ! phase velocity c=σ/k
+              FACTOR = SIG(IK) / CG(IK, ISEA)  ! σ / cg
+              FACTOR = FACTOR * DTH            ! σ / cg * δθ
+!
+              DO ITH = 1, NTH
+                  TFORCE = TC - TU10 * (COSU*ECOS(ITH)+SINU*ESIN(ITH)) &
+                               * BTBETA
+
+                  IF (TFORCE .LT. 0.) THEN ! wind sea component
+                      ESIG(IK) = ESIG(IK) + A(ITH, IK, JSEA) * FACTOR
+                  ENDIF
+              ENDDO ! ITH
+!
+          ENDDO ! IK
+!
+! ESIG is E(σ) of the wind sea after filtration of any background swell.
+! Now we need to get Hs & σp for the wind sea spectrum.
+! FTE    = 0.25 * SIG(NK) * DTH * SIG(NK) [ww3_grid.ftn]
+!
+          ET = SUM(ESIG * DSII)
+          ET = ET + ESIG(NK) * FTE / (DTH * SIG(NK))  ! FTE: add tail
+          HS = 4. * SQRT(MAX(0., ET))                 ! Hs
+!
+! Get σp from E(σ)
+!
+! Here we have tried three different ways to calculate FP:
+!
+! FPOPT = 0: fp defined by Young (1999, p. 239)
+! FPOPT = 1: parabolic fit around the discrete peak frequency, as used
+!            by ww3_outp
+! FPOPT = 2: discrete peak frequency
+!
+! When the discrete peak frequency is used:
+! * For XFR = 1.1, the **discrete** peak region [0.7σp, 1.3σp] will be
+!     {0.75, 0.83, 0.91, 1., 1.1, 1.21, 1.33}σp,
+! * and for XFR = 1.07, the **discrete** peak region becomes
+!     {0.71, 0.76, 0.82, 0.87, 0.93, 1., 1.07, 1.14, 1.23, 1.31}σp.
+!
+! Thus, a good approximation to the range [0.7σp, 1.3σp] is guranteed
+! by each XFR. I however found using the discrete peak frequency yielded
+! step-wise results. According to my test, the smoothest results were
+! obtained with FPOPT = 0. For simplicity, the δσ values (DSII) are
+! not modified.
+!
+          IKM   = MAXLOC(ESIG, 1)                     ! index for σp
+!
+          IF (FPOPT .EQ. 0) THEN
+!             FP defined in Ian's book
+              SIGP = SUM(ESIG**4. * SIG(1:NK) * DSII) /  &
+                         MAX(1E-10, SUM(ESIG**4. * DSII))
+!
+          ELSE IF (FPOPT .EQ. 1) THEN
+!             Parabolic fit around the discrete peak (ww3_outp.ftn)
+              XL    = 1./XFR - 1.
+              XH    = XFR - 1.
+              XL2   = XL**2.
+              XH2   = XH**2.
+              IKL   = MAX (  1 , IKM-1 )
+              IKH   = MIN ( NK , IKM+1 )
+              EL    = ESIG(IKL) - ESIG(IKM)
+              EH    = ESIG(IKH) - ESIG(IKM)
+              DENOM = XL*EH - XH*EL
+              SIGP  = SIG(IKM) * (1. + 0.5 * ( XL2*EH - XH2*EL) &
+                          / SIGN (MAX(ABS(DENOM), 1.E-15), DENOM)) ! σp
+!
+          ELSE IF (FPOPT .EQ. 2) THEN
+!             Discrete peak (Give stepwise results, not used by default)
+              SIGP  = SIG(IKM)
+          ENDIF
+!
+! kp from σp (linear dispersion)
+!
+          CALL WAVNU1 (SIGP, TDPT, KP, CGP)
+!
+!                         { /1.3σp         }1/2
+! peak wave height Hp = 4 { |      E(σ) dσ }
+!                         { /0.7σp         }
+!
+          DO IK = 1, NK
+              IF ( (SIG(IK) >= 0.7 * SIGP) .AND. &
+                   (SIG(IK) <= 1.3 * SIGP) ) THEN
+                  ETP = ETP + ESIG(IK) * DSII(IK)
+              ENDIF
+          ENDDO ! IK
+          HSP = 4. * SQRT(MAX(0., ETP))
+!
+! significant steepness of the peak region εp
+!
+          WSTP = 0.5 * KP * HSP
+!
+! Dominant wave breaking b_T
+!
+          TWBT = 85.1 * (MAX(0.0, WSTP - 0.055) * (1 + HS/TDPT))**2.33
+          WBT(JSEA) = MIN(1.0, TWBT)
+!
+      ENDDO ! JSEA
+!/
+!/ End of  CALC_WBT -------------------------------------------------- /
+!/
+      END SUBROUTINE CALC_WBT
+!/ ------------------------------------------------------------------- /
       END MODULE W3IOGOMD
