@@ -30,7 +30,7 @@ cat 2>&1 << EOF
 
 Usage: $myname source_dir Options
 Required:
-  source_dir : path to top-level of WW3 source
+  source_dir : path to model dir of WW3 source
 Options:
   -c cmplr         : setup comp & link files for specified cmplr
   -h               : print usage and exit

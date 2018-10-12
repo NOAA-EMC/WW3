@@ -1935,14 +1935,15 @@
 
        IF (GTYPE .EQ. UNGTYPE) THEN
          IF (nbSel .ne. 1) THEN
+           WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN WW3_GRID:'
            IF (nbSel .gt. 1) THEN
-             WRITE (NDSO,*) 'More than one scheme selected'
+             WRITE (NDSE,*) 'More than one scheme selected'
            ELSE IF (nbSel .eq. 0) THEN
-             WRITE (NDSO,*) 'no scheme selected'
+             WRITE (NDSE,*) 'no scheme selected'
            END IF
-           WRITE (NDSO,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
-           WRITE (NDSO,*)'IMPFSN, IMPTOTAL'
-           STOP
+           WRITE (NDSE,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
+           WRITE (NDSE,*)'IMPFSN, IMPTOTAL'
+           CALL EXTCDE ( 30 )
          END IF
        END IF
 !
@@ -2322,17 +2323,18 @@
 !
       USSPF(1) = USSP
       USSPF(2) = MAX( 1 , MIN(25, IUSSP ) )
-      if (iussp.gt.25) then
-         write(*,*) "  Stokes drift partition outputs not    "
-         write(*,*) "   intended for use with more than 25   "
-         write(*,*) "   partitions.  Please reduce IUSSP     "
-         write(*,*) "   specified in ww3_grid.inp to proceed "
-         STOP !Replace with an extcde
-      endif
+      IF (IUSSP.GT.25) THEN
+         WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN ww3_grid:'
+         WRITE(NDSE,*) "  Stokes drift partition outputs not    "
+         WRITE(NDSE,*) "   intended for use with more than 25   "
+         WRITE(NDSE,*) "   partitions.  Please reduce IUSSP     "
+         WRITE(NDSE,*) "   specified in ww3_grid.inp to proceed "
+         CALL EXTCDE( 31) 
+      ENDIF
 
-      do J=1,USSPF(2)
+      DO J=1,USSPF(2)
          USSP_WN(j) = STK_WN(J)
-      enddo
+      ENDDO
       
 !
       WRITE (NDSO,4971) P2MSF(1:3)

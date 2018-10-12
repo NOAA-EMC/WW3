@@ -179,6 +179,8 @@
       NDSM   = 20
       NDSS   = 30
       NDSL   = 50
+      NDSO   = 6
+      NDSE   = 6
 !
       NDSTRC =  6
       NTRACE = 10
@@ -383,7 +385,8 @@
           IF (ICODE.NE.0) THEN 
             LONS(IP)=-999.
             LATS(IP)=-999.
-            GOTO 810
+            WRITE (NDSE,1010) TRIM(SPECFILES(IP))
+            CALL EXTCDE ( 70 )
           END IF
  
           IRET=NF90_OPEN(TRIM(SPECFILES(IP)),NF90_NOWRITE,NCID(IP))
@@ -741,10 +744,6 @@
       WRITE (NDSE,1009) IERR
       CALL EXTCDE ( 69 )
 !
- 810 CONTINUE
-      WRITE (NDSE,1010) TRIM(SPECFILES(IP))
-      CALL EXTCDE ( 70 )
-!
   888 CONTINUE
       WRITE (NDSO,999)
 
@@ -816,7 +815,7 @@
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/
-     END PROGRAM W3BOUNC
+      END PROGRAM W3BOUNC
 !/ ------------------------------------------------------------------- /
 
 
@@ -835,7 +834,7 @@
       IF (IRET .NE. NF90_NOERR) THEN
         WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN BOUNC :'
         WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
-        WRITE(*,*) NF90_STRERROR(IRET)
+        WRITE(NDSE,*) NF90_STRERROR(IRET)
         CALL EXTCDE ( 59 )
       END IF
       RETURN

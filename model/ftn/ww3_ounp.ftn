@@ -4967,7 +4967,7 @@
       IF (IRET .NE. NF90_NOERR) THEN
         WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN OUNP :'
         WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
-        WRITE(*,*) NF90_STRERROR(IRET)
+        WRITE(NDSE,*) NF90_STRERROR(IRET)
         CALL EXTCDE ( 59 )
       END IF
       RETURN
@@ -4980,7 +4980,7 @@
 !/
 !/ End of W3OUNP ----------------------------------------------------- /
 !/
-     END PROGRAM W3OUNP
+      END PROGRAM W3OUNP
 
 
 

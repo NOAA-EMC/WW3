@@ -2316,7 +2316,7 @@
 !/ End of W3PRNC ----------------------------------------------------- /
 !/
 
-     END PROGRAM W3PRNC
+      END PROGRAM W3PRNC
 
 !==============================================================================
 
@@ -2333,7 +2333,7 @@
       IF (IRET .NE. NF90_NOERR) THEN
         WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN PRNC :'
         WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
-        WRITE(*,*) NF90_STRERROR(IRET)
+        WRITE(NDSE,*) NF90_STRERROR(IRET)
         CALL EXTCDE ( 59 )
       END IF
       RETURN

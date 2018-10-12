@@ -130,7 +130,7 @@ EOF
     fi
   else
     echo "[ERROR] no env file wwatch3.env found."
-    echo "        Please run $path_bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    echo "        Please run $path_bin/w3_setup <model_dir> -c <comp> -s <switch>"
     exit 1
   fi
 
@@ -199,7 +199,7 @@ EOF
   then
     echo ' '
     echo "[ERROR] Directory $main_dir not found"
-    echo "        Please run $path_bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    echo "        Please run $path_bin/w3_setup <model_dir> -c <comp> -s <switch>"
     exit 1
   fi
 
