@@ -994,7 +994,7 @@
 !/MPI      CALL MPI_FINALIZE(IERR)
 !/MPI/!     End of parallel region
 
-!/F90  998 FORMAT ( ' ... finished. Elapsed time: ',F10.2,' s')
+!/F90  998 FORMAT ( ' ... finished. Elapsed time : ',F10.2,' s')
   993 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType=3 needs TRKNC switch ')
   994 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &

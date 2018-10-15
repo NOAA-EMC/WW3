@@ -153,7 +153,7 @@
               binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
 
               #Generate list of files to skip
-              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished"
+              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out"
 
               nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
               echo "  found $nf_1 files in base directory" >> $home_dir/fulldiff.tmp
@@ -264,16 +264,29 @@
                       cmp=`cmp $file -s $return_comp/$run/$file # > diff_tempfile 2> dev/null`
                       case $? in
                        0) echo "     $file are identical (binary)"  >> $home_dir/fulldiff.tmp ; let "numSame += 1" ;;
-                       1) echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; isIdentical=0; let "numDiff += 1"
-                          diffFiles=`echo "$diffFiles $file (binary)"`
-                          extension="$(echo ${file##*.})"
-                          basename="$(basename $file)"
-
+                       1) extension="$(echo ${file##*.})"
                           if [ "$extension" = "nc" ] ; then
                             mkdir -p $output
+                            basename="$(basename $file)"
                             ncdump $file > $output/${basename}_base.txt
                             ncdump $return_comp/$run/$file > $output/${basename}_comp.txt
                             diff $output/${basename}_base.txt $output/${basename}_comp.txt > $output/${basename}_diff.txt
+                            size_1=`wc -l $output/${basename}_diff.txt | awk '{ print $1}'` 
+                            if [ "$size_1" = '0' ]
+                            then
+                              rm $output/${basename}_diff.txt $output/${basename}_base.txt $output/${basename}_comp.txt
+                              echo "     $file are identical (binary)"  >> $home_dir/fulldiff.tmp ; let "numSame += 1"
+                            else 
+                              echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; 
+                              isIdentical=0; 
+                              let "numDiff += 1"
+                              diffFiles=`echo "$diffFiles $file (binary)"`
+                            fi
+                          else 
+                            echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; 
+                            isIdentical=0; 
+                            let "numDiff += 1"
+                            diffFiles=`echo "$diffFiles $file (binary)"`
                           fi ;;
                        *) echo "     $file error in binary compare" >> $home_dir/fulldiff.tmp ; isIdentical=0 ;;
                       esac

@@ -56,14 +56,15 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+      USE CONSTANTS, ONLY: KAPPA, nu_air
+
+      IMPLICIT NONE 
+
       PUBLIC
 !/
 !/ Public variables
 !/
-      INTEGER(KIND=4)         :: NH(3)
-      REAL,    PARAMETER      :: kappa = 0.40       !Von Karman's constant
       !air kinematic viscosity (used in WAM)
-      REAL,    PARAMETER      :: nu_air  = 1.4E-5        
       INTEGER, PARAMETER      :: ITAUMAX=200,JUMAX=200
       INTEGER, PARAMETER      :: IUSTAR=100,IALPHA=200, ILEVTAIL=50
       REAL                    :: TAUT(0:ITAUMAX,0:JUMAX), DELTAUW, DELU
@@ -71,7 +72,6 @@
       REAL                    :: TAUHFT(0:IUSTAR,0:IALPHA), DELUST, DELALP
       REAL,    PARAMETER      :: UMAX    = 50.
       REAL,    PARAMETER      :: TAUWMAX = 2.2361 !SQRT(5.)
-      REAL, DIMENSION(:)   , ALLOCATABLE :: XSTRESS,YSTRESS
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -147,7 +147,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF
@@ -169,13 +169,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IKP1   ! wind sea peak index
-      INTEGER                 :: IS, IK, ITH, I1, ITT
+      INTEGER                 :: IS, IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
 
-      REAL                    :: TAUW, EBAND, EMEANWS, RDCH, FXPMC,    &
-                                 WNP, UNZ,    FP,                      &
-                                 R1, CP, EB(NK),EB2(NK),ALFA(NK)
+      REAL                    :: TAUW, EBAND, EMEANWS, UNZ,       &
+                                 EB(NK),EB2(NK),ALFA(NK)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -267,14 +265,14 @@
 !
 ! 6.  Final test output ---------------------------------------------- *
 !
-!/T      WRITE (NDST,9060) EMEAN, WNMEAN, TPIINV, CP, CD, Z0
+!/T      WRITE (NDST,9060) EMEAN, WNMEAN, TPIINV, USTAR, CD, Z0
 !
       RETURN
 !
 ! Formats
 !
 !/T 9060 FORMAT (' TEST W3SPR3 : E,WN MN :',F8.3,F8.4/                   &
-!/T              '        FP, CP, CD, Z0 :',F8.3,F7.2,1X,2F9.5)
+!/T              '         TPIINV, USTAR, CD, Z0 :',F8.3,F7.2,1X,2F9.5)
 !/
 !/ End of W3SPR3 ----------------------------------------------------- /
 !/
@@ -360,13 +358,14 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: GRAV, TPI
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           SSWELLF,                                     &
                           DDEN2, DTH, SSINTHP,ZZ0RAT
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
+!/T0      USE W3ODATMD, ONLY: NDST
 !/T1      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT
@@ -386,29 +385,25 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS,IK,ITH, IOMA, ICL
+      INTEGER                 :: IS,IK,ITH
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: COSU, SINU, TAUX, TAUY
       REAL                    :: UST2, TAUW, TAUWB
       REAL   , PARAMETER      :: EPS1 = 0.00001, EPS2 = 0.000001
-      REAL                    :: Usigma           !standard deviation of U due to gustiness
-      REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
-      REAL                    :: BETA, CM,ZCO,UCO,UCN,ZCN, &
+!/STAB3      REAL                    :: Usigma           !standard deviation of U due to gustiness
+!/STAB3      REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
+      REAL                    :: CM,UCO,UCN,ZCN, &
                                  Z0VISC
-      REAL                   :: HSBLOW, ABJSEA, FACTOR
       REAL XI,DELI1,DELI2
       REAL XJ,DELJ1,DELJ2
-      REAL XK,DELK1,DELK2
-      REAL                    :: CONST, CONST0, CONST1, CONST2, CONST3,  TAU1
+      REAL                    :: CONST, CONST0, CONST2, CONST3,  TAU1
       REAL                    :: X,ZARG,ZLOG,ZBETA,UST
       REAL COSWIND,XSTRESS,YSTRESS,TAUHF
       REAL TEMP, TEMP2
-      INTEGER IND,J,I,ISTAB
+      INTEGER IND,J,ISTAB
       REAL DSTAB(3,NSPEC)
       REAL STRESSSTAB(3,2),STRESSSTABN(3,2)
 !/T0      REAL                    :: DOUT(NK,NTH)
-!/T0      USE W3ODATMD, ONLY: NDST
-!/T1     USE W3ODATMD, ONLY: NDST
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -418,6 +413,8 @@
 !
 ! 1.  Preparations
 !
+!      JDM: initializing arrays (shouldn't change answers) 
+      DSTAB=0.; STRESSSTAB=0. ;STRESSSTABN=0.
 !
 ! 1.a  estimation of surface roughness parameters
 !
@@ -636,26 +633,14 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: TPIINV, RADE, GRAV
-      USE W3ODATMD,  ONLY: NDSE
-      USE W3SERVMD,  ONLY: EXTCDE
-      USE W3DISPMD, ONLY: WAVNU2
-      USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH,  &
-                           SSDSDTH, SSDSCOS, TH, DTH, XFR, ECOS, ESIN     
+      USE CONSTANTS, ONLY: TPIINV
+      USE W3GDATMD,  ONLY: SIG, NK
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-!/
-    INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 
-    INTEGER  IKL, ID, ICON, IKD, IKHS, IKH
-    REAL     C, C2
-    REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
-    REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
-    REAL     DKD, DELTAFIT, NHI, H, IH, DH, TOTO
-    REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -742,7 +727,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: GRAV
       USE W3GDATMD, ONLY: ZZWND, AALPHA, ZZ0MAX
       IMPLICIT NONE
       INTEGER, PARAMETER      :: NITER=10
@@ -853,7 +838,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: GRAV, TPI
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE, ZZ0MAX
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1015,13 +1000,11 @@
       REAL, intent(in) :: WINDSPEED,TAUW
       REAL, intent(out) :: USTAR, Z0, CHARN
       ! local variables
-      real a,b  ! constants of parameterisation
-      real cd   ! drag coefficient
       REAL SQRTCDM1
       REAL X,XI,DELI1,DELI2,XJ,delj1,delj2
       REAL UST,DELTOLD,TAUW_LOCAL
       INTEGER IND,J
-   !
+!
       TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
       XI      = SQRT(TAUW_LOCAL)/DELTAUW
       IND     = MIN ( ITAUMAX-1, INT(XI)) ! index for stress table
@@ -1119,9 +1102,10 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
-      USE W3GDATMD, ONLY: NSPEC, NTH, NK, DDELTA1, DDEN, DDELTA2,   &
-                          SSDSC1, SIG, SSDSP, ECOS, ESIN, DTH, DSIP
+      USE CONSTANTS, ONLY: GRAV, TPI
+      USE W3GDATMD, ONLY: NSPEC, NTH, NK, DDELTA1, DDELTA2,   &
+!/T0                      SIG,                                &
+                          SSDSC1
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T1      USE W3ODATMD, ONLY: NDST
@@ -1141,9 +1125,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS, IS2, IS0, IA, J, IKL, ITOT, NTOT, ID, NKL
+      INTEGER                 :: IS, IK, ITH 
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                 :: IK, ITH, I_INT, IK2, ITH2, IKIND, L, IKHS, IKD
       REAL                    :: FACTOR, FACTOR2          
       REAL                    :: ALFAMEAN, WNMEAN2
 !/T0      REAL                    :: DOUT(NK,NTH)
@@ -1152,6 +1135,10 @@
 !/
 !/S      CALL STRACE (IENT, 'W3SDS3')
 !
+! 0.  Pre-initialization of arrays, should be set before being used 
+!     but this is helping with bit reproducibility 
+      D=0.
+
 ! 1.  Common factor
 !
       WNMEAN2 = MAX( 1.E-10 , WNMEAN  )
@@ -1161,9 +1148,6 @@
 !/T      WRITE (NDST,9000) SSDSC1, FMEAN, WNMEAN, EMEAN, FACTOR
 !
 !---------------------------------------------------------------------- 
-!
-! 2.  Source term
-!
 !
 ! 2.  Source term
 !

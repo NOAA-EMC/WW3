@@ -661,8 +661,8 @@
         CHARACTER(LEN=30):: GNAME
         CHARACTER(LEN=13):: FILEXT
         LOGICAL          :: GUGINIT
-        REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
-        INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
+!/REF1        REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
+!/REF1        INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
         INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3), USSPF(2) ! freq. indices for 3D output
         REAL             :: USSP_WN(25) !Max set to 25 decay scales.
 !
@@ -938,8 +938,8 @@
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
       INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:), USSPF(:)
       REAL,    POINTER        :: USSP_WN(:)
-      REAL,    POINTER        :: REFLC(:,:)
-      INTEGER, POINTER        :: REFLD(:,:)
+!/REF1      REAL,    POINTER        :: REFLC(:,:)
+!/REF1      INTEGER, POINTER        :: REFLD(:,:)
       INTEGER, POINTER        :: NBEDGE
       INTEGER, POINTER        :: EDGES(:,:), NEIGH(:,:)
 !
@@ -969,7 +969,7 @@
 !
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
-      REAL,    POINTER        :: REFPARS(:)
+!/REF1      REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
 !/IC3      REAL,    POINTER        :: IC3PARS(:)
@@ -1930,8 +1930,8 @@
       US3DF  => GRIDS(IMOD)%US3DF
       USSPF  => GRIDS(IMOD)%USSPF
       USSP_WN => GRIDS(IMOD)%USSP_WN
-      REFLC  => GRIDS(IMOD)%REFLC
-      REFLD  => GRIDS(IMOD)%REFLD
+!/REF1      REFLC  => GRIDS(IMOD)%REFLC
+!/REF1      REFLD  => GRIDS(IMOD)%REFLD
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
@@ -2890,6 +2890,7 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 !
+!/REF1      RREF=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
 !/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.

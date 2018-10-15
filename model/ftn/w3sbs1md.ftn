@@ -143,8 +143,8 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, &
-                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
-        SIG2, DSII
+                          ECOS, ESIN, EC2, MAPTH, MAPWN, &
+                          SIG2, DSII
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
 !

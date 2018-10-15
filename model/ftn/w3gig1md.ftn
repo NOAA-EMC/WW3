@@ -208,7 +208,7 @@ END FUNCTION Df1f2theta
       USE CONSTANTS
       USE W3DISPMD
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DTH, DDEN,  &
-                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
+                          ECOS, ESIN, EC2, MAPTH, MAPWN, &
                           DSIP, IOBPD, GTYPE, UNGTYPE, IGPARS
 
 !/S      USE W3SERVMD, ONLY: STRACE

@@ -507,7 +507,8 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB, REFPARS
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB
+!/REF1   USE W3GDATMD, ONLY : REFPARS
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -757,7 +758,8 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ, REFPARS
+                            IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ
+!/REF1   USE W3GDATMD, ONLY :  REFPARS
        USE W3WDATMD, ONLY: TIME     
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -1010,7 +1012,8 @@
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
-                            TRIA, NNZ, REFPARS
+                            TRIA, NNZ
+!/REF1  USE W3GDATMD, ONLY : REFPARS
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -1323,7 +1326,8 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA, REFPARS
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA
+!/REF1  USE W3GDATMD, ONLY : REFPARS
        USE W3WDATMD, ONLY: TIME               
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN

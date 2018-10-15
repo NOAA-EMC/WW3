@@ -2494,7 +2494,8 @@ END SUBROUTINE
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, IEN, NTRI, TRIGP,               &
                           IOBP,IOBPD, IOBPA,                          &
-                          ANGLE0, ANGLE, REFPARS, REFLC, REFLD
+!/REF1                    REFPARS, REFLC, REFLD,                      &
+                          ANGLE0, ANGLE
 
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX

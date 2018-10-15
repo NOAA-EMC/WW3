@@ -526,6 +526,7 @@
           HGSTGE(I,J)%NSN1     =  0
           HGSTGE(I,J)%NSMX     =  0
 !/MPI          HGSTGE(I,J)%NRQHGS   =  0
+!/MPI          HGSTGE(I,J)%NRQOUT   =  0
           HGSTGE(I,J)%INIT     = .FALSE.
           EQSTGE(I,J)%VTIME(1) = -1
           EQSTGE(I,J)%VTIME(2) =  0
@@ -534,6 +535,7 @@
           EQSTGE(I,J)%NSND     =  0
           EQSTGE(I,J)%NAVMAX   =  1
 !/MPI          EQSTGE(I,J)%NRQEQS   =  0
+!/MPI          EQSTGE(I,J)%NRQOUT   =  0
           EQSTGE(I,J)%INIT     = .FALSE.
           END DO
         END DO
