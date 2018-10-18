@@ -1,0 +1,6 @@
+&PRO3 WDTHCG = 0.5, WDTHTH = 0.5 /
+&MISC FLAGTR = 2 /
+&UOST
+UOSTFILELOCAL = '../input_rg_multi/obstructions_local.large.in',
+UOSTFILESHADOW = '../input_rg_multi/obstructions_shadow.large.in' /
+END OF NAMELISTS

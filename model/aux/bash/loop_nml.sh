@@ -12,7 +12,7 @@ fi
 rpath="$1"
 prog="$2"
 
-for file in $(find $rpath -name "${prog}*inp*" ! -name "${prog}_clean.inp" )
+for file in $(find $rpath -name "${prog}*.inp*" ! -name "${prog}_clean.inp" )
 do
   echo 'file : '$file
  ./${prog}_inp2nml.sh $file

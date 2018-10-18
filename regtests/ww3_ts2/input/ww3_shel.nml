@@ -101,6 +101,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS LM T02 T01 T0M1 CGE FC CFX CFD UST CHA'
+  TYPE%POINT%FILE          = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !

@@ -901,8 +901,8 @@
                '     ERROR IN READING ',A,' FILE, IOSTAT =',I6/)
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
                '     PREMATURE END OF ',A,' FILE'/)
- 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
-               '     TIDAL CONSTITUENTS NOT RECOGNIZED ',A /)
+!/TIDE 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+!/TIDE               '     TIDAL CONSTITUENTS NOT RECOGNIZED ',A /)
 !/
 !/ End of W3FLDO  ---------------------------------------------------- /
 !/

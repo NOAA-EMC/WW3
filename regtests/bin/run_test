@@ -519,6 +519,10 @@ then
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          mv $prog.nml.log ${prog}_$g.nml.log
+        fi
       fi
     else
       errmsg "Error occured during $path_e/$prog execution"
@@ -615,6 +619,10 @@ then
       then
         mv restart.ww3 restart.$g
         \rm -f mod_def.ww3
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          mv $prog.nml.log ${prog}_$g.nml.log
+        fi
       fi
     else
       errmsg "Error occured during $path_e/$prog execution"
@@ -711,6 +719,10 @@ then
       then
         mv nest.ww3 nest.$g
         \rm -f mod_def.ww3
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          mv $prog.nml.log ${prog}_$g.nml.log
+        fi
       fi
     else
       errmsg "Error occured during $path_e/$prog execution"
@@ -738,8 +750,6 @@ then
 if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
 then
   ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-  files_p="spec.list"
-  files_p="$files_p $(cat ${ifile} | grep -i 'bound%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 )"
 else
   ifile="`ls $path_i/$prog.inp 2>/dev/null`"
 fi
@@ -784,14 +794,6 @@ then
     # link conf file
     if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
-      for file_p in ${files_p}
-      do
-        if [ -e ${path_i}/${file_p} ]
-        then
-          \rm -f ${file_p}
-          \ln -s ${path_i}/${file_p} .
-        fi
-      done
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
       ofile="$path_w/`basename $ifile .nml`${gu}.out"
@@ -817,6 +819,10 @@ then
       then
         mv nest.ww3 nest.$g
         \rm -f mod_def.ww3
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          mv $prog.nml.log ${prog}_$g.nml.log
+        fi
       fi
     else
       errmsg "Error occured during $path_e/$prog execution"
@@ -918,6 +924,10 @@ then
         then
           \rm -f mod_def.ww3
           mv $otype.ww3 $otype.$g
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
@@ -1021,6 +1031,10 @@ then
         then
           \rm -f mod_def.ww3
           mv $otype.ww3 $otype.$g
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
@@ -1096,8 +1110,6 @@ fi
 if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
 then
   ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
-  files_p="points.list"
-  files_p="$files_p $(cat ${ifile} | grep -i 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 )"
 else
   ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
 fi
@@ -1146,16 +1158,6 @@ then
   then
     \rm -f $prog.nml
     \ln -s $ifile $prog.nml
-    for file_p in ${files_p}
-    do
-      echo $path_i/$file_p
-      if [ -e ${path_i}/${file_p} ]
-      then
-        \rm -f ${file_p}
-        \ln -s ${path_i}/${file_p} .
-        ls
-      fi
-    done
   else
     \rm -f $prog.inp
     \ln -s $ifile $prog.inp
@@ -1450,6 +1452,10 @@ then
         then
           \rm -f mod_def.ww3
           \rm -f out_grd.ww3
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
           ofiles="`ls ww3.????????.* 2>/dev/null`"
           if [ $? = 0 ]
           then
@@ -1625,6 +1631,10 @@ then
         then
           \rm -f mod_def.ww3
           \rm -f out_pnt.ww3
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
@@ -1758,6 +1768,10 @@ then
       if [ $multi -eq 2 ]
       then
         \rm -f track_o.ww3
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          mv $prog.nml.log ${prog}_$g.nml.log
+        fi
         if [ -e track.ww3 ]
         then
           mv track.ww3 track.$g

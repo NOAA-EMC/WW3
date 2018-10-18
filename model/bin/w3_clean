@@ -360,11 +360,13 @@ EOF
         if [ -d $main_dir/../regtests/ww3_tp2.14 ]
         then
           cd $main_dir/../regtests/ww3_tp2.14
-          rm -f input/oasis3-mct/util/make_dir/make
+          rm -f input/oasis3-mct/util/make_dir/cmplr
           rm -f input/toy/toy_model
           rm -f input/toy/*__*.f90
           rm -f input/toy/*__*.mod
+          rm -f input/toy/*.o
           rm -f input/ww3_shel.inp
+          rm -f input/ww3_shel.nml
         fi
       fi
     fi

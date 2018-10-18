@@ -1878,15 +1878,15 @@
     echo "$rtst -g 2500m         -w work_2500m_IC3 -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC3_nondisp -i input_IC3_nondisp   $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g CGICE_CHENG   -w work_IC3_CGICE_CHENG -i input_IC3NL     $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M1 -i input_IC4/M1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M2 -i input_IC4/M2             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M3 -i input_IC4/M3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M4 -i input_IC4/M4             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M5 -i input_IC4/M5             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC4_M6 -i input_IC4/M6             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 206H          -w work_IC4_M6H -i input_IC4/M6            $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 206L          -w work_IC4_M6L -i input_IC4/M6            $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC4_M7  -i input_IC4/M7            $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M1 -i input_IC4_M1             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M2 -i input_IC4_M2             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M3 -i input_IC4_M3             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M4 -i input_IC4_M4             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M5 -i input_IC4_M5             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC4_M6 -i input_IC4_M6             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 206H          -w work_IC4_M6H -i input_IC4_M6            $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 206L          -w work_IC4_M6L -i input_IC4_M6            $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC4_M7  -i input_IC4_M7            $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 350m          -w w350m_IC5  -i input_IC5                 $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m         -w w1000m_IC5 -i input_IC5                 $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 2500m         -w w2500m_IC5 -i input_IC5                 $ww3 ww3_tic1.1" >> matrix.body

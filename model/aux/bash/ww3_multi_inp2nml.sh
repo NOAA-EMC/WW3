@@ -8,6 +8,8 @@ then
 fi
 inp=$1
 cur_dir=$(dirname $1)
+cd $cur_dir
+cur_dir="../$(basename $cur_dir)"
 
 
 version=$(bash --version | awk -F' ' '{print $4}')
@@ -55,7 +57,7 @@ do
     continue
   fi
 
-  echo $line >> $cleaninp
+  echo "$line" >> $cleaninp
 
 done
 
@@ -184,19 +186,36 @@ echo ${pointdate[@]}
 # point list
 if [ ${pointdate[3]} -ne 0 ]
 then
-  pointfile="${pointname}.list"
-  rm -f $cur_dir/$pointfile
+  foripoint="$cur_dir/${pointname}.list"
+  fpoint="$cur_dir/${pointname}.list.new"
+  point_filename=$foripoint
+  rm -f $fpoint
   il=$(($il+1))
   tmpname="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
   echo ${tmpname}
   while [ "${tmpname}" != "STOPSTRING" ]
   do
-    echo ${lines[$il]} >> $cur_dir/$pointfile
+    echo ${lines[$il]} >> $fpoint
     il=$(($il+1))
     tmpname="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
   done
+  if [ -f $foripoint ]
+  then
+    if [ -z "$(diff $foripoint $fpoint)" ]
+    then
+      echo $foripoint ' and ' $fpoint 'are same.'
+      echo 'delete ' $fpoint
+      rm $fpoint
+    else
+      echo 'diff between :' $foripoint ' and new file : ' $fpoint
+      echo 'inp2nml conversion stopped'
+      exit 1
+    fi
+  else
+    echo 'mv '$fpoint ' to ' $foripoint
+    mv $fpoint $foripoint
+  fi
 fi
-
 
 # track date
 echo 'track date'
@@ -639,7 +658,7 @@ if [ "${pointdate[3]}" != 0 ]
 then
   if [ "$pointname" != 'unset' ] && [ "$unipts" = "T" ]; then  
                                         echo "  ALLTYPE%POINT%NAME       = '$pointname'" >> $nmlfile; fi
-  if [ "$pointfile" != 'points.list' ]; then  echo "  ALLTYPE%POINT%FILE       = '$pointfile'" >> $nmlfile; fi
+  if [ "$point_filename" != 'points.list' ]; then  echo "  ALLTYPE%POINT%FILE       = '$point_filename'" >> $nmlfile; fi
 fi
 
 if [ "${trackdate[3]}" != 0 ] && [ "$trackflag" != T ];    then  
@@ -854,7 +873,7 @@ cat >> $nmlfile << EOF
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
 EOF
-
+echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 #------------------------------
 

@@ -1,0 +1,267 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     SPECTRUM%XFR         = 0.            ! frequency increment
+!     SPECTRUM%FREQ1       = 0.            ! first frequency (Hz)
+!     SPECTRUM%NK          = 0             ! number of frequencies (wavenumbers)
+!     SPECTRUM%NTH         = 0             ! number of direction bins
+!     SPECTRUM%THOFF       = 0.            ! relative offset of first direction [-0.5,0.5]
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.003129673392731
+  SPECTRUM%NK        =  58
+  SPECTRUM%NTH       =  24
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     RUN%FLDRY            = F             ! dry run (I/O only, no calculation)
+!     RUN%FLCX             = F             ! x-component of propagation
+!     RUN%FLCY             = F             ! y-component of propagation
+!     RUN%FLCTH            = F             ! direction shift
+!     RUN%FLCK             = F             ! wavenumber shift
+!     RUN%FLSOU            = F             ! source terms
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+!
+! * It is highly recommended to set up time steps which are multiple 
+!   between them. 
+!
+! * The first time step to calculate is the maximum CFL time step
+!   which depend on the lowest frequency FREQ1 previously set up and the
+!   lowest spatial grid resolution in meters DXY.
+!   reminder : 1 degree=60minutes // 1minute=1mile // 1mile=1.852km
+!   The formula for the CFL time is :
+!   Tcfl = DXY / (G / (FREQ1*4*Pi) ) with the constants Pi=3,14 and G=9.8m/s²;
+!   DTXY  ~= 90% Tcfl
+!   DTMAX ~= 3 * DTXY   (maximum global time step limit)
+!
+! * The refraction time step depends on how strong can be the current velocities
+!   on your grid :
+!   DTKTH ~= DTMAX / 2   ! in case of no or light current velocities
+!   DTKTH ~= DTMAX / 10  ! in case of strong current velocities
+!
+! * The source terms time step is usually defined between 5s and 60s.
+!   A common value is 10s.
+!   DTMIN ~= 10
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     TIMESTEPS%DTMAX      = 0.         ! maximum global time step (s)
+!     TIMESTEPS%DTXY       = 0.         ! maximum CFL time step for x-y (s)
+!     TIMESTEPS%DTKTH      = 0.         ! maximum CFL time step for k-th (s)
+!     TIMESTEPS%DTMIN      = 0.         ! minimum source term time step (s)
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  30.
+  TIMESTEPS%DTXY         =  3.
+  TIMESTEPS%DTKTH        =  3.
+  TIMESTEPS%DTMIN        =  3.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+!
+! * the tunable parameters for source terms, propagation schemes, and 
+!    numerics are read using namelists. 
+! * Any namelist found in the folowing sections is temporarily written
+!   to param.scratch, and read from there if necessary. 
+! * The order of the namelists is immaterial.
+! * Namelists not needed for the given switch settings will be skipped
+!   automatically
+!
+! * grid type can be : 
+!    'RECT' : rectilinear
+!    'CURV' : curvilinear
+!    'UNST' : unstructured (triangle-based)
+!
+! * coordinate system can be : 
+!    'SPHE' : Spherical (degrees)
+!    'CART' : Cartesian (meters)
+!
+! * grid closure can only be applied in spherical coordinates
+!
+! * grid closure can be : 
+!    'NONE' : No closure is applied
+!    'SMPL' : Simple grid closure. Grid is periodic in the
+!           : i-index and wraps at i=NX+1. In other words,
+!           : (NX+1,J) => (1,J). A grid with simple closure
+!           : may be rectilinear or curvilinear.
+!    'TRPL' : Tripole grid closure : Grid is periodic in the
+!           : i-index and wraps at i=NX+1 and has closure at
+!           : j=NY+1. In other words, (NX+1,J<=NY) => (1,J)
+!           : and (I,NY+1) => (NX-I+1,NY). Tripole
+!           : grid closure requires that NX be even. A grid
+!           : with tripole closure must be curvilinear.
+!
+! * The coastline limit depth is the value which distinguish the sea 
+!   points to the land points. All the points with depth values (ZBIN)
+!   greater than this limit (ZLIM) will be considered as excluded points
+!   and will never be wet points, even if the water level grows over.
+!   It can only overwrite the status of a sea point to a land point.
+!   The value must have a negative value under the mean sea level
+!
+! * The minimum water depth allowed to compute the model is the absolute
+!   depth value (DMIN) used in the model if the input depth is lower to 
+!   avoid the model to blow up.
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     GRID%NAME             = 'unset'            ! grid name (30 char)
+!     GRID%NML              = 'namelists.nml'    ! namelists filename
+!     GRID%TYPE             = 'unset'            ! grid type
+!     GRID%COORD            = 'unset'            ! coordinate system
+!     GRID%CLOS             = 'unset'            ! grid closure
+!
+!     GRID%ZLIM             = 0.        ! coastline limit depth (m)
+!     GRID%DMIN             = 0.        ! abs. minimum water depth (m)
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  '1-D parameterized ice test'
+  GRID%NML          =  '../input_IS2/namelists_1000m_v2.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  0.1
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! - only for RECT grids -
+!
+! * The minimum grid size is 3x3.
+!
+! * If the grid increments SX and SY are given in minutes of arc, the scaling
+!   factor SF must be set to 60. to provide an increment factor in degree.
+!
+! * If CSTRG='SMPL', then SX is forced to 360/NX.
+!
+! * value <= value_read / scale_fac
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     RECT%NX               = 0        ! number of points along x-axis
+!     RECT%NY               = 0        ! number of points along y-axis
+!
+!     RECT%SX               = 0.       ! grid increment along x-axis
+!     RECT%SY               = 0.       ! grid increment along y-axis
+!     RECT%SF               = 1.       ! scaling division factor for x-y axis
+!
+!     RECT%X0               = 0.       ! x-coordinate of lower-left corner (deg)
+!     RECT%Y0               = 0.       ! y-coordinate of lower-left corner (deg)
+!     RECT%SF0              = 1.       ! scaling division factor for x0,y0 coord
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  156
+  RECT%NY           =  3
+  RECT%SX           =  1.0E3
+  RECT%SY           =  1.0E3
+  RECT%X0           =  -1.0E3
+  RECT%Y0           =  -1.0E3
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! - for RECT and CURV grids -
+!
+! * if no obstruction subgrid, need to set &MISC FLAGTR = 0
+!
+! * The depth value must have negative values under the mean sea level
+!
+! * value <= value_read * scale_fac
+!
+! * IDLA : Layout indicator :
+!                  1   : Read line-by-line bottom to top.  (default)
+!                  2   : Like 1, single read statement.
+!                  3   : Read line-by-line top to bottom.
+!                  4   : Like 3, single read statement.
+! * IDFM : format indicator :
+!                  1   : Free format.  (default)
+!                  2   : Fixed format.
+!                  3   : Unformatted.
+! * FORMAT : element format to read :
+!               '(....)'  : auto detected  (default)
+!               '(f10.6)' : float type
+!
+! * Example :
+!      IDF  SF     IDLA  IDFM   FORMAT    FILENAME
+!      50   0.001  1     1     '(....)'  'GLOB-30M.bot'
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     DEPTH%SF             = 1.       ! scale factor
+!     DEPTH%FILENAME       = 'unset'  ! filename
+!     DEPTH%IDF            = 50       ! file unit number
+!     DEPTH%IDLA           = 1        ! layout indicator
+!     DEPTH%IDFM           = 1        ! format indicator
+!     DEPTH%FORMAT         = '(....)' ! formatted read format
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -1.0
+  DEPTH%FILENAME  =  '../input_IC1/depth1d.flat'
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! - for RECT, CURV and UNST grids -
+!
+! * If no mask defined, INBOUND can be used
+!
+! * If the actual input data is not defined in the actual wave model run
+!   the initial conditions will be applied as constant boundary conditions.
+!
+! * The number of points is defined by INBND_COUNT
+!
+! * The points must start from index 1 to N
+!
+! * Each line contains:
+!     Discrete grid counters (IX,IY) of the active point and a
+!     connect flag. If this flag is true, and the present and previous
+!     point are on a grid line or diagonal, all intermediate points
+!     are also defined as boundary points.
+!
+! * Included point :
+!     grid points from segment data
+!     Defines as lines identifying points at which
+!     input boundary conditions are to be defined. 
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     INBND_COUNT%N_POINT     = 0        ! number of segments
+!
+!     INBND_POINT(I)%X_INDEX  = 0        ! x index included point
+!     INBND_POINT(I)%Y_INDEX  = 0        ! y index included point
+!     INBND_POINT(I)%CONNECT  = F        ! connect flag
+!
+! OR
+!     INBND_POINT(I)          = 0 0 F    ! included point
+! -------------------------------------------------------------------- !
+&INBND_COUNT_NML
+  INBND_COUNT%N_POINT    =  1
+/
+
+&INBND_POINT_NML
+  INBND_POINT(1)         =  2 2 F
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

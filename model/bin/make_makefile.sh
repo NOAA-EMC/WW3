@@ -861,7 +861,7 @@
                prop=
              source="w3parall w3triamd $stx $nlx $btx $is $uostmd"
                  IO='w3iogrmd'
-                aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd $pdlibyow $memcode" ;;
+                aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode" ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -1327,6 +1327,7 @@
          'W3NMLTRNCMD'  ) modtest=w3nmltrncmd.o ;;
          'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
          'W3NMLSHELMD'  ) modtest=w3nmlshelmd.o ;;
+         'W3NMLGRIDMD'  ) modtest=w3nmlgridmd.o ;;
          'W3NETCDF'     ) modtest=w3netcdf.o ;;
          'YOWFUNCTION'  ) modtest=yowfunction.o ;;
          'YOWDATAPOOL'  ) modtest=yowdatapool.o ;;

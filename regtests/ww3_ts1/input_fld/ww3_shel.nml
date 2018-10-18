@@ -101,6 +101,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'MSC MCD MSS MSD HS FP DIR PHS PTP PDIR PDP PQP PPE PGW PSW QP'
+  TYPE%POINT%FILE          = '../input_fld/points.list'
 /
 
 ! -------------------------------------------------------------------- !

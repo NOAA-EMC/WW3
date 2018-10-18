@@ -1,0 +1,7 @@
+&PRO3 WDTHCG = 0.5, WDTHTH = 0.5 /
+&MISC FLAGTR = 2 /
+&UOST
+UOSTFILELOCAL = '../input_rg_shel/obstructions_local.ww3.in',
+UOSTFILESHADOW = '../input_rg_shel/obstructions_shadow.ww3.in',
+UOSTFACTORLOCAL = .9, UOSTFACTORSHADOW = .9 /
+END OF NAMELISTS

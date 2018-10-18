@@ -21,7 +21,7 @@ export WWATCH3_DIR=`grep WWATCH3_DIR $WWATCH3_ENV | awk -F' ' '{print $2}' `
 
 echo '   compile oasis coupler'
 cd $path_i/oasis3-mct/util/make_dir
-ln -sf make.$cmplr make
+ln -sf cmplr.$cmplr cmplr
 make realclean -f TopMakefileOasis3 > $path_w/oasis_clean.out
 make -f TopMakefileOasis3 > $path_w/oasis_make.out
 
@@ -45,5 +45,6 @@ ln -sf ../input/toy/toy_model .
 echo '   copy ww3 model inputs'
 cd $path_w
 cp ../input/r-ww3.nc.$swtstr r-ww3.nc
-
+cp ../input/ww3_shel.inp.$swtstr ../input/ww3_shel.inp
+cp ../input/ww3_shel.nml.$swtstr ../input/ww3_shel.nml
 echo ''

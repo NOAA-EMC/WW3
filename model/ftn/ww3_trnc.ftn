@@ -396,10 +396,6 @@
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
                '     PREMATURE END OF INPUT FILE'/)
 !
- 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
-               '     ERROR IN READING FROM INPUT FILE'/               &
-               '     IOSTAT =',I5/)
-!
  1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
                '     ERROR IN OPENING INPUT FILE'/                    &
                '     IOSTAT =',I5/)

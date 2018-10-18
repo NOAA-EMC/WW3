@@ -151,6 +151,7 @@
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'DPT CUR WND WLV ICE HS LM T02 T0M1 T01 FP DIR SPR EF TH1M STH1M'
   ALLTYPE%POINT%NAME       = 'points'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !

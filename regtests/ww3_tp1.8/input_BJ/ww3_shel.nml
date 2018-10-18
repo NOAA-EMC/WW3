@@ -101,6 +101,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'DPT WND WLV HS T02 DIR SPR TAW TWO BHD SXY FOC USS USF'
+  TYPE%POINT%FILE          = '../input_BJ/points.list'
 /
 
 ! -------------------------------------------------------------------- !

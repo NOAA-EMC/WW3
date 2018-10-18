@@ -8,7 +8,7 @@ $ Adapted for WW3 V5.09.   JGLi19Nov2015
 $
 $ Grid name (C*30, in quotes)
 $
-  ' ***** WW3 A50SMC Grid *****  '
+  'A50SMC Grid'
 $
 $ Frequency increment factor and first frequency (Hz) ---------------- $
 $ number of frequencies (wavenumbers) and directions, relative offset

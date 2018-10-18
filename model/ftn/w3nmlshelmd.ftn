@@ -144,6 +144,7 @@
 
   ! miscellaneous
   CHARACTER(256)                :: MSG
+  INTEGER                       :: NDSN
 
 
 
@@ -224,14 +225,12 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSE, IMPROC
-!/T    USE WMMDATMD, ONLY: NMPLOG
+    USE WMMDATMD, ONLY: MDSE, IMPROC, NMPLOG
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE
 !/S      USE W3SERVMD, ONLY: STRACE
 
@@ -258,7 +257,15 @@
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
 !/MPI      IMPROC = IMPROC + 1
 
-
+    ! open namelist log file
+    IF ( NMPLOG .EQ. IMPROC ) THEN
+      NDSN = 3
+      OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
+      IF (IERR.NE.0) THEN
+        WRITE (MDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+        RETURN
+      END IF
+    END IF
 
     ! open input file
     open (NDSI, FILE=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
@@ -268,48 +275,28 @@
     END IF
 
     ! read domain namelist
-    CALL READ_DOMAIN_NML (NDSI, NML_DOMAIN, IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: error occured in READ_DOMAIN_NML'
-      RETURN
-    END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_DOMAIN_NML (NML_DOMAIN)
+    CALL READ_DOMAIN_NML (NDSI, NML_DOMAIN)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_DOMAIN_NML (NML_DOMAIN)
 
     ! read input namelist
-    CALL READ_input_NML (NDSI, NML_INPUT, IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: error occured in READ_INPUT_NML'
-      RETURN
-    END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_INPUT_NML (NML_INPUT)
+    CALL READ_input_NML (NDSI, NML_INPUT)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_INPUT_NML (NML_INPUT)
 
     ! read output type namelist
-    CALL READ_OUTPUT_TYPE_NML (NDSI, NML_OUTPUT_TYPE, IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: error occured in READ_OUTPUT_TYPE_NML'
-      RETURN
-    END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_TYPE_NML (NML_OUTPUT_TYPE)
+    CALL READ_OUTPUT_TYPE_NML (NDSI, NML_OUTPUT_TYPE)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_TYPE_NML (NML_OUTPUT_TYPE)
 
     ! read output date namelist
-    CALL READ_OUTPUT_DATE_NML (NDSI, NML_OUTPUT_DATE, IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: error occured in READ_OUTPUT_DATE_NML'
-      RETURN
-    END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_DATE_NML (NML_OUTPUT_DATE)
+    CALL READ_OUTPUT_DATE_NML (NDSI, NML_OUTPUT_DATE)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_DATE_NML (NML_OUTPUT_DATE)
 
     ! read homogeneous namelist
-    CALL READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: error occured in READ_HOMOGENEOUS_NML'
-      RETURN
-    END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_HOMOGENEOUS_NML (NML_HOMOG_COUNT, NML_HOMOG_INPUT)
+    CALL READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_HOMOGENEOUS_NML (NML_HOMOG_COUNT, NML_HOMOG_INPUT)
 
-
-    ! close namelist file
+    ! close namelist files
     CLOSE (NDSI)
+    IF ( NMPLOG .EQ. IMPROC ) CLOSE (NDSN)
 
   END SUBROUTINE W3NMLSHEL
 
@@ -320,7 +307,7 @@
 
 !/ ------------------------------------------------------------------- /
 
-  SUBROUTINE READ_DOMAIN_NML (NDSI, NML_DOMAIN, IERR)
+  SUBROUTINE READ_DOMAIN_NML (NDSI, NML_DOMAIN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -342,6 +329,8 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NDSI              Int.
+!      NML_DOMAIN        Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -371,22 +360,22 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)               :: NDSI
     TYPE(NML_DOMAIN_T), INTENT(OUT)   :: NML_DOMAIN
-    INTEGER, INTENT(OUT)              :: IERR
 
     ! locals
+    INTEGER                                :: IERR
     TYPE(NML_DOMAIN_T) :: DOMAIN
     NAMELIST /DOMAIN_NML/ DOMAIN
 !/S      INTEGER, SAVE                           :: IENT = 0
@@ -402,18 +391,17 @@
     ! read domain namelist
     REWIND (NDSI)
     READ (NDSI, nml=DOMAIN_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_DOMAIN_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (1)
     END IF
 
     ! set/check return values
-    IF (DOMAIN%IOSTYP.lt.0.or.DOMAIN%IOSTYP.GT.3) THEN
-      WRITE (MDSE,'(A,I3)') 'ERROR: bad IOSTYP input: ',DOMAIN%IOSTYP
-      IERR = 1
-      RETURN
+    IF (DOMAIN%IOSTYP.LT.0.OR.DOMAIN%IOSTYP.GT.3) THEN
+      WRITE (MDSE,'(A,I3)') 'ERROR: BAD IOSTYP INPUT: ',DOMAIN%IOSTYP
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -431,7 +419,7 @@
 !/ ------------------------------------------------------------------- /
 
 
-  SUBROUTINE READ_INPUT_NML (NDSI, NML_INPUT, IERR)
+  SUBROUTINE READ_INPUT_NML (NDSI, NML_INPUT)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -453,6 +441,8 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NDSI              Int.
+!      NML_INPUT         Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -482,22 +472,22 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)                :: NDSI
     TYPE(NML_INPUT_T), INTENT(INOUT)   :: NML_INPUT
-    INTEGER, INTENT(OUT)               :: IERR
 
     ! locals
+    INTEGER                                :: IERR
     TYPE(NML_INPUT_T) :: INPUT
     NAMELIST /INPUT_NML/ INPUT
 !/S      INTEGER, SAVE                           :: IENT = 0
@@ -526,11 +516,11 @@
     ! read input namelist
     REWIND (NDSI)
     READ (NDSI, nml=INPUT_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_INPUT_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (3)
     END IF
 
     ! save namelist
@@ -547,7 +537,7 @@
 
 !/ ------------------------------------------------------------------- /
 
-  SUBROUTINE READ_OUTPUT_TYPE_NML (NDSI, NML_OUTPUT_TYPE, IERR)
+  SUBROUTINE READ_OUTPUT_TYPE_NML (NDSI, NML_OUTPUT_TYPE)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -569,6 +559,8 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NDSI              Int.
+!      NML_OUTPUT_TYPE   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -598,22 +590,22 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)                    :: NDSI
     TYPE(NML_OUTPUT_TYPE_T), INTENT(INOUT) :: NML_OUTPUT_TYPE
-    INTEGER, INTENT(OUT)                   :: IERR
 
     ! locals
+    INTEGER                                :: IERR
     TYPE(NML_OUTPUT_TYPE_T) :: TYPE
     NAMELIST /OUTPUT_TYPE_NML/ TYPE
 !/S      INTEGER, SAVE                           :: IENT = 0
@@ -639,11 +631,11 @@
     ! read output type namelist
     REWIND (NDSI)
     READ (NDSI, nml=OUTPUT_TYPE_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (4)
     END IF
 
     ! save namelist
@@ -660,7 +652,7 @@
 
 !/ ------------------------------------------------------------------- /
 
-  SUBROUTINE READ_OUTPUT_DATE_NML (NDSI, NML_OUTPUT_DATE, IERR)
+  SUBROUTINE READ_OUTPUT_DATE_NML (NDSI, NML_OUTPUT_DATE)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -682,6 +674,8 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NDSI              Int.
+!      NML_OUTPUT_DATE   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -711,22 +705,22 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)                    :: NDSI
     TYPE(NML_OUTPUT_DATE_T), INTENT(INOUT) :: NML_OUTPUT_DATE
-    INTEGER, INTENT(OUT)                   :: IERR
 
     ! locals
+    INTEGER                                :: IERR
     TYPE(NML_OUTPUT_DATE_T) :: DATE
     NAMELIST /OUTPUT_DATE_NML/ DATE
 !/S      INTEGER, SAVE                           :: IENT = 0
@@ -761,11 +755,11 @@
     ! read output date namelist
     REWIND (NDSI)
     READ (NDSI, nml=OUTPUT_DATE_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (5)
     END IF
 
     ! save namelist
@@ -782,7 +776,7 @@
 
 !/ ------------------------------------------------------------------- /
 
-  SUBROUTINE READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
+  SUBROUTINE READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -804,6 +798,9 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NDSI              Int.
+!      NML_HOMOG_COUNT   Type.
+!      NML_HOMOG_INPUT   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -833,24 +830,23 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(IN)                      :: NDSI
-    TYPE(NML_HOMOG_COUNT_T), INTENT(OUT)  :: NML_HOMOG_COUNT
+    INTEGER, INTENT(IN)                    :: NDSI
+    TYPE(NML_HOMOG_COUNT_T), INTENT(OUT)   :: NML_HOMOG_COUNT
     TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE, INTENT(OUT)   :: NML_HOMOG_INPUT(:)
-    INTEGER, INTENT(OUT)                     :: IERR
 
     ! locals
-    INTEGER                   :: I
+    INTEGER                   :: IERR, I
     TYPE(NML_HOMOG_COUNT_T)  :: HOMOG_COUNT
     NAMELIST /HOMOG_COUNT_NML/  HOMOG_COUNT
     TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE   :: HOMOG_INPUT(:)
@@ -880,11 +876,11 @@
     ! read homogeneous count namelist
     REWIND (NDSI)
     READ (NDSI, nml=HOMOG_COUNT_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_COUNT read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (6)
     END IF
 
     ! allocate the total count of homogeneous input
@@ -906,11 +902,11 @@
     ! read homogeneous input namelist
     REWIND (NDSI)
     READ (NDSI, nml=HOMOG_INPUT_NML, iostat=IERR, iomsg=MSG)
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
         'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_INPUT_NML read error', &
         'ERROR: '//TRIM(MSG)
-      RETURN
+      CALL EXTCDE (7)
     END IF
 
     ! save namelist
@@ -953,6 +949,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NML_DOMAIN      Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -982,13 +979,11 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSS
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
@@ -999,13 +994,13 @@
 !/S      CALL STRACE (IENT, 'REPORT_DOMAIN_NML')
 
       WRITE (MSG,'(A)') 'DOMAIN % '
-      WRITE (MDSS,'(A)')
-      WRITE (MDSS,11) TRIM(MSG),'IOSTYP = ', NML_DOMAIN%IOSTYP
-      WRITE (MDSS,10) TRIM(MSG),'START  = ', TRIM(NML_DOMAIN%START)
-      WRITE (MDSS,10) TRIM(MSG),'STOP   = ', TRIM(NML_DOMAIN%STOP)
+      WRITE (NDSN,'(A)')
+      WRITE (NDSN,11) TRIM(MSG),'IOSTYP = ', NML_DOMAIN%IOSTYP
+      WRITE (NDSN,10) TRIM(MSG),'START  = ', TRIM(NML_DOMAIN%START)
+      WRITE (NDSN,10) TRIM(MSG),'STOP   = ', TRIM(NML_DOMAIN%STOP)
 
 10  FORMAT (A,2X,A,A)
-11  FORMAT (A,2X,A,I1)
+11  FORMAT (A,2X,A,I8)
 13  FORMAT (A,2X,A,L1)
 
   END SUBROUTINE REPORT_DOMAIN_NML
@@ -1041,6 +1036,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NML_INPUT         Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1070,13 +1066,11 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSS
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
@@ -1089,22 +1083,22 @@
 !/S      CALL STRACE (IENT, 'REPORT_INPUT_NML')
 
     WRITE (MSG,'(A)') 'INPUT GRID % :'
-    WRITE (MDSS,'(A)')
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % WATER_LEVELS   = ', NML_INPUT%FORCING%WATER_LEVELS
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % CURRENTS       = ', NML_INPUT%FORCING%CURRENTS
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % WINDS          = ', NML_INPUT%FORCING%WINDS
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_CONC       = ', NML_INPUT%FORCING%ICE_CONC
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_PARAM1     = ', NML_INPUT%FORCING%ICE_PARAM1
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_PARAM2     = ', NML_INPUT%FORCING%ICE_PARAM2
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_PARAM3     = ', NML_INPUT%FORCING%ICE_PARAM3
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_PARAM4     = ', NML_INPUT%FORCING%ICE_PARAM4
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % ICE_PARAM5     = ', NML_INPUT%FORCING%ICE_PARAM5
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % MUD_DENSITY    = ', NML_INPUT%FORCING%MUD_DENSITY
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % MUD_THICKNESS  = ', NML_INPUT%FORCING%MUD_THICKNESS
-    WRITE (MDSS,10) TRIM(MSG),'FORCING % MUD_VISCOSITY  = ', NML_INPUT%FORCING%MUD_VISCOSITY
-    WRITE (MDSS,10) TRIM(MSG),'ASSIM % MEAN             = ', NML_INPUT%ASSIM%MEAN
-    WRITE (MDSS,10) TRIM(MSG),'ASSIM % SPEC1D           = ', NML_INPUT%ASSIM%SPEC1D
-    WRITE (MDSS,10) TRIM(MSG),'ASSIM % SPEC2D           = ', NML_INPUT%ASSIM%SPEC2D
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % WATER_LEVELS   = ', NML_INPUT%FORCING%WATER_LEVELS
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % CURRENTS       = ', NML_INPUT%FORCING%CURRENTS
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % WINDS          = ', NML_INPUT%FORCING%WINDS
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_CONC       = ', NML_INPUT%FORCING%ICE_CONC
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_PARAM1     = ', NML_INPUT%FORCING%ICE_PARAM1
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_PARAM2     = ', NML_INPUT%FORCING%ICE_PARAM2
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_PARAM3     = ', NML_INPUT%FORCING%ICE_PARAM3
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_PARAM4     = ', NML_INPUT%FORCING%ICE_PARAM4
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % ICE_PARAM5     = ', NML_INPUT%FORCING%ICE_PARAM5
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_DENSITY    = ', NML_INPUT%FORCING%MUD_DENSITY
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_THICKNESS  = ', NML_INPUT%FORCING%MUD_THICKNESS
+    WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_VISCOSITY  = ', NML_INPUT%FORCING%MUD_VISCOSITY
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM % MEAN             = ', NML_INPUT%ASSIM%MEAN
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM % SPEC1D           = ', NML_INPUT%ASSIM%SPEC1D
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM % SPEC2D           = ', NML_INPUT%ASSIM%SPEC2D
 
 
 10  FORMAT (A,2X,A,A)
@@ -1143,6 +1137,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NML_OUTPUT_TYPE   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1172,13 +1167,11 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSS
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
@@ -1191,22 +1184,22 @@
 !/S      CALL STRACE (IENT, 'REPORT_OUTPUT_TYPE_NML')
 
     WRITE (MSG,'(A)') 'OUTPUT TYPE % '
-    WRITE (MDSS,'(A)')
-    WRITE (MDSS,10) TRIM(MSG),'FIELD % LIST         = ', TRIM(NML_OUTPUT_TYPE%FIELD%LIST)
-    WRITE (MDSS,10) TRIM(MSG),'POINT % FILE         = ', TRIM(NML_OUTPUT_TYPE%POINT%FILE)
-    WRITE (MDSS,13) TRIM(MSG),'TRACK % FORMAT       = ', NML_OUTPUT_TYPE%TRACK%FORMAT
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % X0       = ', NML_OUTPUT_TYPE%PARTITION%X0
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % XN       = ', NML_OUTPUT_TYPE%PARTITION%XN
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % NX       = ', NML_OUTPUT_TYPE%PARTITION%NX
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % Y0       = ', NML_OUTPUT_TYPE%PARTITION%Y0
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % YN       = ', NML_OUTPUT_TYPE%PARTITION%YN
-    WRITE (MDSS,11) TRIM(MSG),'PARTITION % NY       = ', NML_OUTPUT_TYPE%PARTITION%NY
-    WRITE (MDSS,13) TRIM(MSG),'PARTITION % FORMAT   = ', NML_OUTPUT_TYPE%PARTITION%FORMAT
-!/COU    WRITE (MDSS,10) TRIM(MSG),'COUPLING % SENT         = ', TRIM(NML_OUTPUT_TYPE%COUPLING%SENT)
-!/COU    WRITE (MDSS,10) TRIM(MSG),'COUPLING % RECEIVED     = ', TRIM(NML_OUTPUT_TYPE%COUPLING%RECEIVED)
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'FIELD % LIST         = ', TRIM(NML_OUTPUT_TYPE%FIELD%LIST)
+    WRITE (NDSN,10) TRIM(MSG),'POINT % FILE         = ', TRIM(NML_OUTPUT_TYPE%POINT%FILE)
+    WRITE (NDSN,13) TRIM(MSG),'TRACK % FORMAT       = ', NML_OUTPUT_TYPE%TRACK%FORMAT
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % X0       = ', NML_OUTPUT_TYPE%PARTITION%X0
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % XN       = ', NML_OUTPUT_TYPE%PARTITION%XN
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % NX       = ', NML_OUTPUT_TYPE%PARTITION%NX
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % Y0       = ', NML_OUTPUT_TYPE%PARTITION%Y0
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % YN       = ', NML_OUTPUT_TYPE%PARTITION%YN
+    WRITE (NDSN,11) TRIM(MSG),'PARTITION % NY       = ', NML_OUTPUT_TYPE%PARTITION%NY
+    WRITE (NDSN,13) TRIM(MSG),'PARTITION % FORMAT   = ', NML_OUTPUT_TYPE%PARTITION%FORMAT
+!/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % SENT         = ', TRIM(NML_OUTPUT_TYPE%COUPLING%SENT)
+!/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % RECEIVED     = ', TRIM(NML_OUTPUT_TYPE%COUPLING%RECEIVED)
 
 10  FORMAT (A,2X,A,A)
-11  FORMAT (A,2X,A,I1)
+11  FORMAT (A,2X,A,I8)
 13  FORMAT (A,2X,A,L1)
 
   END SUBROUTINE REPORT_OUTPUT_TYPE_NML
@@ -1242,6 +1235,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NML_OUTPUT_DATE   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1271,13 +1265,11 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSS
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
@@ -1290,28 +1282,28 @@
 !/S      CALL STRACE (IENT, 'REPORT_OUTPUT_DATE_NML')
 
     WRITE (MSG,'(A)') 'OUTPUT DATE MODEL GRID % '
-    WRITE (MDSS,'(A)')
-    WRITE (MDSS,10) TRIM(MSG),'FIELD % START        = ', TRIM(NML_OUTPUT_DATE%FIELD%START)
-    WRITE (MDSS,10) TRIM(MSG),'FIELD % STRIDE       = ', TRIM(NML_OUTPUT_DATE%FIELD%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'FIELD % STOP         = ', TRIM(NML_OUTPUT_DATE%FIELD%STOP)
-    WRITE (MDSS,10) TRIM(MSG),'POINT % START        = ', TRIM(NML_OUTPUT_DATE%POINT%START)
-    WRITE (MDSS,10) TRIM(MSG),'POINT % STRIDE       = ', TRIM(NML_OUTPUT_DATE%POINT%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'POINT % STOP         = ', TRIM(NML_OUTPUT_DATE%POINT%STOP)
-    WRITE (MDSS,10) TRIM(MSG),'TRACK % START        = ', TRIM(NML_OUTPUT_DATE%TRACK%START)
-    WRITE (MDSS,10) TRIM(MSG),'TRACK % STRIDE       = ', TRIM(NML_OUTPUT_DATE%TRACK%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'TRACK % STOP         = ', TRIM(NML_OUTPUT_DATE%TRACK%STOP)
-    WRITE (MDSS,10) TRIM(MSG),'RESTART % START      = ', TRIM(NML_OUTPUT_DATE%RESTART%START)
-    WRITE (MDSS,10) TRIM(MSG),'RESTART % STRIDE     = ', TRIM(NML_OUTPUT_DATE%RESTART%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'RESTART % STOP       = ', TRIM(NML_OUTPUT_DATE%RESTART%STOP)
-    WRITE (MDSS,10) TRIM(MSG),'BOUNDARY % START     = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%START)
-    WRITE (MDSS,10) TRIM(MSG),'BOUNDARY % STRIDE    = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'BOUNDARY % STOP      = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STOP)
-    WRITE (MDSS,10) TRIM(MSG),'PARTITION % START    = ', TRIM(NML_OUTPUT_DATE%PARTITION%START)
-    WRITE (MDSS,10) TRIM(MSG),'PARTITION % STRIDE   = ', TRIM(NML_OUTPUT_DATE%PARTITION%STRIDE)
-    WRITE (MDSS,10) TRIM(MSG),'PARTITION % STOP     = ', TRIM(NML_OUTPUT_DATE%PARTITION%STOP)
-!/COU    WRITE (MDSS,10) TRIM(MSG),'COUPLING % START    = ', TRIM(NML_OUTPUT_DATE%COUPLING%START)
-!/COU    WRITE (MDSS,10) TRIM(MSG),'COUPLING % STRIDE   = ', TRIM(NML_OUTPUT_DATE%COUPLING%STRIDE)
-!/COU    WRITE (MDSS,10) TRIM(MSG),'COUPLING % STOP     = ', TRIM(NML_OUTPUT_DATE%COUPLING%STOP)
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'FIELD % START        = ', TRIM(NML_OUTPUT_DATE%FIELD%START)
+    WRITE (NDSN,10) TRIM(MSG),'FIELD % STRIDE       = ', TRIM(NML_OUTPUT_DATE%FIELD%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'FIELD % STOP         = ', TRIM(NML_OUTPUT_DATE%FIELD%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'POINT % START        = ', TRIM(NML_OUTPUT_DATE%POINT%START)
+    WRITE (NDSN,10) TRIM(MSG),'POINT % STRIDE       = ', TRIM(NML_OUTPUT_DATE%POINT%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'POINT % STOP         = ', TRIM(NML_OUTPUT_DATE%POINT%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK % START        = ', TRIM(NML_OUTPUT_DATE%TRACK%START)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK % STRIDE       = ', TRIM(NML_OUTPUT_DATE%TRACK%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK % STOP         = ', TRIM(NML_OUTPUT_DATE%TRACK%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART % START      = ', TRIM(NML_OUTPUT_DATE%RESTART%START)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART % STRIDE     = ', TRIM(NML_OUTPUT_DATE%RESTART%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART % STOP       = ', TRIM(NML_OUTPUT_DATE%RESTART%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % START     = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%START)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % STRIDE    = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % STOP      = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'PARTITION % START    = ', TRIM(NML_OUTPUT_DATE%PARTITION%START)
+    WRITE (NDSN,10) TRIM(MSG),'PARTITION % STRIDE   = ', TRIM(NML_OUTPUT_DATE%PARTITION%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'PARTITION % STOP     = ', TRIM(NML_OUTPUT_DATE%PARTITION%STOP)
+!/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % START    = ', TRIM(NML_OUTPUT_DATE%COUPLING%START)
+!/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % STRIDE   = ', TRIM(NML_OUTPUT_DATE%COUPLING%STRIDE)
+!/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % STOP     = ', TRIM(NML_OUTPUT_DATE%COUPLING%STOP)
 
 
 10  FORMAT (A,2X,A,A)
@@ -1349,6 +1341,8 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!      NML_HOMOG_COUNT   Type.
+!      NML_HOMOG_INPUT   Type.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1378,13 +1372,11 @@
 !  9. Switches :
 !
 !     !/MPI  Uses MPI communications
-!     !/T  Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 
-    USE WMMDATMD, ONLY: MDSS
 !/S      USE W3SERVMD, ONLY: STRACE
 
     IMPLICIT NONE
@@ -1399,38 +1391,38 @@
 !/S      CALL STRACE (IENT, 'REPORT_HOMOGENEOUS_NML')
 
     WRITE (MSG,'(A)') 'HOMOG_COUNT % '
-    WRITE (MDSS,'(A)')
-    WRITE (MDSS,11) TRIM(MSG),'N_IC1       = ', NML_HOMOG_COUNT%N_IC1
-    WRITE (MDSS,11) TRIM(MSG),'N_IC2       = ', NML_HOMOG_COUNT%N_IC2
-    WRITE (MDSS,11) TRIM(MSG),'N_IC3       = ', NML_HOMOG_COUNT%N_IC3
-    WRITE (MDSS,11) TRIM(MSG),'N_IC4       = ', NML_HOMOG_COUNT%N_IC4
-    WRITE (MDSS,11) TRIM(MSG),'N_IC5       = ', NML_HOMOG_COUNT%N_IC5
-    WRITE (MDSS,11) TRIM(MSG),'N_MDN       = ', NML_HOMOG_COUNT%N_MDN
-    WRITE (MDSS,11) TRIM(MSG),'N_MTH       = ', NML_HOMOG_COUNT%N_MTH
-    WRITE (MDSS,11) TRIM(MSG),'N_MVS       = ', NML_HOMOG_COUNT%N_MVS
-    WRITE (MDSS,11) TRIM(MSG),'N_LEV       = ', NML_HOMOG_COUNT%N_LEV
-    WRITE (MDSS,11) TRIM(MSG),'N_CUR       = ', NML_HOMOG_COUNT%N_CUR
-    WRITE (MDSS,11) TRIM(MSG),'N_WND       = ', NML_HOMOG_COUNT%N_WND
-    WRITE (MDSS,11) TRIM(MSG),'N_ICE       = ', NML_HOMOG_COUNT%N_ICE
-    WRITE (MDSS,11) TRIM(MSG),'N_MOV       = ', NML_HOMOG_COUNT%N_MOV
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,11) TRIM(MSG),'N_IC1       = ', NML_HOMOG_COUNT%N_IC1
+    WRITE (NDSN,11) TRIM(MSG),'N_IC2       = ', NML_HOMOG_COUNT%N_IC2
+    WRITE (NDSN,11) TRIM(MSG),'N_IC3       = ', NML_HOMOG_COUNT%N_IC3
+    WRITE (NDSN,11) TRIM(MSG),'N_IC4       = ', NML_HOMOG_COUNT%N_IC4
+    WRITE (NDSN,11) TRIM(MSG),'N_IC5       = ', NML_HOMOG_COUNT%N_IC5
+    WRITE (NDSN,11) TRIM(MSG),'N_MDN       = ', NML_HOMOG_COUNT%N_MDN
+    WRITE (NDSN,11) TRIM(MSG),'N_MTH       = ', NML_HOMOG_COUNT%N_MTH
+    WRITE (NDSN,11) TRIM(MSG),'N_MVS       = ', NML_HOMOG_COUNT%N_MVS
+    WRITE (NDSN,11) TRIM(MSG),'N_LEV       = ', NML_HOMOG_COUNT%N_LEV
+    WRITE (NDSN,11) TRIM(MSG),'N_CUR       = ', NML_HOMOG_COUNT%N_CUR
+    WRITE (NDSN,11) TRIM(MSG),'N_WND       = ', NML_HOMOG_COUNT%N_WND
+    WRITE (NDSN,11) TRIM(MSG),'N_ICE       = ', NML_HOMOG_COUNT%N_ICE
+    WRITE (NDSN,11) TRIM(MSG),'N_MOV       = ', NML_HOMOG_COUNT%N_MOV
 
     IF (NML_HOMOG_COUNT%N_TOT .NE. 0) THEN
       DO I=1,NML_HOMOG_COUNT%N_TOT
         WRITE (MSG,'(A,I5,A)') 'HOMOG_INPUT(',I,') % '
-        WRITE (MDSS,'(A)')
-        WRITE (MDSS,10) TRIM(MSG),'NAME      = ', TRIM(NML_HOMOG_INPUT(I)%NAME)
-        WRITE (MDSS,10) TRIM(MSG),'DATE      = ', TRIM(NML_HOMOG_INPUT(I)%DATE)
-        WRITE (MDSS,14) TRIM(MSG),'VALUE1    = ', NML_HOMOG_INPUT(I)%VALUE1
-        WRITE (MDSS,14) TRIM(MSG),'VALUE2    = ', NML_HOMOG_INPUT(I)%VALUE2
-        WRITE (MDSS,14) TRIM(MSG),'VALUE3    = ', NML_HOMOG_INPUT(I)%VALUE3
-        WRITE (MDSS,'(A)')
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,10) TRIM(MSG),'NAME      = ', TRIM(NML_HOMOG_INPUT(I)%NAME)
+        WRITE (NDSN,10) TRIM(MSG),'DATE      = ', TRIM(NML_HOMOG_INPUT(I)%DATE)
+        WRITE (NDSN,14) TRIM(MSG),'VALUE1    = ', NML_HOMOG_INPUT(I)%VALUE1
+        WRITE (NDSN,14) TRIM(MSG),'VALUE2    = ', NML_HOMOG_INPUT(I)%VALUE2
+        WRITE (NDSN,14) TRIM(MSG),'VALUE3    = ', NML_HOMOG_INPUT(I)%VALUE3
+        WRITE (NDSN,'(A)')
       END DO
     END IF
 
 
 10  FORMAT (A,2X,A,A)
-11  FORMAT (A,2X,A,I1)
-14  FORMAT (A,2X,A,F5.2)
+11  FORMAT (A,2X,A,I8)
+14  FORMAT (A,2X,A,F8.2)
 
   END SUBROUTINE REPORT_HOMOGENEOUS_NML
 

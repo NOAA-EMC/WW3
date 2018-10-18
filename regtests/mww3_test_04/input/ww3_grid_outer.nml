@@ -1,0 +1,460 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     SPECTRUM%XFR         = 0.            ! frequency increment
+!     SPECTRUM%FREQ1       = 0.            ! first frequency (Hz)
+!     SPECTRUM%NK          = 0             ! number of frequencies (wavenumbers)
+!     SPECTRUM%NTH         = 0             ! number of direction bins
+!     SPECTRUM%THOFF       = 0.            ! relative offset of first direction [-0.5,0.5]
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.03
+  SPECTRUM%FREQ1     =  0.075
+  SPECTRUM%NK        =  20
+  SPECTRUM%NTH       =  24
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     RUN%FLDRY            = F             ! dry run (I/O only, no calculation)
+!     RUN%FLCX             = F             ! x-component of propagation
+!     RUN%FLCY             = F             ! y-component of propagation
+!     RUN%FLCTH            = F             ! direction shift
+!     RUN%FLCK             = F             ! wavenumber shift
+!     RUN%FLSOU            = F             ! source terms
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+!
+! * It is highly recommended to set up time steps which are multiple 
+!   between them. 
+!
+! * The first time step to calculate is the maximum CFL time step
+!   which depend on the lowest frequency FREQ1 previously set up and the
+!   lowest spatial grid resolution in meters DXY.
+!   reminder : 1 degree=60minutes // 1minute=1mile // 1mile=1.852km
+!   The formula for the CFL time is :
+!   Tcfl = DXY / (G / (FREQ1*4*Pi) ) with the constants Pi=3,14 and G=9.8m/s²;
+!   DTXY  ~= 90% Tcfl
+!   DTMAX ~= 3 * DTXY   (maximum global time step limit)
+!
+! * The refraction time step depends on how strong can be the current velocities
+!   on your grid :
+!   DTKTH ~= DTMAX / 2   ! in case of no or light current velocities
+!   DTKTH ~= DTMAX / 10  ! in case of strong current velocities
+!
+! * The source terms time step is usually defined between 5s and 60s.
+!   A common value is 10s.
+!   DTMIN ~= 10
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     TIMESTEPS%DTMAX      = 0.         ! maximum global time step (s)
+!     TIMESTEPS%DTXY       = 0.         ! maximum CFL time step for x-y (s)
+!     TIMESTEPS%DTKTH      = 0.         ! maximum CFL time step for k-th (s)
+!     TIMESTEPS%DTMIN      = 0.         ! minimum source term time step (s)
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  720.
+  TIMESTEPS%DTXY         =  720.
+  TIMESTEPS%DTKTH        =  720.
+  TIMESTEPS%DTMIN        =  15.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+!
+! * the tunable parameters for source terms, propagation schemes, and 
+!    numerics are read using namelists. 
+! * Any namelist found in the folowing sections is temporarily written
+!   to param.scratch, and read from there if necessary. 
+! * The order of the namelists is immaterial.
+! * Namelists not needed for the given switch settings will be skipped
+!   automatically
+!
+! * grid type can be : 
+!    'RECT' : rectilinear
+!    'CURV' : curvilinear
+!    'UNST' : unstructured (triangle-based)
+!
+! * coordinate system can be : 
+!    'SPHE' : Spherical (degrees)
+!    'CART' : Cartesian (meters)
+!
+! * grid closure can only be applied in spherical coordinates
+!
+! * grid closure can be : 
+!    'NONE' : No closure is applied
+!    'SMPL' : Simple grid closure. Grid is periodic in the
+!           : i-index and wraps at i=NX+1. In other words,
+!           : (NX+1,J) => (1,J). A grid with simple closure
+!           : may be rectilinear or curvilinear.
+!    'TRPL' : Tripole grid closure : Grid is periodic in the
+!           : i-index and wraps at i=NX+1 and has closure at
+!           : j=NY+1. In other words, (NX+1,J<=NY) => (1,J)
+!           : and (I,NY+1) => (NX-I+1,NY). Tripole
+!           : grid closure requires that NX be even. A grid
+!           : with tripole closure must be curvilinear.
+!
+! * The coastline limit depth is the value which distinguish the sea 
+!   points to the land points. All the points with depth values (ZBIN)
+!   greater than this limit (ZLIM) will be considered as excluded points
+!   and will never be wet points, even if the water level grows over.
+!   It can only overwrite the status of a sea point to a land point.
+!   The value must have a negative value under the mean sea level
+!
+! * The minimum water depth allowed to compute the model is the absolute
+!   depth value (DMIN) used in the model if the input depth is lower to 
+!   avoid the model to blow up.
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     GRID%NAME             = 'unset'            ! grid name (30 char)
+!     GRID%NML              = 'namelists.nml'    ! namelists filename
+!     GRID%TYPE             = 'unset'            ! grid type
+!     GRID%COORD            = 'unset'            ! coordinate system
+!     GRID%CLOS             = 'unset'            ! grid closure
+!
+!     GRID%ZLIM             = 0.        ! coastline limit depth (m)
+!     GRID%DMIN             = 0.        ! abs. minimum water depth (m)
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'The outer grid @ 10 km'
+  GRID%NML          =  '../input/namelists_outer.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  0.25
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! - only for RECT grids -
+!
+! * The minimum grid size is 3x3.
+!
+! * If the grid increments SX and SY are given in minutes of arc, the scaling
+!   factor SF must be set to 60. to provide an increment factor in degree.
+!
+! * If CSTRG='SMPL', then SX is forced to 360/NX.
+!
+! * value <= value_read / scale_fac
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     RECT%NX               = 0        ! number of points along x-axis
+!     RECT%NY               = 0        ! number of points along y-axis
+!
+!     RECT%SX               = 0.       ! grid increment along x-axis
+!     RECT%SY               = 0.       ! grid increment along y-axis
+!     RECT%SF               = 1.       ! scaling division factor for x-y axis
+!
+!     RECT%X0               = 0.       ! x-coordinate of lower-left corner (deg)
+!     RECT%Y0               = 0.       ! y-coordinate of lower-left corner (deg)
+!     RECT%SF0              = 1.       ! scaling division factor for x0,y0 coord
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  55
+  RECT%NY           =  55
+  RECT%SX           =  10.E3
+  RECT%SY           =  10.E3
+  RECT%X0           =  -270.E3
+  RECT%Y0           =  -270.E3
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! - for RECT and CURV grids -
+!
+! * if no obstruction subgrid, need to set &MISC FLAGTR = 0
+!
+! * The depth value must have negative values under the mean sea level
+!
+! * value <= value_read * scale_fac
+!
+! * IDLA : Layout indicator :
+!                  1   : Read line-by-line bottom to top.  (default)
+!                  2   : Like 1, single read statement.
+!                  3   : Read line-by-line top to bottom.
+!                  4   : Like 3, single read statement.
+! * IDFM : format indicator :
+!                  1   : Free format.  (default)
+!                  2   : Fixed format.
+!                  3   : Unformatted.
+! * FORMAT : element format to read :
+!               '(....)'  : auto detected  (default)
+!               '(f10.6)' : float type
+!
+! * Example :
+!      IDF  SF     IDLA  IDFM   FORMAT    FILENAME
+!      50   0.001  1     1     '(....)'  'GLOB-30M.bot'
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     DEPTH%SF             = 1.       ! scale factor
+!     DEPTH%FILENAME       = 'unset'  ! filename
+!     DEPTH%IDF            = 50       ! file unit number
+!     DEPTH%IDLA           = 1        ! layout indicator
+!     DEPTH%IDFM           = 1        ! format indicator
+!     DEPTH%FORMAT         = '(....)' ! formatted read format
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -250.
+  DEPTH%FILENAME  =  '../input/outer.depth'
+  DEPTH%IDLA      =  4
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! - for RECT, CURV and UNST grids -
+!
+! * If no mask defined, INBOUND can be used
+!
+! * If the actual input data is not defined in the actual wave model run
+!   the initial conditions will be applied as constant boundary conditions.
+!
+! * The number of points is defined by INBND_COUNT
+!
+! * The points must start from index 1 to N
+!
+! * Each line contains:
+!     Discrete grid counters (IX,IY) of the active point and a
+!     connect flag. If this flag is true, and the present and previous
+!     point are on a grid line or diagonal, all intermediate points
+!     are also defined as boundary points.
+!
+! * Included point :
+!     grid points from segment data
+!     Defines as lines identifying points at which
+!     input boundary conditions are to be defined. 
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     INBND_COUNT%N_POINT     = 0        ! number of segments
+!
+!     INBND_POINT(I)%X_INDEX  = 0        ! x index included point
+!     INBND_POINT(I)%Y_INDEX  = 0        ! y index included point
+!     INBND_POINT(I)%CONNECT  = F        ! connect flag
+!
+! OR
+!     INBND_POINT(I)          = 0 0 F    ! included point
+! -------------------------------------------------------------------- !
+&INBND_COUNT_NML
+  INBND_COUNT%N_POINT    =  4
+/
+
+&INBND_POINT_NML
+  INBND_POINT(1)         =  54 1 T
+  INBND_POINT(2)         =  1 1 T
+  INBND_POINT(3)         =  1 55 T
+  INBND_POINT(4)         =  54 55 T
+/
+
+! -------------------------------------------------------------------- !
+! Define the output boundary points via OUTBND_COUNT_NML and
+!                                       OUTBND_LINE_NML namelist
+! - only for RECT and CURV grids -
+!
+! * It will creates a nest file with output boundaries for a inner grid.
+!   The prefered way to do it is to use ww3_bounc program.
+!
+! * These do not need to be defined for data transfer between grids in
+!    the multi grid driver.
+!
+! * The number of lines are defined by OUTBND_COUNT
+!
+! * The lines must start from index 1 to N
+!
+! * Output boundary points are defined as a number of straight lines,
+!   defined by its starting point (X0,Y0), increments (DX,DY) and number
+!   of points. A negative number of points starts a new output file.
+!
+! * Example for spherical grid in degrees :
+!     '1.75  1.50  0.25 -0.10     3'
+!     '2.25  1.50 -0.10  0.00    -6'
+!     '0.10  0.10  0.10  0.00   -10'
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     OUTBND_COUNT%N_LINE   = 0               ! number of lines
+!
+!     OUTBND_LINE(I)%X0     = 0.              ! x index start point
+!     OUTBND_LINE(I)%Y0     = 0.              ! y index start point
+!     OUTBND_LINE(I)%DX     = 0.              ! x-along increment
+!     OUTBND_LINE(I)%DY     = 0.              ! y-along increment
+!     OUTBND_LINE(I)%NP     = 0               ! number of points
+! OR
+!     OUTBND_LINE(I)        = 0. 0. 0. 0. 0   ! included lines
+! -------------------------------------------------------------------- !
+&OUTBND_COUNT_NML
+  OUTBND_COUNT%N_LINE   =  145
+/
+
+&OUTBND_LINE_NML
+  OUTBND_LINE(1)           =  -125.E3 -25.E3 1.E3 1.E3 1
+  OUTBND_LINE(2)           =  -125.E3 -20.E3 1.E3 1.E3 1
+  OUTBND_LINE(3)           =  -125.E3 -15.E3 1.E3 1.E3 1
+  OUTBND_LINE(4)           =  -125.E3 -10.E3 1.E3 1.E3 1
+  OUTBND_LINE(5)           =  -125.E3 -5.E3 1.E3 1.E3 1
+  OUTBND_LINE(6)           =  -125.E3 0.E3 1.E3 1.E3 1
+  OUTBND_LINE(7)           =  -125.E3 5.E3 1.E3 1.E3 1
+  OUTBND_LINE(8)           =  -125.E3 10.E3 1.E3 1.E3 1
+  OUTBND_LINE(9)           =  -125.E3 15.E3 1.E3 1.E3 1
+  OUTBND_LINE(10)           =  -125.E3 20.E3 1.E3 1.E3 1
+  OUTBND_LINE(11)           =  -125.E3 25.E3 1.E3 1.E3 1
+  OUTBND_LINE(12)           =  -120.E3 -40.E3 1.E3 1.E3 1
+  OUTBND_LINE(13)           =  -120.E3 -35.E3 1.E3 1.E3 1
+  OUTBND_LINE(14)           =  -120.E3 -30.E3 1.E3 1.E3 1
+  OUTBND_LINE(15)           =  -120.E3 30.E3 1.E3 1.E3 1
+  OUTBND_LINE(16)           =  -120.E3 35.E3 1.E3 1.E3 1
+  OUTBND_LINE(17)           =  -120.E3 40.E3 1.E3 1.E3 1
+  OUTBND_LINE(18)           =  -115.E3 -55.E3 1.E3 1.E3 1
+  OUTBND_LINE(19)           =  -115.E3 -50.E3 1.E3 1.E3 1
+  OUTBND_LINE(20)           =  -115.E3 -45.E3 1.E3 1.E3 1
+  OUTBND_LINE(21)           =  -115.E3 45.E3 1.E3 1.E3 1
+  OUTBND_LINE(22)           =  -115.E3 50.E3 1.E3 1.E3 1
+  OUTBND_LINE(23)           =  -115.E3 55.E3 1.E3 1.E3 1
+  OUTBND_LINE(24)           =  -110.E3 -60.E3 1.E3 1.E3 1
+  OUTBND_LINE(25)           =  -110.E3 60.E3 1.E3 1.E3 1
+  OUTBND_LINE(26)           =  -105.E3 -70.E3 1.E3 1.E3 1
+  OUTBND_LINE(27)           =  -105.E3 -65.E3 1.E3 1.E3 1
+  OUTBND_LINE(28)           =  -105.E3 65.E3 1.E3 1.E3 1
+  OUTBND_LINE(29)           =  -105.E3 70.E3 1.E3 1.E3 1
+  OUTBND_LINE(30)           =  -100.E3 -75.E3 1.E3 1.E3 1
+  OUTBND_LINE(31)           =  -100.E3 75.E3 1.E3 1.E3 1
+  OUTBND_LINE(32)           =  -95.E3 -85.E3 1.E3 1.E3 1
+  OUTBND_LINE(33)           =  -95.E3 -80.E3 1.E3 1.E3 1
+  OUTBND_LINE(34)           =  -95.E3 80.E3 1.E3 1.E3 1
+  OUTBND_LINE(35)           =  -95.E3 85.E3 1.E3 1.E3 1
+  OUTBND_LINE(36)           =  -90.E3 -90.E3 1.E3 1.E3 1
+  OUTBND_LINE(37)           =  -90.E3 90.E3 1.E3 1.E3 1
+  OUTBND_LINE(38)           =  -85.E3 -95.E3 1.E3 1.E3 1
+  OUTBND_LINE(39)           =  -85.E3 95.E3 1.E3 1.E3 1
+  OUTBND_LINE(40)           =  -80.E3 -95.E3 1.E3 1.E3 1
+  OUTBND_LINE(41)           =  -80.E3 95.E3 1.E3 1.E3 1
+  OUTBND_LINE(42)           =  -75.E3 -100.E3 1.E3 1.E3 1
+  OUTBND_LINE(43)           =  -75.E3 100.E3 1.E3 1.E3 1
+  OUTBND_LINE(44)           =  -70.E3 -105.E3 1.E3 1.E3 1
+  OUTBND_LINE(45)           =  -70.E3 105.E3 1.E3 1.E3 1
+  OUTBND_LINE(46)           =  -65.E3 -105.E3 1.E3 1.E3 1
+  OUTBND_LINE(47)           =  -65.E3 105.E3 1.E3 1.E3 1
+  OUTBND_LINE(48)           =  -60.E3 -110.E3 1.E3 1.E3 1
+  OUTBND_LINE(49)           =  -60.E3 110.E3 1.E3 1.E3 1
+  OUTBND_LINE(50)           =  -55.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(51)           =  -55.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(52)           =  -50.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(53)           =  -50.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(54)           =  -45.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(55)           =  -45.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(56)           =  -40.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(57)           =  -40.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(58)           =  -35.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(59)           =  -35.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(60)           =  -30.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(61)           =  -30.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(62)           =  -25.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(63)           =  -25.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(64)           =  -20.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(65)           =  -20.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(66)           =  -15.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(67)           =  -15.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(68)           =  -10.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(69)           =  -10.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(70)           =  -5.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(71)           =  -5.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(72)           =  0.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(73)           =  0.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(74)           =  5.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(75)           =  5.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(76)           =  10.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(77)           =  10.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(78)           =  15.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(79)           =  15.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(80)           =  20.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(81)           =  20.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(82)           =  25.E3 -125.E3 1.E3 1.E3 1
+  OUTBND_LINE(83)           =  25.E3 125.E3 1.E3 1.E3 1
+  OUTBND_LINE(84)           =  30.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(85)           =  30.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(86)           =  35.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(87)           =  35.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(88)           =  40.E3 -120.E3 1.E3 1.E3 1
+  OUTBND_LINE(89)           =  40.E3 120.E3 1.E3 1.E3 1
+  OUTBND_LINE(90)           =  45.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(91)           =  45.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(92)           =  50.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(93)           =  50.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(94)           =  55.E3 -115.E3 1.E3 1.E3 1
+  OUTBND_LINE(95)           =  55.E3 115.E3 1.E3 1.E3 1
+  OUTBND_LINE(96)           =  60.E3 -110.E3 1.E3 1.E3 1
+  OUTBND_LINE(97)           =  60.E3 110.E3 1.E3 1.E3 1
+  OUTBND_LINE(98)           =  65.E3 -105.E3 1.E3 1.E3 1
+  OUTBND_LINE(99)           =  65.E3 105.E3 1.E3 1.E3 1
+  OUTBND_LINE(100)           =  70.E3 -105.E3 1.E3 1.E3 1
+  OUTBND_LINE(101)           =  70.E3 105.E3 1.E3 1.E3 1
+  OUTBND_LINE(102)           =  75.E3 -100.E3 1.E3 1.E3 1
+  OUTBND_LINE(103)           =  75.E3 100.E3 1.E3 1.E3 1
+  OUTBND_LINE(104)           =  80.E3 -95.E3 1.E3 1.E3 1
+  OUTBND_LINE(105)           =  80.E3 95.E3 1.E3 1.E3 1
+  OUTBND_LINE(106)           =  85.E3 -95.E3 1.E3 1.E3 1
+  OUTBND_LINE(107)           =  85.E3 95.E3 1.E3 1.E3 1
+  OUTBND_LINE(108)           =  90.E3 -90.E3 1.E3 1.E3 1
+  OUTBND_LINE(109)           =  90.E3 90.E3 1.E3 1.E3 1
+  OUTBND_LINE(110)           =  95.E3 -85.E3 1.E3 1.E3 1
+  OUTBND_LINE(111)           =  95.E3 -80.E3 1.E3 1.E3 1
+  OUTBND_LINE(112)           =  95.E3 80.E3 1.E3 1.E3 1
+  OUTBND_LINE(113)           =  95.E3 85.E3 1.E3 1.E3 1
+  OUTBND_LINE(114)           =  100.E3 -75.E3 1.E3 1.E3 1
+  OUTBND_LINE(115)           =  100.E3 75.E3 1.E3 1.E3 1
+  OUTBND_LINE(116)           =  105.E3 -70.E3 1.E3 1.E3 1
+  OUTBND_LINE(117)           =  105.E3 -65.E3 1.E3 1.E3 1
+  OUTBND_LINE(118)           =  105.E3 65.E3 1.E3 1.E3 1
+  OUTBND_LINE(119)           =  105.E3 70.E3 1.E3 1.E3 1
+  OUTBND_LINE(120)           =  110.E3 -60.E3 1.E3 1.E3 1
+  OUTBND_LINE(121)           =  110.E3 60.E3 1.E3 1.E3 1
+  OUTBND_LINE(122)           =  115.E3 -55.E3 1.E3 1.E3 1
+  OUTBND_LINE(123)           =  115.E3 -50.E3 1.E3 1.E3 1
+  OUTBND_LINE(124)           =  115.E3 -45.E3 1.E3 1.E3 1
+  OUTBND_LINE(125)           =  115.E3 45.E3 1.E3 1.E3 1
+  OUTBND_LINE(126)           =  115.E3 50.E3 1.E3 1.E3 1
+  OUTBND_LINE(127)           =  115.E3 55.E3 1.E3 1.E3 1
+  OUTBND_LINE(128)           =  120.E3 -40.E3 1.E3 1.E3 1
+  OUTBND_LINE(129)           =  120.E3 -35.E3 1.E3 1.E3 1
+  OUTBND_LINE(130)           =  120.E3 -30.E3 1.E3 1.E3 1
+  OUTBND_LINE(131)           =  120.E3 30.E3 1.E3 1.E3 1
+  OUTBND_LINE(132)           =  120.E3 35.E3 1.E3 1.E3 1
+  OUTBND_LINE(133)           =  120.E3 40.E3 1.E3 1.E3 1
+  OUTBND_LINE(134)           =  125.E3 -25.E3 1.E3 1.E3 1
+  OUTBND_LINE(135)           =  125.E3 -20.E3 1.E3 1.E3 1
+  OUTBND_LINE(136)           =  125.E3 -15.E3 1.E3 1.E3 1
+  OUTBND_LINE(137)           =  125.E3 -10.E3 1.E3 1.E3 1
+  OUTBND_LINE(138)           =  125.E3 -5.E3 1.E3 1.E3 1
+  OUTBND_LINE(139)           =  125.E3 0.E3 1.E3 1.E3 1
+  OUTBND_LINE(140)           =  125.E3 5.E3 1.E3 1.E3 1
+  OUTBND_LINE(141)           =  125.E3 10.E3 1.E3 1.E3 1
+  OUTBND_LINE(142)           =  125.E3 15.E3 1.E3 1.E3 1
+  OUTBND_LINE(143)           =  125.E3 20.E3 1.E3 1.E3 1
+  OUTBND_LINE(144)           =  125.E3 25.E3 1.E3 1.E3 1
+  OUTBND_LINE(145)           =  0.E3 0.E3 1.E3 1.E3 0
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

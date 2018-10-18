@@ -869,8 +869,8 @@
 !
 ! Formats
 !
- 1001 FORMAT (/' *** ERROR WMIOBG : NO DATA IN STAGING ARRAY ***'/    &
-               '                    CALL WMIOBS FIRST '/)
+!/SHRD 1001 FORMAT (/' *** ERROR WMIOBG : NO DATA IN STAGING ARRAY ***'/    &
+!/SHRD               '                    CALL WMIOBS FIRST '/)
  1002 FORMAT (/' *** ERROR WMIOBG : INITIAL DATA NOT AT INITAL ',     &
                                    'MODEL TIME ***'/)
 !/MPI 1003 FORMAT (/' *** ERROR WMIOBG : UNEXPECTED SIZE OF STAGING', &

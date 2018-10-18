@@ -207,13 +207,12 @@
 
       DELX=1. 
       DELY=1. 
-        IF (GTYPE .EQ. UNGTYPE) THEN
-          IF (FLAGLL) THEN
-            FACX   =  1./(DERA * RADIUS) 
-          ELSE 
-            FACX   =  1.
-          END IF
-        END IF
+      ! set FACx for all grid types
+      IF (FLAGLL) THEN
+        FACX   =  1./(DERA * RADIUS) 
+      ELSE 
+        FACX   =  1.
+      END IF
 
       ISEA = MAPFS (IY,IX) 
       IF (GTYPE.EQ.RLGTYPE) THEN 

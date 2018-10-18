@@ -1,0 +1,3 @@
+&UNST UGOBCAUTO = F , EXPFSN = T, UGOBCFILE='../input/ref1.mshb'   /
+&REF1 REFCOAST=0.1 /
+END OF NAMELISTS

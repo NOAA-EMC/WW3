@@ -46,7 +46,7 @@ $
   EXPFSN = T,
   EXPFSPSI = F,
   EXPFSFCT = F,
-  IMPFSN = F,
+  IMPFSN = F /
 $
 $ Implicit with ww3ifr code version
 &UNST UGOBCAUTO = F,
@@ -138,7 +138,7 @@ $
         SDSBR2 = 0.80, SDSP = 2.00, SDSISO = 2, SDSCOS =2.0, SDSDTH = 80.0,
         SDSBRF1 =  0.50, SDSBRFDF = 0,
         SDSBM0 =  1.00, SDSBM1 = 0.00, SDSBM2 = 0.00, SDSBM3 = 0.00, SDSBM4 = 0.00,
-,       WHITECAPWIDTH = 0.30, SDSLFGEN =  0.00, SDSHFGEN =  0.00 /
+        WHITECAPWIDTH = 0.30, SDSLFGEN =  0.00, SDSHFGEN =  0.00 /
 &SBT1 GAMMA = -0.6700E-01 /
 &SDB1 BJALFA =  1.000, BJGAM =  0.730, BJFLAG = .TRUE. /
 &PRO3 CFLTM = 0.70, WDTHCG = 1.50, WDTHTH = 1.50 /

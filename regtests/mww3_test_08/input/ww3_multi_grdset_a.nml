@@ -152,6 +152,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'HS WND ICE DPT DIR'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
   ALLTYPE%PARTITION        = 0 999 1 0 999 1 F
 /
 

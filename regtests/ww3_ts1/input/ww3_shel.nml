@@ -101,6 +101,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'DPT WND MSS MSD ICE HS MSS FAW WCC WCF WCH WCM FOC TAW CHA FWS'
+  TYPE%POINT%FILE          = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !

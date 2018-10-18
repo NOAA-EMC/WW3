@@ -8,7 +8,8 @@ then
 fi
 inp=$1
 cur_dir=$(dirname $1)
-
+cd $cur_dir
+cur_dir="../$(basename $cur_dir)"
 
 version=$(bash --version | awk -F' ' '{print $4}')
 version4=$(echo $version | cut -d '.' -f1)
@@ -40,7 +41,7 @@ do
     continue
   fi
 
-  echo $line >> $cleaninp
+  echo "$line" >> $cleaninp
 
 done
 
@@ -370,7 +371,7 @@ cat >> $nmlfile << EOF
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
 EOF
-
+echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 #------------------------------
 

@@ -108,7 +108,7 @@
 # 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   path_b="$main_dir/bin"
-  path_w="$temp_dir"
+  path_w="$( cd $temp_dir && pwd )"
   path_i="$main_dir/ftn"
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
@@ -344,17 +344,17 @@ then
 # 3.c Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if [ -f comp.stat.$name ]
     then
-      nr_err=`grep ERROR comp.stat.$name | awk '{ print $2 }'`
-      nr_war=`grep WARNING comp.stat.$name | awk '{ print $2 }'`
+      nr_err="$(grep -i error comp.stat.$name | awk '{ print $2 }')"
+      nr_war="$(grep -i warning comp.stat.$name | awk '{ print $2 }')"
       rm -f comp.stat.$name
       if [ "$nr_err" != '0' ]
       then
-        echo "      $nr_err errors found, see $path_w/$name.l"
+        echo "      $nr_err errors found, see $path_w/$name.err"
         list='yes'
       else
         if [ "$nr_war" != '0' ]
         then
-          echo "      $nr_war warnings found, see $path_w/$name.l"
+          echo "      $nr_war warnings found, see $path_w/$name.out"
           list='yes'
         fi
       fi

@@ -2801,8 +2801,6 @@
  1002 FORMAT (/' *** ERROR W3DIMUG : ILLEGAL MODEL NUMBER *** '/       &
                '                    IMOD   = ',I10/                   &
                '                    NGRIDS = ',I10/)
- 1003 FORMAT (/' *** ERROR W3DIMUG : ILLEGAL GRID DIMENSION(S) *** '/  &
-               '                    INPUT = ',I10/)
  1004 FORMAT (/' *** ERROR W3DIMUG : ARRAY(S) ALREADY ALLOCATED *** ')
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
  9000 FORMAT (' TEST W3DIMUG: MODEL ',I4,' DIM. AT ',2I5,I7)

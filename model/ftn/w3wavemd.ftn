@@ -2572,8 +2572,8 @@
                '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
- 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
-               '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
+!/IS2 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+!/IS2               '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
  1030 FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/               &
                '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',     &
                    ' IN GRID',I3)

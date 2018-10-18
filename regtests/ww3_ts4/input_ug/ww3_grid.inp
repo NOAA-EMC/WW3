@@ -3,8 +3,7 @@ $ WAVEWATCH III Grid preprocessor input file                           $
 $ -------------------------------------------------------------------- $
 $ GRID_DEFINITION    -5.9  37. 336  30.  46.15  180
 $
-   ww3
-$  'Mediterranean unstructured grid'
+  'Mediterranean unstructured grid'
 $
 $ RESOLUTION: 10km
 $
