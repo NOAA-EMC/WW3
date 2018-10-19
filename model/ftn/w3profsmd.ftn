@@ -656,9 +656,11 @@
 ! IOBPD=0  : waves coming from land (or outside grid) 
 ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP))
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
 !/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
                END DO
+! update spectrum 
+             AC = U
 !
 ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
 !
@@ -678,25 +680,19 @@
 !
 ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
 !
-               DO IBI=1, NBI
-                 IP    = MAPSF(ISBPI(IBI),1)
-                 BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
-                 U(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
-                          BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
-                 END DO
-             ELSE
+                DO IBI=1, NBI
+                  IP = MAPSF(ISBPI(IBI),1)
+                  AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                     / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                END DO
+
+            ENDIF
 !
 ! 4.2 In this case the boundary is given by the initial conditions (e.g. in regtest tp2.7) 
 !
-               DO IP=1, NX
-                 U(IP) = AC(IP)*DBLE(IOBPA(IP)*(1-IOBPD(ITH,IP)))  
-                 END DO
-               END IF  
 !
 ! 5. Update of the spectrum
 !
-             AC = U
 !
            END DO ! End of loop on time steps        
 !        CALL EXTCDE ( 99 )

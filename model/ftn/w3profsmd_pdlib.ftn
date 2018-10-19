@@ -898,7 +898,7 @@
 
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
-      DTMAX = DBLE(10.E10)
+      DTMAX  = DBLE(10.E10)
 !
 !/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 
@@ -1017,6 +1017,7 @@
           IP_glob=iplg(IP)
           !U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
           U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP_glob))!*IOBDP(IP_glob))! + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values
+!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP_glob) = AC(IP_glob) ! restores reflected boundary values 
          END DO
 !/DEBUGSOLVER     IF (testWrite) THEN
 !/DEBUGSOLVER       CALL SCAL_INTEGRAL_PRINT_R8(U, "U in loop")

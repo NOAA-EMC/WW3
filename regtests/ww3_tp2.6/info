@@ -18,8 +18,11 @@
 #  Sample run_test commands :                                               #
 #  ./bin/run_test                        -s ST0   ../model ww3_tp2.6        #
 #  ./bin/run_test                        -s ST4   ../model ww3_tp2.6        #
+#  Domain Decomposition Implicit which needs PDLIB switch                   #
+#  ./bin/run_test                        -s PDLIB ../model ww3_tp2.6        #
 #                                                                           #
 #                             Aron Roland and Fabrice Ardhuin, Jan 2011     #
-#                                                   Last Mod : Dec 2013     #
+#                             Ali Abdolali                     Oct 2018     #
+#                                                   Last Mod : Oct 2018     #
 #                                                                           #
 #############################################################################

@@ -1032,7 +1032,9 @@
 !/
 !/    06-Jun-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose :
+!  1. Purpose : Introduce mapping for ISPROC and JSEA when using PDLIB
+!               in the Multigrid approach 
+!             
 !  2. Method :
 !  3. Parameters :
 !

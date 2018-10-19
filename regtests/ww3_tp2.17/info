@@ -3,8 +3,8 @@
 # ww3_tp2.17 Test script for WW-III, unstructured grid.                     #
 # Solvers:                                                                  #
 #  > Explicit                                                               #
-#      > Conventional method  (ww3_grid_a.inp)                              #
-#      > block explicit  (ww3_grid_b.inp)                                   #
+#      > Conventional method Card Deck  (ww3_grid_a.inp)                    #
+#      > domain decomposition  (ww3_grid_b.inp)                             #
 #  > Implicit (domain decomposition) (ww3_grid_c.inp)                       #
 # Grid:                                                                     # 
 # Shinnecock Inlet                                                          #

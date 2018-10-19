@@ -52,7 +52,7 @@ $                               see w3iogo.ftn for additional doc.
 $          
 $          
 $
-   20071101 000000  60  20121231 233000
+   20071101 000000  10  20121231 233000
 $----------------------------------------------------------------
 $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual.

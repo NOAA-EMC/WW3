@@ -4,7 +4,7 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
 $
- 20020101 000000   60  3600
+ 20100801 000000  10  3600
 $
 $ Fields requested --------------------------------------------------- $
 $
