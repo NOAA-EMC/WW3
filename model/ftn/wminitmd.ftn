@@ -2403,7 +2403,8 @@
 !
       DO I=1, NRGRD
         DO J=JFIRST, 7
-          IF ( INPMAP(I,J) .LT. 0 ) IDINP(I,J) = IDINP( INPMAP(I,J),J)
+          IF  ( INPMAP(I,J).LT.0 .AND. INPMAP(I,J).NE.-999) IDINP(I,J) = IDINP( INPMAP(I,J),J)
+          !IF ( INPMAP(I,J) .LT. 0 ) IDINP(I,J) = IDINP( INPMAP(I,J),J)
           IF ( INPMAP(I,J) .GT. 0 ) IDINP(I,J) = IDINP(-INPMAP(I,J),J)
           END DO
         END DO

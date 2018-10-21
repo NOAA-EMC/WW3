@@ -705,7 +705,7 @@ EOF
         echo "# component module objects"                            >> $mkfile
         echo "ESMF_DEP_CMPL_OBJS := $obj_dir/lib$prog.a(wmesmfmd.o)" >> $mkfile
         echo "# component object/archive list"                       >> $mkfile
-        echo "ESMF_DEP_LINK_OBJS := $obj_dir/lib$prog.a"             >> $mkfile
+        echo "ESMF_DEP_LINK_OBJS := $obj_dir/lib$prog.a $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"  >> $mkfile
       fi
 
     fi
