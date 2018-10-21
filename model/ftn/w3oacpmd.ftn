@@ -858,10 +858,10 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ODRY'
 !
-!/OASOCM         CASE('T0M1')
-!/OASOCM            ! T0M1 / wave_t0m1 : mean period (s)
+!/OASOCM         CASE('TM10')
+!/OASOCM            ! TM10 / wave_tm10 : mean period (s)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
-!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_T0M1'
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TM10'
 !
 !/OASOCM         CASE('DIR')
 !/OASOCM            ! THM / wave_thm : cosinus of mean direction (n/a)

@@ -74,16 +74,17 @@
 ! * the point file is a space separated values per line : lon lat 'name'
 !
 ! * the full list of field names is : 
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
-!  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
-!  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S
-!  USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 TM10 T01 FP DIR SPR
+!  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS PTHP0
+!  PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR UST CHA CGE FAW TAW TWA WCC
+!  WCF WCH WCM SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC ABR UBR BED
+!  FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
 !
 ! * output track file formatted (T) or unformated (F)
 !
 ! * coupling fields exchanged list is :
 !   - Sent fields by ww3:
-!       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
+!       - Ocean model : TM10 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
 !       - Atmospheric model : ACHA AHS TP (or FP) FWS
 !       - Ice model : IC5 TWI
 !   - Received fields by ww3:

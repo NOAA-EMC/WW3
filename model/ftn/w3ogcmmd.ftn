@@ -150,7 +150,7 @@
          !
          ! Mean wave period (tmn in s) (m0,-1)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_T0M1') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TM10') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(T0M1 /= UNDEF) TMP=T0M1
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))

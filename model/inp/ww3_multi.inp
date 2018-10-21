@@ -116,7 +116,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
   N
-  DPT CUR WND HS T0M1 FP DP PHS PTP PDIR
+  DPT CUR WND HS TM10 FP DP PHS PTP PDIR
 $
 $----------------------------------------------------------------
 $
