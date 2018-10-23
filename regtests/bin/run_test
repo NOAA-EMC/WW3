@@ -43,6 +43,8 @@ myname="`basename $0`"  #name of script
 optstr="a:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:Sw:"  #option string for getopt function
 usage ()
 {
+
+exit      
 cat 2>&1 << EOF
 
 Usage: $myname [options] source_dir test_name
@@ -1891,6 +1893,88 @@ if [ $exit_p = $prog ]
 then
   exit
 fi
+
+# 3.k Update Restart File ------------------------------------------ #
+
+prog=ww3_uprstr
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+# Check for input file
+
+# select inp/nml files
+#if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+#then
+#  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+#else
+  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+#fi
+
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+-------------------------+'
+  echo '|   Update Restart File   |'
+  echo '+-------------------------+'
+  echo ' '
+
+  \cp -f $file_c $path_b/switch
+ 
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  # link conf file
+  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  then
+    \rm -f $prog.nml
+    \ln -s $ifile $prog.nml
+    ofile="$path_w/`basename $ifile .nml`.out"
+  else
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
+    ofile="$path_w/`basename $ifile .inp`.out"
+  fi
+
+  echo "   Processing $ifile"
+  echo "   Screen output copied to $ofile"
+  
+# Additional Files
+   \rm -f anl.grbtxt
+   \ln -s "$path_i/anl.grbtxt" anl.grbtxt
+   
+  mv -f restart001.ww3 restart.ww3
+  
+  if [ $pmpi ]
+  then
+    if [ $nproc ]
+    then
+      runcmd="$runcmd -np $nproc"
+    fi
+  fi
+  if $runcmd $path_e/$prog | tee $ofile
+  then
+    \rm -f $prog.inp
+    \rm -f $prog.nml
+  else
+    errmsg "Error occured during $path_e/$prog execution"
+    exit 1
+  fi
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+
 
 # 3.k End ------------------------------------------------------------------- #
 

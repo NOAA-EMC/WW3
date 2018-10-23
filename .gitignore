@@ -77,3 +77,7 @@ model/bin/w3prnt
 model/bin/w3split
 model/wwatch3.env
 model/bin/wwatch3.env
+*.swp
+*/*.swp
+*/*/*.swp
+*/*/*/*.swp

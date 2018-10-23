@@ -15,6 +15,12 @@
 !/    04-Sep-2017 :  Simplified the code, take out a significant part of the
 !/                   flexibility (The code is still available at SVN/UpRest)
 !/    15-Sep-2017 :  Version 0.65                        ( version 6.03 )
+!/    01-Oct-2018 :  Fixes to preserve spectral energy correctly
+!/                   (Andy Saulter)                      ( version 6.06 )
+!/    17-Oct-2018 :  Version 0.95                        ( version 6.06 )
+!/                   Simplified the code, remove some user unfriendly 
+!/                   options, add reg test ta1, add logical checks, 
+!/                   unified the operator, add/update the documentation.
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -71,11 +77,13 @@
 !     The Hs correction is redistributed to each frequency and direction.
 !
 !     1. The W3UPRSTR imports: i. the restart.ww3, 
-!                             ii. one of or both: correction or/and analysis file and
+!                             ii. the analysis file and
 !                            iii. the input file: ww3_uprstr.inp, details at 2.2.2.i.
 !     
 !     2. The W3UPRSTR updates the restart file according to the option at
-!     ww3_uprstr UPD[N] 
+!     ww3_uprstr UPD[N]
+!     Note: With the version 6.06 some options have been removed, but the naming
+!     is consistent with the original version.
 !
 !     3. W3UPRSTR exports the updated spectrum in the same format as the
 !     restart.ww3. The name of the output file is: restart001.ww3 and it has to
@@ -106,48 +114,54 @@
 !
 !        i. ww3_uprstr.inp
 !     It includes some limited information for running the program:
-! -------------------------------------------------------------------- $
+!
+!$ -------------------------------------------------------------------- $
 !$ WAVEWATCH III Update Restart input file                              $
 !$ -------------------------------------------------------------------- $
 !$
 !$ Time of Assimilation ----------------------------------------------- $
 !$ - Starting time in yyyymmdd hhmmss format.
 !$
-!$ This is the assimilation starting time and has to be the same with 
+!$ This is the assimilation starting time and has to be the same with
 !$ the time at the restart.ww3.
-!
-!   20170801 060000 $20050828 090000 
 !$
-!$ Choose algorithm to update restart file 
+!   19680607 120000 
+!$
+!$ Choose algorithm to update restart file
 !$  UPDN for the Nth approach
 !$  The UPDN*, with N<2 the same correction factor is applied at all the grid points
-!$   UPD0C:: Option 0C  All the spectra are updated with a constant 
-!$           fac=(HsBckg-HsAnl)/HsAnl.
-!$           Expected input: PRCNTG, as defined at fac
-!$   UPDOF:: Option 0F  All the spectra are updated with a constant 
+!$   UPD0C:: ELIMINATED
+!$   UPDOF:: Option 0F  All the spectra are updated with a constant
 !$           fac=HsAnl/HsBckg.
 !$           Expected input: PRCNTG, as defined at fac
-!$   UPD1 :: Option 1   The fac(x,y,frq,theta), is weighted according to
-!$           the % of energy at each spectral bin.
-!$           Expected input: PRCNTG, as defined at UPD0F
+!$   UPD1 :: ELIMINATED
 !$   UPDN, with N>1 each gridpoint has its own update factor.
 !$   UPD2 :: Option 2   The fac(x,y,frq,theta), is calculated at each grid point
 !$           according to HsBckg and HsAnl
 !$           Expected input the Analysis field, grbtxt format
-!$   UPD3 :: Option 3   The update factor is a surface with the shape of 
-!$           the background spectrum. 
+!$   UPD3 :: Option 3   The update factor is a surface with the shape of
+!$           the background spectrum.
 !$           Expected input the Analysis field, grbtxt format
 !$   UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]
 !$           Option 4  The generalization of the UPD3. The update factor
-!$           is the sum of surfaces which are applied on the background 
-!$           spectrum 
-!$           Expected input: the Analysis field, grbtxt format and the 
-!$           functions(frq,theta) of the update to be applied. 
+!$           is the sum of surfaces which are applied on the background
+!$           spectrum. 
+!$           The algorithm requires the mapping of each partition on the
+!$           individual spectra; the map is used to determine the weighting
+!$           surfaces.
+!$           Expected input: the Analysis field, grbtxt format and the
+!$           functions(frq,theta) of the update to be applied.
 !   UPD3
 !$
-!$ PRCNTG is input for option 1 and it is the percentage of correction 
-!$applied  to all the gridpoints (e.g. 1.) 
-!   1.0
+!$ PRCNTG is input for option 1 and it is the percentage of correction
+!$applied  to all the gridpoints (e.g. 1.)
+!$
+!   0.475
+!$
+!$ PRCNTG_CAP is global input for option UPD2 and UPD3 and it is a cap on the 
+!$ maximun correction applied to all the gridpoints (e.g. 0.5)
+!$
+!  0.6
 !$
 !$ Name of the file with the SWH analysis from the DA system            $
 !$ suffix .grbtxt for text out of grib2 file.                           $
@@ -160,7 +174,7 @@
 !
 !   ii. Data files anl.XXX
 ! 
-! USE THE grbtxt FORMAT, See E.
+! USE THE grbtxt FORMAT, See Format E.
 !
 ! Format E. 
 !        Text file created by wgrib2. This format is tested more extensively 
@@ -183,17 +197,19 @@
 !        iii. restart.ww3
 ! The restart file as came out of the background run, the name has to be 
 ! restart.ww3, but the name of the output depends on the mod_def.ww3, the
-! ww3_uprstr follows it's content (be careful with ovewriting).
+! ww3_uprstr follows its content (be careful with ovewriting).
 !
-!  3. Parameters :
+!  3. Example 
+!     Use the regression tests ww3_ta1
+!
+!  4. Parameters :
 !
 !     Local parameters.
 !     ----------------------------------------------------------------
 !
-!
 !     ----------------------------------------------------------------
 !
-!  4. Subroutines used :
+!  5. Subroutines used :
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
@@ -217,20 +233,20 @@
 !   SWH_RSRT_1p
 !   WRITEMATRIX
 !
-!  5. Called by :
+!  6. Called by :
 !
 !     None, stand-alone program.
 !
-!  6. Error messages :
+!  7. Error messages :
 !
-!  7. Remarks:
+!  8. Remarks:
 !
 !     7.1 Use the grbtxt format for correction and analysis files.
 !
 !     7.2 There are some variables not used but declared, it's for future
 !      development.
 !
-!  8. Structure :
+!  9. Structure :
 !
 !     ----------------------------------------------------
 !     1.    Set up data structures.
@@ -242,13 +258,18 @@
 !     6.    Export the updated restart file           ( W3IORS )
 !     ----------------------------------------------------
 !
-!  9. Switches :
+!  10. Switches :
 !
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/T
 !     !/S     Enable subroutine tracing.
 !
-! 10. Source code :
+! 11. Known Bugs
+!
+!     1. Fix the format for the output (NSDO) of non strings, e.g. for
+!     TIME. 
+!
+! 12. Source code :
 !
 !/
       USE W3GDATMD, ONLY: W3NMOD, W3SETG
@@ -260,8 +281,8 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3DISPMD, ONLY: WAVNU1
 !/
-      USE W3GDATMD, ONLY: GNAME, NX, NY, MAPSTA, SIG, NK, NTH, NSEA   &
-                        , NSEAL, MAPSF, DMIN, ZB, DSIP, DTH
+      USE W3GDATMD, ONLY: GNAME, NX, NY, MAPSTA, SIG, NK, NTH, NSEA,  &
+                          NSEAL, MAPSF, DMIN, ZB, DSIP, DTH
       USE W3WDATMD, ONLY: VA, TIME
       USE W3ADATMD, ONLY: NSEALM
       USE W3ODATMD, ONLY: IAPROC, NAPERR, NAPLOG, NDS, NAPOUT
@@ -274,20 +295,23 @@
 !/
       INTEGER                 :: NDSI, NDSM, NDSTRC, NTRACE, IERR, I, J
       CHARACTER               :: COMSTR*1 
-      !/
+!/
 !      REAL, ALLOCATABLE       :: BETAW(:)
 !      LOGICAL, ALLOCATABLE    :: MASK(:)
       LOGICAL                 :: anl_exists
       INTEGER                 :: IMOD, INTYPE, NDSEN, IX, IY, IK, ITH
-      REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),A(:), HS_ANAL(:,:),gues(:,:),HS_DIF(:,:),SWHANL(:,:) &
-                                ,SWHBCKG(:,:), SWHUPRSTR(:,:),VATMP_NORM(:)
-      REAL                    :: PRCNTG
+      REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),     &
+                                 A(:), HS_ANAL(:,:), gues(:,:),         &
+                                 HS_DIF(:,:),SWHANL(:,:), SWHBCKG(:,:), &
+                                 SWHUPRSTR(:,:),VATMP_NORM(:)
+      REAL                    :: PRCNTG, PRCNTG_CAP
       INTEGER                 :: ROWS, COLS, ISEA
       CHARACTER(128)          :: FLNMCOR, FLNMANL
       CHARACTER(16)           :: UPDPROC
 !     for howv
-      REAL                    :: SWHTMP,SWHBCKG_1, SWHANL_1, REL_ERROR, DEPTH, WN, CG, ETOT, E1I, SWH_ANL1,SWHTMP1,SUMVATMP
-      REAL                    :: SUMVA,NITER, K
+      REAL                    :: SWHTMP,SWHBCKG_1, SWHANL_1,            &
+                                 DEPTH, WN, CG, ETOT, E1I
+      REAL                    :: K
       CHARACTER(8), PARAMETER :: MYNAME='W3UPRSTR'
 
 !/
@@ -325,6 +349,7 @@
 !/
       WRITE (NDSO,900)
 !/
+!/ ------------------------------------------------------------------- /
 !  2. Read the ww3_uprstr.inp
 !/
       J      = LEN_TRIM(FNMPRE)
@@ -340,103 +365,84 @@
       READ (NDSI,*,END=2001,ERR=2002) UPDPROC
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
       READ (NDSI,*,END=2001,ERR=2002) PRCNTG
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
 !/F      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
 !/F      READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
       READ (NDSI,*,END=2001,ERR=2002) FLNMANL
-
-      PRINT*, ' TIME: ',TIME,'FLNMCOR: ',trim(FLNMCOR)          &
-            , ' FLNMANL: ', trim(FLNMANL), 'UPDPROC: ', trim(UPDPROC) &
-            , ' PRCNTG: ', PRCNTG
+!
+!/T      WRITE (NDSO,*)' TIME: ',TIME
+!/T      WRITE (NDSO,1004)' FLNMANL: ', trim(FLNMANL), &
+!/T                       ' UPDPROC: ', trim(UPDPROC)
+!/T      WRITE (NDSO,*)' PRCNTG: ', PRCNTG
 !/
+!/ ------------------------------------------------------------------- /
 !  3.  Read model definition file.
 !/
       CALL W3IOGR ( 'READ', NDSM )
       NSEAL  = NSEA
       WRITE (NDSO,920) GNAME
 !/
+!/ ------------------------------------------------------------------- /
 !  4. Read restart file
 !/
       CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )!
       IF ( IAPROC .EQ. NAPLOG ) THEN
          IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
-            WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart file is not &
-            read'
+            WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart ' // &
+                               'file is not read'
             CALL EXTCDE ( 1 )
          ELSE
             WRITE (NDSO,1004) 'Updating Restart File'
          END IF
       END IF
-!/T   WRITE (NDST,*), MYNAME,' : Exporting VA as imported to VA01.txt'
-!/T   CALL writeMatrix('VA01.txt', REAL(VA))      
+!
+!/T      WRITE (NDST,*), MYNAME,' : Exporting VA as imported to VA01.txt'
+!/T      CALL writeMatrix('VA01.txt', REAL(VA))      
 !/
-! 5. Actions according to the selected option
+!/ ------------------------------------------------------------------- /
+! 5. Update restart spectra array according to the selected option
 !
       select case (UPDPROC)
+!
+! UPD0F
       case ('UPD0F')
-         WRITE (NDSO,902) 'UPD0F'
+         write (NDSO,902) 'UPD0F'
+!/T         ALLOCATE( VATMP  (SIZE(VA    ,1)                ))
+!/T         ALLOCATE( SWHANL (SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
+!/T         ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
 !/
          DO ISEA=1, NSEA, 1
-            VA(:,ISEA)= (PRCNTG)*VA(:,ISEA)
+!/T         IX = MAPSF(ISEA,1)
+!/T         IY = MAPSF(ISEA,2)
+!/T         VATMP = VA(:,ISEA)
+!/T         CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+!/T         SWHBCKG(IY,IX)=SWHBCKG_1
+            CALL UPDATE_VA(PRCNTG, VA(:,ISEA))
+!/T         VATMP = VA(:,ISEA)
+!/T         CALL SWH_RSRT_1p (VATMP, ISEA, SWHANL_1)
+!/T         SWHANL(IY,IX)=SWHANL_1
+!/T         WRITE (NDSO,*)'ISEA = ', ISEA,' PRCNTG = ',PRCNTG,    &
+!/T                       ' SWHBCKG = ',SWHBCKG(IY,IX),           &
+!/T                       ' SWHANL= ', SWHANL(IY,IX)
          END DO
-      case ('UPD0C')
-         WRITE (NDSO,902) 'UPD0C'
-!/
-         DO ISEA=1, NSEA, 1
-            VA(:,ISEA)= (1+PRCNTG)*VA(:,ISEA)
-         END DO
-
-      case ('UPD1')
-         WRITE (NDSO,902) 'UPD1'
-!/ 
-         ALLOCATE (VATMP(SIZE(VA,1)))
-         ALLOCATE (A    (SIZE(VA,1)))
-
-         DO ISEA=1, NSEA, 1
-            IX = MAPSF(ISEA,1)
-            IY = MAPSF(ISEA,2)
-            VATMP = VA(:,ISEA)
-            CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
-!/
-            SWHANL_1=(1.+ PRCNTG)*SWHBCKG_1
-            IF (SWHANL_1<0.)THEN 
-               SWHANL_1=0.0
-               WRITE (NDSO,*)'Warning: The Analysis is lower than 0!'
-            END IF
-            NITER = 0
-            REL_ERROR=PRCNTG
-!/            
-            DO WHILE ( ABS(REL_ERROR) >= 0.01  &
-                .AND. NITER < 100              &
-                .AND. SWHANL_1> 0.0              ) 
-               SUMVATMP=SUM(VATMP)
-               IF (SUMVATMP>=0.0001 ) THEN
-                  A=REL_ERROR*VATMP/SUMVATMP
-               ELSE
-                  A=0.
-               END IF
-               VATMP=VATMP+VATMP*A
-               WHERE (VATMP<0.) VATMP=0.0
-               CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-               REL_ERROR=(SWHANL_1-SWHTMP)/SWHANL_1  
-!/            
-               NITER = NITER + 1
-
-            END DO
-            VA(:,ISEA)=VATMP
-         END DO
-!/
-         DEALLOCATE (VATMP,A)
+!
+!/T      CALL writeMatrix('SWHBCKG_UPD0F.txt', REAL(SWHBCKG))
+!/T      CALL writeMatrix('SWHANL_UPD0F.txt' , REAL(SWHANL ))
+!/T      CALL writeMatrix('SWHRSTR_UPD0F.txt', REAL(SWHANL )) 
+!/T      DEALLOCATE ( VATMP, SWHBCKG, SWHANL )
+!
+!/ ------------------------------------------------------------------- /     
       case ('UPD2')
-         WRITE (NDSO,902) 'UPD2'
-!/
+         write (NDSO,902) 'UPD2' 
 !        Additional Input: Analysis Field
          INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
          IF (anl_exists) then
             ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-!/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+!/T            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
             CALL READ_GRBTXT(SWHANL,FLNMANL)
-!/T            CALL writeMatrix('swhanl.txt',SWHANL)
+!/T            CALL writeMatrix('SWHANL_IN.txt',SWHANL)
          ELSE
             WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
             STOP
@@ -457,20 +463,38 @@
              IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
 !/
                PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-!/T             WRITE (NDSO,*) 'ISEA =', ISEA,' IX =',IX,' IY =', IY, ' PRCNTG =',PRCNTG &
-!/T                   ,' SWHBCKG= ',SWHBCKG(IY,IX),' SWHANL= ', SWHANL(IY,IX)
-               VATMP=PRCNTG*VATMP
-               VA(:,ISEA)=VATMP
-               CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-               SWHUPRSTR(IY,IX)=SWHTMP
-               PRINT*,'ISEA=',ISEA,'BCKG=', SWHBCKG(IY,IX),'ANL=', SWHANL(IY,IX),'RSTR=',SWHUPRSTR(IY,IX)
 
+!/T             WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+!/T                            ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+!/T                            ' SWHANL = ', SWHANL(IY,IX)
+            
+               CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
+               CALL UPDATE_VA(PRCNTG, VA(:,ISEA))
+               CALL SWH_RSRT_1p (VA(:,ISEA), ISEA, SWHUPRSTR(IY,IX))
+
+!/T            WRITE (NDSO,*)'ISEA = ',ISEA,' PRCNTG = ',PRCNTG, &
+!/T                          'SWH_BCKG = ', SWHBCKG(IY,IX), 'SWH_ANL = ',     &
+!/T                           SWHANL(IY,IX),'SWH_RSTR = ',SWHUPRSTR(IY,IX)
+!
+!/T               WRITE (NDSO,*) ' =========== UPD2 Output ==========='
+!/T               WRITE (NDSO,*)'ISEA = ',ISEA,                            &
+!/T                             'SWH_BCKG = ', SWHBCKG(IY,IX),             &
+!/T                             'SWH_ANL = ', SWHANL(IY,IX),               &
+!/T                             'SWH_RSTR = ',SWHUPRSTR(IY,IX)
+!/
             END IF
          END DO
-!/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
-!/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
-!/
+!
+!/T      CALL writeMatrix('SWHBCKG_UPD2.txt', REAL(SWHBCKG  ))
+!/T      CALL writeMatrix('SWHANL_UPD2.txt' , REAL(SWHANL   ))
+!/T      CALL writeMatrix('SWHRSTR_UPD2.txt', REAL(SWHUPRSTR))
+!/T
          DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR )
+!
+!/ ------------------------------------------------------------------- /     
+! UPD3 
+! As per UPD2, but the update factor is a surface with the shape of the 
+! background spectrum
       case ('UPD3')
          WRITE (NDSO,902) 'UPD3'
 !        Additional Input: Analysis Field
@@ -479,7 +503,7 @@
             ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
 !/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
             CALL READ_GRBTXT(SWHANL,FLNMANL)
-!/T            CALL writeMatrix('swhanl.txt',SWHANL)
+!/T            CALL writeMatrix('SWHANL_IN.txt',SWHANL)
          ELSE
             WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
             STOP
@@ -502,83 +526,70 @@
             SWHBCKG(IY,IX)=SWHBCKG_1
 !/
             IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+            !Step 1. 
                PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-               NITER = 0
-!/T               WRITE (NDSO,*)'ISEA =', ISEA, 'NITER=',NITER,' PRCNTG =',PRCNTG,' SWHBCKG= ',SWHBCKG(IY,IX)&
-!/T                     ,' SWHANL= ', SWHANL(IY,IX)
-               DO WHILE ( ABS(1-PRCNTG) > 0.01 .AND. NITER < 50  ) 
-                  VATMP_NORM=VATMP/SUM(VATMP)
 
-!/T                  WRITE (NDSO,*)'ISEA =', ISEA,' IX =',IX,' IY =', IY, 'NITER=',NITER  &
-!/T                              ,' PRCNTG =',PRCNTG,' SWHBCKG= ',SWHBCKG(IY,IX)         &
-!/T                               ,' SWHANL= ', SWHANL(IY,IX)
+!/T            WRITE (NDSO,*) ' =========== Step 1. ==========='
+!/T            WRITE (NDSO,*) ' ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+!/T                           ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+!/T                           ' SWHANL = ', SWHANL(IY,IX)
+
+               CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
+               VATMP_NORM=VATMP/SUM(VATMP)
+
+!/T            WRITE (NDSO,*)' ISEA =', ISEA,' IX = ',IX,' IY = ', IY, &
+!/T                          ' PRCNTG = ',PRCNTG,   &
+!/T                          ' SWHBCKG = ',SWHBCKG(IY,IX), ' SWHANL = ', SWHANL(IY,IX)
 !/T
-                  IF (PRCNTG > 1.) THEN
-                     A=PRCNTG + PRCNTG*VATMP_NORM
-                  ELSE
-                     A=PRCNTG - PRCNTG*VATMP_NORM
-                  END IF
+                IF (PRCNTG > 1.) THEN
+                   A=PRCNTG**2*(1 + VATMP_NORM)
+                ELSE
+                   A=PRCNTG**2*(1 - VATMP_NORM)
+                END IF
 !/
-                  VATMP=A*VATMP
+                VATMP=A*VATMP
 !/
-                  CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
-                  PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-                  NITER=NITER+1
-!/T                  PRINT*,'NITER=', NITER, 'PRCNTG= ',PRCNTG, SWHANL(IY,IX), SWHBCKG_1
-               END DO
+                CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+                SWHUPRSTR(IY,IX)=SWHTMP
+                PRCNTG=(SWHANL(IY,IX)/SWHTMP)
+!/
+!/T             WRITE (NDSO,*) ' =========== Step 2. ==========='
+!/T             WRITE (NDSO,*)'ISEA = ', ISEA, ' PRCNTG = ',PRCNTG,        &
+!/T                           ' SWHANL= ', SWHANL(IY,IX),                  &
+!/T                           ' SWHUPRSTR(IY,IX) = ', SWHUPRSTR(IY,IX)
+!/
+               CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
+               CALL UPDATE_VA(PRCNTG, VATMP)
+
                VA(:,ISEA)=VATMP
                CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-!/T               WRITE (NDSO,*)'ISEA =', ISEA, 'NITER=',NITER,' PRCNTG =',PRCNTG,' SWHUPRSTR(IY,IX)=', SWHTMP&
-!/T                     ,' SWHANL= ', SWHANL(IY,IX)
-
                SWHUPRSTR(IY,IX)=SWHTMP
+
+!/T               WRITE (NDSO,*) ' =========== UPD3 Output ==========='
+!/T               WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
+!/T                          'SWH_ANL = ', SWHANL(IY,IX),                 &
+!/T                          'SWH_RSTR = ',SWHUPRSTR(IY,IX)
+!/
             END IF
          END DO
-!/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
-!/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
-!/
+!
+!/T      CALL writeMatrix('SWHBCKG_UPD3.txt', REAL(SWHBCKG))
+!/T      CALL writeMatrix('SWHANL_UPD3.txt' , REAL(SWHANL ))
+!/T      CALL writeMatrix('SWHRSTR_UPD3.txt', REAL(SWHUPRSTR))
+!/T
          DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR,VATMP_NORM,A ) 
-      case ('UPD4')
-         WRITE (NDSO,902) 'UPD4'
-!/F        Additional Input: Analysis Field
-!/F         INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
-!/F         IF (anl_exists) then
-!/F            ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-!/F!/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
-!/F            CALL READ_GRBTXT(SWHANL,FLNMANL)
-!/F!/T            CALL writeMatrix('swhanl.txt',SWHANL)
-!/F         ELSE
-!/F            WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
-!/F            STOP
-!/F         END IF
-!/F!/
-!/F!        Calculation
-!/F         ALLOCATE ( VATMP(SIZE(VA,1)))
-!/F         ALLOCATE ( SWHBCKG (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-!/F         ALLOCATE ( SWHUPRSTR (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-!/F         ALLOCATE ( VATMP_NORM(SIZE(VA,1)))
-!/F         ALLOCATE ( A (SIZE(VA,1)))
-!/F!/
-!/F         DO ISEA=1, NSEA, 1
-!/F            IX = MAPSF(ISEA,1)
-!/F            IY = MAPSF(ISEA,2)
-!/F!/            
-!/F            VATMP = VA(:,ISEA)
-!/F!/
-!/F            CALL DO_SOME_Magic()    
-!/F            SWHBCKG(IY,IX)=SWHBCKG_1
-!/F          END DO
-!/F/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
-!/F/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
-!/F/
-         DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR,VATMP_NORM,A ) 
-!    
       end select
 !
+!/ ------------------------------------------------------------------- /
 ! 6. Write updated restart file
       WRITE (NDSO,903)
       INTYPE = 3
       CALL W3IORS ( 'HOT', NDS(6), SIG(NK), INTYPE, 1 )   
+!
+!/ ------------------------------------------------------------------- /
+!/T   WRITE (NDST,*), MYNAME,' : Exporting VA at the end of the re-analysis'
+!/T   CALL writeMatrix('VA02.txt', REAL(VA))
+      
 !/ 
 ! Escape locations read errors 08k:
 !
@@ -613,7 +624,7 @@
 !
       2222 CONTINUE
 
-!!  Fo1mats
+!!  Formats
 900 FORMAT (/15X,'   *** WAVEWATCH III ww3_uprsrt Initializing ***   '/ &
                15X,'==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
@@ -651,59 +662,17 @@
 !/
    CONTAINS
 !/
-!
-      SUBROUTINE READ_GRBTXT(UPDPRCNT,FLNMCOR)
-         REAL, DIMENSION(:,:), INTENT(OUT) :: UPDPRCNT
-         CHARACTER(*), INTENT(IN) :: FLNMCOR
-! Local Variables
-         INTEGER            :: I, J, IERR
-         INTEGER            :: K, L, M, N 
-         REAL :: A
-         INTEGER, PARAMETER :: IP_FID = 123
-         CHARACTER(25), PARAMETER::myname='read_grbtxt'
+!/ ------------------------------------------------------------------- /
 !/
-!/T         WRITE (NDSO,*) trim(myname), ' starts'         
-!/
-         J     = LEN_TRIM(FNMPRE)
-         OPEN (IP_FID,FILE=FNMPRE(:J)//TRIM(FLNMCOR),STATUS='OLD' &
-              ,ACTION='read',IOSTAT=IERR)
-!/
-         READ( IP_FID, 110),M,N
-
-         IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
-            WRITE (NDSO,*)trim(myname),': These are not the grid dimensions: M=',M,' N=',N
-            STOP
-         END IF
-         UPDPRCNT=0
-!/
-         DO L=1,N
-            DO K=1,M
-               A=0.
-               READ(IP_FID,*)A 
-               UPDPRCNT(N+1-L,K)=A
-            END DO
-         END DO
-
-         CLOSE(IP_FID)
-!/T         WRITE (NDSO,*) trim(myname), ' ends'         
-
-110 format (2(I4) )
-         
-      END SUBROUTINE READ_GRBTXT
-
-
-
-!/
-      SUBROUTINE WORKER (VATMP, ISEA1p, SWH_ANL, REL_ERROR )
-!/ 
+   SUBROUTINE UPDATE_VA (PRCNTG, VATMP)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Mar-2017 |
+!/                  | Created       :       16-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    15-Mar-2017 : Original Code                       ( version 6.04 )
+!/    16-Oct-2018 : Original Code                       ( version 6.06 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -711,7 +680,127 @@
 !/    No unauthorized use without permission.
 !/
 !  1. Purpose :
-!     The main subroutine updating the vertart file
+!     Apply correction to the spectrum
+!     
+!  2. Method :
+!     The factor is (swh_anal/swh_bkg)**2 as applying to wave energy
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+
+      REAL, INTENT(IN) :: PRCNTG
+      REAL, DIMENSION(:), INTENT(INOUT)  :: VATMP
+
+      VATMP = (PRCNTG**2)*VATMP
+
+   END SUBROUTINE UPDATE_VA
+!/
+!/ ---------------------------------------------------------------------
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | Created       :       16-Oct-2018 |
+!/                  +-----------------------------------+
+!/
+!/    16-Oct-2018 : Original Code                       ( version 6.06 )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!     Last sanity check before the update of the spectrum 
+!  2. Method :
+!     The percentage of change is compared against a user defined cap.
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+
+   SUBROUTINE CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
+!
+      REAL, INTENT(INOUT)  ::    PRCNTG
+      REAL, INTENT(IN   )  ::    PRCNTG_CAP
+! local
+      CHARACTER(12), PARAMETER :: MYNAME='CHECK_PRCNTG'
+!/T
+!/T      WRITE (NDSO,*) trim(MYNAME)," The original correction is ",PRCNTG 
+!/T      WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
+      IF ( PRCNTG > 1. ) THEN
+!/T      WRITE (NDSO,*) trim(MYNAME)," PRCNTG > 1."
+         PRCNTG = MIN(PRCNTG, 1. + PRCNTG_CAP)
+      ELSE IF ( PRCNTG < 1. ) THEN
+!/T      WRITE (NDSO,*) trim(MYNAME)," PRCNTG < 1."
+         PRCNTG = MAX(PRCNTG, 1. - PRCNTG_CAP)
+!/T  
+      END IF
+!/T      WRITE (NDSO,*) trim(MYNAME)," The updated correction is ",PRCNTG 
+!/
+   END SUBROUTINE CHECK_PRCNTG
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE READ_GRBTXT(UPDPRCNT,FLNMCOR)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | Created       :       15-Mar-2017 |
+!/                  | Last Update   :       16-Oct-2018 |
+!/                  +-----------------------------------+
+!/
+!/    15-Mar-2017 : Original Code                       ( version 6.04 )
+!/    16-Oct-2018 : Generalization of the reader        ( version 6.06 )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!     Read gribtxt files
 !  2. Method :
 !     
 !  3. Parameters :
@@ -737,44 +826,49 @@
 !     !/T
 !
 ! 10. Source code :
-!
-!/
-
-         REAL, DIMENSION(:), INTENT(INOUT)  :: VATMP
-         INTEGER, INTENT(IN) :: ISEA1p
-         REAL, INTENT(IN) :: SWH_ANL
-         REAL, INTENT(OUT) :: REL_ERROR
-!
-         REAL :: SUMVA 
-         REAL, DIMENSION(SIZE(VATMP,1)) :: A
          
-         CALL SWH_RSRT_1p (VATMP, ISEA1p, SWHTMP)
-!         REL_ERROR = (SWH_ANL - SWHTMP)/SWH_ANL
+         REAL, DIMENSION(:,:), INTENT(OUT) :: UPDPRCNT
+         CHARACTER(*), INTENT(IN) :: FLNMCOR
+! Local Variables
+         INTEGER            :: I, J, IERR
+         INTEGER            :: K, L, M, N 
+         REAL :: A
+         INTEGER, PARAMETER :: IP_FID = 123
+         CHARACTER(25), PARAMETER::myname='read_grbtxt'
+!/
+!/T         WRITE (NDSO,*) trim(myname), ' starts'         
+!/
+         J     = LEN_TRIM(FNMPRE)
+         OPEN (IP_FID,FILE=FNMPRE(:J)//TRIM(FLNMCOR),STATUS='OLD' &
+              ,ACTION='read',IOSTAT=IERR)
+!/
+         READ( IP_FID, *) M,N
 
-!         SUMVA = SUM(VATMP)
-!/T         IF (isnan(SUMVA)) then 
-!/T            print*, 'WORKER SEA1p = ', ISEA1p
-!/T            print*, 'WORKER REL_ERROR = ',REL_ERROR
-!/T            print*, 'WORKER SUMVA = ',SUMVA
-!/T         END IF
-!         A = REL_ERROR*( VATMP/SUMVA )
+         IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
+            WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
+                                         'dimensions: M=',M,' N=',N
+            STOP
+         END IF
+         UPDPRCNT=0
+!/
+         DO L=1,N
+            DO K=1,M
+               A=0.
+               READ(IP_FID,*)A 
+               UPDPRCNT(N+1-L,K)=A
+            END DO
+         END DO
 
-         VATMP = SWH_ANL * VATMP
-!         WHERE (VATMP<0.) VATMP=0.0
-         CALL SWH_RSRT_1p (VATMP, ISEA1p, SWHTMP)
-         REL_ERROR = (SWH_ANL - SWHTMP)/SWH_ANL
+         CLOSE(IP_FID)
+!/T         WRITE (NDSO,*) trim(myname), ' ends'         
 
-!/T         IF (isnan(REL_ERROR)) then
-!/T             print*, 'SWH_ANL=', SWH_ANL, 'SWHTMP=', SWHTMP
-!/T             print*, (SWH_ANL - SWHTMP)/SWH_ANL
-!/T             print*, SWH_ANL - SWHTMP
-!/T         END IF
-         IF (ABS(REL_ERROR)<0.001)REL_ERROR=0.0
-
-      END SUBROUTINE WORKER
-
-
-!!/ 
+110 format (2(I4) )
+         
+      END SUBROUTINE READ_GRBTXT
+!/
+!/
+!/ ------------------------------------------------------------------- /
+!/ 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
@@ -825,7 +919,8 @@
          REAL, DIMENSION(:), INTENT(IN)  :: VA1p
          CHARACTER(25),PARAMETER :: myname='SWH_RSRT_1p'
 !/
-!/T         WRITE (NDSO,*) trim(myname), ' starts'         
+!/FT         WRITE (NDSO,*)' '
+!/FT         WRITE (NDSO,*) trim(myname), ' starts'         
          HSIG1p = 0.
          DEPTH  = MAX ( DMIN , -ZB(ISEA1p) )
          ETOT   = 0.
@@ -841,8 +936,12 @@
 
          HSIG1p = 4. * SQRT ( ETOT * DTH )
 !/
-!/T       WRITE (NDSO,*) trim(myname), ' ends'         
+!/FT       WRITE (NDSO,*) ' ', trim(myname), ' ends'
+!/FT       WRITE (NDSO,*)' '
+
       END SUBROUTINE SWH_RSRT_1p
+!/
+!/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE WRITEMATRIX(FILENAME, RDA_A)
 !/                  +-----------------------------------+
@@ -860,7 +959,7 @@
 !/    No unauthorized use without permission.
 !/
 !  1. Purpose :
-!      Writes a 2D array to text file, column by column
+!     Writes a 2D array to text file, column by column
 !  2. Method :
 !     
 !  3. Parameters :
@@ -896,7 +995,8 @@
          INTEGER IB_I, IB_J, IL_IOS
          INTEGER, PARAMETER :: IP_FID = 123
 !            
-         OPEN( UNIT = IP_FID, FILE = FILENAME, STATUS = 'REPLACE', FORM = 'FORMATTED', IOSTAT = IL_IOS)
+         OPEN( UNIT = IP_FID, FILE = FILENAME, STATUS = 'REPLACE', &
+               FORM = 'FORMATTED', IOSTAT = IL_IOS)
          IF (IL_IOS /= 0) PRINT*,'In writeMatrix : Error creating file'//FILENAME
          DO IB_J = 1, SIZE(RDA_A,2)
             DO IB_I = 1, SIZE(RDA_A,1)
@@ -907,5 +1007,7 @@
          END DO
          CLOSE(IP_FID)
       END SUBROUTINE WRITEMATRIX
+!/
+!/ ------------------------------------------------------------------- /
 !/
    END PROGRAM W3UPRSTR
