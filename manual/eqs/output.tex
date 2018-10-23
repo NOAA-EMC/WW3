@@ -2,64 +2,31 @@
 \subsection{~Output parameters} \label{sub:outpars}
 \vssub
 
-The wave model provides output of gridded fields of mean wave
-parameters. Some of these parameters can also be found in the output for
-selected points. For activation of the output see \para\ref{sec:ww3shel}
+The wave model can output parameters on the geographical grid of the model that can be integrated parameters or 
+parameters as a function of frequency, with one grid for each frequency. All parameters that are a function of frequency (e.g.  \textbf{EF} or \textbf{USF}) require the setting 
+of specific namelist parameters in the {\F OUTS} namelist defined in ww3\_grid.inp or  ww3\_grid.nml . This is to reduce the memory use
+if these parameters are not needed. 
 
-Since version 4.XX (\ldots), \ws\ output fields are defined by a
-double-indexing structure, where the first index refers to a functional group
-that parameters belong to, and the second number is the index for a given
-parameter within its group. Groups are defined according to Table
-\ref{tab:noge}.
-
-\begin{table} \begin{center}
- \begin{tabular}{|c|l|c|} \hline \hline
-     & Group Name & Elements \\ \hline
- I   & Forcing Fields & 10 \\
- II  & Mean Wave Parameters & 16 \\ 
- III & Spectrum Parameters & 6 \\
- IV  & Partitions Parameters & 17 \\
- V   & Atmosphere-Waves Layer & 10 \\
- VI  & Wave-Ocean Layer & 11 \\
- VII & Wave-Bottom Layer & 5 \\
- VIII& Spectrum parameters & 5 \\
- IX  & Numerical Diagnostics & 5 \\
- X   & User Defined & 2 \\ \hline
-\end{tabular} \end{center}
-\caption{Groups in new double-indexing output field structure.}
-\label{tab:noge} \botline \end{table}
-
-Below, a brief denifition of output field parameters is provided. A table
+Below, a brief definition of output field parameters is provided. A table
 with definitions may be found in the sample {\code ww3\_shel.inp} file,
 in \para\ref{sec:ww3shel}. That input file also provides a list of flags  
 indicating if output parameters are available in different field
 output file types (ASCII, grib, igrads, NetCDF). 
+For any details on how these parameters are computed, the user may read the code of the  {\code w3iogo} routine, in the {\code w3iogomd.ftn} module. 
 
-Selection of field outputs in input files for a given output type, 
-may be made in two ways. For F and T flags, this option is activated if the user
-adds F or T to the first line of the output field selection part for a given inp
-file. There are 10 groups of parameters the user can choose from (reflecting the 
-internal double-index structure of the code itself). If the first flag of a group 
-line is set to F then that group will not produce output, and a second line for 
-parameter flags is not expected. If the group flag is set to T, then
-a second group line is expected containing parameter flags. Examples of F/T flag 
-use are given in  \para\ref{sec:ww3shel}.
-All parameters that are a function of frequency (e.g.  \textbf{EF} or \textbf{USF}) require the setting 
-of specific namelist parameters, in the {\F OUTS} namelist. This is to reduce the memory use
-if these parameters are not needed. 
-
-For namelists, the first line is set to N, and the next line contains parameter
-symbols. Examples are given in \para\ref{sec:ww3multi} and
+Selection of field outputs in  {\code ww3\_shel.inp} is most easily performed by providing a list of the 
+requested parameters, for example, {\textbf HS DIR SPR}  will request the calculation of significant wave height, mean direction and directional spread. These will thus be stored in the {\code out\_grd.XX} file and can be post-processed, for example in NetCDF using   {\code ww3\_ouf}. Examples are given in \para\ref{sec:ww3multi} and
 \para\ref{sec:ww3ounf}. The names for these namelists are the bold names below, for 
 example \textbf{HS}. 
 
-All parameters listed below are available in ASCII and NetCDF output files. If selected output file types are grads or grib,
-some parameters may not be available. Availability (or not) is identified
+All parameters listed below are available in ASCII and NetCDF output files. If selected output file types are grads or grib, some parameters may not be available. Availability (or not) is identified
 in the first two columns in the field output parameter table within the example input file in  
 \para\ref{sec:ww3shel}. That table also identifies, for all parameters,
 the internal WAVEWATCH III code tags, the output tags (names used is ASCII 
 file extensions, NetCDF variable names and namelist-based selection (see 
 also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
+
+Finally we note that in all definitions the frequency is the \emph{relative} frequency. Thus, in the presence of currents, these can only be compared to drifting measurement data or data obtained in wavenumber and converted to frequency. Comparison to fixed instrument data requires the use of the full spectrum and proper conversion to the fixed reference frame.
 
 \begin{list}{\Roman{outgrps})\hfill}
             {\usecounter{outgrps} \leftmargin 7mm \labelwidth 5mm
@@ -83,7 +50,7 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
   icebergs \citep{art:Aea11}.
 \item \textbf{D50} Sediment median grain size ($D_{50}$). 
 \item \textbf{IC1} Ice thickness. 
-\item \textbf{IC5} Ice flow diameter. 
+\item \textbf{IC5} Maximum ice flow diameter, $D_{\max}$. 
 \end{list}
 
 \item{Standard mean wave parameters}
@@ -317,9 +284,9 @@ Note that US3D=1 must be set in the ww3\_grid.inp OUTS namelist in order to acti
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
 
-\item \textbf{MSS} Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
+\item \textbf{MSS} Mean square slopes in $u$ and $c$ directions (down-wave and cross-wave components of slopes variances). 
 \item \textbf{MSC} Spectral tail level (without dimensions) 
-\item \textbf{MSD} Mean square slope direction
+\item \textbf{MSD} Direction of the maximum slope variance mss$_u$
 \item \textbf{MCD} Spectral tail direction
 \item \textbf{QP}  Peakedness parameter \citep{art:G70}
       \begin{equation} Q_p = \frac{2}{E^2} \int_0^{2\pi} \int_0^\infty

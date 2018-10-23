@@ -3101,15 +3101,15 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
               NFIELD=2
-              VARNM(1)='mssx'
-              VARNM(2)='mssy'
-              VARNL(1)='x-direction mean square slope'
-              VARNL(2)='y-direction mean square slope'
+              VARNM(1)='mssu'
+              VARNM(2)='mssc'
+              VARNL(1)='downwave mean square slope'
+              VARNL(2)='crosswave mean square slope'
               VARNS(1)='x_mean_square_slope'
               VARNS(2)='y_mean_square_slope'
               VARNG(1)='x_mean_square_slope'
               VARNG(2)='y_mean_square_slope'
-              VARNC(1)='mss=mssx+mssy'
+              VARNC(1)='mss=mssu+mssc'
               WRITE(VARNC(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
               VARND(1)=''
               VARND(2)=''
@@ -3170,7 +3170,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSD   , MAPSF, X1 )
               NFIELD=1
               VARNM(1)='mssd'
-              VARNL(1)='x direction for mss'
+              VARNL(1)='u direction for mss'
               VARNS(1)='sea_surface_wave_dominant_mean_square_slope_direction'
               VARNG(1)='sea_surface_wave_dominant_mean_square_slope_direction'
               WRITE(VARNC(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'

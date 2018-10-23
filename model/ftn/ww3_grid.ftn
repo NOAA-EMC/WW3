@@ -734,7 +734,8 @@
 !/ST4                                 FXDSCUT
 !/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,    &
 !/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH,  &
-!/ST4                                 SDSSTRAIN, SDSBR, SDSP,              &
+!/ST4                                 SDSSTRAIN, SDSSTRAINA, SDSSTRAIN2,   &
+!/ST4                                 SDSBR, SDSP,                         &
 !/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK,      &
 !/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
 !/ST4                                 SDSBR2, SDSBRF1,                     &
@@ -836,7 +837,8 @@
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,        &
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3,      &
-!/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSC4,       &
+!/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSSTRAINA,  &
+!/ST4                      SDSSTRAIN2, SDSC4,                              &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
@@ -1706,6 +1708,8 @@
 !/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
 !/ST4      SDSSTRAIN = 0.
+!/ST4      SDSSTRAINA = 0.
+!/ST4      SDSSTRAIN2 = 0.
 !/ST4      SDSHFGEN  = 0.
 !/ST4      SDSLFGEN  = 0.
 !
@@ -1775,6 +1779,8 @@
 !/ST4      SSDSC(7)   = WHITECAPWIDTH
 !/ST4      SSDSC(8)   = SDSSTRAIN ! Straining constant ... 
 !/ST4      SSDSC(9)   = SDSHFGEN
+!/ST4      SSDSC(10)   = SDSSTRAINA*NTH/360. ! angle for enhanced straining
+!/ST4      SSDSC(11)   = SDSSTRAIN2 ! enhanced straining constant ... 
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
 !/ST4      SSDSBRFDF= SDSBRFDF
@@ -2619,10 +2625,11 @@
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSSTRAIN, SDSC4, SDSC5, SDSC6, &
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3, FXFMAGE, FXINCUT, FXDSCUT, &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
-!/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
+!/ST4                    SDSBR, SDSSTRAIN,  SDSSTRAINA,  SDSSTRAIN2,       &
+!/ST4                    SDSBR2, SDSP, SDSISO, SDSCOS,   &
 !/ST4                    SDSDTH, SDSBRF1, SDSBRFDF,                        &
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,           &
 !/ST4                    WHITECAPWIDTH, SDSLFGEN, SDSHFGEN
@@ -5394,7 +5401,7 @@
 !/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSCUM =',F6.2,', SDSSTRAIN =',F4.1','/        &
+!/ST4               ', SDSCUM =',F6.2,', '/                           &
 !/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
@@ -5403,7 +5410,8 @@
 !/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
 !/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
 !/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4,       &
-!/ST4               ', SDSSTRAIN =',F6.3,', '/                        &
+!/ST4               ', SDSSTRAIN =',F4.1,', SDSSTRAINA =',F4.1,       &
+!/ST4               ', SDSSTRAIN2 =',F5.1,', '/                       &
 !/ST4               '        SDSBR2 =',F5.2,', SDSP =',F5.2,          &
 !/ST4               ', SDSISO =',I2, &
 !/ST4               ', SDSCOS =',F3.1,', SDSDTH =',F5.1,', '/         &
@@ -5501,10 +5509,10 @@
 !/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
 !/IS2              '        scattering coefficient       : ',F5.2/ &
 !/IS2              '        0: no back-scattering        : ',F5.2/ &
-!/IS2              '     TRUE: istropic back-scattering  : ',L3/ &
-!/IS2              '     TRUE: update of ICEDMAX         : ',L3/ &
-!/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/ &
-!/IS2              '     TRUE: uses Robinson-Palmer disp.: ',L3/ &
+!/IS2              '     TRUE: istropic back-scattering  : ',L3/   &
+!/IS2              '     TRUE: update of ICEDMAX         : ',L3/   &
+!/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/   &
+!/IS2              '     TRUE: uses Robinson-Palmer disp.: ',L3/   &
 !/IS2              '        attenuation                  : ',F5.2/ &
 !/IS2              '        fragility                    : ',F5.2/ &
 !/IS2              '        minimum floe size in meters  : ',F5.2/ &
@@ -5519,7 +5527,7 @@
 !/IS2              '        factor for ice breakup       : ',F5.2/ &
 !/IS2              '        IS2WIM1                      : ',F5.2/ &
 !/IS2              '        flexural strength            : ',E9.3/ &
-!/IS2              '        anelastic dissipation        : ',L3/ &
+!/IS2              '        anelastic dissipation        : ',L3/   &
 !/IS2              '        energy of activation         : ',F5.2/ &
 !/IS2              '        anelastic coefficient        : ',E11.3/ &
 !/IS2              '        anelastic exponent           : ',F5.2)
@@ -5532,7 +5540,8 @@
 !/IS2               '       IS2C2 =',F12.8,', IS2C3 =',F8.4,        &
 !/IS2               ', IS2CONC =',F5.1,', IS2CREEPB =',E11.3,','/   &
 !/IS2               '       IS2CREEPC =',F5.2,', IS2CREEPD =',F5.2, &
-!/IS2               ', IS2CREEPN =',F5.2,', IS2BREAKE =',F5.2,      &
+!/IS2               ', IS2CREEPN =',F5.2,','/                       &
+!/IS2               '       IS2BREAKE =',F5.2,                      &
 !/IS2               ', IS2BREAKF =',F5.2,', IS2WIM1 =',F5.2,','/    &
 !/IS2               ', IS2ANDISB =',L3,', IS2ANDISE =',F5.2,        &
 !/IS2               ', IS2ANDISD =',E11.3,', IS2ANDISN=',F5.2, ' /')

@@ -1646,7 +1646,7 @@
 !/
       INTEGER                 :: IS, IS2, IS0, IKL, IKC, ID, NKL
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                 :: IK, IK1, ITH, IK2, ITH2,             & 
+      INTEGER                 :: IK, IK1, ITH, IK2, JTH, ITH2,             & 
                                  IKHS, IKD, SDSNTH, IT, IKM, NKM
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: COSWIND, ASUM, SDIAGISO
@@ -1665,8 +1665,9 @@
       REAL                    :: BTH0S(NK)    !smoothed saturation spectrum 
       REAL                    :: BTHS(NSPEC)  !smoothed saturation spectrum  
       REAL                    :: SBK(NSPEC)  
-      INTEGER                 :: IMSSMAX(NK)   
-      REAL                    :: SBKT(NK), MSSSUM(NK,5), FACHF
+      INTEGER                 :: IMSSMAX(NK), NTHSUM   
+      REAL                    :: SBKT(NK), MSSSUM(NK,5), WTHSUM(NTH), FACHF
+      REAL                    :: MSSSUM2(NK,NTH)
       REAL                    :: MSSLONG(NK,NTH)
       REAL                    :: MSSPCS, MSSPC2, MSSPS2, MSSP, MSSD, MSSTH
       REAL                    :: MICHE, X
@@ -1703,7 +1704,13 @@
 
       !IF (IX == DEBUG_NODE) WRITE(*,'(A20,4F20.10)') 'ST4 DISSIP ANFANG', SUM(SRHS), SUM(DDIAG)
 !/IG1  IK1=NINT(IGPARS(5))+1
-
+      NTHSUM=MIN(FLOOR(SSDSC(10)+0.5),NTH-1)  ! number of angular bins for enhanced modulation
+      IF (NTHSUM.GT.0) THEN 
+        WTHSUM(1:NTHSUM)=1
+        WTHSUM(NTHSUM+1)=SSDSC(10)+0.5-NTHSUM
+      ELSE 
+        WTHSUM(1)=2*SSDSC(10)
+        END IF
 !
 ! 2.   Estimation of spontaneous breaking 
 !
@@ -1717,6 +1724,7 @@
 !
         SDSNTH = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
         MSSLONG(:,:) = 0.
+        MSSSUM2(:,:) = 0.
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
 !
@@ -1743,7 +1751,7 @@
 ! straining effect: first finds the mean direction of mss, then applies cos^2
 !                   straining
 !
-            IF (SSDSC(8).GT.0) THEN 
+            IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
               IKC = MAX(1,IK-DIKCUMUL)
               IMSSMAX (IK) = 1
               MSSP   = 0.
@@ -1756,6 +1764,10 @@
               DO ITH=1,NTH         
                 IS=ITH+(IK-1)*NTH
                 MSSLONG(IK,ITH) = K(IK)**2 * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
+                DO JTH=-NTHSUM,NTHSUM 
+                   ITH2 = 1+MOD(ITH-1+JTH+NTH,NTH)
+                   MSSSUM2(IK:NK,ITH2) = MSSSUM2(IK:NK,ITH2)+MSSLONG(IK,ITH)*WTHSUM(ABS(JTH)+1)
+                   END DO
                 MSSPC2 = MSSPC2 +MSSLONG(IK,ITH)*EC2(ITH)
                 MSSPS2 = MSSPS2 +MSSLONG(IK,ITH)*ES2(ITH)
                 MSSPCS = MSSPCS +MSSLONG(IK,ITH)*ESC(ITH)
@@ -1768,6 +1780,8 @@
               MSSSUM  (IK:NK,3) = MSSSUM (IK:NK,3) +MSSPC2
               MSSSUM  (IK:NK,4) = MSSSUM (IK:NK,4) +MSSPS2
               MSSSUM  (IK:NK,5) = MSSSUM (IK:NK,5) +MSSPCS
+! WRITE(997,*) IK,NTHSUM,MSSSUM2(IK,19),MSSSUM2(IK,55), MSSSUM  (IK,1)
+
 !
 ! Direction of long wave mss summed up to IK       
 !
@@ -1790,18 +1804,18 @@
 ! Testing straining effect of long waves on short waves
 ! extended from Longuet-Higgins and Stewart (JFM 1960, eq. 2.27) the amplitude modulation 
 ! in deep water is equal to the long wave slope k*a cos(theta1-theta2)
-! Here we assume that the saturation is modulated as (1 + SSDSC(8) *  sqrt(mss_theta) )
+! Here we assume that the saturation is modulated as (1 + 2*SSDSC(8) *  sqrt(mss_theta) )
 ! where mss_theta is the mss in direction ITH. 
 ! 
-! Note: SSDSC(8) is 2 times the MTF: close to 4x2=8 for very small ka but can be 20 or larger for ak~0.1
+! Note: SSDSC(8) is 2 times the MTF: close to 4 for very small ka but can be 20 or larger for ak~0.1
 !
                 IF (SSDSC(8).GT.0) THEN 
 !
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
 !
-                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)
-!WRITE(998,*) IK,ITH,IKC, IMSSMAX (IKC), MSSTH, MSSSUM(IKC,1:5),EC2(1+ABS(ITH-IMSSMAX (IKC))),FACSTRAIN
+                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
+!WRITE(998,*) IK,ITH,IKC, IMSSMAX (IKC), SSDSC(8)*SQRT(MSSTH),SSDSC(11)*SQRT(MSSSUM2(IKC,ITH)),FACSTRAIN
                 FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 
