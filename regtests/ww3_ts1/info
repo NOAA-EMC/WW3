@@ -29,6 +29,7 @@
 #  (some details will vary by local system and configuration)               #
 #  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                      #
 #  ./bin/run_test -s ST2  -w work_ST2 ../model ww3_ts1                      #
+#  ./bin/run_test -s ST6 -o netcdf -w work_ST6 ../model ww3_ts1             #
 #  ./bin/run_test -c gnu -o netcdf ../model ww3_ts1                         #
 #                                                                           #
 #  ./bin/run_test -i input_icesct_IC0 -o both ../model ww3_ts1              #
