@@ -343,7 +343,7 @@
 ! 
       IF ( GTYPE .EQ. CLGTYPE ) THEN 
 !/NCEP2! Allowing code to work with Lambert conformal grids 
-!/NCEP2      IF ( GDTN .NE. 30 .OR. GDTN .NE. 20 ) THEN 
+!/NCEP2      IF ( GDTN .NE. 30 .AND. GDTN .NE. 20 ) THEN 
         WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
         'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING' 
         CALL EXTCDE ( 1 ) 
