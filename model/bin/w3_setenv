@@ -183,7 +183,7 @@ EOF
       echo "Update WWATCH3_DIR [u] or keep [k] or exit [e] ?"
       read OK
       case $OK in
-        'y'|'Y') do_set='y' ;;
+        'u'|'U') do_set='y' ;;
         'k'|'K') do_set='n' ;;
         'e'|'E') exit       ;;
       esac
