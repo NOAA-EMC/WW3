@@ -725,6 +725,7 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Oct-2018 : Original Code                       ( version 6.06 )
+!/    24-Oct-2018 : Update by Andy Saulter              ( version x.xx )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -770,10 +771,10 @@
 !/T      WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
       IF ( PRCNTG > 1. ) THEN
 !/T      WRITE (NDSO,*) trim(MYNAME)," PRCNTG > 1."
-         PRCNTG = MIN(PRCNTG, 1. + PRCNTG_CAP)
+         PRCNTG = MIN(PRCNTG, 1. * PRCNTG_CAP)
       ELSE IF ( PRCNTG < 1. ) THEN
 !/T      WRITE (NDSO,*) trim(MYNAME)," PRCNTG < 1."
-         PRCNTG = MAX(PRCNTG, 1. - PRCNTG_CAP)
+         PRCNTG = MAX(PRCNTG, 1. / PRCNTG_CAP)
 !/T  
       END IF
 !/T      WRITE (NDSO,*) trim(MYNAME)," The updated correction is ",PRCNTG 
