@@ -16,6 +16,10 @@ $   0.10  0.01  270. 2  0. 1000. 1. 1000. 2.5
 $   0.10  0.01  270. 2  0. 1000. 1. 1000. 0.01
 $   0.10  0.01  270. 2  0. 1000. 1. 1000. 0.
 $
+  1
+$  fp    sip   thm  ncos xm   six ym  siy hmax
+   0.10  0.01  270. 2    160. 0.5 75. 0.5 4.0
+$
 $ ITYPE = 2 ---------------------------------------------------------- $
 $ JONSWAP spectrum with Hasselmann et al. (1980) direct. distribution.
 $ - alfa, peak freq. (Hz), mean direction (degr., oceanographical
@@ -66,7 +70,7 @@ $
 $ ITYPE = 5 ---------------------------------------------------------- $
 $ Starting from calm conditions.
 $ - No additional data.
- 5
+$ 5
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

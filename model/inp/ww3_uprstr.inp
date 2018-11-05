@@ -44,7 +44,7 @@ $                                                                      $
    0.6754
 $                                                                      $
 $ PRCNTG_CAP is global input for option UPD2 and UPD3 and it is a cap  $
-$ on the maximun correction applied to all the gridpoints (e.g. 0.5)   $
+$ on the maximum correction applied to all the gridpoints (e.g. 0.5)   $
 $                                                                      $
   10.
 $                                                                      $

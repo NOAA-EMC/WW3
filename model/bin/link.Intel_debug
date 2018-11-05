@@ -85,7 +85,7 @@
 #     No GRIB libraries for this one
 
   # linking options
-  libs="-L/appli/ddt/ddt-7.0.6/lib/64 -ldmalloc"
+  libs="-L/appli/ddt/ddt-7.0.6/lib/64 -dlmalloc"
   opt="-O0 -xCORE-AVX2 -o $prog"
   opt="-Zp8 -tpp7 $opt"
   opt="-p -pg -g $opt"
