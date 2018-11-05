@@ -29,7 +29,9 @@
 
   for par in mpi np nr nth rtst ww3 shrd dist omp \
              prop1D prop2D time fetch hur1mg \
-             multi01 multi02 multi03 multi04 multi05
+             multi01 multi02 multi03 multi04 multi05 \
+             hybd shwtr unstr pdlib smcgr mudice infgrv \
+             uost assim multi06 multi07 multi08
   do
     eval " value=\$$par"
 #   echo "$par = $value"
@@ -157,18 +159,6 @@
       echo "$rtst -s PR1 -w work_PR1_g -m grdset_g $ww3 mww3_test_04" >> matrix.body
     fi
   
-    if [ "$assim" = 'y' ]
-    then
-      echo ' ' >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
-    fi
   fi
 
   if [ "$dist" = 'y' ]
@@ -1855,6 +1845,7 @@
     echo ' ' >> matrix.body
     echo "$rtst $ww3 -w work_SHRD_SMC -o both ww3_tp2.10" >> matrix.body
     echo "$rtst $ww3 -w work_SHRD_RTD -o both ww3_tp2.11" >> matrix.body
+    echo "$rtst -w work_SHRD $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
   if [ "$smcgr" = 'y' ] && [ "$dist" = 'y' ]
@@ -1862,6 +1853,7 @@
     echo ' ' >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.10" >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.11" >> matrix.body
+    echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
 # mud/ice cases
@@ -1982,6 +1974,20 @@
      echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
    fi
  fi
+
+ #Test of updating the restart spectra 
+ if [ "$assim" = 'y' ]
+ then
+   echo ' ' >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+  fi
 
 # --------------------------------------------------------------------------- #
 # 3.  End of script output                                                    #

@@ -608,7 +608,8 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, FR1, TH, SGRDS
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPPNT, NOPTS, SPCO, DPO,   &
-                          WAO, WDO, ASO, CAO, CDO, OUTPTS
+                          WAO, WDO, ASO, CAO, CDO, OUTPTS,            &
+                          ICEO,ICEHO,ICEFO
       USE WMMDATMD, ONLY: MDST, MDSE, IMPROC, NMPROC, NMPUPT, NRGRD,  &
                           RESPEC, UPTMAP, MDSUP
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD, ALLPRC,  &
@@ -636,6 +637,7 @@
       REAL, POINTER           :: SPEC(:,:)
 !/MPI      REAL, POINTER           :: SPCR(:,:), DPR(:), WAR(:),      &
 !/MPI                                 WDR(:), ASR(:), CAR(:), CDR(:)
+!/MPI      REAL, POINTER           :: ICRO(:), ICRFO(:), ICRHO(:)
 !/
 !/S      CALL STRACE (IENT, 'WMIOPO')
 !
@@ -652,6 +654,9 @@
           OUTPTS(0)%OUT2%ASO   = 0.
           OUTPTS(0)%OUT2%CAO   = 0.
           OUTPTS(0)%OUT2%CDO   = 0.
+          OUTPTS(0)%OUT2%ICEO  = 0.
+          OUTPTS(0)%OUT2%ICEFO = 0. 
+          OUTPTS(0)%OUT2%ICEHO = 0.   
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -719,7 +724,10 @@
               OUTPTS(0)%OUT2%ASO(II)     = ASO(I)
               OUTPTS(0)%OUT2%CAO(II)     = CAO(I)
               OUTPTS(0)%OUT2%CDO(II)     = CDO(I)
-              END DO
+              OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
+              OUTPTS(0)%OUT2%ICEFO(II)   = ICEFO(I)
+              OUTPTS(0)%OUT2%ICEHO(II)   = ICEHO(I)
+            END DO
 !
             IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
 !
@@ -761,6 +769,22 @@
 !/MPI            CALL MPI_SEND ( CDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
 !/MPI                            MPI_COMM_MWAVE, IERR_MPI )
 !/MPIT            WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
+!JDM: The below should be added for points using partitioned processors 
+! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so 
+! this is being left here commented out for now.  
+! There is a corresponding section to this below 
+!!/MPI            IT     = IT + 1
+!!/MPI            CALL MPI_SEND ( ICEO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+!!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+!!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEO'
+!!/MPI            IT     = IT + 1
+!!/MPI            CALL MPI_SEND ( ICEFO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+!!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+!!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEFO'
+!!/MPI            IT     = IT + 1
+!!/MPI            CALL MPI_SEND ( ICEHO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+!!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+!!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
 !
           END IF
 !
@@ -804,7 +828,8 @@
 !/MPI        IFROM  = NMPPNT - 1
 !/MPI        ALLOCATE ( SPCR(NSPEC,NOPTS), STATUS(MPI_STATUS_SIZE,1),  &
 !/MPI                   DPR(NOPTS), WAR(NOPTS), WDR(NOPTS), ASR(NOPTS),&
-!/MPI                   CAR(NOPTS), CDR(NOPTS) )
+!/MPI                   CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           & 
+!/MPI                   ICRFO(NOPTS), ICRHO(NOPTS) )
 !
 !/MPI        IT     = IT + 1
 !/MPI        CALL MPI_RECV ( SPCR(1,1), NSPEC*NOPTS, MPI_REAL, IFROM,  &
@@ -834,6 +859,22 @@
 !/MPI        CALL MPI_RECV ( CDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
 !/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 !/MPIT        WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
+!JDM: The below should be added for points using partitioned processors 
+! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so 
+! this is being left here commented out for now.  
+! There is a corresponding section to this above
+!!/MPI         IT     = IT + 1
+!!/MPI         CALL MPI_RECV ( ICRO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
+!!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+!!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEO'
+!!/MPI         IT     = IT + 1
+!!/MPI         CALL MPI_RECV (ICRFO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
+!!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+!!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEFO'
+!!/MPI         IT     = IT + 1
+!!/MPI         CALL MPI_SEND (ICRHO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   & 
+!!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+!!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
 !
 ! 3.c Convert if necessary
 !
@@ -862,11 +903,16 @@
 !/MPI          OUTPTS(0)%OUT2%ASO(II)     = ASR(I)
 !/MPI          OUTPTS(0)%OUT2%CAO(II)     = CAR(I)
 !/MPI          OUTPTS(0)%OUT2%CDO(II)     = CDR(I)
-!/MPI          END DO
+!/MPI          OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)   
+!/MPI          OUTPTS(0)%OUT2%ICEFO(II)    = ICEFO(I)   
+!/MPI          OUTPTS(0)%OUT2%ICEHO(II)    = ICEHO(I)   
+!/MPI        END DO
 !
 !/MPI        IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
 !/MPI        DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR, STATUS )
-!
+!        !JDM add deallocates here and check the itag stuff.. really not
+!        sure aabout that 
+!/MPI        DEALLOCATE (ICRO, ICRFO, ICRHO)
 !/MPI        END DO
 !
 ! -------------------------------------------------------------------- /

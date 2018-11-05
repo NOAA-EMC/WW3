@@ -44,7 +44,6 @@ optstr="a:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:Sw:"  #option string for getopt functio
 usage ()
 {
 
-exit      
 cat 2>&1 << EOF
 
 Usage: $myname [options] source_dir test_name
