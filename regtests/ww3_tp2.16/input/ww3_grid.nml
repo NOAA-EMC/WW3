@@ -255,13 +255,13 @@
 !     SMC%AJSID%FORMAT         = '(....)' ! AJSid formatted read format
 ! -------------------------------------------------------------------- !
 &SMC_NML
-  SMC%MCELS%FILENAME        =  'A50SMCels.dat'
-  SMC%ISIDE%FILENAME        =  'A50GISide.dat'
-  SMC%JSIDE%FILENAME        =  'A50GJSide.dat'
-  SMC%SUBTR%FILENAME        =  'A50GObstr.dat'
-  SMC%MBARC%FILENAME        =  'A50SMCBAr.dat'
-  SMC%AISID%FILENAME        =  'A50AISide.dat'
-  SMC%AJSID%FILENAME        =  'A50AJSide.dat'
+  SMC%MCELS%FILENAME        =  '../input/A50SMCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input/A50GISide.dat'
+  SMC%JSIDE%FILENAME        =  '../input/A50GJSide.dat'
+  SMC%SUBTR%FILENAME        =  '../input/A50GObstr.dat'
+  SMC%MBARC%FILENAME        =  '../input/A50SMCBAr.dat'
+  SMC%AISID%FILENAME        =  '../input/A50AISide.dat'
+  SMC%AJSID%FILENAME        =  '../input/A50AJSide.dat'
 /
 
 ! -------------------------------------------------------------------- !
@@ -302,7 +302,7 @@
 ! -------------------------------------------------------------------- !
 &DEPTH_NML
   DEPTH%SF        =  -1.
-  DEPTH%FILENAME  =  'Not_UsDepth.dat'
+  DEPTH%FILENAME  =  'Not_Used_Depth.dat'
 /
 
 ! -------------------------------------------------------------------- !
@@ -346,7 +346,7 @@
 !     MASK%FORMAT           = '(....)' ! formatted read format
 ! -------------------------------------------------------------------- !
 &MASK_NML
-  MASK%FILENAME  =  'Not_UsMasks.dat'
+  MASK%FILENAME  =  'Not_Used_Masks.dat'
 /
 
 ! -------------------------------------------------------------------- !
@@ -397,7 +397,7 @@
 !     OBST%FORMAT          = '(....)' ! formatted read format
 ! -------------------------------------------------------------------- !
 &OBST_NML
-  OBST%FILENAME  =  'A50GObstr.dat'
+  OBST%FILENAME  =  '../input/A50GObstr.dat'
 /
 
 ! -------------------------------------------------------------------- !

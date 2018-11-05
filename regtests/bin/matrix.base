@@ -160,14 +160,14 @@
     if [ "$assim" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s T -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
-      echo "$rtst -s T -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
+      echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
     fi
   fi
 

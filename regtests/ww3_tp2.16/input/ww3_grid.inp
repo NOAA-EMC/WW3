@@ -373,7 +373,7 @@ $     1.     1.     4.
 $    -1.    -1.     4.
 $
 $  -0.1  2.50  10  -10. 3 1 '(....)' 'NAME' 'bottom.inp'
-   -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'Not_UsDepth.dat'
+   -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'Not_Used_Depth.dat'
 $
 $ 6 6 6 6 6 6 6 6 6 6 6 6
 $ 6 6 6 5 4 2 0 2 4 5 6 6
@@ -496,10 +496,10 @@ $    The first line of each file will have the array dimension parameters.
 $    So the first line are read first to determine the array sizes for the
 $    following array read calls.      JGLi18Dec2012
 $
-  32  1  1  '(....)'  'A50SMCels.dat'
-  33  1  1  '(....)'  'A50GISide.dat'
-  34  1  1  '(....)'  'A50GJSide.dat'
-  31  1  1  '(....)'  'A50GObstr.dat'
+  32  1  1  '(....)'  '../input/A50SMCels.dat'
+  33  1  1  '(....)'  '../input/A50GISide.dat'
+  34  1  1  '(....)'  '../input/A50GJSide.dat'
+  31  1  1  '(....)'  '../input/A50GObstr.dat'
 $    Boundary cell id number list file is required if NBISMC is non-zero.
 $    The cell id number should be the sequential number in S625MCels.dat.
 $    Boundary cell spectral input data should be produced from a regular
@@ -507,9 +507,9 @@ $    lat-lon grid model for the listed boundary cells.  JGLi18Dec2012
 $ 35  1  1  '(....)'  'S6125Bundy.dat'
 $
 $    Extra cell and face arrays for Arctic part.  JGLi10Feb2014
-  36  1  1  '(....)'  'A50SMCBAr.dat'
-  37  1  1  '(....)'  'A50AISide.dat'
-  38  1  1  '(....)'  'A50AJSide.dat'
+  36  1  1  '(....)'  '../input/A50SMCBAr.dat'
+  37  1  1  '(....)'  '../input/A50AISide.dat'
+  38  1  1  '(....)'  '../input/A50AJSide.dat'
 $
 $ Input boundary points and excluded points -------------------------- $
 $    The first line identifies where to get the map data, by unit number
@@ -518,7 +518,7 @@ $    if FROM = 'PART', then segmented data is read from below, else
 $    the data is read from file as with the other inputs (as INTEGER)
 $
 $  10 3 1 '(....)' 'PART' 'mapsta.inp'
-  39  1  1  '(....)'  'NAME'  'Not_UsMasks.dat'
+  39  1  1  '(....)'  'NAME'  'Not_Used_Masks.dat'
 $
 $ Read the status map from file ( FROM != PART ) --------------------- $
 $

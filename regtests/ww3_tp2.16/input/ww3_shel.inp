@@ -26,7 +26,7 @@ $ - Starting time in yyyymmdd hhmmss format.
 $ - Ending time in yyyymmdd hhmmss format.
 $
    19680606 000000
-   19680606 060000
+   19680607 000000
 $
 $ Define output data ------------------------------------------------- $
 $
@@ -61,7 +61,7 @@ $          the total number and order of the logical flags is fixed.
 $                               The raw data file is out_grd.ww3, 
 $                               see w3iogo.ftn for additional doc.
 $
-   19680606 000000   3600  19680608 000000
+   19680606 000000  10800  19680607 000000
 $----------------------------------------------------------------
 $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual. If the first flag is 'N' then a namelist
@@ -97,7 +97,7 @@ $    2.1   0.9  'Point_4   '
 $    5.0   5.0  'Outside   '
 $  -123.167    48.333    'B46088'
 $
-   19680606 000000   3600  19680608 000000
+   19680606 000000   3600  19680607 000000
     10.000    70.000    'B66677'
   -170.000    70.000    'B66688'
   -140.000    71.000    'B66699'
@@ -111,25 +111,26 @@ $          Flag for formatted input file.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
 $
-   19680606 000000   3600  19680608 000000
+   19680606 000000   3600  19680607 000000
+   T
 $
 $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
 $
-   19680606 060000   0  19680608 000000
+   19680606 000000   0  19680607 000000
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
 $                               w3iobp.ftn for additional doc.
 $
-   19680606 000000   0  19680606 000000
+   19680606 000000   0  19680607 000000
 $
 $ Type 6 : Separated wave field data (dummy for now).
 $          First, last step IX and IY, flag for formatted file
 $
-   19680606 000000   0  19680608 000000
-      0 999 1 0 999 1 T
+   19680606 000000   0  19680607 000000
+$      0 999 1 0 999 1 T
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
