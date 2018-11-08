@@ -2459,31 +2459,30 @@ END SUBROUTINE
         INTEGER :: I, J, IP, IE
 !/PDLIB      IF (LPDLIB) THEN
 !/PDLIB      DO IP = 1, NSEAL
-!/PDLIB        IF (IOBP(IP) .GT. 0 .AND. IOBDP(IP) .EQ. 0) CYCLE
+!/PDLIB        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
 !/PDLIB        IOBP(IP) = 1
 !/PDLIB        DO I = 1, PDLIB_CCON(IP)
 !/PDLIB          IE = PDLIB_IE_CELL2(I,IP)
 !/PDLIB          IF (ANY(IOBDP(INE(:,IE)) .EQ. 0)) THEN
-!/PDLIB             IOBP(IP) = -1
+!/PDLIB             IOBDP(IP) = -1
 !/PDLIB            CYCLE
 !/PDLIB          ENDIF
 !/PDLIB        ENDDO
 !/PDLIB      ENDDO
 !/PDLIB      !CALL EXCHANGE_....
 !/PDLIB      ELSE
-!      J = 0
-!      DO IP = 1, NSEAL
-!        IF (IOBP(IP) .GT. 0 .AND. IOBDP(IP) .EQ. 0) CYCLE
-!        IOBP(IP) = 1
-!        DO I = 1, CCON(IP)
-!          J = J + 1 
-!          IE = IE_CELL(J)
-!          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
-!             IOBP(IP) = -1
-!            CYCLE
-!          ENDIF
-!        ENDDO
-!      ENDDO
+      J = 0
+      DO IP = 1, NSEAL
+        IF (IOBP(IP) .NE. 1 .OR. IOBDP(IP) .EQ. 0) CYCLE
+        DO I = 1, CCON(IP)
+          J = J + 1 
+          IE = IE_CELL(J)
+          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
+            IOBDP(IP) = -1 ! Set this node as a wet node adjacent to a dry one ... now what's next? Here on this points we want to compute the reflection source term, yes?  
+            EXIT 
+          ENDIF
+        ENDDO
+      ENDDO
 !/PDLIB ENDIF
    
    END SUBROUTINE

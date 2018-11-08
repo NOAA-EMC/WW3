@@ -3,7 +3,7 @@ $ -------------------------------------------
 $ ITYPE: 1= GAUSSIAN
  1
 $  fp     sip     thm ncos   xm    six   ym  siy hmax
-   0.125  0.0001  90. 200  -83.01 -0.01  9.99 2.8 4.
+   0.125  0.0001  180. 200  -83.01 -0.01  9.99 2.8 4.
 $ 
 $   Other possibility: non-zero values only near boundary 
 $   0.125  0.0001  80. 200  -83.012 0.005  9.99 2.8 4.

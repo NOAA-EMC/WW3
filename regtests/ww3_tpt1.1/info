@@ -1,0 +1,42 @@
+###############################################################################
+#                                                                             #
+#  Regression test for extended partitioning methods                          #
+#                                                                             #
+#  The switch file used for this test is minimal as model does not            #
+#  perform propagation or source term integration.                            #
+#                                                                             #
+#  A multi-modal 2D spectrum is provided in the ww3_strt input file to        #
+#  generate a suitable wave field for testing the different paritioning       #
+#  methods.                                                                   #
+#                                                                             #
+#  5 ww3_grid input files are provided with the relevant partitioning         #
+#  method set via the PTM namelist option:                                    #
+#                                                                             #
+#    PTM=1: Wind sea and swells defined using topographic partitions and      #
+#           classified using a wind sea fraction cutoff (WW3 default scheme). #
+#                                                                             #
+#    PTM=2: Wind sea and swells defined using topographic partitions and      #
+#           spectral wave-age cutoff.                                         #
+#                                                                             #
+#    PTM=3: Wave components defined using topographic partitions only.        #
+#                                                                             #
+#    PTM=4: Wind sea and swell defined using spectral wave-age cutoff.        #
+#           Outputs wind-sea and single swell partition.                      #
+#                                                                             #
+#    PTM=5: Wave components defined using a user defined frequency cut-off    #
+#           (PTFCUT). Outputs high frequency and low frequency partition.     #
+#                                                                             #
+#  Use the -g option to select the partitioning method. E.g:                  #
+#   for Serial (SHARED):                                                      #
+#    ./bin/run_test -N -g PTM1 -f -o both ../model ww3_tpt1.1                 #
+#    ./bin/run_test -N -g PTM2 -f -o both ../model ww3_tpt1.1                 #
+#    ./bin/run_test -N -g PTM3 -f -o both ../model ww3_tpt1.1                 #
+#    ./bin/run_test -N -g PTM4 -f -o both ../model ww3_tpt1.1                 #
+#    ./bin/run_test -N -g PTM5 -f -o both ../model ww3_tpt1.1                 #
+#                                                                             #
+#  for Parallel (MPI DIST):                                                   #
+#   ./bin/run_test -N -g PTM2 -n 2 -p aprun -f -s MPI \                       #
+#                                -o both ../model ww3_tpt1.1                  #
+#                                                                             #
+#                                                  Chris Bunney, Nov 2018     #
+###############################################################################

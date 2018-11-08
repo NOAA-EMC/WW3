@@ -831,8 +831,9 @@
       USE W3ADATMD, ONLY: CG, ITER, DW , CFLXYMAX
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPIN, ISBPI, BBPI0, BBPIN
       USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, DMIN
       USE W3ADATMD, ONLY: MPI_COMM_WCMP
+      USE W3GDATMD, ONLY: NSEAL, DMIN
+!/REF1      USE W3GDATMD, ONLY: REFPARS
       USE YOWNODEPOOL,    ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa
       use yowElementpool, ONLY: ne, INE
       use yowDatapool, ONLY: rtype
@@ -1015,22 +1016,16 @@
 !
         DO IP = 1, npa
           IP_glob=iplg(IP)
-          !U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
-          U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP_glob))!*IOBDP(IP_glob))! + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values
-!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP_glob) = AC(IP_glob) ! restores reflected boundary values 
+          U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))!*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
+          IF (IOBPD(ITH,IP_glob) .EQ. 0) THEN
+!            U(IP) = AC(IP) ! restores reflected boundary values 
+!            if ( U(IP) .gt. 0.) write(*,*) ip, AC(IP)
+            endif
+!!/REF1    IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
          END DO
 !/DEBUGSOLVER     IF (testWrite) THEN
 !/DEBUGSOLVER       CALL SCAL_INTEGRAL_PRINT_R8(U, "U in loop")
 !/DEBUGSOLVER     END IF
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1      DO IP=1,npa
-!/REF1        IP_glob=iplg(IP)
-!/REF1        IF (IOBPDR(IP_glob) .eq. 1) THEN
-!/REF1          U(IP)=DBLE(AC(IP))
-!/REF1        END IF
-!/REF1     END DO
         AC = REAL(U)
 !/DEBUGSOLVER     IF (testWrite) THEN
 !/DEBUGSOLVER       CALL SCAL_INTEGRAL_PRINT_R4(AC, "AC before synchronization")
@@ -1140,12 +1135,13 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       USE W3GDATMD, ONLY : NK, NTH, NX, &
-                            IEN, CLATS, MAPSF, IOBPD, IOBP, NNZ, IOBDP
+                            IEN, CLATS, MAPSF, IOBPD, IOBP, IOBPA, NNZ, IOBDP
       USE W3WDATMD, ONLY: TIME     
       USE W3ADATMD, ONLY: CG, ITER, CFLXYMAX
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
       USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, IOBPA
+      USE W3GDATMD, ONLY: NSEAL, DMIN
+!/REF1      USE W3GDATMD, ONLY: REFPARS
       USE W3ADATMD, ONLY: MPI_COMM_WCMP
       use yowElementpool, ONLY: ne, INE
       use YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA, PDLIB_SI, iplg, npa
@@ -1276,16 +1272,8 @@
         DO IP = 1, npa
           IP_glob=iplg(IP)
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
+!/REF1    IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
         END DO
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1      DO IP=1,npa
-!/REF1        IP_glob=iplg(IP)
-!/REF1        IF (IOBPDR(IP_glob) .eq. 1) THEN
-!/REF1          U(IP)=DBLE(AC(IP))
-!/REF1        END IF
-!/REF1     END DO
         AC = REAL(U)
 !
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
@@ -2897,6 +2885,7 @@
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
       USE W3TIMEMD, ONLY: DSEC21
       USE W3GDATMD, ONLY: NSEAL, IOBPA
+!/REF1    USE W3GDATMD, ONLY: REFPARS
       USE W3ADATMD, ONLY: MPI_COMM_WCMP
       use yowElementpool, ONLY: ne, INE
       use YOWNODEPOOL,    ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA
@@ -3076,16 +3065,8 @@
         DO IP = 1,npa
           IP_glob=iplg(IP)
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
+!/REF1    IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
         END DO
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1      DO IP=1,npa
-!/REF1        IP_glob=iplg(IP)
-!/REF1        IF (IOBPDR(IP_glob) .eq. 1) THEN
-!/REF1          U(IP)=DBLE(AC(IP))
-!/REF1        END IF
-!/REF1     END DO
         AC = REAL(U)
 !
 ! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...

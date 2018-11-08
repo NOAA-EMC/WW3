@@ -1261,13 +1261,13 @@
 !
 ! 7.  Check if integration complete ---------------------------------- *
 !
-        IF (srce_call .eq. srce_imp_post) THEN
-          EXIT
-        ENDIF
-        IF ( DTTOT .GE. 0.9999*DTG ) THEN
-!          IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
-          EXIT
-        ENDIF
+          IF (srce_call .eq. srce_imp_post) THEN
+            EXIT
+            ENDIF
+          IF ( DTTOT .GE. 0.9999*DTG ) THEN
+!            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
+            EXIT
+            ENDIF
         END DO ! INTEGRATIN LOOP
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS

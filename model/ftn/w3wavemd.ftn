@@ -884,6 +884,13 @@
 !/DEBUGRUN        STOP
 !/DEBUGRUN      ENDIF
 
+!/PDLIB        DO IP = 1, npa
+!/PDLIB          IP_glob=iplg(IP)
+!/PDLIB          IF (IOBPD(ITH,IP_glob) .EQ. 0) THEN
+!/PDLIB            if ( SUM(VA(:,ip)) .gt. 0.) write(*,*) ip, SUM(VA(:,ip))
+!/PDLIB            endif
+!/PDLIB         END DO
+
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'IT0=', IT0, ' NT=', NT
 !/DEBUGRUN        FLUSH(740+IAPROC)
@@ -1404,13 +1411,7 @@
 !/DEBUGRUN          ENDIF
 !/DEBUGRUN        ENDDO
 !
-                IF (GTYPE .eq. UNGTYPE) THEN
-                  eIOBP=IOBP(IX)
-                ELSE
-                  eIOBP=1
-                END IF
-
-            IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA) .AND. eIOBP .EQ. 1) THEN
+            IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
               IF (FSSOURCE) THEN
 !/PDLIB!/DEBUGSRC         IF (IX .eq. DEBUG_NODE) THEN
 !/PDLIB!/DEBUGSRC           WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
@@ -1990,15 +1991,10 @@
 !/REF1          REFLED=REFLD(:,ISEA)
 !/BT4           D50=SED_D50(ISEA)
 !/BT4           PSIC=SED_PSIC(ISEA)
-                IF (GTYPE .eq. UNGTYPE) THEN
-                  eIOBP=IOBP(IX)
-                ELSE
-                  eIOBP=1
-                END IF
 
 !/DEBUGRUN          IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', ISEA, JSEA, SUM(VA(:,JSEA))
 
-                IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA) .AND. eIOBP.EQ.1 ) THEN
+                IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
                      TMP1   = WHITECAP(JSEA,1:4)
                      TMP2   = BEDFORMS(JSEA,1:3)
                      TMP3   = TAUBBL(JSEA,1:2)
