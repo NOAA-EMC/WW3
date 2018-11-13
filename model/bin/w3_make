@@ -605,9 +605,11 @@ EOF
       export oasis_mod
 
       pdlib_mod=no
+      esmfpdlib='' 
       if [ -n "`grep PDLIB $switch_file`" ]
       then
         export pdlib_mod='yes'
+        esmfpdlib="$METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
       fi
       export pdlib_mod
 
@@ -705,7 +707,7 @@ EOF
         echo "# component module objects"                            >> $mkfile
         echo "ESMF_DEP_CMPL_OBJS := $obj_dir/lib$prog.a(wmesmfmd.o)" >> $mkfile
         echo "# component object/archive list"                       >> $mkfile
-        echo "ESMF_DEP_LINK_OBJS := $obj_dir/lib$prog.a $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"  >> $mkfile
+        echo "ESMF_DEP_LINK_OBJS := $obj_dir/lib$prog.a $esmfpdlib"  >> $mkfile
       fi
 
     fi
