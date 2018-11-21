@@ -360,7 +360,7 @@
                           ICESCALES, IICESMOOTH
       USE W3GDATMD, ONLY: FSSOURCE, optionCall
       USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
-!/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE, REFPARS
+!/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, IOBDP, GTYPE, UNGTYPE, REFPARS
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
       USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, ICEP2
@@ -419,7 +419,6 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
 !/UOST      USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
-!/PDLIB    USE W3PARALL, ONLY : Z_status_rev
 !/PDLIB    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES
 !/PDLIB    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
 !/PDLIB    USE W3GDATMD, ONLY: CLATS
@@ -1035,7 +1034,7 @@
             ENDIF
             VSIO=VS
             VDIO=VD
-!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
+!!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
 !/DEBUGSRC          IF (IX == DEBUG_NODE) THEN
 !/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
 !/DEBUGSRC            WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
@@ -1085,7 +1084,7 @@
 !          IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'AFTER', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
 !          ENDIF
-!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL) 
+!!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL) 
 !/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
 !/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
 !/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
@@ -1492,19 +1491,21 @@
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, TRNX, TRNY,  &
 !/REF1                        BERG, DTG, IX, IY,  VREF )
-!/REF1! Treatment specific to unstructured grids: Dirichlet boundary condition
-!/REF1! the energies in directions from shore are set to the reflected value
 !/REF1          IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN 
+!AR: this can be further simplified let's do some simple tests 1st ...
 !/REF1            IF (IOBP(IX).EQ.0) THEN 
 !/REF1              DO IK=1, NK 
 !/REF1                DO ITH=1, NTH
 !/REF1                  IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
-!/REF1                  END DO
-!/REF1                END DO 
-!/REF1              END IF
+!/REF1                END DO
+!/REF1              END DO 
+!/REF1            ELSE 
+!/REF1              IF (IOBDP(IX) .EQ. -1) THEN
+!/REF1                SPEC(:) = SPEC(:) + DTG * VREF(:)
+!/REF1              ENDIF
+!/REF1            ENDIF
 !/REF1          ELSE
-!/REF1! If not, we have a Neuman boundary condition with the source term feeding energy
-!/REF1            SPEC(:) = SPEC(:)+DTG*VREF(:) 
+!/REF1            SPEC(:) = SPEC(:) + DTG * VREF(:) 
 !/REF1            END IF
 !/REF1          END IF
 !

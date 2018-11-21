@@ -90,20 +90,24 @@
   opt="-Zp8 -tpp7 $opt"
   opt="-p -pg -g $opt"
 
-
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=ifort
-    opt="$MPI_LIBS $opt"
+    comp=mpiifort
+    which mpiifort 1> /dev/null 2> /dev/null
+    OK=$?
+    if [ $OK != 0 ]
+    then
+      comp='ifort -lmpi'
+    fi
+#   opt="-O3 -o $prog"
   else
     comp=ifort
   fi
-
   # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
-    opt="$opt -qopenmp"
+    opt="$opt -openmp"
   fi
 
   # oasis coupler archive

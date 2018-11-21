@@ -864,28 +864,28 @@
 !/MPI          WRITE(*,*) 'w3servmd MPI_ABORT, IEXIT=', IEXIT
 !/MPI          IF (PRESENT(UNIT)) THEN
 !/MPI            WRITE(*,*) 'w3servmd UNIT=', UNIT
-!!/MPI          ELSE
-!!/MPI            WRITE(*,*) 'UNIT missing'
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'w3servmd UNIT missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(MSG)) THEN
 !/MPI            WRITE(*,*) 'w3servmd MSG=', MSG
-!!/MPI          ELSE
-!!/MPI            WRITE(*,*) 'MSG missing'
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'w3servmd MSG missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(FILE)) THEN
 !/MPI            WRITE(*,*) 'w3servmd FILE=', FILE
-!!/MPI          ELSE
-!!/MPI            WRITE(*,*) 'FILE missing'
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'w3servmd FILE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(LINE)) THEN
 !/MPI            WRITE(*,*) 'w3servmd LINE=', LINE
-!!/MPI          ELSE
-!!/MPI            WRITE(*,*) 'LINE missing'
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'w3servmd LINE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(COMM)) THEN
 !/MPI            WRITE(*,*) 'w3servmd COMM=', COMM
-!!/MPI          ELSE
-!!/MPI            WRITE(*,*) 'COMM missing'
+!/MPI          ELSE
+!/MPI            WRITE(*,*) 'w3servmd COMM missing'
 !/MPI          END IF
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF

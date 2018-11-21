@@ -2460,10 +2460,9 @@ END SUBROUTINE
 !/PDLIB      IF (LPDLIB) THEN
 !/PDLIB      DO IP = 1, NSEAL
 !/PDLIB        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
-!/PDLIB        IOBP(IP) = 1
 !/PDLIB        DO I = 1, PDLIB_CCON(IP)
-!/PDLIB          IE = PDLIB_IE_CELL2(I,IP)
-!/PDLIB          IF (ANY(IOBDP(INE(:,IE)) .EQ. 0)) THEN
+!/PDLIB          IE = PDLIB_IE_CELL2(IP,I)
+!/PDLIB          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
 !/PDLIB             IOBDP(IP) = -1
 !/PDLIB            CYCLE
 !/PDLIB          ENDIF
@@ -2597,15 +2596,15 @@ END SUBROUTINE
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 2'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
       ITMP = MAPSTA(1,:)
-      CALL SET_IOBP (ITMP, IOBP) 
+      CALL SET_IOBP(ITMP, IOBP) 
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 3'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Defines directions pointing into land or sea 
 ! 
-      IOBPD(:,:)=0
-      IOBPA(:)=0
+      IOBPD(:,:) = 0
+      IOBPA(:) = 0
 !
       DO IP=1,NX 
         IF ((MAPSTA(1,IP).EQ.2).AND.(IOBP(IP).EQ.0)) IOBPA(IP)=1
@@ -2665,9 +2664,7 @@ END SUBROUTINE
 !/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
 !/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
       DO IP = 1, NX 
-!FA debug:  IOBPD(:,IP) = 0 to let the energy in the boundary 
-!AR debug:  no this is wrong u have setup IOBDP = 0 and multiply in profsN2 wave energy by 0 making it vanish at the boundary ... we need to discuss!
-       IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
+        IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
       END DO
 !2do: recode for mpi 
 !        IF (LBCWA .OR. LBCSP) THEN

@@ -6,7 +6,7 @@ $ as a homogeneous field (first three only); seven input lines.
 $
    F F     Water levels
    F F     Currents
-   F F     Winds
+   T T     Winds
    F       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
@@ -126,7 +126,7 @@ $ 'STP' is mandatory stop string.
 $
 $   'LEV' 19680606 010000    1.0
 $   'CUR' 19680606 073125    2.0    25.
-$   'WND' 20020905 000000  8.    270.    0.0
+   'WND' 20020905 000000  30.    180.    0.0
    'STP'
 $
 $ -------------------------------------------------------------------- $

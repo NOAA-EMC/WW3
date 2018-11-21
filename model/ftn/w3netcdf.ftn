@@ -1558,7 +1558,6 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !
 
-      USE W3PARALL, only : Z_status, Z_status_rev
       USE W3WDATMD, ONLY : WLV
       USE W3GDATMD, ONLY : FTE, GTYPE, UNGTYPE, ZB, NSPEC
       USE W3ADATMD, ONLY : U10, CX, CY
@@ -1726,7 +1725,7 @@
       Status=0
       DO JSEA=1,NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-        IP=Z_status_rev(JSEA)
+        IP=JSEA
         IX=iplg(IP)
         ET = 0
         ETX = 0

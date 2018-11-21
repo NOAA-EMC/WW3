@@ -83,7 +83,7 @@
 #     No GRIB libraries for this one
 
   # linking options
-  libs=""
+  libs="-fsanitize=undefined -fsanitize=bool -fsanitize=bounds"
 # libs="-L/opt/local/lib -L$HOME/g2lib -lg2 -lw3 -lpng -ljasper"
   opt="-o $prog"
 
@@ -130,8 +130,8 @@
   fi
 
   # parmetis library 
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] 
-  then
+#  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] 
+#  then
     if [ "$pdlib_mod" = 'yes' ]
     then
       if [ -z "$(env | grep METIS_PATH)" ]
@@ -143,7 +143,7 @@
       echo "link with parmetis" 
       libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
     fi
-  fi
+#  fi
 
   opt="$opt $EXTRA_LINK_OPTIONS"
 

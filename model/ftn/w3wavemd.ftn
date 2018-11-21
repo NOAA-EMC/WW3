@@ -382,7 +382,7 @@
 !/PDLIB      USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
 !/PDLIB      USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
 !/PDLIB      USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
-!/PDLIB      USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM, Z_status, Z_status_rev, iplg_sea
+!/PDLIB      USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
 !/PDLIB      USE yowNodepool, only: npa, iplg
 !/
       USE W3SERVMD
@@ -883,20 +883,10 @@
 !/DEBUGRUN        CALL FLUSH(740+IAPROC)
 !/DEBUGRUN        STOP
 !/DEBUGRUN      ENDIF
-
-!/PDLIB        DO IP = 1, npa
-!/PDLIB          IP_glob=iplg(IP)
-!/PDLIB          IF (IOBPD(ITH,IP_glob) .EQ. 0) THEN
-!/PDLIB            if ( SUM(VA(:,ip)) .gt. 0.) write(*,*) ip, SUM(VA(:,ip))
-!/PDLIB            endif
-!/PDLIB         END DO
-
-!
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'IT0=', IT0, ' NT=', NT
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !
         DO IT=IT0, NT
-!
 !/TIMINGS         CALL PRINT_MY_TIME("Begin of IT loop")
 !/SETUP     CALL WAVE_SETUP_COMPUTATION
 ! copy old values 
@@ -1008,6 +998,7 @@
 !/DEBUGDCXDX       WRITE(740+IAPROC,*) 'Before call to UG_GRADIENT for assigning DCXDX/DCXDY array'
               CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
               CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
+              CALL GET_INTERFACE 
               UGDTUPDATE=.TRUE.
               CFLXYMAX = 0.
             END IF
@@ -1051,7 +1042,6 @@
 !        CALL FLUSH(740+IAPROC)
 !        STOP
 !      ENDIF
-
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 6'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -1565,6 +1555,7 @@
 !/T           CLOSE(995)
 !/T         END IF
 !/T       END IF
+
 !
 ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
 ! 3.6.1 Preparations
@@ -1605,7 +1596,7 @@
                   IY     = MAPSF(ISEA,2)
 
 !/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
-
+                  IF ( GTYPE .EQ. UNGTYPE .AND. IOBP(ISEA) .NE. 1) CYCLE
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                            DEPTH  = MAX ( DMIN , DW(ISEA) )
                            IF (LPDLIB) THEN
@@ -1706,19 +1697,19 @@
 !
 !/PDLIB       IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.3A'
-!/DEBUGRUN        WRITE(*,*)*, 'W3WAVE, step 6.12.3A'
+!/DEBUGRUN        WRITE(*,*), 'W3WAVE, step 6.12.3A'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !/PDLIB         CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT (FACX, FACX, DTG, VGX, VGY)
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.4A'
-!/DEBUGRUN        WRITE(*,*)*, 'W3WAVE, step 6.12.4A'
+!/DEBUGRUN        WRITE(*,*), 'W3WAVE, step 6.12.4A'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !/PDLIB       ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN 
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.3B'
-!/DEBUGRUN        WRITE(*,*)*, 'W3WAVE, step 6.12.3B'
+!/DEBUGRUN        WRITE(*,*), 'W3WAVE, step 6.12.3B'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !/PDLIB         CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(FACX, FACX, DTG, VGX, VGY)
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.4B'
-!/DEBUGRUN        WRITE(*,*)*, 'W3WAVE, step 6.12.4B'
+!/DEBUGRUN        WRITE(*,*), 'W3WAVE, step 6.12.4B'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !/PDLIB       ENDIF
         ELSE
@@ -1735,6 +1726,7 @@
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.14'
 !/DEBUGRUN        FLUSH(740+IAPROC)
+
             IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
 !/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
@@ -1840,7 +1832,7 @@
 !/ARC           ENDIF 
 !/ARC
 !/ARC  !Li    Work out boundary PE (ISPEC) and JSEA numbers for IX 
-!
+
           IF( ARCTIC ) THEN
 !/DIST            ISPEC = MOD( IX-1, NAPROC ) 
 !/DIST             JSEA = 1 + (IX - ISPEC - 1)/NAPROC
@@ -1865,6 +1857,7 @@
 !
           END IF
         END IF
+
 !/PDLIB!/DEBUGCOH        CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After spatial advection")
 !/TIMINGS         CALL PRINT_MY_TIME("After spatial advection")
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.16'
@@ -1882,14 +1875,14 @@
 !
 !/DEBUGRUN                WRITE(740+IAPROC,*) ' ITLOC=', ITLOC
 !/DEBUGRUN                WRITE(740+IAPROC,*) ' 2: Before call to W3KTP1 / W3KTP2 / W3KTP3'
-                DO JSEA=1, NSEAL
+                DO JSEA = 1, NSEAL
+
                   CALL INIT_GET_ISEA(ISEA, JSEA)
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
-
 !/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
-
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
+                  IF ( GTYPE .EQ. UNGTYPE .AND. IOBP(ISEA) .NE. 1) CYCLE
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                            IF (LPDLIB) THEN
                              IXrel = JSEA
@@ -1942,7 +1935,7 @@
 !/DEBUGRUN        FLUSH(740+IAPROC)
 ! 
 ! 3.6 End propapgation  = = = = = = = = = = = = = = = = = = = = = = = =
-!
+
 ! 3.7 Calculate and integrate source terms.
 !
   370     CONTINUE

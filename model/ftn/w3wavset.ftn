@@ -422,7 +422,6 @@
       USE W3ODATMD, only : IAPROC
       USE W3GDATMD, ONLY : NSEAL, MAPSTA
       USE W3ADATMD, ONLY: DW
-      USE W3PARALL, only : Z_status, Z_status_rev
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -454,7 +453,7 @@
       SYY_p=0
       DWNX=0
       DO JSEA=1,NSEAL
-        IP=Z_status_rev(JSEA)
+        IP = JSEA ! We remove the Z_status because now NX = NSEA
         IX=iplg(IP)
         ISEA=MAPFS(1,IX)
         IF (SXXmethod .eq. 1) THEN
@@ -1413,7 +1412,6 @@
       USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       USE W3PARALL, only: INIT_GET_ISEA
-      USE W3PARALL, only : Z_status, Z_status_rev
       use yowExchangeModule, only : PDLIB_exchange1Dreal
       IMPLICIT NONE
 !/

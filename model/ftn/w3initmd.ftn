@@ -681,7 +681,9 @@
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 11")
 
 !/DIST        IF ( NSEA .LT. NAPROC ) GOTO 820
-!/DIST        IF ( NSPEC .LT. NAPROC ) GOTO 821
+!/DIST        IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+!/DIST          IF ( NSPEC .LT. NAPROC ) GOTO 821
+!/DIST        END IF
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'Before PDLIB related allocations'
 !/DEBUGINIT     FLUSH(740+IAPROC)
 !/PDLIB     IF ((IAPROC .LE. NAPROC).and.(GTYPE .eq. UNGTYPE)) THEN
@@ -748,6 +750,7 @@
       IAPPRO = 1
       ALLOCATE ( NT(NSPEC) )
       NT     = NTTOT
+!/DIST    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
 !
 !/DIST      DO
 !
@@ -805,6 +808,7 @@
 !/DIST          END IF
 !
 !/DIST        END DO
+!/DIST      END IF
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 14")
 !/TIMINGS       CALL PRINT_MY_TIME("After Case 14")
@@ -824,9 +828,11 @@
 !
 ! 2.c.9 Test if any spectral points are left out
 !
+!/DIST    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
 !/DIST      DO ISP=1, NSPEC
 !/DIST        IF ( IAPPRO(ISP) .EQ. -1. ) GOTO 829
 !/DIST        END DO
+!/DIST    END IF
 !
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4'
 !/DEBUGINIT     FLUSH(740+IAPROC)
@@ -929,10 +935,10 @@
 !/PDLIB!/DEBUGINIT     WRITE(740+IAPROC,*) 'FSFREQSHIFT=', FSFREQSHIFT
 !/PDLIB!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before FLCTH=', FLCTH, 'FLCK=', FLCK
 !/PDLIB        IF (FSTOTALIMP .and. FSREFRACTION) THEN
-!/PDLIB          FLCTH=.FALSE.
+!/PDLIB          FLCTH = .FALSE.
 !/PDLIB        END IF
 !/PDLIB        IF (FSTOTALIMP .and. FSFREQSHIFT) THEN
-!/PDLIB          FLCK=.FALSE.
+!/PDLIB          FLCK = .FALSE.
 !/PDLIB        END IF
 !/PDLIB!/DEBUGINIT     WRITE(740+IAPROC,*) ' After FLCTH=', FLCTH, 'FLCK=', FLCK
 !
@@ -1324,7 +1330,7 @@
 ! Boundary set up for the directions
 !
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3")
-!/PDLIB         CALL VA_SETUP_IOBPD
+!!/PDLIB         CALL VA_SETUP_IOBPD
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4")
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.10'
 !/DEBUGINIT     FLUSH(740+IAPROC)
@@ -1572,6 +1578,8 @@
 !
       USE W3GDATMD, ONLY: NSEA
       USE W3ADATMD, ONLY: NSEALM
+      USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+      USE CONSTANTS, ONLY: LPDLIB
 !/MPI      USE W3GDATMD, ONLY: NSPEC
 !/MPI      USE W3WDATMD, ONLY: VA
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC,         &
@@ -1640,6 +1648,7 @@
 ! 2.  Set up scatters and gathers for W3WAVE ------------------------- /
 !     ( persistent communication calls )
 !
+!/DIST   IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
 !/MPI      NSPLOC = 0
 !/MPI      DO ISP=1, NSPEC
 !/MPI        IF ( IAPPRO(ISP) .EQ. IAPROC ) NSPLOC = NSPLOC + 1
@@ -1741,6 +1750,7 @@
 !/MPI      ISPLOC = 0
 !/MPI      IBFLOC = 0
 !
+!/DIST   END IF
       RETURN
 !
 ! Format statements

@@ -62,7 +62,6 @@
 !/ ------------------------------------------------------------------- /
 !
 !/PDLIB      INTEGER :: PDLIB_NSEAL, PDLIB_NSEALM
-!/PDLIB      INTEGER, ALLOCATABLE :: Z_status(:), Z_status_rev(:), iplg_sea(:)
 !/PDLIB      INTEGER, ALLOCATABLE :: JX_TO_JSEA(:), ISEA_TO_JSEA(:)
 
       REAL, ALLOCATABLE    :: AC_tot(:,:)
@@ -1299,7 +1298,7 @@
 !/PDLIB      ENDIF
       ENDIF
 !/
-!/ End of JACOBI_INIT ------------------------------------------------ /
+!/ End of INIT_GET_ISEA ---------------------------------------------- /
 !/
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
@@ -1370,6 +1369,7 @@
       USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
       USE W3GDATMD, ONLY: GTYPE, UNGTYPE
       USE CONSTANTS, ONLY : LPDLIB
+!/PDLIB      USE YOWNODEPOOL, ONLY: iplg
       IMPLICIT NONE
       INTEGER, intent(in) :: JSEA
       INTEGER, intent(out) :: ISEA
@@ -1378,13 +1378,13 @@
 !/DIST            ISEA         = IAPROC + (JSEA-1)*NAPROC
 !/DIST          ELSE
 !/PDLIB           IF (GTYPE .eq. UNGTYPE) THEN
-!/PDLIB             ISEA         = iplg_sea(JSEA)
+!/PDLIB             ISEA         = iplg(JSEA)
 !/PDLIB           ELSE
 !/PDLIB             ISEA         = IAPROC + (JSEA-1)*NAPROC
 !/PDLIB           ENDIF
 !/DIST          ENDIF
 !/
-!/ End of JACOBI_INIT ------------------------------------------------ /
+!/ End of INIT_GET_ISEA ------------------------------------------------ /
 !/
       END SUBROUTINE
 !**********************************************************************
