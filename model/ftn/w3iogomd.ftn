@@ -1921,7 +1921,7 @@
               ENDIF
             UBA(JSEA) = UBR(JSEA)
             CGE(JSEA) = DWAT*GRAV*ETF(JSEA)
-            IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
+            IF ( ET02(JSEA) .GT. 1.E-7  .AND.  ET(JSEA) .GT. 0 ) THEN
               T02(JSEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) )
               T01(JSEA) = TPI * ET(JSEA) / ET1(JSEA)
             ELSE

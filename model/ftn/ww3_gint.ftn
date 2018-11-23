@@ -1117,11 +1117,17 @@
         USSY     = UNDEF
         PRMS     = UNDEF
         TPMS     = UNDEF
-        US3D     = UNDEF
-        P2SMS    = UNDEF
+        IF ( US3DF(1).GT.0 ) THEN
+             US3D     = UNDEF
+        ENDIF
+        IF ( P2MSF(1).GT.0) THEN
+             P2SMS    = UNDEF
+        ENDIF
         TAUICE   = UNDEF
         PHICE    = UNDEF
-        USSP     = UNDEF
+        IF ( USSPF(1).GT.0 ) THEN
+             USSP     = UNDEF
+        ENDIF
 !
 ! Group 7 variables
 !

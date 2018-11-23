@@ -1596,7 +1596,10 @@
                   IY     = MAPSF(ISEA,2)
 
 !/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
-                  IF ( GTYPE .EQ. UNGTYPE .AND. IOBP(ISEA) .NE. 1) CYCLE
+                  IF ( GTYPE .EQ. UNGTYPE ) THEN
+                    IF (IOBP(ISEA) .NE. 1) CYCLE
+                  ENDIF
+
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                            DEPTH  = MAX ( DMIN , DW(ISEA) )
                            IF (LPDLIB) THEN
@@ -1882,7 +1885,11 @@
                   IY     = MAPSF(ISEA,2)
 !/DEBUGRUN                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
-                  IF ( GTYPE .EQ. UNGTYPE .AND. IOBP(ISEA) .NE. 1) CYCLE
+
+                  IF ( GTYPE .EQ. UNGTYPE ) THEN 
+                    IF (IOBP(ISEA) .NE. 1) CYCLE
+                  ENDIF
+
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                            IF (LPDLIB) THEN
                              IXrel = JSEA
