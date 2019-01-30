@@ -25,7 +25,7 @@
 
   ! bound structure
   TYPE NML_BOUND_T
-    CHARACTER(15)               :: MODE
+    CHARACTER(5)                :: MODE
     INTEGER                     :: INTERP
     INTEGER                     :: VERBOSE
     CHARACTER(128)              :: FILE

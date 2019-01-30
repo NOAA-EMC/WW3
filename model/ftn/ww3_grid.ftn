@@ -2511,18 +2511,18 @@
         PMNAME = "Watershedding plus wind cut-off"
       ELSE IF( PTMETH .EQ. 3 ) THEN
         PMNAME = "Watershedding only"
-        WSCUT = 0.0	! We don't want to classify by ws frac
+        WSCUT = 0.0 ! We don't want to classify by ws frac
         PMNAM2 = "WSC set to 0.0"
       ELSE IF( PTMETH .EQ. 4 ) THEN
         PMNAME = "Wind speed cut-off only"
         PMNAM2 = "WSC set to 0.0, NOSW set to 1"
-        WSCUT = 0.0	! We don't want to classify by ws frac
-        NOSWLL = 1	! Only ever one swell
+        WSCUT = 0.0 ! We don't want to classify by ws frac
+        NOSWLL = 1  ! Only ever one swell
       ELSE IF( PTMETH .EQ. 5 ) THEN
         WRITE(PMNAME, '("2-Band hi/low cutoff at ", F4.2,"Hz")') PTFCUT
         PMNAM2 = "WSC set to 0.0, NOSW set to 1"
-        WSCUT = 0.0	! We don't want to classify by ws frac
-        NOSWLL = 1	! Only ever one swell
+        WSCUT = 0.0 ! We don't want to classify by ws frac
+        NOSWLL = 1  ! Only ever one swell
       ELSE
         WRITE( NDSE, * )                                                &
           "*** Error - unknown partitioing method (PTM)! ***"
@@ -3461,7 +3461,7 @@
 !/SMC         TNAME = TRIM(NML_SMC%MCELS%FILENAME)
 !/SMC       ELSE  
 !/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/SMC       END IF
 !/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3493,7 +3493,7 @@
 !/SMC         TNAME = TRIM(NML_SMC%ISIDE%FILENAME)
 !/SMC       ELSE  
 !/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/SMC       END IF
 !/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3524,7 +3524,7 @@
 !/SMC         TNAME = TRIM(NML_SMC%JSIDE%FILENAME)
 !/SMC       ELSE  
 !/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/SMC       END IF
 !/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3556,7 +3556,7 @@
 !/SMC         TNAME = TRIM(NML_SMC%SUBTR%FILENAME)
 !/SMC       ELSE  
 !/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/SMC       END IF
 !/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3583,7 +3583,7 @@
 !/SMC         TNAME = TRIM(NML_SMC%BUNDY%FILENAME)
 !/SMC       ELSE  
 !/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/SMC       END IF
 !/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3608,7 +3608,7 @@
 !/ARC         TNAME = TRIM(NML_SMC%MBARC%FILENAME)
 !/ARC       ELSE  
 !/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/ARC       END IF
 !/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3636,7 +3636,7 @@
 !/ARC         TNAME = TRIM(NML_SMC%AISID%FILENAME)
 !/ARC       ELSE  
 !/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/ARC       END IF
 !/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3670,7 +3670,7 @@
 !/ARC         TNAME = TRIM(NML_SMC%AJSID%FILENAME)
 !/ARC       ELSE  
 !/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
 !/ARC       END IF
 !/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
@@ -3933,21 +3933,21 @@
                             .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
 !/DEBUGGRID               nbCase5=nbCase5 + 1
                           TMPSTA(IY,IX) = NSTAT
-		        END IF
+                        END IF
                       END IF
                       IF (IY.LT.NY) THEN
                         IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
                             .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
 !/DEBUGGRID  	          nbCase6=nbCase6 + 1
                           TMPSTA(IY,IX) = NSTAT
-		        END IF
+                        END IF
                       END IF
                       IF (IY.GT.1) THEN
                         IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
                            .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
 !/DEBUGGRID               nbCase7=nbCase7 + 1
                           TMPSTA(IY,IX) = NSTAT
-			END IF
+                        END IF
                       END IF
                       IF (TMPSTA(IY,IX).EQ.NSTAT) NBT = NBT + 1
                     END IF
@@ -5627,7 +5627,7 @@
   961 FORMAT ( '       Ice concentration cut-offs  :',F8.2,F6.2)
 !/MGG  962 FORMAT  ( '       Moving grid GSE cor. power  :',F8.2)
 !/SCRIP  963 FORMAT( ' Grid offset for multi-grid w/SCRIP  : ',E11.3)
-  1972 FORMAT( '       Compression of track output  : ',L3)
+ 1972 FORMAT ( '       Compression of track output  : ',L3)
 !/SEED  964 FORMAT ( '       Xseed in seeding algorithm  :',F8.2)
   965 FORMAT (/'    Dynamic source term integration scheme :'/        &
                '       Xp                      (-) :',F9.3/           &

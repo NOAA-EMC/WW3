@@ -6,10 +6,18 @@ then
   echo '  [ERROR] need ww3_grid input filename in argument [ww3_grid.inp]'
   exit 1
 fi
-inp=$1
-cur_dir=$(dirname $1)
-cd $cur_dir
-cur_dir="../$(basename $cur_dir)"
+
+# link to temporary inp with regtest format
+inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
+if [ ! -z $(echo $inp | awk -F'ww3_grid.inp.' '{print $2}') ] ; then
+ new_inp=$(echo $(echo $inp | awk -F'ww3_grid.inp.' '{print $1}')ww3_grid_$(echo $inp | awk -F'ww3_grid.inp.' '{print $2}').inp)
+ ln -sfn $inp $new_inp
+ old_inp=$inp
+ inp=$new_inp
+fi
+
+cd $( dirname $inp)
+cur_dir="../$(basename $(dirname $inp))"
 
 
 version=$(bash --version | awk -F' ' '{print $4}')
@@ -306,6 +314,7 @@ then
   # smc
   if [ $(echo ${lines[$il]} | awk -F' ' '{print NF}') -eq 5 ] && [ ! -z "$(echo ${lines[$il]} | awk -F' ' '{print $4}' | grep '(')" ]
   then
+    SMC=1
     # smc mcels
     mcels_idf="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
     mcels_idla="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
@@ -464,7 +473,7 @@ then
 
   # not smc
   else
-
+    SMC=0
     # obst
     obst_idf=70; obst_sf=1.; obst_idla=1; obst_idfm=1; obst_format='(....)'; obst_from='NAME'; obst_filename='unset';
     if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]
@@ -628,7 +637,7 @@ then
   then
     refmap=$(grep REFMAP $forinamelist | awk -F'REFMAP' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}')
     echo 'refmap : ' $refmap
-    if [ $refmap -eq 2 ]
+    if [ $(echo "$refmap == 2" | bc -l) -eq 1 ]
     then
       il=$(($il+1))
       slope_idf="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
@@ -766,78 +775,75 @@ fi
 
 # sed
 sed_idf=90; sed_sf=1.; sed_idla=1; sed_idfm=1; sed_format='(....)'; sed_from='NAME'; sed_filename='unset';
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]
+if [ ! -z "$(grep 'SEDMAPD50' $forinamelist)" ]
 then
-  if [ ! -z "$(grep 'SEDMAPD50' $forinamelist)" ]
+  sedmapd50=$(grep SEDMAPD50 $forinamelist | awk -F'SEDMAPD50' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}')
+  echo 'sedmapd50 : ' $sedmapd50
+  if [ $sedmapd50 ]
   then
-    sedmapd50=$(grep SEDMAPD50 $forinamelist | awk -F'SEDMAPD50' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}')
-    echo 'sedmapd50 : ' $sedmapd50
-    if [ $sedmapd50 ]
+    il=$(($il+1))
+    sed_idf="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_sf="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_idla="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_idfm="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_format="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_from="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
+    sed_filename="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo 'sed : ' $sed_idf $sed_sf $sed_idla $sed_idfm $sed_format $sed_from $sed_filename
+    if [ "$sed_from" == 'UNIT' ]
     then
-      il=$(($il+1))
-      sed_idf="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_sf="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_idla="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_idfm="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_format="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_from="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
-      sed_filename="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
-      echo 'sed : ' $sed_idf $sed_sf $sed_idla $sed_idfm $sed_format $sed_from $sed_filename
-      if [ "$sed_from" == 'UNIT' ]
-      then
-        forised=$cur_dir/${grdname}.sed
-        fsed=$cur_dir/${grdname}.sed.new
-        sed_filename=$forised
-        sed_from='NAME'
-        rm -f $fsed
-        num_total=0
-        iread=0
-        j=1
-        # unfold the array
-        while [ $num_total -lt $num_max ];  do
-          il=$(($il+1))
-          curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
-          line_elem=$(echo $curline} | awk -F' ' '{print NF}')  
-          for n_elem in $(seq 1 $line_elem); do
-            curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
-            if [ ! -z "$(echo $curelem | grep '*')" ]; then    
-              num_times=$(echo $curelem | awk -F'*' '{print $1}')
-              val_times=$(echo $curelem | awk -F'*' '{print $2}')
-            else
-              num_times=1
-              val_times=$curelem
-            fi
-            num_total=$(($num_total + $num_times))
-            for t in $(seq 1 $num_times); do
-              iread=$(($iread+1))
-              sed2d[$iread,$j]="$val_times"
-#              echo -n "$val_times " >> $fsed
-              if [ $iread -ge $nx ]; then
-                iread=0
-                j=$(($j+1))
-#                echo '' >> $fsed
-              fi
-            done
-          done
-          echo "${lines[$il]}" >> $fsed
-        done
-        # save file
-        if [ -f $forised ]
-        then
-          if [ -z "$(diff $forised $fsed)" ]
-          then
-            echo $forised ' and ' $fsed 'are same.'
-            echo 'delete ' $fsed
-            rm $fsed
+      forised=$cur_dir/${grdname}.sed
+      fsed=$cur_dir/${grdname}.sed.new
+      sed_filename=$forised
+      sed_from='NAME'
+      rm -f $fsed
+      num_total=0
+      iread=0
+      j=1
+      # unfold the array
+      while [ $num_total -lt $num_max ];  do
+        il=$(($il+1))
+        curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
+        line_elem=$(echo $curline} | awk -F' ' '{print NF}')  
+        for n_elem in $(seq 1 $line_elem); do
+          curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
+          if [ ! -z "$(echo $curelem | grep '*')" ]; then    
+            num_times=$(echo $curelem | awk -F'*' '{print $1}')
+            val_times=$(echo $curelem | awk -F'*' '{print $2}')
           else
-            echo 'diff between :' $forised ' and new file : ' $fsed
-            echo 'inp2nml conversion stopped'
-            exit 1
+            num_times=1
+            val_times=$curelem
           fi
+          num_total=$(($num_total + $num_times))
+          for t in $(seq 1 $num_times); do
+            iread=$(($iread+1))
+            sed2d[$iread,$j]="$val_times"
+#            echo -n "$val_times " >> $fsed
+            if [ $iread -ge $nx ]; then
+              iread=0
+              j=$(($j+1))
+#              echo '' >> $fsed
+            fi
+          done
+        done
+        echo "${lines[$il]}" >> $fsed
+      done
+      # save file
+      if [ -f $forised ]
+      then
+        if [ -z "$(diff $forised $fsed)" ]
+        then
+          echo $forised ' and ' $fsed 'are same.'
+          echo 'delete ' $fsed
+          rm $fsed
         else
-          echo 'mv '$fsed ' to ' $forised
-          mv $fsed $forised
+          echo 'diff between :' $forised ' and new file : ' $fsed
+          echo 'inp2nml conversion stopped'
+          exit 1
         fi
+      else
+        echo 'mv '$fsed ' to ' $forised
+        mv $fsed $forised
       fi
     fi
   fi
@@ -1393,6 +1399,7 @@ fi # SMC
 
 
 if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
+  if [ $SMC == 0 ]; then
 
 # depth namelist
 cat >> $nmlfile << EOF
@@ -1445,11 +1452,13 @@ EOF
   if [ "$depth_format" != '(....)' ];  then  echo "  DEPTH%FORMAT    =  '$depth_format'" >> $nmlfile; fi
 #  if [ "$depth_from" != 'NAME' ];      then  echo "  DEPTH%FROM      =  '$depth_from'" >> $nmlfile; fi
 
+  fi # SMC
 fi # RECT or CURV
 
 
 if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
-  if [ "$mask_filename" != 'unset' ]; then
+  if [ $SMC == 0 ]; then
+    if [ "$mask_filename" != 'unset' ]; then
 # mask namelist
 cat >> $nmlfile << EOF
 /
@@ -1505,13 +1514,15 @@ EOF
     if [ "$mask_format" != '(....)' ];  then  echo "  MASK%FORMAT    =  '$mask_format'" >> $nmlfile; fi
   fi
 #  if [ "$mask_from" == 'PART' ];      then  echo "  MASK%FROM      =  '$mask_from'" >> $nmlfile; fi
-  fi
+    fi # mask
+  fi # SMC
 fi # RECT or CURV
 
 
 if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
-  if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]; then
-    if [ $flagtr -gt 0 ]; then
+  if [ $SMC == 0 ]; then
+    if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]; then
+      if [ $flagtr -gt 0 ]; then
 
 # obst namelist
 cat >> $nmlfile << EOF
@@ -1575,13 +1586,14 @@ EOF
       if [ "$obst_format" != '(....)' ];  then  echo "  OBST%FORMAT    =  '$obst_format'" >> $nmlfile; fi
 #      if [ "$obst_from" != 'NAME' ];      then  echo "  OBST%FROM      =  '$obst_from'" >> $nmlfile; fi
 
-    fi # flagtr
-  fi # FLAGTR
+      fi # flagtr
+    fi # FLAGTR
+  fi # SMC
 fi # RECT or CURV
 
 if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
   if [ ! -z "$(grep 'REFMAP' $forinamelist)" ]; then
-    if [ $refmap -eq 2 ]; then
+    if [ $(echo "$refmap == 2" | bc -l) -eq 1 ]; then
 
 # slope namelist
 cat >> $nmlfile << EOF
@@ -1638,9 +1650,8 @@ EOF
   fi # REFMAP
 fi # RECT or CURV
 
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
-  if [ ! -z "$(grep 'SEDMAPD50' $forinamelist)" ]; then
-    if [ $sedmapd50 ]; then
+if [ ! -z "$(grep 'SEDMAPD50' $forinamelist)" ]; then
+  if [ $sedmapd50 ]; then
 
 # sed namelist
 cat >> $nmlfile << EOF
@@ -1648,7 +1659,6 @@ cat >> $nmlfile << EOF
 
 ! -------------------------------------------------------------------- !
 ! Define the sedimentary bottom map via SED_NML namelist
-! - only for RECT and CURV grids -
 !
 ! * only used if &SBT4 SEDMAPD50 = T defined in param.nml
 !
@@ -1693,9 +1703,8 @@ EOF
       if [ "$sed_format" != '(....)' ];  then  echo "  SED%FORMAT    =  '$sed_format'" >> $nmlfile; fi
 #      if [ "$sed_from" != 'NAME' ];      then  echo "  SED%FROM      =  '$sed_from'" >> $nmlfile; fi
 
-    fi # sedmap50
-  fi # SEDMAPD50
-fi # RECT or CURV
+  fi # sedmap50
+fi # SEDMAPD50
 
 
 if [ "$mask_filename" == 'unset' ] && [ $n_inpt -gt 0 ]; then 
@@ -1914,6 +1923,9 @@ cat >> $nmlfile << EOF
 EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
+if [ ! -z $(echo $old_inp | awk -F'ww3_grid.inp.' '{print $2}') ] ; then
+  unlink $new_inp
+fi
 #------------------------------
 
 

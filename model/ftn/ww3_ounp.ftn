@@ -2311,11 +2311,11 @@
               IRET=NF90_PUT_VAR(NCID,VARID(6),HSIG,(/ J1,IOUT /))
               IRET=NF90_PUT_VAR(NCID,VARID(7),WLEN,(/ J1,IOUT /))
               IRET=NF90_PUT_VAR(NCID,VARID(8),TMEAN,(/ J1,IOUT /))
-              IRET=NF90_PUT_VAR(NCID,VARID(9),THMEAN,(/ J1,IOUT /))
-              IRET=NF90_PUT_VAR(NCID,VARID(10),THSPRD,(/ J1,IOUT /))
+              IRET=NF90_PUT_VAR(NCID,VARID(9),THP,(/ J1,IOUT /))
+              IRET=NF90_PUT_VAR(NCID,VARID(10),SPP,(/ J1,IOUT /))
               IRET=NF90_PUT_VAR(NCID,VARID(11),FP*TPIINV,(/ J1,IOUT /))
-              IRET=NF90_PUT_VAR(NCID,VARID(12),THP,(/ J1,IOUT /))
-              IRET=NF90_PUT_VAR(NCID,VARID(13),SPP,(/ J1,IOUT /))
+              IRET=NF90_PUT_VAR(NCID,VARID(12),THMEAN,(/ J1,IOUT /))
+              IRET=NF90_PUT_VAR(NCID,VARID(13),THSPRD,(/ J1,IOUT /))
 
 !
 !  Performs subtype 3
@@ -2946,9 +2946,9 @@
 !alpha
          IRET=NF90_DEF_VAR(NCID, 'alpha', NF90_FLOAT, (/ DIMID(4),DIMID(TWO),DIMID(ONE) /), VARID(15))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(15), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','alpha')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','alpha')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','alpha')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','spectral intensity coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','spectral_intensity_coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','spectral_intensity_coefficient')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'units','-')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'add_offset',0.)
@@ -3317,11 +3317,11 @@
         IRET=NF90_PUT_ATT(NCID,VARID(13),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'associates','time station npart')
 !L
-         IRET=NF90_DEF_VAR(NCID, 'lm', NF90_FLOAT, (/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(14))
+         IRET=NF90_DEF_VAR(NCID, 'lp', NF90_FLOAT, (/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(14))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(14), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','mean wave length')
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','mean_wave_length')
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','mean_wave_length')
+        IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','peak wave length')
+        IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','peak_wave_length')
+        IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','peak_wave_length')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'units','m')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(14),'add_offset',0.)
@@ -3330,26 +3330,32 @@
         IRET=NF90_PUT_ATT(NCID,VARID(14),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(14),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'associates','time station npart')
-!Tr
-         IRET=NF90_DEF_VAR(NCID, 'tr', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(15))
+!th1m
+         IRET=NF90_DEF_VAR(NCID, 'th1m', NF90_FLOAT, (/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(15))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(15), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'units','-')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','mean wave direction from spectral moments')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','mean_wave_direction')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','mean_wave_direction')
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'units','degree')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'add_offset',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_max',100.)
+        IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_max',360.)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'associates','time station npart')
-!th1m
-         IRET=NF90_DEF_VAR(NCID, 'th1m', NF90_FLOAT, (/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(16))
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(15),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(15),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
+!sth1m
+         IRET=NF90_DEF_VAR(NCID, 'sth1m', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(16))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(16), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','mean wave direction from spectral moments')
-        IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','mean_wave_direction')
-        IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','mean_wave_direction')
+        IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','directional spread from spectral moments')
+        IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','mean_wave_spreading')
+        IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','mean_wave_spreading')
         IRET=NF90_PUT_ATT(NCID,VARID(16),'units','degree')
         IRET=NF90_PUT_ATT(NCID,VARID(16),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(16),'add_offset',0.)
@@ -3358,27 +3364,20 @@
         IRET=NF90_PUT_ATT(NCID,VARID(16),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(16),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(16),'associates','time station npart')
-!/RTD        IF ( FLAGUNR ) THEN
-!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(16),'direction_reference','True North')
-!/RTD        ELSE
-!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(16),'direction_reference','Rotated Pole Grid North')
-!/RTD        END IF
-
-!sth1m
-         IRET=NF90_DEF_VAR(NCID, 'sth1m', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(17))
+!ws
+         IRET=NF90_DEF_VAR(NCID, 'ws', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(17))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(17), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(17),'long_name','directional spread from spectral moments')
-        IRET=NF90_PUT_ATT(NCID,VARID(17),'standard_name','mean_wave_spreading')
-        IRET=NF90_PUT_ATT(NCID,VARID(17),'globwave_name','mean_wave_spreading')
-        IRET=NF90_PUT_ATT(NCID,VARID(17),'units','degree')
+        IRET=NF90_PUT_ATT(NCID,VARID(17),'long_name','wind sea fraction')
+        IRET=NF90_PUT_ATT(NCID,VARID(17),'standard_name','wind_sea_fraction')
+        IRET=NF90_PUT_ATT(NCID,VARID(17),'globwave_name','wind_sea_fraction')
+        IRET=NF90_PUT_ATT(NCID,VARID(17),'units','%')
         IRET=NF90_PUT_ATT(NCID,VARID(17),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(17),'add_offset',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(17),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(17),'valid_max',360.)
+        IRET=NF90_PUT_ATT(NCID,VARID(17),'valid_max',100.)
         IRET=NF90_PUT_ATT(NCID,VARID(17),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(17),'content','TXY')
         IRET=NF90_PUT_ATT(NCID,VARID(17),'associates','time station npart')
-
 !TM10
          IRET=nf90_def_var(ncid, 'tm10', NF90_FLOAT,(/dimid(4),dimid(2),dimid(1)/),varid(18))
 !/NC4        IF (NCTYPE.EQ.4) IRET=nf90_def_var_deflate(ncid, varid(18), 1, 1, deflate)
@@ -3570,10 +3569,10 @@
 !Tr
          IRET=NF90_DEF_VAR(NCID, 'tr', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(8))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','tr')
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'units','-')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','mean period normalised by the relative frequency')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','mean_period_normalised_by_the_relative_frequency')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','mean period normalised by the relative frequency')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'units','s')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(8),'add_offset',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_min',0.)
@@ -3726,9 +3725,9 @@
 !Cd
          IRET=NF90_DEF_VAR(NCID, 'cd', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(9))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(9), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'long_name','cd')
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','cd')
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','cd')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'long_name','drag coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','drag_coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','drag_coefficient')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'units','*1000')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'add_offset',0.)
@@ -3816,9 +3815,9 @@
 !Cd
          IRET=NF90_DEF_VAR(NCID, 'cd', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(9))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(9), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'long_name','cd')
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','cd')
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','cd')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'long_name','drag coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','drag_coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','drag_coefficient')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'units','*1000')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'add_offset',0.)
@@ -3830,9 +3829,9 @@
 !alpha
          IRET=NF90_DEF_VAR(NCID, 'alpha', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(10))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','alpha')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name','alpha')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','alpha')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','spectral intensity coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name','spectral_intensity_coefficient')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','spectral_intensity_coefficient')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'units','*100')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
@@ -3918,9 +3917,9 @@
 !cp/U
          IRET=NF90_DEF_VAR(NCID, 'cpu', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(10))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','cpu')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name','cpu')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','cpu')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','phase speed at peak frequency on friction velocity')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name','peak_wave_age')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','peak_wave_age')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'units','-')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
@@ -3932,9 +3931,9 @@
 !cm/U
          IRET=NF90_DEF_VAR(NCID, 'cmu', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(11))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(11), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','cmu')
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','cmu')
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','cmu')
+        IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','phase speed at mean frequency on friction velocity')
+        IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','mean_wave_age')
+        IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','mean_wave_age')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'units','-')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(11),'add_offset',0.)
@@ -4442,15 +4441,15 @@
 !Tini / Tinist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'tini', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(11))
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','tini')
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','tini')
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','tini')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','wind input source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','inverse_time_scales_wind_input_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','inverse_time_scales_wind_input_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(11),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'tinist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(11))
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','nondimensionalized using tini')
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','tinist')
-          IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','tinist')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','nondimensionalized using wind input source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','inverse_time_scales_wind_input_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','inverse_time_scales_wind_input_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(11),'units','-')
         END IF
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(11), 1, 1, DEFLATE)
@@ -4472,15 +4471,15 @@
 !Tnli / Tnlist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'tnli', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(12))
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'long_name','tnli')
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'standard_name','tnli')
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'globwave_name','tnli')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'long_name','nonlinear 4 wave source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'standard_name','inverse_time_scales_nonlinear_4_wave_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'globwave_name','inverse_time_scales_nonlinear_4_wave_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(12),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'tnlist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(12))
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'long_name','nondimensionalized using tnli')
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'standard_name','tnlist')
-          IRET=NF90_PUT_ATT(NCID,VARID(12),'globwave_name','tnlist')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'long_name','nondimensionalized using nonlinear 4 wave source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'standard_name','inverse_time_scales_nonlinear_4_wave_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'globwave_name','inverse_time_scales_nonlinear_4_wave_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(12),'units','-')
         END IF
 !/NC4       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(12), 1, 1, DEFLATE)
@@ -4502,15 +4501,15 @@
 !Tdsi / Tdsist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'tdsi', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(13))
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','tdsi')
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','tdsi')
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','tdsi')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','wave breaking source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','inverse_time_scales_wave_breaking_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','inverse_time_scales_wave_breaking_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(13),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'tdsist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(13))
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','nondimensionalized using tdsi')
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','tdsist')
-          IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','tdsist')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','nondimensionalized using wave breaking source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','inverse_time_scales_wave_breaking_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','inverse_time_scales_wave_breaking_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(13),'units','-')
         END IF
 !/NC4       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(13), 1, 1, DEFLATE)
@@ -4531,15 +4530,16 @@
 !Tbti / Tbtist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'tbti', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(14))
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','tbti')
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','tbti')
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','tbti')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','depth induced breaking source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','inverse_time_scales_depth_induced_breaking_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','inverse_time_scales_depth_induced_breaking_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(14),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'tbtist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(14))
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','nondimensionalized using tbti')
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','tbtist')
-          IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','tbtist')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','nondimensionalized using depth induced breaking source term &
+                                                        normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','inverse_time_scales_depth_induced_breaking_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','inverse_time_scales_depth_induced_breaking_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(14),'units','-')
         END IF
 !/NC4       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(14), 1, 1, DEFLATE)
@@ -4560,15 +4560,16 @@
 !Ticei / Ticeist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'ticei', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(15))
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','ticei')
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','ticei')
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','ticei')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','wave ice interactions source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','inverse_time_scales_wave_ice_interactions_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','inverse_time_scales_wave_ice_interactions_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(15),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'ticeist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(15))
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','nondimensionalized using ticei')
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','ticeist')
-          IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','ticeist')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','nondimensionalized using wave ice interactions source term &
+                                                        normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','inverse_time_scales_wave_ice_interactions_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','inverse_time_scales_wave_ice_interactions_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(15),'units','-')
         END IF
 !/NC4       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(15), 1, 1, DEFLATE)
@@ -4589,15 +4590,15 @@
 !Ttoti / Ttotist
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           IRET=NF90_DEF_VAR(NCID, 'ttoti', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(16))
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','ttoti')
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','ttoti')
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','ttoti')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','total source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','inverse_time_scales_total_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','inverse_time_scales_total_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(16),'units','m2')
         ELSE
           IRET=NF90_DEF_VAR(NCID, 'ttotist', NF90_FLOAT,(/DIMID(4),DIMID(TWO),DIMID(ONE)/), VARID(16))
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','nondimensionalized using ttoti')
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','ttotist')
-          IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','ttotist')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'long_name','nondimensionalized using total source term normalised by Ef')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'standard_name','inverse_time_scales_total_source_term')
+          IRET=NF90_PUT_ATT(NCID,VARID(16),'globwave_name','inverse_time_scales_total_source_term')
           IRET=NF90_PUT_ATT(NCID,VARID(16),'units','-')
         END IF
 !/NC4       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(16), 1, 1, DEFLATE)
@@ -4919,9 +4920,9 @@
           IF ( FLSRCE(7) )  THEN
             IRET=NF90_DEF_VAR(NCID,'stt',NF90_FLOAT,(/DIMID(5),DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(22))
 !/NC4            IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(22), 1, 1, DEFLATE)
-            IRET=NF90_PUT_ATT(NCID,VARID(22),'long_name','Stt')
-            IRET=NF90_PUT_ATT(NCID,VARID(22),'standard_name','Stt')
-            IRET=NF90_PUT_ATT(NCID,VARID(22),'globwave_name','Stt')
+            IRET=NF90_PUT_ATT(NCID,VARID(22),'long_name','total source term')
+            IRET=NF90_PUT_ATT(NCID,VARID(22),'standard_name','total_source_term')
+            IRET=NF90_PUT_ATT(NCID,VARID(22),'globwave_name','total_source_term')
             IRET=NF90_PUT_ATT(NCID,VARID(22),'units','m2 rad-1')
             IRET=NF90_PUT_ATT(NCID,VARID(22),'scale_factor',1.)
             IRET=NF90_PUT_ATT(NCID,VARID(22),'add_offset',0.)

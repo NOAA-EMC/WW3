@@ -60,9 +60,9 @@
   ! file structure
   TYPE NML_FILE_T
     CHARACTER(256)              :: FILENAME
-    CHARACTER(256)              :: LONGITUDE
-    CHARACTER(256)              :: LATITUDE
-    CHARACTER(256)              :: VAR(3)
+    CHARACTER(100)              :: LONGITUDE
+    CHARACTER(100)              :: LATITUDE
+    CHARACTER(100)              :: VAR(3)
     CHARACTER(15)               :: TIMESHIFT
   END TYPE NML_FILE_T
 
@@ -520,7 +520,6 @@
 
 
 10  FORMAT (A,2X,A,A)
-11  FORMAT (A,2X,A,I8)
 13  FORMAT (A,2X,A,L1)
 
   END SUBROUTINE REPORT_FORCING_NML

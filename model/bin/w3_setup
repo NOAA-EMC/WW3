@@ -32,10 +32,10 @@ Usage: $myname source_dir Options
 Required:
   source_dir : path to model dir of WW3 source
 Options:
-  -c cmplr         : setup comp & link files for specified cmplr
+  -c cmplr         : setup comp & link files for specified cmplr (see manual section 5.6)
+  -s swtch         : setup switch file for specified swtch (see manual section 5.8)
   -h               : print usage and exit
   -q               : do not prompt for changes to existing WW3 environment
-  -s swtch         : setup switch file for specfied swtch
   -e               : edit switch file
   -t tdir          : set path for scratch directory to tdir
 

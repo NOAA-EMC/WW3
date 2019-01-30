@@ -1,8 +1,22 @@
-###############################################################################
-# On caparmor cluster, you must load the following modules :                  #
-# module purge                                                                #
-# module load intel-comp/12.1.5 intel-mpi/4.0.0.028                           #
-###############################################################################
+# --------------------------------------------------------------------------- #
+# cmplr : Compiler makefile for oasis coupler based on WW3 environment        #
+#                                                                             #
+# remarks :                                                                   #
+#                                                                             #
+#  - template file is used by regtests/ww3_tp2.14/input/prep_env.sh           #
+#    which will replace <comp_mpi>, <optc_short>, <optl_short>, <comp_mpi_exe>#
+#    by the values defined in model/bin/cmplr.env                             #
+#                                                                             #
+#  - Upon (first) installation of WAVEWATCH III the user needs to check the   #
+#    existing compilers and options available in the script cmplr.env         #
+#                                                                             #
+#  - This version is a template for mpt/intel/gnu/pgi with optimized or       #
+#    debugging options by adding _debug                                       #
+#                                                                             #
+#                                                      M. Accensi             #
+#                                                      August   2018          #
+# --------------------------------------------------------------------------- #
+
 #
 # CHAN	: communication technique used in OASIS3 (MPI1/MPI2)
 CHAN            = MPI1
@@ -21,18 +35,18 @@ NETCDF_LIBRARY  = $(shell $(NETCDF_CONFIG) --flibs)
 #
 # Compilers and options
 MAKE        = gmake
-F90         = mpiifort
+F90         = <comp_mpi>
 F           = $(F90)
 f90         = $(F90)
 f           = $(F90)
 CC          = icc
 AR          = ar
 ARFLAGS     = -ruv
-F90COMP     = -CB -O0 -fpe0 -traceback -assume byterecl -convert big_endian
-F90LINK     = -O0
+F90COMP     = <optc_short>
+F90LINK     = <optl_short>
 #
 # MPI library
-MPI         = $(shell which mpiifort)
+MPI         = $(shell which <comp_mpi_exe>)
 MPIDIR      = $(shell dirname $(shell dirname $(MPI)))
 MPIBIN      = $(MPIDIR)/bin
 MPI_INCLUDE = $(MPIDIR)/include
@@ -41,7 +55,7 @@ MPI_INCLUDE = $(MPIDIR)/include
 CPPDEF    = -Duse_netCDF -Duse_comm_$(CHAN) -D__VERBOSE -DTREAT_OVERLAY -Duse_realtype_single
 #
 # Flags 
-F90FLAGS_1  = -O2 -assume byterecl -convert big_endian -I.
+F90FLAGS_1  = $(F90COMP) -I.
 f90FLAGS_1  = $(F90FLAGS_1)
 FFLAGS_1    = $(F90FLAGS_1)
 fFLAGS_1    = $(F90FLAGS_1)

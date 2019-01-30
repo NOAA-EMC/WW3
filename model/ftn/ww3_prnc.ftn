@@ -214,7 +214,7 @@
                                  TIMESHIFT(2),                        &
                                  NXI, NYI, NXJ(2), NYJ(2),            &
                                  NDSLL, IDLALL, IDFMLL, NDSF(2),      &
-                                 IDLAF(2), IDFMF(2), TIME2(2),        &
+                                 IDLAF(2), IDFMF(2),                  &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
                                  NDAT, JJ, IS(4), JS(4)
       INTEGER                 :: ILAND = -999
@@ -1996,7 +1996,7 @@
 !     End loop over input fields
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-  880 CONTINUE
+!/TIDE  880 CONTINUE
       GOTO 888
 !
 ! Error escape locations
@@ -2017,14 +2017,6 @@
       WRITE (NDSE,1003) IERR
       CALL EXTCDE ( 43 )
 !
-  804 CONTINUE
-      WRITE (NDSE,1004) TRIM(TIMEUNITS)
-      CALL EXTCDE ( 44 )
-!
-  805 CONTINUE
-      WRITE (NDSE,1005) IERR
-      CALL EXTCDE ( 45 )
-!
   810 CONTINUE
       WRITE (NDSE,1010)
       CALL EXTCDE ( 1010 )
@@ -2033,18 +2025,6 @@
       WRITE (NDSE,1011)
       CALL EXTCDE ( 1011 )
 !
-  837 CONTINUE
-      WRITE (NDSE,1037) NDSI
-      CALL EXTCDE ( 46 )
-!
-  840 CONTINUE
-      WRITE (NDSE,1040) X0I, XNI
-      CALL EXTCDE ( 47 )
-!
-  841 CONTINUE
-      WRITE (NDSE,1041) Y0I, YNI
-      CALL EXTCDE ( 48 )
-!
   845 CONTINUE
       WRITE (NDSE,1045) IERR
       CALL EXTCDE ( 49 )
@@ -2052,18 +2032,6 @@
   846 CONTINUE
       WRITE (NDSE,1046) IERR
       CALL EXTCDE ( 50 )
-!
-  850 CONTINUE
-      WRITE (NDSE,1050) IERR, NDSF(J), NAMEF
-      CALL EXTCDE ( 51 )
-!
-  860 CONTINUE
-      WRITE (NDSE,1060) J, IERR
-      CALL EXTCDE ( 52 )
-!
-  861 CONTINUE
-      WRITE (NDSE,1061) TIME, TIME2
-      CALL EXTCDE ( 53 )
 !
   862 CONTINUE
       WRITE (NDSE,1062) IERR
@@ -2152,7 +2120,6 @@
                '           Dimension along y : ',A)
   969 FORMAT ( '           Field component ',I1,' : ',A)
 !
-  970 FORMAT (/'       Opening input data file .....')
   971 FORMAT (/'       Opening output data file .....')
   972 FORMAT (//'  Processing data'/                                  &
                ' --------------------------------------------------')
@@ -2187,19 +2154,6 @@
                '     EXPECTING LIST OF TIDAL CONST. OR FAST OR VFAST'/&
                '     IOSTAT =',I5/)
 !
- 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     PREMATURE END OF TIME ATTRIBUTE '/               &
-               '     ',A/                                             &
-               '     DIFFERS FROM CONVENTION ISO8601 '/               &
-               '     XXX since YYYY-MM-DD hh:mm:ss'/)
-!
- 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ERROR IN READING OF TIME ATTRIBUTE '/            &
-               '     ',A/                                             &
-               '     DIFFERS FROM CONVENTION ISO8601 '/               &
-               '     XXX since YYYY-MM-DD hh:mm:ss'/                  &
-               '     IOSTAT =',I5/)
-!
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     NO FIELD SELECTED'/)
  1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
@@ -2231,20 +2185,9 @@
                '     ILLEGAL TIME : ',I8.8,I7.6/)
  1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ILLEGAL SIZE OF INPUT GRID : ',I5,1X,I5/)
- 1037 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ATTEMPT TO USE INPUT UNIT (',I2,                 &
-               ') FOR NAMED FILE'/)
  1038 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
                '     DATA READ FROM INPUT FILE')
- 1039 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ARRAYS FOR INPUT FIELDS TO SMALL '/              &
-               '            GRID SIZE       :',2I5/                   &
-               '            ARRAY DIMENSION :',2I5/)
 !
- 1040 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     LONGITUDE GRID RANGE > 360 DEGR. : ',2F6.1/)
- 1041 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ILLEGAL LATITUDE GRID RANGE : ',2F6.1/)
  1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PRNC : '/                &
                '     GRID POINT ',2I6,2F7.2,/                         &
                ' NOT COVERED BY INPUT GRID.'/)
@@ -2263,21 +2206,6 @@
                '     ERROR IN OPENING MASK FILE'/                     &
                '     IOSTAT =',I5/)
 !
- 1050 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ERROR IN OPENING INPUT DATA FILE'/               &
-               '     IOSTAT =',I5/                                    &
-               '     NDSF   =',I5/                                    &
-               '     NAMEF  = ',A/)
- 1051 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     CANNOT READ UNFORMATTED FROM UNIT',I3/)
-!
- 1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     ERROR IN READING TIME FROM FILE (',I1,')'/       &
-               '     IOSTAT =',I5/)
- 1061 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     INCOMPATIBLE FIELD TIMES '/                      &
-               '            FIELD #1 : ',I8.8,I7.6/                   &
-               '            FIELD #2 : ',I8.8,I7.6/)
  1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN READING NDAT FROM FILE'/                &
                '     IOSTAT =',I5/)

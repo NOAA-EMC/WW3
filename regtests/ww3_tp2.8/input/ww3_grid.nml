@@ -218,7 +218,6 @@
 &DEPTH_NML
   DEPTH%SF        =  -1.
   DEPTH%FILENAME  =  '../input/iro_1p5k.bot'
-  DEPTH%FORMAT    =  '(20f10.2)'
 /
 
 ! -------------------------------------------------------------------- !

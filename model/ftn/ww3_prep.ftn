@@ -215,9 +215,8 @@
                                  NDSLL, IDLALL, IDFMLL, NDSF(2),      &
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
-                                 NDAT, NDATMX, JJ, IS(4), JS(4)
-      INTEGER                 :: NXT, NYT, GTYPET, FILLER(2), TFLAGT
-      INTEGER                 :: NYB
+                                 NDAT, JJ, IS(4), JS(4)
+      INTEGER                 :: NXT, NYT
       INTEGER                 :: ILAND = -999
 !/O15      INTEGER                 :: NDSTIME
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
@@ -230,8 +229,8 @@
 !/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
 !/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
 !/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
-      REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI, XDIF,  &
-                                 ADD, X, Y, FACTOR, EFAC, NODATA, RW(4)
+      REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI,        &
+                                 X, Y, FACTOR, EFAC, NODATA, RW(4)
       REAL                    :: ACC = 0.05
       REAL, ALLOCATABLE       :: RD11(:,:), RD21(:,:),                &
                                  RD12(:,:), RD22(:,:),                &
@@ -1360,18 +1359,6 @@
       WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 42 )
 !
-  837 CONTINUE
-      WRITE (NDSE,1037) NDSI
-      CALL EXTCDE ( 43 )
-!
-  840 CONTINUE
-      WRITE (NDSE,1040) X0I, XNI
-      CALL EXTCDE ( 45 )
-!
-  841 CONTINUE
-      WRITE (NDSE,1041) Y0I, YNI
-      CALL EXTCDE ( 46 )
-!
   845 CONTINUE
       WRITE (NDSE,1045) IERR
       CALL EXTCDE ( 47 )
@@ -1516,27 +1503,14 @@
                '     ILLEGAL TIME : ',I8.8,I7.6/)
  1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ILLEGAL SIZE OF INPUT GRID : ',I5,1X,I5/)
- 1037 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     ATTEMPT TO USE INPUT UNIT (',I2,                 &
-               ') FOR NAMED FILE'/)
  10381 FORMAT (/' *** WAVEWATCH III WARNING IN W3PREP : '/             &
                '     LAT/LON DATA READ FROM INPUT FILE')
  10382 FORMAT (/' *** WAVEWATCH III WARNING IN W3PREP : '/             &
                '     MASK DATA READ FROM INPUT FILE')
- 1039 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     ARRAYS FOR INPUT FIELDS TO SMALL '/              &
-               '            GRID SIZE       :',2I5/                   &
-               '            ARRAY DIMENSION :',2I5/)
 !
- 1040 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     LONGITUDE GRID RANGE > 360 DEGR. : ',2F6.1/)
- 1041 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     ILLEGAL LATITUDE GRID RANGE : ',2F6.1/)
  1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PREP : '/                &
                '     GRID POINT ',2I6,2F7.2,/                         &
                ' NOT COVERED BY INPUT GRID.'/)
- 1043 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
-               '     X = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
  1044 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
                '     Y = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
 !

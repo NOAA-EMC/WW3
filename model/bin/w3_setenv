@@ -170,6 +170,8 @@ EOF
       if [ "$do_set" = 'y' ]
       then
         $path_bin/w3_setup -t "$path_mod/tmp" $path_mod
+        temp_dir=$path_mod/tmp
+        main_dir=$path_mod
       fi
     fi
 
@@ -190,6 +192,8 @@ EOF
       if [ "$do_set" = 'y' ]
       then
         $path_bin/w3_setup -t "$path_mod/tmp" $path_mod
+        temp_dir=$path_mod/tmp
+        main_dir=$path_mod
       fi
     fi
   fi

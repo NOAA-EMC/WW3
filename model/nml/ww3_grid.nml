@@ -588,7 +588,6 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the sedimentary bottom map via SED_NML namelist
-! - only for RECT and CURV grids -
 !
 ! * only used if &SBT4 SEDMAPD50 = T defined in param.nml
 !

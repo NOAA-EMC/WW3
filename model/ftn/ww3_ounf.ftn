@@ -391,6 +391,9 @@
            CYCLE
         ENDIF
         NBIPART = NBIPART + 1
+        IF(NBIPART .GT. NOSWLL) THEN
+           GOTO 803
+        ENDIF
         TABIPART(NBIPART) = IPART
       ENDDO
 !
@@ -572,6 +575,10 @@
       WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 12 )
 !
+  803 CONTINUE
+      WRITE (NDSE,1003) NBIPART, NOSWLL
+      CALL EXTCDE (13)
+!
   888 CONTINUE
       WRITE (NDSO,999)
 !
@@ -635,6 +642,10 @@
                '     ERROR IN READING FROM INPUT FILE'/               &
                '     IOSTAT =',I5/)
 !
+ 1003 FORMAT (/' *** WAVEWATCH III WERROR IN W3EXNC : '/              &
+               '     OUT OF RANGE REQUEST FOR NBIPART =',I2, /        &
+               '     MAX SWELL PARTITIONS (NOSW) =',I2 /)
+!
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
  1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
@@ -642,7 +653,7 @@
 !
  1500 FORMAT (/' *** WAVEWATCH III WARNING IN W3EXNC : '/             &
                '     IGNORING REQUEST FOR IPART =',I2, /              &
-               '     MAX SWELL PARITIONS (NOSWLL) =',I2 /)
+               '     MAX SWELL PARTITIONS (NOSW) =',I2 /)
 !
 !/
 !/ Internal subroutine W3EXNC ---------------------------------------- /
@@ -788,8 +799,8 @@
 !
       CHARACTER*80            :: VARNM(8),VARNL(8)
       CHARACTER*120           :: VARNS(8),VARNG(8), VARND(8), STR2
-      CHARACTER*256           :: VARNC(8), PARTCOM
-      CHARACTER*20            :: UNITVAR(3),FORMAT1
+      CHARACTER*512           :: VARNC(8), PARTCOM
+      CHARACTER*30            :: UNITVAR(3),FORMAT1
       CHARACTER*30            :: STRSTARTDATE
       CHARACTER               :: FNAMENC*50,                           &
                                  ENAME*10,FORMF*11, UNITS*24, UNITS2*24
@@ -1138,7 +1149,7 @@
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(ICE, X1)
               ELSE
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE(1:NSEA), MAPSF, X1 )
               ENDIF
 
               NFIELD=1
@@ -1192,7 +1203,7 @@
 !/IS2              FSC = 0.001
 !/IS2              UNITS = 'm'
 !/IS2              ENAME = '.ic1'
-!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH  , MAPSF, X1 )
+!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 !/IS2              VARNM(1)='ic1'
 !/IS2              VARNL(1)='ice thickness'
@@ -1208,7 +1219,7 @@
 !/IS2              FSC = 0.05
 !/IS2              UNITS = 'm'
 !/IS2              ENAME = '.ic5'
-!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF  , MAPSF, X1 )
+!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 !/IS2              VARNM(1)='ic5'
 !/IS2              VARNL(1)='maximum floe diameter'
@@ -4666,9 +4677,7 @@
 !
 ! Error escape locations
 !
-  800 CONTINUE
-      WRITE (NDSE,1000) IERR
-      CALL EXTCDE (2)
+
 !
 ! Formats
 !
@@ -4676,10 +4685,6 @@
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXNC :'/                &
                '     PLEASE UPDATE FIELDS !!! '/                      &
                '     IFI = ',I2, '- IFJ = ',I2/)
-!
- 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXNC : '/               &
-               '     ERROR IN OPENING OUTPUT FILE'/                   &
-               '     IOSTAT =',I5/)
 !               
 !/T 9000 FORMAT (' TEST W3EXNC : FLAGS :',I3,2X,20L2)
 !/T 9001 FORMAT (' TEST W3EXNC : ITPYE :',I4/                         &

@@ -12,10 +12,12 @@ fi
 rpath="$1"
 prog="$2"
 
+path_bash="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 for file in $(find $rpath -name "${prog}*.inp*" ! -name "${prog}_clean.inp" )
 do
   echo 'file : '$file
- ./${prog}_inp2nml.sh $file
+  $path_bash/${prog}_inp2nml.sh $file
 done
 
 echo ''

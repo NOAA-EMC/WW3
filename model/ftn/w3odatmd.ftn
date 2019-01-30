@@ -343,7 +343,7 @@
                                  ICEFO(:), SPCO(:,:)
         REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
 
-        CHARACTER(LEN=13), POINTER :: PTNME(:), GRDID(:)
+        CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
         LOGICAL               :: O2INIT
 !/MPI        LOGICAL               :: O2IRQI
       END TYPE OTYPE2
@@ -447,7 +447,7 @@
                                  ICEFO(:), SPCO(:,:)
       REAL, POINTER           :: ZET_SETO(:)
 !
-      CHARACTER(LEN=13), POINTER :: PTNME(:), GRDID(:)
+      CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
       LOGICAL, POINTER        :: O2INIT
 !/MPI        LOGICAL, POINTER      :: O2IRQI
 !/

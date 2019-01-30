@@ -1780,8 +1780,6 @@
               MSSSUM  (IK:NK,3) = MSSSUM (IK:NK,3) +MSSPC2
               MSSSUM  (IK:NK,4) = MSSSUM (IK:NK,4) +MSSPS2
               MSSSUM  (IK:NK,5) = MSSSUM (IK:NK,5) +MSSPCS
-! WRITE(997,*) IK,NTHSUM,MSSSUM2(IK,19),MSSSUM2(IK,55), MSSSUM  (IK,1)
-
 !
 ! Direction of long wave mss summed up to IK       
 !
@@ -1791,8 +1789,8 @@
 !
 ! mss along perpendicular direction        
 !
-              MSSSUM  (IK,2)  = MSSSUM(IK,4)*COS(MSSD)**2   &
-                       -2*MSSSUM(IK,5)*SIN(MSSD)*COS(MSSD)+MSSSUM(IK,3)*SIN(MSSD)**2 
+              MSSSUM  (IK,2)  = MAX(0.,MSSSUM(IK,4)*COS(MSSD)**2   &
+                       -2*MSSSUM(IK,5)*SIN(MSSD)*COS(MSSD)+MSSSUM(IK,3)*SIN(MSSD)**2)
 
               END IF ! SSDSC(8).GT.0) THEN
 
@@ -1807,7 +1805,7 @@
 ! Here we assume that the saturation is modulated as (1 + 2*SSDSC(8) *  sqrt(mss_theta) )
 ! where mss_theta is the mss in direction ITH. 
 ! 
-! Note: SSDSC(8) is 2 times the MTF: close to 4 for very small ka but can be 20 or larger for ak~0.1
+! Note: SSDSC(8) is 2 times the MTF: close to 4x2=8 for very small ka but can be 20 or larger for ak~0.1
 !
                 IF (SSDSC(8).GT.0) THEN 
 !

@@ -168,11 +168,11 @@ $
 $ Example for longitude-latitude grid (switch !/LLG), for Cartesian
 $ grid the unit is meters (NOT km).
 $
-     'RECT'  T  'NONE'
-     103   119 
-     0.019 0.0125  1.
-     -6.119 47.6375  1.
-     0.0  1.0  20  -1. 1 1 '(20f10.2)'  'NAME' '../input/iro_1p5k.bot'
+  'RECT'  T  'NONE'
+  103   119 
+  0.019 0.0125  1.
+  -6.119 47.6375  1.
+  0.0  1.0  20  -1. 1 1 '(....)'  'NAME' '../input/iro_1p5k.bot'
 $
 $ If the above unit number equals 10, the bottom data is read from 
 $ this file and follows below (no intermediate comment lines allowed).

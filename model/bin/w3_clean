@@ -37,7 +37,7 @@ myname="`basename $0`"  #name of script
   }
 
 # 0.b Usage function
-  optstr="cmr"  #option string for getopt function
+  optstr="hcmr"  #option string for getopt function
   usage ()
   {
 cat 2>&1 << EOF
@@ -48,6 +48,7 @@ Options:
   -c : "clobber", also clean-up model & regtests directories
   -m : also clean-up model directories
   -r : also clean-up regtests directories
+  -h : print usage and exit
 
 EOF
   }
@@ -66,6 +67,7 @@ EOF
   do
     case "$1" in
     -c) cleanup_model=1; cleanup_regtests=1 ;;
+    -h) help=1 ;;
     -m) cleanup_model=1 ;;
     -r) cleanup_regtests=1 ;;
     --) break ;;

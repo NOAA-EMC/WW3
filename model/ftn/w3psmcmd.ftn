@@ -1497,7 +1497,7 @@
                CNST= CNST5 - ( CNST3+UFLX(i) )*CNST7*CNST9/1.5 
 
 !    Use doubled UNO2 scheme
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN 
                CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
 
                 ELSE
@@ -1528,7 +1528,7 @@
                CNST= CNST5 + ( CNST2-UFLX(i) )*CNST7*CNST9/1.5 
 
 !    Use doubled UNO2 scheme
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN 
                CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
 
                 ELSE
@@ -1637,7 +1637,7 @@
                CNST= CNST5 - ( CNST3+VFLY(j) )*CNST7*CNST9/1.5 
 
 !    Use doubled UNO2 scheme
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN 
                CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
 
                 ELSE
@@ -1674,7 +1674,7 @@
                CNST= CNST5 + ( CNST2-VFLY(j) )*CNST7*CNST9/1.5 
 
 !    Use doubled UNO2 scheme
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN 
                CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
 
                 ELSE
@@ -1769,7 +1769,7 @@
            IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
 !    Use 3rd order scheme in limited zone, note division by 2 grid sizes
              CNST=0.5*CNST5 - (1.0+UFLX(i)/CNST2)*CNST9/6.0
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN 
 !    Use doubled minimum gradient in rest of monotonic region
              CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
            ELSE 
@@ -1793,7 +1793,7 @@
            IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
 !    Use 3rd order scheme in limited zone, note division by 2 grid sizes
              CNST=0.5*CNST5 + (1.0-UFLX(i)/CNST3)*CNST9/6.0
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN
 !    Use doubled minimum gradient in rest of monotonic region
              CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
                 ELSE
@@ -1881,7 +1881,7 @@
            IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
 !    Use 3rd order scheme in limited zone, note division by 2 grid sizes
              CNST=0.5*CNST5-(1.0+VFLY(j))*CNST9/6.0
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN
 !    Use doubled minimum gradient in rest of monotonic region
              CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
            ELSE
@@ -1908,7 +1908,7 @@
            IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
 !    Use 3rd order scheme in limited zone, note division by 2 grid sizes
              CNST=0.5*CNST5+(1.0-VFLY(j))*CNST9/6.0
-           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+           ELSE IF( DBLE(CNST4)*DBLE(CNST5) .GT. 0.d0 ) THEN
 !    Use doubled minimum gradient in rest of monotonic region
              CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
            ELSE

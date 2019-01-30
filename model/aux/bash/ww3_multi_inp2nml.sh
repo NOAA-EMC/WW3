@@ -6,10 +6,18 @@ then
   echo '  [ERROR] need ww3_multi input filename in argument [ww3_multi.inp]'
   exit 1
 fi
-inp=$1
-cur_dir=$(dirname $1)
-cd $cur_dir
-cur_dir="../$(basename $cur_dir)"
+
+# link to temporary inp with regtest format
+inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
+if [ ! -z $(echo $inp | awk -F'ww3_multi.inp.' '{print $2}') ] ; then
+ new_inp=$(echo $(echo $inp | awk -F'ww3_multi.inp.' '{print $1}')ww3_multi_$(echo $inp | awk -F'ww3_multi.inp.' '{print $2}').inp)
+ ln -sfn $inp $new_inp
+ old_inp=$inp
+ inp=$new_inp
+fi
+
+cd $( dirname $inp)
+cur_dir="../$(basename $(dirname $inp))"
 
 
 version=$(bash --version | awk -F' ' '{print $4}')
@@ -622,15 +630,27 @@ cat >> $nmlfile << EOF
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 !
 ! * index I must match indexes from 1 to DOMAIN%NRGRD
+!
 ! * ALLTYPE will apply the output types for all the model grids
+!
 ! * ITYPE(I) will apply the output types for the model grid number I
+!
 ! * need DOMAIN%UNIPTS equal true to use a unified point output file
+!
 ! * the point file is a space separated values per line : lon lat 'name'
-! * the full list of field names is : 
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
-!  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
-!  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S
-!  USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+!
+! * the detailed list of field names is given in model/nml/ww3_shel.nml :
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
+!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG
+!  EF TH1M STH1M TH2M STH2M WN
+!  PHS PTP PLP PDIR PSPR PWS PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR
+!  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS
+!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+!  ABR UBR BED FBB TBB
+!  MSS MSC WL02 AXT AYT AXY
+!  DTD FC CFX CFD CFK
+!  U1 U2 
+!
 ! * output track file formatted (T) or unformated (F)
 !
 ! * namelist must be terminated with /
@@ -875,6 +895,9 @@ cat >> $nmlfile << EOF
 EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
+if [ ! -z $(echo $old_inp | awk -F'ww3_multi.inp.' '{print $2}') ] ; then
+  unlink $new_inp
+fi
 #------------------------------
 
 

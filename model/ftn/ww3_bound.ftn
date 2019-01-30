@@ -112,7 +112,6 @@
 !/ Local parameters
 !/
       INTEGER        :: TIME1(2),TIME2(2)
-      LOGICAL         :: FILEW = .TRUE.
       CHARACTER               :: COMSTR*1, LINE*80
       CHARACTER*5   :: INXOUT
       CHARACTER*10  :: VERTEST  ! = 'III  1.03 '
@@ -120,31 +119,27 @@
       CHARACTER*120,     ALLOCATABLE  :: SPECFILES(:)
       CHARACTER*120 :: FILENAME
 
-      INTEGER   IX, IY, ISEA, I,JJ,IP,IP1,IP2,J,K,ITIME,          &
+      INTEGER   IX, IY, ISEA, I,JJ,IP,IP1,J,K,ITIME,          &
                 NDSI,NDSM, NDSI2,NDSS,NDSB, NDSTRC, NTRACE, &
                 NK1,NTH1,NSPEC1, NBI, NBI2,           &
-                NKI, NTHI, NBO, NBO2, IERR, INTERP, N3, OVER, ILOOP, &
+                NKI, NTHI, NBO, NBO2, IERR, INTERP, ILOOP, &
                IFMIN, IFMIN2, IFMAX, VERBOSE
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER     np,npar,Jfp, IBO
-      INTEGER     iostat,finished
-      INTEGER(KIND=4) Jday,Jdays,Jdayend,Jdayfile
-      REAL   , DIMENSION(:),     ALLOCATABLE :: SPEC, LATS, LONS
+      INTEGER     IBO
+      !REAL   , DIMENSION(:),     ALLOCATABLE :: SPEC
+      REAL   , DIMENSION(:),     ALLOCATABLE :: LATS, LONS
       REAL   , DIMENSION(:,:),   ALLOCATABLE :: SPEC2D
       REAL   , DIMENSION(:),     ALLOCATABLE :: FREQ, THETA
-      REAL   XFRI, FR1I, TH1I, DTH1
+      REAL   FR1I, TH1I
       REAL, ALLOCATABLE     :: XBPI(:), YBPI(:), RDBPI(:,:),        &
                                XBPO(:), YBPO(:), RDBPO(:,:),        &
                                ABPIN(:,:) 
              
       INTEGER,  ALLOCATABLE :: IPBPI(:,:),   IPBPO(:,:)
 
-      DOUBLE PRECISION timemod,timeobs1,timeobs2
-      INTEGER(KIND=4), DIMENSION(:,:),  ALLOCATABLE ::  Jdayobs
-      DOUBLE PRECISION, DIMENSION(:,:),  ALLOCATABLE ::  Dateobs
-      CHARACTER(120) string1,string2,buoyname
+      CHARACTER(120) string1,buoyname
       CHARACTER space
-      REAL depth,U10,Udir,Curr,Currdir,DMIN, DIST, DMIN2, COS1, COS2
+      REAL depth,U10,Udir,Curr,Currdir,DMIN, DIST, DMIN2, COS1 !, COS2
 !/
 !/ ------------------------------------------------------------------- /
 
@@ -543,8 +538,6 @@ STOP
       WRITE (NDSE,1008) NK, NKI
       CALL EXTCDE ( 68 )
 !
- 2222 CONTINUE
-!
   901 FORMAT (/' *** WAVEWATCH-III ERROR IN W3IOBC :'/                &
                '     ILEGAL IDSTR, READ : ',A/                        &
                '                  CHECK : ',A/)
@@ -568,8 +561,6 @@ STOP
                '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
                '     IT WILL BE MANAGED SOON BY SPCONV')
 !
- 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
-               '     ILLEGAL TYPE, ITYPE =',I4/)
 !/
 !/ End of W3BOUND ---------------------------------------------------- /
 !/

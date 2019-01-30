@@ -51,6 +51,12 @@
 ! -------------------------------------------------------------------- !
 ! Define the type 1, spectra via SPECTRA_NML namelist
 !
+! Table of 1-D spectra content : 
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
+!   - ffp, f, th1m, sth1m, alpha : 1D spectral parameters
+!   - dpt, ust, wnd, wnddir : mean parameters
+!
 ! Transfert file content :
 !   - time, station id, station name, longitude, latitude 
 !   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
@@ -58,6 +64,12 @@
 !   - frequency2 : unit Hz, upper band frequency
 !   - direction : unit degree, convention to, origin East, trigonometric order
 !   - efth(time,station,frequency,direction) : 2D spectral density
+!   - dpt, wnd, wnddir, cur, curdir : mean parameters
+!
+! Spectral partitioning content : 
+!   - time, station id, station name, longitude, latitude
+!   - npart : number of partitions
+!   - hs, tp, lm, th1m, sth1m, ws, tm10, t01, t02 : partitioned parameters
 !   - dpt, wnd, wnddir, cur, curdir : mean parameters
 !
 !
@@ -77,10 +89,27 @@
 ! -------------------------------------------------------------------- !
 ! Define the type 2, mean parameter via PARAM_NML namelist
 !
+! Forcing parameters content : 
+! - dpt, wnd, wnddir, cur, curdir
+!
+! Mean wave parameters content : 
+! - hs, lm, tr, th1p, sth1p, fp, th1m, sth1m
+!
+! Nondimensional parameters (U*) content :
+! - ust, efst, fpst, cd, alpha
+!
+! Nondimensional parameters (U10) content : 
+! - wnd, efst, fpst, cd, alpha
+!
+! Validation table content :  
+! - wnd, wnddir, hs, hsst, cpu, cmu, ast
+!
+! WMO stantdard output content :
+! - wnd, wnddir, hs, tp
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     PARAM%OUTPUT      = 4                ! 1: Depth, current, wind
+!     PARAM%OUTPUT      = 4                ! 1: Forcing parameters
 !                                          ! 2: Mean wave parameters
 !                                          ! 3: Nondimensional pars. (U*)
 !                                          ! 4: Nondimensional pars. (U10)
@@ -93,6 +122,30 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the type 3, source terms via SOURCE_NML namelist
+!
+! Table of 1-D S(f) content : 
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency
+!   - ef(frequency)   : 1D spectral density
+!   - Sin(frequency)  : input source term
+!   - Snl(frequency)  : non linear interactions source term
+!   - Sds(frequency)  : dissipation source term
+!   - Sbt(frequency)  : bottom source term
+!   - Sice(frequency) : ice source term
+!   - Stot(frequency) : total source term
+!   - dpt, ust, wnd : mean parameters
+!
+! Table of 1-D inverse time scales (1/T = S/F) content : 
+!   - time, station id, station name, longitude, latitude
+!   - frequency : unit Hz, center band frequency
+!   - ef(frequency)   : 1D spectral density
+!   - tini(frequency)  : input inverse time scales source term
+!   - tnli(frequency)  : non linear interactions inverse time scales source term
+!   - tdsi(frequency)  : dissipation inverse time scales source term
+!   - tbti(frequency)  : bottom inverse time scales source term
+!   - ticei(frequency) : ice inverse time scales source term
+!   - ttoti(frequency) : total inverse time scales source term
+!   - dpt, ust, wnd : mean parameters
 !
 ! Transfert file content :
 !   - time, station id, station name, longitude, latitude 
@@ -107,6 +160,8 @@
 !   - Sbt(frequency,direction)  : bottom source term
 !   - Sice(frequency,direction) : ice source term
 !   - Stot(frequency,direction) : total source term
+!   - dpt, wnd, wnddir, cur, curdir, ust : mean parameters
+!
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
