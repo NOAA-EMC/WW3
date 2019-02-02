@@ -1764,7 +1764,8 @@
         MODE(JSEA) = SQRT(2.*LOG(NS(JSEA))+LOG(2.*LOG(NS(JSEA))+     &
                      LOG(2.*LOG(NS(JSEA)))))
 ! Space-time extremes (strictly for STEX*STEY >> WL02X*WL02Y)
-      ELSE
+      ELSEIF ((WL02X(JSEA) .GT. 1.E-7) .AND. (WL02Y(JSEA) .GT. 1.E-7) &
+          .AND. (T02P(JSEA) .GT. 1.E-7)) THEN
         MODE(JSEA) = SQRT(2.*LOG(NV(JSEA))+2.*LOG(2.*LOG(NV(JSEA))+  &
          2.*LOG(2.*LOG(NV(JSEA)))))
       ENDIF

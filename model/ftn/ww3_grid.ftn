@@ -2267,10 +2267,10 @@
 !/IS2      IS2ANDISN=1.      !dependency on stress. Equal to 1 normally?
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
-!/IS2      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
+!/IS2      WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK, IS2DUPDATE, IS2FLEXSTR, IS2DISP, &
 !/IS2        IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2, IS2C3, IS2CONC, IS2CREEPB,&
 !/IS2        IS2CREEPC, IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1,  &
-!/IS2        IS2FLEXSTR, IS2ANDISB, IS2ANDISE, IS2ANDISD, IS2ANDISN
+!/IS2        IS2ANDISB, IS2ANDISE, IS2ANDISD, IS2ANDISN
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -2703,7 +2703,7 @@
 !
 !/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
 !
-!/IS2          WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
+!/IS2          WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
 !/IS2                    IS2DUPDATE, IS2FLEXSTR, IS2DISP,  IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
 !/IS2                    IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
 !/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1, IS2ANDISB, &
@@ -5507,11 +5507,12 @@
 !/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS2              ' --------------------------------------------------')
 !/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
-!/IS2              '        scattering coefficient       : ',F5.2/ &
-!/IS2              '        0: no back-scattering        : ',F5.2/ &
+!/IS2              '        scattering coefficient       : ',E9.3/ &
+!/IS2              '        0: no back-scattering        : ',E9.3/ &
 !/IS2              '     TRUE: istropic back-scattering  : ',L3/   &
 !/IS2              '     TRUE: update of ICEDMAX         : ',L3/   &
 !/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/   &
+!/IS2              '        flexural strength            : ',E9.3/ &
 !/IS2              '     TRUE: uses Robinson-Palmer disp.: ',L3/   &
 !/IS2              '        attenuation                  : ',F5.2/ &
 !/IS2              '        fragility                    : ',F5.2/ &
@@ -5526,7 +5527,6 @@
 !/IS2              '        elastic energy factor        : ',F5.2/ &
 !/IS2              '        factor for ice breakup       : ',F5.2/ &
 !/IS2              '        IS2WIM1                      : ',F5.2/ &
-!/IS2              '        flexural strength            : ',E9.3/ &
 !/IS2              '        anelastic dissipation        : ',L3/   &
 !/IS2              '        energy of activation         : ',F5.2/ &
 !/IS2              '        anelastic coefficient        : ',E11.3/ &
