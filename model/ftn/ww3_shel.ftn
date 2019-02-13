@@ -1234,7 +1234,7 @@
                     READ (NDSI,'(A)') LINE
                     WRITE (NDSS,'(A)') LINE
                   END IF
-                  IF ( PN .EQ. 'STOPSTRING' ) EXIT
+                  IF ( INDEX(PN,"STOPSTRING").NE.0 ) EXIT
                   NPTS   = NPTS + 1
                   IF ( ILOOP .EQ. 1 ) CYCLE
                   X(NPTS)      = XX

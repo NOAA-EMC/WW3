@@ -1925,9 +1925,11 @@ echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 if [ ! -z $(echo $old_inp | awk -F'ww3_grid.inp.' '{print $2}') ] ; then
   unlink $new_inp
+  addon="$(echo $(basename $nmlfile) | awk -F'ww3_grid_' '{print $2}' | awk -F'.nml' '{print $1}'  )"
+  new_nmlfile="ww3_grid.nml.$addon"
+  mv $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile) $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)
+  echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
 fi
 #------------------------------
-
-
 
 
