@@ -166,6 +166,8 @@ then
   usage
   exit 1
 fi
+#uncomment next line to add S & T switches to every test 
+#testST=1  
 if [ ! $exec_p = "none" ]
 then
   exit_p=$exec_p
@@ -456,6 +458,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ] 
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -571,6 +579,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -672,6 +686,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -772,6 +792,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -870,6 +896,12 @@ then
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
+  fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
   fi
   if $path_b/w3_make $prog
   then :
@@ -977,6 +1009,12 @@ then
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
+  fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
   fi
   if $path_b/w3_make $prog
   then :
@@ -1126,6 +1164,12 @@ then
   echo ' '
 
   \cp -f $file_c $path_b/switch
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prgb
   then :
   else
@@ -1281,6 +1325,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -1390,6 +1440,12 @@ then
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
+  fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
   fi
   if $path_b/w3_make $prog
   then :
@@ -1572,6 +1628,12 @@ then
   else
     \cp -f $file_c $path_b/switch
   fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -1697,6 +1759,12 @@ then
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
+  fi
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
   fi
   if $path_b/w3_make $prog
   then :
@@ -1830,7 +1898,13 @@ then
 #                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switchh
 #  else
 #    \cp -f $file_c $path_b/switch
-#  fi
+#  fi  
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -1919,7 +1993,12 @@ then
   echo ' '
 
   \cp -f $file_c $path_b/switch
- 
+  if [ $testST ]
+  then #add S T switches 
+    \cp -f $path_b/switch $path_b/switch_noST
+    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    rm $path_b/switch_noST
+  fi
   if $path_b/w3_make $prog
   then :
   else

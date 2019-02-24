@@ -182,9 +182,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 !
       INTEGER JSEA, IP, IP_glob, ITH, ISP
+!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
       IF (GTYPE .eq. UNGTYPE) THEN
         DO JSEA=1,NSEAL
           IP      = JSEA
@@ -263,6 +263,7 @@
       USE yowfunction, ONLY : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
 !/
       IMPLICIT NONE
+      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -274,8 +275,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-      INCLUDE "mpif.h"
+!!      INCLUDE "mpif.h"
       REAL, ALLOCATABLE   :: XP_IN(:), YP_IN(:), DEP_IN(:)
       INTEGER, ALLOCATABLE   :: INE_IN(:,:)
       INTEGER :: istat
@@ -290,6 +290,7 @@
       INTEGER IK0, ISP0, ITH
       REAL :: eSIG, eFR
       REAL, PARAMETER :: COEF4 = 5.0E-7
+!/S      CALL STRACE (IENT, 'PDLIB_STYLE_INIT')
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'PDLIB_STYLE_INIT, IMOD (no print)'
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
@@ -508,10 +509,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'PDLIB_MAPSTA_INIT')
       INTEGER :: IBND_MAP, ISEA, JSEA, IX, IP, IP_glob
       INTEGER, INTENT(in) :: IMOD
       INTEGER :: Status(NX), istat
+!/S      CALL STRACE (IENT, 'PDLIB_MAPSTA_INIT')
 !/DEBUGINIT      WRITE(*,*) 'Passing by PDLIB_MAPSTA_INIT IAPROC=', IAPROC
       IF (IAPROC .gt. NAPROC) THEN
         RETURN
@@ -854,7 +855,6 @@
                                        ! the max. Global Time step
 !/S      INTEGER, SAVE           :: IENT = 0
 !/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
       INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
       INTEGER :: IBI, NI(3)
       INTEGER :: JX
@@ -880,6 +880,7 @@
       REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
       LOGICAL :: testWrite
       REAL  :: FIN(1), FOUT(1)
+!/S      CALL STRACE (IENT, 'W3XYPFSN')
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 1'
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
 !/DEBUGSOLVER     CALL GET_SCAL_INTEGRAL_COH_R4(AC, eSumAC)
@@ -1160,7 +1161,6 @@
                                         ! the max. Global Time step
 !/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)
 !/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
       INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
       INTEGER :: IBI, NI(3), JX
       INTEGER :: ISPROC, IP_glob, JSEA, ierr
@@ -1178,6 +1178,7 @@
       REAL  :: KELEM(3,NE), FLALL(3,NE)
       REAL  :: KKSUM(npa), ST(npa)
       REAL  :: NM(NE) 
+!/S      CALL STRACE (IENT, 'W3XYPFSN')
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
       DTMAX = DBLE(10.E10)
@@ -1360,11 +1361,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       CHARACTER(*), INTENT(in) :: string
       INTEGER ITH_F, IK
       INTEGER ITH, ISP, JSEA
       REAL eVal, eErr
+!/S      CALL STRACE (IENT, 'HACK_CHECK')
       ITH_F=4
       WRITE(740+IAPROC,*) 'HACK_CHECK, begin'
       DO ITH=1,NTH
@@ -1453,7 +1454,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       REAL, INTENT(in) :: V(NSEAL)
       CHARACTER (len = *), PARAMETER :: string = "Test a view"
       REAL, INTENT(out) :: eSum
@@ -1461,6 +1461,7 @@
       LOGICAL :: PrintFullValue = .FALSE.
       LOGICAL :: PrintBasicData = .FALSE.
       !
+!/S      CALL STRACE (IENT, 'GET_SCAL_INTEGRAL_COH_R4')
       V8 = DBLE(V)
       CALL SCAL_INTEGRAL_PRINT_GENERAL(eSum, V8, string, PrintFullValue, PrintBasicData)
       END SUBROUTINE
@@ -1525,7 +1526,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       REAL, INTENT(in) :: V(NSEAL)
       CHARACTER(*), INTENT(in) :: string
       REAL :: V8(NSEAL)
@@ -1533,6 +1533,7 @@
       LOGICAL :: PrintBasicData = .TRUE.
       REAL :: eSum
       !
+!/S      CALL STRACE (IENT, 'SCAL_INTEGRAL_PRINT_R8')
       V8 = DBLE(V)
       CALL SCAL_INTEGRAL_PRINT_GENERAL(eSum, V8, string, PrintFullValue, PrintBasicData)
       END SUBROUTINE
@@ -1597,13 +1598,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       REAL, INTENT(in) :: V(NSEAL)
       CHARACTER(*), INTENT(in) :: string
       LOGICAL :: PrintFullValue = .FALSE.
       LOGICAL :: PrintBasicData = .TRUE.
       REAL :: eSum
       !
+!/S      CALL STRACE (IENT, 'SCAL_INTEGRAL_PRINT_R4')
       CALL SCAL_INTEGRAL_PRINT_GENERAL(eSum, V, string, PrintFullValue, PrintBasicData)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
@@ -1663,6 +1664,7 @@
       USE W3PARALL, ONLY: INIT_GET_ISEA
 !/
       IMPLICIT NONE
+      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1674,8 +1676,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-      INCLUDE "mpif.h"
+!!      INCLUDE "mpif.h"
       !
       REAL, INTENT(out) :: eSum
       REAL, INTENT(in) :: V(NSEAL)
@@ -1688,6 +1689,7 @@
       INTEGER JSEA, ISEA, iProc, I, IX, ierr, ISP, IP, IP_glob
       INTEGER nbIncorr
       INTEGER ITH, IK
+!/S      CALL STRACE (IENT, 'SCAL_INTEGRAL_PRINT_GENERAL')
       WRITE(740+IAPROC,*) 'IAPROC=', IAPROC
       WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
       WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
@@ -5093,7 +5095,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       REAL, INTENT(in) :: DTG
       INTEGER IP, IP_glob, ISEA, IX, IY, JSEA
       REAL :: SPEC_VA(NSPEC)
@@ -5108,7 +5109,7 @@
 !/BT1     REAL   ::    VSBT(NSPEC), VDBT(NSPEC)
 !/BT4     REAL   ::    VSBT(NSPEC), VDBT(NSPEC)
 !/BS1     REAL   ::    VSBS(NSPEC), VDBS(NSPEC)
-
+!/S      CALL STRACE (IENT, 'ADD_SOURCE_TERMS_NONLINEAR')
       DO JSEA=1,NSEAL
         IP      = JSEA
         IP_glob = iplg(IP)
@@ -5244,12 +5245,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       REAL    :: RD1, RD2, RD10, RD20
       REAL    :: eVA, eAC
       INTEGER :: IK, ITH, ISEA, JSEA
       INTEGER :: IBI, ISP
-
+!/S      CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION_VA')
       IF (GTYPE .eq. UNGTYPE) THEN
         IF ( FLBPI ) THEN
           RD10    = DSEC21 ( TBPI0, TIME )
@@ -5356,13 +5356,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !/DEBUGSOLVER      REAL*8 :: sumAC(NSPEC)
 !/DEBUGSOLVER      REAL :: sumBPI0(NSPEC), sumBPIN(NSPEC), sumCG, sumCLATS
 !/DEBUGIOBC      REAL :: ETOT, HSIG_bound, eVA, eAC, FACTOR
       REAL    :: RD1, RD2, RD10, RD20
       INTEGER :: IK, ITH, ISEA
       INTEGER :: IBI, IP_glob, ISP, JX
+!/S      CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION')
       IF ( FLBPI ) THEN
         RD10    = DSEC21 ( TBPI0, TIME )
         RD20    = DSEC21 ( TBPI0, TBPIN )
@@ -5498,7 +5498,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
       INTEGER, INTENT(in) :: IP
       REAL, INTENT(in) :: ACOLD(NSPEC)
       REAL, INTENT(inout) :: ACLOC(NSPEC)
@@ -5514,7 +5513,7 @@
       INTEGER IP_glob, ISEA
       INTEGER :: IK, ITH, ISP
       LOGICAL :: LLIMITER_WWM 
-!
+!/S      CALL STRACE (IENT, 'ACTION_LIMITER_LOCAL')!
       IP_glob=iplg(IP)
       ISEA=MAPFS(1,IP_glob)
       eSPSIG=SIG(NK)
@@ -6634,7 +6633,6 @@
       IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
 !/
       INTEGER ISP, ITH, IK, ISPprevFreq, ISPnextFreq
       INTEGER NewISP, JTH, istat
@@ -6753,11 +6751,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !
       INTEGER :: JSEA, ISEA, IX, IP, IP_glob
       REAL*8, PARAMETER :: DTHR = 10E-6
-
+!/S      CALL STRACE (IENT, 'SETDEPTH_PDLIB')
       IOBDP = 1
       DO JSEA=1,NSEAL
         IP=JSEA
@@ -6831,8 +6828,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !
+!/S      CALL STRACE (IENT, 'BLOCK_SOLVER_FINALIZE')
       IF (B_JGS_USE_JACOBI) THEN
         CALL JACOBI_FINALIZE
       END IF
@@ -7018,7 +7015,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+!/S      CALL STRACE (IENT, 'JACOBI_FINALIZE')
       DEALLOCATE(ASPAR_JAC, B_JAC)
 !/
 !/ End of JACOBI_FINALIZE -------------------------------------------- /

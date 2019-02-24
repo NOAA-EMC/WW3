@@ -358,7 +358,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: GRAV, TPI
+      USE CONSTANTS, ONLY: GRAV, TPI, &
+!/T                        RADE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           SSWELLF,                                     &

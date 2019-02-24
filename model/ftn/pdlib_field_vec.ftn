@@ -437,6 +437,7 @@ MODULE PDLIB_FIELD_VEC
 !/TIMINGS      USE W3PARALL, ONLY: PRINT_MY_TIME
       use yowNodepool, only: ListNP, ListNPA, ListIPLG
       IMPLICIT NONE
+      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -448,9 +449,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 !
-      INCLUDE "mpif.h"
       INTEGER, intent(in) :: NDREAD
       INTEGER iBlock, iFirst, iEnd, len, i, IB, iProc
       INTEGER NREC, ISEA, JSEA, ierr
@@ -467,6 +466,7 @@ MODULE PDLIB_FIELD_VEC
       integer IPloc, IPglob, pos
       integer NbMatch, idx
       integer ListFirst(NAPROC)
+!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
       !
 !/DEBUGIO     WRITE(740+IAPROC,*) 'UNST_PDLIB_READ, Beginning of function'
 !/DEBUGIO     FLUSH(740+IAPROC)
@@ -652,6 +652,7 @@ MODULE PDLIB_FIELD_VEC
       USE W3WDATMD, ONLY : VA
       USE W3GDATMD, ONLY: NSEAL, NX, NY
       IMPLICIT NONE
+      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -663,9 +664,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 !
-      INCLUDE "mpif.h"
       INTEGER, intent(in) :: NDWRITE
       INTEGER, PARAMETER :: BlockSize = 100000
       REAL :: DATAwrite(NSPEC,BlockSize)
@@ -683,6 +682,7 @@ MODULE PDLIB_FIELD_VEC
       INTEGER IERR_MPI
       REAL(KIND=LRB) WRITEBUFF(NSPEC)
       REAL, allocatable :: DATAsend(:,:)
+!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 !/DEBUGIO      WRITE(740+IAPROC,*) 'Beginning of UNST_PDLIB_WRITE_TO_FILE IAPROC=', IAPROC, 'NAPRST=', NAPRST
 !/DEBUGIO      FLUSH(740+IAPROC)
 !/DEBUGIO      WRITE(740+IAPROC,*) 'sum(VA)=', sum(VA)

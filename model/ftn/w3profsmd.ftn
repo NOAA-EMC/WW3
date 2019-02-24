@@ -1578,12 +1578,10 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !
       INTEGER :: JSEA, ISEA, IX, IP
       REAL*8, PARAMETER :: DTHR = 10E-6
-
+!/S      CALL STRACE (IENT, 'SETDEPTH')
       IOBDP = 1
       DO IP=1,NX
         IF (DW(IP) .LT. DMIN + DTHR) IOBDP(IP) = 0

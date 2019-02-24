@@ -401,7 +401,7 @@ CONTAINS
 !/PDLIB      use yowElementpool, only: ne_global, INE_global
 !/PDLIB      use yowNodepool, only: np_global
       USE W3GDATMD, ONLY : TRIGP, NTRI, NX
-      implicit none
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -413,12 +413,12 @@ CONTAINS
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 !
       integer, intent(out) :: STATUS(NX)
       INTEGER :: COLLECTED(NX), NEXTVERT(NX), PREVVERT(NX)
       INTEGER :: ISFINISHED, INEXT, IPREV
       INTEGER :: IPNEXT, IPPREV, ZNEXT, IP, I, IE
+!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
       STATUS(:) = 0
       DO IE=1,NTRI
         DO I=1,3
@@ -2147,10 +2147,6 @@ END SUBROUTINE
 !/ Local PARAMETERs
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 
         INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
         INTEGER, INTENT(INOUT)          :: IOBP(MNP)
@@ -2165,7 +2161,7 @@ END SUBROUTINE
         INTEGER :: IE, I, IP, IP2, IP3
         INTEGER :: ISFINISHED, INEXT, IPREV, ISTAT
         INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
-
+!/S      CALL STRACE (IENT, 'GET_BOUNDARY')
         ALLOCATE(STATUS(MNP), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
@@ -2362,6 +2358,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
+         IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -2373,10 +2370,9 @@ END SUBROUTINE
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!
         INTEGER, INTENT(IN)  :: I
         INTEGER, INTENT(OUT) :: INEXT, IPREV
+!/S      CALL STRACE (IENT, 'TRIANG_INDEXES')
         IF (I.EQ.1) THEN
           INEXT=3
         ELSE
@@ -2454,9 +2450,8 @@ END SUBROUTINE
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-
         INTEGER :: I, J, IP, IE
+!/S      CALL STRACE (IENT, 'GET_INTERFACE')
 !/PDLIB      IF (LPDLIB) THEN
 !/PDLIB      DO IP = 1, NSEAL
 !/PDLIB        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE

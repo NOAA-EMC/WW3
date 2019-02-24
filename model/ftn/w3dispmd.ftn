@@ -400,7 +400,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       USE CONSTANTS, ONLY : GRAV, PI
-!/S      USE W3SERVMD, ONLY: STRACE
+!!/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
 !/
@@ -414,7 +414,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: I1, I2
-!/S      INTEGER, SAVE           :: IENT = 0
+!!/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: KH0, KH, TMP, TP, CP, L
       REAL, PARAMETER         :: BETA1 = 1.55
       REAL, PARAMETER         :: BETA2 = 1.3
@@ -424,7 +424,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'WAVNU1')
+! IENT does not work with PURE subroutines
+!!/S      CALL STRACE (IENT, 'WAVNU1')
 !
       TP  = SI/ZPI
       KH0 = ZPI*ZPI*H/GRAV*TP*TP

@@ -1738,11 +1738,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 
         INTEGER             :: ISP, ITH, IK, IS
         REAL, INTENT(IN)    :: SPEC(NSPEC)
         REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
+!/S      CALL STRACE (IENT, 'SIGN_VSD_SEMI_IMPLICIT_WW3')
         DO IS=1,NSPEC
           VD(IS) = MIN(0., VD(IS))
         END DO
@@ -1809,10 +1809,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
         INTEGER             :: ISP, ITH, IK, IS
         REAL, INTENT(IN)    :: SPEC(NSPEC)
         REAL, INTENT(INOUT) :: VS(NSPEC), VD(NSPEC)
+!/S      CALL STRACE (IENT, 'SIGN_VSD_PATANKAR_WW3')
         DO IS=1,NSPEC
           VD(IS) = MIN(0., VD(IS))
           VS(IS) = MAX(0., VS(IS))

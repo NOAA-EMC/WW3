@@ -287,6 +287,7 @@
 !
 ! 10. Source code :
 !
+!/S      USE W3SERVMD, ONLY: STRACE
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   
 !/
@@ -372,6 +373,7 @@
 !       !/T  Enable test output.
 !
 ! 10. Source code :
+!/S      USE W3SERVMD, ONLY: STRACE
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   

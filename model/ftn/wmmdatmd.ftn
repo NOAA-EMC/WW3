@@ -1075,6 +1075,7 @@
 !/
       integer, intent(in) :: ISEA, J
       integer, intent(out) :: JSEA, ISPROC
+      integer nb
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1084,7 +1085,6 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC_GLOB')
-      integer nb
       IF (.NOT. LPDLIB) THEN
         nb=OUTPTS(J)%NAPROC
         JSEA   = 1 + (ISEA-1)/nb

@@ -445,5 +445,3 @@ if [ ! -z $(echo $old_inp | awk -F'ww3_ounp.inp.' '{print $2}') ] ; then
   echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
 fi
 #------------------------------
-
-

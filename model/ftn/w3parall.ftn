@@ -52,14 +52,6 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
 !
 !/PDLIB      INTEGER :: PDLIB_NSEAL, PDLIB_NSEALM
 !/PDLIB      INTEGER, ALLOCATABLE :: JX_TO_JSEA(:), ISEA_TO_JSEA(:)
@@ -75,7 +67,7 @@
 
       REAL,  PARAMETER     :: THR8      = TINY(1.0)
       REAL,  PARAMETER     :: THR       = TINY(1.0)
-
+!!/S      CALL STRACE (IENT, 'W3XXXX')
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WAV_MY_WTIME(eTime)
@@ -132,23 +124,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+       IMPLICIT NONE
 !/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-!
-      IMPLICIT NONE
       INTEGER mpimode
       REAL(8), intent(out) :: eTime
 !/MPI      REAL(8) mpi_wtime
       mpimode=0
 !/MPI      mpimode=1
 !/MPI      eTime=mpi_wtime()
+!/S      CALL STRACE (IENT, 'WAV_MY_WTIME')
       IF (mpimode .eq. 0) THEN
         CALL CPU_TIME(eTime)
       END IF
@@ -203,6 +187,8 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE W3ODATMD, ONLY : IAPROC
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -213,17 +199,10 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
 !
-      USE W3ODATMD, ONLY : IAPROC
-      IMPLICIT NONE
       character(*), intent(in) :: string
       REAL(8) :: eTime
+!/S      CALL STRACE (IENT, 'PRINT_MY_TIME')
       CALL WAV_MY_WTIME(eTime)
       WRITE(740+IAPROC,*) 'TIMING time=', eTime, ' at step ', string
 !/
@@ -277,6 +256,15 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
+     USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
+                          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
+                          CTMAX, DMIN, DTH, CTHG0S, MAPSF
+      USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX,   &
+                          DDDY, DW
+!/REFRX USE W3ADATMD, ONLY: DCDX, DCDY
+      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, only : IAPROC
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -288,20 +276,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-!
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-                          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-                          CTMAX, DMIN, DTH, CTHG0S, MAPSF
-      USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX, DDDY, DW
-!/REFRX USE W3ADATMD, ONLY: DCDX, DCDY
-      USE W3IDATMD, ONLY: FLCUR
-      USE W3ODATMD, only : IAPROC
-      IMPLICIT NONE
       REAL, intent(out) :: CAD(NSPEC)
       INTEGER, intent(in) :: ISEA
       REAL, intent(in) :: DTG
@@ -311,6 +286,7 @@
       REAL :: eDCXDX, eDCXDY, eDCYDX, eDCYDY, eDDDX, eDDDY, eCTHG0
       REAL :: VCFLT(NSPEC), DEPTH, FDG
       REAL :: FDDMAX
+!/S      CALL STRACE (IENT, 'PROP_REFRACTION_PR1')
       IX=MAPSF(ISEA,1)
       IY=MAPSF(ISEA,2)
       eDDDX=DDDX(IY,IX)
@@ -432,6 +408,15 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE CONSTANTS, ONLY : LPDLIB
+      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
+                          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
+                          CTMAX, DMIN, DTH, CTHG0S, MAPSF
+      USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX,   &
+                          DDDY, DW
+      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, only : IAPROC
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -440,22 +425,6 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY : LPDLIB
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-                          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-                          CTMAX, DMIN, DTH, CTHG0S, MAPSF
-      USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX, DDDY, DW
-      USE W3IDATMD, ONLY: FLCUR
-      USE W3ODATMD, only : IAPROC
-      IMPLICIT NONE
       REAL, intent(out) :: CAD(NSPEC)
       INTEGER, intent(in) :: ISEA, IP
       REAL, intent(in) :: DTG
@@ -466,7 +435,7 @@
       REAL :: eDCXDX, eDCXDY, eDCYDX, eDCYDY, eDDDX, eDDDY, eCTHG0
       REAL :: VCFLT(NSPEC), DEPTH, FDG
       REAL :: FDDMAX, CFLTHMAX, VELNOFILT, CTMAX_eff
-
+!/S      CALL STRACE (IENT, 'PROP_REFRACTION_PR3')
       IX=MAPSF(ISEA,1)
       IY=MAPSF(ISEA,2)
       IF (LPDLIB) THEN
@@ -589,23 +558,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-!
       USE CONSTANTS, ONLY : LPDLIB
       USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
                           EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
@@ -613,6 +565,12 @@
       USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, CX, CY, DDDX, DDDY, DW
       USE W3ODATMD, only : IAPROC
       IMPLICIT NONE
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, intent(in) :: ISEA, IP
       REAL, intent(out) :: DMM(0:NK2)
       REAL, intent(in) :: DTG
@@ -623,6 +581,7 @@
       REAL :: VELNOFILT, VELFAC, DEPTH
       REAL :: CFLK(NK2,NTH), FKC(NTH), FKD0
       INTEGER :: IK, ITH, ISP, IY, IX
+!/S      CALL STRACE (IENT, 'PROP_FREQ_SHIFT')
 !
       IF (LPDLIB) THEN
         eDCXDX = DCXDX(1,IP)
@@ -741,31 +700,22 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
 !
+!/S      USE W3SERVMD, ONLY: STRACE
       USE CONSTANTS, ONLY : LPDLIB
       USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
                           EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
                           CTMAX, DMIN, DTH, MAPSF
       USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, CX, CY, DDDX, DDDY, DW
       USE W3ODATMD, only : IAPROC
+
       IMPLICIT NONE
+
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+
       INTEGER, intent(in) :: ISEA, IP
       REAL, intent(out) :: CWNB_M2(1-NTH:NSPEC)
       REAL, intent(out) :: DWNI_M2(NK)
@@ -780,8 +730,12 @@
       REAL :: sumDiff, sumDiff1, sumDiff2, sumDiff3
       REAL :: sumDiff0, sumDiff4, sumDiff5
       INTEGER :: IK, ITH, ISP, IY, IX
+
+!/ ------------------------------------------------------------------- /
+!/S      CALL STRACE (IENT, 'PROP_FREQ_SHIFT_M2')
+
 !/DEBUGDCXDX       WRITE(740+IAPROC,*) 'Now we use DCXDX array in PROP_FREQ_SHIFT_M2'
-!
+
       IF (LPDLIB) THEN
         eDCXDX = DCXDX(1,IP)
         eDCXDY = DCXDY(1,IP)
@@ -873,7 +827,7 @@
 !/
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-!/PDLIB   SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
+      SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -922,37 +876,24 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-
-!/PDLIB   use yowDatapool, only: istatus
-!/PDLIB   use yowNodepool, only: np_global
+!/PDLIB   USE yowDatapool, only: istatus
+!/PDLIB   USE yowNodepool, only: np_global
 !/PDLIB   USE W3ODATMD, ONLY: NTPROC, NAPROC, IAPROC
 !/PDLIB   USE W3GDATMD, ONLY: MAPSF, NSEA
 !/PDLIB   USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
 !/PDLIB   USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
 !/PDLIB   USE WMMDATMD, ONLY: MDATAS
-!/PDLIB   implicit none
+          IMPLICIT NONE 
 !/PDLIB   INCLUDE "mpif.h"
-!/PDLIB   INTEGER, intent(in) :: IMOD
-!/PDLIB   logical, intent(in) :: IsMulti
+          INTEGER, intent(in) :: IMOD
+          logical, intent(in) :: IsMulti
+!/S      INTEGER, SAVE           :: IENT = 0
 !/PDLIB   INTEGER :: Iarr(1)
 !/PDLIB   INTEGER :: ISEA, IP_glob
 !/PDLIB   INTEGER :: IPROC, IERR_MPI, istat
+
+!/S      CALL STRACE (IENT, 'SYNCHRONIZE_IPGL_ETC_ARRAY')
+
 !/PDLIB   IF (IAPROC .le. NAPROC) THEN
 !/PDLIB     IF (IAPROC .eq. 1) THEN
 !/PDLIB       Iarr(1)=np_global
@@ -984,7 +925,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-!/PDLIB   END SUBROUTINE
+      END SUBROUTINE
 !/ ....................----------------------------------------------- /
       SUBROUTINE SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
 !/
@@ -1034,20 +975,6 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
 !/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
 !/PDLIB      use yowDatapool, only: istatus
 !/PDLIB      use yowNodepool, only: npa
 !/PDLIB      use yowRankModule, only : rank
@@ -1058,6 +985,13 @@
       USE W3ODATMD, ONLY: NTPROC, NAPROC, IAPROC
       IMPLICIT NONE
       INTEGER, intent(out) :: NSEALout, NSEALMout
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'SET_UP_NSEAL_NSEALM')
 !!/PDLIB      WRITE(*,*) 'LPDLIB=', LPDLIB
 !!/PDLIB      WRITE(*,*) 'GTYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
 !/DEBUG      WRITE(740+IAPROC,*) 'SET_UP, PDLIB=', LPDLIB
@@ -1140,6 +1074,12 @@
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
+      USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
+      USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
+      USE CONSTANTS, ONLY : LPDLIB
+!/PDLIB      USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
+!/PDLIB      use yowNodepool, only: ipgl, iplg
+      IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -1149,22 +1089,10 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-
-      USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
-      USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
-      USE CONSTANTS, ONLY : LPDLIB
-!/PDLIB      USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
-!/PDLIB      use yowNodepool, only: ipgl, iplg
-      IMPLICIT NONE
       INTEGER, intent(in) :: ISEA
       INTEGER, intent(out) :: JSEA, ISPROC
       INTEGER IP_glob
+!/S      CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC')
 !!/DEBUG      WRITE(740+IAPROC,*) 'PDLIB=', PDLIB
 !!/DEBUG      WRITE(740+IAPROC,*) 'GTYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
 !!/DEBUG      FLUSH(740+IAPROC)
@@ -1238,6 +1166,12 @@
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
+      USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
+      USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
+      USE CONSTANTS, ONLY : LPDLIB
+!/PDLIB      USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot, IPGL_npa
+!/PDLIB      use yowNodepool, only: ipgl, iplg
+      IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -1248,21 +1182,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-!
-      USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
-      USE W3GDATMD, ONLY: GTYPE, UNGTYPE, MAPSF
-      USE CONSTANTS, ONLY : LPDLIB
-!/PDLIB      USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot, IPGL_npa
-!/PDLIB      use yowNodepool, only: ipgl, iplg
-      IMPLICIT NONE
       INTEGER, intent(in) :: ISEA
       INTEGER, intent(out) :: JSEA, IBELONG
       INTEGER ISPROC, IX, JX
+!/S      CALL STRACE (IENT, 'GET_JSEA_IBELONG')
       IF (.NOT. LPDLIB) THEN
         JSEA   = 1 + (ISEA-1)/NAPROC
         ISPROC = ISEA - (JSEA-1)*NAPROC
@@ -1350,17 +1273,18 @@
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
+      USE W3ODATMD, ONLY: OUTPTS, IAPROC, NAPROC
+      USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+      USE CONSTANTS, ONLY : LPDLIB
+!/PDLIB      USE YOWNODEPOOL, ONLY: iplg
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1371,8 +1295,10 @@
       USE CONSTANTS, ONLY : LPDLIB
 !/PDLIB      USE YOWNODEPOOL, ONLY: iplg
       IMPLICIT NONE
+!/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, intent(in) :: JSEA
       INTEGER, intent(out) :: ISEA
+!/S      CALL STRACE (IENT, 'INIT_GET_ISEA')
 !/SHRD          ISEA         = JSEA
 !/DIST          IF (.NOT. LPDLIB) THEN
 !/DIST            ISEA         = IAPROC + (JSEA-1)*NAPROC
@@ -1440,7 +1366,14 @@
 !
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
-!/
+!
+      USE W3GDATMD, ONLY: NSEAL, NSEA, NX
+!/PDLIB      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+!/PDLIB      USE W3ADATMD, ONLY: MPI_COMM_WCMP
+!/PDLIB      use yowDatapool, only: rtype, istatus
+!/PDLIB      USE yowNodepool, only: npa
+!/PDLIB      use yowNodepool, only: iplg
+      IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -1451,25 +1384,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/ ------------------------------------------------------------------- /
-!
-      USE W3GDATMD, ONLY: NSEAL, NSEA, NX
-!/PDLIB      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
-!/PDLIB      USE W3ADATMD, ONLY: MPI_COMM_WCMP
-!/PDLIB      use yowDatapool, only: rtype, istatus
-!/PDLIB      USE yowNodepool, only: npa
-!/PDLIB      use yowNodepool, only: iplg
-      IMPLICIT NONE
 !/MPI      INCLUDE "mpif.h"
       INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
       INTEGER IPROC, I, ierr, IP, IX, IP_glob
       REAL*8, intent(inout) :: TheVar(NX)
       REAL*8  rVect(NX)
       Status=0
+!/S      CALL STRACE (IENT, 'SYNCHRONIZE_GLOBAL_ARRAY')
 !/PDLIB      DO IP=1,npa
 !/PDLIB        IP_glob=iplg(IP)
 !/PDLIB        Status(IP_glob)=1
