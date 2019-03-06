@@ -505,7 +505,7 @@
       IF ( FLREQ(02,04) )                                              &
            WRITE (NDSCTL,991) 't01  ', 0, IU, 'Mean Per Tm (s)  '
       IF ( FLREQ(02,05) )                                              &
-           WRITE (NDSCTL,991) 'tm10 ', 0, IU, 'Mean Per Te (s)  '
+           WRITE (NDSCTL,991) 't0m1', 0, IU, 'Mean Per Te (s)  '
       IF ( FLREQ(02,06) )                                              &
            WRITE (NDSCTL,991) 'fp   ', 0, IU, 'Peak Freq. (Hz)'
       IF ( FLREQ(02,07) )                                              &

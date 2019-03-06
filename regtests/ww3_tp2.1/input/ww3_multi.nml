@@ -156,7 +156,7 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'HS TM10 FP DIR'
+  ALLTYPE%FIELD%LIST       = 'HS T0M1 FP DIR'
 /
 
 ! -------------------------------------------------------------------- !

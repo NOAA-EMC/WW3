@@ -239,7 +239,7 @@
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'HS LM T02 T01 TM10 UST CHA CGE DTD FC CFX CFD'
+  TYPE%FIELD%LIST          = 'HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD'
   TYPE%POINT%FILE          = '../input/points.list'
 /
 
@@ -339,7 +339,6 @@
   HOMOG_INPUT(1)%VALUE2      = 180.
   HOMOG_INPUT(1)%VALUE3      = 0.0
 /
-
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !

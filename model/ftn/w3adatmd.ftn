@@ -101,8 +101,7 @@
 !      HS        R.A.  Public   Wave Height.
 !      WLM       R.A.  Public   Mean wave length.
 !      T02       R.A.  Public   Mean wave period (m0,2).
-!      T0M1      R.A.  Public   Mean wave period (m-1,0); NB described correctly as
-!                                TM10 in input/output statements.
+!      T0M1      R.A.  Public   Mean wave period (m0,-1).
 !      T01       R.A.  Public   Mean wave period (m0,1).
 !      FP0       R.A.  Public   Peak frequency.
 !      THM       R.A.  Public   Mean wave direction.
@@ -191,8 +190,7 @@
 !      PWST      R.A.  Public   Total wind sea fraction.
 !      PNR       R.A.  Public   Number of partitions found.
 !
-!      PTHP0     R.A.  Public   Peak wave direction of partition. Written out
-!                               as PDP
+!      PTHP0     R.A.  Public   Peak wave direction of partition.
 !      PQP       R.A.  Public   Goda peakdedness parameter of partition.
 !      PPE       R.A.  Public   JONSWAP peak enhancement factor of partition.
 !      PGW       R.A.  Public   Gaussian frequency width of partition.

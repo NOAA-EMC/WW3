@@ -9,8 +9,8 @@ fi
 
 # link to temporary inp with regtest format
 inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
-if [ ! -z $(echo $inp | awk -F'ww3_prnc.inp.' '{print $2}') ] ; then
- new_inp=$(echo $(echo $inp | awk -F'ww3_prnc.inp.' '{print $1}')ww3_prnc_$(echo $inp | awk -F'ww3_prnc.inp.' '{print $2}').inp)
+if [ ! -z $(echo $inp | awk -F'ww3_prnc\\..inp\\..' '{print $2}') ] ; then
+ new_inp=$(echo $(echo $inp | awk -F'ww3_prnc\\..inp\\..' '{print $1}')ww3_prnc_$(echo $inp | awk -F'ww3_prnc\\..inp\\..' '{print $2}').inp)
  ln -sfn $inp $new_inp
  old_inp=$inp
  inp=$new_inp
@@ -55,6 +55,8 @@ do
   echo "$line" >> $cleaninp
 
 done
+
+
 
 #------------------------------
 # get all values from clean inp file
@@ -238,20 +240,17 @@ done
 cat >> $nmlfile << EOF
 /
 
-
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
 EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
-if [ ! -z $(echo $old_inp | awk -F'ww3_prnc.inp.' '{print $2}') ] ; then
+if [ ! -z $(echo $old_inp | awk -F'ww3_prnc\\..inp\\..' '{print $2}') ] ; then
   unlink $new_inp
-  addon="$(echo $(basename $nmlfile) | awk -F'ww3_prnc_' '{print $2}' | awk -F'.nml' '{print $1}'  )"
+  addon="$(echo $(basename $nmlfile) | awk -F'ww3_prnc_' '{print $2}' | awk -F'\\..nml' '{print $1}'  )"
   new_nmlfile="ww3_prnc.nml.$addon"
   mv $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile) $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)
   echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
 fi
 #------------------------------
-
-

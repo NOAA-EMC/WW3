@@ -263,6 +263,7 @@
   SMC%AISID%FILENAME        =  '../input/A50AISide.dat'
   SMC%AJSID%FILENAME        =  '../input/A50AJSide.dat'
 /
+
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !

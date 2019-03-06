@@ -70,7 +70,7 @@
 # | sent fields by ww3 to Ocean model :             WW3 | OASIS  |
 # |--------------------------------------------------------------|
 # |            not defined   |    WW3_ODRY                       |
-# |                   TM10   |    WW3_TM10                       |
+# |                   T0M1   |    WW3_T0M1                       |
 # |                     HS   |    WW3__OHS                       |
 # |                    DIR   |    WW3_CDIR WW3_SDIR              |
 # |                    BHD   |    WW3__BHD                       |

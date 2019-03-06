@@ -9,7 +9,7 @@ $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 fo the manual.
 $
 N
-DPT HS TM10 DIR SPR HIG EF P2L
+DPT HS TM1 DIR SPR HIG EF P2L
 $
 $ Output type 4 [3,4]       (version netCDF)
 $ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)

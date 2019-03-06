@@ -236,7 +236,7 @@
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'DPT HS TM10'
+  TYPE%FIELD%LIST          = 'DPT HS T0M1'
   TYPE%POINT%FILE          = '../input/points.list'
 /
 
@@ -328,7 +328,6 @@
 
 &HOMOG_INPUT_NML
 /
-
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !

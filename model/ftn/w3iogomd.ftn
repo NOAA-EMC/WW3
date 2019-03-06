@@ -460,7 +460,7 @@
              FLG2D(2,2)=.TRUE.
            CASE('T02')
              FLG2D(2,3)=.TRUE.
-           CASE('TM10')
+           CASE('T0M1')
              FLG2D(2,4)=.TRUE.
            CASE('T01')
              FLG2D(2,5)=.TRUE.
@@ -518,7 +518,7 @@
              FLG2D(4,5)=.TRUE.
            CASE('PWS')
              FLG2D(4,6)=.TRUE.
-           CASE('PTHP0')
+           CASE('PDP')
              FLG2D(4,7)=.TRUE.
            CASE('PQP')
              FLG2D(4,8)=.TRUE.
@@ -880,7 +880,7 @@
            FLG2D(2,2)=.TRUE.
          CASE('T02')
            FLG2D(2,3)=.TRUE.
-         CASE('TM10')
+         CASE('T0M1')
            FLG2D(2,4)=.TRUE.
          CASE('T01')
            FLG2D(2,5)=.TRUE.
@@ -938,7 +938,7 @@
            FLG2D(4,5)=.TRUE.
          CASE('PWS')
            FLG2D(4,6)=.TRUE.
-         CASE('PTHP0')
+         CASE('PDP')
            FLG2D(4,7)=.TRUE.
          CASE('PQP')
            FLG2D(4,8)=.TRUE.

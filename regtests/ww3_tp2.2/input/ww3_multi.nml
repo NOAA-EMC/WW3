@@ -156,7 +156,7 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'HS TM10 DIR SPR'
+  ALLTYPE%FIELD%LIST       = 'HS T0M1 DIR SPR'
   ALLTYPE%POINT%FILE       = '../input/points.list'
 /
 

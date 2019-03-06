@@ -163,7 +163,7 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'DPT CUR WND HS TM10 FP DP PHS PTP PDIR'
+  ALLTYPE%FIELD%LIST       = 'DPT CUR WND HS T0M1 FP DP PHS PTP PDIR'
   ALLTYPE%POINT%NAME       = 'points'
   ALLTYPE%POINT%FILE       = '../input/points.list'
 /
