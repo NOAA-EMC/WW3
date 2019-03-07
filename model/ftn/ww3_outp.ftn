@@ -1366,7 +1366,7 @@
             ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
             ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
 !
-            HSIG   = 4. * SQRT ( ET )
+            HSIG   = 4. * SQRT ( MAX(0.,ET) )
             IF ( HSIG .GT. HSMIN ) THEN
                 WLEN   = EWN / ET * TPI
                 TMEAN  = ETR / ET * TPI

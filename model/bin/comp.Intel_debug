@@ -79,6 +79,7 @@
   opt="-p -pg -g $opt"
   opt="-check bounds -check uninit -ftrapuv -warn -warn interface $opt"
   opt="-fno-alias -fno-fnalias -debug -check all -implicitnone -warn all -fp-stack-check -heap-arrays $opt"
+  opt="-c $list -O0 -assume byterecl -g -traceback -check all -fpe0 -ftrapuv -module $path_m"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

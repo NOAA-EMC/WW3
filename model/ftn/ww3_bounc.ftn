@@ -495,8 +495,7 @@
             CALL CHECK_ERR(IRET)
           END IF
           ! apply scale_factor and add_offset
-          SPEC2D=(SPEC2D*FACTOR)+OFFSET
-
+          SPEC2D(:,:,:,IP)=(SPEC2D(:,:,:,IP)*FACTOR)+OFFSET
          
           ! close spectra file
           IRET=NF90_CLOSE(NCID(IP))

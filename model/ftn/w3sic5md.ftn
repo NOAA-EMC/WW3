@@ -630,6 +630,7 @@
       USE W3SERVMD,  ONLY: EXTCDE
       USE W3ODATMD,  ONLY: NDSE, IAPROC, NAPROC, NAPERR
       USE W3GDATMD,  ONLY: IC5PARS
+      USE W3GSRUMD,  ONLY: W3INAN
 !/
       IMPLICIT NONE
 !/
@@ -759,13 +760,14 @@
 ! NAN = SQRT(-1.) or
 ! a /= a then a is NaN or
 ! ISNAN func (supported by gfortran & ifort)
-!
+!        --- ISNAN -> W3INAN because ISNAN is not supported by pgi
 ! For very few cases, we can get nan | negative ki | kr
 !
 ! (N.B.) NaN problem solved by using CMPLX_TANH2
 !
+
       TRATIO = WNO / WNR
-      IF (ISNAN(WNR) .OR. ISNAN(WNI) .OR. WNR <= 0 .OR. WNI <= 0. &
+      IF (W3INAN(WNR) .OR. W3INAN(WNI) .OR. WNR <= 0 .OR. WNI <= 0. &
           .OR. TRATIO >= IC5MAXKRATIO) THEN
           IF ( IAPROC .EQ. NAPERR )                       &
           WRITE(NDSE, 1002) 'FSDISP', HICE, IVISC, TISMODG, HWAT, TWT, &

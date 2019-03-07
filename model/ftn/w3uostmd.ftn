@@ -161,10 +161,10 @@
         !  warning the user that for cells too small UOST may be inaccurate
         CGMAX = 20 ! simply taking a high value for the max group velocity to give an indication of this threshold
         MINSIZE = CGMAX*GRD%DTMAX/1000
-        WRITE(NDSO,*)
+        WRITE(NDSO,*)'*** WAVEWATCH-III WARNING IN W3UOST/UOST_INITGRID'
         WRITE(NDSO,*)'UOST: grid ',TRIM(GRD%GNAME),':'
         WRITE(NDSO,*)'      global time step == ', GRD%DTMAX, ' s'
-        WRITE(NDSO,*)'      FOR CELLS SMALLER THAN ABOUT ', MINSIZE,\
+        WRITE(NDSO,*)'      FOR CELLS SMALLER THAN ABOUT ', MINSIZE,    &
                   ' KM UOST MAY UNDERESTIMATE THE DISSIPATION'
         WRITE(NDSO,*)
       ENDIF
