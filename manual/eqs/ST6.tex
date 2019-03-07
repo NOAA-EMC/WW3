@@ -143,8 +143,8 @@ was parameterized by \citet{art:Tea10} as a function of wind speed using
 data from \citet{art:BP98}.
 
 \paragraph{Negative Input.} Apart from the positive input, {\code ST6} also has a
-negative input term in order to attenuate growth of waves in those parts
-of wave spectrum where adverse component of the wind stress is present
+negative input term in order to attenuate the growth of waves in those parts
+of the wave spectrum where an adverse component of the wind stress is present
 (\ref{eq:ST606-1}--\ref{eq:ST606-2}). The growth rate for adverse winds
 is negative \citep{pro:Don99} and is applied after the constraint of
 the wave-supported stress $\tau_w$ is met. The value of $a_0$
@@ -175,9 +175,9 @@ implemented as:
 
 \noindent
 where $T_1$ is the inherent breaking term, expressed as the traditional function
-of wave spectrum, and $T_2$, expressed as an integral of the wave spectrum below
+of the wave spectrum, and $T_2$, expressed as an integral of the wave spectrum below
 wavenumber $k$, accounts for the cumulative effect of short-wave breaking or
-dissipated due to longer waves at each frequency/wavenumber. The inherent breaking
+dissipation due to longer waves at each frequency/wavenumber. The inherent breaking
 term $T_1$ is the only breaking-dissipation term if this frequency is at or below
 the spectral peak. Once the peak moves below this particular frequency, $T_2$
 becomes active and progressively more important as the peak downshifts further.
@@ -309,7 +309,7 @@ specific frequency range.
 Rogers (2014, unpublished work) found that using $U_s = 32u_{\ast}$ (i.e.,
 $\Upsilon = 32$) could improve model skills in estimating tail level in
 the {\code ST6} implementation in SWAN [see also \citet{Rogers2017}]. Following
-this, \citet{Liu2018} carried out a thorough recalibration of {\code ST6} with WW3,
+this, \citet{Liu2019} carried out a thorough recalibration of {\code ST6} with WW3,
 and the new set of parameters (i.e., $a_0,\ a_1,\ a_2,\ B_1$) is summarized
 in the last column of Table~\ref{tab:ST601}. The updated {\code ST6} package not
 only performs well in predicting commonly-used bulk wave parameters (e.g.,
@@ -343,7 +343,7 @@ about $f^{-5}$, comparable to previous field studies \citep{Forristall1981}.
 \end{table}
 % -------------------------------------------------------------------
 
-Apart from applying {\code ST6} with the {\code DIA} (section~\ref{sec:NL1}) nonlinear solver, \citet{Liu2018}
+Apart from applying {\code ST6} with the {\code DIA} (section~\ref{sec:NL1}) nonlinear solver, \citet{Liu2019}
 also made an attempt to run {\code ST6} with the {\code GMD} parameterization of $S_{nl}$
 (section~\ref{sec:NL3}). As a first step, only the {\code GMD} configuration with
 5 quadruplets and a three-parameter quadruplet definition
@@ -358,11 +358,11 @@ $\theta_{12}$ is implied by the value of $\mu$ \citep{tol:OMOD13d}. Accordingly,
 a combination of {\code ST6+GMD} and the conservative nonlinear high-frequency
 filter of \citet{tol:OMOD11} [see also section~\ref{sec:NLS}] might be
 necessary to stabilize the model integration, particularly for high-resolution
-spectral grid (say, $\Delta \theta < 5^{\circ}$).}\footnote{Unlike
+spectral grid (say, $\Delta \theta < 5^{\circ}$).},\footnote{Unlike
 Table~\ref{tab:ST601}, here we only show important parameters of {\code ST6} and
 {\code GMD}. The reader is refered to {\code bin/README.UoM} for the detailed
 set up of namelist variables for this specific model configuration.}.
-\citet{Liu2018} demonstrated that in the duration-limited test, the
+\citet{Liu2019} demonstrated that in the duration-limited test, the
 {\code GMD}-simulated $E(f)$ is in excellent agreement with that from the exact
  solutions of $S_{nl}$(e.g., {\code WRT}; section~\ref{sec:NL2}) \citep[see also][]{tol:OMOD13d}]. In a 1-yr global
 hindcast, the {\code DIA}-based model overestimates the low-frequency wave energy
@@ -423,15 +423,15 @@ wind fields. When optimizing the wave model, it is recommended to
 only re-tune parameters $a_0$, $b_1$ and $\mathrm{FAC}$. Again, $\mathrm{FAC}$
 can potentially eliminate a bias in the wind field, which typically changes
 with the selection of the reanalysis product. This reduction was tested
-for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In global
-hindcast, the coefficient for the negative input can be used to tune
-the bulk of wave height in scatter comparisons, whereas the scaling
-coefficient for swell dissipation primarily effect large sea states.
+for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In
+a global hindcast, the coefficient for the negative input can be used to tune
+the bulk of the wave heights in scatter comparisons, whereas the scaling
+coefficient for swell dissipation primarily affects large sea states.
 When the discrete interaction approximation ({\code DIA}) is used to compute the four-wave
-interaction the default value for the proportionality constant changes to
+interaction, the default value for the proportionality constant changes to
 $C=3.00\times10^7$.
 
 \textrm{\textit{\underline{Limitations of the code:}}} For vers. 4.18 and
-vers. 5.16, in cases where the minimum time step for dynamical source term
+vers. 5.16, in cases where the minimum time step for the dynamical source term
 integration is much smaller than the overall time step (i.e. less than
-1/15th) the model becomes unstable. The issue has been solved since vers.\,\WWver.
+1/15th), the model becomes unstable. The issue has been solved since vers.\,\WWver.

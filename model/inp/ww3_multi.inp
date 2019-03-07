@@ -36,7 +36,7 @@ $
 $ -------------------------------------------------------------------- $
 $ If all point output is gathered in a unified point output file
 $ ( UNIPTS = .TRUE. ), then the output spectral grid needs to be 
-$ defined. Ths information is taken from a wave model grid, and only
+$ defined. This information is taken from a wave model grid, and only
 $ the spectral definitions from this grid are relevant. Define the
 $ name of this grid here
 $

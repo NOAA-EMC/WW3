@@ -92,10 +92,13 @@ additional to corresponding {\F st{\it n}} switch:
 \sit{st1} {\wam\-3 source term package.}
 \sit{st2} {\cite{tol:JPO96} source term package. See also the optional 
           {\F stab2} switch.}
-\sit{stab2}{Enable stability correction (\ref{eq:scor}) - (\ref{eq:stab})
-            for {\F st2}.}
+\sit{stab0}{No stability correction. Compatible with any source term ({\F st}) package. 
+            Including this switch has no effect.}
+\sit{stab2}{Enable stability correction (\ref{eq:scor}) - (\ref{eq:stab}).
+            Compatible with {\F st2} only.}
 \sit{st3} {\wam\-4 and variants source term package.}
-\sit{stab3}{Enable stability correction from \cite{rep:AB02} for {\F st4}.}
+\sit{stab3}{Enable stability correction from \cite{rep:AB02}. 
+            Compatible with {\F st3} and {\F st4} only.}
 \sit{st4} {\cite{art:Aea10} source term package.}
 %\sit{st5} {UNSW source term package.}
 \sit{st6} {BYDRZ source term package.}
@@ -278,6 +281,7 @@ compatible with switches used in previous model versions.
     parallelization.}  
 \sit{omph}{Idem, but for directives used only for hybrid MPI-OpenMP
     parallelization.}
+\sit{pdlib}{Domain Decomposition for Explicit and Implicit Solver on triangular unstructured grids. ({\code ParMetis} is required for this option)}
 \end{slist}
 Note that these switches can only be used in certain combinations, as enforced
 in the model installation scripts (particularly {\file make\_makefile.sh}. A
@@ -333,6 +337,7 @@ Furthermore the following miscellaneous switches are available:
 \sit{oasis }{Initializes OASIS Coupler (App.~\ref{sec:couplingB}).}   
 \sit{oasacm}{OASIS atmospheric model coupling fields(App.~\ref{sec:couplingB}).}
 \sit{oasocm}{OASIS oceanic model coupling fields (App.~\ref{sec:couplingB}).}
+\sit{oasicm}{OASIS sea ice model coupling fields (App.~\ref{sec:couplingB}).}
 \sit{refrx} {Enables refraction based on spatial gradients in phase velocity (\para\ref{sec:ICE3})}
 \sit{reft}{Test output for shoreline reflection (which is activated with
           {\F ref1}).}

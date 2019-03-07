@@ -8,40 +8,75 @@ a description of the ice properties that usually include at least the ice concen
 mean ice thickness, and maximum floe diameter. Indeed, the ice is often broken into pieces (the floes) that can have a wide variety of sizes, 
 and these sizes strongly modify the dispersion and wave-ice interaction processes. 
 
-
 In the present version of \ww, the different options 
-for treating the ice are the result of ongoing research effort and are not completely self-consistent. In particular, the forcing fields may take 
-different meanings for different source terms. There are now 5 different 
-version of dissipation processes activated with the switches {\code IC1}, {\code IC2},  {\code IC3}, {\code IC4} and {\code IC5} that can be combined with 2 
-different versions of scattering effects  {\code IS1} and {\code IS2}. The second scatering routine, because it was the only routine 
+for treating the ice represent ongoing research. There are now five different 
+versions of dissipation processes activated with the switches {\code IC1}, {\code IC2},  {\code IC3}, {\code IC4} and {\code IC5} that can be combined with two 
+different versions of scattering effects  {\code IS1} and {\code IS2}. The second scattering routine, because it was the only routine 
 to use a maximum floe diameter, also contains an estimation of 
-ice break-up and resulting maximum floe diameter and some dissipation due to creep. 
+ice break-up and resulting maximum floe diameter and some dissipation due to hysteresis. 
 
+Some features of these switch selections require care in application. For example, other than ice concetration and thickness, the forcing fields are context-based: they take different meanings for different source terms.
 
-At present it is not possible to combine dissipation parametrizations designed for frazil or pancake ice (  {\code IC3} or {\code IC4}) with 
-a parametrization designed for the ice pack, such  as {\code IC2}. Further, all parameterizations are not yet completely consistent: 
-for example the floe size is not yet taken into account in some modified dispersion relations that take into account the ice, and 
-the spatial variability of the ice properties, in particular the thickness, is generally not taken into account. As a result, 
-the various ice effects have only been tested in very  few real conditions \citep[e.g.][]{art:Aea16}.
-We expect to have a more streamlined way of combining various processes in future versions of \ww, possibly using 
-a maximum floe diameter to call one or the other routines. 
+At present it is not possible to combine dissipation parametrizations designed for frazil or pancake ice ({\code IC3} or {\code IC4}) with a parametrization designed for the ice pack, such as {\code IC2}. Further, all parameterizations are not yet fully integrated: for example the floe size is not yet taken into account in some modified dispersion relations that take into account the ice. We expect to have a more streamlined way of combining various processes in future versions of \ws, possibly using a maximum floe diameter to call one or the other routines. 
 
+In most cases, \ws\ now permits spatial and temporal variability of ice-related inputs, but in practice this information is usually available only for ice concentration (from satellite or model) and thickness (most often from a model). The variability of other parameters representing the nature of the sea ice is rarely available to the user. 
 
-In several source terms, a modified dispersion relation can be used. In particular {\code IC2} and {\code IS2} share 
-the optional use of the \cite{art:LMC88} dispersion relation for unbroken ice, 
-\begin{equation}
-\sigma^2 =  \left(gk_{ice} + B k_{ice}^5\right)  / \left(1/\tanh ( k_{ice}H) +\frac{\rho_{ice}  h k_{ice}} {\rho_{w} }\right),
-\end{equation}
-\begin{equation}
-c_g =  (g+(5 + 4 k_{ice} M)Bk_{ice}^5)/(2\sigma(1+k_{ice}M)^2).
+Observational study of effects of sea ice on waves are challenging, and the modeling of these effects in and near the ice edge is particularly difficult, where the accuracy of the non-stationary and non-uniform input ice fields can be a primary limition on accuracy \citep{rep:RPLA18}. A number of important modeling studies use models other than \ws, e.g. \cite{art:DB13}. So far, the various options available in \ws\ and described in the following sections have been tested in real conditions in a handful of studies, including \cite{art:LKS15}, \cite{art:Aea16}, \cite{art:WHR16}, \cite{art:RTS16}, \cite{rep:RPLA18}, \cite{art:CRT17}, and \cite{Liu2018ic5}.
+
+% Note: IC2 dispersion relation equation was moved to IC2 section
+
+\noindent
+Experimental routines for representation of the effect of ice on waves have
+been implemented using the switches {\code IC1}, {\code IC2}, {\code IC3}, etc. The first two implemented in \ws\ (by \cite{rep:RO13}), were {\code IC1} and the initial version of {\code IC2} which was based on the work by \cite{art:LMC88} and \cite{art:LHV91}. These effects can be presented in terms of a complex wavenumber
+
+\begin{equation}\label{eq:waveno}
+     {k} = {k_r} + i{k_i},
 \end{equation}
 
 \noindent
-$B$ and $M$ quantify the effects of, respectively, ice bending due to waves and ice inertia. 
-The group velocity under the ice, derived from the same relation, is used in the module {\code W3SIS2MD} and computed in  
-{\code W3DISPMD}.  See \citet{art:LMC88} for details.\\
+with the real part ${k_r}$ representing impact of the sea ice on the physical
+wavelength and propagation speeds, producing effects analogous to shoaling and
+refraction by bathymetry, whereas the imaginary part of the complex
+wavenumber, ${k_i}$, is an exponential decay coefficient
+${k_i}({x},{y},{t},\sigma $) (depending on location, time and frequency,
+respectively), producing wave attenuation.  The ${k_i}$ is introduced as
+${S_{ice}}/{E}=-2{c_g}{k_i}$, where ${S_{ice}}$ is a source term (see also
+\cite{bk:WAM94}, pg. 170).  With the methods that provide  ${k_r}$, e.g. {\code IC2}, 
+{\code IC3}, and {\code IC5}, the sea ice effects 
+require solution of a new dispersion relation.
 
+The effect of sea ice on ${k_i}$ is used for all source functions in \ws\ version 6:
+{\code IC1}, ..., {\code IC5}. The effect of sea ice on ${k_r}$ has
+been implemented for {\code IC2} and {\code IC3}, but is exported for use in
+the rest of the code only for {\code IC3}, and this remains an experimental feature.
 
-This equation is only solved when ICEDISP=TRUE in the {\F MISC} namelist. Otherwise, $k_{ice}=k$, just like in open water. 
-Note that the effect of $k_{ice}$ is limited to wave breaking and dissipation, and is not passed back to the main program. \\
+% Note : Is the above still true? Has it been done for IC2 now also?
 
+The ice source functions are scaled by ice concentration.
+
+In the case of ice, up to five input parameters are allowed as 
+non-stationary and non-uniform fields. These can be referred
+to generically as ${C_{ice,1}}$, ${C_{ice,2}}$, ..., ${C_{ice,5}}$.  The meaning
+of the ice parameters will vary depending on which ${S_{ice}}$ routine is
+selected. For example, in case of {\code IC1}, only one parameter is specified, ${C_{ice,1}}$.
+In some cases, e.g. {\code IC3} and {\code IC4}, there are options for taking the simpler approach
+of inputting the same variables as stationary and uniform, defined using namelist parameters.
+
+The reader is referred to the regression tests {\file ww3\_tic1.1-3} and
+{\file ww3\_tic2.1} for examples of how to use the new ice source functions.
+
+\textrm{\textit{\underline{Use within {\file ww3\_shel}:}}} 
+Non-stationary and non-uniform input ice parameters are permitted.
+In the case where any of the ice and mud source functions are activated with
+the switches {\code IC1}, {\code IC2}, {\code IC3}, {\code BT8}, or {\code
+BT9}, {\file ww3\_shel} will anticipate intructions for 8 fields (5 for ice,
+then 3 for mud). These are given prior to the ``water levels'' information.
+The new fields can optionally be specified as a homogeneous field using lines
+found near the end of {\file ww3\_shel.inp}. 
+
+\textrm{\textit{\underline{Use within {\file ww3\_multi} (New in \ws\ version 6):}}} Using the namelist method of
+providing instructions to {\file ww3\_multi}, it is now possible to prescribe mud and ice coefficients as non-stationary and non-uniform fields in {\file ww3\_multi}. Prior to version 6, this was only possible with {\file ww3\_shel}. 
+However, the new method of reading these instructions via {\file ww3\_multi.nml} has not yet been tested by this author at time of writing.
+
+\textrm{\textit{\underline{Separation of the source terms:}}} 
+The source terms {\code IC1},...,{\code IC5} predict dissipation of wave energy. The reflection and scattering of waves from sea ice  (e.g. \cite{art:Wad75}) are not dissipation: they are conservative processes. They are treated separately in {\code IS1} and {\code IS2}.

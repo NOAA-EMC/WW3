@@ -165,11 +165,11 @@ then
 
   set `grep WWATCH3_F90 $ww3_env` ; shift
   comp_fc="$*"
-  echo "      FORTRAN compiler (aux only) : $comp_fc"
+  echo "      auxiliary FORTRAN compiler  : $comp_fc"
 
   set `grep WWATCH3_CC $ww3_env` ; shift
   comp_cc="$*"
-  echo "      C compiler (aux only)       : $comp_cc"
+  echo "      auxiliary C compiler        : $comp_cc"
 
   echo "      Source directory            : $path_s"
 
@@ -213,8 +213,8 @@ else
     echo ' '
     echo "   Default set up :"
     echo "      Printer (listings)       : $prntr"
-    echo "      FORTRAN comp. (aux only) : $comp_fc"
-    echo "      C Compiler (aux only)    : $comp_cc"
+    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
+    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -259,14 +259,14 @@ then
       prntr="$instr"
     fi
 
-    echo -n "      FORTRAN compiler for aux. [$comp_fc] : "
+    echo -n "      Auxiliary FORTRAN compiler [$comp_fc] : "
     instr="$NULL" ; read instr
     if [ -n "$instr" ]
     then
       comp_fc="$instr"
     fi
 
-    echo -n "      C compiler for aux. [$comp_cc] : "
+    echo -n "      Auxiliary C compiler [$comp_cc] : "
     instr="$NULL" ; read instr
     if [ -n "$instr" ]
     then
@@ -324,8 +324,8 @@ then
     echo ' '
     echo "   Modified set up :"
     echo "      Printer (listings)       : $prntr"
-    echo "      FORTRAN comp. (aux only) : $comp_fc"
-    echo "      C Compiler (aux only)    : $comp_cc"
+    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
+    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"

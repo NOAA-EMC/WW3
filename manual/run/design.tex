@@ -2,31 +2,35 @@
 \subsection{~Program design} \label{run:design}
 \vssub
 
-The core of \ws\ is the wave model subroutine. The wave model routine can be
+The core of \ws\ is the wave model subroutine, which can be
 called by either a stand-alone program shell or any other program that
 requires dynamically updated wave data. Two such programs are provided with
-the \ws\ release. Auxiliary programs include a grid preprocessor, a program to
-generate artificial initial conditions, a generic program shell (and a
-corresponding input pre-processor) and output post-processors.  In the
-discussion of the model below, file names will be identified by the {\file
+the \ws\ release (e.g., {\code ww3\_shel} and {\code ww3\_multi}). 
+Auxiliary programs include a grid preprocessor {\code ww3\_grid}, a program to
+generate artificial initial conditions {\code ww3\_strt}, generic program shells
+for individual {\code ww3\_shel} or multi-grid {\code ww3\_multi} applications,
+two input pre-processors ({\code ww3\_prep} and {\code ww3\_prnc}), and  
+post-processors for gridded ({\code ww3\_outf} and {\code ww3\_ounf}) and point 
+({\code ww3\_outp} and {\code ww3\_ounp}) output data.
+
+In this section, note that file names will be identified by the {\file
 file} type font, the contents of a file by the {\code code} type font and {\sc
-fortran} program elements by the {\F fortran} type font.
-
-The main wave model routine is {\F w3wave}. Data files are identified with the
+fortran} program elements by the {\F fortran} type font. The main wave model 
+subroutine is {\F w3wave}. Data files are identified with the
 file extension {\file .ww3}, except in the multi-grid wave model {\file
-ww3\_multi}, where the file extension identifies an individual grid. For
-simplicity, the file extension {\file .ww3} will be used throughout this
-chapter.  A relational diagram including the basic data flow is presented in
-Fig.~\ref{fig:elements}.
+ww3\_multi}, where the file extension identifies individual grids part of a chosen
+multi-grid mosaic. For simplicity, the file extension {\file .ww3} will be used 
+throughout this chapter.  
 
-The grid preprocessor writes a model definition file {\file mod\_def.ww3} with
+A relational diagram including the basic data flow is presented in 
+Fig.~\ref{fig:run_elements}. The figure illustrates a typical workflow, as follows.
+ The grid pre-processor {\code ww3\_grid} writes a model definition file {\file mod\_def.ww3} with
 bottom and obstruction information and parameter values defining the physical
-and numerical approaches. The wave model requires initial conditions,
-consisting of a restart file {\file restart.ww3}, written by either the wave
-model itself, or by the initial conditions program. If this file is not
-available, the wave model will be initialized automatically, depending on the
-ability of the model to start from calm conditions. If linear growth or
-spectral seeding is switch on, the model will start from calm conditions ($H_s
+and numerical approaches. The wave model may have cold or hot starts. 
+Hot starting requires a restart file {\file restart.ww3}, created either
+by the wave model itself in a previous run, or by the initial conditions program {\code ww3\_strt}.
+If a restart file is not available, the wave model will be initialized automatically.
+If linear growth or spectral seeding is switch on, the model may start from a flat ocean ($H_s
 = 0$), otherwise the initial conditions will consist of a parametric
 fetch-limited spectrum based on the initial wind field (see the corresponding
 option in the initial conditions program).  
@@ -34,9 +38,10 @@ option in the initial conditions program).
 The wave model routine ({\F
   w3wave}) optionally generates up to 9 restart files {\file
   restart{\em{n}}.ww3}, where {\file{\em{n}}} represents a single digit
-integer number. The wave model also optionally reads boundary conditions from
+integer number. For telescoping nest applications, the wave model also 
+optionally reads boundary conditions from
 the file {\file nest.ww3} and generates boundary conditions for consecutive
-runs in {\file nest{\em{n}}.ww3}. The model furthermore dumps raw data to the
+nested runs in {\file nest{\em{n}}.ww3}. The model furthermore dumps raw data to the
 output files {\file out\_grd.ww3 }, {\file out\_pnt.ww3}, {\file track\_o.ww3}
 and {\file partition.ww3} (gridded mean wave parameters, spectra at locations,
 spectra along tracks, and partitioned wave data, respectively). The tracks
@@ -57,14 +62,13 @@ documented. This documentation is an additional source of information about
 
 \input{run/fig_flow}
 
-Files specific to \ws\ are opened by name within the program. The unit
-numbers, however, have to be defined by the user\footnote{~Except for {\file
-ww3\_multi}.}, guaranteeing the largest possible flexibility for
-implementation in integrated models.
+Files specific to \ws\ are opened by name within program subroutines. The unit
+numbers, however, are defined by the user\footnote{~Except for {\file
+ww3\_multi}.} within each {\file \.inp}, guaranteeing the largest possible 
+flexibility for implementation in integrated models.
 
-Next to the wave model subroutine, an initialization routine and an interface
-routine for data assimilation are provided. The latter routine is intended to
-be run side by side with the wave model routine. The routine includes a
+In addition to the wave model subroutine, an initialization routine and an interface
+routine for data assimilation are provided. The routine includes a
 generic interface that provides all necessary model components to perform full
 spectral data assimilation. This routine is integrated into the generic wave
 model shell, which is set up to perform time step managements for a wave model

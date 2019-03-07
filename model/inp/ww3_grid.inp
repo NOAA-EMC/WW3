@@ -233,6 +233,16 @@ $                           IS2DAMP       : multiplicative coefficient for dissi
 $                           IS2UPDATE     : TRUE  - updates the max floe diameter with forcing only
 $                                         : FALSE - updates the max floe diameter at each time step
 $
+$ Dissipation by sea ice
+$   Empirical/parametric representations : Namelist SIC4
+$                           IC4METHOD    : integer 1 to 7
+$                                        : In most cases, additional input
+$                                        :   is required.
+$                                        : See examples in /regtests/ww3_tic1.1/
+$                                        : See also: 1) description in manual
+$                                        :   and 2) inline documentation in
+$                                            w3sic4md.ftn
+$
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
 $                           PTRIAD1 : Proportionality coefficient (default 0.05)
@@ -373,6 +383,16 @@ $ For 2nd order pressure at K=0 (source of microseisms & microbaroms)
 $                           P2SF   : <=0: not declared, > 0: declared
 $                           I1P2SF : First frequency index of output (default is 1)
 $                           I2P2SF : Last frequency index of output  (default is NK)
+$ For the surface Stokes drift partitions (USP)
+$                           USSP : First index (default is 1, should always be 1)
+$                           IUSSP : Last index (must be <= than NK and should be
+$                                               between 3 and ~10 with the tradeoff
+$                                               between accuracy and resources)
+$                           STK_WN : List of wavenumbers (size of IUSSP)
+$                           e.g.: USSP = 1, IUSSP=3, STK_WN = 0.04, 0.11, 0.33
+$                                 provides 3 partitions of both x & y component,
+$                                 with a reasonable accuracy for using in
+$                                 a climate model. 
 $
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
@@ -389,6 +409,12 @@ $                                         daries between grid points.
 $                                     2 : Transp. at cell centers.
 $                                     3 : Like 1 with cont. ice.
 $                                     4 : Like 2 with cont. ice.
+$                           TRCKCMPR : Logical variable (T/F). Set to F to
+$                                      disable "compression" of track output.
+$                                      This simplifies post-processing.
+$                                      Default is T and will create track
+$                                      output in the traditional manner
+$                                      (WW3 v3, v4, v5).
 $                           XP, XR, XFILT
 $                                    Xp, Xr and Xf for the dynamic
 $                                    integration scheme.

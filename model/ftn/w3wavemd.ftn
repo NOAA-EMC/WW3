@@ -1233,8 +1233,6 @@
 !
               IF ( IDACT(5:5).NE.' ' ) THEN
 
-!          write(740+IAPROC,*) 'TEST ARON2', FLDDIR, FLCTH, FSREFRACTION, FLCK, FSFREQSHIFT 
-
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'Before W3ULEV'
 !/DEBUGRUN        FLUSH(740+IAPROC)
                   CALL W3ULEV ( VA, VA )

@@ -2,7 +2,7 @@
 \subsubsection{Grid Integration} \label{sub:ww3gint}
 \vsssub
 \proddefH{ww3\_gint}{w3gint}{ww3\_gint.ftn}
-\proddeff{Input}{ww3\_gint.inp}{Formatted input file for program.}{10}
+\proddeff{Input}{ww3\_gint.inp}{Traditional configuration file.}{10} (App.~\ref{sec:config111})
 \proddefa{mod\_def.*}{Model definition files in \ws\ format for base and target grids}{20}
 \proddefa{out\_grd.*}{Gridded field files in \ws\ format for base grids}{30+}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
@@ -18,8 +18,6 @@ rectilinear grids. A weights file {\file WHTGRIDINT.bin} is written
 that can be read in subsequent runs using identical origin-destination grids, 
 saving substantial time in cases using large number of input grids and/or 
 high-resolution target grids.
-
-\inpfile{ww3_gint.tex}
 
 \vspace{\baselineskip}
 \vspace{\baselineskip}

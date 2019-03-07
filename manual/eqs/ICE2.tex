@@ -1,5 +1,5 @@
 \vsssub
-\subsubsection{~$S_{ice}$: Damping by sea ice (generalization of Liu et al.)} \label{sec:ICE2}
+\subsubsection{~$S_{ice}$: Damping by sea ice (Liu et al.)} \label{sec:ICE2}
 \vsssub
 
 \opthead{IC2}{\ws/NRL}{E. Rogers, S. Zieger, F. Ardhuin}
@@ -17,8 +17,21 @@ setting the {\code IC2} namelist {\F SIC2} parameter {\code IC2DISPER = .TRUE.}.
  assumes that the boundary layer is always laminar but it uses an eddy viscosity ${\nu}$ that can vary spatially 
 and is the forcing field ${C_{ice,2}}$. 
 
-With {\code IC2} and {\code IC3}, the sea ice effects requires solution of a
-new dispersion relation. For {\code IC2}, the key equations are:
+ {\code IC2} and {\code IS2} share 
+the optional use of the \cite{art:LMC88} dispersion relation for unbroken ice, 
+\begin{equation}
+\sigma^2 =  \left(gk_{ice} + B k_{ice}^5\right)  / \left(1/\tanh ( k_{ice}H) +\frac{\rho_{ice}  h k_{ice}} {\rho_{w} }\right),
+\end{equation}
+\begin{equation}
+c_g =  (g+(5 + 4 k_{ice} M)Bk_{ice}^5)/(2\sigma(1+k_{ice}M)^2).
+\end{equation}
+
+\noindent
+$B$ and $M$ quantify the effects of, respectively, ice bending due to waves and ice inertia. 
+The group velocity under the ice, derived from the same relation, is used in the module {\code W3SIS2MD} and computed in  
+{\code W3DISPMD}.  See \citet{art:LMC88} for details.
+
+For {\code IC2}, the dispersion relation is defined by 
 
 \begin{equation}\label{eq:ice1}
   {\sigma}^2 = ({gk_r} + {Bk_r^5})/(\coth({k_r}{h_w}) + {k_r}{M}),
@@ -36,17 +49,33 @@ variables $B$ and $M$ quantify the effects of the bending of the ice and
 inertia of the ice, respectively. Both of these variables depend on $h_i$ 
 \citep[see][]{art:LMC88, art:LHV91}.
 
-\vspace{\baselineskip} \noindent
-In the case of {\code IC2}, though the ${k_r}$ is calculated, its effect is
-not passed back to the main program (this will be implemented in a future version). The only effect is via ${k_i}$ (dissipation).
+This equation is only solved when ICEDISP=TRUE in the {\F MISC} namelist. Otherwise, $k_{ice}=k$, just like in open water. 
+Note that the effect of $k_{ice}$ is not passed back to the main program. 
+% I temporarily removed text "...is limited to wave breaking and dissipation..." : is this true? Or did the author mean to say "ice breaking and dissipation"? 
 
- \cite{art:Aea15} distinguish between laminar and 
+ \cite{art:SAG16} improved {\code IC2} by adding a better alternative to the eddy viscosity representation of dissipation. 
+They distinguish between laminar and 
 turbulent regimes, allowing this is activated by setting  {\code IC2DISPER = .FALSE.}. 
 In that case the dissipation goes from a laminar form using the molecular viscosity multiplied by an 
 empirical adjustment factor {\code IC2VISC} to a turbulent form, amplified by a factor {\code IC2TURB}, for Reynolds numbers 
 above a user-defined threshold {\code IC2REYNOLDS}. This transition is smoothed over a range {\code IC2SMOOTH} to take into 
 account the random nature of the wave field. In the turbulent regime, the friction factor 
 is estimated from a user-specified under-ice roughness length {\code IC2ROUGH}, expected to be of the order of $10^{-4}$~m. 
+Possibility has also been added to perform a heuristic reduction of the dissipation 
+rate when the floe diameters are much shorter than the ocean wave 
+wavelength \citep[see][for details]{Aea18}. It relies on the hypothesis that, in these conditions, ice floes follow at least partly 
+the horizontal motion and it is thus logical to reduce the relative velocity 
+between the ice and the water from which the dissipation rate is estimated. 
+This reduction is controlled by the factor called $r_D$ in \cite{Aea18} which value can be set through the namelist parameter {\code IC2DMAX}. 
+Reduction of the dissipation rate occures for waves longer than $D_{\max}/r_D$ ($D_{\max}$ 
+being the maximum floe size), and there is no reduction for maximum floe diameters of the order of 
+the wavelength or more.
+
 The parameter {\code IC2TURBS} is an ad hoc enhancement of turbulent dissipation in the Southern hemisphere 
 that was introduced for test purposes to investigate sources of bias. This will be deprecated in future versions. It now appears 
-that combining IC2 with creep dissipation in IS2 can provide good results for dominant waves in both hemispheres. 
+that combining IC2 with ineleastic dissipation in IS2 can provide good results for dominant waves in both hemispheres \citep{Aea18}. 
+
+A full description of the original form of {\code IC2} can be found in \cite{rep:RO13}. 
+It is applied in \cite{art:LKS15}. A concise summary of the present code is given 
+in \cite{rep:RPLA18}. A description of the improvement of the dissipation mechanism 
+of {\code IC2} can be found in Appendix B of \cite{art:SAG16}, where it is used.

@@ -572,8 +572,10 @@
             IF (ZLOG.LT.0.) THEN
               ! The source term Sp is beta * omega * X**2
               ! as given by Janssen 1991 eq. 19
-              ! for a faster performance EXP(X)*X**4 should be tabulated   
+              ! Note that this is slightly diffent from ECWAM code CY45R2 where ZLOG is replaced by ??
               DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
+
+              ! Below is an example with breaking probability feeding back to the input...
               !DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
               !                  *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
               LLWS(IS)=.TRUE.
@@ -1813,7 +1815,6 @@
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
 !
                 FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
-!WRITE(998,*) IK,ITH,IKC, IMSSMAX (IKC), SSDSC(8)*SQRT(MSSTH),SSDSC(11)*SQRT(MSSSUM2(IKC,ITH)),FACSTRAIN
                 FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 

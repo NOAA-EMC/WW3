@@ -1,27 +1,33 @@
 \vssub
 \subsection{~Auxiliary programs} \label{sec:auxprog}
+
 \vsssub
 \subsubsection{General concepts}
 \vsssub
 
 All auxiliary programs presented here, with the exception of the track output
-post-processor, read input from a pre-defined input file. The first character
+post-processor, read input from a pre-defined input file. Contents of that file
+determine user choices for each auxiliary program. Comment lines are allowed
+using a character determined by the user as follows: the first character
 on the first line of the input file will be considered to be the comment
-character, identifying comment lines in the input file. This comment character
+character, identifying comment lines throughout the input file. This comment character
 has to appear on the first position of input lines to be effective. In all
-examples in the following sections lines starting with '{\tt \$}' therefore
-only contain comment. The programs furthermore all write formatted output to
-the standard output unit.
+examples in the following sections, the first character of the first line
+is '{\tt \$}'. Therefore, all lines starting with '{\tt \$}' contain only
+comments that are not parsed into the auxiliary program. As a standard,
+auxiliary programs all write formatted output to the standard output unit.
 
 In the following sections, all available auxiliary programs are described
-using an example input file with all options included (partially as
-comment). These files are identical to the distributed example input
-files. The sections furthermore show the name of the executable program, the
-program name (as appears in the program statement), the source code file and
-input and output files and their unit numbers (in brackets behind the file
-name). Input and output files marked with \opt are optional. The intermediate
-files mentioned below are all {\F unformatted}, and are not described in
-detail here. Each file is written and read by a single routine, to which
+using an example input file. These are found in the directory {\code inp} within the
+\ws\ package. Inside each sample input file, all possible options that can be activated
+by the user are included, most of them feature as comment lines starting with '{\tt \$}'.
+Files in the current section reflect actual contents of sample files.
+The sections below also show the name of the executable program associated with the 
+displayed input file, the program name (as appears in the program statement), 
+the source code file and input and output files and their unit numbers (in brackets 
+behind the file name). Input and output files marked with \opt are optional. The 
+intermediate files mentioned below are all {\F unformatted}, and are not described 
+in detail here. Each file is written and read by a single routine, to which
 reference is made for additional documentation.
 
 \begin{list}{}{\itemsep 0mm \parsep 0mm \leftmargin 40mm \labelwidth 30mm}
@@ -38,5 +44,104 @@ reference is made for additional documentation.
 Preprocessing and compilation of the programs is discussed in the following
 two chapters. Examples of test runs of the model are provided with the source
 code.
+
+\vsssub
+\subsubsection{Configuration file}
+\vsssub
+
+All auxiliary programs presented here read parameters and configuration from
+either a namelist file (new form) or an input file (legacy form). Although most
+auxiliary programs provide the option of a namelist file, some are still limited 
+to using the legacy input file form. Namelist files for the latter programs
+will become available in future public releases. For programs which already use 
+namelists, template files are stored in model/nml directory. It is also possible
+to convert the traditional {\file inp} file to new {\file nml} format using 
+{\code bash} tools stored in the model/aux/bash directory. If {\file inp} 
+and {\file nml} files are both present in
+the run directory, the priority will be given to the namelist file. For
+regtests, the default behavior is to run all the programs with {\file inp} file, the
+option -N must be added to rather use {\file nml} file. Some new features are only 
+available with namelists and the future developments will mainly be designed
+for namelist use.
+
+The namelist configuration file dedicated to a program provides a more 
+readable and adaptative file. A {\file nml} file contains one or more namelists with
+default values for each parameter with the possibility to overwrite them by a
+user-defined value. There is no mandatory order to defined namelists in the
+nml file. A namelist starts by '{\tt \&SOMETHING\_NML}' and stops by '{\tt /}'.
+If a section is skipped from the namelist file, all the default values will be
+used. When a program read its namelist file, all the default and user-defined
+values for all namelists will be outputted in a log file for more tracability.
+
+The traditional way to read the program configuration is from a pre-defined
+input file. The first character on the first line of the input file will be
+considered to be the comment character, identifying comment lines in the input
+file. This comment character has to appear on the first position of input
+lines to be effective. In all examples in the following sections lines starting
+with '{\tt \$}' therefore only contain comment. The programs furthermore all
+write formatted output to the standard output unit.
+
+\vspace{\baselineskip} \noindent
+Below is the part of an {\file inp} file with the corresponding part of {\file nml} file:
+
+\vspace{\baselineskip} \noindent
+\rule[1mm]{43mm}{.5mm} {\rm start of example input file (traditional form)}
+\rule[1mm]{43mm}{.5mm}
+\begin{footnotesize}
+\begin{verbatim}
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$ Grid name (C*30, in quotes)
+$
+  'TEST GRID (GULF OF NOWHERE)   '
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+$ number of frequencies (wavenumbers) and directions, relative offset
+$ of first direction in terms of the directional increment [-0.5,0.5].
+$ In versions 1.18 and 2.22 of the model this value was by definiton 0,
+$ it is added to mitigate the GSE for a first order scheme. Note that
+$ this factor is IGNORED in the print plots in ww3_outp.
+$
+   1.1  0.04118  32  24  0.
+$
+\end{verbatim}
+\end{footnotesize}
+\rule[1mm]{46mm}{.5mm} end of example input file (traditional form) 
+\rule[1mm]{45.1mm}{.5mm}
+
+\vspace{\baselineskip} \noindent
+\rule[1mm]{43mm}{.5mm} {\rm start of example input file (namelist form)}
+\rule[1mm]{43mm}{.5mm}
+\begin{footnotesize}
+\begin{verbatim}
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     SPECTRUM%XFR   = 0.  ! frequency increment
+!     SPECTRUM%FREQ1 = 0.  ! first frequency (Hz)
+!     SPECTRUM%NK    = 0   ! number of frequencies (wavenumbers)
+!     SPECTRUM%NTH   = 0   ! number of direction bins
+!     SPECTRUM%THOFF = 0.  ! relative offset of first direction [-0.5,0.5]
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR           =  1.1
+  SPECTRUM%FREQ1         =  0.04118
+  SPECTRUM%NK            =  32
+  SPECTRUM%NTH           =  24
+/
+\end{verbatim}
+\end{footnotesize}
+\rule[1mm]{46mm}{.5mm} end of example input file (namelist form) 
+\rule[1mm]{45.1mm}{.5mm}
+
+
 
 \pb

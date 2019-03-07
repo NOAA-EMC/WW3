@@ -44,14 +44,14 @@ currents and grid movement. For the schemes used here the critical \cfl\
 number is 1.
 
 The second time step to consider is the overall time step (the first time step
-identified in {\file ww3\_grid.inp}).For maximum numerical accuracy, this time
+identified in {\file ww3\_grid.inp}). For maximum numerical accuracy, this time
 step should be set smaller than or equal to the above \cfl\ time step.
 However, particularly in spherical grids, the critical \cfl\ condition occurs
 only in a few grid points. In most grid points, \cfl\ numbers will be much
 smaller. In such grids, accuracy does not suffer significantly if the overall
 time step is take as 2 to 4 times the critical \cfl\ time steps. Such a
 setting generally has a major positive impact on model economy. The key to
-numerical accuracy is the interpretation of the \cfl\ number. this number
+numerical accuracy is the interpretation of the \cfl\ number. This number
 represents the normalized distance over which information propagates in a
 single time step. Inaccuracy occurs if information propagates over several
 grid boxes before source terms are applied. With \cfl\ $\approx 1$ and the

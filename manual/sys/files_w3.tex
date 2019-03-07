@@ -82,6 +82,149 @@ Model input \hfill {\file w3idatmd.ftn}
 \fit{w3seti}{Set pointers to selected grid.}
 \end{flisti}
 
+
+\noindent
+The configuration files such as traditional form (.inp) and namelist form (.nml)
+are processed differently in the program. The traditional configuration file is
+directly read in the main program. The namelist configuration file is read by the 
+subroutines in the following modules.
+
+\vspace{\baselineskip} \noindent
+Grid preprocessor namelist module \hfill {\file w3nmlgridmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlgrid}{Read and report all the namelists.}
+\fit{read\_spectrum\_nml}{Init and save values to a derived type.}
+\fit{read\_run\_nml}{Init and save values to a derived type.}
+\fit{read\_timesteps\_nml}{Init and save values to a derived type.}
+\fit{read\_grid\_nml}{Init and save values to a derived type.}
+\fit{read\_rect\_nml}{Init and save values to a derived type.}
+\fit{read\_curv\_nml}{Init and save values to a derived type.}
+\fit{read\_unst\_nml}{Init and save values to a derived type.}
+\fit{read\_smc\_nml}{Init and save values to a derived type.}
+\fit{read\_mask\_nml}{Init and save values to a derived type.}
+\fit{read\_obst\_nml}{Init and save values to a derived type.}
+\fit{read\_slope\_nml}{Init and save values to a derived type.}
+\fit{read\_sed\_nml}{Init and save values to a derived type.}
+\fit{read\_inbound\_nml}{Init and save values to a derived type.}
+\fit{read\_excluded\_nml}{Init and save values to a derived type.}
+\fit{read\_outbound\_nml}{Init and save values to a derived type.}
+\fit{report\_spectrum\_nml}{Output default and user-defined values.}
+\fit{report\_run\_nml}{Output default and user-defined values.}
+\fit{report\_timesteps\_nml}{Output default and user-defined values.}
+\fit{report\_grid\_nml}{Output default and user-defined values.}
+\fit{report\_rect\_nml}{Output default and user-defined values.}
+\fit{report\_curv\_nml}{Output default and user-defined values.}
+\fit{report\_smc\_nml}{Output default and user-defined values.}
+\fit{report\_depth\_nml}{Output default and user-defined values.}
+\fit{report\_mask\_nml}{Output default and user-defined values.}
+\fit{report\_obst\_nml}{Output default and user-defined values.}
+\fit{report\_slope\_nml}{Output default and user-defined values.}
+\fit{report\_sed\_nml}{Output default and user-defined values.}
+\fit{report\_inbound\_nml}{Output default and user-defined values.}
+\fit{report\_excluded\_nml}{Output default and user-defined values.}
+\fit{report\_outbound\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+NetCDF boundary conditions namelist module \hfill {\file w3nmlbouncmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlbounc}{Read and report all the namelists.}
+\fit{read\_bound\_nml}{Init and save values to a derived type.}
+\fit{report\_bound\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+NetCDF input field preprocessor namelist module \hfill {\file w3nmlprncmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlprnc}{Read and report all the namelists.}
+\fit{read\_forcing\_nml}{Init and save values to a derived type.}
+\fit{read\_file\_nml}{Init and save values to a derived type.}
+\fit{report\_forcing\_nml}{Output default and user-defined values.}
+\fit{report\_file\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+Generic shell namelist module \hfill {\file w3nmlshelmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlshel}{Read and report all the namelists.}
+\fit{read\_domain\_nml}{Init and save values to a derived type.}
+\fit{read\_input\_nml}{Init and save values to a derived type.}
+\fit{read\_output\_type\_nml}{Init and save values to a derived type.}
+\fit{read\_output\_date\_nml}{Init and save values to a derived type.}
+\fit{read\_homogeneous\_nml}{Init and save values to a derived type.}
+\fit{report\_domain\_nml}{Output default and user-defined values.}
+\fit{report\_input\_nml}{Output default and user-defined values.}
+\fit{report\_output\_type\_nml}{Output default and user-defined values.}
+\fit{report\_output\_date\_nml}{Output default and user-defined values.}
+\fit{report\_homogeneous\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+Multi-grid shell namelist module \hfill {\file w3nmlmultimd.ftn}
+
+\begin{flisti}
+\fit{w3nmlmultidef}{Set the number of model and forcing grids.}
+\fit{w3nmlmulticonf}{Read and report all the namelists.}
+\fit{read\_domain\_nml}{Init and save values to a derived type.}
+\fit{read\_input\_grid\_nml}{Init and save values to a derived type.}
+\fit{read\_model\_grid\_nml}{Init and save values to a derived type.}
+\fit{read\_output\_type\_nml}{Init and save values to a derived type.}
+\fit{read\_output\_date\_nml}{Init and save values to a derived type.}
+\fit{read\_homogeneous\_nml}{Init and save values to a derived type.}
+\fit{report\_domain\_nml}{Output default and user-defined values.}
+\fit{report\_input\_grid\_nml}{Output default and user-defined values.}
+\fit{report\_model\_grid\_nml}{Output default and user-defined values.}
+\fit{report\_output\_type\_nml}{Output default and user-defined values.}
+\fit{report\_output\_date\_nml}{Output default and user-defined values.}
+\fit{report\_homogeneous\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+Gridded output NetCDF post-processor namelist module \hfill {\file w3nmlounfmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlounf}{Read and report all the namelists.}
+\fit{read\_field\_nml}{Init and save values to a derived type.}
+\fit{read\_file\_nml}{Init and save values to a derived type.}
+\fit{read\_smc\_nml}{Init and save values to a derived type.}
+\fit{report\_field\_nml}{Output default and user-defined values.}
+\fit{report\_file\_nml}{Output default and user-defined values.}
+\fit{report\_smc\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+Point output NetCDF post-processor namelist module \hfill {\file w3nmlounpmd.ftn}
+
+\begin{flisti}
+\fit{w3nmlounp}{Read and report all the namelists.}
+\fit{read\_point\_nml}{Init and save values to a derived type.}
+\fit{read\_file\_nml}{Init and save values to a derived type.}
+\fit{read\_spectra\_nml}{Init and save values to a derived type.}
+\fit{read\_param\_nml}{Init and save values to a derived type.}
+\fit{read\_source\_nml}{Init and save values to a derived type.}
+\fit{report\_point\_nml}{Output default and user-defined values.}
+\fit{report\_file\_nml}{Output default and user-defined values.}
+\fit{report\_spectra\_nml}{Output default and user-defined values.}
+\fit{report\_param\_nml}{Output default and user-defined values.}
+\fit{report\_source\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+\vspace{\baselineskip} \noindent
+Track output NetCDF post-processor namelist module \hfill {\file w3nmltrncmd.ftn}
+
+\begin{flisti}
+\fit{w3nmltrnc}{Read and report all the namelists.}
+\fit{read\_track\_nml}{Init and save values to a derived type.}
+\fit{read\_file\_nml}{Init and save values to a derived type.}
+\fit{report\_track\_nml}{Output default and user-defined values.}
+\fit{report\_file\_nml}{Output default and user-defined values.}
+\end{flisti}
+
+
 \noindent
 The input fields such as winds and currents are transferred to the model
 through the parameter list of {\F w3wave}. The information is processed within

@@ -1,150 +1,103 @@
 \vssub
-\subsection{~Installing files}\label{sec:install}
+\subsection{~Distribution}\label{sec:install}
 \vssub
 
-\noindent
-In its packaged public version (tar file distribution), \ws\ is
-contained in several files:
+\noindent Through version 5.16, \ws\ public releases were released as tarballs. 
+After the public release of version 6.07, \ws\ will move to an open development 
+paradigm and source code is distributed via Github. 
 
-\begin{list}{???}{\parsep 0mm \itemsep 0mm 
-                  \leftmargin 20mm \rightmargin 5mm
-                  \labelwidth 10mm \labelsep 5mm}
-\item[{\file install\_wwatch3\_tar} \hfill]
-The \ws\ install program. 
+\vssub
+\subsection{~Installing}
+\vssub
 
-\item[{\file wwatch3.[VERTAG].model.tar} \hfill] Archive file containing 
- source codes (ftn directory), programs and scripts controlling the
-compiling and linking of and code management of \ws (aux and bin
-directories), and sample input files (inp directory).
+To clone the source code
+\command{ git clone https://github.com/NOAA-EMC/WW3 }
+Public releases can be accessed by checking out tags: 
+\command{ git checkout VERTAG }
+where VERTAG is the public release tag, for example v6.07. 
 
-\item[{\file wwatch3.[VERTAG].regtests.tar} \hfill]
-Archive file containing several regression test cases.
+\vssub
+\subsection{~Setting up}
+\vssub
 
-\item[{\file wwatch3.[VERTAG].cases.tar} \hfill]
-Archive file containing several large tests involving real case scenarios. 
+After cloning the \ws\ repo, there are two steps to follow.  The first step 
+is to run the script {\file model/bin/w3\_setup} which will compile auxiliary 
+programs and setup the environment file {\file wwatch3.env}, which will be 
+stored locally in the bin directory. This file sets options for default C 
+and FORTRAN compilers which will only be used by the preprocessor. Except 
+in specific cases, this default setting can be used as is. Running the 
+script alone will give full usage, or to execute also supply the source\_dir, 
+which is the location of the {\file model} directory.  If you run from the 
+top level directory: 
+\command{ ./model/bin/w3\_setup model }
 
-\end{list}
+The setup can be modified by rerunning the {\file w3\_setup} program, or by 
+manually editing the setup file. The `home' directory of \ws\ can only be 
+changed by editing or removing the local {\file wwatch3.env}.
 
-\noindent
-The label [VERTAG] is typically a version number for the model package, which
-may be followed or preceded by alpha-numeric tags describing other
-characteristics of the distribution package (e.g., v4.18.beta for the beta
-version 4.18 etc).
+Note that previous versions of \ws\ required defining the 
+An advanced option is to define the path of {\file wwatch3.env} in the 
+user environment variable {\code WWATCH3\_ENV}. This is no longer needed. 
+In addition, there is no longer an option of a global installation. 
 
-As the first step of installing \ws, these files have to be copied to a work
-directory on the machine on which \ws\ will be installed. Because this
-directory will be the `home' directory of \ws, it is suggested that a new
-directory is created (see also warning in previous section). Furthermore
-{\file install\_wwatch3\_tar} has to be made executable by typing
-\command{chmod 700 install\_wwatch3\_tar} after which the installation of the
-files is started by typing \command{install\_wwatch3\_tar} at your Linux/Unix
-prompt.
+The second set of setting up \ws\ is running the script 
+{\file /model/bin/ww3\_from\_ftp.sh} to obtain binary or large 
+files that are not stored in the git repository.  From the top directory: 
+\command{./model/bin/ww3\_from\_ftp.sh} 
+There are three prompts requiring user input in this script.  The first asks 
+for the path the the top level directory, the second asks if you want to delete
+the tar file that is copied (likely the answer is n for no) and the last asks 
+to keep a folder that is used by this script (likely the answer is n for no).  
 
+\vssub
+\subsection{~Directory Structure}
+\vssub
 
-\begin{center}
-\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
-\vspace{\baselineskip}
+After cloning the \ws\ repository, the following directories are found on the 
+top level. 
 
-\parbox{120mm}{The install program will ask for a compiler to compile some
-auxiliary \fortran\ codes. Unlike the actual \ws\ source code, these programs
-are still written in \fortran-77. It is therefore sufficient to point toward
-the generic \fortran-77 compiler on the system. The {\file install\_ww3\_tar}
-script allows the user to set pre-defined choices that will point the
-\fortran-77 to a generic executable {\file f77}. This may not be available on
-your system, so make sure that an appropriate choice is made during the
-installation process.}
-\\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
-WARNING \rule[1mm]{55mm}{1.0mm}
-\end{center}
+\begin{dlist}
+\dit{manual   }{Manual directory.}
+\dit{model    }{Model source code, build scritps, etc.}
+\dit{regtests }{\ws\ executables.}
+\dit{guide    }{Guide for \ws\ .}
+\dit{smc\_docs }{Documentation and files for SMC grids.}
+\end{dlist}
 
-When {\file install\_wwatch3\_tar} is executed for the first time, it will ask
-the user to identify the directory in which \ws\ will be installed. This has
-to confirm that the installation directory is the current directory. Next, the
-script jumps to the most crucial option, which determines if a local or generic install 
-is to be performed.
-
-The type of install deals with where to save the traditional {\file wwatch3.env} 
-file, containing the general user-dependent directory and basic FORTRAN and C compiler 
-choices. The local install will save this at the same location as the package
-is being installed, which is the main \ws\ directory. This results in a standalone version
-that allows multiple installations (or other branches or the trunk) to co-exist
-without interference. The general install means wwatch.env will be save in the user's
-home directory in the form {\file \$HOME/.wwatch3.env}, and that this will be the
-main or central installation in that work area. The existence of a general install
-does not preclude the existence of multiple local installs, but the user has to be 
-mindful of which code is being invoked when using the general install (things can
-get very confusing if not kept explicitly on track).
-
-After a choice is made for local or generic install, the script will search for
-existing config files. If none is found, it will print a message that it cannot find 
-the setup file, and ask some questions. The same questions are asked if a setup file is found,
-except that the intention there is to confirm the existing options have not changed. In any case,
-having a pre-existing setup or not, the script will give the user an opportunity to revise
-defaults/existing and change if needed. The script will echo the existing options, and the 
-default/existing answers or options are shown in square brackets. 
-
-Other than the generic or local wwatch.env files, a third alternate
-setup file may be specified prior to running {\file install\_wwatch3\_tar} by
-setting {\code WWATCH3\_ENV} in the user environment.  The setup can be
-modified by rerunning the install program, or by manually editing the setup
-file. The `home' directory of \ws\ can only be changed by editing or removing
-the local or generic {\file wwatch3.env} or by changing {\code WWATCH3\_ENV} in the user
-environment.
-
-\begin{center}
-\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
-\vspace{\baselineskip}
-
-\parbox{120mm}{In case you decide to use the generic installation, you have to make sure
-that the model installation directory is either {\file \${HOME}/wwatch3} or if it has
-a different name, it is linked to {\file \${HOME}/wwatch3}. If this is not the case
-the generic install may fail or compromise other pre-existing installations.}
-\\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
-WARNING \rule[1mm]{55mm}{1.0mm}
-\end{center}
-
-After the setup file is processed, the install program asks if the user wants
-to continue with the installation. If the user chooses to continue, the
-program will look for the archive files. If no files are found, the
-archive files do not reside in the home directory, or the home directory is
-erroneously defined, the installation will exit. 
-Check the location of the archive files, and the `home' directory of \ws\
-(see previous paragraphs).
-
-After files to be unpacked have been identified, the program will ask if old
-files should be overwritten automatically. If the user chooses `n', the
-program will ask permission to overwrite each file that already exists. Files
-that contain user specific information, such as compile and link options, will
-never be replaced by the install program.
-
-As the first step of the actual installation, the install program checks if
-the following directories exist in the `home' directory of \ws.
+\noindent The following directories exist in the `model' directory of \ws.
  
 \begin{dlist}
-\dit{arc }{Archive directory.}
 \dit{aux }{Raw auxiliary programs (source codes etc.).}
 \dit{bin }{Executables and shell scripts for compiling and linking.}
-\dit{exe }{\ws\ executables.}
 \dit{ftn }{Source code and makefile.}
 \dit{inp }{Input files.}
+\dit{nml }{Namelist input files.}
+\end{dlist}
+
+\noindent The following directories are generated in the `model' directory 
+after compiling the code. 
+
+\begin{dlist}
+\dit{exe }{\ws\ executables.}
 \dit{mod }{Module files.}
 \dit{obj }{Object files.}
-\dit{test}{Scripts with test cases.}
-\dit{work}{Auxiliary work directory.}
 \end{dlist}
 
 \noindent
-All these directories are generated by the install program {\file
-install\_wwatch3}, except for the archive directory, which is generated by
-{\file arc\_wwatch3} (see below).
 
-Unlike previous version, where the user could choose which parts of the
-package were to be installed, the current {\file install\_ww3\_tar} script
-installs the entire updated package without prompting. 
+The  {\dir aux} directory has various additional tools, see the actual directory
+for its contents. These include contributed {\it Matlab} codes, 
+{\it IDL} tools, {\it bash} scripts and {\it GrADS} and {\it FORTRAN} programs.
 
-Installation of the auxiliary programs will first process source codes of
-auxiliary programs, using the compiler as defined by the user in the setup
-file. Note that these codes are still in fixed format \fortran-77.
+Setting up \ws\ runs the installation the auxiliary programs will first process 
+{\it FORTRAN} codes,
+using the compiler as defined in the setup file {\file wwatch3.env}. 
+Note that these codes are still in fixed format {\fortran-77}. The 
+executables are stored in the directory {\dir bin}. A more detailed
+description of these programs (including instructions on running the
+executables) can be found in the documentation included in the above source
+code files. After the compilation of these programs, several \unix\ shell
+scripts and auxiliary files are installed in the {\dir bin} directory.
 
 \begin{flist}
 \fit{w3adc.f }{\ws\ {\fortran} preprocessor.}
@@ -159,15 +112,65 @@ file. Note that these codes are still in fixed format \fortran-77.
 
 \end{flist}
 
+The {\dir bin} directory has various \unix\ scripts to manage the \ws\ framework.
+The use of these scripts is explained in \para\ref{sec:comp}.  Note that the
+following scripts acquire setup information from the \ws\ environment setup file
+defined by {\code WWATCH3\_ENV}. Either defined by {\file w3\_setenv} which
+read the local {\file wwatch3.env} or by the user environment file.
 
-The above source codes are stored in the directory {\dir aux} and the
-executables are stored in the directory {\dir bin}. A more detailed
-description of these programs (including instructions on running the
-executables) can be found in the documentation included in the above source
-code files. After the compilation of these programs, several \unix\ shell
-scripts and auxiliary files are installed in the {\dir bin} directory.
+\vspace{\baselineskip} \noindent
+Main programs used :
 
 \begin{flist}
+\fit{install\_ww3\_tar }{Script to install \ws\ from tar files.}
+\fit{w3\_setup        }{Script for creating/editing the \ws\ environment setup
+                        file. The default setup file is 
+			{\file {\dir bin}/.wwatch3.env}. switch and compiler
+			are given in arguments. (see options)}
+\fit{w3\_clean        }{Script to clean up \ws\ directories by removing files
+	                generated during compilation or test runs. 
+			3 levels of clean-up. (see options)}
+\fit{w3\_make         }{Script to compile and link components of \ws\
+                        using a makefile. A list of programs can be given 
+			in arguments.}
+\fit{w3\_automake      }{Script to automatically compile separately sequential and
+	                distributed programs in MPI, OMP or HYB depending on
+	                the switch file content. A list of programs can be given
+                        in arguments.}
+\fit{w3\_new          }{Script to touch all correct source code files
+                        to account for changes in compiler switches in
+                        combination with the makefile.} 
+\fit{ww3\_gspl.sh     }{Script to automate use of {\file ww3\_gspl} program 
+                        (see \para\ref{sub:ww3gspl}).}
+\fit{arc\_wwatch3\_tar}{Program to archive versions of \ws\ in the 
+                        directory {\dir arc}.}
+\fit{ww3\_from\_ftp.sh  }{Script to download all the binary files not provided by git.}
+\end{flist}
+
+\noindent
+Examples files provided : 
+
+\begin{flist}
+\fit{switch\_{\it xxx} }{Examples of preprocessor switches provided by users
+	                or developers. (\para\ref{sec:switches})}
+\end{flist}
+
+\noindent               
+Subprograms called :
+
+\begin{flist}
+\fit{w3\_setenv        }{Script to setup the environment based on 
+	               {\file {\dir bin}/.wwatch3.env}.	Called by all 
+		       auxiliary programs.}
+\fit{comp.tmpl        }{Compiler script template {\file comp} used with
+	               {\file cmplr.env}.}
+\fit{link.tmpl        }{Link script template {\file link} used with
+	               {\file cmplr.env}.}
+\fit{cmplr.env        }{compiler options tested on intel, mpt, gnu, pgi with
+                       optimized and debugging options. used with comp.tmpl
+		       and link.tmpl}
+\fit{make\_makefile.sh}{Script to generate the makefile based
+                        on selections in the file {\file switch}}. 
 \fit{ad3              }{Script to run the preprocessor {\file w3adc}
                         and the compile script {\file comp} for a given
                         source code file.}
@@ -176,62 +179,37 @@ scripts and auxiliary files are installed in the {\dir bin} directory.
                         compile code.}
 \fit{all\_switches    }{Generates a list of all {\code w3adc} switches 
                         present in the source code files.}
-\fit{arc\_wwatch3     }{Program to archive versions of \ws\ in the 
-                        directory {\dir arc}.}
-\fit{comp.gen         }{Generic compiler script. The actual compiler
-                        script {\file comp} will be copied from this
-                        script if it does not exists.}
-\fit{comp.{\it xxx}   }{The compiler script {\file comp} for a specific
-                        hardware-compiler combination.}
 \fit{find\_switch     }{Script to find \ws\ source code files containing 
                        compiler switches (or arbitrary strings).}
-\fit{install\_ww3\_svn }{Script to install \ws\ from the svn repository.}
-\fit{install\_ww3\_tar }{Script to install \ws\ from tar files.}
-\fit{link.gen         }{Generic linker script. Actual script is {\file
-                        link}.}
-\fit{link.{\it xxx}   }{The link script {\file comp} for a specific
-                        hardware-compiler combination.}
-\fit{list             }{Script to print source code listing using 
-                        {\file w3prnt}.}
-\fit{ln3              }{Script to make symbolic link of source code file
-                        to work directory.}
-\fit{make\_MPI        }{Script to separately compile MPI and non-MPI programs.}
-\fit{make\_OMP        }{Script to separately compile OpenMP and single threaded
-                        programs.}
-\fit{make\_HYB        }{Script to separately compile hybrid MPI-OpenMP and
-                        single threaded programs.}
-\fit{make\_makefile.sh}{Script to generate the of the makefile based
-                        on selections in the file {\file switch})}. 
-\fit{switch.gen       }{Generic file with preprocessor switches
-                        (\para\ref{sec:switches}).}
-\fit{switch.{\it xxx}       }{Examples of preprocessor switches
-                        provided by users or developers.}
-\fit{w3\_clean        }{Script to clean up work and scratch directories
-                        by removing files generated during compilation or
-                        test runs.}
-\fit{w3\_make         }{Script to compile and link components of \ws\
-                        using a makefile.}
-\fit{w3\_new          }{Script to touch correct source code files
-                        to account for changes in compiler switches in
-                        combination with the makefile.} 
-\fit{w3\_setup        }{Script for creating/editing the \ws\ environment setup
-                        file. The default setup file is
-                        {\file \$\{HOME\}/.wwatch3.env}.  An alternate setup
-                        file can be specified with the {\code WWATCH3\_ENV}
-                        environment variable.}
-\fit{w3\_source       }{Script to generate a true \fortran\ source
-                        code for any of he \ws\ program elements.}
-\fit{ww3\_gspl.sh     }{Script to automate use of {\file ww3\_gspl} program 
-                        (see \para\ref{sub:ww3gspl}).}
+\fit{sort\_switch     }{Order the switches present in the switch file.}
+\fit{sort\_all\_switches}{Script to search all the switch files in \ws\
+                	and call {\file sort\_switch}.}
+
 \end{flist}
 
 
-The use of these scripts is explained in \para\ref{sec:comp}.  Note that the
-above scripts acquire setup information from the \ws\ environment setup file
-defined by {\code WWATCH3\_ENV}, or, if that is not defined, from the generic 
-setup file {\file .wwatch3.env} in the home directory of the user, or the local 
-setup file {\file wwatch3.env} in the directory where the wave model package is 
-being installed.
+\noindent               
+Extra programs :
+
+\begin{flist}
+\fit{comp.{\it xxx}   }{Compiler script {\file comp} for advanced setting.}
+\fit{link.{\it xxx}   }{Link script {\file link} for advanced setting.}
+\fit{make\_MPI        }{Script to separately compile MPI and non-MPI programs.
+			(obsolete in future releases - use {\file w3\_automake})}
+\fit{make\_OMP        }{Script to separately compile OpenMP and single threaded
+			programs. (obsolete in future releases - use {\file w3\_automake})}
+\fit{make\_HYB        }{Script to separately compile hybrid MPI-OpenMP and
+			single threaded programs. (obsolete in future releases
+			- use {\file w3\_automake})}
+\fit{ln3              }{Script to make symbolic link of source code file
+			to work directory. (not used)}
+\fit{list             }{Script to print source code listing using 
+			{\file w3prnt}. (not used)}
+\fit{w3\_source       }{Script to generate a true \fortran\ source
+			code for any of he \ws\ program elements. (not used)}
+\fit{WW3\_switch\_process}{Perl script to process switch from a source file.
+                	(not used)}
+\end{flist}
 
 
 After installation in the {\dir bin} directory, several GrADS scripts are
@@ -252,171 +230,6 @@ installed in the {\dir aux} directory.
 \end{flist}
 
 
-This directory also has various additional tools in and documentations, see
-the actual directory for its contents. These include contributed {\it Matlab} scripts,
-{\file IDL} scripts and tools, and a manual on using {\file SMG type} grids.
-
-As the final step of {\file aux} processing, some links between directories are established.
-
-Finally, the install program lists manual modifications required by or
-suggested to the user. These messages are printed only if the compile and link
-system are installed. An example of an installation session using the script
-{\file install\_ww3\_tar} is provided below for a case where local install was
-chosen.
 
 \pb
-
-%\begin{myfig}{tbp}
-\begin{minipage}[c]{4.5in}
-{\scriptsize \begin{verbatim}
-GUIDE >> tar zxvf wwatch3.beta.v4.18.tar.gz 
-install_ww3_tar
-guide.beta.v4.18.pdf
-manual.beta.v4.18.pdf
-wwatch3.beta.v4.18.model.tar
-wwatch3.beta.v4.18.regtests.tar
-
-GUIDE >> ls -l
-total 354836
--rw-------. 1 wd20ha wd2    197909 Jan 14 10:11 guide.beta.v4.18.pdf
--rwx------. 1 wd20ha wd2     38670 Jan 14 10:12 install_ww3_tar
--rw-------. 1 wd20ha wd2   3545855 Jan 14 10:12 manual.beta.v4.18.pdf
--rw-------. 1 wd20ha wd2 135690240 Jan 14 10:12 wwatch3.beta.v4.18.model.tar
--rw-------. 1 wd20ha wd2 123136000 Jan 14 10:12 wwatch3.beta.v4.18.regtests.tar
--rw-------. 1 wd20ha wd2 100731957 Mar 13 15:05 wwatch3.beta.v4.18.tar.gz
-
-GUIDE >> ./install_ww3_tar 
-
-
-                  ===================================
-              ------ Installing WAVEWATCH III  v.4 ------
-                  =================================== 
-
-                  Script for installing package from tar files. 
-                  Requires files in same directory as script.
-
- Continue? [y|n] y
-
-
-                  ===================================
-              ------ Installing WAVEWATCH III  v.4 ------
-                  ===================================
-                                     from tar source 
-
- This installation requires a configuration file (wwatch3.env).
- The current version allows two types of env files: 
- - A local [L] wwatch3.env (Allowing multiple independent installations).
- - A generic [G] dot-file .wwatch3.env (Old-fashioned option).
- [L] Installs new, uses existing or updates env file in current directory.
- [G] Installs new, uses existing or updates env file in home directory, 
-     (home is presumably /export/emc-lw-jhalves/wd20ha}). 
-
- Type your choice now: G
-
- Installing in 
-   /export/emc-lw-jhalves/wd20ha/WW3_GUIDE
-
-   OK ? [y/n] y
-
-\end{verbatim}}
-\end{minipage}
-
-\begin{minipage}[c]{4.5in}
-{\scriptsize \begin{verbatim}
-
- Setting up environment variables. 
-
-
-   Previous setup file not found. Variables will be set to defaults. 
-
-     (User must check to see if these setting are appropriate.)      
-
-
- Creating wwatch3.env locally (also in home if G option chosen). 
-      Printer (listings)       : printer 
-      FORTRAN comp. (aux only) : f77 
-      C Compiler (aux only)    : cc 
-      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
-      Save source code         : yes 
-      Save listings            : yes 
-
- Update settings ? [y/n] y
-
- Modifying set-up 
-
- Type n new settings, or press ENTER to keep [current ones]: 
-
-      Printer for listings [printer] : 
-      Compiler for aux. [f77] : gfortran
-      Compiler for aux. [cc] : gcc
-      Scratch space [/export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp] : 
-      Save source code files (*.f)  [yes] : 
-      Save listing files  [yes] : 
- 
-   Modified settings:
-      Printer (listings)       : printer 
-      FORTRAN comp. (aux only) : gfortran 
-      C Compiler (aux only)    : gcc 
-      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
-      Save sources             : yes 
-      Save listings            : yes 
-
-   New settings OK ? [y/n]  y
-
- Continue with actual implementation ? [y/n] y
-
-
-[==========================SCREEN OUTPUT OMMITTED=============================]
-
-
-\end{verbatim}}
-\end{minipage}
-
-\begin{minipage}[c]{4.5in}
-{\scriptsize \begin{verbatim}
-=============================== 
- --- Final remarks ---
- ============================================================== 
-
- To run the WAVEWATCH III executables and the scripts to generate 
- and update these executables from arbitrary directories, add the
- following directories to the path of your interactive shell : 
-
-      /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/bin
-      /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/exe
-
- Note that 'comp' and 'link' and 'switch' are user/machine specific.
-
-   Several comp and link files for known compilers are found in:
-   /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/bin
-
-   If you cannot find one that suits your machine/preferences, 
-   create custom scripts based on the existing ones and add to bin.
-
-
-                    ===============================
-                  ---       End of program        --- 
-                    =============================== 
- 
-
-GUIDE >> ls -l
-total 3708
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 arc
-drwx------.  6 wd20ha wd2    4096 Mar 13 15:45 aux
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 bin
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 exe
-drwx------.  3 wd20ha wd2    4096 Mar 13 15:45 ftn
--rw-------.  1 wd20ha wd2  197909 Jan 14 10:11 guide.beta.v4.18.pdf
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 inp
-lrwxrwxrwx.  1 wd20ha wd2      21 Mar 13 15:45 install_ww3_tar -> ./bin/install_ww3_tar
--rw-------.  1 wd20ha wd2 3545855 Jan 14 10:12 manual.beta.v4.18.pdf
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 mod
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 obj
-drwx------. 40 wd20ha wd2    4096 Mar 13 15:45 regtests
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 tmp
-drwx------.  2 wd20ha wd2    4096 Mar 13 15:45 work
--rw-------.  1 wd20ha wd2     324 Mar 13 15:44 wwatch3.env
-
-\end{verbatim}}
-\end{minipage}
 

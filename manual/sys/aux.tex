@@ -50,7 +50,7 @@ Initial conditions program \hfill {\file ww3\_strt.ftn}
 Boundary conditions program \hfill {\file ww3\_bound.ftn}
 
 \noindent
-Boundary conditions program (NetCDF) \hfill {\file ww3\_bound.ftn}
+Boundary conditions program (NetCDF) \hfill {\file ww3\_bounc.ftn}
 
 \begin{flisti}
 \fit{w3bound}{The boundary conditions program (NetCDF).}
@@ -190,6 +190,16 @@ Track output post-processing program \hfill {\file ww3\_trck.ftn}
 \begin{flisti}
 \fit{w3trck}{Converting unformatted direct access track
              output file to integer-packed formatted file.}
+\end{flisti}
+
+\noindent
+Track output post-processing program \hfill {\file ww3\_trnc.ftn}
+
+\begin{flisti}
+\fit{w3trck}{Converting unformatted direct access track
+	     output file to NetCDF file.}
+\fit{w3crnc}{Creation of NetCDF files, definition of dimensions and header data.}
+\fit{w3exnc}{Actual output routine (internal).}
 \end{flisti}
 
 \noindent

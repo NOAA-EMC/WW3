@@ -18,7 +18,7 @@ The contribution of short waves (above the maximum frequency of the model) shoul
 such as the backscatter power ($\sigma^0$) of near-nadir optical or radar data (altimeters, GPM or CFOSAT/SWIM data).
    
 \subsubsection{Stokes drift profile}
-The spectrum of the surface Stokes drift has the two components that are computed as 
+The spectrum of the surface Stokes drift has the two components that are computed as \\
 {\code usf(IK)= SUM( E(IK,ITH)*ECOS(ITH)*DTH(ITH) )*DK(IK)*2*WN(IK,ISEA) *  FACT(KD)/DF(IK)}
 
 {\code vsf(IK)= SUM( E(IK,ITH)*ESIN(ITH)*DTH(ITH) )*DK(IK)*2*WN(IK,ISEA) *  FACT(KD)/DF(IK)}
@@ -32,4 +32,5 @@ Vs(z)= SUM{IK=I1,I2} ( vsf(IK) * FACT2(z,KD)*DF(IK))
 
 This requires a knowledge of the local water depth D and mean sea level LEV and the wavenumbers WN(IK). KD=D*WN(IK) is thus a local function if the frequency/wavenumber index IK.
 
-The coefficent FACT2(z,KD) is equal to EXP(2*WN(IK)*(z-LEV)) if KD > 6, and otherwise, FACT2(z,KD)=COSH(2*WN(IK)*(z+H))/COSH(2*WN(IK)*D).
+The coefficent FACT2(z,KD) is equal to EXP(2*WN(IK)*(z-LEV)) if KD $>$ 6, and otherwise, \\
+FACT2(z,KD)=COSH(2*WN(IK)*(z+H))/COSH(2*WN(IK)*D).

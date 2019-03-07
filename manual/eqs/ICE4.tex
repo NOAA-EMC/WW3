@@ -5,7 +5,7 @@
 \opthead{IC4}{\ws/NRL}{C. Collins and E. Rogers}
 
 \noindent
-The fourth option ({\code IC4}) for damping of waves by sea ice gives methods to implement one of several simple, empirical/parametric forms for the dissipation of wave energy by sea ice.  The motivation for {\code IC4} is to provide a simple, flexible, and efficient source term which reproduces, albeit in a highly parameterized way, some basic physics of wave-ice interaction. The method is set by the integer value (presently 1 to 6) for {\code IC4METHOD} namelist parameter: 1) an exponential fit to the field data of \cite{art:WAD88}, 2) the polynomial fit in \cite{art:MBK14}, 3) a quadratic fit to the calculations of \cite{art:KM08} given in \cite{art:HT15}, 4) Eq. 1 of \cite{art:Ko14}, 5) a simple step function with up to 4 steps (may be nonstationary and non-uniform), and 6) a simple step function with up to 10 steps (must be stationary and uniform). All but the fourth method of {\code IC4} feature frequency-dependent attenuation. With the fourth method, attenuation varies with waveheight but is uniform across the frequencies. 
+The fourth option ({\code IC4}) for damping of waves by sea ice was introduced by \cite{rep:CR17}. It gives methods to implement one of several simple, empirical/parametric forms for the dissipation of wave energy by sea ice.  The motivation for {\code IC4} is to provide a simple, flexible, and efficient source term which reproduces, albeit in a highly parameterized way, some basic physics of wave-ice interaction. The method is set by the integer value (presently 1 to 7) for {\code IC4METHOD} namelist parameter: 1) an exponential fit to the field data of \cite{art:WAD88}, 2) the polynomial fit in \cite{art:MBK14}, 3) a quadratic fit to the calculations of \cite{art:KM08} given in \cite{art:HT15}, 4) Eq. 1 of \cite{art:Ko14}, 5) a simple step function with up to 4 steps (may be nonstationary and non-uniform), and 6) a simple step function with up to 10 steps (must be stationary and uniform), and 7) a formula from \cite{art:Dob15} which uses ice thickness. All but the fourth method of {\code IC4} feature frequency-dependent attenuation. With the fourth method, attenuation varies with waveheight but is uniform in frequency space. 
 
 In the following discussion we use {\code IC4M1} to denote {\code IC4} method 1, and so forth. {\code IC4} appears in the {\file switch} and namelist {\code IC4METHOD=1} (for example) appears in the file {\file ww3\_grid.inp}. Whereas in {\code IC1}, ${C_{ice,1}}$ is the user-determined attenuation, for {\code IC4M1}, {\code IC4M2}, and {\code IC4M4} ${C_{ice,n}}$ are constants of the equations. For {\code IC4M3}, ${C_{ice,1}}$ is ice thickness. For {\code IC4M5}, ${C_{ice,n}}$ controls the step function. Note that ${C_{ice,n}}$ may be provided by the user as non-stationary and non-uniform using methods analogous to methods used to input water levels.
 
@@ -14,37 +14,39 @@ In the following discussion we use {\code IC4M1} to denote {\code IC4} method 1,
   {\alpha} = \exp\left[\frac{-{2\pi}C_{ice, 1}}{{\sigma}} - C_{ice, 2}\right]
 \end{equation}
 
-\noindent Here, $\alpha$ is the exponential decay rate for energy, which is twice that for amplitude: $\alpha = 2k_i$. The values determined from the data are ${C_{ice,1...2}}=[0.18, 7.3]$, but these may be modified by the user. 
+\noindent Here, $\alpha$ is the exponential decay rate for energy, which is twice that for amplitude: $\alpha = 2k_i$. The values determined from the data are ${C_{ice,1...2}}=[0.18, 7.3]$, but these may be modified by the user. This method is described and applied in \cite{rep:CR17}.
 
-{\code IC4M2}: \cite{art:MBK14} used a polynomial to fit their data. The additional physics parameterized here is the so-called “roll-over effect” where the attenuation levels off at the higher frequencies. The equation is the following:
+{\code IC4M2}: In this method, the dissipation is represented using a user-specified polynomial. It is a powerful method, since many shapes can be represented, e.g. by fitting to observation-based dissipation rates. The method is described and applied in \cite{rep:CR17}. The equation is the following:
 \begin{equation}\label{eq:ice2}
   {\alpha} = C_{ice,1} + C_{ice,2}\left[{\frac{\sigma}{2\pi}}\right] + C_{ice,3}\left[{\frac{\sigma}{2\pi}}\right]^2 + C_{ice,4}\left[{\frac{\sigma}{2\pi}}\right]^3 + C_{ice,5}\left[{\frac{\sigma}{2\pi}}\right]^4
 \end{equation}
 
 \noindent
-From \cite{art:MBK14}, the suggested values for the coefficients are ${C_{ice,1...5}}=[0, 0, 2.12\times 10^{-3}, 0, 4.59\times 10^{-2}]$.
+If a user wishes to follow \cite{art:MBK14}, the suggested values for the coefficients are ${C_{ice,1...5}}=[0, 0, 2.12\times 10^{-3}, 0, 4.59\times 10^{-2}]$. Additional suggested polynomials can be found in \cite{rep:RMK18}.
 
-{\code IC4M3}: \cite{art:HT15} fit a quadratic equation to the attenuation coefficient calculated by \cite{art:KM08} as a function of frequency, $T$, and ice thickness, $h$. Attenuation increases for thicker ice and higher frequencies (lower periods). The number of  coefficients of the quadratic equation were prohibitively large to be user-determined, so the equation is hardwired in and the tunable parameter, ${C_{ice,1}}$, is ice thickness  $h$. For reference, the equation is the following:
+With appropriate coefficients, this polynomial method can be used to reproduce the so-called “roll-over effect” where the attenuation is non-monotonic in frequency space. However, some recent studies do not indicate this effect, e.g. \cite{art:RTS16} and \cite{art:LK17}, and it may just be a spurious artifact in prior observational studies.
+
+{\code IC4M3}: \cite{art:HT15} fit a quadratic equation to the attenuation coefficient calculated by \cite{art:KM08} as a function of frequency, $T$, and ice thickness, $h$. Attenuation increases for thicker ice and higher frequencies (lower periods). The number of  coefficients of the quadratic equation were prohibitively large to be user-determined, so the equation is hardwired in and the tunable parameter, ${C_{ice,1}}$, is ice thickness $h$. This method is described and applied in \cite{rep:CR17}. For reference, the equation is the following:
 \begin{equation}\label{eq:ice3}
   {\ln{\alpha(T,h)}} = -0.3203 + 2.058h - 0.9375T - 0.4269h^2 + 0.1566hT + 0.0006T^2
 \end{equation}
 
 \noindent
-Be advised, the equation itself was an extrapolation of the original range of $h$ used to calculate the attenuation coefficients in \cite{art:KM08} which was between 0.5 and 3 m, see \cite{art:HT15}. 
+There are two warnings to make about {\code IC4M3}. First, the equation itself was an extrapolation of the original range of $h$ used to calculate the attenuation coefficients in \cite{art:KM08} which was between 0.5 and 3 m, see \cite{art:HT15}. Second, in \cite{art:KM08}, wave attenuation predicted is based on scattering (a conservative process), whereas in {\code IC4M3}, the wave attenuation is treated as dissipation (non-conservative). This is ad hoc and not recommended for general use. Most especially, users should think twice before using {\code IC4M3} in combination with scattering routines {\code IS1} or {\code IS2}, since this is essentially double-counting scattering.
 
-{\code IC4M4}: \cite{art:Ko14} found that attenuation was a function of significant wave height. Attenuation increased linearly with ${H_s}$ until ${H_s} = 3 m$ at which point attenuation is capped, thus:
+{\code IC4M4}: \cite{art:Ko14} found that attenuation was a function of significant wave height. Attenuation increased linearly with ${H_s}$ until ${H_s} = 3$ m at which point attenuation is capped, thus:
 \begin{equation}
 \left \{
 \begin{array}{llrcl}
-{\frac{\partial H_s}{\partial dx}} = {C_{ice,1}}\times {H_s}   & & \text{for} \> {H_s} \leq 3 m  \\
-{\frac{\partial H_s}{\partial dx}} = {C_{ice,2}}               & & \text{for} \> {H_s} > 3 m     \\
+{\frac{\partial H_s}{\partial dx}} = {C_{ice,1}}\times {H_s}   & & \text{for} \> {H_s} \leq 3 \text{ m}  \\
+{\frac{\partial H_s}{\partial dx}} = {C_{ice,2}}               & & \text{for} \> {H_s} > 3 \text{ m}     \\
 \end{array} \right .
 \end{equation}
 where {$k_i=\frac{\partial H_s}{\partial dx}/H_s$}.
 
-The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16.05\times 10^{-6}]$. See regression test {\file ww3\_tic1.1/input\_IC4/M4} for examples.
+The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16.05\times 10^{-6}]$. See regression test {\file ww3\_tic1.1/input\_IC4/M4} for examples. This method is described and applied in \cite{rep:CR17}.
 
-{\code IC4M5}: This is a simple step function with up to 4 steps. It is controlled by the optionally nonstationary and non-uniform parameters ${C_{ice,1...7}}$. Parameters ${C_{ice,1...4}}$ control the step levels, which are in terms of dissipation rate, ${k_i}$, in radians per meter. Parameters ${C_{ice,5...7}}$ control the step boundaries (given in Hz). See regression test {\file ww3\_tic1.1/input\_IC4/M5} for examples.
+{\code IC4M5}: This is a simple step function with up to 4 steps. It is controlled by the optionally nonstationary and non-uniform parameters ${C_{ice,1...7}}$. Parameters ${C_{ice,1...4}}$ control the step levels, which are in terms of dissipation rate, ${k_i}$. Parameters ${C_{ice,5...7}}$ control the step boundaries (given in Hz). See regression test {\file ww3\_tic1.1/input\_IC4/M5} for examples. This method is described in \cite{rep:CR17}.
 
 {\code IC4M6}: This is a simple step function with up to 10 steps. It is controlled by the stationary and uniform namelist parameters {\code IC4KI} and {\code IC4FC}. Array {\code IC4KI} controls the step levels, which are in terms of dissipation rate, ${k_i}$, in radians per meter. Array {\code IC4FC} controls the step boundaries (given in Hz). See regression test {\file ww3\_tic1.1/input\_IC4/M6} for examples. 
 
@@ -52,3 +54,4 @@ The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16
 \begin{equation}\label{eq:ice7}
   {\alpha=0.2T^{-2.13}h} \:\:\: .
 \end{equation}
+This method is described in \cite{rep:RPLA18}.

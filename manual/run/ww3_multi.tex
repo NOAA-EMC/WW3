@@ -3,8 +3,8 @@
 \vsssub
 
 \proddefH{ww3\_multi}{w3mlti}{ww3\_multi.ftn}
-\proddeff{Input}{ww3\_multi.nml}{Input file for multi-grid wave model: alternative namelist form.}{8}
-\proddeff{Input}{ww3\_multi.inp}{Input file for multi-grid wave model: traditional format.}{8}
+\proddeff{Input}{ww3\_multi.nml}{Namelist configuration file.}{8} (App.~\ref{sec:config102})
+\proddefa{ww3\_multi.inp}{Traditional configuration file.}{8} (App.~\ref{sec:config101})
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{log.mww3}{Output log of wave model driver.}{9}
 \proddefa{test.mww3\opt}{Test output of wave model.}{auto}
@@ -20,11 +20,5 @@ number assignment is dynamic and automatic.
 In order to make all existing features available there is a new version of the input file that uses namelists. This 
 is the version that will be supported in the future as it allows a more flexible addition of new features. 
 {\bf Please note that the namelist form is not supported by GCC compilers before version 4.8.2.} 
-
-\nmlfile{ww3_multi.tel}
-
-\pb
-
-\inpfile{ww3_multi.tex}
 
 \pb

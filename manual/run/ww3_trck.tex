@@ -3,14 +3,14 @@
 \vsssub
 
 \proddefH{ww3\_trck}{w3trck}{ww3\_trck.ftn}
-\proddeff{Input}{track\_o.ww3}{Raw track output data.}{11}
+\proddeff{Input}{ww3\_trck.inp}{Traditional configuration file.}{10} (App.~\ref{sec:config191})
+\proddefa{track\_o.ww3}{Raw track output data.}{11}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{track.ww3}{Formatted data file.}{51}
 
 \vspace{\baselineskip} 
 \noindent
-This post-processor does not require a formatted input file with program
-commands. It will simply convert the entire unformatted file to an integer
+This post-processor will convert the raw track output data to an integer
 compressed formatted file. The file contains the following header records :
 
 \begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
@@ -23,7 +23,7 @@ compressed formatted file. The file contains the following header records :
 \end{list}
 
 \noindent
-For each output point the following records are printed :
+For each output point varying in time and position, the following records are printed :
 \begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
 \item Date and time in {\tt yyyymmdd hhmmss} format, longitude and latitude in
       degrees, and a status identifier `{\F ice}', `{\F lnd}' or `{\F

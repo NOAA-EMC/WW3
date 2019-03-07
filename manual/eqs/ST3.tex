@@ -8,15 +8,20 @@
 The wind-wave interaction source terms described here are based on the wave
 growth theory of \cite{art:Miles57}, modified by \cite{art:Jan82}. The
 pressure-slope correlations that give rise to part of the wave generation are
-parameterized following \cite{art:Jan91}. A wave dissipation term due to shear
-stresses variations in phase with the orbital velocity is added for the swell
-part of the spectrum, based on the swell decay observations of
-\cite{art:ACC09}.
+parameterized following \cite{art:Jan91}. 
+%A wave dissipation term due to shear
+%stresses variations in phase with the orbital velocity is added for the swell
+%part of the spectrum, based on the swell decay observations of
+%\cite{art:ACC09}.
 
 This parameterization was further extended by \cite{rep:AB02} to take into
 account a stronger gustiness in unstable atmospheric conditions. This effect is
-included in the present parameterization and is activated with the {\code
-STAB3} switch. Efforts have been made to make the present implementation as
+included in the present parameterization and is activated with the optional
+{\code STAB3} switch. The formula used in {\code STAB3} is not described herein. 
+For that, the reader is referred to \cite{rep:AB02}. If {\code STAB3} is used, the air-sea 
+temperature differences should be provided by the user, e.g. using {\file ww3\_prep}.
+
+Efforts have been made to make the present implementation as
 close as possible to the one in the ECWAM model \citep{rep:Bea05}, in
 particular the stress lookup tables were verified to be identical. 
 Later modifications include the addition of a negative part in the wind input 
@@ -110,6 +115,50 @@ positive feedback on the wind input via $z_1$. This sensitivity is exacerbated
 by the sensitivity of the high-frequency spectral level to the presence of
 swell via the dissipation term.
 
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.           & namelist & WAM4 & BJA   & Bidlot 2012 \\
+\hline
+  $z_u$ &  ZWND                       & SIN3 & 10.0    & 10.0   & 10.0   \\
+  $\alpha_0$ &  ALPHA0                & SIN3 & 0.01    & 0.0095 &  0.0095 \\
+  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN3 & 1.2     & 1.2    & 1.2  \\
+  $p_{\mathrm{in}}$ &  SINTHP         & SIN3 & 2       & 2      & 2  \\
+  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.0080 \\
+  $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    & 1.0   \\
+\hline
+\end{tabular} \end{center}
+\caption{Parameter values for WAM4, BJA and the 2012 update in the ECWAM model. Source term
+  parameterizations that can be reset via the {\F SIN3} and {\F SDS3} namelist. BJA is
+  generally better than WAM4. The default parameters in ST3 corresponds to BJA. Please
+  note that the names of the variables only apply to the namelists. In the source
+  term module the names are slightly different, with a doubled first letter, in
+  order to differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSIN}
+\botline
+\end{table}
+
+\begin{table}[htb] 
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.                               &  WWATCH var.         & namelist & WAM4 & BJA   & Bidlot 2012 \\
+\hline
+  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1& -1.33       \\
+  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5        \\
+  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5        \\
+  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.5        \\
+  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.5 \\
+  \hline \hline
+\end{tabular} \end{center}
+\caption{Parameter values for WAM4, BJA and the update by \cite{pro:Bid12}. Source term
+parameterizations that can be reset via the {\F SDS3} namelist. BJA is generally
+better than WAM4. Please note that the
+names of the variables only apply to the namelists. In the source term module
+the names are slightly different, with a doubled first letter, in order to
+differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSDS}
+\botline
+\end{table}
+
+
 A linear damping of swells was introduced in the operational ECWAM model in September 2009. It takes 
 the form given by \cite{bk:Jan04} 
 
@@ -176,43 +225,3 @@ allow the use of WAM4, BJA or others ECWAM parameterization, via a simple change
 the parameters in the namelists {\F SIN3} and {\F SDS3}, see Tables \ref{tab:WAM4_parSIN} and \ref{tab:WAM4_parSDS}. At present, the default values of the namelist
 parameters correspond to BJA \citep{rep:Bea05}.
 
-\begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var.           & namelist & WAM4 & BJA   & Bidlot 2012 \\
-\hline
-  $z_u$ &  ZWND                       & SIN3 & 10.0    & 10.0   & 10.0   \\
-  $\alpha_0$ &  ALPHA0                & SIN3 & 0.01    & 0.0095 &  0.0095 \\
-  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN3 & 1.2     & 1.2    & 1.2  \\
-  $p_{\mathrm{in}}$ &  SINTHP         & SIN3 & 2       & 2      & 2  \\
-  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.0080 \\
-  $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    & 1.0   \\
-\hline
-\end{tabular} \end{center}
-\caption{Parameter values for WAM4, BJA and the 2012 update in the ECWAM model. Source term
-  parameterizations that can be reset via the {\F SIN3} and {\F SDS3} namelist. BJA is
-  generally better than WAM4. The default parameters in ST3 corresponds to BJA. Please
-  note that the name of the variables only apply to the namelists. In the source
-  term module the names are slightly different, with a doubled first letter, in
-  order to differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSIN}
-\botline
-\end{table}
-
-\begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.                               &  WWATCH var.         & namelist & WAM4 & BJA   & Bidlot 2012 \\
-\hline
-  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1& -1.33       \\
-  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5        \\
-  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5        \\
-  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.5        \\
-  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.5 \\
-  \hline \hline
-\end{tabular} \end{center}
-\caption{Parameter values for WAM4, BJA and the update by \cite{pro:Bid12}. Source term
-parameterizations that can be reset via the {\F SDS3} namelist. BJA is generally
-better than WAM4. Please note that the
-name of the variables only apply to the namelists. In the source term module
-the names are slightly different, with a doubled first letter, in order to
-differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSDS}
-\botline
-\end{table}

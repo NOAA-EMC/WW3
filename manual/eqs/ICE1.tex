@@ -4,63 +4,10 @@
 
 \opthead{IC1}{\ws/NRL}{E. Rogers and S. Zieger}
 
-\noindent
-Experimental routines for representation of the effect of ice on waves have
-been implemented using the switches {\code IC1}, {\code IC2}, and {\code
-IC3}. These effects can be presented in terms of a complex wavenumber
-
-\begin{equation}\label{eq:waveno}
-     {k} = {k_r} + i{k_i},
-\end{equation}
-
-\noindent
-with the real part ${k_r}$ representing impact of the sea ice on the physical
-wavelength and propagation speeds, producing effects analogous to shoaling and
-refraction by bathymetry, whereas the imaginary part of the complex
-wavenumber, ${k_i}$, is an exponential decay coefficient
-${k_i}({x},{y},{t},\sigma $) (depending on location, time and frequency,
-respectively), producing wave attenuation.  The ${k_i}$ is introduced as
-${S_{ice}}/{E}=-2{c_g}{k_i}$, where ${S_{ice}}$ is a source term (see also
-\cite{bk:WAM94}, pg. 170).
-
-The effect of sea ice on ${k_i}$ is used for all three of the source functions
-({\code IC1}, {\code IC2}, {\code IC3}). The effect of sea ice on ${k_r}$ has
-been implemented for {\code IC3}, does
-not apply to {\code IC1}, and has not been implemented for {\code IC2}.
-
-With the ice source functions, {\code IC1}, {\code IC2}, and {\code IC3}, ice
-concentration is not a required input, but if ice concentration has been read
-in, the source function will be scaled by ice concentration.
-
-In the case of ice, up to five parameters are allowed. These can be referred
-to generically as ${C_{ice,1}}$, ${C_{ice,2}}$,...,${C_{ice,5}}$.  The meaning
-of the ice parameters will vary depending on which ${S_{ice}}$ routine is
-selected.
-
-In the case where any of the ice and mud source functions are activated with
-the switches {\code IC1}, {\code IC2}, {\code IC3}, {\code BT8}, or {\code
-BT9}, {\file ww3\_shel} will anticipate intructions for 8 fields (5 for ice,
-then 3 for mud). These are given prior to the ``water levels'' information.
-The new fields can also be specified as homogeneous field using {\file
-ww3\_shel.inp}.
-
-The reader is referred to the regression tests {\file ww3\_tic1.1-3} and
-{\file ww3\_tic2.1} for examples of how to use the new ice source functions.
-
 The first implemented method ({\code IC1}) is for the user to specify
 ${k_i(x,t)}$, which is uniform in frequency space, ${C_{ice,1}}={k_i}$. The
 parameters ${C_{ice,2}}$,...,${C_{ice,5}}$ are not used. An example setting
-is ${C_{ice,1}}=2\times 10^{-5}$. Descriptions specific to IC2 and IC3 are given in 
-following sections. 
+is ${C_{ice,1}}=2\times 10^{-5}$. Descriptions specific to {\code IC2} and {\code IC3} are
+given in following sections. 
 
-\textrm{\textit{\underline{Limitations of the code:}}} The interface for the
-new mud and ice coefficients have only been implemented for {\file
-ww3\_shel}. Interface for {\file ww3\_multi} will be available in a future
-revision.  
-
-\textrm{\textit{\underline{Limitations of the physics:}}} The
-scattering of waves from sea ice is not considered via {\code IC1}, {\code
-IC2}, {\code IC3}. This is an important physical process \citep{art:Wad75},
-but since it is conservative, it should be treated separately from the source
-functions {\code IC1}, {\code IC2}, {\code IC3}, which are intended to
-represent non-conservative effects of sea ice. This work is in progress.
+A full description of {\code IC1} can be found in \cite{rep:RO13} and a concise summary is given in \cite{rep:RPLA18}. This simple method was applied in \cite{art:LKS15} and is used as the modeling component of a model-data inversion procedure by \cite{art:RTS16}, \cite{rep:RPLA18}, and \cite{rep:RMK18}.

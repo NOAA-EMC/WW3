@@ -1,0 +1,83 @@
+\pagestyle{myheadings} \setcounter{page}{1} \setcounter{footnote}{0}
+
+\section{~Coupling with NUOPC} \label{app:nuopc}
+\newcounters
+
+\vssub
+\subsection{~Introduction} \label{sec:nuopcintro}
+\vssub
+
+\ws\ as of v6.02 has a component cap {\code wmesmf} that interfaces with the multi-grid routines via the 
+National Unified Operational Prediction Capability (NUOPC)\footnote{https://earthsystemcog.org/projects/nuopc/}
+Layer which specifies the use of the Earth System Modeling Framework (ESMF)
+\footnote{https://www.earthsystemcog.org/projects/esmf/}   
+for coupling with other earth systems such as atmosphere, ocean, ice and storm surge models. 
+This cap is meant to be flexible and is already in use in multiple different coupled models at NOAA and the US Navy. 
+This section describes how to build, install, configure and run the NUOPC cap.  It assumes a basic knowledge of \ws. 
+
+\vssub
+\subsection{~Building and Installing the NUOPC Cap} \label{sec:nuopcbuild}
+\vssub
+
+To make the library that will contain the \ws\ code and cap that can be included in a NUOPC coupled model, use
+{\code model\/esmf\/Makefile}.  For example, in the NOAA Environmental Modeling System (NEMS) the command is: 
+\command{make ww3\_nems} 
+this makefile will subsequently call {\code w3\_make}. As part of this process a nuopc.mk makefile
+fragment will also be created, which tells NUOPC/ESMF where the \ws\ library is located. 
+
+\vssub
+\subsection{~Import/Export Fields in the NUOPC Cap} \label{sec:nuopcfields}
+\vssub
+
+The avaiable fields for import and export are listed below.  Please see Section \ref{sec:nuopcconfig} for 
+information on how to activate coupling for an import field. 
+
+\noindent Import Fields:
+\begin{itemize} 
+\item sea\_surface\_height\_above\_sea\_level
+\item surface\_eastward\_sea\_water\_velocity
+\item surface\_northward\_sea\_water\_velocity
+\item eastward\_wind\_at\_10m\_height
+\item northward\_wind\_at\_10m\_height
+\item sea\_ice\_concentration
+\end{itemize}
+
+\noindent Export: 
+\begin{itemize}
+\item wave\_induced\_charnock\_parameter
+\item wave\_z0\_roughness\_length
+\item eastward\_stokes\_drift\_current
+\item northward\_stokes\_drift\_current
+\item eastward\_wave\_bottom\_current
+\item northward\_wave\_bottom\_current
+\item wave\_bottom\_current\_period
+\item eastward\_wave\_radiation\_stress
+\item eastward\_northward\_wave\_radiation\_stress
+\item northward\_wave\_radiation\_stress
+\end{itemize}
+
+
+\vssub
+\subsection{~Configuration of Input Files for the NUOPC Cap} \label{sec:nuopcconfig}
+\vssub
+
+The required \ws\ input file is the ww3\_multi.inp or ww3\_multi.nml file.  To spcify that a particular input field 
+is to be obtained via coupling and not a file 'CPL:' is put infront of the input grid specification for the 
+particular input field.  
+
+Note that current limitations of the NUOPC cap are that there can only be one input grid (whether it is one of the 
+model grids or an input grid) and one export grid (the first computational grid if there are multiple computational 
+grids). The grid can be unstructured or structured. 
+
+Note that while the start and end times for the run is determined by the NUOPC driver, the start time, end time and 
+frequency of output are still determined by the ww3\_multi input file. 
+
+\vssub
+\subsection{~Running the NUOPC Cap} \label{sec:nuopcrun}
+\vssub
+
+While the cap is designed to be used in coupled systems outside of the scope of this documentation.  
+A script to run a regression test of the standalone \ws\ cap is provided in the {\code regtest\/run\_esmf\_test\_suite}
+script. 
+
+

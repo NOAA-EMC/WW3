@@ -91,6 +91,7 @@ eqs.tex \
 eqs/intro.tex \
 eqs/prop.tex \
 eqs/source.tex \
+eqs/sourceice.tex \
 eqs/NL1.tex \
 eqs/NL2.tex \
 eqs/NL1.tex \
@@ -116,6 +117,7 @@ eqs/ICE1.tex \
 eqs/ICE2.tex \
 eqs/ICE3.tex \
 eqs/ICE4.tex \
+eqs/ICE5.tex \
 eqs/IS1.tex \
 eqs/IS2.tex \
 eqs/REF1.tex \
@@ -182,6 +184,7 @@ run/ww3_ounp.tex \
 run/ww3_gint.tex \
 run/gx_outp.tex \
 run/ww3_trck.tex \
+run/ww3_trnc.tex \
 run/ww3_systrk.tex \
 run/ww3_uprstr.tex \
 impl.tex \
@@ -219,33 +222,42 @@ sys/fig_struc2.tex \
 sys/vars.tex \
 sys/modules.tex \
 sys/structures.tex \
-app/more.tex \
 app/tstep.tex \
 app/nest.tex \
 app/mpi.tex \
 app/scrip.tex \
 app/to_do.tex \
 app/oasis.tex \
+app/nuopc.tex \
+app/config.tex \
 test.tex
 
 # TeX files generated from $(INPDIR) files
 INPFILES = \
 ww3_grid.tex \
+ww3_grid.tel \
 ww3_strt.tex \
 ww3_bounc.tex \
+ww3_bounc.tel \
 ww3_bound.tex \
 ww3_prep.tex \
 ww3_prtide.tex \
 ww3_prnc.tex \
+ww3_prnc.tel \
 ww3_gspl.tex \
 ww3_shel.tex \
+ww3_shel.tel \
 ww3_multi.tex \
 ww3_multi.tel \
 ww3_trck.tex \
+ww3_trnc.tex \
+ww3_trnc.tel \
 ww3_outf.tex \
 ww3_outp.tex \
 ww3_ounf.tex \
+ww3_ounf.tel \
 ww3_ounp.tex \
+ww3_ounp.tel \
 ww3_systrk.tex \
 ww3_grib.tex \
 ww3_gint.tex \
@@ -255,7 +267,8 @@ gx_outp.tex
 
 # Bibliography inputs
 BIBFILES = manual.bib
-BSTFILES = jas.bst
+#BSTFILES = jas.bst
+BSTFILES = agufull08.bst
 
 # Style inputs
 STYFILES = svn.sty
@@ -288,18 +301,22 @@ clean:
 	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
 	-@\rm -f $@
 	-@touch $@
+	-@printf '%s\n' \\begin\{footnotesize\} >> $@
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
-	-@cat $< >> $@
+	-@cat $< | cut -c -72 >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+	-@printf '%s\n' \\end\{footnotesize\} >> $@
 
 %.tex : $(INPDIR)/%.inp
 	-@echo "Processing $<"
 	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
 	-@\rm -f $@
 	-@touch $@
+	-@printf '%s\n' \\begin\{footnotesize\} >> $@
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
-	-@cat $< >> $@
+	-@cat $< | cut -c -72 >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+	-@printf '%s\n' \\end\{footnotesize\} >> $@
 
 
 

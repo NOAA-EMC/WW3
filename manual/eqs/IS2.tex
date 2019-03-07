@@ -11,7 +11,7 @@ by waves to be able to update a maximum floe size diameter. Finally a creep-base
 combined with the scattering.  
 
 
-The scattering source term is defined by the scattering coefficient $\beta_{\mathrm{is},\mathrm{MIZ}}(\theta-\theta')$ which by default is isotropic, but can be given any directional dependency by setting {\code IS2ISOSCAT=.FALSE.} in namelist {\F SIS2}. The source term is thus,
+The scattering source term is defined by the scattering coefficient $\beta_{\mathrm{is},\mathrm{MIZ}}(\theta-\theta')$ which by default is isotropic, but can be given any directional dependency by setting {\code IS2ISOSCAT=FALSE} in namelist {\F SIS2}. The source term is thus,
 \begin{equation}
  \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is},\mathrm{MIZ}}(\theta-\theta') [s_\mathrm{scat}  N(k,\theta')-N(k,\theta)] d\theta'  .
  \end{equation}
@@ -22,7 +22,9 @@ where $s_\mathrm{scat}$ is set to 1.0 by default but can be modified by
 The determination of scattering coefficients  $\beta_{\mathrm{is},\mathrm{MIZ}}$ is based on the theoretical 
 reflection coefficient $\alpha_n(\sigma,h)$
 for waves with a normal incidence going from a half-plane of open water to a half-plane of ice-covered water with a 
-constant ice thickness $h$.  Values of $\alpha_n(\sigma,h)$ as computed by \cite{art:KM08} are tabulated 
+constant ice thickness $h$.  
+Values of $\alpha_n(\sigma,h)$ as computed by \cite{art:KM08}
+ (if {\code IS2WIM1=0.}) or by \cite{art:Ben12} (if {\code IS2WIM1=1.})  are tabulated 
 in the {\code W3SIS2MD} module. Following \cite{art:Dea11}, the broken ice is treated as a series of 
 such ice-water interfaces. Neglecting multiple reflections, the scattering parameterization defines the attenuation 
 per unit time as if the ice-covered part of a grid cell was a succession of floes of mean diameter $D_{m}$ with a partial 
@@ -34,7 +36,7 @@ where $c_i$ is the ice concentration. \\
  
 
 The estimation of the mean floe diameter $D_m$ is based on an assumed power law for the number of 
-floes of diameter $D$, taken  proportional to $D^{-\gamma}$. This power low is further assumed to 
+floes of diameter $D$, taken  proportional to $D^{-\gamma}$. This power law is further assumed to 
 apply for $D$ ranging from 
 the minimum $D_{\min}$ and a maximum $D_{\max}$. The average is thus given by  
 \begin{equation}
@@ -66,9 +68,9 @@ be greater than a defined critical strain
 The first criterion is simply checking that the new value of $D_{\max}$ will be larger than $D_{\min}$ and smaller 
 than the previous value of $D_{\max}$.\\
 
-The second criterion relies on \cite{inc:M86}, who defines $D_{c}$ as
+The second criterion relies on \cite{inc:M86} with the correction specified in \cite{art:Bea18}, where $D_{c}$ is defined as
 \begin{equation}
-D_{c}=\left(\frac{\pi^4 Y^* h^3}{48 \rho g (1 -\nu ^2)}\right)^{1/4}. 
+D_{c}=\dfrac{1}{2}\left(\frac{\pi^4 Y^* h^3}{48 \rho g (1 -\nu ^2)}\right)^{1/4}. 
 \end{equation}
 
 The third criterion corresponds to the flexural strain threshold. The horizontal 
@@ -102,14 +104,14 @@ $F_{break} \, E_s$ is thus the maximum strain for random waves. \\
 
 
 
-Creep dissipation was added in this routine, following \cite{art:Wad73}, because it critically 
+Inelastic dissipation was added in this routine, following \cite{art:Wad73}, because it critically 
 depends on the floe size.  It assumes that the floes deformation is not fully elastic, and that the secondary creep under the wave-induced cyclic causes the dissipation of wave energy into heat. 
-We use the ice flow law
+We use the ice floe law
 \begin{equation}
 %\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^{n-1}}{B^n}\sigma_{i,j}'
 \left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^2}{B^3}\sigma_{i,j}',
 \end{equation}
-$B$ is the flow law  constant and is a function of ice temperature. Using the normalized parameter estimated by \cite{art:Cea98} from 
+$B$ is the floe law  constant and is a function of ice temperature. Using the normalized parameter estimated by \cite{art:Cea98} from 
 laboratory experiments, $A=10^{11}$,  and  a uniform ice temperature of 270~K  gives a value 
 of $B=10^7$~s$^{1/3}$. The volumic dissipation rate is 
 \begin{equation}
@@ -140,15 +142,15 @@ be set to zero to work with the true elevation spectrum instead. This factor $R$
 applied in the calculation of ice breakup by the waves.\\
 
 
-The creep dissipation is linearized as  $S_{\mathrm{creep}}=-\alpha_{\mathrm{creep}} E_{ice}$. 
+The inelastic dissipation is linearized as  $S_{\mathrm{ine}}=-\alpha_{\mathrm{ine}} E_{ice}$. 
 The coefficient $\alpha_{\mathrm{creep}}$ was adapted from the 
 \cite{art:Wad73} monochromatic formula and is equal to
 \begin{equation}
-%\alpha_{\mathrm{creep}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{(n+1)} I_n k^{n+1} \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F \int_{k_1}^{k_2} k_{ice}^4 E(k)dk 
-\alpha_{\mathrm{creep}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{4} I_3 k^4 \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F \int_{k_1}^{k_2} k_{ice}^4 E(k)dk, 
+%\alpha_{\mathrm{ine}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{(n+1)} I_n k^{n+1} \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F \int_{k_1}^{k_2} k_{ice}^4 E(k)dk 
+\alpha_{\mathrm{ine}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{4} I_3 k^4 \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F_{\rm broken} \int_{k_1}^{k_2} k_{ice}^4 E(k)dk, 
 \label{eq:alpha_creep}
 \end{equation}
-where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$. 
+where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$. Details of the computation are given in \cite{art:Bea18}.
 $F_{\rm broken}$  is a heuristic smooth transition from unbroken to broken ice, so that the dissipation 
 gradually goes to zero for waves much longer than the floe sizes, because in that case the ice does 
 not deform and produces no dissipation of wave energy, 
@@ -156,29 +158,56 @@ not deform and produces no dissipation of wave energy,
 F_{\rm broken}=\tanh \left( {\frac{D_{\max}-C_{\lambda}\lambda_{ice}} {D_{\max}C_{smooth} } }\right) .
 \label{smooth}
 \end{equation}
-Creep is computed after updating $D_{\max}$. 
+Inelastic dissipation is computed after updating $D_{\max}$. 
 %dissipation is full for
 %$\lambda_{ice}\leq D_{\max}$ and disappears for $C_{\lambda}\lambda_{ice}< D_{\max}$.  
 The two parameters in this smooth transition $C_{\lambda}$ and $C_{smooth}$ are 
 set to  $0.4$ and $0.2$ by the adjustable namelist parameters {\code IS2CREEPD} and {\code IS2CREEPC}.\\
+
+Possibility of subsituting this inelastic dissipation by an anelastic dissipation term has also been added. It is activated by setting the namelist parameter {\code IS2ANDISB} to {\code TRUE}. 
+Anelastic dissipation corresponds to the energy dissipated into heat during the oscillatory motion of the dislocations induced by the cyclic stress associated to waves.  This behaviour results in a hysteresis that can be seen in stress-strain diagrams when sea ice is submitted to a sinusoidal stress as presented in Fig.~4 of \cite{art:Cea98} study. This latter article also suggests a model for the anelastic behaviour of sea ice, with a stress-strain relationship that enables to compute the area within the ellipse which results from the hysteresis. Similarly to what has been done for inelastic dissipation, anelastic dissipation is linearized as  $S_{\mathrm{ane}}=-\alpha_{\mathrm{ane}} E_{ice}$. 
+\cite{art:Bea18} have derived  $\alpha_{\mathrm{ane}}$  from \cite{art:Cea98} model for a monochromatic stress. They obtained the following coefficient: 
+\begin{equation}
+\alpha_{\mathrm{ane}}= \dfrac{A}{6}\left(k_i^{2}\dfrac{Y^*}{(1-\nu^{2})\rho gG}\right)^{2}h^{3}\frac{C_g}{GC_{g,i}} F_{\rm broken},
+\label{eq:alpha_ane}
+\end{equation}  
+where  $F_{\rm broken}$ is the same as for inelastic dissipation and $A$ is equal to:
+\begin{equation}
+A=\dfrac{4}{3}\sigma \alpha_{d}~\delta D^{d}~\dfrac{1}{\exp(\alpha_{d}s)+\exp(-\alpha_{d}s)}, 
+\label{eq:A_ane}
+\end{equation}  
+in which terms are detailed in the table at the end of this section.\\
 
 Finally we recall the various model parameters used in IS2 in the following table. Some are defined 
 as constants in the {\code W3IS2MD} module, others can be adjusted with the {\F SIS2} namelist. 
 
 {\centering
 \begin{tabular}{l  c c  c}
-Parameters & Symbol &  namelist parameter &  default values \\
+Parameters                   & Symbol        &  namelist parameter &  default values \\
 \hline
-Minimum floe size    & $D_{\min}$  & N. A. & 20~m \\
-Initial floe size    & $D_{init}$  & N. A. & 1000~m \\
-Ice fragility        & $\xi $      & N. A. & $0.9$ \\
-Ice density          & $\rho_{ice}$& N. A. & 922.5~kg~m$^{-3}$ \\
-Effective Young Modulus & $Y^{*}$  & N. A. & 5.49~GPa \\
-Poisson Coefficient  & $\nu$       & N. A. & 0.3 \\
-Flexural strength    &  $\sigma_c$ & N. A. & 0.27~MPa \\
-Flow law parameter &$n$          & {\code IS2CREEPN} & 3\\
-Flow law parameter &$B$          & {\code IS2CREEPB} &  10$^7$~s$^{1/3}$\\
-Correction for elastic energy & $C_R$ & {\code IS2BREAKE} & 1.0 \\
+Minimum floe size            & $D_{\min}$    & N. A. & 20~m \\
+Initial floe size            & $D_{init}$    & N. A. & 1000~m \\
+Ice fragility                & $\xi $        & N. A. & $0.9$ \\
+Ice density                  & $\rho_{ice}$  & N. A. & 922.5~kg~m$^{-3}$ \\
+Effective Young Modulus      & $Y^{*}$       & N. A. & 5.49~GPa \\
+Poisson Coefficient          & $\nu$         & N. A. & 0.3 \\
+Flexural strength            &  $\sigma_c$   & N. A. & 0.27~MPa \\
+Flow law parameter           &$n$            & {\code IS2CREEPN} & 3\\
+Flow law parameter           &$B$            & {\code IS2CREEPB} &  10$^7$~s$^{1/3}$\\
+Elastic energy correction    & $C_R$         & {\code IS2BREAKE} & 1.0 \\
+Relax. of disloc. compliance & $\delta D^{d}$& {\code IS2ANDISD} & $\Delta_d \Omega b^2/K$ (Pa$^{-1}$)\\
+Dislocation density          & $\Delta_d$    & N. A. & 1.8$\times10^{9}$ (m$^{-2}$)\\
+Restoring stress term        & $K$           & N. A. & 0.07 (Pa) \\
+Orientation factor           & $\Omega$      & N. A. & $\pi^{-1}$ \\
+Burgers vector               & $b$           & N. A. & 4.52$\times10^{-10}$ (m) \\
+Drag term                    & $B$           & N. A. & $B_0 \exp(Q_v/(k_bT_K)$ (Pa.s)\\
+ -                           & $B_0$         & N. A. & 1.205$\times10^{-9}$ (Pa.s)\\
+ Boltzmann constant          & $k_B$         & N. A. & 8.617$\times10^{-5}$ (eV.K$^{-1}$) \\
+Activation energy            & $Q_v$         & {\code IS2ANDISE} & 0.55 (eV) \\
+ Peak broadening term        & $\alpha_{d}$  & N. A. & 0.54 \\
+ Reduced variable            & $s$           & N. A. & $\log(\tau\omega)$ \\
+ Relax. time of disloc.      & $\tau$        & N. A. & $B/K$ (s) \\
+ Temperature of sea ice      & $T_K$         & N. A. & $268.15$ (K)\\
 \hline
 \end{tabular}
 }

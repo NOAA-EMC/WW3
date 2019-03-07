@@ -5,7 +5,7 @@
 \opthead{IC3}{Clarkson U. Fortran-77 code}{E. Rogers, X. Zhao, S. Cheng, S. Zieger}
 
 \noindent
-The third method for representing wave-ice interaction is taken from\linebreak
+The third method for representing wave-ice interactions is taken from\linebreak
 \cite{art:WS10}. This model treats the ice as a visco-elastic
 layer. ${C_{ice,1}}$ is used for ice thickness (m); ${C_{ice,2}}$ is used for
 the viscosity ($\mathrm{m^2\,s^{-1}}$); ${C_{ice,3}}$ is used for density
@@ -13,12 +13,12 @@ the viscosity ($\mathrm{m^2\,s^{-1}}$); ${C_{ice,3}}$ is used for density
 (Pa); ${C_{ice,5}}$ is not used. An example setting is 
 ${C_{ice,1...4}}=[0.1, 1.0, 917.0, 0.0]$.
 
-In \ws\ version 4, this method of $S_{ice}$ ({\code IC3}) was much more expensive than {\code IC1} or {\code IC2}. This issue is largely addressed in model version 5.
+In \ws\ version 4, this method of $S_{ice}$ ({\code IC3}) was much more expensive than {\code IC1} or {\code IC2}. This issue is largely addressed in model version 5.16.
 
-The namelist {\F SIC3} is introduced in model version 5. The namelist parameters are summarized in a list here, and some are discussed in further detail below.
+The namelist {\F SIC3} is introduced in model version 5.16. The namelist parameters are summarized in a list here, and some are discussed in further detail below.
 
 \begin{clist}
-\cit {IC3CHENG} {Solution technique new in version 5. Default = {\code TRUE}.}
+\cit {IC3CHENG} {Solution technique new in version 5.16. Default = {\code TRUE}.}
 \cit {IC3HILIM} {Optional limiter on ice thickness. Default=100 (i.e. by default, the option is not used).}
 \cit {IC3KILIM} {Optional limiter on dissipation rate ${k_i}$. Default=100 (i.e. by default, the option is not used).}
 \cit {USECGICE} {When set to {\code TRUE}, the model will include the effect of ice on the group velocity. Default = {\code FALSE}.}
@@ -40,21 +40,24 @@ The {\code IC3CHENG} option is new in model version 5. When set to {\code TRUE},
 
 If {\code IC3CHENG} is set to {\code FALSE}, the user is advised to use the ice thickness limiter {\code IC3HILIM} to ensure stability (value of 25 to 100 cm is suggested). The parameter {\code IC3KILIM} was required for stable and fast computations in some prior development versions of \ws, but is now unnecessary and may be ignored by the user.
 
-In model version 4.18, four ice rheology parameters (ice thickness, effective viscosity, effective elasticity, and ice density) were allowed to be nonstationary and non-uniform. This could be provided using {\file ww3\_prep}. Or in cases where {\file ww3\_shel} is used and non-uniform input is unnecessary, the ``homogeneous'' option of {\file ww3\_shel} was available for rheology input. In model version 5, an option is added to specify the four ice rheology parameters via the namelist {\F SIC3}. Two restrictions apply: 1) If {\code IC3CHENG} is set to {\code FALSE} and  {\code USECGICE} is set to {\code TRUE}, the namelist method cannot be used, and 2) If {\code IC3CHENG} is set to {\code TRUE}, the namelist method must be used for three of the rheology parameters (effective viscosity, effective elasticity, and ice density). If {\code IC3CHENG} is set to {\code TRUE} or {\code USECGICE} is set to {\code FALSE}, the fourth ice rheology parameter (ice thickness) can be input by either method (namelist or non-namelist). The model performs error checking to ensure that the user has specified input for each parameter by a single method (neither method of input is assumed to supercede the other).
+In model version 4.18, four ice rheology parameters (ice thickness, effective viscosity, effective elasticity, and ice density) were allowed to be nonstationary and non-uniform. This could be provided using {\file ww3\_prep}. Or in cases where {\file ww3\_shel} is used and non-uniform inputs are unnecessary, the ``homogeneous'' option of {\file ww3\_shel} was available for rheology input. In model version 5.16, an option is added to specify the four ice rheology parameters via the namelist {\F SIC3}. Two restrictions apply: 1) If {\code IC3CHENG} is set to {\code FALSE} and  {\code USECGICE} is set to {\code TRUE}, the namelist method cannot be used, and 2) If {\code IC3CHENG} is set to {\code TRUE}, the namelist method must be used for three of the rheology parameters (effective viscosity, effective elasticity, and ice density). If {\code IC3CHENG} is set to {\code TRUE} or {\code USECGICE} is set to {\code FALSE}, the fourth ice rheology parameter (ice thickness) can be input by either method (namelist or non-namelist). The model performs error checking to ensure that the user has specified input for each parameter by a single method (neither method of input is assumed to supercede the other).
 
 The ${k_r}$ modified by ice is incorporated into the governing
 equation~(\ref{eq:bal_plane}) via the $c_g$ (group velocity) and $c$ (phase velocity) calculations on the
-left-hand side; e.g. \citet[][and subsequent unpublished work]{art:RH09}.  The
-modified wavenumber ${k_r}$ produces effects analogous to shoaling and
-refraction by bathymetry. To activate the shoaling effect, the model should be
+left-hand side; e.g. \citet[][and subsequent unpublished work]{art:RH09}. 
+The modification of wavenumber and group velocity can be optionally passed back to the main program to produce effects analogous to refraction and shoaling by bathymetry. However, this feature has been used so far only in academic studies, rather than in routine application to realistic scenarios.\\
+
+To activate the shoaling effect, the model should be
 operated with namelist variable {\code USECGICE = TRUE}. To activate the refraction effect, the model should be
 compiled with switch {\code REFRX}. With this switch, the model computes
 refraction based on spatial gradients in phase velocity that include ice effects, rather than the
 simpler wave dispersion relation without ice. These effects are demonstrated in the regression test {\file
 ww3\_tic1.3} which is provided with the code.
 
-The group velocity using {\code IC3CHENG} solver with zero ice thickness does not collapse exactly to that from the open water dispersion relation. [This is caused by numerical error in the calculation $c_g = \frac{\partial \sigma}{\partial k} = \frac{\Delta \sigma}{\Delta k} $. This calculation will be improved in a subsequent patch.] These small differences in group speed will result in slight shoaling and refraction errors if these effects are turned on. Error for ice thickness=zero was found to be less than 10\% and was frequency dependent. This has been avoided by skipping the solver if ice thickness is exactly zero. If ice thickness is close to but not exactly zero, then the issue may persist. The solutions from CHENG for other parameters (effective viscosity, effective shear modulus) as they approach zero were not tested. Small but material difference have also noted between the solutions from {\code IC3CHENG} set to {\code FALSE} vs. {\code TRUE} for the same ice inputs.
+The group velocity using {\code IC3CHENG} solver with zero ice thickness does not collapse exactly to that from the open water dispersion relation. This is caused by numerical error in the calculation $c_g = \frac{\partial \sigma}{\partial k} = \frac{\Delta \sigma}{\Delta k} $. These small differences in group speed will result in slight shoaling and refraction errors if these effects are turned on. Error for ice thickness equal to zero was found less than 10\% and frequency dependent. This has been avoided by skipping the solver if ice thickness is exactly zero. If ice thickness is close to but not exactly zero, then this discrepancy may be noticeable. The solutions from CHENG for other parameters (effective viscosity, effective shear modulus) as they approach zero were not tested. Small but material difference have also noted between the solutions from {\code IC3CHENG} set to {\code FALSE} vs. {\code TRUE} for the same ice inputs.
 
-As noted above, {\code USECGICE = TRUE} is required for the shoaling effect. However, since some ice rheology will lead to an increase in group velocity, the user is advised to be careful with this option. The group velocity affects the CFL criterion, which may require that the user reduce the time step size. {\code USECGICE = FALSE} is recommended for users that do not wish to worry about this issue.
+As noted above, {\code USECGICE = TRUE} is required for the shoaling effect. However, since some ice rheology will lead to an increase in group velocity, the user is advised to use care with this option. The group velocity affects the CFL criterion, which may require that the user reduce the time step size. {\code USECGICE = FALSE} is recommended for users that do not wish to worry about this issue.
 
-In model version 5, a non-default option is added which causes the dissipation parameterization to change for some ice conditions. If ice concentration exceeds {\code IC3MAXCNC} and ice thickness exceeds {\code IC3MAXTHK}, the {\code IC2} dissipation (more specifically, the non-default, non-dispersive boundary layer scheme sub-option of {\code IC2}) is used in place of the dispersion-based dissipation estimate of \cite{art:WS10}. See description of {\code IC2} for more information. Since it is non-dispersive, this feature should not be used with {\code USECGICE = TRUE}.
+In model version 5.16, a non-default option is added which causes the dissipation parameterization to change for some ice conditions. If ice concentration exceeds {\code IC3MAXCNC} and ice thickness exceeds {\code IC3MAXTHK}, the {\code IC2} dissipation (more specifically, the non-default, non-dispersive boundary layer scheme sub-option of {\code IC2}) is used in place of the dispersion-based dissipation estimate of \cite{art:WS10}. See description of {\code IC2} for more information. Since it is non-dispersive, this feature should not be used with {\code USECGICE = TRUE}.
+
+{\code IC3} first appeared in \ww\ version 4 and the first simple testing was reported in \cite{pro:RZ14}. It has since been used in \cite{art:LKS15}, \cite{art:WHR16}, \cite{art:RTS16}, and \cite{art:CRT17}.

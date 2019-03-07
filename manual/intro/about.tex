@@ -2,22 +2,23 @@
 \subsection{~About this manual}
 \vssub
 
-This document describes the governing equations (\textbf{Chapter ~\ref{chapt:eq}}), numerical approaches (\textbf{Chapter~\ref{chapt:num}}),
-model structure and data flow (\textbf{Chapter~\ref{chapt:run}}), installing, compiling and running (\textbf{Chapter~\ref{chapt:impl}}) of \ws. Further details on the general code 
-structure and implementation of different aspects are given in \textbf{Chapter~\ref{chapt:sys}}. A user wishing to install the model 
-may thus jump directly to \textbf{Chapter~\ref{chapt:impl}}, and then successively
-modify input files in example runs (Chapter~\ref{chapt:run}). However this will not replace a thorough knowledge of \ws\ that can be obtained by
-following Chapters~\ref{chapt:eq} through \ref{chapt:impl}.
-
-
-
 This is the user manual and system documentation of version \WWver\ of the
-third-generation wind-wave modeling framework \ww. While code management of this system is undertaken by the National Center for Environmental Prediction (NCEP) the model development relies on a community of developers (see below). It is based on WAVEWATCH~I and WAVEWATCH~II as developed at
-Delft University of Technology, and NASA Goddard Space Flight Center,
-respectively. \ws\ differs from its predecessors in all major aspects; i.e.,
-governing equations, program structure, numerical and physical approaches.
+\ww wind-wave modeling framework. Although code management of the framework is 
+primarily undertaken by NCEP/NOAA, the model development itself relies on a community of developers, the 
+\ws\ Development Group (WW3DG) with membership indicated below. This manual is describes the 
+wave modeling framework as follows.
 
+\begin{list}{$\bullet$}{\rightmargin 5mm \parsep 0mm \itemsep 0mm}
+\item \textbf{Chapter~\ref{chapt:eq}}: Governing equations, 
+\item \textbf{Chapter~\ref{chapt:num}}: Numerical approaches, 
+\item \textbf{Chapter~\ref{chapt:run}}: Model structure and data flow, 
+\item \textbf{Chapter~\ref{chapt:impl}}: Installing, compiling and running,
+\item \textbf{Chapter~\ref{chapt:sys}}: Details on the general code structure and implementation of different aspects. 
+\end{list}
 
+A user wishing to install the framework may thus jump directly to Chapter~\ref{chapt:impl}, and then successively
+modify input files in example runs (eg, Chapter~\ref{chapt:run}). However this will not replace a thorough knowledge of \ws\ 
+that can be obtained by following Chapters~\ref{chapt:eq} through \ref{chapt:impl}.
 
 The format of a combined user manual and
 system documentation has been chosen to give users the necessary background
@@ -27,17 +28,22 @@ developed into a wave modeling framework. By design, a user can apply his or
 her numerical and/or physical approaches, and thus develop a new wave model based
 on the \ws\ framework. In such an approach, optimization, parallelization,
 nesting, input and output service programs from the framework can be easily
-shared between actual models.  Whereas this document is intended to be
+shared between actual models.  
+
+Whereas this document is intended to be
 complete and self-contained, this is not the case for all elements in the
 system documentation. For additional system details, reference is made to the
 source code, which is fully documented. Note that a best practices guide for
-code development for \ws\ is now available \citep{tol:MMAB10a, tol:MMAB14b}.
+code development for \ws\ is now available \citep{tol:MMAB10a, tol:MMAB14b}. 
+Applications of the modeling framework are widely documented in the literature, 
+some reviews of recent applications may be found in \cite{tol:WaF02}, \cite{art:HET09}, \cite{art:CET13a}, 
+\cite{art:AET13}, \cite{art:RET14}, \cite{art:LiET14}, \cite{art:RAR14}, \cite{art:ZET18}.
 
 \vspace{\baselineskip} 
 \noindent 
 The present model version (\WWver) is the new public version based on the
-last official model release (version 5.16). Since the latter release the
-following modifications have been made:
+previous official model release (version 5.16). The following are new features added 
+and code-structure modifications made in \ws\ \WWver since the previous release.
 
 \begin{list}{$\bullet$}{\rightmargin 5mm \parsep 0mm \itemsep 0mm}
 
@@ -63,14 +69,21 @@ following modifications have been made:
 
 \end{list}
 
+Other additions include updates on source term parameterizations such IC2, IS2, ST4, REF1.
+
+
 \vspace{\baselineskip} \noindent 
 Up to date information on this model can be found (including bugs and bug
-fixes) on the \ws\ web page, 
+fixes) on the \ws\ GitHub wiki page
+\begin{center}
+\url{https://github.com/NOAA-EMC/WW3/wiki}
+\end{center}
+and at the NCEP \ws\ page, 
 \begin{center}
 \url{http://polar.ncep.noaa.gov/waves/wavewatch/}
 \end{center}
 and comments, questions and suggestions should be
-directed to the code manager, Jessica Meixner (jessica.meixner@noaa.gov), or the general \ws\ users mailing group list
+directed to the code manager, Jose-Henrique Alves (henrique.alves@noaa.gov), or the general \ws\ users mailing group list
 
 \begin{center}
 ncep.list.wwatch3.users@lstsrv.ncep.noaa.gov
@@ -85,3 +98,11 @@ mailing list at the following web page:
 \url{https://www.lstsrv.ncep.noaa.gov/mailman/listinfo/ncep.list.wwatch3.users}
 \end{center} 
 
+% nocite Tolman (2002) references so that a,b,c, etc follow previously
+%  established order : 
+\nocite{tol:OMOD02b}
+\nocite{tol:PACO02}
+\nocite{tol:GAOS02}
+\nocite{tol:OMB02b}
+\nocite{tol:OMB02c}
+% now tol:OMB02a should show up as Tolman (2002f)

@@ -38,7 +38,7 @@ second-order spectrum are ignored \citep{art:Jan09}.
 
 However, when comparing to measurements, one should be aware that different
 measuring devices have different responses to the nonlinear part of the
-spectrum. In particular surface-following buoys also linearize the spectrum,
+spectrum. In particular, surface-following buoys also linearize the spectrum,
 and the second-order pressure field is not related to the second-order
 elevation via the relations used for linear waves. The canonical transform is
 thus only applicable for wave gauges that measure elevation at a fixed
@@ -52,7 +52,10 @@ allows the parameterization of that effect with several methods.  These are
 very crude parameterizations compared to the full hydrodynamic solution that
 would require solving the bispectral evolution across the surf zone at a very
 high spatial resolution \citep[e.g.][]{art:HB97}. The default namelist settings
-correspond to the parameterization presented by \cite{art:Aea14}.
+correspond to the parameterization presented by \cite{art:Aea14}, with minor adjustments in version 6.06. 
+The power in the definition of $\widehat{E}_{IG}(f)$ was changed from $f^{1.5}$ to $f^{1.0}$, with 
+an associated adjuspent of the constant fro 0.015 to 0.013. 
+
  In practice the free infragravity wave energy is
 added via the $S_{ref}$ source term, by setting the {\code SIG1} namelist
 {\code IGSOURCE} to 1 or 2.
@@ -68,7 +71,7 @@ is still being tested.  The second method, activated with {\code IGSOURCE =
 \begin{eqnarray}
  A_{IG} & =&    H_s T_{m0,-2}^2\label{eq:IGfit0}, \\
 \widehat{E}_{IG}(f)& = & 1.2 \alpha_1^2 \frac{k g^2}{c_g 2 \pi f} \frac{(A_{IG}/4)^2}{\Delta_f}  
-\left[\min( 1., 0.015\mathrm{Hz}/ f)\right]^{1.5}, \label{eq:IGfit1} \\
+\left[\min( 1., 0.013\mathrm{Hz}/ f)\right]^{1.0}, \label{eq:IGfit1} \\
  \widehat{E}_{IG}(f,\theta) & = & \widehat{E}_{IG}(f) / (2 \pi ),
 \label{eq:fit2} 
 \end{eqnarray}

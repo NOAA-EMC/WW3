@@ -1,16 +1,26 @@
 \vsssub
-\subsubsection{~$S_{in} + S_{ds}$: Ardhuin et al. 2010} \label{sec:ST4}
+\subsubsection{~$S_{\mathrm{in}} + S_{\mathrm{ds}}$: Ardhuin et al. 2010 ...} \label{sec:ST4}
 \vsssub
 
 \opthead{ST4}{\ws}{F. Ardhuin}
 
 \noindent 
-This parameterization uses a positive part of the wind input taken
-from WAM cycle 4, with an ad hoc reduction of $u_\star$ is implemented in
-order to allow a balance with a saturation-based dissipation.  This correction
+This family of parameterizations uses a positive part of the wind input taken
+from WAM cycle 4 with an ad hoc reduction of $u_\star$, implemented in
+order to allow a balance with a saturation-based dissipation that uses different options for 
+a cumulative term.  This correction
 also reduces the drag coefficient at high winds. This is done by reducing the
-wind input for high frequencies and high winds. For this, $u_\star$ in
-eq. (\ref{eq:SinWAM4}) is replaced by $u_\star '(k)$ defined for each
+wind input for high frequencies and high winds.
+Many different adjustments can be made by changing the namelist parameters. A few successful combinations 
+are given by tables \ref{tab:ST4_parSIN} and \ref{tab:ST4_parSDS}, with results described by \citep{art:RA13,art:SAG16}. 
+Further calibration to any particular wind field should be done for best performance. Guidance for this is given by \cite{Stopa2018}. 
+We also note that the particular 
+set of parameters T400 corresponds to setting IPHYS=1 in the ECWAM code cycle 45R2, with a few differences 
+related to the fact that precomputed stress tables have now been removed from ECWAM. 
+
+
+The reduction of $u_\star$ in
+eq. (\ref{eq:SinWAM4}) is obtained by replacing it with $u_\star '(k)$ defined for each
 frequency as
 
 \begin{equation}
@@ -29,19 +39,21 @@ tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
 3-dimensional look-up table for the high frequency stress, the third parameter
 being the energy level of the tail.
 
+The {\code STAB3} switch, described above for use with {\code ST3}, may also be used with {\code ST4}. If {\code STAB3} is used, the air-sea  temperature differences should be provided by the user, e.g. using {\file ww3\_prep}.
+
 The swell dissipation parameterization of \cite{art:ACC09} is activated by
 setting $s_1$ to a non-zero integer value, and is given by a combination of
 the viscous boundary layer value,
 
 \begin{equation}
-\cS_{out,vis}\left(k,\theta\right) = - s_5 \frac{\rho_a}{\rho_w}\left\{ 2 k \sqrt{2
+\cS_{\mathrm{out,vis}}\left(k,\theta\right) = - s_5 \frac{\rho_a}{\rho_w}\left\{ 2 k \sqrt{2
 \nu \sigma}\right\}  N \left(k,\theta\right) , \label{eq:Dore}
 \end{equation}
 
 \noindent
 with the turbulent boundary layer expression 
 \begin{equation}
-\cS_{out,tur} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
+\cS_{\mathrm{out,tur}} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
 \sigma^2 u_{\mathrm{orb},s} / g \right\}
  N\left(k,\theta\right),  \label{eq:swell_turb}
 \end{equation}
@@ -49,19 +61,19 @@ with the turbulent boundary layer expression
 \noindent
 giving the full term 
 \begin{equation}
-\cS_{out} \left(k,\theta\right) = r_{vis} \cS_{out,vis}\left(k,\theta\right)  + 
- r_{tur} \cS_{out,tur}\left(k,\theta\right),  
+\cS_{\mathrm{out}} \left(k,\theta\right) = r_{vis} \cS_{\mathrm{out,vis}}\left(k,\theta\right)  + 
+ r_{tur} \cS_{\mathrm{out,tur}}\left(k,\theta\right),  
  \label{eq:swell_comb}
 \end{equation}
 
 \noindent
-where the two weights $ r_{vis} $ and $r_{tur}$ are defined from 
+where the two weights $ r_{\mathrm{vis}} $ and $r_{\mathrm{tur}}$ are defined from 
 a modified  air-sea boundary layer significant Reynolds number $\mathrm{Re} = 2
 u_{\mathrm{orb},s} H_s / \nu_{a}$ 
 
 \begin{eqnarray}
- r_{vis} &=& 0.5 (1- \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7), \\
- r_{tur}&=& 0.5 (1+ \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) .
+ r_{\mathrm{vis}} &=& 0.5 (1- \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7), \\
+ r_{\mathrm{tur}}&=& 0.5 (1+ \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) .
 \end{eqnarray}
 The significant surface orbital velocity is defined by
 \begin{equation} u_{\mathrm{orb},s} = 2 \left [  \int \!\!\!\! \int
@@ -78,32 +90,42 @@ explanation for the dependence on $H_s$.  With $s_6=1$, a constant threshold
 close to $2 \times 10^5$ provides similar -- but less accurate -- results.
 
 
-%\begin{landscape}
-\begin{table} \begin{center} {\tiny
-\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var.       & namelist & TEST471 & TEST471f & TEST405  & TEST500 \\
+\begin{landscape}
+\begin{table} 
+\begin{center} 
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.       & namelist & T471    & T471f       & T400/$I_{\mathrm{phys}}=1$    & T405          & T500         & T601     \\
 \hline
-  $z_u$ &  ZWND                       & SIN4 & 10.0    & 10.0    & 10.0      & 10.0 \\
-  $\alpha_0$ &  ALPHA0                & SIN4 & 0.0095  & 0.0095   & 0.0095    &  0.0095 \\
-  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN4 & 1.43    &\textbf{1.33}& \textbf{1.55}    &  \textbf{1.52}   \\
-  $p_{\mathrm{in}}$ &  SINTHP         & SIN4 & 2       & 2       & 2         &  2      \\
-  $z_\alpha$ &  ZALP                  & SIN4 & 0.006   & 0.006   & 0.006     &  0.006 \\
-  $s_u$ &  TAUWSHELTER                & SIN4 & 0.3     & 0.3     & \textbf{0.0} & \textbf{1.0}   \\
-  $s_1$ &  SWELLF                     & SIN4 & 0.66    & 0.66    & 0.8       &  0.8 \\
-  $s_2$ &  SWELLF2                    & SIN4 & -0.018  & -0.018  & -0.018    &  -0.018 \\
-  $s_3$ &  SWELLF3                    & SIN4 &  0.022  &  0.022  &  \textbf{0.015}    & \textbf{0.015} \\
-  $\mathrm{Re}_c$ &  SWELLF4          & SIN4 & $1.5\times 10^5$  & $1.5\times 10^5$  & $10^5$    & $10^5$  \\
-  $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2     & 1.2       &  1.2 \\
-  $s_6$ &  SWELLF6                    & SIN4 & 0.      & 0.      & 0.        & 0.   \\
-  $s_7$ &  SWELLF7                    & SIN4 & 3.6$\times 10^5$ & 3.6$\times 10^5$  &\textbf{0.0}       &\textbf{0.0} \\
-  $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04    & 0.04      &  0.04 \\
-  $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002   &\textbf{0.002}&  1.002 \\
+  $z_u$ &  ZWND                       & SIN4 & 10.0    & 10.0        & 10.0           & 10.0          & 10.0         & 10.0        \\
+  $\alpha_0$ &  ALPHA0                & SIN4 & 0.0095  & 0.0095      & \textbf{0.0062}& 0.0095        &  0.0095      & 0.0095      \\
+  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN4 & 1.43    &\textbf{1.33}&\textbf{1.42}   & \textbf{1.55} &\textbf{1.52} & \textbf{2.0}\\
+  $p_{\mathrm{in}}$ &  SINTHP         & SIN4 & 2       & 2           & 2              & 2             &  2           & \textbf{1}  \\
+  $z_\alpha$ &  ZALP                  & SIN4 & 0.006   & 0.006       & 0.008          & 0.006         &0.006         & 0.006       \\
+  $s_u$ &  TAUWSHELTER                & SIN4 & 0.3     & 0.3         & \textbf{0.25}  & \textbf{0.0}  &\textbf{1.0}  & \textbf{0.5}\\
+  $s_1$ &  SWELLF                     & SIN4 & 0.66    & 0.66        & 0.66           & 0.8           &  0.8         & 0.66        \\
+  $s_2$ &  SWELLF2                    & SIN4 & -0.018  & -0.018      &-0.018          & -0.018        &  -0.018      &  -0.018     \\
+  $s_3$ &  SWELLF3                    & SIN4 &  0.022  &  0.022      & 0.022          &\textbf{0.015} &\textbf{0.015}&  0.022      \\
+  $\mathrm{Re}_c$ &  SWELLF4          & SIN4 &$1.5\X^5$& $1.5\X^5$   & $1.5\X^5$      &$\mathbf{10^5}$&$\mathbf{10^5}$&  $1.5\X^5$ \\
+  $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2         & 1.2            & 1.2           &  1.2         & 1.2         \\
+  $s_6$ &  SWELLF6                    & SIN4 & 0.      & 0.          & \textbf{1.0}   & 0.            & 0.           & 0.          \\
+  $s_7$ &  SWELLF7                    & SIN4 &3.6$\X^5$&3.6$\X^5$    & 3.6$\X^5$      &\textbf{0.0}   &\textbf{0.0}  & 3.6$\X^5$   \\
+  $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04        & 0.04           & 0.04          &  0.04        &   0.04      \\
+  $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002       & 1.002          &\textbf{0.002} &  1.002       &  1.002      \\
 \hline
-\end{tabular} }
+\end{tabular}  
+
  \end{center}
-\caption{Parameter values for TEST471, TEST471f, TEST405 and TEST500 source 
-term parameterizations that can be reset via the {\F SIN4} namelist. TEST471
-generally provides the best results at global scale when using ECMWF winds,
+\caption{Parameter values for T471, T471f, T400, T405, T500, and T601 source 
+term parameterizations that can be reset via the {\F SIN4} namelist. 
+Please note that the names of the variables only apply to the namelists. In the
+source term module the names are slightly different, with a doubled first
+letter, in order to differentiate the variables from the pointers to these
+variables, and the SWELLFx are combined in one array SSWELLF. Values highlighted in bold are
+different from the default values set by ww3\_grid.} \label{tab:ST4_parSIN}
+\end{table}
+\end{landscape}
+
+TEST471 generally provides the best results at global scale when using ECMWF winds,
 with the only serious problem being a low bias for $H_s > 8$~m.  TEST451f
 corresponds to a retuning for CSFR wind reanalysis from NCEP/NCAR
 \citep{art:CFSRR10}, and has almost no bias all the way to $H_s =
@@ -113,13 +135,6 @@ TEST471 also used $s_u=1$ and a few other adjustements (see manual of version 4.
 TEST405 is slightly superior for short fetches, and TEST500 is intermediate in
 terms of quality but it also includes depth-induced breaking in the same
 formulation, and thus may be more appropriate for depth-limited conditions.
-Please note that the name of the variables only apply to the namelists. In the
-source term module the names are slightly different, with a doubled first
-letter, in order to differentiate the variables from the pointers to these
-variables, and the SWELLFx are combined in one array SSWELLF. Bold values are
-different from the default values set by ww3\_grid.} \label{tab:ST4_parSIN}
-\end{table}
-%\end{landscape}
 
 
 Eq. (\ref{eq:swell_turb}) is a parameterization for the
@@ -145,10 +160,17 @@ wind opposing swells are more dissipated than following swells. Further, if
 $s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
 swell.
 
-The dissipation term is parameterized from the wave spectrum
-saturation. Because the directional wave spectra were too narrow when using a
+The dissipation term is parameterized from the wave spectrum saturation, following the general ideas of \cite{art:Phi85}, 
+which were initially explored in a numerical modeling framework by \cite{art:AB03}. However, using a saturation parameterization 
+only makes sense when the spectrum is smooth. In general, going from the spectral space to the physical space requires 
+integrating the saturation over a finite spectral band in wavenumber and direction to compute the breaking probability 
+and then deconvolve this integral to obtain a spectral dissipation rate. Because such operations would be too time consuming we have 
+implemented two approaches. One uses on integration over directions only \citep{art:Aea10}, while the other uses an integration  over frequency 
+bands \citep{Filipot&Ardhuin2012}. These are activated by different namelist parameters, see e.g. T471 for the first approach and T500 for the second.
+
+Because the directional wave spectra were too narrow when using a
 saturation spectrum integrated over the full circle \citep{art:AL06},
-the integration is restricted over a sector of half-width $\Delta_\theta$,
+\citep{art:Aea10} restricted over a sector of half-width $\Delta_\theta$,
 \begin{equation}
 B'\left(k,\theta\right)=
 \int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta} \sigma k^3 cos^{\mathrm{sB}}\left(\theta-
@@ -158,6 +180,18 @@ B'\left(k,\theta\right)=
 As a result, a sea state with two systems of same energy but opposite
 direction will typically produce less dissipation than a sea state with all
 the energy radiated in the same direction.
+
+Based on recent analysis by \cite{Guimaraes2018} and \cite{Peureux&al.2019}, this saturation is enhanced by a factor that represents 
+the effect of long waves on short waves 
+\begin{equation}
+1+M_\theta \sqrt{\mathrm{mss}_\theta} + N_\theta \sqrt{\mathrm{nss}_\theta} \label{defFACSAT}.
+\end{equation}
+where $M_\theta$ is twice the modulation transfer function for short wave steepness, with 
+$M_\theta=8$ when following the simplified theory by \cite{art:LHS60} and using the root mean square enhancement of $B$ over a 
+long wave cycle. $N_\theta$ is an additional straining factor due to the instability of the wave action envelope of short waves 
+propagating in the direction close to that of the long wave \citep{Peureux&al.2019}. The squared slopes $\mathrm{mss}_\theta$ is 
+the mean square slope in direction $\theta$, wheras $\mathrm{nss}_\theta$ is a slope of long waves propagating in a narrow window $\pm \delta_\theta$, 
+around the short wave direction $\theta$.
 
 We finally define our dissipation term as the sum of the saturation-based term
 and a cumulative breaking term $S_{\mathrm{bk,cu}}$,
@@ -259,32 +293,36 @@ DIA constant $C$ has been slightly adjusted in TEST441b, $C=2.5\times
 10^7$. TEST441f corresponds to a re-tuned wind input formulation when using
 NCEP/NCAR winds.
 
-\begin{table} \begin{center} {\tiny
-\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist  & TEST471 & TEST451 & TEST405  & TEST500 \\
+\begin{landscape}
+\begin{table} \begin{center} 
+\begin{tabular}{|l|c|c|c|c|c|c|c|} \hline \hline
+Par.                               &  WWATCH var.  & namelist  & T471        & T400/$I_{\mathrm{phys}}=1$& T405             & T500         & T601   \\
 \hline
-  $p$                               &  WNMEANP        & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5    \\
-  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5 \\
-  $f_{\mathrm{FM}}$                 &  FXFM3          & SDS4& 2.5 &\textbf{9.9}                 &  2.5 &\textbf{9.9}  \\
-                                    & SDSC1           & SDS4 & 0 & 0   & 0                              & \textbf{1.0} \\
-  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4& $-2.2\times 10^{-5}$  & $-2.2\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
-  $C_{\mathrm{ds}}^{\mathrm{BCK}}$  & SDSBCK          & SDS4 & 0 & 0                     & 0  & \textbf{0.185} \\
-  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4& 0 & 0                    & 1.5  & 1.5 \\
-  $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80 & 80                    & 80 &  80 \\
-  $B_r$                             &  SDSBR          & SDS4  & 0.0009& 0.0009                & \textbf{0.00085} & 0.0009    \\
-  $C_{\mathrm{cu}}$                 & SDSCUM         & SDS4 & -0.40344  & -0.40344               & \textbf{0.0}    & -0.40344     \\
-  ${\mathrm{s_B}}$                  & SDSCOS           &SDS4  & 2.0& 2.0                   &  0.0 & 2.0 \\
-   $B_0$                             &  SDSC4          & SDS4 & 1.0 & 1.0                  & 1.0 & 1.0   \\
-  $p^{\mathrm{sat}}$                &  SDSP           & SDS4 & 2.0& 2.0  & 2.0 &  2.0   \\
-  $C_{\mathrm{turb}}$               & SDSC5           & SDS4  & 0.0& 0.0 & 0.0 &  0.0   \\
-  $\delta_d$                        & SDSC6           & SDS4  & 0.3& 0.3 & 0.3 &  0.3   \\
-  $C$                               & NLPROP          & SNL1  & $2.5\times 10^7$& $2.5\times 10^7$ & $\mathbf{2.7\times 10^7}$  & $2.5\times 10^7$   \\
+%  $p$                               &  WNMEANP        & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5    \\
+%  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5 \\
+  $f_{\mathrm{FM}}$                &  FXFM3        & SDS4      & 2.5         & 2.5                       & 2.5              &\textbf{9.9}  & 5      \\
+                                   & SDSC1         & SDS4      & 0           & 0                         & 0                &\textbf{1.0}  & 0      \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$ & SDSC2         & SDS4      &$-2.2\X^{-5}$&$-2.2\X^{-5}$              &$-2.2\X^{-5}$     &\textbf{0.0}  &$-2.2\X^{-5}$ \\
+  $C_{\mathrm{ds}}^{\mathrm{BCK}}$ & SDSBCK        & SDS4      & 0           & 0                         & 0                &\textbf{0.185}& 0      \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$ & SDSHCK        & SDS4      & 0           & 0                         & 0                &\textbf{1.5}  & 0      \\
+  $\Delta_\theta$                  & SDSDTH        & SDS4      & 80          & 80                        & 80               & 80           &  80    \\
+  $\delta_\theta$                  & SDSSTRAINA    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{15}    \\
+  $M_\theta$                       & SDSSTRAIN     & SDS4      & 0           & 0                         & 0                & 0            & \textbf{10}     \\
+  $N_\theta$                       & SDSSTRAIN2    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{20}     \\
+  $B_r$                            & SDSBR         & SDS4      & 0.0009      & 0.0009                    &\textbf{0.00085}  & 0.0009       & 0.0009   \\
+  $C_{\mathrm{cu}}$                & SDSCUM        & SDS4      & -0.40344    & \textbf{0.0}              & \textbf{0.0}     &-0.40344      &-0.40344   \\
+  ${\mathrm{s_B}}$                 & SDSCOS        &SDS4       & 2.0         &  2.0                      & \textbf{0.0}     & 2.0          & 2.0 \\
+   $B_0$                           & SDSC4         & SDS4      & 1.0         & 1.0                       & 1.0              & 1.0          & 1.0    \\
+  $p^{\mathrm{sat}}$               & SDSP          & SDS4      & 2.0         & 2.0                       & 2.0              & 2.0          & 2.0  \\
+  $C_{\mathrm{turb}}$              & SDSC5         & SDS4      & 0.0         & 0.0                       &  0.0             & 0.0          & \textbf{1.0} \\
+  $\delta_d$                       & SDSC6         & SDS4      & 0.3         & 0.3                       &  0.3             & 0.3          &0.3   \\
+  $C$                              & NLPROP        & SNL1      & $2.5\X^7$   & $\mathbf{2.7\X^7}$        &$\mathbf{2.7\X^7}$& $2.5\X^7$    & $2.5\X^7$  \\
  \hline \hline
-\end{tabular} } \end{center}
+\end{tabular}  \end{center}
 
 \caption{Same as Table \ref{tab:ST4_parSIN}, for the {\F SDS4} and {\F SNL1}
 namelists. Bold values are different from the default values set by 
  ww3\_grid.} \label{tab:ST4_parSDS}
 %\botline
 \end{table}
-
+\end{landscape}

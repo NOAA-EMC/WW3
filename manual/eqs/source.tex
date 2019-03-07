@@ -5,23 +5,26 @@
 \vsssub
 
 In deep water, the net source term $S$ is generally considered to consist of
-three parts, an atmosphere-wave interaction term $S_{in}$, which 
+three parts, an atmosphere-wave interaction term $S_{\mathrm{in}}$, which 
 is usually a positive energy input but can also be negative in the case of swell, a nonlinear wave-wave
-interactions term $S_{nl}$ and a wave-ocean interaction term that generally contains the dissipation 
-$S_{ds}$. The input term $S_{in}$ is dominated by the
+interactions term $S_{\mathrm{nl}}$ and a wave-ocean interaction term that is generally dominated by wave breaking
+$S_{\mathrm{ds}}$. The input term $S_{\mathrm{in}}$ is dominated by the
 exponential wind-wave growth term, and this source term generally describes this
 dominant process only. For model initialization, and to provide more realistic
-initial wave growth, a linear input term $S_{ln}$ can also be added in
+initial wave growth, a linear input term $S_{\mathrm{ln}}$ can also be added in
 \ws.
 
 In shallow water additional processes have to be considered, most notably
-wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
-shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
-interactions ($S_{tr}$) also become important. Also available in \ws\ are source
-terms for scattering of waves by bottom features ($S_{sc}$), wave-ice
-interactions ($S_{ice}$), reflection off shorelines or floating objects such
-as icebergs ($S_{ref}$), which can include sources of infragravity wave energy, and a general purpose slot for additional, user
-defined source terms ($S_{xx}$).
+wave-bottom interactions $S_{\mathrm{bot}}$ \cite[e.g.,][]{pro:Sea78}. In extremely
+shallow water, an additional  breaking term ($S_{\mathrm{db}}$) should be considered,  
+if not well represented in  $S_{\mathrm{ds}}$ \citep[see][]{Filipot&Ardhuin2012}.
+Triad wave-wave
+interactions ($S_{\mathrm{tr}}$) may also be considered, but present parameterizations have limited accuracy. 
+Also available in \ws\ are source
+terms for scattering of waves by bottom features ($S_{\mathrm{sc}}$), wave-ice
+interactions ($S_{\mathrm{ice}}$), reflection off shorelines or floating objects such
+as icebergs which can include sources of infragravity wave energy ($S_{\mathrm{ref}}$),  and a general purpose slot for additional, user
+defined source terms ($S_{\mathrm{user}}$).
 
 This defines the general source terms used in \ws\ as
 
@@ -31,8 +34,9 @@ This defines the general source terms used in \ws\ as
 % eq:general_st
 
 \begin{equation}
-S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} +
-    S_{sc} + S_{ice} + S_{ref} + S_{xx}\: .
+S = S_{\mathrm{ln}} + S_{\mathrm{in}} + S_{\mathrm{nl}} + S_{\mathrm{ds}} + S_{\mathrm{bot}} + S_{\mathrm{db}} 
+    + S_{\mathrm{tr}} +
+    S_{\mathrm{sc}} + S_{\mathrm{ice}} + S_{\mathrm{ref}} + S_{\mathrm{user}}\: .
 \label{eq:general_st}
 \end{equation}
 
@@ -43,8 +47,8 @@ calculated for the action spectrum. The latter source terms are denoted as
 $\cS \equiv S/\sigma$.
 
 The explicit treatment of the nonlinear interactions defines third-generation wave
-models. Therefore, the options for the calculation of $S_{nl}$ will be
-discussed first, starting in section \ref{sec:NL1}. $S_{in}$ and $S_{ds}$
+models. Therefore, the options for the calculation of $S_{\mathrm  nl}$ will be
+discussed first, starting in section \ref{sec:NL1}. $S_{\mathrm  in}$ and $S_{\mathrm ds}$
 represent separate processes, but are often interrelated,
 because the balance of these two source terms governs the integral growth
 characteristics of the wave energy. Several combinations of these basic source

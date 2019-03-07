@@ -1,5 +1,118 @@
 \vssub
+\subsection{~Optional environment settings}
+\vssub
+
+Compilation of the \ws\ NetCDF enabled programs requires the environment variable
+{\code WWATCH3\_NETCDF} be set to either {\code NC3} (compile with NetCDF
+version 3.x) or {\code NC4} (compile with NetCDF version 4.x).  If the script
+variable is set to {\code WWATCH3\_NETCDF = NC3}, then the following
+environment variables are required
+\begin{clist}
+\cit {NETCDF\_LIBDIR} {Path to where the NetCDF-3 libraries are installed.}
+\cit {NETCDF\_INCDIR} {Path to where the NetCDF-3 include files are installed.}
+\end{clist}
+If {\code WWATCH3\_NETCDF = NC4}, then the following environment variable
+is required.
+\begin{clist}
+\cit {NETCDF\_CONFIG} {Path to the NetCDF-4 nc-config utility program.}
+\end{clist}
+The {\file nf-config} utility program (part of the NetCDF-4 install or 
+{\file nc-config} for old versions) is used to determine the appropriate
+compile and link flags for the {\code WWATCH3\_NETCDF = NC4} compile.
+The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.  Use the command
+\command{\code nf-config --version} to check the version of the installed 
+Fortran-NetCDF library.  Compiling with the {\code NC4} switch requires
+{\code WWATCH3\_NETCDF = NC4} and the NetCDF-4 installation compiled with the
+NetCDF-4 API enabled.  Use \command{\code nf-config --has-nc4} to check if the
+installed NetCDF has the NetCDF-4 API enabled.
+
+\vspace{\baselineskip} 
+\noindent
+Compilation of the WAVEWATCH III with PDLIB for Domain Decompstion option
+for (Explicit/Implicit) triangular unstructed grids requires the environment
+variable {\code METIS\_PATH} be set to the path where {\code Metis} and
+{\code ParMetis} are compiled using the same compiler used for WW3.
+
+\vspace{\baselineskip}
+\noindent
+Two additional remarks need to be made regarding parallel versions of the
+model (OpenMP and \mpi\ versions). First, complications may occur when
+preparing executables for running in an \mpi\ environment. Such complications
+are discussed in Appendix~\ref{app:mpi}. Secondly, the \omp\ code should be
+compiled using directives only, i.e., do not use compiler options that
+automatically thread the code.
+
+
+
+\vssub
 \subsection{~Compiling and linking} \label{sec:comp}
+\vssub
+
+\vspace{\baselineskip} \noindent 
+For the first compilation, the \ws\ environment must be set up using the script
+{\file w3\_setup} with the model directory path in argument. Some options are
+available to define the compiler options and the switch file located in the
+{\dir bin} directory. For instance, \command{w3\_setup /home/user/WW3/model
+-c <comp> -s <switch>} the {\code <comp>} keyword can be {\code mpt}, 
+{\code intel}, {\code gfortran}, {\code pgi} for optimized compilation options
+or could be {\code mpt\_debug}, {\code intel\_debug}, {\code gfortran\_debug},
+{\code pgi\_debug} for debugging compilation options. If system-dependant
+options are needed, it can be done by modifying the script {\file cmplr.env}. 
+Some old comp/link templates from different clusters are still available but 
+not recommended. The {\code <switch>} keyword can be the suffix of a provided
+switch file or your own one. Running this script will create these three 
+scripts/files :
+
+\begin{flist}
+\fit{comp}  {Compiler script. This script is based on {\file comp.tmpl} with
+	    the provided definition of the compiler and its options.}
+\fit{link}  {Linker script. This script is based on {\file link.tmpl} with
+	    the provided definition of the linker and its options.}
+\fit{switch}{File containing a list of switches as recognized by the
+             preprocessor {\file w3adc}. Copied from {\code switch\_<switch>}}.
+\end{flist}
+
+\vspace{\baselineskip}
+
+The environment file {\file wwatch3.env} will be created or updated if it 
+already exists. The auxiliary FORTRAN programs for code prepocessor will be
+compiled using by default the GNU FORTRAN compiler which can be different to
+the provided compiler for the \ws\ programs.
+
+
+\vspace{\baselineskip} \noindent 
+The easiest way to compile \ws\ is using the script {\file w3\_automake} to 
+automatically detect which programs to compile and to compile it. It will
+force pre- and post-processing programs to be compiled as sequential 
+implementation and others depending on the switches from openMP, MPI or hybrid
+configurations. If the netCDF library is correctly set up, the netCDF dedicated
+programs will be also compiled. The same test is done for SCRIPNC, PDLIB, OASIS,
+ESMF, TRKNC and TIDE keywords to manage the program compilation in the best way.
+For instance, \command{w3\_automake} or for a few programs \command{w3\_automake
+ww3\_grid ww3\_shel ww3\_ounf} the compiled programs will all be stored in the 
+{\dir exe} directory with a copy of the switch, comp and link files used.
+
+\vspace{\baselineskip} \noindent
+In case of troubles during the compilation of a program, the log files will be
+stored in a temporary directory which will differs between sequential mode
+({\dir tmp\_SEQ}) and distributed mode like MPI ({\dir tmp\_MPI}), OMP 
+({\dir tmp\_OMP}) or hybrid ({\dir tmp\_HYB}). There are usually three log files
+per program:
+
+\begin{flist}
+\fit{\code ww3\_<prog>.l} {full program with only the matching lines
+	of codes based on the switches and at the end the compilation command line.}
+	\fit{\code ww3\_<prog>.out} {warning messages}
+	\fit{\code ww3\_<prog>.err} {error messages}
+\end{flist}
+
+To remove all user-created files from the \ws\ framework, the script 
+{\file w3\_clean} can be used by only cleaning up the {\dir model} directory
+\command{w3\_clean -m} or the full ww3 repository \command{w3\_clean -c}
+
+
+\vssub
+\subsection{~Detailled compilation}
 \vssub
 
 Compilation of \ws\ is performed using the script {\file w3\_make} in the
@@ -30,27 +143,10 @@ run {\file w3\_make} only.
 
 \input{impl/fig_make} 
 
-\vspace{\baselineskip} \noindent 
-Before a first attempt is made at compiling, user intervention is required in
-three scripts/files. For convenience of debugging and development, links to
-these three files are made in the work directory {\dir work}. The files in the
-work directory are
-
-\begin{flist}
-\fit{comp}  {Compiler script. This script requires the correct definition
-             of the compiler and its options. Linked to {\file ../bin/comp}}
-\fit{link}  {Linker script. This script requires the correct definition
-             of the linker and its options. Linked to {\file ../bin/link}}
-\fit{switch}{File containing a list of switches as recognized by the
-             preprocessor {\file w3adc}. Linked to {\file ../bin/switch}}. The
-             file provided with \ws\ should result in a hardware independent
-             code.
-\end{flist}
-
 \vspace{\baselineskip}
 
 \begin{center}
-\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\
 \vspace{\baselineskip}
 \parbox{120mm}{The auxiliary scripts {\file w3\_make} etc. use the {\file
   switch}, {\file comp} and {\file link} files from the {\file ./bin}
@@ -58,6 +154,7 @@ work directory are
   directory.} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING
   \rule[1mm]{55mm}{1.0mm}
 \end{center}
+
 
 \noindent
 After the appropriate changes have been made, or the appropriate example
@@ -109,35 +206,3 @@ might also be useful if the compilation is unsuccessful for no apparent
 reason.
 
 
-
-Compilation of the \ws\ NetCDF enabled programs requires the environment variable
-{\code WWATCH3\_NETCDF} be set to either {\code NC3} (compile with NetCDF
-version 3.x) or {\code NC4} (compile with NetCDF version 4.x).  If the script
-variable is set to {\code WWATCH3\_NETCDF = NC3}, then the following
-environment variables are required
-\begin{clist}
-\cit {NETCDF\_LIBDIR} {Path to where the NetCDF-3 libraries are installed.}
-\cit {NETCDF\_INCDIR} {Path to where the NetCDF-3 include files are installed.}
-\end{clist}
-If {\code WWATCH3\_NETCDF = NC4}, then the following environment variable
-is required.
-\begin{clist}
-\cit {NETCDF\_CONFIG} {Path to the NetCDF-4 nc-config utility program.}
-\end{clist}
-The {\file nc-config} utility program (part of the NetCDF-4 install) is used
-to determine the appropriate compile and link flags for the {\code
-  WWATCH3\_NETCDF = NC4} compile.  The NetCDF-4 compile requires NetCDF
-version 4.1.1 or higher.  Use the command \command{\code nc-config --version}
-to check the version of the installed NetCDF.  Compiling with the {\code NC4}
-switch requires {\code WWATCH3\_NETCDF = NC4} and the NetCDF-4 installation
-compiled with the NetCDF-4 API enabled.  Use \command{\code nc-config
-  --has-nc4} to check if the installed NetCDF has the NetCDF-4 API enabled.
-
-\vspace{\baselineskip} 
-\noindent 
-Two additional remarks need to be made regarding parallel versions of the
-model (OpenMP and \mpi\ versions). First, complications may occur when
-preparing executables for running in an \mpi\ environment. Such complications
-are discussed in Appendix~\ref{app:mpi}. Secondly, the \omp\ code should be
-compiled using directives only, i.e., do not use compiler options that
-automatically thread the code.

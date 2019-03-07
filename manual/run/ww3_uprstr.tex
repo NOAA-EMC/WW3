@@ -3,14 +3,11 @@
 \vsssub
 
 \proddefH{ww3\_uprstr}{ww3uprstr}{ww3\_uprstr.ftn}
-\proddeff{Input}{ww3\_uprstr.inp}{Input file for restart file
-post-processor.}{10}
+\proddeff{Input}{ww3\_uprstr.inp}{Traditional configuration file.}{10} (App.~\ref{sec:config221})
 \proddefa{mod\_def.ww3}{Model definition file.}{20}
 \proddefa{restart.ww3}{Restart File}{ }
 \proddefa{XXXX.grbtxt}{SWH Analysis file in grbtxt format.}{123}
 \proddeff{Output}{restart001.ww3}{Updated restart file.}{ }
-
-\inpfile{ww3_uprstr.tex}
 
 \vspace{\baselineskip} 
 
@@ -90,8 +87,8 @@ as for all the WAVEWATCH III programs. In summary:
       \end{itemize}
    \end{description}
    
-   \fbox{
-      \parbox{\linewidth}{
+   \noindent\fbox{
+      \parbox{\textwidth}{
          \textbf{Tips}
          \begin{itemize}
             \item The restart file has to be created with the same WW3 version as 
@@ -177,7 +174,7 @@ one minute to update a grid of 260000 grid nodes and generate the output on a si
 The updated restart file has to be renamed, at the expected file name, in the case of this
 example to \textbf{restart.ww3}. \newline  
 
-   \fbox{
+   \noindent\fbox{
       \parbox{\textwidth}{
       \textbf{Note: }
       All \ncep's WDA systems use GRIB2 format, thereore there is always an intermediate

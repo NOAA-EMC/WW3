@@ -70,7 +70,7 @@ Finally we note that in all definitions the frequency is the \emph{relative} fre
       \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
       \: . \label{eq:Tm0m1} \end{equation}
 \item \textbf{T01} Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
-      \begin{equation} T_{m0,1} = 2\pi \overline{\sigma}
+      \begin{equation} T_{m0,1} = 2\pi /\overline{\sigma}
       \: . \label{eq:Tm} \end{equation}
 \item \textbf{FP} Peak frequency (Hz), calculated from the one-dimensional frequency
       spectrum using a parabolic fit around the discrete peak.
@@ -186,7 +186,7 @@ The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
 \item \textbf{PT2} Wave zero-upcrossing period of partitions of the spectrum [see Eq.~(\ref{eq:Tm02})]
 \item \textbf{PEP} Wave peak spectral density of partitions
 \item \textbf{TWS} Wind sea fraction of the entire spectrum.
-\item \textbf{PNR} Number of partitions found in the spectrum.
+\item \textbf{PNR} Number of partitions found in the spectrum. \label{out:last_part}
 \end{list}
 
 
@@ -257,6 +257,12 @@ Note that US3D=1 must be set in the ww3\_grid.inp OUTS namelist in order to acti
       \: . \label{eq:sopf} \end{equation}
 \item \textbf{TWI}   Wave to sea ice stress
 \item \textbf{FIC}   Wave to sea ice energy flux
+\item \textbf{USP}   Surface Stokes drift partitioned into run-time defined frequency components (m/s),
+      \begin{equation} (U_{ssp},V_{ssp})(n) =  \int \!\!\!\! \int_{k_n}  \sigma \cosh 2kd \frac{(k\
+      \cos(\theta),k \sin(\theta))}
+        {\sinh^2 kd}  \: F(k,\theta) \: dk d\theta
+      \: . \label{eq:Ussp} \end{equation}
+The number $n$ and the central wavenumbers for the partitions $k_n$ are `run-time' in the sense that they are defined in the model definition file generated from ww3\_grid.inp (see the sample input file for details on setting these quantities).  The wavenumber integral bounds for each $n$ partition divide the model wave spectra to accomodate the prescribed values of $k_n$.
 \end{list}
 
 \item{Wave-bottom layer}

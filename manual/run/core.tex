@@ -2,11 +2,12 @@
 \subsection{~The wave model routines} \label{sec:core}
 \vssub
 
-As discussed above, the actual wave model is a subroutine. To run the model, a
-program shell is needed. \ws\ is provided with a simple stand-alone shell as
+The wave model driver is a subroutine within the \ws\ framework package. 
+To run the model driver subroutine, a program shell is needed. 
+\ws\ is provided with a simple stand-alone shell as
 will be discussed in \para\ref{sec:ww3shel}, and with a more complex
 multi-grid model shell as will be discussed in \para\ref{sec:ww3multi}. The
-present section concentrates on the wave model subroutines.
+present section concentrates on the wave model driver subroutines.
 
 The wave model initialization routine {\F w3init} performs model
 initialization for a single wave model grid. This includes setting up part of
@@ -41,8 +42,8 @@ step considered. The column identified as `pass' identifies the sequence
 number of the call to {\F w3wave}; i.e., 3 identifies that this action took
 place in the third call to {\F w3wave}. The third column shows the ending time
 of the time step. In the input and output columns the corresponding actions of
-the model are shown. An {\tt X} identifies that the input has been updated, or
-that the output has been performed. An {\tt F} indicates a first field read,
+the model are shown. A {\tt X} identifies that the input has been updated, or
+that the output has been performed. A {\tt F} indicates a first field read,
 and an {\tt L} identifies the last output. The seven input columns identify
 boundary conditions ({\tt b}), wind fields ({\tt w}), water levels ({\tt l}),
 current fields ({\tt c}), ice concentrations ({\tt i}), and data for
@@ -57,8 +58,9 @@ For the multi-grid wave model \citep[][{\file ww3\_multi}]{tol:OMOD08b} a set
 of routines is build around the basic wave model routines. The three main
 routines are the initialization routine {\F wminit}, a time stepping routine
 {\F wmwave} and a finalization routine {\F wmfinl}, with similar functions as
-the routines for a single grid as described above. Note that he raw input and
+the routines for a single grid as described above. Note that the raw input and
 output files are generated for separate grid in the mosaic, and are identified
 by replacing the standard file extension '{\file .ww3}' with a unique
-identifier for each individual grid. Log files are maintained for each
-individual grid, as well as an overall log file {\file log.mww3}.
+identifier for each individual grid as chosen by the user in the 
+{\file ww3\_grid.inp} file. Log files are maintained for each individual grid, 
+as well as an overall log file {\file log.mww3}.

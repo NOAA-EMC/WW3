@@ -1,6 +1,6 @@
 \pagestyle{myheadings} \setcounter{page}{1} \setcounter{footnote}{0}
 
-\section{~Ocean-Waves-Atmosphere coupling with OASIS} \label{app:coupling}
+\section{~Ocean-Ice-Waves-Atmosphere coupling with OASIS} \label{app:coupling}
 \newcounters 
 
 \vssub
@@ -28,22 +28,22 @@ In a nutshell, OASIS3-MCT ...
 \subsection{~Interfacing with OASIS3-MCT} \label{sec:couplingB}
 \vssub
 
-To communicate with another model, a component model (ocean, wave or atmosphere) needs to include a few specific calls to the OASIS3-MCT coupling library. To use these OASIS's functions in \ws\ we created 3 new modules:
+To communicate with another model, a component model (ocean, wave, sea ice or atmosphere) needs to include a few specific calls to the OASIS3-MCT coupling library. To use these OASIS's functions in \ws\ we created 4 new modules:
 \begin{itemize}
 \item {\file w3oacpmd.ftn}, module containing common functions for atmosphere and ocean coupling. These functions are called before the temporal loop, in the {\code ww3\_shel} program.
-\item {\file w3ogcmmd.ftn} and {\file w3agcmmd.ftn}, modules containing specific functions for, respectively, waves-ocean coupling and waves-atmosphere coupling.  These functions are called in the temporal loop.
+\item {\file w3ogcmmd.ftn}, {\file w3igcmmd.ftn} and {\file w3agcmmd.ftn}, modules containing specific functions for, respectively, waves-ocean coupling,  waves-sea icecoupling and waves-atmosphere coupling.  These functions are called in the temporal loop.
 \end{itemize}
 
 \vssub
 \subsection{~Compiling with OASIS3-MCT} \label{sec:couplingB}
 \vssub
 
-To use or not these coupling functions 4 switches were created: 
+To use or not these coupling functions 5 switches were created: 
 
 \begin{itemize}
 \item switch {\code COU}, to perform the coupling : reading the {\file ww3\_shel.inp} input file and define the number of variable exchanged and the time exchange.
 \item switch {\code OASIS}, to initialize the coupler OASIS {\file w3oacpmd.ftn}
-\item switch {\code OASACM} and/or {\code OASOCM}, to send/receive the coupling fields to/from the atmospheric model {\file w3agcmmd.ftn} and/or the oceanic model {\file w3ogcmmd.ftn}
+\item switch {\code OASACM} and/or {\code OASOCM} and/or {\code OASICM}, to send/receive the coupling fields to/from the atmospheric model {\file w3agcmmd.ftn} and/or the oceanic model {\file w3ogcmmd.ftn} and/or the sea ice model {\file w3igcmmd.ftn}
 \end{itemize}
 
 To allow the use of OASIS, \ww~ should be compiled with the following switches. For 
@@ -51,6 +51,8 @@ a coupling with an atmospheric circulation model
 \command{COU OASIS OASACM}
 and with an ocean circulation model
 \command{COU OASIS OASOCM}
+and with a sea ice model
+\command{COU OASIS OASICM}
 and both ocean and atmosphere circulation models 
 \command{COU OASIS OASACM OASOCM}
 
@@ -69,7 +71,7 @@ To launch a coupling simulation, for example with Intel Mpi, we need the:
 \begin{itemize}
 \item input files for WW3 : {\file ww3\_shel.inp}, and the usual *.ww3 files.
 \item input file for OASIS : {\file namcouple}
-\item input files for ocean/atmosphere models : {\file files depends on the model}
+\item input files for ocean/sea ice/atmosphere models : {\file files depends on the model}
 \end{itemize}
 
 To launch a coupling simulation, the {\file mpirun} command should be used as follows

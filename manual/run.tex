@@ -24,6 +24,7 @@
 \input{run/ww3_ounp.tex}
 \input{run/gx_outp.tex}
 \input{run/ww3_trck.tex}
+\input{run/ww3_trnc.tex}
 \input{run/ww3_systrk.tex}
 \input{run/ww3_uprstr.tex}
 
@@ -60,14 +61,14 @@ group & field & description                  &  file        & GRIB1 & GRIB2   \\
  4 & 7 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
  4 & 8 & number of partitions            & {\file .pnr} &  --  &    --    \\
  5 & 1 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
- 5 & 2 & Charnock parameter for air side & {\file .cha} &  --  &    --    \\
+ 5 & 2 & Charnock par for air side & {\file .cha} &  --  &    --    \\
  5 & 3 & Energy flux $\int C_g E(f) df$  & {\file .CgE} &  --  &    --    \\
  5 & 4 & Wind to wave energy flux        & {\file .faw} &  --  &    --    \\
  5 & 5 & Wave-supported stress           & {\file .taw} &  --  &    --    \\
  5 & 6 & Upward wave-supported stress    & {\file .twa} &  --  &    --    \\
  5 & 7 & Whitecap coeverage              & {\file .wcc} &  --  &    --    \\
- 5 & 8 & Average whitecap foam thickness & {\file .wcf} &  --  &    --    \\
- 5 & 9 & Significant breaking wave height& {\file .wch} &  --  &    --    \\
+ 5 & 8 & Avg whitecap foam thickness & {\file .wcf} &  --  &    --    \\
+ 5 & 9 & Sign breaking wave height& {\file .wch} &  --  &    --    \\
  5 & 10 & Whitecap moment                 & {\file .wcm} &  --  &    --    \\ \hline
 \end{tabular} \end{center}
 \caption{~Field output post processors ancillary data.} \label{tab:fields}
@@ -88,8 +89,8 @@ group & field & description                  &  file        & GRIB1 & GRIB2   \\
  7 & 1 & near-bottom amplitude           & {\file .cfd} &  --  &    --    \\
  7 & 2 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
  7 & 3 & bedform parameters              & {\file .bed} &  --  &    --    \\
- 7 & 4 & Energy flux to bot. boundary layer & {\file .fbb} &  --  &    --    \\
- 7 & 5 & Momentum flux to bot. boundary layer & {\file .tbb} &  --  &    --    \\
+ 7 & 4 & Energy flx to bot bound layer & {\file .fbb} &  --  &    --    \\
+ 7 & 5 & Momentum flx to bot bound layer & {\file .tbb} &  --  &    --    \\
  8 & 1& mean square slopes              & {\file .mss} &  --  &    --    \\
  8 & 2 & Phillips constant               & {\file .msc} &  --  &    --    \\
  9 & 1 & average time step               & {\file .dtd} &  --  &    --    \\

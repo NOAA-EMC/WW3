@@ -12,7 +12,7 @@ $ In versions 1.18 and 2.22 of the model this value was by definiton 0,
 $ it is added to mitigate the GSE for a first order scheme. Note that
 $ this factor is IGNORED in the print plots in ww3_outp.
 $
-1.1 0.05 25 24 0.
+1.1 0.05 36 36 0.
 $
 $ Set model flags ---------------------------------------------------- $
 $  - FLDRY         Dry run (input/output only, no calculation).
@@ -20,7 +20,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T T T T
+   F T T F F F 
 $
 $ Set time steps ----------------------------------------------------- $
 $ - Time step information (this information is always read)
@@ -28,7 +28,7 @@ $     maximum global time step, maximum CFL time step for x-y and
 $     k-theta, minimum source term time step (all in seconds).
 $
 $
-   120. 30. 30. 10.                              
+  1 1 1 1                               
 $
 $ Start of namelist input section ------------------------------------ $
 $   Starting with WAVEWATCH III version 2.00, the tunable parameters
@@ -91,14 +91,45 @@ $                                    PHImin.
 $
 $ BAJ (adjusted) 
 $
-$ &SIN3 BETAMAX = 1.25 /
+&SIN4 BETAMAX = 1.52, Z0MAX = 1.002 /
+$&SDS4 SDSC1 = 1.0, SDSC2 = 0.0 , SDSBCK = 0.100, SDSHCK = 1.0, SDSDTH = 0 /
+$&SDB1 BJGAM = 1.0, BJALFA = 0.001 /
+&SNL1 NLPROP = 3.1E7 /
 $
-$ TEST441
+$ TEST451
+$
+$ &SNL1 NLPROP=2.5E7 /
 $
 $
-&SNL1 NLPROP=2.5E7 /
-$
-  &UNST UGOBCAUTO = F  , EXPFSN = T /
+&UNST
+UGOBCAUTO = F
+UGOBCDEPTH= -10.
+EXPFSN   = T,
+EXPFSPSI = F,
+EXPFSFCT = F,
+IMPFSN   = F,
+IMPTOTAL = F,
+EXPTOTAL  = F,
+IMPREFRACTION = F,
+IMPFREQSHIFT  = F,
+IMPSOURCE     = F,
+SETUP_APPLY_WLV = F
+SOLVERTHR_SETUP=1E-14
+CRIT_DEP_SETUP=0.1
+JGS_USE_JACOBI = T,
+JGS_NLEVEL = 0
+JGS_SOURCE_NONLINEAR = F,
+JGS_BLOCK_GAUSS_SEIDEL = T,
+JGS_TERMINATE_MAXITER = T,
+JGS_MAXITER = 100000,
+JGS_TERMINATE_NORM = F,
+JGS_TERMINATE_DIFFERENCE = T,
+JGS_DIFF_THR = 1.E-4,
+JGS_PMIN = 3.0
+JGS_LIMITER = F,
+JGS_BLOCK_GAUSS_SEIDEL = T
+JGS_NORM_THR = 1.E-6
+/
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
@@ -163,7 +194,7 @@ $ Define grid -------------------------------------------------------- $
 $
   'UNST' T 'NONE'
 $    
-    5.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
+    1.0 0.10  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
 $
 $ If the above unit number equals 10, the bottom data is read from 
 $ this file and follows below (no intermediate comment lines allowed).

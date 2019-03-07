@@ -3,9 +3,12 @@
 \vssub
 
 If \ws\ is installed and compiled successfully, it can be tested by running
- different program elements interactively from the {\file work}
-directory. The switch settings in the generic switch file correspond to the
-activated inputs in the example input files. It should therefore be possible
+ different program elements interactively.  To do this, create a top level 
+directory called {\file work} and copy the input files in the {\file model/inp} 
+or {\file model/nml} 
+directories. A generic switch file is no longer provided, but a switch file can be
+chosen from the {\file bin} directory and then test the example input files. 
+ It should therefore be possible
 to run all model elements by typing
 \command{ww3\_grid | more \\
   ww3\_strt | more \\
@@ -70,10 +73,13 @@ directory completely. The following regression tests are available in the
 \fit{ww3\_tp2.13}{Test for propagation under angle with grid (tripole)}
 \fit{ww3\_tp2.14}{Test for toy-model using OASIS coupler.}
 \fit{ww3\_tp2.15}{Test for space-time extremes parameters.}
+\fit{ww3\_tp2.16}{Two-dimensional propagation on SMC grid with ARC option}
+\fit{ww3\_tp2.17}{Unstructured grid with Card Deck vs Domain Decompostion for Explicit vs Implicit schemes}
 \fit{ww3\_tp2.16}{Test for two-dimensional SMC propagation with Arctic pole handling}
 \fit{ww3\_ts1  }{Source term test, time limited growth.}
 \fit{ww3\_ts2  }{Source term test, fetch limited growth.}
 \fit{ww3\_ts3  }{Source term test, hurricane with single moving grid.}
+\fit{ww3\_ts4  }{Source term test, unresolved obstacles.}
 \fit{ww3\_tic1.1}{Wave-ice interaction, 1D test of $S_{ice}$.}
 \fit{ww3\_tic1.2}{Wave-ice interaction, 1D test of ``shoaling'' effect.}
 \fit{ww3\_tic1.3}{Wave-ice interaction, 1D test of refraction effect.}
@@ -84,6 +90,7 @@ directory completely. The following regression tests are available in the
 \fit{ww3\_tbt1.1}{Wave-mud interaction, 1D test of $S_{mud}$.}
 \fit{ww3\_tbt2.1}{Wave-mud interaction, 2D test of $S_{mud}$.}
 \fit{ww3\_tpt1.1}{Tests for alternative spectral partitioning methods.}
+\fit{ww3\_ta1   }{ww3\_uprstrt, update the restart file of homogeneous conditions (1 point model)}
 \fit{mww3\_test\_01}{Test for expanded grid mask with wetting and drying, etc.}
 \fit{mww3\_test\_02}{Two-way nesting test with single inner grid.}
 \fit{mww3\_test\_03}{Overlapping grids and two-way nesting tests (6-grid

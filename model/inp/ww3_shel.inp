@@ -191,6 +191,7 @@ $  F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
 $  F  F  6     9   P2SMS      P2L   Micro seism  source term
 $  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 $  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
+$  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 $   -------------------------------------------------
 $        7                          Wave-bottom layer 
 $   -------------------------------------------------

@@ -8,7 +8,9 @@ routine is integrated in the stand-alone shell (see \para\ref{sec:ww3shel}) to
 provide time step management of a combined wave model / data assimilation
 scheme. It has not yet been integrated in the multi-grid model driver,
 although it is accounted for in the multi-grid model management
-algorithm. In this a fairly simple approach is assumed where data assimilation
+algorithm. 
+
+In this a fairly simple approach is assumed where data assimilation
 is performed at selected times, while the wave model marches forward in
 time. In the setup of the shell, the data assimilation is performed after the
 model has reached the target time, but has not yet produced output. After the
@@ -25,10 +27,11 @@ these could be mean wave parameters, one dimensional spectral data, and two
 dimensional spectral data, respectively. This is, however, not hardwired to
 the model and in fact needs to be defined by the user.
 
-Presently, no data assimilation packages are available. User supplied data
-assimilation schemes can be included in the wave model using the interface
-routine ({\F w3wdas} in {\file w3wdasmd.ftn}), the documentation of which
-should be sufficient for the necessary programming. Details on how to add user
-supplied software to the \ws\ compilation system can be found in the following
-chapter. NCEP is presently working on wave data assimilation techniques, but
-presently has no plans to distribute wave data assimilation software.
+Presently, no data assimilation packages are available. Therefore, user supplied 
+data assimilation schemes are required, and may be included in the wave model 
+using the interface routine ({\F w3wdas} in {\file w3wdasmd.ftn}), the documentation 
+of which should be sufficient for the necessary programming. Details on how to add 
+user supplied software to the \ws\ compilation system can be found in the following
+chapter. Although NCEP is presently working on wave data assimilation techniques, 
+ there are no plans to distribute wave data assimilation software as part of the 
+\ws\ package.
