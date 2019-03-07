@@ -1,8 +1,10 @@
 watch3.env
 cases
 data_regtests
-smc_docs
+smc_docs/*.pdf 
+smc_docs/SMCG_TKs/*.ps
 ww3_from_ftp.tar.gz
+ww3_from_ftp.v6.07.tar.gz
 guide/*.log
 guide/*.aux
 guide/*.bbl

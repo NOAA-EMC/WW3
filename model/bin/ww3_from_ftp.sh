@@ -19,8 +19,8 @@ cd $ww3dir
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
-wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/ww3_from_ftp.tar.gz
-tar -xvzf ww3_from_ftp.tar.gz
+wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/ww3_from_ftp.v6.07.tar.gz
+tar -xvzf ww3_from_ftp.v6.07.tar.gz
 
 #Move regtest info from data_regtests to regtests:
 echo -e "Moving data from data_regtests to regtets"  
@@ -41,13 +41,14 @@ cp -r data_regtests/ww3_tp2.14/input/toy/*.nc.OAS*CM regtests/ww3_tp2.14/input/t
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 
+
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
-echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.tar.gz [y|n]: "
+echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.v6.07.tar.gz [y|n]: "
 read wnew
 if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
 then
-  echo -e '\n Deleting tar file ww3_from_ftp.tar.gz'
-  rm ww3_from_ftp.tar.gz
+  echo -e '\n Deleting tar file ww3_from_ftp.v6.07.tar.gz'
+  rm ww3_from_ftp.v6.07.tar.gz
 else
   echo -e ' Not deleting tar file.' 
 fi
