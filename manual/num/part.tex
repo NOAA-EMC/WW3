@@ -85,7 +85,7 @@ The second stage in the partitioning process is the assignment of individual
 partitions to (wind-)sea and swell categories in point or field outputs. In the
 default option for \ws\ these comprise a single wind-sea (partition 1) and a set
 of swell components ordered by wave height. Selecting alternative partition methods
-changes the categorisation as described below.
+changes the categorisation as described below. 
 
 The partitioning method is set in the MISC namelist in ww3\_grid.inp via the PTM parameter:
 \begin{itemize}
@@ -107,18 +107,22 @@ The partitioning method is set in the MISC namelist in ww3\_grid.inp via the PTM
 \end{itemize}
 
 In PTM1, topographic partitions for which the percentage of wind-sea energy exceeds a 
-defined fraction are aggregated and assigned to the wind-sea component. The remaining
-partitions are assigned as swell components in order of decreasing wave height.
+defined fraction are aggregated and assigned to the wind-sea component (e.g., the first
+partition). The remaining partitions are assigned as swell components in order of 
+decreasing wave height.
 
-PTM2 works in a very similary way to PTM1, except that after a partition is
-established via the topographic method, any spectral bins influenced by the wind
-(based on a wave age criterion) are removed and assigned to a new wind-sea
-partition (which will be combined into a single wind sea when PTCOMB=.True.).
-Based on the remaining energy, partitions are then assigned as swell components in order
-of decreasing wave height. Operational forecast use at the Met Office suggests this
-provides a smoother spatial transition between partitions and a more direct link between
-the wind-sea component and wind speed than PTM1. Using this method, the fraction of wind-sea
-for all partitions except the wind-sea partition should be close to 0.0.
+PTM2 works in a very similar way to PTM1, by first identifying a primary wind-sea component,
+which is assigned as the first partition, then a number of swell (or secondary wind-sea) 
+partitions are identified, as follows. A set of secondary spectral partitions is established 
+using the topographic method, each partition is checked in turn, with any of their spectral 
+bins influenced by the wind (based on a wave age criterion) being removed and assigned as 
+separate, secondary wind-sea partitions. The latter are by default combined into a single 
+partition, but may remain separate if the namelist parameter FLC is set to ".False.". Swell 
+and secondary wind-sea partitions are then ordered by decreasing wave height. Operational 
+forecasts made at the Met Office suggests that when PTM2 is run with the default single wind-sea 
+partition, this provides a smoother spatial transition between partitions and a more direct link 
+between the primary wind-sea component and wind speed than PTM1. Using the default method, the 
+fraction of wind-sea for all partitions except the primary wind-sea partition should be close to 0.0.
 
 PTM3 does not classify the topographic partitions into wind-sea or swell - it simply orders
 them by wave height. This approach is useful for producing data for spectral reconstruction 

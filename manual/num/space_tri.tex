@@ -26,11 +26,11 @@ The spectral propagation part is solved with simple implicit
 1$^{st}$ order upwind schemes and the source terms are written  in
 the matrix in the same way as in the dynamic
 scheme of WW3 using $\epsilon = 1$ in eq. 3.61 and assembling the
-equation system following simple Patankar rules.
+equation system following simple Patankar rules. The full description of new implementations is discussed in \cite{rolandetal2019t}
 It can be shown analytically and by numerical experiment that
 for CFL \textless 1 the explicit and the implicit methods give similar results.
 This was also demonstrated in practical applications
-e.g. \citep{rep:Abdolalli2018, Smith2018, rep:Abdolalli2019}. However, for CFL \textgreater 1
+e.g. \citep{rep:Abdolalli2018, Smith2018, rep:Abdolalli2019, AbdolaliEtAl2019OM}. However, for CFL \textgreater 1
 the transient solutions of the implicit schemes
 have a time step depedency since the source terms are linearized
 in time. The time step in the implicit schemes is equal the global timestep
@@ -91,7 +91,7 @@ the main source with just one line of code. For the compilation of
 the PDLIB option in the switch files, which activates the domain
 decomposition parallelization, ParMetis needs to be installed
 and the code needs to be compiled with using MPI. PDLIB works with
-all usual MPI implementations, such as OpenMPI or MPICH2 and others.
+all usual MPI implementations, such as OpenMPI or MPICH2 and others. An schematic view of implemented parallelization algorthims in WW3 (card deck and domain decomposition) are shown in figure \ref{DDvsCD}. For real case applications, the convergence of these two methods is demonstrated in \cite{AbdolaliEtAl2019OM} for Hurricane Ike, 2008.
 
 In practice, the unstructured grid can be easily generated, using the PolyMesh
 software (developed by Aron Roland), from a shoreline polygons database

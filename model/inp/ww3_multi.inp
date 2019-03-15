@@ -64,7 +64,11 @@ $     9)   Rank number of grid (internally sorted and reassigned).
 $    10)   Group number (internally reassigned so that different
 $          ranks result in different group numbers.
 $   11-12) Define fraction of communicator (processes) used for this
-$          grid.
+$          grid. '0.00 1.00' is appropriate in many cases. Partial 
+$          fractions, i.e. settings other than '0.00 1.00', are 
+$          intended for equal rank grids, to improve scaling. The 
+$          commented example provided here (partial fractions with
+$          non-equal rank) is not generally recommended.
 $    13)   Flag identifying dumping of boundary data used by this
 $          grid. If true, the file nest.MODID is generated.
 $
