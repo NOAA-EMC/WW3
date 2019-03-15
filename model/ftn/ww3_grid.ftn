@@ -4915,7 +4915,7 @@
 !
           IF ( ILOOP .EQ. 1 ) THEN
             IF (FLGNML) THEN
-              WRITE(NDSS,'(A)') NML_OUTBND_LINE(I)
+              WRITE(NDSS,'(A)') NML_OUTBND_LINE(I-1)
             ELSE
               BACKSPACE (NDSI)
               READ (NDSI,'(A)') LINE

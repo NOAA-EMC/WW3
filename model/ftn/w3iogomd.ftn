@@ -1479,7 +1479,7 @@
           ETXX(JSEA) = ETXX(JSEA) + ABX2(JSEA) * FACTOR* WN(IK,ISEA)**2
           ETYY(JSEA) = ETYY(JSEA) + ABY2(JSEA) * FACTOR* WN(IK,ISEA)**2
           ETXY(JSEA) = ETXY(JSEA) + ABYX(JSEA) * FACTOR* WN(IK,ISEA)**2
-          IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN 
+          IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN
             ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR           &
                      *WN(IK,ISEA)**2
           ELSE
@@ -1495,9 +1495,9 @@
           UBS(JSEA) = UBS(JSEA) + AB(JSEA) * SIG(IK)**2
 !
 !   2nd order equivalent surface pressure spectral density at K=0
-!   this is used for microseismic or microbarom sources 
-!   Finite water depth corrections (Ardhuin & Herbers 2013) are not 
-!   included here. 
+!   this is used for microseismic or microbarom sources
+!   Finite water depth corrections (Ardhuin & Herbers 2013) are not
+!   included here.
 !
           FACTOR2 = DTH*2/(TPI**2)                        &
                     * SIG(IK)                             &
@@ -1574,7 +1574,7 @@
 ! Fills the 3D Stokes drift spectrum array
 !  ! The US3D Stokes drift specrum array is now calculated in a
 !  subroutine and called at the end of this subroutine
-!          IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
+!          IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN
 !            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV)
 !            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)
 !          END IF
@@ -1685,7 +1685,7 @@
 !  Mean wave period (no tail contribution - Prognostic)
         IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
           T02P(JSEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) )
-          END IF   
+          END IF
 !
 !  Mean wavelength and mean crest length (02) for space-time extremes
         IF ( MSSXM(JSEA) .GT. 1.E-7 ) THEN
@@ -1693,7 +1693,7 @@
           END IF
         IF ( MSSYM(JSEA) .GT. 1.E-7 ) THEN
           WL02Y(JSEA) = TPI * SQRT(ET(JSEA) / MSSYM(JSEA))
-          END IF 
+          END IF
 !
 !  Irregularity parameters for space-time extremes
         IF ((MSSXM(JSEA) .GT. 1.E-7) .AND. (ET02(JSEA) .GT. 1.E-7)) THEN
@@ -1858,7 +1858,7 @@
         ETR(JSEA) = ETR(JSEA) + FTTR * EBAND
         ET1(JSEA) = ET1(JSEA) + FT1  * EBAND
         EET1(JSEA)= ET1(JSEA) + FT1  * EBAND**2
-        ET02(JSEA)= ET02(JSEA)+ EBAND* 0.5 * SIG(NK)**4 * DTH 
+        ET02(JSEA)= ET02(JSEA)+ EBAND* 0.5 * SIG(NK)**4 * DTH
         ETX(JSEA) = ETX(JSEA) + FTE * ABX(JSEA) / CG(NK,ISEA)
         ETY(JSEA) = ETY(JSEA) + FTE * ABY(JSEA) / CG(NK,ISEA)
         SXX(JSEA) = SXX(JSEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
@@ -3783,7 +3783,7 @@
       USE W3ADATMD, ONLY: U10, U10D, WBT
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3GDATMD, ONLY: NK, NTH, NSEAL, SIG, ESIN, ECOS, DTH, DSII, &
-                          FTE, XFR, MAPSF, MAPSTA
+                          FTE, XFR, MAPSF, MAPSTA, DMIN
       USE W3GDATMD, ONLY: BTBETA
       USE W3PARALL, ONLY: INIT_GET_ISEA
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -3812,7 +3812,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'CALC_U3STOKES')
+!/S      CALL STRACE (IENT, 'CALC_WBT')
 !
       DO JSEA = 1, NSEAL
 ! JSEA 2 ISEA
@@ -3840,7 +3840,7 @@
 ! the constant forcing parameter with β∈ [1.0, 2.0]. By default, we use
 ! β = 1.2(Bidlot 2001).
 !
-          TDPT  = DW(ISEA)                     ! water depth d
+          TDPT  = MAX(DW(ISEA), DMIN)          ! water depth d
           TU10  = U10(ISEA)                    ! wind velocity U10
           TUDIR = U10D(ISEA)                   ! wind direction φ (rad)
           SINU  = SIN(TUDIR)                   ! sinφ
@@ -3922,6 +3922,9 @@
           ENDIF
 !
 ! kp from σp (linear dispersion)
+!
+! N(k, θ) at first step is zero →  σp=0 → floating divided by zero error
+          IF (SIGP < 1E-6) SIGP = SIG(NK)     ! Hsp & b_T will be still 0.
 !
           CALL WAVNU1 (SIGP, TDPT, KP, CGP)
 !

@@ -361,7 +361,7 @@
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
       REAL*8                  :: KELEM(3), KTMP(3), LAMBDA(2)
-      REAL*8                  :: NM(3), KKSUM, DTMAXEXP
+      REAL*8                  :: KKSUM, DTMAXEXP
 !/
 !/  Velocities 
 !/
@@ -433,7 +433,6 @@
             KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians 
 
             KTMP        = KELEM ! Copy
-            NM          = - REAL(1.D0/MIN(-THR,SUM(MIN(0.d0,KTMP)))) ! N-Values 
             KELEM       = MAX(0.d0,KTMP)
 
             KKSUM = KKSUM  +  KELEM(IV)

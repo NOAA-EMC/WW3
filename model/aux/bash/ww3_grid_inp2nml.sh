@@ -365,8 +365,38 @@ then
           num_total=0
           iread=0
           j=1
-          # unfold the array
+          # unfold the along-X array
           while [ $num_total -lt $num_max ];  do
+            il=$(($il+1))
+            curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
+            line_elem=$(echo $curline} | awk -F' ' '{print NF}')
+            for n_elem in $(seq 1 $line_elem); do
+              curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
+              if [ ! -z "$(echo $curelem | grep '*')" ]; then
+                num_times=$(echo $curelem | awk -F'*' '{print $1}')
+                val_times=$(echo $curelem | awk -F'*' '{print $2}')
+              else
+                num_times=1
+                val_times=$curelem
+              fi
+              num_total=$(($num_total + $num_times))
+              for t in $(seq 1 $num_times); do
+                iread=$(($iread+1))
+                obst2d[$iread,$j]="$val_times"
+#                echo -n "$val_times " >> $fobst
+                if [ $iread -ge $nx ]; then
+                  iread=0
+                  j=$(($j+1))
+#                  echo '' >> $fobst
+                fi
+              done
+            done
+            echo "${lines[$il]}" >> $fobst
+          done
+          # unfold the along-Y array
+          echo "carriage return for Y-along array"
+          echo -n '' >> $fobst
+          while [ $num_total -lt $(($num_max * 2)) ];  do
             il=$(($il+1))
             curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
             line_elem=$(echo $curline} | awk -F' ' '{print NF}')  
@@ -501,7 +531,7 @@ then
           num_total=0
           iread=0
           j=1
-          # unfold the array
+          # unfold the along-X array
           while [ $num_total -lt $num_max ];  do
             il=$(($il+1))
             curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
@@ -509,6 +539,36 @@ then
             for n_elem in $(seq 1 $line_elem); do
               curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
               if [ ! -z "$(echo $curelem | grep '*')" ]; then    
+                num_times=$(echo $curelem | awk -F'*' '{print $1}')
+                val_times=$(echo $curelem | awk -F'*' '{print $2}')
+              else
+                num_times=1
+                val_times=$curelem
+              fi
+              num_total=$(($num_total + $num_times))
+              for t in $(seq 1 $num_times); do
+                iread=$(($iread+1))
+                obst2d[$iread,$j]="$val_times"
+#                echo -n "$val_times " >> $fobst
+                if [ $iread -ge $nx ]; then
+                  iread=0
+                  j=$(($j+1))
+#                  echo '' >> $fobst
+                fi
+              done
+            done
+            echo "${lines[$il]}" >> $fobst
+          done
+          # unfold the along-Y array
+          echo "carriage return for Y-along array"
+          echo -n '' >> $fobst
+          while [ $num_total -lt $(($num_max * 2)) ];  do
+            il=$(($il+1))
+            curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
+            line_elem=$(echo $curline} | awk -F' ' '{print NF}')
+            for n_elem in $(seq 1 $line_elem); do
+              curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
+              if [ ! -z "$(echo $curelem | grep '*')" ]; then
                 num_times=$(echo $curelem | awk -F'*' '{print $1}')
                 val_times=$(echo $curelem | awk -F'*' '{print $2}')
               else

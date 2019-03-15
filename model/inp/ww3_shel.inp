@@ -119,9 +119,9 @@ $        2                          Standard mean wave Parameters
 $   -------------------------------------------------
 $  T  T  2     1   HS         HS    Wave height.
 $  T  T  2     2   WLM        LM    Mean wave length.
-$  T  T  2     3   T02        T02   Mean wave period (Tm02).
+$  T  T  2     3   T02        T02   Mean wave period (Tm0,2).
 $  T  T  2     4   T0M1       T0M1  Mean wave period (Tm0,-1).
-$  T  T  2     5   T01        T01   Mean wave period (Tm01).
+$  T  T  2     5   T01        T01   Mean wave period (Tm0,1).
 $  T  T  2     6   FP0        FP    Peak frequency.
 $  T  T  2     7   THM        DIR   Mean wave direction.
 $  T  T  2     8   THS        SPR   Mean directional spread.
@@ -133,7 +133,7 @@ $  T  T  2    13   HMAXE      MXH   Max wave height (STE)
 $  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
 $  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 $  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
-$  F  T  2    17   WBT        WBT   Domiant wave breaking probability bT
+$  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------

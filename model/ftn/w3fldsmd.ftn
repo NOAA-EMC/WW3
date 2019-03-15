@@ -472,7 +472,7 @@
 !
 ! Formats
 !
-  900 FORMAT (1X,A13,1X,A3,3I12)
+  900 FORMAT (1X,A13,1X,A3,6I12)
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
                '     ILLEGAL INXOUT STRING : ',A/)

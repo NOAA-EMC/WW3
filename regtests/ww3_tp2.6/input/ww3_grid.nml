@@ -16,8 +16,8 @@
 &SPECTRUM_NML
   SPECTRUM%XFR       =  1.1
   SPECTRUM%FREQ1     =  0.05
-  SPECTRUM%NK        =  25
-  SPECTRUM%NTH       =  24
+  SPECTRUM%NK        =  36
+  SPECTRUM%NTH       =  36
 /
 
 ! -------------------------------------------------------------------- !
@@ -35,9 +35,6 @@
 &RUN_NML
   RUN%FLCX         =  T
   RUN%FLCY         =  T
-  RUN%FLCTH        =  T
-  RUN%FLCK         =  T
-  RUN%FLSOU        =  T
 /
 
 ! -------------------------------------------------------------------- !
@@ -72,10 +69,10 @@
 !     TIMESTEPS%DTMIN      = 0.         ! minimum source term time step (s)
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  120.
-  TIMESTEPS%DTXY         =  30.
-  TIMESTEPS%DTKTH        =  30.
-  TIMESTEPS%DTMIN        =  10.
+  TIMESTEPS%DTMAX        =  1
+  TIMESTEPS%DTXY         =  1
+  TIMESTEPS%DTKTH        =  1
+  TIMESTEPS%DTMIN        =  1
 /
 
 ! -------------------------------------------------------------------- !
@@ -141,8 +138,8 @@
   GRID%TYPE         =  'UNST'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  5.0
-  GRID%DMIN         =  0.30
+  GRID%ZLIM         =  1.0
+  GRID%DMIN         =  0.10
 /
 
 ! -------------------------------------------------------------------- !

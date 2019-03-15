@@ -2307,9 +2307,9 @@
 !-----------------------------------------------------------------------
 !
       IMPLICIT NONE
-      COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J
+      COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J,DEPTHD
       INTEGER MDW
-      REAL DEPTH,ALPHA,GAM_J
+      REAL DEPTH,ALPHA,GAM_J,DEPTHD
       REAL D,XK,X,T
 
       D = DEPTH
@@ -2356,9 +2356,9 @@
 !-----------------------------------------------------------------------
 !
       IMPLICIT NONE
-      COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J
+      COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J,DEPTHD
       INTEGER MDW
-      REAL DEPTH,ALPHA,GAM_J
+      REAL DEPTH,ALPHA,GAM_J,DEPTHD
       REAL D,XK,X,XD
 
       D = DEPTH
