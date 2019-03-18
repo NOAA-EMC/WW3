@@ -8,7 +8,7 @@
 !/                  | Last update :         08-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -86,7 +86,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : allocate the UOST variables for a given grid, and load
 !               them from file
@@ -182,7 +182,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : sets the current grid in the sourceterm object
 !  2. Parameters :
@@ -230,7 +230,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : estimates the UOST source term for a give spectrum
 !  2. Parameters :
@@ -274,7 +274,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : loads local and shadow alpha and beta from files
 !  2. Parameters :
@@ -359,7 +359,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : loads alpha and beta from a single obstructions file
 !  2. Parameters :
@@ -484,7 +484,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : method of the class UOST_SOURCETERM, 
 !               to set the actual spatial and spectral grid
@@ -546,7 +546,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : In conditions of wind sea, the effect
 !               of the unresolved obstacles is reduced.
@@ -628,7 +628,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : Method of the class UOST_SOURCETERM. 
 !               Computation of the local dissipation of the spectrum
@@ -732,7 +732,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : Method of the class UOST_SOURCETERM. 
 !               Computation of the shadow dissipation of the spectrum
@@ -846,7 +846,7 @@
 !/                  | Last update :         01-Oct-2018 |
 !/                  +-----------------------------------+
 !/
-!/    Aug-2018 : Origination.                        ( version 6.xx )
+!/    Aug-2018 : Origination.                        ( version 6.07 )
 !/
 !  1. Purpose : Method of the class UOST_SOURCETERM. 
 !               Computation of the source term

@@ -141,7 +141,7 @@
 !  T  T  4     4   PDIR       PDIR  Partitioned mean direction.
 !  T  T  4     5   PSI        PSPR  Partitioned mean directional spread.
 !  T  T  4     6   PWS        PWS   Partitioned wind sea fraction.
-!  T  T  4     7   PTHP0      PDP   Peak wave direction of partition.
+!  T  T  4     7   PDP        PDP   Peak wave direction of partition.
 !  T  T  4     8   PQP        PQP   Goda peakdedness parameter of partition.
 !  T  T  4     9   PPE        PPE   JONSWAP peak enhancement factor of partition.
 !  T  T  4    10   PGW        PGW   Gaussian frequency width of partition.

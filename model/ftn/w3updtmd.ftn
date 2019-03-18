@@ -407,7 +407,7 @@
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
 !/    27-May-2014 : Adding OMPG parallelizations dir.   ( version 5.02 )
 !/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
-!/    26-Mar-2018 : Sea-point only wind for SMC grid.   ( version 6.xx )
+!/    26-Mar-2018 : Sea-point only wind for SMC grid.   ( version 6.07 )
 !/
 !  1. Purpose :
 !
