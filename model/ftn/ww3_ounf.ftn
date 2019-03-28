@@ -381,7 +381,7 @@
 
       ! Alternative processing of TABIPART to capture requests 
       ! greater than NOSWLL (C.Bunney):
-      ALLOCATE(TABIPART(NOSWLL))
+      ALLOCATE(TABIPART(NOSWLL + 1))
       NBIPART=0
       DO I=1,30
         IF(STRINGIPART(I:I) .EQ. ' ') CYCLE
@@ -391,7 +391,7 @@
            CYCLE
         ENDIF
         NBIPART = NBIPART + 1
-        IF(NBIPART .GT. NOSWLL) THEN
+        IF(NBIPART .GT. NOSWLL + 1) THEN
            GOTO 803
         ENDIF
         TABIPART(NBIPART) = IPART
