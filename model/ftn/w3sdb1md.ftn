@@ -68,11 +68,9 @@
 !     Compute depth-induced breaking using Battjes and Janssen bore
 !     model approach
 !
-!  2. Method :
+!  2. Method : Battjes & Janssen (1979), 
 !
-!       Sdb = - CDB * FMEAN * QB * B * B * SPEC
-!
-!     Where CDB   =  SDBC1 = 0.25 * BJALFA (defaults to BJALFA = 1)
+!     Where CDB   =  SDBC1 = BJALFA (defaults to BJALFA = 1)
 !                    modified via ww3_grid namelist parameter BJALFA
 !           B     =  HM / HRMS
 !           HM    =  GAMMA * DEP
@@ -179,7 +177,7 @@
 !
 !/T      WRITE (NDST,9000) SDBC1, SDBC2, FDONLY
 !
-! 1.  Integral quantities ... only for the case when it is used nonlinear in the solver ...
+! 1.  Integral quantities. AR: make sure mean quantities are computed, need to move upward
 !
       ETOT = 0.
       FMEAN2 = 0.
@@ -256,9 +254,9 @@
       IF (IWB == 1) THEN
         IF ( ( BB .GT. THR) .AND. ( ABS ( BB - QB ) .GT. THR) ) THEN
           IF ( BB .LT. 1.0) THEN
-            CBJ = DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
+            CBJ = 2 * DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
           ELSE
-            CBJ = DBLE(SDBC1) * DBLE(FMEAN) * BB ! Make sure the energy vanishes ...
+            CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB ! Make sure the energy vanishes ...
           END IF
         ELSE
           CBJ = 0.d0
@@ -275,7 +273,6 @@
         ENDIF
         D = - CBJ
         S = D * A 
-      ELSE IF (IWB == 3) THEN
       ENDIF
 
       IF (CBJ .GT. 0.) THEN
