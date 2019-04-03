@@ -256,14 +256,16 @@
           IF ( BB .LT. 1.0) THEN
             CBJ = 2 * DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
           ELSE
-            CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB ! Make sure the energy vanishes ...
+            CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB 
+            ! AR: The multiplication with BB is kind of experimental, it basically to avoid to high gamma values in the solution when BB > 1
+            ! AR: It is obvious that for BB > 1 .. CBJ is getting smaller for the original equation ... not really what you would expect. 
           END IF
         ELSE
           CBJ = 0.d0
         ENDIF
         D = - CBJ
         S = D * A
-      ELSE IF (IWB == 2) THEN
+      ELSE IF (IWB == 2) THEN 
         IF (ETOT .GT. THR) THEN
           HRMS = SQRT(8*EMEAN)
           FAK  = (1+4./SQRT(PI)*(B*BB+1.5*B)*exp(-BB)-ERF(B))
