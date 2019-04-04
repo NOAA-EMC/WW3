@@ -1506,7 +1506,7 @@
 
 
 
-      CHARACTER(LEN=1024), intent(IN)      :: STRING
+      CHARACTER(LEN=*), intent(IN)         :: STRING
       CHARACTER(LEN=100), intent(INOUT)    :: TAB(*)
       INTEGER                              :: cnt, I
       CHARACTER(LEN=1024)                  :: tmp_str, ori_str

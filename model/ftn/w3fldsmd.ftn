@@ -818,14 +818,14 @@
 !/TIDE        ELSE
 !/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
 !/TIDE               IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
-!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAME)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
+!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
 !/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
 !/TIDE                     TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
 !/TIDE                     LIST(:)=''
 !/TIDE                     TIDE_MF1=TIDE_MF
 !/TIDE                     DO I=1,TIDE_MF
 !/TIDE                       LIST(I)=TIDECON_NAMEI(I)
-!/TIDE                       END DO
+!/TIDE                     END DO
 !/TIDE                     CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
 !/TIDE               IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
 !/TIDE               CALL TIDE_SET_INDICES

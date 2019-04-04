@@ -974,14 +974,14 @@
               IF (IX21(IX,1).LE.1 .AND. RW(1).LT.ACC) THEN
                 IF (RW(1).LT.0.) THEN
                   RW(1) = 0.
-                  WRITE (NDSO,1043) X
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
 !/T                  FLMOD  = .TRUE.
                   END IF
                 END IF
 !
               IF (IX21(IX,1).GE.(NXI-1) .AND. RW(1).GT.1.-ACC) THEN
                 IF (RW(1).GT.1.) THEN
-                  WRITE (NDSO,1043) X
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
                   RW(1) = 1.
 !/T                       FLMOD  = .TRUE.
                   END IF
@@ -989,7 +989,7 @@
 !
               IF (IY21(IX,1).LE.1 .AND. RW(2).LT.ACC) THEN
                 IF (RW(2).LT.0.) THEN
-                  WRITE (NDSO,1044) Y
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 0.
 !/T                  FLMOD  = .TRUE.
                 END IF
@@ -997,7 +997,7 @@
 !
               IF (IY21(IX,1).GE.NYI .AND. RW(2).GT.1.-ACC) THEN
                 IF (RW(2).GT.1) THEN
-                  WRITE (NDSO,1044) Y
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 1.
 !/T                       FLMOD  = .TRUE.
                 END IF
@@ -1251,6 +1251,10 @@
 !/TIDE          IF (ITYPE.EQ.6) THEN 
 !/TIDE            CALL VUF_SET_PARAMETERS
 !/TIDE            TIDE_NDEF = NFIELDS
+!/TIDE            IF (TRIM(LIST(1)).EQ.'ALL') THEN
+!/TIDE              WRITE(NDSE,'(A)') 'Tidal constituent ALL not available anymore'
+!/TIDE              CALL EXTCDE(29)
+!/TIDE            END IF
 !/TIDE            CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
 !/TIDE            END IF
             IF ( IAPROC .EQ. NAPOUT )  &
@@ -1386,8 +1390,8 @@
 !/DIST        DISTSWITCH = .TRUE.
 !/TIDE        IF (DISTSWITCH) THEN 
 !/TIDE          TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
-!/MPI!/TIDE         CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
-!/MPI!/TIDE         CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
+!/MPI           CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
+!/MPI           CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
 !/TIDE          ALLOCATE(TIDALSTUFFA(TIDESIZ))
 !/TIDE          TIDALSTUFFA(:)=0.
 !/TIDE          END IF
@@ -1446,6 +1450,7 @@
 !/TIDE                DO I=1,TIDE_NTI
 !/TIDE                  CALL SETVUF(TIDE_HOURS(I),TIDE_LAT,I)
 !/TIDE                END DO
+!/TIDE                TIDE_ITREND=0
 !/TIDE                CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
 !/TIDE                                         TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
 !/TIDE                                         SDEV0, RMSR, RESMAX, IMAX, 0)
@@ -1506,8 +1511,8 @@
 !
 !/TIDE     IF (DISTSWITCH) THEN 
 !/TIDE     IF (IAPROC.NE.NAPOUT)  THEN
-!/DIST!/TIDE       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
-!/DIST!/TIDE                       MPI_COMM_WORLD, IERR_MPI )
+!/MPI        CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
+!/MPI                        MPI_COMM_WORLD, IERR_MPI )
 !/TIDE     ELSE
 !/TIDET           DO JX=1,NXL(IAPROC)
 !/TIDET             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
@@ -1521,8 +1526,8 @@
 !/TIDET           END DO       ! JX=1,NXL
 !/TIDE       DO JPC=1,NAPROC
 !/TIDE         IF (JPC .NE. NAPOUT )  THEN 
-!/DIST!/TIDE           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
-!/DIST!/TIDE                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
+!/MPI            CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
+!/MPI                              MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
 !/TIDE           ! Now unpacks the 1-D array
 !/TIDE           IND=0
 !/TIDE           DO JX=1,NXL(JPC)
@@ -1550,7 +1555,7 @@
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
 
 !/TIDE   IF (DISTSWITCH) THEN 
-!/DIST!/TIDE     CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
+!/MPI      CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
 !/TIDE     DEALLOCATE(TIDALSTUFFA)
 !/TIDE   END IF
 

@@ -218,14 +218,14 @@
     fi
 
     # sort in seq or mpi programs
-    par_programs="ww3_shel ww3_multi ww3_sbs1"
+    par_programs="ww3_shel ww3_multi ww3_sbs1 ww3_prtide" # ww3_prnc"
     if [ $ESMFMKFILE ]
     then
       par_programs="$par_programs ww3_multi_esmf"
     fi
     if [ -n "`grep OASIS $switch_file`" ]
     then
-      par_programs="$par_programs ww3_prnc ww3_prep ww3_prtide"
+      par_programs="$par_programs ww3_prep"
     fi
     if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" ] || [ -n "$(grep PDLIB $switch_file)"]
     then

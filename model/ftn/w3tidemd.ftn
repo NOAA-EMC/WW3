@@ -84,6 +84,7 @@
 !/
       DOUBLE PRECISION, PARAMETER  :: TWPI=3.1415926535898*2.
       DOUBLE PRECISION, PARAMETER  :: FAC=TWPI/360.
+      DOUBLE PRECISION, PARAMETER  :: EPS=1.D-10
 
 !
 !  Array sizes
@@ -303,13 +304,13 @@
 !/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
 !
       TIDE_PRMF=0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+      IF (TRIM(LIST(1)).EQ.'VFAST' .OR. TRIM(LIST(1)).EQ.'FAST') THEN 
         DO J=1,TIDE_MF
           INDS(J)=J
-          END DO
+        END DO
         TIDE_PRMF = TIDE_MF
         RETURN
-        END IF
+      END IF
 !
       DO WHILE (len_trim(LIST(TIDE_PRMF+1)).NE.0)
         TIDE_PRMF=TIDE_PRMF+1
@@ -319,10 +320,10 @@
             INDS(TIDE_PRMF)=J
             FOUND=1
             WRITE(6,*) 'Tidal constituent to be used in pre:',TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
-            END IF
-          END DO
-        IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)),' not available.'
+          END IF
         END DO
+        IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)),' not available.'
+      END DO
 !
       END SUBROUTINE TIDE_FIND_INDICES_PREDICTION
 
@@ -384,9 +385,9 @@
       CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
 !
       INTEGER TIDE_MF_ALL
-      CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(60)      ! array of names of tidal constituents
-      REAL                         :: TIDE_FREQC_ALL(60)        ! array of freq. of tidal constituents
-      INTEGER                      :: INDS(60), J, FOUND, NTIDES
+      CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(65)      ! array of names of tidal constituents
+      REAL                         :: TIDE_FREQC_ALL(65)        ! array of freq. of tidal constituents
+      INTEGER                      :: INDS(65), J, FOUND, NTIDES
 !/S      INTEGER, SAVE           :: IENT   =   0
 !
 !/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
@@ -397,9 +398,10 @@
        'J1   ', 'SO1  ', 'OO1  ', 'UPS1 ', 'OQ2  ', 'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
        'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
        'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
+       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ',  &
+       'N4   ', 'R2   ', 'S1   ', 'SA   ', 'T2   ' /) 
 !
-       TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
+      TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
                   0.0343965698, 0.0357063505, 0.0359087218, 0.0372185025, 0.0374208738, &
                   0.0387306544, 0.0389588136, 0.0400404351, 0.0402685943, 0.0404709655, &
                   0.0415525871, 0.0417807462, 0.0420089053, 0.0430905269, 0.0432928982, &
@@ -410,13 +412,10 @@
                   0.1222921469, 0.1251140796, 0.1595106494, 0.1610228013, 0.1623325820, &
                   0.1638447340, 0.1640728931, 0.1666666667, 0.1668948258, 0.2028035476, &
                   0.2084474129, 0.2400220500, 0.2415342020, 0.2443561347, 0.2445842938, &
-                  0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027 /)
+                  0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027, &
+                  0.157998497 , 0.083447407 , 0.041666667 , 0.000114080 , 0.083219259 /)
 
       INDS(:) = 0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
-        WRITE(6,*) 'Tidal constituent ALL not available anymore.'
-        RETURN
-        END IF
 !
       IF (TRIM(LIST(1)).EQ.'FAST') THEN 
         TIDE_MF = 44
@@ -436,30 +435,30 @@
 !
           TIDE_MF=TIDE_MF+1
           FOUND = 0
-          DO J=1,60
+          DO J=1,65
             IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN 
               NTIDES=NTIDES+1
               INDS(NTIDES)=J
               FOUND = 1
               WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
-              END IF
-            END DO
+            END IF
+          END DO
           IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
 ! 
-          END DO
+        END DO
 !
         TIDE_MF=NTIDES
-        END IF
+      END IF
 !
 ! Defines names and frequencies
 !
-        IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
-        ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
+      IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
+      ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 
-        DO J=1,TIDE_MF 
-          TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
-          TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
-          END DO
+      DO J=1,TIDE_MF 
+        TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
+        TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
+      END DO
       CALL TIDE_SET_INDICES
 
 !
@@ -581,11 +580,11 @@
 !
               RR=EE(J)
               L2=IR(J)+1
-              GO TO (901,902,903),L2
-  902         RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-              GO TO 901
-  903         RR=EE(J)*2.59808*SLAT
-  901         CONTINUE
+              IF (L2.EQ.2) THEN
+                RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+              ELSE IF (L2.EQ.3) THEN
+                RR=EE(J)*2.59808*SLAT
+              END IF
               UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
               IUU=UUDBL
               UU=UUDBL-IUU
@@ -953,7 +952,7 @@
       DOUBLE PRECISION s,tmp(NMAX)
       do 12 j=1,n
         s=0.0d0
-        IF (w(j).ne.0.0d0)then
+        IF (w(j).gt.eps)then
           do 11 i=1,m
             s=s+u(i,j)*b(i)
 11        continue
@@ -994,7 +993,7 @@
           DO k=i,m
             scale=scale+abs(a(k,i))
             END DO
-          IF (scale.ne.0.0d0) THEN 
+          IF (scale.gt.eps) THEN 
             DO  k=i,m
               a(k,i)=a(k,i)/scale
               s=s+a(k,i)*a(k,i)
@@ -1029,7 +1028,7 @@
           do 17 k=l,n
             scale=scale+abs(a(i,k))
 17        continue
-          IF (scale.ne.0.0d0)then
+          IF (scale.gt.eps)then
             do 18 k=l,n
               a(i,k)=a(i,k)/scale
               s=s+a(i,k)*a(i,k)
@@ -1059,7 +1058,7 @@
 25    continue
       do 32 i=n,1,-1
         IF (i.lt.n)then
-          IF (g.ne.0.0d0)then
+          IF (g.gt.eps)then
             do 26 j=l,n
               v(j,i)=(a(i,j)/a(i,l))/g
 26          continue
@@ -1088,7 +1087,7 @@
         do 33 j=l,n
           a(i,j)=0.0d0
 33      continue
-        IF (g.ne.0.0d0)then
+        IF (g.gt.eps)then
           g=1.0d0/g
           do 36 j=l,n
             s=0.0d0
@@ -1182,7 +1181,7 @@
 45          continue
             z=dpythag(f,h)
             w(j)=z
-            IF (z.ne.0.0d0)then
+            IF (z.gt.eps)then
               z=1.0d0/z
               c=f*z
               s=h*z
@@ -1905,11 +1904,11 @@
 !
       RR=EE(J)
       L=IR(J)+1
-      GO TO (901,902,903),L
-  902 RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-      GO TO 901
-  903 RR=EE(J)*2.59808*SLAT
-  901 CONTINUE
+      IF (L.EQ.2) THEN
+        RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+      ELSE IF (L.EQ.3) THEN
+        RR=EE(J)*2.59808*SLAT
+      END IF
       UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
       IUU=UUDBL
       UU=UUDBL-IUU
