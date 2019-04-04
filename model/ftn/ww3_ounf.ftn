@@ -3398,6 +3398,9 @@
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
 
+!/NCO ! For NCEP application, requires fixed netcdf file name
+!/NCO            FNAMENC='ww3.gridded.nc'
+
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
               UNITVAR(:)=UNITS

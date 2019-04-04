@@ -202,7 +202,7 @@
 !/MPI      INTEGER                 :: IERR_MPI
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
-!/NCO      INTEGER                 :: NDSTAB
+!/NCO      INTEGER                 :: NDSTAB, NDST
 !
       INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
       INTEGER,ALLOCATABLE     :: NCID(:)
