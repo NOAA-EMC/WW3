@@ -63,8 +63,8 @@
 !/
 !/    25-Apr-2007 : Origination of module.              ( version 3.11 )
 !/    08-Jun-2018 : Add DEBUGDB1.                       ( version 6.04 )
-!/    03-Apr-2019 : Rewrite in terms of energy density (A. Roland, version 6.07)
-!/    03-Apr-2019 : Add Thornton & Guza, 1983          (A. Roland, version 6.07)
+!/    03-Apr-2019 : Rewrite in terms of energy density (A. Roland, version 7.00)
+!/    03-Apr-2019 : Add Thornton & Guza, 1983          (A. Roland, version 7.00)
 
 !/
 !  1. Purpose :
@@ -80,7 +80,7 @@
 !           BB    = Hrms²/Hmax² = 8Etot/Hmax²
 !           D     = Dtot/Etot = BJALFA * sigma / pi * Qb/BB = 2 * BJALFA * fm * Qb/BB
 !
-!           only valid for Hrms .le. Hm, Qb .le. 1, otherwise, in the degenrative regime it is 
+!           AR: only valid for Hrms .le. Hm, Qb .le. 1, otherwise, in the degenrative regime it is 
 !           due to Qb > 1 that all wave are broken and Hrms .le. Hmax
 !           MLIM can be used to enforce this conditions, source term will smoothly converge to this limit. 
 !           
