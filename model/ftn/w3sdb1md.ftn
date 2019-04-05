@@ -57,27 +57,38 @@
 !/                  |                        FORTRAN 90 |
 !/                  |           J. H. Alves             |
 !/                  |           H. L. Tolman            |
+!/                  !           A. Roland               | 
 !/                  | Last update :         08-Jun-2018 |
 !/                  +-----------------------------------+
 !/
 !/    25-Apr-2007 : Origination of module.              ( version 3.11 )
 !/    08-Jun-2018 : Add DEBUGDB1.                       ( version 6.04 )
+!/    03-Apr-2019 : Rewrite in terms of energy density (A. Roland, version 7.00)
+!/    03-Apr-2019 : Add Thornton & Guza, 1983          (A. Roland, version 7.00)
+
 !/
 !  1. Purpose :
 !
 !     Compute depth-induced breaking using Battjes and Janssen bore
 !     model approach
 !
-!  2. Method :
+!  2. Method : Battjes & Janssen (1978), 
+! 
+!           Sbr   = Dtot/Etot*WA = D * WA
+!           Dtot  = 0.25*alpha*Qb*fm*Hmax²
+!           fm    = sigma/2Pi
+!           BB    = Hrms²/Hmax² = 8Etot/Hmax²
+!           D     = Dtot/Etot = BJALFA * sigma / pi * Qb/BB = 2 * BJALFA * fm * Qb/BB
 !
-!       Sdb = - CDB * FMEAN * QB * B * B * SPEC
-!
-!     Where CDB   =  SDBC1 = 0.25 * BJALFA (defaults to BJALFA = 1)
-!                    modified via ww3_grid namelist parameter BJALFA
-!           B     =  HM / HRMS
-!           HM    =  GAMMA * DEP
-!           GAMMA =  SDBC2 defaults to 0.73 (mean Battjes/Janssen value)
-!                    modified via ww3_grid namelist parameter BJGAM
+!           AR: only valid for Hrms .le. Hm, Qb .le. 1, otherwise, in the degenrative regime it is 
+!           due to Qb > 1 that all wave are broken and Hrms .le. Hmax
+!           MLIM can be used to enforce this conditions, source term will smoothly converge to this limit. 
+!           
+!     Where CDB   = SDBC1 = BJALFA (defaults to BJALFA = 1)
+!                   modified via ww3_grid namelist parameter BJALFA
+!           HM    = GAMMA * DEP
+!           GAMMA = SDBC2 defaults to 0.73 (mean Battjes/Janssen value)
+!                   modified via ww3_grid namelist parameter BJGAM
 !
 !     And QB is estimated by iterations using the nonlinear expression 
 !
@@ -145,7 +156,6 @@
 !/
       INTEGER, INTENT(IN)     :: IX ! Local grid number
       REAL, INTENT(IN)        :: A(NSPEC)
-!AR: This below is not good I know ... we need more inlined methods ...
       REAL, INTENT(INOUT)     :: EMEAN, FMEAN, WNMEAN, DEPTH
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
       REAL, INTENT(IN)        :: CG(NK)
@@ -179,7 +189,7 @@
 !
 !/T      WRITE (NDST,9000) SDBC1, SDBC2, FDONLY
 !
-! 1.  Integral quantities ... only for the case when it is used nonlinear in the solver ...
+! 1.  Integral quantities. AR: make sure mean quantities are computed, need to move upward
 !
       ETOT = 0.
       FMEAN2 = 0.
@@ -256,16 +266,16 @@
       IF (IWB == 1) THEN
         IF ( ( BB .GT. THR) .AND. ( ABS ( BB - QB ) .GT. THR) ) THEN
           IF ( BB .LT. 1.0) THEN
-            CBJ = DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
+            CBJ = 2 * DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
           ELSE
-            CBJ = DBLE(SDBC1) * DBLE(FMEAN) * BB ! Make sure the energy vanishes ...
+            CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB ! AR: degenerative regime, all waves must be .le. Hmax, we just smoothly let the excessive energy vanish by * BB. 
           END IF
         ELSE
           CBJ = 0.d0
         ENDIF
         D = - CBJ
         S = D * A
-      ELSE IF (IWB == 2) THEN
+      ELSE IF (IWB == 2) THEN 
         IF (ETOT .GT. THR) THEN
           HRMS = SQRT(8*EMEAN)
           FAK  = (1+4./SQRT(PI)*(B*BB+1.5*B)*exp(-BB)-ERF(B))
@@ -275,7 +285,6 @@
         ENDIF
         D = - CBJ
         S = D * A 
-      ELSE IF (IWB == 3) THEN
       ENDIF
 
       IF (CBJ .GT. 0.) THEN
