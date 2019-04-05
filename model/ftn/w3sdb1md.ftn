@@ -63,11 +63,8 @@
 !/
 !/    25-Apr-2007 : Origination of module.              ( version 3.11 )
 !/    08-Jun-2018 : Add DEBUGDB1.                       ( version 6.04 )
-!/    03-Apr-2019 : Rewrite in terms of energy density (A. Roland,
-!version 6.07)
-!/    03-Apr-2019 : Add Thornton & Guza, 1983          (A. Roland,
-!version 6.07)
-
+!/    03-Apr-2019 : Rewrite in terms of energy density (A. Roland,version 6.07)
+!/    03-Apr-2019 : Add Thornton & Guza, 1983          (A. Roland,version 6.07)
 !/
 !  1. Purpose :
 !
