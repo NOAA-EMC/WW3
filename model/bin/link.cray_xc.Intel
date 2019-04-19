@@ -82,7 +82,6 @@
 
 # Intel compiler ------------------------------------------------------------
 # 3.a Build options and determine compiler name
-#     No GRIB libraries for this one
 
   opt="-o $prog"
   opt="$opt -xHost -O3 -ip -fno-alias -fp-model strict -no-fma -ftz"
@@ -121,7 +120,14 @@
     fi
   fi
 
-  # netcdf library dir
+  if [ "$ncep_grib_compile" = 'yes' ]
+  then
+# GRIB libraries for this one
+    opt="$opt -convert big_endian -assume byterecl -prec-div -prec-sqrt -ip"
+    libs="$libs ${G2_LIB4} ${W3NCO_LIB4} ${BACIO_LIB4} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}"
+  fi
+  
+# netcdf library dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in

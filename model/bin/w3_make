@@ -161,6 +161,13 @@
     cdf_programs="$cdf_programs ww3_prtide"
   fi
 
+  # NCEP GRIB
+  export ncep_grib_compile="no"
+  if [ -n "`grep NCEP $switch_file`" ]
+  then
+    export ncep_grib_compile="yes"
+  fi
+
   # MULTI MULTI_ESMF SBS1
   if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
