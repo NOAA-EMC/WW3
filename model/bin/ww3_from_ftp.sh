@@ -6,16 +6,9 @@
 # --------------------------------------------------------------------------- #
 
 curr_dir=`pwd`
-
-#Get top level directory of ww3 from user: 
-echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
-echo -e "Enter the relative path to the main/top level directory, this would "
-echo -e "be '../../' if in the model/bin directory or '.' if already in the "
-echo -e "top/main directory:"
-read ww3dir 
-
-#Move to top level directory of ww3: 
-cd $ww3dir 
+ww3dir="$(cd "$(dirname "$0")";pwd -P)/../.."
+#Move to top level directory of ww3:
+cd $ww3dir
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
@@ -64,6 +57,6 @@ else
   echo -e ' Not deleting the data_regtests folder.' 
 fi
 
-#move back to original directory: 
+#move back to original directory:
 cd $curr_dir
 echo -e "End of ww3_from_ftp.sh"
