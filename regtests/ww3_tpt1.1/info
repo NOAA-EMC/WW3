@@ -26,6 +26,10 @@
 #    PTM=5: Wave components defined using a user defined frequency cut-off    #
 #           (PTFCUT). Outputs high frequency and low frequency partition.     #
 #                                                                             #
+#  =====                                                                      #
+#  NOTE: CURRENTLY, THIS TEST NEEDS TO BE RUN WITH THE "-N" FLAG.             #
+#  =====                                                                      #
+#                                                                             #
 #  Use the -g option to select the partitioning method. E.g:                  #
 #   for Serial (SHARED):                                                      #
 #    ./bin/run_test -N -g PTM1 -f -o both ../model ww3_tpt1.1                 #
@@ -37,6 +41,7 @@
 #  for Parallel (MPI DIST):                                                   #
 #   ./bin/run_test -N -g PTM2 -n 2 -p aprun -f -s MPI \                       #
 #                                -o both ../model ww3_tpt1.1                  #
+#                                                                             #
 #                                                                             #
 #                                                  Chris Bunney, Nov 2018     #
 ###############################################################################
