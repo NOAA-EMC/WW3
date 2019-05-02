@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2018 |
+!/                  | Last update :         28-Mar-2019 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -31,6 +31,7 @@
 !/    26-Jul-2018 : Changed reading of TABIPART         ( version 6.05 )
 !/    12-Sep-2018 : Added extra partitioned fields      ( version 6.06 )
 !/    25-Sep-2018 : Add WBT parameter                   ( version 6.06 )
+!/    28-Mar-2019 : Bugfix to NBIPART check.            ( version 6.07 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -381,7 +382,7 @@
 
       ! Alternative processing of TABIPART to capture requests 
       ! greater than NOSWLL (C.Bunney):
-      ALLOCATE(TABIPART(NOSWLL))
+      ALLOCATE(TABIPART(NOSWLL + 1))
       NBIPART=0
       DO I=1,30
         IF(STRINGIPART(I:I) .EQ. ' ') CYCLE
@@ -391,7 +392,7 @@
            CYCLE
         ENDIF
         NBIPART = NBIPART + 1
-        IF(NBIPART .GT. NOSWLL) THEN
+        IF(NBIPART .GT. NOSWLL + 1) THEN
            GOTO 803
         ENDIF
         TABIPART(NBIPART) = IPART
@@ -3396,6 +3397,9 @@
             ! Defines the netcdf extension
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
+
+!/NCO ! For NCEP application, requires fixed netcdf file name
+!/NCO            FNAMENC='ww3.gridded.nc'
 
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 

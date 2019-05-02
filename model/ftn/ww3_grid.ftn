@@ -1888,7 +1888,7 @@
 !/DB1             '      Using Hmax/d in Miche style formulation.'
 !/DB1        END IF
 !/DB1      WRITE (NDSO,*)
-!/DB1      SDBC1  = 0.25 * BJALFA
+!/DB1      SDBC1  = BJALFA
 !/DB1      SDBC2  = BJGAM
 !/DB1      FDONLY = BJFLAG
 !

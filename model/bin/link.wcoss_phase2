@@ -140,8 +140,11 @@
     esac
   fi
 
-  if [ "$prog" = 'ww3_grib' ]
+# NCEP grib creation
+  if [ "$ncep_grib_compile" = 'yes' ]
   then
+# GRIB libraries for this one
+    opt="$opt -convert big_endian -assume byterecl -prec-div -prec-sqrt -ip"
     libs="$libs ${G2_LIB4} ${W3NCO_LIB4} ${BACIO_LIB4} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}"
   fi
 
