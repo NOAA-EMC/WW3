@@ -6,7 +6,7 @@ execute_process (
 )
 
 execute_process (
-      COMMAND sh ${CMAKE_SOURCE_DIR}/WW3/model/bin/w3_setup ${CMAKE_SOURCE_DIR}/model -c intel -s NCEP_st4
+      COMMAND sh ${CMAKE_SOURCE_DIR}/WW3/model/bin/w3_setup ${CMAKE_SOURCE_DIR}/WW3/model -c theia_so -s NCEP_st4
 )
 
 execute_process(
