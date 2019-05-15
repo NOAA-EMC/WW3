@@ -2,18 +2,19 @@
 
 # Temporary script to compile esmf codes for testing modifications
 
- NEMSdir=$1 # Requires FV3-WW3 coupled app installed in machine
+ NEMSdir=$1 # Requires to enter location of NEMS dir
+ WW3dir=$1 # Requires to enter location of WW3 model codes
 
- if [ -z $NEMSdir ]
+ if [ -z $NEMSdir ] || [ -z $WW3dir ]
  then
   echo " Variable NEMSdir not set "
-  echo " Usage: ./esmf_stdalone_make.sh NEMSdir"  
+  echo " Usage: ./esmf_stdalone_make.sh NEMSdir WW3dir"  
   exit
  fi
  module use ${NEMSdir}/NEMS/src/conf 
  module load modules.nems              ; module list   
  ulimit -S -s $stack ; set -x ; #cd `pwd`
- export COMP_SRCDIR="/scratch4/NCEPDEV/ocean/noscrub/Henrique.Alves/EMC_FV3-WW3/WW3/model" COMP_BINDIR="/scratch4/NCEPDEV/ocean/noscrub/Henrique.Alves/EMC_FV3-WW3/WW3/WW3_INSTALL" WW3_COMP="theia"
+ export COMP_SRCDIR="${WW3dir}/model" COMP_BINDIR="${WW3dir}/model/bin" WW3_COMP="theia"
  set -e
  exec make -j 1 WW3_COMP="theia" ww3_nems 1> make.out 2>&1
 

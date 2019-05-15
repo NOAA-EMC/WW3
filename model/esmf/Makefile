@@ -1,4 +1,4 @@
-# GNU Makefile for test Wavewatch III coupled application
+# GNU Makefile for WAVEWATCH III Implementation using NEMS at NCEP
 
 ################################################################################
 
