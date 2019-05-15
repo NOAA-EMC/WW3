@@ -1325,7 +1325,7 @@
         IRET=NF90_GET_VAR(NCID,VARIDTMP,ALLTIMES,start=(/1/))
         CALL CHECK_ERR(IRET)
         IF (INDEX(TIMEUNITS, "seconds").NE.0)   ALLTIMES=ALLTIMES/86400.
-        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/3600.
+        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/1440.
         IF (INDEX(TIMEUNITS, "hours").NE.0)   ALLTIMES=ALLTIMES/24.
         ALLTIMES=REFJULDAY+ALLTIMES
 
@@ -1385,7 +1385,7 @@
         ALLOCATE(TIDE_DATA_ALL(NXL(IAPROC),NTI,NFIELDS))
 
 
-        WRITE(NDSE,*) "Number of points for this processor :", IAPROC,NXL(IAPROC)
+!/T        WRITE(NDSO,'(A,I6,I12)') "Number of points for this processor :", IAPROC,NXL(IAPROC)
               DISTSWITCH = .FALSE.
 !/DIST        DISTSWITCH = .TRUE.
 !/TIDE        IF (DISTSWITCH) THEN 
@@ -1454,7 +1454,19 @@
 !/TIDE                CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
 !/TIDE                                         TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
 !/TIDE                                         SDEV0, RMSR, RESMAX, IMAX, 0)
-                
+!
+!/TIDE! Detect NaN values due to a bug with non-linear components
+!/TIDE! like MSN2 MN4 M4 MS4 S4 M6 2MS6 M8 when used primary tidal components
+!/TIDE              DO J=1,TIDE_MF
+!/TIDE                DO I=1,NFIELDS
+!/TIDE                  IF (TIDE_AMPC(J,I) .NE. TIDE_AMPC(J,I) .OR. &
+!/TIDE                      TIDE_PHG(J,I) .NE. TIDE_PHG(J,I) ) THEN
+!/TIDE                    WRITE(NDSE,1039)
+!/TIDE                    CALL EXTCDE ( 1039 )
+!/TIDE                  END IF
+!/TIDE                END DO
+!/TIDE              END DO
+!
 !/TIDE                TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
 !/TIDE                TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
 !/TIDET    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS) !,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
@@ -1485,12 +1497,12 @@
 !/TIDE             END DO
 !/TIDE           END DO
 !/TIDE         END DO
-!/TIDE         IF (IAPROC.EQ.NAPOUT) WRITE(6,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
-!/TIDE           IY,',',JX, ' out of  ', NXL(IAPROC)
+!/TIDE         IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') '[PROGRESS] : JX = ', &
+!/TIDE                                                              JX, ' out of  ', NXL(IAPROC)
               END IF
 !/TIDE            ELSE 
-!/TIDE              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, & 
-!/TIDE                                                            NTI, TIDE_NTI
+!/TIDE              WRITE(NDSE,'(A,I8,A,I8,A,I8,A,I8,A)') '[WARNING] not enough data at point (',IX,',',IY,') : ', & 
+!/TIDE                            TIDE_NTI, ' wet times over ', NTI, ' total time steps'
 !/TIDE              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=0.
 !/TIDE              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=0.
 !/TIDE              IND=IND+TIDE_MF*NFIELDS*2
@@ -1552,7 +1564,7 @@
 !/TIDET    CLOSE (990)
 !/TIDET    CLOSE (989)
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
-!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
 
 !/TIDE   IF (DISTSWITCH) THEN 
 !/MPI      CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
@@ -1560,12 +1572,12 @@
 !/TIDE   END IF
 
 !/MPI   IF (IAPROC .EQ. NAPOUT )  THEN 
-!/MPI     WRITE(NDSE,*) "parallelization done"
+!/MPI     WRITE(NDSO,*) "parallelization done"
 !/MPI   ELSE
 !/MPI     GOTO 888
 !/MPI   END IF
 !/TIDE!
-!/TIDE! After loop on points, write tidal constituents to file. 
+!/TIDE! After loop on points, write tidal constituents to file.
 !/TIDE!
 !/TIDE   IF ( IAPROC .EQ. NAPOUT.AND.TIDEFLAG.GE.1)  &
 !/TIDE     CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
@@ -2192,6 +2204,11 @@
                '     ILLEGAL SIZE OF INPUT GRID : ',I5,1X,I5/)
  1038 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
                '     DATA READ FROM INPUT FILE')
+!/TIDE 1039 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/       &
+!/TIDE               '     NAN VALUES IN HARMONICS '/                 &
+!/TIDE               '     REMOVE NON-LINEAR TIDAL COMPONENTS '/      &
+!/TIDE               '     2MS2 2MN2 2NK2 MNS2 MSN2 2SM2 3MSN2 '      &
+!/TIDE               '     M4 MS4 MN4 M6 2MS6 2MN6'/)
 !
  1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PRNC : '/                &
                '     GRID POINT ',2I6,2F7.2,/                         &

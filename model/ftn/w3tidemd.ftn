@@ -84,7 +84,6 @@
 !/
       DOUBLE PRECISION, PARAMETER  :: TWPI=3.1415926535898*2.
       DOUBLE PRECISION, PARAMETER  :: FAC=TWPI/360.
-      DOUBLE PRECISION, PARAMETER  :: EPS=1.D-10
 
 !
 !  Array sizes
@@ -288,6 +287,8 @@
 !
 ! 10. Source code :
 !
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
+      USE W3ODATMD, ONLY: NDSE, NDSO
 !/S      USE W3SERVMD, ONLY: STRACE
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   
@@ -319,10 +320,12 @@
           IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN 
             INDS(TIDE_PRMF)=J
             FOUND=1
-            WRITE(6,*) 'Tidal constituent to be used in pre:',TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
+            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used for prediction:', &
+                                                            TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
           END IF
         END DO
-        IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)),' not available.'
+        IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(3A)') 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)), &
+                                                                  ' not available.'
       END DO
 !
       END SUBROUTINE TIDE_FIND_INDICES_PREDICTION
@@ -374,6 +377,9 @@
 !       !/T  Enable test output.
 !
 ! 10. Source code :
+!
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
+      USE W3ODATMD, ONLY: NDSE, NDSO
 !/S      USE W3SERVMD, ONLY: STRACE
 !
 !/ ------------------------------------------------------------------- /
@@ -440,10 +446,13 @@
               NTIDES=NTIDES+1
               INDS(NTIDES)=J
               FOUND = 1
-              WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
+              IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,2A,E12.2)')  &
+                                    'Tidal constituent in analysis:', J, ' ', &
+                                    TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
             END IF
           END DO
-          IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
+          IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,A,A)') &
+                                                 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
 ! 
         END DO
 !
@@ -952,7 +961,7 @@
       DOUBLE PRECISION s,tmp(NMAX)
       do 12 j=1,n
         s=0.0d0
-        IF (w(j).gt.eps)then
+        IF (w(j).ne.0.0d0)then
           do 11 i=1,m
             s=s+u(i,j)*b(i)
 11        continue
@@ -993,7 +1002,7 @@
           DO k=i,m
             scale=scale+abs(a(k,i))
             END DO
-          IF (scale.gt.eps) THEN 
+          IF (scale.ne.0.0d0) THEN 
             DO  k=i,m
               a(k,i)=a(k,i)/scale
               s=s+a(k,i)*a(k,i)
@@ -1028,7 +1037,7 @@
           do 17 k=l,n
             scale=scale+abs(a(i,k))
 17        continue
-          IF (scale.gt.eps)then
+          IF (scale.ne.0.0d0)then
             do 18 k=l,n
               a(i,k)=a(i,k)/scale
               s=s+a(i,k)*a(i,k)
@@ -1058,7 +1067,7 @@
 25    continue
       do 32 i=n,1,-1
         IF (i.lt.n)then
-          IF (g.gt.eps)then
+          IF (g.ne.0.0d0)then
             do 26 j=l,n
               v(j,i)=(a(i,j)/a(i,l))/g
 26          continue
@@ -1087,7 +1096,7 @@
         do 33 j=l,n
           a(i,j)=0.0d0
 33      continue
-        IF (g.gt.eps)then
+        IF (g.ne.0.0d0)then
           g=1.0d0/g
           do 36 j=l,n
             s=0.0d0
@@ -1181,7 +1190,7 @@
 45          continue
             z=dpythag(f,h)
             w(j)=z
-            IF (z.gt.eps)then
+            IF (z.ne.0.0d0)then
               z=1.0d0/z
               c=f*z
               s=h*z
