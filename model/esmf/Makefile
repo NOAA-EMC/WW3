@@ -87,6 +87,7 @@ default: env setup gout switch
 
 ww3_nems: env setup gout switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
+	$(WW3_BINDIR)/w3_make ww3_multi
 
 ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
@@ -154,9 +155,9 @@ switch:
 # Setup switch file and compile serial routines ww3_grid, ww3_outf and ww3_outp 
 # ------------------------------------------------------------------------------
 gout: 
-	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
-	@cat $(WW3_BINDIR)/tempswitch > $(WW3_BINDIR)/switch 
-	$(WW3_BINDIR)/w3_make ww3_multi
+#	@echo "$(SWITCHES)" > $(WW3_BINDIR)/switch
+#	$(WW3_BINDIR)/w3_make ww3_multi
+#	\mv $(WW3_EXEDIR)/ww3_multi $(WW3_EXEDIR)/ww3_multi_std
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
 	     -e "s/MPIT/ /g"\
