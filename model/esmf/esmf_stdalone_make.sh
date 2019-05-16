@@ -13,9 +13,13 @@
  fi
 
  hostl=`hostname | cut -c1`
+ hostl2=`hostname | cut -c2`
  if [ "$hostl" = "v" ] || [ "$hostl" = "m" ]
  then
    machn="wcoss_dell_p3"
+ elif [ "$hostl" = "t" ] && [ "$hostl2" = "f" ]
+ then
+   machn="theia.intel"
  fi
 
  module use ${NEMSdir}/modulefiles/${machn}
