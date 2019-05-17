@@ -155,9 +155,6 @@ switch:
 # Setup switch file and compile serial routines ww3_grid, ww3_outf and ww3_outp 
 # ------------------------------------------------------------------------------
 gout: 
-#	@echo "$(SWITCHES)" > $(WW3_BINDIR)/switch
-#	$(WW3_BINDIR)/w3_make ww3_multi
-#	\mv $(WW3_EXEDIR)/ww3_multi $(WW3_EXEDIR)/ww3_multi_std
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
 	     -e "s/MPIT/ /g"\
