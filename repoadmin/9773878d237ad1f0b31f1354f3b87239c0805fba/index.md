@@ -2,4 +2,4 @@
 
 ### Meeting Minutes
 
-- (https://noaa-emc.github.io/WW3/repoadmin/Minutes_20190520.mdi)[Minutes 20190520]
+- [Mintes May 20th 2019](https://noaa-emc.github.io/WW3/repoadmin/Minutes_20190520.mdi)
