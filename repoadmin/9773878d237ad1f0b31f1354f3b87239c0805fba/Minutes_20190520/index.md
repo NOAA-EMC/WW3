@@ -32,7 +32,7 @@
 - Status?
   + Mickael has no branches, Fabrice's branches have been merged 
   + Mickael will confirm with Fabrice for deletion
-    * Still waiting to hear from Fabrice
+    * Still waiting to hear from Fabrice  
 - Tag up with ERDC to figure out what has been ported or restarted from scratch (then delete branches on vlab): Ali will check
   + This week will have meeting with Ty and Aron and update the Valb → GitHub spreadsheet
 - Ali and Jessica shared spreadsheet with branches that need to be transferred.
