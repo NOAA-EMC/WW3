@@ -1,5 +1,7 @@
 ## WAVEWATCH III Trusted Repos Code Manager Meeting - Minutes - May 20th 2019 0930EDT
 
+### Click [here](https://github.com/NOAA-EMC/WW3/edit/gh-pages/repoadmin/9773878d237ad1f0b31f1354f3b87239c0805fba/Minutes_20190520/index.md) to edit this file 
+
 ### Participants:
 - Ifremer: Mickael
 - NCEP-EMC: Ali, Henrique
