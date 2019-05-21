@@ -27,7 +27,7 @@ $
 $
 $ -------------------------------------------------------------------- $
 $ File prefix
-$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
+$ number of characters in date [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 $ IX and IY ranges [regular:IX NX IY NY, unstructured:IP NP 1 1]
 $
  ww3.
