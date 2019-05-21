@@ -141,8 +141,8 @@
   fi
 
   case $prog in
-    'ww3_grib'  ) libs="${G2_LIB4} ${W3NCO_LIB4} ${BACIO_LIB4} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}" ;;
-       *        ) libs= ;;
+    'ww3_grib'  ) libs="${libs} ${G2_LIB4} ${W3NCO_LIB4} ${BACIO_LIB4} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}" ;;
+       *        ) libs="${libs}" ;;
   esac
 
 
