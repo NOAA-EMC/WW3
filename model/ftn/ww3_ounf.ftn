@@ -157,10 +157,9 @@
                                  IOUT, S3, IRET, HASNC4,               &
                                  NBIPART, CNTIPART, NCVARTYPE, IPART,  &
                                  RTDNX, RTDNY
-      INTEGER                 :: TOUT(2), TDUM(2),                     &
-                                 NCIDS(NOGRP,NGRPP,6), STOPDATE(8)
+      INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
 !
-      INTEGER, ALLOCATABLE    :: TABIPART(:)
+      INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
 !
 !/S      INTEGER, SAVE           :: IENT = 0
 !
@@ -383,6 +382,7 @@
       ! Alternative processing of TABIPART to capture requests 
       ! greater than NOSWLL (C.Bunney):
       ALLOCATE(TABIPART(NOSWLL + 1))
+      ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1))
       NBIPART=0
       DO I=1,30
         IF(STRINGIPART(I:I) .EQ. ' ') CYCLE
