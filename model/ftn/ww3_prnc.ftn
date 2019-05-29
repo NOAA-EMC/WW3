@@ -25,6 +25,7 @@
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
 !/    29-May-2019 : Correction in MPI for tide          ( version X.XX )
+!/    29-May-2019 : Correction in scale factor          ( version X.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -249,6 +250,7 @@
       REAL                    :: ACC = 0.05
       REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
       REAL                    :: FILLVALUE, TIMEDELAY
+      REAL                    :: SCFAC(2), ADDOFF(2)
 !
       REAL, ALLOCATABLE       :: RD11(:,:), RD21(:,:),                &
                                  RD12(:,:), RD22(:,:),                &
@@ -1355,15 +1357,15 @@
         END DO
         IRET=NF90_GET_ATT(NCID,VARIDTMP,"_FillValue", FILLVALUE)
 
-        IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
-        IF (IRET .NE. 0) XCFAC = 1.0
-        IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
-        IF (IRET .NE. 0) XCOFF = 0.0
+        IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',SCFAC(1))
+        IF (IRET .NE. 0) SCFAC(1) = 1.0
+        IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
+        IF (IRET .NE. 0) ADDOFF(1) = 0.0
         IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
-          IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
-          IF (IRET .NE. 0) YCFAC = 1.0
-          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
-          IF (IRET .NE. 0) YCOFF = 0.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
+          IF (IRET .NE. 0) SCFAC(2) = 1.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
+          IF (IRET .NE. 0) ADDOFF(1) = 0.0
         END IF
 
 
@@ -1419,8 +1421,7 @@
               IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
                                 start=(/CUMUL(IAPROC)+1,1/),count=(/NELEM(IAPROC),NTI/))
               CALL CHECK_ERR(IRET)
-              if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
-              if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
+              WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
             END DO
           ELSE IF (NDIMSGRID.EQ.2) THEN
             IF (NDIMSVAR.EQ.3) THEN
@@ -1428,16 +1429,14 @@
                 IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
                                   start=(/CUMUL(IAPROC)+1,IY,1/),count=(/NELEM(IAPROC),1,NTI/))
                 CALL CHECK_ERR(IRET)
-                if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
-                if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
+                WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
               END DO
             ELSE IF (NDIMSVAR.EQ.4) THEN
               DO I=1,NFIELDS
                 IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
                                   start=(/CUMUL(IAPROC)+1,IY,1,1/),count=(/NELEM(IAPROC),1,1,NTI/))
                 CALL CHECK_ERR(IRET)
-                if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
-                if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
+                WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
               END DO
             END IF ! NDIMSVAR
           END IF ! NDIMSGRID
@@ -1655,9 +1654,9 @@
             END IF
             ! forces to 0 values that are undefined
             WHERE(XC.NE.XC) XC = 0. 
-!!            WHERE(XC.EQ.FILLVALUE) XC = 0.
             CALL CHECK_ERR(IRET)
-            XC  = XC * XCFAC + XCOFF
+            WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
+
 !
 !/T2            WRITE (NDST,9060) 1
 !/T2            IXP0   = 1
@@ -1688,9 +1687,8 @@
                       END IF
 ! The following line forces to 0 values that are undefine
                     WHERE(YC.NE.YC) YC = 0.
-!!                    WHERE(YC.EQ.FILLVALUE) YC = 0.
                     CALL CHECK_ERR(IRET)
-                    YC  = YC * YCFAC + YCOFF
+                    WHERE (YC.NE.FILLVALUE) YC=YC*YCFAC+YCOFF
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
