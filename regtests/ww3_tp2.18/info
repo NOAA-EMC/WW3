@@ -1,0 +1,26 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.18 Tidal harmonics on a regular grid                              #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   F90 NOGRB NC4 TRKNC DIST MPI PR3 UQ FLX0 LN0 ST4 STAB0 NL0 BT0 DB0      #
+#   MLIM TR0 BS0 IC0 IS0 REF1 XX0 WNT2 WNX1 RWND CRT1 CRX1 TIDE             #
+#   O0 O1 O2 O2a O2b O2c O3 O4 O5 O6 O7                                     #
+#                                                                           #
+# Remarks :                                                                 #
+# - TIDE switch must be used for tidal harmonics                            #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test -n 3 -p mpirun -f -o netcdf ../model  ww3_tp2.18          # 
+#                                                                           #
+#                                              Mickael Accensi, May 2019    #
+#                                                    Last Mod : May 2019    #
+#                                                                           #
+#    Copyright 2009-2019 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

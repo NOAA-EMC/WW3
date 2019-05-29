@@ -11,6 +11,7 @@
 !/
 !/    01-Sep-2012 : Origination.                        ( version 4.07 )
 !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
+!/    29-May-2019 : Correction of time and implicit none( version X.XX )
 !/
 !  1. Purpose :
 !
@@ -320,7 +321,7 @@
           IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN 
             INDS(TIDE_PRMF)=J
             FOUND=1
-            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used for prediction:', &
+            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used in pre:', &
                                                             TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
           END IF
         END DO
@@ -1218,7 +1219,7 @@
 ! See numerical recipes 2nd ed. The order of month and day have been swapped!
 !*********************************************************************
       IMPLICIT NONE
-           INTEGER id,mm,iyyy
+      INTEGER id,mm,iyyy
       INTEGER IGREG 
       INTEGER*4 ja,jm,jy
       INTEGER*4 JULDAYT
@@ -1246,7 +1247,7 @@
 ! Should be removed : same is now in W3TIMEMD
 !*********************************************************************
    IMPLICIT NONE
-        INTEGER(KIND=4),    INTENT(in)  :: julian
+   INTEGER(KIND=4),    INTENT(in)  :: julian
    INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
    INTEGER(KIND=4), PARAMETER :: IGREG=2299161
    INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
@@ -1323,8 +1324,9 @@
       real, intent(IN)                  :: toler
       real, intent(INOUT)               :: q(mm,N2), ssq, res
       integer, intent(INOUT)            :: jc
+      double precision, intent(INOUT)   :: sig(mm)
       double precision, intent(OUT)     :: u(mm,N2),v(N2,N2),cov(N2,N2),      &
-                                           w(N2),b(mm),p(N2),sig(mm)
+                                           w(N2),b(mm),p(N2)
 
 ! LOCAL VARIABLES
       double precision          :: wti(nwt)
@@ -1333,7 +1335,6 @@
       double precision          :: eps, sum, resi
       
       jc=0
-      sig(:)=1.
       do i=1,mm
         b(i)=q(i,N2)
       enddo
@@ -1383,7 +1384,7 @@
         resi=abs(b(i)-sum)
 !      TIDE_MF addition
         q(i,N2)=b(i)-sum
-        res=max(res,REAL(resi))
+        res=max(res,resi)
         ssq=ssq+resi**2
       enddo
 ! compute variances, covariances, these may need to be given dimension
@@ -1416,7 +1417,7 @@
 
       IMPLICIT NONE
 
-      integer          :: JLM
+      INTEGER          :: JLM
 
       NTIDAL_CON = 45
       NTOTAL_CON = 45+101
@@ -1849,18 +1850,25 @@
 !/ ------------------------------------------------------------------- /
      SUBROUTINE SETVUF(hr,XLAT,ITIME)
 !      setvuf calculates the V,u,f values at time hr for all constituents
-      REAL,         INTENT(IN)  :: XLAT
+
+      IMPLICIT NONE
+
       REAL(KIND=8), INTENT(IN)  :: hr
+      REAL,         INTENT(IN)  :: XLAT
+      INTEGER,      INTENT(IN)  :: ITIME
+
 !
 !   Local variables
 !
-      INTEGER                   :: ITIME, KD0, INT24, INTDYS, &
+      INTEGER                   :: KD0, INT24, INTDYS, &
                                    JBASE, J, K, L, J1, K1, JL, LK, iflag
+      INTEGER                   :: IV, IUU
+!
       REAL(KIND=4), PARAMETER   :: PI=3.1415926536
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
-
-      REAL                      :: SLAT, VDBL, IV, VV, SUMC, SUMS, RR, &
-                                   UUDBL, IUU, UU
+!
+      REAL                      :: SLAT, VDBL, VV, SUMC, SUMS, RR, &
+                                   UUDBL, UU
       REAL(KIND=8)              :: d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp,hh,tau
 
       INTEGER                   :: indx(170)
@@ -1880,7 +1888,8 @@
       ! KD0= 693961
       !KD0=JULDAYT(31,12,1899)   ! JULDAYT(id,mm,iyyy)
       KD0= 2415020
-      d1=d1-dfloat(KD0)-0.5d0
+      ! substracting 0.5day is not necessary anymore with new time functions
+      d1=d1-dfloat(KD0)
       call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
       INT24=24
       INTDYS=int((hr+0.00001)/INT24)

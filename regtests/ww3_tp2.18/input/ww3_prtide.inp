@@ -1,0 +1,31 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Field preprocessor input file                          $
+$ -------------------------------------------------------------------- $
+$ types of field
+$   Field types  :  LEV   Water levels.
+$                   CUR   Currents.
+$                   
+$
+  'CUR' 
+$
+$ List of tidal constituents------------------------------------------ $
+$
+ M2 S2 N2
+$
+$ Maximum allowed values    ------------------------------------------ $
+$
+ Z0   SSA MSF
+ 1.0  0.5 0.5
+$
+$  Start time  step        end time
+   20190201 000000 1800 20190201 020000
+$
+$ Define data files -------------------------------------------------- $
+$ The input line identifies the filename using for the forcing field.
+$
+  'ww3_tide'
+$
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

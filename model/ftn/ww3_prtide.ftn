@@ -14,6 +14,7 @@
 !/    06-Jun-2018 : COMPUTE VNEIGH: calculate the number of connected 
 !/                  triangles for a given point         ( version 6.04 )   
 !/    19-Mar-2019 : MPI implementation                  ( version X.XX )
+!/    29-May-2109 : bug fix for rectilinear grid        ( version X.XX )
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -308,6 +309,9 @@
       CLOSE(NDSF)
       
 !
+
+      IF (GTYPE.EQ.UNGTYPE) THEN 
+
       COUNTRI = MAXVAL(CCON)
       ALLOCATE(VNEIGH(NX,2*COUNTRI))
       ALLOCATE(CONN(NX))
@@ -373,6 +377,8 @@
         END DO
       END DO !NX   
 
+      END IF ! UNGTYPE
+
 !==========================================================
 !
 ! Apply the maximum threshold value to tidal constituents
@@ -389,7 +395,7 @@
             TIDE_MAX=TIDE_MAX+1
             INDMAX(TIDE_MAX)=J
             READ(TIDECON_MAXVALS(TIDE_MAXI),*) MAXVALCON(TIDE_MAX)
-            WRITE(NDSO,*) 'Maximum allowed value for amplitude:',J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
+            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,*) 'Maximum allowed value for amplitude:',J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
           END IF
         END DO
       END DO
@@ -491,6 +497,18 @@
           DO IY = 1, NY
             DO IX=1, NX
               TIDEOK=1
+
+              ! NaN values
+!              DO I=1,TIDE_MF
+!                IF (TIDAL_CONST(IX,IY,I,1,1) .NE. TIDAL_CONST(IX,IY,I,1,1) .OR. &
+!                    TIDAL_CONST(IX,IY,I,2,1) .NE. TIDAL_CONST(IX,IY,I,2,1)) THEN
+!                  WRITE(NDSO,*) 'NAN: ', I, '/', TIDAL_CONST(IX,IY,I,1:2,1)
+!                  TIDAL_CONST(IX,IY,I,1,1)=0
+!                  TIDAL_CONST(IX,IY,I,2,1)=0
+!                END IF
+!              END DO
+
+              ! Over threshold values
               DO I=1,TIDE_MAX
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
                     ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN
@@ -499,6 +517,7 @@
                 END IF
                 BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
               END DO
+
               IF (BADPOINTS(IX,IY).GT.0) THEN 
                 NBAD = NBAD +1
                 WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &

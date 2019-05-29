@@ -218,7 +218,11 @@
     fi
 
     # sort in seq or mpi programs
-    par_programs="ww3_shel ww3_multi ww3_sbs1 ww3_prtide" # ww3_prnc"
+    par_programs="ww3_shel ww3_multi ww3_sbs1"
+    if  [ -n "`grep TIDE $switch_file`" ]
+    then
+      par_programs="par_programs ww3_prtide"
+    fi
     if [ $ESMFMKFILE ]
     then
       par_programs="$par_programs ww3_multi_esmf"
