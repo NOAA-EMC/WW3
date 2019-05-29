@@ -20,9 +20,7 @@
   + Tyler and Henrique had an email with procedure that would work as skeleton of page
   + Ali: page will be made available by Friday May 20th
   + Henrique testing usage of mpiserial to speed up shared memory tests in matrix
-    * Check results of tests with Ali and report to group
-    * Check with other centers possibility of having their version of mpiserial
-    * If not, ask Sam Trahan to share mpiserial program with all
+    * Tests indicated this is not a viable option at this stage, more work needed
 - Status of regtests/matrix at trusted repos
   + ERDC has not yet made progress, will work with Ali this week
   + UKMO Chris has been working through it but is not there yet, has made good progress
