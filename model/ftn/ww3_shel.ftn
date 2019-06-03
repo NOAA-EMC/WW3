@@ -1297,7 +1297,6 @@
             ELSE IF ( J .EQ. 6 ) THEN
 !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
               CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-              READ (NDSI,*,END=2001,ERR=2002) IPRT, PRTFRM
 !/DEBUGINIT              write(740+IAPROC,*), 'Before reading IPRT'
 !/DEBUGINIT              write(740+IAPROC,*), 'Before read 2002, case 10'
               READ (NDSI,*) IPRT, PRTFRM
