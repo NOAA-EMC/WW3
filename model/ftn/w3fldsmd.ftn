@@ -599,7 +599,7 @@
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3TIDEMD
+!/TIDE      USE W3TIDEMD
       USE W3IDATMD
       IMPLICIT NONE
 !/
@@ -633,12 +633,14 @@
            IDFLD.NE.'ISI' )    GOTO 802
       WRITE  = INXOUT .EQ. 'WRITE'
 
-      IF ( WRITE ) THEN
-        WRITE (NDS,ERR=804,IOSTAT=IERR) TIDE_MF
-      ELSE
-        READ (NDS,END=806,ERR=805,IOSTAT=IERR) TIDE_MF                    
-        NTIDE = TIDE_MF
-      END IF
+!/TIDE      IF ( WRITE ) THEN
+!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+!/TIDE                     TIDE_MF
+!/TIDE        ELSE
+!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+!/TIDE                    TIDE_MF
+!/TIDE                    NTIDE = TIDE_MF
+!/TIDE               END IF
 !
 !
 ! File OK ------------------------------------------------------------ *
@@ -810,45 +812,44 @@
            IDFLD.NE.'ISI' )    GOTO 802
       WRITE  = INXOUT .EQ. 'WRITE'
 
-      IF ( WRITE ) THEN
-        WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
-               TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
-      ELSE
-        IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
-        IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
-        IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
-        READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
-              TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
-        LIST(:)=''
-        TIDE_MF1=TIDE_MF
-        DO I=1,TIDE_MF
-          LIST(I)=TIDECON_NAMEI(I)
-        END DO
-        CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
-        IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
-        CALL TIDE_SET_INDICES
-        IF(IDFLD.EQ.'LEV') THEN 
-          IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-        ELSE 
-          IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-          IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
-        END IF 
-      END IF
-
-!/T      DO I=1,NTIDE 
-!/T        WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
-!/T                      '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
-!/T      END DO
-!/T      DO I=1,NTIDE 
-!/T        WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
-!/T                       '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
-!/T      END DO
-!/T      DO IX=1,NX
-!/T        IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)') IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
-!/T                                                            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
-!/T      END DO
-!/T      IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
-!/T      IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
+!/TIDE      IF ( WRITE ) THEN
+!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+!/TIDE                     TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE        ELSE
+!/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+!/TIDE               IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
+!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
+!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+!/TIDE                     TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE                     LIST(:)=''
+!/TIDE                     TIDE_MF1=TIDE_MF
+!/TIDE                     DO I=1,TIDE_MF
+!/TIDE                       LIST(I)=TIDECON_NAMEI(I)
+!/TIDE                       END DO
+!/TIDE                     CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
+!/TIDE               IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
+!/TIDE               CALL TIDE_SET_INDICES
+!/TIDE               IF(IDFLD.EQ.'LEV') THEN 
+!/TIDE                 IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE               ELSE 
+!/TIDE                 IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE                 IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
+!/TIDE                 END IF 
+!/TIDE               END IF
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO IX=1,NX
+!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)') IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
+!/TIDET            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
+!/TIDET  END DO
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
 !
 !
 ! File OK ------------------------------------------------------------ *
@@ -884,7 +885,7 @@
       RETURN
 !
   807 CONTINUE
-      IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) TIDECON_NAMEI(:)
+!/TIDE      IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) TIDECON_NAMEI(:)
       IERR   = 7
       RETURN
 !
@@ -900,8 +901,8 @@
                '     ERROR IN READING ',A,' FILE, IOSTAT =',I6/)
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
                '     PREMATURE END OF ',A,' FILE'/)
- 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
-               '     TIDAL CONSTITUENTS NOT RECOGNIZED ',A /)
+!/TIDE 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+!/TIDE               '     TIDAL CONSTITUENTS NOT RECOGNIZED ',A /)
 !/
 !/ End of W3FLDO  ---------------------------------------------------- /
 !/
