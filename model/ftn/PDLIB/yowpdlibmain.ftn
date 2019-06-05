@@ -60,7 +60,7 @@ module yowpdlibMain
   !> @overload initPD1
   subroutine initFromGridDim(MNP, XP, YP, DEP, MNE, INE, secDim, thirdDim, MPIcomm)
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
-    use yowNodepool,       only: np_global, np, np_perProcSum, ng, ARR_ipgl, ipgl, iplg, npa
+    use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
     use yowElementpool,    only: ne_global,ne
     use yowSidepool,       only: ns, ns_global
     use yowExchangeModule, only: nConnDomains, setDimSize
@@ -124,12 +124,6 @@ module yowpdlibMain
       write(*,*) "Thread", myrank, "# of ghosts", ng
       write(*,*) "Thread", myrank, "# of neighbor domains", nConnDomains
     endif
-    allocate(ARR_ipgl(np_global), stat=istat)
-    if(istat/=0) CALL ABORT("allocate")
-    ARR_ipgl(:)%id = 0
-    ARR_ipgl(1:np_global)%id = ipgl(1:np_global)
-    ARR_ipgl(:)%rank = -1
-    ARR_ipgl(iplg(1:npa))%rank = myrank
   end subroutine initFromGridDim
 
 

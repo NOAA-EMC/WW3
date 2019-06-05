@@ -43,13 +43,6 @@ module yowNodepool
   public :: finalizeNodepool, nodes, ghosts
 
 
-  type, public :: llist_type
-    integer                      :: rank=-1   ! Processor rank assignment
-    integer                      :: id=0      ! Local index on processor "rank"
-    type(llist_type),pointer :: next=>null()  ! Next entry in linked-list. ! we dont need this in pdlib
-  end type llist_type
-  type(llist_type), public, allocatable :: ARR_ipgl(:)
-
   !> Holds the nodes data.
   !> Such as x, y, z data or the number of connected nodes
   type, public :: t_Node
