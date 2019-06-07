@@ -157,10 +157,9 @@
                                  IOUT, S3, IRET, HASNC4,               &
                                  NBIPART, CNTIPART, NCVARTYPE, IPART,  &
                                  RTDNX, RTDNY
-      INTEGER                 :: TOUT(2), TDUM(2),                     &
-                                 NCIDS(NOGRP,NGRPP,6), STOPDATE(8)
+      INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
 !
-      INTEGER, ALLOCATABLE    :: TABIPART(:)
+      INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
 !
 !/S      INTEGER, SAVE           :: IENT = 0
 !
@@ -383,6 +382,7 @@
       ! Alternative processing of TABIPART to capture requests 
       ! greater than NOSWLL (C.Bunney):
       ALLOCATE(TABIPART(NOSWLL + 1))
+      ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1))
       NBIPART=0
       DO I=1,30
         IF(STRINGIPART(I:I) .EQ. ' ') CYCLE
@@ -874,17 +874,21 @@
 
 ! 1.2 Sets the date as ISO8601 convention 
       ! S3 defines the number of characters in the date for the filename
-      ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
+      ! S3=0 -> field, S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
       ! Setups min and max date format
-      IF (S3.LT.4) S3=4 
+      IF (S3.GT.0 .AND. S3.LT.4) S3=4 
       IF (S3.GT.10) S3=10 
 !
       ! Defines the format of FILETIME
       S5=S3-8
       S4=S3
       OLDTIMEID=TIMEID
+      ! if S3=>nodate then filetime='field'
+      IF (S3.EQ.0) THEN
+        S4=5
+        TIMEID="field"
       ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHZ'
-      IF (S3.EQ.10) THEN 
+      ELSE IF (S3.EQ.10) THEN 
         S4=S4+2 ! add chars for ISO8601 : day T hours Z
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
@@ -3397,9 +3401,6 @@
             ! Defines the netcdf extension
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
-
-!/NCO ! For NCEP application, requires fixed netcdf file name
-!/NCO            FNAMENC='ww3.gridded.nc'
 
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
