@@ -1652,10 +1652,11 @@
                 IRET=NF90_GET_VAR(NCID,VARIDF(1),XC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
               END IF
             END IF
-            ! forces to 0 values that are undefined
-            WHERE(XC.NE.XC) XC = 0. 
             CALL CHECK_ERR(IRET)
+            ! forces to 0 values that are undefined
+            WHERE(XC.NE.XC) XC = FILLVALUE
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
+            WHERE (XC.EQ.FILLVALUE) XC=0.
 
 !
 !/T2            WRITE (NDST,9060) 1
@@ -1686,9 +1687,10 @@
                         END IF
                       END IF
 ! The following line forces to 0 values that are undefine
-                    WHERE(YC.NE.YC) YC = 0.
                     CALL CHECK_ERR(IRET)
+                    WHERE(YC.NE.YC) YC = FILLVALUE
                     WHERE (YC.NE.FILLVALUE) YC=YC*YCFAC+YCOFF
+                    WHERE (YC.EQ.FILLVALUE) YC=0.
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
