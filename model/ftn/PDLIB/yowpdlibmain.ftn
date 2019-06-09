@@ -58,7 +58,7 @@ module yowpdlibMain
   !> @param[in] thirdDim size of the third dimensions to exchange
   !> @param[in] MPIComm MPI communicator to use with pdlib
   !> @overload initPD1
-  subroutine initFromGridDim(MNP, XP, YP, DEP, MNE, INE, secDim, thirdDim, MPIcomm)
+  subroutine initFromGridDim(MNP, XP, YP, DEP, MNE, INE, secDim, MPIcomm)
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
     use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
     use yowElementpool,    only: ne_global,ne
@@ -69,11 +69,11 @@ module yowpdlibMain
     integer, intent(in) :: MNP, MNE
     integer, intent(in) :: INE(3,MNE)
     real(kind=rkind), intent(in) :: XP(MNP), YP(MNP), DEP(MNP)
-    integer, intent(in) :: secDim, thirdDim
+    integer, intent(in) :: secDim
     integer, intent(in) :: MPIcomm
     integer istat
 
-    call setDimSize(secDim, thirdDim)
+    call setDimSize(secDim)
 !/DEBUGINIT    Print *, '1: MPIcomm=', MPIcomm
     call initMPI(MPIcomm)
 !/DEBUGINIT    Print *, '2: After initMPI'

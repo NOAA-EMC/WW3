@@ -43,7 +43,7 @@ module yowExchangeModule
   private
   public :: initNbrDomains, createMPITypes, setDimSize
   public :: finalizeExchangeModule, PDLIB_exchange1Dreal
-  public :: PDLIB_exchange1Dint, PDLIB_exchange2Dreal, PDLIB_exchange3Dreal
+  public :: PDLIB_exchange1Dint, PDLIB_exchange2Dreal
 
   !> Holds some data belong to a neighbor Domain
   type, public :: t_neighborDomain
@@ -79,9 +79,6 @@ module yowExchangeModule
     integer :: p2DRrecvType1 = MPI_DATATYPE_NULL
     integer :: p2DRsendType2 = MPI_DATATYPE_NULL
     integer :: p2DRrecvType2 = MPI_DATATYPE_NULL
-    !> MPI datatypes for 3D exchange
-    integer :: p3DRsendType = MPI_DATATYPE_NULL
-    integer :: p3DRrecvType = MPI_DATATYPE_NULL
 
     contains
 !     procedure :: exchangeGhostIds
@@ -101,8 +98,6 @@ module yowExchangeModule
   !> number of the second dimension for exchange
   integer, public :: n2ndDim = 1
 
-  !> number fo the third dimension for exchange
-  integer, public :: n3ndDim = 1
 
   contains
 
@@ -133,10 +128,6 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p2DRrecvType2, ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
-    call mpi_type_free(this%p3DRsendType, ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
-    call mpi_type_free(this%p3DRrecvType, ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
   end subroutine
 
   ! create MPI indexed datatype for this neighborDomain
@@ -152,7 +143,7 @@ module yowExchangeModule
     integer :: dsplSend(this%numNodesToSend)
     integer :: dsplRecv(this%numNodesToReceive)
 
-    
+
     dsplSend = ipgl(this%nodesToSend)-1
     dsplRecv = ghostgl(this%nodesToReceive) + np -1
 
@@ -161,7 +152,7 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
     call mpi_type_commit(this%p1DRsendType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-    
+
     call mpi_type_create_indexed_block(this%numNodesToReceive, 1, dsplRecv, rtype, this%p1DRrecvType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
     call mpi_type_commit(this%p1DRrecvType,ierr)
@@ -192,32 +183,6 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
 
 
-    IF (n3ndDim .gt. 0) THEN
-      dsplSend = (ipgl(this%nodesToSend)-1) * n3ndDim
-      dsplRecv = (ghostgl(this%nodesToReceive) + np -1) * n3ndDim
-      call mpi_type_create_indexed_block(this%numNodesToSend, n3ndDim, dsplSend, rtype, this%p2DRsendType2,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-      call mpi_type_commit(this%p2DRsendType2,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-
-      call mpi_type_create_indexed_block(this%numNodesToReceive, n3ndDim, dsplRecv, rtype, this%p2DRrecvType2,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-      call mpi_type_commit(this%p2DRrecvType2,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-
-      ! p3D real
-      dsplSend = (ipgl(this%nodesToSend)-1) * n2ndDim*n3ndDim
-      dsplRecv = (ghostgl(this%nodesToReceive) + np -1) * n2ndDim*n3ndDim
-      call mpi_type_create_indexed_block(this%numNodesToSend, n2ndDim*n3ndDim, dsplSend, rtype, this%p3DRsendType,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-      call mpi_type_commit(this%p3DRsendType,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-
-      call mpi_type_create_indexed_block(this%numNodesToReceive, n2ndDim*n3ndDim, dsplRecv, rtype, this%p3DRrecvType,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-      call mpi_type_commit(this%p3DRrecvType,ierr)
-      if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-    END IF
   end subroutine
 
   subroutine initNbrDomains(nConnD)
@@ -232,7 +197,7 @@ module yowExchangeModule
     if(stat/=0)  CALL ABORT('neighborDomains allocation failure')
   end subroutine
 
-  subroutine createMPITypes()    
+  subroutine createMPITypes()
     implicit none
     integer :: i
 
@@ -360,20 +325,6 @@ module yowExchangeModule
     integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
 
 
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 1'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
-
-    if(size(U,2) /= npa) then
-      CALL ABORT("sizeof(U,2) < npa")
-    endif
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 2'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
-
-    if((size(U,1) /= n2ndDim) ) then
-      if((size(U,1) /= n3ndDim) ) then
-        CALL ABORT("sizeof(U,1) /= n2ndDim or n3ndDim")
-      endif
-    endif
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 3'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
 
@@ -406,34 +357,6 @@ module yowExchangeModule
       end do
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 6'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
-    else if(size(U,1) == n3ndDim) then
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 7'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
-      ! post receives
-      do i=1, nConnDomains
-        tag = 30000 + myrank
-        call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType2, &
-               neighborDomains(i)%domainID-1, tag, comm, &
-               recvRqst(i), ierr)
-        if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-        endif
-      enddo
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 8'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
-
-      ! post sends
-      do i=1, nConnDomains
-        tag = 30000 + (neighborDomains(i)%domainID-1)
-        call MPI_ISend(U, 1, neighborDomains(i)%p2DRsendType2, &
-            neighborDomains(i)%domainID-1, tag, comm, &
-            sendRqst(i), ierr);
-        if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-        endif
-      end do
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 9'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
     endif
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 10'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
@@ -449,71 +372,14 @@ module yowExchangeModule
 !/DEBUGEXCH     FLUSH(740+IAPROC)
   end subroutine
 
-  !> \overload exchange1Dreal
-  !> \note MPI recv tag: 40000 + MPI rank
-  !> \note MPI send tag: 40000 + neighbor MPI rank
-  subroutine PDLIB_exchange3Dreal(U)
-    use yowDatapool, only: comm, myrank, rkind
-    use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
-    use yowerr
-    use MPI
-    implicit none
-    real(kind=rkind), intent(inout) :: U(:,:,:)
-
-    integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
-
-
-    if(size(U,3) /= npa) then
-      CALL ABORT("sizeof(U,3) < npa")
-    endif
-
-    if((size(U,2) /= n2ndDim) ) then
-      CALL ABORT("sizeof(U,2) < n2ndDim")
-    endif
-
-    if((size(U,1) /= n3ndDim) ) then
-      CALL ABORT("sizeof(U,1) < n3ndDim")
-    endif
-
-    ! post receives
-    do i=1, nConnDomains
-      tag = 40000 + myrank
-      call MPI_IRecv(U, 1, neighborDomains(i)%p3DRrecvType, &
-          neighborDomains(i)%domainID-1, tag, comm, &
-          recvRqst(i), ierr)
-      if(ierr/=MPI_SUCCESS) then
-        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-      endif
-    enddo
-
-    ! post sends
-    do i=1, nConnDomains
-      tag = 40000 + (neighborDomains(i)%domainID-1)
-      call MPI_ISend(U, 1, neighborDomains(i)%p3DRsendType, &
-          neighborDomains(i)%domainID-1, tag, comm, &
-          sendRqst(i), ierr)
-      if(ierr/=MPI_SUCCESS) then
-        CALL PARALLEL_ABORT("MPI_ISend", ierr)
-      endif
-    end do
-
-    ! Wait for completion
-    call mpi_waitall(nConnDomains, recvRqst, recvStat,ierr)
-    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-    call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
-    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-  end subroutine
 
   !> set the size of the second and third dimension for exchange
   !> \note the size of the first dimension is npa
   !> \note call this before initPD()
-  subroutine setDimSize(second, third)
+  subroutine setDimSize(second)
     implicit none
-    integer, intent(in) :: second, third
+    integer, intent(in) :: second
     n2ndDim = second
-    n3ndDim = third
   end subroutine setDimSize
 
   subroutine finalizeExchangeModule()
