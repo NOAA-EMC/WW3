@@ -43,7 +43,7 @@ module yowExchangeModule
   private
   public :: initNbrDomains, createMPITypes, setDimSize
   public :: finalizeExchangeModule, PDLIB_exchange1Dreal
-  public :: PDLIB_exchange1Dint, PDLIB_exchange2Dreal
+  public :: PDLIB_exchange2Dreal
 
   !> Holds some data belong to a neighbor Domain
   type, public :: t_neighborDomain
@@ -72,8 +72,6 @@ module yowExchangeModule
     !> MPI datatypes for 1D exchange
     integer :: p1DRsendType = MPI_DATATYPE_NULL
     integer :: p1DRrecvType = MPI_DATATYPE_NULL
-    integer :: p1DIsendType = MPI_DATATYPE_NULL
-    integer :: p1DIrecvType = MPI_DATATYPE_NULL
     !> MPI datatypes for 2D exchange
     integer :: p2DRsendType1 = MPI_DATATYPE_NULL
     integer :: p2DRrecvType1 = MPI_DATATYPE_NULL
@@ -116,10 +114,6 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p1DRrecvType, ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
-    call mpi_type_free(this%p1DIsendType, ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
-    call mpi_type_free(this%p1DIrecvType, ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p2DRsendType1, ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p2DRrecvType1, ierr)
@@ -156,17 +150,6 @@ module yowExchangeModule
     call mpi_type_create_indexed_block(this%numNodesToReceive, 1, dsplRecv, rtype, this%p1DRrecvType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
     call mpi_type_commit(this%p1DRrecvType,ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-
-    ! p1D integer
-    call mpi_type_create_indexed_block(this%numNodesToSend, 1, dsplSend, itype, this%p1DIsendType,ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-    call mpi_type_commit(this%p1DIsendType,ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-
-    call mpi_type_create_indexed_block(this%numNodesToReceive, 1, dsplRecv, itype, this%p1DIrecvType,ierr)
-    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-    call mpi_type_commit(this%p1DIrecvType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
 
     ! p2D real
@@ -259,53 +242,6 @@ module yowExchangeModule
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
   end subroutine
 
-  !> \overload exchange1Dreal
-  !> \note MPI recv tag: 20000 + MPI rank
-  !> \note MPI send tag: 20000 + neighbor MPI rank
-  subroutine PDLIB_exchange1Dint(U)
-    use yowDatapool, only: comm, myrank
-    use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
-    use yowerr
-    use MPI
-    implicit none
-    integer, intent(inout) :: U(:)
-
-    integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
-
-    if(size(U) /= npa) then
-      CALL ABORT("sizeof(U) < npa")
-    endif
-
-    ! post receives
-    do i=1, nConnDomains
-      tag = 20000 + myrank
-      call MPI_IRecv(U, 1, neighborDomains(i)%p1DIrecvType, &
-             neighborDomains(i)%domainID-1, tag, comm, &
-             recvRqst(i), ierr)
-      if(ierr/=MPI_SUCCESS) then
-        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-      endif
-    enddo
-
-    ! post sends
-    do i=1, nConnDomains
-      tag = 20000 + (neighborDomains(i)%domainID-1)
-      call MPI_ISend(U, 1, neighborDomains(i)%p1DIsendType, &
-             neighborDomains(i)%domainID-1, tag, comm, &
-             sendRqst(i), ierr)
-      if(ierr/=MPI_SUCCESS) then
-        CALL PARALLEL_ABORT("MPI_ISend", ierr)
-      endif
-    end do
-
-    ! Wait for completion
-    call mpi_waitall(nConnDomains, recvRqst, recvStat,ierr)
-    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-    call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
-    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-  end subroutine
 
   !> \overload PDLIB_exchange1Dreal
   !> 
@@ -328,37 +264,32 @@ module yowExchangeModule
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 3'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
 
-    !> \todo do that better
-    if(size(U,1) == n2ndDim) then
-      ! post receives
+    ! post receives
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 4'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
-      do i=1, nConnDomains
-        tag = 30000 + myrank
-        call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType1, &
-               neighborDomains(i)%domainID-1, tag, comm, &
-               recvRqst(i), ierr)
-        if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-        endif
-      enddo
+    do i=1, nConnDomains
+      tag = 30000 + myrank
+      call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType1, &
+             neighborDomains(i)%domainID-1, tag, comm, &
+             recvRqst(i), ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
+    enddo
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 5'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
 
-      ! post sends
-      do i=1, nConnDomains
-        tag = 30000 + (neighborDomains(i)%domainID-1)
-        call MPI_ISend(U, 1, neighborDomains(i)%p2DRsendType1, &
-               neighborDomains(i)%domainID-1, tag, comm, &
-               sendRqst(i), ierr)
-        if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-        endif
-      end do
+    ! post sends
+    do i=1, nConnDomains
+      tag = 30000 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, 1, neighborDomains(i)%p2DRsendType1, &
+             neighborDomains(i)%domainID-1, tag, comm, &
+             sendRqst(i), ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_ISend", ierr)
+      endif
+    end do
 !/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 6'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
-    endif
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 10'
 !/DEBUGEXCH     FLUSH(740+IAPROC)
 
     ! Wait for completion
