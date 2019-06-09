@@ -1012,9 +1012,9 @@ module yowpdlibMain
   end subroutine exchangeGhostIds
 
   !> this collects all data which depends on ghost information
-  !> alter: ne, INE, x, y, z, ielg, iegl
+  !> alter: ne, INE, x, y, z, ielg
   subroutine postPartition2
-    use yowElementpool, only: ne, ne_global, INE, INE_global, belongto, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, INE_global, belongto, ielg
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
@@ -1090,23 +1090,16 @@ module yowpdlibMain
     endif
 
     ! create element local to global mapping ielg
-    ! and element global to local mapping iegl
     if(allocated(ielg)) deallocate(ielg)
     allocate(ielg(ne), stat=stat)
     if(stat/=0) call parallel_abort('ielg allocation failure')
     ielg = 0
-
-    if(allocated(iegl)) deallocate(iegl)
-    allocate(iegl(ne_global), stat=stat)
-    if(stat/=0) call parallel_abort('iegl allocation failure')
-    iegl = 0
 
     j = 0
     do i=1, ne_global
       if (belongto(INE_global(:,i))) then
         j = j +1
         ielg(j) = i
-        iegl(i) = j
       end if
     end do
 
@@ -1139,7 +1132,7 @@ module yowpdlibMain
 !*                                                                    *
 !**********************************************************************
   subroutine ComputeTRIA_IEN_SI_CCON
-    use yowElementpool, only: ne, ne_global, INE, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, ielg
     use yowExchangeModule, only : PDLIB_exchange1Dreal
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
@@ -1190,7 +1183,7 @@ module yowpdlibMain
 !*                                                                    *
 !**********************************************************************
   subroutine ComputeIA_JA_POSI_NNZ
-    use yowElementpool, only: ne, ne_global, INE, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, ielg
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa

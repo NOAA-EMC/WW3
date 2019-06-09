@@ -62,10 +62,6 @@ module yowElementpool
   !> ne long. give the global element id
   integer, public, target, allocatable :: ielg(:)
 
-  !> Element global to local mapping
-  !> ne_global long. give the local element id but only for this rank. local element id for other ranks are set to 0!
-  integer, public, allocatable :: iegl(:)
-
   contains
 
 
@@ -106,6 +102,5 @@ module yowElementpool
     if(allocated(INE))        deallocate(INE)
     if(allocated(INE_global)) deallocate(INE_global)
     if(allocated(ielg))       deallocate(ielg)
-    if(allocated(iegl))       deallocate(iegl)
   end subroutine
 end module yowElementpool
