@@ -207,7 +207,7 @@ module yowpdlibMain
   !> alter: np_global, nodes_global(), ne_global, elements(), INE_global
   subroutine assignMesh(MNP, XP, YP, DEP, MNE, INE)
     use yowNodepool,    only: nodes_global, np_global
-    use yowElementpool, only: ne_global, elements, INE_global
+    use yowElementpool, only: ne_global, INE_global
     use yowerr,       only: parallel_abort
     implicit none
     integer, intent(in) :: MNP, MNE
@@ -229,18 +229,10 @@ module yowpdlibMain
 
     ne_global=MNE
 
-    if(allocated(elements)) deallocate(elements)
-    allocate(elements(ne_global), stat=stat);
-    if(stat/=0) CALL ABORT('elements() allocate failure')
-
     if(allocated(INE_global)) deallocate(INE_global)
     allocate(INE_global(3, ne_global), stat=stat);
     if(stat/=0) CALL ABORT('INE_global allocate failure')
-
-    do i = 1, ne_global
-      elements(i)%node(:)=INE(:,i)
-      INE_global(:, i) = elements(i)%node(:)
-    end do
+    INE_global = INE
   end subroutine assignMesh
 
 
@@ -305,13 +297,13 @@ module yowpdlibMain
   subroutine findConnNodes
     use yowerr,       only: parallel_abort
     use yowNodepool,    only: np, np_global, nodes_global, nodes, maxConnNodes, t_Node, connNodes_data
-    use yowElementpool, only: ne_global, elements
+    use yowElementpool, only: ne_global, INE_global
     use yowSidepool,    only: ns, ns_global
-    use yowElementpool, only: ne_global, elements
     implicit none
 
     integer :: i, j, stat
     type(t_Node), pointer :: node
+    integer JPREV, JNEXT
 
     ! Loop over all nlements
     ! look at their nodes
@@ -326,7 +318,7 @@ module yowpdlibMain
     ! first loop
     do i = 1, ne_global
       do j = 1, 3
-        node => nodes_global(elements(i)%node(j))
+        node => nodes_global(INE_global(j,i))
         call node%insertConnNode()
         call node%insertConnNode()
       end do
@@ -343,23 +335,21 @@ module yowpdlibMain
 
     ! second loop
     do i = 1, ne_global
-  !     do j = 1, 3
-  !       node = nodes(elements(i)%node(j))
-  !       call node%insertConnNode( elements(i)%node( mod (j+1, 3)+1 ))
-  !       call node%insertConnNode( elements(i)%node( mod (j+2, 3)+1 ))
-  !     end do
-
-      node => nodes_global(elements(i)%node(1))
-      call node%insertConnNode( elements(i)%node(2))
-      call node%insertConnNode( elements(i)%node(3))
-
-      node => nodes_global(elements(i)%node(2))
-      call node%insertConnNode( elements(i)%node(3))
-      call node%insertConnNode( elements(i)%node(1))
-
-      node => nodes_global(elements(i)%node(3))
-      call node%insertConnNode( elements(i)%node(1))
-      call node%insertConnNode( elements(i)%node(2))
+      DO J=1,3
+        IF (J .eq. 3) THEN
+          JNEXT = 1
+        ELSE
+          JNEXT = J + 1
+        END IF
+        IF (J .eq. 1) THEN
+          JPREV = 3
+        ELSE
+          JPREV = J - 1
+        END IF
+        node => nodes_global(INE_global(J,i))
+        call node%insertConnNode(INE_global(JNEXT,i))
+        call node%insertConnNode(INE_global(JPREV,i))
+      END DO
 
     end do
 
@@ -389,7 +379,7 @@ module yowpdlibMain
     use yowDatapool, only: debugParmetis,debugPartition, nTasks, myrank, itype, comm
     use yowNodepool, only: np, npa, np_global, nodes, nodes_global, t_Node, np_perProcSum, np_perProc
     use yowSidepool, only: ns
-    use yowElementpool, only: ne, ne_global, elements
+    use yowElementpool, only: ne, ne_global
     use MPI
     implicit none
 
@@ -544,12 +534,6 @@ module yowpdlibMain
  ! write(1112+myrank,*) "Thread",myrank,"sum;vtxdist", sum(vtxdist), vtxdist
  ! write(1112+myrank,*) "Thread",myrank,"sum;xadj", sum(xadj), xadj
  ! write(1112+myrank,*) "Thread",myrank,"sum;adjncy", sum(adjncy), adjncy
-
-    do i=1, ne_global
-      if(elements(i)%getArea() < 0) then
-        write(*,*) "Thread", myrank, "global Element area <0", i
-      endif
-    end do
 
     CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 8")
 
@@ -1030,7 +1014,7 @@ module yowpdlibMain
   !> this collects all data which depends on ghost information
   !> alter: ne, INE, x, y, z, ielg, iegl
   subroutine postPartition2
-    use yowElementpool, only: ne, ne_global, elements, INE, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, INE_global, belongto, ielg, iegl
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
@@ -1046,9 +1030,8 @@ module yowpdlibMain
     ! step 1: calc the number of local elements
     ne = 0
     do i=1, ne_global
-      if(elements(i)%belongTo() .eqv. .true.) then
+      if (belongto(INE_global(:,i))) then
         ne = ne +1
-!         write(*,*) myrank, "ele global", i-1
       endif
     end do
 
@@ -1061,11 +1044,11 @@ module yowpdlibMain
     ne = 0
     do i=1, ne_global
       ! yes, this element belongs to this domain
-      if(elements(i)%belongTo() .eqv. .true.) then
+      if (belongto(INE_global(:,i))) then
         ne = ne + 1
         do j=1, 3
           assigned = .false.
-          node => nodes_global(elements(i)%node(j))
+          node => nodes_global(INE_global(j,i))
           if(node%domainID == myrank+1) then
             INE(j, ne) = node%id
             assigned = .true.
@@ -1120,7 +1103,7 @@ module yowpdlibMain
 
     j = 0
     do i=1, ne_global
-      if(elements(i)%belongTo() .eqv. .true.) then
+      if (belongto(INE_global(:,i))) then
         j = j +1
         ielg(j) = i
         iegl(i) = j
@@ -1156,7 +1139,7 @@ module yowpdlibMain
 !*                                                                    *
 !**********************************************************************
   subroutine ComputeTRIA_IEN_SI_CCON
-    use yowElementpool, only: ne, ne_global, elements, INE, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, ielg, iegl
     use yowExchangeModule, only : PDLIB_exchange1Dreal
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
@@ -1207,7 +1190,7 @@ module yowpdlibMain
 !*                                                                    *
 !**********************************************************************
   subroutine ComputeIA_JA_POSI_NNZ
-    use yowElementpool, only: ne, ne_global, elements, INE, ielg, iegl
+    use yowElementpool, only: ne, ne_global, INE, ielg, iegl
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
