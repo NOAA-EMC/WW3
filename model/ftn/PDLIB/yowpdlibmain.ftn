@@ -225,12 +225,9 @@ module yowpdlibMain
     if(stat/=0) CALL ABORT('xyz(,3) allocate failure')
 
     do i=1, np_global
-      nodes_global(i)%x => xyz(1,i)
-      nodes_global(i)%y => xyz(2,i)
-      nodes_global(i)%z => xyz(3,i)
-      xyz(1,i)=XP(I)
-      xyz(2,i)=YP(I)
-      xyz(3,i)=DEP(I)
+      nodes_global(i)%x = XP(i)
+      nodes_global(i)%y = YP(i)
+      nodes_global(i)%z = DEP(i)
       nodes_global(i)%id_global = i
     end do
 

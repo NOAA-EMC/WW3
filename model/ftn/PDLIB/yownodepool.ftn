@@ -54,11 +54,11 @@ module yowNodepool
     integer :: id_global = 0
 
     !> X Coordiante
-    real(rkind), pointer :: x=>null()
+    real(rkind) :: x = 0.0
     !> Y Coordiante
-    real(rkind), pointer :: y=>null()
+    real(rkind) :: y = 0.0
     !> Z Coordiante
-    real(rkind), pointer :: z=>null()
+    real(rkind) :: z = 0.0
 
     !> number of connected nodes.
     !> holds the number of neighbors conntected to this node.
