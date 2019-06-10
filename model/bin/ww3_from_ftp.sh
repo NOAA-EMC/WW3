@@ -23,7 +23,7 @@ wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/ww3_from_ftp.v6.07.tar.gz
 tar -xvzf ww3_from_ftp.v6.07.tar.gz
 
 #Move regtest info from data_regtests to regtests:
-echo -e "Moving data from data_regtests to regtests"  
+echo -e "Moving data from data_regtests to regtets"  
 cp -r data_regtests/ww3_tp2.15/input/*.nc  regtests/ww3_tp2.15/input/
 cp -r data_regtests/ww3_tp2.13/*.png       regtests/ww3_tp2.13/
 cp -r data_regtests/ww3_tic1.4/input/*.nc  regtests/ww3_tic1.4/input/
@@ -53,7 +53,7 @@ else
   echo -e ' Not deleting tar file.' 
 fi
 
-echo -e "\n\n Files were copied from the data_regtests to the regstets folder."
+echo -e "\n\n Files were copied from the data_regtests to the regtets folder."
 echo -e "Do you want to delete the data_regtests folder? [y|n]: "
 read wnew2
 if [ "${wnew2}" = "Y" ] || [ "${wnew2}" = "y" ]
