@@ -78,8 +78,8 @@
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
   
-#  opt="-c $list -O3 -assume byterecl -fPIC -module $path_m"
-  opt="-c $list -O3 -assume byterecl -ip -module $path_m"
+  opt="-c $list -O3 -assume byterecl -fPIC -module $path_m"
+#  opt="-c $list -O3 -assume byterecl -ip -module $path_m"
 # opt="-c $list -O3 -assume byterecl -xSSE4.2 -ip  -module $path_m"
 # opt="-c $list -O3 -assume byterecl -prec-div -prec-sqrt -xHost -align array128byte -ip  -module $path_m"
 # opt="-c $list -O0 -assume byterecl -g -traceback -check all -fpe0 -ftrapuv -module $path_m"

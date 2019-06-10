@@ -174,7 +174,7 @@
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
     cdf_programs="$cdf_programs libww3"
-#    cdf_programs="$cdf_programs libww3.so"
+    cdf_programs="$cdf_programs libww3.so"
     if [ $ESMFMKFILE ]
     then
       cdf_programs="$cdf_programs ww3_multi_esmf"
@@ -183,7 +183,7 @@
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
     reg_programs="$reg_programs libww3"
-#    reg_programs="$reg_programs libww3.so"    
+    reg_programs="$reg_programs libww3.so"    
     if [ $ESMFMKFILE ]
     then
       reg_programs="$reg_programs ww3_multi_esmf"
@@ -666,9 +666,9 @@ EOF
       elif [ "$prog" = "libww3" ]
       then
         target="$prog"
-#      elif [ "$prog" = "libww3.so" ]
-#      then
-#        target="$prog"
+      elif [ "$prog" = "libww3.so" ]
+      then
+        target="$prog"
       else
         target="$aPe/$prog"
       fi
