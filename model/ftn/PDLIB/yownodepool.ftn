@@ -53,13 +53,6 @@ module yowNodepool
     !> the global node number
     integer :: id_global = 0
 
-    !> X Coordiante
-    real(rkind) :: x = 0.0
-    !> Y Coordiante
-    real(rkind) :: y = 0.0
-    !> Z Coordiante
-    real(rkind) :: z = 0.0
-
     !> number of connected nodes.
     !> holds the number of neighbors conntected to this node.
     !> to get the connected nodes, iterate over the connNodes() Array
