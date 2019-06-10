@@ -132,7 +132,7 @@
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_uprstr"
   reg_programs="$reg_programs libww3"
-  reg_programs="$reg_programs libww3.so"
+#  reg_programs="$reg_programs libww3.so"
 
 # PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
