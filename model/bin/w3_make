@@ -224,7 +224,7 @@
   then
     reg_programs="$reg_programs libww3.so"
   else
-    echo 'Shared Object will not be created'
+    echo 'Shared Object     : No'
   fi
 
   # if no progs in argument
