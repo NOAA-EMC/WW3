@@ -174,7 +174,6 @@
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
     cdf_programs="$cdf_programs libww3"
-    cdf_programs="$cdf_programs libww3.so"
     if [ $ESMFMKFILE ]
     then
       cdf_programs="$cdf_programs ww3_multi_esmf"
@@ -183,7 +182,6 @@
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
     reg_programs="$reg_programs libww3"
-    reg_programs="$reg_programs libww3.so"    
     if [ $ESMFMKFILE ]
     then
       reg_programs="$reg_programs ww3_multi_esmf"
@@ -220,6 +218,13 @@
     cdf_programs="$cdf_programs ww3_shel"
   else
     reg_programs="$reg_programs ww3_shel"
+  fi
+
+  if [ -n "`grep -nri fPIC $comp_file`" ]
+  then
+    reg_programs="$reg_programs libww3.so"
+  else
+    echo 'Shared Object will not be created'
   fi
 
   # if no progs in argument
