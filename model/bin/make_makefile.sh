@@ -856,7 +856,6 @@
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
   progs="$progs ww3_multi_esmf  ww3_uprstr"
   progs="$progs libww3"
-  progs="$progs libww3.so"
 
   for prog in $progs
   do
@@ -1065,13 +1064,6 @@
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
-     libww3.so) IDstring='Object file archive'
-               core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
-               data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop="$pr"
-             source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
-                 IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;  
      ww3_uprstr) IDstring='Update Restart File' 
               core= 
 	          data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
@@ -1091,7 +1083,7 @@
       filesl="$data $core $prop $source $IO $aux"
     # if program name is libww3, then
     # the target is compile and create archive
-    elif [ "$prog" = "libww3" ] ||  [ "$prog" = "libww3.so" ]
+    elif [ "$prog" = "libww3" ]
     then
       d_string="$prog"' : $(aPo)/'
       files="$aux $core $data $prop $source $IO"
@@ -1136,19 +1128,6 @@
       done
       echo "	@cd \$(aPo); $ar_cmd $lib $objs" >> makefile
       echo ' '                                   >> makefile
-    # if program name is libww3.so, then
-    # the target is compile and create archive
-    elif [ "$prog" = "libww3.so" ]
-    then
-      lib=$prog
-      objs=""
-      for file in $filesl
-      do
-        objs="$objs $file.o"
-      done
-      echo "	@cd \$(aPo); ld -o $lib -shared $objs" >> makefile
-      echo ' '                                   >> makefile
-      
     else
       echo '	@$(aPb)/link '"$filesl"          >> makefile
       echo ' '                                   >> makefile
