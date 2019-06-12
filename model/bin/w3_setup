@@ -416,7 +416,7 @@ then
        [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "gnu_so" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
+       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
        [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -442,7 +442,7 @@ then
        [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "gnu_so" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
+       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
        [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
