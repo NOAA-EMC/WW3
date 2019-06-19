@@ -412,9 +412,11 @@ then
        [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
        [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
        [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
+       [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
+       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
        [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -422,7 +424,7 @@ then
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ] ; then
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" $path_b/comp.tmpl > $path_b/comp
-    echo "      sed $path_b/comp.tmpl => $path_b/comp"
+     echo "      sed $path_b/comp.tmpl => $path_b/comp"
   else
     errmsg "$path_b/comp.$cmplr not found"
     exit 1
@@ -436,9 +438,11 @@ then
        [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
        [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
        [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
+       [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
+       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
        [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -453,7 +457,6 @@ then
   fi
   chmod 775 $path_b/comp $path_b/link
 fi
-
 # 3.d Setup switch file
 if [ $swtch ]
 then
