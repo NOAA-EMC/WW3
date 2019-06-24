@@ -303,7 +303,19 @@
   fi
 
   rm -f $path_o/$name.o
-  rm -f *.mod
+  ## Chris B: Dont delete *.mod - could clobber files in parallel make
+  ## Need to delete specific mod file that could be upper/lower/mixed case!
+#  rm -f *.mod ## too indiscriminate
+
+  ## Using find -iname most succinct, but maybe not all version of find have
+  ## the -iname option? 
+#  find . -iname "${name}.mod" -delete  # not all versions of find have -iname?
+
+  # Fall back on grep -i 
+  mods=`ls *.mod | grep -i "${name}.mod 2> /dev/null"`
+  if [ -n ${mods} ]; then
+    rm -f ${mods}
+  fi 
 
 # --------------------------------------------------------------------------- #
 # 3. Compile source code f / f90                                              #
@@ -380,7 +392,17 @@ then
       rm -f $name.o
     else
       mv $name.o $path_o/.
-      mods=`ls *.mod 2> /dev/null`
+      ## ChrisB: Don't move all module files...could break parallel make.
+      ## Just target specific module file (could be mixed case filename
+      ## depending on compiler - use case insensitive find):
+#      mods=`ls *.mod 2> /dev/null` 
+
+      ## Using find -iname most succinct, but maybe not all version of find have
+      ## the -iname option? 
+#      mods=`find . -iname "${name}.mod"` # not all versions of find have -iname?
+
+      # Fall back on grep -i 
+      mods=`ls *.mod | grep -i "${name}.mod 2> /dev/null"`
       if [ -n "$mods" ]
       then
         for mod in $mods
