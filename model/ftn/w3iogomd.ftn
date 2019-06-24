@@ -401,7 +401,7 @@
              IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
                                FLG2D(IFI,IFJ)=.TRUE.
           ENDDO
-          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
+          IF (NDSEN .GT. 0 .AND. IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
          ENDIF
         END DO
 !
