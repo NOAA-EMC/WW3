@@ -1965,9 +1965,9 @@
    echo ' ' >> matrix.body
    if [ "$dist" = 'y' ]
    then 
-     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -s MPI -w work_ug_MPI -i input_ug $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_ug_MPI -i input_ug -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
    else 
      echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
      echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
