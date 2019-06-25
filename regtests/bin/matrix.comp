@@ -19,9 +19,21 @@
 # 1. Set up
 # 1.a Computer/ user dependent set up
 
+  if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+  then     
+    printf "\n ERROR ABORTING \n"
+    printf "\n matrix.comp requires 3 arguments: "
+    printf "   1: test type (eg, all or test-name), 2: base directory and 3: reference directory. \n"
+    printf "\n Usage:"
+    printf "    ./bin/matrix.comp all basedir compdir \n\n"
+    exit
+  fi
+
+  ctest=$1
+  base_dir=$2
+  comp_dir=$3
   home_dir=`pwd`
-  base_dir='.'
-  comp_dir='../../EMC_ww3_master/regtests'
+
   rm -rf $home_dir/output
   rm -f $home_dir/matrixDiff.out
 
@@ -58,18 +70,12 @@
   echo '**********************************************************************' >> $home_dir/fulldiff.tmp
 
 
-  if [ "$#" != '1' ] ; then
-    echo "usage: matrix.comp test"
-    echo "       test can be 'all'" ; exit 1 ; fi
-
-  test=$1
-
-  if [ "$test" = 'all' ] ; then
-    test=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? mww3_test_0?` ; fi
+  if [ "$ctest" = 'all' ] ; then
+    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? mww3_test_0?` ; fi
   echo "base directory : $base_dir" >> $home_dir/header.tmp
   echo "comp directory : $comp_dir" >> $home_dir/header.tmp
   echo "test(s)        : "          >> $home_dir/header.tmp
-  echo $test                        >> $home_dir/header.tmp
+  echo $ctest                        >> $home_dir/header.tmp
   echo " "                          >> $home_dir/header.tmp
 
   cat $home_dir/header.tmp
@@ -84,7 +90,7 @@
 # 2.  Looping over tests                                                      #
 # --------------------------------------------------------------------------- #
 
-  for tst in $test
+  for tst in $ctest
   do
     cd $home_dir ; cd $base_dir
     if [ ! -d $tst ]

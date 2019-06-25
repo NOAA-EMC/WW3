@@ -40,7 +40,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:Sw:"  #option string for getopt function
+optstr="a:b:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:STw:"  #option string for getopt function
 usage ()
 {
 
@@ -54,6 +54,7 @@ Options:
   -a ww3_env       : use WW3 environment setup file <ww3_env>
                    :   *default is <source_dir>/bin/wwatch3.env
                    :   *file will be created if it does not already exist
+  -b batchq        : optional setting to determine batch queue type (for slurm now)
   -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
                    :   OASIS : OASIS3-mct ww3_shel coupled application
@@ -97,6 +98,7 @@ Options:
                      tests not executed if file is found.
   -t nthrd         : Threading option. (this is system dependant and can be used
                    : only for the hybrid option)
+  -T               : Run w3_make under time command to create compile-time metric
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
 EOF
@@ -107,6 +109,10 @@ EOF
 # 2. Preparations                                                             #
 # --------------------------------------------------------------------------- #
 
+echo ' '
+echo " Running now options: run_test $*"
+echo ' '
+
 # 2.a Setup array of command-line arguments
 args=`getopt $optstr $*`
 if [ $? != 0 ]
@@ -115,6 +121,8 @@ then
   exit 1
 fi
 set -- $args
+
+ARGS=$args
 
 # 2.b Process command-line options
 exit_p=none
@@ -129,6 +137,7 @@ while :
 do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
+  -b) shift; batchq="$1" ;;
   -c) shift; cmplr="$1" ;;
   -C) shift; coupl="$1" ;;
   -d) use_gdb=1 ;;
@@ -155,6 +164,7 @@ do
   -s) shift; swtstr="$1" ;;
   -S) stub=1 ;;
   -t) shift; nthrd="$1" ;;
+  -T) time_count=1 ;;
   -w) shift; wrkdir="$1" ;;
   --) break ;;
   esac
@@ -276,6 +286,7 @@ then
 else
   file_c="$path_i/switch"
 fi
+
 if [ ! -f $file_c ]
 then
   errmsg "switch file $file_c not found"
@@ -387,6 +398,12 @@ fi
 #  $path_b/w3_setup $path_s -s $file_c -q
 #fi
 
+# 2.m Initialize time counter if time_count option
+if [ $time_count ]
+then # Add time counter if -T
+  cumult_comp=0
+  cumult_run=0
+fi
 
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #
@@ -403,6 +420,11 @@ then
     \rm -f *.inp *.out *.txt $ncfiles finished
     \ls *.ww3  2>/dev/null | grep -v 'restart.ww3' | grep -v 'nest.ww3' | grep -v 'wind.ww3' | grep -v 'ice.ww3' | grep -v 'ice1.ww3' | xargs \rm 2>/dev/null
   fi
+fi
+
+if [ $time_count ]
+then # Add time counter if -T
+  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
 fi
 
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
@@ -464,11 +486,25 @@ then
     cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
     rm $path_b/switch_noST
   fi
+
+  if [ $time_count ]
+  then # Add time counter if -T
+    Tstart=`date +"%s.%2N"`
+  fi
+
   if $path_b/w3_make $prog
   then :
   else
     errmsg "Error occured during WW3 $prog build"
     exit 1
+  fi
+
+  if [ $time_count ]
+  then # Add time counter if -T
+    Tend=`date +"%s.%2N"`
+    Maketime=`echo "$Tend - $Tstart" | bc`
+    cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
   fi
 
   for g in $all_grids
@@ -521,6 +557,11 @@ then
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
 
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
@@ -536,6 +577,14 @@ then
     else
       errmsg "Error occured during $path_e/$prog execution"
       exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      cumult_run=`echo "$Maketime + $cumult_run" | bc`
+      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
 
   done
@@ -554,100 +603,128 @@ if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+  fi
 
-if [ $? = 0 ]
-then
+  if [ $? = 0 ]
+  then
 
-  echo ' '
-  echo '+--------------------+'
-  echo '| Initial conditions |'
-  echo '+--------------------+'
-  echo ' '
+    echo ' '
+    echo '+--------------------+'
+    echo '| Initial conditions |'
+    echo '+--------------------+'
+    echo ' '
 
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'| \
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
 
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $model_grids
-  do
-
-    if [ $multi -eq 2 ]
-    then
-      gu="_$g"
-    fi
-
-    # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-    then
-      \rm -f $prog.nml
-      \ln -s $ifile $prog.nml
-      ofile="$path_w/`basename $ifile .nml`${gu}.out"
     else
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      \cp -f $file_c $path_b/switch
+    fi
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
     fi
 
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
-    if [ $multi -eq 2 ]
-    then
-      \rm -f mod_def.ww3
-      \ln -s mod_def.$g mod_def.ww3
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
     fi
-    if $path_e/$prog > $ofile
-    then
-      \rm -f $prog.inp
-      \rm -f $prog.nml
-      if [ $multi -eq 2 ]
-      then
-        mv restart.ww3 restart.$g
-        \rm -f mod_def.ww3
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-        then
-          mv $prog.nml.log ${prog}_$g.nml.log
-        fi
-      fi
+
+    if $path_b/w3_make $prog
+    then :
     else
-      errmsg "Error occured during $path_e/$prog execution"
+      errmsg "Error occured during WW3 $prog build"
       exit 1
     fi
 
-  done
-
-fi
-
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+  
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+  
+    for g in $model_grids
+    do
+  
+      if [ $multi -eq 2 ]
+      then
+        gu="_$g"
+      fi
+  
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+        ofile="$path_w/`basename $ifile .nml`${gu}.out"
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+        ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      fi
+  
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+  
+      if [ $multi -eq 2 ]
+      then
+        \rm -f mod_def.ww3
+        \ln -s mod_def.$g mod_def.ww3
+      fi
+  
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
+      fi
+  
+      if $path_e/$prog > $ofile
+      then
+        \rm -f $prog.inp
+        \rm -f $prog.nml
+        if [ $multi -eq 2 ]
+        then
+          mv restart.ww3 restart.$g
+          \rm -f mod_def.ww3
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+  
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        cumult_run=`echo "$Maketime + $cumult_run" | bc`
+        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      fi
+  
+    done
+  
+  fi
+  
 fi
 
 if [ $exit_p = $prog ]
@@ -655,104 +732,132 @@ then
   exit
 fi
 
-# 3.d boundary conditions -------------------------------------------------- #
+# 3.d.1 boundary conditions -------------------------------------------------- #
 
 prog=ww3_bound
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+  fi
 
-if [ $? = 0 ]
-then
+  if [ $? = 0 ]
+  then
+  
+    echo ' '
+    echo '+---------------------+'
+    echo '| Boundary conditions |'
+    echo '+---------------------+'
+    echo ' '
 
-  echo ' '
-  echo '+---------------------+'
-  echo '| Boundary conditions |'
-  echo '+---------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'| \
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $model_grids
-  do
-    if [ $multi -eq 2 ]
-    then
-      gu="_$g"
-    fi
-
-    # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-    then
-      \rm -f $prog.nml
-      \ln -s $ifile $prog.nml
-      ofile="$path_w/`basename $ifile .nml`${gu}.out"
     else
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      \cp -f $file_c $path_b/switch
     fi
-
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
-    if [ $multi -eq 2 ]
-    then
-      \rm -f mod_def.ww3
-      \ln -s mod_def.$g mod_def.ww3
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
     fi
-    if $path_e/$prog > $ofile
-    then
-      \rm -f $prog.inp
-      \rm -f $prog.nml
-      if [ $multi -eq 2 ]
-      then
-        mv nest.ww3 nest.$g
-        \rm -f mod_def.ww3
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-        then
-          mv $prog.nml.log ${prog}_$g.nml.log
-        fi
-      fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+  
+    if $path_b/w3_make $prog
+    then :
     else
-      errmsg "Error occured during $path_e/$prog execution"
+      errmsg "Error occured during WW3 $prog build"
       exit 1
     fi
-
-  done
-
-fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+  
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+  
+    for g in $model_grids
+    do
+      if [ $multi -eq 2 ]
+      then
+        gu="_$g"
+      fi
+  
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+        ofile="$path_w/`basename $ifile .nml`${gu}.out"
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+        ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      fi
+  
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+  
+      if [ $multi -eq 2 ]
+      then
+        \rm -f mod_def.ww3
+        \ln -s mod_def.$g mod_def.ww3
+      fi
+      
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
+      fi
+  
+      if $path_e/$prog > $ofile
+      then
+        \rm -f $prog.inp
+        \rm -f $prog.nml
+        if [ $multi -eq 2 ]
+        then
+          mv nest.ww3 nest.$g
+          \rm -f mod_def.ww3
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+  
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        cumult_run=`echo "$Maketime + $cumult_run" | bc`
+        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      fi
+  
+    done
+  
+  fi
 
 fi
 
@@ -761,104 +866,132 @@ then
   exit
 fi
 
-# 3.d boundary conditions -------------------------------------------------- #
+# 3.d.2 boundary conditions -------------------------------------------------- #
 
 prog=ww3_bounc
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-fi
-
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+---------------------+'
-  echo '| Boundary conditions |'
-  echo '+---------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
   then
-    errmsg "$path_e/$prog not found"
-    exit 1
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
   fi
-
-  for g in $model_grids
-  do
-    if [ $multi -eq 2 ]
-    then
-      gu="_$g"
-    fi
-
-    # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-    then
-      \rm -f $prog.nml
-      \ln -s $ifile $prog.nml
-      ofile="$path_w/`basename $ifile .nml`${gu}.out"
+  
+  if [ $? = 0 ]
+  then
+  
+    echo ' '
+    echo '+---------------------+'
+    echo '| Boundary conditions |'
+    echo '+---------------------+'
+    echo ' '
+  
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'| \
+                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
     else
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      \cp -f $file_c $path_b/switch
+    fi
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
+    fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
     fi
 
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
-    if [ $multi -eq 2 ]
-    then
-      \rm -f mod_def.ww3
-      \ln -s mod_def.$g mod_def.ww3
-    fi
-    if $path_e/$prog > $ofile
-    then
-      \rm -f $prog.inp
-      \rm -f $prog.nml
-      if [ $multi -eq 2 ]
-      then
-        mv nest.ww3 nest.$g
-        \rm -f mod_def.ww3
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-        then
-          mv $prog.nml.log ${prog}_$g.nml.log
-        fi
-      fi
+    if $path_b/w3_make $prog
+    then :
     else
-      errmsg "Error occured during $path_e/$prog execution"
+      errmsg "Error occured during WW3 $prog build"
       exit 1
     fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
 
-  done
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+  
+    for g in $model_grids
+    do
+      if [ $multi -eq 2 ]
+      then
+        gu="_$g"
+      fi
+  
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+        ofile="$path_w/`basename $ifile .nml`${gu}.out"
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+        ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      fi
+  
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+  
+      if [ $multi -eq 2 ]
+      then
+        \rm -f mod_def.ww3
+        \ln -s mod_def.$g mod_def.ww3
+      fi
+  
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
+      fi
 
-fi
+      if $path_e/$prog > $ofile
+      then
+        \rm -f $prog.inp
+        \rm -f $prog.nml
+        if [ $multi -eq 2 ]
+        then
+          mv nest.ww3 nest.$g
+          \rm -f mod_def.ww3
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            mv $prog.nml.log ${prog}_$g.nml.log
+          fi
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+  
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        cumult_run=`echo "$Maketime + $cumult_run" | bc`
+        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      fi
+  
+    done
+  
+  fi
 
 fi
 
@@ -867,111 +1000,139 @@ then
   exit
 fi
 
-# 3.e Prep forcing fields --------------------------------------------------- #
+# 3.e.1 Prep forcing fields --------------------------------------------------- #
 
 prog=ww3_prep
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
-then
-  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
-else
-  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-fi
-
-if [ $? = 0 ]
-then
-  echo ' '
-  echo '+---------------------+'
-  echo '| Prep forcing fields |'
-  echo '+---------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
   then
-    errmsg "$path_e/$prog not found"
-    exit 1
+    inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+  else
+    inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
   fi
 
-  for g in $input_grids
-  do
+  if [ $? = 0 ]
+  then
+    echo ' '
+    echo '+---------------------+'
+    echo '| Prep forcing fields |'
+    echo '+---------------------+'
+    echo ' '
 
-    if [ $multi -eq 2 ]
-    then
-      gu="_$g"
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'| \
+                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+    else
+      \cp -f $file_c $path_b/switch
+    fi
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
     fi
 
-    for ifile in $inputs
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+
+    for g in $input_grids
     do
-
-      # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-      then
-        \rm -f $prog.nml
-        \ln -s $ifile $prog.nml
-        otype="`basename $ifile .nml | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .nml`.out"
-      else
-        \rm -f $prog.inp
-        \ln -s $ifile $prog.inp
-        otype="`basename $ifile .inp | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .inp`.out"
-      fi
-
-      echo "   Processing $ifile for $otype"
-      echo "   Screen output routed to $ofile"
-
+  
       if [ $multi -eq 2 ]
       then
-        \rm -f mod_def.ww3
-        \ln -s mod_def.$g mod_def.ww3
+        gu="_$g"
       fi
-      if $path_e/$prog > $ofile
-      then
-        \rm -f $prog.inp
-        \rm -f $prog.nml
+  
+      for ifile in $inputs
+      do
+
+# link conf file
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          \rm -f $prog.nml
+          \ln -s $ifile $prog.nml
+          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .nml`.out"
+        else
+          \rm -f $prog.inp
+          \ln -s $ifile $prog.inp
+          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .inp`.out"
+        fi
+
+        echo "   Processing $ifile for $otype"
+        echo "   Screen output routed to $ofile"
+
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
-          mv $otype.ww3 $otype.$g
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-          then
-            mv $prog.nml.log ${prog}_$g.nml.log
-          fi
+          \ln -s mod_def.$g mod_def.ww3
         fi
-      else
-        errmsg "Error occured during $path_e/$prog execution"
-        exit 1
-      fi
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $path_e/$prog > $ofile
+        then
+          \rm -f $prog.inp
+          \rm -f $prog.nml
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            mv $otype.ww3 $otype.$g
+            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            then
+              mv $prog.nml.log ${prog}_$g.nml.log
+            fi
+          fi
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+  
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tend=`date +"%s.%2N"`
+          Maketime=`echo "$Tend - $Tstart" | bc`
+          cumult_run=`echo "$Maketime + $cumult_run" | bc`
+          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        fi
+
+      done
 
     done
 
-  done
-
-fi
+  fi
 
 fi
 
@@ -980,111 +1141,139 @@ then
   exit
 fi
 
-# 3.e Prep forcing fields --------------------------------------------------- #
+# 3.e.2 Prep forcing fields --------------------------------------------------- #
 
 prog=ww3_prnc
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
-then
-  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
-else
-  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-fi
-
-if [ $? = 0 ]
-then
-  echo ' '
-  echo '+-------------------------------+'
-  echo '| Prep of NetCDF forcing fields |'
-  echo '+-------------------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
   then
-    errmsg "$path_e/$prog not found"
-    exit 1
+    inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+  else
+    inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
   fi
 
-  for g in $input_grids
-  do
+  if [ $? = 0 ]
+  then
+    echo ' '
+    echo '+-------------------------------+'
+    echo '| Prep of NetCDF forcing fields |'
+    echo '+-------------------------------+'
+    echo ' '
 
-    if [ $multi -eq 2 ]
-    then
-      gu="_$g"
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'| \
+                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+    else
+      \cp -f $file_c $path_b/switch
+    fi
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
+    fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
     fi
 
-    for ifile in $inputs
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+  
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+
+    for g in $input_grids
     do
-
-      # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-      then
-        \rm -f $prog.nml
-        \ln -s $ifile $prog.nml
-        otype="`basename $ifile .nml | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .nml`.out"
-      else
-        \rm -f $prog.inp
-        \ln -s $ifile $prog.inp
-        otype="`basename $ifile .inp | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .inp`.out"
-      fi
-
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
 
       if [ $multi -eq 2 ]
       then
-        \rm -f mod_def.ww3
-        \ln -s mod_def.$g mod_def.ww3
+        gu="_$g"
       fi
-      if $path_e/$prog > $ofile
-      then
-        \rm -f $prog.inp
-        \rm -f $prog.nml
+
+      for ifile in $inputs
+      do
+
+# link conf file
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          \rm -f $prog.nml
+          \ln -s $ifile $prog.nml
+          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .nml`.out"
+        else
+          \rm -f $prog.inp
+          \ln -s $ifile $prog.inp
+          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .inp`.out"
+        fi
+  
+        echo "   Processing $ifile"
+        echo "   Screen output routed to $ofile"
+  
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
-          mv $otype.ww3 $otype.$g
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-          then
-            mv $prog.nml.log ${prog}_$g.nml.log
-          fi
+          \ln -s mod_def.$g mod_def.ww3
         fi
-      else
-        errmsg "Error occured during $path_e/$prog execution"
-        exit 1
-      fi
+  
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $path_e/$prog > $ofile
+        then
+          \rm -f $prog.inp
+          \rm -f $prog.nml
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            mv $otype.ww3 $otype.$g
+            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            then
+              mv $prog.nml.log ${prog}_$g.nml.log
+            fi
+          fi
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tend=`date +"%s.%2N"`
+          Maketime=`echo "$Tend - $Tstart" | bc`
+          cumult_run=`echo "$Maketime + $cumult_run" | bc`
+          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        fi
+
+      done
 
     done
 
-  done
-
-fi
+  fi
 
 fi
 
@@ -1113,171 +1302,204 @@ else
   prog=ww3_shel
   prgb=ww3_shel
 fi
+
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # track file - multigrid option (ge 1)
-if [ $multi -ge 1 ]
-then
-  for g in $all_grids
-  do
-    ifile="`ls $path_i/track_i.$g 2>/dev/null`"
+  if [ $multi -ge 1 ]
+  then
+    for g in $all_grids
+    do
+      ifile="`ls $path_i/track_i.$g 2>/dev/null`"
+      if [ $? = 0 ]
+      then
+        \rm -f track_i.$g
+        \ln -s $ifile
+      fi
+    done
+  else
+    ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
     if [ $? = 0 ]
     then
-      \rm -f track_i.$g
+      \rm -f track_i.ww3
       \ln -s $ifile
     fi
-  done
-else
-  ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
+  fi
+  
+# config filename - gridset option (eq 2)
+  if [ $multi -eq 2 ]
+  then
+    fileconf="${prog}_${grdset}"
+  else
+    fileconf="${prog}"
+  fi
+  
+# select inp/nml files
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+  fi
+  
+  
   if [ $? = 0 ]
   then
-    \rm -f track_i.ww3
-    \ln -s $ifile
-  fi
-fi
-
-# config filename - gridset option (eq 2)
-if [ $multi -eq 2 ]
-then
-  fileconf="${prog}_${grdset}"
-else
-  fileconf="${prog}"
-fi
-
-# select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
-fi
-
-
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo '|    Main program    |'
-  echo '+--------------------+'
-  echo ' '
-
-  \cp -f $file_c $path_b/switch
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prgb
-  then :
-  else
-    errmsg "Error occured during WW3 $prgb build"
-    exit 1
-  fi
-  if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
-  then
-    if [ $cmplr ]
-    then
-      export WW3_COMP=$cmplr
+  
+    echo ' '
+    echo '+--------------------+'
+    echo '|    Main program    |'
+    echo '+--------------------+'
+    echo ' '
+  
+    \cp -f $file_c $path_b/switch
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
     fi
-    if make -C $path_s/esmf $prgb
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+  
+    if $path_b/w3_make $prgb
     then :
     else
-      errmsg "Error occured during WW3 ESMF build"
+      errmsg "Error occured during WW3 $prgb build"
       exit 1
     fi
-  fi
-
-  if [ ! -f $path_e/$prgb ]
-  then
-    errmsg "$path_e/$prgb not found"
-    exit 1
-  fi
-
-  ofile="$path_w/$prog.out"
-
-  # link conf file
-  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-  then
-    \rm -f $prog.nml
-    \ln -s $ifile $prog.nml
-  else
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
-  fi
-
-  if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
-  then
-    \rm -f PET*.ESMF_LogFile
-    \rm -f ww3_esmf.rc
-    \cp -f ${path_i}/ww3_esmf.rc ww3_esmf.rc
-    if [ ! -z "`echo ${ifile} | grep -o nml`" ]
-    then
-      echo "WAV_input_file_name: $prog.nml" >> ww3_esmf.rc
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
     fi
-    if [ $nproc ]
+  
+    if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
     then
-      echo "pet_count: $nproc" >> ww3_esmf.rc
-    else
-      echo "pet_count: 1" >> ww3_esmf.rc
-    fi
-  fi
-
-  echo "   Processing $ifile"
-  echo "   Screen output copied to $ofile"
-  if [ $pmpi ]
-  then
-    if [ $nproc ]
-    then
-      runcmd="$runcmd -np $nproc"
-    fi
-    if [ $nthrd ]
-    then
-      if ( which omplace ) ; then
-        runcmd="$runcmd omplace -nt $nthrd"
+      if [ $cmplr ]
+      then
+        export WW3_COMP=$cmplr
+      fi
+      if make -C $path_s/esmf $prgb
+      then :
       else
-        runcmd="$runcmd /usr/bin/env OMP_NUM_THREADS=$nthrd"
+        errmsg "Error occured during WW3 ESMF build"
+        exit 1
       fi
     fi
-  fi
-  if [ $pomp ]
-  then
-    if [ $nproc ]
+  
+    if [ ! -f $path_e/$prgb ]
     then
-      export OMP_NUM_THREADS=$nproc
-    fi
-  fi
-
-  if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
-  then
-    halfnproc=$(($nproc / 2))
-    if $runcmd1 -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
-    then
-      \rm -f track_i.ww3
-      \rm -f $prog.inp
-    else
-      errmsg "Error occured during $path_e/$prog execution"
+      errmsg "$path_e/$prgb not found"
       exit 1
     fi
-  else
-    if $runcmd $path_e/$prgb | tee $ofile
+  
+    ofile="$path_w/$prog.out"
+  
+# link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
     then
-      \rm -f track_i.ww3
-      \rm -f $prog.inp
       \rm -f $prog.nml
-      for file_p in ${files_p}
-      do
-        \rm -f ${file_p}
-      done
+      \ln -s $ifile $prog.nml
     else
-      errmsg "Error occured during $path_e/$prog execution"
-      exit 1
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+  
+    if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
+    then
+      \rm -f PET*.ESMF_LogFile
+      \rm -f ww3_esmf.rc
+      \cp -f ${path_i}/ww3_esmf.rc ww3_esmf.rc
+      if [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        echo "WAV_input_file_name: $prog.nml" >> ww3_esmf.rc
+      fi
+      if [ $nproc ]
+      then
+        echo "pet_count: $nproc" >> ww3_esmf.rc
+      else
+        echo "pet_count: 1" >> ww3_esmf.rc
+      fi
+    fi
+  
+    echo "   Processing $ifile"
+    echo "   Screen output copied to $ofile"
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then 
+          runcmd="$runcmd -n $nproc"
+        
+        else
+          runcmd="$runcmd -np $nproc"
+        fi
+      fi
+      if [ $nthrd ]
+      then
+        if ( which omplace ) ; then
+          runcmd="$runcmd omplace -nt $nthrd"
+        else
+          runcmd="$runcmd /usr/bin/env OMP_NUM_THREADS=$nthrd"
+        fi
+      fi
+    fi
+    if [ $pomp ]
+    then
+      if [ $nproc ]
+      then
+        export OMP_NUM_THREADS=$nproc
+      fi
+    fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+  
+    if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
+    then
+      halfnproc=$(($nproc / 2))
+      if $runcmd1 -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      then
+        \rm -f track_i.ww3
+        \rm -f $prog.inp
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+    else
+      if $runcmd $path_e/$prgb | tee $ofile
+      then
+        \rm -f track_i.ww3
+        \rm -f $prog.inp
+        \rm -f $prog.nml
+        for file_p in ${files_p}
+        do
+          \rm -f ${file_p}
+        done
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+    fi
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      cumult_run=`echo "$Maketime + $cumult_run" | bc`
+      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
   fi
-fi
-
 fi
 
 if [ $exit_p = $prog ]
@@ -1292,85 +1514,111 @@ if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # config filename - gridset option (eq 2)
-if [ $multi -eq 2 ]
-then
-  fileconf="${prog}_${grdset}"
-else
-  fileconf="${prog}"
-fi
+  if [ $multi -eq 2 ]
+  then
+    fileconf="${prog}_${grdset}"
+  else
+    fileconf="${prog}"
+  fi
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
-fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+  fi
 
 
-if [ $? = 0 ]
-then
+  if [ $? = 0 ]
+  then
 
-  echo ' '
-  echo '+-------------------------+'
-  echo '|    Integrated output    |'
-  echo '+-------------------------+'
-  echo ' '
+    echo ' '
+    echo '+-------------------------+'
+    echo '|    Integrated output    |'
+    echo '+-------------------------+'
+    echo ' '
 
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+    if [ $force_shrd ]
+    then # build pre- & post-processing programs with SHRD only
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'| \
                   sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
+    else
+      \cp -f $file_c $path_b/switch
+    fi
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
+    fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
 
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
 
-  # link conf file
-  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-  then
-    \rm -f $prog.nml
-    \ln -s $ifile $prog.nml
-    ofile="$path_w/`basename $ifile .nml`.out"
-  else
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
-    ofile="$path_w/`basename $ifile .inp`.out"
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+
+# link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`.out"
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`.out"
+    fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output copied to $ofile"
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+
+    if $path_e/$prog > $ofile
+    then
+      \rm -f $prog.inp
+      \rm -f $prog.nml
+      for g in $intgl_grids
+      do
+        if [ -f "out_grd.$g" ]
+        then
+          model_grids="$model_grids $g"
+        fi
+      done
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      cumult_run=`echo "$Maketime + $cumult_run" | bc`
+      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+    fi
+
   fi
-
-  echo "   Processing $ifile"
-  echo "   Screen output copied to $ofile"
-
-  if $path_e/$prog > $ofile
-  then
-    \rm -f $prog.inp
-    \rm -f $prog.nml
-    for g in $intgl_grids
-    do
-      if [ -f "out_grd.$g" ]
-      then
-        model_grids="$model_grids $g"
-      fi
-    done
-  else
-    errmsg "Error occured during $path_e/$prog execution"
-    exit 1
-  fi
-
-fi
 
 fi
 
@@ -1402,169 +1650,197 @@ fi
 for prog in $out_progs
 do
 
-rline='|   Gridded output   |'
-if [ $prog = ww3_ounf ]
-then
-  rline='| NC Gridded output  |'
-fi
-if [ $prog = gx_outf ]
-then
-  rline='|GrADS Gridded output|'
-fi
+  rline='|   Gridded output   |'
+  if [ $prog = ww3_ounf ]
+  then
+    rline='| NC Gridded output  |'
+  fi
+  if [ $prog = gx_outf ]
+  then
+    rline='|GrADS Gridded output|'
+  fi
 
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
+  if [ $exec_p = $prog -o $exec_p = "none" ]
+  then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
-then
-  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
-else
-  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-fi
-
-
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo "$rline"
-  echo '+--------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $model_grids
-  do
-
-    if [ $multi -eq 2 ]
+    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
     then
-      if [ ! -e out_grd.$g ]
-      then
-        continue
-      fi
-      gu="_$g"
+      inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+    else
+      inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
     fi
 
-    for ifile in $inputs
-    do
 
-      # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-      then
-        \rm -f $prog.nml
-        \ln -s $ifile $prog.nml
-        otype="`basename $ifile .nml | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .nml`${gu}.out"
+    if [ $? = 0 ]
+    then
+
+      echo ' '
+      echo '+--------------------+'
+      echo "$rline"
+      echo '+--------------------+'
+      echo ' '
+    
+      if [ $force_shrd ]
+      then # build pre- & post-processing programs with SHRD only
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'| \
+                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
       else
-        \rm -f $prog.inp
-        \ln -s $ifile $prog.inp
-        otype="`basename $ifile .inp | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .inp`${gu}.out"
+        \cp -f $file_c $path_b/switch
+      fi
+      if [ $testST ]
+      then #add S T switches 
+        \cp -f $path_b/switch $path_b/switch_noST
+        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        rm $path_b/switch_noST
+      fi
+    
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
       fi
 
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-
-      if [ $multi -eq 2 ]
-      then
-        \rm -f mod_def.ww3
-        \rm -f out_grd.ww3
-        \ln -s mod_def.$g mod_def.ww3
-        \ln -s out_grd.$g out_grd.ww3
-        \rm -f ww3.????????.*
-        \rm -fr ${otype}_$g
-      fi
-      if $path_e/$prog > $ofile
-      then
-        \rm -f $prog.inp
-        \rm -f $prog.nml
-        if [ $multi -eq 2 ]
-        then
-          \rm -f mod_def.ww3
-          \rm -f out_grd.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-          then
-            mv $prog.nml.log ${prog}_$g.nml.log
-          fi
-          ofiles="`ls ww3.????????.* 2>/dev/null`"
-          if [ $? = 0 ]
-          then
-            mkdir ${otype}_$g
-            mv -f $ofiles ${otype}_$g/.
-            echo "   ASCII output files moved to ${otype}_$g"
-          fi
-          ofiles="`ls ww3.????*.nc 2>/dev/null`"
-          if [ $? = 0 ]
-          then
-            mkdir ${otype}_$g
-            mv -f $ofiles ${otype}_$g/.
-            echo "   NetCDF output files moved to ${otype}_$g"
-          fi
-#
-          if [ "$prog" = 'gx_outf' ]
-          then
-            case $g in
-              'grd2' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
-                            -e "s/37\.5/3\.75/g" \
-                            -e "s/1\.50/0\.15/g" \
-                                                  ww3.ctl > $g.ctl ;;
-              'grd3' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
-                            -e "s/12\.5/1\.25/g" \
-                            -e "s/0\.50/0\.05/g" \
-                                                  ww3.ctl > $g.ctl ;;
-                *    )  sed -e "s/ww3\.grads/ww3\.$g/g" \
-                            -e "s/0\.25/2\.50/g" ww3.ctl > $g.ctl ;;
-            esac
-            rm -f ww3.ctl
-            echo "   ww3.ctl moved to $g.ctl"
-            mv ww3.grads ww3.$g
-            echo "   ww3.grads moved to ww3.$g"
-          fi
-        fi
+      if $path_b/w3_make $prog
+      then :
       else
-        errmsg "Error occured during $path_e/$prog execution"
+        errmsg "Error occured during WW3 $prog build"
+        exit 1
+      fi
+    
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+        cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+      fi
+
+      if [ ! -f $path_e/$prog ]
+      then
+        errmsg "$path_e/$prog not found"
         exit 1
       fi
 
-    done
+      for g in $model_grids
+      do
 
-  done
+        if [ $multi -eq 2 ]
+        then
+          if [ ! -e out_grd.$g ]
+          then
+            continue
+          fi
+          gu="_$g"
+        fi
 
-fi
+        for ifile in $inputs
+        do
 
-fi
+# link conf file
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            \rm -f $prog.nml
+            \ln -s $ifile $prog.nml
+            otype="`basename $ifile .nml | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .nml`${gu}.out"
+          else
+            \rm -f $prog.inp
+            \ln -s $ifile $prog.inp
+            otype="`basename $ifile .inp | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .inp`${gu}.out"
+          fi
 
-if [ $exit_p = $prog ]
-then
-  exit
-fi
+          echo "   Processing $ifile"
+          echo "   Screen output routed to $ofile"
+    
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            \rm -f out_grd.ww3
+            \ln -s mod_def.$g mod_def.ww3
+            \ln -s out_grd.$g out_grd.ww3
+            \rm -f ww3.????????.*
+            \rm -fr ${otype}_$g
+          fi
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+    
+        if $path_e/$prog > $ofile
+          then
+            \rm -f $prog.inp
+            \rm -f $prog.nml
+            if [ $multi -eq 2 ]
+            then
+              \rm -f mod_def.ww3
+              \rm -f out_grd.ww3
+              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              then
+                mv $prog.nml.log ${prog}_$g.nml.log
+              fi
+              ofiles="`ls ww3.????????.* 2>/dev/null`"
+              if [ $? = 0 ]
+              then
+                mkdir ${otype}_$g
+                mv -f $ofiles ${otype}_$g/.
+                echo "   ASCII output files moved to ${otype}_$g"
+              fi
+              ofiles="`ls ww3.????*.nc 2>/dev/null`"
+              if [ $? = 0 ]
+              then
+                mkdir ${otype}_$g
+                mv -f $ofiles ${otype}_$g/.
+                echo "   NetCDF output files moved to ${otype}_$g"
+              fi
+#
+              if [ "$prog" = 'gx_outf' ]
+              then
+                case $g in
+                  'grd2' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                                -e "s/37\.5/3\.75/g" \
+                                -e "s/1\.50/0\.15/g" \
+                                                      ww3.ctl > $g.ctl ;;
+                  'grd3' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                                -e "s/12\.5/1\.25/g" \
+                                -e "s/0\.50/0\.05/g" \
+                                                      ww3.ctl > $g.ctl ;;
+                    *    )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                                -e "s/0\.25/2\.50/g" ww3.ctl > $g.ctl ;;
+                esac
+                rm -f ww3.ctl
+                echo "   ww3.ctl moved to $g.ctl"
+                mv ww3.grads ww3.$g
+                echo "   ww3.grads moved to ww3.$g"
+              fi
+            fi
+          else
+            errmsg "Error occured during $path_e/$prog execution"
+            exit 1
+          fi
+
+          if [ $time_count ]
+          then # Add time counter if -T
+            Tend=`date +"%s.%2N"`
+            Maketime=`echo "$Tend - $Tstart" | bc`
+            cumult_run=`echo "$Maketime + $cumult_run" | bc`
+            printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          fi
+
+        done
+
+      done
+
+    fi
+
+  fi
+
+  if [ $exit_p = $prog ]
+  then
+    exit
+  fi
 
 done # end of loop on progs
 
@@ -1593,129 +1869,156 @@ fi
 for prog in $out_progs
 do
 
-rline='|    Point output    |'
-if [ $prog = ww3_ounp ]
-then
-  rline='| NC Point output    |'
-fi
+  rline='|    Point output    |'
+  if [ $prog = ww3_ounp ]
+  then
+    rline='| NC Point output    |'
+  fi
 
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
+  if [ $exec_p = $prog -o $exec_p = "none" ]
+  then
 
 # select inp/nml format for input file to program $prog
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
-then
-  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
-else
-  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-fi
-
-
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo "$rline"
-  echo '+--------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $point_grids
-  do
-
-    if [ $multi -eq 2 ]
+    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
     then
-      if [ ! -e out_pnt.$g ]
-      then
-        continue
-      fi
-      gu="_$g"
+      inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+    else
+      inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
     fi
 
-    for ifile in $inputs
-    do
+    if [ $? = 0 ]
+    then
 
-      # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-      then
-        \rm -f $prog.nml
-        \ln -s $ifile $prog.nml
-        otype="`basename $ifile .nml | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .nml`${gu}.out"
+      echo ' '
+      echo '+--------------------+'
+      echo "$rline"
+      echo '+--------------------+'
+      echo ' '
+
+      if [ $force_shrd ]
+      then # build pre- & post-processing programs with SHRD only
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'| \
+                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
       else
-        \rm -f $prog.inp
-        \ln -s $ifile $prog.inp
-        otype="`basename $ifile .inp | sed s/^${prog}_//`"
-        ofile="$path_w/`basename $ifile .inp`${gu}.out"
+        \cp -f $file_c $path_b/switch
+      fi
+      if [ $testST ]
+      then #add S T switches 
+        \cp -f $path_b/switch $path_b/switch_noST
+        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        rm $path_b/switch_noST
       fi
 
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-
-      if [ $multi -eq 2 ]
-      then
-        \rm -f mod_def.ww3
-        \rm -f out_pnt.ww3
-        \ln -s mod_def.$g mod_def.ww3
-        \ln -s out_pnt.$g out_pnt.ww3
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
       fi
-      if $path_e/$prog > $ofile
-      then
-        \rm -f $prog.inp
-        \rm -f $prog.nml
-        if [ $multi -eq 2 ]
-        then
-          \rm -f mod_def.ww3
-          \rm -f out_pnt.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-          then
-            mv $prog.nml.log ${prog}_$g.nml.log
-          fi
-        fi
+
+      if $path_b/w3_make $prog
+      then :
       else
-        errmsg "Error occured during $path_e/$prog execution"
+        errmsg "Error occured during WW3 $prog build"
         exit 1
       fi
 
-    done
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+        cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+      fi
+    
+      if [ ! -f $path_e/$prog ]
+      then
+        errmsg "$path_e/$prog not found"
+        exit 1
+      fi
 
-  done
+      for g in $point_grids
+      do
 
-fi
+        if [ $multi -eq 2 ]
+        then
+          if [ ! -e out_pnt.$g ]
+          then
+            continue
+          fi
+          gu="_$g"
+        fi
 
-fi
+        for ifile in $inputs
+        do
+    
+          # link conf file
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            \rm -f $prog.nml
+            \ln -s $ifile $prog.nml
+            otype="`basename $ifile .nml | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .nml`${gu}.out"
+          else
+            \rm -f $prog.inp
+            \ln -s $ifile $prog.inp
+            otype="`basename $ifile .inp | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .inp`${gu}.out"
+          fi
 
-if [ $exit_p = $prog ]
-then
-  exit
-fi
+          echo "   Processing $ifile"
+          echo "   Screen output routed to $ofile"
+    
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            \rm -f out_pnt.ww3
+            \ln -s mod_def.$g mod_def.ww3
+            \ln -s out_pnt.$g out_pnt.ww3
+          fi
+
+          if [ $time_count ]
+          then # Add time counter if -T
+            Tstart=`date +"%s.%2N"`
+          fi
+
+          if $path_e/$prog > $ofile
+          then
+            \rm -f $prog.inp
+            \rm -f $prog.nml
+            if [ $multi -eq 2 ]
+            then
+              \rm -f mod_def.ww3
+              \rm -f out_pnt.ww3
+              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              then
+                mv $prog.nml.log ${prog}_$g.nml.log
+              fi
+            fi
+          else
+            errmsg "Error occured during $path_e/$prog execution"
+            exit 1
+          fi
+
+          if [ $time_count ]
+          then # Add time counter if -T
+            Tend=`date +"%s.%2N"`
+            Maketime=`echo "$Tend - $Tstart" | bc`
+            cumult_run=`echo "$Maketime + $cumult_run" | bc`
+            printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          fi
+
+        done
+
+      done
+
+    fi
+
+  fi
+
+  if [ $exit_p = $prog ]
+  then
+    exit
+  fi
 
 done # end of loop on progs
 
@@ -1731,138 +2034,166 @@ esac
 for prog in $out_progs
 do
 
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
+  if [ $exec_p = $prog -o $exec_p = "none" ]
+  then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
-then
-  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
-else
-  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-fi
-
-
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo '|    Track output    |'
-  echo '+--------------------+'
-  echo ' '
-
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $point_grids
-  do
-
-    if [ $multi -eq 2 ]
+    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
     then
-      if [ ! -e track_o.$g ]
-      then
-        continue
+      inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+    else
+      inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+    fi
+
+
+    if [ $? = 0 ]
+    then
+
+      echo ' '
+      echo '+--------------------+'
+      echo '|    Track output    |'
+      echo '+--------------------+'
+      echo ' '
+
+      if [ $force_shrd ]
+      then # build pre- & post-processing programs with SHRD only
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'| \
+                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      else
+        \cp -f $file_c $path_b/switch
       fi
-      gu="_$g"
-      fileconf="$prog${gu}"
-    else
-      fileconf="$prog"
-    fi
+      if [ $testST ]
+      then #add S T switches 
+        \cp -f $path_b/switch $path_b/switch_noST
+        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        rm $path_b/switch_noST
+      fi
 
-    # select inp/nml files
-    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
-    then
-      ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
-    else
-      ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
-    fi
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tstart=`date +"%s.%2N"`
+      fi
 
-    if [ ! -f $ifile ]
-    then
-      errmsg "$ifile not found"
-      exit 1
-    fi
+      if $path_b/w3_make $prog
+      then :
+      else
+        errmsg "Error occured during WW3 $prog build"
+        exit 1
+      fi
 
-    # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-    then
-      \rm -f $prog.nml
-      \ln -s $ifile $prog.nml
-      otype="`basename $ifile .nml | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .nml`.out"
-    else
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`.out"
-    fi
+      if [ $time_count ]
+      then # Add time counter if -T
+        Tend=`date +"%s.%2N"`
+        Maketime=`echo "$Tend - $Tstart" | bc`
+        printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+        cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+      fi
 
-    echo "   Processing $ifile"
-    echo "   Screen output routed to $ofile"
-
-    if [ $multi -eq 2 ]
-    then
-      \rm -f track_o.ww3
-      \ln -s track_o.$g track_o.ww3
-    fi
-    if $path_e/$prog > $ofile
-    then
-      \rm -f $prog.inp
-      \rm -f $prog.nml
-      if [ $multi -eq 2 ]
+      if [ ! -f $path_e/$prog ]
       then
-        \rm -f track_o.ww3
+        errmsg "$path_e/$prog not found"
+        exit 1
+      fi
+    
+      for g in $point_grids
+      do
+    
+        if [ $multi -eq 2 ]
+        then
+          if [ ! -e track_o.$g ]
+          then
+            continue
+          fi
+          gu="_$g"
+          fileconf="$prog${gu}"
+        else
+          fileconf="$prog"
+        fi
+  
+# select inp/nml files
+        if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+        then
+          ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+        else
+          ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+        fi
+
+        if [ ! -f $ifile ]
+        then
+          errmsg "$ifile not found"
+          exit 1
+        fi
+
+# link conf file
         if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
         then
-          mv $prog.nml.log ${prog}_$g.nml.log
+          \rm -f $prog.nml
+          \ln -s $ifile $prog.nml
+          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .nml`.out"
+        else
+          \rm -f $prog.inp
+          \ln -s $ifile $prog.inp
+          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .inp`.out"
         fi
-        if [ -e track.ww3 ]
+    
+        echo "   Processing $ifile"
+        echo "   Screen output routed to $ofile"
+
+        if [ $multi -eq 2 ]
         then
-          mv track.ww3 track.$g
-        elif [ -e track.nc ]
+          \rm -f track_o.ww3
+          \ln -s track_o.$g track_o.ww3
+        fi
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $path_e/$prog > $ofile
         then
-          mv track.nc track_$g.nc
-        fi        
-      fi
-    else
-      errmsg "Error occured during $path_e/$prog execution"
-      exit 1
+          \rm -f $prog.inp
+          \rm -f $prog.nml
+          if [ $multi -eq 2 ]
+          then
+            \rm -f track_o.ww3
+            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            then
+              mv $prog.nml.log ${prog}_$g.nml.log
+            fi
+            if [ -e track.ww3 ]
+            then
+              mv track.ww3 track.$g
+            elif [ -e track.nc ]
+            then
+              mv track.nc track_$g.nc
+            fi        
+          fi
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tend=`date +"%s.%2N"`
+          Maketime=`echo "$Tend - $Tstart" | bc`
+          cumult_run=`echo "$Maketime + $cumult_run" | bc`
+          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        fi
+      done
+
     fi
-  done
 
-fi
+  fi
 
-fi
-
-if [ $exit_p = $prog ]
-then
-  exit
-fi
+  if [ $exit_p = $prog ]
+  then
+    exit
+  fi
 
 done # end of loop on progs
 
@@ -1873,24 +2204,24 @@ if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
 # select inp/nml files
-if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-then
-  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+  fi
 
 
-if [ $? = 0 ]
-then
+  if [ $? = 0 ]
+  then
 
-  echo ' '
-  echo '+-------------------------+'
-  echo '|  Wave system tracking   |'
-  echo '+-------------------------+'
-  echo ' '
+    echo ' '
+    echo '+-------------------------+'
+    echo '|  Wave system tracking   |'
+    echo '+-------------------------+'
+    echo ' '
 
-    \cp -f $file_c $path_b/switch
+      \cp -f $file_c $path_b/switch
 #  if [ $force_shrd ]
 #  then # build pre- & post-processing programs with SHRD only
 #    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
@@ -1899,50 +2230,86 @@ then
 #  else
 #    \cp -f $file_c $path_b/switch
 #  fi  
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-
-  # link conf file
-  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-  then
-    \rm -f $prog.nml
-    \ln -s $ifile $prog.nml
-    ofile="$path_w/`basename $ifile .nml`.out"
-  else
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
-    ofile="$path_w/`basename $ifile .inp`.out"
-  fi
-
-  echo "   Processing $ifile"
-  echo "   Screen output copied to $ofile"
-
-  if [ $pmpi ]
-  then
-    if [ $nproc ]
-    then
-      runcmd="$runcmd -np $nproc"
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
+      rm $path_b/switch_noST
     fi
-  fi
-  if $runcmd $path_e/$prog | tee $ofile
-  then
-    \rm -f $prog.inp
-    \rm -f $prog.nml
-  else
-    errmsg "Error occured during $path_e/$prog execution"
-    exit 1
-  fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+
+
+# link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`.out"
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`.out"
+    fi
+
+    echo "   Processing $ifile"
+    echo "   Screen output copied to $ofile"
+
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then
+          runcmd="$runcmd -n $nproc"
+  
+        else
+          runcmd="$runcmd -np $nproc"
+        fi
+      fi
+    fi
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+    if $runcmd $path_e/$prog | tee $ofile
+    then
+      \rm -f $prog.inp
+      \rm -f $prog.nml
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      cumult_run=`echo "$Maketime + $cumult_run" | bc`
+      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+    fi
+#  if [ $time_count ]
+#  then # Add time counter if -T
+#    Tstart=`date +"%s.%2N"`
+#  fi
+#
 #  if $path_e/$prog > $ofile
 #  then
 #    \rm -f $prog.inp
@@ -1957,8 +2324,16 @@ then
 #    errmsg "Error occured during $path_e/$prog execution"
 #    exit 1
 #  fi
+#
+#   if [ $time_count ]
+#   then # Add time counter if -T
+#     Tend=`date +"%s.%2N"`
+#     Maketime=`echo "$Tend - $Tstart" | bc`
+#     cumult_run=`echo "$Maketime + $cumult_run" | bc`
+#     printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+#   fi
 
-fi
+  fi
 
 fi
 
@@ -1983,68 +2358,99 @@ then
   ifile="`ls $path_i/$prog.inp 2>/dev/null`"
 #fi
 
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+-------------------------+'
-  echo '|   Update Restart File   |'
-  echo '+-------------------------+'
-  echo ' '
-
-  \cp -f $file_c $path_b/switch
-  if [ $testST ]
-  then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  # link conf file
-  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  if [ $? = 0 ]
   then
-    \rm -f $prog.nml
-    \ln -s $ifile $prog.nml
-    ofile="$path_w/`basename $ifile .nml`.out"
-  else
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
-    ofile="$path_w/`basename $ifile .inp`.out"
-  fi
 
-  echo "   Processing $ifile"
-  echo "   Screen output copied to $ofile"
+    echo ' '
+    echo '+-------------------------+'
+    echo '|   Update Restart File   |'
+    echo '+-------------------------+'
+    echo ' '
   
-# Additional Files
-   \rm -f anl.grbtxt
-   \ln -s "$path_i/anl.grbtxt" anl.grbtxt
-   
-  mv -f restart001.ww3 restart.ww3
-  
-  if [ $pmpi ]
-  then
-    if [ $nproc ]
-    then
-      runcmd="$runcmd -np $nproc"
+    \cp -f $file_c $path_b/switch
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
     fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+  
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
+  
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+  
+# link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+      ofile="$path_w/`basename $ifile .nml`.out"
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+      ofile="$path_w/`basename $ifile .inp`.out"
+    fi
+  
+    echo "   Processing $ifile"
+    echo "   Screen output copied to $ofile"
+    
+# Additional Files
+     \rm -f anl.grbtxt
+     \ln -s "$path_i/anl.grbtxt" anl.grbtxt
+     
+     mv -f restart001.ww3 restart.ww3
+    
+     if [ $pmpi ]
+     then
+       if [ $nproc ]
+       then
+         if [ $batchq = "slurm" ]
+         then
+           runcmd="$runcmd -n $nproc"
+         else
+           runcmd="$runcmd -np $nproc"
+         fi
+       fi
+     fi
+     if [ $time_count ]
+     then # Add time counter if -T
+       Tstart=`date +"%s.%2N"`
+     fi
+  
+     if $runcmd $path_e/$prog | tee $ofile
+     then
+       \rm -f $prog.inp
+       \rm -f $prog.nml
+     else
+       errmsg "Error occured during $path_e/$prog execution"
+       exit 1
+     fi
+     if [ $time_count ]
+     then # Add time counter if -T
+       Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      cumult_run=`echo "$Maketime + $cumult_run" | bc`
+      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+    fi
+  
   fi
-  if $runcmd $path_e/$prog | tee $ofile
-  then
-    \rm -f $prog.inp
-    \rm -f $prog.nml
-  else
-    errmsg "Error occured during $path_e/$prog execution"
-    exit 1
-  fi
-
-fi
-
+  
 fi
 
 if [ $exit_p = $prog ]
@@ -2052,13 +2458,18 @@ then
   exit
 fi
 
-
-
 # 3.k End ------------------------------------------------------------------- #
 
 if [ "$stub" ]
 then
   date > finished
+fi
+
+if [ $time_count ]
+then # Export cumultive time if time_count  
+  printf "\n\n Total compile time: %8.2f sec" $cumult_comp >> time_count.txt
+  printf "\n Total run time    : %8.2f sec" $cumult_run >> time_count.txt
+  printf "\n" >> time_count.txt
 fi
 
 echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
