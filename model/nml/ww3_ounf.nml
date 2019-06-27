@@ -23,7 +23,7 @@
 !     FIELD%TIMESTART            = '19000101 000000'  ! Stop date for the output field
 !     FIELD%TIMESTRIDE           = '0'                ! Time stride for the output field
 !     FIELD%TIMECOUNT            = '1000000000'       ! Number of time steps
-!     FIELD%TIMESPLIT            = 6                  ! [4(yearly),6(monthly),8(daily),10(hourly)]
+!     FIELD%TIMESPLIT            = 6                  ! [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 !     FIELD%LIST                 = 'unset'            ! List of output fields
 !     FIELD%PARTITION            = '0 1 2 3'          ! List of wave partitions ['0 1 2 3 4 5']
 !     FIELD%SAMEFILE             = T                  ! All the variables in the same file
