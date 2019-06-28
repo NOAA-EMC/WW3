@@ -409,18 +409,15 @@ then
     cp -f $path_b/comp.$cmplr $path_b/comp
     echo "      copy $path_b/comp.$cmplr => $path_b/comp"
   elif [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
-       [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
        [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
        [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
-       [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
-       [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
+       [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
+       [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
-       [ "$cmplr" == "zeus_pgi" ] || [ "$cmplr" == "zeus_pgi_debug" ]               || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ] ; then
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" $path_b/comp.tmpl > $path_b/comp
@@ -435,18 +432,15 @@ then
     cp -f $path_b/link.$cmplr $path_b/link
     echo "      copy $path_b/link.$cmplr => $path_b/link"
   elif [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
-       [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
        [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
        [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
-       [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "so_gnu" ] || [ "$cmplr" == "so_gnu_debug" ]                   || \
-       [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
+       [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
+       [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
-       [ "$cmplr" == "zeus_pgi" ] || [ "$cmplr" == "zeus_pgi_debug" ]               || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ] ; then
      source $path_b/cmplr.env
      sed -e "s/<optl>/$optl/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" $path_b/link.tmpl > $path_b/link
