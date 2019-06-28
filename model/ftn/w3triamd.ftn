@@ -666,7 +666,10 @@ CONTAINS
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
            !write(*,*) 'TEST1', IX, TMPSTA(1,IX), CCON(IX), COUNTCON(IX), ZBIN(1,IX), ZLIM
-           IF (IX.NE.0) THEN  ! There was a bug in the mesh conversion, OUTSIDE_BOUNDARY(IBC) should not be zero 
+
+           ! OUTSIDE_BOUNDARY(IBC) is defined over the full nodes NODES indexes
+           ! whereas TMPSTA and ZBIN are defined over the clean up list of nodes NX
+           IF ((IX.NE.0).AND.(IX.LE.NX)) THEN
              IF ((TMPSTA(1,IX).EQ.1).AND.(STATUS(IX).EQ.0)  &
                .AND.(ZBIN(1,IX).LT.ZLIM))  TMPSTA(1,IX)=2  
             END IF       
