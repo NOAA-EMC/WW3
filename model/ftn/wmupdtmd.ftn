@@ -21,6 +21,8 @@
 !/                  (T. J. Campbell, NRL)
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1122,7 +1124,8 @@
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
                           GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
-                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
+                          HPFAC, HQFAC
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1155,7 +1158,7 @@
                                  MAP3(NX,NY), FLAGUP
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
-      REAL, POINTER           :: X0I, Y0I, SXI, SYI
+      REAL, POINTER           :: X0I, Y0I, SXI, SYI, HPFACI, HQFACI
       INTEGER, POINTER        :: ICLOSE
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
@@ -1166,12 +1169,7 @@
 !/S      CALL STRACE (IENT, 'WMUPDV')
 !
 
-      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
-           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
-          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
-          CALL EXTCDE ( 999 )
-      ELSE IF ( GRIDS(IMOD)%GTYPE .EQ. UNGTYPE .OR. &
+      IF ( GRIDS(IMOD)%GTYPE .EQ. UNGTYPE .OR. &
                 GRIDS(JMOD)%GTYPE .EQ. UNGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
           'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
@@ -1184,6 +1182,8 @@
       Y0I    => GRIDS(JMOD)%Y0
       SXI    => GRIDS(JMOD)%SX
       SYI    => GRIDS(JMOD)%SY
+      HPFACI => GRIDS(JMOD)%HPFAC
+      HQFACI => GRIDS(JMOD)%HQFAC
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
@@ -1205,7 +1205,6 @@
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
-
       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
@@ -1261,9 +1260,18 @@
 !
 ! 2.  General case --------------------------------------------------- /
 !
-! 2.a Interpolation / averaging data for X axis
+! 2.a Curvilinear grids
 !
-      IF ( SX/SXI .LT. 1.0001 ) THEN
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+
+      ELSE
+!
+! 2.b Rectilinear grids
+!
+! 2.b.1 Interpolation / averaging data for X axis
+!
+        IF ( SX/SXI .LT. 1.0001 ) THEN
           MXA    = 2
         ELSE
           MXA    = 2 + INT(SX/SXI)
@@ -1273,47 +1281,47 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-      NXA    = 0
-      RXA    = 0.
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
 !
-      IF ( MXA .EQ. 2 ) THEN
+        IF ( MXA .EQ. 2 ) THEN
 !
           DO IX=1, NX
             IF ( FLAGLL ) THEN
-                XR     = 1. + MOD       &
+              XR     = 1. + MOD       &
                          ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
-              ELSE
-                XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-              END IF
+            ELSE
+              XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
+            END IF
             IF ( XR.GT.0. ) THEN
-                J1     = INT(XR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , XR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
-                    J1 = 1 + MOD(J1-1,NXI)
-                    J2 = 1 + MOD(J2-1,NXI)
-                  END IF
-                IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
-                    NXA(IX,0) = NXA(IX,0) + 1
-                    NXA(IX,NXA(IX,0)) = J1
-                    RXA(IX,NXA(IX,0)) = R1
-                  END IF
-                IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
-                    NXA(IX,0) = NXA(IX,0) + 1
-                    NXA(IX,NXA(IX,0)) = J2
-                    RXA(IX,NXA(IX,0)) = R2
-                  END IF
-                IF ( NXA(IX,0)  .GT. 0 ) THEN
-                    RT     = SUM ( RXA(IX,:) )
-                    IF ( RT .LT. 0.7 ) THEN
-                        NXA(IX,:) = 0
-                        RXA(IX,:) = 0.
-                      END IF
-                  END IF
+              J1     = INT(XR)
+              J2     = J1 + 1
+              R2     = MAX ( 0. , XR-REAL(J1) )
+              R1     = 1. - R2
+              IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
+                J1 = 1 + MOD(J1-1,NXI)
+                J2 = 1 + MOD(J2-1,NXI)
               END IF
-            END DO
+              IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = J1
+                RXA(IX,NXA(IX,0)) = R1
+              END IF
+              IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = J2
+                RXA(IX,NXA(IX,0)) = R2
+              END IF
+              IF ( NXA(IX,0)  .GT. 0 ) THEN
+                RT     = SUM ( RXA(IX,:) )
+                IF ( RT .LT. 0.7 ) THEN
+                  NXA(IX,:) = 0
+                  RXA(IX,:) = 0.
+                END IF
+              END IF
+            END IF
+          END DO
 !
         ELSE
 !
@@ -1322,45 +1330,45 @@
             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
             IF ( FLAGLL ) THEN
-                IXC    = 1 + NINT ( MOD (                             &
-                            1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-                IXS0   = IXC - 1 - MXA/2
-                IXSN   = IXC + 1 + MXA/2
-              ELSE
-                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-              END IF
+              IXC    = 1 + NINT ( MOD (                             &
+                          1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
+              IXS0   = IXC - 1 - MXA/2
+              IXSN   = IXC + 1 + MXA/2
+            ELSE
+              IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+              IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+              IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+            END IF
             DO J=IXS0, IXSN
-               JJ=J
+              JJ=J
               IF ( FLAGLL ) THEN
-                  IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
-                  IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-                  IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-                  IF ( IXC .NE. 0 ) THEN
-                      XFL    = XFL - REAL(IXC) * 360.
-                      XFR    = XFR - REAL(IXC) * 360.
-                    END IF
-                ELSE
-                  JJ     = J
+                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
+                IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+                IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+                IF ( IXC .NE. 0 ) THEN
+                  XFL    = XFL - REAL(IXC) * 360.
+                  XFR    = XFR - REAL(IXC) * 360.
                 END IF
+              ELSE
+                JJ     = J
+              END IF
               XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
               XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
               R1     = MAX ( 0. , XSR - XSL ) / SX
               IF ( R1 .GT. 0 ) THEN
-                  NXA(IX,0) = NXA(IX,0) + 1
-                  NXA(IX,NXA(IX,0)) = JJ
-                  RXA(IX,NXA(IX,0)) = R1
-                END IF
-              END DO
-            IF ( NXA(IX,0)  .GT. 0 ) THEN
-                RT     = SUM ( RXA(IX,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                    NXA(IX,:) = 0
-                    RXA(IX,:) = 0.
-                  END IF
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = JJ
+                RXA(IX,NXA(IX,0)) = R1
               END IF
             END DO
+            IF ( NXA(IX,0)  .GT. 0 ) THEN
+              RT     = SUM ( RXA(IX,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NXA(IX,:) = 0
+                RXA(IX,:) = 0.
+              END IF
+            END IF
+          END DO
 !
         END IF
 !
@@ -1369,9 +1377,9 @@
 !/T1               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
 !/T1        END DO
 !
-! 2.b Interpolation / averaging data for Y axis
+! 2.b.2 Interpolation / averaging data for Y axis
 !
-      IF ( SY/SYI .LT. 1.0001 ) THEN
+        IF ( SY/SYI .LT. 1.0001 ) THEN
           MYA    = 2
         ELSE
           MYA    = 2 + INT(SY/SYI)
@@ -1382,38 +1390,38 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-      NYA    = 0
-      RYA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
 !
-      IF ( MYA .EQ. 2 ) THEN
+        IF ( MYA .EQ. 2 ) THEN
 !
           DO IY=1, NY
             YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
             IF ( YR.GT.0. ) THEN
-                J1     = INT(YR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , YR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
-                    NYA(IY,0) = NYA(IY,0) + 1
-                    NYA(IY,NYA(IY,0)) = J1
-                    RYA(IY,NYA(IY,0)) = R1
-                  END IF
-                IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
-                    NYA(IY,0) = NYA(IY,0) + 1
-                    NYA(IY,NYA(IY,0)) = J2
-                    RYA(IY,NYA(IY,0)) = R2
-                  END IF
-                IF ( NYA(IY,0)  .GT. 0 ) THEN
-                    RT     = SUM ( RYA(IY,:) )
-                    IF ( RT .LT. 0.7 ) THEN
-                        NYA(IY,:) = 0
-                        RYA(IY,:) = 0.
-                      END IF
-                  END IF
+              J1     = INT(YR)
+              J2     = J1 + 1
+              R2     = MAX ( 0. , YR-REAL(J1) )
+              R1     = 1. - R2
+              IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
+                NYA(IY,0) = NYA(IY,0) + 1
+                NYA(IY,NYA(IY,0)) = J1
+                RYA(IY,NYA(IY,0)) = R1
               END IF
-            END DO
+              IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
+                NYA(IY,0) = NYA(IY,0) + 1
+                NYA(IY,NYA(IY,0)) = J2
+                RYA(IY,NYA(IY,0)) = R2
+              END IF
+              IF ( NYA(IY,0)  .GT. 0 ) THEN
+                RT     = SUM ( RYA(IY,:) )
+                IF ( RT .LT. 0.7 ) THEN
+                  NYA(IY,:) = 0
+                  RYA(IY,:) = 0.
+                END IF
+              END IF
+            END IF
+          END DO
 !
         ELSE
 !
@@ -1428,21 +1436,23 @@
               YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
               R1     = MAX ( 0. , YSR - YSL ) / SY
               IF ( R1 .GT. 0 ) THEN
-                  NYA(IY,0) = NYA(IY,0) + 1
-                  NYA(IY,NYA(IY,0)) = J
-                  RYA(IY,NYA(IY,0)) = R1
-                END IF
-              END DO
-            IF ( NYA(IY,0)  .GT. 0 ) THEN
-                RT     = SUM ( RYA(IY,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                    NYA(IY,:) = 0
-                    RYA(IY,:) = 0.
-                  END IF
+                NYA(IY,0) = NYA(IY,0) + 1
+                NYA(IY,NYA(IY,0)) = J
+                RYA(IY,NYA(IY,0)) = R1
               END IF
             END DO
+            IF ( NYA(IY,0)  .GT. 0 ) THEN
+              RT     = SUM ( RYA(IY,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NYA(IY,:) = 0
+                RYA(IY,:) = 0.
+              END IF
+            END IF
+          END DO
 !
         END IF
+!
+      END IF
 !
 !/T1      DO, IY=1, NY
 !/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
@@ -1672,7 +1682,8 @@
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
                           GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
-                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
+                          HPFAC, HQFAC
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1703,7 +1714,7 @@
                                  MAP3(NX,NY), FLAGUP
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
-      REAL, POINTER           :: X0I, Y0I, SXI, SYI
+      REAL, POINTER           :: X0I, Y0I, SXI, SYI, HPFACI, HQFACI
       INTEGER, POINTER        :: ICLOSE
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
@@ -1713,19 +1724,14 @@
 !
 !/S      CALL STRACE (IENT, 'WMUPDS')
 !
-      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
-           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
-          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
-          CALL EXTCDE ( 999 )
-      END IF
-!
       NXI    => GRIDS(JMOD)%NX
       NYI    => GRIDS(JMOD)%NY
       X0I    => GRIDS(JMOD)%X0
       Y0I    => GRIDS(JMOD)%Y0
       SXI    => GRIDS(JMOD)%SX
       SYI    => GRIDS(JMOD)%SY
+      HPFACI => GRIDS(JMOD)%HPFACI
+      HQFACI => GRIDS(JMOD)%HQFACI
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
@@ -1735,7 +1741,6 @@
          ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
          CALL EXTCDE ( 1 )
       END IF
-
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF
@@ -1753,57 +1758,68 @@
 !
 ! 1.a Offsets
 !
-          IXO    = NINT((X0-X0I)/SX)
+        IXO    = NINT((X0-X0I)/SX)
 !
-          IF ( FLAGLL ) THEN
-              IXF0   = 1
-              IXFN   = NX
-              IXS0   = -999
-              IXSN   = -999
-            ELSE
-              IXF0   = MAX (  1  , 1-IXO )
-              IXFN   = MIN ( NX  , NXI-IXO )
-              IXS0   = MAX (  1  , 1+IXO )
-              IXSN   = IXS0 + IXFN - IXF0
-            END IF
+        IF ( FLAGLL ) THEN
+          IXF0   = 1
+          IXFN   = NX
+          IXS0   = -999
+          IXSN   = -999
+        ELSE
+          IXF0   = MAX (  1  , 1-IXO )
+          IXFN   = MIN ( NX  , NXI-IXO )
+          IXS0   = MAX (  1  , 1+IXO )
+          IXSN   = IXS0 + IXFN - IXF0
+        END IF
 !
-          IYO    = NINT((Y0-Y0I)/SY)
+        IYO    = NINT((Y0-Y0I)/SY)
 !
-          IYF0   = MAX (  1  , 1-IYO )
-          IYFN   = MIN ( NY  , NYI-IYO )
-          IYS0   = MAX (  1  , 1+IYO )
-          IYSN   = IYS0 + IYFN - IYF0
+        IYF0   = MAX (  1  , 1-IYO )
+        IYFN   = MIN ( NY  , NYI-IYO )
+        IYS0   = MAX (  1  , 1+IYO )
+        IYSN   = IYS0 + IYFN - IYF0
 !
 !/T          WRITE (MDST,9010) IXO, IYO, IXF0, IXFN, IYF0, IYFN,      &
 !/T                                      IXS0, IXSN, IYS0, IYSN
 !
 ! 1.b Fill arrays for sea points only
 !
-          IF ( FLAGLL ) THEN
-              DO IX=IXF0, IXFN
-                IXS    = 1 + NINT ( MOD (                             &
+        IF ( FLAGLL ) THEN
+          DO IX=IXF0, IXFN
+           IXS    = 1 + NINT ( MOD (                             &
                   1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
-                IF ( IXS .GT. NXI ) CYCLE
-                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
-                END DO
-            ELSE
-              DO IX=IXF0, IXFN
-                IXS    = IX + IXO
-                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
-                END DO
-            END IF
+            IF ( IXS .GT. NXI ) CYCLE
+              FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+          END DO
+        ELSE
+          DO IX=IXF0, IXFN
+            IXS    = IX + IXO
+            FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+          END DO
+        END IF
 !
 ! 1.c Return to calling routine
 !
-          RETURN
+        RETURN
 !
-        END IF
+      END IF
 !
 ! 2.  General case --------------------------------------------------- /
 !
-! 2.a Interpolation / averaging data for X axis
 !
-      IF ( SX/SXI .LT. 1.0001 ) THEN
+! 2.a Curvilinear grids
+!
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+
+
+      ELSE
+!
+! 2.b Rectilinear grids
+!
+! 2.b.1 Interpolation / averaging data for X axis
+!
+        IF ( SX/SXI .LT. 1.0001 ) THEN
           MXA    = 2
         ELSE
           MXA    = 2 + INT(SX/SXI)
@@ -1814,47 +1830,47 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-      NXA    = 0
-      RXA    = 0.
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
 !
-      IF ( MXA .EQ. 2 ) THEN
+        IF ( MXA .EQ. 2 ) THEN
 !
           DO IX=1, NX
             IF ( FLAGLL ) THEN
-                XR     = 1. + MOD       &
+              XR     = 1. + MOD       &
                          ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
-              ELSE
+            ELSE
                 XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-              END IF
+            END IF
             IF ( XR.GT.0. ) THEN
-                J1     = INT(XR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , XR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
-                    J1 = 1 + MOD(J1-1,NXI)
-                    J2 = 1 + MOD(J2-1,NXI)
-                  END IF
-                IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
-                    NXA(IX,0) = NXA(IX,0) + 1
-                    NXA(IX,NXA(IX,0)) = J1
-                    RXA(IX,NXA(IX,0)) = R1
-                  END IF
-                IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
-                    NXA(IX,0) = NXA(IX,0) + 1
-                    NXA(IX,NXA(IX,0)) = J2
-                    RXA(IX,NXA(IX,0)) = R2
-                  END IF
-                IF ( NXA(IX,0)  .GT. 0 ) THEN
-                    RT     = SUM ( RXA(IX,:) )
-                    IF ( RT .LT. 0.7 ) THEN
-                        NXA(IX,:) = 0
-                        RXA(IX,:) = 0.
-                      END IF
-                  END IF
+              J1     = INT(XR)
+              J2     = J1 + 1
+              R2     = MAX ( 0. , XR-REAL(J1) )
+              R1     = 1. - R2
+              IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
+                J1 = 1 + MOD(J1-1,NXI)
+                J2 = 1 + MOD(J2-1,NXI)
               END IF
-            END DO
+              IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = J1
+                RXA(IX,NXA(IX,0)) = R1
+              END IF
+              IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = J2
+                RXA(IX,NXA(IX,0)) = R2
+              END IF
+              IF ( NXA(IX,0)  .GT. 0 ) THEN
+                RT     = SUM ( RXA(IX,:) )
+                IF ( RT .LT. 0.7 ) THEN
+                  NXA(IX,:) = 0
+                  RXA(IX,:) = 0.
+                END IF
+              END IF
+            END IF
+          END DO
 !
         ELSE
 !
@@ -1863,44 +1879,44 @@
             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
             IF ( FLAGLL ) THEN
-                IXC    = 1 + NINT ( MOD (                             &
+              IXC    = 1 + NINT ( MOD (                             &
                          1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-                IXS0   = IXC - 1 - MXA/2
-                IXSN   = IXC + 1 + MXA/2
-              ELSE
-                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-              END IF
+              IXS0   = IXC - 1 - MXA/2
+              IXSN   = IXC + 1 + MXA/2
+            ELSE
+              IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+              IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+              IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+            END IF
             DO J=IXS0, IXSN
               IF ( FLAGLL ) THEN
-                  IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
-                  IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-                  IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-                  IF ( IXC .NE. 0 ) THEN
-                      XFL    = XFL - REAL(IXC) * 360.
-                      XFR    = XFR - REAL(IXC) * 360.
-                    END IF
-                ELSE
-                  JJ     = J
+                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
+                IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+                IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+                IF ( IXC .NE. 0 ) THEN
+                  XFL    = XFL - REAL(IXC) * 360.
+                  XFR    = XFR - REAL(IXC) * 360.
                 END IF
+              ELSE
+                JJ     = J
+              END IF
               XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
               XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
               R1     = MAX ( 0. , XSR - XSL ) / SX
               IF ( R1 .GT. 0 ) THEN
-                  NXA(IX,0) = NXA(IX,0) + 1
-                  NXA(IX,NXA(IX,0)) = JJ
-                  RXA(IX,NXA(IX,0)) = R1
-                END IF
-              END DO
-            IF ( NXA(IX,0)  .GT. 0 ) THEN
-                RT     = SUM ( RXA(IX,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                    NXA(IX,:) = 0
-                    RXA(IX,:) = 0.
-                  END IF
+                NXA(IX,0) = NXA(IX,0) + 1
+                NXA(IX,NXA(IX,0)) = JJ
+                RXA(IX,NXA(IX,0)) = R1
               END IF
             END DO
+            IF ( NXA(IX,0)  .GT. 0 ) THEN
+              RT     = SUM ( RXA(IX,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NXA(IX,:) = 0
+                RXA(IX,:) = 0.
+              END IF
+            END IF
+          END DO
 !
         END IF
 !
@@ -1909,9 +1925,9 @@
 !/T1               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
 !/T1        END DO
 !
-! 2.b Interpolation / averaging data for Y axis
+! 2.b.2 Interpolation / averaging data for Y axis
 !
-      IF ( SY/SYI .LT. 1.0001 ) THEN
+        IF ( SY/SYI .LT. 1.0001 ) THEN
           MYA    = 2
         ELSE
           MYA    = 2 + INT(SY/SYI)
@@ -1921,38 +1937,38 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-      NYA    = 0
-      RYA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
 !
-      IF ( MYA .EQ. 2 ) THEN
+        IF ( MYA .EQ. 2 ) THEN
 !
           DO IY=1, NY
             YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
             IF ( YR.GT.0. ) THEN
-                J1     = INT(YR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , YR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
-                    NYA(IY,0) = NYA(IY,0) + 1
-                    NYA(IY,NYA(IY,0)) = J1
-                    RYA(IY,NYA(IY,0)) = R1
-                  END IF
-                IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
-                    NYA(IY,0) = NYA(IY,0) + 1
-                    NYA(IY,NYA(IY,0)) = J2
-                    RYA(IY,NYA(IY,0)) = R2
-                  END IF
-                IF ( NYA(IY,0)  .GT. 0 ) THEN
-                    RT     = SUM ( RYA(IY,:) )
-                    IF ( RT .LT. 0.7 ) THEN
-                        NYA(IY,:) = 0
-                        RYA(IY,:) = 0.
-                      END IF
-                  END IF
+              J1     = INT(YR)
+              J2     = J1 + 1
+              R2     = MAX ( 0. , YR-REAL(J1) )
+              R1     = 1. - R2
+              IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
+                NYA(IY,0) = NYA(IY,0) + 1
+                NYA(IY,NYA(IY,0)) = J1
+                RYA(IY,NYA(IY,0)) = R1
               END IF
-            END DO
+              IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
+                NYA(IY,0) = NYA(IY,0) + 1
+                NYA(IY,NYA(IY,0)) = J2
+                RYA(IY,NYA(IY,0)) = R2
+              END IF
+              IF ( NYA(IY,0)  .GT. 0 ) THEN
+                RT     = SUM ( RYA(IY,:) )
+                IF ( RT .LT. 0.7 ) THEN
+                  NYA(IY,:) = 0
+                  RYA(IY,:) = 0.
+                END IF
+              END IF
+            END IF
+          END DO
 !
         ELSE
 !
@@ -1966,22 +1982,24 @@
               YSL    = MAX ( YFL , Y0I + REAL(J-1)*SYI - 0.5*SYI )
               YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
               R1     = MAX ( 0. , YSR - YSL ) / SY
-              IF ( R1 .GT. 0 ) THEN
-                  NYA(IY,0) = NYA(IY,0) + 1
-                  NYA(IY,NYA(IY,0)) = J
-                  RYA(IY,NYA(IY,0)) = R1
-                END IF
-              END DO
-            IF ( NYA(IY,0)  .GT. 0 ) THEN
-                RT     = SUM ( RYA(IY,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                    NYA(IY,:) = 0
-                    RYA(IY,:) = 0.
-                  END IF
-              END IF
+            IF ( R1 .GT. 0 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J
+              RYA(IY,NYA(IY,0)) = R1
+            END IF
             END DO
+            IF ( NYA(IY,0)  .GT. 0 ) THEN
+              RT     = SUM ( RYA(IY,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NYA(IY,:) = 0
+                RYA(IY,:) = 0.
+              END IF
+            END IF
+          END DO
 !
         END IF
+!
+      END IF
 !
 !/T1      DO, IY=1, NY
 !/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
