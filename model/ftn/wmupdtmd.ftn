@@ -1125,7 +1125,7 @@
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
                           GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
                           ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
-                          HPFAC, HQFAC
+                          HPFAC, HQFAC, XGRD, YGRD
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1147,18 +1147,31 @@
                                  IYFN, IXS0, IXSN, IYS0, IYSN, IXS,   &
                                  MXA, MYA, J, J1, J2, IXC, IYC, JJ,   &
                                  JX, JY
+      INTEGER                 :: NPOIX, NPOIY, I,  IFIELDS   !RP
+
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: NXA(:,:), NYA(:,:)
       REAL                    :: XR, YR, R1, R2, RT, XFL, XFR, XSL,   &
                                  XSR, YFL, YFR, YSL, YSR
       REAL                    :: VXL, VYL, VA0, VA, VA2, FACTOR,      &
                                  WTOT, WL
+
+      REAL                    :: LONC, LATC, SXC, SYC, SXYC,          &
+                                 XDI, DTOLER, VALUEINTER           !RP
+
       REAL, ALLOCATABLE       :: RXA(:,:), RYA(:,:)
+
+      REAL, ALLOCATABLE       :: VARIN(:,:)                        !RP
+
       LOGICAL                 :: MAP1(NX,NY), MAP2(NX,NY),            &
                                  MAP3(NX,NY), FLAGUP
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
-      REAL, POINTER           :: X0I, Y0I, SXI, SYI, HPFACI, HQFACI
+      REAL, POINTER           :: X0I, Y0I, SXI, SYI !RP , HPFACI, HQFACI
+
+      REAL, POINTER           :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:),  &
+                                 YGRDC(:,:), HPFACI(:,:), HQFACI(:,:) !RP
+
       INTEGER, POINTER        :: ICLOSE
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
@@ -1264,7 +1277,85 @@
 !
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+!======================================================================
+!======================================================================
 
+        ALLOCATE (VARIN(NXI,NYI)) 
+
+!       GETTING THE INFO FOR THE INPUT FIELD 
+!        NXI    => GRIDS(JMOD)%NX
+!        NYI    => GRIDS(JMOD)%NY
+!       X0I    => GRIDS(JMOD)%X0
+!       Y0I    => GRIDS(JMOD)%Y0
+!        SXI    => GRIDS(JMOD)%SX
+!        SYI    => GRIDS(JMOD)%SY
+        XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
+        YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
+!        HPFACI => GRIDS(JMOD)%HPFAC  !DELTAS IN LON FOR INPUT
+!        HQFACI => GRIDS(JMOD)%HQFAC  !DELTAS IN LAT FOR INPUT
+
+!         LONI=XGRDI    
+!         LATI=YGRDI   
+
+!       GETTING THE INFO FOR THE CURVILINEAR GRID 
+        XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
+        YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
+
+        HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+        HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+
+
+! 2.a.1  running over the vector components
+      DO IFIELDS=1,2
+        VARIN     = UNDEF
+        IF(IFIELDS==1) THEN
+          VARIN=VXI
+        ELSE
+          VARIN=VYI
+        END IF
+! 2.a.2  running over the curvilinear grid
+        DO J=1,NY
+          DO I=1,NX
+
+            LONC=XGRDC(I,J)   !LON FOR EVERY CURVL GRID POINT
+            LATC=YGRDC(I,J)   !LAT FOR EVERY CURVL GRID POINT
+            SXC  =HPFAC(I,J)  !DELTA IN LON FOR CURVI GRID
+            SYC  =HQFAC(I,J)  !DELTA IN LAT FOR CURVI GRID
+
+            !CHOOSING THE LARGEST DELTA
+            SXYC=MAX(SXC,SYC)
+            XDI=SXYC/SXI
+            IF(XDI .LT. 2.00) THEN
+              MXA=2
+            ELSE
+              MXA=2+INT(XDI)
+            ENDIF
+
+
+            IF (MXA .EQ. 2) THEN
+              VALUEINTER=INTERPOLATE(NXI,XGRDI,NYI,YGRDI,  &
+                         VARIN,LONC,LATC,DTOLER)
+            ELSE
+              ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
+              ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
+              ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
+              NPOIX=INT(SXC/SXI)
+              NPOIY=INT(SYC/SYI)
+              VALUEINTER=AVERAGING(NXI,XGRDI,NYI,YGRDI,    &
+                         VARIN,LONC,LATC,NPOIX,NPOIY,MXA)
+            ENDIF
+   
+            IF(IFIELDS==1) THEN
+              VX(I,J)=VALUEINTER
+            ELSE
+              VY(I,J)=VALUEINTER
+            END IF
+          END DO  !END I
+        END DO  !END J
+      END DO  !END IFIELDS
+      DEALLOCATE (VARIN)
+!=======================================================================
+!=======================================================================
       ELSE
 !
 ! 2.b Rectilinear grids
@@ -1683,7 +1774,7 @@
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
                           GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
                           ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
-                          HPFAC, HQFAC
+                          HPFAC, HQFAC, XGRD, YGRD
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1704,17 +1795,30 @@
                                  IYFN, IXS0, IXSN, IYS0, IYSN, IXS,   &
                                  MXA, MYA, J, J1, J2, IXC, IYC, JJ,   &
                                  JX, JY
+
+      INTEGER                 :: NPOIX, NPOIY, I                    !RP
+
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: NXA(:,:), NYA(:,:)
       REAL                    :: XR, YR, R1, R2, RT, XFL, XFR, XSL,   &
                                  XSR, YFL, YFR, YSL, YSR
       REAL                    :: FDL, WTOT, WL
+
+      REAL                    :: LONC, LATC, SXC, SYC, SXYC,          &
+                                 XDI, DTOLER, VALUEINTER           !RP
+
       REAL, ALLOCATABLE       :: RXA(:,:), RYA(:,:)
+
+
       LOGICAL                 :: MAP1(NX,NY), MAP2(NX,NY),            &
                                  MAP3(NX,NY), FLAGUP
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
-      REAL, POINTER           :: X0I, Y0I, SXI, SYI, HPFACI, HQFACI
+
+      REAL, POINTER           :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:),  &
+                                 YGRDC(:,:), HPFACI(:,:), HQFACI(:,:)  !RP
+
+      REAL, POINTER           :: X0I, Y0I, SXI, SYI !RPXXX , HPFACI, HQFACI
       INTEGER, POINTER        :: ICLOSE
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
@@ -1730,8 +1834,8 @@
       Y0I    => GRIDS(JMOD)%Y0
       SXI    => GRIDS(JMOD)%SX
       SYI    => GRIDS(JMOD)%SY
-      HPFACI => GRIDS(JMOD)%HPFACI
-      HQFACI => GRIDS(JMOD)%HQFACI
+      HPFACI => GRIDS(JMOD)%HPFAC
+      HQFACI => GRIDS(JMOD)%HQFAC
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
@@ -1811,7 +1915,71 @@
 !
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+!======================================================================
+!======================================================================
 
+! 2.a.1    Getting the info for reg and curvi grids
+!        NXI    => GRIDS(JMOD)%NX
+!        NYI    => GRIDS(JMOD)%NY
+!       X0I    => GRIDS(JMOD)%X0
+!       Y0I    => GRIDS(JMOD)%Y0
+!        SXI    => GRIDS(JMOD)%SX
+!        SYI    => GRIDS(JMOD)%SY
+        XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
+        YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
+!        HPFACI => GRIDS(JMOD)%HPFAC  !DELTAS IN LON FOR INPUT
+!        HQFACI => GRIDS(JMOD)%HQFAC  !DELTAS IN LAT FOR INPUT
+
+!         LONI=XGRDI
+!         LATI=YGRDI
+
+!       GETTING THE INFO FOR THE CURVILINEAR GRID 
+        XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
+        YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
+
+        HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+        HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+
+
+
+
+! 2.a.2  running over the curvilinear grid
+      DO J=1,NY
+        DO I=1,NX
+          LONC=XGRDC(I,J)   !LON FOR EVERY CURVL GRID POINT
+          LATC=YGRDC(I,J)   !LAT FOR EVERY CURVL GRID POINT
+          SXC  =HPFAC(I,J)  !DELTA IN LON FOR CURVI GRID
+          SYC  =HQFAC(I,J)  !DELTA IN LAT FOR CURVI GRID
+
+          !CHOOSING THE LARGEST DELTA
+          SXYC=MAX(SXC,SYC)
+          XDI=SXYC/SXI
+          IF(XDI .LT. 2.00) THEN
+            MXA=2
+          ELSE
+            MXA=2+INT(XDI)
+          ENDIF
+
+
+          IF (MXA .EQ. 2) THEN
+            VALUEINTER=INTERPOLATE(NXI,XGRDI,NYI,YGRDI,  &
+                       FDI,LONC,LATC,DTOLER)
+          ELSE
+            ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
+            ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
+            ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
+            NPOIX=INT(SXC/SXI)
+            NPOIY=INT(SYC/SYI)
+            VALUEINTER=AVERAGING(NXI,XGRDI,NYI,YGRDI,   &
+                       FDI,LONC,LATC, NPOIX,NPOIY,MXA)
+          ENDIF
+
+          FD(I,J)=VALUEINTER
+        END DO  !END I
+      END DO  !END J
+
+!=======================================================================
+!=======================================================================
 
       ELSE
 !
@@ -2125,6 +2293,171 @@
 !/ End of WMUPDS ----------------------------------------------------- /
 !/
       END SUBROUTINE WMUPDS
+!=======================================================================
+
+! !!MODULE INTERPREC2ANY
+
+!      CONTAINS
+
+      FUNCTION XYCURVISEARCH(LENGTH, ARRAY, VALUE, DELTA)
+      ! GIVEN AN ARRAY  AND A VALUE TO SEARCH, IT RETURNS THE INDEX OF
+      ! THE ELEMENT ON THE RECTILINEAR GRID THAT IS CLOSEST TO, BUT 
+      ! LESS THAN, THE GIVEN VALUE.
+      ! "DELTA" IS THE THERSHOLD  USED TO DETERMINE IF TWO VALUES ARE EQUAL
+      ! IF ( ABS(X1 - X2) <= DELTA) THEN
+      !    ASSUME X1 = X2
+      ! ENDIF
+
+      !IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LENGTH
+      REAL, DIMENSION(LENGTH), INTENT(IN) :: ARRAY
+      REAL, INTENT(IN) :: VALUE
+      REAL, INTENT(IN), OPTIONAL :: DELTA
+
+      INTEGER :: XYCURVISEARCH
+
+      INTEGER :: LEFT, MIDDLE, RIGHT
+      REAL :: D
+      
+      LEFT = 1
+      RIGHT = LENGTH
+      DO
+          IF (LEFT > RIGHT) THEN
+             EXIT
+          ENDIF
+          MIDDLE = NINT((LEFT+RIGHT) / 2.0)
+          IF ( ABS(ARRAY(MIDDLE) - VALUE) <= D) THEN
+             XYCURVISEARCH = MIDDLE
+             RETURN
+          ELSE IF (ARRAY(MIDDLE) > VALUE) THEN
+             RIGHT = MIDDLE - 1
+          ELSE
+             LEFT = MIDDLE + 1
+          END IF
+      END DO
+      XYCURVISEARCH = RIGHT
+
+      END FUNCTION XYCURVISEARCH
+
+     
+      REAL FUNCTION INTERPOLATE(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
+                                X,Y,DELTA)
+      ! THIS FUNCTION USES BILINEAR INTERPOLATION TO ESTIMATE THE VALUE
+      ! OF A FUNCTION F AT POINT (X,Y)
+      ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
+      ! BY XARRAY WITH DIMENSION X_LEN 
+      ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
+
+      !IMPLICIT NONE
+      INTEGER, INTENT(IN) :: X_LEN, Y_LEN
+      REAL, DIMENSION(X_LEN), INTENT(IN) :: XARRAY
+      REAL, DIMENSION(Y_LEN), INTENT(IN) :: YARRAY
+      REAL, DIMENSION(X_LEN, Y_LEN), INTENT(IN) :: FUNC
+      REAL, INTENT(IN) :: X,Y
+      REAL, INTENT(IN), OPTIONAL :: DELTA
+   
+
+      REAL :: DENOM, X1, X2, Y1, Y2
+      INTEGER :: INX,JNX
+
+      INX = XYCURVISEARCH(X_LEN, XARRAY, X)
+      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y)
+
+      X1 = XARRAY(INX)
+      X2 = XARRAY(INX+1)
+
+      Y1 = YARRAY(JNX)
+      Y2 = YARRAY(JNX+1)
+ 
+      DENOM = (X2 - X1)*(Y2 - Y1)
+      
+
+      INTERPOLATE = (FUNC(INX,JNX)*(X2-X)*(Y2-Y) +           &
+                     FUNC(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
+                     FUNC(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
+                     FUNC(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
+
+      END FUNCTION INTERPOLATE
+
+
+      REAL FUNCTION AVERAGING(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
+                              X,Y,NPX,NPY,MAM)
+      ! THIS FUNCTION USES AVERAGING TO ESTIMATE THE VALUE
+      ! OF A FUNCTION F AT POINT (X,Y)
+      ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
+      ! BY XARRAY WITH DIMENSION X_LEN 
+      ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
+      ! ININI AND INEND, THE NUMBER OF POINT TO BE TAKEN INTO ACCOUNT
+      ! IN X AND Y
+
+      !IMPLICIT NONE
+      INTEGER  X_LEN, Y_LEN, MAM, INXEND, INYEND, NPX,NPY
+      REAL, DIMENSION(X_LEN) :: XARRAY
+      REAL, DIMENSION(Y_LEN)  :: YARRAY
+      REAL, DIMENSION(X_LEN, Y_LEN) :: FUNC
+      REAL :: X,Y
+  
+      REAL :: X1, X2, Y1, Y2, SUM
+      INTEGER :: INX,INY, INITIALX, INITIALY
+      INTEGER :: INFINX, INFINY,ICOUNT,I,J
+
+      INX = XYCURVISEARCH(X_LEN, XARRAY, X)
+      INY = XYCURVISEARCH(Y_LEN, YARRAY, Y)
+
+      X1 = XARRAY(INX)
+      !X2 = XARRAY(INX+1)
+
+      Y1 = YARRAY(INY)
+      !Y2 = YARRAY(INY+1)
+
+      INXEND=NPX+1
+      INYEND=NPY+1
+      ! LETS FIX THE INITIAL INDEX =1 NEGATIVE INDEXES IN LONG
+      IF (INX-NPX .LT. 1) THEN
+         INITIALX=1
+      ELSE
+         INITIALX=INX-NPX
+      END IF
+      ! LETS FIX THE FINAL INDEX =NX IF LOOKING FOR INDEXES > NX
+      IF (INX+INXEND .GT. X_LEN) THEN
+         INFINX=X_LEN
+      ELSE
+         INFINX=INX+INXEND
+      END IF
+      ! LETS FIX THE INITIAL INDEX =1 FOR NEGATIVE INDEXES FOR LAT
+      IF (INY-NPY .LT. 1) THEN
+         INITIALY=1
+      ELSE
+         INITIALY=INY-NPY
+      END IF
+      ! LETS FIX THE FINAL INDEX =NX IF LOOKING FOR INDEXES > NX
+      IF (INY+INYEND .GT. Y_LEN) THEN
+         INFINY=Y_LEN
+      ELSE
+         INFINY=INY+INYEND
+      END IF
+
+
+!      PRINT*,'AVERAGE MXA NPX NPY INITIALX INFINX INITIALY INFINY:',
+!     1          MAM, NPX, NPY, INITIALX, INFINX, INITIALY, INFINY
+
+
+      SUM=0.0 
+      ICOUNT=0
+      DO J=INITIALY,INFINY
+        DO I=INITIALX,INFINX
+          ICOUNT=ICOUNT+1
+          SUM=SUM+FUNC(I,J)
+        END DO
+      END DO
+      AVERAGING=SUM/REAL(ICOUNT)
+
+      END FUNCTION AVERAGING
+
+!      END MODULE INTERPREC2ANY
+
+!=======================================================================
+
 !/
 !/ End of module WMUPDTMD -------------------------------------------- /
 !/
