@@ -14,19 +14,19 @@
 !/
 !  1. Purpose :
 !
-!     Tidal analysis of time series for storage of tidal constituents 
-!     only. This module is built around the versatile tidal analysis 
+!     Tidal analysis of time series for storage of tidal constituents
+!     only. This module is built around the versatile tidal analysis
 !     package : http://www.pac.dfo-mpo.gc.ca/science/oceans/tidal-marees/index-eng.htm
-!     by Mike Foreman et al.  (see publication in J. Ocean Atmos. Tech.: vol. 
-!                http://journals.ametsoc.org/doi/pdf/10.1175/2008JTECHO615.1 )     
+!     by Mike Foreman et al.  (see publication in J. Ocean Atmos. Tech.: vol.
+!                http://journals.ametsoc.org/doi/pdf/10.1175/2008JTECHO615.1 )
 !     Adaptation to WAVEWATCH III was performed by F. Ardhuin
 !
-!     STILL TO BE DONE: 
+!     STILL TO BE DONE:
 !     - adding a namelist in ww3_grid to allow adjustment of TIDE_DT
-!     - check on constituents (M2, S2, N2 ...) when running ww3_shel, 
+!     - check on constituents (M2, S2, N2 ...) when running ww3_shel,
 !        in order to allow use of different sets of constituents
-!     - add residual currents (or geostrophic ...) ... 
-!     - make this work with multigrids 
+!     - add residual currents (or geostrophic ...) ...
+!     - make this work with multigrids
 !
 !  2. Variables and types :
 !
@@ -38,29 +38,29 @@
 !
 !      Name                  Type  Scope    Description
 !     ----------------------------------------------------------------
-!      TIDE_WRITE_RESULTS    Subr. Public   Writes tidal results 
+!      TIDE_WRITE_RESULTS    Subr. Public   Writes tidal results
 !                                          (with M. Forman's format)
 !      TIDE_PREDICT          Subr. Public  Predicts tide from amp. & phases
-!      TIDE_SETTINGS_FULL    Subr. Public  Choice of constituents 
-!      TIDE_SETTINGS_FAST    Subr. Public  Choice of constituents 
-!      TIDE_SETTINGS_VFAST   Subr. Public  Choice of constituents 
-!      TIDE_SET_INDICES      Subr. Public 
-!      SETVUF_FAST           Subr. Public Calculates the V,u,f values 
+!      TIDE_SETTINGS_FULL    Subr. Public  Choice of constituents
+!      TIDE_SETTINGS_FAST    Subr. Public  Choice of constituents
+!      TIDE_SETTINGS_VFAST   Subr. Public  Choice of constituents
+!      TIDE_SET_INDICES      Subr. Public
+!      SETVUF_FAST           Subr. Public Calculates the V,u,f values
 !      TIDE_READ_SETTINGS    Subr. Public Reads data from file (IOS format)
 !      TIDE_READ_ANAPAR      Subr. Public Reads data from file (IOS format)
 !      TIDE_READ_TIMESERIES  Subr. Public Reads data from file (IOS format)
 !      ASTR                  Subr. Public Calculates the ephermides
 !      JULDAYT               Func. Public Julian day
-!      CALDATT               Subr. Public 
-!      dsvbksb               Subr. Public 
-!      dsvdcmp               Subr. Public 
+!      CALDATT               Subr. Public
+!      dsvbksb               Subr. Public
+!      dsvdcmp               Subr. Public
 !      svd                   Subr. Public Matrix singular value decomposition
-!      VUF_SET_PARAMETERS    Subr. Public 
-!      VUF                   Subr. Public 
-!      OPNVUF                Subr. Public 
-!      SETVUF                Subr. Public 
-!      flex_tidana_webpage   Subr. Public 
-!      TIDE_PREDICT          Subr. Public Tide prediction and error estimate 
+!      VUF_SET_PARAMETERS    Subr. Public
+!      VUF                   Subr. Public
+!      OPNVUF                Subr. Public
+!      SETVUF                Subr. Public
+!      flex_tidana_webpage   Subr. Public
+!      TIDE_PREDICT          Subr. Public Tide prediction and error estimate
 !      TIDE_PREDICT_ONLY     Subr. Public Tide prediction only
 !     ----------------------------------------------------------------
 !
@@ -78,7 +78,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!      PUBLIC 
+!      PUBLIC
 !/
 !/ Private variables
 !/
@@ -94,13 +94,13 @@
 !
       INTEGER                     :: NTIDAL_CON, NTOTAL_CON, NKONCO
       CHARACTER*5,    ALLOCATABLE :: TIDECON_ALLNAMES(:)       ! array of names of tidal constituents
-      CHARACTER*5,    ALLOCATABLE   :: KONCO_CON(:)         
+      CHARACTER*5,    ALLOCATABLE   :: KONCO_CON(:)
       INTEGER, ALLOCATABLE, PRIVATE :: II(:),JJ(:),KK(:),LL(:),MM(:),NN(:),NJ(:)
       REAL, ALLOCATABLE             :: SEMI(:),COEF_CON(:)
       REAL , ALLOCATABLE            :: V_ARG(:,:),F_ARG(:,:),U_ARG(:,:)
       REAL                          :: EE(180),PH(180)
       INTEGER                       :: LDEL(180),MDEL(180),NDEL(180),IR(180)
-! these two index table are used in VUF ... 
+! these two index table are used in VUF ...
       INTEGER , ALLOCATABLE         :: TIDE_INDEXJ(:),TIDE_INDEXJK(:)
 !
 ! Parameters for tidal analysis
@@ -130,7 +130,7 @@
                                       TIDE_SIG3(MC,2), TIDE_TTEST(MC,2)
       REAL                         :: TIDE_ampci(10,10,2), TIDE_phgi(10,10,2)
       INTEGER                      :: TIDE_INDEX(MC),TIDE_INDEX2(MC)
-      
+
 
       INTEGER                      :: NDSET, TIDE_VERBOSE = 0
 
@@ -152,7 +152,7 @@
       REAL(KIND=8),  INTENT(IN)     :: RMSR0(NDEF), &
                                        SDEV0(NDEF), SDEV(NDEF), RMSR(NDEF), RESMAX(NDEF), RMSRP(NDEF)
       REAL         , INTENT(IN)     :: RES(NDEF), SSQ(NDEF), XLAT,XLON
-! 
+!
       INTEGER                       :: IDEF, I, K, K2, L, I1, INFTOT
       INTEGER                       :: ID1,IM1,IY1,ID2,IM2,IY2
 
@@ -197,13 +197,13 @@
           WRITE(LP,43) TIDECON_NAME(I),TIDE_FREQC(I),TIDE_AMPC(I,idef),TIDE_PHG(I,idef),     &
                    TIDE_sig1(I,idef),TIDE_sig2(I,idef),TIDE_sig3(I,idef),TIDE_ttest(I,idef)
           END DO
- 
+
    43 FORMAT(5X,A5,4X,F12.9,2X,F10.5,2X,F10.3,5x,4f8.3)
 
 !
 !*  INFERENCE results are given now
 !
-      IF (TIDE_NIN.GE.0) THEN 
+      IF (TIDE_NIN.GE.0) THEN
         write(lp,*) ' INFERENCE RESULTS'
         l=0
         do k=1,TIDE_NIN
@@ -289,21 +289,21 @@
 !
 !/S      USE W3SERVMD, ONLY: STRACE
 !/ ------------------------------------------------------------------- /
-      IMPLICIT NONE   
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
       CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
       INTEGER, INTENT(OUT)    :: INDS(70), TIDE_PRMF
- 
+
       INTEGER J, FOUND
 !/S      INTEGER, SAVE           :: IENT   =   0
 !
 !/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
 !
       TIDE_PRMF=0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+      IF (TRIM(LIST(1)).EQ.'ALL') THEN
         DO J=1,TIDE_MF
           INDS(J)=J
           END DO
@@ -315,7 +315,7 @@
         TIDE_PRMF=TIDE_PRMF+1
         FOUND = 0
         DO J=1,TIDE_MF
-          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN 
+          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN
             INDS(TIDE_PRMF)=J
             FOUND=1
             WRITE(6,*) 'Tidal constituent to be used in pre:',TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
@@ -376,7 +376,7 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !
 !/ ------------------------------------------------------------------- /
-      IMPLICIT NONE   
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -397,7 +397,7 @@
        'J1   ', 'SO1  ', 'OO1  ', 'UPS1 ', 'OQ2  ', 'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
        'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
        'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
+       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /)
 !
        TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
                   0.0343965698, 0.0357063505, 0.0359087218, 0.0372185025, 0.0374208738, &
@@ -413,20 +413,20 @@
                   0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027 /)
 
       INDS(:) = 0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+      IF (TRIM(LIST(1)).EQ.'ALL') THEN
         WRITE(6,*) 'Tidal constituent ALL not available anymore.'
         RETURN
         END IF
 !
-      IF (TRIM(LIST(1)).EQ.'FAST') THEN 
+      IF (TRIM(LIST(1)).EQ.'FAST') THEN
         TIDE_MF = 44
         INDS(1:44)= (/ 1, 2, 3, 4, 5, 6, 12, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,  &
                       37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,&
-                      55, 56, 57, 58, 59, 60 /) 
+                      55, 56, 57, 58, 59, 60 /)
 !
-      ELSE IF (TRIM(LIST(1)).EQ.'VFAST') THEN 
+      ELSE IF (TRIM(LIST(1)).EQ.'VFAST') THEN
         TIDE_MF = 20
-        INDS(1:20)= (/ 1, 2, 3, 5, 6, 27, 28, 29, 30, 31, 35, 36, 37, 44, 45, 47, 49, 54, 55, 60 /) 
+        INDS(1:20)= (/ 1, 2, 3, 5, 6, 27, 28, 29, 30, 31, 35, 36, 37, 44, 45, 47, 49, 54, 55, 60 /)
 !
       ELSE
         TIDE_MF=0
@@ -437,7 +437,7 @@
           TIDE_MF=TIDE_MF+1
           FOUND = 0
           DO J=1,60
-            IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN 
+            IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN
               NTIDES=NTIDES+1
               INDS(NTIDES)=J
               FOUND = 1
@@ -445,7 +445,7 @@
               END IF
             END DO
           IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
-! 
+!
           END DO
 !
         TIDE_MF=NTIDES
@@ -456,7 +456,7 @@
         IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
         ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 
-        DO J=1,TIDE_MF 
+        DO J=1,TIDE_MF
           TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
           TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
           END DO
@@ -471,18 +471,18 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE TIDE_SET_INDICES
 !
-      IMPLICIT NONE   
+      IMPLICIT NONE
 !
-      INTEGER J, K, K1, L, J1, JL, L2, KM1, JBASE 
+      INTEGER J, K, K1, L, J1, JL, L2, KM1, JBASE
 !
-      DO L=1,TIDE_MF 
+      DO L=1,TIDE_MF
         DO K=1,NTOTAL_CON
           IF (TIDECON_ALLNAMES(k).EQ.TIDECON_NAME(L)) TIDE_INDEX2(L)=K
-          END DO 
-        END DO 
-!     
-      TIDE_INDEXJ(:)=0    
-      TIDE_INDEXJK(:)=0    
+          END DO
+        END DO
+!
+      TIDE_INDEXJ(:)=0
+      TIDE_INDEXJK(:)=0
       JBASE=0
       K1=NTIDAL_CON+1
 !
@@ -494,7 +494,7 @@
           KM1=K-1
           L2=0
           DO L2=1,KM1
-            IF (TIDECON_ALLNAMES(L2).EQ.KONCO_CON(J)) THEN 
+            IF (TIDECON_ALLNAMES(L2).EQ.KONCO_CON(J)) THEN
               TIDE_INDEXJK(J)=L2
               END IF
             END DO ! L2
@@ -508,7 +508,7 @@
 !/ ------------------------------------------------------------------- /
      SUBROUTINE SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,XLAT,F,U,V)
 !      setvuf calculates the V,u,f values at time hr for all constituents
-      IMPLICIT NONE 
+      IMPLICIT NONE
       REAL,         INTENT(IN)  :: XLAT
       REAL(KIND=8), INTENT(IN)  :: h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
       INTEGER, PARAMETER        :: NTIL=44
@@ -523,11 +523,11 @@
 
       REAL                      :: SLAT, VDBL, RR, SUMC, SUMS, UUDBL, UU
       INTEGER                   :: IUU, IV
- 
+
       SLAT=SIN(PI*XLAT/180.)
 
       JBASE=0
-! All 
+! All
 ! 1'Z0  *','SA   ','SSA *','MSM *','MM   *,'MSF *','MF  *','ALP1*','2Q1  ','SIG1 ', &
 !11'Q1   ','RHO1 ','O1  *','TAU1 ','BET1 ','NO1  ','CHI1 ','PI1  ','P1  *','S1   ', &
 !21'K1  *','PSI1 ','PHI1 ','THE1 ','J1   ','OO1  ','UPS1 ','OQ2  ','EPS2*','2N2 *', &
@@ -550,7 +550,7 @@
 !       'J1   ', 'SO1  ', 'OO1  ', 'UPS1 ', 'OQ2  ', 'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
 !       'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
 !       'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-!       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
+!       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /)
 
 ! Subset
 !       'Z0   ', 'SSA  ', 'MSM  ', 'MM   ', 'MSF  ', 'MF   ',  &
@@ -558,7 +558,7 @@
 !                                                    'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
 !       'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
 !       'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-!       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
+!       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /)
 
 
 !
@@ -567,15 +567,15 @@
       DO K=1,NTIDAL_CON
         J1=JBASE+1
         JL=JBASE+NJ(K)
-        DO L=1,TIDE_MF 
-          IF (TIDE_INDEX2(L).EQ.K) THEN 
+        DO L=1,TIDE_MF
+          IF (TIDE_INDEX2(L).EQ.K) THEN
             VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
             IV=VDBL
             IV=(IV/2)*2
             SUMC=1.
             SUMS=0.
             DO J=J1,JL
-! ITIME ??? 
+! ITIME ???
 !***********************************************************************
 !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
 !
@@ -598,7 +598,7 @@
             UA(K)=ATAN2(SUMS,SUMC)/TWOPI
             END IF
           JBASE=JL ! (indx(L).EQ.K)
-          END DO   ! L 
+          END DO   ! L
         END DO     ! K
 !
 !  HERE F AND V+U OF THE SHALLOW WATER CONSTITUENTS ARE COMPUTED FROM
@@ -619,7 +619,7 @@
           END DO   ! J
         END DO     ! K
 !
-        DO L=1,TIDE_MF 
+        DO L=1,TIDE_MF
           F(L)=FA(TIDE_INDEX2(L))
           U(L)=UA(TIDE_INDEX2(L))
           V(L)=VA(TIDE_INDEX2(L))
@@ -637,17 +637,17 @@
       CHARACTER*256, INTENT(OUT)    :: fnam6,fnam7,fnam8,fnam9,fnam11
 
       INTEGER KIN
-      
+
 ! Parameters for reading KR1
 !      FILE I/O
-!      KIN is the master input file. 
+!      KIN is the master input file.
 !      fnam6 is the file to which the output is sent. It is assigned the number
 !            lp.
 !      fnam7 is file containing the constituents to be included in the analysis,
 !            the analysis period, inference parameters, the flag controlling
 !            height or current analyses, and site information. It is assigned the
 !            number kr1.
-!      fnam8 is the file containing all the astronomical argument information 
+!      fnam8 is the file containing all the astronomical argument information
 !            (it should not have to be changed)
 !      fnam11 is a file to which information on the SVD matrix fit is output when
 !
@@ -655,7 +655,7 @@
 !      the same are also output to file 26 in a format that could be input to
 !      Excel for plotting.
 !
-      KIN=40   ! Input file assigned to unit 4 
+      KIN=40   ! Input file assigned to unit 4
 
 !      OPEN(UNIT=KIN,FILE='tuk75_tidana.inp',STATUS='OLD')
 !      OPEN(UNIT=KIN,FILE='victoria_2008_test.inp',STATUS='OLD')
@@ -699,7 +699,7 @@
 !***********************************************************************
 !*  READ FROM DEVICE KR1 THE ANALYSIS TYPE AND TIDAL STATION DETAILS.
 !*
-!*  1)ONE RECORD FOR THE VARIABLES TIDE_MF 
+!*  1)ONE RECORD FOR THE VARIABLES TIDE_MF
 !*  TIDE_MF   = THE NUMBER OF CONSTITUENTS, INCLUDING THE CONSTANT TERM Z0,
 !*         TO BE IN THE LEAST SQUARES FIT.
 !*
@@ -726,18 +726,18 @@
 !              *  LATD,LATM = STATION LATITUDE IN DEGREES AND MINUTES,
 !              *  LOND,LONM = STATION LONGITUDE IN DEGREES AND MINUTES.
 !              *
-!              *  5)ONE SET RECORDS FOR EACH POSSIBLE INFERENCE. THE FIRST RECORD HAS THE 
+!              *  5)ONE SET RECORDS FOR EACH POSSIBLE INFERENCE. THE FIRST RECORD HAS THE
 !              *      CONSITUENT NAME, ITS FREQUENCY, AND THE NUMBER OF CONSTITUENTS TO BE
-!              *      INFERRED (4X,A5,E16.10,i5), WHILE THERE IS ONE RECORD FOR EACH OF THE 
-!              *      CONSTITUENTS TO BE INFERRED WITH THE NAME, FREQUENCY, AMPLITUDE RATIO 
-!              *      (INFERRED TO REFERENCE) AND PHASE DIFFERENCE (GREENWICH PHASE LAG OF 
+!              *      INFERRED (4X,A5,E16.10,i5), WHILE THERE IS ONE RECORD FOR EACH OF THE
+!              *      CONSTITUENTS TO BE INFERRED WITH THE NAME, FREQUENCY, AMPLITUDE RATIO
+!              *      (INFERRED TO REFERENCE) AND PHASE DIFFERENCE (GREENWICH PHASE LAG OF
 !              *      THE INFERRED CONSTITUENT SUBTRACTED FROM THE GREENWICH PHASE LAG OF THE
 !              *    (ANALYSED CONSTITUENT IN THE FORMAT(4X,A5,E16.10,2F10.3)
 !              *
 !              *  FOR KR1 INPUT, ALL CONSTITUENT NAMES SHOULD BE LEFT JUSTIFIED IN
 !              *  THE ALPHANUMERIC FIELD, FREQUENCIES ARE MEASURED IN CYCLES/HOUR, AND
 !              *  ALL CONSTITUENTS MUST BE INCLUDED IN THE LIST IN READ FROM FNAM8.
-!              
+!
 !                    write(6,*) ' reading from unit kr1'
       READ(KR1,*) TIDE_MF,ndef,itrend
       ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
@@ -772,7 +772,7 @@
 
       iy=ic2*100+iy2
       kd2=JULDAYT(id2,im2,iy)
-!      
+!
 !      read in inference information now as it will be used in the lsq matrix
 !
       DO K=1,10
@@ -810,36 +810,36 @@
       REAL                          :: htt(NDEF)
 !
 ! Initialize Variables
-!      
-      ALLOCATE( TIDE_DATATMP(NR,NDEF), TIDE_DAYSTMP(NR), TIDE_SECSTMP(NR) )  
+!
+      ALLOCATE( TIDE_DATATMP(NR,NDEF), TIDE_DAYSTMP(NR), TIDE_SECSTMP(NR) )
 
-! Reads in data between dates kd1 and kd2 in file kr2 
-!  
+! Reads in data between dates kd1 and kd2 in file kr2
+!
       OPEN(unit=kr2,file=filename,status='old',form='formatted')
-      
+
       ICODE = 0
       KDD = KD1
       I=0
-      DO WHILE(ICODE.EQ.0.AND.KDD.LE.KD2) 
+      DO WHILE(ICODE.EQ.0.AND.KDD.LE.KD2)
 !
 ! reads with the original Foreman's format
 !
-        READ(kr2,145,IOSTAT=ICODE) idd,imm,icc,iyy,ihh,imin,htt(1:NDEF)  
+        READ(kr2,145,IOSTAT=ICODE) idd,imm,icc,iyy,ihh,imin,htt(1:NDEF)
 145     format(6i2,4f10.4)
         isec=0
         iy=icc*100+iyy
-      
+
         kdd=JULDAYT(idd,imm,iy)
 
         IF (kdD.lt.kd1) then
           WRITE(*,*) icc,iyy,imm,idd,ihh,imin
           WRITE(*,*)'kd, kd1, kd2 =',kdd,kd1,kd2
           write(*,*) ' observation before analysis period'
-        ELSE 
+        ELSE
 !
 !  Fills in data array
 !
-          IF (ICODE.EQ.0.AND.KDD.LE.KD2) THEN 
+          IF (ICODE.EQ.0.AND.KDD.LE.KD2) THEN
             i=i+1
             TIDE_DATATMP(I,:)=htt(:)
             TIDE_DAYSTMP(I)=kdd
@@ -847,10 +847,10 @@
             END IF
           END IF
         END DO
-     
+
       TIDE_NTI=i
-      ALLOCATE( TIDE_DATA(TIDE_NTI,NDEF) )  
-      ALLOCATE( TIDE_DAYS(TIDE_NTI), TIDE_SECS(TIDE_NTI), TIDE_HOURS(TIDE_NTI) )  
+      ALLOCATE( TIDE_DATA(TIDE_NTI,NDEF) )
+      ALLOCATE( TIDE_DAYS(TIDE_NTI), TIDE_SECS(TIDE_NTI), TIDE_HOURS(TIDE_NTI) )
       TIDE_DATA(1:TIDE_NTI,1:NDEF)=TIDE_DATATMP(1:TIDE_NTI,1:NDEF)
       TIDE_DAYS(1:TIDE_NTI)=TIDE_DAYSTMP(1:TIDE_NTI)
       TIDE_SECS(1:TIDE_NTI)=TIDE_SECSTMP(1:TIDE_NTI)
@@ -980,7 +980,7 @@
 
       INTEGER i,its,j,jj,k,l,nm
       DOUBLE PRECISION anorm,c,f,g,h,s,scale,x,y,z,rv1(NMAX)
-      
+
       g=0.0d0
       scale=0.0d0
       anorm=0.0d0
@@ -994,7 +994,7 @@
           DO k=i,m
             scale=scale+abs(a(k,i))
             END DO
-          IF (scale.ne.0.0d0) THEN 
+          IF (scale.ne.0.0d0) THEN
             DO  k=i,m
               a(k,i)=a(k,i)/scale
               s=s+a(k,i)*a(k,i)
@@ -1146,7 +1146,7 @@
             endif
             goto 3
           endif
-          IF (ITS.eq.30) THEN 
+          IF (ITS.eq.30) THEN
             WRITE(6,*) 'no convergence in svdcmp'
             STOP
             END IF
@@ -1211,7 +1211,7 @@
 !*********************************************************************
       IMPLICIT NONE
            INTEGER id,mm,iyyy
-      INTEGER IGREG 
+      INTEGER IGREG
       INTEGER*4 ja,jm,jy
       INTEGER*4 JULDAYT
       IGREG=15+31*(10+12*1582)
@@ -1266,7 +1266,7 @@
                     ,ssq,res)
 !-----------------------------------------------------------------------
 ! svd uses singular-value-decomposition to calculate the least-squares
-! solution p to an overdetermined system of linear equations with 
+! solution p to an overdetermined system of linear equations with
 ! coefficient matrix q, which includes right hand side vector b.
 !
 ! there are two ways to use svd:
@@ -1283,9 +1283,9 @@
 ! n      the total number of columns of q to be used (<N2)
 ! N2   the number of columns of q, at least n+1.
 ! mm   the number of rows of q, at least N2+m.
-! q      an mm-by-N2 array which on entry must contain the 
-!        matrix a in its first m rows and n columns, and the vector 
-!        b in its first m rows of column mm. on exit the residual 
+! q      an mm-by-N2 array which on entry must contain the
+!        matrix a in its first m rows and n columns, and the vector
+!        b in its first m rows of column mm. on exit the residual
 !        of equation i is stored in q(i,N2), i=1 to m.
 ! sig    measurement error (standard deviation) for the rhs
 !        from the calling program (can be set to 1.)
@@ -1323,7 +1323,7 @@
       integer                   :: i, j, k
       real                      :: wmax, thresh
       double precision          :: eps, sum, resi
-      
+
       jc=0
       sig(:)=1.
       do i=1,mm
@@ -1338,7 +1338,7 @@
         enddo
       enddo
 ! compute svd decomposition of u(=a), with a being replaced by its upper
-! matrix u, viz a=u*w*transpose(v), and vector w is output of a diagonal 
+! matrix u, viz a=u*w*transpose(v), and vector w is output of a diagonal
 ! matrix of singular values w(i), i=1,n.
       call dsvdcmp(u,m,n,mm,N2,w,v)
 ! check for small singular values
@@ -1420,7 +1420,7 @@
       ALLOCATE(TIDECON_ALLNAMES(NTOTAL_CON))
       ALLOCATE(II(NTIDAL_CON),JJ(NTIDAL_CON),KK(NTIDAL_CON),LL(NTIDAL_CON),MM(NTIDAL_CON), &
                NN(NTIDAL_CON),SEMI(NTIDAL_CON), NJ(NTOTAL_CON))
-      
+
       ALLOCATE(KONCO_CON(NKONCO),COEF_CON(NKONCO))
 
       TIDECON_ALLNAMES(:)=(/ &
@@ -1507,7 +1507,7 @@
  -2, -1,  0,  0,  1, -1, -1,  0,  0,  1, &
   1,  1,  2,  2,  0,  0,  0,  2,  2,  2, &
   2,  0,  0,  1,  2,  0,  0, -1, -1,  0, &
-  0,  0,  0,  0,  0,  1,  1,  1,  2,  0/) 
+  0,  0,  0,  0,  0,  1,  1,  1,  2,  0/)
       MDEL(1:JLM)=(/  0,  0,  0,  0,  0,  0,  0,  0, -1, -2, &
                      -1,  0, -2, -1,  0, -2, -1,  0, -3, -2, &
                      -2, -1,  0, -2,  0, -1,  0,  0, -2, -1, &
@@ -1524,7 +1524,7 @@
                       -2,  0, -1, -1,  0, -1,  0, -2, -1, -1, &
                        0,  1,  0,  1, -1, -1, -1, -1,  0,  1, &
                        2,  0, -1,  0,  0,  0,  1,  0,  1, -1, &
-                       1,  2, -1,  1,  2,  0,  1,  2,  0, -1 /) 
+                       1,  2, -1,  1,  2,  0,  1,  2,  0, -1 /)
      NDEL(1:JLM)=(/ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, &
                     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, &
                     0,  0,  0,  0,  1,  0,  0,  0,  0,  0, &
@@ -1541,7 +1541,7 @@
                     0,  0,  0,  0, -1,  0,  0,  0,  0,  0, &
                     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, &
                     0,  0,  0,  0,  0,  2,  2,  0,  0,  0, &
-                    0,  0,  0,  0,  0,  0,  0,  0,  0,  0 /) 
+                    0,  0,  0,  0,  0,  0,  0,  0,  0,  0 /)
      PH(1:JLM)=(/ 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.75, 0.00, 0.50, &
                   0.75, 0.75, 0.50, 0.00, 0.75, 0.50, 0.00, 0.50, 0.50, 0.50, &
                   0.75, 0.75, 0.75, 0.50, 0.00, 0.00, 0.75, 0.50, 0.50, 0.00, &
@@ -1558,7 +1558,7 @@
                   0.00, 0.25, 0.50, 0.50, 0.50, 0.75, 0.75, 0.00, 0.50, 0.25, &
                   0.75, 0.75, 0.00, 0.00, 0.50, 0.50, 0.50, 0.00, 0.50, 0.50, &
                   0.50, 0.00, 0.00, 0.75, 0.00, 0.50, 0.00, 0.75, 0.75, 0.50, &
-                  0.00, 0.00, 0.50, 0.00, 0.00, 0.75, 0.75, 0.75, 0.50, 0.50 /) 
+                  0.00, 0.00, 0.50, 0.00, 0.00, 0.75, 0.75, 0.75, 0.50, 0.50 /)
 
      EE(1:JLM)=(/ 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0360, 0.1906, 0.0063, &
                   0.0241, 0.0607, 0.0063, 0.1885, 0.0095, 0.0061, 0.1884, 0.0087, 0.0007, 0.0039, &
@@ -1576,7 +1576,7 @@
                   0.1429, 0.0293, 0.0330, 0.0224, 0.0447, 0.0001, 0.0004, 0.0005, 0.0373, 0.0001, &
                   0.0009, 0.0002, 0.0006, 0.0002, 0.0217, 0.0448, 0.0366, 0.0047, 0.2505, 0.1102, &
                   0.0156, 0.0000, 0.0022, 0.0001, 0.0001, 0.2535, 0.0141, 0.0024, 0.0004, 0.0128, &
-                  0.2980, 0.0324, 0.0187, 0.4355, 0.0467, 0.0747, 0.0482, 0.0093, 0.0078, 0.0564 /) 
+                  0.2980, 0.0324, 0.0187, 0.4355, 0.0467, 0.0747, 0.0482, 0.0093, 0.0078, 0.0564 /)
 
      IR(1:JLM)=(/ 0,  0,  0,  0,  0,  0,  0,  1,  0,  0, &
                    1,  1,  0,  0,  1,  0,  0,  0,  0,  0, &
@@ -1594,7 +1594,7 @@
                    0,  2,  0,  0,  0,  2,  2,  0,  0,  2, &
                    2,  2,  0,  0,  0,  0,  0,  0,  0,  0, &
                    0,  0,  0,  2,  0,  0,  0,  2,  2,  0, &
-                   0,  0,  0,  0,  0,  2,  2,  2,  0,  0 /) 
+                   0,  0,  0,  0,  0,  2,  2,  2,  0,  0 /)
 
       COEF_CON(:)=(/ 2.00,-1.00, 1.00,-1.00, 2.00, 1.00,-2.00, 2.00,-1.00, 3.00, &
                     -2.00, 2.00, 1.00,-2.00, 1.00, 1.00, 1.00,-2.00, 2.00, 1.00, &
@@ -1658,7 +1658,7 @@
 !
 !
 !* GIVEN CONSTITUENT KONX , THE NODAL CORRECTIONS V+U AND F ARE RETURNED
-! That subroutine can now be replaced by look-up table to get K from J 
+! That subroutine can now be replaced by look-up table to get K from J
 !
 !
       IMPLICIT NONE
@@ -1706,7 +1706,7 @@
 
       DOUBLE PRECISION, PARAMETER   :: TWOPI=3.1415926535898*2.
       DOUBLE PRECISION, PARAMETER   :: FAC=TWPI/360.
-      
+
       KR=8
 !
 !***********************************************************************
@@ -1735,7 +1735,7 @@
         !           NJ(K)
         IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 100
 70      J1=JBASE+1
-        IF (NJ(K).LT.1) THEN 
+        IF (NJ(K).LT.1) THEN
           NJ(K)=1
           JL=J1
           PH(J1)=0.
@@ -1744,7 +1744,7 @@
           MDEL(J1)=0
           NDEL(J1)=0
           IR(J1)=0
-        ELSE 
+        ELSE
           JL=JBASE+NJ(K)
 !
 !***********************************************************************
@@ -1796,7 +1796,7 @@
 
 170   NTOTAL_CON=K-1
 
-!  Write out  for cut and paste ... 
+!  Write out  for cut and paste ...
 !    WRITE(6,*) 'Numbers:',NTIDAL_CON, NTOTAL_CON, JLM, J1, J4
 !    WRITE(996,*) NTIDAL, NTOTAL_CON, JLM, J1, J4
 !999      FORMAT(10("'",A5,"',"),' &')
@@ -1836,7 +1836,7 @@
 !
 !      setvuf calculates the V,u,f values at time hr for all constituents
 !
-      END SUBROUTINE OPNVUF 
+      END SUBROUTINE OPNVUF
 
 !/ ------------------------------------------------------------------- /
      SUBROUTINE SETVUF(hr,XLAT,ITIME)
@@ -1868,7 +1868,7 @@
       d1=hr/24.d0
       ! This was with "gregorian days from KDAY"
       !call gday(31,12,99,18,kd0)   !  CALL GDAY(IDd,IMm,IYy,ICc,KDd)
-      ! Now uses "julian days from JULDAYT" 
+      ! Now uses "julian days from JULDAYT"
       ! KD0= 693961
       !KD0=JULDAYT(31,12,1899)   ! JULDAYT(id,mm,iyyy)
       KD0= 2415020
@@ -1937,7 +1937,7 @@
         DO lk=1,TIDE_MF
           IF (TIDECON_ALLNAMES(K).eq.TIDECON_NAME(lk)) then
            iflag=1
-            EXIT 
+            EXIT
             END IF
           END DO   ! lk
 
@@ -1949,8 +1949,8 @@
           END DO   ! J
         END DO     ! K
 
-!  Test output for verification purposes 
-        IF (ITIME.EQ.-1) THEN 
+!  Test output for verification purposes
+        IF (ITIME.EQ.-1) THEN
           WRITE(992,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,XLAT
           do l=1,TIDE_MF
@@ -1962,7 +1962,7 @@
                END IF
              END DO
            ENDDO
-         ENDIF 
+         ENDIF
 
       RETURN
 !
@@ -1977,10 +1977,10 @@
 !*
 !*  THIS PROGRAM DOES A TIDAL HEIGHTS 'HARMONIC' ANALYSIS OF IRREGULARLY
 !*  SAMPLED OBSERVATIONS.  THE ANALYSIS METHOD IS A LEAST SQUARES FIT
-!*  USING SVD COUPLED WITH NODAL MODULATION AND INFERENCE(IF SO REQUESTED).  
-!*      
-!*      The code is based on TOPEX analysis code originally developed by Josef 
-!*      Cherniawsky (JAOT, 2001, 18(4): 649-664) and modified by Rob Bell and 
+!*  USING SVD COUPLED WITH NODAL MODULATION AND INFERENCE(IF SO REQUESTED).
+!*
+!*      The code is based on TOPEX analysis code originally developed by Josef
+!*      Cherniawsky (JAOT, 2001, 18(4): 649-664) and modified by Rob Bell and
 !*      Mike Foreman. Enhancements to that version include
 !*
 !*      1. Provision for multi-constituent inferences computed directly within
@@ -1991,14 +1991,14 @@
 !*      2. An extension to permit the analysis of current observations.
 !*
 !*      3. Removal of a central time as the basis for the calculation of the
-!*        astronomical arguments V. Now the V value for each observation, as well 
-!*        as those for the nodal corrections f and u (done for the JAOT analysis), 
+!*        astronomical arguments V. Now the V value for each observation, as well
+!*        as those for the nodal corrections f and u (done for the JAOT analysis),
 !*        are incorporated directly into the overdetermined matrix. These changes
 !*        mean that analyses no longer need be restricted to periods of a year or
-!*        less. (Though as the period approaches 18.6 years, using another "long 
+!*        less. (Though as the period approaches 18.6 years, using another "long
 !*        period" analysis program that solves for the "nodal satellites" directly
 !*        is advisable.)
-!* 
+!*
 !***********************************************************************
 !*
 !*  FILE REFERENCE NUMBERS OF DEVICES REQUIRED BY THIS PROGRAM.
@@ -2024,7 +2024,7 @@
 !*         NEQ     BE TIDE_NTI*2 IF ALL THE OBSERVATIONS ARE EXTREMES AND
 !*                 THE DERIVATIVE CONDITION IS TO BE INCLUDED FOR EACH,
 !*                 AND TIDE_NTI OTHERWISE (= NR for T/P data).
-!*  THEN PARAMETERS NMAXP1, AND NMAXPM SHOULD BE AT LEAST MPAR+1, AND 
+!*  THEN PARAMETERS NMAXP1, AND NMAXPM SHOULD BE AT LEAST MPAR+1, AND
 !*  NEQ+MPAR RESPECTIVELY.  THEY ARE CURRENTLY SET TO 40 AND 240.
 !*
 !*  TIDECON_NAME(I) IS THE ARRAY CONTAINING ALL THE CONSTITUENT NAMES,
@@ -2060,7 +2060,7 @@
 !***********************************************************************
 !
       IMPLICIT NONE
-  
+
       INTEGER, INTENT(IN)         :: NDEF, ITREND, ITEST
       INTEGER(KIND=4), INTENT(IN) :: KD1, KD2, IX, IY
       REAL           , INTENT(IN) :: XLON, XLAT
@@ -2068,7 +2068,7 @@
       REAL           , INTENT(OUT):: SSQ(NDEF), RES(NDEF)
       INTEGER        , INTENT(OUT):: IMAX(NDEF)
 !
-      INTEGER                     :: I, I1, I2, I21, II1, IDEF, ICODE,  INFLAG,  & 
+      INTEGER                     :: I, I1, I2, I21, II1, IDEF, ICODE,  INFLAG,  &
                                      J, INFTOT, IREP, J2, JCODE, JJ1, K, K2, KH1,     &
                                      KH2, KHM, KINF, L, M, MEQ, N, NCOL, NEW, NMAX
       REAL(KIND=8)                :: AAMP, ARG, ARG1, ARG2, ARG3, C, C2, C3,     &
@@ -2077,8 +2077,8 @@
       REAL                        :: TOLER
       REAL(KIND=8)                :: AV, SDEV, SUM2, hrm
       DOUBLE PRECISION            :: X(NR),Y(NR), TIME(NR)
-      REAL                        :: Q(NMAXPM,NMAXP1),FREQ(MC),AMP(MC),PH(MC) 
-      DOUBLE PRECISION            :: P(NMAXP1),CENHR,CUMHR  
+      REAL                        :: Q(NMAXPM,NMAXP1),FREQ(MC),AMP(MC),PH(MC)
+      DOUBLE PRECISION            :: P(NMAXP1),CENHR,CUMHR
       DOUBLE PRECISION            :: yy
 !
 !     Additional arrays, for use in the SVD routine (J.Ch., Aug. 1997)
@@ -2129,7 +2129,7 @@
       DO idef=1,ndef   ! loop thru once or twice
 
 ! Modifies the time reference xmid and puts it at 0 : modification by FA, 2012/09/26
-! the impact of that change has not been verified ... 
+! the impact of that change has not been verified ...
         xmid=0. !0.5*(TIDE_HOURS(1)+TIDE_HOURS(TIDE_NTI))
         Q(1:NMAXPM,1:NMAXP1)=0.0
         DO I=1,N
@@ -2138,7 +2138,7 @@
 !      fitted as const+trend(t-tmid) where tmid (=xmid) is the middle time
 !      of the analysis period (This makes the constant consistent with z0
 !      in the old analysis program)
-!      If itrend=0 then the second parameter is is associated with the next 
+!      If itrend=0 then the second parameter is is associated with the next
 !      constituent
           Q(I,1)=1.
           IF (itrend.eq.1) then
@@ -2151,11 +2151,11 @@
 !      but something is not right if don't do it 2nd time too
          ! CALL SETVUF(TIDE_HOURS(I),xlat,I)
           DO J=2,TIDE_MF
-            CALL VUF(TIDECON_NAME(j),VX,ux,FX,I) 
+            CALL VUF(TIDECON_NAME(j),VX,ux,FX,I)
 !      check to see if this constituent is to be used for inference
               inflag=0
               kinf=0
-              IF (TIDE_NIN.GE.0) THEN 
+              IF (TIDE_NIN.GE.0) THEN
                 do k=1,TIDE_NIN
                   IF (TIDECON_NAME(j).eq.TIDE_KONAN(k)) then
                     inflag=1
@@ -2186,8 +2186,8 @@
                 Q(I,J2)=COS(ARG1)*fx
                 Q(I,JJ1)=SIN(ARG1)*fx
                 do k2=1,TIDE_NINF(kinf)
-                  CALL VUF(TIDE_KONIN(kinf,k2),VXi,uxi,FXi,I) 
-!      freq is radians/hr but sigin is cycles/hr 
+                  CALL VUF(TIDE_KONIN(kinf,k2),VXi,uxi,FXi,I)
+!      freq is radians/hr but sigin is cycles/hr
                   ARG2=(vxi+uxi)*twpi
                   c2=cos(arg2)
                   s2=sin(arg2)
@@ -2200,7 +2200,7 @@
               END IF
             END DO ! j
           END DO  !i
-      
+
 !/T      WRITE(6,*) 'assembled overdetermined matrix and/or rhs'
         NMAX=M
         MEQ=N
@@ -2285,7 +2285,7 @@
 !***********************************************************************
 !*  CALCULATE AMPLITUDES AND PHASES
 !
-!      if itrend=1 then the linear trend is shown as the phase of the constant 
+!      if itrend=1 then the linear trend is shown as the phase of the constant
 !      Z0 term (& the true phase of Z0 is zero)
 !      otherwise, the phase of Z0 is shown as zero
       AMP(1)=P(1)
@@ -2305,14 +2305,14 @@
           C=P(I2)
           S=P(I21)
           AAMP=SQRT(C*C+S*S)
-          IF (AAMP.LT.1.E-5) THEN 
+          IF (AAMP.LT.1.E-5) THEN
             PH(I)=0.
-          ELSE 
+          ELSE
             PH(I)=ATAN2(S,C)/FAC
             IF (PH(I).LT.0.) PH(I)=PH(I)+360.
             END IF
           AMP(I)=AAMP
-          END DO  ! end of loop on TIDE_MF 
+          END DO  ! end of loop on TIDE_MF
 !***********************************************************************
 !      Note that with f & u included in the lsq fit, we only need V from routine VUF
 !      but we don't want to correct with V for a central hour. Better to include
@@ -2328,7 +2328,7 @@
       TIDE_sig3(:,idef)=0.
       TIDE_ttest(:,idef)=0.
 !
-      IF (ITEST.GE.1) THEN 
+      IF (ITEST.GE.1) THEN
 !---------------------------------------------------
 !
       i=1
@@ -2379,7 +2379,7 @@
 !
 !  now inferred constituents
 !
-      IF (TIDE_NIN.GE.0) THEN 
+      IF (TIDE_NIN.GE.0) THEN
         l=0
         do k=1,TIDE_NIN
           do i=2,TIDE_MF
@@ -2421,7 +2421,7 @@
 !              jmax=j
 !             END IF
 !            END DO
-!          END DO 
+!          END DO
 !        if (itrend.eq.1) then
 !          iconst=(imax+1)/2
 !          jconst=(jmax+1)/2
@@ -2431,7 +2431,7 @@
 !          END IF
 !        write(lp,83) iter,cormax,imax,jmax,TIDECON_NAME(iconst),TIDECON_NAME(jconst)
 !83      format(i5,' largest correlation coefficient is ',f8.3,' at (i,j)='     &
-!           ,2i5,' for constituents ',a5,' and ',a5) 
+!           ,2i5,' for constituents ',a5,' and ',a5)
 !        cor(imax,jmax)=0.
 !        END DO
 !
@@ -2461,14 +2461,14 @@
       REAL                           :: ARG, ADD, SUM1, SSQ
       REAL(KIND=8)                   :: VX, UX, FX
 
-      M = 2*TIDE_MF 
+      M = 2*TIDE_MF
 
       DO IDEF=1,NDEF
         SDEV=0.D0
         DO I=1,N
-          IF (itrend.eq.1) THEN 
+          IF (itrend.eq.1) THEN
             SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*HOURS(i)/(365.*24.)
-          ELSE 
+          ELSE
             SUM1=TIDE_AMPC(1,idef)
             END IF
 !
@@ -2479,15 +2479,15 @@
           SUM1=SUM1+ADD
           END DO
 !
-        IF (TIDE_NIN.NE.0) THEN 
+        IF (TIDE_NIN.NE.0) THEN
           DO k=1,TIDE_NIN
             DO k2=1,TIDE_NINF(k)
               CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
               ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
               ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
               SUM1=SUM1+ADD
-              END DO 
-            END DO 
+              END DO
+            END DO
           END IF
 !
         PREDICTED(I,IDEF)=SUM1
@@ -2499,7 +2499,7 @@
       SSQ=SDEV(IDEF)
       RMSR(IDEF)=SQRT(SSQ/(N-M))
       SDEV(IDEF)=sqrt(ssq/N)
-      ENDDO 
+      ENDDO
 !
       END SUBROUTINE TIDE_PREDICT
 
@@ -2520,9 +2520,9 @@
 
       DO IDEF=1,NDEF
         DO I=1,N
-          IF (itrend.eq.1) THEN 
+          IF (itrend.eq.1) THEN
             SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*TIDE_HOURS(i)/(365.*24.)
-          ELSE 
+          ELSE
             SUM1=TIDE_AMPC(1,idef)
             END IF
 !
@@ -2533,22 +2533,22 @@
           SUM1=SUM1+ADD
           END DO
 !
-        IF (TIDE_NIN.NE.0) THEN 
+        IF (TIDE_NIN.NE.0) THEN
           DO k=1,TIDE_NIN
             DO k2=1,TIDE_NINF(k)
               CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
               ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
               ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
               SUM1=SUM1+ADD
-              END DO 
-            END DO 
+              END DO
+            END DO
           END IF
 !
         PREDICTED(I,IDEF)=SUM1
 !
         END DO
 !
-      ENDDO 
+      ENDDO
 !
       END SUBROUTINE TIDE_PREDICT_ONLY
 

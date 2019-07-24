@@ -20,7 +20,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -48,7 +48,7 @@
 !       !/S   Enable subroutine tracing.
 !       !/T   Enable general test output.
 !       !/T0  2-D print plot of source term.
-!       !/T1  Print arrays. 
+!       !/T1  Print arrays.
 !
 !  7. Source code :
 !/
@@ -134,7 +134,7 @@
 !       !/S   Enable subroutine tracing.
 !       !/T   Enable general test output.
 !       !/T0  2-D print plot of source term.
-!       !/T1  Print arrays. 
+!       !/T1  Print arrays.
 !
 ! 10. Source code :
 !
@@ -333,12 +333,12 @@
 !
   800 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-      CALL EXTCDE ( 1 ) 
+      CALL EXTCDE ( 1 )
 !
 !     Format statements
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN INSNL2 :'/                &
-               '     xnl_init RETURN CODE NON ZERO : ',I8/) 
+               '     xnl_init RETURN CODE NON ZERO : ',I8/)
 !
 !/T 9000 FORMAT (' TEST INSNL2 : NLTAIL :',F6.1/                      &
 !/T              '               XGRAV  :',F8.3/                      &

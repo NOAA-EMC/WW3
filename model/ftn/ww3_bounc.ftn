@@ -13,14 +13,14 @@
 !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
 !/     1-Apr-2015 : Add checks on lat lon xfr           ( version 5.05 )
 !/    11-May-2015 : Allow use of cartesian grids        ( version 5.08 )
-!/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 ) 
+!/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 )
 !/    20-Oct-2016 : Error statement updates             ( version 5.15 )
 !/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -69,7 +69,7 @@
 !
 !     ----------------------------------------------------
 !        1.a  Set up data structures.
-!                            ( W3NMOD , W3NDAT , W3NOUT 
+!                            ( W3NMOD , W3NDAT , W3NOUT
 !                              W3SETG , W3SETW , W3SETO )
 !          b  I-O setup.
 !        ....
@@ -205,7 +205,7 @@
 !
 ! process ww3_bounc namelist
 !
-      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_bounc.nml", EXIST=FLGNML) 
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_bounc.nml", EXIST=FLGNML)
       IF (FLGNML) THEN
         ! Read namelist
         CALL W3NMLBOUNC (NDSI, TRIM(FNMPRE)//'ww3_bounc.nml', NML_BOUND, IERR)
@@ -215,7 +215,7 @@
         VERBOSE = NML_BOUND%VERBOSE
         FILE = NML_BOUND%FILE
 
-        NBO2 = 0          
+        NBO2 = 0
         OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
         REWIND (NDSL)
         DO
@@ -251,7 +251,7 @@
         READ (NDSI,*,END=801,ERR=802) VERBOSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
-        NBO2 = 0          
+        NBO2 = 0
 !
 !       ILOOP = 1 to count NBO2
 !       ILOOP = 2 to read the file names
@@ -266,10 +266,10 @@
             ALLOCATE(SPECFILES(NBO2))
             NBO2=0
           ENDIF
- 
+
           NBO2=0
 !         Read input file names
-          DO 
+          DO
             CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
             READ (NDSI2,'(A512)') FILENAME
             JJ     = LEN_TRIM(FILENAME)
@@ -278,13 +278,13 @@
               READ (NDSI,'(A)') LINE
               WRITE (NDSS,'(A)') LINE
             END IF
-            IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT 
+            IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT
             NBO2=NBO2+1
-            IF (ILOOP.EQ.1) CYCLE 
+            IF (ILOOP.EQ.1) CYCLE
             SPECFILES(NBO2)=FILENAME
-          END DO 
+          END DO
 !
-          IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS) 
+          IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS)
 !
           IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
         END DO ! ILOOP = 1, 2
@@ -298,15 +298,15 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4. Tests the reading of the file
 !
-      IF ( INXOUT.EQ.'READ') THEN 
+      IF ( INXOUT.EQ.'READ') THEN
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='old')
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
         IF ( IDTST .NE. IDSTRBC ) GOTO 803
         WRITE(NDSO,940) VERTEST
         WRITE(NDSO,941) IDTST
-        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
-                    NK1,NTH1,XFR, FR1I, TH1I, NBI 
+        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', &
+                    NK1,NTH1,XFR, FR1I, TH1I, NBI
         ALLOCATE (XBPI(NBI),YBPI(NBI))
         ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
         READ(NDSB) (XBPI(I),I=1,NBI),                                 &
@@ -327,8 +327,8 @@
         IERR=0
         DO WHILE (IERR.EQ.0)
           READ (NDSB,IOSTAT=IERR) TIME2, NBI2
-          IF (IERR.EQ.0) THEN 
-            IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
+          IF (IERR.EQ.0) THEN
+            IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR
             DO IP=1, NBI2
               READ (NDSB,END=803,ERR=804) ABPIN(:,IP)
             END DO
@@ -338,7 +338,7 @@
       END IF ! INXOUT.EQ.'READ'
 !
 !
-      IF ( INXOUT.EQ.'WRITE') THEN 
+      IF ( INXOUT.EQ.'WRITE') THEN
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5. Defines position of active boundary points
@@ -346,8 +346,8 @@
         NBO = 0
         DO ISEA=1,NSEA
           IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2) 
-          IF (MAPSTA(IY,IX).EQ.2) THEN 
+          IY     = MAPSF(ISEA,2)
+          IF (MAPSTA(IY,IX).EQ.2) THEN
             NBO=NBO+1
           END IF
         END DO
@@ -357,7 +357,7 @@
         DO ISEA=1,NSEA
           IX     = MAPSF(ISEA,1)
           IY     = MAPSF(ISEA,2)
-          IF (MAPSTA(IY,IX).EQ.2) THEN 
+          IF (MAPSTA(IY,IX).EQ.2) THEN
             IBO=IBO+1
             SELECT CASE ( GTYPE )
             CASE ( RLGTYPE )
@@ -366,7 +366,7 @@
             CASE ( CLGTYPE )
               XBPO(IBO)= XGRD(IY,IX)
               YBPO(IBO)= YGRD(IY,IX)
-            CASE (UNGTYPE) 
+            CASE (UNGTYPE)
               XBPO(IBO)= XYB(IX,1)
               YBPO(IBO)= XYB(IX,2)
             END SELECT !GTYPE
@@ -382,17 +382,17 @@
           ! open file
           OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),FORM='UNFORMATTED',      &
                status='old',iostat=ICODE)
-          IF (ICODE.NE.0) THEN 
+          IF (ICODE.NE.0) THEN
             LONS(IP)=-999.
             LATS(IP)=-999.
             WRITE (NDSE,1010) TRIM(SPECFILES(IP))
             CALL EXTCDE ( 70 )
           END IF
- 
+
           IRET=NF90_OPEN(TRIM(SPECFILES(IP)),NF90_NOWRITE,NCID(IP))
           WRITE(6,*) 'Opening file:',TRIM(SPECFILES(IP))
           CALL CHECK_ERR(IRET)
-          
+
           ! dimensions
           IRET=NF90_INQ_DIMID(NCID(IP),'time',DIMID(IP,1))
           CALL CHECK_ERR(IRET)
@@ -428,7 +428,7 @@
             IRET=NF90_GET_VAR(NCID(IP), VARID(1), TIMES(:))
             CALL CHECK_ERR(IRET)
             IRET=NF90_GET_ATT(NCID(IP),VARID(1),"calendar",CALENDAR)
-            IF ( IRET/=NF90_NOERR ) THEN 
+            IF ( IRET/=NF90_NOERR ) THEN
               WRITE(NDSE,951)
             ELSE IF ((INDEX(CALENDAR, "standard").EQ.0) .AND. &
                      (INDEX(CALENDAR, "gregorian").EQ.0)) THEN
@@ -438,7 +438,7 @@
             CALL U2D(TIMEUNITS,REFDATE,IERR)
             CALL D2J(REFDATE,REFJULDAY,IERR)
 
-          ELSE 
+          ELSE
             IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) GOTO 805
           END IF
 
@@ -448,16 +448,16 @@
             CALL CHECK_ERR(IRET)
             IRET=NF90_GET_VAR(NCID(IP), VARID(2), LATS(IP))
             CALL CHECK_ERR(IRET)
-            IRET=NF90_INQ_VARID(NCID(IP), 'longitude', VARID(3))        
+            IRET=NF90_INQ_VARID(NCID(IP), 'longitude', VARID(3))
             CALL CHECK_ERR(IRET)
             IRET=NF90_GET_VAR(NCID(IP), VARID(3), LONS(IP))
             CALL CHECK_ERR(IRET)
           ELSE
-            IRET=NF90_INQ_VARID(NCID(IP), 'y', VARID(2))        
+            IRET=NF90_INQ_VARID(NCID(IP), 'y', VARID(2))
             CALL CHECK_ERR(IRET)
             IRET=NF90_GET_VAR(NCID(IP), VARID(2), LATS(IP))
             CALL CHECK_ERR(IRET)
-            IRET=NF90_INQ_VARID(NCID(IP), 'x', VARID(3))        
+            IRET=NF90_INQ_VARID(NCID(IP), 'x', VARID(3))
             CALL CHECK_ERR(IRET)
             IRET=NF90_GET_VAR(NCID(IP), VARID(3), LONS(IP))
             CALL CHECK_ERR(IRET)
@@ -474,7 +474,7 @@
           CALL CHECK_ERR(IRET)
           THETA=(PI/180)*THETA
 
-          ! 2D spectra depending on station name or lat/lon 
+          ! 2D spectra depending on station name or lat/lon
           IRET=NF90_INQ_VARID(NCID(IP),"efth",VARID(7))
           IF (IRET.NE.0) IRET=NF90_INQ_VARID(NCID(IP),"Efth",VARID(7))
           CALL CHECK_ERR(IRET)
@@ -482,7 +482,7 @@
           IF (IRET.NE.0) FACTOR=1.
           IRET=NF90_GET_ATT(NCID(IP),VARID(7),"add_offset",OFFSET)
           IF (IRET.NE.0) OFFSET=0.
-          IRET = NF90_INQ_VARID(NCID(IP), 'station_name', VARID(6)) 
+          IRET = NF90_INQ_VARID(NCID(IP), 'station_name', VARID(6))
           IF (IRET.NE.0) THEN
             ! efth(time, frequency, direction, latitude, longitude)
             IRET=NF90_GET_VAR(NCID(IP),VARID(7),SPEC2D(:,:,:,IP),       &
@@ -496,7 +496,7 @@
           END IF
           ! apply scale_factor and add_offset
           SPEC2D(:,:,:,IP)=(SPEC2D(:,:,:,IP)*FACTOR)+OFFSET
-         
+
           ! close spectra file
           IRET=NF90_CLOSE(NCID(IP))
           CALL CHECK_ERR(IRET)
@@ -526,36 +526,36 @@
         IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 807
 !
         ! Checks consistency of NTH
-        ! WARNING: check is only done on number of directions, no check 
-        ! is done on the relative offset of first direction in terms of 
-        ! the directional increment [-0.5,0.5] (last parameter of the 
-        ! spectral definition in ww3_grid.inp, on second active line) 
+        ! WARNING: check is only done on number of directions, no check
+        ! is done on the relative offset of first direction in terms of
+        ! the directional increment [-0.5,0.5] (last parameter of the
+        ! spectral definition in ww3_grid.inp, on second active line)
         IF (NTHI.NE.NTH) GOTO 808
 !
-        IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
+        IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN
           DO J=1,MIN(NK1,NK)
-            IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
+            IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN
               IFMIN=J
             END IF
-          END DO  
-        END IF
-!     
-        IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN 
-          DO J=1,MIN(NK,NK1)
-            IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN 
-              IFMIN2=J
-            END IF
-          END DO  
+          END DO
         END IF
 !
-        IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN 
+        IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN
+          DO J=1,MIN(NK,NK1)
+            IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN
+              IFMIN2=J
+            END IF
+          END DO
+        END IF
+!
+        IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN
           DO J=1,NK
             IF (ABS(FREQ(J)-FR1*XFR**(NK1-1)) .LT. &
-                ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN 
+                ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN
               IFMAX=J
             END IF
-          END DO 
-        END IF 
+          END DO
+        END IF
 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -563,7 +563,7 @@
 !
         DO IP=1,NBO2
 !         Fills in the low frequency end of the spectrum
-          IF (IFMIN2.GT.1) THEN 
+          IF (IFMIN2.GT.1) THEN
             ABPIN2(1:(IFMIN2-1)*NTH,:,IP)=0.
           END IF
 
@@ -574,18 +574,18 @@
             END DO
           END DO
 
-!         Fills tail of spectrum            
-          IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN 
+!         Fills tail of spectrum
+          IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN
             IF (VERBOSE.GE.2) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
             ABPIN2((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,:,IP)=0.
-          END IF 
+          END IF
         END DO ! IP=1,NBO2
 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8. Writes header
 !
-!       Writes header in nest.ww3 file 
+!       Writes header in nest.ww3 file
         WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH1, XFR, FREQ(1),       &
         MOD(2.5*PI-THETA(1),TPI), NBO
         IPBPO(:,:)=1
@@ -599,19 +599,19 @@
 !         Loops on files
           DO IP=1,NBO2
 !           Searches for the nearest 2 points where spectra are available
-            IF (FLAGLL)  THEN 
+            IF (FLAGLL)  THEN
               DIST=DIST_SPHERE ( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
-            ELSE 
+            ELSE
               DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
               END IF
-            IF (DMIN.EQ.(360.+180.)) THEN 
-              IF(DIST.LT.DMIN) THEN 
+            IF (DMIN.EQ.(360.+180.)) THEN
+              IF(DIST.LT.DMIN) THEN
                 IPBPO(IP1,1)=IP
                 DMIN=DIST
               END IF
             ELSE
-              IF(DIST.LT.DMIN2) THEN 
-                IF(DIST.LT.DMIN) THEN 
+              IF(DIST.LT.DMIN2) THEN
+                IF(DIST.LT.DMIN) THEN
                   IPBPO(IP1,2)=IPBPO(IP1,1)
                   DMIN2=DMIN
                   IPBPO(IP1,1)=IP
@@ -632,8 +632,8 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9. Computes linear interpolation coefficient between the nearest 2 points
 !
-          IF (INTERP.GT.1.AND.NBO2.GT.1) THEN 
-            IF (FLAGLL) THEN 
+          IF (INTERP.GT.1.AND.NBO2.GT.1) THEN
+            IF (FLAGLL) THEN
               DLON=LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))
               DLAT=LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))
               DLO=XBPO(IP1)-LONS(IPBPO(IP1,1))
@@ -641,11 +641,11 @@
               IF (DLON.LT.-180.) DLON=DLON+360
               IF (DLO.GT.180.) DLO=DLO-360
               IF (DLO.LT.-180.) DLO=DLO+360
-              DIST=SQRT(DLON**2+DLAT**2) 
+              DIST=SQRT(DLON**2+DLAT**2)
               COS1=( DLO*DLON &
                   + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
                   *DLAT )/(DIST**2)
-            ELSE 
+            ELSE
               DIST=SQRT((LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))**2   &
                +(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2)))**2)
               COS1=( (XBPO(IP1)-LONS(IPBPO(IP1,1)))  &
@@ -659,7 +659,7 @@
             !      *(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2))))/(DIST**2)
             RDBPO(IP1,1)=1-MIN(1.,MAX(0.,COS1))
             RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
-          ELSE 
+          ELSE
             ! in this case: nearest point
             RDBPO(IP1,1)=1.
             RDBPO(IP1,2:4)=0.
@@ -678,12 +678,12 @@
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 10. Loops on times and files and write to nest.ww3
-!          
+!
         DO IT=1,NT1
           CURJULDAY=TIMES(IT)
           IF (INDEX(TIMEUNITS, "seconds").NE.0)   CURJULDAY=CURJULDAY/86400.
           IF (INDEX(TIMEUNITS, "minutes").NE.0)   CURJULDAY=CURJULDAY/1440.
-          IF (INDEX(TIMEUNITS, "hours").NE.0)     CURJULDAY=CURJULDAY/24. 
+          IF (INDEX(TIMEUNITS, "hours").NE.0)     CURJULDAY=CURJULDAY/24.
           CURJULDAY=REFJULDAY+CURJULDAY
 
           ! convert julday to date and time

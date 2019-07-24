@@ -36,7 +36,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -48,7 +48,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      TRNMIN    R.P.  Private   Minimum transparancy for local 
+!      TRNMIN    R.P.  Private   Minimum transparancy for local
 !                                switching off of averaging.
 !     ----------------------------------------------------------------
 !
@@ -192,7 +192,7 @@
 !
 ! 10. Source code :
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, NX, NY, NSEA, MAPSTA, MAPSF,& 
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, NX, NY, NSEA, MAPSTA, MAPSF,&
                           GTYPE
       USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
                           NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
@@ -523,15 +523,15 @@
       DO ISEA=1, NSEA
         IXY         = MAPSF(ISEA,3)
 
-!notes: Oct 22 2012: I changed this because it *looks* like a bug. 
+!notes: Oct 22 2012: I changed this because it *looks* like a bug.
 !       I have not confirmed that it is a bug.
-!       Old code is given (2 lines). Only the first line is 
+!       Old code is given (2 lines). Only the first line is
 !       changed.
 
-!old    MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              & 
+!old    MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              &
 !old                       ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
 
-        MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNX(IXY,-1) ,              & 
+        MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNX(IXY,-1) ,              &
                            ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
         END DO
 !
@@ -861,7 +861,7 @@
         IX  = MAPSF(ISEA,1)
         IY  = MAPSF(ISEA,2)
 !
-! 1.c.1 Normal and parallel width ... 
+! 1.c.1 Normal and parallel width ...
 !
         TMPX   = FTHX / CLATS(ISEA)
         TMPY   = FTHY
@@ -1039,10 +1039,10 @@
           IF ( MAPSTA(IXY) .LE. 0 ) CYCLE
           IF ( MAPTRN(IXY) ) THEN
               VQ(IXY) = AQ(IXY)
-            ELSE          
+            ELSE
               RD1     = RDI1(ISEA)
               RD3     = RDI3(ISEA)
-              RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )           
+              RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )
               RD4     = MIN ( 1. , RDI4(ISEA) * CG(IK,ISEA) )
               VQ(IXY          ) = VQ(IXY          )                   &
                                    + AQ(IXY) * (3.-RD2-RD4)/3.
@@ -1067,7 +1067,7 @@
                        VQ(IXY          ) = VQ(IXY          )          &
                                             + AQ(IXY) * RD2*RD1/6.
                 END IF
- 
+
               IF ( MAPSTX(IXY+IIXY2(ISEA)) .GE. 1 ) THEN
                        VQ(IXY+IIXY2(ISEA)) = VQ(IXY+IIXY2(ISEA))      &
                                             + AQ(IXY) * (1.-RD1)*RD2/6.
@@ -1220,7 +1220,7 @@
 !/T2              END IF
 !/T2            END DO
 !
-        IF ( FLBPI ) THEN 
+        IF ( FLBPI ) THEN
             RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
                                       REAL(NTLOC-ITLOC)/REAL(NTLOC)
             RD2    = DSEC21 ( TBPI0, TBPIN )
@@ -1444,7 +1444,7 @@
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Initialize arrays
 !
-     DEPTH  = MAX ( DMIN, DW )  
+     DEPTH  = MAX ( DMIN, DW )
      VQ       = 0.
      IF ( FLCTH ) VCFLT    = 0.
      IF ( FLCK  ) CFLK     = 0.
@@ -1548,7 +1548,7 @@
             CFLTHMAX = MAX(CFLTHMAX, ABS(VELNOFILT))
 !
 ! Puts filtering on total velocity (including currents and great circle effects)
-! the filtering limits VCFLT to be less than CTMAX 
+! the filtering limits VCFLT to be less than CTMAX
 ! this modification was proposed by F. Ardhuin 2011/03/06
 !
             VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
@@ -1593,15 +1593,15 @@
 !
           DO IK=0, NK+1
             FKD0   = FKD / CG(IK) * DSDD(IK)
-            VELFAC =  FACK/DB(IK+1,1) 
+            VELFAC =  FACK/DB(IK+1,1)
             DO ITH=1, NTH
 !
-! Puts filtering on velocity (needs the band widths) 
-!             
-              VELNOFILT = ( FKD0 + WN(IK)*FKC(ITH) ) * VELFAC   ! this is velocity * DT / DK 
+! Puts filtering on velocity (needs the band widths)
+!
+              VELNOFILT = ( FKD0 + WN(IK)*FKC(ITH) ) * VELFAC   ! this is velocity * DT / DK
               CFLKMAX = MAX(CFLKMAX, ABS(VELNOFILT))
               CFLK(IK+1,ITH) = SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)/VELFAC
-              !CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)          ! this was without the limiter ... 
+              !CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)          ! this was without the limiter ...
               END DO
             END DO
 !

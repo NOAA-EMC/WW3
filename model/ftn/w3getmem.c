@@ -48,7 +48,7 @@ double get_memory_(void)
   struct rusage RU;
 
   getrusage(RUSAGE_SELF, &RU);
- 
+
   Kbytes = RU.ru_maxrss;
 
   Mbytes = ((double) Kbytes) / 1024.0;

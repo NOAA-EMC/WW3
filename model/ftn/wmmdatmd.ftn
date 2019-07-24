@@ -29,12 +29,12 @@
 !/    10-Dec-2014 : Add checks for allocate status     ( version 5.04 )
 !/    28-Sep-2016 : Adjust MTAG? values so that MPI tags used fit
 !/                  within allowed bounds.             ( version 5.15 )
-!/    06-Jun-2018 : add subroutine INIT_GET_JSEA_ISPROC_GLOB/add PDLIB 
+!/    06-Jun-2018 : add subroutine INIT_GET_JSEA_ISPROC_GLOB/add PDLIB
 !/                                                     ( version 6.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -55,7 +55,7 @@
 !      MDST      Int.  Public   Unit number for test output.
 !      MDSE      Int.  Public   Unit number for error output.
 !                               These outputs correspond to similar
-!                               unit numbers as defined per grid, but 
+!                               unit numbers as defined per grid, but
 !                               are used for multi-grid routines
 !                               only.
 !      MDSP      Int.  Public   Unit number for profiling.
@@ -112,10 +112,10 @@
 !                               data.                         ( !/MPI )
 !      HGHSTA    I.A.  Public   Status for gathering high resolution
 !                               data.                         ( !/MPI )
-!      EQLSTA    I.A.  Public   Status for gathering data fro equally 
+!      EQLSTA    I.A.  Public   Status for gathering data fro equally
 !                               ranked grids.                 ( !/MPI )
 !
-!      FLGBDI    Log.  Public   Flag for intitialization of boundry 
+!      FLGBDI    Log.  Public   Flag for intitialization of boundry
 !                               distance maps.
 !      FLGHGn    Log.  Public   Flags for using mask for computations
 !                               and output for areas of grid overlap.
@@ -201,7 +201,7 @@
 !      NRQOUT    Int.  Public   Number of local spectra.     ( !/MPI )
 !      OUTDAT    I.A.  Public   Corresponding data.          ( !/MPI )
 !      NTOT, NREC, NRC1, NSND, NSN1, NSMX
-!                Int.  Public   Counters for total data, send and 
+!                Int.  Public   Counters for total data, send and
 !                               received data with and without
 !                               masking.
 !      VTIME     I.A.  Public   Valid time of data.
@@ -212,7 +212,7 @@
 !      ISEND     I.A.  Public   Composite of all deta needed for send.
 !      WGHT      R.A.  Public   Weihts in averaging.
 !      SHGH      R.A.  Public   Staging area for spectra.
-!      TSTORE    R.A.  Public   Staging area for spectra to be send 
+!      TSTORE    R.A.  Public   Staging area for spectra to be send
 !                               out                         ( !/MPI )
 !      INIT      Log.  Public   Flag for array allocation.
 !     ----------------------------------------------------------------
@@ -226,7 +226,7 @@
 !      NRQOUT    Int.  Public   Number of local spectra.     ( !/MPI )
 !      OUTDAT    I.A.  Public   Corresponding data.          ( !/MPI )
 !      NTOT, NREC, NSND, NAVMAX
-!                Int.  Public   Counters for total data, send and 
+!                Int.  Public   Counters for total data, send and
 !                               received data.
 !      VTIME     I.A.  Public   Valid time of data.
 !      I/JSEA    I.A.  Public   Sea point counters.
@@ -240,7 +240,7 @@
 !      SEQL      R.A.  Public   Staging array.
 !      WGHT      R.A.  Public   Weight between grids.
 !      WAVG      R.A.  Public   Weight within grid.
-!      TSTORE    R.A.  Public   Staging area for spectra to be send 
+!      TSTORE    R.A.  Public   Staging area for spectra to be send
 !                               out                         ( !/MPI )
 !      INIT      Log.  Public   Flag for array allocation.
 !     ----------------------------------------------------------------
@@ -604,7 +604,7 @@
 !
 !  7. Remarks :
 !
-!     - WMSETM needs to be called after allocation to point to 
+!     - WMSETM needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -779,7 +779,7 @@
 !
 !  7. Remarks :
 !
-!     - WMSETM needs to be called after allocation to point to 
+!     - WMSETM needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -960,7 +960,7 @@
       IF ( NMDATA .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
-        END IF   
+        END IF
 !
       IF ( IMOD.LT.1 .OR. IMOD.GT.NMDATA ) THEN
           WRITE (NDSE,1002) IMOD, NMDATA
@@ -1033,8 +1033,8 @@
 !/    06-Jun-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : Introduce mapping for ISPROC and JSEA when using PDLIB
-!               in the Multigrid approach 
-!             
+!               in the Multigrid approach
+!
 !  2. Method :
 !  3. Parameters :
 !
@@ -1091,7 +1091,7 @@
         ISPROC=1
 !/DIST        ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
       ELSE
-!/PDLIB      IF (GRIDS(J)%GTYPE .ne. UNGTYPE) THEN       
+!/PDLIB      IF (GRIDS(J)%GTYPE .ne. UNGTYPE) THEN
 !/PDLIB        nb=OUTPTS(J)%NAPROC
 !/PDLIB        JSEA   = 1 + (ISEA-1)/nb
 !/PDLIB        ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb

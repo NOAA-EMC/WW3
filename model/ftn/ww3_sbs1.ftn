@@ -11,25 +11,25 @@
 !/                  +-----------------------------------+
 !/
 !/    04-May-2005 : Origination.                        ( version 3.07 )
-!/    11-Aug-2010 : Upgrade for operations and inclusion in svn.        
+!/    11-Aug-2010 : Upgrade for operations and inclusion in svn.
 !/                                                    ( version 3.14.4 )
 !/    05-Dec-2012 : Making sleep a system call.       ( version 4.11   )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Program shell or driver to run the multi-grid wave model in 
+!     Program shell or driver to run the multi-grid wave model in
 !     'half-coupled' mode, that is running side-by-side with a weather
 !     model while waiting for wind field to become available.
 !
 !     This version is set up for running at NCEP with a single input
-!     wind file, and requires an additional input file. 
+!     wind file, and requires an additional input file.
 !       times.inp  Input file with time stamps. Add to this input file
-!                  a time stamp after the field has been properly 
+!                  a time stamp after the field has been properly
 !                  added to the wind.ww3 or equavalent file.
 !     This file should have the time stamps of fields available in
 !     the first auxiliary wind input file (grid).
@@ -43,17 +43,17 @@
 !
 !  2. Method :
 !
-!     Calling WMWAVE in a loop as wind data become available, with 
+!     Calling WMWAVE in a loop as wind data become available, with
 !     test on wind file.
 !
 !     In order for this to work properly, the user needs to increment
 !     then main wind input file (wind.XXXX) as data become avalable
-!     while this program is running. After a new field is added to 
-!     wind file, the corresponding time stamp in YYYYMMDD YYMMSS 
+!     while this program is running. After a new field is added to
+!     wind file, the corresponding time stamp in YYYYMMDD YYMMSS
 !     format is concatenated to the times.inp file. As the code
 !     reads the new time stamp (1X,I8,1Z,I6 format), a test read of
 !     the wind file is performed until the file is readable, after
-!     which the wave model is run until the new time stamp and the 
+!     which the wave model is run until the new time stamp and the
 !     process is repeated. The test reading of the wind file proved
 !     essential on the NCEP IBM systems to deal with file system
 !     latencies and buffer flushing.
@@ -304,11 +304,11 @@
 !
       GO TO 888
 !
-  820 CONTINUE 
+  820 CONTINUE
       WRITE (MDSS,1020) IERR
       CALL EXTCDE ( 20 )
 !
-  825 CONTINUE 
+  825 CONTINUE
       WRITE (MDSS,1025) NDST2
       CALL EXTCDE ( 25 )
 !
@@ -330,7 +330,7 @@
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3SBS1 : '/               &
                '     ERROR IN OPENING TIMES FILE'/                    &
-               '     IOSTAT =',I5/) 
+               '     IOSTAT =',I5/)
 !
  1025 FORMAT (/' *** WAVEWATCH-III ERROR IN W3SBS1 : '/               &
                '     WIND FILE NOT FOUND, NDST2 =  ',I8/)
@@ -357,7 +357,7 @@
 !/
 !  1. Purpose :
 !
-!     Internal subroutine to get next time in time file, including 
+!     Internal subroutine to get next time in time file, including
 !     waiting until the file is there.
 !
 !  3. Parameters :
@@ -545,7 +545,7 @@
 !
 ! Escape locations read errors --------------------------------------- *
 !
-  800 CONTINUE 
+  800 CONTINUE
       WRITE (MDSS,1010)
       CALL EXTCDE ( 10 )
 !

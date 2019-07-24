@@ -15,7 +15,7 @@
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -151,7 +151,7 @@
 !
 ! ----- start of inlined and reduced WAVNU1 -----
 !
-        AFP    = TPI * MAX ( FP, 0.001) 
+        AFP    = TPI * MAX ( FP, 0.001)
 !
         SQRTH  = SQRT ( DEPTH )
         SIX    = AFP * SQRTH

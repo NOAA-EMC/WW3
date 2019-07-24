@@ -31,14 +31,14 @@
 !/                  (Arun Chawla)
 !/    01-Mar-2013 : Adding double-index output fields   ( version 4.11 )
 !/                  (J-Henrique Alves)
-!/    01-Dec-2016 : Adding lambert conformal grid       ( version 6.01 ) 
+!/    01-Dec-2016 : Adding lambert conformal grid       ( version 6.01 )
 !/                  (J.H. Alves)
-!/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 ) 
+!/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 )
 !/                  (J.H. Alves)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -77,7 +77,7 @@
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
-!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags.
 !      W3EXGB    Subr. Internal Execute grib output.
 !      BAOPEN    Subr.          NCEP library routine.
 !      BAOPENW    Subr.          NCEP library routine.
@@ -142,7 +142,7 @@
                                  ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&
                                  FTIME(2), CID, PID, GID, GDS, IOUT,  &
                                  GDTN
-      INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
+      INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:)
 ! GRIB1 specific variables
 !/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
 !/NCEP1      INTEGER                 :: KPDS(25), KGDS(22)
@@ -153,10 +153,10 @@
 !/NCEP2      INTEGER                 :: IBMP, LCGRIB, LENGRIB, IDRSNUM
 !/NCEP2      REAL                    :: COORDLIST, XN
 !/NCEP2      CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
-!/NCEP2      INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, & 
-!/NCEP2                                 LATIN2, LATSP, LONSP  
-!/NCEP2      REAL                    :: DSX, DSY 
-!/NCEP2      REAL                    :: YN, X0N, Y0N 
+!/NCEP2      INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, &
+!/NCEP2                                 LATIN2, LATSP, LONSP
+!/NCEP2      REAL                    :: DSX, DSY
+!/NCEP2      REAL                    :: YN, X0N, Y0N
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST, RFTIME
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
@@ -246,9 +246,9 @@
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
 !
-! ... Initialize FLGRD array 
+! ... Initialize FLGRD array
 !
-      FLREQ(:,:)=.FALSE. 
+      FLREQ(:,:)=.FALSE.
 !
 ! ... Call to interface for reading flags or namelists
 !
@@ -261,10 +261,10 @@
 !
       WRITE (NDSO,944)
 ! Reset flags for variables not yet implemented in grib output
-! interface 
+! interface
 !
 !
-      IFI = 3 ! Entire group Frequency-dependent parameters 
+      IFI = 3 ! Entire group Frequency-dependent parameters
       DO IFJ = 1,NOGE(IFI)
         IF ( FLREQ(IFI,IFJ) ) THEN
           WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
@@ -272,7 +272,7 @@
           FLREQ(IFI,IFJ) = .FALSE.
         END IF
       END DO
-! 
+!
       IFI = 5 ! Atm-waves layer, all except for friction velocity
       DO IFJ = 2,10
         IF ( FLREQ(IFI,IFJ) ) THEN
@@ -310,13 +310,13 @@
 !
 ! Chage this as parameters become available in grib2 tables
 !
-      ALLOCATE ( IFIA (16), IFJA(16) ) 
+      ALLOCATE ( IFIA (16), IFJA(16) )
 
       IFIA = (/ 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 5, 9, 9, 9, 9 /)
       IFJA = (/ 1, 4, 2 ,3, 5, 8, 3, 5, 6, 7, 8, 1, 1, 2, 3, 4 /)
-      DO I = 1, 16 
+      DO I = 1, 16
         IF ( FLREQ(IFIA(I),IFJA(I)) ) THEN
-          FLREQ(IFIA(I),IFJA(I)) = .FALSE. 
+          FLREQ(IFIA(I),IFJA(I)) = .FALSE.
           WRITE(NDSO,946) IDOUT(IFIA(I),IFJA(I)),                      &
                         '*** EXCLUDED FROM GRIB OUTPUT ***'
         END IF
@@ -337,72 +337,72 @@
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) FTIME, CID, PID, GID, GDS, GDTN
-! 
-! Check if grid type is curvilinear, and only go on if Lambert conformal 
+!
+! Check if grid type is curvilinear, and only go on if Lambert conformal
 ! or PolarStereo
-! 
-      IF ( GTYPE .EQ. CLGTYPE ) THEN 
-!/NCEP2! Allowing code to work with Lambert conformal grids 
-!/NCEP2      IF ( GDTN .NE. 30 .AND. GDTN .NE. 20 ) THEN 
-        WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
-        'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING' 
-        CALL EXTCDE ( 1 ) 
-!/NCEP2      ENDIF 
-      END IF 
-! 
-! 
-! Coded up to now only for Lamber conformal grids (GDTN=30) or 
-! PolarStereo (GDTN=20). For regular grids use GDTN=0 
-! 
-!/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
-!/NCEP2! This is a Lambert conformal grid, read projection parameters 
-!/NCEP2        CALL NEXTLN ( COMSTR , NDSI , NDSE ) 
-!/NCEP2        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          & 
-!/NCEP2                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP 
+!
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+!/NCEP2! Allowing code to work with Lambert conformal grids
+!/NCEP2      IF ( GDTN .NE. 30 .AND. GDTN .NE. 20 ) THEN
+        WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// &
+        'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'
+        CALL EXTCDE ( 1 )
+!/NCEP2      ENDIF
+      END IF
+!
+!
+! Coded up to now only for Lamber conformal grids (GDTN=30) or
+! PolarStereo (GDTN=20). For regular grids use GDTN=0
+!
+!/NCEP2      IF ( GDTN .EQ. 30 ) THEN
+!/NCEP2! This is a Lambert conformal grid, read projection parameters
+!/NCEP2        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/NCEP2        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          &
+!/NCEP2                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP
 !/NCEP2             ELSEIF ( GDTN .EQ. 20 ) THEN
 !/NCEP2               CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/NCEP2               READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,   &
 !/NCEP2                                             SCNMOD
 
-!/NCEP2      ENDIF 
+!/NCEP2      ENDIF
 !
       CALL STME21 ( FTIME , IDTIME )
       WRITE (NDSO,948) IDTIME, CID, PID, GID, GDS
-! 
-! 
-!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-! 4.  Read general data and first fields from file 
-! 4.a Read file. 
-! 
-      CALL W3IOGO ( 'READ', NDSOG, IOTEST ) 
-! 
-! 4.b Output fields in file 
-! 
-! 
-      WRITE (NDSO,930) 
-      DO I=1, NOGRP 
-       DO J=1, NGRPP 
-        IF ( FLOGRD(I,J) ) WRITE (NDSO,931) IDOUT(I,J) 
-        END DO 
-        END DO 
-! 
-!/NCEP2! 
-!/NCEP2      IF ( GDTN .EQ. 0 ) THEN 
-!/NCEP2! 
-! 4.c Flip MAPSF for REGULAR/RECTILINEAR grids 
-! 
-      DO ISEA=1, NSEA 
-        IX            = MAPSF(ISEA,1) 
-        IY            = MAPSF(ISEA,2) 
-        MAPSF(ISEA,2) = NY + 1 - IY 
-        MAPSF(ISEA,3) = IY +( IX-1)*NY 
-        END DO 
-!/NCEP2! 
-!/NCEP2      ENDIF 
 !
-!--- - - - - - - - - - - - - - - - - - - - - - - - - -  
-! 5. Set grib encoding parameter Sections 
-! 
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 4.  Read general data and first fields from file
+! 4.a Read file.
+!
+      CALL W3IOGO ( 'READ', NDSOG, IOTEST )
+!
+! 4.b Output fields in file
+!
+!
+      WRITE (NDSO,930)
+      DO I=1, NOGRP
+       DO J=1, NGRPP
+        IF ( FLOGRD(I,J) ) WRITE (NDSO,931) IDOUT(I,J)
+        END DO
+        END DO
+!
+!/NCEP2!
+!/NCEP2      IF ( GDTN .EQ. 0 ) THEN
+!/NCEP2!
+! 4.c Flip MAPSF for REGULAR/RECTILINEAR grids
+!
+      DO ISEA=1, NSEA
+        IX            = MAPSF(ISEA,1)
+        IY            = MAPSF(ISEA,2)
+        MAPSF(ISEA,2) = NY + 1 - IY
+        MAPSF(ISEA,3) = IY +( IX-1)*NY
+        END DO
+!/NCEP2!
+!/NCEP2      ENDIF
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - -
+! 5. Set grib encoding parameter Sections
+!
 ! ... Initialize KPDS and KGDS (for both NCEP1 and NCEP2)
 !
       KPDS     =   0
@@ -491,8 +491,8 @@
 !      ( 2)  GRIB Edition Number
 !      ( 3)
 !/NCEP2       LISTSEC0      =   0
-!/NCEP2       LISTSEC0(1)   =   10      
-!/NCEP2       LISTSEC0(2)   =   2       
+!/NCEP2       LISTSEC0(1)   =   10
+!/NCEP2       LISTSEC0(2)   =   2
 !
 ! ... Set GRIB2 Identification Section
 !       ( 1) ID OF CENTER
@@ -545,9 +545,9 @@
 !
 ! General parameters for all grids
 !       ( 1) Coordinate system (6 = spherical coordinate system with radius of 6,371,229 m)
-!       ( 2) 
+!       ( 2)
 !       ( 3)
-!       ( 4) 
+!       ( 4)
 !       ( 5)
 !       ( 6)
 !       ( 7)
@@ -562,14 +562,14 @@
 ! Lambert Conformal grid
 !       (10) Latitude of first grid point
 !       (11) Longitude of first grid point
-!       (12) Resolution and component flags 
+!       (12) Resolution and component flags
 !       (13) Latitude where DX and DY are specified
 !       (14) Longitude of orientation
 !       (15) Increment of longitude
 !       (16) Increment of latitude
 !       (17) Projection center flag
 !       (18) Scanning mode
-!       (19) First latitude of secant cone 
+!       (19) First latitude of secant cone
 !       (20) Second latitude of secant cone
 !       (21) Latitude of southern pole
 !       (22) Longitude of southern pole
@@ -663,7 +663,7 @@
 !     ( 9) Time range
 !     (10) Type of level (Code Table 4.5) 1st level
 !     (11) Scaled factor of (10)
-!     (12) Scaled value of (10) 
+!     (12) Scaled value of (10)
 !     (13) Type of level (Code Table 4.5) 2nd level
 !     (14) Scaled factor of (13)
 !     (15) Scaled value of (13)
@@ -677,7 +677,7 @@
 !/NCEP2       KPDS(12) = 1
 !/NCEP2       KPDS(13) = 255
 !
-! ... Set GRIB2 vertical layer information 
+! ... Set GRIB2 vertical layer information
 !
 !/NCEP2       NUMCOORD  = 0
 !/NCEP2       COORDLIST = 0.0
@@ -906,7 +906,7 @@
 !     ----------------------------------------------------------------
 !      STRACE     Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE     Subr.   Id.    Abort program as graceful as possible.
-!      W3S2XY     Subr.   Id.    Convert from storage to spatial grid. 
+!      W3S2XY     Subr.   Id.    Convert from storage to spatial grid.
 !      PUTGB      Subr.          NCEP GRIB1 library routine.
 !      GRIBCREATE Subr.          NCEP GRIB2 library routine.
 !      ADDGRID    Subr.          NCEP GRIB2 library routine.
@@ -1006,8 +1006,8 @@
             IF ( IFI .EQ. 1 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 14 
-!/NCEP2                KPDS(1) = 4  
+!/NCEP2                KPDS(2) = 14
+!/NCEP2                KPDS(1) = 4
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, DW(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1016,8 +1016,8 @@
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  2 ) THEN
                 FLTWO = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 1 
-!/NCEP2                KPDS(1) = 1 
+!/NCEP2                KPDS(2) = 1
+!/NCEP2                KPDS(1) = 1
 !/RTD                ! Rotate x,y vector back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX, CY, AnglD)
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CX(1:NSEA)          &
@@ -1083,8 +1083,8 @@
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255 
-!/NCEP2                KPDS(1) = 3   
+!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(1) = 3
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, AS(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1092,9 +1092,9 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 1 
-!/NCEP2                KPDS(1) = 3 
+!/NCEP1                KPDS(5) = -1
+!/NCEP2                KPDS(2) = 1
+!/NCEP2                KPDS(1) = 3
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
 !
 !     Ice concentration
@@ -1126,7 +1126,7 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
+!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 28
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
@@ -1142,7 +1142,7 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
+!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 25
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
@@ -1274,8 +1274,8 @@
                 FLPRT = .TRUE.
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  32 
-!/NCEP2                KPDS5B  =  33 
+!/NCEP2                KPDS5A  =  32
+!/NCEP2                KPDS5B  =  33
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PSI(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1319,7 +1319,7 @@
               ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ.  1 ) THEN
                 FLTWO = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 17 
+!/NCEP2                KPDS(2) = 17
 !/NCEP2                KPDS(1) = 1
 !/RTD                ! Rotate x,y vector back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST, USTDIR, AnglD)

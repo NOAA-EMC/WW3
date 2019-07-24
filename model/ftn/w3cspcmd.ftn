@@ -15,7 +15,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -34,7 +34,7 @@
 !     Elements of the data structure CASE are given below. The middle
 !     block pf parameters has pointer aliasses with the same name in
 !     the subroutine.
-!  
+!
 !      Name      Type  Description
 !     ----------------------------------------------------------------
 !      ICASE     Int.  Number of case.
@@ -109,7 +109,7 @@
 !/                  +-----------------------------------+
 !/
 !/    19-Sep-2005 : Origination.                        ( version 3.08 )
-!/    01-Nov-2012 : code clean up (tab spaces, comments)( version 4.08 ) 
+!/    01-Nov-2012 : code clean up (tab spaces, comments)( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -152,7 +152,7 @@
 !     ----------------------------------------------------------------
 !      W3IOBC    Subr. W3IOBCMD Updating boundary conditions.
 !                Subr           Multi scale model bound. data input.
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !
 !  6. Error messages :
 !
@@ -160,7 +160,7 @@
 !
 !  7. Remarks :
 !
-!     - The inner loop of the actual redistribution is over the 
+!     - The inner loop of the actual redistribution is over the
 !       individual spectra, optimizing this routine for large numbers
 !       of conversions in a single call.
 !
@@ -207,7 +207,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Pointers for aliases
-!/ 
+!/
       INTEGER, POINTER        :: IDTH(:,:), IDFR(:,:), NFR2T
       REAL, POINTER           :: DTH1, DTH2, RDTH(:,:), FRQ1(:),      &
                                  FRQ2(:), XDF1, XDF2, RDFR(:,:)
@@ -225,12 +225,12 @@
         END IF
 !
       IF ( NSP .LT. 0 ) THEN
-        WRITE (NDSE,901)   
+        WRITE (NDSE,901)
         CALL EXTCDE ( 2 )
         END IF
 !
       IF ( NSP .EQ. 0 ) THEN
-        WRITE (NDSE,902) 
+        WRITE (NDSE,902)
         RETURN
         END IF
 !
@@ -261,7 +261,7 @@
                 CURRENT%NTH1.EQ.NTH1 .AND. CURRENT%NTH2.EQ.NTH2 .AND. &
                 CURRENT%XF1 .EQ.XF1  .AND. CURRENT%XF2 .EQ.XF2  .AND. &
                 CURRENT%FR1 .EQ.FR1  .AND. CURRENT%FR2 .EQ.FR2  .AND. &
-                CURRENT%TH1 .EQ.TH1  .AND. CURRENT%TH2 .EQ.TH2 
+                CURRENT%TH1 .EQ.TH1  .AND. CURRENT%TH2 .EQ.TH2
         IF ( FOUND ) EXIT
 !
         END DO
@@ -302,7 +302,7 @@
         ELSE
           ALLOCATE ( CURRENT%NEXT )
           CURRENT => CURRENT%NEXT
-          END IF 
+          END IF
 !
 ! 2.b.2 Store test data
 !

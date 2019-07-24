@@ -248,7 +248,7 @@ module yowRankModule
   subroutine finalizeRankModule()
     implicit none
     integer :: i
-  
+
     if(allocated(rank)) then
       do i=1, size(rank)
         if(allocated(rank(i)%iplg)) deallocate(rank(i)%iplg)

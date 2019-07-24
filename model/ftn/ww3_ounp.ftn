@@ -55,7 +55,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -123,7 +123,7 @@
 !     TOUT is the time defined in the input file
 !     TIME is the time read from the out_pnt.ww3 file
 !     DTREQ is the stride used for the time steps
-!     at the beginning, if TOUT is after TIME, the program will read 
+!     at the beginning, if TOUT is after TIME, the program will read
 !     out_pnt.ww3 DTREQ by DTREQ until TIME is equal to TOUT
 !     /!\ if DTREQ is too big, it's possible to never have TIME=TOUT /!\
 !
@@ -133,7 +133,7 @@
 !
 !     MFL is the number of stations processed in the 'time' loop
 !     NOPTS is the total number of stations defined in out_pnt.ww3
-!     NFL is the number of bunch of MFL stations to loop on to 
+!     NFL is the number of bunch of MFL stations to loop on to
 !     process all the NOPTS stations
 !     NREQ is the number of valid stations to process, unvalid stations
 !     are duplicata or stations not specified in the input file
@@ -335,7 +335,7 @@
 !
 ! process ww3_ounp namelist
 !
-      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounp.nml", EXIST=FLGNML) 
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounp.nml", EXIST=FLGNML)
       IF (FLGNML) THEN
         ! Read namelist
         CALL W3NMLOUNP (NDSI, TRIM(FNMPRE)//'ww3_ounp.nml', NML_POINT, NML_FILE, &
@@ -369,9 +369,9 @@
           DO WHILE (LEN_TRIM(POINTLIST(IP+1)).NE.0)
             IP=IP+1
             READ(POINTLIST(IP),*) IPOINT
-            ! existing index in out_pnt.ww3   
+            ! existing index in out_pnt.ww3
             IF ((IPOINT .LE. NOPTS) .AND. (NREQ .LT. NOPTS)) THEN
-              IF ( .NOT. FLREQ(IPOINT) ) THEN 
+              IF ( .NOT. FLREQ(IPOINT) ) THEN
                 NREQ = NREQ + 1
                 INDREQTMP(NREQ)=IPOINT
               END IF
@@ -446,13 +446,13 @@
             IF (I.EQ.1) THEN
               FLREQ = .TRUE.
               NREQ = NOPTS
-              INDREQTMP=(/(J,J=1,NREQ)/) 
+              INDREQTMP=(/(J,J=1,NREQ)/)
             END IF
             EXIT
           END IF
-          ! existing index in out_pnt.ww3   
+          ! existing index in out_pnt.ww3
           IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
-            IF ( .NOT. FLREQ(IPOINT) ) THEN 
+            IF ( .NOT. FLREQ(IPOINT) ) THEN
               NREQ = NREQ + 1
               INDREQTMP(NREQ)=IPOINT
             END IF
@@ -479,7 +479,7 @@
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) NCTYPE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) TOGETHER, MFL 
+        READ (NDSI,*,END=801,ERR=802) TOGETHER, MFL
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) ITYPE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -530,7 +530,7 @@
 
 ! 4.1.3 Loops on TIME from out_pnt file to reach the first time PASTDATE
       DTEST  = DSEC21 ( TIME , TOUT )
-      DO WHILE (DTEST.NE.0) 
+      DO WHILE (DTEST.NE.0)
         DTEST  = DSEC21 ( TIME , TOUT )
         IF ( DTEST .GT. 0. ) THEN
           CALL W3IOPO ( 'READ', NDSOP, IOTEST )
@@ -545,7 +545,7 @@
           CYCLE
         END IF
       END DO
-      WRITE(PASTDATE,'(I8.8,I6.6)') TIME(1), TIME(2) 
+      WRITE(PASTDATE,'(I8.8,I6.6)') TIME(1), TIME(2)
 
 
 ! 4.2 Output points NOPTS
@@ -560,13 +560,13 @@
       ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
 !
       ! Setups min and max date format
-      IF (S3.LT.4) S3=4 
-      IF (S3.GT.10) S3=10 
+      IF (S3.LT.4) S3=4
+      IF (S3.GT.10) S3=10
 !
       ! Defines the format of FILETIME as ISO8601 convention
       S5=S3-8
       ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
-      IF (S3.EQ.10) THEN 
+      IF (S3.EQ.10) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
@@ -576,7 +576,7 @@
         WRITE (FILETIME,FORMAT1) TIME(1)
       ! if S3=>YYYYMM then filetime='YYYYMM'
       ! or S3=>YYYY then filetime='YYYY'
-      ELSE 
+      ELSE
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
         WRITE (FILETIME,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
       END IF
@@ -591,7 +591,7 @@
         TWO=1
       END IF
 !
-      IF ((NCTYPE.EQ.3) .AND. (.NOT.ORDER)) GOTO 803 
+      IF ((NCTYPE.EQ.3) .AND. (.NOT.ORDER)) GOTO 803
       IF ((NCTYPE.EQ.4) .AND. INDEX(NF90_INQ_LIBVERS(),'"3.').NE.0) GOTO 804
 
 
@@ -605,12 +605,12 @@
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Now creates files
-!     If too many (memory problem) then makes several reads 
+!     If too many (memory problem) then makes several reads
 !
 
 
 ! 5.1 Defines number of files/stations per file NFL
-      IF (TOGETHER) THEN 
+      IF (TOGETHER) THEN
         NFL=1
       ELSE
         NFL=1+NOPTS/MFL
@@ -632,7 +632,7 @@
         CALL EXTCDE ( 46 )
       END IF
 
-! 5.3 Redefines netCDF type 
+! 5.3 Redefines netCDF type
 !/NC4      IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NFL.GT.300).AND.(NREQ.GT.9000))  THEN
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with NF90_share mode'
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : this is due to NF90_sync memory problem with netCDF4 library'
@@ -663,7 +663,7 @@
               CYCLE
             END IF
           END IF  ! FLREQ(I)
-        END DO  ! I=1,NOPTS    
+        END DO  ! I=1,NOPTS
       END IF  ! .NOT.TOGETHER
 
 
@@ -677,7 +677,7 @@
 
 ! 5.6.1 Redefines the filetime when it's a new date defined by the date division S3
         ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
-        IF (S3.EQ.10) THEN 
+        IF (S3.EQ.10) THEN
           WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
           WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                  NINT(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
@@ -687,7 +687,7 @@
           WRITE (FILETIME,FORMAT1) TIME(1)
         ! if S3=>YYYYMM then filetime='YYYYMM'
         ! or S3=>YYYY then filetime='YYYY'
-        ELSE 
+        ELSE
           WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
           WRITE (FILETIME,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
         END IF
@@ -709,7 +709,7 @@
               J = LEN_TRIM(FNMPRE)
               WRITE(NCFILE(I),'(2A)') TRIM(FNMPRE(:J)), TRIM(NCNAME)  ! filename
             END IF  ! FLREQ(I)
-          END DO  ! I=1,NOPTS    
+          END DO  ! I=1,NOPTS
         END IF  ! TOGETHER
 
 
@@ -879,7 +879,7 @@
               IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1942) '2-D', SCALE2
             END IF
 
-! ... OTYPE = 2  
+! ... OTYPE = 2
 ! or  OTYPE = 3
           ELSE IF (( OTYPE .EQ. 2 ) .OR. ( OTYPE .EQ. 3 )) THEN
             IF ( ISCALE .LE. 2) THEN
@@ -973,7 +973,7 @@
 !
         CALL T2D(TIME,STARTDATE,IERR)
         WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2), &
-              '-',STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7) 
+              '-',STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
 
         ! loops on TIME from out_pnt.ww3 till not reach TOUT from inp file
         DO
@@ -994,7 +994,7 @@
           ! increment the time counter IOUT
           IOUT = IOUT + 1
           CALL STME21 ( TOUT , IDTIME )
-          WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2) 
+          WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
 
 
 ! 6.1 Creates a new file if it is a new date defined by the date division S3
@@ -1015,10 +1015,10 @@
           DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
             IF (FLREQ(I) .OR. TOGETHER) THEN
               ! together
-              IF ( TOGETHER ) THEN 
+              IF ( TOGETHER ) THEN
                 CALL W3EXNC(I,NCID(I),NREQ,INDREQ,ORDER)
               ! not together
-              ELSE 
+              ELSE
                 J=J+1
                 CALL W3EXNC(I,NCID(I),1,(/ I /),ORDER)
                 ! flush buffer (only available in netcdf3)
@@ -1029,7 +1029,7 @@
             END IF ! (FLREQ(I) .OR. TOGETHER)
           END DO ! I=1+ ...
 !
-          WRITE(PASTDATE,'(I8.8,I6.6)') TOUT(1), TOUT(2) 
+          WRITE(PASTDATE,'(I8.8,I6.6)') TOUT(1), TOUT(2)
           CALL TICK21 ( TOUT , DTREQ )
           IF ( IOUT .GE. NOUT ) GOTO 700
 !
@@ -1046,7 +1046,7 @@
 !
         CALL T2D(TIME,STOPDATE,IERR)
         WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
-              '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7) 
+              '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
 
 
 ! 7.1 Writes the global attributes to netCDF file
@@ -1070,7 +1070,7 @@
               END DO
             END IF
             CLOSE(994)
-!            
+!
             WRITE(GLOBALATT,'(A)') TRIM(NCFILE(I))
             IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'product_name' ,GLOBALATT(3:))
             IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'area',TRIM(GNAME))
@@ -1101,7 +1101,7 @@
               IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','12-hourly')
             ELSE IF (DTREQ.EQ.86400)  THEN
               IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','daily')
-            ELSE  
+            ELSE
               IRET=NF90_PUT_ATT(NCID(I),NF90_GLOBAL,'field_type','n/a')
             END IF
 !
@@ -1133,7 +1133,7 @@
 
 ! 7.4 Loops on TIME till it is equal to TOUT
         DTEST  = DSEC21 ( TIME , TOUT )
-        DO WHILE (DTEST.NE.0) 
+        DO WHILE (DTEST.NE.0)
           DTEST  = DSEC21 ( TIME , TOUT )
           IF ( DTEST .GT. 0. ) THEN
             CALL W3IOPO ( 'READ', NDSOP, IOTEST )
@@ -1168,7 +1168,7 @@
       CALL EXTCDE ( 42 )
 !
   803 CONTINUE
-      WRITE (NDSE,1003) 
+      WRITE (NDSE,1003)
       CALL EXTCDE ( 43 )
 !
   804 CONTINUE
@@ -1463,7 +1463,7 @@
                                  SBT1(NK), SIS1(NK), STT1(NK),         &
                                  E1ALL(NK,6), UDIR1(NREQ), CDIR1(NREQ)
       REAL, SAVE              :: HSMIN  = 0.05
-!/IS2       REAL                     :: ICEF, ICEDMAX, DIA2(NTH,NK)                              
+!/IS2       REAL                     :: ICEF, ICEDMAX, DIA2(NTH,NK)
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
@@ -1484,7 +1484,7 @@
 !
       LOGICAL                 :: LASTSTATION=.FALSE.
       LOGICAL                 :: SHORT=.TRUE.
-      LOGICAL                   :: LBREAK 
+      LOGICAL                   :: LBREAK
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !
@@ -1537,7 +1537,7 @@
 
 
 !
-! Selects first station index 
+! Selects first station index
 !
       IF (TOGETHER) THEN
         J=1
@@ -1548,7 +1548,7 @@
 ! Short version of the ww3_ounp code for ITYPE = 1
 !                                    and OTYPE = 3
 !
-      IF (SHORT.AND.ITYPE.EQ.1.AND.OTYPE.EQ.3) THEN 
+      IF (SHORT.AND.ITYPE.EQ.1.AND.OTYPE.EQ.3) THEN
 
           DEPTH  = MAX ( DMIN, DPO(J) )
           SQRTH  = SQRT ( DEPTH )
@@ -1570,10 +1570,10 @@
             END DO
 
 !
-! Computes 2nd order spectrum 
+! Computes 2nd order spectrum
 !
-!/IG1      IF (IGPARS(2).EQ.1) THEN 
-!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1      IF (IGPARS(2).EQ.1) THEN
+!/IG1        IF(IGPARS(1).EQ.1) THEN
 !/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
 !/IG1        ELSE
 !/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
@@ -1589,13 +1589,13 @@
             END DO
           END DO
         END DO
- 
+
         CALL T2D(TIME,CURDATE,IERR)
         OUTJULDAY=TSUB(REFDATE,CURDATE)
         IRET=NF90_PUT_VAR(NCID,VARID(1),OUTJULDAY,(/IOUT/))
         CALL CHECK_ERR(IRET)
-! 
-        IF (IOUT.EQ.1) THEN 
+!
+        IF (IOUT.EQ.1) THEN
           DO J1=1, NREQ
             IRET=NF90_PUT_VAR(NCID,VARID(27),INDREQ(J1),(/J1/))
             CALL CHECK_ERR(IRET)
@@ -1610,19 +1610,19 @@
           IF ((FLWW3.NE.0).AND.(.NOT.ORDER)) IRET=NF90_PUT_VAR(NCID,VARID(3),FLWW3,(/IOUT,J1/))
           CALL CHECK_ERR(IRET)
         END DO
-! 
+!
         IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
         IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/IOUT,1/))
         CALL CHECK_ERR(IRET)
         IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
         IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/IOUT,1/))
         CALL CHECK_ERR(IRET)
-!             
+!
         DO J1=1,NREQ
           UDIR1(J1)  = MOD ( 270. - WDO(INDREQ(J1))*RADE , 360. )
           CDIR1(J1)   = MOD ( 270. - CDO(INDREQ(J1))*RADE , 360. )
         END DO
-! 
+!
         IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/1,IOUT/))
         IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/IOUT,1/))
         CALL CHECK_ERR(IRET)
@@ -1645,11 +1645,11 @@
                            start=(/1,1,IOUT,1/),count=(/NTH,NK,1,NREQ/))
         CALL CHECK_ERR(IRET)
 !
-! End of short version 
+! End of short version
 !
-      ELSE 
+      ELSE
 !
-! And here is the full thing with all options ITYPE and OTYPE ... 
+! And here is the full thing with all options ITYPE and OTYPE ...
 !
       J1=1
       LASTSTATION=.FALSE.
@@ -1703,10 +1703,10 @@
 !
           END DO
 !
-! Computes 2nd order spectrum 
+! Computes 2nd order spectrum
 !
-!/IG1      IF (IGPARS(2).EQ.1) THEN 
-!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1      IF (IGPARS(2).EQ.1) THEN
+!/IG1        IF(IGPARS(1).EQ.1) THEN
 !/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
 !/IG1        ELSE
 !/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
@@ -2037,8 +2037,8 @@
             IF ( FLSRCE(3) ) THEN
 !/NL1                    CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
 !/NL2                    CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
-!/NL3                    CALL W3SNL3 ( A, CG, WN, DEPTH,     XNL, DIA ) 
-!/NL4                    CALL W3SNL4 ( A, CG, WN, DEPTH,     XNL, DIA ) 
+!/NL3                    CALL W3SNL3 ( A, CG, WN, DEPTH,     XNL, DIA )
+!/NL4                    CALL W3SNL4 ( A, CG, WN, DEPTH,     XNL, DIA )
 !/NLX                    CALL W3SNLX
 !
 !/TRX                    CALL W3STRX
@@ -2064,12 +2064,12 @@
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 !/BT2                    SBTC2 = 2. * -0.067 / GRAV
 !/BT2                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
-!/BT4                    IX=1    ! to be fixed later 
-!/BT4                    IY=1    ! to be fixed later 
-!/BT4                    ISEA=1  ! to be fixed later 
+!/BT4                    IX=1    ! to be fixed later
+!/BT4                    IY=1    ! to be fixed later
+!/BT4                    ISEA=1  ! to be fixed later
 !/BT4                    D50 = SED_D50(ISEA)
 !/BT4                    PSIC= SED_PSIC(ISEA)
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 
 ! see remarks about BT8 and BT9 in ww3_outp.ftn
@@ -2086,7 +2086,7 @@
 !
             END IF
             IF ( FLSRCE(6) ) THEN
-              IF (IICEDISP) THEN  
+              IF (IICEDISP) THEN
                       CALL LIU_FORWARD_DISPERSION (ICETHICK,0.,DEPTH, &
                      SIG,WN_R,CG_ICE,ALPHA_LIU)
               ELSE
@@ -2095,7 +2095,7 @@
                 END IF
 !
 !/IS2              CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX,  &
-!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)          
+!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
             END IF
 !
 !/XXX                CALL W3SXXX
@@ -2174,11 +2174,11 @@
               OUTJULDAY=TSUB(REFDATE,CURDATE)
               IRET=NF90_PUT_VAR(NCID,VARID(1),OUTJULDAY,(/IOUT/))
               CALL CHECK_ERR(IRET)
-            END IF  
+            END IF
 
 
 !
-!  Performs subtype 1 
+!  Performs subtype 1
 !
             IF ( OTYPE .EQ. 1 ) THEN
 !
@@ -2282,7 +2282,7 @@
             IRET=NF90_PUT_VAR(NCID,VARID(1),OUTJULDAY,(/IOUT/))
 
 !
-!  Performs subtype 1 
+!  Performs subtype 1
 !
             IF ( OTYPE .EQ. 1 ) THEN
 
@@ -2411,9 +2411,9 @@
               CALL T2D(TIME,CURDATE,IERR)
               OUTJULDAY=TSUB(REFDATE,CURDATE)
               IRET=NF90_PUT_VAR(NCID,VARID(1),OUTJULDAY,(/IOUT/))
-            END IF  
+            END IF
 !
-!  Performs subtype 1 
+!  Performs subtype 1
 !
             IF ( OTYPE .EQ. 1 ) THEN
 !
@@ -2460,7 +2460,7 @@
                            'Stot(f,th)', 'm^2', PTNME(J) )
               END IF
 !
-!  Performs subtype 2 
+!  Performs subtype 2
 !
             ELSE IF ( OTYPE .EQ. 2 ) THEN
 !
@@ -2479,7 +2479,7 @@
               IRET=NF90_PUT_VAR(NCID,VARID(12),SNL1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               IRET=NF90_PUT_VAR(NCID,VARID(13),SDS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               IRET=NF90_PUT_VAR(NCID,VARID(14),SBT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
-              IRET=NF90_PUT_VAR(NCID,VARID(15),SIS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))              
+              IRET=NF90_PUT_VAR(NCID,VARID(15),SIS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               IRET=NF90_PUT_VAR(NCID,VARID(16),STT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
 
 !
@@ -2505,7 +2505,7 @@
                   IRET=NF90_PUT_VAR(NCID,VARID(12),FACT*SNL1(IK),(/ IK,J1,IOUT /))
                   IRET=NF90_PUT_VAR(NCID,VARID(13),FACT*SDS1(IK),(/ IK,J1,IOUT /))
                   IRET=NF90_PUT_VAR(NCID,VARID(14),FACT*SBT1(IK),(/ IK,J1,IOUT /))
-                  IRET=NF90_PUT_VAR(NCID,VARID(15),FACT*SIS1(IK),(/ IK,J1,IOUT /))                
+                  IRET=NF90_PUT_VAR(NCID,VARID(15),FACT*SIS1(IK),(/ IK,J1,IOUT /))
                   IRET=NF90_PUT_VAR(NCID,VARID(16),FACT*STT1(IK),(/ IK,J1,IOUT /))
                 ELSE
                   IRET=NF90_PUT_VAR(NCID,VARID(11),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
@@ -2551,13 +2551,13 @@
                  count=(/NTH,NK,1,1/)                               )
               IF ( FLSRCE(6) )  IRET=NF90_PUT_VAR(NCID,VARID(21),   &
                  TRANSPOSE(SIS(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
-                 count=(/NTH,NK,1,1/)                               )            
+                 count=(/NTH,NK,1,1/)                               )
               IF ( FLSRCE(7) )  IRET=NF90_PUT_VAR(NCID,VARID(22),   &
                  TRANSPOSE(STT(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
                  count=(/NTH,NK,1,1/)                               )
 !
             END IF
-!                 
+!
           END IF ! ITYPE
 
 !
@@ -2578,7 +2578,7 @@
 
       END DO ! DO WHILE (.NOT. LASTSTATION)
 
-      END IF  ! NOT SHORT ... 
+      END IF  ! NOT SHORT ...
 !
       RETURN
 !
@@ -2668,7 +2668,7 @@
       IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions','Relative julian days with decimal part (as parts of the day)')
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T') 
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T')
 
 !  station
       IRET=NF90_DEF_VAR(NCID, 'station', NF90_INT, (/DIMID(2)/), VARID(27))
@@ -2676,7 +2676,7 @@
 !/NC4      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(27), 1, 1, DEFLATE)
       IRET=NF90_PUT_ATT(NCID,VARID(27),'long_name','station id')
       IRET=NF90_PUT_ATT(NCID,VARID(27),'_FillValue',NF90_FILL_INT)
-      IRET=NF90_PUT_ATT(NCID,VARID(27),'axis','X') 
+      IRET=NF90_PUT_ATT(NCID,VARID(27),'axis','X')
 
 !  string16
       IRET=NF90_DEF_VAR(NCID, 'string16', NF90_INT, (/DIMID(3)/), VARID(28))
@@ -2684,7 +2684,7 @@
 !/NC4      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(28), 1, 1, DEFLATE)
       IRET=NF90_PUT_ATT(NCID,VARID(28),'long_name','station_name number of characters')
       IRET=NF90_PUT_ATT(NCID,VARID(28),'_FillValue',NF90_FILL_INT)
-      IRET=NF90_PUT_ATT(NCID,VARID(28),'axis','W') 
+      IRET=NF90_PUT_ATT(NCID,VARID(28),'axis','W')
 
 !  station_name
       IRET=NF90_DEF_VAR(NCID, 'station_name', NF90_CHAR, (/DIMID(3),DIMID(2)/), VARID(2))
@@ -2712,7 +2712,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(3),'associates','time station')
         END IF
 
-      IF (FLAGLL) THEN 
+      IF (FLAGLL) THEN
 !  longitude
         IRET=NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, (/DIMID(TWO),DIMID(ONE)/), VARID(4))
         CALL CHECK_ERR(IRET)
@@ -2762,7 +2762,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(4),'_FillValue',NF90_FILL_FLOAT)
         IRET=NF90_PUT_ATT(NCID,VARID(4),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(4),'associates','time station')
-   
+
 
 !  latitude
         IRET=NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, (/DIMID(TWO),DIMID(ONE)/), VARID(5))
@@ -2780,7 +2780,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(5),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(5),'associates','time station')
 
-      END IF 
+      END IF
 
 ! Process FREQ and DIR dimension values
       FREQ(1:NK)=SIG(1:NK)*TPIINV
@@ -2817,7 +2817,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',10.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 !d
          IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(7))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
@@ -2959,7 +2959,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(15),'associates','time station frequency')
 
 
-        ! Add values in netCDF file      
+        ! Add values in netCDF file
         IRET=NF90_ENDDEF(NCID)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_VAR(NCID,VARID(6),FREQ(1:NK))
@@ -2996,7 +2996,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',10.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 
 !frequency1
         IRET=NF90_DEF_VAR(NCID, 'frequency1', NF90_FLOAT, (/DIMID(4)/), VARID(7))
@@ -3043,7 +3043,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(9),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'valid_max',360.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'axis','Z') 
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'axis','Z')
 !/RTD        IF ( FLAGUNR ) THEN
 !/RTD          IRET=NF90_PUT_ATT(NCID,VARID(9),'direction_reference','True North')
 !/RTD        ELSE
@@ -3129,7 +3129,7 @@
         IRET=NF90_DEF_VAR(NCID, 'cur', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(14))
         CALL CHECK_ERR(IRET)
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(14), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','sea water speed')        
+        IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','sea water speed')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'units','m s-1')
@@ -3163,7 +3163,7 @@
 !/RTD        END IF
 
 
-        ! Add values in netCDF file      
+        ! Add values in netCDF file
         IRET=NF90_ENDDEF(NCID)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_VAR(NCID,VARID(6),FREQ(1:NK))
@@ -3205,7 +3205,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',100.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_INT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 !d
          IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(7))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
@@ -3539,11 +3539,11 @@
 
       ELSE IF (ITYPE.EQ.2 .AND. OTYPE.EQ.2) THEN
 !Hs
-         IRET=NF90_DEF_VAR(NCID, 'hs', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(6))  
+         IRET=NF90_DEF_VAR(NCID, 'hs', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(6))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(6), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'long_name','spectral estimate of significant wave height') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'long_name','spectral estimate of significant wave height')
         IRET=NF90_PUT_ATT(NCID,VARID(6),'standard_name','sea_surface_wave_significant_height')
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'globwave_name','significant_wave_height') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'globwave_name','significant_wave_height')
         IRET=NF90_PUT_ATT(NCID,VARID(6),'units','m')
         IRET=NF90_PUT_ATT(NCID,VARID(6),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'add_offset',0.)
@@ -3888,9 +3888,9 @@
 !Hs
          IRET=NF90_DEF_VAR(NCID, 'hs', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(8))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','spectral estimate of significant wave height') 
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','sea_surface_wave_significant_height') 
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','significant_wave_height') 
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','spectral estimate of significant wave height')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','sea_surface_wave_significant_height')
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','significant_wave_height')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'units','m')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(8),'add_offset',0.)
@@ -3903,9 +3903,9 @@
          IRET=NF90_DEF_VAR(NCID, 'hsst', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(9))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(9), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'long_name',                    &
-                          'nondimensionalized using spectral estimate of significant wave height') 
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','sea_surface_wave_significant_height') 
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','significant_wave_height') 
+                          'nondimensionalized using spectral estimate of significant wave height')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'standard_name','sea_surface_wave_significant_height')
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'globwave_name','significant_wave_height')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'units','-')
         IRET=NF90_PUT_ATT(NCID,VARID(9),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'add_offset',0.)
@@ -4007,7 +4007,7 @@
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','spectral estimate of significant wave height')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','sea_surface_wave_significant_height')
-        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','significant_wave_height')  
+        IRET=NF90_PUT_ATT(NCID,VARID(8),'globwave_name','significant_wave_height')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'units','m')
         IRET=NF90_PUT_ATT(NCID,VARID(8),'scale_factor',1.)
         IRET=NF90_PUT_ATT(NCID,VARID(8),'add_offset',0.)
@@ -4067,7 +4067,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',10.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 
 !d
         IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(7))
@@ -4322,7 +4322,7 @@
           IRET=NF90_PUT_ATT(NCID,VARID(16),'associates','time station ffp')
         END IF
 
-!  Add values in netCDF file   
+!  Add values in netCDF file
         IRET=NF90_ENDDEF(NCID)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_VAR(NCID,VARID(6),FREQ(1:NK))
@@ -4361,7 +4361,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',10.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 
 !d
         IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(7))
@@ -4616,7 +4616,7 @@
           IRET=NF90_PUT_ATT(NCID,VARID(16),'associates','time station ffp')
         END IF
 
-!  Add values in netCDF file   
+!  Add values in netCDF file
         IRET=NF90_ENDDEF(NCID)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_VAR(NCID,VARID(6),FREQ(1:NK))
@@ -4650,7 +4650,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'valid_max',10.)
         IRET=NF90_PUT_ATT(NCID,VARID(6),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y') 
+        IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Y')
 
 !frequency1
         IRET=NF90_DEF_VAR(NCID, 'frequency1', NF90_FLOAT, (/DIMID(4)/), VARID(7))
@@ -4695,7 +4695,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(9),'valid_min',0.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'valid_max',360.)
         IRET=NF90_PUT_ATT(NCID,VARID(9),'_FillValue',NF90_FILL_FLOAT)
-        IRET=NF90_PUT_ATT(NCID,VARID(9),'axis','Z') 
+        IRET=NF90_PUT_ATT(NCID,VARID(9),'axis','Z')
 !/RTD        IF ( FLAGUNR ) THEN
 !/RTD          IRET=NF90_PUT_ATT(NCID,VARID(9),'direction_reference','True North')
 !/RTD        ELSE
@@ -4754,7 +4754,7 @@
 !Uc
         IRET=NF90_DEF_VAR(NCID, 'cur', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(13))
 !/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(13), 1, 1, DEFLATE)
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','sea water speed')        
+        IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','sea water speed')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'units','m s-1')
@@ -4935,7 +4935,7 @@
           ENDIF
         ENDIF
 
-!  Add values in netCDF file      
+!  Add values in netCDF file
         IRET=NF90_ENDDEF(NCID)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_VAR(NCID,VARID(6),FREQ(1:NK))
@@ -4951,7 +4951,7 @@
 !
       RETURN
 
-      END SUBROUTINE W3CRNC 
+      END SUBROUTINE W3CRNC
 
 !==============================================================================
 

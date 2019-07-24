@@ -9,20 +9,20 @@
 !/                  | Last update :         06-Jun-2018 |
 !/                  +-----------------------------------+
 !/
-!/    29-Mar-2013 : Creation                            ( version 4.11 )   
+!/    29-Mar-2013 : Creation                            ( version 4.11 )
 !/    17-Oct-2013 : Manages missing data for UNST grids ( version 4.12 )
-!/    06-Jun-2018 : COMPUTE VNEIGH: calculate the number of connected 
-!/                  triangles for a given point         ( version 6.04 )   
+!/    06-Jun-2018 : COMPUTE VNEIGH: calculate the number of connected
+!/                  triangles for a given point         ( version 6.04 )
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Predicts tides (current or water level) to be used during 
-!     run by ww3_shel or ww3_multi  (this takes much less memory). 
+!     Predicts tides (current or water level) to be used during
+!     run by ww3_shel or ww3_multi  (this takes much less memory).
 !
 !  2. Method :
 !
@@ -90,7 +90,7 @@
 !  8. Structure :
 !
 !     ----------------------------------------------------
-!        To be updated ... 
+!        To be updated ...
 !     ----------------------------------------------------
 !
 !  9. Switches :
@@ -110,7 +110,7 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
 !/S      USE W3SERVMD, ONLY : STRACE
-      USE W3TIMEMD 
+      USE W3TIMEMD
       USE W3ARRYMD, ONLY : INA2R, INA2I
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3FLDSMD, ONLY: W3FLDO, W3FLDG, W3FLDD, W3FLDTIDE1, W3FLDTIDE2
@@ -138,11 +138,11 @@
       CHARACTER(LEN=100)      :: TIDECON_PRNAMES(70), TIDECON_MAXNAMES(70), &
                                  TIDECON_MAXVALS(70)
       INTEGER                 :: PR_INDS(70), K, IND, IX2, SUMOK, NBAD, ITER
-      CHARACTER*23            :: IDTIME 
+      CHARACTER*23            :: IDTIME
       CHARACTER               :: COMSTR*1, IDFLD*3
       REAL, ALLOCATABLE       :: FX(:,:), FY(:,:), FA(:,:)
       INTEGER, ALLOCATABLE    :: BADPOINTS(:,:)
-      REAL                    :: MAXVALCON(70) 
+      REAL                    :: MAXVALCON(70)
       REAL             :: WCURTIDEX, WCURTIDEY, TIDE_ARGX, TIDE_ARGY
       INTEGER(KIND=4)  :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
       REAL             :: WLEVTIDE, TIDE_ARG, WLEVTIDE2(1)
@@ -254,18 +254,18 @@
                                   NDSE, NX, NY, GTYPE,               &
                                   IERR, FILENAMEXT, '', TIDEFLAGIN=FLAGTIDE )
 !
-      IF (FLAGTIDE.NE.1) GOTO 803 
+      IF (FLAGTIDE.NE.1) GOTO 803
 !
       CALL VUF_SET_PARAMETERS
       ALLOCATE(V_ARG(170,1),F_ARG(170,1),U_ARG(170,1))  ! to be removed later ...
-! 
-! Reads tidal amplitudes and phases        
+!
+! Reads tidal amplitudes and phases
 !
 !
       CALL W3FLDTIDE1 ( 'READ',  NDSF, NDST, NDSE, NX, NY, IDFLD, IERR )
       CALL W3FLDTIDE2 ( 'READ',  NDSF, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
       CLOSE(NDSF)
-      
+
 !
       COUNTRI = MAXVAL(CCON)
       ALLOCATE(VNEIGH(NX,2*COUNTRI))
@@ -320,7 +320,7 @@
         END DO ! CCON
 ! CONN is a counter on connected points. In comparison with the number of connected triangle
 ! CCON, it will enable to spot whether a point belong to the contour
-!         
+!
         CONN(IP)=IFOUND
         do I=2,IFOUND
            do JJ=1,i-1
@@ -331,7 +331,7 @@
               END IF
            enddo
         enddo
-      END DO !NX   
+      END DO !NX
 
 !
 ! Counts the number of tidal constituents
@@ -342,7 +342,7 @@
       DO WHILE (len_trim(TIDECON_MAXNAMES(TIDE_MAXI+1)).NE.0)
         TIDE_MAXI=TIDE_MAXI+1
         DO J=1,TIDE_MF
-          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(TIDECON_MAXNAMES(TIDE_MAXI))) THEN 
+          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(TIDECON_MAXNAMES(TIDE_MAXI))) THEN
             TIDE_MAX=TIDE_MAX+1
             INDMAX(TIDE_MAX)=J
             READ(TIDECON_MAXVALS(TIDE_MAXI),*) MAXVALCON(TIDE_MAX)
@@ -351,7 +351,7 @@
           END DO
         END DO
 !
-! Now writes new file 
+! Now writes new file
 !
       FLAGTIDE = 0
       CALL W3FLDO ('WRITE', IDFLD, NDSDAT, NDST,     &
@@ -361,13 +361,13 @@
 ! Loop on time steps
 !
       DTTST  = DSEC21 ( TIDE_START , TIDE_END )
-      IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) GOTO 888 
+      IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) GOTO 888
       TIME = TIDE_START
       TIDE_KD0= 2415020
 !
       TINDEX = 1
 !
-      DO    
+      DO
         DTTST  = DSEC21 ( TIME, TIDE_END )
         IF ( DTTST .LT. 0. ) GOTO 888
 !
@@ -376,7 +376,7 @@
 
         TIDE_HOUR = TIME2HOURS(TIME)
 !
-!*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED 
+!*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED
 !
         d1=TIDE_HOUR/24.d0
         d1=d1-dfloat(TIDE_kd0)-0.5d0
@@ -392,17 +392,17 @@
         BADPOINTS(:,:)=0
         NBAD =0
         DO IY = 1, NY
-          DO IX = 1, NX 
+          DO IX = 1, NX
             CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
-            IF (TINDEX.EQ.1) THEN 
+            IF (TINDEX.EQ.1) THEN
               TIDEOK=1
               DO I=1,TIDE_MAX
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) &
-                  .OR.ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) & 
+                  .OR.ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) &
                   TIDEOK = 0
                   BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
                 END DO
-                IF (BADPOINTS(IX,IY).GT.0) THEN 
+                IF (BADPOINTS(IX,IY).GT.0) THEN
                   NBAD = NBAD +1
                   WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
                      TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
@@ -410,46 +410,46 @@
               END IF
             END DO
           END DO
-!   
+!
         DO ITER=1,2
         DO IY = 1, NY
-          DO IX = 1, NX 
-            IF (TINDEX.EQ.1) THEN 
-              IF (BADPOINTS(IX,IY).GT.0) THEN 
+          DO IX = 1, NX
+            IF (TINDEX.EQ.1) THEN
+              IF (BADPOINTS(IX,IY).GT.0) THEN
                 TIDAL_CONST(IX,IY,:,1,1)=0
                 TIDAL_CONST(IX,IY,:,2,1)=0
-                IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN 
+                IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN
 !
 ! Performs a vector sum of tidal constituents over neighbor nodes
-!  
-                   DO J=1, TIDE_MF 
+!
+                   DO J=1, TIDE_MF
                      DO K=1, 2
                       AMPCOS = 0
                       AMPSIN = 0
                       SUMOK = 0
-                      DO IND=1,COUNTCON(IX) 
+                      DO IND=1,COUNTCON(IX)
                         IX2=VNEIGH(IX,IND)
-                        IF (BADPOINTS(IX2,IY).EQ.0) THEN 
+                        IF (BADPOINTS(IX2,IY).EQ.0) THEN
                           SUMOK = SUMOK + 1
                           AMPCOS = AMPCOS+TIDAL_CONST(IX2,IY,J,K,1)*COS(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
                           AMPSIN = AMPSIN+TIDAL_CONST(IX2,IY,J,K,1)*SIN(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
                           END IF
                         END DO
-                      IF (SUMOK.GT.1) THEN 
+                      IF (SUMOK.GT.1) THEN
 !
-! Finalizes the amplitude and phase calculation from COS and SIN. Special case for mean value Z0. 
+! Finalizes the amplitude and phase calculation from COS and SIN. Special case for mean value Z0.
 !
-                        IF (TIDECON_NAME(J).NE.'Z0   ') THEN 
+                        IF (TIDECON_NAME(J).NE.'Z0   ') THEN
                           TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
                           TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
                         ELSE
                           TIDAL_CONST(IX,IY,J,K,1) = AMPCOS/SUMOK
                           TIDAL_CONST(IX,IY,J,K,2) = 0.
                           END IF
-                        IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN 
+                        IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN
                           NBAD=NBAD-1
                           BADPOINTS(IX,IY) = 0
-                          END IF 
+                          END IF
 
                          ENDIF
                        END DO
@@ -466,22 +466,22 @@
 !
 ! For currents: 2 components
 !
-        IF (IFLD.EQ.4) THEN 
+        IF (IFLD.EQ.4) THEN
         DO IY = 1, NY
-          DO IX = 1, NX 
+          DO IX = 1, NX
             WCURTIDEX = 0.
             WCURTIDEY = 0.
             DO I=1,TIDE_PRMF
               J=PR_INDS(I)
-              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN 
+              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
                  WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
                  WCURTIDEY = WCURTIDEY+TIDAL_CONST(IX,IY,J,2,1)
-              ELSE 
+              ELSE
                 TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
                 TIDE_ARGY=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,2,2)*DERA
                 WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
-                WCURTIDEY = WCURTIDEY+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,2,1)*COS(TIDE_ARGY)    
-                END IF         
+                WCURTIDEY = WCURTIDEY+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,2,1)*COS(TIDE_ARGY)
+                END IF
               END DO
             IF (ABS(WCURTIDEX).GT.10..OR.ABS(WCURTIDEY).GT.10.)  &
             WRITE(NDSE,*) &
@@ -496,39 +496,39 @@
 !
 ! For water levels: only 1 component
 !
-        IF (IFLD.EQ.2) THEN 
+        IF (IFLD.EQ.2) THEN
         DO IY = 1, NY
-          DO IX = 1, NX 
+          DO IX = 1, NX
 
             CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
 !
-! Removes unlikely values ... 
+! Removes unlikely values ...
 !
-            IF (TINDEX.EQ.1) THEN 
+            IF (TINDEX.EQ.1) THEN
               TIDEOK=1
               DO I=1,TIDE_MAX
-                IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I)) & 
+                IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I)) &
                   TIDEOK = 0
                 END DO
-              IF (TIDEOK.EQ.0) THEN   
+              IF (TIDEOK.EQ.0) THEN
                 WRITE(NDSE,*) 'BAD POINT:',IX,IY, &
                      TIDAL_CONST(IX,IY,:,1,1)
                 TIDAL_CONST(IX,IY,:,1,1)=0
                 END IF
-              END IF   
+              END IF
 
             WCURTIDEX = 0.
             DO I=1,TIDE_PRMF
               J=PR_INDS(I)
-              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN 
+              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
                  WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
-              ELSE 
+              ELSE
                 TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
                 WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
-                END IF         
+                END IF
               END DO
 
-            FX(IX,IY) = 0.       
+            FX(IX,IY) = 0.
             FY(IX,IY) = 0.
             FA(IX,IY) = WCURTIDEX
             END DO
@@ -548,7 +548,7 @@
 ! Increments the clock
 !
         CALL TICK21 ( TIME, FLOAT(PRTIDE_DT) )
-        TINDEX = TINDEX +1 
+        TINDEX = TINDEX +1
         END DO
 !
       GOTO 888

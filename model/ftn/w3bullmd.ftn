@@ -27,13 +27,13 @@
       REAL, PARAMETER      :: BHSMIN = 0.15, BHSDROP = 0.05
       REAL                 :: HST(NPTAB,2), TPT(NPTAB,2),     &
                                       DMT(NPTAB,2)
-      CHARACTER(LEN=129)   :: ASCBLINE 
-      CHARACTER(LEN=664)   :: CSVBLINE 
-!/NCO      CHARACTER(LEN=67)    :: CASCBLINE 
+      CHARACTER(LEN=129)   :: ASCBLINE
+      CHARACTER(LEN=664)   :: CSVBLINE
+!/NCO      CHARACTER(LEN=67)    :: CASCBLINE
       LOGICAL              :: IYY(NPMAX)
-!/    
+!/
 !/ Conventional declarations
-!/     
+!/
 !/
 !/ Private parameter statements (ID strings)
 !/
@@ -41,7 +41,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3BULL                                                &
-          ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
+          ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
@@ -64,7 +64,7 @@
 !
 !  2. Method :
 !
-!     Partitioning is made using the built-in module w3partmd. Partitions 
+!     Partitioning is made using the built-in module w3partmd. Partitions
 !     are ranked and organized into coherent sequences that are then
 !     written as tables to output files. Input options for generating
 !     tables are defined in ww3_outp.inp. This module sorts the table
@@ -101,7 +101,7 @@
 !
 !  7. Remarks :
 !
-!     Current version does not allow generating tables for multiple 
+!     Current version does not allow generating tables for multiple
 !     points.
 !
 !  8. Structure :
@@ -140,7 +140,7 @@
       PARAMETER     ( DDMMAX =  15.   )
       PARAMETER     ( DDWMAX =  30.   )
       PARAMETER     ( AGEMIN =   0.8  )
-      INTEGER, INTENT(IN)     :: NPART, DIMXP, IOUT 
+      INTEGER, INTENT(IN)     :: NPART, DIMXP, IOUT
       INTEGER, INTENT(INOUT)  :: TIMEV(2)
       REAL, INTENT(IN)        :: UABS,    &
                                  UD, XPART(DIMP,0:DIMXP)
@@ -173,7 +173,7 @@
        FACT = 1.
      ELSE
        FACT = 1.E-3
-     ENDIF 
+     ENDIF
 !
 ! Convert wind direction to azimuthal reference
       UDIR   = MOD( UD+180., 360. )
@@ -275,7 +275,7 @@
             INT(TIME(1)/100)-100*INT(TIME(1)/10000)
       WRITE (CSVBLINE(14:15),'(I2)') MOD(TIME(1),100)
       WRITE (CSVBLINE(17:18),'(I2)') TIME(2)/10000
-      WRITE (CSVBLINE(20:24),'(F5.2)') UABS 
+      WRITE (CSVBLINE(20:24),'(F5.2)') UABS
       WRITE (CSVBLINE(26:28),'(I3)') INT(UDIR)
       IF ( HSTOT .GT. 0. ) WRITE (CSVBLINE(30:34),'(F5.2)') HSTOT
       IF ( HSTOT .GT. 0. ) WRITE (CSVBLINE(36:40),'(F5.2)') TP
@@ -403,7 +403,7 @@
            IPG1=IPG1+1
          ENDIF
          WRITE (PART2,'(",",F5.2,",",F5.2,",",I3)')                   &
-               HSD(IFLD), TPD(IFLD), NINT(WDD(IFLD))         
+               HSD(IFLD), TPD(IFLD), NINT(WDD(IFLD))
          CSVBLINE(25+IPI(IFLD)*16:40+IPI(IFLD)*16) = PART2
        ELSE
          ILEN(IFLD)=0

@@ -43,7 +43,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -101,7 +101,7 @@
 !      STRACE    Subr.   Id.    Subroutine tracing.
 !      NEXTLN    Subr.   Id.    Get next line from input filw
 !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
-!      STME21    Subr. W3TIMEMD Convert time to string. 
+!      STME21    Subr. W3TIMEMD Convert time to string.
 !      TICK21    Subr.   Id.    Advance time.
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
@@ -180,7 +180,7 @@
                     'Nonlinear interactions   ' ,                     &
                     'Dissipation              ' ,                     &
                     'Wave-bottom interactions ' ,                     &
-                    'Wave-ice interactions ' ,                     &                
+                    'Wave-ice interactions ' ,                     &
                     'Sum of selected sources  ' /
       DATA FLSRCE / .FALSE. , .FALSE. , .FALSE. ,                     &
                     .FALSE. , .FALSE. , .FALSE., .FALSE. /
@@ -563,7 +563,7 @@
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      W3SPRn    Subr. W3SRCnMD Mean wave parameters for use in       
+!      W3SPRn    Subr. W3SRCnMD Mean wave parameters for use in
 !                               source terms.
 !      W3FLXn    Subr. W3FLXnMD Flux/stress computation.
 !      W3SLNn    Subr. W3SLNnMD Linear input.
@@ -691,7 +691,7 @@
       REAL                    :: WN(NK), CG(NK), E(NK,NTH), E1(NK),   &
                                  APM(NK), THBND(NK), SPBND(NK),       &
                                  A(NTH,NK), WN2(NTH,NK),WN_R(NK),     &
-                                 ALPHA_LIU(NK), CG_ICE(NK), R(NK) 
+                                 ALPHA_LIU(NK), CG_ICE(NK), R(NK)
       REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
                                  SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
                                  STT(NK,NTH), DIA2(NK,NTH)
@@ -700,7 +700,7 @@
                                  XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
                                  XWL(NTH,NK), XIS(NTH,NK)
       LOGICAL                 :: LBREAK
-!/ST3      LOGICAL                :: LLWS(NTH,NK) 
+!/ST3      LOGICAL                :: LLWS(NTH,NK)
 !/ST4      LOGICAL                :: LLWS(NTH,NK)
 !/ST4      REAL                   :: LAMBDA(NSPEC)
       CHARACTER               :: DTME21*23
@@ -1021,16 +1021,16 @@
 !/IC2                CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
 !/IC2                              CG_ICE, ALPHA_LIU, R )
 !/IC3                CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
-!/IC4                CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA ) 
+!/IC4                CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 !/IC5                CALL W3SIC5 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 
-!/BT4                    IX=1    ! to be fixed later 
-!/BT4                    IY=1    ! to be fixed later 
-!/BT4                    ISEA=1  ! to be fixed later 
+!/BT4                    IX=1    ! to be fixed later
+!/BT4                    IY=1    ! to be fixed later
+!/BT4                    ISEA=1  ! to be fixed later
 !/BT4                    D50 = SED_D50(ISEA)
 !/BT4                    PSIC= SED_PSIC(ISEA)
 
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 !
 
@@ -1046,7 +1046,7 @@
            IF ( FLSRCE(6) ) THEN
 
 !/IS2           CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
-!/IS2                       XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)                    
+!/IS2                       XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
            END IF
 !
 !/XXX            CALL W3SXXX
@@ -1058,7 +1058,7 @@
               DO ITH=1, NTH
                 ISPEC       = ITH + (IK-1)*NTH
                 E  (IK,ITH) = SPCO(ISPEC,J)
-                SWI(IK,ITH) = ( XWI(ITH,IK) + XLN(ITH,IK) ) * FACTOR 
+                SWI(IK,ITH) = ( XWI(ITH,IK) + XLN(ITH,IK) ) * FACTOR
                 SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
                 SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6               SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)

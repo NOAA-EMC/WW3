@@ -100,7 +100,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -154,7 +154,7 @@
 !      W3INIT    Subr. W3INITMD Wave model initialization routine.
 !      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
 !      WW3_STRT  Prog.   N/A    Initial conditions program.
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !
 !  6. Error messages :
 !
@@ -291,7 +291,7 @@
 !/S      CALL STRACE (IENT, 'W3IORS')
 !
 !
-! Constant NDSR for using mpiifort in ZEUS ... paralell runs crashing 
+! Constant NDSR for using mpiifort in ZEUS ... paralell runs crashing
 !  because compiler doesn't accept reciclyng of UNIT for FORMATTED or
 !  UNFORMATTED files in OPEN
 !
@@ -809,13 +809,13 @@
               MAPST2 = (MAPTMP-MAPSTA) / 8
               DEALLOCATE ( MAPTMP )
 !
-! Updates reflections maps: 
+! Updates reflections maps:
 !
-              IF (GTYPE.EQ.UNGTYPE) THEN 
+              IF (GTYPE.EQ.UNGTYPE) THEN
                 CALL SETUGIOBP
-!/REF1              ELSE 
+!/REF1              ELSE
 !/REF1                CALL W3SETREF
-                ENDIF 
+                ENDIF
 !
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading UST'
               DO IPART=1,NPART

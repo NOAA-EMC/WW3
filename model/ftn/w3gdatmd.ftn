@@ -46,7 +46,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.1 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
@@ -54,20 +54,20 @@
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    05-Apr-2011 : Implement interations for DTMAX < 1s( version 3.14.1 )
-!/                  (F. Ardhuin) 
+!/                  (F. Ardhuin)
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
 !/    29-Nov-2011 : Adding ST6 source term option.      ( version 4.04 )
 !/                  (S. Zieger)
 !/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid variables. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid variables.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
 !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.09 )
 !/    16-Sep-2013 : Add Arctic part SMC grid.           ( version 4.11 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
 !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
@@ -85,7 +85,7 @@
 !/    07-Jan-2018 : Generalizes ICE100WIND to ICESCALES ( version 6.04 )
 !/    26-Mar-2018 : Add FSWND optional variable.  JGLi  ( version 6.02 )
 !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
-!/                  for unstructured grids              ( version 6.04 ) 
+!/                  for unstructured grids              ( version 6.04 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    20-Aug-2018:  Extra namelist variables for ST6    ( version 6.06)
 !/                  (Q. Liu, UoM)
@@ -95,12 +95,12 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Define data structures to set up wave model grids and aliases 
+!     Define data structures to set up wave model grids and aliases
 !     to use individual grids transparently. Also includes subroutines
 !     to manage data structure and pointing to individual models.
 !     Definition of grids and model set up.
@@ -109,7 +109,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      NGRIDS    Int.  Public   Number of grids, initialized at -1 
+!      NGRIDS    Int.  Public   Number of grids, initialized at -1
 !                               to check proper model initialization.
 !      NAUXGR    Int.  Public   Auxiliary grids.
 !      IGRID     Int.  Public   Selected spatial grid, init. at -1.
@@ -137,7 +137,7 @@
 !      GTYPE     Int.  Public   Flag for type of grid
 !                               RLGTYPE: Rectilinear grid
 !                               CLGTYPE: Curvilinear grid
-!                               UNGTYPE: Unstructured triangular grid                       
+!                               UNGTYPE: Unstructured triangular grid
 !      ICLOSE    Int.  Public   Parameter indicating type of index closure of grid.
 !                               ICLOSE_NONE: No grid closure
 !                               ICLOSE_SMPL: Simple grid closure
@@ -151,10 +151,10 @@
 !                                 closure requires that NX be even.
 !      NX, NY    Int.  Public   Discrete dimensions of spatial grid.
 !      NSEA(L)   Int.  Public   Number of sea points (local for MPP).
-!      NU/VFc    Int.  Public   Number of U/V faces for SMC grid. 
-!      NRLv      Int.  Public   Number of refined levels for SMC grid. 
-!      NGLO      Int.  Public   Number of cells in global part for SMC grid. 
-!      NARC      Int.  Public   Number of cells in Arctic part for SMC grid. 
+!      NU/VFc    Int.  Public   Number of U/V faces for SMC grid.
+!      NRLv      Int.  Public   Number of refined levels for SMC grid.
+!      NGLO      Int.  Public   Number of cells in global part for SMC grid.
+!      NARC      Int.  Public   Number of cells in Arctic part for SMC grid.
 !      NBAC      Int.  Public   Number of boundary cells in Arctic part.
 !      NBGL      Int.  Public   Number of boundary cells in global part.
 !      TRFLAG    Int.  Public   Flag for use of transparencies
@@ -186,7 +186,7 @@
 !      IICEHFAC  Real  Public   Scale factor for sea ice thickness
 !      IICEHINIT Real  Public   Initial value of ice thickness
 !      ICESCALES R.A.  Publ.    Scaling coefficient for source terms in the presence of ice
-!                               Default is 1.0, meaning that 100% ice 
+!                               Default is 1.0, meaning that 100% ice
 !                               concentration result in zero source term
 !                               If set to 0.0, then ice has no direct impact on Sln / Sin / Snl / Sds
 !      IC3PARS   R.A.  Public   various parameters for use in IC4, handled as
@@ -197,10 +197,10 @@
 !                               for moving grids.
 !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
 !      CMPRTRCK  Log.  Public   True for traditional compression of track output
-!      PoLat/Lon R.A.  Public   Rotated N-Pole standard latitude/longitude. 
+!      PoLat/Lon R.A.  Public   Rotated N-Pole standard latitude/longitude.
 !      AnglD     R.A.  Public   Rotation angle in degree to turn rotated grid
 !                               back to standard grid.  JGLi12Jun2012
-!      FLAGUNR   Log.  Public   True if rotating directions back to true north 
+!      FLAGUNR   Log.  Public   True if rotating directions back to true north
 !      STEXU     Real  Public   Length-scale (X) for space-time extreme averaging
 !      STEYU     Real  Public   Length-scale (Y) for space-time extreme averaging
 !      STEDU     Real  Public   Time-scale for space-time extreme averaging
@@ -209,8 +209,8 @@
 !      CTHG0S    R.A.  Public   Constant in great-circle refr. term at sea points.
 !      TRNX/Y    R.A.  Public   Transparencies in X/Y for sub-grid
 !      CTRNX/Y   R.A.  Public   Sub-grid transparencies for SMC grid.
-!      ANGARC    R.A.  Public   Rotation angle in degree for Arctic cells. 
-!      SPCBAC    R.A.  Public   Full 2-D spectra for Arctic boundary cells. 
+!      ANGARC    R.A.  Public   Rotation angle in degree for Arctic cells.
+!      SPCBAC    R.A.  Public   Full 2-D spectra for Arctic boundary cells.
 !      X/YGRD    R.A.  Public   Spatial grid coordinate arrays.
 !      SX/SYGRD  R.A.  Public   Spatial grid increment arrays.
 !      GINIT     Log.  Public   Flag identifying grid initialization.
@@ -218,14 +218,14 @@
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
 !      FLSOU     Log.  Public   Flag for source term calcualtion.
-!      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
+!      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid.
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FSWND     Log.  Public   Flag for sea-point only wind input on SMC grid.
-!      FLAGST    L.A.  Public   Flag for source term computations 
+!      FLAGST    L.A.  Public   Flag for source term computations
 !                               for individual grid points.
 !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
 !      IICESMOOTH Log.  Public   Flag to smooth the ice covered dispertion relation in broken ice.
-!       
+!
 !
 !      GNAME     C*30  Public   Grid name.
 !      FILEXT    C*13  Public   Extension of WAVEWATCH III file names
@@ -308,7 +308,7 @@
 !      XFC       Real  Public   Id.
 !      FACSD     Real  Public   Constant in seeding algorithm.
 !      FHMAX     Real  Public   Hs/depth ratio in limiter     (!/MLIM)
-!      RWINDC    Real  Public   Coefficient for current in relative 
+!      RWINDC    Real  Public   Coefficient for current in relative
 !                               wind                          (!/RWND)
 !      WWCOR     R.A.  Public   Wind correction factors       (!/WCOR)
 !     ----------------------------------------------------------------
@@ -419,14 +419,14 @@
 !      KDMN      Real  Public   Minimum relative depth.
 !      SNLSn     Real  Public   Constants in shallow water factor.
 !                                                             (!/NL2)
-!      IQTPE     Int.  Public   Type of depth treatment 
-!                                1 : Deep water         
+!      IQTPE     Int.  Public   Type of depth treatment
+!                                1 : Deep water
 !                                2 : Deep water / WAM scaling
-!                                3 : Finite water depth 
+!                                3 : Finite water depth
 !      NDPTHS    Int.  Public   Number of depth for which integration
 !                               space needs to be computed.
 !      NLTAIL    Real  Public   Tail factor for parametric tail.
-!      DPTHNL    R.A.  Public   Depths corresponding to NDPTHS.   
+!      DPTHNL    R.A.  Public   Depths corresponding to NDPTHS.
 !                               *** NOTE: This array is not allocated
 !                                         in the W3DIMP routine ***
 !                                                             (!/NL3)
@@ -510,7 +510,7 @@
 !     ----------------------------------------------------------------
 !     ----------------------------------------------------------------
 !
-!     The structure SICP contains parameters for arbitrary source 
+!     The structure SICP contains parameters for arbitrary source
 !     term and is aliased as above:
 !
 !      Name      Type  Scope    Description
@@ -519,7 +519,7 @@
 !     IS1C2      Real  Public   Offset for ice concentration (!/ISx)
 !     ----------------------------------------------------------------
 !
-!     The structure SXXP contains parameters for arbitrary source 
+!     The structure SXXP contains parameters for arbitrary source
 !     term and is aliased as above:
 !
 !      Name      Type  Scope    Description
@@ -557,7 +557,7 @@
 !     See subroutine documentation.
 !
 !     !/PRn  Select propagation scheme
-!     !/SMC  UNO2 propagation on SMC grid.   
+!     !/SMC  UNO2 propagation on SMC grid.
 !
 !     !/LNn  Select source terms
 !     !/STn
@@ -594,21 +594,21 @@
 !/IC4      INTEGER, PARAMETER      :: NIC4=10
       INTEGER, PARAMETER      :: RLGTYPE = 1
       INTEGER, PARAMETER      :: CLGTYPE = 2
-      INTEGER, PARAMETER      :: UNGTYPE = 3      
+      INTEGER, PARAMETER      :: UNGTYPE = 3
 
       INTEGER, PARAMETER      :: ICLOSE_NONE = ICLO_NONE
       INTEGER, PARAMETER      :: ICLOSE_SMPL = ICLO_SMPL
       INTEGER, PARAMETER      :: ICLOSE_TRPL = ICLO_TRPL
 !
-! Dimensions of tables for pre-computing of dissipation 
-!  
+! Dimensions of tables for pre-computing of dissipation
+!
 !/ST4      INTEGER,    PARAMETER   :: NKHS=2000, NKD=1300
-!/ST4      INTEGER,    PARAMETER   :: NDTAB=2000          
+!/ST4      INTEGER,    PARAMETER   :: NDTAB=2000
 !/
 !/ Data structures
 !/
 !/ Grid type
-      TYPE GRID          ! this is the geographical grid with all associated parameters 
+      TYPE GRID          ! this is the geographical grid with all associated parameters
         INTEGER          :: GTYPE
         INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
@@ -616,7 +616,7 @@
         INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
                             MAPFS(:,:), MAPSF(:,:)
 !
-!/SMC !!Li     Cell and face arrays for SMC grid.  
+!/SMC !!Li     Cell and face arrays for SMC grid.
 !/SMC        INTEGER               :: NCel, NUFc, NVFc, NRLv, MRFct
 !/SMC        INTEGER, POINTER      :: NLvCel(:), NLvUFc(:), NLvVFc(:)
 !/SMC        INTEGER, POINTER      :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
@@ -669,7 +669,7 @@
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
         REAL                  :: FFACBERG    ! mutiplicative factor for iceberg mask
-!/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:) 
+!/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 !/REF1        LOGICAL, POINTER      :: RREF(:)
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
@@ -740,7 +740,7 @@
 !/PR2        REAL                  :: DTME, CLATMN
 !/PR3        REAL                  :: WDCG, WDTH
 !/SMC        REAL                  :: DTME, CLATMN, Refran
-!/SMC        LOGICAL               :: FUNO3, FVERG, FSWND 
+!/SMC        LOGICAL               :: FUNO3, FVERG, FSWND
       END TYPE PROP
 !
       TYPE FLDP
@@ -876,35 +876,35 @@
 !/XX0        REAL                  :: DUMMY
 !/XXX        REAL                  :: DUMMY
       END TYPE SXXP
-      
+
 ! specific type for unstructured scheme
       TYPE SCHM
-         LOGICAL :: FSN          = .FALSE. 
-         LOGICAL :: FSPSI        = .FALSE. 
-         LOGICAL :: FSFCT        = .FALSE. 
-         LOGICAL :: FSNIMP       = .FALSE. 
-         LOGICAL :: FSTOTALIMP   = .FALSE. 
-         LOGICAL :: FSTOTALEXP   = .FALSE. 
-         LOGICAL :: FSREFRACTION = .FALSE. 
-         LOGICAL :: FSFREQSHIFT  = .FALSE. 
-         LOGICAL :: FSSOURCE     = .FALSE. 
-         LOGICAL :: DO_CHANGE_WLV 
-         REAL(8) :: SOLVERTHR_STP 
+         LOGICAL :: FSN          = .FALSE.
+         LOGICAL :: FSPSI        = .FALSE.
+         LOGICAL :: FSFCT        = .FALSE.
+         LOGICAL :: FSNIMP       = .FALSE.
+         LOGICAL :: FSTOTALIMP   = .FALSE.
+         LOGICAL :: FSTOTALEXP   = .FALSE.
+         LOGICAL :: FSREFRACTION = .FALSE.
+         LOGICAL :: FSFREQSHIFT  = .FALSE.
+         LOGICAL :: FSSOURCE     = .FALSE.
+         LOGICAL :: DO_CHANGE_WLV
+         REAL(8) :: SOLVERTHR_STP
          REAL(8) :: CRIT_DEP_STP
-         LOGICAL :: B_JGS_TERMINATE_MAXITER 
-         LOGICAL :: B_JGS_TERMINATE_DIFFERENCE 
-         LOGICAL :: B_JGS_TERMINATE_NORM 
-         LOGICAL :: B_JGS_LIMITER 
+         LOGICAL :: B_JGS_TERMINATE_MAXITER
+         LOGICAL :: B_JGS_TERMINATE_DIFFERENCE
+         LOGICAL :: B_JGS_TERMINATE_NORM
+         LOGICAL :: B_JGS_LIMITER
          LOGICAL :: B_JGS_USE_JACOBI
-         LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL 
-         INTEGER :: B_JGS_MAXITER 
+         LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL
+         INTEGER :: B_JGS_MAXITER
          REAL*8  :: B_JGS_PMIN
-         REAL*8  :: B_JGS_DIFF_THR 
-         REAL*8  :: B_JGS_NORM_THR 
+         REAL*8  :: B_JGS_DIFF_THR
+         REAL*8  :: B_JGS_NORM_THR
          INTEGER :: B_JGS_NLEVEL
-         LOGICAL :: B_JGS_SOURCE_NONLINEAR 
-      END TYPE SCHM    
-!      
+         LOGICAL :: B_JGS_SOURCE_NONLINEAR
+      END TYPE SCHM
+!
 !
       TYPE MPAR
         LOGICAL               :: PINIT
@@ -943,13 +943,13 @@
       INTEGER, POINTER        :: NBEDGE
       INTEGER, POINTER        :: EDGES(:,:), NEIGH(:,:)
 !
-! Variables for unstructured grids 
+! Variables for unstructured grids
 !
       INTEGER, POINTER        :: NTRI,COUNTRI,COUNTOT,NNZ
       INTEGER                 :: optionCall = 3 ! take care all other options are basically wrong
 !  XYB may not be necessary now that we have XGRD and YGRD
 !  but these XGRD and YGRD should probably be double precision
-      DOUBLE PRECISION, POINTER  ::     XYB(:,:)   
+      DOUBLE PRECISION, POINTER  ::     XYB(:,:)
       INTEGER, POINTER        :: TRIGP(:,:)
 !/PDLIB      INTEGER, POINTER        :: NBND_MAP
 !/PDLIB      INTEGER, POINTER        :: INDEX_MAP(:)
@@ -964,8 +964,8 @@
                                  INDEX_CELL(:)
       REAL(8), POINTER        :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
-      REAL,POINTER            :: MAXX, MAXY, DXYMAX 
-      LOGICAL, POINTER        :: GUGINIT       
+      REAL,POINTER            :: MAXX, MAXY, DXYMAX
+      LOGICAL, POINTER        :: GUGINIT
 !
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
@@ -1054,7 +1054,7 @@
 !/PR2      REAL, POINTER           :: DTME, CLATMN
 !/PR3      REAL, POINTER           :: WDCG, WDTH
 !/SMC      REAL, POINTER           :: DTME, CLATMN, Refran
-!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG, FSWND 
+!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG, FSWND
 !/
 !/ Data aliasses for structure FLDP(S)
 !/
@@ -1311,11 +1311,11 @@
 !/
       END SUBROUTINE W3NMOD
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   & 
+      SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   &
 !/SMC                    , MCel, MUFc, MVFc, MRLv           &
 !/ARC                    , MARC, MBAC, MSPEC                &
                          )
-!/SMC  !!Li    A few dimensional numbers for SMC grid.  
+!/SMC  !!Li    A few dimensional numbers for SMC grid.
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1374,10 +1374,10 @@
 !
 !  7. Remarks :
 !
-!     - Grid dimensions apre passed through parameter list and then 
+!     - Grid dimensions apre passed through parameter list and then
 !       locally stored to assure consistency between allocation and
 !       data in structure.
-!     - W3SETG needs to be called after allocation to point to 
+!     - W3SETG needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -1401,8 +1401,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: IMOD, MX, MY, MSEA, NDSE, NDST
-!/SMC       INTEGER, INTENT(IN)     :: MCel, MUFc, MVFc, MRLv 
-!/ARC       INTEGER, INTENT(IN)     :: MARC, MBAC, MSPEC 
+!/SMC       INTEGER, INTENT(IN)     :: MCel, MUFc, MVFc, MRLv
+!/ARC       INTEGER, INTENT(IN)     :: MARC, MBAC, MSPEC
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1440,7 +1440,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
+! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points
 !
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                  GRIDS(IMOD)%MAPST2(MY,MX),  &
@@ -1482,7 +1482,7 @@
 !/SMC                 GRIDS(IMOD)%IJKCel(5, -9:MCel), &
 !/SMC                 GRIDS(IMOD)%IJKUFc(7,MUFc),     &
 !/SMC                 GRIDS(IMOD)%IJKVFc(8,MVFc),     &
-!/SMC                 GRIDS(IMOD)%CTRNX(-9:MCel),     &  
+!/SMC                 GRIDS(IMOD)%CTRNX(-9:MCel),     &
 !/SMC                 GRIDS(IMOD)%CTRNY(-9:MCel),     &
 !/SMC                 GRIDS(IMOD)%CLATF(MVFc),        &
 !/SMC                 STAT=ISTAT                      )
@@ -1505,8 +1505,8 @@
 !/REF1                 GRIDS(IMOD)%REFPARS(10), &
 !/REF1                 STAT=ISTAT               )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
-!/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
-!/REF1! where reflection can occur. 
+!/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes
+!/REF1! where reflection can occur.
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA), &
 !/REF1                 GRIDS(IMOD)%REFLD(6,0:NSEA), &
 !/REF1                 STAT=ISTAT                    )
@@ -1632,10 +1632,10 @@
 !
 !  7. Remarks :
 !
-!     - Grid dimensions apre passed through parameter list and then 
+!     - Grid dimensions apre passed through parameter list and then
 !       locally stored to assure consistency between allocation and
 !       data in structure.
-!     - W3SETG needs to be called after allocation to point to 
+!     - W3SETG needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -1914,16 +1914,16 @@
       TRFLAG => GRIDS(IMOD)%TRFLAG
       FLAGLL => GRIDS(IMOD)%FLAGLL
 !
-!/SMC      NCel   => GRIDS(IMOD)%NCel 
-!/SMC      NUFc   => GRIDS(IMOD)%NUFc 
-!/SMC      NVFc   => GRIDS(IMOD)%NVFc 
-!/SMC      NRLv   => GRIDS(IMOD)%NRLv 
-!/SMC      MRFct  => GRIDS(IMOD)%MRFct 
+!/SMC      NCel   => GRIDS(IMOD)%NCel
+!/SMC      NUFc   => GRIDS(IMOD)%NUFc
+!/SMC      NVFc   => GRIDS(IMOD)%NVFc
+!/SMC      NRLv   => GRIDS(IMOD)%NRLv
+!/SMC      MRFct  => GRIDS(IMOD)%MRFct
 !
-!/ARC      NGLO   => GRIDS(IMOD)%NGLO 
-!/ARC      NARC   => GRIDS(IMOD)%NARC 
-!/ARC      NBGL   => GRIDS(IMOD)%NBGL 
-!/ARC      NBAC   => GRIDS(IMOD)%NBAC 
+!/ARC      NGLO   => GRIDS(IMOD)%NGLO
+!/ARC      NARC   => GRIDS(IMOD)%NARC
+!/ARC      NBGL   => GRIDS(IMOD)%NBGL
+!/ARC      NBAC   => GRIDS(IMOD)%NBAC
 !
       E3DF   => GRIDS(IMOD)%E3DF
       P2MSF  => GRIDS(IMOD)%P2MSF
@@ -1977,7 +1977,7 @@
       BTBETA => GRIDS(IMOD)%BTBETA
 !
       GINIT  => GRIDS(IMOD)%GINIT
-      GUGINIT  => GRIDS(IMOD)%GUGINIT      
+      GUGINIT  => GRIDS(IMOD)%GUGINIT
       FLDRY  => GRIDS(IMOD)%FLDRY
       FLCX   => GRIDS(IMOD)%FLCX
       FLCY   => GRIDS(IMOD)%FLCY
@@ -1999,8 +1999,8 @@
       SI     => GRIDS(IMOD)%SI
       COUNTOT    => GRIDS(IMOD)%COUNTOT
       IEN     => GRIDS(IMOD)%IEN
-      LEN     => GRIDS(IMOD)%LEN 
-      ANGLE     => GRIDS(IMOD)%ANGLE 
+      LEN     => GRIDS(IMOD)%LEN
+      ANGLE     => GRIDS(IMOD)%ANGLE
       ANGLE0     => GRIDS(IMOD)%ANGLE0
       CCON     => GRIDS(IMOD)%CCON
       COUNTCON     => GRIDS(IMOD)%COUNTCON
@@ -2026,7 +2026,7 @@
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
       MAXX     => GRIDS(IMOD)%MAXX
       MAXY     => GRIDS(IMOD)%MAXY
-      DXYMAX   => GRIDS(IMOD)%DXYMAX      
+      DXYMAX   => GRIDS(IMOD)%DXYMAX
 
 !
       IF ( GINIT ) THEN
@@ -2151,8 +2151,8 @@
 !/SMC      DTME   => MPARS(IMOD)%PROPS%DTME
 !/SMC      CLATMN => MPARS(IMOD)%PROPS%CLATMN
 !/SMC      Refran => MPARS(IMOD)%PROPS%Refran
-!/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3 
-!/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG 
+!/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3
+!/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG
 !/SMC      FSWND  => MPARS(IMOD)%PROPS%FSWND
 !
 !     Structure FLDP
@@ -2261,9 +2261,9 @@
 !/ST4      SSTXFTWN => MPARS(IMOD)%SRCPS%SSTXFTWN
 !/ST4      SSDSCOS  => MPARS(IMOD)%SRCPS%SSDSCOS
 !/ST4      SSDSISO  => MPARS(IMOD)%SRCPS%SSDSISO
-!/ST4      IKTAB    => MPARS(IMOD)%SRCPS%IKTAB  
-!/ST4      DCKI     => MPARS(IMOD)%SRCPS%DCKI  
-!/ST4      QBI      => MPARS(IMOD)%SRCPS%QBI  
+!/ST4      IKTAB    => MPARS(IMOD)%SRCPS%IKTAB
+!/ST4      DCKI     => MPARS(IMOD)%SRCPS%DCKI
+!/ST4      QBI      => MPARS(IMOD)%SRCPS%QBI
 !/ST4      CUMULW   => MPARS(IMOD)%SRCPS%CUMULW
 !/ST4      SATINDICES    => MPARS(IMOD)%SRCPS%SATINDICES
 !/ST4      SATWEIGHTS   => MPARS(IMOD)%SRCPS%SATWEIGHTS
@@ -2619,7 +2619,7 @@
 !/ End of W3GNTX ----------------------------------------------------- /
 !/
       END SUBROUTINE W3GNTX
-!/ ------------------------------------------------------------------- /   
+!/ ------------------------------------------------------------------- /
       SUBROUTINE W3DIMUG  ( IMOD, MTRI, MX, COUNTOTA, NNZ, NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -2670,10 +2670,10 @@
 !
 !  7. Remarks :
 !
-!     - Grid dimensions apre passed through parameter list and then 
+!     - Grid dimensions apre passed through parameter list and then
 !       locally stored to assure consistency between allocation and
 !       data in structure.
-!     - W3SETG needs to be called after allocation to point to 
+!     - W3SETG needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -2739,7 +2739,7 @@
       ALLOCATE ( GRIDS(IMOD)%TRIGP(MTRI,3),                         &
                  GRIDS(IMOD)%XYB(MX,3),                             &
                  GRIDS(IMOD)%SI(MX),                                &
-                 GRIDS(IMOD)%TRIA(MTRI),                            & 
+                 GRIDS(IMOD)%TRIA(MTRI),                            &
                  GRIDS(IMOD)%CROSSDIFF(6,MTRI),                     &
                  GRIDS(IMOD)%IEN(MTRI,6),                           &
                  GRIDS(IMOD)%LEN(MTRI,3),                           &
@@ -2767,7 +2767,7 @@
       WRITE (NDST,9001)
 #endif
 !
-!some segmentation troubles can appear, they are related with the allocation of 
+!some segmentation troubles can appear, they are related with the allocation of
 !normal(1st dimension) and the nesting of the triangulated grid.
 ! -------------------------------------------------------------------- /
 ! 3.  Point to allocated arrays
@@ -2826,7 +2826,7 @@
 !/
 !  1. Purpose :
 !
-!     Update reflection directions at shoreline. 
+!     Update reflection directions at shoreline.
 !
 !  2. Method :
 !
@@ -2888,7 +2888,7 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 !
-!/REF1      RREF=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
+!/REF1      RREF=.FALSE.  !JDM initializing to false helps with b4b mod_defs
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
 !/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
@@ -2896,7 +2896,7 @@
 !/REF1      DO IY=2, NY-1
 !/REF1        DO IX=2, NX-1
 !/REF1          IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
-!/REF1!No reflection from artificial island on pole. 
+!/REF1!No reflection from artificial island on pole.
 !/REF1          IF (FLAGLL.AND.(YGRD(IY,IX).GT.85)) RREF(1)=.FALSE.
 !/REF1          IF (MAPSTA(IY,IX).GT.0) THEN
 !/REF1!
@@ -2912,11 +2912,11 @@
 !/REF1!
 !/REF1! resolved shoreline reflection
 !/REF1!
-!/REF1            IF (RREF(1)) THEN 
+!/REF1            IF (RREF(1)) THEN
 !/REF1              REFLC(1,  MAPFS(IY,IX)) = 0.
 !/REF1              REFLD(1:6,MAPFS(IY,IX)) = 0
 !/REF1!
-!/REF1! Search for neighboring coastline.        3 2 1 
+!/REF1! Search for neighboring coastline.        3 2 1
 !/REF1! around X. These are the neighbors of X:  4 X 0
 !/REF1!                                          5 6 7
 !/REF1!
@@ -2926,9 +2926,9 @@
 !/REF1              NEIGH1(4)=8*MAPST2(IY,IX-1)+MAPSTA(IY,IX-1)
 !/REF1              NEIGH1(5:7)=8*MAPST2(IY-1,IX-1:IX+1)+MAPSTA(IY-1,IX-1:IX+1)
 !/REF1!
-!/REF1! if one of the surrounding points is land: determines directions ... 
-!/REF1!              
-!/REF1              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN 
+!/REF1! if one of the surrounding points is land: determines directions ...
+!/REF1!
+!/REF1              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN
 !/REF1                IF ( FLAGLL ) THEN
 !/REF1                  CLAT   = COS(YGRD(IY,IX)*DERA)
 !/REF1                ELSE
@@ -2939,32 +2939,32 @@
 !/REF1                ANGLES(2)= ATAN2(DYDQ(IY,IX),DXDQ(IY,IX)*CLAT)
 !/REF1                ANGLES(3)= ATAN2(DYDQ(IY,IX)-DYDP(IY,IX),(DXDQ(IY,IX)-DXDP(IY,IX))*CLAT)
 !/REF1                ANGLES(4:7)= ANGLES(0:3)+PI
-!/REF1                IF ((NEIGH1(0).GE.1).AND.(NEIGH1(4).GE.1)) THEN 
+!/REF1                IF ((NEIGH1(0).GE.1).AND.(NEIGH1(4).GE.1)) THEN
 !/REF1                  REFLD(3,MAPFS(IY,IX))=0
-!/REF1                ELSE 
+!/REF1                ELSE
 !/REF1                  IF ((NEIGH1(0).GE.1).OR.(NEIGH1(4).GE.1)) REFLD(3,MAPFS(IY,IX))=1
 !/REF1                  END IF
-!/REF1                IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).GE.1)) THEN 
+!/REF1                IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).GE.1)) THEN
 !/REF1                  REFLD(4,MAPFS(IY,IX))=0
 !/REF1                ELSE
 !/REF1                  IF ((NEIGH1(2).GE.1).OR.(NEIGH1(6).GE.1)) REFLD(4,MAPFS(IY,IX))=1
 !/REF1                  END IF
 !/REF1!
-!/REF1! Looks for a locally straight coast in all 8 orientations 
+!/REF1! Looks for a locally straight coast in all 8 orientations
 !/REF1!
 !/REF1                J=0
 !/REF1                REFLD(1,MAPFS(IY,IX))=0
 !/REF1                COSAVG=0
 !/REF1                SINAVG=0
-!/REF1! Shore angle is corrected for grid rotation in w3ref1md.ftn with  REFLD(5:6,MAPFS(IY,IX)) 
+!/REF1! Shore angle is corrected for grid rotation in w3ref1md.ftn with  REFLD(5:6,MAPFS(IY,IX))
 !/REF1                REFLD(5,MAPFS(IY,IX))= MOD(NTH+NINT(ANGLES(0)/TPI*NTH),NTH)
 !/REF1                REFLD(6,MAPFS(IY,IX))= MOD(NTH+NINT((ANGLES(2)/TPI-0.25)*NTH),NTH)
-!/REFT                    IF (IY.EQ.4) THEN 
+!/REFT                    IF (IY.EQ.4) THEN
 !/REFT                      WRITE(6,*) 'POINT (IX,IY):',IX,IY
-!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(3),NEIGH1(2), NEIGH1(1) 
-!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(4),1, NEIGH1(0) 
+!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(3),NEIGH1(2), NEIGH1(1)
+!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(4),1, NEIGH1(0)
 !/REFT                      WRITE(6,*) 'REFT:',NEIGH1(5:7)
-!/REFT                      WRITE(6,*) 'ANG:',ANGLES(3)*RADE,ANGLES(2)*RADE, ANGLES(1)*RADE 
+!/REFT                      WRITE(6,*) 'ANG:',ANGLES(3)*RADE,ANGLES(2)*RADE, ANGLES(1)*RADE
 !/REFT                      WRITE(6,*) 'ANG:',ANGLES(4)*RADE,1, ANGLES(0) *RADE
 !/REFT                      WRITE(6,*) 'ANG:',ANGLES(5:7)*RADE
 !/REFT                      WRITE(6,*) 'REFT:',XGRD(IY+1,IX-1:IX+1), YGRD(IY+1,IX-1:IX+1)
@@ -2975,7 +2975,7 @@
 !/REF1                DO K=0,7
 !/REF1                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
 !/REF1                    .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-!/REF1                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
 !/REF1                    REFLC(1,MAPFS(IY,IX))= REFPARS(1)
 !/REF1!
 !/REF1! Defines direction index for specular reflection (normal to coast)
@@ -2984,7 +2984,7 @@
 !/REF1!  (NB: 1 is sea, 0 is land)             1 X 0
 !/REF1!                                        1 1 0
 !/REF1!
-!/REF1!  then there is only a coastline detection for K=0, giving J=1 
+!/REF1!  then there is only a coastline detection for K=0, giving J=1
 !/REF1!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
 !/REF1!  Namely, the direction TH(REFLD) is the direction pointing INTO the coast
 !/REF1!
@@ -2994,9 +2994,9 @@
 !/REF1                    J=J+1
 !/REF1                    ENDIF
 !/REF1                  END DO
-!/REF1                IF (J.GT.0) THEN 
+!/REF1                IF (J.GT.0) THEN
 !/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
-!/REF1                  THAVG=ATAN2(SINAVG,COSAVG) 
+!/REF1                  THAVG=ATAN2(SINAVG,COSAVG)
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETREF)
 !/REF1                  !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
 !/REF1                  !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
@@ -3004,12 +3004,12 @@
 !/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                ELSE
 !/REF1
-!/REF1!                             1 1 1 
+!/REF1!                             1 1 1
 !/REF1! Looks for mild corners like 1 1 1
-!/REF1!                             1 0 0          
+!/REF1!                             1 0 0
 !/REF1                  DO K=0,7
 !/REF1                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-!/REF1                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
 !/REF1                      REFLC(1,MAPFS(IY,IX))= REFPARS(1)
 !/REF1                      REFLD(1,MAPFS(IY,IX))= 1+MOD((K*NTH+(K+1)*NTH)/16,NTH)
 !/REF1                      REFLD(2,MAPFS(IY,IX))= 1
@@ -3017,10 +3017,10 @@
 !/REF1                    END DO
 !/REF1!                              1 1 1                        1 1 1
 !/REF1! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
-!/REF1!                              1 0 1                        1 1 0          
-!/REF1                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN 
+!/REF1!                              1 0 1                        1 1 0
+!/REF1                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN
 !/REF1                    DO K=0,7,2
-!/REF1                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
 !/REF1                        REFLC(1,MAPFS(IY,IX))= REFPARS(1)
 !/REF1                        REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
 !/REF1                        REFLD(2,MAPFS(IY,IX))= 0
@@ -3031,7 +3031,7 @@
 !/REF1                  END IF
 !/REF1! End of test if surrounding point is land
 !/REF1                END IF
-!/REFT                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  THEN 
+!/REFT                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  THEN
 !/REFT                  WRITE (6,*) 'COAST DIRECTION AT POINT:',IX,IY,' IS ', &
 !/REFT                    REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
 !/REFT                  ENDIF
@@ -3049,7 +3049,7 @@
 !/ End of W3SETREF ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SETREF
-           
+
 !/
 !/ End of module W3GDATMD -------------------------------------------- /
 !/

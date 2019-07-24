@@ -1,7 +1,7 @@
       MODULE W3WAVSET
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -11,8 +11,8 @@
 !/
 !/    01-June-2016 : Origination                        ( version 6.04 )
 !/
-!  1. Purpose : Implicit solution of wave setup problem following 
-!               Dingemans for structured and unstructured grids 
+!  1. Purpose : Implicit solution of wave setup problem following
+!               Dingemans for structured and unstructured grids
 !
 !  2. Method :  To be described
 !
@@ -77,7 +77,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -88,7 +88,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : differentiate xy
-!  2. Method : linear shape function 
+!  2. Method : linear shape function
 !  3. Parameters :
 !
 !     Parameter list
@@ -180,7 +180,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -190,8 +190,8 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : differentiate xy based on mapsta 
-!  2. Method : linear shape function 
+!  1. Purpose : differentiate xy based on mapsta
+!  2. Method : linear shape function
 !  3. Parameters :
 !
 !     Parameter list
@@ -286,7 +286,7 @@
         ELSE
           DVDX(IP)=0.
           DVDY(IP)=0.
-        ENDIF 
+        ENDIF
       END DO
       DO IP=1,npa
         IX=iplg(IP)
@@ -303,7 +303,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                        FORTRAN 90 |
@@ -371,7 +371,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -381,7 +381,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Setup boundary pointer 
+!  1. Purpose : Setup boundary pointer
 !  2. Method :
 !  3. Parameters :
 !
@@ -495,7 +495,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -579,7 +579,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -738,7 +738,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -748,7 +748,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : preconditioner 
+!  1. Purpose : preconditioner
 !  2. Method :
 !  3. Parameters :
 !
@@ -853,7 +853,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -863,7 +863,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : compute off diagonal contr. 
+!  1. Purpose : compute off diagonal contr.
 !  2. Method :
 !  3. Parameters :
 !
@@ -937,7 +937,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -947,7 +947,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : scalar prod. + exchange 
+!  1. Purpose : scalar prod. + exchange
 !  2. Method :
 !  3. Parameters :
 !
@@ -1031,7 +1031,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1041,7 +1041,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : poisson eq. solver 
+!  1. Purpose : poisson eq. solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -1172,7 +1172,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1182,7 +1182,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : set. mean value 
+!  1. Purpose : set. mean value
 !  2. Method :
 !  3. Parameters :
 !
@@ -1277,7 +1277,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1361,7 +1361,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1490,7 +1490,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1500,7 +1500,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Wave setup for FD grids 
+!  1. Purpose : Wave setup for FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -1642,7 +1642,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1652,7 +1652,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : comp. off diagonal for FD grids 
+!  1. Purpose : comp. off diagonal for FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -1720,7 +1720,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1730,7 +1730,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Precond. for FD grids 
+!  1. Purpose : Precond. for FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -1805,7 +1805,7 @@
         END DO
       END IF
       IF (ThePrecond .eq. 2) THEN
-        
+
         DO IP=1,NSEA
           J=PDLIB_I_DIAG(IP)
           TheOut(IP)=TheIn(IP)/ASPAR(J)
@@ -1817,7 +1817,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1827,7 +1827,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Rad. stresses for FD grids 
+!  1. Purpose : Rad. stresses for FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -1928,7 +1928,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1938,7 +1938,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : setup fluxes 
+!  1. Purpose : setup fluxes
 !  2. Method :
 !  3. Parameters :
 !
@@ -2062,7 +2062,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2072,7 +2072,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : differences on FD grids 
+!  1. Purpose : differences on FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -2151,7 +2151,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2161,7 +2161,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Setup matrix on FD grids 
+!  1. Purpose : Setup matrix on FD grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -2251,7 +2251,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2322,7 +2322,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2332,7 +2332,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : possoin solver on fd grids 
+!  1. Purpose : possoin solver on fd grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -2429,7 +2429,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2439,7 +2439,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : set meanvalue 
+!  1. Purpose : set meanvalue
 !  2. Method :
 !  3. Parameters :
 !
@@ -2506,7 +2506,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -2516,7 +2516,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : wave setup comp. on fd grids 
+!  1. Purpose : wave setup comp. on fd grids
 !  2. Method :
 !  3. Parameters :
 !
@@ -2600,7 +2600,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2610,7 +2610,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : general driver 
+!  1. Purpose : general driver
 !  2. Method :
 !  3. Parameters :
 !

@@ -24,14 +24,14 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Module containing data structures and subroutines for spatial and 
+!     Module containing data structures and subroutines for spatial and
 !     temporal tracking (part of wave partitioning).
 !
 !  2. Method :
@@ -43,7 +43,7 @@
 !  3. Variables and types :
 !
 !     NOTE: In Fortran 90/95 derived types cannot contain allocatable arrays.
-!           The same functionality is achieved here using pointers (pointing 
+!           The same functionality is achieved here using pointers (pointing
 !           to unnamed allocatable arrays). Can be replaced by allocatable arrays
 !           when transitioning to the Fortran 2003 standard.
 !
@@ -113,10 +113,10 @@
          INTEGER     :: j
       END TYPE neighbr
 !
-!     mtchsys  Der. type    structure for storing data of matched systems 
+!     mtchsys  Der. type    structure for storing data of matched systems
 !     sysVal   Int arr      array of indices of matched systems
-!     tpVal    Real arr     array of peak period values of matched systems 
-!     wfVal    Real arr     array of wind fraction values of matched systems 
+!     tpVal    Real arr     array of peak period values of matched systems
+!     wfVal    Real arr     array of wind fraction values of matched systems
 !
       TYPE mtchsys
          INTEGER     :: sysVal(50)
@@ -167,14 +167,14 @@
       END TYPE system
 !
 !     timsys   Der. type     structure for storing time-tracked systems (all time levels)
-!     sys  type(system) arr  array of all spatially+temporally tracked systems at given 
-!                            time level   
+!     sys  type(system) arr  array of all spatially+temporally tracked systems at given
+!                            time level
 !
       TYPE timsys
          TYPE(system), POINTER :: sys(:)
       END TYPE timsys
 !
-!     sysmemory  Der. type   Structure to store key characteristics of systems over multiple 
+!     sysmemory  Der. type   Structure to store key characteristics of systems over multiple
 !                            time levels. Used during the time tracking routine.
 !
       TYPE sysmemory
@@ -216,7 +216,7 @@
 !     SETDIFF              returns elements in vector1 that are not in vector2
 !     INTERSECT            returns elements that are mutual in vector1 and vector2
 !     UNION                returns the union of vector1 and vector2
-!     func. LENGTH         finds no. of indices in vector not filled with blank entries. 
+!     func. LENGTH         finds no. of indices in vector not filled with blank entries.
 !     func. FINDFIRST      returns index of first instance of a search value in vector
 !     func. STD            computes standard deviation
 !
@@ -253,7 +253,7 @@
 !     |       |      CALL combineSys             See below
 !     |       |
 !     |       +----- SUBROUTINE printFinalSys    output the final output systems for this time step
-!     |       |         (CALL UNIQUE)      
+!     |       |         (CALL UNIQUE)
 !     |       |         (CALL SETDIFF)           returns elements in vector1 that are not in vector2
 !     |       |         (CALL SORT)              sorts the vector in ascending or descending order
 !     |       |
@@ -310,7 +310,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -324,9 +324,9 @@
 !  2. Method
 !
 !     (1) Read the raw partitioning output from one of two file formats:
-!         (a) "partRes" format of IFP-SWAN (intype=1), or 
+!         (a) "partRes" format of IFP-SWAN (intype=1), or
 !         (b) WW3 spectral bulletin format (intype=2).
-!         If intype=0, the partition data is read from memory (not activated yet). 
+!         If intype=0, the partition data is read from memory (not activated yet).
 !
 !     (2) Perform tracking in space by calling subroutine spiralTrackV3
 !     (3) Perform tracking in time by calling subroutine timeTrackingV2
@@ -348,9 +348,9 @@
 !     dirKnob        Real      input  Parameter in direction for combining fields in space
 !     perKnob        Real      input  Parameter in period for combining fields in space
 !     hsKnob         Real      input  Parameter in wave height for purging fields
-!     wetPts         Real      input  Percentage of wet points for purging fields (fraction) 
+!     wetPts         Real      input  Percentage of wet points for purging fields (fraction)
 !     seedLat        Real      input  Start Lat for tracking spiral (if =0 centre of field is used)
-!     seedLon        Real      input  Start Lon for tracking spiral (if =0 centre of field is used) 
+!     seedLon        Real      input  Start Lon for tracking spiral (if =0 centre of field is used)
 !     dirTimeKnob    Real      input  Parameter in direction for combining fields in time
 !     tpTimeKnob     Real      input  Parameter in period for combining fields in time
 !     paramFile      Char      input  File name of partitioning parameters                           Is this used???
@@ -368,14 +368,14 @@
       TYPE(timsys), POINTER :: sysA(:), sysAA(:)
       INTEGER      :: NumConsSys, iConsSys
       REAL         :: dt
-      REAL         :: minlon, maxlon, minlat, maxlat 
+      REAL         :: minlon, maxlon, minlat, maxlat
       INTEGER      :: mxcwt, mycwt
 
-!     Note: Variables wsdat, sysA and maxSys have IN/OUT intent so that they 
-!     can be manipulated outside of this subroutine, e.g. re-indexing of 
-!     systems and groups during the simulation. 
+!     Note: Variables wsdat, sysA and maxSys have IN/OUT intent so that they
+!     can be manipulated outside of this subroutine, e.g. re-indexing of
+!     systems and groups during the simulation.
       INTENT (IN)  intype, tmax, tcur, filename, paramFile, &
-                   minlon, maxlon, minlat, maxlat, & 
+                   minlon, maxlon, minlat, maxlat, &
                    hsKnob, wetPts, seedLat, seedLon, &
                    dirKnob, perKnob, dirTimeKnob, tpTimeKnob
       INTENT (OUT) maxGroup
@@ -383,7 +383,7 @@
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     llat     Real    Latitude of partition point, from input file 
+!     llat     Real    Latitude of partition point, from input file
 !     llon     Real    Longitude of partition point, from input file
 !     ts       Real    Time step of partition, from input file
 !     hs0      Real    Wave height of partition, from input file
@@ -429,7 +429,7 @@
       REAL       :: lonext, latext
 
 !/MPI      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
-!/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
+!/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR
 !/MPI      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
 !/MPI      INTEGER    :: REQ(16)
 !/MPI/!    INTEGER    :: ISTAT(MPI_STATUS_SIZE,16)
@@ -858,7 +858,7 @@
          ALLOCATE(uniqueLatraw(mycwt+1))
          ALLOCATE(uniqueLonraw(mxcwt+1))
          DO i = 1,(mycwt+1)
-            uniqueLatraw(i) =  minlat + & 
+            uniqueLatraw(i) =  minlat + &
                                (REAL(i)-1)/REAL(mycwt)*(maxlat-minlat)
          END DO
          DO i = 1,(mxcwt+1)
@@ -901,7 +901,7 @@
          WRITE(20,*) '                        Latitude range  =', &
                      uniqueLat(1), uniqueLat(SIZE(uniqueLat))
 
-!        Map is transposed (rotated by 90 deg), so that: 
+!        Map is transposed (rotated by 90 deg), so that:
 !          I (matrix row) represents Longitute
 !          J (matrix column) represents Latitude
 !          i.e. from this point onwards the indices (i,j) represents Cart. coordinates
@@ -952,7 +952,7 @@
                   wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
 !                  wsdat(tsA)%par(i,j)%wf(1:10)=9999.
                   wsdat(tsA)%par(i,j)%ipart(1:10)=0
-                  wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
+                  wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
                   wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
                   wsdat(tsA)%wnd(i,j)%wdir=9999.
                   wsdat(tsA)%wnd(i,j)%wspd=9999.
@@ -1114,7 +1114,7 @@
 !/MPI                         wsdat(tsA)%par(i,j)%dir(1:10)=9999.
 !/MPI                         wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
 !/MPI                         wsdat(tsA)%par(i,j)%ipart(1:10)=0
-!/MPI                         wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
+!/MPI                         wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
 !/MPI                         wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
 !/MPI                         wsdat(tsA)%wnd(i,j)%wdir=9999.
 !/MPI                         wsdat(tsA)%wnd(i,j)%wspd=9999.
@@ -1226,7 +1226,7 @@
          WRITE(32,'(I4,71x,A)') tsA,'Time step'
          WRITE(32,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
-            WRITE(32,'(I4,71x,A)') k,'System number'  
+            WRITE(32,'(I4,71x,A)') k,'System number'
             WRITE(32,'(I4,71x,A)') 9999,'Number of points in system'
             DO j = maxJ,1,-1
                DO i = 1,maxI
@@ -1249,7 +1249,7 @@
          WRITE(33,'(I4,71x,A)') tsA,'Time step'
          WRITE(33,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
-            WRITE(33,'(I4,71x,A)') k,'System number'  
+            WRITE(33,'(I4,71x,A)') k,'System number'
             WRITE(33,'(I4,71x,A)') 9999,'Number of points in system'
             DO j = maxJ,1,-1
                DO i = 1,maxI
@@ -1263,14 +1263,14 @@
       CLOSE(33)
 
 !-----RAW PARTITION output: dir
-      OPEN(unit=34, file='PART_DIR.OUT', & 
+      OPEN(unit=34, file='PART_DIR.OUT', &
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
          WRITE(34,'(I4,71x,A)') tsA,'Time step'
          WRITE(34,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
-            WRITE(34,'(I4,71x,A)') k,'System number'  
+            WRITE(34,'(I4,71x,A)') k,'System number'
             WRITE(34,'(I4,71x,A)') 9999,'Number of points in system'
             DO j = maxJ,1,-1
                DO i = 1,maxI
@@ -1291,11 +1291,11 @@
          WRITE(35,'(I4,71x,A)') tsA,'Time step'
          WRITE(35,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
-            WRITE(35,'(I4,71x,A)') k,'System number'  
+            WRITE(35,'(I4,71x,A)') k,'System number'
             WRITE(35,'(I4,71x,A)') 9999,'Number of points in system'
             DO j = maxJ,1,-1
                DO i = 1,maxI
-                  WRITE(35,'(F8.2)',ADVANCE='NO') & 
+                  WRITE(35,'(F8.2)',ADVANCE='NO') &
                      wsdat(tsA)%par(i,j)%dspr(k)
                END DO
                WRITE(35,'(A)',ADVANCE='YES') ''
@@ -1410,12 +1410,12 @@
 !/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%tp(maxI*maxJ) )
 !/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%dir(maxI*maxJ) )
 !/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%dspr(maxI*maxJ) )
-!/MPI                  sysA(tsA)%sys(ic)%i(:) = 9999  
+!/MPI                  sysA(tsA)%sys(ic)%i(:) = 9999
 !/MPI                  sysA(tsA)%sys(ic)%j(:) = 9999
 !/MPI                  sysA(tsA)%sys(ic)%lon(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%lat(:) = 9999. 
+!/MPI                  sysA(tsA)%sys(ic)%lat(:) = 9999.
 !/MPI                  sysA(tsA)%sys(ic)%hs(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%tp(:) = 9999. 
+!/MPI                  sysA(tsA)%sys(ic)%tp(:) = 9999.
 !/MPI                  sysA(tsA)%sys(ic)%dir(:) = 9999.
 !/MPI                  sysA(tsA)%sys(ic)%dspr(:) = 9999.
 !/MPI                  sysA(tsA)%sys(ic)%hsMean = 9999.
@@ -1694,7 +1694,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -1708,7 +1708,7 @@
 !     Index convention on grid:
 !
 !      j
-!      ^                      
+!      ^
 !      |+(1,maxJ)          +(maxI,maxJ)
 !      |
 !      |
@@ -1740,7 +1740,7 @@
 
       INTENT (IN) wetPts,dirKnob,perKnob,hsKnob,seedLat,seedLon
       INTENT (IN OUT) wsdat
-!      INTENT (OUT) maxSys,sys   
+!      INTENT (OUT) maxSys,sys
 !
 !     Local variables
 !     ----------------------------------------------------------------
@@ -1752,7 +1752,7 @@
       LOGICAL   :: first
       CHARACTER :: way *1
       INTEGER   :: ngbrExt, combine, maxI, maxJ, i, j, oldJ
-      INTEGER   :: horizStepCount, vertStepCount, checkCount, sc, & 
+      INTEGER   :: horizStepCount, vertStepCount, checkCount, sc, &
                    maxPts, landPts, horizBorder, vertBorder, m, k, &
                    stepCount
       REAL      :: deltaLat, minLat, maxLat, minLon, maxLon
@@ -1845,7 +1845,7 @@
       vertBorder=0
       DO WHILE (checkCount.LE.(maxI*maxJ-3) )
 !        From the direction (way) we were going before, find which direction we
-!        are going now and how many 'step' we need to take            
+!        are going now and how many 'step' we need to take
          CALL findWay(way, horizStepCount, vertStepCount, &
                       vertBorder, horizBorder, stepCount)
          IF (first) THEN
@@ -1913,14 +1913,14 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Performs the time tracking of the systems identified within 
+!     Performs the time tracking of the systems identified within
 !     the subroutine spiralTrackV3.
 !
 !  2. Method
@@ -1964,8 +1964,8 @@
       CHARACTER :: dummy*23
       TYPE(sysmemory) :: sysMem(50)                                             !!! 50 memory spaces should be enough Check!!!
       INTEGER :: leng, l, i, ii, j, k, kk, idir, numSys, &
-                 counter, new, DIFSIZE, tpMinInd, dirMinInd, used, ok 
-      REAL    :: Tb,  deltaPer, deltaDir, tpMinVal, dirMinVal, & 
+                 counter, new, DIFSIZE, tpMinInd, dirMinInd, used, ok
+      REAL    :: Tb,  deltaPer, deltaDir, tpMinVal, dirMinVal, &
                  dirForTpMin, tpForDirMin
       REAL, ALLOCATABLE :: sysOrdered(:), TEMP(:), dirs(:)
       REAL, POINTER :: DIFARR(:)
@@ -2133,8 +2133,8 @@
             WRITE(20,*) 'sysMem(',i,')%latMean =',sysMem(i)%latMean
             WRITE(20,*) 'sysMem(',i,')%tpMean =',sysMem(i)%tpMean
             WRITE(20,*) 'sysMem(',i,')%dirMean =',sysMem(i)%dirMean
-            WRITE(20,*) 'sysMem(',i,')%updated =',sysMem(i)%updated 
-            WRITE(20,*) 'sysMem(',i,')%length =',sysMem(i)%length         
+            WRITE(20,*) 'sysMem(',i,')%updated =',sysMem(i)%updated
+            WRITE(20,*) 'sysMem(',i,')%length =',sysMem(i)%length
          END DO
 !********************************************
       END IF
@@ -2160,7 +2160,7 @@
             sysA(i)%sys(:)%grp = 9999                                     ! Optimize?
             counter = 0
             leng = LENGTH(REAL(sysMem(:)%grp), &
-                          SIZE(sysMem(:)%grp),REAL(9999)) 
+                          SIZE(sysMem(:)%grp),REAL(9999))
             ALLOCATE( alreadyUsed(leng+10) )                              !Make space for 10 new potential entries. Improve!!!
             WRITE(20,*) 'sysMem(1:leng)%grp =', &
                         sysMem(1:leng)%grp
@@ -2209,21 +2209,21 @@
                sysA(i)%sys(j)%indx(iii) = &
                   (sysA(i)%sys(j)%j(iii)-1)*maxI + &
                    sysA(i)%sys(j)%i(iii)
-            END DO           
+            END DO
 !071012----------- Grid point indexing --------------------------
             WRITE(20,*) 'System no. ',j,' of ',maxSys(i)
             WRITE(20,*) 'Size =', npnts
             WRITE(20,*) 'lonMean =', lonmean
             WRITE(20,*) 'latMean =', latmean
             WRITE(20,*) 'tpMean =', sysA(i)%sys(j)%tpMean
-            WRITE(20,*) 'dirMean =', sysA(i)%sys(j)%dirMean       
+            WRITE(20,*) 'dirMean =', sysA(i)%sys(j)%dirMean
             sysA(i)%sys(j)%grp = 9999                                     !Now redundant?
 
 !           Compute deltas
             Tbsysmem = sysMem(1:maxGroup)%tpMean
             WRITE(20,*) 'Tbsysmem(:) =       ', Tbsysmem(:)
 !           Compute deltas the same way as for field combining - they should
-!           be of the same degree of strictness as the latter, otherwise 
+!           be of the same degree of strictness as the latter, otherwise
 !           the time combining will lose track!
 !3stddev            m1 = -3.645*Tb + 63.211
 !3stddev            m1 = MAX(m1,10.)
@@ -2248,11 +2248,11 @@
             WRITE(20,*) 'deltaDirsysmem(:) = ',deltaDirsysmem
             WRITE(20,*) 'deltaPersysmem(:) = ',deltaPersysmem
 
-!                 Criterion 1: Mean period 
+!                 Criterion 1: Mean period
                   ALLOCATE( TEMP(SIZE(ind2)) )
                   TEMP = ABS( sysA(i)%sys(j)%tpMean - &
                               sysMem(ind2(:))%tpMean )
-                  WRITE(20,*) 'tpMean list =', & 
+                  WRITE(20,*) 'tpMean list =', &
                               sysMem(ind2(:))%tpMean
                   WRITE(20,*) 'tpMinVal list =', TEMP
                   tpMinVal = MINVAL(TEMP)
@@ -2266,12 +2266,12 @@
                   DO idir = 1, SIZE(dirs)
                      IF (dirs(idir).GE.180.) dirs(idir)=360-dirs(idir)
                   END DO
-                  WRITE(20,*) 'dirMean list =', & 
+                  WRITE(20,*) 'dirMean list =', &
                               sysMem(ind2(:))%dirMean
                   WRITE(20,*) 'dirMinVal list =', dirs
 
 !                 Criterion 3: Size
-                  WRITE(20,*) 'Size list =', & 
+                  WRITE(20,*) 'Size list =', &
                               sysMem(ind2(:))%nPoints
 
 !                 Criterion 4: Distance between systems
@@ -2319,8 +2319,8 @@
                      END IF
                      IF ( (TEMP(ii).GT.deltaPersysmem(ii)).OR.&
                           (dirs(ii).GT.deltaDirsysmem(ii)) ) THEN
-                       GOF(j,ii) = 9999. 
-                     END IF      
+                       GOF(j,ii) = 9999.
+                     END IF
                   END DO
                   WRITE(20,*) 'GOF(j,:) =',GOF(j,:)
 
@@ -2357,7 +2357,7 @@
 
          DO j = 1, maxSys(i)
                   new = 0
-!                 Look up sysMem match for this current system. If no match 
+!                 Look up sysMem match for this current system. If no match
 !                 is found, the index value 0 is returned.
                   tpMinInd = 0
                   TEMP1 = 9999.
@@ -2403,7 +2403,7 @@
                             (.NOT.ANY(alreadyUsed(:).EQ.k))) THEN
 !                           Make sure it hasn't been used yet (at previous time level)
                             DO l = 1, maxGroup
-!                              If last update of system was more that *6* time steps 
+!                              If last update of system was more that *6* time steps
 !                              ago, system can be released (TO CALIBRATE)
                                IF ( (sysMem(l)%grp.EQ.k).AND. &
                                    ((i-sysMem(l)%updated).LT.6) ) ok = 0
@@ -2436,7 +2436,7 @@
          END DO
          IF (ALLOCATED(ind)) DEALLOCATE(ind)                  !071212 Shifted
          IF (ALLOCATED(ind2)) DEALLOCATE(ind2)                !071212 Shifted
-         IF (ALLOCATED(GOFMinVal)) DEALLOCATE(GOFMinVal) 
+         IF (ALLOCATED(GOFMinVal)) DEALLOCATE(GOFMinVal)
          IF (ALLOCATED(GOFMinInd)) DEALLOCATE(GOFMinInd)
 
          IF (ALLOCATED(alreadyUsed)) DEALLOCATE(alreadyUsed)
@@ -2479,7 +2479,7 @@
                          sysA(i)%sys(kk)%i(iii)
                   END DO
 !071012----------- Grid point indexing --------------------------
-                  sysMem(k)%updated = i 
+                  sysMem(k)%updated = i
                   sysMem(k)%length = sysMem(k)%length + 1
                END IF
             END DO
@@ -2539,9 +2539,9 @@
                END IF
             END DO
          END DO
-         ELSE  
+         ELSE
             WRITE(20,*) '*** No systems at this time level. ', &
-                        'No. systems =',SIZE(sysA(i)%sys)  
+                        'No. systems =',SIZE(sysA(i)%sys)
             !Test for expired groups
             DO k = 1, maxGroup
                IF ((i-sysMem(k)%updated).GE.6) THEN
@@ -2587,7 +2587,7 @@
          WRITE(27,'(A8,I3,A12,F10.3)') 'sysMem( ',k, &
             ' )%dirMean =',sysMem(k)%dirMean
          WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
-            ' )%updated =',sysMem(k)%updated 
+            ' )%updated =',sysMem(k)%updated
          WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
             ' )%length  =',sysMem(k)%length
          DO j = maxJ,1,-1
@@ -2623,7 +2623,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -2652,7 +2652,7 @@
 
       INTENT (IN) vertBorder, horizBorder
       INTENT (OUT) stepCount
-      INTENT (IN OUT) way    
+      INTENT (IN OUT) way
 !
 !     Local variables
 !     ----------------------------------------------------------------
@@ -2739,7 +2739,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -2766,8 +2766,8 @@
       INTEGER     :: i, j, maxI, maxJ, vertBorder, horizBorder
 
       INTENT (IN) maxI, maxJ, way
-      INTENT (IN OUT) i, j   
-      INTENT (OUT) vertBorder, horizBorder 
+      INTENT (IN OUT) i, j
+      INTENT (OUT) vertBorder, horizBorder
 !
 !     Local variables
 !     ----------------------------------------------------------------
@@ -2805,7 +2805,7 @@
               IF (i.LT.maxI) THEN
                   i=i+1
               ELSE
-!                 Need to tell findWay that if we hit the border we don't 
+!                 Need to tell findWay that if we hit the border we don't
 !                 increment stepCount...
                   horizBorder=1
               END IF
@@ -2873,7 +2873,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !     i,j         Int      input   Current grid indices
-!     maxI, maxJ  Int      input   Maximum indices of wave field  
+!     maxI, maxJ  Int      input   Maximum indices of wave field
 !     wsdat   Type(dat2d)  in/out  Input data structure to be spiral tracked
 !     maxSys      Int      in/out  Maximum number of systems identified
 !
@@ -2969,7 +2969,7 @@
           IF (endCount.EQ.0) WRITE(20,*) '***1.Calling UNIQUE w. len=0!'
           CALL UNIQUE (REAL(allFullSys),endCount,realarr,nout)            !Can one do this?
           ALLOCATE(allSys(nout))
-          allSys = INT(realarr)                                           !Can one do this?     
+          allSys = INT(realarr)                                           !Can one do this?
           IF (ASSOCIATED(realarr)) DEALLOCATE(realarr)
           maxS = MAXVAL(allSys)
 
@@ -3019,7 +3019,7 @@
 !              tmpsys(s)%wfMean = SUM(wfAll(1:countAll))/countAll
           END DO
 
-!         Find the partition at current (i,j) point that matches previously 
+!         Find the partition at current (i,j) point that matches previously
 !         identified wave systems if any...
           wsdat%par(i,j)%ngbrSys(1:SIZE(allSys)) = allSys
 
@@ -3154,14 +3154,14 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Combine wave systems. Then remove small and low-energy systems from set, 
+!     Combine wave systems. Then remove small and low-energy systems from set,
 !     based on the parameters maxPts and maxHgt.
 !
 !  2. Method
@@ -3174,16 +3174,16 @@
 !     ----------------------------------------------------------------
 !     wsdat   Type(dat2d)  output  Combined wave system data structure
 !     sys     Type(system) output  Final set of tracked systems, for one time level
-!     maxI, maxJ  Int      input   Maximum indices of wave field  
+!     maxI, maxJ  Int      input   Maximum indices of wave field
 !     maxSys      Int      input   Maximum number of systems identified
 !     maxPts      Int      input   Number of points req for valid system
 !     hsKnob      Real     input   Parameter for identifying valid system
-!     combine     Int      input   Toggle: 1=combine systems; 0=do not combine 
+!     combine     Int      input   Toggle: 1=combine systems; 0=do not combine
 
       TYPE(dat2d) :: wsdat
       TYPE(system), POINTER :: sys(:), systemp(:)
       INTEGER      :: maxSys, maxPts, maxI, maxJ, combine
-      REAL         :: perKnob ,dirKnob, hsKnob 
+      REAL         :: perKnob ,dirKnob, hsKnob
 
       INTENT (IN) maxPts, maxI, maxJ, hsKnob, combine
       INTENT (IN OUT) wsdat, maxSys                                       !In the Matlab code maxSys is only input ???
@@ -3231,7 +3231,7 @@
 !012912      WRITE(20,*) 'maxSys,maxPts,maxI,maxJ,hsKnob,combine =', &
 !012912                  maxSys,maxPts,maxI,maxJ,hsKnob,combine
 
-!     Set up initial index array of active systems      
+!     Set up initial index array of active systems
       IF (.NOT.ALLOCATED(actSysInd)) ALLOCATE( actSysInd(maxSys) )
       actSysInd(1:maxSys) = (/ (ind, ind = 1, maxSys) /)
 !opt      WRITE(20,*) 'actSysInd =',actSysInd
@@ -3252,7 +3252,7 @@
               ELSE
                  nSys = maxSys
               END IF
-              WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', & 
+              WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', &
                            'iteration',iter,' (maxSys =',nSys,').'
 
 !opt              WRITE(20,*) 'SIZE(sys)=',SIZE(sys)
@@ -3270,7 +3270,7 @@
       END IF
 
 !     Remove small and low-energy systems from set, based on
-!     the parameters maxPts and maxHgt. 
+!     the parameters maxPts and maxHgt.
 !      ALLOCATE( sysOut(maxSys) )
 !      sysOut = sys(1:maxSys)%sysInd
 !      mS = maxSys
@@ -3281,7 +3281,7 @@
       DO so = 1, mS
           s = actSysInd(so)
 !opt      NOTE: if we deallocate the individual records without
-!opt      compressing sys, then s and sysInd will remain the same  
+!opt      compressing sys, then s and sysInd will remain the same
           ss = s
 
           leng = LENGTH(sys(ss)%hs,SIZE(sys(ss)%hs),9999.)
@@ -3320,8 +3320,8 @@
 !                          DEALLOCATE( sys(iloop)%ngbr )
                        END DO
                     END IF
-                 END IF       
-              END DO  
+                 END IF
+              END DO
 
 !             Update wsdat as well
               DO iw = 1, maxI
@@ -3333,7 +3333,7 @@
 !                    Identify system index (there are no duplicate
 !                    systems at this point.
                      DO WHILE (ind.LE.leng)
-                        IF ( wsdat%par(iw,jw)%sys(ind).EQ.s ) THEN 
+                        IF ( wsdat%par(iw,jw)%sys(ind).EQ.s ) THEN
                            found = .TRUE.
                            EXIT
                         END IF
@@ -3345,11 +3345,11 @@
                         wsdat%par(iw,jw)%ipart(ind) = 9999
                      END IF
                  END DO
-              END DO        
+              END DO
           END IF
       END DO
 
-!     Compile array index of active systems in sys      
+!     Compile array index of active systems in sys
       actSys = 0
       DO so = 1,maxSys
          IF (sys(so)%nPoints>0) actSys = actSys + 1
@@ -3368,7 +3368,7 @@
       DO so = 1,SIZE(actSysInd)
          s = actSysInd(so)
 !opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
-      END DO     
+      END DO
 
       CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
 !opt      WRITE(20,*) 'actSysInd =',actSysInd
@@ -3382,7 +3382,7 @@
 !/ End of combineWaveSystems ----------------------------------------- /
 !/
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE printFinalSys (wsdat    ,maxSys    ,actSysInd , & 
+      SUBROUTINE printFinalSys (wsdat    ,maxSys    ,actSysInd , &
                                 maxI     ,maxJ      ,flag      ,sys    )
 !/
 !/                  +-----------------------------------+
@@ -3400,7 +3400,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -3418,10 +3418,10 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !     wsdat   Type(dat2d)  input   Combined data structure
-!     maxI, maxJ  Int      input   Maximum indices of wave field  
+!     maxI, maxJ  Int      input   Maximum indices of wave field
 !     maxSys      Int      input   Maximum number of systems identified
 !     flag        Int      input   Flag for printing system
-!     sys     Type(system) output  Final set of tracked systems, for one time level 
+!     sys     Type(system) output  Final set of tracked systems, for one time level
 !
       TYPE(dat2d)  :: wsdat
       TYPE(system), POINTER :: sys(:)
@@ -3588,7 +3588,7 @@
           IF (ALLOCATED(ngbrSysAll)) DEALLOCATE(ngbrSysAll)
       END IF
 
-!     Print the sorted field to the screen 
+!     Print the sorted field to the screen
       leng = LENGTH(REAL(sys(:)%nPoints), &
                     SIZE(sys(:)%nPoints),REAL(9999))
       ALLOCATE( sysOrdered(leng) )
@@ -3628,7 +3628,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -3646,11 +3646,11 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !     wsdat   Type(dat2d)  input   Combined data structure
-!     maxI, maxJ  Int      input   Maximum indices of wave field  
+!     maxI, maxJ  Int      input   Maximum indices of wave field
 !     sys     Type(system) output  Final set of tracked systems, for one time level
 !     maxSys      Int      input  Number of systems
 !     dirKnob     Real     input  Parameter in direction for combining fields in space
-!     perKnob     Real     input  Parameter in period for combining fields in space 
+!     perKnob     Real     input  Parameter in period for combining fields in space
 !
       TYPE(dat2d)  :: wsdat                                               !40.PAR
       TYPE(system), POINTER :: sys(:)                                     !40.PAR
@@ -3670,9 +3670,9 @@
       INTEGER, POINTER :: indSys1(:), indSys2(:)
       REAL, ALLOCATABLE    :: sysOrdered(:), rounded(:)
       REAL, POINTER    :: uniarr(:), difarr(:), allngbr(:)
-      INTEGER   :: leng, leng2, s, ss, so, ngb, lsys, lsys2, hh, i, j, & 
+      INTEGER   :: leng, leng2, s, ss, so, ngb, lsys, lsys2, hh, i, j, &
                    ii, jj, ind, ind2, nn, nbr, icEnd,ic,iii,iloop
-      INTEGER   :: myngbr, indMatch, matchSys, keep, replacedInd, & 
+      INTEGER   :: myngbr, indMatch, matchSys, keep, replacedInd, &
                    hhForIndMatch, lMatch, tot, outsize
       INTEGER   :: ngbIndex(10000), keepInd(maxI*maxJ), oneLess(1000)     !Array large enough?
 !      REAL      :: Tb,deltaPerB,deltaDirB,absDir,absPer,absHs,absWf
@@ -3724,7 +3724,7 @@
 !     Initialize pointer (first use)
       NULLIFY(indSys1)
       NULLIFY(indSys2)
-!     Flag to combine systems on a point-by-point basis along boundary, 
+!     Flag to combine systems on a point-by-point basis along boundary,
 !     instead of using mean values.
       ZIPMATCH = .FALSE.
       ngbrExt = 1
@@ -3733,8 +3733,8 @@
       ALLOCATE( sysSortedInd(maxSys) )
       ALLOCATE( sysOut(maxSys) )
       ALLOCATE( rounded(maxSys) )
-!     Sort in descending Tp: the following improves the iterative combining in  
-!     the special case that the wave period is constant over the domain, but  
+!     Sort in descending Tp: the following improves the iterative combining in
+!     the special case that the wave period is constant over the domain, but
 !     tpMean is not because of truncation errors at very high decimals.
       rounded = REAL(INT(sys(1:maxSys)%tpMean*1.E4))*1.E-4
       CALL SORT(rounded,maxSys,sysOrdered,sysSortedInd,'D')
@@ -3760,12 +3760,12 @@
           s = sysOut(so)
           ss = FINDFIRST(REAL(sys(:)%sysInd),SIZE(sys(:)%sysInd), &
                          REAL(s))
-!opt          WRITE(20,*) 's,ss=',s,ss 
+!opt          WRITE(20,*) 's,ss=',s,ss
           ngbIndex(:) = 0
           ii = 1
           leng = LENGTH(REAL(sys(ss)%ngbr),SIZE(sys(ss)%ngbr), &
                         REAL(9999))
-!         Identify the indices of all the systems that neighbour the current system s, 
+!         Identify the indices of all the systems that neighbour the current system s,
 !         store in ngbIndex(:)
           DO ngb = 1, leng
              IF ( sys(ss)%ngbr(ngb).NE.s ) THEN
@@ -3787,8 +3787,8 @@
 
           IF ( ii.GT.0 ) THEN
               DO ngb = 1, ii
-!                 We first need to find the (i,j) points that are either common 
-!                 to both these systems, or at the boundary of the two systems. Here 
+!                 We first need to find the (i,j) points that are either common
+!                 to both these systems, or at the boundary of the two systems. Here
 !                 sys 1 will carry the 'ss' index and sys 2 the ngbIndex(ngb) index.
                   CALL findIJV4 (sys(ss),sys(ngbIndex(ngb)), &
                                  maxI,maxJ,indSys1,indSys2)
@@ -3908,7 +3908,7 @@
 !                                deltaPerB = (m2*1. + 3)*1.
                                 deltaDirB = (m1*1. + 30)*1.
                                 deltaPerB = (m2*1. + 3)*1.
-                                !Remove dHs limitation from criteria 
+                                !Remove dHs limitation from criteria
                                 deltaHsB = 9999.
                                 GOTO 500
                               END IF
@@ -4074,7 +4074,7 @@
                         mean_angleV3((/ sys(ss)%dir(keepInd(1:keep)), &
                         sys(indMatch)%dir(1:leng) /), &
                         (/ sys(ss)%hs(keepInd(1:keep)), &
-                        sys(indMatch)%hs(1:leng) /),tot)                      
+                        sys(indMatch)%hs(1:leng) /),tot)
 !070512----------- Weight averages with Hm0 ---------------------
 
                       sys(indMatch)%i(1:(keep+leng))= &
@@ -4227,7 +4227,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -4293,11 +4293,11 @@
 !
 !/ ------------------------------------------------------------------- /
 
-!     Find indices in dat%sys(:) of all partition associated with 
-!     the same wave system, and store them in the data structure 
-!     dup(1:nsys). Here nsys is the number of systems for which duplicates 
-!     were found, and dup(s)%ndup the number of partitions assigned 
-!     to the same system s. 
+!     Find indices in dat%sys(:) of all partition associated with
+!     the same wave system, and store them in the data structure
+!     dup(1:nsys). Here nsys is the number of systems for which duplicates
+!     were found, and dup(s)%ndup the number of partitions assigned
+!     to the same system s.
       nsys = 0
       dup(:)%ndup = 0
       dup(:)%val = 9999
@@ -4329,7 +4329,7 @@
       END DO
 
 !     Now go through array of duplicates for each of n systems
-!     to add all the wave energy to the most energetic of the 
+!     to add all the wave energy to the most energetic of the
 !     duplicates, and then remove the rest.
       maxInd = 0
       temp = -9999.
@@ -4365,7 +4365,7 @@
 !                       dat%wf( (dup(s)%ind(p)+1):npart)
                dat%sys( dup(s)%ind(p):(npart-1) ) = &
                         dat%sys( (dup(s)%ind(p)+1):npart)
-               dat%ipart( dup(s)%ind(p):(npart-1) ) = & 
+               dat%ipart( dup(s)%ind(p):(npart-1) ) = &
                         dat%ipart( (dup(s)%ind(p)+1):npart)
 !              Shift up indices
                DO ss = 1, nsys
@@ -4408,7 +4408,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -4440,7 +4440,7 @@
 !     theta     Real   Mean direction relative to North
 !
       REAL      :: PI
-      PARAMETER  (PI = 3.1416) 
+      PARAMETER  (PI = 3.1416)
       REAL      :: u(ll), v(ll), vm, um, theta
 !
 !  4. Subroutines used :
@@ -4515,14 +4515,14 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Compute the mean direction from array of directions, 
+!     Compute the mean direction from array of directions,
 !     INCLUDING WEIGHTING WITH HMO
 !
 !  2. Method
@@ -4549,7 +4549,7 @@
 !     theta     Real   Mean direction relative to North
 !
       REAL      :: PI
-      PARAMETER  (PI = 3.1416) 
+      PARAMETER  (PI = 3.1416)
       REAL      :: u(ll), v(ll), vm, um, theta
       INTEGER   :: i
 !
@@ -4582,7 +4582,7 @@
 !     North and East components
       v(:) = COS(ang(:)*(PI/180.))
       u(:) = SIN(ang(:)*(PI/180.))
-      TEMP1 = 0. 
+      TEMP1 = 0.
       TEMP2 = 0.
       DO i = 1,ll
          TEMP1 = TEMP1 + (hsign(i)**2)*v(i)
@@ -4770,8 +4770,8 @@
 !  1. Purpose :
 !
 !     Sorts the array INARRAY in ascending (Direction = 'A') or
-!     descending (Direciton = 'D') order. The sorted array is 
-!     stored in OUTARRAY, and the sorted array of the original 
+!     descending (Direciton = 'D') order. The sorted array is
+!     stored in OUTARRAY, and the sorted array of the original
 !     indices is stored in IY.
 !
 !  2. Method
@@ -4790,7 +4790,7 @@
       CHARACTER         :: DIRECTION *1
       INTEGER           :: INSIZE
       INTEGER           :: IY(INSIZE)
-      REAL              :: INARRAY(INSIZE), OUTARRAY(INSIZE) 
+      REAL              :: INARRAY(INSIZE), OUTARRAY(INSIZE)
 
       INTENT (IN)  INARRAY, INSIZE, DIRECTION
       INTENT (OUT) OUTARRAY, IY
@@ -4883,7 +4883,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -4948,7 +4948,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      IF ( (INSIZE1).EQ.0 ) THEN 
+      IF ( (INSIZE1).EQ.0 ) THEN
         OUTSIZE = 0
         ALLOCATE(OUTARRAY(OUTSIZE))
       ELSE IF ( INSIZE2.EQ.0 ) THEN
@@ -4994,7 +4994,7 @@
               I = I + 1
             ELSE IF ( ARRAY2(J).LT.ARRAY1(I) ) THEN
               J = J + 1
-            ELSE 
+            ELSE
               I = I + 1
               J = J + 1
             END IF
@@ -5203,7 +5203,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -5377,16 +5377,16 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Find largest index in ARRAY with a value not equal to the 
+!     Find largest index in ARRAY with a value not equal to the
 !     filler value VAL.
-!     E.g. If VAL = 9999. and ARRAY = [X X X X 9999. 9999. 9999.], 
+!     E.g. If VAL = 9999. and ARRAY = [X X X X 9999. 9999. 9999.],
 !     the function returns 4.
 !
 !  3. Parameters :
@@ -5440,14 +5440,14 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     Fast algorithm to find the *first* index IND in ARRAY 
+!     Fast algorithm to find the *first* index IND in ARRAY
 !     for which ARRAY(IND) = VAL. Use only when there are
 !     no duplicates in ARRAY!
 !
@@ -5499,7 +5499,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -5550,7 +5550,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !
@@ -5676,7 +5676,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !

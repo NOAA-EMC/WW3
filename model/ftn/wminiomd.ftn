@@ -18,7 +18,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -270,7 +270,7 @@
 !/MPI            ITAG   = MTAG0 + IMOD + (J-1)*NRGRD
 !/MPI            IF ( ITAG .GT. MTAG1 ) THEN
 !/MPI                WRITE (MDSE,1001)
-!/MPI                CALL EXTCDE (1001) 
+!/MPI                CALL EXTCDE (1001)
 !/MPI              END IF
 !/MPI            DO IP=1, NMPROC
 !/MPI              IF ( ALLPRC(IP,J) .NE. 0 .AND.                 &
@@ -303,13 +303,13 @@
             END DO
 !
 !/MPI          DO IP=1, NMPROC
-!/MPI            IF ( ALLPRC(IP,J) .NE. 0 .AND.                   &    
+!/MPI            IF ( ALLPRC(IP,J) .NE. 0 .AND.                   &
 !/MPI                 ALLPRC(IP,J) .LE. OUTPTS(J)%NAPROC ) THEN
 !/MPI                NRQ    = NRQ + 1
 !/MPI                ITAG   = IT0 + I
 !/MPI                IF ( ITAG .GT. MTAG1 ) THEN
 !/MPI                    WRITE (MDSE,1001)
-!/MPI                    CALL EXTCDE (1001) 
+!/MPI                    CALL EXTCDE (1001)
 !/MPI                  END IF
 !/MPI                CALL MPI_ISEND ( SBPI(1,I), NSPEC, MPI_REAL, &
 !/MPI                                 IP-1, ITAG, MPI_COMM_MWAVE, &
@@ -379,7 +379,7 @@
 !/
       END SUBROUTINE WMIOBS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE WMIOBG ( IMOD, DONE ) 
+      SUBROUTINE WMIOBG ( IMOD, DONE )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -548,7 +548,7 @@
         END IF
 !
 ! -------------------------------------------------------------------- /
-! 1.  Testing / gathering data in staging arrays 
+! 1.  Testing / gathering data in staging arrays
 !
 !/T      WRITE (MDST,9010)
 !
@@ -572,7 +572,7 @@
 ! 1.b Distributed memory version - - - - - - - - - - - - - - - - - - - /
 !
 !/MPIT        WRITE (MDST,9011) NBISTA(IMOD)
-! 
+!
 ! 1.b.1 NBISTA = 0
 !       Check if staging arrays are initialized.
 !       Post the proper receives.
@@ -602,7 +602,7 @@
 !/MPI                         SIZE(BPSTGE(IMOD,J)%SBPI(1,:)) .NE.     &
 !/MPI                                             NBI2G(IMOD,J) ) THEN
 !/MPI                        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1003)
-!/MPI                        CALL EXTCDE (1003) 
+!/MPI                        CALL EXTCDE (1003)
 !/MPI                      END IF
 !/MPIT                    WRITE (MDST,9012) J, 'TESTED'
 !/MPI                  END IF
@@ -694,7 +694,7 @@
 ! ..... End IF in 1.b.1
 !
 !/MPI        END IF
-! 
+!
 ! 1.b.2 NBISTA = 1
 !       Wait for communication to finish.
 !       If DONE defined, check if done, otherwise wait.
@@ -741,7 +741,7 @@
 !
 !/MPI          NBISTA(IMOD) = 2
 !/MPIT          WRITE (MDST,9011) NBISTA(IMOD)
-! 
+!
 ! 1.b.3 Convert spectra if needed
 !
 !/MPI          DO J=1, NRGRD
@@ -1157,7 +1157,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
-! 
+!
 !/T      WRITE (MDST,9000) IMOD, FLGHG1
 !
       IF ( .NOT. FLGHG1 ) THEN
@@ -1172,7 +1172,7 @@
       CALL W3SETG ( IMOD, MDSE, MDST )
       CALL W3SETW ( IMOD, MDSE, MDST )
       CALL W3SETA ( IMOD, MDSE, MDST )
-! 
+!
 ! -------------------------------------------------------------------- /
 ! 1.  Loop over grids
 !
@@ -1248,7 +1248,7 @@
 !/MPI          ITAG   = HGSTGE(J,IMOD)%ISEND(I,5) + IT0
 !/MPI          IF ( ITAG .GT. MTAG2 ) THEN
 !/MPI              WRITE (MDSE,1001)
-!/MPI              CALL EXTCDE (1001) 
+!/MPI              CALL EXTCDE (1001)
 !/MPI            END IF
 !
           DO IS=1, NSPEC
@@ -1308,7 +1308,7 @@
 !/
       END SUBROUTINE WMIOHS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE WMIOHG ( IMOD, DONE ) 
+      SUBROUTINE WMIOHG ( IMOD, DONE )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1469,12 +1469,12 @@
       CALL W3SETA ( IMOD, MDSE, MDST )
 !
 ! -------------------------------------------------------------------- /
-! 1.  Testing / gathering data in staging arrays 
-! 
+! 1.  Testing / gathering data in staging arrays
+!
 !/T      WRITE (MDST,9010) TIME
 !
 ! 1.a Shared memory version, test valid times. - - - - - - - - - - - - /
-! 
+!
 !/SHRD      DO J=1, NRGRD
 !
 !/SHRD        IF ( FLGALL ) THEN
@@ -1538,7 +1538,7 @@
 ! ..... Spectra
 !
 !/MPI                IT0 = MTAG1 + 1
-!/MPI                SHGH  => HGSTGE(IMOD,J)%SHGH 
+!/MPI                SHGH  => HGSTGE(IMOD,J)%SHGH
 !
 !/MPI                IF ( FLGALL ) THEN
 !/MPI                    NTOT   = HGSTGE(IMOD,J)%NREC
@@ -1566,7 +1566,7 @@
 !
 ! ..... End IF for posting receives 1.b.1
 !
-!/MPIT                WRITE (MDST,9017) 
+!/MPIT                WRITE (MDST,9017)
 !/MPI              END IF
 !
 ! ..... End grid loop J in 1.b.1
@@ -1579,7 +1579,7 @@
 !/MPI          DEALLOCATE ( IRQ )
 !
 ! ..... Reset status
-! 
+!
 !/MPI          IF ( NRQ .GT. 0 ) THEN
 !/MPI              HGHSTA(IMOD) = 1
 !/MPIT              WRITE (MDST,9011) HGHSTA(IMOD)
@@ -1654,7 +1654,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Data available, process grid by grid
-! 
+!
 !/T      WRITE (MDST,9020)
 !
 ! 2.a Loop over grids
@@ -1726,7 +1726,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Set flag if reqeusted
-! 
+!
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !
 !/PDLIB      CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
@@ -1999,7 +1999,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
-! 
+!
 !/T      WRITE (MDST,9000) IMOD
 !/T      WRITE (MDST,9001) EQSTGE(:,IMOD)%NSND
 !
@@ -2007,7 +2007,7 @@
       CALL W3SETG ( IMOD, MDSE, MDST )
       CALL W3SETW ( IMOD, MDSE, MDST )
       CALL W3SETA ( IMOD, MDSE, MDST )
-! 
+!
 ! -------------------------------------------------------------------- /
 ! 1.  Loop over grids
 !
@@ -2068,7 +2068,7 @@
 !/MPI          ITAG   = EQSTGE(J,IMOD)%STG(I) + IT0
 !/MPI          IF ( ITAG .GT. MTAG_UB ) THEN
 !/MPI              WRITE (MDSE,1001)
-!/MPI              CALL EXTCDE (1001) 
+!/MPI              CALL EXTCDE (1001)
 !/MPI            END IF
 !
           DO IS=1, NSPEC
@@ -2084,7 +2084,7 @@
 !/MPI                       ITAG, MPI_COMM_MWAVE, IRQ(NRQ), IERR_MPI )
 !/MPIT              WRITE (MDST,9082) NRQ, JSEA, IP, ITAG-MTAG2,      &
 !/MPIT                                IRQ(NRQ), IERR_MPI
-!/MPI            ELSE 
+!/MPI            ELSE
 !/MPI              NRQOUT = NRQOUT + 1
 !/MPI              OUTDAT(NRQOUT,1) = I
 !/MPI              OUTDAT(NRQOUT,2) = I1
@@ -2127,7 +2127,7 @@
 !/
       END SUBROUTINE WMIOES
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE WMIOEG ( IMOD, DONE ) 
+      SUBROUTINE WMIOEG ( IMOD, DONE )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2318,12 +2318,12 @@
 !/MPIT            WRITE (MDST,9013) VTIME, DTTST
 !
 ! ..... Post receives for data gather
-! 
+!
 !/MPI            IF ( DTTST .NE. 0. ) THEN
 !/MPIT                WRITE (MDST,9014) J
 !
 ! ..... Spectra
-! 
+!
 !/MPI                IT0 = MTAG2 + 1
 !/MPI                SEQL  => EQSTGE(IMOD,J)%SEQL
 !
@@ -2363,7 +2363,7 @@
 !/MPI          DEALLOCATE ( IRQ )
 !
 ! ..... Reset status
-! 
+!
 !/MPI          IF ( NRQ .GT. 0 ) THEN
 !/MPI              EQLSTA(IMOD) = 1
 !/MPIT              WRITE (MDST,9011) EQLSTA(IMOD)
@@ -2509,7 +2509,7 @@
 ! 3.  Set flag if requested
 !
       IF ( PRESENT(DONE) ) DONE = .TRUE.
-!       
+!
 !/PDLIB  CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
 !
 ! Formats

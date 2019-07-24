@@ -1,7 +1,7 @@
 MODULE PDLIB_FIELD_VEC
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -53,7 +53,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -63,7 +63,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Estimate arrays size for communication 
+!  1. Purpose : Estimate arrays size for communication
 !  2. Method :
 !  3. Parameters :
 !
@@ -243,63 +243,63 @@ MODULE PDLIB_FIELD_VEC
         IH = IH + 1
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 2) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 3) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 4) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 5) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 6) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 7) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 8) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5, 9) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 5,10) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 1) ) THEN
         IH = IH + 1
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 2) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 3) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 4) ) THEN
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 5) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 6) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 7) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 6, 8) ) THEN
         DO IK=1,2*NK
           IH = IH + 1
@@ -320,7 +320,7 @@ MODULE PDLIB_FIELD_VEC
       IF ( FLGRDALL( 7, 1) ) THEN
         IH = IH + 1
         IH = IH + 1
-      END IF 
+      END IF
       IF ( FLGRDALL( 7, 2) ) THEN
         IH = IH + 1
         IH = IH + 1
@@ -381,7 +381,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -391,7 +391,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : PDLIB read from file 
+!  1. Purpose : PDLIB read from file
 !  2. Method :
 !  3. Parameters :
 !
@@ -599,7 +599,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -609,7 +609,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : PDLIB write to file 
+!  1. Purpose : PDLIB write to file
 !  2. Method :
 !  3. Parameters :
 !
@@ -832,7 +832,7 @@ MODULE PDLIB_FIELD_VEC
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1013,31 +1013,31 @@ MODULE PDLIB_FIELD_VEC
               IH = IH + 1
               Arrexch(IH,JSEA)=WBT(JSEA)
             END IF
-            IF ( FLGRDALL( 3, 1) ) THEN 
+            IF ( FLGRDALL( 3, 1) ) THEN
               DO IK=E3DF(2,1),E3DF(3,1)
                 IH = IH + 1
                 Arrexch(IH,JSEA)=EF(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 3, 2) ) THEN 
+            IF ( FLGRDALL( 3, 2) ) THEN
               DO IK=E3DF(2,2),E3DF(3,2)
                 IH = IH + 1
                 Arrexch(IH,JSEA)=TH1M(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 3, 3) ) THEN 
+            IF ( FLGRDALL( 3, 3) ) THEN
               DO IK=E3DF(2,3),E3DF(3,3)
                 IH = IH + 1
                 Arrexch(IH,JSEA)=STH1M(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 3, 4) ) THEN 
+            IF ( FLGRDALL( 3, 4) ) THEN
               DO IK=E3DF(2,4),E3DF(3,4)
                 IH = IH + 1
                 Arrexch(IH,JSEA)=TH2M(JSEA,IK)
               END DO
             END IF
-            IF ( FLGRDALL( 3, 5) ) THEN 
+            IF ( FLGRDALL( 3, 5) ) THEN
               DO IK=E3DF(2,5),E3DF(3,5)
                 IH = IH + 1
                 Arrexch(IH,JSEA)=STH2M(JSEA,IK)
@@ -1148,7 +1148,7 @@ MODULE PDLIB_FIELD_VEC
               Arrexch(IH,JSEA)=USTDIR(JSEA)
               IH = IH + 1
               Arrexch(IH,JSEA)=ASF(JSEA)
-            END IF 
+            END IF
             IF ( FLGRDALL( 5, 2) ) THEN
               IH = IH + 1
               Arrexch(IH,JSEA)=CHARN(JSEA)
@@ -1474,13 +1474,13 @@ MODULE PDLIB_FIELD_VEC
                 IH = IH + 1
                 WBT(1:NSEA) = ARRtotal(IH,:)
               END IF
-              IF ( FLGRDALL( 3, 1) ) THEN 
+              IF ( FLGRDALL( 3, 1) ) THEN
                 DO IK=E3DF(2,1),E3DF(3,1)
                   IH = IH + 1
                   EF(1:NSEA,IK) = ARRtotal(IH,:)
                 END DO
               END IF
-              IF ( FLGRDALL( 3, 2) ) THEN 
+              IF ( FLGRDALL( 3, 2) ) THEN
                 DO IK=E3DF(2,2),E3DF(3,2)
                   IH = IH + 1
                   TH1M(1:NSEA,IK) = ARRtotal(IH,:)

@@ -4,7 +4,7 @@
       MODULE PDLIB_W3PROFSMD
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -14,44 +14,44 @@
 !/
 !/    01-June-2016 : Origination                        ( version 6.04 )
 !/
-!  1. Purpose : PDLIB version of UGTYPE including fully implicit 
-!               discretization. This works is based on the thesis 
-!               of Roland, 2008 and represents the continues 
-!               development of the solution of the WAE on unstructured 
-!               grids. Following the quest since one decade we 
-!               continuesly improve the aplicability and robustness of 
-!               the source code and the methods. The development and 
-!               implementation of the involved schemes was funded over 
+!  1. Purpose : PDLIB version of UGTYPE including fully implicit
+!               discretization. This works is based on the thesis
+!               of Roland, 2008 and represents the continues
+!               development of the solution of the WAE on unstructured
+!               grids. Following the quest since one decade we
+!               continuesly improve the aplicability and robustness of
+!               the source code and the methods. The development and
+!               implementation of the involved schemes was funded over
 !               the past decade by IFREMER, SHOM, USACE, NCEP/NOAA,
 !               BGS IT&E GmbH, Zanke & Partner and Roland & Partner.
-!               The PDLIB (Parallel Decomposition Library) library, 
+!               The PDLIB (Parallel Decomposition Library) library,
 !               which is used here is courtesy to BGS IT&E GmbH and
-!               has it's own license, which is the same as WW3. As of 
-!               the origin of the methods, ideas and source code. This 
+!               has it's own license, which is the same as WW3. As of
+!               the origin of the methods, ideas and source code. This
 !               code was 1st developed in the WWM-III (Roland, 2008) and
 !               the ported to WW3. This is true for all source code
-!               related to UGTYPE. 
-!             
+!               related to UGTYPE.
 !
-!  2. Method :  We apply here the framework of Residual Distributions 
-!               schemes for hyperbolic problems for nonlinear propagation 
-!               laws based on the work of Richiuotto et al. 2005. 
+!
+!  2. Method :  We apply here the framework of Residual Distributions
+!               schemes for hyperbolic problems for nonlinear propagation
+!               laws based on the work of Richiuotto et al. 2005.
 !               We supply the N-scheme, PSI-scheme and Lax-FCT-scheme
 !               as explicit methods ranging from 1st order time space
 !               to most optimal PSI method up to 2nd order Lax-FCT-scheme.
-!               For the implicit implementation we used up to now ONLY 
+!               For the implicit implementation we used up to now ONLY
 !               the N-Scheme. Higher order schemes are up to now rather
-!               a research feature than for practical application. The 
-!               reason is given in Cavalleri et al. 2018, we do not 
-!               resolve enough physics in order to be able to run 
-!               2nd or even higher order schemes. 
-!               Use the numerical schemes with the needed care and 
-!               do proper convergence analysis on the time step and 
-!               grid size as well as solver threshold depedency. 
-!               Think about the time and spatial scales of your 
-!               u r intending to resolve! Multiscale modelling needs 
-!               much work on the side of the modeler and much more 
-!               time for the grid generation and the validation of the 
+!               a research feature than for practical application. The
+!               reason is given in Cavalleri et al. 2018, we do not
+!               resolve enough physics in order to be able to run
+!               2nd or even higher order schemes.
+!               Use the numerical schemes with the needed care and
+!               do proper convergence analysis on the time step and
+!               grid size as well as solver threshold depedency.
+!               Think about the time and spatial scales of your
+!               u r intending to resolve! Multiscale modelling needs
+!               much work on the side of the modeler and much more
+!               time for the grid generation and the validation of the
 !               final model
 !
 !  3. Parameters :
@@ -122,7 +122,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -132,7 +132,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Setup boundary pointer 
+!  1. Purpose : Setup boundary pointer
 !  2. Method :
 !  3. Parameters :
 !
@@ -201,7 +201,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -357,7 +357,7 @@
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
         !
         ! Map a point in (1:PDLIB_NSEAL) to a point in (1:NSEA)
-        ! 
+        !
         nb=0
         DO IX=1,NX
           IF (MAPFS(1,IX) .gt. 0) nb = nb + 1
@@ -448,7 +448,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -549,7 +549,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -561,7 +561,7 @@
 !/    10-Jan-2011 : Addition of implicit scheme         ( version 3.14.4 )
 !/    06-Feb-2014 : PDLIB parallelization
 !/
-!  1. Purpose : Explicit advection schemes driver 
+!  1. Purpose : Explicit advection schemes driver
 !
 !     Propagation in physical space for a given spectral component.
 !     Gives the choice of scheme on unstructured grid
@@ -600,7 +600,7 @@
 !       !/S     Enable subroutine tracing.
 !
 !
-! 10. Source code :     
+! 10. Source code :
 !/ ------------------------------------------------------------------- /
 !/
 !
@@ -651,14 +651,14 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
-!      
-      
-!/S      CALL STRACE (IENT, 'W3XYPUG')      
+!
+
+!/S      CALL STRACE (IENT, 'W3XYPUG')
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'Begin of PDLIB_W3XYPUG'
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
-   
+
       CCOS   = FACX * ECOS(ITH)
       CSIN   = FACY * ESIN(ITH)
       CCURX  = FACX
@@ -673,7 +673,7 @@
       CALL SETDEPTH_PDLIB
 !
 ! 2.  Calculate velocities ---------------- *
-! 
+!
       DO JSEA = 1, NSEAL
         IP      = JSEA
         IP_glob = iplg(IP)
@@ -777,7 +777,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -787,7 +787,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Explicit N-Scheme 
+!  1. Purpose : Explicit N-Scheme
 !  2. Method :
 !  3. Parameters :
 !
@@ -875,7 +875,7 @@
       REAL  :: LAMBDA(2), KTMP(3)
       REAL  :: KELEM(3,NE), FLALL(3,NE)
       REAL  :: KKSUM(npa), ST(npa)
-      REAL  :: NM(NE) 
+      REAL  :: NM(NE)
       INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
       REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
       LOGICAL :: testWrite
@@ -928,7 +928,7 @@
         KTMP        = KELEM(:,IE) ! Copy
         NM(IE)      = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
         KELEM(:,IE) = MAX(ZERO,KTMP)
-        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration 
+        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
         FL12  = C(I3,1) * PDLIB_IEN(1,IE) + C(I3,2) * PDLIB_IEN(2,IE)
         FL21  = C(I3,1) * PDLIB_IEN(3,IE) + C(I3,2) * PDLIB_IEN(4,IE)
         FL22  = C(I1,1) * PDLIB_IEN(3,IE) + C(I1,2) * PDLIB_IEN(4,IE)
@@ -1012,7 +1012,7 @@
         DO IP = 1, npa
           IP_glob=iplg(IP)
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)
-!/REF1    IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+!/REF1    IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP_glob).EQ.0.AND.IOBPA(IP_glob).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
          END DO
 !/DEBUGSOLVER     IF (testWrite) THEN
 !/DEBUGSOLVER       CALL SCAL_INTEGRAL_PRINT_R8(U, "U in loop")
@@ -1029,8 +1029,8 @@
 !
 ! 5 Update boundaries ... would be better to omit any if clause in this loop ...
 !   a possibility would be to use NBI = 0 when FLBPI is FALSE and loop on IBI whatever the value of NBI
-! 
-        IF ( FLBPI ) THEN 
+!
+        IF ( FLBPI ) THEN
           RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
           RD2=RD20
           IF ( RD2 .GT. 0.001 ) THEN
@@ -1082,7 +1082,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1127,7 +1127,7 @@
 !
       USE W3GDATMD, ONLY : NK, NTH, NX, &
                             IEN, CLATS, MAPSF, IOBPD, IOBP, IOBPA, NNZ, IOBDP
-      USE W3WDATMD, ONLY: TIME     
+      USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, ITER, CFLXYMAX
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
       USE W3TIMEMD, ONLY: DSEC21
@@ -1143,15 +1143,15 @@
       USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
       USE W3PARALL, ONLY : ONESIXTH, THR, ZERO
       USE yowRankModule, ONLY : IPGL_npa
-      IMPLICIT NONE  
-     
+      IMPLICIT NONE
+
       INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
                                      ! actual Wave Direction
       REAL,    INTENT(IN)    :: DT   ! Time interval for which the
                                      ! advection should be computed
                                      ! for the given velocity field
       REAL,    INTENT(IN)    :: C(npa,2)  ! Velocity field in its
-                                          ! X- and Y- Components, 
+                                          ! X- and Y- Components,
       REAL,    INTENT(INOUT) :: AC(npa)   ! Wave Action before and
                                           ! after advection
       REAL,    INTENT(IN)    :: RD10, RD20   ! Time interpolation
@@ -1161,11 +1161,11 @@
                                         ! the max. Global Time step
 !/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
+      INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
       INTEGER :: IBI, NI(3), JX
       INTEGER :: ISPROC, IP_glob, JSEA, ierr
       REAL    :: RD1, RD2
-      REAL  :: UTILDE 
+      REAL  :: UTILDE
       REAL  :: SUMTHETA
       REAL  :: FL1, FL2, FL3
       REAL  :: FT, CFLXY
@@ -1177,7 +1177,7 @@
       REAL  :: THETA_L(3), BET1(3), BETAHAT(3)
       REAL  :: KELEM(3,NE), FLALL(3,NE)
       REAL  :: KKSUM(npa), ST(npa)
-      REAL  :: NM(NE) 
+      REAL  :: NM(NE)
 !/S      CALL STRACE (IENT, 'W3XYPFSN')
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
@@ -1195,7 +1195,7 @@
         KTMP        = KELEM(:,IE) ! Copy
         NM(IE)      = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
         KELEM(:,IE) = MAX(ZERO,KTMP)
-        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration 
+        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
         FL12  = C(I3,1) * PDLIB_IEN(1,IE) + C(I3,2) * PDLIB_IEN(2,IE)
         FL21  = C(I3,1) * PDLIB_IEN(3,IE) + C(I3,2) * PDLIB_IEN(4,IE)
         FL22  = C(I1,1) * PDLIB_IEN(3,IE) + C(I1,2) * PDLIB_IEN(4,IE)
@@ -1269,7 +1269,7 @@
 !
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
-        IF ( FLBPI ) THEN 
+        IF ( FLBPI ) THEN
           RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
           RD2=RD20
           IF ( RD2 .GT. 0.001 ) THEN
@@ -1281,7 +1281,7 @@
           END IF
 !
 ! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
+! the constant boundary in the structured grids ... which restores the boundary
 ! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
 ! Why this difference ?
 !
@@ -1302,7 +1302,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1312,7 +1312,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Source code for parallel debugging 
+!  1. Purpose : Source code for parallel debugging
 !  2. Method :
 !  3. Parameters :
 !
@@ -1398,7 +1398,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1470,7 +1470,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1542,7 +1542,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1612,7 +1612,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1622,7 +1622,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Source code for parallel Debugging 
+!  1. Purpose : Source code for parallel Debugging
 !  2. Method :
 !  3. Parameters :
 !
@@ -1786,7 +1786,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1853,7 +1853,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1863,7 +1863,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Source code for parallel debugging 
+!  1. Purpose : Source code for parallel debugging
 !  2. Method :
 !  3. Parameters :
 !
@@ -1949,7 +1949,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2013,7 +2013,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2267,7 +2267,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2353,7 +2353,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2415,7 +2415,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2609,7 +2609,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2713,7 +2713,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2794,7 +2794,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2856,15 +2856,15 @@
       USE W3PARALL, ONLY : THR
       use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
       USE yowRankModule, ONLY : IPGL_npa
-      IMPLICIT NONE  
-     
+      IMPLICIT NONE
+
       INTEGER, INTENT(IN)    :: ISP   ! Actual Frequency/Wavenumber,
                                       ! actual Wave Direction
       REAL,    INTENT(IN)    :: DT    ! Time intervall for which the
                                       ! advection should be computed
                                       ! for the given velocity field
       REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in its
-                                           ! X- and Y- Components, 
+                                           ! X- and Y- Components,
       REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and after
                                            ! advection
       REAL,    INTENT(IN)    :: RD10, RD20  ! Time interpolation
@@ -2872,10 +2872,10 @@
                                             ! condition
       LOGICAL, INTENT(IN)    :: LCALC  ! Switch for the calculation of
                                        ! the max. Global Time step
-      INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
+      INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
       INTEGER :: IBI, NI(3), JX
       REAL    :: RD1, RD2
-      REAL  :: UTILDE 
+      REAL  :: UTILDE
       REAL  :: SUMTHETA
       REAL  :: FL1, FL2, FL3
       REAL  :: FT, CFLXY
@@ -2890,7 +2890,7 @@
       REAL  :: PM(npa), PP(npa), UIM(npa), UIP(npa)
       REAL  :: KELEM(3,NE), FLALL(3,NE)
       REAL  :: KKSUM(npa), ST(npa), BETA
-      REAL  :: NM(NE) 
+      REAL  :: NM(NE)
       INTEGER :: ISproc, IP_glob, JSEA, ierr
       REAL  :: eScal
 !/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)
@@ -2909,7 +2909,7 @@
         KELEM(3,IE) = LAMBDA(1) * PDLIB_IEN(5,IE) + LAMBDA(2) * PDLIB_IEN(6,IE)
         KTMP        = KELEM(:,IE) ! Copy
         NM(IE)      = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
-        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration 
+        FL11  = C(I2,1) * PDLIB_IEN(1,IE) + C(I2,2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
         FL12  = C(I3,1) * PDLIB_IEN(1,IE) + C(I3,2) * PDLIB_IEN(2,IE)
         FL21  = C(I3,1) * PDLIB_IEN(3,IE) + C(I3,2) * PDLIB_IEN(4,IE)
         FL22  = C(I1,1) * PDLIB_IEN(3,IE) + C(I1,2) * PDLIB_IEN(4,IE)
@@ -3019,7 +3019,7 @@
           ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
         END DO
 !
-! IOBPD is the switch for removing energy coming from the shoreline 
+! IOBPD is the switch for removing energy coming from the shoreline
 !
         DO IP = 1,npa
           IP_glob=iplg(IP)
@@ -3030,7 +3030,7 @@
 !
 ! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
-        IF ( FLBPI ) THEN 
+        IF ( FLBPI ) THEN
           RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
           RD2=RD20
           IF ( RD2 .GT. 0.001 ) THEN
@@ -3042,7 +3042,7 @@
           END IF
 !
 ! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
+! the constant boundary in the structured grids ... which restores the boundary
 ! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
 ! Why this difference ?
 !
@@ -3057,7 +3057,7 @@
         END IF
         CALL PDLIB_exchange1DREAL(AC)
         U = DBLE(AC)
-      END DO ! IT        
+      END DO ! IT
 !      CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
@@ -3069,7 +3069,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3079,7 +3079,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Block Explicit N-Scheme 
+!  1. Purpose : Block Explicit N-Scheme
 !  2. Method :
 !  3. Parameters :
 !
@@ -3137,7 +3137,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3194,7 +3194,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3204,7 +3204,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Source code for parallel debugging 
+!  1. Purpose : Source code for parallel debugging
 !  2. Method :
 !  3. Parameters :
 !
@@ -3273,7 +3273,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3404,7 +3404,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3490,7 +3490,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3599,7 +3599,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3609,7 +3609,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Compute matrix coefficients for advection part  
+!  1. Purpose : Compute matrix coefficients for advection part
 !  2. Method :
 !  3. Parameters :
 !
@@ -3727,10 +3727,10 @@
         I2 = INE(2,IE)
         I3 = INE(3,IE)
         NI = INE(:,IE)
-        DO IS = 1, NSPEC 
+        DO IS = 1, NSPEC
           ITH    = 1 + MOD(IS-1,NTH)
           IK     = 1 + (IS-1)/NTH
-          CCOS   = FACX * ECOS(ITH)  
+          CCOS   = FACX * ECOS(ITH)
           CSIN   = FACY * ESIN(ITH)
           CXY(:,1) = CCOS * CG(IK,NI) / CLATS(NI)
           CXY(:,2) = CSIN * CG(IK,NI)
@@ -3760,7 +3760,7 @@
           NM(IS,IE) = 1.d0/MIN(-THR,SUM(KM))
         ENDDO
       END DO
- 
+
       J = 0
       DO IP = 1, npa
         IP_glob=iplg(IP)
@@ -3785,12 +3785,12 @@
             TMP3  =  DTK * NM(ISP,IE)
             IF (FSGEOADVECT) THEN
               ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS,ISP,IE)
-              ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(POS_TRICK(POS,1),ISP,IE) 
-              ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(POS_TRICK(POS,2),ISP,IE) 
+              ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(POS_TRICK(POS,1),ISP,IE)
+              ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(POS_TRICK(POS,2),ISP,IE)
             ELSE
               ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03
             END IF
-            B_JAC(ISP,IP)=B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP(IP_glob) * IOBPD(ITH,IP_glob) 
+            B_JAC(ISP,IP)=B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP(IP_glob) * IOBPD(ITH,IP_glob)
           END DO
         END DO
       END DO
@@ -3809,7 +3809,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -3975,11 +3975,11 @@
             DTK    =  K1 * DTG * IOBDP(IP_glob) * IOBPD(ITH,IP_glob) * (1-IOBPA(IP_glob))
             TMP3   =  DTK * NM
             IF (FSGEOADVECT) THEN
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS) 
+              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS)
               ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
               ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
             ELSE
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 
+              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03
             END IF
             B_JAC(ISP,IP)=B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP(IP_glob) * IOBPD(ITH,IP_glob)
           END DO
@@ -3998,7 +3998,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4184,7 +4184,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4289,11 +4289,11 @@
       POS_TRICK(2,2) = 1
       POS_TRICK(3,1) = 1
       POS_TRICK(3,2) = 2
- 
+
       ASPAR_DIAG_LOCAL     = ZERO
       B_JAC_LOCAL          = ZERO
       ASPAR_OFF_DIAG_LOCAL = ZERO
- 
+
       IP_glob=iplg(IP)
 
       DO I = 1, PDLIB_CCON(IP)
@@ -4398,7 +4398,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4502,13 +4502,13 @@
       POS_TRICK(2,2) = 1
       POS_TRICK(3,1) = 1
       POS_TRICK(3,2) = 2
- 
+
       TRIA03    = ONETHIRD * PDLIB_TRIA(IE)
       IEN_LOCAL = PDLIB_IEN(:,IE)
       NI        = INE(:,IE)
       NI_GLOB   = iplg(NI)
-      NI_ISEA   = MAPFS(1,NI_GLOB)      
-      
+      NI_ISEA   = MAPFS(1,NI_GLOB)
+
       CRFS_U    = ZERO
       K_U       = ZERO
 
@@ -4576,7 +4576,7 @@
         DTK     = KP * DTG * IOBDP(NI_ISEA) * IOBPD(ITH,NI_ISEA) * (1-IOBPA(NI_ISEA))
         TMP3(ISP,:) = DTK * NM
       ENDDO
-      
+
       DO I = 1, 3
         IP        = NI(I)
         IP1       = INE(POS_TRICK(I,1),IE)
@@ -4587,13 +4587,13 @@
         !ASPAR_OFF_DIAG(:,IP1) = ASPAR_OFF_DIAG(:,IP1)              - TMP3(:,IPP1) * DELTAL(:,IPP1) * VA(:,IP1)
         !ASPAR_OFF_DIAG(:,IP2) = ASPAR_OFF_DIAG(:,IP2)              - TMP3(:,IPP2) * DELTAL(:,IPP2) * VA(:,IP2)
       ENDDO
-      END SUBROUTINE      
+      END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI_SPECTRAL(DTG,ASPAR_DIAG_LOCAL)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4660,7 +4660,7 @@
       LOGICAL :: DoLimiterFreqShit   = .FALSE. !AR: This one is missing ...
       INTEGER :: ITH0
 
-      LOGICAL :: LSIG = .FALSE. 
+      LOGICAL :: LSIG = .FALSE.
 
 !AR: this is missing in init ... but there is a design error in ww3_grid with FLCUR and FLLEV
       LSIG = FLCUR .OR. FLLEV
@@ -4718,7 +4718,7 @@
                   ASPAR_JAC(ITH0 + ITH,PDLIB_I_DIAG(IP)) = ASPAR_JAC(ITH0 + ITH,PDLIB_I_DIAG(IP)) + eSI * eVal
                 ELSE IF (IMEM == 2) THEN
                   ASPAR_DIAG_LOCAL(ITH0 + ITH,IP) = ASPAR_DIAG_LOCAL(ITH0 + ITH,IP) + eSI * eVal
-                ENDIF 
+                ENDIF
               END DO
             ELSE
               CWNB_M2=0
@@ -4762,7 +4762,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4847,7 +4847,7 @@
           END DO
           eSI    = PDLIB_SI(IP)
           SIDT   = eSI * DTG
-          DEPTH  = DW(ISEA) 
+          DEPTH  = DW(ISEA)
 !/DB1          VSDB   = 0.
 !/DB1          VDDB   = 0.
 !/DB1          CG1 = CG(1:NK,ISEA)
@@ -4896,7 +4896,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -4947,7 +4947,7 @@
       USE W3GDATMD, ONLY: IOBP, MAPSTA, FACP, SIG, IOBPD, IOBPA, IOBDP
       USE W3GDATMD, ONLY: NSEAL, CLATS
       USE W3WDATMD, ONLY: VA, VSTOT, VDTOT, SHAVETOT
-!/DB1      USE W3SDB1MD 
+!/DB1      USE W3SDB1MD
       USE constants, ONLY : TPI, TPIINV, GRAV
       IMPLICIT NONE
       REAL, INTENT(in) :: DTG
@@ -5021,7 +5021,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -5123,16 +5123,16 @@
         CALL COMPUTE_MEAN_PARAM(SPEC_VA, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
 
 !/DB1        VSDB = 0.
-!/TR1        VSTR = 0. 
+!/TR1        VSTR = 0.
 !/BT1        VSBT = 0.
 !/DB1        VDDB = 0.
-!/TR1        VDTR = 0. 
+!/TR1        VDTR = 0.
 !/BT1        VDBT = 0.
 
 !/TR1        CALL W3STR1 ( SPEC_VA, CG1, WN1, DEPTH, IX,VSTR, VDTR )
 !/TRX        CALL W3STRX
 
-!/DB1        CALL W3SDB1 ( JSEA, SPEC_VA, DEPTH, EMEAN, FMEAN, WNMEAN, CG1, LBREAK, VSDB, VDDB ) 
+!/DB1        CALL W3SDB1 ( JSEA, SPEC_VA, DEPTH, EMEAN, FMEAN, WNMEAN, CG1, LBREAK, VSDB, VDDB )
 !/BT1        CALL W3SBT1 ( SPEC_VA, CG1, WN1, DEPTH,            VSBT, VDBT )
 
 !/BT4        D50=SED_D50(ISEA)
@@ -5153,9 +5153,9 @@
             ISP=ITH + (IK-1)*NTH
             PreVS=0
             eVD=0
-!/DB1            PreVS = PreVS + VSDB(ISP)  
-!/TR1            PreVS = PreVS + VSTR(ISP) 
-!/BT1            PreVS = PreVS + VSBT(ISP) 
+!/DB1            PreVS = PreVS + VSDB(ISP)
+!/TR1            PreVS = PreVS + VSTR(ISP)
+!/BT1            PreVS = PreVS + VSBT(ISP)
 !/BS1            PreVS = PreVS + VSBS(ISP)
             eVS=DBLE(PreVS) / CG(IK,ISEA) * CLATS(ISEA)
 !/DB1            eVD=eVD+DBLE(MIN(0., VDDB(ISP)))
@@ -5181,7 +5181,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -5291,7 +5291,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -5301,7 +5301,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Apply boundary conditions 
+!  1. Purpose : Apply boundary conditions
 !  2. Method :
 !  3. Parameters :
 !
@@ -5370,7 +5370,7 @@
         RD10=1.
         RD20=0.
       END IF
-      IF ( FLBPI ) THEN 
+      IF ( FLBPI ) THEN
         RD1=RD10 ! I am not completely sure about that
         RD2=RD20
         IF ( RD2 .GT. 0.001 ) THEN
@@ -5439,7 +5439,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -5449,7 +5449,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Computation of the limiter function 
+!  1. Purpose : Computation of the limiter function
 !  2. Method :
 !  3. Parameters :
 !
@@ -5502,8 +5502,8 @@
       REAL, INTENT(in) :: ACOLD(NSPEC)
       REAL, INTENT(inout) :: ACLOC(NSPEC)
       REAL, INTENT(in) :: DTG
-      INTEGER :: MELIM = 1 
-      REAL :: LIMFAK = 0.1 
+      INTEGER :: MELIM = 1
+      REAL :: LIMFAK = 0.1
       REAL :: CONST, SND, eWN, eWK, eWKpow
       REAL :: eFact, eSPSIG
       REAL :: NewVAL
@@ -5512,7 +5512,7 @@
       REAL :: dac, limac, eDam
       INTEGER IP_glob, ISEA
       INTEGER :: IK, ITH, ISP
-      LOGICAL :: LLIMITER_WWM 
+      LOGICAL :: LLIMITER_WWM
 !/S      CALL STRACE (IENT, 'ACTION_LIMITER_LOCAL')!
       IP_glob=iplg(IP)
       ISEA=MAPFS(1,IP_glob)
@@ -5559,7 +5559,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -5569,7 +5569,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Block Gauss Seidel and Jacobi solver 
+!  1. Purpose : Block Gauss Seidel and Jacobi solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -5630,7 +5630,7 @@
       USE W3WDATMD, ONLY: VA, VAOLD, VSTOT, VDTOT
       USE W3ADATMD, ONLY: CG, CX, CY
       USE W3ODATMD, ONLY: TBPIN, FLBPI, IAPROC
-      USE W3PARALL, ONLY : IMEM 
+      USE W3PARALL, ONLY : IMEM
       USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC, ZERO, THR8
       USE W3PARALL, ONLY : ListISPprevDir, ListISPnextDir
       USE W3PARALL, ONLY : JX_TO_JSEA
@@ -5718,7 +5718,7 @@
       CALL SETDEPTH_PDLIB
 !
 ! 2.  Convert to Wave Action ---------------- *
-! 
+!
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'NSEAL =', NSEAL, 'NP    =', NP, 'NPA   =', NPA
       DO JSEA=1,NSEAL
         IP      = JSEA
@@ -5765,7 +5765,7 @@
 !/MEMCHECK      call getMallocInfo(mallinfos)
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
-!     source terms 
+!     source terms
 !
       IF (FSSOURCE .and. B_JGS_NLEVEL .eq. 0) THEN
         IF (B_JGS_SOURCE_NONLINEAR) THEN
@@ -5780,7 +5780,7 @@
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 
 !
-!     geographical advection  
+!     geographical advection
 !
       IF (IMEM == 1) call calcARRAY_JACOBI2(DTG,FACX,FACY,VGX,VGY)
 
@@ -5793,7 +5793,7 @@
 !/DEBUGSOLVER     !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 
 !
-!     spectral advection  
+!     spectral advection
 !
       IF (FSFREQSHIFT .or. FSREFRACTION) THEN
         call calcARRAY_JACOBI_SPECTRAL(DTG,ASPAR_DIAG_ALL)
@@ -5827,7 +5827,7 @@
 
         ICOUNT1 = 0
         ICOUNT2 = 0
-!AR: 
+!AR:
 !ADD LOOP OVER ELEMENTS HERE FOR ALL ASPAR STUFF
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 1'
 !/MEMCHECK      call getMallocInfo(mallinfos)
@@ -5857,7 +5857,7 @@
 !!/DEBUGFREQSHIFT          WRITE(740+IAPROC,*) 'eVal12=', eVal1, eVal2
 !!/DEBUGFREQSHIFT        END DO
             Sum_Prev=sum(ACLOC)
-            IF (IMEM == 2) THEN 
+            IF (IMEM == 2) THEN
               CALL calcARRAY_JACOBI4(IP,ICOUNT2,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
               !WRITE(*,'(A10,10F20.10)') 'JAC4', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
               !CALL calcARRAY_JACOBI3(IP,ICOUNT1,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
@@ -6012,8 +6012,8 @@
             ELSE
               U_JAC(:,IP)=eSum
             END IF
-          ELSE 
-            esum = VA(:,IP) 
+          ELSE
+            esum = VA(:,IP)
             DO I = 1, PDLIB_CCON(IP)
               ICOUNT1 = ICOUNT1 + 1
               ICOUNT2 = ICOUNT2 + 1
@@ -6038,7 +6038,7 @@
           END IF
             !IF (IP == 2) STOP
 !/DEBUGSRC          WRITE(740+IAPROC,*) 'sum(VA)out=', sum(VA(:,IP))
-        END DO ! IP 
+        END DO ! IP
 
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 2'
 !/MEMCHECK      call getMallocInfo(mallinfos)
@@ -6167,7 +6167,7 @@
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 6'
 !/MEMCHECK      call getMallocInfo(mallinfos)
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
-      END DO ! Open Do Loop ... End of Time Interval 
+      END DO ! Open Do Loop ... End of Time Interval
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' B_JGS_MAXITER=', B_JGS_MAXITER
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
 ! Tihs is below also goes into the matrix ... like the wave boundary ...
@@ -6213,7 +6213,7 @@
 !/DEBUGSRC          SumVAin = SumVAin + abs(VA(ISP,JSEA))
 !/DEBUGSRC          SumVAout = SumVAout + abs(eVA)
 !/DEBUGSRC          SumVAw3srce = SumVAw3srce + abs(eVA_w3srce)
-            VA(ISP,JSEA) = eVA 
+            VA(ISP,JSEA) = eVA
           END DO
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' IntDiff=', IntDiff, ' DTG=', DTG
 !/DEBUGSRC        IF (ISEA .eq. TESTNODE) THEN
@@ -6249,7 +6249,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -6259,7 +6259,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Explicit block solver 
+!  1. Purpose : Explicit block solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -6380,7 +6380,7 @@
       CALL SETDEPTH_PDLIB
 !
 ! 2.  Calculate velocities ---------------- *
-! 
+!
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'NSEAL =', NSEAL
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'NP    =', NP
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'NPA   =', NPA
@@ -6416,7 +6416,7 @@
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'min,max(0)=', 0
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
 
-      DO IE = 1, NE 
+      DO IE = 1, NE
         I1 = INE(1,IE)
         I2 = INE(2,IE)
         I3 = INE(3,IE)
@@ -6455,19 +6455,19 @@
         NI = INE(:,IE)
         KKSUM(:,NI) = KKSUM(:,NI) + KELEMGL(:,:,IE)
       END DO
-      DTMAX_GLOBAL_EXP = 1.d0/THR 
+      DTMAX_GLOBAL_EXP = 1.d0/THR
       DO IP = 1, NP
         DTMAX_EXP        = PDLIB_SI(IP)/MAX(THR,MAXVAL(KKSUM(:,IP)))
         DTMAX_GLOBAL_EXP = MIN ( DTMAX_GLOBAL_EXP, DTMAX_EXP)
         CFLXYMAX(IP)     = DBLE(DTG)/DTMAX_EXP
       END DO
-      rest = CFLXYMAX(1) 
+      rest = CFLXYMAX(1)
       DO IP = 2, NP
         if (rest .lt. CFLXYMAX(IP)) then
           rest = CFLXYMAX(IP)
           iter_max = ip
-        endif    
-      END DO 
+        endif
+      END DO
 
       DTMAX_EXP=DTMAX_GLOBAL_EXP
       call mpi_allreduce(DTMAX_EXP,DTMAX_GLOBAL_EXP,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
@@ -6483,7 +6483,7 @@
 
       DT4AI = DTG/ITER_MAX
       DO IT = 1, ITER_MAX
-        DO IP = 1, NPA 
+        DO IP = 1, NPA
           ST3 = ZERO
           DO I = 1, PDLIB_CCON(IP)
             IE       = PDLIB_IE_CELL2(IP,I)
@@ -6506,7 +6506,7 @@
         END DO
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'IOBPD loop, After, sum(VA)=', sum(VA(:,IP))
       END DO
-      
+
 !/DEBUGSOLVERCOH      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) after loop", npa)
 !/DEBUGSOLVER     WRITE(740+IAPROC,*) 'FLBPI=', FLBPI
 !/DEBUGSOLVER     FLUSH(740+IAPROC)
@@ -6540,7 +6540,7 @@
 !/DEBUGSRC          SumVAin = SumVAin + abs(VA(ISP,JSEA))
 !/DEBUGSRC          SumVAout = SumVAout + abs(eVA)
 !/DEBUGSRC          SumVAw3srce = SumVAw3srce + abs(eVA_w3srce)
-            VA(ISP,JSEA) = eVA 
+            VA(ISP,JSEA) = eVA
           END DO
 
 !/DEBUGSRC        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' IntDiff=', IntDiff, ' DTG=', DTG
@@ -6573,7 +6573,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -6583,7 +6583,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Initialization of the block solver 
+!  1. Purpose : Initialization of the block solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -6691,7 +6691,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -6772,7 +6772,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -6782,7 +6782,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Finalize Solver 
+!  1. Purpose : Finalize Solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -6842,7 +6842,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -6852,7 +6852,7 @@
 !/
 !/    01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Init jacobi solver 
+!  1. Purpose : Init jacobi solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -6960,7 +6960,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |

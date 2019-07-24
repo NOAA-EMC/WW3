@@ -19,18 +19,18 @@
 !/                  user selected areas.
 !/                  (A. Saulter, UK Met Office)
 !/    18-Apr-2018 : Added Type 3 and 4 SMC output:      ( version 4.18 )
-!/                  re-gridding to an arbitrary regular 
+!/                  re-gridding to an arbitrary regular
 !/                  grid using pre-calculated indices and
 !/                  weights (see WW3_SMCINT). Chris Bunney, UKMO
 !/    20-Jun-2018   Updated routines to ensure that     ( version 4.18 )
-!/                  directional fields are converted to 
+!/                  directional fields are converted to
 !/                  degrees (nautical convention) on output.
 !/                  (Chris Bunney, UK Met Office)
-!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05) 
+!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -46,7 +46,7 @@
 !
 !       2 - Regular, uniformly gridded output to a specified output grid.
 !           This is achieved by area averaging of the SMC cells. The output
-!           grid will be aligned with the SMC grid cell edges which may 
+!           grid will be aligned with the SMC grid cell edges which may
 !           result in the actual output grid being slightly different to
 !           the original user request. A land/sea mask is created by
 !           keeping track of the cell coverage and setting cells with
@@ -66,7 +66,7 @@
       USE W3GDATMD
       USE CONSTANTS
       USE W3ODATMD, ONLY: UNDEF
-        
+
       PUBLIC
 
       ! Output grid definition
@@ -83,7 +83,7 @@
       INTEGER, ALLOCATABLE    :: MAPSMC(:,:)             ! Regridded MAPSTA
       LOGICAL, ALLOCATABLE    :: SMCMASK(:)              ! Mask for type 1 output (flat array)
       INTEGER, ALLOCATABLE    :: SMCIDX(:)               ! Indices of SMC cells witin output grid domain
-      
+
       INTEGER, ALLOCATABLE    :: smccx(:), smccy(:)      ! Cell size factors
       REAL                    :: dlat, dlon              ! Base lat/lon sizes
       INTEGER                 :: cfac                    ! SMC scaling factor
@@ -114,9 +114,9 @@
       !           uniformly spaced lat/lon grid.
       !
       ! Chris Bunney, UK Met Office. 22-Oct-2015
-      
+
       IMPLICIT NONE
-      
+
       ! Locals
       REAL    :: CX0, CY0   ! SW corner of origin of grid
       REAL    :: S0CHK
@@ -153,7 +153,7 @@
       ENDIF
       IF(ABS(SYO + 999.9) .LT. 1E-4) THEN
           SYO = CY0
-      ELSE 
+      ELSE
           S0CHK = CY0 + FLOOR((SYO - CY0) / SY) * SY
           ! Ensure first grid value falls within specified range
           ! NB the step is made at coarsest cell resolution
@@ -294,7 +294,7 @@
       SYO = SYO + 0.5 * DYO
 
       END SUBROUTINE SMC_INTERP
-      
+
 !--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
@@ -302,7 +302,7 @@
       ! Regrid SMC data onto a regular grid using pre-calculated grid
       ! indices and weights.
       ! Chris Bunney, 02-Jul-2013
- 
+
       IMPLICIT NONE
 
       ! Input parameters:
@@ -331,14 +331,14 @@
                IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
                ! Interpolate:
-               XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA) 
- 
+               XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+
                ! Keep track of how much of cell is (wet) covered:
                COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -348,7 +348,7 @@
                XY(IX,IY) = UNDEF
             ELSE IF(COV(IX,IY) .LT. 0.5) THEN
                ! More than half of cell has UNDEF values - set to NOVAL:
-               XY(IX,IY) = NOVAL 
+               XY(IX,IY) = NOVAL
             ELSE IF(COV(IX,IY) .LT. 1.0) THEN
                ! If coverage < 1.0, scale values back to full cell coverage.
                ! Without this step, points around coast could end up with lower
@@ -371,7 +371,7 @@
       ! area averaging of directional data.
 
       ! Chris Bunney, 02-Jul-2013
- 
+
       IMPLICIT NONE
 
       ! Input parameters:
@@ -407,16 +407,16 @@
                IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
                ! Interpolate:
-               !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA) 
-               AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA) 
-               AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA) 
- 
+               !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+               AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA)
+               AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA)
+
                ! Keep track of how much of cell is (wet) covered:
                COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -483,7 +483,7 @@
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -511,7 +511,7 @@
 
       ! Locals
       INTEGER :: IERR, I, J
-      REAL :: PLATO, PLONO ! Not used yet....future version might allow 
+      REAL :: PLATO, PLONO ! Not used yet....future version might allow
                            ! output to a rotated pole grid...
 
       NDSMC = 50
@@ -536,7 +536,7 @@
 !--------------------------------------------------------------------------
       SUBROUTINE CALC_INTERP()
 !     Calculates the interpolation indices and weights for regirdding
-!     and SMC grid to an arbitrary regular grid. Index is that of 
+!     and SMC grid to an arbitrary regular grid. Index is that of
 !     SMC cell that contains output cell centre. Weights are the distance
 !     in metres between the output and SMC cell centres.
 !     A future version ~may~ allow for output grids to be on a rotated pole.
@@ -578,8 +578,8 @@
 !/RTD          tmplat = olat
 !/RTD          tmplon = olon
 !/RTD          PRINT*,'Rotating coordinates'
-!/RTD          CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,     &              
-!/RTD                            ang, POLAT, POLON, NXO*NYO )             
+!/RTD          CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,     &
+!/RTD                            ang, POLAT, POLON, NXO*NYO )
 !/RTD          PRINT*,'Rotating coordinates complete'
 
       ! Cycle over output grid points and find containing SMC cell:
@@ -616,7 +616,7 @@
 !     Directional fields (DIRN=True) will be assumed to be in radians
 !     and will be converted to degrees in nautical convention.
 !--------------------------------------------------------------------------
-      IMPLICIT NONE 
+      IMPLICIT NONE
 
       ! Input parameters:
       REAL, INTENT(IN)    :: S(:)        ! Inupt array
@@ -629,7 +629,7 @@
         DO IY = 1,NYO
            ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
            IF(ISEA .EQ. -1) THEN
-              ! Land 
+              ! Land
               XY(IX,IY) = UNDEF
            ELSE
               IF(S(ISEA) .EQ. UNDEF) THEN
@@ -657,7 +657,7 @@
 !     and will be converted to degrees in nautical convention.
 !--------------------------------------------------------------------------
       USE W3PSMCMD, ONLY: SMCGradn
-      IMPLICIT NONE 
+      IMPLICIT NONE
 
       ! Input parameters:
       REAL, INTENT(IN)    :: S(:)        ! Input array

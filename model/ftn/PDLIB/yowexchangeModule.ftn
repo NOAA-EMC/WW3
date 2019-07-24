@@ -47,7 +47,7 @@ module yowExchangeModule
 
   !> Holds some data belong to a neighbor Domain
   type, public :: t_neighborDomain
-    
+
     !> the domain ID
     !> The domain ID of the neighbor domain. Starts by 1
     integer :: domainID = 0
@@ -152,7 +152,7 @@ module yowExchangeModule
     integer :: dsplSend(this%numNodesToSend)
     integer :: dsplRecv(this%numNodesToReceive)
 
-    
+
     dsplSend = ipgl(this%nodesToSend)-1
     dsplRecv = ghostgl(this%nodesToReceive) + np -1
 
@@ -161,7 +161,7 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
     call mpi_type_commit(this%p1DRsendType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
-    
+
     call mpi_type_create_indexed_block(this%numNodesToReceive, 1, dsplRecv, rtype, this%p1DRrecvType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
     call mpi_type_commit(this%p1DRrecvType,ierr)
@@ -232,7 +232,7 @@ module yowExchangeModule
     if(stat/=0)  CALL ABORT('neighborDomains allocation failure')
   end subroutine
 
-  subroutine createMPITypes()    
+  subroutine createMPITypes()
     implicit none
     integer :: i
 
@@ -343,7 +343,7 @@ module yowExchangeModule
   end subroutine
 
   !> \overload PDLIB_exchange1Dreal
-  !> 
+  !>
   !> \note MPI recv tag: 30000 + MPI rank
   !> \note MPI send tag: 30000 + neighbor MPI rank
   subroutine PDLIB_exchange2Dreal(U)

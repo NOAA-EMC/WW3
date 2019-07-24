@@ -169,7 +169,7 @@ module yowfunction
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'Before ComputeListNP_ListNPA_Kernel'
 !/DEBUGINIT     FLUSH(740+IAPROC)
     IF (IAPROC .le. NAPROC) THEN
-      CALL ComputeListNP_ListNPA_ListIPLG_Kernel    
+      CALL ComputeListNP_ListNPA_ListIPLG_Kernel
     END IF
 !/DEBUGINIT     WRITE(740+IAPROC,*) ' After ComputeListNP_ListNPA_Kernel'
 !/DEBUGINIT     FLUSH(740+IAPROC)

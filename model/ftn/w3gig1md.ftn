@@ -10,10 +10,10 @@
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 4.07 )
-!/ 
+!/
 !  1. Purpose :
 !
-!     This module computes : 
+!     This module computes :
 !        - the second order spectrum, in particular for infragravity waves
 !
 !  2. Variables and types :
@@ -72,12 +72,12 @@
 !/
 !  1. Purpose :
 !
-!      Computes the coupling coefficient between waves of frequencies f1 and f2 
-!      and an angle theta. 
+!      Computes the coupling coefficient between waves of frequencies f1 and f2
+!      and an angle theta.
 !       This is for the surface elevation variance
 !      See Okihiro et al. 1992
 !       Code adapted from Matlab by Arshad Rawat, 2012.
-! 
+!
 !  3. Parameters :
 !
 !     Parameter list
@@ -117,7 +117,7 @@
   REAL                    :: Df1f2theta,WN1,WN2
   REAL                    :: k1,k2,co,cok1,cok2,k3,C1,C2,C3,C4
   REAL                    :: C1b,s3,sk2,g2,g
-  
+
   k1=WN1
   k2=WN2
   co=cos(theta)
@@ -131,7 +131,7 @@
   C1b=(s3**2-s1*s2)/g2
   C2=s3
   C3=(s3**2-sk2)*s1*s2
- 
+
 ! C4 is Hasselmann's D times i
 
   C4=s3*(k1*k2*co-((s1*s2)**2)/g2)+0.5*(s1*k2**2+s2*k1**2-s1*s2*(s2**3+s1**3)/g2)
@@ -153,10 +153,10 @@ END FUNCTION Df1f2theta
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 4.07 )
-!/ 
+!/
 !  1. Purpose :
 !
-!     This subroutine computes : 
+!     This subroutine computes :
 !        - the second order spectrum, in particular for infragravity waves
 !  2. Method :
 !     Uses 2nd order coupling coefficient (Biesel 1952, Hasselmann 1962)
@@ -169,7 +169,7 @@ END FUNCTION Df1f2theta
 !       DEPTH     Real I     Water depth
 !       WN        R.A.       wavenumbers
 !       CG        R.A.       group velocities
-!       IACTION   Int  I     Switch to specify if the input spectrum 
+!       IACTION   Int  I     Switch to specify if the input spectrum
 !                            is E(f,theta) or A(k,theta)
 !     ----------------------------------------------------------------
 !
@@ -245,41 +245,41 @@ END FUNCTION Df1f2theta
       REAL   , DIMENSION(:,:,:,:),  ALLOCATABLE :: DD
       REAL   , DIMENSION(NSPEC)                 :: ESPEC
       CHARACTER(120) ::path,filename,filename2
-  
+
 
 ! Defines the spectral domain for the IG computation
-      NKIG=IGPARS(5) 
+      NKIG=IGPARS(5)
       NSPECIG=NKIG*NTH
- 
+
       ALLOCATE(DD(NKIG,nk,nth,nth))
       ALLOCATE(wfr1(NKIG,nk))
       ALLOCATE(ifr2c(NKIG,nk))
       ALLOCATE(EfthIG(NSPECIG))
       EfthIG(:)=0.
-  
+
 !  WRITE(*,*) 'Computing coupling coefficient for SURFACE ELEVATION'
-  
-      IF (IACTION.EQ.0) THEN 
+
+      IF (IACTION.EQ.0) THEN
         ESPEC=E
-      ELSE 
+      ELSE
         DO IK = 1,NK
           DO ITH = 1, NTH
             ISP1=ITH+(IK-1)*NTH
             ESPEC(ISP1)=E(ISP1)*SIG(IK)*TPI / CG(IK)
             END DO
           END DO
-        END IF 
-!  
+        END IF
+!
       DO iIG=1,NKIG
         DO ifr=1,nk
           CALL WAVNU1 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
           DO ith1=1,nth
-            DO ith2=1,nth 
+            DO ith2=1,nth
 !
 ! This is the coupling coefficient for the SURFACE ELEVATION. See .e.g. forristall (JPO 2000)
 !
               DD(iIG,ifr,ith1,ith2)=(Df1f2theta(SIG(ifr)+SIG(iIG),-SIG(ifr), WN1,WN(IFR), &
-                                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2 
+                                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2
 
               END DO
             END DO
@@ -301,9 +301,9 @@ END FUNCTION Df1f2theta
           if (iloc /= 0) THEN
             ifr2c(iIG,ifr)=iloc  ! index of frequency f+fIG
           else
-            ifr2c(iIG,ifr)=nk 
+            ifr2c(iIG,ifr)=nk
             end if
-            
+
             !wfr1(iIG,ifr)=0.0
           end if
         end do
@@ -313,32 +313,32 @@ END FUNCTION Df1f2theta
       DO iIG=1,NKIG
         DO IFR = 1,NK-1
 
-! AR calculating k1 and k2 before loops on th1 and th2      
-       
+! AR calculating k1 and k2 before loops on th1 and th2
+
             k1=WN(ifr)
                k2=WN(ifr2c(iIG,ifr))
 
           DO ith1 = 1,NTH
-            DO ith2 = 1,NTH 
-                
+            DO ith2 = 1,NTH
+
 ! Adds the effect of interaction of frequency f(ifr), theta(ith1) with f(ifr)+fIG(:), theta(ith2)
-              ISP1 = ITH1 + (ifr2c(iIG,ifr)-1)*NTH        
-              ISP2 = ITH2 + (ifr-1)*NTH        
- 
+              ISP1 = ITH1 + (ifr2c(iIG,ifr)-1)*NTH
+              ISP2 = ITH2 + (ifr-1)*NTH
+
               Eadd=DD(iIG,ifr,ith1,ith2)*wfr1(iIG,ifr) &
                               *ESPEC(ISP1)*ESPEC(ISP2) ! Rectangle rule by AR
               Dkx=k2*cos(dble(dth*ith2))- k1*cos(dble(dth*ith1))
-              Dky=k2*sin(dble(dth*ith2))- k1*sin(dble(dth*ith1)) 
+              Dky=k2*sin(dble(dth*ith2))- k1*sin(dble(dth*ith1))
 
               thetaIG=atan2(Dky,Dkx)
 
               if (thetaIG.LT.0) thetaIG=2*pi+thetaIG
 ! Finding corresponding index of theta IG in theta array
                 !I=INT((thetaIG/(2*pi))*nth)
-                
+
               I=minloc(abs(thetaIG-TH), 1)-1
                    if (I==0) I=nth
-              ISP3 = I + (iIG-1)*NTH        
+              ISP3 = I + (iIG-1)*NTH
 !            memo=EfthIG(ISP3)
                 EfthIG(ISP3)= EfthIG(ISP3)+Eadd;
 !              IF (EfthIG(ISP3).NE.EfthIG(ISP3).AND.Eadd.NE.0) WRITE(6,*) 'EfthIG:',IIG, IFR, ITH1,ITH2,ISP3, &
@@ -351,18 +351,18 @@ END FUNCTION Df1f2theta
 !   ESPEC(1:NSPECIG)=ESPEC(1:NSPECIG)+EfthIG(:)
    ESPEC(1:NSPECIG)=EfthIG(:)
 
-      IF (IACTION.EQ.0) THEN 
-        DO ISP1=1,NSPECIG 
+      IF (IACTION.EQ.0) THEN
+        DO ISP1=1,NSPECIG
           E(ISP1)=ESPEC(ISP1)
           END DO
-      ELSE 
+      ELSE
         DO IK = 1,NKIG
           DO ITH = 1, NTH
             ISP1=ITH+(IK-1)*NTH
             E(ISP1)=ESPEC(ISP1)*CG(IK)/(SIG(IK)*TPI)
             END DO
           END DO
-        END IF 
+        END IF
 
 ! OPEN(5555,FILE='testos.dat',status='unknown')
 ! WRITE(5555,*) E,EfthIG !f,fIG,tet!ifr2c !Efth, !!, Efth,

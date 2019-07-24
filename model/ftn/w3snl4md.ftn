@@ -16,7 +16,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !!
@@ -323,7 +323,7 @@
       character            :: grdfname*80
       integer              :: io_unit
 !!
-!!     
+!!
 !!    Dimension wv# array and
 !!    declare local var. dep2, cvel & cgnrng at nrng & depth 'nd'
       real                 :: wka2(nrng)  !* wv# array at depth nd (local)
@@ -585,7 +585,7 @@
 !!    nang      int.  Public    O   # of angles
 !!    npts      int.  Public    I   # of points on the locus
 !!    ndep      int.  Public    I   # of depths in look-up tables
-!!    nzz       int.  Public    O   linear irngxkrng = (NK*(NK+1))/2  
+!!    nzz       int.  Public    O   linear irngxkrng = (NK*(NK+1))/2
 !!    kzone     int.  Public    O   zone of influence = INT(alog(4.0)/alog(dfrq))
 !!    nb2fp     int.  Public    O   # of bins over fp => dfrq**nb2fp)*fp ~ 2.*fp
 !!                                                    = INT(alog(2.0)/alog(dfrq))
@@ -619,7 +619,7 @@
 !!    grad_tbl  R.A.  Public    I   Coupling and gradient term in integral
 !!                                  grad = C * H * g**2 * ds / |dW/dn|
 !!    ------------------------------------------------------------------
-!!    
+!!
 !!    *** The 11 grid integration geometry arrays at one given depth
 !!    *** from gridsetr.            dim=(npts,nang,nzz,ndep)
 !!    kref2     I.A.  Public    O   Index of reference wavenumber for k2
@@ -652,7 +652,7 @@
 !!    tsa       R.A.  Public    O   Snl-tsa = sumint + sumintsa
 !!    diag      R.A.  Public    O   Snl-tsa diagonal term = [dN/dn1]
 !!    ------------------------------------------------------------------
-!!    
+!!
 !!    for -fbi; The 2 returned arrays fbi & diag2 dim=(nrng,nang)
 !!    fbi       R.A.  Public    O   Snl-fbi = sumint + sumintp  + sumintx
 !!    diag2     R.A.  Public    O   Snl-fbi diagonal term = [dN/dn1]
@@ -729,7 +729,7 @@
 !!    -----------------------------
 !/S      INTEGER, SAVE           :: IENT = 0
       integer              :: irng, iang
-      integer              :: nd3         !* bin # corresp. to ww3 dep  
+      integer              :: nd3         !* bin # corresp. to ww3 dep
       real                 :: dep         !* depth (m), get it from WW3 DEPTH
       real                 :: wka(NK)     !* from WW3 WN(1:NK) corresp. to "DEPTH"
       real                 :: cga(NK)     !* from WW3 CG(1:NK) corresp. to "DEPTH"
@@ -1151,7 +1151,7 @@
 !!    have found the 1st good peak (= overall peak) with e1max > eps
 !!
 !!    Now we look for a new 2nd peak that is at least 'nsep' bins away from
-!!    the 1st peak (nsep=2) (i.e. iabs(irng-npk).gt.nsep) before 
+!!    the 1st peak (nsep=2) (i.e. iabs(irng-npk).gt.nsep) before
 !!    calling new "optsa2" (the 2nd peak will have e1max2 < e1max)
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       nsep   = 2
@@ -1423,9 +1423,9 @@
 !!
 !! 2. Method :
 !!
-!! 3. Parameters : 
+!! 3. Parameters :
 !!
-!!    Parameter list 
+!!    Parameter list
 !!    ------------------------------------------------------------------
 !!    Name     Type   Scope    I/O  Description
 !!    ------------------------------------------------------------------
@@ -1478,30 +1478,30 @@
 !!     cplshr    Subr. W3SERVMD Calculates Boltzmann coupling coefficient
 !!                              in shallow water
 !!    ------------------------------------------------------------------
-!! 
-!! 5. Called by : 
-!! 
-!!     Name      Type  Module   Description 
+!!
+!! 5. Called by :
+!!
+!!     Name      Type  Module   Description
 !!    ------------------------------------------------------------------
 !!     insnl4    Subr. W3SNL4MD initialize the grid geometry
 !!    ------------------------------------------------------------------
-!! 
-!! 6. Error messages : 
-!! 
-!!      None. 
-!! 
-!! 7. Remarks : 
-!! 
-!! 8. Structure : 
-!! 
-!!    See source code. 
-!! 
-!! 9. Switches : 
-!! 
-!!    !/S  Enable subroutine tracing. 
-!! 
-!!10. Source code : 
-!! 
+!!
+!! 6. Error messages :
+!!
+!!      None.
+!!
+!! 7. Remarks :
+!!
+!! 8. Structure :
+!!
+!!    See source code.
+!!
+!! 9. Switches :
+!!
+!!    !/S  Enable subroutine tracing.
+!!
+!!10. Source code :
+!!
 !!    --------------------------------------------------------------- &
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!    ----------------------------------------------------------------72
@@ -2164,7 +2164,7 @@
 !!    wk2y      R.A.  Public    O   y_cmp of vector k2 solution on the locus
 !!    wk4x      R.A.  Public    O   x_cmp of vector k4 solution on the locus
 !!    wk4y      R.A.  Public    O   y_cmp of vector k4 solution on the locus
-!!    ds        R.A.  Public    O   element length along the locus 
+!!    ds        R.A.  Public    O   element length along the locus
 !!                                  (npts*ds circles the whole locus)
 !!    ----------------------------------------------------------------
 !!
@@ -2208,7 +2208,7 @@
 !!
 !!
       IMPLICIT NONE
-!!    
+!!
 !!    Parameter list
 !!    --------------
       real,    intent(in)  :: dep
@@ -2216,7 +2216,7 @@
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!    ------------------------------------------------------------------
 !!
-!!    
+!!
 !!    Local Parameters & variables
 !!    -----------------------------
       integer              :: n, np, nnp, nplace
@@ -2418,7 +2418,7 @@
 !!    search in the 10's place out to some reasonably big number to    !
 !!    try to find the place where [12] crosses the rnew = rold line    !
 !!    (if this fails, we set an error flag); in refining the estimate, !
-!!    it appears that [12] can get a little squirrely, so we do a      ! 
+!!    it appears that [12] can get a little squirrely, so we do a      !
 !!    brute force successive decimation search to nplace decimal places!
 !!    to home in on the answer; note that if p is big enough for the   !
 !!    tanh()'s to reach unity, [12] becomes exact and                  !
@@ -2479,7 +2479,7 @@
 !!    -----------------------------------------------------------------#
 !!                                                                     !
 !!    search for cos(dth) for off-p-vector solutions; use a circle     !
-!!    centered on the p-vector axis at a distance                      ! 
+!!    centered on the p-vector axis at a distance                      !
 !!    rcenter = 0.5*(rmax+rmin)  from the  origin with a               !
 !!    radius  = 0.5*(rmax-rmin); radii from the center of the circle   !
 !!    at successive angle increments np*dphi intersect the circle at   !
@@ -2575,7 +2575,7 @@
 !!
       if ( ierr_gr .ne. 0 ) then
         write ( ndse,1000 ) ierr_gr
-        CALL EXTCDE ( 60 ) 
+        CALL EXTCDE ( 60 )
       endif
 !!    ------------------------------------------------------------------
 !!
@@ -2737,7 +2737,7 @@
 !!
 !!eps Bash; added +eps to avoid dividing by 0.0. Dividing by 0.0 causes NaN
 !eps  double precision     :: eps
-!!    
+!!
 !!    Bash; Added domsq23 = denominator of  t1      in cplshr
 !!          and   sumom   = denominator of  csqhatd in cplshr
       double precision     :: domsq23, sumom
@@ -3047,36 +3047,36 @@
 !!    dens2     R.A.  Public    O   Small-scale Action Density (k,theta)
 !!                                                     dim=(nrng,nang)
 !!    ------------------------------------------------------------------
-!! 
+!!
 !! 4. Subroutines used :
-!!     
+!!
 !!     Name      Type  Module   Description
 !!    ------------------------------------------------------------------
 !!    ------------------------------------------------------------------
-!! 
+!!
 !! 5. Called by :
-!!     
+!!
 !!     Name      Type  Module   Description
 !!    ------------------------------------------------------------------
 !!     gridsetr  Subr. W3SNL4MD Setup geometric integration grid
 !!    ------------------------------------------------------------------
-!! 
+!!
 !! 6. Error messages :
-!!      
+!!
 !!      None.
-!! 
+!!
 !! 7. Remarks :
-!! 
+!!
 !! 8. Structure :
-!!    
+!!
 !!    See source code.
-!! 
+!!
 !! 9. Switches :
-!!    
+!!
 !!    !/S  Enable subroutine tracing.
 !!
 !!10. Source code :
-!!    
+!!
 !!    --------------------------------------------------------------- &
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!    ----------------------------------------------------------------72
@@ -3313,7 +3313,7 @@
       maxang       = MAXLOC(ef2maxrow,1)
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
-!!    Shift the row so that the max is at location of 90 degress 
+!!    Shift the row so that the max is at location of 90 degress
 !!          Negative shift is to the right, Postive to the left
 !!          halfangl - lower angular limit of the half maximum
 !!          halfangu - upper angular limit of the half maximum
@@ -3606,9 +3606,9 @@
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!    ------------------------------------------------------------------
 !!
-!!    
+!!
 !!    Local Parameters & variables
-!!    ----------------------------- 
+!!    -----------------------------
 !!    for both -tsa and -fbi
       integer              :: irng,krng, iang,kang
       integer              :: ipt, iizz, izz
@@ -4221,9 +4221,9 @@
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!    ------------------------------------------------------------------
 !!
-!!    
+!!
 !!    Local Parameters & variables
-!!    ----------------------------- 
+!!    -----------------------------
 !!    for both -tsa and -fbi
       integer              :: irng,krng, iang,kang
       integer              :: ipt, iizz, izz
@@ -4701,15 +4701,15 @@
 !!    after alternating the irng, iang, krng & kang loops in snlr's
 !!
 !! 2. Method :
-!! 
+!!
 !! 3. Parameters :
-!!    
+!!
 !!    Parameter list
 !!    ------------------------------------------------------------------
 !!    Name     Type   Scope    I/O  Description
 !!    ------------------------------------------------------------------
 !!    nrng      int.  Public    I   # of freq. or rings
-!!    nang      int.  Public    I   # of angles 
+!!    nang      int.  Public    I   # of angles
 !!    ismo      int.  Local     I   switch;  ismo=0 skip smoothing
 !!                                           ismo.ne.0 do smoothing
 !!    X         R.A.  Local    I/O  Array to be ineterp. & smoothing
@@ -4775,8 +4775,8 @@
 !!    ##################################################################
 !!------------------------------------------------------------------------------
 !!==============================================================================
-!!     
-!!     
+!!
+!!
 !!-0  Initial Y(:,:) array before it's computed
 !!ini
       Y(:,:) = 0.0

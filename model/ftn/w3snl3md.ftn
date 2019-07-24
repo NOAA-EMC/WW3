@@ -20,7 +20,7 @@
 !/
 !/    Copyright 2008-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !
@@ -39,7 +39,7 @@
 !      KDMAX     R.P.  Private  Maximum relative depth in table.
 !      LAMMAX    R.P.  Public   Maximum value for lambda or mu.
 !      DELTHM    R.P.  Public   Maximum angle gap (degree).
-!      SITMIN    Real  Private  Minimum nondimensional radian 
+!      SITMIN    Real  Private  Minimum nondimensional radian
 !                               frequency in table.
 !      XSIT      Real  Private  Corresponding increment factor.
 !     ----------------------------------------------------------------
@@ -74,13 +74,13 @@
 !     - Filtering techniques for computation of quadruplet spectral
 !       values and distribution in spectral space have been tested
 !       but were not found worth the large coding effort involved.
-!     - WAVNU1 is used in W3SNL3  for consistency with spectral grid 
+!     - WAVNU1 is used in W3SNL3  for consistency with spectral grid
 !       description.
 !     - WAVNU2 is used in INSNL3  for accuracy in the computation of
 !       the layout of the quadruplets (higher computational cost is
 !       not an issue with initialization routine).
-!     - For large lambda or mu the original maximum kd = 10. still 
-!       leads to significantly different quadruplet layout in 
+!     - For large lambda or mu the original maximum kd = 10. still
+!       leads to significantly different quadruplet layout in
 !       secion 3. To remedy this, the orriginal settings of the
 !       lookup tables
 !
@@ -92,8 +92,8 @@
 !     INTEGER, PRIVATE, PARAMETER :: NKD = 275
 !     REAL, PRIVATE, PARAMETER    :: KDMIN = 0.025 ,  KDMAX = 20.
 !
-!       for the bug fix of 03-Jan-2009. Note that with this, the 
-!       estimate of NTHMAX in INSNL3 also is needed to guarantee 
+!       for the bug fix of 03-Jan-2009. Note that with this, the
+!       estimate of NTHMAX in INSNL3 also is needed to guarantee
 !       consistent NTHMAX and NTHM2 for any lambda and mu.
 !
 !  6. Switches :
@@ -140,12 +140,12 @@
 !     Paramterization (DIA) with multiple representative quadruplets
 !     (MDIA) for arbitrary water depths.
 !
-!     The outer loop of the code is over quadruplet realizations, 
+!     The outer loop of the code is over quadruplet realizations,
 !     which implies two realizations for a conventional quadruplet
-!     definitions and four for extended definitions (with rescaling 
+!     definitions and four for extended definitions (with rescaling
 !     of the contants for consistency). Within this loop the compu-
 !     tations are performed in two stages. First, interactions
-!     contributions are computed for the entire spectral space, 
+!     contributions are computed for the entire spectral space,
 !     second all contributions are combined into the actual inter-
 !     actions and diagonal contributions.
 !
@@ -173,14 +173,14 @@
 !       D       R.A.  O   Diagonal term of derivative.
 !     ----------------------------------------------------------------
 !
-!     Variables describing the expanded frequency space from the 
+!     Variables describing the expanded frequency space from the
 !     dynamic storage in w3gdatmd.
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      NFR       Int.  Public   Number of frequencies or wavenumbers
 !                               in discrete spectral space (NFR=>NK).
-!      NFRMIN    Int.  Public   Minimum discrete frequency in the 
+!      NFRMIN    Int.  Public   Minimum discrete frequency in the
 !                               expanded frequency space.
 !      NFRMAX    Int.  Public   Idem maximum for first part.
 !      NFRCUT    Int.  Public   Idem maximum for second part.
@@ -202,7 +202,7 @@
 !      QST2      R.A.  Public   Idem weights.
 !      QST3      R.A.  Public   Norm. factors in product term and
 !                               in diagonal strength.
-!      QST4      I.A.  Public   Spectral offsets for combining of 
+!      QST4      I.A.  Public   Spectral offsets for combining of
 !                               interactions and diagonal.
 !      QST5      R.A.  Public   Idem weights for interactions.
 !      QST6      R.A.  Public   Idem weights for diagonal.
@@ -245,8 +245,8 @@
 !     - Normalization with respect to the number of quadruplets is
 !       included in the proportionality constant.
 !     - Note that the outer loop in the routine considers one actual
-!       quadruplet realization per loop cycle. For the traditional 
-!       quadruplet layout two realizations occure, for the expanded 
+!       quadruplet realization per loop cycle. For the traditional
+!       quadruplet layout two realizations occure, for the expanded
 !       four realizations occur. For consistency, strength of a
 !       traditional layout is therefore doubled.
 !     - 1D representation is used of 2D spectral space for optimization
@@ -454,12 +454,12 @@
             DSB(ISP) = FPROP * ( AUX1 - AUX2 )
 !
             AUX1   = FQ3 + FQ4
-            AUX2   = FQ3 * FQ4     
+            AUX2   = FQ3 * FQ4
             DD1(ISP) = FPROP * FACT(1) * ( FQ2 * AUX1 - AUX2 )
             DD2(ISP) = FPROP * FACT(2) * ( FQ1 * AUX1 - AUX2 )
 !
             AUX1   = FQ1 + FQ2
-            AUX2   = FQ1 * FQ2     
+            AUX2   = FQ1 * FQ2
             DD3(ISP) = FPROP * FACT(3) * ( AUX2 - FQ4*AUX1 )
             DD4(ISP) = FPROP * FACT(4) * ( AUX2 - FQ3*AUX1 )
 !
@@ -517,7 +517,7 @@
                                     + DSB(ISPX+LQST4(13)) * LQST5(13) &
                                     + DSB(ISPX+LQST4(14)) * LQST5(14) &
                                     + DSB(ISPX+LQST4(15)) * LQST5(15) &
-                                    + DSB(ISPX+LQST4(16)) * LQST5(16) 
+                                    + DSB(ISPX+LQST4(16)) * LQST5(16)
 !
             D(ITH,IFR) = D(ITH,IFR) + DD1(ISPX+LQST4( 1)) * LQST6( 1) &
                                     + DD1(ISPX+LQST4( 2)) * LQST6( 2) &
@@ -703,7 +703,7 @@
 !
 !  2. Method :
 !
-!     Fill storage aryays as described in the main subroutine with 
+!     Fill storage aryays as described in the main subroutine with
 !     interpolation, model and distribution data.
 !
 !  3. Parameters :
@@ -746,7 +746,7 @@
 !       IGRID and resetting pointer of aliaases.
 !     - In the 03-Jan-2009 bug fix !/T3 error output was fixed, and
 !       NTHMAX is increased by 1 to assure that NTHMX2 .LE. NTHMAX
-!       for any lambda and mu. With this, the label 810 test is 
+!       for any lambda and mu. With this, the label 810 test is
 !       changed from equality testing to .LE. testing.
 !
 !  8. Structure :
@@ -915,7 +915,7 @@
 !/T1          WRITE (NDST,9022) DELTH(:) * RADE
 !
 ! 2.d Frequency indices
-! 
+!
           DO J=1, 4
             JFR (J) = INT( LOG(AUXFR(J)) / XFRLN )
             JFR1(J) = JFR(J) + 1 * SIGN(1.,AUXFR(J)-1.)
@@ -1036,7 +1036,7 @@
         END DO
       FRQ    = XSI * TPIINV
 !
-! 2.h Final storage 
+! 2.h Final storage
 !
       ALLOCATE ( MPARS(IGRID)%SNLPS%QST1(16,NQA,NKD),                 &
                  MPARS(IGRID)%SNLPS%QST3(6,NQA,NKD),                  &
@@ -1143,7 +1143,7 @@
 !
 ! 3.d Loop over quadruplet components
 !
-          DO JIQ=1, 4  
+          DO JIQ=1, 4
 !
             IF ( JIQ .LE. 2 ) THEN
                 WF     = -1.
@@ -1153,7 +1153,7 @@
 !
 ! 3.e Loop over frequency offsets, get directional offsets
 !
-            DO JOF=1, 2  
+            DO JOF=1, 2
 !
               IF ( JOF .EQ. 1 ) THEN
                   IFR    = -JFR(JIQ)
@@ -1286,7 +1286,7 @@
 !
         END DO
 !
-! 3.g Finalize storage 
+! 3.g Finalize storage
 !
       QST4 = AST1*NTHEXP + AST2
 !
@@ -1367,7 +1367,7 @@
 !/T3 9038 FORMAT (23X,3I4,3F8.3)
 !/
 !/ Embedded subroutines
-!/ 
+!/
       CONTAINS
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION MINLAM ( MU, THETA )
@@ -1382,40 +1382,40 @@
 !/    28-Jan-2009 : Origination.
 !/
 !  1. Purpose :
-!  
+!
 !     Calculate minimum allowed lambda for quadruplet configuration.
-!     
+!
 !  3. Parameters :
-!  
+!
 !     Parameter list
 !     ----------------------------------------------------------------
 !       MU, THETA  Real   Quadruplet parameters, theta in degree.
 !     ----------------------------------------------------------------
-!     
+!
 ! 10. Source code :
-! 
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/
 !/ Parameter list
-!/ 
+!/
       REAL, INTENT(IN)        :: MU, THETA
 !/
 !/ Local parameters
-!/ 
+!/
       REAL                    :: MULOC, THETAR, BB, AUX
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
       IF ( THETA .LT. 0. ) THEN
-          MINLAM = 0. 
+          MINLAM = 0.
         ELSE
           MULOC  = MAX ( 0. , MIN ( 1., MU ) )
           THETAR = THETA * ATAN(1.) / 45.
           BB     = (1.+MULOC)**4 + (1.-MULOC)**4 +                    &
                       2. * (1.+MULOC)**2 * (1.-MULOC)**2 * COS(THETAR)
           BB     = SQRT ( MAX ( BB , 0. ) )
-          AUX    = MAX ( 0. , 0.5*BB-1. ) 
+          AUX    = MAX ( 0. , 0.5*BB-1. )
           MINLAM = SQRT ( AUX )
         END IF
 !

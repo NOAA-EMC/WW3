@@ -26,9 +26,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    15-May-2010 : Add ISI (icebergs and sea ice).     ( version 3.14.4 )   
+!/    15-May-2010 : Add ISI (icebergs and sea ice).     ( version 3.14.4 )
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
@@ -42,7 +42,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -128,14 +128,14 @@
 !  7. Remarks :
 !
 !     - Input fields need to be continuous in longitude and latitude.
-!     - Longitude - latitude grid (Section 4.a) : program attempts to 
-!       detect closure type (ICLO) using longitudes of the grid. Thus, 
+!     - Longitude - latitude grid (Section 4.a) : program attempts to
+!       detect closure type (ICLO) using longitudes of the grid. Thus,
 !       it does not allow the user to specify the closure type, and so
 !       tripole closure is not supported.
 !     - Grid(s) from file (Section 4.a) : program reads logical variable
-!       CLO(J) from .inp file. Thus, it does not allow the user to 
+!       CLO(J) from .inp file. Thus, it does not allow the user to
 !       specify more than two closure type (SMPL or NONE), and so
-!       tripole closure is not supported. 
+!       tripole closure is not supported.
 
 !  8. Structure :
 !
@@ -259,7 +259,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-! notes: Is it possible to combine ice parameters into one group, 
+! notes: Is it possible to combine ice parameters into one group,
 !        similar to the way 1D spectra are in one group?
       DATA IDSTR1 / 'ice param. 1' , 'ice param. 2' ,                 &
                     'ice param. 3' , 'ice param. 4' ,                 &
@@ -562,8 +562,8 @@
 
                      WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
 
-! Notes: We need to set these variables, even if we never intend to use them. 
-!...........Especially in the case of IX?? IY??, we cannot leave them unset, 
+! Notes: We need to set these variables, even if we never intend to use them.
+!...........Especially in the case of IX?? IY??, we cannot leave them unset,
 !...........since they will be used as array indices later.
 
                      IX21(IX,IY) = 1
@@ -591,22 +591,22 @@
 !/T1                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
                   END DO
                 END DO
-            ELSE 
+            ELSE
               DO IX=1, NX
                 X = XYB(IX,1)
                 Y = XYB(IX,2)
- 
+
                 IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
 !
 ! Manages the simple closure of the grid
 !
-                IF (ICLO.EQ.ICLOSE_NONE) THEN 
+                IF (ICLO.EQ.ICLOSE_NONE) THEN
                   IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
                   IX22(IX,1) =   IX21(IX,1) + 1
                 ELSE
                   IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI) )
                   IX22(IX,1) =   MOD(IX21(IX,1),NXI)+1
-                  END IF 
+                  END IF
                 IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
                 IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
                 IY22(IX,1) =   IY21(IX,1) + 1
@@ -635,13 +635,13 @@
                 EFAC       = SQRT ( MAX(0.,ABS(RW(1)-0.5)-0.5)**2 +  &
                                     MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
                 EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
-                
+
 
                 RD11(IX,1) = EFAC * (1.-RW(1)) * (1.-RW(2))
                 RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
                 RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
                 RD22(IX,1) = EFAC *    RW(1)   *    RW(2)
-                END DO 
+                END DO
               END IF ! GTYPE .NE. UNGTYPE
 !
               CALL W3GSUD( GSI )
@@ -904,10 +904,10 @@
                           .OR. NYT .NE. NYI ) THEN
                           WRITE (NDSE,1052) TSFLD, NXT, NYT, IDFLD,   &
                                  NXI, NYI
-                          CALL EXTCDE ( 21 ) 
+                          CALL EXTCDE ( 21 )
                       END IF
                   ELSE
-                      REWIND(NDSF(J)) 
+                      REWIND(NDSF(J))
                   END IF
               END IF
           ELSE

@@ -14,7 +14,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -31,7 +31,7 @@
 !      UNITLW    I.P.  Private  Lowest unit number.
 !      UNITHG    I.P.  Private  Highest unit number.
 !      INPLOW, INPHGH, OUTLOW, OUTHGH, SCRLOW, SCRHGH
-!                I.P.  Private  Low and high for input, output and 
+!                I.P.  Private  Low and high for input, output and
 !                               scratch files.
 !      FLINIT    Log.  Private  Flag for intialization.
 !
@@ -402,11 +402,11 @@
   930 FORMAT (/' WMUDMP: Unit information '//                         &
                '    Nr Flg Type  Name                  Description '/ &
                '  -------------------------------------------------', &
-               '---------------------') 
+               '---------------------')
   931 FORMAT (/' WMUDMP: Unit information (assigned only)'//          &
                '    Nr Flg Type  Name                  Description '/ &
                '  -------------------------------------------------', &
-               '---------------------') 
+               '---------------------')
   932 FORMAT ( 2X,I4,L4,2X,A3,2X,A20,2X,A)
 !
  1000 FORMAT (/' *** ERROR WMUDMP: DATA STRUCTURE READY ***'/         &
@@ -651,7 +651,7 @@
         END IF
 !
       IF ( PRESENT(NR) ) THEN
-          NRC    = MAX ( 1 , NR ) 
+          NRC    = MAX ( 1 , NR )
         ELSE
           NRC    = 1
         END IF
@@ -702,7 +702,7 @@
  1010 FORMAT (/' *** ERROR WMUGET: INITIALIZE FIRST !!! ***')
  1020 FORMAT (/' *** ERROR WMUGET: CANNOT FIND FREE UNIT FOR TYPE ',  &
                A,' ***'/)
-!  
+!
 !/T 9010 FORMAT ( ' TEST WMUGET: LOOKING FOR UNIT FOR TYPE ',A,' [',  &
 !/T                I2,']')
 !/T 9020 FORMAT ( ' TEST WMUGET: UNIT NUMBER SET TO',I4)

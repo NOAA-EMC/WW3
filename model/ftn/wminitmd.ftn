@@ -36,7 +36,7 @@
 !/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
-!/                  (A. Chawla and Mark Szyszka) 
+!/                  (A. Chawla and Mark Szyszka)
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    20-Jan-2017 : Modify input forcing flags to support coupler input.
@@ -46,13 +46,13 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
 !     Initialization of the multi-grid wave model. As a preparation
-!     for coupled modeling, all initialization, including the 
+!     for coupled modeling, all initialization, including the
 !     processing of the input file has ben included in the routine.
 !
 !  2. Variables and types :
@@ -130,7 +130,7 @@
 !/                  required for regridding.            ( version 4.08 )
 !/                  (T. J. Campbell, NRL)
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
-!/                  (F. Ardhuin) 
+!/                  (F. Ardhuin)
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
@@ -229,12 +229,12 @@
 !
 !  7. Remarks :
 !
-!     - When running regtests in cases where disk is non-local 
+!     - When running regtests in cases where disk is non-local
 !       (i.e. NFS used), there can be a huge improvment in compute
-!       time by using /var/tmp/ for log files. 
+!       time by using /var/tmp/ for log files.
 !       See commented line at "OPEN (MDSO,FILE=..."
 !
-!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where lowest possible 
+!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where lowest possible
 !       value of JFIRST is JFIRST=-7
 !
 !  8. Structure :
@@ -309,12 +309,12 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !       !/MPI   Id.
-!                            
+!
 !       !/MGW   Moving grid wind correction.
 !       !/MGP   Moving grid propagation correction.
 !
 !       !/O10   Enable output identifying start and end of routine
-!      
+!
 !       !/F90  FORTRAN 90 specific extensions.
 !
 !       !/S     Enable subroutine tracing.
@@ -334,7 +334,7 @@
       USE WMMDATMD, ONLY: WMNDAT, WMSETM, WMDIMD
 !
       USE W3FLDSMD, ONLY: W3FLDO
-      USE W3IOGOMD, ONLY: W3READFLGRD 
+      USE W3IOGOMD, ONLY: W3READFLGRD
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3INITMD, ONLY: W3INIT
       USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH
@@ -548,7 +548,7 @@
 !
       LFILE  = 'log.mww3'
       IW     = 1 + INT ( LOG10 ( REAL(NMPROC) + 0.5 ) )
-      IW     = MAX ( 3 , MIN ( 9 , IW ) ) 
+      IW     = MAX ( 3 , MIN ( 9 , IW ) )
       WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)') '(A4,I',IW,'.',IW,',A5)'
 !/SHRD       TFILE  = 'test.mww3'
 !/DIST       WRITE (TFILE,FORMAT) 'test', IMPROC, '.mww3'
@@ -639,8 +639,8 @@
       CALL W3NDAT (        MDSE2, MDST )
       CALL W3NAUX (        MDSE2, MDST )
       CALL W3NOUT (        MDSE2, MDST )
-      CALL W3NINP (        MDSE2, MDST ) 
-      CALL WMNDAT (        MDSE2, MDST ) 
+      CALL W3NINP (        MDSE2, MDST )
+      CALL WMNDAT (        MDSE2, MDST )
 !
 ! 2.c Set up I/O for individual models (initial)
 !
@@ -655,7 +655,7 @@
       FLGR2  = .FALSE.
       IPRT   = 0
 !
-! ... Fixed and recycleable unit numbers.      
+! ... Fixed and recycleable unit numbers.
 !
       CALL WMUGET ( MDSE, MDST, NDSREC, 'INP' )
       CALL WMUSET ( MDSE, MDST, NDSREC, .TRUE., 'I/O', NAME='...',    &
@@ -825,7 +825,7 @@
                     USEINP(INPMAP(I,J)) = .TRUE.
                   END IF
               END IF
-!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
+!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1,
 !           it does not change during the simulation
          IF(.NOT. INFLAGS2(J)) INFLAGS2(J)=INFLAGS1(J)
          END DO !         DO J=JFIRST, 7
@@ -903,7 +903,7 @@
           DO I=1, NRGRD
             IF ( GRANK(I).EQ.RNKTMP .AND. GRPMIN.EQ.TMPGRP(I) ) THEN
                 GRGRP(I)  = NRGRP
-                TMPGRP(I) = GRPMAX 
+                TMPGRP(I) = GRPMAX
                 NINGRP(NRGRP) = NINGRP(NRGRP) + 1
               END IF
             END DO
@@ -1035,7 +1035,7 @@
               IF ( NMPLOG .EQ. IMPROC ) WRITE (MDSO,934) LINE(1:JJJ)
               LINE(1:6) = '      '
               JJJ       = 6
-            END IF 
+            END IF
           WRITE (LINE(JJJ+1:JJJ+3),'(I3)') INGRP(J,JJ)
 !
           LINE(JJJ+4:JJJ+5) = ' ('
@@ -1075,10 +1075,10 @@
       DO I=1, NRGRD
         CALL W3SETW ( I, MDSE, MDST )
         TIME   = STIME
-        END DO 
+        END DO
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,943)
-!              
+!
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
       READ (MDSI,*,END=2001,ERR=2002) FLGHG1, FLGHG2
       FLGHG2 = FLGHG1 .AND. FLGHG2
@@ -1112,7 +1112,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         READ (MDSI,*,END=2001,ERR=2002) (ODAT(I,1),I=5*(J-1)+1,5*J)
         ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
-!                 
+!
         IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,951) J, IDOTYP(J)
@@ -1147,7 +1147,7 @@
 !
 ! 5.c Type 1: fields of mean wave parameters
 !
-              FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
+              FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD
               CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
                                  FLG2D, IMPROC, NMPSCR, IERR )
               FLGRD(:,:,1)=FLG2D
@@ -1357,7 +1357,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         READ (MDSI,*,END=2001,ERR=2002) (ODAT(II,I),II=5*(J-1)+1,5*J)
         ODAT(5*(J-1)+3,I) = MAX ( 0 , ODAT(5*(J-1)+3,I) )
-! 
+!
         IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
             TTIME(1) = ODAT(5*(J-1)+1,I)
             TTIME(2) = ODAT(5*(J-1)+2,I)
@@ -1520,7 +1520,7 @@
 ! 6.  Read moving grid data ------------------------------------------ /
 !
 !     Only a single set of data are provided to be applied to all
-!     the grids, because this is only intended for test cases. 
+!     the grids, because this is only intended for test cases.
 !     For true implementations, the jumping grid will be used.
 !
       IF ( INFLAGS1(8) ) THEN
@@ -1894,13 +1894,13 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
           WRITE (MDSS,976)
           IF ( UNIPTS ) WRITE (MDSS,977) NMPUPT
-          WRITE (MDSS,*) 
+          WRITE (MDSS,*)
         END IF
 !
       IF ( NMPLOG .EQ. IMPROC ) THEN
           WRITE (MDSO,1976)
           IF ( UNIPTS ) WRITE (MDSO,1977) NMPUPT
-          WRITE (MDSO,*) 
+          WRITE (MDSO,*)
         END IF
 !
       DEALLOCATE ( TMPRNK, NDPOUT )
@@ -2439,8 +2439,8 @@
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
 !/MPI        CALL W3SETG ( I, MDSE, MDST )
-! the next line (with the W3GSUD call) removed Jan 8 2013. 
-! ...ref: personal communication, 
+! the next line (with the W3GSUD call) removed Jan 8 2013.
+! ...ref: personal communication,
 ! ...email from Rogers to Alves, Campbell, Tolman, Chawla Dec 13 2012.
 ! REMOVED  !/MPI        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) CALL W3GSUD( GSU )
 !/MPI        END DO
@@ -2718,12 +2718,12 @@
       RETURN
 !
  2020 CONTINUE
-      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020) 
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
       CALL EXTCDE ( 2020 )
       RETURN
 !
  2021 CONTINUE
-      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021) 
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
       CALL EXTCDE ( 2021 )
       RETURN
 !
@@ -2850,7 +2850,7 @@
   954 FORMAT ( '            Interval : ',A/)
   955 FORMAT ( '            Fields   : ',A)
   956 FORMAT ( '                       ',A)
-  957 FORMAT ( '            Point  1 : ',2E14.6,2X,A)             
+  957 FORMAT ( '            Point  1 : ',2E14.6,2X,A)
   958 FORMAT ( '              ',I6,' : ',2E14.6,2X,A)
   959 FORMAT ( '            No points defined')
   960 FORMAT ( '            The file with ',A,' data is ',A,'.')
@@ -2913,7 +2913,7 @@
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
                '     PREMATURE END OF INPUT FILE'/)
-! 
+!
  1002 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : *** '/           &
                '     ERROR IN READING FROM INPUT FILE'/               &
                '     IOSTAT =',I5/)
@@ -3051,7 +3051,7 @@
 !/                  required for regridding.            ( version 4.08 )
 !/                  (T. J. Campbell, NRL)
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
-!/                  (F. Ardhuin) 
+!/                  (F. Ardhuin)
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
@@ -3151,12 +3151,12 @@
 !
 !  7. Remarks :
 !
-!     - When running regtests in cases where disk is non-local 
+!     - When running regtests in cases where disk is non-local
 !       (i.e. NFS used), there can be a huge improvment in compute
-!       time by using /var/tmp/ for log files. 
+!       time by using /var/tmp/ for log files.
 !       See commented line at "OPEN (MDSO,FILE=..."
 !
-!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where lowest possible 
+!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where lowest possible
 !       value of JFIRST is JFIRST=-7
 !
 !  8. Structure :
@@ -3231,12 +3231,12 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !       !/MPI   Id.
-!                            
+!
 !       !/MGW   Moving grid wind correction.
 !       !/MGP   Moving grid propagation correction.
 !
 !       !/O10   Enable output identifying start and end of routine
-!      
+!
 !       !/F90  FORTRAN 90 specific extensions.
 !
 !       !/S     Enable subroutine tracing.
@@ -3317,8 +3317,8 @@
 !/ Local parameters
 !/
       TYPE(NML_DOMAIN_T)                      :: NML_DOMAIN
-      TYPE(NML_INPUT_GRID_T), ALLOCATABLE     :: NML_INPUT_GRID(:) 
-      TYPE(NML_MODEL_GRID_T), ALLOCATABLE     :: NML_MODEL_GRID(:) 
+      TYPE(NML_INPUT_GRID_T), ALLOCATABLE     :: NML_INPUT_GRID(:)
+      TYPE(NML_MODEL_GRID_T), ALLOCATABLE     :: NML_MODEL_GRID(:)
       TYPE(NML_OUTPUT_TYPE_T), ALLOCATABLE    :: NML_OUTPUT_TYPE(:)
       TYPE(NML_OUTPUT_DATE_T), ALLOCATABLE    :: NML_OUTPUT_DATE(:)
       TYPE(NML_HOMOG_COUNT_T)                 :: NML_HOMOG_COUNT
@@ -3483,13 +3483,13 @@
       ! process ww3_multi namelist input
       CALL W3NMLMULTIDEF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, NML_DOMAIN, IERR)
       ALLOCATE(NML_INPUT_GRID(NML_DOMAIN%NRINP))
-      ALLOCATE(NML_MODEL_GRID(NML_DOMAIN%NRGRD)) 
+      ALLOCATE(NML_MODEL_GRID(NML_DOMAIN%NRGRD))
       ALLOCATE(NML_OUTPUT_TYPE(NML_DOMAIN%NRGRD))
       ALLOCATE(NML_OUTPUT_DATE(NML_DOMAIN%NRGRD))
 !
       CALL W3NMLMULTICONF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, &
                           NML_DOMAIN, NML_INPUT_GRID, NML_MODEL_GRID, NML_OUTPUT_TYPE, &
-                          NML_OUTPUT_DATE, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR) 
+                          NML_OUTPUT_DATE, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
       IF (IERR.NE.0) THEN
         WRITE (*,'(2A)') 'ERROR: error occured while processing ', IFNAME
         CALL EXIT (IERR)
@@ -3503,7 +3503,7 @@
 !
       LFILE  = 'log.mww3'
       IW     = 1 + INT ( LOG10 ( REAL(NMPROC) + 0.5 ) )
-      IW     = MAX ( 3 , MIN ( 9 , IW ) ) 
+      IW     = MAX ( 3 , MIN ( 9 , IW ) )
       WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)') '(A4,I',IW,'.',IW,',A5)'
 !/SHRD       TFILE  = 'test.mww3'
 !/DIST       WRITE (TFILE,FORMAT) 'test', IMPROC, '.mww3'
@@ -3596,8 +3596,8 @@
       CALL W3NDAT (        MDSE2, MDST )
       CALL W3NAUX (        MDSE2, MDST )
       CALL W3NOUT (        MDSE2, MDST )
-      CALL W3NINP (        MDSE2, MDST ) 
-      CALL WMNDAT (        MDSE2, MDST ) 
+      CALL W3NINP (        MDSE2, MDST )
+      CALL WMNDAT (        MDSE2, MDST )
 !
 ! 2.c Set up I/O for individual models (initial)
 !
@@ -3612,7 +3612,7 @@
       FLGR2  = .FALSE.
       IPRT   = 0
 !
-! ... Fixed and recycleable unit numbers.      
+! ... Fixed and recycleable unit numbers.
 !
       CALL WMUGET ( MDSE, MDST, NDSREC, 'INP' )
       CALL WMUSET ( MDSE, MDST, NDSREC, .TRUE., 'I/O', NAME='...',    &
@@ -3671,7 +3671,7 @@
 !
         CALL W3SETI ( -I, MDSE, MDST )
         INFLAGS1 = .FALSE.
-        MNAMES(-I) = NML_INPUT_GRID(I)%NAME 
+        MNAMES(-I) = NML_INPUT_GRID(I)%NAME
         INFLAGS1(-7) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM1
         INFLAGS1(-6) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM2
         INFLAGS1(-5) = NML_INPUT_GRID(I)%FORCING%ICE_PARAM3
@@ -3812,7 +3812,7 @@
                     USEINP(INPMAP(I,J)) = .TRUE.
                   END IF
               END IF
-!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
+!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1,
 !           it does not change during the simulation
          IF(.NOT. INFLAGS2(J)) INFLAGS2(J)=INFLAGS1(J)
          END DO !         DO J=JFIRST, 7
@@ -3890,7 +3890,7 @@
           DO I=1, NRGRD
             IF ( GRANK(I).EQ.RNKTMP .AND. GRPMIN.EQ.TMPGRP(I) ) THEN
                 GRGRP(I)  = NRGRP
-                TMPGRP(I) = GRPMAX 
+                TMPGRP(I) = GRPMAX
                 NINGRP(NRGRP) = NINGRP(NRGRP) + 1
               END IF
             END DO
@@ -4023,7 +4023,7 @@
               IF ( NMPLOG .EQ. IMPROC ) WRITE (MDSO,934) LINE(1:JJJ)
               LINE(1:6) = '      '
               JJJ       = 6
-            END IF 
+            END IF
           WRITE (LINE(JJJ+1:JJJ+3),'(I3)') INGRP(J,JJ)
 !
           LINE(JJJ+4:JJJ+5) = ' ('
@@ -4048,12 +4048,12 @@
 !     in WMESMFMD from the external clock.
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,940)
-!              
+!
       IF (IS_ESMF_COMPONENT) THEN
-          READ(NML_DOMAIN%START, *) STMPT 
+          READ(NML_DOMAIN%START, *) STMPT
           READ(NML_DOMAIN%STOP, *) ETMPT
         ELSE
-          READ(NML_DOMAIN%START, *) STIME 
+          READ(NML_DOMAIN%START, *) STIME
           READ(NML_DOMAIN%STOP, *) ETIME
         END IF
       CALL STME21 ( STIME , DTME21 )
@@ -4064,10 +4064,10 @@
       DO I=1, NRGRD
         CALL W3SETW ( I, MDSE, MDST )
         TIME   = STIME
-        END DO 
+        END DO
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,943)
-!              
+!
       FLGHG1 = NML_DOMAIN%FLGHG1
       FLGHG2 = NML_DOMAIN%FLGHG2
       FLGHG2 = FLGHG1 .AND. FLGHG2
@@ -4255,7 +4255,7 @@
                     IF ( ILOOP .EQ. 2 ) THEN
                       OT2(I)%X(OT2(I)%NPTS)      = XX
                       OT2(I)%Y(OT2(I)%NPTS)      = YY
-                      OT2(I)%PNAMES(OT2(I)%NPTS) = PN 
+                      OT2(I)%PNAMES(OT2(I)%NPTS) = PN
                       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                         IF ( OT2(I)%NPTS .EQ. 1 ) THEN
                           WRITE (MDSS,957)              XX, YY, PN
@@ -4264,7 +4264,7 @@
                         END IF
                       END IF
                     END IF ! ILOOP.EQ.2
-                  END DO ! end of file                      
+                  END DO ! end of file
                 END DO ! ILOOP
                 CLOSE(MDSI)
 !
@@ -4365,7 +4365,7 @@
 ! 6.  Read moving grid data ------------------------------------------ /
 !
 !     Only a single set of data are provided to be applied to all
-!     the grids, because this is only intended for test cases. 
+!     the grids, because this is only intended for test cases.
 !     For true implementations, the jumping grid will be used.
 !
       IF ( INFLAGS1(8) ) THEN
@@ -4701,13 +4701,13 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
           WRITE (MDSS,976)
           IF ( UNIPTS ) WRITE (MDSS,977) NMPUPT
-          WRITE (MDSS,*) 
+          WRITE (MDSS,*)
         END IF
 !
       IF ( NMPLOG .EQ. IMPROC ) THEN
           WRITE (MDSO,1976)
           IF ( UNIPTS ) WRITE (MDSO,1977) NMPUPT
-          WRITE (MDSO,*) 
+          WRITE (MDSO,*)
         END IF
 !
       DEALLOCATE ( TMPRNK, NDPOUT )
@@ -5245,8 +5245,8 @@
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
 !/MPI        CALL W3SETG ( I, MDSE, MDST )
-! the next line (with the W3GSUD call) removed Jan 8 2013. 
-! ...ref: personal communication, 
+! the next line (with the W3GSUD call) removed Jan 8 2013.
+! ...ref: personal communication,
 ! ...email from Rogers to Alves, Campbell, Tolman, Chawla Dec 13 2012.
 ! REMOVED  !/MPI        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) CALL W3GSUD( GSU )
 !/MPI        END DO
@@ -5524,12 +5524,12 @@
       RETURN
 !
  2020 CONTINUE
-      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020) 
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
       CALL EXTCDE ( 2020 )
       RETURN
 !
  2021 CONTINUE
-      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021) 
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
       CALL EXTCDE ( 2021 )
       RETURN
 !
@@ -5671,7 +5671,7 @@
   954 FORMAT ( '            Interval : ',A/)
   955 FORMAT ( '            Fields   : ',A)
   956 FORMAT ( '                       ',A)
-  957 FORMAT ( '            Point  1 : ',2E14.6,2X,A)             
+  957 FORMAT ( '            Point  1 : ',2E14.6,2X,A)
   958 FORMAT ( '              ',I6,' : ',2E14.6,2X,A)
   959 FORMAT ( '            No points defined')
   960 FORMAT ( '            The file with ',A,' data is ',A,'.')

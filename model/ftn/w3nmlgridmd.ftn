@@ -1,4 +1,4 @@
-#include "w3macros.h" 
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3NMLGRIDMD
 !/
@@ -249,7 +249,7 @@
                         NML_TIMESTEPS, NML_GRID, NML_RECT, NML_CURV,   &
                         NML_UNST, NML_SMC, NML_DEPTH, NML_MASK,        &
                         NML_OBST, NML_SLOPE, NML_SED, NML_INBND_COUNT, &
-                        NML_INBND_POINT, NML_EXCL_COUNT,               &                  
+                        NML_INBND_POINT, NML_EXCL_COUNT,               &
                         NML_EXCL_POINT, NML_EXCL_BODY,                 &
                         NML_OUTBND_COUNT, NML_OUTBND_LINE, IERR)
 !/

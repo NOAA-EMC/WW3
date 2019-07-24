@@ -1,7 +1,7 @@
       MODULE W3NETCDF
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -62,7 +62,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -72,7 +72,7 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : date conversion 
+!  1. Purpose : date conversion
 !  2. Method :
 !  3. Parameters :
 !
@@ -148,7 +148,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -158,8 +158,8 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : date conversion 
-!  2. Method : 
+!  1. Purpose : date conversion
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -222,7 +222,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -233,7 +233,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : linear shape function 
+!  2. Method : linear shape function
 !  3. Parameters :
 !
 !     Parameter list
@@ -313,7 +313,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -324,7 +324,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -384,7 +384,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -395,7 +395,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : days in month
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -477,7 +477,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -488,7 +488,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -556,7 +556,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -567,7 +567,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -632,7 +632,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -643,7 +643,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -703,7 +703,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -714,7 +714,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -818,7 +818,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -829,7 +829,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -891,7 +891,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -902,7 +902,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : date conversion
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -964,7 +964,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -974,8 +974,8 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : time managment 
-!  2. Method : 
+!  1. Purpose : time managment
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1041,7 +1041,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1052,7 +1052,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : error handling
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1116,7 +1116,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1127,7 +1127,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : boundary status (code duplication)
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1255,7 +1255,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1265,8 +1265,8 @@
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : define netcdfvar 
-!  2. Method : 
+!  1. Purpose : define netcdfvar
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1335,7 +1335,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1346,7 +1346,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : put value
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1435,7 +1435,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1446,7 +1446,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : output driver
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list
@@ -1514,7 +1514,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  |                                   |
@@ -1525,7 +1525,7 @@
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
 !/
 !  1. Purpose : actual output routine
-!  2. Method : 
+!  2. Method :
 !  3. Parameters :
 !
 !     Parameter list

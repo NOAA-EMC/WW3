@@ -15,12 +15,12 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Contains routines for computing dissipation by viscous fluid mud using 
+!     Contains routines for computing dissipation by viscous fluid mud using
 !     Ng (2000)
 !
 !  2. Variables and types :
@@ -47,22 +47,22 @@
 !     ----------------------------------------------------------------
 !
 !  5. Remarks :
-!     Historical information: 
+!     Historical information:
 !        This started as some equations (the "B" parameter equations
-!        in subroutine "Ng" below) in a standalone Fortran 
-!        code written by Jim Kaihatu, December 2004. These were adapted by  
-!        Erick Rogers for a simple model based on governing equation 
-!        similar to SWAN, and installed in a full version of SWAN in 
-!        March 2005 with an informal report in May 2005. Kaihatu provided 
-!        a "patch" for the B equations May 2006. Mud code in SWAN v40.41A was 
-!        finalized June 2006, and v40.51 August 2007. The code was applied 
+!        in subroutine "Ng" below) in a standalone Fortran
+!        code written by Jim Kaihatu, December 2004. These were adapted by
+!        Erick Rogers for a simple model based on governing equation
+!        similar to SWAN, and installed in a full version of SWAN in
+!        March 2005 with an informal report in May 2005. Kaihatu provided
+!        a "patch" for the B equations May 2006. Mud code in SWAN v40.41A was
+!        finalized June 2006, and v40.51 August 2007. The code was applied
 !        to Cassino Beach ~Sep 2006. This work was presented at a conference
-!        in Brazil Nov 2006, and later published in Rogers and Holland 
-!        (CSR 2009). The code was adapted for WW3 by Mark Orzech in Nov 2012 
+!        in Brazil Nov 2006, and later published in Rogers and Holland
+!        (CSR 2009). The code was adapted for WW3 by Mark Orzech in Nov 2012
 !        (he had installed the D&L routines as BT8 in July 2011).
 !
-!     Reference: Ng, C.O.,2000. Water waves over a muddy bed: 
-!                a two-layer Stokes’ boundary layer model. 
+!     Reference: Ng, C.O.,2000. Water waves over a muddy bed:
+!                a two-layer Stokes’ boundary layer model.
 !                Coastal Engineering 40(3),221–242.
 !
 !  6. Switches :
@@ -146,7 +146,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NK,SIG,NSPEC,MAPWN   
+      USE W3GDATMD, ONLY: NK,SIG,NSPEC,MAPWN
       USE W3IDATMD, ONLY: MUDT, MUDV, MUDD, INFLAGS1
       USE CONSTANTS, ONLY: PI,GRAV,DWAT,NU_WATER
       USE W3SERVMD, ONLY: EXTCDE
@@ -167,31 +167,31 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-  
+
    !  LOCAL VARIABLES
       REAL :: DMW(NK)
-      REAL :: ROOTDG     
-      REAL :: SND        
-      REAL :: SND2       
-      REAL :: WGD        
-      REAL :: CWAVE      
-      REAL :: KD_ROCK         
-      REAL :: CG_MUD     
-      REAL :: K_MUD     
-      REAL :: NWAVE_MUD  
-      REAL :: ND_MUD     
+      REAL :: ROOTDG
+      REAL :: SND
+      REAL :: SND2
+      REAL :: WGD
+      REAL :: CWAVE
+      REAL :: KD_ROCK
+      REAL :: CG_MUD
+      REAL :: K_MUD
+      REAL :: NWAVE_MUD
+      REAL :: ND_MUD
       REAL :: SMUDWD(NK) !  DISSIPATION DUE TO MUD
-      REAL :: CG_ROCK     
-      REAL :: K_ROCK      
-      REAL :: NWAVE_ROCK  
-      REAL :: ND_ROCK     
+      REAL :: CG_ROCK
+      REAL :: K_ROCK
+      REAL :: NWAVE_ROCK
+      REAL :: ND_ROCK
       REAL :: KINVISM       ! := THE KINEMATIC VISCOSITY OF THE MUD
       REAL :: KINVISW       ! := KINEMATIC VISCOSITY OF WATER
       REAL :: RHOW          ! := DENSITY OF WATER
       REAL :: RHOM          ! := DENSITY OF MUD
       REAL :: DM            ! := DEPTH OF MUD LAYER
       REAL :: ZETA          ! := THIS IS ZETA AS USED IN NG PG. 238. IT IS THE
-                            !    RATIO OF STOKES' BOUNDARY LAYER THICKNESSES, 
+                            !    RATIO OF STOKES' BOUNDARY LAYER THICKNESSES,
                             !    OR DELTA_M/DELTA_W
       REAL :: GAMMA         ! := THIS IS THE GAMMA USED IN NG PG. 238. THIS IS
                             !  DENSITY(WATER)/DENSITY(MUD)
@@ -199,21 +199,21 @@
       REAL :: SBLTM         ! := A FUNCTION OF VISCOSITY AND FREQ
       REAL :: DTILDE        ! := NORMALIZED MUD DEPTH = MUD DEPTH / DELTA_M,
                             !  DELTA IS THE SBLT= SQRT(2*VISC/SIGMA)
-      REAL :: ZTMP          
-      REAL :: KDCUTOFF      
-      REAL :: KD            
+      REAL :: ZTMP
+      REAL :: KDCUTOFF
+      REAL :: KD
 
-      INTEGER :: IS         
+      INTEGER :: IS
 
       LOGICAL :: INAN
-     
+
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3SBT9')
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
-      !     Ng (2000), Waves over soft muds. 
+      !     Ng (2000), Waves over soft muds.
       !     Based on code for SWAN created by Erick Rogers.
       !     Adapted for WW3 by Mark Orzech, Nov 2012.
 
@@ -236,35 +236,35 @@
          WRITE(NDSE,*)'KINVISM NOT SET'
          CALL EXTCDE ( 3 )
       ENDIF
-      
-      ROOTDG = SQRT(H_WDEPTH/GRAV) 
-      WGD    = ROOTDG*GRAV 
+
+      ROOTDG = SQRT(H_WDEPTH/GRAV)
+      WGD    = ROOTDG*GRAV
       DO IS = 1, NK
        !       SND is dimensionless frequency
        SND = SIG(IS) * ROOTDG
        IF (SND .GE. 2.5) THEN
           !       ******* DEEP WATER *******
-          K_ROCK  = SIG(IS) * SIG(IS) / GRAV 
-          CG_ROCK = 0.5 * GRAV / SIG(IS)   
+          K_ROCK  = SIG(IS) * SIG(IS) / GRAV
+          CG_ROCK = 0.5 * GRAV / SIG(IS)
           NWAVE_ROCK  = 0.5
           ND_ROCK = 0.
        ELSE IF (SND.LT.1.E-6) THEN
-          !       *** VERY SHALLOW WATER ***          
-          K_ROCK  = SND/H_WDEPTH                     
+          !       *** VERY SHALLOW WATER ***
+          K_ROCK  = SND/H_WDEPTH
           CG_ROCK = WGD
           NWAVE_ROCK  = 1.
           ND_ROCK = 0.
        ELSE
 
-          SND2  = SND*SND                        
+          SND2  = SND*SND
           CWAVE     = SQRT(GRAV*H_WDEPTH/(SND2+1./(1.+0.666*SND2 &
                        +0.445*SND2**2 -0.105*SND2**3+0.272*SND2**4)))
-          K_ROCK = SIG(IS)/CWAVE                                  
+          K_ROCK = SIG(IS)/CWAVE
 
           CALL CALC_ND(K_ROCK,H_WDEPTH,SND2,ND_ROCK)
 
           NWAVE_ROCK = 0.5*(1.0+2.0*K_ROCK*H_WDEPTH/SINH(2.0*K_ROCK*H_WDEPTH))
-          CG_ROCK= NWAVE_ROCK*CWAVE             
+          CG_ROCK= NWAVE_ROCK*CWAVE
 
           SND2=0
           CWAVE=0
@@ -273,8 +273,8 @@
 
           KDCUTOFF = 10.0  ! hardwired (same as w3sbt8md)
 
-          ! now that kh is known, we can use a definition of "deep" that is 
-          ! consistent with the definition used in sbot 
+          ! now that kh is known, we can use a definition of "deep" that is
+          ! consistent with the definition used in sbot
           K_MUD=0.0
           DMW(IS)=0.0
           KD_ROCK = K_ROCK * H_WDEPTH
@@ -285,7 +285,7 @@
              ZETA=SQRT(KINVISM/KINVISW)
              GAMMA=RHOW/RHOM
              SBLTW=SQRT(2.0*KINVISW/SIG(IS))
-             SBLTM=SQRT(2.0*KINVISM/SIG(IS)) 
+             SBLTM=SQRT(2.0*KINVISM/SIG(IS))
 
              DTILDE=DM/SBLTM
              CALL NG(SIG(IS),H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,K_ROCK,K_MUD, &
@@ -307,14 +307,14 @@
           NWAVE_MUD=0.5*(1.0+2.0*K_MUD*H_WDEPTH/ZTMP)
 
           CG_MUD=NWAVE_MUD*CWAVE
-          SND2  = SND*SND                        
+          SND2  = SND*SND
 
           CALL CALC_ND(K_MUD,H_WDEPTH,SND2,ND_MUD)
 
           SND2=0
           CWAVE=0
 
-       ! If we wanted to include the effects of mud on the real part of the 
+       ! If we wanted to include the effects of mud on the real part of the
        ! wavnumber (as we do in SWAN), this is where we would do it.
        ! Set output variables k_out, cg_out, nwave_out, nd_out, dmw.
 !kinematics       IF(MUD)THEN !
@@ -322,7 +322,7 @@
 !kinematics          CG_OUT(IS)   =CG_MUD
 !kinematics          NWAVE_OUT(IS)=NWAVE_MUD
 !kinematics          ND_OUT(IS)   =ND_MUD
-!kinematics       ELSE ! USE ROCKY WAVENUMBER,ETC. 
+!kinematics       ELSE ! USE ROCKY WAVENUMBER,ETC.
 !kinematics          K_OUT(IS)    =K_ROCK
 !kinematics          CG_OUT(IS)   =CG_ROCK
 !kinematics          NWAVE_OUT(IS)=NWAVE_ROCK
@@ -337,7 +337,7 @@
        END IF
 
 ! NaN check:
-        INAN = .NOT. ( DMW(IS) .GE. -HUGE(DMW(IS)) .AND. DMW(IS) & 
+        INAN = .NOT. ( DMW(IS) .GE. -HUGE(DMW(IS)) .AND. DMW(IS) &
                .LE. HUGE(DMW(IS)) )
         IF (INAN) THEN
            WRITE(*,'(/1A/)') 'W3SBT9 ERROR -- DMW(IS) IS NAN'
@@ -349,7 +349,7 @@
         END IF
 
       END DO !  DO IS = 1, NK
-         
+
 !    *** store the results in the DIAGONAL arrays D and S ***
       DO IS = 1,NSPEC
          ! note that "IS" here is for the directional spectrum (2d)
@@ -359,9 +359,9 @@
       S = D * AC
 
       RETURN
-     
+
       END SUBROUTINE W3SBT9
-     
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE NG(SIGMA,H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,WK,WKDR,DISS)
 !/
@@ -429,7 +429,7 @@
 !/ ------------------------------------------------------------------- /
 !/
 
-  !   
+  !
       IMPLICIT NONE
 
     ! INPUT VARIABLES :
@@ -438,13 +438,13 @@
       REAL, INTENT(IN)  ::  DTILDE  ! normalized mud depth = mud depth / sbltm,
                                     ! delta is the sblt= sqrt(2*visc/sigma)
       REAL, INTENT(IN)  ::  ZETA    ! this is zeta as used in Ng pg. 238. it is
-                                    ! the ratio of stokes' boundary layer 
+                                    ! the ratio of stokes' boundary layer
                                     ! thicknesses, or sbltm/delta_w
-      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in Ng pg. 238. 
+      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in Ng pg. 238.
                                     ! this is density(water)/density(mud)
-      REAL, INTENT(IN)  ::  SBLTM   ! sbltm is what you get if you calculate 
-                                    ! sblt using the viscosity of the mud, 
-                                    ! sbltm=sqrt(2*visc_m/sigma) 
+      REAL, INTENT(IN)  ::  SBLTM   ! sbltm is what you get if you calculate
+                                    ! sblt using the viscosity of the mud,
+                                    ! sbltm=sqrt(2*visc_m/sigma)
                                     ! .....also delta_m
       REAL, INTENT(IN)  :: WK       ! unmuddy wavenumber
 
@@ -467,16 +467,16 @@
   !   NOW CALCULATE Ng's B coefficients : see Ng pg 238
       B1=GAMMA*(-2.0*GAMMA**2+2.0*GAMMA-1.-ZETA**2)*SINH(DTILDE)*   &
          COSH(DTILDE)-GAMMA**2*ZETA*((COSH(DTILDE))**2+             &
-         (SINH(DTILDE))**2)-(GAMMA-1.)**2*ZETA*((COSH(DTILDE))**2   & 
+         (SINH(DTILDE))**2)-(GAMMA-1.)**2*ZETA*((COSH(DTILDE))**2   &
          *(COS(DTILDE))**2+(SINH(DTILDE))**2*(SIN(DTILDE))**2)-2.0  &
-         *GAMMA*(1.-GAMMA)*(ZETA*COSH(DTILDE)+GAMMA*SINH(DTILDE))   & 
+         *GAMMA*(1.-GAMMA)*(ZETA*COSH(DTILDE)+GAMMA*SINH(DTILDE))   &
          *COS(DTILDE)
 
       B2=GAMMA*(-2.0*GAMMA**2+2.0*GAMMA-1.+ZETA**2)*SIN(DTILDE)*    &
          COS(DTILDE) -2.0*GAMMA*(1.-GAMMA)*(ZETA*SINH(DTILDE)+GAMMA &
          *COSH(DTILDE))*SIN(DTILDE)
 
-      B3=(ZETA*COSH(DTILDE)+GAMMA*SINH(DTILDE))**2*(COS(DTILDE))**2 & 
+      B3=(ZETA*COSH(DTILDE)+GAMMA*SINH(DTILDE))**2*(COS(DTILDE))**2 &
         +(ZETA*SINH(DTILDE)+GAMMA*COSH(DTILDE))**2*(SIN(DTILDE))**2
 
       BR=WK*SBLTM*(B1-B2)/(2.0*B3)+GAMMA*WK*DM
@@ -492,7 +492,7 @@
       RETURN
 
       END SUBROUTINE NG
-      
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALC_ND(KWAVE,H_WDEPTH,SND2,ND)
 !/ ------------------------------------------------------------------- /
@@ -507,15 +507,15 @@
       REAL    :: FAC3       ! LOCAL
       REAL    :: KND        ! LOCAL
 
-      KND   = KWAVE*H_WDEPTH              
-      FAC1  = 2.*KND/SINH(2.*KND)   
-      FAC2  = SND2/KND              
-      FAC3  = 2.*FAC2/(1.+FAC2*FAC2) 
+      KND   = KWAVE*H_WDEPTH
+      FAC1  = 2.*KND/SINH(2.*KND)
+      FAC2  = SND2/KND
+      FAC3  = 2.*FAC2/(1.+FAC2*FAC2)
       ND= FAC1*(0.5/H_WDEPTH - KWAVE/FAC3)
 
       END SUBROUTINE CALC_ND
-      
+
 !/ ------------------------------------------------------------------- /
 !/
       END MODULE W3SBT9MD
-      
+

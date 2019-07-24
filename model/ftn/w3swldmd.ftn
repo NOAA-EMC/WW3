@@ -12,7 +12,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -32,7 +32,7 @@
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      W3SWL4    Subr. Public   Ardhuin et al (2010+) swell dissipation
-!      W3SWL6    Subr. Public   Babanin (2011) swell dissipation 
+!      W3SWL6    Subr. Public   Babanin (2011) swell dissipation
 !
 !      IRANGE    Func. Private  Generate a sequence of integer values
 !     ----------------------------------------------------------------
@@ -74,7 +74,7 @@
 !/
 !  1. Purpose :
 !
-!     FIXME 
+!     FIXME
 !
 !  2. Method :
 !
@@ -85,7 +85,7 @@
 !      A¹      R.A. I  Action density spectrum
 !      CG      R.A. I  Group velocities
 !      WN      R.A. I  Wavenumbers
-!      S¹      R.A. O  Source term 
+!      S¹      R.A. O  Source term
 !      D¹      R.A. O  Diagonal term of derivative
 !      ¹ Stored as 1-D array with dimension NTH*NK (column by column).
 !     ----------------------------------------------------------------
@@ -94,7 +94,7 @@
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      IRANGE    Func. W3SWLDMD 
+!      IRANGE    Func. W3SWLDMD
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !     ----------------------------------------------------------------
 !
@@ -147,7 +147,7 @@
 !/
 !/S      CALL STRACE (IENT, 'W3SWL4')
 !
-      IKN = IRANGE(1,NSPEC,NTH) 
+      IKN = IRANGE(1,NSPEC,NTH)
       D   = 0.
       WN2 = 0.
 !
@@ -159,7 +159,7 @@
       EMEAN  = SUM(EB) + (EB(NK) / DDEN(NK)) * FTE
 !
       AORB   = 2.0*SQRT(EMEAN)
-!     
+!
       EB     = SUM(RESHAPE(A*SIG2**2,(/ NTH,NK /)),1) * DDEN(1:NK) / CG
       UOSIG  = 2.0*SQRT(SUM(EB))
 
@@ -206,7 +206,7 @@
 !  1. Purpose :
 !
 !     Turbulent dissipation of narrow-banded swell as described in
-!     Babanin (2011, Section 7.5). 
+!     Babanin (2011, Section 7.5).
 !
 !     Babanin 2011: Cambridge Press, 295-321, 463pp.
 !
@@ -221,7 +221,7 @@
 !      A¹      R.A. I  Action density spectrum
 !      CG      R.A. I  Group velocities
 !      WN      R.A. I  Wavenumbers
-!      S¹      R.A. O  Source term 
+!      S¹      R.A. O  Source term
 !      D¹      R.A. O  Diagonal term of derivative
 !      ¹ Stored as 1-D array with dimension NTH*NK (column by column).
 !     ----------------------------------------------------------------
@@ -230,7 +230,7 @@
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      IRANGE    Func. W3SWLDMD 
+!      IRANGE    Func. W3SWLDMD
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !     ----------------------------------------------------------------
 !
@@ -285,7 +285,7 @@
 !/S      CALL STRACE (IENT, 'W3SWL6')
 !
 !/ 0) --- Initialize parameters -------------------------------------- /
-      IKN   = IRANGE(1,NSPEC,NTH)            ! Index vector for array access, e.g.  
+      IKN   = IRANGE(1,NSPEC,NTH)            ! Index vector for array access, e.g.
 !                                            ! in form of WN(1:NK) == WN2(IKN).
       ABAND = SUM(RESHAPE(A,(/ NTH,NK /)),1) ! action density as function of wavenumber
       DDIS  = 0.
@@ -329,7 +329,7 @@
 !
 !/ 3) --- Apply dissipation term of derivative to all directions ----- /
       DO ITH = 1, NTH
-         D(IKN+(ITH-1)) = DDIS 
+         D(IKN+(ITH-1)) = DDIS
       END DO
 !
       S = D * A

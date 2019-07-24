@@ -11,12 +11,12 @@
 !/
 !/    30-Nov-1999 : Fortran 90 version.                 ( version 2.00 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
-!/    10-Mar-2016 : Added Liu & Mollo-Christensen 
+!/    10-Mar-2016 : Added Liu & Mollo-Christensen
 !/                  dispersion with ice (E. Rogers)     ( version 5.10 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -270,7 +270,7 @@
 !
       !CALL WAVNU1(ABS(W),H,KTEST1,CGTEST1)
       !CALL WAVNU3(ABS(W),H,KTEST2,CGTEST2)
-  
+
       CG   = 0
       KOLD = 0
       ICON = 0
@@ -330,7 +330,7 @@
 !/ End of WAVNU2 ----------------------------------------------------- /
 !/
       END SUBROUTINE WAVNU2
-!/      
+!/
       PURE SUBROUTINE WAVNU3 (SI,H,K,CG)
 !/
 !/                  +-----------------------------------+
@@ -344,8 +344,8 @@
 !/
 !  1. Purpose :
 !
-!     Calculate wavenumber and group velocity from the improved 
-!     Eckard's formula by Beji (2003) 
+!     Calculate wavenumber and group velocity from the improved
+!     Eckard's formula by Beji (2003)
 !
 !  2. Method :
 !
@@ -437,8 +437,8 @@
       RETURN
 !/
 !/ End of WAVNU3 ----------------------------------------------------- /
-!/      
-      END SUBROUTINE WAVNU3 
+!/
+      END SUBROUTINE WAVNU3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DISTAB
 !/
@@ -586,15 +586,15 @@
 !
 !     Dispersion relation calculation: given frequency, find k
 !     This is for dispersion in ice, so it requires the ice thickness
-!     and viscosity also. (the latter is the "eddy viscosity in the 
+!     and viscosity also. (the latter is the "eddy viscosity in the
 !     turbulent boundary layer beneath the ice.").
 !     Please note that this is for a continuous ice cover (not broken in floes)
 !
 !     This subroutine also calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy* (not to be 
-!     confused with k_i which is the exponential decay rate of 
-!     amplitude) 
-!     
+!     alpha is the exponential decay rate of *energy* (not to be
+!     confused with k_i which is the exponential decay rate of
+!     amplitude)
+!
 !     Both alpha and k_i are for spatial decay rate, units (1/m)
 !     Neither is for temporal decay rate.
 !
@@ -603,7 +603,7 @@
 !
 !  2. Method :
 !
-!     Newton-Raphson. 
+!     Newton-Raphson.
 !     For actual dispersion relation, see documentation of subroutine
 !     "Liu_reverse_dispersion"
 !
@@ -616,8 +616,8 @@
 !      H_WDEPTH   Real    I  Water depth
 !      SIGMA      R.A.    I  Radian Wave frequency
 !      K_SOLUTION R.A.    O  Wave number
-!      CG         R.A.    O  Group velocity 
-!      ALPHA      R.A.    O  Exponential decay rate of energy 
+!      CG         R.A.    O  Group velocity
+!      ALPHA      R.A.    O  Exponential decay rate of energy
 !      NK         Int.    I  Number of frequencies
 !     ----------------------------------------------------------------
 !
@@ -625,7 +625,7 @@
 !
 !      Name                   | Type |  Module | Description
 !     ----------------------------------------------------------------
-!      Liu_reverse_dispersion | Subr.| W3SIC2MD| As name implies. 
+!      Liu_reverse_dispersion | Subr.| W3SIC2MD| As name implies.
 !      STRACE                 | Subr.| W3SERVMD| Subroutine tracing.
 !      WAVNU1                 | Subr.| W3DISPMD| Wavenumber for waves
 !                                                in open water.
@@ -644,11 +644,11 @@
 !
 !  7. Remarks :
 !
-!     Eventually, k and Cg should be used for propagation. This is not 
+!     Eventually, k and Cg should be used for propagation. This is not
 !     implemented yet. For now, it is only used to calculate the source
 !     term.
 !
-!     For discussion of the eddy viscosity term, see documentation of 
+!     For discussion of the eddy viscosity term, see documentation of
 !     subroutine "Liu_reverse_dispersion"
 !
 !     This subroutine expects eddy viscosity in units of m2/sec even
@@ -676,11 +676,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      
+
       REAL   , INTENT(IN)  :: H_ICE, H_WDEPTH, SIGMA(NK)
       REAL   , INTENT(IN)  :: VISC    ! in m2/sec
       REAL   , INTENT(OUT) :: K_SOLUTION(NK) ,CG(NK) ,ALPHA(NK)
-     
+
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -690,12 +690,12 @@
       INTEGER, PARAMETER :: N_ITER=20  ! number of iterations prior to
                                        ! failure
       LOGICAL            :: GET_CG     ! indicates whether to get Cg
-                                       ! and alpha 
+                                       ! and alpha
                                        ! from "Liu_reverse_dispersion"
-      REAL :: FREQ(20)    ! wave frequency at current 
-                                       ! iteration 
-      REAL  :: KWN(20)     ! wavenumber at current 
-                                       ! iteration 
+      REAL :: FREQ(20)    ! wave frequency at current
+                                       ! iteration
+      REAL  :: KWN(20)     ! wavenumber at current
+                                       ! iteration
       INTEGER            :: ITER       ! iteration number
       REAL               :: DK,DF,DFDK ! as name implies
       REAL               :: FDUMMY     ! as name implies
@@ -703,7 +703,7 @@
       REAL               :: K_OPEN     ! open-water value of k
       REAL               :: CG_OPEN    ! open-water value of Cg
       REAL               :: FWANTED    ! Freq. corresponding to sigma
-      REAL               :: FERROR     ! Max acceptable error after test to avoid crash    
+      REAL               :: FERROR     ! Max acceptable error after test to avoid crash
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -711,9 +711,9 @@
 !/S      CALL STRACE (IENT, 'LIU_FORWARD_DISPERSION')
 !
 !/ 0) --- Initialize/allocate variables ------------------------------ /
-        
- 
-      
+
+
+
 
       DO IK = 1, NK
 
@@ -722,7 +722,7 @@
         !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
              FWANTED=SIGMA(IK)/TPI
         ! First guess for k :
-              
+
               CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
         !     KWN(1)  = 0.2 ! (old method)
               KWN(1)  =K_OPEN ! new method, Mar 10 2014
@@ -761,8 +761,8 @@
 
                  ! Decide on next k to try
                  KWN(ITER+1) = KWN(ITER) + DK
-                 ! If we end up with a negative k for the next iteration, don't 
-                 !   allow this. 
+                 ! If we end up with a negative k for the next iteration, don't
+                 !   allow this.
                  IF(KWN(ITER+1) < 0.0)THEN
                     KWN(ITER+1) = TPI / 1000.0
                  ENDIF
@@ -773,12 +773,12 @@
         !     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
         !     last time, to get CG and ALPHA
 
-              K_SOLUTION(IK) = KWN(ITER)  
+              K_SOLUTION(IK) = KWN(ITER)
 
         GET_CG     = .TRUE.
       CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION(IK), &
            GET_CG,FDUMMY,CG(IK),ALPHA(IK))
-      END DO 
+      END DO
 !
 !/T38      WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
 !/T38                          K_SOLUTION,CG,ALPHA
@@ -812,25 +812,25 @@
 !
 !     Dispersion relation calculation: given k, find frequency.
 !     This is for dispersion in ice, so it requires the ice thickness
-!     and viscosity also. (the latter is the "eddy viscosity in the 
+!     and viscosity also. (the latter is the "eddy viscosity in the
 !     turbulent boundary layer beneath the ice.").
 !
 !     This subroutine also (optionally) calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy* (not to be 
-!     confused with k_i which is the exponential decay rate of 
+!     alpha is the exponential decay rate of *energy* (not to be
+!     confused with k_i which is the exponential decay rate of
 !     amplitude)
-!     
+!
 !     Both alpha and k_i are for spatial decay rate, units (1/m)
 !     Neither is for temporal decay rate.
 
-!     This calculation is optional for reasons of computational 
-!      efficiency (don't calculate if it will not be used). Note that 
+!     This calculation is optional for reasons of computational
+!      efficiency (don't calculate if it will not be used). Note that
 !      if Cg and alpha are not calculated, the value of input viscosity
 !      is irrelevant.
 !
 !     References:
 !       Liu et al.    1991: JGR 96 (C3), 4605-4621
-!       Liu and Mollo 1988: JPO 18       1720-1712 
+!       Liu and Mollo 1988: JPO 18       1720-1712
 !
 !  2. Method :
 !
@@ -864,7 +864,7 @@
 !
 !      Name                  | Type |  Module | Description
 !     ----------------------------------------------------------------
-!      Liu_forward_dispersion| Subr.| W3SIC2MD| As name implies. 
+!      Liu_forward_dispersion| Subr.| W3SIC2MD| As name implies.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -873,11 +873,11 @@
 !
 !  7. Remarks :
 !
-!     Eventually, k and Cg should be used for propagation. This is not 
+!     Eventually, k and Cg should be used for propagation. This is not
 !     implemented yet. For now, it is only used to calculate the source
 !     term.
 !
-!     The eddy viscosity term given by Liu is unfortunately highly 
+!     The eddy viscosity term given by Liu is unfortunately highly
 !     variable, and "not a physical parameter", which suggests that it
 !     is difficult to specify in practice. In this paper, we see values
 !     of:
@@ -892,26 +892,26 @@
 !
 !     The paper states: "The only tuning parameter is the turbulent eddy
 !     viscosity, and it is a function of the flow conditions in the
-!     turbulent boundary layer which are determined by the ice 
+!     turbulent boundary layer which are determined by the ice
 !     thickness, floe sizes, ice concentration, and wavelength."
 !
-!     Another criticism of this source term is that it does not use the 
-!     ice concentration in actual calculations. The method appears to 
+!     Another criticism of this source term is that it does not use the
+!     ice concentration in actual calculations. The method appears to
 !     simply rely on concentration being high, "When the ice is highly
-!     compact with high concentration, the flexural waves obey the 
-!     dispersion relation (1) as similar waves in a continuous ice 
+!     compact with high concentration, the flexural waves obey the
+!     dispersion relation (1) as similar waves in a continuous ice
 !     sheet." Later, "Five of these  cases with high ice conentration
 !     (larger than 60%) in the MIZ have been selected"
 !
 !     This subroutine expects eddy viscosity in units of m2/sec even
 !     though values are given in units of cm2/sec in the Liu paper.
 !
-!     Cg used here is correct only for deep water. It is taken from 
+!     Cg used here is correct only for deep water. It is taken from
 !     Liu et al. (1991) equation 2. If we want to calculate for finite
 !     depths accurately, we need to use d_sigma/d_k. However, be warned
-!     that this calculation is sensitive to numerical error and so the 
-!     (potentially too coarse) computational grid for sigma and k should 
-!     *not* be used. 
+!     that this calculation is sensitive to numerical error and so the
+!     (potentially too coarse) computational grid for sigma and k should
+!     *not* be used.
 !
 !  8. Structure :
 !

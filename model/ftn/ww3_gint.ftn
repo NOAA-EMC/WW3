@@ -20,23 +20,23 @@
 !/                  (F.Ardhuin, M.Accensi, J.H.Alves)   ( version 6.05 )
 !/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
 !/
-!   1. Purpose : 
+!   1. Purpose :
 !
-!   Re-gridding binary output (out_grd.* files) to another grid 
+!   Re-gridding binary output (out_grd.* files) to another grid
 !
 !   2. Method :
 !
 !   Data is interpolated from a combination of base grids to the target
 !   grid. For each grid, if resolution is coarser or similar to target
 !   grid then a linear interpolation approach is used. On the other hand
-!   if resolution is much higher then an averaging technique based on 
-!   cell areas. 
+!   if resolution is much higher then an averaging technique based on
+!   cell areas.
 !   Total number of base grids to be used for interpolation together with
-!   their (and target grid) file extns are read from 'ww3_gint.inp'. 
-!   Base grids can be arranged in any order but the target grid should 
-!       always be the last grid. 
+!   their (and target grid) file extns are read from 'ww3_gint.inp'.
+!   Base grids can be arranged in any order but the target grid should
+!       always be the last grid.
 !
-!   3. Parameters : 
+!   3. Parameters :
 !
 !   4. Subroutines used :
 !
@@ -57,10 +57,10 @@
 !      W3SETA    Subr.   Id.    Point to selected model for aux data.
 !      W3DIMA      Subr.   Id.    Assign memory for aux data.
 !      W3GRMP    Func. W3GSRUMD Compute interpolation coeff. from grid.
-!      W3CKCL    Func.   Id.    Check if point lies within grid cell. 
+!      W3CKCL    Func.   Id.    Check if point lies within grid cell.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
 !     ----------------------------------------------------------------
-!  
+!
 !  5. Called by :
 !
 !     None, stand-alone program.
@@ -185,7 +185,7 @@
         WRITE (NDSO,902) IDTIME, DTREQ, NOUT
 !
 ! 3.c Read number of grids and allocate memory
-!   
+!
         CALL NEXTLN ( COMSTR, NDSI, NDSE )
         READ (NDSI,*,END=2001,ERR=2002) NG
         WRITE (NDSO,903) NG
@@ -196,7 +196,7 @@
         CALL W3NINP (    6, 6)
         CALL W3NOUT(     6, 6)
 !
-! 3.d Read file extensions for each of the grids and 
+! 3.d Read file extensions for each of the grids and
 !     the grid information from the corresponding mod_def files
 !
         NOSWLL_MIN = 9999999
@@ -211,7 +211,7 @@
           CALL W3SETW( IG, 6, 6)
           CALL W3SETG( IG, 6, 6)
           CALL W3IOGR ('READ', NDSM, IG, GRIDS(IG)%FILEXT)
-          WRITE (NDSO,905) NX, NY, GTYPE, ICLOSE 
+          WRITE (NDSO,905) NX, NY, GTYPE, ICLOSE
 
           IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
              WRITE(NDSE,*)'PROGRAM W3GRID_INTERP HAS NOT BEEN '//  &
@@ -260,7 +260,7 @@
 !
         IF ( FLAGLL ) THEN
           IF ( MINVAL ( XGRD ) .LT. 0 .OR.                                     &
-               MAXVAL ( XGRD ) .GT. 180.0 ) L360 = .TRUE. 
+               MAXVAL ( XGRD ) .GT. 180.0 ) L360 = .TRUE.
         END IF
 !
 ! 4.b Check if weight files exist or create it
@@ -268,11 +268,11 @@
         FNAMEWHT='WHTGRIDINT.bin'
         OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
         NSEA_FILE = 0
-        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic security check ... 
-        IF (NSEA_FILE.EQ.NSEA) THEN 
+        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic security check ...
+        IF (NSEA_FILE.EQ.NSEA) THEN
           DO ISEA = 1, NSEA
             READ(994) COUNTG
-            ALLOCATE ( GR_INTS(ISEA)%IND_WTS(COUNTG),GR_INTS(ISEA)%GDID(COUNTG) ) 
+            ALLOCATE ( GR_INTS(ISEA)%IND_WTS(COUNTG),GR_INTS(ISEA)%GDID(COUNTG) )
             DO IG = 1,COUNTG
               READ(994) GR_INTS(ISEA)%IND_WTS(IG)%AR
               READ(994) GR_INTS(ISEA)%GDID(IG)
@@ -310,7 +310,7 @@
 !
           COUNTG = 0
           DO IG = 1,NG-1
-!       
+!
 ! 4.b.ii Check if point is enclosed in grid domain
 !
             INGRID=.FALSE.
@@ -319,16 +319,16 @@
               CALL IS_IN_UNGRID(IG, XGRD(IY,IX), YGRD(IY,IX),  &
                                                  ITOUT, IS, JS, RW)
               IF (ITOUT.GT.0) INGRID=.TRUE.
-!              ! If extrapolation activated, force to find if a triangles is inside 
+!              ! If extrapolation activated, force to find if a triangles is inside
 !              ! the coarse grid cell even if there is no triangle in the cell center
               IF (EXTRA.GT.0) THEN
                 WRITE(991,'(2I6,2F9.4,I8,3I8,3F5.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 IF (ITOUT.EQ.0)  WRITE(992,*) IX,IY,ISEA,XGRD(IY,IX), YGRD(IY,IX)
-                IF (ITOUT.EQ.0) THEN 
+                IF (ITOUT.EQ.0) THEN
                    CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), EXTRA,  &
                                                  ITOUT, IS, JS, RW)
                    WRITE(993,'(2I6,2F9.4,I8,3I8,3F6.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
-                ENDIF  
+                ENDIF
                 !IF (ITOUT.EQ.0) CALL IS_IN_UNGRID(IG, XGRD(IY,IX)+DX, YGRD(IY,IX), ITOUT, IS, JS, RW)
                 !IF (ITOUT.GT.0) INGRID=.TRUE.
                 !IF (ITOUT.EQ.0) CALL IS_IN_UNGRID(IG, XGRD(IY,IX)-DX, YGRD(IY,IX), ITOUT, IS, JS, RW)
@@ -337,19 +337,19 @@
                 !IF (ITOUT.GT.0) INGRID=.TRUE.
                 !IF (ITOUT.EQ.0) CALL IS_IN_UNGRID(IG, XGRD(IY,IX), YGRD(IY,IX)-DY, ITOUT, IS, JS, RW)
                 !IF (ITOUT.GT.0) INGRID=.TRUE.
-              END IF           
+              END IF
             ELSE
               IF ( W3GRMP ( GRIDS(IG)%GSU, XGRD(IY,IX), YGRD(IY,IX), IS,        &
                    JS, RW ) ) INGRID=.TRUE.
               END IF
-           IF (INGRID) THEN 
+           IF (INGRID) THEN
 !
-! 4.b.iii Check source grid resolution vs target grid resolution 
+! 4.b.iii Check source grid resolution vs target grid resolution
 !         (averaging used for finer resolution source grids)
 !
-             IF (GRIDS(IG)%GTYPE .EQ. UNGTYPE) THEN 
+             IF (GRIDS(IG)%GTYPE .EQ. UNGTYPE) THEN
                 SAREA = GRIDS(IG)%TRIA(ITOUT)
-             ELSE 
+             ELSE
                DO I = 1,4
                  XCRNR(I) = GRIDS(IG)%XGRD(JS(I),IS(I))
                  YCRNR(I) = GRIDS(IG)%YGRD(JS(I),IS(I))
@@ -373,33 +373,33 @@
              NS = NINT(DAREA/SAREA)
 !
              IF ( NS .LE. 2 .OR. GRIDS(IG)%GTYPE .EQ. UNGTYPE ) THEN
-! FA: Quick fix for UNST type grids: always perform interpolation 
-!     To be updated later ... 
+! FA: Quick fix for UNST type grids: always perform interpolation
+!     To be updated later ...
 !
 ! 4.b.iv Counting the contributing nodes to re-normalize the weights RW
-! 
+!
                 ALLOCATE ( TMP_INDX(4) )
                 COUNTF = 0
                 SUMWT = 0.0
-                DO I = 1,4 
+                DO I = 1,4
 ! The following two IF tests are separated because for triangles, JS(4)=IS(4)=0
-                  IF ( RW(I) .GT. 0.0 ) THEN 
+                  IF ( RW(I) .GT. 0.0 ) THEN
                     IF ( GRIDS(IG)%MAPSTA(JS(I),IS(I)) .NE. 0) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
                       SUMWT = SUMWT + RW(I)
-                    END IF 
+                    END IF
                   END IF
                 END DO
 !
 ! 4.b.v  Interpolating to target grid
-! 
-                IF ( COUNTF .GT. 0 ) THEN                
-! Should use SAREA info to prevent the increment of COUNTG ... 
-! what about islands / land in triangle meshes? they are not part of the triangles... 
+!
+                IF ( COUNTF .GT. 0 ) THEN
+! Should use SAREA info to prevent the increment of COUNTG ...
+! what about islands / land in triangle meshes? they are not part of the triangles...
                   COUNTG = COUNTG + 1
-                  IF (COUNTG.GT.1) THEN 
-                    IF (SAREA.LT.0.5*GR_INTS(ISEA)%IND_WTS(COUNTG-1)%AR) THEN 
+                  IF (COUNTG.GT.1) THEN
+                    IF (SAREA.LT.0.5*GR_INTS(ISEA)%IND_WTS(COUNTG-1)%AR) THEN
                        DO JG=1,COUNTG-1
                          DEALLOCATE (GR_INTS(ISEA)%IND_WTS(JG)%IP)
                          DEALLOCATE (GR_INTS(ISEA)%IND_WTS(JG)%JP)
@@ -426,7 +426,7 @@
                 DEALLOCATE ( TMP_INDX )
 !
               ELSE
-! 
+!
 ! 4.b.vi Find the averaging points for higher resolution grid
 !        Step 1 : Compute the corners of the cell
 !
@@ -464,8 +464,8 @@
                   YCRNR(4) = 0.5*(YT+Y0)
                 ELSEIF ( IX .EQ. 1 ) THEN
                   IF ( IY .EQ. 1 ) THEN
-                    XT = XGRD(IY+1,IX+1)     
-                    YT = YGRD(IY+1,IX+1)     
+                    XT = XGRD(IY+1,IX+1)
+                    YT = YGRD(IY+1,IX+1)
                     IF ( ABS(XT-X0) .GT. 270 ) THEN
                       XT = XT - SIGN(360.,XT-X0)
                       END IF
@@ -473,13 +473,13 @@
                     YCRNR(2) = 0.5*(YT+Y0)
                     XCRNR(4) = 2*X0 - XCRNR(2)
                     YCRNR(4) = 2*Y0 - YCRNR(2)
-                    XCRNR(3) = X0 - (YCRNR(2)-Y0) 
-                    YCRNR(3) = Y0 + (XCRNR(2)-X0) 
+                    XCRNR(3) = X0 - (YCRNR(2)-Y0)
+                    YCRNR(3) = Y0 + (XCRNR(2)-X0)
                     XCRNR(1) = 2*X0 - XCRNR(3)
                     YCRNR(1) = 2*Y0 - YCRNR(3)
                   ELSEIF ( IY .EQ. NY ) THEN
-                    XT = XGRD(IY-1,IX+1)     
-                    YT = YGRD(IY-1,IX+1)     
+                    XT = XGRD(IY-1,IX+1)
+                    YT = YGRD(IY-1,IX+1)
                     IF ( ABS(XT-X0) .GT. 270 ) THEN
                       XT = XT - SIGN(360.,XT-X0)
                     END IF
@@ -487,8 +487,8 @@
                     YCRNR(1) = 0.5*(YT+Y0)
                     XCRNR(3) = 2*X0 - XCRNR(1)
                     YCRNR(3) = 2*Y0 - YCRNR(1)
-                    XCRNR(2) = X0 - (Y0-YCRNR(1)) 
-                    YCRNR(2) = Y0 + (X0-XCRNR(1)) 
+                    XCRNR(2) = X0 - (Y0-YCRNR(1))
+                    YCRNR(2) = Y0 + (X0-XCRNR(1))
                     XCRNR(4) = 2*X0 - XCRNR(2)
                     YCRNR(4) = 2*Y0 - YCRNR(2)
                   ELSE
@@ -513,29 +513,29 @@
                   ENDIF
                 ELSEIF ( IX .EQ. NX ) THEN
                   IF ( IY .EQ. 1 ) THEN
-                    XT = XGRD(IY+1,IX-1)     
-                    YT = YGRD(IY+1,IX-1)     
+                    XT = XGRD(IY+1,IX-1)
+                    YT = YGRD(IY+1,IX-1)
                     IF ( ABS(XT-X0) .GT. 270 ) THEN
                       XT = XT - SIGN(360.,XT-X0)
                     END IF
                     XCRNR(3) = 0.5*(XT+X0)
                     YCRNR(3) = 0.5*(YT+Y0)
-                    XCRNR(2) = X0 - (YCRNR(3)-Y0) 
-                    YCRNR(2) = Y0 + (XCRNR(3)-X0) 
+                    XCRNR(2) = X0 - (YCRNR(3)-Y0)
+                    YCRNR(2) = Y0 + (XCRNR(3)-X0)
                     XCRNR(1) = 2*X0 - XCRNR(3)
                     YCRNR(1) = 2*Y0 - YCRNR(3)
                     XCRNR(4) = 2*X0 - XCRNR(2)
                     YCRNR(4) = 2*Y0 - YCRNR(2)
                   ELSEIF ( IY .EQ. NY ) THEN
-                    XT = XGRD(IY-1,IX-1)     
-                    YT = YGRD(IY-1,IX-1)     
+                    XT = XGRD(IY-1,IX-1)
+                    YT = YGRD(IY-1,IX-1)
                     IF ( ABS(XT-X0) .GT. 270 ) THEN
                       XT = XT - SIGN(360.,XT-X0)
                     END IF
                     XCRNR(4) = 0.5*(XT+X0)
                     YCRNR(4) = 0.5*(YT+Y0)
-                    XCRNR(3) = X0 - (YCRNR(4)-Y0) 
-                    YCRNR(3) = Y0 + (XCRNR(4)-X0) 
+                    XCRNR(3) = X0 - (YCRNR(4)-Y0)
+                    YCRNR(3) = Y0 + (XCRNR(4)-X0)
                     XCRNR(1) = 2*X0 - XCRNR(3)
                     YCRNR(1) = 2*Y0 - YCRNR(3)
                     XCRNR(2) = 2*X0 - XCRNR(4)
@@ -601,22 +601,22 @@
                     YCRNR(3) = 2*Y0 - YCRNR(1)
                   END IF
                 END IF
-                BRNCHCL = .FALSE. 
-                BRNCHCR = .FALSE. 
+                BRNCHCL = .FALSE.
+                BRNCHCR = .FALSE.
                 IF ( FLAGLL .AND. ICLOSE .EQ. ICLOSE_SMPL ) THEN
                   IF ( L360 ) THEN
-                    IF ( MINVAL ( XCRNR(1:4) ) .LT.   0.0 ) BRNCHCL = .TRUE. 
-                    IF ( MAXVAL ( XCRNR(1:4) ) .GT. 360.0 ) BRNCHCR = .TRUE. 
+                    IF ( MINVAL ( XCRNR(1:4) ) .LT.   0.0 ) BRNCHCL = .TRUE.
+                    IF ( MAXVAL ( XCRNR(1:4) ) .GT. 360.0 ) BRNCHCR = .TRUE.
                   ELSE
-                    IF ( MINVAL ( XCRNR(1:4) ) .LT. -180.0 ) BRNCHCL = .TRUE. 
-                    IF ( MAXVAL ( XCRNR(1:4) ) .GT.  180.0 ) BRNCHCR = .TRUE. 
+                    IF ( MINVAL ( XCRNR(1:4) ) .LT. -180.0 ) BRNCHCL = .TRUE.
+                    IF ( MAXVAL ( XCRNR(1:4) ) .GT.  180.0 ) BRNCHCR = .TRUE.
                   END IF
                 END IF
 !
 !        Step 2 : Loop through source grid to find all active points in cell
 !
-!FA : why only *5 ???... 
-! 
+!FA : why only *5 ???...
+!
                 ALLOCATE ( TMP_INDX(NS*5) )
                 COUNTF = 0
                 DO I = 1, GRIDS(IG)%NSEA
@@ -672,7 +672,7 @@
                     GR_INTS(ISEA)%IND_WTS(COUNTG)%WT(I) = 1./( REAL(COUNTF) )
                   END DO
                   GR_INTS(ISEA)%IND_WTS(COUNTG)%NP = COUNTF
-                END IF   
+                END IF
                 DEALLOCATE ( TMP_INDX )
 !
               END IF  ! End of check for grid resolution
@@ -682,15 +682,15 @@
           END DO      ! End of loop through all input grids
 !
           GR_INTS(ISEA)%NGRDS = COUNTG
-! 
-! 4.b.vii Check to see if interpolation weights found.  
+!
+! 4.b.vii Check to see if interpolation weights found.
 !        Status of output points with / without weights set in MAPST2
 !        using the next available bit
 !
           IF ( GR_INTS(ISEA)%NGRDS .EQ. 0 ) THEN
 !/T            WRITE (NDSO,909)IX, IY
             MAPINT = 1
-            MAPST2(IY,IX) = MAPST2(IY,IX) + MAPINT*16 
+            MAPST2(IY,IX) = MAPST2(IY,IX) + MAPINT*16
             MAPSTA(IY,IX) = -ABS ( MAPSTA(IY,IX) )
           END IF
 !
@@ -700,8 +700,8 @@
         WRITE(994) NSEA
         DO ISEA = 1, NSEA
           COUNTG = GR_INTS(ISEA)%NGRDS
-          WRITE(994) COUNTG              
-          DO IG = 1,COUNTG                   
+          WRITE(994) COUNTG
+          DO IG = 1,COUNTG
             WRITE(994) GR_INTS(ISEA)%IND_WTS(IG)%AR
             WRITE(994) GR_INTS(ISEA)%GDID(IG)
             COUNTF = GR_INTS(ISEA)%IND_WTS(IG)%NP
@@ -715,7 +715,7 @@
           END DO ! IG
           WRITE(994) GR_INTS(ISEA)%NGRDS
         END DO ! ISEA
-        END IF ! NSEA.EQ.NSEA_FILE	
+        END IF ! NSEA.EQ.NSEA_FILE
         CLOSE(994)
 !
 ! 4.c Print Interpolation grids map
@@ -783,8 +783,8 @@
         END DO
         WRITE (NDSO, 915)
 !
-! 5.d Carry out interpolation in an infinite loop till appropriate 
-!     time steps are interpolated 
+! 5.d Carry out interpolation in an infinite loop till appropriate
+!     time steps are interpolated
 !
         IOUT = 0
 !
@@ -890,7 +890,7 @@
                  '     IOSTAT =',I5/)
 !
 !/
-!/ Internal Subroutine 
+!/ Internal Subroutine
 !/
 !/ Internal Subroutine W3EXGI ----------------------------------------------/
 !/
@@ -911,34 +911,34 @@
 !/
 !   1. Purpose :
 !
-!      Perform actual output of interpolated data. 
+!      Perform actual output of interpolated data.
 !
-!   3. Parameters : 
+!   3. Parameters :
 !
-!   4. Subroutines used : 
+!   4. Subroutines used :
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !        W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
 !     ----------------------------------------------------------------
 !
-!   5. Called by : 
+!   5. Called by :
 !
 !      Subroutine it resides in
 !
-!   6. Error messages : 
+!   6. Error messages :
 !
 !      None.
 !
-!   7. Remarks : 
+!   7. Remarks :
 !
-!   8. Structure : 
+!   8. Structure :
 !
 !      See source code.
 !
-!   9. Switches : 
+!   9. Switches :
 !
-!      10. Source code : 
+!      10. Source code :
 !
 !/ -------------------------------------------------------------------------/
         USE W3ADATMD
@@ -1156,11 +1156,11 @@
 !
           IX = MAPSF(ISEA,1)
           IY = MAPSF(ISEA,2)
-          MAPICE = MOD(MAPST2(IY,IX),2) 
-          MAPDRY = MOD(MAPST2(IY,IX)/2,2) 
-          MAPLND = MOD(MAPST2(IY,IX)/4,2) 
-          MAPMSK = MOD(MAPST2(IY,IX)/8,2) 
-          MAPINT = MOD(MAPST2(IY,IX)/16,2) 
+          MAPICE = MOD(MAPST2(IY,IX),2)
+          MAPDRY = MOD(MAPST2(IY,IX)/2,2)
+          MAPLND = MOD(MAPST2(IY,IX)/4,2)
+          MAPMSK = MOD(MAPST2(IY,IX)/8,2)
+          MAPINT = MOD(MAPST2(IY,IX)/16,2)
           MAPST2(IY,IX) = MAPST2(IY,IX) - MAPICE - 2*MAPDRY - 4*MAPLND         &
                           - 8*MAPMSK
           ACTIVE =  (MAPICE .NE. 1 .AND. MAPDRY .NE. 1)
@@ -1198,7 +1198,7 @@
                 IF ( LMAPDRY .EQ. 1 ) NMAPDRY = NMAPDRY + 1
                 IF ( LMAPLND .EQ. 1 ) NMAPLND = NMAPLND + 1
                 IF ( LMAPMSK .EQ. 1 ) NMAPMSK = NMAPMSK + 1
-              END DO 
+              END DO
               NMAPICE = NMAPICE*100/GR_INTS(ISEA)%IND_WTS(IG)%NP
               NMAPDRY = NMAPDRY*100/GR_INTS(ISEA)%IND_WTS(IG)%NP
               NMAPLND = NMAPLND*100/GR_INTS(ISEA)%IND_WTS(IG)%NP
@@ -1495,7 +1495,7 @@
 !/IS2                      SUMWT1(9) = SUMWT1(9) + WT
 !/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
 !/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
-!/IS2                      ELSE 
+!/IS2                      ELSE
 !/IS2                        ICEHAUX = ICEHAUX + WDATAS(IGRID)%ICEH(GSEA)*WT
 !/IS2                      END IF
 !/IS2                    END IF
@@ -1506,7 +1506,7 @@
 !/IS2                      SUMWT1(10) = SUMWT1(10) + WT
 !/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
 !/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
-!/IS2                      ELSE 
+!/IS2                      ELSE
 !/IS2                        ICEFAUX = ICEFAUX + WDATAS(IGRID)%ICEF(GSEA)*WT
 !/IS2                      END IF
 !/IS2                    END IF
@@ -2342,7 +2342,7 @@
                     CX(ISEA) = CXAUX / REAL( SUMGRD )
                     CY(ISEA) = CYAUX / REAL( SUMGRD )
                   ELSE
-                    CX(ISEA) = CX(ISEA) + CXAUX / REAL( SUMGRD ) 
+                    CX(ISEA) = CX(ISEA) + CXAUX / REAL( SUMGRD )
                     CY(ISEA) = CY(ISEA) + CYAUX / REAL( SUMGRD )
                   END IF
                 END IF
@@ -2351,10 +2351,10 @@
                   UAAUX = UAAUX / SUMWT1(3)
                   UDAUX = UDAUX / SUMWT1(3)
                   IF ( UA(ISEA) .EQ. UNDEF )  THEN
-                    UA(ISEA) = UAAUX / REAL( SUMGRD ) 
+                    UA(ISEA) = UAAUX / REAL( SUMGRD )
                     UD(ISEA) = UDAUX / REAL( SUMGRD )
                   ELSE
-                    UA(ISEA) = UA(ISEA) + UAAUX / REAL( SUMGRD ) 
+                    UA(ISEA) = UA(ISEA) + UAAUX / REAL( SUMGRD )
                     UD(ISEA) = UD(ISEA) + UDAUX / REAL( SUMGRD )
                   END IF
                 END IF
@@ -2364,7 +2364,7 @@
                   IF ( AS(ISEA) .EQ. UNDEF )  THEN
                     AS(ISEA) = ASAUX / REAL( SUMGRD )
                   ELSE
-                    AS(ISEA) = AS(ISEA) + ASAUX / REAL( SUMGRD ) 
+                    AS(ISEA) = AS(ISEA) + ASAUX / REAL( SUMGRD )
                   END IF
                 END IF
 !
@@ -2869,7 +2869,7 @@
                   IF ( WHITECAPAUX(ICAP) .NE. UNDEF ) THEN
                     WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) / SUMWTC(ICAP)
                     IF ( WHITECAP(ISEA,ICAP) .EQ. UNDEF )  THEN
-                      WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD ) 
+                      WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD )
                     ELSE
                       WHITECAP(ISEA,ICAP) = WHITECAP(ISEA,ICAP) +              &
                                WHITECAPAUX(ICAP) / REAL( SUMGRD )
@@ -3135,7 +3135,7 @@
             END DO !/ IG = 1, GR_INTS
 !
 ! Convert select variables back to polar notation. This is done because just
-! prior to writing to file the w3iogo routine converts these variables 
+! prior to writing to file the w3iogo routine converts these variables
 ! from polar to cartesian coordinates
 !
             IF ( UA(ISEA) .NE. UNDEF ) THEN
@@ -3143,7 +3143,7 @@
               VAR2 = UD(ISEA)
               UA(ISEA) = SQRT ( VAR1**2 + VAR2**2 )
               UD(ISEA) = ATAN2 ( VAR2, VAR1 )
-            END IF 
+            END IF
 !
             IF ( UST(ISEA) .NE. UNDEF ) THEN
               VAR1 = UST(ISEA)

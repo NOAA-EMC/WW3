@@ -17,7 +17,7 @@
 !/
 !  1. Purpose :
 !
-!     This module computes a scattering term 
+!     This module computes a scattering term
 !     based on the theory by Ardhuin and Magne (JFM 2007)
 !
 !  2. Variables and types :
@@ -30,7 +30,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      W3SBS1    Subr. Public   bottom scattering 
+!      W3SBS1    Subr. Public   bottom scattering
 !      INSBS1    Subr. Public   Corresponding initialization routine.
 !     ----------------------------------------------------------------
 !
@@ -57,15 +57,15 @@
 !/
 !/ Public variables
 !/
-      REAL, DIMENSION(:,:), ALLOCATABLE   :: BOTSPEC 
+      REAL, DIMENSION(:,:), ALLOCATABLE   :: BOTSPEC
       INTEGER, PARAMETER :: NKSCAT = 30                 !number of wavenumbers
       DOUBLE PRECISION  ,DIMENSION(:,:,:) ,  ALLOCATABLE :: SCATMATV !scattering matrices
       DOUBLE PRECISION  ,DIMENSION(:,:,:) ,  ALLOCATABLE :: SCATMATA !original matrix
-      DOUBLE PRECISION  ,DIMENSION(:,:)   ,  ALLOCATABLE :: SCATMATD 
-      CHARACTER(len=10)                   :: botspec_indicator 
+      DOUBLE PRECISION  ,DIMENSION(:,:)   ,  ALLOCATABLE :: SCATMATD
+      CHARACTER(len=10)                   :: botspec_indicator
       INTEGER            :: nkbx, nkby
       REAL               :: dkbx, dkby, kwmin, kwmax
-      REAL, PARAMETER    :: scattcutoff=0. 
+      REAL, PARAMETER    :: scattcutoff=0.
       REAL               :: CURTX, CURTY
 !/
       CONTAINS
@@ -86,13 +86,13 @@
 !/
 !  1. Purpose :
 !
-!     Bottom scattering source term 
+!     Bottom scattering source term
 !
 !  2. Method :
 !
-!     Without current, goes through a diagonalization of the matrix 
+!     Without current, goes through a diagonalization of the matrix
 !     problem  S(f,:) = M(f,:,:)**E(f,:)
-!     With current, integrates the source term along the resonant locus 
+!     With current, integrates the source term along the resonant locus
 !
 !  3. Parameters :
 !
@@ -104,8 +104,8 @@
 !       DEPTH     Real  I   Mean water depth.
 !       S         R.A.  O   Source term (1-D version).
 !       D         R.A.  O   Diagonal term of derivative (1-D version).
-!       CX1-Y1    R.A.  I   Current components at ISEA.   
-!       TAUSCX-Y  R.A.  I   Change of wave momentum due to scattering   
+!       CX1-Y1    R.A.  I   Current components at ISEA.
+!       TAUSCX-Y  R.A.  I   Change of wave momentum due to scattering
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -161,31 +161,31 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
-!/ 
+!/
       INTEGER         :: ISPEC, IK, NSCUT, ITH, ITH2, i, j,iajust,iajust2
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
       INTEGER         :: MATRICES = 0
-       
+
       REAL            :: R1, R2, R3
-      
+
       REAL            :: WN2(NSPEC, NTH), Ka(NSPEC),        &
                          Kb(NSPEC, NTH), WNBOT(NSPEC, NTH), &
                          B(NSPEC, NTH)
       REAL            :: kbotxi, kbotyi, xbk,   &
                          ybk,integral, kbotx, kboty, count,count2
-     
+
       INTEGER         :: ibk, jbk, ik2
       REAL            ::  SIGP,KU, KPU, CGK, CGPK, WN2i, xk2, Ap, kcutoff, ECC2, &
                          variance , integral1,integral1b,integral2, SB(NK,NTH), integral3,&
                          ajust,absajust,aa,bb,LNORM,UdotL,KdotKP,MBANDC
-      REAL            :: KD, Kfactor, kscaled, kmod , CHECKSUM, ETOT                 
+      REAL            :: KD, Kfactor, kscaled, kmod , CHECKSUM, ETOT
       REAL            :: SMATRIX(NTH,NTH),SMATRIX2(NTH,NTH)
       DOUBLE PRECISION :: AVECT(NTH)
 
       CURTX=CX1
       CURTY=CY1
-      
+
       count=0
 !/
 !/ ------------------------------------------------------------------- /
@@ -220,27 +220,27 @@
 !
 ! 3.  Bottom scattering ================================================== *
 !
-      IF ( DEPTH*WN(1) .LE. 6 ) THEN 
+      IF ( DEPTH*WN(1) .LE. 6 ) THEN
 !
 ! 3.a Ardhuin and Herbers JFM 2000: no current
 !
-        IF ((ABS(CX1)+ABS(CY1).EQ.0.).AND.(MATRICES.EQ.1)) THEN 
+        IF ((ABS(CX1)+ABS(CY1).EQ.0.).AND.(MATRICES.EQ.1)) THEN
           DO IK=1,NK
             KD=WN(IK)*DEPTH
             IF ( KD .LE. 6 .AND.WN(IK).LT.kwmax ) THEN
-! Test on kwmax means that scattering is not computed if interaction goes beyond the shortest resolved 
-! bottom component. This should probably be replaced by a warning... 
-              Kfactor=(WN(IK)**4)*SIG(IK)*pi*4.             &      
+! Test on kwmax means that scattering is not computed if interaction goes beyond the shortest resolved
+! bottom component. This should probably be replaced by a warning...
+              Kfactor=(WN(IK)**4)*SIG(IK)*pi*4.             &
                    /(SINH(2*KD)*(2*KD+SINH(2*KD)))
               kscaled=(nkscat-2)*(WN(IK)-kwmin)/(kwmax-kwmin)
               AVECT=DBLE(A(:,IK))
-              IF (kscaled.LT.0) THEN 
+              IF (kscaled.LT.0) THEN
                 ibk=0
                 kmod=0.
-              ELSE 
+              ELSE
                 ibk=INT(kscaled)
                 kmod=mod(kscaled,1.0)
-                END IF 
+                END IF
               S((IK-1)*NTH+1:IK*NTH)                              &
                 =REAL(MATMUL(SCATMATV(IBK,:,:),Kfactor*SCATMATD(IBK,:) &
                      *MATMUL(TRANSPOSE(SCATMATV(IBK,:,:)),AVECT))*(1.-kmod))
@@ -260,14 +260,14 @@
 ! 3.b
 !  Case with current (Ardhuin and Magne JFM 2007)
 ! Compute k' (WN2) from k (WN) and U (CX1, CY1)
-! using : k'=(Cg+k.U/k)/(Cg+k'.U/k') 
+! using : k'=(Cg+k.U/k)/(Cg+k'.U/k')
 !
          DO ITH2=1, NTH
-       
+
            DO ISPEC=1, NSPEC
-          
+
              KU=CX1 * ECOS(MAPTH(ISPEC))+CY1 * ESIN(MAPTH(ISPEC))
-             KPU=CX1 * ECOS(ITH2)+  CY1 * ESIN(ITH2) 
+             KPU=CX1 * ECOS(ITH2)+  CY1 * ESIN(ITH2)
              CGK=CG(MAPWN(ISPEC))
              IF ((CGK+KPU).LT.0.1*CGK) KPU=-0.9*CGK
              IF ((CGK+KU).LT.0.1*CGK)  KU=-0.9*CG(MAPWN(ISPEC))
@@ -276,27 +276,27 @@
 
            END DO
 !
-! 3.c Compute the coupling coefficient as a product of two terms 
-!               
-!   K=0.5*pi k'^2 * M(k,k')^2 / [sig*sig' *(k'*Cg'+k'.U)]  
+! 3.c Compute the coupling coefficient as a product of two terms
+!
+!   K=0.5*pi k'^2 * M(k,k')^2 / [sig*sig' *(k'*Cg'+k'.U)]
 !                                      (Magne and Ardhuin JFM 2007)
 !
 !   K=Ka(k)*Kb(k,k',theta')
-! 
+!
 !   Ka = ...
 !   here Mc is neglected
 !
          DO ISPEC=1, NSPEC
            Ka(ISPEC)= 4*PI*SIG2(ISPEC) * WN(MAPWN(ISPEC))  /    &
-                SINH(MIN(2*WN(MAPWN(ISPEC))*DEPTH,20.))    
+                SINH(MIN(2*WN(MAPWN(ISPEC))*DEPTH,20.))
 
            DO ITH2=1, NTH
              KU=CX1 * ECOS(MAPTH(ISPEC))+CY1 * ESIN(MAPTH(ISPEC))
-             KPU=CX1 * ECOS(ITH2)+  CY1 * ESIN(ITH2) 
+             KPU=CX1 * ECOS(ITH2)+  CY1 * ESIN(ITH2)
              SIGP=SQRT(GRAV*WN2(ISPEC,ITH2)*TANH(WN2(ISPEC,ITH2)*DEPTH))
              CGPK=SIGP*(0.5+WN2(ISPEC,ITH2)*DEPTH &
-                 /SINH(MIN(2*WN2(ISPEC,ITH2)*DEPTH,20.)))/WN2(ISPEC, ITH2)   
-             
+                 /SINH(MIN(2*WN2(ISPEC,ITH2)*DEPTH,20.)))/WN2(ISPEC, ITH2)
+
              Kb(ISPEC, ITH2)= WN2(ISPEC, ITH2)**3      &
                *EC2(1+ABS(MAPTH(ISPEC)-ITH2)) /        &
                 (                                      &
@@ -317,35 +317,35 @@
 !           - UdotL**2*(KdotKP-SIGP*SIG2(ISPEC)*(SIGP*SIG2(ISPEC)+UdotL**2)/GRAV**2)) &
 !           /(LNORM*(UdotL**2/(GRAV*LNORM)-TANH(MIN(LNORM*DEPTH,20.)))*COSH(MIN(LNORM*DEPTH,20.)))
 !  Kb(ISPEC,ITH2)= WN2(ISPEC, ITH2)**2
-!                   /((SIG2(ISPEC)*SIGP*WN2(ISPEC, ITH2)*(CGPK+KPU)) & 
+!                   /((SIG2(ISPEC)*SIGP*WN2(ISPEC, ITH2)*(CGPK+KPU)) &
 !                  *MBANDC**2
 !
-             END DO                 
-           END DO  
-!    
-! 3.a Bilinear interpolation of the bottom spectrum BOTSPEC 
+             END DO
+           END DO
+!
+! 3.a Bilinear interpolation of the bottom spectrum BOTSPEC
 !     along the locus -> B(ISPEC,ITH2)
 !
          B(:,:)=0
          DO ISPEC=1, NSPEC
            kcutoff=scattcutoff*WN(MAPWN(ISPEC))
            DO ITH2=1,NTH
-             kbotx=WN(MAPWN(ISPEC))*ECOS(MAPTH(ISPEC)) - &             
-               WN2(ISPEC, ITH2) * ECOS(ITH2)     
-             kboty=WN(MAPWN(ISPEC))*ESIN(MAPTH(ISPEC)) - &             
-               WN2(ISPEC, ITH2) * ESIN(ITH2)           
+             kbotx=WN(MAPWN(ISPEC))*ECOS(MAPTH(ISPEC)) - &
+               WN2(ISPEC, ITH2) * ECOS(ITH2)
+             kboty=WN(MAPWN(ISPEC))*ESIN(MAPTH(ISPEC)) - &
+               WN2(ISPEC, ITH2) * ESIN(ITH2)
 !
 ! 3.a.1 test if the bottom wavenumber is larger than the cutoff
 !        otherwise the interaction is set to zero
-    
-             IF ((kbotx**2+kboty**2)>(kcutoff**2)) THEN    
-  
+
+             IF ((kbotx**2+kboty**2)>(kcutoff**2)) THEN
+
              kbotxi=REAL(nkbx-MOD(nkbx,2))/2.+1.+kbotx/dkbx   ! The MOD(nkbx,2) is either 1 or 0
              kbotyi=REAL(nkby-MOD(nkby,2))/2.+1.+kboty/dkby   ! k=0 is at ik=(nkbx-1)/2+1 if kkbx is odd
 
              ibk=MAX(MIN(INT(kbotxi),nkbx-1),1)
              xbk=mod(kbotxi,1.0)
-             jbk=MAX(MIN(INT(kbotyi),nkby-1),1)        
+             jbk=MAX(MIN(INT(kbotyi),nkby-1),1)
              ybk=mod(kbotyi,1.0)
 
              B(ISPEC,ITH2)=(                &
@@ -354,16 +354,16 @@
                 +               &
                 (BOTSPEC(ibk+1,jbk)*(1-ybk)+    &
                 BOTSPEC(ibk+1,jbk+1)*ybk)*xbk   &
-                )   
+                )
             END IF
             END DO
-         END DO 
+         END DO
 !
 ! 4. compute Sbscat
 ! 4.a linear interpolation of A(k', theta') -> Ap
 !
-      
-!  4.b computation of the source term    
+
+!  4.b computation of the source term
          integral2=0.
          integral3=0.
          SMATRIX(:,:)=0.
@@ -376,21 +376,21 @@
                 END DO
               iajust=MAX(iajust,1)
               iajust2=MIN(iajust+1,NK)
-              IF (iajust.EQ.iajust2) THEN 
+              IF (iajust.EQ.iajust2) THEN
                 Ap=A(ITH2,iajust)
               ELSE
                 bb=(WN2(ISPEC,ITH2)-WN(iajust))/(WN(iajust2)-WN(iajust))
                 aa=(WN(iajust2)-WN2(ISPEC,ITH2))/(WN(iajust2)-WN(iajust))
                 Ap=(A(ITH2,iajust)*aa+A(ITH2,iajust2)*bb)
                 END IF
-        
+
               integral=integral + Ka(ISPEC)*Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*               &
-                     ( Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)- A(MAPTH(ISPEC),MAPWN(ISPEC))) *DTH  
-         ! the factor WN/WN2 accounts for the fact that N(K) and N(K') 
+                     ( Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)- A(MAPTH(ISPEC),MAPWN(ISPEC))) *DTH
+         ! the factor WN/WN2 accounts for the fact that N(K) and N(K')
                      ! have different Jacobian transforms from kx,ky to k,theta
 
               integral1=integral1+Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)*DTH &
-                         *DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))  
+                         *DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
               integral1b=integral1b+Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*A(MAPTH(ISPEC),MAPWN(ISPEC))*DTH  &
                          *DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
               END DO
@@ -401,8 +401,8 @@
             END DO
           END IF
 !/T    print*,'BOTTOM SCAT CHECKSUM:',integral2,integral3,integral1,integral1b
-    
-!/T    DO ITH=1,120 
+
+!/T    DO ITH=1,120
 !/T      WRITE(6,'(120G15.7)') SMATRIX(ITH,:)
 !/T      END DO
         END IF
@@ -474,7 +474,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-!/      
+!/
       INTEGER, INTENT(IN)        :: inistep
 !/
 !/ ------------------------------------------------------------------- /
@@ -491,7 +491,7 @@
 !/
 !/S      CALL STRACE (IENT, 'INSBS1')
 !
-       IF (inistep.EQ.1) THEN 
+       IF (inistep.EQ.1) THEN
 !
 ! 1.  Reads bottom spectrum
 !
@@ -516,39 +516,39 @@
 !
 ! 2.  Precomputed the scatering matrices for zero current
 !
-! The Scattering source term is expressed as a matrix problem for 
+! The Scattering source term is expressed as a matrix problem for
 ! a list of wavenumbers k0
-! in the range of wavenumbers used in the model. 
+! in the range of wavenumbers used in the model.
 ! i.e. S(k0,theta)=Kfactor*SCATMATA ** TRANSPOSE (E(k0,theta))
 !
 ! in which
-! 
-! Kfactor is a scalar computed in CALCSOURCE as 
+!
+! Kfactor is a scalar computed in CALCSOURCE as
 !        Kfactor=tailfactor*(Kp(I,J)**4)*2.*pi*FREQ(J)*pi*4./(SINH(HND)*(HND+SINH(HND)))
 !
 ! SCATMATA is a square matrix of size NTH*NTH
 !
-! S(k0,theta) and E(k0,theta) are the vectors giving the directional source term 
+! S(k0,theta) and E(k0,theta) are the vectors giving the directional source term
 !   and spectrum at a fixed wavenumber
 !
          ALLOCATE(SCATMATA(0:nkscat-1,1:NTH,1:NTH))
          ALLOCATE(AMAT(NTH,NTH))
          DO I=0,nkscat-1
-           ! kcurr is the current surface wavenumber for which 
+           ! kcurr is the current surface wavenumber for which
            ! the scattering matrices are evaluated
            kcurr=kwmin+I*(kwmax-kwmin)/(nkscat-2)
            kcutoff=scattcutoff*kcurr
            DO K1=1,NTH
              DO K2=1,NTH
-               kbotx=-kcurr*(ECOS(K2)-ECOS(K1))  
-               kboty=-kcurr*(ESIN(K2)-ESIN(K1))  
+               kbotx=-kcurr*(ECOS(K2)-ECOS(K1))
+               kboty=-kcurr*(ESIN(K2)-ESIN(K1))
                AMAT(K1,K2)=0.
                ! Tests if the bottom wavenumber is larger than the cutoff
                ! Otherwise the interaction is set to zero
                IF ((kbotx**2+kboty**2) > (kcutoff**2)) THEN
-                 !WARNING : THERE MAY BE A BUG : spectrum not symmetric when 
+                 !WARNING : THERE MAY BE A BUG : spectrum not symmetric when
                  ! nkbx is odd !!
-                 
+
                  kbotxi=REAL(nkbx)/2.+1.+kbotx/dkbx
                  kbotyi=REAL(nkby)/2.+1.+kboty/dkby
                  !WRITE(6,*) 'Bottom wavenumber i:',kbotxi,kbotyi
@@ -570,9 +570,9 @@
                END DO
              AMAT(K1,K1)=AMAT(K1,K1)-SUM(AMAT(K1,:))
              END DO
-           AMAT(:,:)=DTH*(AMAT(:,:)+TRANSPOSE(AMAT(:,:)))*0.5   
+           AMAT(:,:)=DTH*(AMAT(:,:)+TRANSPOSE(AMAT(:,:)))*0.5
            !makes sure the matrix is exactly symmetric
-           !which should already be the case if the bottom 
+           !which should already be the case if the bottom
            ! spectrum is really symmetric
            SCATMATA(I,:,:)=AMAT(:,:)
            END DO
@@ -584,11 +584,11 @@
            AMAT(:,:)=SCATMATA(I,:,:)
 !
 !diagonalizes the matrix A
-!D is a vector with the eigenvalues, V is the matrix made of the 
+!D is a vector with the eigenvalues, V is the matrix made of the
 !eigenvectors so that VD2Vt=A  with D2(i,j)=delta(i,j)D(i)
 !and VVt=Id, so that exp(A)=Vexp(D2)Vt
 !
-           CALL DIAGONALIZE(AMAT,D,V,nrot) 
+           CALL DIAGONALIZE(AMAT,D,V,nrot)
            SCATMATD(I,:)=D(:)    !eigen values
            SCATMATV(I,:,:)=V(:,:) !eigen vectors
            kcurr=kwmin+I*(kwmax-kwmin)/(nkscat-2)

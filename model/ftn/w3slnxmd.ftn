@@ -16,7 +16,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -71,8 +71,8 @@
 !        all other routines that require modification.
 !      - Provide a test case with expected results.
 !      - It is strongly recommended that the programming style used
-!        in WAVEWATCH III is followed, in particular 
-!          a) for readability, write as if in fixed FORTRAN format 
+!        in WAVEWATCH III is followed, in particular
+!          a) for readability, write as if in fixed FORTRAN format
 !             regarding column use, even though all files are F90
 !             free format.
 !          b) I prefer upper case programming for permanent code,
@@ -83,14 +83,14 @@
 !      a) All saved variables connected with this source term need
 !         to be declared in the module header. Upon acceptance as
 !         permanent code, they will be converted to the WAVEWATCH III
-!         dynamic data structure.  
+!         dynamic data structure.
 !      b) Provide a separate computation and initialization routine.
 !         In the submission, the initialization should be called
 !         from the computation routine upon the first call to the
 !         routine. Upon acceptance as permanent code, the
 !         initialization routine will be moved to a more appropriate
 !         location in the code (i.e., being absorbed in ww3_grid or
-!         being moved to W3IOGR). 
+!         being moved to W3IOGR).
 !
 !     See notes in the file below where to add these elements.
 !

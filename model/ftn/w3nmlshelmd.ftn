@@ -1,4 +1,4 @@
-#include "w3macros.h" 
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3NMLSHELMD
 !/
@@ -98,7 +98,7 @@
 
 
   ! output date structure
-  TYPE NML_OUTPUT_TIME_T 
+  TYPE NML_OUTPUT_TIME_T
     CHARACTER(15)               :: START
     CHARACTER(15)               :: STRIDE
     CHARACTER(15)               :: STOP
@@ -915,7 +915,7 @@
     NML_HOMOG_COUNT = HOMOG_COUNT
     NML_HOMOG_INPUT = HOMOG_INPUT
 
-    
+
   END SUBROUTINE READ_HOMOGENEOUS_NML
 
 !/ ------------------------------------------------------------------- /

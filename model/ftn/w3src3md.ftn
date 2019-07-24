@@ -16,7 +16,7 @@
 !/
 !  1. Purpose :
 !
-!     The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with 
+!     The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with
 !     extensions by him and by J.-R. Bidlot. Converted from the original
 !     WAM codes by F. Ardhuin, with further extensions to adapt to a
 !     saturation-based breaking and observation-based swell dissipation
@@ -58,7 +58,7 @@
 !/
       USE CONSTANTS, ONLY: KAPPA, nu_air
 
-      IMPLICIT NONE 
+      IMPLICIT NONE
 
       PUBLIC
 !/
@@ -92,7 +92,7 @@
 !  1. Purpose :
 !
 !     Calculate mean wave parameters for the use in the source term
-!     routines. 
+!     routines.
 !
 !  2. Method :
 !
@@ -118,7 +118,7 @@
 !       CD      Real  O   Drag coefficient at wind level ZWND.
 !       Z0      Real  O   Corresponding z0.
 !       LLWS    L.A.  I   Wind sea true/false array for each component
-!       FMEANWS Real  O   Mean frequency of wind sea, used for tail 
+!       FMEANWS Real  O   Mean frequency of wind sea, used for tail
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -163,7 +163,7 @@
       REAL, INTENT(IN)        :: TAUWX, TAUWY
       LOGICAL, INTENT(IN)     :: LLWS(NSPEC)
       REAL, INTENT(INOUT)     :: USTAR ,USDIR
-      REAL, INTENT(OUT)       :: EMEAN, FMEAN, FMEANS, WNMEAN, AMAX,  & 
+      REAL, INTENT(OUT)       :: EMEAN, FMEAN, FMEANS, WNMEAN, AMAX,  &
                                  CD, Z0, CHARN, FMEANWS
 !/
 !/ ------------------------------------------------------------------- /
@@ -232,13 +232,13 @@
 ! 4.  Final processing
 !
 
-      IF (FMEAN.LT.1.E-7) THEN 
+      IF (FMEAN.LT.1.E-7) THEN
         FMEAN=TPIINV * SIG(NK)
       ELSE
       FMEAN  = TPIINV *( MAX ( 1.E-7 , FMEAN )                       &
                      / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANPTAIL))
         END IF
-      IF (FMEANS.LT.1.E-7) THEN 
+      IF (FMEANS.LT.1.E-7) THEN
         FMEANS=TPIINV * SIG(NK)
       ELSE
         FMEANS = TPIINV *( MAX ( 1.E-7 , FMEANS )                      &
@@ -246,7 +246,7 @@
         END IF
       WNMEAN = ( MAX ( 1.E-7 , WNMEAN )                              &
                 / MAX ( 1.E-7 , EMEAN ) )**(1/WWNMEANP)
-      IF (FMEANWS.LT.1.E-7.OR.EMEANWS.LT.1.E-7) THEN 
+      IF (FMEANWS.LT.1.E-7.OR.EMEANWS.LT.1.E-7) THEN
         FMEANWS=TPIINV * SIG(NK)
       ELSE
         FMEANWS  = TPIINV *( MAX ( 1.E-7 , FMEANWS )                       &
@@ -256,11 +256,11 @@
 ! 5.  Cd and z0 ----------------------------------------------- *
 !
       TAUW = SQRT(TAUWX**2+TAUWY**2)
-     
+
       Z0=0.
-      CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
+      CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN)
       UNZ    = MAX ( 0.01 , U )
-      CD     = (USTAR/UNZ)**2 
+      CD     = (USTAR/UNZ)**2
       USDIR = UDIR
 !
 ! 6.  Final test output ---------------------------------------------- *
@@ -290,7 +290,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Oct-2007 : Origination.                        ( version 3.13 )
-!/    16-May-2010 : Adding sea ice                      ( version 3.14_Ifremer ) 
+!/    16-May-2010 : Adding sea ice                      ( version 3.14_Ifremer )
 !/    02-Sep-2012 : Clean up test output T, T0, T1      ( version 4.07 )
 !/
 !  1. Purpose :
@@ -299,9 +299,9 @@
 !
 !  2. Method :
 !
-!       WAM-4 : Janssen et al. 
+!       WAM-4 : Janssen et al.
 !       WAM-"4.5" : gustiness effect (Cavaleri et al. )
-!       SWELLF: damping coefficient (=1) for Janssen (2004) theory 
+!       SWELLF: damping coefficient (=1) for Janssen (2004) theory
 !
 !  3. Parameters :
 !
@@ -414,7 +414,7 @@
 !
 ! 1.  Preparations
 !
-!      JDM: initializing arrays (shouldn't change answers) 
+!      JDM: initializing arrays (shouldn't change answers)
       DSTAB=0.; STRESSSTAB=0. ;STRESSSTABN=0.
 !
 ! 1.a  estimation of surface roughness parameters
@@ -423,9 +423,9 @@
 !
 ! 2.  Diagonal
 !
-! Here AS is the air-sea temperature difference in degrees. Expression given by 
-! Abdalla & Cavaleri, JGR 2002 for Usigma. For USTARsigma ... I do not see where 
-! I got it from, maybe just made up from drag law ... 
+! Here AS is the air-sea temperature difference in degrees. Expression given by
+! Abdalla & Cavaleri, JGR 2002 for Usigma. For USTARsigma ... I do not see where
+! I got it from, maybe just made up from drag law ...
 !
 !/STAB3      Usigma=MAX(0.,-0.025*AS)
 !/STAB3      USTARsigma=(1.0+U/(10.+U))*Usigma
@@ -437,7 +437,7 @@
       TAUX = UST**2* COS(USDIR)
       TAUY = UST**2* SIN(USDIR)
 !
-! Loop over the resolved part of the spectrum 
+! Loop over the resolved part of the spectrum
 !
       STRESSSTAB(ISTAB,:)=0.
       STRESSSTABN(ISTAB,:)=0.
@@ -452,30 +452,30 @@
         CM=K(IS)/SIG2(IS) !inverse of phase speed
         UCN=UST*CM+ZZALP  !this is the inverse wave age
 !
-! the stress is the real stress (N/m^2) divided by 
+! the stress is the real stress (N/m^2) divided by
 ! rho_a, and thus comparable to USTAR**2
-! it is the integral of rho_w g Sin/C /rho_a 
+! it is the integral of rho_w g Sin/C /rho_a
 ! (air-> waves momentum flux)
 !
         CONST2=DDEN2(IS)/CG(IK) &        !Jacobian to get energy in band
               *GRAV/(SIG(IK)/K(IS)*DRAT) ! coefficient to get momentum
-        CONST=SIG2(IS)*CONST0                    
+        CONST=SIG2(IS)*CONST0
 ! this CM parameter is 1 / C_phi
 ! this is the "correct" shallow-water expression
 ! here Z0 corresponds to Z0+Z1 of the Janssen eq. 14
         ZCN=ALOG(K(IS)*Z0)
-! commented below is the original WAM version (OK for deep water) 
+! commented below is the original WAM version (OK for deep water)
 !       ZCN=ALOG(G*Z0b(I)*CM(I)**2)
         DO ITH=1,NTH
           IS=ITH+(IK-1)*NTH
           COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
           IF (COSWIND.GT.0.01) THEN
-            X=COSWIND*UCN 
+            X=COSWIND*UCN
 ! this ZARG term is the argument of the exponential
-! in Janssen 1991 eq. 16. 
+! in Janssen 1991 eq. 16.
             ZARG=KAPPA/X
 ! ZLOG is ALOG(MU) where MU is defined by Janssen 1991 eq. 15
-            ZLOG=ZCN+ZARG 
+            ZLOG=ZCN+ZARG
             ZBETA = CONST3*(COSWIND+KAPPA/(ZCN*UST*CM))*UCN**2
             IF (ZLOG.LT.0.) THEN
 ! The source term Sp is beta * omega * X**2
@@ -493,7 +493,7 @@
             END IF
 !
           TEMP2=CONST2*DSTAB(ISTAB,IS)*A(IS)
-          IF (DSTAB(ISTAB,IS).LT.0) THEN 
+          IF (DSTAB(ISTAB,IS).LT.0) THEN
             STRESSSTABN(ISTAB,1)=STRESSSTABN(ISTAB,1)+TEMP2*ECOS(IS)
             STRESSSTABN(ISTAB,2)=STRESSSTABN(ISTAB,2)+TEMP2*ESIN(IS)
             END IF
@@ -508,7 +508,7 @@
         TAUWNX =STRESSSTABN(3,1)
         TAUWNY =STRESSSTABN(3,2)
 !             WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
-!/STAB3      END DO 
+!/STAB3      END DO
 !/STAB3      D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
 !/STAB3      XSTRESS=0.5*(STRESSSTAB(1,1)+STRESSSTAB(2,1))
 !/STAB3      YSTRESS=0.5*(STRESSSTAB(1,2)+STRESSSTAB(2,2))
@@ -556,18 +556,18 @@
       TAUHF = CONST0*TEMP*UST**2*TAU1
       TAUWX = XSTRESS+TAUHF*COS(USDIR)
       TAUWY = YSTRESS+TAUHF*SIN(USDIR)
-!      
-! Reduces tail effect to make sure that wave-supported stress 
-! is less than total stress, this is borrowed from ECWAM Stresso.F      
+!
+! Reduces tail effect to make sure that wave-supported stress
+! is less than total stress, this is borrowed from ECWAM Stresso.F
 !
       TAUW = SQRT(TAUWX**2+TAUWY**2)
-      UST2   = MAX(USTAR,EPS2)**2  
+      UST2   = MAX(USTAR,EPS2)**2
       TAUWB = MIN(TAUW,MAX(UST2-EPS1,EPS2**2))
-      IF (TAUWB.LT.TAUW) THEN 
+      IF (TAUWB.LT.TAUW) THEN
         TAUWX=TAUWX*TAUWB/TAUW
         TAUWY=TAUWY*TAUWB/TAUW
         END IF
-         
+
       RETURN
 !
 ! Formats
@@ -673,7 +673,7 @@
 !/    23-Jun-2006 : Origination.                        ( version 3.13 )
 !/     adapted from WAM, original:P.A.E.M. JANSSEN    KNMI AUGUST 1990
 !/     adapted version (subr. STRESS): J. BIDLOT    ECMWF OCTOBER 2004
-!/     Table values were checkes against the original f90 result and found to 
+!/     Table values were checkes against the original f90 result and found to
 !/     be identical (at least at 0.001 m/s accuracy)
 !/
 !  1. Purpose :
@@ -766,16 +766,16 @@
           !ZZ0 = MAX(ZNU,ZZ0)
                F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
                DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
-                        *(1.-(XM+1)*X)/(1.-X)  
+                        *(1.-(XM+1)*X)/(1.-X)
                UST = UST-F/DELF
                TAUOLD= MAX(UST**2., ZTAUW+EPS1)
                END DO
             TAUT(I,J)  = SQRT(TAUOLD)
-            END DO   
+            END DO
          END DO
          I=ITAUMAX
          J=JUMAX
-!         
+!
 !  Force zero wind to have zero stress (Bidlot 1996)
 !
       DO I=0,ITAUMAX
@@ -796,7 +796,7 @@
 !/    27-Feb-2004 : Origination in WW3                  ( version 2.22.SHOM )
 !/     the resulting table was checked to be identical to the original f77 result
 !/    14-Aug-2006 : Modified following Bidlot           ( version 2.22.SHOM )
-!/    18-Aug-2006 : Ported to version 3.09      
+!/    18-Aug-2006 : Ported to version 3.09
 !
 !  1. Purpose :
 !
@@ -865,7 +865,7 @@
 !
 !/ ------------------------------------------------------------------- /
       REAL                    :: USTARM, ALPHAM
-      REAL                    :: CONST1, OMEGA, OMEGAC 
+      REAL                    :: CONST1, OMEGA, OMEGAC
       REAL                    :: UST, ZZ0,OMEGACC, CM
       INTEGER, PARAMETER      :: JTOT=250
       REAL, ALLOCATABLE       :: W(:)
@@ -883,7 +883,7 @@
       DELALP = ALPHAM/REAL(IALPHA)
       CONST1 = BBETA/KAPPA**2
       OMEGAC = TPI*FRMAX
-!   
+!
       TAUHFT(0:IUSTAR,0:IALPHA)=0. !table initialization
 !
       ALLOCATE(W(JTOT))
@@ -901,14 +901,14 @@
             OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
             YC       = OMEGACC*SQRT(ZZ0/GRAV)
             DELY     = MAX((1.-YC)/REAL(JTOT),0.)
-            ! For a given value of UST and ALPHA, 
+            ! For a given value of UST and ALPHA,
             ! the wave-supported stress is integrated all the way
             ! to 0.05*g/UST
             DO J=1,JTOT
                Y        = YC+REAL(J-1)*DELY
                OMEGA    = Y*SQRT(GRAV/ZZ0)
                ! This is the deep water phase speed
-               CM       = GRAV/OMEGA   
+               CM       = GRAV/OMEGA
                !this is the inverse wave age, shifted by ZZALP (tuning)
                ZX       = UST/CM +ZZALP
                ZARG     = MIN(KAPPA/ZX,20.)
@@ -932,7 +932,7 @@
 !WRITE(101,*) 'TAUHFT:',FRMAX,BBETA,AALPHA,CONST1,OMEGAC,TPI
 !WRITE(101,'(20G16.8)') TAUHFT
       RETURN
-!/T 9000 FORMAT (' TABU_HF, L, K :',(2I4,3F8.3)/)    
+!/T 9000 FORMAT (' TABU_HF, L, K :',(2I4,3F8.3)/)
       END SUBROUTINE TABU_TAUHF
 !/ ------------------------------------------------------------------- /
 
@@ -949,7 +949,7 @@
 !/    27-Feb-2004 : Origination in WW3                  ( version 2.22-SHOM )
 !/     the resulting table was checked to be identical to the original f77 result
 !/    14-Aug-2006 : Modified following Bidlot           ( version 2.22-SHOM )
-!/    18-Aug-2006 : Ported to version 3.09      
+!/    18-Aug-2006 : Ported to version 3.09
 !/    03-Apr-2010 : Adding output of Charnock parameter ( version 3.14-IFREMER )
 !
 !  1. Purpose :
@@ -966,7 +966,7 @@
 !     ----------------------------------------------------------------
 !       U10,TAUW,USTAR,Z0
 !     ----------------------------------------------------------------
-!       WINDSPEED Real  I   10-m wind speed ... should be NEUTRAL 
+!       WINDSPEED Real  I   10-m wind speed ... should be NEUTRAL
 !       TAUW      Real  I   Wave-supported stress
 !       USTAR     Real  O   Friction velocity.
 !       Z0        Real  O   air-side roughness length
@@ -1022,9 +1022,9 @@
       !
       SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
       Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
-                IF (USTAR.GT.0.001) THEN 
+                IF (USTAR.GT.0.001) THEN
                   CHARN = GRAV*Z0/USTAR**2
-                ELSE 
+                ELSE
                   CHARN = AALPHA
                   END IF
 !
@@ -1052,9 +1052,9 @@
 !
 !  2. Method :
 !
-!       WAM-Cycle 4 and following. 
+!       WAM-Cycle 4 and following.
 !       The last update (09-May-2005) follows the redefinition of
-!       the mean wavenumber as in Bidlot et al. (2005). 
+!       the mean wavenumber as in Bidlot et al. (2005).
 !
 !  3. Parameters :
 !
@@ -1119,16 +1119,16 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),                     &
-                                 DEPTH, USTAR, USDIR, EMEAN, FMEAN, WNMEAN 
+                                 DEPTH, USTAR, USDIR, EMEAN, FMEAN, WNMEAN
       INTEGER, INTENT(IN)     :: IX, IY
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS, IK, ITH 
+      INTEGER                 :: IS, IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: FACTOR, FACTOR2          
+      REAL                    :: FACTOR, FACTOR2
       REAL                    :: ALFAMEAN, WNMEAN2
 !/T0      REAL                    :: DOUT(NK,NTH)
 !/
@@ -1136,8 +1136,8 @@
 !/
 !/S      CALL STRACE (IENT, 'W3SDS3')
 !
-! 0.  Pre-initialization of arrays, should be set before being used 
-!     but this is helping with bit reproducibility 
+! 0.  Pre-initialization of arrays, should be set before being used
+!     but this is helping with bit reproducibility
       D=0.
 
 ! 1.  Common factor
@@ -1148,7 +1148,7 @@
 !
 !/T      WRITE (NDST,9000) SSDSC1, FMEAN, WNMEAN, EMEAN, FACTOR
 !
-!---------------------------------------------------------------------- 
+!----------------------------------------------------------------------
 !
 ! 2.  Source term
 !
@@ -1162,7 +1162,7 @@
           D(IS)=  FACTOR2
           END DO
         END DO
-!            
+!
       S = D * A
 !
 ! ... Test output of arrays
@@ -1187,5 +1187,5 @@
 !/ End of W3SDS3 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SDS3
-      
+
       END MODULE W3SRC3MD

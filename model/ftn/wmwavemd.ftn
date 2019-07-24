@@ -27,7 +27,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -129,7 +129,7 @@
 !      WWTIME    Subr    Id.    System time in readable format.
 !      PRTIME    Subr    Id.    Profiling routine ( !/MPRF )
 !      STME21    Subr  W3TIMEMD Print date and time readable.
-!      DSEC21    Func    Id.    Difference between times.             
+!      DSEC21    Func    Id.    Difference between times.
 !      TICK21    Subr    Id.    Advance time.
 !      WMSETM    Subr  WMMDATMD Point to grid/model.
 !      WMUPDT    Subr  WMUPDTMD Update input fields at driver level.
@@ -160,7 +160,7 @@
 !
 !  7. Remarks :
 !
-!     - If no action is taken in the endless loop, an error is 
+!     - If no action is taken in the endless loop, an error is
 !       assumed (code 2099). This should never take place in the
 !       default driver, but may be a problem in a coupled model.
 !     - If output is requested for the initial model time, TSYNC
@@ -256,7 +256,7 @@
 !/S      CALL STRACE (IENT, 'WMWAVE')
 !
 !/MPRF      CALL PRTIME ( PRFT0 )
-!              
+!
 !/O10      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,900)
 !
 ! 0.  Initializations ------------------------------------------------ /
@@ -350,7 +350,7 @@
 !
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC .AND.                &
              DSEC21(TPRNT,TSYNC(:,0)).NE.0. ) THEN
-            IF ( .NOT. TSTAMP ) WRITE (MDSS,*) 
+            IF ( .NOT. TSTAMP ) WRITE (MDSS,*)
             CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
             CALL STME21 ( TSYNC(:,0), MTIME )
             CALL WWTIME ( WTIME )
@@ -401,11 +401,11 @@
 !/T                WRITE (MDST,9002) I, GRSTAT(I), ' '
 !
                 IF ( TDATA(1,I) .EQ. -1 ) THEN
-                    DTTST  = 0.  
-                  ELSE 
+                    DTTST  = 0.
+                  ELSE
                     CALL W3SETW ( I, MDSE, MDST )
-                    DTTST  = DSEC21 ( TIME , TDATA(:,I) ) 
-                  END IF         
+                    DTTST  = DSEC21 ( TIME , TDATA(:,I) )
+                  END IF
 !/T                WRITE (MDST,9020) DTTST
 !
                 IF ( DTTST .GT. 0. ) THEN
@@ -759,7 +759,7 @@
 !/MPI                CALL WMIOEF ( I )
                 CALL WMIOES ( I )
 !
-! 5.c Finish up 
+! 5.c Finish up
 !
                 GRSTAT(I) = 4
                 DONE      = .TRUE.
@@ -957,11 +957,11 @@
 !/T                WRITE (MDST,9002) I, GRSTAT(I), ' '
 !
                 IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                    DTTST  = 1.  
-                  ELSE 
+                    DTTST  = 1.
+                  ELSE
                     CALL W3SETW ( I, MDSE, MDST )
-                    DTTST  = DSEC21 ( TIME , TOUTP(:,I) ) 
-                  END IF         
+                    DTTST  = DSEC21 ( TIME , TOUTP(:,I) )
+                  END IF
 !/T                WRITE (MDST,9090) DTTST
                 FLG_O1 = DTTST .EQ. 0.
 !
@@ -1090,7 +1090,7 @@
 !/MPI                TIME       = TOUTP(:,I)
 !/MPI                TOUTP(1,I) = -1
 !/MPI                TOUTP(2,I) =  0
-! 
+!
 !/MPI                DO JO=1, NOTYPE
 !
 !/MPI                  IF ( FLOUT(JO) ) THEN
@@ -1244,7 +1244,7 @@
            CALL WWTIME ( WTIME )
            WRITE (MDSS,902) WTIME
         ENDIF
-!              
+!
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
 !/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
@@ -1529,8 +1529,8 @@
 !  1. Purpose :
 !
 !     Non-blocking broadcast, initially for times only, but made for
-!     any integer array. Sending data from first process in the 
-!     model cummunicator to all processes that are in the overall 
+!     any integer array. Sending data from first process in the
+!     model cummunicator to all processes that are in the overall
 !     communicator but not in the model communicator.
 !
 !  2. Method :

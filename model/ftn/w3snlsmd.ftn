@@ -99,7 +99,7 @@
 !/
 !  1. Purpose :
 !
-!     High-frequeny filter based on the nonlinear interactions for 
+!     High-frequeny filter based on the nonlinear interactions for
 !     an uresolved quadruplet.
 !
 !  2. Method :
@@ -239,12 +239,12 @@
 ! 1.c.2 Compute 1D spectrum
 !
           E1(NFR+2) = SUM(A(:,NFR)) * FACHFA**2 * XSI(NFR+2)          &
-                                           / XCG(NFR+2) * TPI * DTH 
+                                           / XCG(NFR+2) * TPI * DTH
           E1(NFR+1) = SUM(A(:,NFR)) * FACHFA    * XSI(NFR+1)          &
-                                           / XCG(NFR+1) * TPI * DTH 
+                                           / XCG(NFR+1) * TPI * DTH
 !
           DO IFR=NFR, 1, -1
-            E1(IFR) = SUM(A(:,IFR)) * XSI(IFR) / XCG(IFR) * TPI * DTH 
+            E1(IFR) = SUM(A(:,IFR)) * XSI(IFR) / XCG(IFR) * TPI * DTH
 !
 ! 1.c.3 Reached PM frequency
 !
@@ -361,7 +361,7 @@
           AUX11  = DT * DS1(ISPX)
           AUX21  = DT * DS2(ISPX)
           AUXB   = CNLSFM * FILTFP(IFR) * MAX(1.E-10,UN(ISPX)) /   &
-                      MAX ( 1.E-10 , ABS(AUX11)+ABS(AUX21) ) / MC 
+                      MAX ( 1.E-10 , ABS(AUX11)+ABS(AUX21) ) / MC
           AUX12  = AUXB * ABS(AUX11)
           AUX22  = AUXB * ABS(AUX21)
 !
@@ -540,17 +540,17 @@
       IMPLICIT NONE
 !/
 !/ Parameter list
-!/    
+!/
       REAL, INTENT(OUT)       :: PSPC(0:NTH+1,0:NFR+2),               &
                                  SPEC(0:NTH+1,0:NFR+2)
 !/
 !/ Local parameters
-!/ 
+!/
       INTEGER                 :: IFR, ITH
 !/
 !/ ------------------------------------------------------------------- /
 !
-      SPEC(:,0) = 0. 
+      SPEC(:,0) = 0.
 !
       SPEC(1:NTH,1:NFR) = A
       SPEC(1:NTH,NFR+1) = SPEC(1:NTH,NFR) * FACHFA
@@ -561,7 +561,7 @@
 !
       DO IFR=1, NFR+2
         PSPC(:,IFR) = SPEC(:,IFR) / XWN(IFR)
-        END DO 
+        END DO
 !
       RETURN
 !/
@@ -586,7 +586,7 @@
 !/
 !  1. Purpose :
 !
-!     Initializations for the Snl / filter source term for high 
+!     Initializations for the Snl / filter source term for high
 !     frequencies.
 !
 !  2. Method :

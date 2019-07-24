@@ -13,7 +13,7 @@
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -92,16 +92,16 @@
 !/    28-Jul-2010 : Moving NKI, NTHI, XFRI, FR1I and
 !/                  TH1I to W3ODATMD.                   ( version 3.14.3 )
 !/    31-Oct-2010 : Implementing unstructured grid      ( version 3.14.3 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    05-Apr-2011 : Moved the SPCONV call into loop     ( version 3.14.3 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
-!/    14-Jan-2014 : Corrected ABPIN indices for W3CSPC  ( version 4.18 ) 
+!/    14-Jan-2014 : Corrected ABPIN indices for W3CSPC  ( version 4.18 )
 !/    20-Jan-2017 : Allow input boundary points to lie outside the grid
 !/                  within a distance of 0.1 times the grid cell size.
 !/                  (T.J. Campbell, NRL)                ( version 6.02 )
-!/    01-Mar-2018 : Rotate boundary points and directions 
+!/    01-Mar-2018 : Rotate boundary points and directions
 !/                  of input spectra for rotated grids  ( version 6.02 )
 !/
 !  1. Purpose :
@@ -112,7 +112,7 @@
 !
 !     The file(s) are opened within the routine, the names are
 !     pre-defined as nest.FILEXT for the input file and nest1.FILEXT
-!     through nest9.FILEXT for up to 9 output files. 
+!     through nest9.FILEXT for up to 9 output files.
 !
 !  3. Parameters :
 !
@@ -182,13 +182,13 @@
       USE W3ADATMD, ONLY: W3SETA
       USE W3ODATMD, ONLY: W3SETO, W3DMO5
       USE W3CSPCMD, ONLY: W3CSPC
-      USE W3TRIAMD, ONLY: W3NESTUG      
+      USE W3TRIAMD, ONLY: W3NESTUG
 !
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
                           X0, Y0, SX, SY, GSU, MAPSTA, MAPFS, MAPSF,  &
                           XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE,    &
                           GTYPE, UNGTYPE
-      USE W3GDATMD, ONLY: DXYMAX  
+      USE W3GDATMD, ONLY: DXYMAX
 !/T1      USE W3GDATMD, ONLY: SIG
 !/RTD !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
 !/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, AnglD
@@ -229,7 +229,7 @@
 !/T1      REAL                  :: HS, HS0
 !/RTD  !!    Declare rotation angle and rotated lat/lon variables for
 !/RTD  !!    boundary points.   JGLi12Jun2012
-!/RTD      REAL, ALLOCATABLE      :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
+!/RTD      REAL, ALLOCATABLE      :: Anglbdy(:), ELatbdy(:), ELonbdy(:)
       REAL, ALLOCATABLE      :: XBPO2(:), YBPO2(:)
 !/RTD      REAL, ALLOCATABLE      :: ANG(:)
 !/RTD      REAL                   :: Spectr(NK*NTH)
@@ -390,12 +390,12 @@
               CALL EXTCDE ( 11 )
             END IF
 !
-! Determines if the spectrum in nest file needs to be converted 
+! Determines if the spectrum in nest file needs to be converted
 !
           SPCONV = NKI.NE.NK .OR. NTHI.NE.NTH .OR.                    &
                    ABS(XFRI/XFR-1.).GT.0.01 .OR.                      &
                    ABS(FR1I/FR1-1.).GT.0.01 .OR.                      &
-                   ABS(TH1I-TH(1)).GT.0.01*DTH 
+                   ABS(TH1I-TH(1)).GT.0.01*DTH
 !
           CALL W3DMO5 ( IGRD, NDSE, NDST, 1 )
 !
@@ -420,7 +420,7 @@
 !/RTD              IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
 !/RTD            ENDDO
 !/RTD          END IF
-!/RTD !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD 
+!/RTD !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD
 !/RTD !!    values to within a tolerance of the boundary - possibly this is
 !/RTD !!    no longer required after the 20-Jan-2017 change?
 !/RTD          XRLIM = X0 + (NX-1) * SX
@@ -436,8 +436,8 @@
 !/RTD
           FLOK   = .TRUE.
           IF (GTYPE .EQ. UNGTYPE) THEN
-            CALL W3NESTUG(DXYMAX,FLOK) 
-          ELSE 
+            CALL W3NESTUG(DXYMAX,FLOK)
+          ELSE
             DO I=1, NBI
               ! W3GFTP: find the nearest grid point to the input boundary point
               ! DCIN=0.1 is the distance outside of source grid in units of
@@ -455,7 +455,7 @@
               END IF
             ISBPI(I) = MAPFS(IY,IX)
             END DO
-          END IF    
+          END IF
 !
 !/T0          WRITE (NDST,9003)
 !/T0          DO I=1, NBI
@@ -578,7 +578,7 @@
                 END DO
             ELSE
 !
-! In this case the spectral resolution is not compatible and 
+! In this case the spectral resolution is not compatible and
 ! the spectrum TMPSPC in nest file must be re-gridded into ABPIN to fit the model run
 !
               ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )

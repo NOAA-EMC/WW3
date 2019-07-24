@@ -36,7 +36,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -155,7 +155,7 @@
 !
 !  5. Called by :
 !
-!      Name      Type  Module   Description 
+!      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      W3WAVE    Subr. W3WAVEMD Wave model routine.
 !     ---------------------------------------------------------------
@@ -503,7 +503,7 @@
 !
 !  5. Called by :
 !
-!      Name      Type  Module   Description 
+!      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      W3WAVE    Subr. W3WAVEMD Wave model routine.
 !     ---------------------------------------------------------------
@@ -542,14 +542,14 @@
 !       can significantly reduce size/cost of code. These variants are marked as
 !       CURV1 or CURV2. NCEP will make final decision re: which version to adopt.
 !       CURV1 is the shorter version and results do not match the original code
-!       for all test cases. CURV2 is the longer version and results do match the 
-!       original. DETAILED EXPLANATION: Discrepancies occur at the boundaries. 
-!       This is because, at the boundaries, the pre-curvilinear version zeros out 
-!       some terms in the diffusion calculation. Since they are zeroed out, 
+!       for all test cases. CURV2 is the longer version and results do match the
+!       original. DETAILED EXPLANATION: Discrepancies occur at the boundaries.
+!       This is because, at the boundaries, the pre-curvilinear version zeros out
+!       some terms in the diffusion calculation. Since they are zeroed out,
 !       they aren't there to *cancel* certain other terms: these "other terms"
-!       affect the result, so they have to be retained in the long vesion (CURV2) 
-!       to get an exact match. In the short version, the "canceling out" is 
-!       performed prior to coding the scheme, so both the canceled and canceling 
+!       affect the result, so they have to be retained in the long vesion (CURV2)
+!       to get an exact match. In the short version, the "canceling out" is
+!       performed prior to coding the scheme, so both the canceled and canceling
 !       terms are always omitted.
 !
 !  8. Structure :

@@ -9,12 +9,12 @@
 !
 !     CVS:$Id: grids.f,v 1.6 2001/08/21 21:06:41 pwjones Exp $
 !
-!     Copyright (c) 1997, 1998 the Regents of the University of 
+!     Copyright (c) 1997, 1998 the Regents of the University of
 !       California.
 !
-!     This software and ancillary information (herein called software) 
-!     called SCRIP is made available under the terms described here.  
-!     The software has been approved for release with associated 
+!     This software and ancillary information (herein called software)
+!     called SCRIP is made available under the terms described here.
+!     The software has been approved for release with associated
 !     LA-CC Number 98-45.
 !
 !     Unless otherwise indicated, this software has been authored
@@ -29,10 +29,10 @@
 !     any liability or responsibility for the use of this software.
 !
 !     If software is modified to produce derivative works, such modified
-!     software should be clearly marked, so as not to confuse it with 
+!     software should be clearly marked, so as not to confuse it with
 !     the version available from Los Alamos National Laboratory.
 !
-!     this grids.f has been modified from the version available from 
+!     this grids.f has been modified from the version available from
 !     Los Alamos National Laboratory.
 !     modifications are marked with "NRL"
 !     list of modifications:
@@ -40,8 +40,8 @@
 !           (major change)
 !     - print statements added
 !     - allocations removed (moved to scrip_wrapper subroutine)
-!     - imask removed (this was an intermediate step from ncdf to 
-!           the logicals grid1_mask grid2_mask; creation of these 
+!     - imask removed (this was an intermediate step from ncdf to
+!           the logicals grid1_mask grid2_mask; creation of these
 !           logicals is now handled by scrip_wrapper)
 !
 !***********************************************************************
@@ -74,10 +74,10 @@
       integer (SCRIP_i4), dimension(:), allocatable, save ::
      &             grid1_dims, grid2_dims  ! size of each grid dimension
 
-      character(SCRIP_charLength), save :: 
+      character(SCRIP_charLength), save ::
      &             grid1_name, grid2_name  ! name for each grid
 
-      character (SCRIP_charLength), save :: 
+      character (SCRIP_charLength), save ::
      &             grid1_units, ! units for grid coords (degs/radians)
      &             grid2_units  ! units for grid coords
 
@@ -99,7 +99,7 @@
       real (SCRIP_r8), dimension(:), allocatable, target, save ::
      &             grid1_center_lat,  ! lat/lon coordinates for
      &             grid1_center_lon,  ! each grid center in radians
-     &             grid2_center_lat, 
+     &             grid2_center_lat,
      &             grid2_center_lon,
      &             grid1_area,        ! tot area of each grid1 cell
      &             grid2_area,        ! tot area of each grid2 cell
@@ -116,7 +116,7 @@
       real (SCRIP_r8), dimension(:,:), allocatable, target, save ::
      &             grid1_corner_lat,  ! lat/lon coordinates for
      &             grid1_corner_lon,  ! each grid corner in radians
-     &             grid2_corner_lat, 
+     &             grid2_corner_lat,
      &             grid2_corner_lon
 
       logical (SCRIP_logical), save ::
@@ -128,13 +128,13 @@
      &             grid1_bound_box,  ! lat/lon bounding box for use
      &             grid2_bound_box   ! in restricting grid searches
 
-      integer (SCRIP_i4), save ::    ! Cells overlapping the poles 
+      integer (SCRIP_i4), save ::    ! Cells overlapping the poles
                                      ! (may be 0)
-     &     grid1_npole_cell,        
-     &     grid1_spole_cell,         
+     &     grid1_npole_cell,
+     &     grid1_spole_cell,
      &     grid2_npole_cell,
      &     grid2_spole_cell
-      
+
 
 !-----------------------------------------------------------------------
 !
@@ -162,7 +162,7 @@
 !
 !-----------------------------------------------------------------------
 
-      real (SCRIP_r8), save :: 
+      real (SCRIP_r8), save ::
      &     north_thresh,  ! threshold for coord transf.
      &     south_thresh   ! threshold for coord transf.
 
@@ -172,7 +172,7 @@
       !*** degeneracies in intersection
 
       integer (SCRIP_i4), save ::
-     &     npseg                    
+     &     npseg
 
 !***********************************************************************
 
@@ -215,7 +215,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4) :: 
+      integer (SCRIP_i4) ::
      &  n,      ! loop counter
      &  nele,   ! element loop counter
      &  i,j,
@@ -227,17 +227,17 @@
      &     zero_crossing, pi_crossing,
      &     grid1_add, grid2_add,
      &     corner, next_corn
-     
+
       real (SCRIP_r8) ::
      &     beglon, beglat, endlon, endlat
 
       logical (SCRIP_logical) ::
      &     found
 
-!NRL      integer (SCRIP_i4), dimension(:), allocatable :: 
+!NRL      integer (SCRIP_i4), dimension(:), allocatable ::
 !NRL     &                            imask ! integer mask read from file
 
-      real (SCRIP_r8) :: 
+      real (SCRIP_r8) ::
      &  dlat,dlon           ! lat/lon intervals for search bins
 
       real (SCRIP_r8), dimension(4) ::
@@ -258,14 +258,14 @@
 !
 !-----------------------------------------------------------------------
 
-      allocate( 
+      allocate(
 !NRL &          grid1_mask      (grid1_size),
 !NRL &          grid2_mask      (grid2_size),
      &          special_polar_cell1(grid1_size),
      &          special_polar_cell2(grid2_size),
-!NRL &          grid1_center_lat(grid1_size), 
+!NRL &          grid1_center_lat(grid1_size),
 !NRL &          grid1_center_lon(grid1_size),
-!NRL &          grid2_center_lat(grid2_size), 
+!NRL &          grid2_center_lat(grid2_size),
 !NRL &          grid2_center_lon(grid2_size),
      &          grid1_area      (grid1_size),
      &          grid1_area_in   (grid1_size),
@@ -429,7 +429,7 @@
 !-----------------------------------------------------------------------
 !
 !     make sure input latitude range is within the machine values
-!     for +/- pi/2 
+!     for +/- pi/2
 !
 !-----------------------------------------------------------------------
 
@@ -453,7 +453,7 @@
 !     problems
 !
 !-----------------------------------------------------------------------
-      
+
       where (abs(grid1_corner_lat-pih) < 1.e-03) grid1_corner_lat =  pih
       where (abs(grid1_corner_lat+pih) < 1.e-03) grid1_corner_lat = -pih
       where (abs(grid2_corner_lat-pih) < 1.e-03) grid2_corner_lat =  pih
@@ -496,7 +496,7 @@
             ip1 = 1
             !*** but if it is not, correct
             e_add = (j - 1)*nx + ip1
-            if (abs(grid1_center_lat(e_add) - 
+            if (abs(grid1_center_lat(e_add) -
      &              grid1_center_lat(n   )) > pih) then
               ip1 = i
             endif
@@ -509,7 +509,7 @@
             jp1 = 1
             !*** but if it is not, correct
             n_add = (jp1 - 1)*nx + i
-            if (abs(grid1_center_lat(n_add) - 
+            if (abs(grid1_center_lat(n_add) -
      &              grid1_center_lat(n   )) > pih) then
               jp1 = j
             endif
@@ -554,7 +554,7 @@
             ip1 = 1
             !*** but if it is not, correct
             e_add = (j - 1)*nx + ip1
-            if (abs(grid2_center_lat(e_add) - 
+            if (abs(grid2_center_lat(e_add) -
      &              grid2_center_lat(n   )) > pih) then
               ip1 = i
             endif
@@ -567,7 +567,7 @@
             jp1 = 1
             !*** but if it is not, correct
             n_add = (jp1 - 1)*nx + i
-            if (abs(grid2_center_lat(n_add) - 
+            if (abs(grid2_center_lat(n_add) -
      &              grid2_center_lat(n   )) > pih) then
               jp1 = j
             endif
@@ -627,14 +627,14 @@
 
       grid1_npole_cell = 0
       grid1_spole_cell = 0
-         
+
       do grid1_add = 1, grid1_size
 
          found = .false.
          do corner = 1, grid1_corners
             endlat = grid1_corner_lat(corner,grid1_add)
             if (abs(abs(endlat)-pih) .lt. 1e-5) then
-               found = .true.   ! cell has polar pnt; so pole is 
+               found = .true.   ! cell has polar pnt; so pole is
                                 ! not in the interior of the cell
                exit
             endif
@@ -662,7 +662,7 @@
 
             beglon = endlon
          enddo
-         
+
          if (zero_crossing .eq. 1 .and. pi_crossing .eq. 1) then
 
             !***
@@ -695,7 +695,7 @@
          do corner = 1, grid2_corners
             endlat = grid2_corner_lat(corner,grid2_add)
             if (abs(abs(endlat)-pih) .lt. 1e-5) then
-               found = .true.   ! cell has polar pnt; so pole is 
+               found = .true.   ! cell has polar pnt; so pole is
                                 ! not in the interior of the cell
                exit
             endif
@@ -710,7 +710,7 @@
          do corner = 1, grid2_corners
             next_corn = mod(corner,grid2_corners) + 1
             endlon = grid2_corner_lon(next_corn,grid2_add)
-            
+
             if (abs(beglon-endlon) > pi) then
                zero_crossing = 1
             else
@@ -722,7 +722,7 @@
 
             beglon = endlon
          enddo
-         
+
          if (zero_crossing .eq. 1 .and. pi_crossing .eq. 1) then
 
             !***
@@ -751,13 +751,13 @@
          ncorners_at_pole = 0
          do i = 1, grid1_corners
             beglat = grid1_corner_lat(i,grid1_add)
-            if (abs(abs(beglat)-pih) .le. 1.e-5) 
+            if (abs(abs(beglat)-pih) .le. 1.e-5)
      &           ncorners_at_pole = ncorners_at_pole + 1
          enddo
 
-         if (ncorners_at_pole .eq. 1) 
+         if (ncorners_at_pole .eq. 1)
      &        special_polar_cell1(grid1_add) = .true.
-            
+
       enddo
 
       special_polar_cell2 = .false.
@@ -766,13 +766,13 @@
          ncorners_at_pole = 0
          do i = 1, grid2_corners
             beglat = grid2_corner_lat(i,grid2_add)
-            if (abs(abs(beglat)-pih) .le. 1.e-5) 
+            if (abs(abs(beglat)-pih) .le. 1.e-5)
      &              ncorners_at_pole = ncorners_at_pole + 1
          enddo
 
-         if (ncorners_at_pole .eq. 1) 
+         if (ncorners_at_pole .eq. 1)
      &        special_polar_cell2(grid2_add) = .true.
-            
+
       enddo
 
       if(l_master)print *, ' '
@@ -790,21 +790,21 @@
 !     if(l_master)print *, 'grid1_spole_cell',grid1_spole_cell
       if (grid1_spole_cell .gt. 0) then
          do i = 1, grid1_corners
-            print *, grid1_corner_lat(i,grid1_spole_cell), 
+            print *, grid1_corner_lat(i,grid1_spole_cell),
      &           grid1_corner_lon(i,grid1_spole_cell)
          enddo
       endif
 !     if(l_master)print *, 'grid2_npole_cell',grid2_npole_cell
       if (grid2_npole_cell .gt. 0) then
          do i = 1, grid2_corners
-            print *, grid2_corner_lat(i,grid2_npole_cell), 
+            print *, grid2_corner_lat(i,grid2_npole_cell),
      &           grid2_corner_lon(i,grid2_npole_cell)
          enddo
       endif
 !     if(l_master)print *, 'grid2_spole_cell',grid2_spole_cell
       if (grid2_spole_cell .gt. 0) then
          do i = 1, grid2_corners
-            print *, grid2_corner_lat(i,grid2_spole_cell), 
+            print *, grid2_corner_lat(i,grid2_spole_cell),
      &           grid2_corner_lon(i,grid2_spole_cell)
          enddo
       endif
@@ -813,7 +813,7 @@
 
 !-----------------------------------------------------------------------
 !
-!     set up and assign address ranges to search bins in order to 
+!     set up and assign address ranges to search bins in order to
 !     further restrict later searches
 !
 !-----------------------------------------------------------------------
@@ -930,7 +930,7 @@
          call SCRIP_GridComputeArea(grid1_area_in, grid1_corner_lat,
      &                              grid1_corner_lon, errorCode)
 
-         if (SCRIP_ErrorCheck(errorCode, rtnName, 
+         if (SCRIP_ErrorCheck(errorCode, rtnName,
      &                        'error computing grid1 area')) return
       endif
 
@@ -938,7 +938,7 @@
          call SCRIP_GridComputeArea(grid2_area_in, grid2_corner_lat,
      &                              grid2_corner_lon, errorCode)
 
-         if (SCRIP_ErrorCheck(errorCode, rtnName, 
+         if (SCRIP_ErrorCheck(errorCode, rtnName,
      &                        'error computing grid2 area')) return
       endif
 
@@ -993,7 +993,7 @@
 
       real (SCRIP_r8) ::
      &   dphi                ! delta(longitude) for this segment
-     
+
 !-----------------------------------------------------------------------
 !
 !  determine size of grid and initialize
@@ -1019,7 +1019,7 @@
             nextCorner = mod(nCorner,numCorners) + 1
 
             !*** trapezoid rule - delta(Lon) is -0.5*dx
-            dphi = CornerLon(   nCorner,nCell) - 
+            dphi = CornerLon(   nCorner,nCell) -
      &             CornerLon(nextCorner,nCell)
             if (dphi > pi) then
                dphi = dphi - pi2
@@ -1028,7 +1028,7 @@
             endif
             dphi = 0.5_SCRIP_r8*dphi
 
-            Area(nCell) = Area(nCell) + 
+            Area(nCell) = Area(nCell) +
      &                    dphi*(sin(CornerLat(   nCorner,nCell)) +
      &                          sin(CornerLat(nextCorner,nCell)))
          end do

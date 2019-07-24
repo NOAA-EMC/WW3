@@ -9,8 +9,8 @@
 !/                  | Last update :         01-Jul-2013 |
 !/                  +-----------------------------------+
 !/
-!/    Adapted from   WAVEWATCH-III  W3UQCKMD 
-!/            for    UNO2 advection scheme. 
+!/    Adapted from   WAVEWATCH-III  W3UQCKMD
+!/            for    UNO2 advection scheme.
 !/
 !/    18-Mar-2008 : Origination.                        ( version 3.14 )
 !/    ..-...-...  : .....                               ( version 3.14 )
@@ -44,7 +44,7 @@
 !
 !  5. Remarks :
 !
-!     - STRACE and !/S irrelevant for running code. The module is 
+!     - STRACE and !/S irrelevant for running code. The module is
 !       therefore fully portable to any other model.
 !
 !  6. Switches :
@@ -219,7 +219,7 @@
         IXY  = MAPBOU(IP)
         VEL  = 0.5 * ( VELO(IXY) + VELO(IXY+INC) )
 !  Assuming velocity is at cell centre, so face velocity is an average.
-        CFL  = DT *  VEL 
+        CFL  = DT *  VEL
 !  Courant number without gradient distance (between IXY and IXY+INC cells)
         IXYC = IXY - INC * INT( MIN ( 0. , SIGN(1.1,CFL) ) )
 !  Central cell index, depending on flow direction.
@@ -815,7 +815,7 @@
 !/T1      WRITE (NDST,9010)
 !/T1      WRITE (NDST,9011) NB0, 'CENTRAL'
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, IXYD, QB)  
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, IXYD, QB)
 !
       DO IP=1, NB0
 !

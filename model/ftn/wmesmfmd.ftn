@@ -51,11 +51,11 @@
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
 !/    09-Aug-2017 : Add ocean forcing export fields     ( version 6.03 )
-!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 ) 
+!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -405,7 +405,7 @@
       call NUOPC_CompSpecialize(gcomp, specLabel=label_CheckImport, &
         specRoutine=NUOPC_NoOp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      
+
 ! --- Model advance method
 
       call NUOPC_CompSpecialize(gcomp, specLabel=label_Advance, &
@@ -778,7 +778,7 @@
 ! 2.  Initialization of all wave models / grids
 !
 ! 2.a Call into WMINIT
-!     
+!
       if ( .not.lsep_ss ) idss = stdo
       if ( .not.lsep_st ) idst = stdo
       if ( .not.lsep_se ) idse = stdo
@@ -830,7 +830,7 @@
 ! 3.  Initialize import field list
 !
       istep_import: do istep = 1, 2
-      
+
       if ( istep.eq.2 ) then
         allocate ( impFieldName(numImpFields), &
                    impFieldStdName(numImpFields), &
@@ -924,7 +924,7 @@
 ! 4.  Initialize export field list
 !
       istep_export: do istep = 1, 2
-      
+
       if ( istep.eq.2 ) then
         allocate ( expFieldName(numExpFields), &
                    expFieldStdName(numExpFields), &
@@ -1112,7 +1112,7 @@
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
 !/    09-Aug-2017 : Update 3D export field setup        ( version 6.03 )
-!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )  
+!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -2395,7 +2395,7 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! Surface Roughness 
+! Surface Roughness
 !
       i1 = FieldIndex( expFieldName, 'z0rlen', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3241,7 +3241,7 @@
 !
 ! 5.b Store route handle
 !
-      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc ) 
+      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 5.c Clean up
@@ -3372,9 +3372,9 @@
 !
 !  2. Method :
 !
-!     Create an ESMF Mesh for import using the unstructured mesh description 
-!     in W3GDATMD. At present, this import mesh is not domain decomposed, 
-!     but instead is defined on PET 0 only. (In future, when the unstructured 
+!     Create an ESMF Mesh for import using the unstructured mesh description
+!     in W3GDATMD. At present, this import mesh is not domain decomposed,
+!     but instead is defined on PET 0 only. (In future, when the unstructured
 !     mesh will run on domain decomposition, we will use that decomposition.)
 !
 !  3. Parameters :
@@ -3487,7 +3487,7 @@
 !/PDLIB!        -------------------------------------------------------------------
 !/PDLIB!        ESMF Definition: The global id's of the nodes resident on this processor
 !/PDLIB!        -------------------------------------------------------------------
-!/PDLIB!        Allocate global node ids, including ghost nodes (npa=np+ng) 
+!/PDLIB!        Allocate global node ids, including ghost nodes (npa=np+ng)
 !/PDLIB         allocate(nodeIds(npa))
 !/PDLIB         do i = 1,npa
 !/PDLIB            nodeIds(i)=iplg(i)
@@ -3654,9 +3654,9 @@
          enddo
 !/PDLIB      else
 !/PDLIB!        -------------------------------------------------------------------
-!/PDLIB!        ESMF Definition: Connectivity table. The number of entries should 
-!/PDLIB!        be equal to the number of nodes in the given topology. The indices 
-!/PDLIB!        should be the local index (1 based) into the array of nodes that 
+!/PDLIB!        ESMF Definition: Connectivity table. The number of entries should
+!/PDLIB!        be equal to the number of nodes in the given topology. The indices
+!/PDLIB!        should be the local index (1 based) into the array of nodes that
 !/PDLIB!        was declared with MeshAddNodes.
 !/PDLIB!        -------------------------------------------------------------------
 !/PDLIB!        > INE is local element array. it stores the local node IDs
@@ -3731,16 +3731,16 @@
 !
 !  2. Method :
 !
-!     Create an ESMF Mesh for export using the unstructured mesh description 
-!     in W3GDATMD. At present, this export mesh is not domain decomposed, 
-!     but instead is defined on PET 0 only. (In future, when the unstructured 
+!     Create an ESMF Mesh for export using the unstructured mesh description
+!     in W3GDATMD. At present, this export mesh is not domain decomposed,
+!     but instead is defined on PET 0 only. (In future, when the unstructured
 !     mesh will run on domain decomposition, we will use that decomposition.)
 !
-!     Since the internal parallel data is currently stored accross grid points 
+!     Since the internal parallel data is currently stored accross grid points
 !     in a "card deck" fashion, we will define an intermediate native grid, as
 !     is done for regular/curvilinear grids, and perform an ESMF regrid to the
-!     export mesh. This code segment is taken from T. J. Campbell, and 
-!     modified to 1D, because the internal data structure for unstructred 
+!     export mesh. This code segment is taken from T. J. Campbell, and
+!     modified to 1D, because the internal data structure for unstructred
 !     meshes is an array with dimensions [NX,NY=1].
 !
 !  3. Parameters :
@@ -3848,7 +3848,7 @@
       natIndexFlag = ESMF_INDEX_DELOCAL
 !
 ! -------------------------------------------------------------------- /
-! 2.  Create ESMF mesh for export 
+! 2.  Create ESMF mesh for export
 !
 ! 2.a Create ESMF export mesh
 !
@@ -3862,7 +3862,7 @@
 !/PDLIB!        -------------------------------------------------------------------
 !/PDLIB!        ESMF Definition: The global id's of the nodes resident on this processor
 !/PDLIB!        -------------------------------------------------------------------
-!/PDLIB!        Allocate global node ids, including ghost nodes (npa=np+ng) 
+!/PDLIB!        Allocate global node ids, including ghost nodes (npa=np+ng)
 !/PDLIB         allocate(nodeIds(npa))
 !/PDLIB         do i = 1,npa
 !/PDLIB            nodeIds(i)=iplg(i)
@@ -4028,9 +4028,9 @@
          enddo
 !/PDLIB      else
 !/PDLIB!        -------------------------------------------------------------------
-!/PDLIB!        ESMF Definition: Connectivity table. The number of entries should 
-!/PDLIB!        be equal to the number of nodes in the given topology. The indices 
-!/PDLIB!        should be the local index (1 based) into the array of nodes that 
+!/PDLIB!        ESMF Definition: Connectivity table. The number of entries should
+!/PDLIB!        be equal to the number of nodes in the given topology. The indices
+!/PDLIB!        should be the local index (1 based) into the array of nodes that
 !/PDLIB!        was declared with MeshAddNodes.
 !/PDLIB!        -------------------------------------------------------------------
 !/PDLIB!        > INE is local element array. it stores the local node IDs
@@ -4155,7 +4155,7 @@
 !
 ! 4.b Store route handle
 !
-      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc ) 
+      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 4.c Clean up
@@ -5643,7 +5643,7 @@
             enddo ith_loop
             fack = dden(ik)/cg(ik,isea)
             kd = max(kdmin,min(kdmax,wn(ik,isea)*depth))
-            fkd = fack/sinh(kd)**2 
+            fkd = fack/sinh(kd)**2
             abr = abr + aka*fkd
             ubr = ubr + aka*sig2(ik)*fkd
             ubx = ubx + akx*sig2(ik)*fkd
@@ -5888,7 +5888,7 @@
 #endif
         enddo jsea_loop
 !/PDLIB      else
-!/PDLIB        jsea_loop2: do jsea = 1,np 
+!/PDLIB        jsea_loop2: do jsea = 1,np
 !/PDLIB          isea = iplg(jsea)
 !/PDLIB!          if ( dw(isea).le.zero ) cycle jsea_loop
 !/PDLIB          sxxn(jsea) = sxx(jsea)

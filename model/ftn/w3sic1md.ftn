@@ -15,10 +15,10 @@
 !  1. Purpose :
 !
 !     Calculate ice source term S_{ice} according to simple methods.
-!          Exponential decay rate is uniform in frequency, and 
-!          specified directly by the user.  This method is, in effect, 
-!          not sustantially different from handling sea ice via the 
-!          "sub-grid" blocking approach, after improvements by 
+!          Exponential decay rate is uniform in frequency, and
+!          specified directly by the user.  This method is, in effect,
+!          not sustantially different from handling sea ice via the
+!          "sub-grid" blocking approach, after improvements by
 !          Fabrice Ardhuin (in v4.00).
 !
 !  2. Variables and types :
@@ -37,10 +37,10 @@
 !  5. Remarks :
 !
 !     Reference:Rogers, W.E. and M.D. Orzech, 2013: Implementation and
-!        Testing of Ice and Mud Source Functions in WAVEWATCH III(R), 
+!        Testing of Ice and Mud Source Functions in WAVEWATCH III(R),
 !        NRL/MR/7320--13-9462, 31pp.
 !        available from http://www7320.nrlssc.navy.mil/pubs.php
-!        Direct link: 
+!        Direct link:
 !        http://www7320.nrlssc.navy.mil/pubs/2013/rogers2-2013.pdf
 !
 !  6. Switches :
@@ -76,7 +76,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -101,23 +101,23 @@
 !     Sea ice affects the wavenumber k of wind-generated ocean waves.
 !     The ice-modified wavenumber can be expressed as a complex number
 !     k = k_r + i*k_i, with the real part k_r representing impact of
-!     the sea ice on the physical wavelength and propagation speeds, 
-!     producing something analogous to shoaling and refraction by 
-!     bathymetry, whereas the imaginary part of the complex 
-!     wavenumber, k_i, is an exponential decay coefficient 
-!     k_i(x,y,t,sigma) (depending on location, time and frequency, 
-!     respectively), representing wave attenuation, and can be 
-!     introduced in a wave model such as WW3 as S_ice/E=-2*Cg*k_i, 
-!     where S_ice is one of several dissipation mechanisms, along 
-!     with whitecapping, for example, S_ds=S_wc+S_ice+⋯. The k_r - 
-!     modified by ice would enter the model via the C calculations 
+!     the sea ice on the physical wavelength and propagation speeds,
+!     producing something analogous to shoaling and refraction by
+!     bathymetry, whereas the imaginary part of the complex
+!     wavenumber, k_i, is an exponential decay coefficient
+!     k_i(x,y,t,sigma) (depending on location, time and frequency,
+!     respectively), representing wave attenuation, and can be
+!     introduced in a wave model such as WW3 as S_ice/E=-2*Cg*k_i,
+!     where S_ice is one of several dissipation mechanisms, along
+!     with whitecapping, for example, S_ds=S_wc+S_ice+⋯. The k_r -
+!     modified by ice would enter the model via the C calculations
 !     on the left-hand side of the governing equation.The fundamentals
-!     are straightforward, e.g. Rogers and Holland (2009 and 
-!     subsequent unpublished work) modified a similar model, SWAN 
-!     (Booij et al. 1999) to include the effects of a viscous mud 
+!     are straightforward, e.g. Rogers and Holland (2009 and
+!     subsequent unpublished work) modified a similar model, SWAN
+!     (Booij et al. 1999) to include the effects of a viscous mud
 !     layer using the same approach (k = k_r + i*k_i) previously.
 !
-!     General approach is analogous to Rogers and Holland (2009) 
+!     General approach is analogous to Rogers and Holland (2009)
 !         approach for mud.
 !     See text near their eq. 1 :
 !       k        = k_r  +  i * k_i
@@ -129,7 +129,7 @@
 !         S = D * E
 !     However, the code of W3SBT1 has
 !         S = D * A
-!     This leads me to believe that the calling routine is 
+!     This leads me to believe that the calling routine is
 !         expecting "S/sigma" not "S"
 !     Thus we will use D = S/E = -2 * Cg * k_i
 !

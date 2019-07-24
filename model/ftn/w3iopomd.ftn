@@ -22,21 +22,21 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grid         ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -70,7 +70,7 @@
 !      W3DMO2    Subr. W3ODATMD Data structure management.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Program abort with exit code.
-!      MPI_STARTALL, MPIWAITALL 
+!      MPI_STARTALL, MPIWAITALL
 !                Subr.          MPI persistent communication routines.
 !     ----------------------------------------------------------------
 !
@@ -127,11 +127,11 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
-!/                  from RTD grid models             
+!/                  from RTD grid models
 !/
 !  1. Purpose :
 !
@@ -181,8 +181,8 @@
 !       coverage, the actual interpolation factors can only be
 !       determined at the actual output time. Hence only the basic
 !       bilinear interpolation factors are stored.
-!     - Implementation of the /O7a diagnostic output section is 
-!       currently incomplete and non-functional for curvilinear grids 
+!     - Implementation of the /O7a diagnostic output section is
+!       currently incomplete and non-functional for curvilinear grids
 !       and/or tripole grids
 !
 !  8. Structure :
@@ -212,10 +212,10 @@
                           RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
                           ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
-      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  
+      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX
 !/RTD  !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR    
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ 
+!/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR
+!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
                           NOPTS, PTLOC, PTNME, GRDID, IPTINT, PTIFAC
@@ -242,7 +242,7 @@
 !/O7a      INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
 !/O7a                                 KX, KY, JX, IIX
       INTEGER                 :: IX(4), IY(4)   ! Indices of points used in interp.
-      REAL                    :: RD(4)          ! Interpolation coefficient 
+      REAL                    :: RD(4)          ! Interpolation coefficient
 !/O7a      REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
       REAL, PARAMETER         :: ACC = 0.05
       REAL                    :: FACTOR
@@ -301,11 +301,11 @@
 !
 !     Check if point within grid and compute interpolation weights
 !
-        IF (GTYPE .NE. UNGTYPE) THEN 
+        IF (GTYPE .NE. UNGTYPE) THEN
           INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-        ELSE 
+        ELSE
           CALL IS_IN_UNGRID(IMOD, XPT(IPT), YPT(IPT), itout, IX, IY, RD)
-          INGRID = (ITOUT.GT.0) 
+          INGRID = (ITOUT.GT.0)
           END IF
 !
         IF ( .NOT.INGRID ) THEN
@@ -358,7 +358,7 @@
 
         PTNME(NOPTS) = PNAMES(IPT)
 !
-        END DO ! End loop over output points (IPT). 
+        END DO ! End loop over output points (IPT).
 !
 !/RTD       DEALLOCATE( EquLon, EquLat, StdLon, StdLat, AnglPT )
 !
@@ -546,11 +546,11 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/                  (A. Roland and F. Ardhuin)
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
-!/                  from RTD grid models             
+!/                  from RTD grid models
 !/
 !  1. Purpose :
 !
@@ -615,9 +615,9 @@
       USE W3GDATMD, ONLY: NK, NTH, SIG, NX, NY, NSEA, NSEAL,          &
                           MAPSTA, MAPFS
 !/RTD !!   Use spectral rotation sub and angle.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR 
+!/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR
 !/RTD      USE W3SERVMD, ONLY: W3ACTURN
-      USE W3WDATMD, ONLY: ICE, ICEH, ICEF 
+      USE W3WDATMD, ONLY: ICE, ICEH, ICEF
       USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
                           SP => SPPNT
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
@@ -829,12 +829,12 @@
 !/RTD          CALL  W3ACTURN( NTH, NK, AnglDIS, Spectr )
 !/RTD          SPCO(:,I) = Spectr
 !/RTD        END IF
-!/RTD       
+!/RTD
 !
 !/T        WRITE (NDST,9004) DPO(I), WAO(I), WDO(I)*RADE,             &
 !/T                                  CAO(I), CDO(I)*RADE
 
-! FA COMMENTED OUT: BUG 
+! FA COMMENTED OUT: BUG
 !At line 1974 of file w3arrymd.f90
 !Fortran runtime error: Index '52' of dimension 1 of array 'pnum2' above upper bound of 51
 !/T       ! CALL PRT2DS (NDST, NK, NK, NTH, SPTEST, SIG(1:), ' ', 1.,0.,&

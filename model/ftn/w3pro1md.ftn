@@ -33,7 +33,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -118,7 +118,7 @@
 !  5. Called by :
 !
 !      Name      Type  Module   Description
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !      W3WAVE    Subr. W3WAVEMD Wave model routine.
 !     ----------------------------------------------------------------
 !
@@ -321,7 +321,7 @@
 !  5. Called by :
 !
 !      Name      Type  Module   Description
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !      W3WAVE    Subr. W3WAVEMD Wave model routine.
 !     ----------------------------------------------------------------
 !
@@ -345,13 +345,13 @@
 !       This is to calculate the flux VCY(IY+0.5). For the tripole grid,
 !       we cannot do it this way, since the sign of VCY flips as we jump
 !       over the seam. If we were to do it this way, VCY(IY) and VCY(IY+1)
-!       are two numbers of similar magnitude and opposite sign, so the 
-!       average of the two gives something close to zero, so energy does 
+!       are two numbers of similar magnitude and opposite sign, so the
+!       average of the two gives something close to zero, so energy does
 !       not leave via VCY(IY+0.5). One alternative is:
-!               VCB       = VCY2D(IY,IX) 
+!               VCB       = VCY2D(IY,IX)
 !       Another alternative is :
 !               VCB       = FACVY(IXY) * ( VCY2D(IY,IX) - VCY2D(IY+1,IX) )
-!       Both appear to give correct results for ww3_tp2.13. We use the 
+!       Both appear to give correct results for ww3_tp2.13. We use the
 !       second alternative.
 !
 !  8. Structure :
@@ -524,7 +524,7 @@
 
             END DO
         END IF
-          
+
         IF ( FLCX ) THEN
            DO ISEA=1, NSEA
               IX     = MAPSF(ISEA,1)
@@ -683,7 +683,7 @@
                                  + ATRNX(IXY,JXN) * VFLX2D(IY,IX-1)   &
                                  - ATRNX(IXY,JXP) * VFLX2D(IY,IX)     &
                                  + ATRNY(IXY,JYN) * VFLY2D(IY-1,IX)   &
-                                 - ATRNY(IXY,JYP) * VFLY2D(IY,IX)   
+                                 - ATRNY(IXY,JYP) * VFLY2D(IY,IX)
 
 !/T3              WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
 !/T3                 VFLX2D(IY,IX-1), VFLX2D(IY,IX), VFLY2D(IY-1,IX), &
@@ -822,7 +822,7 @@
 !  5. Called by :
 !
 !      Name      Type  Module   Description
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !      W3WAVE    Subr. W3WAVEMD Wave model routine.
 !     ----------------------------------------------------------------
 !

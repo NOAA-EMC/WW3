@@ -18,7 +18,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -35,7 +35,7 @@
 !
 !     A three tier data structure is used with three separate data
 !     sets. Tentatively, they are intended for mean wave parameters,
-!     1-D and 2-D spectral data. This separation is made only for 
+!     1-D and 2-D spectral data. This separation is made only for
 !     economy in file and menory usage. All three data sets are defined
 !     here onlt by a record length and a number of records. All data are
 !     treated as real numbers, but the meaing of all record components
@@ -68,7 +68,7 @@
 !  5. Remarks :
 !
 !     - This module still requires an OpenMP or  MPI setup to be made
-!       compatible with WAVEWATCH III inside the user supplied 
+!       compatible with WAVEWATCH III inside the user supplied
 !       routines.
 !
 !  6. Switches :
@@ -213,9 +213,9 @@
 !
 !     User-defined data assimilation routines to be plugged in here.
 !     All that could be needed is avainalble in this subroutine,
-!     including the grid definition from W3GDATMD. All 
+!     including the grid definition from W3GDATMD. All
 !     can thus be included in the parameter list, and no explcit links
-!     to other WAVEWATCH III routines will be needed within the 
+!     to other WAVEWATCH III routines will be needed within the
 !     data assimilation routines ( with the possible exception of the
 !     CONSTANTS module ), If there is a reason to terminate the code,
 !     pass an error code out of the routine and use EXTCDE to stop

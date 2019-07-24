@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !     this module contains necessary routines for computing addresses
-!     and weights for a conservative interpolation  between any two 
-!     grids on a sphere.  the weights are computed by performing line 
-!     integrals around all overlap regions of the two grids.  see 
+!     and weights for a conservative interpolation  between any two
+!     grids on a sphere.  the weights are computed by performing line
+!     integrals around all overlap regions of the two grids.  see
 !     Dukowicz and Kodis, SIAM J. Sci. Stat. Comput. 8, 305 (1987) and
 !     Jones, P.W. Monthly Weather Review (submitted).
 !
@@ -11,12 +11,12 @@
 !
 !     CVS:$Id: remap_conserv.f,v 1.10 2001/08/21 21:05:13 pwjones Exp $
 !
-!     Copyright (c) 1997, 1998 the Regents of the University of 
+!     Copyright (c) 1997, 1998 the Regents of the University of
 !       California.
 !
-!     This software and ancillary information (herein called software) 
-!     called SCRIP is made available under the terms described here.  
-!     The software has been approved for release with associated 
+!     This software and ancillary information (herein called software)
+!     called SCRIP is made available under the terms described here.
+!     The software has been approved for release with associated
 !     LA-CC Number 98-45.
 !
 !     Unless otherwise indicated, this software has been authored
@@ -31,10 +31,10 @@
 !     any liability or responsibility for the use of this software.
 !
 !     If software is modified to produce derivative works, such modified
-!     software should be clearly marked, so as not to confuse it with 
+!     software should be clearly marked, so as not to confuse it with
 !     the version available from Los Alamos National Laboratory.
 !
-!     This code has been modified from the version available from 
+!     This code has been modified from the version available from
 !     Los Alamos National Laboratory, for the purpose of running it
 !     within WW3. Primary modifications:
 !     - renamed many variables to be unique across the code
@@ -44,15 +44,15 @@
 !     - phi_or_theta = 2 instead of phi_or_theta = 1 (important!)
 !
 !***********************************************************************
-!  Modifications introduced by M. Dutour (MD) for 
+!  Modifications introduced by M. Dutour (MD) for
 !  running with WAVEWATCH III  ... see below
 !
-!     
+!
 !     BE CAREFUL ABOUT EXPLICIT INITIALIZATION OF VARIABLES IN
 !     MULTI-THREADED VERSION OF THE CODE - INLINE INITIALIZATION OF
 !     A VARIABLE IN FORTRAN 90/95 MAKES THE VARIABLE IMPLICITLY STATIC.
 !     OPENMP FORCES _ALL_ FORTRAN IMPLEMENTATIONS TO MAKE THE VARIABLE
-!     STATIC (OR OF THE TYPE SAVE) IF IT IS INITIALIZED IN THE 
+!     STATIC (OR OF THE TYPE SAVE) IF IT IS INITIALIZED IN THE
 !     DECLARATION LINE
 !
 !
@@ -77,23 +77,23 @@
 !............These are all local variables that had the "save" attribute
 !............in the standard version of SCRIP
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &     avoid_pole_count = 0  ! count attempts to avoid pole
 
-      real (SCRIP_r8), save :: 
+      real (SCRIP_r8), save ::
      &     avoid_pole_offset = tiny  ! endpoint offset to avoid pole
 
       integer (SCRIP_i4), dimension(:,:), allocatable, save ::
      &        link_add1,  ! min,max link add to restrict search
      &        link_add2   ! min,max link add to restrict search
 
-      logical (SCRIP_logical), save :: 
+      logical (SCRIP_logical), save ::
      &        first_call_store_link_cnsrv = .true.
 
       logical (SCRIP_logical), save ::
      &     first_call_locate_segstart= .true.
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &     last_cell_locate_segstart=0,     ! save the search parameters
      &     last_cell_grid_num_locate_segstart=0,   ! if unchanged, reuse
                                                    ! search lists
@@ -101,10 +101,10 @@
 
       integer (SCRIP_i4), save ::
      &     num_srch_cells_locate_segstart=0,
-     &     srch_corners_locate_segstart      ! number of corners for 
+     &     srch_corners_locate_segstart      ! number of corners for
                                              ! each cell
 
-      integer (SCRIP_i4), dimension(:), allocatable, save :: 
+      integer (SCRIP_i4), dimension(:), allocatable, save ::
      &        srch_add_locate_segstart       ! global address of cells
                                              ! in srch arrays
 
@@ -117,11 +117,11 @@
       real(SCRIP_r8), dimension(:), allocatable, save ::
      &     srch_center_lat_locate_segstart,! lat of center of srch cells
      &     srch_center_lon_locate_segstart ! lon of center of srch cells
-     
+
       logical (SCRIP_logical), save ::
      &     first_call_locate_point= .true.
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &     last_cell_locate_point=0,       ! save the search parameters
      &     last_cell_grid_num_locate_point=0,     ! if unchanged, reuse
                                                   ! search lists
@@ -131,7 +131,7 @@
      &     num_srch_cell_locate_points=0,
      &     srch_corners_locate_point  ! number of corners for each cell
 
-      integer (SCRIP_i4), dimension(:), allocatable, save :: 
+      integer (SCRIP_i4), dimension(:), allocatable, save ::
      &        srch_add_locate_point       ! global address of cells in
                                           ! srch arrays
 
@@ -156,16 +156,16 @@
                                                ! search cells
 
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
-     &     srch_corner_lat_loc_get_srch_cells, 
+     &     srch_corner_lat_loc_get_srch_cells,
      &     srch_corner_lon_loc_get_srch_cells
-      
+
       real (SCRIP_r8), dimension(:), allocatable, save ::
      &     srch_center_lat_loc_get_srch_cells,
      &     srch_center_lon_loc_get_srch_cells
 
       integer (SCRIP_i4), save ::
-     &     last_cell_add_get_srch_cells, 
-     &     last_cell_grid_num_get_srch_cells, 
+     &     last_cell_add_get_srch_cells,
+     &     last_cell_grid_num_get_srch_cells,
      &     last_srch_grid_num_get_srch_cells
 
       logical (SCRIP_logical), save ::
@@ -177,13 +177,13 @@
       logical (SCRIP_logical), private :: is_master
            ! module's equivalent of "l_master"
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &     last_cell_find_adj_cell,
      &     last_cell_grid_num_find_adj_cell,
-     &     num_srch_cells_find_adj_cell, 
+     &     num_srch_cells_find_adj_cell,
      &     srch_corners_find_adj_cell
 
-      integer (SCRIP_i4), dimension(:), allocatable, save :: 
+      integer (SCRIP_i4), dimension(:), allocatable, save ::
      &     srch_add_find_adj_cell
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
      &     srch_corner_lat_find_adj_cell, srch_corner_lon_find_adj_cell
@@ -201,7 +201,7 @@ C$OMP& srch_add_loc_get_srch_cells,
 C$OMP& srch_corner_lat_loc_get_srch_cells,
 C$OMP& srch_corner_lon_loc_get_srch_cells,
 C$OMP& srch_center_lat_loc_get_srch_cells,
-C$OMP& srch_center_lon_loc_get_srch_cells) 
+C$OMP& srch_center_lon_loc_get_srch_cells)
 
 C$OMP THREADPRIVATE(first_call_locate_segstart,
 C$OMP& last_cell_locate_segstart,
@@ -254,7 +254,7 @@ C$OMP& srch_center_lon_find_adj_cell)
 
       logical(SCRIP_Logical), intent(in) :: l_master   ! Am I the master
                                                    ! processor (do I/O)?
-      logical(SCRIP_Logical), intent(in) :: l_test     ! Whether to 
+      logical(SCRIP_Logical), intent(in) :: l_test     ! Whether to
                                                     !include test output
 
 !-----------------------------------------------------------------------
@@ -263,13 +263,13 @@ C$OMP& srch_center_lon_find_adj_cell)
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), parameter :: 
+      integer (SCRIP_i4), parameter ::
      &     phi_or_theta = 2      ! integrate w.r.t. phi (1) or theta (2)
-      
 
-      integer (SCRIP_i4) :: 
+
+      integer (SCRIP_i4) ::
      &     i, inext,            !
-     &     n, nwgt, 
+     &     n, nwgt,
      &     grid1_add,           ! Current linear address for grid1 cell
      &     grid2_add,           ! Current linear address for grid2 cell
      &     grid_num,            ! Index (1,2) of grid that we are
@@ -284,7 +284,7 @@ C$OMP& srch_center_lon_find_adj_cell)
       real (SCRIP_r8) ::
      &     norm_factor          ! factor for normalizing wts
 
-      real (SCRIP_r8), dimension(6) :: 
+      real (SCRIP_r8), dimension(6) ::
      &     weights             ! Weights array
 
       real (SCRIP_r8) ::
@@ -299,7 +299,7 @@ C$OMP& srch_center_lon_find_adj_cell)
       real (SCRIP_r8), dimension(:), allocatable ::
      &     reldiff,             ! Relative difference in computed
                                 ! and true area
-     &     ref_area             ! Area of cell as computed by direct 
+     &     ref_area             ! Area of cell as computed by direct
                                 ! integration around its boundaries
 
 !      call OMP_SET_DYNAMIC(.FALSE.)
@@ -311,7 +311,7 @@ C$OMP& srch_center_lon_find_adj_cell)
 !-----------------------------------------------------------------------
 
       is_master=l_master ! set module variable using subroutine input
-                         ! argument variable. 
+                         ! argument variable.
                          ! Use the former subsequently.
 
       if(is_master)print *,'grid1 sweep'
@@ -321,9 +321,9 @@ C$OMP& srch_center_lon_find_adj_cell)
       if (grid2_size >     500000) then
          progint =         1000
       elseif (grid2_size > 250000) then
-         progint =         2000 
+         progint =         2000
       elseif (grid2_size > 100000) then
-         progint =         5000 
+         progint =         5000
       else
          progint =         10000
       endif
@@ -335,7 +335,7 @@ C$OMP& srch_center_lon_find_adj_cell)
 
 C$OMP PARALLEL DEFAULT(SHARED) PRIVATE(grid1_add) NUM_THREADS(nthreads)
 
-C$OMP DO SCHEDULE(DYNAMIC) 
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do grid1_add = 1,grid1_size
 
@@ -364,9 +364,9 @@ C$OMP END PARALLEL
       if (grid1_size >     500000) then
          progint =         1000
       elseif (grid1_size > 250000) then
-         progint =         2000 
+         progint =         2000
       elseif (grid1_size > 100000) then
-         progint =         5000 
+         progint =         5000
       else
          progint =         10000
       endif
@@ -400,7 +400,7 @@ C$OMP END PARALLEL
 !
 !     correct for situations where N/S pole not explicitly included in
 !     grid (i.e. as a grid corner point). if pole is missing from only
-!     one grid, need to correct only the area and centroid of that 
+!     one grid, need to correct only the area and centroid of that
 !     grid.  if missing from both, do complete weight calculation.
 !     This is necessary only when integrating w.r.t. phi (longitude)
 !
@@ -415,38 +415,38 @@ C$OMP END PARALLEL
          weights(4) =  pi2
          weights(5) =  pi*pi
          weights(6) =  zero
-         
+
          if (grid1_npole_cell /=0) then
-            grid1_area(grid1_npole_cell) = grid1_area(grid1_npole_cell) 
+            grid1_area(grid1_npole_cell) = grid1_area(grid1_npole_cell)
      &           + weights(1)
-            grid1_centroid_lat(grid1_npole_cell) = 
+            grid1_centroid_lat(grid1_npole_cell) =
      &           grid1_centroid_lat(grid1_npole_cell) + weights(2)
             grid1_centroid_lon(grid1_npole_cell) =
      &           grid1_centroid_lon(grid1_npole_cell) + weights(3)
          endif
-         
+
          if (grid2_npole_cell /=0) then
-            grid2_area(grid2_npole_cell) = grid2_area(grid2_npole_cell) 
+            grid2_area(grid2_npole_cell) = grid2_area(grid2_npole_cell)
      &           + weights(num_wts+1)
-            grid2_centroid_lat(grid2_npole_cell) = 
-     &           grid2_centroid_lat(grid2_npole_cell) + 
+            grid2_centroid_lat(grid2_npole_cell) =
+     &           grid2_centroid_lat(grid2_npole_cell) +
      &           weights(num_wts+2)
             grid2_centroid_lon(grid2_npole_cell) =
-     &           grid2_centroid_lon(grid2_npole_cell) + 
+     &           grid2_centroid_lon(grid2_npole_cell) +
      &           weights(num_wts+3)
          endif
-         
+
          if (grid1_npole_cell /= 0 .and. grid2_npole_cell /=0) then
-            call store_link_cnsrv(grid1_npole_cell, 
+            call store_link_cnsrv(grid1_npole_cell,
      &           grid2_npole_cell, weights)
-            
-            grid1_frac(grid1_npole_cell) = grid1_frac(grid1_npole_cell) 
+
+            grid1_frac(grid1_npole_cell) = grid1_frac(grid1_npole_cell)
      &           + weights(1)
-            grid2_frac(grid2_npole_cell) = grid2_frac(grid2_npole_cell) 
+            grid2_frac(grid2_npole_cell) = grid2_frac(grid2_npole_cell)
      &           + weights(num_wts+1)
          endif
 
-         
+
          !*** South Pole
          weights(1) =  pi2
          weights(2) = -pi*pi
@@ -454,42 +454,42 @@ C$OMP END PARALLEL
          weights(4) =  pi2
          weights(5) = -pi*pi
          weights(6) =  zero
-         
+
          if (grid1_spole_cell /=0) then
-            grid1_area(grid1_spole_cell) = grid1_area(grid1_spole_cell) 
+            grid1_area(grid1_spole_cell) = grid1_area(grid1_spole_cell)
      &           + weights(1)
-            grid1_centroid_lat(grid1_spole_cell) = 
+            grid1_centroid_lat(grid1_spole_cell) =
      &           grid1_centroid_lat(grid1_spole_cell) + weights(2)
             grid1_centroid_lon(grid1_spole_cell) =
      &           grid1_centroid_lon(grid1_spole_cell) + weights(3)
          endif
-         
+
          if (grid2_spole_cell /=0) then
-            grid2_area(grid2_spole_cell) = grid2_area(grid2_spole_cell) 
+            grid2_area(grid2_spole_cell) = grid2_area(grid2_spole_cell)
      &           + weights(num_wts+1)
-            grid2_centroid_lat(grid2_spole_cell) = 
-     &           grid2_centroid_lat(grid2_spole_cell) + 
+            grid2_centroid_lat(grid2_spole_cell) =
+     &           grid2_centroid_lat(grid2_spole_cell) +
      &           weights(num_wts+2)
             grid2_centroid_lon(grid2_spole_cell) =
-     &           grid2_centroid_lon(grid2_spole_cell) + 
+     &           grid2_centroid_lon(grid2_spole_cell) +
      &           weights(num_wts+3)
          endif
 
          if (grid1_spole_cell /= 0 .and. grid2_spole_cell /=0) then
-            call store_link_cnsrv(grid1_spole_cell, 
+            call store_link_cnsrv(grid1_spole_cell,
      &           grid2_spole_cell, weights)
-            
-            grid1_frac(grid1_spole_cell) = grid1_frac(grid1_spole_cell) 
+
+            grid1_frac(grid1_spole_cell) = grid1_frac(grid1_spole_cell)
      &           + weights(1)
-            grid2_frac(grid2_spole_cell) = grid2_frac(grid2_spole_cell) 
+            grid2_frac(grid2_spole_cell) = grid2_frac(grid2_spole_cell)
      &           + weights(num_wts+1)
          endif
       endif
 
 
-      
+
       if(is_master)print *, 'Grid sweeps completed'
-      
+
 
 !-----------------------------------------------------------------------
 !
@@ -663,8 +663,8 @@ C$OMP DO SCHEDULE(DYNAMIC)
            if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
      &          (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
 
-           call line_integral(phi_or_theta, weights, num_wts, beglon, 
-     &          endlon, beglat, endlat, grid1_center_lat(n), 
+           call line_integral(phi_or_theta, weights, num_wts, beglon,
+     &          endlon, beglat, endlat, grid1_center_lat(n),
      &          grid1_center_lon(n), grid1_center_lat(n),
      &          grid1_center_lon(n))
 
@@ -683,18 +683,18 @@ C$OMP END PARALLEL
          weights(1) =  pi2
 
          if (grid1_npole_cell /=0) then
-            ref_area(grid1_npole_cell) = ref_area(grid1_npole_cell) 
+            ref_area(grid1_npole_cell) = ref_area(grid1_npole_cell)
      &           + weights(1)
          endif
-         
+
          !*** South Pole
          weights(1) =  pi2
-         
+
          if (grid1_spole_cell /=0) then
-            ref_area(grid1_spole_cell) = ref_area(grid1_spole_cell) 
+            ref_area(grid1_spole_cell) = ref_area(grid1_spole_cell)
      &           + weights(1)
          endif
-         
+
       endif
 
 
@@ -713,7 +713,7 @@ C$OMP END PARALLEL
             maxrd_true = ref_area(n)
          endif
       end do
-      
+
       ave_reldiff = ave_reldiff/grid1_size
 
       if(is_master.and.l_test)then
@@ -727,7 +727,7 @@ C$OMP END PARALLEL
      &        max_reldiff
          print *, 'Max rel. diff. is in cell ',maxrd_cell
          print *, 'Computed Area: ', maxrd_area
-         print *, 'Reference Area: ',maxrd_true 
+         print *, 'Reference Area: ',maxrd_true
          print *
       endif
 
@@ -738,7 +738,7 @@ C$OMP END PARALLEL
       allocate(ref_area(grid2_size))
       allocate(reldiff(grid2_size))
 
-C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads) 
+C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
 C$OMP&   PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
 C$OMP DO SCHEDULE(DYNAMIC)
 
@@ -763,8 +763,8 @@ C$OMP DO SCHEDULE(DYNAMIC)
            if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
      &          (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
 
-           call line_integral(phi_or_theta, weights, num_wts, beglon, 
-     &          endlon, beglat, endlat, grid2_center_lat(n), 
+           call line_integral(phi_or_theta, weights, num_wts, beglon,
+     &          endlon, beglat, endlat, grid2_center_lat(n),
      &          grid2_center_lon(n), grid2_center_lat(n),
      &          grid2_center_lon(n))
 
@@ -781,20 +781,20 @@ C$OMP END PARALLEL
 
          !*** North Pole
          weights(1) =  pi2
-         
+
          if (grid2_npole_cell /=0) then
-            ref_area(grid2_npole_cell) = ref_area(grid2_npole_cell) 
+            ref_area(grid2_npole_cell) = ref_area(grid2_npole_cell)
      &           + weights(1)
          endif
-         
+
          !*** South Pole
          weights(1) =  pi2
-         
+
          if (grid2_spole_cell /=0) then
-            ref_area(grid2_spole_cell) = ref_area(grid2_spole_cell) 
+            ref_area(grid2_spole_cell) = ref_area(grid2_spole_cell)
      &           + weights(1)
          endif
-         
+
       endif
 
 
@@ -824,7 +824,7 @@ C$OMP END PARALLEL
      &        max_reldiff
          print *, 'Max rel. diff. is in cell ',maxrd_cell
          print *, 'Computed Area: ', maxrd_area
-         print *, 'Reference Area: ',maxrd_true 
+         print *, 'Reference Area: ',maxrd_true
          print *
       endif
 
@@ -838,8 +838,8 @@ C$OMP END PARALLEL
       endif
 
       !***
-      !*** In the following code, gridN_centroid_lat is being used to 
-      !*** store running tallies of the cell areas - so it is a 
+      !*** In the following code, gridN_centroid_lat is being used to
+      !*** store running tallies of the cell areas - so it is a
       !*** misnomer used to avoid allocation of a new variable
       !***
 
@@ -863,20 +863,20 @@ C$OMP DO SCHEDULE(DYNAMIC)
         end do
 
 ! count warnings about weights that will be excluded
-        if (grid2_frac(grid2_add).gt.frac_lowest .and. 
+        if (grid2_frac(grid2_add).gt.frac_lowest .and.
      &       grid2_frac(grid2_add).lt.frac_highest .and. is_master) then
            if ( (wts_map1(1,n) < wt_lowest) )then
               icount=icount+1
 ! print statements that were here have been moved to another routine...
            endif
-           if (norm_opt /= norm_opt_none .and. wts_map1(1,n) > 
+           if (norm_opt /= norm_opt_none .and. wts_map1(1,n) >
      &          wt_highest)then
               icount=icount+1
 ! print statements that were here have been moved to another routine...
            endif
         endif
 C$OMP   CRITICAL
-        grid2_centroid_lat(grid2_add) = 
+        grid2_centroid_lat(grid2_add) =
      &  grid2_centroid_lat(grid2_add) + wts_map1(1,n)
 C$OMP   END CRITICAL
 
@@ -891,7 +891,7 @@ C$OMP   END CRITICAL
      &                                  wts_map2(1,n)
           endif
 C$OMP     CRITICAL
-          grid1_centroid_lat(grid1_add) = 
+          grid1_centroid_lat(grid1_add) =
      &    grid1_centroid_lat(grid1_add) + wts_map2(1,n)
 C$OMP     END CRITICAL
         endif
@@ -911,7 +911,7 @@ C$OMP END PARALLEL
       !*** the following code will generate errors even though nothing
       !*** is wrong (grid1_centroid_lat or grid2_centroid_lat are never
       !*** updated in the above loop)
-      !*** 
+      !***
 
       do n=1,grid2_size
         select case(norm_opt)
@@ -926,7 +926,7 @@ C$OMP END PARALLEL
             norm_factor = grid2_area(n)
           endif
         end select
-!       if (abs(grid2_centroid_lat(n)-norm_factor) > .01 
+!       if (abs(grid2_centroid_lat(n)-norm_factor) > .01
 !    &     .and. is_master) then
 !         print *,'Warning: sum of wts for map1 ',n,
 !    &            grid2_centroid_lat(n),norm_factor
@@ -977,14 +977,14 @@ C$OMP END PARALLEL
 
 !***********************************************************************
 
-      subroutine cellblock_integrate(ibegin, iend, grid_num, 
-     &     phi_or_theta) 
+      subroutine cellblock_integrate(ibegin, iend, grid_num,
+     &     phi_or_theta)
 
       integer (SCRIP_i4) :: ibegin, iend, grid_num, phi_or_theta
 
       integer (SCRIP_i4) :: cell_add
 
-      
+
       do cell_add = ibegin, iend
 
          call cell_integrate(cell_add, grid_num, phi_or_theta)
@@ -1016,7 +1016,7 @@ C$OMP END PARALLEL
 !     Input variables
 !
 !-----------------------------------------------------------------------
-      
+
       integer (SCRIP_i4) ::
      &     cell_add,            ! cell to be processed
      &     grid_num,            ! grid that the cell belongs to
@@ -1035,22 +1035,22 @@ C$OMP END PARALLEL
                                 ! to prevent infinite loop
 
 
-      integer (SCRIP_i4) :: 
+      integer (SCRIP_i4) ::
      &     i, inext,            !
      &     j, jnext,            ! generic counters
      &     ic, k, ns,           !
      &     n, next_n,           !
      &     nwgt, it,            !
-     &     oppcell_add,         ! Cell from opposite grid we are 
+     &     oppcell_add,         ! Cell from opposite grid we are
                                 ! intersecting
      &     opp_grid_num,        ! Index of opposite grid (2,1)
      &     min_add,             ! addresses for restricting search of
      &     max_add,             ! destination grid
-     &     corner,              ! corner of cell that segment starts 
+     &     corner,              ! corner of cell that segment starts
                                 ! from
      &     next_corn,           ! corner of cell that segment ends on
      &     nseg,                ! number of segments to use to represent
-                                ! edges near the pole                   
+                                ! edges near the pole
      &     num_subseg,          ! number of subsegments
      &     bedgeid1,            !
      &     bedgeid2,            ! ID of edge that a point is on
@@ -1058,21 +1058,21 @@ C$OMP END PARALLEL
      &     intedge,             ! ID of intersected edge
      &     last_add,            ! Address of last cell we were in
      &     next_add,            ! Address of next cell we will go into
-     &     adj_add              ! Address of cell adjacent to current 
+     &     adj_add              ! Address of cell adjacent to current
                                 ! one
 
-      logical (SCRIP_logical) :: 
+      logical (SCRIP_logical) ::
      &     lcoinc,              ! Are segments coincident?
      &     lrevers,             ! Are we integrating segment in reverse?
-     &     lboundary1, 
+     &     lboundary1,
      &     lboundary2,          ! Is point is on cell boundary?
-     &     lboundary3,          
+     &     lboundary3,
      &     last_lboundary,      ! Is last point is on cell bdry?
      &     loutside,            ! Is point outside the grid?
      &     lthresh,             ! Has segment crossed threshold?
-     &     srch_success,        ! Was search for segment start 
+     &     srch_success,        ! Was search for segment start
                                 ! successful?
-     &     intrsct_success,     ! Was intersection of segment with 
+     &     intrsct_success,     ! Was intersection of segment with
                                 ! opposite grid successful?
      &     inpoly,              ! Is point is in polygon
      &     last_endpt_inpoly,   ! Was end point of last segment in cell
@@ -1081,27 +1081,27 @@ C$OMP END PARALLEL
      &     lstuck,              ! Is the walk stuck inside a cell
      &     seg_outside,         ! Is segment completely outside the grid
      &     bndedge,             ! Is segment on the boundary of the grid
-     &     search,              ! Do we have to search to locate point 
+     &     search,              ! Do we have to search to locate point
                                 ! in grid
      &     inpolar,             ! Are we in the polar region?
-     &     special_cell,        ! Is this a special cell 
+     &     special_cell,        ! Is this a special cell
                                 ! (only 1 vtx at pole)
-     &     L_exit_do            ! Do we need to escape from infinite 
+     &     L_exit_do            ! Do we need to escape from infinite
                                 ! loop? (NRL)
 
       real (SCRIP_r8) ::
      &     intrsct_lat,         ! lat of next intersection point
      &     intrsct_lon,         ! lon of next intersection point
      &     beglat, beglon,      ! start point of current sub seg
-     &     endlat, endlon,      ! endpoint of current seg  
+     &     endlat, endlon,      ! endpoint of current seg
                                 ! (chg to endseg?)
      &     endlat1, endlon1,    ! endpoint of current subseg
      &     norm_factor          ! factor for normalizing wts
 
-      real (SCRIP_r8), dimension(2) :: 
+      real (SCRIP_r8), dimension(2) ::
      &     begseg               ! begin lat/lon for full segment
 
-      real (SCRIP_r8), dimension(6) :: 
+      real (SCRIP_r8), dimension(6) ::
      &     weights,             ! local wgt array
      &     rev_weights          ! Weights for grid1 and grid2 flipped
 
@@ -1112,9 +1112,9 @@ C$OMP END PARALLEL
      &     midlat, midlon,      ! Midpoint of segment
      &     tmplat, tmplon,
      &     srchpt_lat,          ! Search point (offset from seg. start)
-     &     srchpt_lon,          
+     &     srchpt_lon,
      &     offset, delta,       ! Offset and offset increase for search
-     &     sinang2,             ! Square of sine of angle b/w two  
+     &     sinang2,             ! Square of sine of angle b/w two
                                 ! segments
      &     dist2,               ! Square of distance b/w two points
      &     fullseg_len2,        ! Square of full segment length
@@ -1193,7 +1193,7 @@ C$OMP END PARALLEL
          !***
 
          ncorners = grid2_corners
-         nalloc = min(ncorners + 2, 
+         nalloc = min(ncorners + 2,
      &                size(grid2_corner_lat(:,1)))
          allocate (cell_corner_lat(nalloc),
      &        cell_corner_lon(nalloc))
@@ -1265,7 +1265,7 @@ C$OMP END PARALLEL
          lrevers = .false.
 
          !***
-         !*** if this is a constant-longitude segment, skip the rest 
+         !*** if this is a constant-longitude segment, skip the rest
          !*** since the line integral contribution will be zero.
          !***
 
@@ -1274,7 +1274,7 @@ C$OMP END PARALLEL
 
          !***
          !*** to ensure exact path taken during both
-         !*** sweeps, always integrate segments in the same 
+         !*** sweeps, always integrate segments in the same
          !*** direction (SW to NE).
          !***
 
@@ -1293,7 +1293,7 @@ C$OMP END PARALLEL
          !*** we want to start from that (makes some logic easier)
 
          if ((beglat < north_thresh .and. endlat > north_thresh) .or.
-     &       (beglat > south_thresh .and. endlat < south_thresh)) 
+     &       (beglat > south_thresh .and. endlat < south_thresh))
      &        then
             tmplat = beglat
             beglat = endlat
@@ -1311,17 +1311,17 @@ C$OMP END PARALLEL
          fullseg_dlon = endlon-beglon
          if (fullseg_dlon >  pi) fullseg_dlon = fullseg_dlon - pi2
          if (fullseg_dlon < -pi) fullseg_dlon = fullseg_dlon + pi2
-         fullseg_len2 = fullseg_dlat*fullseg_dlat + 
+         fullseg_len2 = fullseg_dlat*fullseg_dlat +
      &        fullseg_dlon*fullseg_dlon
-         
+
          partseg_len2 = 0.0
 
          !***
-         !*** Is this an edge on the boundary of the grid or 
+         !*** Is this an edge on the boundary of the grid or
          !*** on the boundary of the active cells
-         !*** 
+         !***
 
-! Commented out by MD 
+! Commented out by MD
 !         call find_adj_cell(cell_add, corner, grid_num, adj_add)
 !         if (grid_num .eq. 1) then
 !            if (adj_add .eq. 0 .or. .not. grid1_mask(adj_add)) then
@@ -1358,7 +1358,7 @@ C$OMP END PARALLEL
          endif
 
          !***
-         !*** integrate along this segment, detecting intersections 
+         !*** integrate along this segment, detecting intersections
          !*** and computing the line integral for each sub-segment
          !***
 
@@ -1383,7 +1383,7 @@ C$OMP END PARALLEL
 ! outer "do while"
 
          do while (beglat /= endlat .or. beglon /= endlon)
-            
+
             L_exit_do=.false.         !NRL
 
             if ((ns .eq. nseg) .or. (inpolar .eqv. .false.)) then
@@ -1397,15 +1397,15 @@ C$OMP END PARALLEL
                endlat1 = begseg(1) + ns*(fullseg_dlat)/nseg
                endlon1 = begseg(2) + ns*(fullseg_dlon)/nseg
             endif
-            
+
             num_subseg = 0
 
 ! inner "do while"
 
             do while (beglat /= endlat1 .or. beglon /= endlon1)
-               
-               !*** 
-               !*** If we integrated to the end or just past it (due to 
+
+               !***
+               !*** If we integrated to the end or just past it (due to
                !*** numerical errors), we are done with this segment
                !***
 
@@ -1426,7 +1426,7 @@ C$OMP END PARALLEL
                !*** segment is starting in and where it is exiting this
                !*** cell
                !******************************************************
-         
+
                vec1_lat = endlat1-beglat
                vec1_lon = endlon1-beglon
                if (vec1_lon > pi) vec1_lon = vec1_lon - pi2
@@ -1434,7 +1434,7 @@ C$OMP END PARALLEL
                vec1_len = sqrt(vec1_lat*vec1_lat+vec1_lon*vec1_lon)
                vec1_lat = vec1_lat/vec1_len
                vec1_lon = vec1_lon/vec1_len
-               
+
                offset = 100.0*tiny
                oppcell_add = 0
                delta = 10*tiny
@@ -1444,8 +1444,8 @@ C$OMP END PARALLEL
                lboundary1 = .false.
                lboundary2 = .false.
                lboundary3 = .false.
-               
-               do while (.not. intrsct_success) 
+
+               do while (.not. intrsct_success)
 
                   !*************************************************
                   !*** Find out which cell the segment starts in
@@ -1455,50 +1455,50 @@ C$OMP END PARALLEL
                   if (search) then
 
                   !***
-                  !*** Offset the start point in ever increasing 
-                  !*** amounts until we are able to reliably locate 
+                  !*** Offset the start point in ever increasing
+                  !*** amounts until we are able to reliably locate
                   !*** the point in a cell of grid2. Inability to locate
                   !*** the point causes the offset amount to increase
 
                      it = 0
-                     do while (.not. srch_success) 
-                        
+                     do while (.not. srch_success)
+
                         srchpt_lat = beglat + offset*vec1_lat
                         srchpt_lon = beglon + offset*vec1_lon
-                        
+
                         call locate_point(srchpt_lat, srchpt_lon,
-     &                       cell_add, grid_num, opp_grid_num, 
+     &                       cell_add, grid_num, opp_grid_num,
      &                       oppcell_add, lboundary1, bedgeid1)
-                        
+
                         if (oppcell_add .eq. 0) then
                            loutside = .true.
 ! lcoinc added by MD
                            lcoinc = .false.
                            exit ! exit the search loop
                         else
-                           if (oppcell_add .ne. last_add .or. lthresh) 
+                           if (oppcell_add .ne. last_add .or. lthresh)
      &                          then
                               srch_success = .true.
                            else
                               offset = offset + delta
                               if (offset .ge. vec1_len) then
                                  exit
-                              endif                               
+                              endif
                               if (it .gt. 3) then
                                  delta = 2.0*delta
                                  it = 0
                               endif
-                           endif                        
+                           endif
                         endif
-                        
-                        it = it + 1                         
+
+                        it = it + 1
                      enddo   ! do while (.not. srch_success)
-                     
+
                   else
                      if (last_endpt_inpoly) then
 
-                        !*** We know the grid cell the end of the last 
-                        !*** segment (which is the beginning of this 
+                        !*** We know the grid cell the end of the last
+                        !*** segment (which is the beginning of this
                         !*** segment)
 
                         oppcell_add = last_add
@@ -1512,18 +1512,18 @@ C$OMP END PARALLEL
 
                         oppcell_add = next_add
                         lboundary1 = .true.
-                        
+
                      endif
-                     
+
                      srch_success = .true.
-                     
+
                   endif
-                  
+
                   !*****************************************************
                   !*** Find where the segment exits this cell, if at all
                   !*****************************************************
 
-                  if (srch_success) then 
+                  if (srch_success) then
 
                   !***
                   !*** First setup local copy of oppcell with room for
@@ -1533,28 +1533,28 @@ C$OMP END PARALLEL
                      if (grid_num .eq. 1) then
                         ncorners_opp = grid2_corners
                         do i = 1, ncorners_opp
-                           oppcell_corner_lat(i) = 
+                           oppcell_corner_lat(i) =
      &                          grid2_corner_lat(i,oppcell_add)
-                           oppcell_corner_lon(i) = 
+                           oppcell_corner_lon(i) =
      &                          grid2_corner_lon(i,oppcell_add)
                         enddo
-                        oppcell_center_lat = 
+                        oppcell_center_lat =
      &                       grid2_center_lat(oppcell_add)
-                        oppcell_center_lon = 
+                        oppcell_center_lon =
      &                       grid2_center_lon(oppcell_add)
 
                         special_cell = special_polar_cell2(oppcell_add)
                      else
                         ncorners_opp = grid1_corners
                         do i = 1, ncorners_opp
-                           oppcell_corner_lat(i) = 
+                           oppcell_corner_lat(i) =
      &                          grid1_corner_lat(i,oppcell_add)
                            oppcell_corner_lon(i) =
      &                          grid1_corner_lon(i,oppcell_add)
                         enddo
-                        oppcell_center_lat = 
+                        oppcell_center_lat =
      &                       grid1_center_lat(oppcell_add)
-                        oppcell_center_lon = 
+                        oppcell_center_lon =
      &                       grid1_center_lon(oppcell_add)
 
                         special_cell = special_polar_cell1(oppcell_add)
@@ -1564,35 +1564,35 @@ C$OMP END PARALLEL
                         call modify_polar_cell(ncorners_opp, nalloc_opp,
      &                       oppcell_corner_lat, oppcell_corner_lon)
                      endif
-                     
+
                      !***
-                     !*** First see if the segment end is 
+                     !*** First see if the segment end is
                      !*** in the same cell
                      !***
 
-                     call ptincell(endlat1,endlon1, oppcell_add, 
+                     call ptincell(endlat1,endlon1, oppcell_add,
      &                    ncorners_opp,
      &                    oppcell_corner_lat,oppcell_corner_lon,
      &                    oppcell_center_lat,oppcell_center_lon,
      &                    opp_grid_num,inpoly,
-     &                    lboundary2,bedgeid2) 
-                     
+     &                    lboundary2,bedgeid2)
+
                      if (inpoly) then
                         intrsct_lat = endlat1
                         intrsct_lon = endlon1
-                        intrsct_success = .true.                  
+                        intrsct_success = .true.
                         search = .false.
                         next_add = 0
                         last_add = oppcell_add        ! for next subseg
                         last_lboundary = lboundary2
                         last_endpt_inpoly = .true.
-                        
+
                         if (lboundary1 .and. lboundary2) then
-                  
-                           !*** This is a edge on the boundary of the 
-                           !*** active mesh and both of its endpoints 
-                           !*** are on the boundary of the containing 
-                           !*** cell. Check if the the segment is also 
+
+                           !*** This is a edge on the boundary of the
+                           !*** active mesh and both of its endpoints
+                           !*** are on the boundary of the containing
+                           !*** cell. Check if the the segment is also
                            !*** on the boundary
 
                            midlat = (beglat+endlat1)/2.0
@@ -1600,33 +1600,33 @@ C$OMP END PARALLEL
                               midlon = (beglon+endlon1)/2.0 - pi
                            else
                               midlon = (beglon+endlon1)/2.0
-                           endif 
-                           
-                           call ptincell(midlat,midlon, oppcell_add, 
+                           endif
+
+                           call ptincell(midlat,midlon, oppcell_add,
      &                          ncorners_opp,
      &                          oppcell_corner_lat, oppcell_corner_lon,
      &                          oppcell_center_lat, oppcell_center_lon,
      &                          opp_grid_num, inpoly, lboundary3,
-     &                          bedgeid3) 
-                           
+     &                          bedgeid3)
+
                            if (inpoly .and. lboundary3) then
                               lcoinc = .true.
                               intedge = bedgeid3
                            endif
-                           
+
                         else
                            lcoinc = .false.
                         endif
-                        
+
                      else
-                      
+
                         !***
-                        !*** Do an intersection to find out where the 
+                        !*** Do an intersection to find out where the
                         !*** segment exits the cell
                         !***
 
                         call intersection(cell_add,grid_num,
-     &                       beglat, beglon, endlat1, endlon1, 
+     &                       beglat, beglon, endlat1, endlon1,
      &                       begseg,
      &                       bedgeid1,
      &                       oppcell_add, ncorners_opp,
@@ -1634,7 +1634,7 @@ C$OMP END PARALLEL
      &                       opp_grid_num,
      &                       intrsct_lat, intrsct_lon, intedge,
      &                       sinang2, lcoinc, lthresh)
-                        
+
                         if (intedge /= 0) then
                            intrsct_success = .true.
                            last_add = oppcell_add     ! for next subseg
@@ -1654,11 +1654,11 @@ C$OMP END PARALLEL
                               search = .true.
                            endif
                         endif
-                        
+
                      endif
-                     
+
                      if (.not. intrsct_success) then
-                        
+
                         !*** Offset point and try again
 
                         search = .true.
@@ -1672,7 +1672,7 @@ C$OMP END PARALLEL
                            intrsct_lon = endlon1
                            last_add = 0
                            last_lboundary = .false.
-                           exit              
+                           exit
 
                         endif
                      endif
@@ -1685,7 +1685,7 @@ C$OMP END PARALLEL
                      !***
                      !*** Segment is coincident with edge of other grid
                      !*** which means it could belong to one of 2 cells
-                     !*** Choose the cell such that edge that is 
+                     !*** Choose the cell such that edge that is
                      !*** coincident with the segment is in the same
                      !*** dir as the segment
 
@@ -1693,23 +1693,23 @@ C$OMP END PARALLEL
                         inext = mod(i,ncorners_opp)+1
                         vec2_lat = oppcell_corner_lat(inext) -
      &                          oppcell_corner_lat(i)
-                        vec2_lon = oppcell_corner_lon(inext) - 
+                        vec2_lon = oppcell_corner_lon(inext) -
      &                          oppcell_corner_lon(i)
 
                         if (vec2_lon >  pi) vec2_lon = vec2_lon - pi2
                         if (vec2_lon < -pi) vec2_lon = vec2_lon + pi2
-                        
+
                         dp = vec1_lat*vec2_lat + vec1_lon*vec2_lon
-                        
+
                         if ((.not. lrevers .and. dp .lt. 0) .or.
      &                       (lrevers .and. dp .gt. 0)) then
-                           
+
                            !*** Integrals from this segment must be
                            !*** assigned to the adjacent cell of
                            !*** opcell_add but only if such an adjacent
                            !*** cell exists
 
-                           call find_adj_cell(oppcell_add, intedge, 
+                           call find_adj_cell(oppcell_add, intedge,
      &                          opp_grid_num, adj_add)
 
                            if (adj_add .gt. 0) then
@@ -1718,47 +1718,47 @@ C$OMP END PARALLEL
                               if (grid_num .eq. 1) then
                                  ncorners_opp = grid2_corners
                                  do i = 1, ncorners_opp
-                                    oppcell_corner_lat(i) = 
+                                    oppcell_corner_lat(i) =
      &                                   grid2_corner_lat(i,oppcell_add)
-                                    oppcell_corner_lon(i) = 
+                                    oppcell_corner_lon(i) =
      &                                   grid2_corner_lon(i,oppcell_add)
                                  enddo
-                                 oppcell_center_lat = 
+                                 oppcell_center_lat =
      &                                grid2_center_lat(oppcell_add)
-                                 oppcell_center_lon = 
+                                 oppcell_center_lon =
      &                                grid2_center_lon(oppcell_add)
-                                 
-                                 special_cell = 
+
+                                 special_cell =
      &                                special_polar_cell2(oppcell_add)
                               else
                                  ncorners_opp = grid1_corners
                                  do i = 1, ncorners_opp
-                                    oppcell_corner_lat(i) = 
+                                    oppcell_corner_lat(i) =
      &                                   grid1_corner_lat(i,oppcell_add)
                                     oppcell_corner_lon(i) =
      &                                   grid1_corner_lon(i,oppcell_add)
                                  enddo
-                                 oppcell_center_lat = 
+                                 oppcell_center_lat =
      &                                grid1_center_lat(oppcell_add)
-                                 oppcell_center_lon = 
+                                 oppcell_center_lon =
      &                                grid1_center_lon(oppcell_add)
 
-                                 special_cell = 
+                                 special_cell =
      &                                special_polar_cell1(oppcell_add)
                               endif
-                              
+
                               if (special_cell) then
-                                 call modify_polar_cell(ncorners_opp, 
-     &                                nalloc_opp, oppcell_corner_lat, 
+                                 call modify_polar_cell(ncorners_opp,
+     &                                nalloc_opp, oppcell_corner_lat,
      &                                oppcell_corner_lon)
                               endif
 
                            endif
 
                         endif
-                        
+
                      endif
-                     
+
                   else
 
                      !***
@@ -1766,11 +1766,11 @@ C$OMP END PARALLEL
                      !*** start
                      !***
 
-                     if (oppcell_add .eq. 0) then                     
+                     if (oppcell_add .eq. 0) then
                         loutside = .true.
 ! lcoinc added by MD
                         lcoinc = .false.
-                      
+
                         !***
                         !*** Take baby steps to see if any part of the
                         !*** segment is inside a cell of the other grid
@@ -1780,48 +1780,48 @@ C$OMP END PARALLEL
                         delta = vec1_len/100.00
                         offset = delta
                         do while (.not. srch_success)
-                         
+
                            srchpt_lat = beglat + offset*vec1_lat
                            srchpt_lon = beglon + offset*vec1_lon
-                           
-                           call locate_point(srchpt_lat, srchpt_lon, 
-     &                          cell_add, grid_num, opp_grid_num, 
+
+                           call locate_point(srchpt_lat, srchpt_lon,
+     &                          cell_add, grid_num, opp_grid_num,
      &                          oppcell_add, lboundary1, bedgeid1)
-                           
+
                            if (oppcell_add /= 0) then
                               srch_success = .true.
 
                               !***
                               !*** Found a point of the segment in the
                               !*** cell. Do a bisection method to find
-                              !*** the starting point of the segment 
+                              !*** the starting point of the segment
                               !*** in the cell
-                              !*** 
+                              !***
 
-                              call converge_to_bdry(oppcell_add, 
-     &                             opp_grid_num, ncorners_opp, 
-     &                             oppcell_corner_lat, 
+                              call converge_to_bdry(oppcell_add,
+     &                             opp_grid_num, ncorners_opp,
+     &                             oppcell_corner_lat,
      &                             oppcell_corner_lon,
      &                             oppcell_center_lat,
      &                             oppcell_center_lon,
      &                             srchpt_lat, srchpt_lon,
      &                             beglat, beglon,
-     &                             intrsct_lat, intrsct_lon, 
+     &                             intrsct_lat, intrsct_lon,
      &                             bedgeid1)
 
                               search = .false.
                               last_endpt_onedge = .true.
                               next_add = oppcell_add
                               last_lboundary = .true.
-                                                         
-                              oppcell_add = 0  
+
+                              oppcell_add = 0
 
                            else
 
                               offset = offset + delta
-                              
+
                               if (offset .ge. vec1_len) then
-!                                 print *, 
+!                                 print *,
 !     &                                'Segment fully outside grid2'
 !                                 print *, 'Segment of grid1_add',
 !     &                                grid1_add
@@ -1831,8 +1831,8 @@ C$OMP END PARALLEL
                                  seg_outside = .true.
 
                                  intrsct_lat = endlat1
-                                 intrsct_lon = endlon1 
-                                 
+                                 intrsct_lon = endlon1
+
                                  search = .true.
                                  last_add = 0
                                  last_lboundary = .false.
@@ -1840,34 +1840,34 @@ C$OMP END PARALLEL
                                  exit ! leave search loop
                               endif
                            endif
-                         
+
                         enddo
 
                         ! int. loop
-                        if (srch_success .or. seg_outside) exit 
-                        
+                        if (srch_success .or. seg_outside) exit
+
                      else
-                        
+
                         if(is_master)then
                            print *, 'Unable to move out of last cell'
                            print *, 'Segment of edge ',corner,
      &                          ' of grid cell ',cell_add
                            print *, 'Stuck in opposite grid cell ',
      &                          oppcell_add
-                           dist2 = 
+                           dist2 =
      &                      (endlat1-begseg(1))*(endlat1-begseg(1)) +
      &                      (endlon1-begseg(2))*(endlon1-begseg(2))
                            print *, 'Fraction of segment left ',
      &                          vec1_len/sqrt(dist2)
                         endif
                         lstuck = .true.
-                        
+
                         !***
-                        !*** Punt - just assign the rest of the segment 
+                        !*** Punt - just assign the rest of the segment
                         !*** to the current cell it is stuck in by
-                        !*** tagging the segment endpoint as the 
+                        !*** tagging the segment endpoint as the
                         !*** intersection point
-                        !*** 
+                        !***
 
                         intrsct_lat = endlat1
                         intrsct_lon = endlon1
@@ -1875,11 +1875,11 @@ C$OMP END PARALLEL
                         search = .true.
                         last_add = 0
                         last_lboundary = .false.
-                        
+
                      endif
 
                      exit    ! exit the intersection loop
-                     
+
                   endif      ! if (srch_success) then ... else ....
 
                end do        ! do while (.not. intrsct_success)
@@ -1887,7 +1887,7 @@ C$OMP END PARALLEL
                !********************************************************
                !*** Compute the line integrals for this subsegment
                !********************************************************
-            
+
                if (oppcell_add /= 0) then
                   call line_integral(phi_or_theta, weights, num_wts,
      &                 beglon, intrsct_lon, beglat, intrsct_lat,
@@ -1899,7 +1899,7 @@ C$OMP END PARALLEL
      &                 cell_center_lat, cell_center_lon,
      &                 cell_center_lat, cell_center_lon)
                endif
-             
+
                !***
                !*** if integrating in reverse order, change
                !*** sign of weights
@@ -1910,7 +1910,7 @@ C$OMP END PARALLEL
                endif
 
                !***
-               !*** store the appropriate addresses and weights. 
+               !*** store the appropriate addresses and weights.
                !*** also add contributions to cell areas and centroids.
                !***
 
@@ -1918,7 +1918,7 @@ C$OMP END PARALLEL
 
                   if (oppcell_add /= 0) then
                      if (grid1_mask(cell_add)) then
-                        call store_link_cnsrv(cell_add, oppcell_add, 
+                        call store_link_cnsrv(cell_add, oppcell_add,
      &                       weights)
 
 C$OMP CRITICAL(block1)
@@ -1927,22 +1927,22 @@ C$OMP CRITICAL(block1)
 !     cell address and oppcell_add in which case it will try to write
 !     into this address - we have to block that until we are finished
 !
-                        grid1_frac(cell_add) = 
+                        grid1_frac(cell_add) =
      &                       grid1_frac(cell_add) + weights(1)
 
-                        grid2_frac(oppcell_add) = 
+                        grid2_frac(oppcell_add) =
      &                     grid2_frac(oppcell_add) + weights(num_wts+1)
 C$OMP END CRITICAL(block1)
                      endif
-                     
+
                   endif
 
-C$OMP CRITICAL(block2)                  
-                  grid1_area(cell_add) = grid1_area(cell_add) + 
+C$OMP CRITICAL(block2)
+                  grid1_area(cell_add) = grid1_area(cell_add) +
      &                 weights(1)
-                  grid1_centroid_lat(cell_add) = 
+                  grid1_centroid_lat(cell_add) =
      &                 grid1_centroid_lat(cell_add) + weights(2)
-                  grid1_centroid_lon(cell_add) = 
+                  grid1_centroid_lon(cell_add) =
      &                 grid1_centroid_lon(cell_add) + weights(3)
 C$OMP END CRITICAL(block2)
 
@@ -1952,14 +1952,14 @@ C$OMP END CRITICAL(block2)
                   !*** we are always sending in grid1 weights first
                   !*** and then grid2 weights
 
-                  do i = 1, num_wts                     
+                  do i = 1, num_wts
                      rev_weights(num_wts+i) = weights(i)
                      rev_weights(i) = weights(num_wts+i)
                   enddo
 
                   if (.not. lcoinc .and. oppcell_add /= 0) then
                      if (grid1_mask(oppcell_add)) then
-                        call store_link_cnsrv(oppcell_add, cell_add, 
+                        call store_link_cnsrv(oppcell_add, cell_add,
      &                       rev_weights)
 
 C$OMP CRITICAL(block3)
@@ -1968,23 +1968,23 @@ C$OMP CRITICAL(block3)
 !     cell address and oppcell_add in which case it will try to write
 !     into this address - we have to block that until we are finished
 !
-                        grid2_frac(cell_add) = 
+                        grid2_frac(cell_add) =
      &                       grid2_frac(cell_add) + weights(1)
 
-                        grid1_frac(oppcell_add) = 
+                        grid1_frac(oppcell_add) =
      &                      grid1_frac(oppcell_add) + weights(num_wts+1)
 C$OMP END CRITICAL(block3)
 
                      endif
-                     
+
                   endif
-                  
+
 C$OMP CRITICAL(block4)
-                  grid2_area(cell_add) = grid2_area(cell_add) + 
+                  grid2_area(cell_add) = grid2_area(cell_add) +
      &                 weights(1)
-                  grid2_centroid_lat(cell_add) = 
+                  grid2_centroid_lat(cell_add) =
      &                 grid2_centroid_lat(cell_add) + weights(2)
-                  grid2_centroid_lon(cell_add) = 
+                  grid2_centroid_lon(cell_add) =
      &                 grid2_centroid_lon(cell_add) + weights(3)
 C$OMP END CRITICAL(block4)
                endif
@@ -1999,12 +1999,12 @@ C$OMP END CRITICAL(block4)
                !***
                !*** How far have we come from the start of the segment
                !***
-             
+
                vec2_lat = intrsct_lat-begseg(1)
                vec2_lon = intrsct_lon-begseg(2)
                if (vec2_lon >  pi) vec2_lon = vec2_lon - pi2
                if (vec2_lon < -pi) vec2_lon = vec2_lon + pi2
-               
+
                partseg_len2 = vec2_lat*vec2_lat + vec2_lon*vec2_lon
 
                !***
@@ -2014,7 +2014,7 @@ C$OMP END CRITICAL(block4)
 
                num_subseg = num_subseg + 1
                if (num_subseg > max_subseg) then
-                  print *, 
+                  print *,
      &               'integration stalled: num_subseg exceeded limit'
                   print *, 'Cell ',cell_add
                   print *, 'Edge ',corner
@@ -2031,11 +2031,11 @@ C$OMP END CRITICAL(block4)
             end do           ! do while (beglat /= endlat1 ...
 
 !NRL We add an exit to outer do similar to exit of inner do:
-!NRL   This was an apparent bug: exit statement would escape 
-!NRL   inner do but then computation could not get out of 
+!NRL   This was an apparent bug: exit statement would escape
+!NRL   inner do but then computation could not get out of
 !NRL   outer do since beglat, beglon controlling outer do
 !NRL   never changed b/c it never gets to the part of the
-!NRL   code that changes beglat, beglon, b/c it keeps 
+!NRL   code that changes beglat, beglon, b/c it keeps
 !NRL   exiting inner do.
 
 !NRL This should happen very rarely, so we have a print
@@ -2049,8 +2049,8 @@ C$OMP END CRITICAL(block4)
             endif                                        ! NRL
 
             ns = ns + 1
-            if ((beglat > 0 .and. beglat < north_thresh) .or. 
-     &           (beglat < 0 .and. beglat > south_thresh)) 
+            if ((beglat > 0 .and. beglat < north_thresh) .or.
+     &           (beglat < 0 .and. beglat > south_thresh))
      &           then
                inpolar = .false.
             endif
@@ -2060,9 +2060,9 @@ C$OMP END CRITICAL(block4)
 
          call line_integral(phi_or_theta, weights, num_wts,
      &        begseg(2), endlon, begseg(1), endlat,
-     &        cell_center_lat, 
+     &        cell_center_lat,
      &        cell_center_lon,
-     &        cell_center_lat, 
+     &        cell_center_lat,
      &        cell_center_lon)
 
          !***
@@ -2077,7 +2077,7 @@ C$OMP END CRITICAL(block4)
 
 !***********************************************************************
 
-      subroutine modify_polar_cell(ncorners, nalloc, cell_corner_lat, 
+      subroutine modify_polar_cell(ncorners, nalloc, cell_corner_lat,
      &     cell_corner_lon)
 
       !*** Input variables
@@ -2085,7 +2085,7 @@ C$OMP END CRITICAL(block4)
       integer (SCRIP_i4), intent(in) ::
      &     nalloc
 
-      !*** In/Out Variables 
+      !*** In/Out Variables
 
       integer (SCRIP_i4), intent(inout) ::
      &     ncorners
@@ -2097,7 +2097,7 @@ C$OMP END CRITICAL(block4)
 
       integer (SCRIP_i4) ::
      &     npcorners,      ! Number of polar corners
-     &     pcorner,        ! Index of the polar corner 
+     &     pcorner,        ! Index of the polar corner
                            ! (if only 1 is found)
      &     corner,         ! Corner iterator variable
      &     previdx,        ! Index of previous corner to polar corner
@@ -2108,7 +2108,7 @@ C$OMP END CRITICAL(block4)
      &     prevlon,        ! Latitude of previous corner to polar corner
      &     nextlon         ! Latitude of next corner to polar corner
 
-      
+
       !***
       !*** Modify special cell with only one corner at the pole. Such
       !*** cells can have an artificially extreme distortion of the
@@ -2129,9 +2129,9 @@ C$OMP END CRITICAL(block4)
       !***    lat_p+      lat_p-      lat_p+           lat_p-
       !***
 
-      
+
       !***
-      !*** MAJOR ASSUMPTION HERE IS THAT CELL_CORNER_LAT AND 
+      !*** MAJOR ASSUMPTION HERE IS THAT CELL_CORNER_LAT AND
       !*** CELL_CORNER_LON HAVE ROOM TO GROW
       !***
       if (ncorners .ge. nalloc) return ! ** * No room to grow
@@ -2148,13 +2148,13 @@ C$OMP END CRITICAL(block4)
 
 
       if (npcorners .ne. 1) return !*** Not the kind of cell we want
-      
+
       previdx = mod((pcorner-1)-1+ncorners,ncorners) + 1
       prevlon = cell_corner_lon(previdx)
-      
+
       nextidx = mod(pcorner,ncorners) + 1
       nextlon = cell_corner_lon(nextidx)
-      
+
       !*** Move entries from pcorner+1 on back by one
 
       do corner = ncorners, pcorner+1, -1
@@ -2166,7 +2166,7 @@ C$OMP END CRITICAL(block4)
 
       cell_corner_lat(pcorner+1) = pole_lat
       cell_corner_lon(pcorner+1) = nextlon
-      
+
       ncorners = ncorners+1
 
       !*** Move entries from pcorner on back by one
@@ -2182,7 +2182,7 @@ C$OMP END CRITICAL(block4)
       cell_corner_lon(pcorner) = prevlon
 
       ncorners = ncorners+1
-      
+
       end subroutine modify_polar_cell
 
 
@@ -2196,16 +2196,16 @@ C$OMP END CRITICAL(block4)
 
 !-----------------------------------------------------------------------
 !
-!     this routine finds the intersection of a line segment given by 
+!     this routine finds the intersection of a line segment given by
 !     beglon, endlon, etc. with a cell from another grid
-!     A coincidence flag is returned if the segment is entirely 
-!     coincident with an edge of the opposite.  
+!     A coincidence flag is returned if the segment is entirely
+!     coincident with an edge of the opposite.
 !
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !
-!     intent(in): 
+!     intent(in):
 !
 !-----------------------------------------------------------------------
 
@@ -2215,11 +2215,11 @@ C$OMP END CRITICAL(block4)
       integer (SCRIP_i4), intent(in) ::
      &     seg_grid_id    ! ID of grid that intersecting segment is from
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     beglat, beglon,! beginning lat/lon endpoints for segment
      &     endlat, endlon ! ending    lat/lon endpoints for segment
 
-      real (SCRIP_r8), dimension(2), intent(inout) :: 
+      real (SCRIP_r8), dimension(2), intent(inout) ::
      &     begseg         ! begin lat/lon of full segment
 
       integer (SCRIP_i4), intent(in) ::
@@ -2227,7 +2227,7 @@ C$OMP END CRITICAL(block4)
 
       integer (SCRIP_i4), intent(in) ::
      &     cell_id             ! cell to intersect with
-      
+
       integer (SCRIP_i4), intent(in) ::
      &     ncorners            ! number of corners of cell
 
@@ -2241,12 +2241,12 @@ C$OMP END CRITICAL(block4)
 
 !-----------------------------------------------------------------------
 !
-!     intent(out): 
+!     intent(out):
 !
 !-----------------------------------------------------------------------
 
       real (SCRIP_r8), intent(out) ::
-     &     intrsct_lat, 
+     &     intrsct_lat,
      &     intrsct_lon          ! lat/lon coords of intersection
 
       real (SCRIP_r8), intent(out) ::
@@ -2257,7 +2257,7 @@ C$OMP END CRITICAL(block4)
      &     intedge              ! edge that is intersected
 
       logical (SCRIP_logical), intent(out) ::
-     &     lcoinc               ! True if segment is coincident with 
+     &     lcoinc               ! True if segment is coincident with
                                 ! a cell edge
 
       logical (SCRIP_logical), intent(out) ::
@@ -2269,7 +2269,7 @@ C$OMP END CRITICAL(block4)
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4) :: 
+      integer (SCRIP_i4) ::
      &     n, next_n
 
       logical (SCRIP_logical) ::
@@ -2280,22 +2280,22 @@ C$OMP END CRITICAL(block4)
      &     lat1, lat2,         ! local latitude  variables for segment
      &     grdlon1, grdlon2,   ! local longitude variables for grid cell
      &     grdlat1, grdlat2,   ! local latitude  variables for grid cell
-     &     vec1_lat, vec1_lon, 
+     &     vec1_lat, vec1_lon,
      &     vec2_lat, vec2_lon, !
      &     vec3_lat, vec3_lon, ! vectors and vector products used
      &     cross_product,      ! during grid search
      &     dot_product,        !
      &     lensqr1, lensqr2,   !
      &     lensqr3,            !
-     &     s1, s2, determ,      
+     &     s1, s2, determ,
      &     mat1, mat2,         ! variables used for linear solve to
      &     mat3, mat4,         ! find intersection
      &     rhs1, rhs2,         !
-     &     denom,               
+     &     denom,
      &     begsegloc(2),       ! local copy of full segment start
-     &     dist2,              ! distance from start pt to intersection 
+     &     dist2,              ! distance from start pt to intersection
                                ! pt
-     &     maxdist2,           ! max dist from start pt to any 
+     &     maxdist2,           ! max dist from start pt to any
                                ! intersection pt
      &     max_intrsct_lat,    ! latitude of farthest intersection point
      &     max_intrsct_lon,    ! longitude of farthest intersection
@@ -2341,12 +2341,12 @@ C$OMP END CRITICAL(block4)
       if (beglat > north_thresh .or. beglat < south_thresh) then
 
          !*** Special intersection routine for cells near the pole
-         !*** Intersection is done in a transformed space using 
+         !*** Intersection is done in a transformed space using
          !*** multi-segmented representation of the cell
 
         call pole_intersection(cell_id,ncorners,
      &               cell_corner_lat,cell_corner_lon,cell_grid_id,
-     &               beglat, beglon, endlat, 
+     &               beglat, beglon, endlat,
      &               endlon, begseg, begedge,
      &               intedge,intrsct_lat,intrsct_lon,
      &               sinang2,lcoinc,lthresh)
@@ -2356,7 +2356,7 @@ C$OMP END CRITICAL(block4)
       endif
 
 
-      maxdist2 = -9999999.0 
+      maxdist2 = -9999999.0
 
       begsegloc(1) = begseg(1)
       begsegloc(2) = begseg(2)
@@ -2364,7 +2364,7 @@ C$OMP END CRITICAL(block4)
       lthresh = .false.
       intrsct_loop: do n=1,ncorners
          next_n = mod(n,ncorners) + 1
-         
+
          grdlat1 = cell_corner_lat(n)
          grdlon1 = cell_corner_lon(n)
          grdlat2 = cell_corner_lat(next_n)
@@ -2383,7 +2383,7 @@ C$OMP END CRITICAL(block4)
             grdlon1 = grdlon1 - pi2
          endif
 
-         ! Also the two intersecting segments together 
+         ! Also the two intersecting segments together
          ! cannot span more than 2*pi radians
 
          minlon = min(lon1,lon2)
@@ -2398,8 +2398,8 @@ C$OMP END CRITICAL(block4)
                grdlon1 = grdlon1 + pi2
                grdlon2 = grdlon2 + pi2
             endif
-         endif     
-         
+         endif
+
 
         !***
         !*** set up linear system to solve for intersection
@@ -2415,14 +2415,14 @@ C$OMP END CRITICAL(block4)
         determ = mat1*mat4 - mat2*mat3
 
         !***
-        !*** if the determinant is zero, the segments are either 
-        !***   parallel or coincident.  coincidences were detected 
+        !*** if the determinant is zero, the segments are either
+        !***   parallel or coincident.  coincidences were detected
         !***   above so do nothing.
 
         if (abs(determ) > tiny*tiny) then
 
-          !*** if the determinant is non-zero, solve for the linear 
-          !***   parameters s for the intersection point on each line 
+          !*** if the determinant is non-zero, solve for the linear
+          !***   parameters s for the intersection point on each line
           !***   segment.
           !*** if 0<s1,s2<1 then the segment intersects with this side.
           !***   return the point of intersection (adding a small
@@ -2447,7 +2447,7 @@ C$OMP END CRITICAL(block4)
              endif
 
 
-            ! Also the two intersecting segments together 
+            ! Also the two intersecting segments together
             ! cannot span more than 2*pi radians
 
              minlon = min(begsegloc(2),lon2)
@@ -2473,7 +2473,7 @@ C$OMP END CRITICAL(block4)
              determ = mat1*mat4 - mat2*mat3
 
              !***
-             !*** sometimes due to roundoff, the previous 
+             !*** sometimes due to roundoff, the previous
              !*** determinant is non-zero, but the lines
              !*** are actually coincident.  if this is the
              !*** case, skip the rest.
@@ -2511,12 +2511,12 @@ C$OMP END CRITICAL(block4)
 
                    maxdist2 = vec1_lat*vec1_lat + vec1_lon*vec1_lon
                    dist2 = maxdist2
-                   
+
                    denom = (mat1*mat1+mat2*mat2)*(mat3*mat3+mat4*mat4)
                    sinang2 = determ*determ/denom
                    intedge = n
                    first = .false.
-                else                   
+                else
                    vec1_lat = intrsct_lat-beglat
                    vec1_lon = intrsct_lon-beglon
                    if (vec1_lon > pi) then
@@ -2532,8 +2532,8 @@ C$OMP END CRITICAL(block4)
                          max_intrsct_lat = intrsct_lat
                          max_intrsct_lon = intrsct_lon
                          maxdist2 = dist2
-                         
-                         denom = 
+
+                         denom =
      &                       (mat1*mat1+mat2*mat2)*(mat3*mat3+mat4*mat4)
                          sinang2 = determ*determ/denom
                          intedge = n
@@ -2545,14 +2545,14 @@ C$OMP END CRITICAL(block4)
                 print *, 'DEBUG: zero determ'
                 stop
              endif
-             
+
           endif
 
        else
 
           !***
           !*** Coincident lines or parallel lines
-          !*** 
+          !***
 
           cross_product = mat2*rhs2 - mat4*rhs1
 
@@ -2566,7 +2566,7 @@ C$OMP END CRITICAL(block4)
 
              dot_product = mat1*(-mat2) + mat3*(-mat4)
 
-             lensqr1 = mat1*mat1 + mat3*mat3 ! length sqrd of input 
+             lensqr1 = mat1*mat1 + mat3*mat3 ! length sqrd of input
                                              ! segment
 
              if (dot_product < zero) then
@@ -2574,7 +2574,7 @@ C$OMP END CRITICAL(block4)
                 !***
                 !*** Segments oriented in the same direction
                 !***
-             
+
 
                 tmplat = grdlat2
                 tmplon = grdlon2
@@ -2600,14 +2600,14 @@ C$OMP END CRITICAL(block4)
              vec3_lat = grdlat2 - lat1
              vec3_lon = grdlon2 - lon1
              if (vec3_lon >  pi) vec3_lon = vec3_lon - pi2
-             if (vec3_lon < -pi) vec3_lon = vec3_lon + pi2             
+             if (vec3_lon < -pi) vec3_lon = vec3_lon + pi2
 
              lensqr3 = (vec3_lat*vec3_lat+vec3_lon*vec3_lon)
 
              if (vec3_lat*mat1 + vec3_lon*mat3 < 0) then
                 lensqr3 = -lensqr3
              endif
-             
+
              found = .false.
 
              if (lensqr2 > 0) then
@@ -2646,13 +2646,13 @@ C$OMP END CRITICAL(block4)
 
                 exit intrsct_loop
              endif
-                
+
           endif
 
        endif
 
        !*** restore lon1 and lon2 in case it got modified
-         
+
        lon1 = beglon
        lon2 = endlon
        begsegloc(2) = begseg(2)
@@ -2728,20 +2728,20 @@ C$OMP END CRITICAL(block4)
 
 !-----------------------------------------------------------------------
 !
-!     Special intersection routine for line segment in cell close to 
+!     Special intersection routine for line segment in cell close to
 !     poles
 !     A coordinate transformation (using a Lambert azimuthal
 !     equivalent projection) is performed to perform the intersection
 !     Also, since a straight line in lat-lon space is a curve in this
-!     transformed space, we represent each edge of the cell as having 
-!     'npseg' segments whose endpoints are mapped using the Lambert 
+!     transformed space, we represent each edge of the cell as having
+!     'npseg' segments whose endpoints are mapped using the Lambert
 !     projection
 !
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !
-!     intent(in): 
+!     intent(in):
 !
 !-----------------------------------------------------------------------
 
@@ -2758,20 +2758,20 @@ C$OMP END CRITICAL(block4)
       integer (SCRIP_i4), intent(in) ::
      &     cell_grid_id         ! which grid is the cell from?
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     beglat, beglon,      ! beginning lat/lon coords for segment
      &     endlat, endlon       ! ending    lat/lon coords for segment
 
-      real (SCRIP_r8), dimension(2), intent(inout) :: 
+      real (SCRIP_r8), dimension(2), intent(inout) ::
      &     begseg               ! begin lat/lon of full segment
 
       integer (SCRIP_i4), intent(in) ::
-     &     begedge              ! edge on which segment start is on 
+     &     begedge              ! edge on which segment start is on
                                 ! (can be 0)
 
 !-----------------------------------------------------------------------
 !
-!     intent(out): 
+!     intent(out):
 !
 !-----------------------------------------------------------------------
 
@@ -2780,18 +2780,18 @@ C$OMP END CRITICAL(block4)
 
       real (SCRIP_r8), intent(out) ::
      &     intrsct_lat,         ! lat/lon coords of intersection
-     &     intrsct_lon          
+     &     intrsct_lon
 
       real (SCRIP_r8), intent(out) ::
      &     sinang2              ! square of sine of angle between
                                 ! intersecting line segments
 
       logical (SCRIP_logical), intent(out) ::
-     &     lcoinc               ! True if segment is coincident with 
+     &     lcoinc               ! True if segment is coincident with
                                 ! a cell edge
 
       logical (SCRIP_logical), intent(inout) ::
-     &     lthresh              ! True if segment crosses threshold 
+     &     lthresh              ! True if segment crosses threshold
 
 
 !-----------------------------------------------------------------------
@@ -2800,17 +2800,17 @@ C$OMP END CRITICAL(block4)
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4) :: 
+      integer (SCRIP_i4) ::
      &     n, n1, next_n, prev_n,
-     &     it, i, j, 
-     &     ncorners2, 
+     &     it, i, j,
+     &     ncorners2,
      &     intedge1
 
-      logical (SCRIP_logical) :: 
-     &     first, 
+      logical (SCRIP_logical) ::
+     &     first,
      &     found
 
-      real (SCRIP_r8) :: 
+      real (SCRIP_r8) ::
      &     pi4, rns,             ! north/south conversion
      &     x1, x2,               ! local x variables for segment
      &     y1, y2,               ! local y variables for segment
@@ -2820,7 +2820,7 @@ C$OMP END CRITICAL(block4)
      &     grdlon1, grdlon2,     ! longitude vars for grid cell
      &     vec1_y, vec1_x,       !
      &     vec2_y, vec2_x,       ! vectors and cross products used
-     &     vec3_y, vec3_x,       ! 
+     &     vec3_y, vec3_x,       !
      &     vec1_lat, vec1_lon,   !
      &     vec2_lat, vec2_lon,   !
      &     vec3_lon,             !
@@ -2831,7 +2831,7 @@ C$OMP END CRITICAL(block4)
      &     mat3, mat4,           ! find intersection
      &     rhs1, rhs2,           !
      &     denom,                !
-     &     intrsct_x, intrsct_y, ! intersection coordinates in 
+     &     intrsct_x, intrsct_y, ! intersection coordinates in
                                  ! transformed space
      &     max_intrsct_lat,      ! intersection point at max distance
      &     max_intrsct_lon,      ! from the start point
@@ -2840,8 +2840,8 @@ C$OMP END CRITICAL(block4)
      &     maxdist2,             ! max dist of intersection point from
                                  ! start pnt
      &     lensqr1, lensqr2,     ! various segment lengths
-     &     lensqr3,             
-     &     tmpx, tmpy, 
+     &     lensqr3,
+     &     tmpx, tmpy,
      &     tmplat, tmplon,
      &     ldummy
 
@@ -2851,9 +2851,9 @@ C$OMP END CRITICAL(block4)
 
       real (SCRIP_r8), dimension(npseg*ncorners) ::
      &     cell_corners_lat_loc,! Lat/Lon coordinates of multi-segmented
-     &     cell_corners_lon_loc ! version of cell 
+     &     cell_corners_lon_loc ! version of cell
 
-      
+
 
 !-----------------------------------------------------------------------
 !
@@ -2902,13 +2902,13 @@ C$OMP END CRITICAL(block4)
 !-----------------------------------------------------------------------
 
 
-      if (abs(x1) .le. tiny .and. abs(y1) .le. tiny .and. 
+      if (abs(x1) .le. tiny .and. abs(y1) .le. tiny .and.
      &     abs(x2) .le. tiny .and. abs(y2) .le. tiny) then
 
          !***
          !*** The segment is a polar segment which is degenerate
          !*** in the transformed Lambert space. Find out which
-         !*** cell edge it is coincident with and find the 
+         !*** cell edge it is coincident with and find the
          !*** point where the segment exits this cell (if at all)
          !*** NOTE 1: THIS MUST BE DONE IN LAT-LON SPACE
          !*** NOTE 2: CODE RELEVANT ONLY FOR INTEGRATION W.R.T. phi
@@ -2916,7 +2916,7 @@ C$OMP END CRITICAL(block4)
 
          intrsct_loop1: do n = 1, ncorners
            next_n = mod(n,ncorners) + 1
-           
+
            grdlat1  = cell_corners_lat(n)
            grdlon1  = cell_corners_lon(n)
            grdlat2  = cell_corners_lat(next_n)
@@ -2925,10 +2925,10 @@ C$OMP END CRITICAL(block4)
            grdy1 =     two*sin(pi4 - half*grdlat1)*sin(grdlon1)
            grdx2 = rns*two*sin(pi4 - half*grdlat2)*cos(grdlon2)
            grdy2 =     two*sin(pi4 - half*grdlat2)*sin(grdlon2)
-          
+
            if (abs(grdx1) .le. tiny .and. abs(grdy1) .le. tiny .and.
      &          abs(grdx2) .le. tiny .and. abs(grdy2) .le. tiny) then
-              
+
               !***
               !*** Found polar segment in cell
               !***
@@ -2950,7 +2950,7 @@ C$OMP END CRITICAL(block4)
                  grdlat2 = grdlat1
                  grdlon2 = grdlon1
                  grdlat1 = tmplat
-                 grdlon1 = tmplon                 
+                 grdlon1 = tmplon
               endif
 
               vec2_lon = grdlon1 - beglon
@@ -2988,15 +2988,15 @@ C$OMP END CRITICAL(block4)
                  intedge = n
                  exit intrsct_loop1
               endif
- 
+
            endif
-         
+
         end do intrsct_loop1
 
         return
       endif
 
-      
+
 
 
       !****
@@ -3012,7 +3012,7 @@ C$OMP END CRITICAL(block4)
       i = 0
       do n = ncorners, 1, -1
          i = i+1
-         n1 = mod(n,ncorners)+1         
+         n1 = mod(n,ncorners)+1
          cell_corners_lat_loc(i) = cell_corners_lat(n1)
          cell_corners_lon_loc(i) = cell_corners_lon(n1)
 
@@ -3029,8 +3029,8 @@ C$OMP END CRITICAL(block4)
          endif
 
          do j = 1, npseg-1
-            i = i+1         
-            cell_corners_lat_loc(i) = 
+            i = i+1
+            cell_corners_lat_loc(i) =
      &           cell_corners_lat(n1) + j*vec1_lat/npseg
             cell_corners_lon_loc(i) =
      &           cell_corners_lon(n1) + j*vec1_lon/npseg
@@ -3077,11 +3077,11 @@ C$OMP END CRITICAL(block4)
         determ = mat1*mat4 - mat2*mat3
 
         !***
-        !*** if the determinant is zero, the segments are either 
-        !***   parallel or coincident or one segment has zero length.  
+        !*** if the determinant is zero, the segments are either
+        !***   parallel or coincident or one segment has zero length.
 
-        !*** if the determinant is non-zero, solve for the linear 
-        !***   parameters s for the intersection point on each line 
+        !*** if the determinant is non-zero, solve for the linear
+        !***   parameters s for the intersection point on each line
         !***   segment.
         !*** if 0<s1,s2<1 then the segment intersects with this side.
         !***   return the point of intersection (adding a small
@@ -3092,13 +3092,13 @@ C$OMP END CRITICAL(block4)
 
            s1 = (rhs1*mat4 - mat2*rhs2)/determ
            s2 = (mat1*rhs2 - rhs1*mat3)/determ
-           
+
            if (s2 >= zero .and. s2 <= one .and.
      &          s1 >  tiny .and. s1 <= one) then
 
               intrsct_x = x1 + s1*mat1
               intrsct_y = y1 + s1*mat3
-              
+
               !***
               !*** convert back to lat/lon coordinates
               !***
@@ -3112,10 +3112,10 @@ C$OMP END CRITICAL(block4)
 
                  !*** Degenerate case - we don't have a good way of
                  !*** finding out what the longitude corresponding
-                 !*** to a (0,0) intersection is. So we take the 
+                 !*** to a (0,0) intersection is. So we take the
                  !*** the intersection as one of the two endpoints of
                  !*** the grid segment
-                 
+
                  if (abs(abs(grdlat1)-pih) .lt. 1e-5 .and.
      &                abs(abs(grdlat2)-pih) .lt. 1e-5) then
 
@@ -3138,7 +3138,7 @@ C$OMP END CRITICAL(block4)
                     else if (vec2_lon < -pi) then
                        vec2_lon = vec2_lon + pi2
                     endif
-                    
+
                     !*** pick the endpoint of the grid segment that is
                     !*** farthest from the beg point of the segment
 
@@ -3180,16 +3180,16 @@ C$OMP END CRITICAL(block4)
 
               endif
 
-              if (intrsct_lon < zero) 
+              if (intrsct_lon < zero)
      &             intrsct_lon = intrsct_lon + pi2
-           
+
               if (abs(intrsct_x) > 1.d-10) then
-                 intrsct_lat = (pi4 - 
+                 intrsct_lat = (pi4 -
      &                asin(rns*half*intrsct_x/cos(intrsct_lon)))*two
                  ldummy = two*(pi4 -
      &           asin(sqrt(intrsct_x*intrsct_x+intrsct_y*intrsct_y)/2.))
               else if (abs(intrsct_y) > 1.d-10) then
-                 intrsct_lat = (pi4 - 
+                 intrsct_lat = (pi4 -
      &                asin(half*intrsct_y/sin(intrsct_lon)))*two
                  ldummy = two*(pi4 -
      &           asin(sqrt(intrsct_x*intrsct_x+intrsct_y*intrsct_y)/2.))
@@ -3201,10 +3201,10 @@ C$OMP END CRITICAL(block4)
               !***
               !*** If there are multiple intersection points, accept the
               !*** one that is not on the edge we started from but is
-              !*** closest to the start point - need this for 
+              !*** closest to the start point - need this for
               !*** intersection to work for non-convex edges
               !***
-            
+
               if (first) then
 
                  intedge1 = (n-1)/npseg + 1
@@ -3214,7 +3214,7 @@ C$OMP END CRITICAL(block4)
 
                     max_intrsct_lat = intrsct_lat
                     max_intrsct_lon = intrsct_lon
-                    
+
                     vec1_lat = intrsct_lat-beglat
                     vec1_lon = intrsct_lon-beglon
                     if (vec1_lon > pi) then
@@ -3224,11 +3224,11 @@ C$OMP END CRITICAL(block4)
                     endif
                     maxdist2 = vec1_lat*vec1_lat + vec1_lon*vec1_lon
                     dist2 = maxdist2
-                    
+
                     denom = (mat1*mat1+mat2*mat2)*(mat3*mat3+mat4*mat4)
                     sinang2 = determ*determ/denom
                     intedge = intedge1
-                 
+
                     first = .false.
                  endif
 
@@ -3241,44 +3241,44 @@ C$OMP END CRITICAL(block4)
                     vec1_lon = vec1_lon + pi2
                  endif
                  dist2 = vec1_lat*vec1_lat + vec1_lon*vec1_lon
-                 
+
                  !*** if the first intersection was on the same edge
-                 !*** as the starting edge or 
-                 !*** the current intersection point is not on the 
-                 !*** starting edge and the distance to the beginning 
-                 !*** point is less than that of the previous 
+                 !*** as the starting edge or
+                 !*** the current intersection point is not on the
+                 !*** starting edge and the distance to the beginning
+                 !*** point is less than that of the previous
                  !*** intersection accept this intersection
 
                  intedge1 = (n-1)/npseg + 1
                  intedge1 = ncorners - intedge1 + 1 ! dir of edges was
-                                                    ! reversed 
+                                                    ! reversed
                  if (dist2 > maxdist2) then
                     if (begedge == 0 .or. intedge1 .ne. begedge) then
                        max_intrsct_lat = intrsct_lat
                        max_intrsct_lon = intrsct_lon
                        maxdist2 = dist2
-                       
-                       denom = 
+
+                       denom =
      &                      (mat1*mat1+mat2*mat2)*(mat3*mat3+mat4*mat4)
                        sinang2 = determ*determ/denom
                        intedge = intedge1
                     endif
                  endif
               endif
-           endif   
+           endif
 
         else
 
           !***
           !*** Coincident lines or parallel lines
-          !*** 
+          !***
 
            cross_product = mat2*rhs2 - mat4*rhs1
-         
+
            if (abs(cross_product) < tiny) then
-              
+
               dot_product = mat1*(-mat2) + mat3*(-mat4)
-              
+
               !***
               !*** If area of triangle formed by x2,y2 and the gridline
               !*** is negligible then the lines are coincident
@@ -3286,7 +3286,7 @@ C$OMP END CRITICAL(block4)
 
               lensqr1 = mat1*mat1 + mat3*mat3 ! length sqrd of input
                                               ! segment
-              
+
               if (dot_product < zero) then
                 tmpx = grdx2
                 tmpy = grdy2
@@ -3302,17 +3302,17 @@ C$OMP END CRITICAL(block4)
                 grdlon1 = tmplon
              endif
 
-             
+
              vec2_x = grdx1 - x1
              vec2_y = grdy1 - y1
              lensqr2 = vec2_x*vec2_x + vec2_y*vec2_y
              if (vec2_x*mat1+vec2_y*mat3 < 0) then
                 lensqr2 = -lensqr2
              endif
-             
+
 
              vec3_x = grdx2 - x1
-             vec3_y = grdy2 - y1             
+             vec3_y = grdy2 - y1
              lensqr3 = (vec3_x*vec3_x+vec3_y*vec3_y)
              if (vec3_x*mat1+vec3_y*mat3 < 0) then
                 lensqr3 = -lensqr3
@@ -3345,15 +3345,15 @@ C$OMP END CRITICAL(block4)
                    endif
                 endif
              endif
-             
+
              if (found) then
                 dist2 = (intrsct_lat-beglat)*(intrsct_lat-beglat)+
      &               (intrsct_lon-beglon)*(intrsct_lon-beglon)
-                
+
                 if (dist2 > tiny*tiny) then
-                   
+
                    !*** Coincidence intersection always wins
-                   
+
                    max_intrsct_lat = intrsct_lat
                    max_intrsct_lon = intrsct_lon
                    maxdist2 = dist2
@@ -3361,14 +3361,14 @@ C$OMP END CRITICAL(block4)
                    intedge = (n-1)/npseg + 1
                    intedge = ncorners - intedge + 1
                    lcoinc = .true.
-                   
+
                    exit intrsct_loop2
                 endif
              endif
 
 
            endif            ! if (abs(cross_product) < tiny)
-              
+
         endif               ! if (abs(determ) > 1.e-30) .. else .. endif
 
       end do intrsct_loop2
@@ -3383,7 +3383,7 @@ C$OMP END CRITICAL(block4)
 
 !-----------------------------------------------------------------------
 !
-!     if segment manages to cross over pole, shift the beginning 
+!     if segment manages to cross over pole, shift the beginning
 !     endpoint in order to avoid hitting pole directly
 !     (it is ok for endpoint to be pole point)
 !
@@ -3454,31 +3454,31 @@ C$OMP END CRITICAL(block4)
 
 
 
-      subroutine line_integral(phi_or_theta, weights, num_wts, 
+      subroutine line_integral(phi_or_theta, weights, num_wts,
      &                       in_phi1, in_phi2, theta1, theta2,
      &                       grid1_lat, grid1_lon, grid2_lat, grid2_lon)
 
 !-----------------------------------------------------------------------
 !
-!     this routine computes the line integral of the flux function 
+!     this routine computes the line integral of the flux function
 !     that results in the interpolation weights.  the line is defined
 !     by the input lat/lon of the endpoints.
 !
 !-----------------------------------------------------------------------
-      
+
 !-----------------------------------------------------------------------
 !
 !     intent(in):
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) :: 
+      integer (SCRIP_i4), intent(in) ::
      &     phi_or_theta         ! Integration variable (lat or lon)
 
       integer (SCRIP_i4), intent(in) ::
      &     num_wts              ! number of weights to compute
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     in_phi1, in_phi2,     ! longitude endpoints for the segment
      &     theta1, theta2,       ! latitude  endpoints for the segment
      &     grid1_lat, grid1_lon, ! reference coordinates for each
@@ -3497,11 +3497,11 @@ C$OMP END CRITICAL(block4)
 !     write(*,*)'subroutine line_integral'
       if (phi_or_theta .eq. 1) then
          call line_integral_phi(weights, num_wts, in_phi1, in_phi2,
-     &        theta1, theta2, grid1_lat, grid1_lon, 
+     &        theta1, theta2, grid1_lat, grid1_lon,
      &        grid2_lat, grid2_lon)
       else
          call line_integral_theta(weights, num_wts,in_phi1,in_phi2,
-     &        theta1, theta2, grid1_lat, grid1_lon, 
+     &        theta1, theta2, grid1_lat, grid1_lon,
      &        grid2_lat, grid2_lon)
       endif
 
@@ -3516,13 +3516,13 @@ C$OMP END CRITICAL(block4)
 
 
 
-      subroutine line_integral_phi(weights, num_wts, 
+      subroutine line_integral_phi(weights, num_wts,
      &                       in_phi1, in_phi2, theta1, theta2,
      &                       grid1_lat, grid1_lon, grid2_lat, grid2_lon)
 
 !-----------------------------------------------------------------------
 !
-!     this routine computes the line integral of the flux function 
+!     this routine computes the line integral of the flux function
 !     that results in the interpolation weights.  the line is defined
 !     by the input lat/lon of the endpoints. Integration is w.r.t. lon
 !
@@ -3537,7 +3537,7 @@ C$OMP END CRITICAL(block4)
       integer (SCRIP_i4), intent(in) ::
      &        num_wts  ! number of weights to compute
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     in_phi1, in_phi2,     ! longitude endpoints for the segment
      &     theta1, theta2,       ! latitude  endpoints for the segment
      &     grid1_lat, grid1_lon, ! reference coordinates for each
@@ -3676,13 +3676,13 @@ C$OMP END CRITICAL(block4)
 
 !***********************************************************************
 
-      subroutine line_integral_theta(weights, num_wts, 
+      subroutine line_integral_theta(weights, num_wts,
      &                       in_phi1, in_phi2, theta1, theta2,
      &                       grid1_lat, grid1_lon, grid2_lat, grid2_lon)
 
 !-----------------------------------------------------------------------
 !
-!    this routine computes the line integral of the flux function 
+!    this routine computes the line integral of the flux function
 !    that results in the interpolation weights.  the line is defined
 !    by the input lat/lon of the endpoints. Integration is w.r.t. lat
 !
@@ -3698,7 +3698,7 @@ C$OMP END CRITICAL(block4)
       integer (SCRIP_i4), intent(in) ::
      &        num_wts  ! number of weights to compute
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     in_phi1, in_phi2,     ! longitude endpoints for the segment
      &     theta1, theta2,       ! latitude  endpoints for the segment
      &     grid1_lat, grid1_lon, ! reference coordinates for each
@@ -3720,7 +3720,7 @@ C$OMP END CRITICAL(block4)
 !-----------------------------------------------------------------------
 
       real (SCRIP_r8) :: dtheta, dtheta2, costh1, costh2, costhpi,
-     &                   phi1, phi2, theta_pi, f1, f2, fpi, 
+     &                   phi1, phi2, theta_pi, f1, f2, fpi,
      &                   fm, costhm, part1, part2
 
 !-----------------------------------------------------------------------
@@ -3805,36 +3805,36 @@ C$OMP END CRITICAL(block4)
 !            print *, 'phi1',phi1,'    phi2',phi2
 !            print *, 'theta1',theta1,'    theta2',theta2
 !            print *, 'theta_pi',theta_pi
-            
+
             costhpi = COS(theta_pi)
             fpi = pi*costhpi
 
-            fm = half*(phi1+pi)*cos(half*(theta1+theta_pi))            
+            fm = half*(phi1+pi)*cos(half*(theta1+theta_pi))
             part1 = (theta_pi - theta1)*(f1 + 4*fm + fpi)/6.0
 
             fm = half*(phi2-pi)*cos(half*(theta1+theta_pi))
             part2 = 0.5*(theta2 - theta_pi)*(-fpi + 4*fm + f2)/6.0
 
-            weights(1) = part1 + part2 
+            weights(1) = part1 + part2
 !            write(401,*)weights(1),' % B'
-            
+
             part1 = 0.5*(theta_pi - theta1)*(theta1*f1 + theta_pi*fpi)
             part2 = 0.5*(theta2 - theta_pi)*(-theta_pi*fpi + theta2*f2)
-            weights(2) = part1 + part2  
-            
-            
+            weights(2) = part1 + part2
+
+
          else                   ! Means phi2-phi1 > pi
-       
+
 !           theta at phi = -pi
             theta_pi = theta1 + (-pi - phi1)*dtheta/(phi2 - pi2 - phi1)
 !            print *, ''
 !            print *, 'phi1',phi1,'    phi2',phi2
 !            print *, 'theta1',theta1,'    theta2',theta2
 !            print *, 'theta_pi',theta_pi
-            
+
             costhpi = COS(theta_pi)
             fpi = pi*costhpi
-            
+
             fm = half*(phi1-pi)*cos(half*(theta1+theta_pi))
             part1 = 0.5*(theta_pi - theta1)*(f1 + 4*fm - fpi)/6.0
 
@@ -3842,58 +3842,58 @@ C$OMP END CRITICAL(block4)
             part2 = 0.5*(theta2 - theta_pi)*(fpi + 4*fm + f2)/6.0
             weights(1) = part1 + part2
 !            write(401,*)weights(1),' % C'
-            
+
             part1 = 0.5*(theta_pi - theta1)*(theta1*f1 - theta_pi*fpi)
             part2 = 0.5*(theta2 - theta_pi)*(theta_pi*fpi + theta2*f2)
             weights(2) = part1 + part2
-            
-            
+
+
          endif
-         
+
          part1 = 0.25*(theta_pi - theta1)*(f1*f1 + fpi*fpi)
          part2 = 0.25*(theta2 - theta_pi)*(fpi*fpi + f2*f2)
          weights(3) = part1 + part2
-         
+
       endif
-      
-      
+
+
       phi1 = in_phi1 - grid2_lon
       if (phi1 >  pi) then
          phi1 = phi1 - pi2
       else if (phi1 < -pi) then
          phi1 = phi1 + pi2
       endif
-      
+
       phi2 = in_phi2 - grid2_lon
       if (phi2 >  pi) then
          phi2 = phi2 - pi2
       else if (phi2 < -pi) then
          phi2 = phi2 + pi2
       endif
-      
-      
+
+
       f1 = phi1*costh1
       f2 = phi2*costh2
-      
+
       if ((phi2-phi1) <  pi .and. (phi2-phi1) > -pi) then
 
          fm = half*(phi1+phi2)*costhm
 
          weights(num_wts+1) = dtheta2*(f1 + f2)
-         
+
          weights(num_wts+2) = dtheta2*(theta1*f1 + theta2*f2)
-         
+
          weights(num_wts+3) = half*dtheta2*(f1*f1 + f2*f2)
-         
+
       else
          if (phi1 > zero) then
-            
+
             theta_pi = theta1 + (pi - phi1)*dtheta/(phi2 + pi2 - phi1)
 !            print *, ''
 !            print *, 'phi1',phi1,'    phi2',phi2
 !            print *, 'theta1',theta1,'    theta2',theta2
 !            print *, 'theta_pi',theta_pi
-            
+
             costhpi = COS(theta_pi)
             fpi = pi*costhpi
 
@@ -3903,40 +3903,40 @@ C$OMP END CRITICAL(block4)
             fm = half*(-pi+phi2)*cos(half*(theta2+theta_pi))
             part2 = (theta2 - theta_pi)*(-fpi + 4*fm + f2)/6.0
             weights(num_wts+1) = part1 + part2
-            
+
             part1 = 0.5*(theta_pi - theta1)*(theta1*f1 + theta_pi*fpi)
             part2 = 0.5*(theta2 - theta_pi)*(-theta_pi*fpi + theta2*f2)
             weights(num_wts+2) = part1 + part2
-            
-            
+
+
          else
-            
+
             theta_pi = theta1 + (-pi - phi1)*dtheta/(phi2 - pi2 - phi1)
 !            print *, ''
 !            print *, 'phi1',phi1,'    phi2',phi2
 !            print *, 'theta1',theta1,'    theta2',theta2
 !            print *, 'theta_pi',theta_pi
-            
+
             costhpi = COS(theta_pi)
             fpi = pi*costhpi
-            
+
             fm = half*(phi1-pi)*cos(half*(theta1+theta_pi))
             part1 = (theta_pi - theta1)*(f1 +4*fm - fpi)/6.0
 
             fm = half*(phi2+pi)*cos(half*(theta2+theta_pi))
             part2 = 0.5*(theta2 - theta_pi)*(fpi + 4*fm + f2)/6.0
             weights(num_wts+1) = part1 + part2
-            
+
             part1 = 0.5*(theta_pi - theta1)*(theta1*f1 - theta_pi*fpi)
             part2 = 0.5*(theta2 - theta_pi)*(theta_pi*fpi + theta2*f2)
             weights(num_wts+2) = part1 + part2
-            
+
          endif
-         
+
          part1 = 0.25*(theta_pi - theta1)*(f1*f1 + fpi*fpi)
          part2 = 0.25*(theta2 - theta_pi)*(fpi*fpi + f2*f2)
          weights(num_wts+3) = part1 + part2
-         
+
       endif
 
 !-----------------------------------------------------------------------
@@ -3996,7 +3996,7 @@ C$OMP END CRITICAL(block4)
 !-----------------------------------------------------------------------
 
 C$OMP CRITICAL(block5)
-!     first_call should be within critical block or else multiple 
+!     first_call should be within critical block or else multiple
 !     threads will see it as true the first time around
 
       if (first_call_store_link_cnsrv) then
@@ -4032,7 +4032,7 @@ C$OMP END CRITICAL(block5)
 C$OMP CRITICAL(block3a)
           wts_map1(:,nlink) = wts_map1(:,nlink) + weights(1:num_wts)
           if (num_maps == 2) then
-            wts_map2(:,nlink) = wts_map2(:,nlink) + 
+            wts_map2(:,nlink) = wts_map2(:,nlink) +
      &                                  weights(num_wts+1:2*num_wts)
           endif
 C$OMP END CRITICAL(block3a)
@@ -4048,8 +4048,8 @@ C$OMP END CRITICAL(block3a)
 
 !-----------------------------------------------------------------------
 !
-!     if the link does not yet exist, increment number of links and 
-!     check to see if remap arrays need to be increased to accomodate 
+!     if the link does not yet exist, increment number of links and
+!     check to see if remap arrays need to be increased to accomodate
 !     the new link.  then store the link.
 !
 !-----------------------------------------------------------------------
@@ -4057,7 +4057,7 @@ C$OMP END CRITICAL(block3a)
 C$OMP CRITICAL(block6)
 
       num_links_map1  = num_links_map1 + 1
-      if (num_links_map1 > max_links_map1) 
+      if (num_links_map1 > max_links_map1)
      &   call resize_remap_vars(1,resize_increment)
 
       grid1_add_map1(num_links_map1) = add1
@@ -4066,7 +4066,7 @@ C$OMP CRITICAL(block6)
 
       if (num_maps > 1) then
         num_links_map2  = num_links_map2 + 1
-        if (num_links_map2 > max_links_map2) 
+        if (num_links_map2 > max_links_map2)
      &     call resize_remap_vars(2,resize_increment)
 
         grid1_add_map2(num_links_map2) = add1
@@ -4104,11 +4104,11 @@ C$OMP END CRITICAL(block6)
 
 !-----------------------------------------------------------------------
 !
-!     intent(in): 
+!     intent(in):
 !
 !-----------------------------------------------------------------------
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     beglat, beglon,      ! beginning and end points of segment
      &     endlat, endlon       ! on which the point to be located lies
 
@@ -4121,14 +4121,14 @@ C$OMP END CRITICAL(block6)
      &     cell_grid_num        ! Index of grid to which cell belongs
 
       integer (SCRIP_i4), intent(in) ::
-     &     srch_grid_num        ! num indicating if we are locating a 
+     &     srch_grid_num        ! num indicating if we are locating a
                                 ! grid1 point in a cell of grid2 (num=2)
-                                ! or a grid2 point in a cell of grid1 
+                                ! or a grid2 point in a cell of grid1
                                 ! (num=1)
 
 !-----------------------------------------------------------------------
 !
-!     intent(out): 
+!     intent(out):
 !
 !-----------------------------------------------------------------------
 
@@ -4136,7 +4136,7 @@ C$OMP END CRITICAL(block6)
      &     cont_cell            ! grid cell containing this point
 
       logical (SCRIP_logical), intent(out) ::
-     &     lboundary            ! flag points that lie on the boundary 
+     &     lboundary            ! flag points that lie on the boundary
                                 ! of the cell
 
       integer (SCRIP_i4), intent(out) ::
@@ -4156,7 +4156,7 @@ C$OMP END CRITICAL(block6)
       real (SCRIP_r8), dimension(:), allocatable ::
      &     cell_corner_x, cell_corner_y
 
-      logical (SCRIP_logical) :: inpoly, latlon      
+      logical (SCRIP_logical) :: inpoly, latlon
 
       real (SCRIP_r8) ::
      &     vec1_x, vec1_y, vec1_lenx, vec1_lat, vec1_lon, vec1_len,
@@ -4172,10 +4172,10 @@ C$OMP END CRITICAL(block6)
       lboundary = .false.
       edgeid = 0
       cont_cell = 0
-      
 
-      if (cell /= last_cell_locate_segstart .or. 
-     &     cell_grid_num /= last_cell_grid_num_locate_segstart 
+
+      if (cell /= last_cell_locate_segstart .or.
+     &     cell_grid_num /= last_cell_grid_num_locate_segstart
      &     .or. srch_grid_num /= last_srch_grid_num_locate_segstart)
      &      then
 
@@ -4194,17 +4194,17 @@ C$OMP END CRITICAL(block6)
                deallocate(srch_add_locate_segstart,
      &         srch_corner_lat_locate_segstart,
      &         srch_corner_lon_locate_segstart,
-     &         srch_center_lat_locate_segstart, 
+     &         srch_center_lat_locate_segstart,
      &         srch_center_lon_locate_segstart)
             endif
          endif
 
-         call get_srch_cells(cell, cell_grid_num, srch_grid_num, 
-     &        num_srch_cells_locate_segstart, srch_add_locate_segstart, 
-     &        srch_corners_locate_segstart, 
-     &        srch_corner_lat_locate_segstart, 
+         call get_srch_cells(cell, cell_grid_num, srch_grid_num,
+     &        num_srch_cells_locate_segstart, srch_add_locate_segstart,
+     &        srch_corners_locate_segstart,
+     &        srch_corner_lat_locate_segstart,
      &        srch_corner_lon_locate_segstart,
-     &        srch_center_lat_locate_segstart, 
+     &        srch_center_lat_locate_segstart,
      &        srch_center_lon_locate_segstart)
 
       endif
@@ -4213,13 +4213,13 @@ C$OMP END CRITICAL(block6)
 
 
       do ic=1,num_srch_cells_locate_segstart
-         
+
          srch_cell_add = srch_add_locate_segstart(ic)
-         
 
 
-         !**** CAN WE ACCOMPLISH THE FOLLOWING THROUGH A SUBROUTINE 
-         !**** CALLED SEGSTART_INCELL ?? 
+
+         !**** CAN WE ACCOMPLISH THE FOLLOWING THROUGH A SUBROUTINE
+         !**** CALLED SEGSTART_INCELL ??
 
 
     !*** IF POINT IS IN POLAR REGION, CHECK IN A TRANSFORMED SPACE
@@ -4241,13 +4241,13 @@ C$OMP END CRITICAL(block6)
          vec1_len = sqrt(vec1_lat*vec1_lat+vec1_lon*vec1_lon)
          vec1_lat = vec1_lat/vec1_len
          vec1_lon = vec1_lon/vec1_len
-         
+
          ptlat = beglat + offset*vec1_lat
          ptlon = beglon + offset*vec1_lon
-            
 
-         if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001) 
-     &        .or. 
+
+         if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001)
+     &        .or.
      &        (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001))
      &        then
 
@@ -4259,12 +4259,12 @@ C$OMP END CRITICAL(block6)
                rns = -one
             endif
 
-        
+
             begx = rns*two*sin(pi4 - half*beglat)*cos(beglon)
             begy =     two*sin(pi4 - half*beglat)*sin(beglon)
             endx = rns*two*sin(pi4 - half*endlat)*cos(endlon)
             endy =     two*sin(pi4 - half*endlat)*sin(endlon)
-        
+
             vec1_x = endx-begx
             vec1_y = endy-begy
 
@@ -4273,7 +4273,7 @@ C$OMP END CRITICAL(block6)
             vec1_y = vec1_y/vec1_lenx
 
 
-            !*** Must calculate ptx and pty as an offset on straight 
+            !*** Must calculate ptx and pty as an offset on straight
             !*** line in polar space rather than calculating it on a
             !*** straight line in latlon space an offset point in latlon
             !***  space will be off the straight line in polar space
@@ -4283,9 +4283,9 @@ C$OMP END CRITICAL(block6)
 
             latlon = .false.
 
-         ! Since we want greater fidelity for locating the points 
+         ! Since we want greater fidelity for locating the points
          ! we send in the mid-points of the polygon edges too
-         ! BUT THAT MAKES THE POLYGON NON-CONVEX SOMETIMES AND 
+         ! BUT THAT MAKES THE POLYGON NON-CONVEX SOMETIMES AND
          ! THE CROSS-PRODUCT CHECK FAILS. SO USE CODE TO CHECK GENERAL
          ! POLYGONS
 
@@ -4301,11 +4301,11 @@ C$OMP END CRITICAL(block6)
                lon = srch_corner_lon_locate_segstart(i,ic)
                cell_corner_x(k) = rns*two*sin(pi4-half*lat)*cos(lon)
                cell_corner_y(k) =     two*sin(pi4-half*lat)*sin(lon)
-           
+
                j = i-1
-               if (j .eq. 0) j = srch_corners_locate_segstart ! how do 
+               if (j .eq. 0) j = srch_corners_locate_segstart ! how do
                                               ! we do (j-1+n)%n in F90?
-           
+
                vec1_lat = srch_corner_lat_locate_segstart(j,ic)
      &              -srch_corner_lat_locate_segstart(i,ic)
                vec1_lon = srch_corner_lon_locate_segstart(j,ic)
@@ -4332,7 +4332,7 @@ C$OMP END CRITICAL(block6)
      &           cell_corner_y, latlon, inpoly, lboundary, edgeid)
 
             if (lboundary) then
-               edgeid = (edgeid-1)/npseg + 1 ! convert from index in 
+               edgeid = (edgeid-1)/npseg + 1 ! convert from index in
                                        ! multi-segmented to regular cell
             endif
 
@@ -4341,68 +4341,68 @@ C$OMP END CRITICAL(block6)
          else
 
             latlon = .true.
-            
+
             whichpole = 0
-            if (srch_grid_num .eq. 1 .and. 
+            if (srch_grid_num .eq. 1 .and.
      &           srch_cell_add .eq. grid1_spole_cell) then
-               
+
                whichpole = -1   ! S pole
-               call ptinpolarpoly(ptlat, ptlon, 
+               call ptinpolarpoly(ptlat, ptlon,
      &              srch_corners_locate_segstart,
-     &              srch_corner_lat_locate_segstart(:,ic), 
+     &              srch_corner_lat_locate_segstart(:,ic),
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, whichpole, inpoly, lboundary, edgeid)
-               
+
             else if (srch_grid_num .eq. 1 .and.
      &              srch_cell_add .eq. grid1_npole_cell) then
-               
+
                whichpole =  1   ! N pole
-               call ptinpolarpoly(ptlat, ptlon, 
+               call ptinpolarpoly(ptlat, ptlon,
      &              srch_corners_locate_segstart,
-     &              srch_corner_lat_locate_segstart(:,ic), 
+     &              srch_corner_lat_locate_segstart(:,ic),
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, whichpole, inpoly, lboundary, edgeid)
-               
+
             else if (srch_grid_num .eq. 2 .and.
      &              srch_cell_add .eq. grid2_spole_cell) then
-               
+
                whichpole = -1   ! S pole
-               call ptinpolarpoly(ptlat, ptlon, 
+               call ptinpolarpoly(ptlat, ptlon,
      &              srch_corners_locate_segstart,
-     &              srch_corner_lat_locate_segstart(:,ic), 
+     &              srch_corner_lat_locate_segstart(:,ic),
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, whichpole, inpoly, lboundary, edgeid)
-               
+
             else if (srch_grid_num .eq. 2 .and.
      &              srch_cell_add .eq. grid2_npole_cell) then
-               
+
                whichpole =  1   ! N pole
-               call ptinpolarpoly(ptlat, ptlon, 
+               call ptinpolarpoly(ptlat, ptlon,
      &              srch_corners_locate_segstart,
-     &              srch_corner_lat_locate_segstart(:,ic), 
+     &              srch_corner_lat_locate_segstart(:,ic),
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, whichpole, inpoly, lboundary, edgeid)
-               
+
             else
-            
+
       !***
       !***  General cell
       !***
-               
+
                call ptinpoly(ptlat, ptlon, srch_corners_locate_segstart,
-     &              srch_corner_lat_locate_segstart(:,ic), 
+     &              srch_corner_lat_locate_segstart(:,ic),
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, inpoly, lboundary, edgeid)
-               
+
             endif
-            
+
          endif
 
          if (inpoly) then
             cont_cell = srch_cell_add
             exit
-         endif         
-            
+         endif
+
       end do
 
       return
@@ -4431,11 +4431,11 @@ C$OMP END CRITICAL(block6)
 
 !-----------------------------------------------------------------------
 !
-!     intent(in): 
+!     intent(in):
 !
 !-----------------------------------------------------------------------
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     ptlat, ptlon         ! Point to locate
 
       integer (SCRIP_i4), intent(in) ::
@@ -4444,14 +4444,14 @@ C$OMP END CRITICAL(block6)
      &     cell_grid_num        ! Index of grid to which cell belongs
 
       integer (SCRIP_i4), intent(in) ::
-     &     srch_grid_num        ! num indicating if we are locating a 
+     &     srch_grid_num        ! num indicating if we are locating a
                                 ! grid1 point in a cell of grid2 (num=2)
                                 ! or a grid2 point in a cell of grid1
                                 ! (num=1)
 
 !-----------------------------------------------------------------------
 !
-!     intent(out): 
+!     intent(out):
 !
 !-----------------------------------------------------------------------
 
@@ -4459,7 +4459,7 @@ C$OMP END CRITICAL(block6)
      &     cont_cell            ! grid cell containing this point
 
       logical (SCRIP_logical), intent(out) ::
-     &     lboundary            ! flag points that lie on the boundary 
+     &     lboundary            ! flag points that lie on the boundary
                                 ! of the cell
 
       integer (SCRIP_i4), intent(out) ::
@@ -4475,7 +4475,7 @@ C$OMP END CRITICAL(block6)
       integer (SCRIP_i4) :: i, j, n, ic
       integer (SCRIP_i4) :: whichpole, srch_cell_add,
      &                      grid1_add, grid2_add, min_add, max_add,
-     &                      previdx, nextidx, pcorner, corner, 
+     &                      previdx, nextidx, pcorner, corner,
      &                      ncorners, nalloc
 
        real (SCRIP_r8), dimension(:), allocatable ::
@@ -4490,7 +4490,7 @@ C$OMP END CRITICAL(block6)
      &     cell_center_lon
 
 
-      logical (SCRIP_logical) :: inpoly, latlon      
+      logical (SCRIP_logical) :: inpoly, latlon
       logical (SCRIP_logical) :: test
 
 !-----------------------------------------------------------------------
@@ -4504,7 +4504,7 @@ C$OMP END CRITICAL(block6)
       cont_cell = 0
 
       if (cell /= last_cell_locate_point .or. cell_grid_num /=
-     &      last_cell_grid_num_locate_point 
+     &      last_cell_grid_num_locate_point
      &     .or. srch_grid_num /= last_srch_grid_num_locate_point) then
 
          last_cell_locate_point = cell
@@ -4525,9 +4525,9 @@ C$OMP END CRITICAL(block6)
             endif
          endif
 
-         call get_srch_cells(cell, cell_grid_num, srch_grid_num, 
+         call get_srch_cells(cell, cell_grid_num, srch_grid_num,
      &        num_srch_cell_locate_points, srch_add_locate_point,
-     &        srch_corners_locate_point, 
+     &        srch_corners_locate_point,
      &        srch_corner_lat_locate_point,srch_corner_lon_locate_point,
      &        srch_center_lat_locate_point,srch_center_lon_locate_point)
 
@@ -4543,18 +4543,18 @@ C$OMP END CRITICAL(block6)
 
 
       do ic=1,num_srch_cell_locate_points
-         
+
          srch_cell_add = srch_add_locate_point(ic)
 
          do i = 1, ncorners
             cell_corner_lat(i) = srch_corner_lat_locate_point(i,ic)
             cell_corner_lon(i) = srch_corner_lon_locate_point(i,ic)
          enddo
-         
+
          cell_center_lat = srch_center_lat_locate_point(ic)
          cell_center_lon = srch_center_lon_locate_point(ic)
 
-!         if ((srch_grid_num .eq. 1 .and. 
+!         if ((srch_grid_num .eq. 1 .and.
 !     &        (special_polar_cell1(srch_cell_add))) .or.
 !     &        (srch_grid_num .eq. 2 .and.
 !     &        (special_polar_cell2(srch_cell_add)))) then
@@ -4581,13 +4581,13 @@ C$OMP END CRITICAL(block6)
      &        cell_center_lat, cell_center_lon,
      &        srch_grid_num, inpoly, lboundary, edgeid)
 
-         
+
          if (inpoly) then
             cont_cell = srch_cell_add
             exit
-         endif         
+         endif
 
-         ncorners = srch_corners_locate_point ! reset it for other srch 
+         ncorners = srch_corners_locate_point ! reset it for other srch
                                               !cells
       end do
 
@@ -4601,7 +4601,7 @@ C$OMP END CRITICAL(block6)
 
 !**********************************************************************
 
-      subroutine ptincell(ptlat, ptlon, cell_add, ncorners, 
+      subroutine ptincell(ptlat, ptlon, cell_add, ncorners,
      &     cell_corner_lat, cell_corner_lon,
      &     cell_center_lat, cell_center_lon,
      &     cell_grid_id, inpoly, lboundary, edgeid)
@@ -4612,35 +4612,35 @@ C$OMP END CRITICAL(block6)
 
 !-----------------------------------------------------------------------
 !
-!     intent(in): 
+!     intent(in):
 !
 !-----------------------------------------------------------------------
 
-      real (SCRIP_r8), intent(in) :: 
+      real (SCRIP_r8), intent(in) ::
      &     ptlat, ptlon         ! Point to locate
 
       integer (SCRIP_i4), intent(in) ::
      &     cell_add             ! ID of cell
 
       integer (SCRIP_i4), intent(in) ::
-     &     ncorners 
+     &     ncorners
 
       real (SCRIP_r8), dimension(ncorners), intent(in) ::
      &     cell_corner_lat, cell_corner_lon
 
       real (SCRIP_r8), intent(in) ::
-     &     cell_center_lat, 
+     &     cell_center_lat,
      &     cell_center_lon
 
       integer (SCRIP_i4), intent(in) ::
      &     cell_grid_id     ! num indicating if we are locating a grid1
-                            ! point in a cell of grid2 (num = 2) or 
+                            ! point in a cell of grid2 (num = 2) or
                             ! a grid2 point in a cell of grid1 (num = 1)
 
 
 !-----------------------------------------------------------------------
 !
-!     intent(out): 
+!     intent(out):
 !
 !-----------------------------------------------------------------------
 
@@ -4648,7 +4648,7 @@ C$OMP END CRITICAL(block6)
      &     inpoly               ! is point in polygon?
 
       logical (SCRIP_logical), intent(out) ::
-     &     lboundary            ! flag points that lie on the boundary 
+     &     lboundary            ! flag points that lie on the boundary
                                 ! of the cell
 
       integer (SCRIP_i4), intent(out) ::
@@ -4687,7 +4687,7 @@ C$OMP END CRITICAL(block6)
     !***
 
       if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001) .or.
-     &    (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001)) 
+     &    (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001))
      &     then
 
          if (ptlat > zero) then
@@ -4700,12 +4700,12 @@ C$OMP END CRITICAL(block6)
 
          ptx = rns*two*sin(pi4 - half*ptlat)*cos(ptlon)
          pty =     two*sin(pi4 - half*ptlat)*sin(ptlon)
-         
+
          latlon = .false.
 
-         ! Since we want greater fidelity for locating the points 
+         ! Since we want greater fidelity for locating the points
          ! we send in the mid-points of the polygon edges too
-         ! BUT THAT MAKES THE POLYGON NON-CONVEX SOMETIMES AND 
+         ! BUT THAT MAKES THE POLYGON NON-CONVEX SOMETIMES AND
          ! THE CROSS-PRODUCT CHECK FAILS. SO USE CODE TO CHECK GENERAL
          ! POLYGONS
 
@@ -4717,7 +4717,7 @@ C$OMP END CRITICAL(block6)
             lon = cell_corner_lon(i)
             cell_corner_x(k) = rns*two*sin(pi4-half*lat)*cos(lon)
             cell_corner_y(k) =     two*sin(pi4-half*lat)*sin(lon)
-            
+
             j = i-1
             if (j .eq. 0) j = ncorners  ! how do we do (j-1+n)%n in F90?
 
@@ -4745,54 +4745,54 @@ C$OMP END CRITICAL(block6)
      &        cell_corner_y, latlon, inpoly, lboundary, edgeid)
 
          if (lboundary) then
-            edgeid = (edgeid-1)/npseg + 1 ! convert from index in 
-                                          ! multi-segmented cell to 
+            edgeid = (edgeid-1)/npseg + 1 ! convert from index in
+                                          ! multi-segmented cell to
                                           ! regular cell
          endif
       else
 
          latlon = .true.
-         
+
          whichpole = 0
-         if (cell_grid_id .eq. 1 .and. 
+         if (cell_grid_id .eq. 1 .and.
      &        cell_add .eq. grid1_spole_cell) then
-            
+
             whichpole = -1      ! S pole
             call ptinpolarpoly(ptlat, ptlon, ncorners,
      &           cell_corner_lat, cell_corner_lon,
      &           latlon, whichpole, inpoly, lboundary, edgeid)
-            
+
          else if (cell_grid_id .eq. 1 .and.
      &           cell_add .eq. grid1_npole_cell) then
-            
+
             whichpole =  1      ! N pole
             call ptinpolarpoly(ptlat, ptlon, ncorners,
      &           cell_corner_lat, cell_corner_lon,
      &           latlon, whichpole, inpoly, lboundary, edgeid)
-            
+
          else if (cell_grid_id .eq. 2 .and.
      &           cell_add .eq. grid2_spole_cell) then
-            
+
             whichpole = -1      ! S pole
             call ptinpolarpoly(ptlat, ptlon, ncorners,
      &           cell_corner_lat, cell_corner_lon,
      &           latlon, whichpole, inpoly, lboundary, edgeid)
-            
+
          else if (cell_grid_id .eq. 2 .and.
      &           cell_add .eq. grid2_npole_cell) then
-            
+
             whichpole =  1      ! N pole
             call ptinpolarpoly(ptlat, ptlon, ncorners,
      &           cell_corner_lat, cell_corner_lon,
      &           latlon, whichpole, inpoly, lboundary, edgeid)
-            
+
          else
-            
+
       !***
       !***  General cell
       !***
-               
-            call ptinpoly(ptlat, ptlon, ncorners, 
+
+            call ptinpoly(ptlat, ptlon, ncorners,
      &           cell_corner_lat, cell_corner_lon,
      &           latlon, inpoly, lboundary, edgeid)
 
@@ -4815,7 +4815,7 @@ C$OMP END CRITICAL(block6)
 
 !----------------------------------------------------------------------
 !
-!     Check if point is in (convex) polygonal cell 
+!     Check if point is in (convex) polygonal cell
 !
 !----------------------------------------------------------------------
 
@@ -4874,42 +4874,42 @@ C$OMP END CRITICAL(block6)
       !***********************************************************
       !*** We should just remove the latlon argument since that is
       !*** the only coordinate system we are using it for
-      !***********************************************************      
-      
+      !***********************************************************
+
 
       !***
-      !*** here we take the cross product of the vector making 
+      !*** here we take the cross product of the vector making
       !*** up each cell side with the vector formed by the vertex
-      !*** and search point.  if all the cross products are 
+      !*** and search point.  if all the cross products are
       !*** positive, the point is contained in the cell.
       !***
 
       inpoly = .false.
       lboundary = .false.
       edgeid = 0
-        
+
       if (.not. latlon) then
-         
+
          do n = 1, ncorners
             next_n = MOD(n,ncorners) + 1
-            
+
             x1 = cell_corner_x(n)
             y1 = cell_corner_y(n)
             x2 = cell_corner_x(next_n)
             y2 = cell_corner_y(next_n)
-            
+
             vec1_x = x2 - x1
             vec1_y = y2 - y1
             vec2_x = ptx - x1
             vec2_y = pty - y1
-                        
+
             cross_product = vec1_y*vec2_x - vec2_y*vec1_x
-            
+
             !***
-            !***   if the cross product for a side is zero, the point 
+            !***   if the cross product for a side is zero, the point
             !***   lies exactly on the side or the side is degenerate
-            !***   (zero length).  if degenerate, set the cross 
-            !***   product to a positive number.  
+            !***   (zero length).  if degenerate, set the cross
+            !***   product to a positive number.
             !***
 
             if (abs(cross_product) < tiny) then
@@ -4933,7 +4933,7 @@ C$OMP END CRITICAL(block6)
                   return
                endif
             endif
-            
+
          end do
 
       else
@@ -4944,7 +4944,7 @@ C$OMP END CRITICAL(block6)
 
          cell_corner_lat_loc = cell_corner_x
          cell_corner_lon_loc = cell_corner_y
-            
+
          minlon =  9999.0
          maxlon = -9999.0
          do n = 1, ncorners
@@ -4977,24 +4977,24 @@ C$OMP END CRITICAL(block6)
 
          do n = 1, ncorners
             next_n = MOD(n,ncorners) + 1
-            
+
             x1 = cell_corner_lat_loc(n)
             y1 = cell_corner_lon_loc(n)
             x2 = cell_corner_lat_loc(next_n)
             y2 = cell_corner_lon_loc(next_n)
-            
+
             vec1_x = x2 - x1
             vec1_y = y2 - y1
             vec2_x = ptx_loc - x1
             vec2_y = pty_loc - y1
-                        
+
             cross_product = vec1_y*vec2_x - vec2_y*vec1_x
-            
+
             !***
-            !***   if the cross product for a side is zero, the point 
+            !***   if the cross product for a side is zero, the point
             !***   lies exactly on the side or the side is degenerate
-            !***   (zero length).  if degenerate, set the cross 
-            !***   product to a positive number.  
+            !***   (zero length).  if degenerate, set the cross
+            !***   product to a positive number.
             !***
 
             if (abs(cross_product) < tiny) then
@@ -5018,7 +5018,7 @@ C$OMP END CRITICAL(block6)
                   return
                endif
             endif
-            
+
          end do
 
       endif
@@ -5043,12 +5043,12 @@ C$OMP END CRITICAL(block6)
 !----------------------------------------------------------------------
 !
 !     Check if point is in polygonal cell overlapping the pole
-!     Cannot check the containment as is in latlon space - We have 
+!     Cannot check the containment as is in latlon space - We have
 !     to check by connecting each edge of the polygon to the pole
-!     and check containment in the resulting quadrilateral in latlon 
+!     and check containment in the resulting quadrilateral in latlon
 !     space
 !     The cell can be non-convex as long as the pole is 'visible' to
-!     all the edges of the polygon, i.e., we can connect the pole to 
+!     all the edges of the polygon, i.e., we can connect the pole to
 !     each edge of the polygon and form a triangle with positive area
 !
 !----------------------------------------------------------------------
@@ -5075,7 +5075,7 @@ C$OMP END CRITICAL(block6)
      &     latlon               ! Are coordinates in latlon space?
 
       integer (SCRIP_i4), intent(in) ::
-     &     whichpole            ! South or North pole      
+     &     whichpole            ! South or North pole
 
 !----------------------------------------------------------------------
 !
@@ -5103,7 +5103,7 @@ C$OMP END CRITICAL(block6)
 
       real (SCRIP_r8), dimension(4) ::
      &     pquad_corner_x,       ! Coordinates of polar quad
-     &     pquad_corner_y        
+     &     pquad_corner_y
 
       real (SCRIP_r8) :: x1, y1, x2, y2, vec1_x, vec1_y, vec2_x, vec2_y,
      &     cross_product, pole_lat
@@ -5113,15 +5113,15 @@ C$OMP END CRITICAL(block6)
       !***
       !*** This is a polygon that overlaps the pole
       !*** A normal point in polygon check could fail
-      !*** So, with each edge of the polygon form a quadrilateral 
+      !*** So, with each edge of the polygon form a quadrilateral
       !*** in latlon space using the polar latitude and the longitude
       !*** values of the endpoints of the edge. Then check containment
       !*** of the point in this quadrilateral
       !***
-      
+
       inpoly = .false.
       lboundary = .false.
-      
+
       do n = 1, ncorners
          next_n = MOD(n,ncorners) + 1
 
@@ -5134,8 +5134,8 @@ C$OMP END CRITICAL(block6)
          pquad_corner_x(4) = pole_lat
          pquad_corner_y(4) = cell_corner_y(n)
 
-         
-         call ptinpoly(ptx,pty,4,pquad_corner_x,pquad_corner_y, 
+
+         call ptinpoly(ptx,pty,4,pquad_corner_x,pquad_corner_y,
      &        latlon,inpoly,lboundary, ledgeid)
 
          if (inpoly) then
@@ -5144,8 +5144,8 @@ C$OMP END CRITICAL(block6)
 
                !***
                !*** Check to see if the lboundary flag is being
-               !*** triggered by the outer edge of the polygon or 
-               !*** by one of the artificial internal edges            
+               !*** triggered by the outer edge of the polygon or
+               !*** by one of the artificial internal edges
                !***
 
                vec1_x = pquad_corner_x(2) - pquad_corner_x(1)
@@ -5164,7 +5164,7 @@ C$OMP END CRITICAL(block6)
                   if (vec1_y < -pi) vec1_y = vec1_y + pi2
                   if (vec2_y >  pi) vec2_y = vec2_y - pi2
                   if (vec2_y < -pi) vec2_y = vec2_y + pi2
-               
+
                endif
 
                cross_product = vec1_y*vec2_x - vec2_y*vec1_x
@@ -5172,8 +5172,8 @@ C$OMP END CRITICAL(block6)
                !***
                !***   if the cross product for a side is zero, the point
                !***   lies exactly on the side or the side is degenerate
-               !***   (zero length).  if degenerate, set the cross 
-               !***   product to a positive number.  
+               !***   (zero length).  if degenerate, set the cross
+               !***   product to a positive number.
                !***
 
                if (abs(cross_product) < tiny) then
@@ -5211,9 +5211,9 @@ C$OMP END CRITICAL(block6)
 
 !----------------------------------------------------------------------
 !
-!     Check if point is in general (convex or mildly non-convex) 
+!     Check if point is in general (convex or mildly non-convex)
 !     polygonal cell by connecting each edge of the polygon to a
-!     a central point (average of vertices) and check containment in 
+!     a central point (average of vertices) and check containment in
 !     the resulting triangle
 !
 !     The cell can be non-convex as long as the 'center' is 'visible' to
@@ -5273,7 +5273,7 @@ C$OMP END CRITICAL(block6)
 
       real (SCRIP_r8), dimension(3) ::
      &     tri_corner_x,       ! Coordinates of triangle
-     &     tri_corner_y        
+     &     tri_corner_y
 
       real (SCRIP_r8) :: x1, y1, x2, y2, vec1_x, vec1_y, vec2_x, vec2_y,
      &     cross_product
@@ -5281,13 +5281,13 @@ C$OMP END CRITICAL(block6)
 
       !***
       !*** So, with each edge of the polygon form a triangle
-      !*** by connecting a 'central' point to the endpoints of 
+      !*** by connecting a 'central' point to the endpoints of
       !*** the edge. Then check containment of the point in this tri
       !***
-      
+
       inpoly = .false.
       lboundary = .false.
-      
+
       do n = 1, ncorners
          next_n = MOD(n,ncorners) + 1
 
@@ -5304,8 +5304,8 @@ C$OMP END CRITICAL(block6)
          !*** Skip triangles arising from degenerate edges
 
          if (vec1_x*vec1_x+vec1_y*vec1_y .le. tiny*tiny) cycle
-         
-         call ptinpoly(ptx,pty,3,tri_corner_x,tri_corner_y, 
+
+         call ptinpoly(ptx,pty,3,tri_corner_x,tri_corner_y,
      &        latlon,inpoly,lboundary, ledgeid)
 
          if (inpoly) then
@@ -5314,8 +5314,8 @@ C$OMP END CRITICAL(block6)
 
                !***
                !*** Check to see if the lboundary flag is being
-               !*** triggered by the outer edge of the polygon or 
-               !*** by one of the artificial internal edges            
+               !*** triggered by the outer edge of the polygon or
+               !*** by one of the artificial internal edges
                !***
 
                vec2_x = ptx - tri_corner_x(1)
@@ -5332,7 +5332,7 @@ C$OMP END CRITICAL(block6)
                   if (vec1_y < -pi) vec1_y = vec1_y + pi2
                   if (vec2_y >  pi) vec2_y = vec2_y - pi2
                   if (vec2_y < -pi) vec2_y = vec2_y + pi2
-               
+
                endif
 
                cross_product = vec1_y*vec2_x - vec2_y*vec1_x
@@ -5340,8 +5340,8 @@ C$OMP END CRITICAL(block6)
                !***
                !***   if the cross product for a side is zero, the point
                !***   lies exactly on the side or the side is degenerate
-               !***   (zero length).  if degenerate, set the cross 
-               !***   product to a positive number.  
+               !***   (zero length).  if degenerate, set the cross
+               !***   product to a positive number.
                !***
 
                if (abs(cross_product) < tiny) then
@@ -5378,13 +5378,13 @@ C$OMP END CRITICAL(block6)
 
 !----------------------------------------------------------------------
 !
-!     Check if point is in general (convex or mildly non-convex) 
+!     Check if point is in general (convex or mildly non-convex)
 !     polygonal cell by connecting each edge of the polygon to a
-!     a central point (average of vertices) and check containment in 
+!     a central point (average of vertices) and check containment in
 !     the resulting triangle
 !
 !     The cell can be non-convex as long as the 'center' is 'visible' to
-!     all the edges of the polygon, i.e., we can connect the 'center' to 
+!     all the edges of the polygon, i.e., we can connect the 'center' to
 !     each edge of the polygon and form a triangle with positive area
 !
 !----------------------------------------------------------------------
@@ -5441,13 +5441,13 @@ C$OMP END CRITICAL(block6)
 
       !***
       !*** So, with each edge of the polygon form a triangle
-      !*** by connecting a 'central' point to the endpoints of 
+      !*** by connecting a 'central' point to the endpoints of
       !*** the edge. Then check containment of the point in this tri
       !***
-      
+
       inpoly = .false.
       lboundary = .false.
-      
+
       c = 0
       do n = 1, ncorners
          next_n = MOD(n,ncorners) + 1
@@ -5462,12 +5462,12 @@ C$OMP END CRITICAL(block6)
      &        (ptx <= (x1 + (pty-y1)*(x2-x1)/(y2-y1)))) then
 
             c = 1 - c
-            
+
          endif
       enddo
 
       if (c .eq. 1) inpoly = .true.
-         
+
 
       !*** Check if the point is on the boundary of the polygon
 
@@ -5495,7 +5495,7 @@ C$OMP END CRITICAL(block6)
             cross_product = cross_product/vec2_len
          endif
 
-         if (abs(cross_product) < 1e5*tiny .and. 
+         if (abs(cross_product) < 1e5*tiny .and.
      &        abs(cross_product) > 10*tiny) then
 
             !*** Sometimes when the point is too close to a vertex
@@ -5510,7 +5510,7 @@ C$OMP END CRITICAL(block6)
             cross_product = -vec1_x*vec3_y + vec1_y*vec3_x
             if (abs(cross_product) > tiny .and. vec3_len > tiny) then
                !***
-               !*** Normalize only if we won't be dividing two small 
+               !*** Normalize only if we won't be dividing two small
                !*** numbers
                cross_product = cross_product/vec3_len
             endif
@@ -5533,8 +5533,8 @@ C$OMP END CRITICAL(block6)
          endif
 
       enddo
-         
-      return   
+
+      return
 
 !----------------------------------------------------------------------
 
@@ -5550,8 +5550,8 @@ C$OMP END CRITICAL(block6)
 !
 !----------------------------------------------------------------------
 
-      subroutine get_srch_cells(cell_add, cell_grid_num, srch_grid_num, 
-     &     num_srch_cells, srch_add, srch_corners, 
+      subroutine get_srch_cells(cell_add, cell_grid_num, srch_grid_num,
+     &     num_srch_cells, srch_add, srch_corners,
      &     srch_corner_lat, srch_corner_lon,
      &     srch_center_lat, srch_center_lon)
 
@@ -5562,10 +5562,10 @@ C$OMP END CRITICAL(block6)
 !----------------------------------------------------------------------
 
       integer (SCRIP_i4), intent(in) ::
-     &     cell_add,         ! cell in whose nbrhood we must find other 
-     &     cell_grid_num,    ! cells grid number from which 'cell_add' 
+     &     cell_add,         ! cell in whose nbrhood we must find other
+     &     cell_grid_num,    ! cells grid number from which 'cell_add'
      &     srch_grid_num     ! is grid number in which we must find
-                             ! search cells 
+                             ! search cells
 
 !----------------------------------------------------------------------
 !
@@ -5602,12 +5602,12 @@ C$OMP END CRITICAL(block6)
 !-----------------------------------------------------------------------
 
       num_srch_cells = 0
-         
+
       !***
       !*** restrict searches first using search bins
       !***
 
-      if (last_cell_add_get_srch_cells /= cell_add .or. 
+      if (last_cell_add_get_srch_cells /= cell_add .or.
      &     last_cell_grid_num_get_srch_cells /= cell_grid_num .or.
      &     last_srch_grid_num_get_srch_cells /= srch_grid_num) then
 
@@ -5659,17 +5659,17 @@ C$OMP END CRITICAL(block6)
 
                num_srch_cells_loc_get_srch_cells = 0
                do grid1_add = min_add,max_add
-                  srch_mask(grid1_add) = 
-     &                 (grid1_bound_box(1,grid1_add) <= 
+                  srch_mask(grid1_add) =
+     &                 (grid1_bound_box(1,grid1_add) <=
      &                 grid1_bound_box(2,cell_add)) .and.
-     &                 (grid1_bound_box(2,grid1_add) >= 
+     &                 (grid1_bound_box(2,grid1_add) >=
      &                 grid1_bound_box(1,cell_add)) .and.
-     &                 (grid1_bound_box(3,grid1_add) <= 
+     &                 (grid1_bound_box(3,grid1_add) <=
      &                 grid1_bound_box(4,cell_add)) .and.
-     &                 (grid1_bound_box(4,grid1_add) >= 
+     &                 (grid1_bound_box(4,grid1_add) >=
      &                 grid1_bound_box(3,cell_add))
-                  
-                  if (srch_mask(grid1_add)) 
+
+                  if (srch_mask(grid1_add))
      &                 num_srch_cells_loc_get_srch_cells =
      &                 num_srch_cells_loc_get_srch_cells+1
                end do
@@ -5696,13 +5696,13 @@ C$OMP END CRITICAL(block6)
                      if (srch_mask(grid1_add)) then
                         n = n+1
                         srch_add_loc_get_srch_cells(n) = grid1_add
-                        srch_corner_lat_loc_get_srch_cells(:,n) = 
+                        srch_corner_lat_loc_get_srch_cells(:,n) =
      &                       grid1_corner_lat(:,grid1_add)
-                        srch_corner_lon_loc_get_srch_cells(:,n) = 
+                        srch_corner_lon_loc_get_srch_cells(:,n) =
      &                       grid1_corner_lon(:,grid1_add)
-                        srch_center_lat_loc_get_srch_cells(n) = 
+                        srch_center_lat_loc_get_srch_cells(n) =
      &                       grid1_center_lat(grid1_add)
-                        srch_center_lon_loc_get_srch_cells(n) = 
+                        srch_center_lon_loc_get_srch_cells(n) =
      &                       grid1_center_lon(grid1_add)
                      endif
                   end do
@@ -5713,7 +5713,7 @@ C$OMP END CRITICAL(block6)
                deallocate(srch_mask)
 
             else
-            
+
                !*** Grid 2 neighbors of grid 1 cell
 
                allocate(srch_mask(grid2_size))
@@ -5734,20 +5734,20 @@ C$OMP END CRITICAL(block6)
 
                num_srch_cells_loc_get_srch_cells = 0
                do grid2_add = min_add,max_add
-                  srch_mask(grid2_add) = 
-     &                 (grid2_bound_box(1,grid2_add) <= 
+                  srch_mask(grid2_add) =
+     &                 (grid2_bound_box(1,grid2_add) <=
      &                 grid1_bound_box(2,cell_add)) .and.
-     &                 (grid2_bound_box(2,grid2_add) >= 
+     &                 (grid2_bound_box(2,grid2_add) >=
      &                 grid1_bound_box(1,cell_add)) .and.
-     &                 (grid2_bound_box(3,grid2_add) <= 
+     &                 (grid2_bound_box(3,grid2_add) <=
      &                 grid1_bound_box(4,cell_add)) .and.
-     &                 (grid2_bound_box(4,grid2_add) >= 
+     &                 (grid2_bound_box(4,grid2_add) >=
      &                 grid1_bound_box(3,cell_add))
 
 
-                  
-                  if (srch_mask(grid2_add)) 
-     &                 num_srch_cells_loc_get_srch_cells = 
+
+                  if (srch_mask(grid2_add))
+     &                 num_srch_cells_loc_get_srch_cells =
      &                 num_srch_cells_loc_get_srch_cells+1
                end do
 
@@ -5774,17 +5774,17 @@ C$OMP END CRITICAL(block6)
                      if (srch_mask(grid2_add)) then
                         n = n+1
                         srch_add_loc_get_srch_cells(n) = grid2_add
-                        srch_corner_lat_loc_get_srch_cells(:,n) = 
+                        srch_corner_lat_loc_get_srch_cells(:,n) =
      &                       grid2_corner_lat(:,grid2_add)
-                        srch_corner_lon_loc_get_srch_cells(:,n) = 
+                        srch_corner_lon_loc_get_srch_cells(:,n) =
      &                       grid2_corner_lon(:,grid2_add)
-                        srch_center_lat_loc_get_srch_cells(n) = 
+                        srch_center_lat_loc_get_srch_cells(n) =
      &                       grid2_center_lat(grid2_add)
-                        srch_center_lon_loc_get_srch_cells(n) = 
+                        srch_center_lon_loc_get_srch_cells(n) =
      &                       grid2_center_lon(grid2_add)
                      endif
                   end do
-                  
+
                   srch_corners_loc_get_srch_cells = grid2_corners
                endif
 
@@ -5815,18 +5815,18 @@ C$OMP END CRITICAL(block6)
 
                num_srch_cells_loc_get_srch_cells = 0
                do grid1_add = min_add,max_add
-                  srch_mask(grid1_add) = 
-     &                 (grid1_bound_box(1,grid1_add) <= 
+                  srch_mask(grid1_add) =
+     &                 (grid1_bound_box(1,grid1_add) <=
      &                 grid2_bound_box(2,cell_add)) .and.
-     &                 (grid1_bound_box(2,grid1_add) >= 
+     &                 (grid1_bound_box(2,grid1_add) >=
      &                 grid2_bound_box(1,cell_add)) .and.
-     &                 (grid1_bound_box(3,grid1_add) <= 
+     &                 (grid1_bound_box(3,grid1_add) <=
      &                 grid2_bound_box(4,cell_add)) .and.
-     &                 (grid1_bound_box(4,grid1_add) >= 
+     &                 (grid1_bound_box(4,grid1_add) >=
      &                 grid2_bound_box(3,cell_add))
 
-                  if (srch_mask(grid1_add)) 
-     &                 num_srch_cells_loc_get_srch_cells = 
+                  if (srch_mask(grid1_add))
+     &                 num_srch_cells_loc_get_srch_cells =
      &                 num_srch_cells_loc_get_srch_cells+1
                end do
 
@@ -5853,13 +5853,13 @@ C$OMP END CRITICAL(block6)
                      if (srch_mask(grid1_add)) then
                         n = n+1
                         srch_add_loc_get_srch_cells(n) = grid1_add
-                        srch_corner_lat_loc_get_srch_cells(:,n) = 
+                        srch_corner_lat_loc_get_srch_cells(:,n) =
      &                       grid1_corner_lat(:,grid1_add)
-                        srch_corner_lon_loc_get_srch_cells(:,n) = 
+                        srch_corner_lon_loc_get_srch_cells(:,n) =
      &                       grid1_corner_lon(:,grid1_add)
-                        srch_center_lat_loc_get_srch_cells(n) = 
+                        srch_center_lat_loc_get_srch_cells(n) =
      &                       grid1_center_lat(grid1_add)
-                        srch_center_lon_loc_get_srch_cells(n) = 
+                        srch_center_lon_loc_get_srch_cells(n) =
      &                       grid1_center_lon(grid1_add)
                      endif
                   end do
@@ -5891,21 +5891,21 @@ C$OMP END CRITICAL(block6)
 
                num_srch_cells_loc_get_srch_cells = 0
                do grid2_add = min_add,max_add
-                  srch_mask(grid2_add) = 
-     &                 (grid2_bound_box(1,grid2_add) <= 
+                  srch_mask(grid2_add) =
+     &                 (grid2_bound_box(1,grid2_add) <=
      &                 grid2_bound_box(2,cell_add)) .and.
-     &                 (grid2_bound_box(2,grid2_add) >= 
+     &                 (grid2_bound_box(2,grid2_add) >=
      &                 grid2_bound_box(1,cell_add)) .and.
-     &                 (grid2_bound_box(3,grid2_add) <= 
+     &                 (grid2_bound_box(3,grid2_add) <=
      &                 grid2_bound_box(4,cell_add)) .and.
-     &                 (grid2_bound_box(4,grid2_add) >= 
+     &                 (grid2_bound_box(4,grid2_add) >=
      &                 grid2_bound_box(3,cell_add))
 
-                  if (srch_mask(grid2_add)) 
-     &                 num_srch_cells_loc_get_srch_cells = 
+                  if (srch_mask(grid2_add))
+     &                 num_srch_cells_loc_get_srch_cells =
      &                 num_srch_cells_loc_get_srch_cells+1
                end do
-               
+
 
                if (num_srch_cells_loc_get_srch_cells /= 0) then
 
@@ -5929,17 +5929,17 @@ C$OMP END CRITICAL(block6)
                      if (srch_mask(grid2_add)) then
                         n = n+1
                         srch_add_loc_get_srch_cells(n) = grid2_add
-                        srch_corner_lat_loc_get_srch_cells(:,n) = 
+                        srch_corner_lat_loc_get_srch_cells(:,n) =
      &                       grid2_corner_lat(:,grid2_add)
-                        srch_corner_lon_loc_get_srch_cells(:,n) = 
+                        srch_corner_lon_loc_get_srch_cells(:,n) =
      &                       grid2_corner_lon(:,grid2_add)
-                        srch_center_lat_loc_get_srch_cells(n) = 
+                        srch_center_lat_loc_get_srch_cells(n) =
      &                       grid2_center_lat(grid2_add)
-                        srch_center_lon_loc_get_srch_cells(n) = 
+                        srch_center_lon_loc_get_srch_cells(n) =
      &                       grid2_center_lon(grid2_add)
                      endif
                   end do
-                  
+
                   srch_corners_loc_get_srch_cells = grid2_corners
                endif
 
@@ -5982,8 +5982,8 @@ C$OMP END CRITICAL(block6)
 !
 !----------------------------------------------------------------------
 
-      subroutine find_adj_cell(cell_add, edge_id, cell_grid_num, 
-     &     adj_add) 
+      subroutine find_adj_cell(cell_add, edge_id, cell_grid_num,
+     &     adj_add)
 
 !----------------------------------------------------------------------
 !
@@ -6027,7 +6027,7 @@ C$OMP END CRITICAL(block6)
          lon2 = grid1_corner_lon(inx,cell_add)
 
          !***
-         !*** Often the cell with the next or previous index is 
+         !*** Often the cell with the next or previous index is
          !*** the adjacent cell. Check that first
          !***
 
@@ -6037,45 +6037,45 @@ C$OMP END CRITICAL(block6)
 
             do i = 1, grid1_corners
                inx = mod(i,grid1_corners)+1
-               if (abs(grid1_corner_lat(inx,global_add)-lat1) .le. tiny 
+               if (abs(grid1_corner_lat(inx,global_add)-lat1) .le. tiny
      &              .and.
-     &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny 
+     &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny
      &              .and.
      &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
-     &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny) 
+     &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny)
      &              then
-                  
+
                   adj_add = global_add
                   return
                endif
             enddo
 
          endif
-         
+
          if (cell_add .gt. 1) then
-            
+
             global_add = cell_add - 1
 
             do i = 1, grid1_corners
                inx = mod(i,grid1_corners)+1
-               if (abs(grid1_corner_lat(inx,global_add)-lat1) .le. tiny 
+               if (abs(grid1_corner_lat(inx,global_add)-lat1) .le. tiny
      &              .and.
-     &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny 
+     &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny
      &              .and.
      &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
-     &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny) 
+     &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny)
      &              then
-                  
+
                   adj_add = global_add
                   return
                endif
             enddo
 
          endif
-         
-         
+
+
 
       else
 
@@ -6089,7 +6089,7 @@ C$OMP END CRITICAL(block6)
 
 
          !***
-         !*** Often the cell with the next or previous index is 
+         !*** Often the cell with the next or previous index is
          !*** the adjacent cell. Check that first
          !***
 
@@ -6099,49 +6099,49 @@ C$OMP END CRITICAL(block6)
 
             do i = 1, grid2_corners
                inx = mod(i,grid2_corners)+1
-               if (abs(grid2_corner_lat(inx,global_add)-lat1) .le. tiny 
+               if (abs(grid2_corner_lat(inx,global_add)-lat1) .le. tiny
      &              .and.
-     &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny 
+     &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny
      &              .and.
      &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
-     &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny) 
+     &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny)
      &              then
-                  
+
                   adj_add = global_add
                   return
                endif
             enddo
 
          endif
-         
+
          if (cell_add .gt. 1) then
-            
+
             global_add = cell_add - 1
 
             do i = 1, grid2_corners
                inx = mod(i,grid2_corners)+1
-               if (abs(grid2_corner_lat(inx,global_add)-lat1) .le. tiny 
+               if (abs(grid2_corner_lat(inx,global_add)-lat1) .le. tiny
      &              .and.
-     &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny 
+     &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny
      &              .and.
      &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
-     &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny) 
+     &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny)
      &              then
-                  
+
                   adj_add = global_add
                   return
                endif
             enddo
 
          endif
-         
+
 
       endif
 
 
-      if (cell_add /= last_cell_find_adj_cell .or. 
+      if (cell_add /= last_cell_find_adj_cell .or.
      &     cell_grid_num /= last_cell_grid_num_find_adj_cell) then
 
          last_cell_find_adj_cell = cell_add
@@ -6153,19 +6153,19 @@ C$OMP END CRITICAL(block6)
             last_cell_grid_num_find_adj_cell = 0
          else
             if (num_srch_cells_find_adj_cell .gt. 0) then
-               deallocate(srch_add_find_adj_cell, 
-     &         srch_corner_lat_find_adj_cell, 
+               deallocate(srch_add_find_adj_cell,
+     &         srch_corner_lat_find_adj_cell,
      &         srch_corner_lon_find_adj_cell,
-     &         srch_center_lat_find_adj_cell, 
+     &         srch_center_lat_find_adj_cell,
      &         srch_center_lon_find_adj_cell)
             endif
          endif
 
          call get_srch_cells(cell_add, cell_grid_num, cell_grid_num,
-     &        num_srch_cells_find_adj_cell, srch_add_find_adj_cell, 
+     &        num_srch_cells_find_adj_cell, srch_add_find_adj_cell,
      &        srch_corners_find_adj_cell, srch_corner_lat_find_adj_cell,
-     &        srch_corner_lon_find_adj_cell, 
-     &        srch_center_lat_find_adj_cell, 
+     &        srch_corner_lon_find_adj_cell,
+     &        srch_center_lat_find_adj_cell,
      &        srch_center_lon_find_adj_cell)
 
       endif
@@ -6173,14 +6173,14 @@ C$OMP END CRITICAL(block6)
 
       found = .false.
       do n = 1, num_srch_cells_find_adj_cell
-         
+
          global_add = srch_add_find_adj_cell(n)
 
          do i = 1, srch_corners_find_adj_cell
             inx = mod(i,srch_corners_find_adj_cell)+1
             if (abs(srch_corner_lat_find_adj_cell(inx,n)-lat1) .le. tiny
      &           .and.
-     &           abs(srch_corner_lat_find_adj_cell(i,n)-lat2) .le. tiny 
+     &           abs(srch_corner_lat_find_adj_cell(i,n)-lat2) .le. tiny
      &           .and.
      &           abs(srch_corner_lon_find_adj_cell(inx,n)-lon1) .le.tiny
      &           .and.
@@ -6195,7 +6195,7 @@ C$OMP END CRITICAL(block6)
          enddo
 
          if (found) exit
-         
+
       enddo
 
       return
@@ -6211,7 +6211,7 @@ C$OMP END CRITICAL(block6)
 
       subroutine converge_to_bdry(cell_add, cell_grid_num,
      &     ncorners, cell_corner_lat,
-     &     cell_corner_lon, cell_center_lat, cell_center_lon, 
+     &     cell_corner_lon, cell_center_lat, cell_center_lon,
      &     inpt_lat, inpt_lon, outpt_lat, outpt_lon,
      &     bpt_lat, bpt_lon, bedgeid)
 
@@ -6259,7 +6259,7 @@ C$OMP END CRITICAL(block6)
 !----------------------------------------------------------------------
 
       logical (SCRIP_logical) ::
-     &     converged, 
+     &     converged,
      &     lboundary,
      &     inpoly
 
@@ -6276,28 +6276,28 @@ C$OMP END CRITICAL(block6)
       lat1 = inpt_lat
       lon1 = inpt_lon
       lat2 = outpt_lat
-      lon2 = outpt_lon      
+      lon2 = outpt_lon
 
 
       converged = .false.
       it = 0
-      do while (.not. converged) 
-         
+      do while (.not. converged)
+
          midlat = (lat1+lat2)/2.0
-         if (abs(lon1-lon2) < pi) then            
+         if (abs(lon1-lon2) < pi) then
             midlon = (lon1+lon2)/2.0
          else
             midlon = (lon1+lon2)/2.0 - pi2
          endif
-                               
-                               
-         call ptincell(midlat, midlon, 
-     &        cell_add, ncorners, 
+
+
+         call ptincell(midlat, midlon,
+     &        cell_add, ncorners,
      &        cell_corner_lat, cell_corner_lon,
      &        cell_center_lat, cell_center_lon,
      &        cell_grid_num,
-     &        inpoly, lboundary, bedgeid) 
-                               
+     &        inpoly, lboundary, bedgeid)
+
          if (inpoly) then
             lat1 = midlat
             lon1 = midlon
@@ -6305,16 +6305,16 @@ C$OMP END CRITICAL(block6)
             lat2 = midlat
             lon2 = midlon
          endif
-                               
+
          if (abs(lat1-lat2) < tiny .and.
      &        abs(lon1-lon2) < tiny .and. lboundary) then
             converged = .true.
-         endif                 
-                               
+         endif
+
          if (it > 100) then
             exit
          endif
-                               
+
          it = it + 1
       enddo                     ! do while (not converged)
 

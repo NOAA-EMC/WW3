@@ -24,7 +24,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    31-Oct-2010 : Implement unstructured grid         ( version 3.14 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    05-Jul-2011 : Revert to X-Y gaussian shape        ( version 4.01 )
 !/    06-Mar-2012 : Hardening output.                   ( version 4.07 )
 !/    06-Jun-2018 : Add DEBUGINIT/EXPORTWWM             ( version 6.04 )
@@ -32,7 +32,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -118,16 +118,16 @@
 !     - While reading the restart file W3IORS will recognize the
 !       need for checking the time, as the restart file contains
 !       information on the origine of the file ("cold" or "hot").
-!     - User input for x-wise gaussian spread control, SIX, is 
-!       now available again (option for SIX.NE.SIY available.) 
-!       If user desires a distribution that is circular in real 
+!     - User input for x-wise gaussian spread control, SIX, is
+!       now available again (option for SIX.NE.SIY available.)
+!       If user desires a distribution that is circular in real
 !       distances, user should input a negative number for SIX.
 !
 !  8. Structure :
 !
 !     ----------------------------------------------------
 !        1.a  Set up data structures.
-!                            ( W3NMOD , W3NDAT , W3NOUT 
+!                            ( W3NMOD , W3NDAT , W3NOUT
 !                              W3SETG , W3SETW , W3SETO )
 !          b  I-O setup.
 !          b  Print heading(s).
@@ -458,7 +458,7 @@
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
-            IF (GTYPE .EQ. UNGTYPE) THEN 
+            IF (GTYPE .EQ. UNGTYPE) THEN
                IX     = MAPSF(ISEA,1)
                X      = XYB(IX,1)
                Y      = XYB(IX,2)
@@ -625,7 +625,7 @@
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
-            IF (GTYPE .EQ. UNGTYPE) THEN 
+            IF (GTYPE .EQ. UNGTYPE) THEN
                IX     = MAPSF(ISEA,1)
                X      = XYB(IX,1)
                Y      = XYB(IX,2)
@@ -810,7 +810,7 @@
   901 FORMAT ( '  Comment character is ''',A,''''/)
   902 FORMAT ( '  Grid name : ',A/)
   903 FORMAT ( '  Negative SIX was provided by user.         '/       &
-               '  WW3 will create a gaussian distribution    '/       &         
+               '  WW3 will create a gaussian distribution    '/       &
                '  that is circular in real space. ')
 !
   930 FORMAT (/'  Initial field ITYPE =',I2/                          &

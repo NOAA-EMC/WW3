@@ -11,7 +11,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -1915,7 +1915,7 @@
 !
 !  7. Remarks :
 !
-!       PNUM2: dimensioning changed from 51 to 71 due to "subscript out 
+!       PNUM2: dimensioning changed from 51 to 71 due to "subscript out
 !           of range" fault (Sep 28 2012)
 !
 !  8. Structure :

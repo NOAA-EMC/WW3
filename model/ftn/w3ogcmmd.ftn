@@ -15,12 +15,12 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Module used for coupling applications between oceanic model and WW3 with OASIS3-MCT 
+!     Module used for coupling applications between oceanic model and WW3 with OASIS3-MCT
 !
 !  2. Variables and types :
 !
@@ -87,7 +87,7 @@
 !
 !      Name            Type    Module     Description
 !     ------------------------------------------------------------------
-!     W3WAVE           Subr.   W3WAVEMD   Wave model 
+!     W3WAVE           Subr.   W3WAVEMD   Wave model
 !     ------------------------------------------------------------------
 !
 !  6. Error messages :
@@ -125,7 +125,7 @@
       INTEGER, DIMENSION(NSEAL)      :: MASK
       REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_SND
       INTEGER                        :: IB_DO
-      LOGICAL                        :: LL_ACTION   
+      LOGICAL                        :: LL_ACTION
       REAL(kind=8), DIMENSION(NSEAL) :: TMP
 !
 !----------------------------------------------------------------------
@@ -173,7 +173,7 @@
          !
          ! Cosinus of Mean wave direction (cos(theta) in radians)
          ! ---------------------------------------------------------------------
-         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east
          ! theta : trigonometric convention ( 0 at East, 90 at North)
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
             TMP(1:NSEAL) = 0.0
@@ -184,7 +184,7 @@
          !
          ! Sinus of Mean wave direction (sin(theta) in radians)
          ! ---------------------------------------------------------------------
-         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east
          ! theta : trigonometric convention ( 0 at East, 90 at North)
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
             TMP(1:NSEAL) = 0.0
@@ -369,7 +369,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !     ID_LCOMM          Char.     I     MPI communicator
-!     IDFLD             Int.      I     Name of the exchange fields    
+!     IDFLD             Int.      I     Name of the exchange fields
 !     FXN               Int.     I/O    First exchange field
 !     FYN               Int.     I/O    Second exchange field
 !     FAN               Int.     I/O    Third exchange field
@@ -417,7 +417,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      LOGICAL                          :: LL_ACTION   
+      LOGICAL                          :: LL_ACTION
       INTEGER                          :: IB_DO, IB_I, IB_J, IL_ERR
       INTEGER, SAVE                    :: ID_OASIS_TIME_WETDRYONLYONCE = -1
       REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_RCV
@@ -437,7 +437,7 @@
 ! ---------------------------------------------------------------------
 !
 ! For the same coupling time, W3FLDG is called for the level and current variables.
-! As RCV_FIELDS_FROM_OCEAN is called from W3FLDG, the following test prevents to 
+! As RCV_FIELDS_FROM_OCEAN is called from W3FLDG, the following test prevents to
 ! exchange the wet-dry variables more than once per coupling time.
 !cval well but it cannot work because MASKT,MASKU,MASKV variable are not global variable
 !cval Anyway we will give up the exchange of mask, it is not a good idea at all

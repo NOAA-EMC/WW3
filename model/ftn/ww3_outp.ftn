@@ -62,7 +62,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -345,9 +345,9 @@
           END IF
           EXIT
         END IF
-        ! existing index in out_pnt.ww3   
+        ! existing index in out_pnt.ww3
         IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
-          IF ( .NOT. FLREQ(IPOINT) ) THEN 
+          IF ( .NOT. FLREQ(IPOINT) ) THEN
             NREQ = NREQ + 1
           END IF
           FLREQ(IPOINT) = .TRUE.
@@ -440,8 +440,8 @@
                                   NK, NTH, NREQ, GNAME
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
 !
-! conversion of directions from trignonmetric to nautical (still uses directions TO ) 
-! 
+! conversion of directions from trignonmetric to nautical (still uses directions TO )
+!
                  WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
 
                 ELSE
@@ -612,7 +612,7 @@
                   WRITE (NDSE,1012) OTYPE
                   CALL EXTCDE ( 45 )
                 ENDIF
-                IF (FLREQ(IJ)) THEN 
+                IF (FLREQ(IJ)) THEN
                   NDSBUL = NDSTAB + (IJ - 1)
                   OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
                   WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
@@ -628,7 +628,7 @@
               DO IJ = 1,NOPTS
                 IF (FLREQ(IJ)) THEN
                   ICSV = 0
-                  IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL 
+                  IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
 !/NCO                   IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
                   NDSCSV = NDSTAB + (IJ - 1) + ICSV
                   OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',ERR=803,IOSTAT=IERR)
@@ -711,8 +711,8 @@
         DO IJ = 1,NOPTS
           IF (FLREQ(IJ)) THEN
             NDSBUL = NDSTAB + (IJ - 1)
-            WRITE(NDSBUL,971) 
-            WRITE(NDSBUL,974) BHSDROP, BHSMIN 
+            WRITE(NDSBUL,971)
+            WRITE(NDSBUL,974) BHSDROP, BHSMIN
 !/NCO             NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 !/NCO             WRITE(NDSCBUL,961)
 !/NCO             WRITE(NDSCBUL,962)
@@ -809,7 +809,7 @@
        75X,'Tp  : Peak period of separate wave field.'/               &
        75X,'dir : Mean direction of separate wave field.'/            &
        75X,'*   : Wave generation due to local wind probable.')
- 
+
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
@@ -980,10 +980,10 @@
 !     - Note that arrays CX and CY of the main program now contain
 !       the absolute current speed and direction respectively.
 !
-!     - BT8&9 issues : 
+!     - BT8&9 issues :
 !
 !       Q: What is the problem?
-!       A: Point output of Sbot with BT8 or BT9 is not presently 
+!       A: Point output of Sbot with BT8 or BT9 is not presently
 !          supported.
 !
 !       Q: What can a user do now?
@@ -996,20 +996,20 @@
 !        $               | | | ^ Dissipation
 !        $               | | ^ Nonlinear interactions
 !        $               | ^ Wind-wave interactions
-!        $               ^ Spectrum 
+!        $               ^ Spectrum
 !          If the user really need this source function, he/she
-!          needs to add test output to the mud subroutine 
+!          needs to add test output to the mud subroutine
 !          directly
 !
 !       Q: Why doesn't this functionality exist?
-!       A: The Sbot source function in ww3_outp was originally written 
-!          with the case of BT1 in mind. BT1 uses a uniform friction 
-!          factor, so it does not need any special variable for the 
-!          local friction factor. BT8 and BT9 allow non-uniform mud 
-!          variables (thickness, density, viscosity) and the mud 
-!          subroutines are written with ww3_shel in mind, where the 
-!          source function is calculated on the computational grid 
-!          point IX IY. 
+!       A: The Sbot source function in ww3_outp was originally written
+!          with the case of BT1 in mind. BT1 uses a uniform friction
+!          factor, so it does not need any special variable for the
+!          local friction factor. BT8 and BT9 allow non-uniform mud
+!          variables (thickness, density, viscosity) and the mud
+!          subroutines are written with ww3_shel in mind, where the
+!          source function is calculated on the computational grid
+!          point IX IY.
 
 !       Q: How can we add this functionality?
 !       A: To fix it, we would need to :
@@ -1310,10 +1310,10 @@
               END DO
 
 !
-! Computes 2nd order spectrum 
+! Computes 2nd order spectrum
 !
-!/IG1      IF (IGPARS(2).EQ.1) THEN 
-!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1      IF (IGPARS(2).EQ.1) THEN
+!/IG1        IF(IGPARS(1).EQ.1) THEN
 !/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
 !/IG1        ELSE
 !/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
@@ -1661,13 +1661,13 @@
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 !/BT2                    SBTC2 = 2. * -0.067 / GRAV
 !/BT2                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
-!/BT4                    IX=1    ! to be fixed later 
-!/BT4                    IY=1    ! to be fixed later 
-!/BT4                    ISEA=1  ! to be fixed later 
+!/BT4                    IX=1    ! to be fixed later
+!/BT4                    IY=1    ! to be fixed later
+!/BT4                    ISEA=1  ! to be fixed later
 !/BT4                    D50 = SED_D50(ISEA)
 !/BT4                    PSIC= SED_PSIC(ISEA)
 
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 
                  BT8MSG='ww3_outp: ITYPE=3 with BT8 or BT9: Sbot out'//&
@@ -1701,7 +1701,7 @@
 !/IS2                     END IF
 !
 !/IS2                  CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
-!/IS2                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)    
+!/IS2                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
                   END IF
 !
 !/XXX                CALL W3SXXX
@@ -2022,7 +2022,7 @@
                       WRITE (NDSTAB,2930) FACF*SIG(IK), E1(IK),       &
                         SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK),       &
                         SIS1(IK), STT1(IK)
-                     
+
                       END DO
                     WRITE (NDSTAB,2940)
 !
@@ -2103,7 +2103,7 @@
                         IF ( FLSRCE(5) ) WRITE (NDSTAB,902)           &
                               ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
                         IF ( FLSRCE(6) ) WRITE (NDSTAB,902)           &
-                              ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH) 
+                              ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH)
                         IF ( FLSRCE(7) ) WRITE (NDSTAB,902)           &
                               ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
                       END IF
@@ -2164,11 +2164,11 @@
 !/NCO                         NDSCBUL=NDSTAB + (J - 1) + NOPTS
                         IF (IOUT .EQ. 1) THEN
                           WRITE(HSTR,'(I2,1X,A)') TIMEV(2)/10000,   &
-                                   HTYPE 
+                                   HTYPE
                           WRITE (NDSBUL,970) PTNME(J), Y, IDLAT, X, &
                                            IDLON, GNAME, TIMEV(1),  &
                                            HSTR
-                          WRITE (NDSBUL,971) 
+                          WRITE (NDSBUL,971)
                           WRITE (NDSBUL,972)
                           WRITE (NDSBUL,971)
 !/NCO                           WRITE (NDSCBUL,960) PTNME(J), Y, IDLAT,   &
@@ -2180,7 +2180,7 @@
 !/NCO                         WRITE (NDSCBUL,963) CASCBLINE
                      ENDIF
                       IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
-                        ICSV = 0 
+                        ICSV = 0
                         IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
 !/NCO                         IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
                         NDSCSV = NDSTAB + (J - 1) + ICSV
@@ -2242,7 +2242,7 @@
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
   942 FORMAT (I3,3F8.2,2F9.2,10F7.2)
 !
-! 
+!
 !/NCO  960 FORMAT ( 'Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/              &
 !/NCO                'Model    : ',A/                                       &
 !/NCO                'Cycle    : ',I8,1X,A//                                &

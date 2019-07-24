@@ -16,7 +16,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -84,7 +84,7 @@
 !         to be declared in the module header. Upon acceptance as
 !         permanent code, they will be converted to the WAVEWATCH III
 !         dynamic data structure.
-!      b) Preprocessing should be done in W3MAPX, and this reoutine 
+!      b) Preprocessing should be done in W3MAPX, and this reoutine
 !         needs to be able o be called multiple times, as propagation
 !         schemes are re-initialized every time propagation 'maps'
 !         change (see established routines).
@@ -99,7 +99,7 @@
 !     ***    Declare saved variables here   ***
 !     ***  public or private as appropriate ***
 !     *****************************************
-!     
+!
       PUBLIC
 !/
       CONTAINS
@@ -223,7 +223,7 @@
 !     ----------------------------------------------------------------
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !     ----------------------------------------------------------------
-! 
+!
 !  5. Called by :
 !
 !      Name      Type  Module   Description
@@ -311,7 +311,7 @@
 !     ----------------------------------------------------------------
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !     ----------------------------------------------------------------
-! 
+!
 !  5. Called by :
 !
 !      Name      Type  Module   Description

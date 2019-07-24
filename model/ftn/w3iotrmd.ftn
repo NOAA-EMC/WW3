@@ -98,7 +98,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -163,14 +163,14 @@
 !
 ! 10. Remarks :
 !
-!     Regarding section 3.e.2 "Optimize: omit points that are not 
-!       strictly required.". This optimization saves disk space but 
-!       results in output files that are more difficult to use. For 
+!     Regarding section 3.e.2 "Optimize: omit points that are not
+!       strictly required.". This optimization saves disk space but
+!       results in output files that are more difficult to use. For
 !       example, matlab built-in function "griddata" requires all four
 !       bounding points. This means that a post-processing code must
 !       have extra logic do deal with cases without all four bounding
-!       points (interpolation along a line, or nearest neighbor). 
-!       A namelist variable has been add to make this feature optional. 
+!       points (interpolation along a line, or nearest neighbor).
+!       A namelist variable has been add to make this feature optional.
 !       Default, original behavior: TRCKCMPR = T (in /MISC/ namelist).
 !       Save all points: TRCKCMPR =  F (in /MISC/ namelist).
 !       Within the present routine, the logical is named "CMPRTRCK".
@@ -190,7 +190,7 @@
                           DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
                           MAPFS, TH, DTH, SIG, DSIP, XFR, FILEXT
       USE W3GSRUMD, ONLY: W3GFCL
-!/T      USE W3GSRUMD, ONLY: W3GSUP      
+!/T      USE W3GSRUMD, ONLY: W3GSUP
       USE W3GDATMD, ONLY: XYB, MAXX, MAXY, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME, UST
       USE W3ADATMD, ONLY: CG, DW, CX, CY, UA, UD, AS
@@ -260,11 +260,11 @@
       FORMI  = NDSINP .GT. 0
       NDSTI  = ABS(NDSINP)
       NDSTO  = ABS(NDSOUT)
-      
+
       IF (GTYPE .EQ. UNGTYPE) THEN
         XN     = MAXX
         YN     = MAXY
-        ENDIF       
+        ENDIF
 !
       ISPROC = IAPROC
       IPASS  = IPASS + 1
@@ -461,7 +461,7 @@
               IYY(2) = IYY(4)
           END IF
 
-        END IF ! IF(CMPRTRCK)THEN 
+        END IF ! IF(CMPRTRCK)THEN
 !
 ! 3.f Mark the four corner points
 !

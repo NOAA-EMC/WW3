@@ -25,10 +25,10 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLO (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    30-Oct-2012 : Implement tidal analysis            ( version 4.08 ) 
+!/    30-Oct-2012 : Implement tidal analysis            ( version 4.08 )
 !/                  (F. Ardhuin)
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.OF )
-!/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 ) 
+!/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
@@ -36,7 +36,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -104,7 +104,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
-!/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
+!/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
@@ -242,7 +242,7 @@
       FILLER(:)=0
       IF ( PRESENT(TIDEFLAGIN) ) THEN
         TIDEFLAG = TIDEFLAGIN
-      ELSE 
+      ELSE
         TIDEFLAG = 0
         END IF
 
@@ -353,9 +353,9 @@
       IF ( WRITE ) THEN
           IF ( FDHDR ) THEN
              IF ( FORM .EQ. 'UNFORMATTED' ) THEN
-! 
+!
 ! The "filler" was added for compatibility with old binary forcing files
-! It is now also used for tidal info ... 
+! It is now also used for tidal info ...
 !
                  WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
                        IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
@@ -382,9 +382,9 @@
 !/DEBUGFLS       WRITE(740+IAPROC,*) '2: NXT=', NXT, ' NYT=', NYT
           END IF
           IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
-          IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN     
+          IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN
             GOTO 810
-            END IF          
+            END IF
 !
           IF ( IDSTR .NE. TSSTR ) GOTO 807
           IF (( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS') .OR.             &
@@ -394,7 +394,7 @@
             END IF
           IF ( IDFLD .NE. TSFLD ) GOTO 808
           IF ( IDFLD(1:2) .NE. 'DT' ) THEN
-            IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN 
+            IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN
 !/DEBUGFLS       WRITE(740+IAPROC,*) 'Dimension error'
 !/DEBUGFLS       WRITE(740+IAPROC,*) 'NX =', NX , ' NY =', NY
 !/DEBUGFLS       WRITE(740+IAPROC,*) 'NXT=', NXT, ' NYT=', NYT
@@ -495,7 +495,7 @@
                '                   SHOULD BE >',A,'<'/)
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
          '     INCOMPATIBLE GRID DATA : ',3(1X,I10)/             &
-         '                  SHOULD BE : ',3(1X,I10)/)            
+         '                  SHOULD BE : ',3(1X,I10)/)
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/          &
          '     FILLER indicates use of tidal constituents',3I4, /&
          '     For this the code should be compiled with TIDE switch'/)
@@ -527,8 +527,8 @@
 !/                  | Last update :         30-Jun-2013 |
 !/                  +-----------------------------------+
 !/
-!/    24-Sep-2012 : Creation                            ( version 4.09 ) 
-!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
+!/    24-Sep-2012 : Creation                            ( version 4.09 )
+!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -705,8 +705,8 @@
 !/                  | Last update :         30-Jun-2013 |
 !/                  +-----------------------------------+
 !/
-!/    24-Sep-2012 : Creation                            ( version 4.09 ) 
-!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
+!/    24-Sep-2012 : Creation                            ( version 4.09 )
+!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -829,18 +829,18 @@
 !/TIDE                     CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
 !/TIDE               IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
 !/TIDE               CALL TIDE_SET_INDICES
-!/TIDE               IF(IDFLD.EQ.'LEV') THEN 
+!/TIDE               IF(IDFLD.EQ.'LEV') THEN
 !/TIDE                 IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-!/TIDE               ELSE 
+!/TIDE               ELSE
 !/TIDE                 IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
 !/TIDE                 IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
-!/TIDE                 END IF 
+!/TIDE                 END IF
 !/TIDE               END IF
-!/TIDET DO I=1,NTIDE 
+!/TIDET DO I=1,NTIDE
 !/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
 !/TIDET                   '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
 !/TIDET END DO
-!/TIDET DO I=1,NTIDE 
+!/TIDET DO I=1,NTIDE
 !/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
 !/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
 !/TIDET END DO
@@ -946,7 +946,7 @@
 !       INXOUT  C*(*)  I   Test string for read/write, valid are:
 !                          'READ' and 'WRITE'.
 !       IDFLD   C*3    I   ID string for field type, valid are: 'IC1',
-!                          'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH', 'MVS', 
+!                          'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH', 'MVS',
 !                          'LEV', 'CUR', 'WND', 'WNS', 'ICE' and 'ISI'.
 !       NDS     Int.   I   Dataset number for fields file.
 !       NDST    Int.   I   Dataset number for test output.
@@ -1024,7 +1024,7 @@
 !/OASACM      USE W3AGCMMD, ONLY: RCV_FIELDS_FROM_ATMOS
 !/OASOCM      USE W3OGCMMD, ONLY: RCV_FIELDS_FROM_OCEAN
 !/OASICM      USE W3IGCMMD, ONLY: RCV_FIELDS_FROM_ICE
-!/OASIS       USE W3ODATMD, ONLY: DTOUT 
+!/OASIS       USE W3ODATMD, ONLY: DTOUT
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1065,7 +1065,7 @@
 ! test input parameters ---------------------------------------------- *
 !
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
-      IF ( IDFLD.NE.'IC1' .AND. IDFLD.NE.'IC2' .AND.                  & 
+      IF ( IDFLD.NE.'IC1' .AND. IDFLD.NE.'IC2' .AND.                  &
            IDFLD.NE.'IC3' .AND. IDFLD.NE.'IC4' .AND.                  &
            IDFLD.NE.'IC5' .AND. IDFLD.NE.'MDN' .AND.                  &
            IDFLD.NE.'MTH' .AND. IDFLD.NE.'MVS' .AND.                  &
@@ -1078,8 +1078,8 @@
       WRITE  = INXOUT .EQ. 'WRITE'
       FL2D   = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' &
                               .OR. IDFLD.EQ.'ISI'
-      FLBE   = IDFLD.EQ.'ISI'       
-      FLST   = IDFLD.EQ.'WNS' 
+      FLBE   = IDFLD.EQ.'ISI'
+      FLST   = IDFLD.EQ.'WNS'
 
       IF ( .NOT. PRESENT(FLAGSC) ) THEN
         FLCOUPL=FLAGSC_DEFAULT
@@ -1112,7 +1112,7 @@
             TF0(1) = TFN(1)
             TF0(2) = TFN(2)
 !/T            WRITE (NDST,9020)
-! unless TFN has been changed in the do loop, the following line is essentally 
+! unless TFN has been changed in the do loop, the following line is essentally
 !       "if not.flfrst"
             IF ( TFN(1) .NE. -1 ) THEN
                 DO IX=1, NX
@@ -1161,8 +1161,8 @@
 !
           ELSE
 !
-!/OASIS            IF (FLCOUPL) THEN 
-!/OASIS  ! Do not receive coupling fields at the end of the first integration time in case of  
+!/OASIS            IF (FLCOUPL) THEN
+!/OASIS  ! Do not receive coupling fields at the end of the first integration time in case of
 !/OASIS  ! forcing with a non interpolated field (like lev, ice, ...)
 !/OASIS              IF ((ID_OASIS_TIME.EQ.0 .AND. FLFRST) .OR. (ID_OASIS_TIME.GT.0)) THEN
 !
@@ -1181,7 +1181,7 @@
 !/OASIS                TFN(2)=T0(2)
 !/OASIS                CALL TICK21(TFN,DTOUT(7))
 !/OASIS              END IF
-!/OASIS            ELSE 
+!/OASIS            ELSE
               READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
 !/T             WRITE (NDST,9031) TFN
               IF ( .NOT. FL2D ) THEN
@@ -1214,7 +1214,7 @@
 !
             DTTST  = DSEC21 ( T0 , TFN )
 
-! Exit if the time is the first time and the field is not interpolated in time 
+! Exit if the time is the first time and the field is not interpolated in time
 
             IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. ) EXIT
 
@@ -1401,7 +1401,7 @@
 !                           'WRITE'  Write a data field to file.
 !                           'SIZE'   Get the number of records of
 !                                    next data set.
-!                           'READ'   Read the data set found by 
+!                           'READ'   Read the data set found by
 !                                    'SIZE' after allocating proper
 !                                    data array.
 !       IDFLD   C*3    I   ID string for field type, valid are:
@@ -1531,7 +1531,7 @@
 !
           DTTST  = DSEC21 ( TIME , TD )
           IF ( DTTST.LT.0. .OR. NDOUT.EQ.0 ) THEN
-              IF (NDOUT.GT.0) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT) 
+              IF (NDOUT.GT.0) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)
               GOTO 100
            END IF
 !
@@ -1737,7 +1737,7 @@
 !     - The "CLOSED" variable comes from ww3_prep.inp and is associated
 !       with the input grid (e.g. grid that winds are provided on).
 !       It is a logical, not an integer, so it only allows two cases:
-!       no closure, or simple closure. "ww3_prep" only supports these 
+!       no closure, or simple closure. "ww3_prep" only supports these
 !       two (not tripole).
 !
 !  8. Structure :
@@ -2244,7 +2244,7 @@
           ! exit if field time is later than run time
           IF ( DTTST .GT. 0. ) EXIT
           ! exit if field is ic* or md* or lev or ice
-          ! and first forcing field has been stored 
+          ! and first forcing field has been stored
           ! at start run time
           IF ( J.LE.(1).OR.(J.EQ.4) ) THEN
             IF (FLFRST .AND. DTTST.EQ.0. ) EXIT

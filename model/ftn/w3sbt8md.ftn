@@ -15,12 +15,12 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Contains routines for computing dissipation by viscous fluid mud using 
+!     Contains routines for computing dissipation by viscous fluid mud using
 !     Dalrymple and Liu (1978) "Thin Model".
 !
 !  2. Variables and types :
@@ -46,15 +46,15 @@
 !     ----------------------------------------------------------------
 !
 !  5. Remarks :
-!     Historical information: 
+!     Historical information:
 !        This started as a matlab script provided to Erick Rogers by Tony
-!        Dalrympyle Sep 2006. Erick Rogers converted to Fortran and put 
+!        Dalrympyle Sep 2006. Erick Rogers converted to Fortran and put
 !        it into the SWAN model May 2007. Mark Orzech adapted the code for
-!        WW3 and added it to NRL code repository July-Dec 2011. 
+!        WW3 and added it to NRL code repository July-Dec 2011.
 !        Erick Rogers brought it over to the NCEP repository May 2013
 !        and has been updating and maintaining it there.
 !
-!     Reference: Dalrymple, R.A., Liu,P.L.-F.,1978: 
+!     Reference: Dalrymple, R.A., Liu,P.L.-F.,1978:
 !                Waves over soft muds :a 2-layer fluid model.
 !                Journal of Physical Oceanography, 8, 1121–1131.
 !
@@ -80,7 +80,7 @@
 !/                  | Last update :         21-Nov-2013 |
 !/                  +-----------------------------------+
 !/
-!/    20-Dec-2004 : Origination.                        ( version 3.06 
+!/    20-Dec-2004 : Origination.                        ( version 3.06
 !/    23-Jun-2006 : Formatted for submitting code for   ( version 3.09 )
 !/                  inclusion in WAVEWATCH III.
 !/
@@ -160,72 +160,72 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-     
-      COMPLEX    :: K           
-      COMPLEX    :: SHH         
-      COMPLEX    :: CHH         
-      COMPLEX    :: SHD         
-      COMPLEX    :: CHD         
-      COMPLEX    :: LAM1        
-      COMPLEX    :: LAM2        
-      COMPLEX    :: CHLAM2      
-      COMPLEX    :: SHLAM2      
-      COMPLEX    :: A1          
-      COMPLEX    :: A2          
-      COMPLEX    :: A3          
-      COMPLEX    :: B1          
-      COMPLEX    :: B2          
-      COMPLEX    :: B3          
-      COMPLEX    :: B4          
-      COMPLEX    :: C0          
-      COMPLEX    :: TESTALF1    
-      COMPLEX    :: TESTALF2    
-      COMPLEX    :: ALF1        
-      COMPLEX    :: ALF2        
-      COMPLEX    :: PSI1        
-      COMPLEX    :: PSI2        
-      COMPLEX    :: M1          
-      COMPLEX    :: M0          
-      COMPLEX    :: C(4,3)      
-      COMPLEX    :: C41A        
-      COMPLEX    :: C42A        
-      COMPLEX    :: C43A        
-      COMPLEX    :: B(4)        
-      COMPLEX    :: CD          
-      COMPLEX    :: HH          
-      COMPLEX    :: DD          
-      COMPLEX    :: GG          
-      COMPLEX    :: FM1         
-      COMPLEX    :: KM1         
-      COMPLEX    :: FP          
-      COMPLEX    :: I         
-      COMPLEX    :: F         
+
+      COMPLEX    :: K
+      COMPLEX    :: SHH
+      COMPLEX    :: CHH
+      COMPLEX    :: SHD
+      COMPLEX    :: CHD
+      COMPLEX    :: LAM1
+      COMPLEX    :: LAM2
+      COMPLEX    :: CHLAM2
+      COMPLEX    :: SHLAM2
+      COMPLEX    :: A1
+      COMPLEX    :: A2
+      COMPLEX    :: A3
+      COMPLEX    :: B1
+      COMPLEX    :: B2
+      COMPLEX    :: B3
+      COMPLEX    :: B4
+      COMPLEX    :: C0
+      COMPLEX    :: TESTALF1
+      COMPLEX    :: TESTALF2
+      COMPLEX    :: ALF1
+      COMPLEX    :: ALF2
+      COMPLEX    :: PSI1
+      COMPLEX    :: PSI2
+      COMPLEX    :: M1
+      COMPLEX    :: M0
+      COMPLEX    :: C(4,3)
+      COMPLEX    :: C41A
+      COMPLEX    :: C42A
+      COMPLEX    :: C43A
+      COMPLEX    :: B(4)
+      COMPLEX    :: CD
+      COMPLEX    :: HH
+      COMPLEX    :: DD
+      COMPLEX    :: GG
+      COMPLEX    :: FM1
+      COMPLEX    :: KM1
+      COMPLEX    :: FP
+      COMPLEX    :: I
+      COMPLEX    :: F
       COMPLEX    :: KMUD
 
-      REAL    :: BET0        
-      REAL    :: KINVISW     
-      REAL    :: RHOW        
-      REAL    :: EXPH        
-      REAL    :: A           
-      REAL    :: K_UNMUD     
+      REAL    :: BET0
+      REAL    :: KINVISW
+      REAL    :: RHOW
+      REAL    :: EXPH
+      REAL    :: A
+      REAL    :: K_UNMUD
       REAL    :: SIGMA       ! radian frequency (rad)
       REAL    :: SMUDWD(NK)  ! dissipation due to mud
       REAL    :: KMIMAG(NK)  ! imag part of kmud
-      REAL    :: KD      
-      REAL    :: KDCUTOFF      
-      REAL    :: CWAVE      
-      REAL    :: ZTMP      
-      REAL    :: NWAVE_MUD      
-      REAL    :: CG_MUD      
-      REAL    :: KCHECK      
+      REAL    :: KD
+      REAL    :: KDCUTOFF
+      REAL    :: CWAVE
+      REAL    :: ZTMP
+      REAL    :: NWAVE_MUD
+      REAL    :: CG_MUD
+      REAL    :: KCHECK
       REAL    :: KTHRESHOLD
-      REAL    :: RHOM      
-      REAL    :: KINVISM      
+      REAL    :: RHOM
+      REAL    :: KINVISM
       REAL    :: THICKM
       REAL    :: CG_UNMUD
 
-      INTEGER :: ICOUNT      
-      INTEGER :: IK      
+      INTEGER :: ICOUNT
+      INTEGER :: IK
       INTEGER :: IS
 
       PARAMETER (I=(0.,1.))
@@ -237,7 +237,7 @@
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
-      !     Dalrymple and Liu, Waves over soft muds:  1978. 
+      !     Dalrymple and Liu, Waves over soft muds:  1978.
       !     Thin layer solution.
       !     Matlab code provided by Tony Dalrymple
       !     Converted to Fortran by Erick Rogers
@@ -261,10 +261,10 @@
          WRITE(NDSE,*)'KINVISM NOT SET'
          CALL EXTCDE ( 3 )
       ENDIF
-      
-      RHOW=DWAT        ! Density of seawater 
+
+      RHOW=DWAT        ! Density of seawater
       KINVISW=NU_WATER
-      KDCUTOFF = 10.0 
+      KDCUTOFF = 10.0
       KTHRESHOLD=1.0E-9
 
       A=1.0
@@ -279,10 +279,10 @@
 
 ! *** loop over frequencies
       DO IK = 1,NK
-      
+
         SIGMA = SIG(IK)
 
-        !     un-muddy wave number, to start things off 
+        !     un-muddy wave number, to start things off
         CALL WAVNU1(SIGMA,H_WDEPTH,K_UNMUD,CG_UNMUD)
         K=K_UNMUD
 
@@ -379,7 +379,7 @@
            B(4)=0
            !  coefficients
            CD=-(C(3,3)-C(3,2)*C(4,3)/C(4,2))/C(3,1)
-           HH=B(2)/(C(2,1)*CD -C(2,2)*(C(4,3)/C(4,2))+C(2,3))      
+           HH=B(2)/(C(2,1)*CD -C(2,2)*(C(4,3)/C(4,2))+C(2,3))
            DD=CD*HH
            GG=-C(4,3)*HH/C(4,2)
 
@@ -391,7 +391,7 @@
               KM1=K
               K=K*(.995)+.001*I
               KCHECK=100.0
-           ELSE 
+           ELSE
               KCHECK=ABS(IMAG(K)-IMAG(KM1))
               IF((F.EQ.FM1).OR.(K.EQ.KM1).OR.(KCHECK<KTHRESHOLD))THEN
 ! notes: I have noticed that if iterations are not stopped early enough, NaNs result
@@ -406,7 +406,7 @@
         END DO
 
         KMUD=K
-        
+
 ! KD calc: not that important: just used to determine whether we make the mud calculation
         KD = REAL(KMUD) * H_WDEPTH
 
@@ -422,17 +422,17 @@
           ENDIF
           NWAVE_MUD=0.5*(1.0+2.0*REAL(KMUD)*H_WDEPTH/ZTMP)
           CG_MUD=NWAVE_MUD*CWAVE
-!        --- compute fluid mud-induced wave dissipation 
+!        --- compute fluid mud-induced wave dissipation
           SMUDWD(IK)=2.0*IMAG(KMUD)*CG_MUD
 
-!        --- store imaginary part of KMUD  
+!        --- store imaginary part of KMUD
           KMIMAG(IK)=IMAG(KMUD)
- 
+
         END IF !     IF ( KD .LT. KDCUTOFF ) THEN
-        
+
       END DO ! IK
 
-!     *** store the results in the DIAGONAL array D *** 
+!     *** store the results in the DIAGONAL array D ***
       DO IS = 1,NSPEC
         D(IS) = -SMUDWD(MAPWN(IS))
       END DO
@@ -440,7 +440,7 @@
       END IF !   IF ( THICKM>0.0 & RHOM>0.0 & KINVISM>0.0 ) THEN
 
       S = D * AC
-      
+
       RETURN
 !/
 !/ End of W3SBT8 ----------------------------------------------------- /

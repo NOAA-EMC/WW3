@@ -13,12 +13,12 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Module for inclusion of triad nonlinear interaction according to 
+!     Module for inclusion of triad nonlinear interaction according to
 !     Eldeberky's (1996) Lumped Triad Interaction (LTA) source term.
 !
 !  2. Variables and types :
@@ -63,8 +63,8 @@
 !        all other routines that require modification.
 !      - Provide a test case with expected results.
 !      - It is strongly recommended that the programming style used
-!        in WAVEWATCH III is followed, in particular 
-!          a) for readability, write as if in fixed FORTRAN format 
+!        in WAVEWATCH III is followed, in particular
+!          a) for readability, write as if in fixed FORTRAN format
 !             regarding column use, even though all files are F90
 !             free format.
 !          b) I prefer upper case programming for permanent code,
@@ -75,14 +75,14 @@
 !      a) All saved variables connected with this source term need
 !         to be declared in the module header. Upon acceptance as
 !         permanent code, they will be converted to the WAVEWATCH III
-!         dynamic data structure.  
+!         dynamic data structure.
 !      b) Provide a separate computation and initialization routine.
 !         In the submission, the initialization should be called
 !         from the computation routine upon the first call to the
 !         routine. Upon acceptance as permanent code, the
 !         initialization routine will be moved to a more appropriate
 !         location in the code (i.e., being absorbed in ww3_grid or
-!         being moved to W3IOGR). 
+!         being moved to W3IOGR).
 !
 !     See notes in the file below where to add these elements.
 !
@@ -293,7 +293,7 @@
       INTEGER I1, I2, ID, IDDUM, II, IS, ISM, ISM1, ISMAX, &
               ISP, ISP1, ITH, IK
       REAL    AUX1, AUX2, BIPH, C0, CM, DEP, DEP_2, DEP_3, E0, EM, HS, &
-              FT, RINT, SIGPICG, SINBPH, STRI, WISM, WISM1, WISP, & 
+              FT, RINT, SIGPICG, SINBPH, STRI, WISM, WISM1, WISP, &
               WISP1, W0, WM, WN0, WNM, XIS, XISLN
       REAL, ALLOCATABLE :: E(:), SA(:,:)
       REAL              :: EB(NK), EBAND, EMEAN, SIGM01
@@ -421,8 +421,8 @@
 !
            DO IK = 1, NK
               E(IK) = A(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
-!------------ Test ------------------------------------------ 
-              EF(IK) = EF(IK) + E(IK)        
+!------------ Test ------------------------------------------
+              EF(IK) = EF(IK) + E(IK)
 !------------------------------------------------------------
            END DO
 !

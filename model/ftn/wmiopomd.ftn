@@ -23,7 +23,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -73,7 +73,7 @@
 !
 !       !/S    Enable subroutine tracing.
 !       !/T    Enable test output
-!       !/MPIT 
+!       !/MPIT
 !
 !  7. Source code :
 !
@@ -291,9 +291,9 @@
 ! ..........in w3iopomd.ftn, it is "DO IPT=1, NPT" but otherwise very similar
         DO IPT=1, NOPTS
 !
-!     Check if point within grid 
+!     Check if point within grid
 !
-          IF (GTYPE .NE. UNGTYPE) THEN 
+          IF (GTYPE .NE. UNGTYPE) THEN
             INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
             IF ( .NOT.INGRID(J,IPT) ) THEN
               CYCLE
@@ -315,8 +315,8 @@
               CYCLE
               END IF
 
-!.........If we've gotten to this point, then we are satisfied that 
-!................the point is in this grid. 
+!.........If we've gotten to this point, then we are satisfied that
+!................the point is in this grid.
 
         END DO !        DO IPT=1, NOPTS
 !
@@ -343,7 +343,7 @@
 ! 2.c Diagnostic output
 !
 !/O7b      IF ( IMPROC .EQ. NMPSCR ) THEN
-!/O7b          WRITE (MDSS,920) 
+!/O7b          WRITE (MDSS,920)
 !/O7b          DO IPT=1, NOPTS
 !/O7b            DO J=1, NRGRD
 !/O7b              IF ( GRIDS(J)%FILEXT .EQ. GRDID(IPT) ) EXIT
@@ -355,7 +355,7 @@
 !/O7b                                 GRIDS(J)%FILEXT
 !/O7b              END IF
 !/O7b            END DO
-!/O7b          WRITE (MDSS,929) 
+!/O7b          WRITE (MDSS,929)
 !/O7b        END IF
 !
 ! 2.d Test output
@@ -401,7 +401,7 @@
           MDATAS(J)%UPTMAP(IPT) = II
           XP(IPT)  = PTLOC(1,II)
           YP(IPT)  = PTLOC(2,II)
-          PN(IPT)  = PTNME(II) 
+          PN(IPT)  = PTNME(II)
           END DO
 !
 !/T        DO IPT=1, MDATAS(J)%NRUPTS
@@ -591,7 +591,7 @@
 !
 !       !/S    Enable subroutine tracing.
 !       !/T    Enable test output
-!       !/MPIT 
+!       !/MPIT
 !
 ! 10. Source code :
 !
@@ -655,8 +655,8 @@
           OUTPTS(0)%OUT2%CAO   = 0.
           OUTPTS(0)%OUT2%CDO   = 0.
           OUTPTS(0)%OUT2%ICEO  = 0.
-          OUTPTS(0)%OUT2%ICEFO = 0. 
-          OUTPTS(0)%OUT2%ICEHO = 0.   
+          OUTPTS(0)%OUT2%ICEFO = 0.
+          OUTPTS(0)%OUT2%ICEHO = 0.
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -769,10 +769,10 @@
 !/MPI            CALL MPI_SEND ( CDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
 !/MPI                            MPI_COMM_MWAVE, IERR_MPI )
 !/MPIT            WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
-!JDM: The below should be added for points using partitioned processors 
-! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so 
-! this is being left here commented out for now.  
-! There is a corresponding section to this below 
+!JDM: The below should be added for points using partitioned processors
+! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
+! this is being left here commented out for now.
+! There is a corresponding section to this below
 !!/MPI            IT     = IT + 1
 !!/MPI            CALL MPI_SEND ( ICEO(1), NOPTS, MPI_REAL, ITARG, IT,  &
 !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
@@ -828,7 +828,7 @@
 !/MPI        IFROM  = NMPPNT - 1
 !/MPI        ALLOCATE ( SPCR(NSPEC,NOPTS), STATUS(MPI_STATUS_SIZE,1),  &
 !/MPI                   DPR(NOPTS), WAR(NOPTS), WDR(NOPTS), ASR(NOPTS),&
-!/MPI                   CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           & 
+!/MPI                   CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           &
 !/MPI                   ICRFO(NOPTS), ICRHO(NOPTS) )
 !
 !/MPI        IT     = IT + 1
@@ -859,9 +859,9 @@
 !/MPI        CALL MPI_RECV ( CDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
 !/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 !/MPIT        WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
-!JDM: The below should be added for points using partitioned processors 
-! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so 
-! this is being left here commented out for now.  
+!JDM: The below should be added for points using partitioned processors
+! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
+! this is being left here commented out for now.
 ! There is a corresponding section to this above
 !!/MPI         IT     = IT + 1
 !!/MPI         CALL MPI_RECV ( ICRO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
@@ -872,7 +872,7 @@
 !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 !!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEFO'
 !!/MPI         IT     = IT + 1
-!!/MPI         CALL MPI_SEND (ICRHO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   & 
+!!/MPI         CALL MPI_SEND (ICRHO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
 !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
 !
@@ -903,15 +903,15 @@
 !/MPI          OUTPTS(0)%OUT2%ASO(II)     = ASR(I)
 !/MPI          OUTPTS(0)%OUT2%CAO(II)     = CAR(I)
 !/MPI          OUTPTS(0)%OUT2%CDO(II)     = CDR(I)
-!/MPI          OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)   
-!/MPI          OUTPTS(0)%OUT2%ICEFO(II)    = ICEFO(I)   
-!/MPI          OUTPTS(0)%OUT2%ICEHO(II)    = ICEHO(I)   
+!/MPI          OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
+!/MPI          OUTPTS(0)%OUT2%ICEFO(II)    = ICEFO(I)
+!/MPI          OUTPTS(0)%OUT2%ICEHO(II)    = ICEHO(I)
 !/MPI        END DO
 !
 !/MPI        IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
 !/MPI        DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR, STATUS )
 !        !JDM add deallocates here and check the itag stuff.. really not
-!        sure aabout that 
+!        sure aabout that
 !/MPI        DEALLOCATE (ICRO, ICRFO, ICRHO)
 !/MPI        END DO
 !

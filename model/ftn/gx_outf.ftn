@@ -32,16 +32,16 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 ) 
-!/                  (J-H Alves) 
-!/    25-Feb-2013 : Adding double-index output fields   ( version 4.11 ) 
+!/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 )
+!/                  (J-H Alves)
+!/    25-Feb-2013 : Adding double-index output fields   ( version 4.11 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -80,7 +80,7 @@
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
-!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags.
 !      W3EXGO    Subr. Internal Execute grid output.
 !     ----------------------------------------------------------------
 !
@@ -261,14 +261,14 @@
 !
 ! ... Output fields
 !
-      FLREQ(:,:)=.FALSE. ! Initialize FLGRD 
+      FLREQ(:,:)=.FALSE. ! Initialize FLGRD
       CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
                                  FLREQ, 1, 1, IERR )
 !
 !
 ! Reset flags for variables not yet implemented in grads output interface
 !
-!    This needs to be reviewed whenever new parameters are added to the 
+!    This needs to be reviewed whenever new parameters are added to the
 !     grads ctl and data files
 !
       IFI = 3
@@ -279,7 +279,7 @@
           FLREQ(IFI,IFJ) = .FALSE.
         END IF
       END DO
-      IFI = 5 
+      IFI = 5
       DO IFJ = 7,10
         IF ( FLREQ(IFI,IFJ) ) THEN
           WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
@@ -291,7 +291,7 @@
         DO IFJ = 1,NOGE(IFI)
           IF ( FLREQ(IFI,IFJ) ) THEN
             WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
-                             '*** NOT YET CODED INTO GXOUTF ***' 
+                             '*** NOT YET CODED INTO GXOUTF ***'
             FLREQ(IFI,IFJ) = .FALSE.
           END IF
         END DO
@@ -305,10 +305,10 @@
         END IF
       END DO
       IF ( FLREQ(9,5) ) THEN
-        WRITE (NDSO,946) IDOUT(9,5),'*** NOT YET CODED INTO GXOUTF ***' 
+        WRITE (NDSO,946) IDOUT(9,5),'*** NOT YET CODED INTO GXOUTF ***'
         FLREQ(9,5) = .FALSE.
       END IF
-     
+
       WRITE (NDSO,945)
 !
       NVAR  = 1
@@ -773,7 +773,7 @@
 !     ----------------------------------------------------------------
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
-!      W3S2XY    Subr.   Id.    Convert from storage to spatial grid. 
+!      W3S2XY    Subr.   Id.    Convert from storage to spatial grid.
 !     ---------------------------------------------------------------
 !
 !  5. Called by :
@@ -788,7 +788,7 @@
 !
 !     - Note that arrays CX and CY of the main program now contain
 !       the absolute current speed and direction respectively.
-!     - VALLND added to assure that map with only land plots in 
+!     - VALLND added to assure that map with only land plots in
 !       GrADS.
 !
 !  8. Structure :
@@ -921,7 +921,7 @@
         FLTWO = .FALSE.
         FLDIR = .FALSE.
         FLTRI = .FALSE.
-        FLPRT = .FALSE. 
+        FLPRT = .FALSE.
 !
 !/T            WRITE (NDST,9020) IDOUT(J,K)
 !
@@ -1213,13 +1213,13 @@
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CHARN , MAPSF, X1 )
 !
-!     Mean energy flux 
+!     Mean energy flux
 !
               ELSE IF ( J.EQ.5 .AND. K.EQ.3 ) THEN
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CGE   , MAPSF, X1 )
 !
-!     Air-sea energy flux 
+!     Air-sea energy flux
 !
               ELSE IF ( J.EQ.5 .AND. K.EQ.4 ) THEN
                 FLONE = .TRUE.
@@ -1348,7 +1348,7 @@
 !
 !     Scalars
 !
-              ELSE IF ( FLONE ) THEN 
+              ELSE IF ( FLONE ) THEN
                 WRITE (NDSDAT)                                        &
                       ((X1(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
               END IF

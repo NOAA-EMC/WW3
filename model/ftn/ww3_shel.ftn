@@ -35,13 +35,13 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    23-Nov-2011 : Comments clean up                   ( version 4.04 )
 !/    06-Mar-2012 : Repairing test output.              ( version 4.07 )
 !/    03-Sep-2012 : Output initialization time.         ( version 4.10 )
 !/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
-!/                  (A. Chawla and Mark Szyszka)      
+!/                  (A. Chawla and Mark Szyszka)
 !/    23-Apr-2015 : Adding NCEP Coupler                 ( version 5.06 )
 !/                  (A. Chawla and Dmitry Sheinin)
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
@@ -54,7 +54,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -130,7 +130,7 @@
 !      W3FLDH    Subr.   Id.    Udates homogeneous fields.
 !
 !      W3INIT    Subr. W3INITMD Wave model initialization.
-!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags.
 !      W3WAVE    Subr. W3WAVEMD Wave model.
 !      W3WDAS    Subr. W3WDASMD Data assimilation interface.
 !
@@ -158,9 +158,9 @@
 !       (in case of homogeneous input field),  grabs field value at next
 !       input time, which may in fact be far in the future from current
 !       compute time. Example: user says
-!       field=1   on 19680101 000000 and 
-!       field=100 on 20160101 000000 
-!       then on if 7.a.2 is reached on 19680101 010000, WW3 will set 
+!       field=1   on 19680101 000000 and
+!       field=100 on 20160101 000000
+!       then on if 7.a.2 is reached on 19680101 010000, WW3 will set
 !       field to 100.
 !
 !  8. Structure :
@@ -296,7 +296,7 @@
                              STARTDATE(8), STOPDATE(8), IHH(-7:8)
 !/OASIS      INTEGER             :: OASISED
 !/COU      INTEGER             :: OFL
-!/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
+!/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 !/MPI      INTEGER             :: IERR_MPI
 !
       REAL                :: FACTOR, DTTST, XX, YY,                    &
@@ -330,8 +330,8 @@
                              FLAGSTIDE(4), FLH(-7:8), FLGDAS(3),       &
                              FLLST_ALL(-7:8)
       LOGICAL             :: DEBUG_NCC = .FALSE.
-!/NCC      LOGICAL             :: CFLAG(10) 
-!/OASIS      LOGICAL             :: L_MASTER    
+!/NCC      LOGICAL             :: CFLAG(10)
+!/OASIS      LOGICAL             :: L_MASTER
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -356,12 +356,12 @@
                     'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1',  &
                     'DT2', 'MOV' /
 !
-      FLGR2 = .FALSE.  
+      FLGR2 = .FALSE.
       FLAGSTIDE(:) = .FALSE.
       FLH(:)       = .FALSE.
 !
 !/T      PRTFRM = .TRUE.
-!/T      DEBUG_NCC = .TRUE. 
+!/T      DEBUG_NCC = .TRUE.
 !
 !/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
@@ -370,7 +370,7 @@
 !
 !/OASIS     OASISED=1
 !/PDLIB     LPDLIB = .TRUE.
-!  
+!
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3NDAT (    6, 6 )
       CALL W3NAUX (    6, 6 )
@@ -527,7 +527,7 @@
 !
 ! 1.c Local parameters
 !
-! inferred from context: these flags (FL) are to indicate that the last (LST) 
+! inferred from context: these flags (FL) are to indicate that the last (LST)
 !   field has been read from a file.
       FLLSTL = .FALSE. ! This is associated with J.EQ.1 (wlev)
       FLLSTI = .FALSE. ! This is associated with J.EQ.4 (ice)
@@ -563,7 +563,7 @@
 !
 ! process ww3_prnc namelist
 !
-      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML) 
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML)
       IF (FLGNML) THEN
         ! Read namelist
         CALL W3NMLSHEL (MPI_COMM, NDSI, TRIM(FNMPRE)//'ww3_shel.nml',  &
@@ -642,30 +642,30 @@
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
         DO J=JFIRST, 7
           IF ( J .LE. 4 ) THEN
-            IF (FLAGTFC(J).EQ.'T') THEN 
+            IF (FLAGTFC(J).EQ.'T') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'F') THEN 
+            IF (FLAGTFC(J).EQ.'F') THEN
               INFLAGS1(J)=.FALSE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'C') THEN 
+            IF (FLAGTFC(J).EQ.'C') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.TRUE.
             END IF
             FLH(J) = FLH(J) .AND. INFLAGS1(J)
           ELSE
             FLH(J) = .FALSE.
-            IF (FLAGTFC(J).EQ.'T') THEN 
+            IF (FLAGTFC(J).EQ.'T') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'F') THEN 
+            IF (FLAGTFC(J).EQ.'F') THEN
               INFLAGS1(J)=.FALSE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'C') THEN 
+            IF (FLAGTFC(J).EQ.'C') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.TRUE.
             END IF
@@ -824,7 +824,7 @@
                   IF ( ILOOP .EQ. 2 ) THEN
                     X(IPTS)      = XX
                     Y(IPTS)      = YY
-                    PNAMES(IPTS) = PN 
+                    PNAMES(IPTS) = PN
                     IF ( IAPROC .EQ. NAPOUT ) THEN
                       IF ( FLAGLL ) THEN
                         IF ( IPTS .EQ. 1 ) THEN
@@ -845,7 +845,7 @@
                       END IF
                     END IF
                   END IF ! ILOOP.EQ.2
-                END DO ! end of file                      
+                END DO ! end of file
               END DO ! ILOOP
               CLOSE(NDSL)
 
@@ -1048,30 +1048,30 @@
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
         DO J=JFIRST, 7
           IF ( J .LT. 4 ) THEN
-            IF (FLAGTFC(J).EQ.'T') THEN 
+            IF (FLAGTFC(J).EQ.'T') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'F') THEN 
+            IF (FLAGTFC(J).EQ.'F') THEN
               INFLAGS1(J)=.FALSE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'C') THEN 
+            IF (FLAGTFC(J).EQ.'C') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.TRUE.
             END IF
             FLH(J) = FLH(J) .AND. INFLAGS1(J)
           ELSE
             FLH(J) = .FALSE.
-            IF (FLAGTFC(J).EQ.'T') THEN 
+            IF (FLAGTFC(J).EQ.'T') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'F') THEN 
+            IF (FLAGTFC(J).EQ.'F') THEN
               INFLAGS1(J)=.FALSE.
               FLAGSC(J)=.FALSE.
             END IF
-            IF (FLAGTFC(J).EQ.'C') THEN 
+            IF (FLAGTFC(J).EQ.'C') THEN
               INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.TRUE.
             END IF
@@ -1218,7 +1218,7 @@
                       ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
                     ELSE
                       ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                      GOTO 2054 
+                      GOTO 2054
                     END IF
                   END IF
                 END IF
@@ -1460,7 +1460,7 @@
 !
 
         DO J=JFIRST, 4
-!/DEBUGINIT     write(740+IAPROC,*), 'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J) 
+!/DEBUGINIT     write(740+IAPROC,*), 'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J)
           IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
             IF ( FLH(J) ) THEN
               IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
@@ -1615,12 +1615,12 @@
 
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) 'Wave model ...'
 !
-!/TIDE      IF (FLAGSTIDE(1).OR.FLAGSTIDE(2)) THEN 
+!/TIDE      IF (FLAGSTIDE(1).OR.FLAGSTIDE(2)) THEN
 !/TIDE        CALL VUF_SET_PARAMETERS
 !/TIDE        IF (FLAGSTIDE(1)) CALL W3FLDTIDE1 ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), IERR )
 !/TIDE        IF (FLAGSTIDE(2)) CALL W3FLDTIDE1 ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
 !/TIDE      END IF
-! 
+!
      CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
                    FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
@@ -1661,7 +1661,7 @@
 !/OASIS        L_MASTER = .TRUE.
 !/OASIS      ELSE
 !/OASIS        L_MASTER = .FALSE.
-!/OASIS      ENDIF 
+!/OASIS      ENDIF
 !/OASIS ! Estimate the weights for the spatial interpolation
 !/OASIS      IF (DTOUT(7).NE.0) THEN
 !/OASIS        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
@@ -1702,7 +1702,7 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
 !
-!/NCC      CFLAG = .FALSE. 
+!/NCC      CFLAG = .FALSE.
 !/NCC      CALL WW_INIT(1,GRIDS(1)%NX,GRIDS(1)%NY,            &
 !/NCC      GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY)
 !/NCC      CALL WW_RECVDTC
@@ -1767,7 +1767,7 @@
 !
 ! 7.a.2 Check if update is needed
 !
-          IF (.NOT.FLAGSC(J)) THEN 
+          IF (.NOT.FLAGSC(J)) THEN
             TTT(1) = TFN(1,J)
             TTT(2) = TFN(2,J)
             IF ( TTT(1) .EQ. -1 ) THEN
@@ -1775,7 +1775,7 @@
             ELSE
               DTTST  = DSEC21 ( TIME0 , TTT )
             END IF
-!/OASIS          ELSE 
+!/OASIS          ELSE
 !/OASIS            ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
 !/OASIS            IF ( (DTOUT(7).NE.0) .AND.                               &
 !/OASIS                 (MOD(ID_OASIS_TIME/DTOUT(7),1.0) .LT. 1.E-7 ) .AND. &
@@ -1788,7 +1788,7 @@
 !
           IF ( DTTST .LE. 0. ) THEN
 
-!/TIDE            IF ((FLLEVTIDE .AND.(J.EQ.1)).OR.(FLCURTIDE.AND.(J.EQ.2))) THEN 
+!/TIDE            IF ((FLLEVTIDE .AND.(J.EQ.1)).OR.(FLCURTIDE.AND.(J.EQ.2))) THEN
 !/TIDE              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974) IDFLDS(J)
 !/TIDE            ELSE
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
@@ -1923,11 +1923,11 @@
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                              TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
               ELSE
-!/TIDE                IF ( FLLEVTIDE ) THEN 
+!/TIDE                IF ( FLLEVTIDE ) THEN
 !/TIDE                  IERR=0
-!/TIDE                  IF ( TLN(1) .EQ. -1 ) THEN 
-!/TIDE                    TLN = TIME 
-!/TIDE                  ELSE 
+!/TIDE                  IF ( TLN(1) .EQ. -1 ) THEN
+!/TIDE                    TLN = TIME
+!/TIDE                  ELSE
 !/TIDE                    CALL TICK21 ( TLN, TIDE_DT )
 !/TIDE                  END IF
 !/TIDE                ELSE
@@ -1951,20 +1951,20 @@
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                              TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
 !
-!/SMC !!Li  Reshape the CX0/N CY0/N space for sea-point only current. 
-!/SMC !!Li              JGLi26Jun2018. 
+!/SMC !!Li  Reshape the CX0/N CY0/N space for sea-point only current.
+!/SMC !!Li              JGLi26Jun2018.
 !/SMC              ELSE IF( FSWND ) THEN
 !/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
 !/SMC                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TC0, &
-!/SMC                      CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR) 
-!/SMC !!Li  
+!/SMC                      CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/SMC !!Li
               ELSE
-!/TIDE                IF ( FLCURTIDE ) THEN 
+!/TIDE                IF ( FLCURTIDE ) THEN
 !/TIDE                  IERR=0
-!/TIDE                  IF ( TCN(1) .EQ. -1 ) THEN 
-!/TIDE                    TCN = TIME 
+!/TIDE                  IF ( TCN(1) .EQ. -1 ) THEN
+!/TIDE                    TCN = TIME
 !/TIDE                  END IF
-!/TIDE                  TC0(:) = TCN(:)               
+!/TIDE                  TC0(:) = TCN(:)
 !/TIDE                  CALL TICK21 ( TCN, TIDE_DT )
 !/TIDE                ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
@@ -1985,13 +1985,13 @@
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                              TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
 !
-!/SMC !!Li  Reshape the WX0/N WY0/N space for sea-point only wind. 
-!/SMC !!Li              JGLi26Jun2018. 
+!/SMC !!Li  Reshape the WX0/N WY0/N space for sea-point only wind.
+!/SMC !!Li              JGLi26Jun2018.
 !/SMC              ELSE IF( FSWND ) THEN
 !/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
 !/SMC                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TW0, &
-!/SMC                      WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)  
-!/SMC !!Li  
+!/SMC                      WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/SMC !!Li
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
@@ -2099,7 +2099,7 @@
 !
             IF ( IERR.GT.0 ) GOTO 2222
             IF ( IERR.LT.0 .AND. IAPROC.EQ.NAPOUT ) WRITE (NDSO,973) IDFLDS(J)
-                           
+
 
           END IF ! DTTST .LE. 0.
 !
@@ -2120,8 +2120,8 @@
                      (FLLST_ALL(J) .AND. J.EQ.0 ) .OR.            &
                      (FLLSTI .AND. J.EQ.4) ) ) THEN
               TTIME  = TTT
-! notes: if model has run out beyond field input, then this line should not 
-!    be reached. 
+! notes: if model has run out beyond field input, then this line should not
+!    be reached.
             END IF
           END IF
 !
@@ -2178,10 +2178,10 @@
 !/MEMCHECK      call getMallocInfo(mallinfos)
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
 !
-      ! The following lines prevents us from trying to read past the end 
+      ! The following lines prevents us from trying to read past the end
       ! of the files. This feature existed in v3.14.
       ! "1" is for water levels
-      ! "4" is for ice concentration: 
+      ! "4" is for ice concentration:
       IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
       IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 
@@ -2212,7 +2212,7 @@
 
         IF ( DTTST .EQ. 0. ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
-          CALL W3WAVE ( 1, TIME0                                       & 
+          CALL W3WAVE ( 1, TIME0                                       &
 !/OASIS                       , .TRUE., .FALSE., MPI_COMM              &
                       )
         END IF

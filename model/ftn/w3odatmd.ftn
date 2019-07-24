@@ -29,7 +29,7 @@
 !/    14-Jul-2010 : Fix VAAUX declaration bug.        ( version 3.14.2 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    18-Dec-2012 : New 2D field output structure,      ( version 4.11 )
 !/                  reducing memory footprint for fields.
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
@@ -46,12 +46,12 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Define data structures to set up wave model grids and aliases 
+!     Define data structures to set up wave model grids and aliases
 !     to use individual grids transparently. Also includes subroutines
 !     to manage data structure and pointing to individual models.
 !     This module considers the parameters required for model output.
@@ -63,11 +63,11 @@
 !      NOUTP     Int.  Public   Number of models in array dim.
 !      IOUTP     Int.  Public   Selected model for output, init. at -1.
 !      IOSTYP    Int.  Public   Output data server type.
-!      NOGRP     I.P.  Public   Number of output field groups 
+!      NOGRP     I.P.  Public   Number of output field groups
 !      NGRPP     I.P.  Public   Max numb of parameters per output group
 !      NOGE      I.P.  Public   Number of output group elements
 !      NOTYPE    I.P.  Public   Number of output types
-!      NOEXTR    I.P.  Public   Number of extra (user available) 
+!      NOEXTR    I.P.  Public   Number of extra (user available)
 !                               output fields.
 !      DIMP      I.P.  Public   Number of parameters in partition
 !                               output group
@@ -302,9 +302,9 @@
 !/ Module private variable for checking error returns
 !/
       INTEGER, PRIVATE        :: ISTAT
-!/    
+!/
 !/ Conventional declarations
-!/     
+!/
       INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
 !
       INTEGER, PARAMETER      :: NOGRP = 10
@@ -753,7 +753,7 @@
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 12 
+      NOGE(6) = 12
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -891,7 +891,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETO needs to be called after allocation to point to 
+!     - W3SETO needs to be called after allocation to point to
 !       proper allocated arrays.
 !     - Note that NOPTS is overwritten in W3IOPP.
 !
@@ -969,7 +969,7 @@
                  OUTPTS(IMOD)%OUT2%CDO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%ICEO(NPT)       ,                  &
                  OUTPTS(IMOD)%OUT2%ICEHO(NPT)      ,                  &
-                 OUTPTS(IMOD)%OUT2%ICEFO(NPT)      ,                  &  
+                 OUTPTS(IMOD)%OUT2%ICEFO(NPT)      ,                  &
                  OUTPTS(IMOD)%OUT2%SPCO(NSPEC,NPT) ,                  &
                  OUTPTS(IMOD)%OUT2%PTLOC(2,NPT)    , STAT=ISTAT       )
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1066,7 +1066,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETO needs to be called after allocation to point to 
+!     - W3SETO needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -1537,7 +1537,7 @@
           ASO    => OUTPTS(IMOD)%OUT2%ASO
           CAO    => OUTPTS(IMOD)%OUT2%CAO
           CDO    => OUTPTS(IMOD)%OUT2%CDO
-          ICEO   => OUTPTS(IMOD)%OUT2%ICEO         
+          ICEO   => OUTPTS(IMOD)%OUT2%ICEO
           ICEHO  => OUTPTS(IMOD)%OUT2%ICEHO
           ICEFO  => OUTPTS(IMOD)%OUT2%ICEFO
           SPCO   => OUTPTS(IMOD)%OUT2%SPCO

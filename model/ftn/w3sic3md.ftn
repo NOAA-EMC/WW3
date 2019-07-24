@@ -23,14 +23,14 @@
 !     Calculate ice source term S_{ice} according to a viscoelastic sea
 !     ice model (Wang and Shen 2010).
 !
-!     Reference: Wang, R., and H. H. Shen (2010), Gravity waves 
-!     propagating into an ice‐covered ocean: A viscoelastic model, J. 
+!     Reference: Wang, R., and H. H. Shen (2010), Gravity waves
+!     propagating into an ice‐covered ocean: A viscoelastic model, J.
 !     Geophys. Res., 115, C06024, doi:10.1029/2009JC005591 .
 !
 !  2. Variables and types :
 !      Name              Type  Scope    Description
 !     ------------------------------------------------------------------
-!      IC3TABLE_CHENG    Int.  Public   Table of wave number k_r, 
+!      IC3TABLE_CHENG    Int.  Public   Table of wave number k_r,
 !                                       attenuation k_i and group
 !                                       velocity cg
 !      IC3_DITK          R.A.  Private  Ice thickness increment
@@ -45,12 +45,12 @@
 !      W3SIC3            Subr. Public   Ice source term.
 !      BSDET             Func. Private  Calculate the determinant for
 !                                       the dispersion relation.
-!      WN_CMPLX_V1       Func. Private  Calculate complex wavenumber in 
+!      WN_CMPLX_V1       Func. Private  Calculate complex wavenumber in
 !                                       ice
 !      WN_PRECALC_CHENG  Subr. Private  Calculate complex wavenumber in
 !                                       ice
 !      WN_CMPLX_HF       Func. Private  Like above, but for h-f waves
-!      CMPLX_ROOT_MULLER_CHENG Func. Private  Find root for complex 
+!      CMPLX_ROOT_MULLER_CHENG Func. Private  Find root for complex
 !                                             numbers
 !      FUN_ZHAO          Func. Private  Wrapper function for FUNC0/FUNC1
 !      FUNC0_ZHAO        Func. Private
@@ -114,7 +114,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -122,8 +122,8 @@
 !     Calculate ice source term S_{ice} according to a viscoelastic sea
 !     ice model (Wang and Shen 2010).
 !
-!     Reference: Wang, R., and H. H. Shen (2010), Gravity waves 
-!     propagating into an ice‐covered ocean: A viscoelastic model, J. 
+!     Reference: Wang, R., and H. H. Shen (2010), Gravity waves
+!     propagating into an ice‐covered ocean: A viscoelastic model, J.
 !     Geophys. Res., 115, C06024, doi:10.1029/2009JC005591 .
 !
 !/ ------------------------------------------------------------------- /
@@ -140,23 +140,23 @@
 !     Sea ice affects the wavenumber k of wind-generated ocean waves.
 !     The ice-modified wavenumber can be expressed as a complex number
 !     k = k_r + i*k_i, with the real part k_r representing impact of
-!     the sea ice on the physical wavelength and propagation speeds, 
-!     producing something analogous to shoaling and refraction by 
-!     bathymetry, whereas the imaginary part of the complex 
-!     wavenumber, k_i, is an exponential decay coefficient 
-!     k_i(x,y,t,sigma) (depending on location, time and frequency, 
-!     respectively), representing wave attenuation, and can be 
-!     introduced in a wave model such as WW3 as S_ice/E=-2*Cg*k_i, 
-!     where S_ice is one of several dissipation mechanisms, along 
-!     with whitecapping, for example, S_ds=S_wc+S_ice+⋯. The k_r - 
-!     modified by ice would enter the model via the C calculations 
+!     the sea ice on the physical wavelength and propagation speeds,
+!     producing something analogous to shoaling and refraction by
+!     bathymetry, whereas the imaginary part of the complex
+!     wavenumber, k_i, is an exponential decay coefficient
+!     k_i(x,y,t,sigma) (depending on location, time and frequency,
+!     respectively), representing wave attenuation, and can be
+!     introduced in a wave model such as WW3 as S_ice/E=-2*Cg*k_i,
+!     where S_ice is one of several dissipation mechanisms, along
+!     with whitecapping, for example, S_ds=S_wc+S_ice+⋯. The k_r -
+!     modified by ice would enter the model via the C calculations
 !     on the left-hand side of the governing equation.The fundamentals
-!     are straightforward, e.g. Rogers and Holland (2009 and 
-!     subsequent unpublished work) modified a similar model, SWAN 
-!     (Booij et al. 1999) to include the effects of a viscous mud 
+!     are straightforward, e.g. Rogers and Holland (2009 and
+!     subsequent unpublished work) modified a similar model, SWAN
+!     (Booij et al. 1999) to include the effects of a viscous mud
 !     layer using the same approach (k = k_r + i*k_i) previously.
 !
-!     General approach is analogous to Rogers and Holland (2009) 
+!     General approach is analogous to Rogers and Holland (2009)
 !         approach for mud.
 !     See text near their eq. 1 :
 !       k        = k_r  +  i * k_i
@@ -168,7 +168,7 @@
 !         S = D * E
 !     However, the code of W3SBT1 has
 !         S = D * A
-!     This leads me to believe that the calling routine is 
+!     This leads me to believe that the calling routine is
 !         expecting "S/sigma" not "S"
 !     Thus we will use D = S/E = -2 * Cg * k_i
 !
@@ -184,20 +184,20 @@
 !
 !     Note regarding applicability/validity:
 !
-!     The Wang and Shen model is intended as a generalized model for 
-!     various types of ice cover. It is a "continuum" model for  
-!     which the same model is used from the ice edge to the ice 
-!     interior. Though the ice types are expected to be very different 
+!     The Wang and Shen model is intended as a generalized model for
+!     various types of ice cover. It is a "continuum" model for
+!     which the same model is used from the ice edge to the ice
+!     interior. Though the ice types are expected to be very different
 !     from the edge to the interior, this is accomodated by the relative
-!     importance of the "effective viscosity" and the "modulus of 
+!     importance of the "effective viscosity" and the "modulus of
 !     elasticity". At the ice edge, where one finds frazil ice, pancake
 !     ice, or ice floes much smaller than the wave length, the "viscous"
-!     component of the model is believed to be most appropriate. At the 
-!     interior, where one finds a continuous ice sheet, the "elastic 
-!     model" component of the generalized visco-elastic model is 
+!     component of the model is believed to be most appropriate. At the
+!     interior, where one finds a continuous ice sheet, the "elastic
+!     model" component of the generalized visco-elastic model is
 !     expected to be appropriate. In addition to the case of continuous
 !     ice, Wang and Shen argue that the elastic model is also applicable
-!     to ice floes when the floe sizes are large relative to the 
+!     to ice floes when the floe sizes are large relative to the
 !     wavelength. So to summarize,
 !     * frazil ice, pancake ice, and floes smaller than wavelength :
 !          viscosity dominates
@@ -205,46 +205,46 @@
 !          elasticity dominates
 !     * intermediate conditions: neither dominates
 !     All this is accomodated in WW3 by using non-uniform specification
-!     of viscosity and elasticity. 
+!     of viscosity and elasticity.
 !
-!     In the case where a user wishes to utilize only the "viscous 
+!     In the case where a user wishes to utilize only the "viscous
 !     model" aspect of Wang and Shen, and use an alternative scheme for
-!     continous ice and large ice floes, we allow this through the use 
-!     of a user-defined namelist parameter "IC3MAXTHK". Floe size is 
+!     continous ice and large ice floes, we allow this through the use
+!     of a user-defined namelist parameter "IC3MAXTHK". Floe size is
 !     not (at time of writing) an output available from ice model CICE,
 !     so we use the ice thickness as a way to anticipate the floe size.
-!     When ice thickness exceeds IC3MAXTHK, WW3 will use another model 
+!     When ice thickness exceeds IC3MAXTHK, WW3 will use another model
 !     in place of the Wang and Shen formulation :
 !
-!     S_ice by F.A., an estimation of dissipation by turbulence 
+!     S_ice by F.A., an estimation of dissipation by turbulence
 !     at the ice-water interface. It uses only namelists for input, and
 !     no space/time varying input (though of course ice concentration is
-!     space/time varying). Unlike Liu et al. (IC2), it does not use 
+!     space/time varying). Unlike Liu et al. (IC2), it does not use
 !     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
-!     dispersive), but it has the very nice feature of not requiring  
-!     an eddy viscosity, which is a major drawback of the Liu et al.  
+!     dispersive), but it has the very nice feature of not requiring
+!     an eddy viscosity, which is a major drawback of the Liu et al.
 !     model. That is why we use it here, vs. Liu et al.
-!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
+!     (S_ice by Liu et al. and S_ice by F.A. are the two options
 !     available in IC2, i.e. w3sic2md.ftn)
 !
-!     At time of writing (March 23 2015), there may be some problems 
+!     At time of writing (March 23 2015), there may be some problems
 !     with the root-selection of IC3. For example with these settings:
-!     hice=1   ; rho_ice=917.0 ; emod=4.9e+12 ; visc=5e+7 ; 
-!     h_water=deep (without using the IC3MAXTHK feature) the solution 
+!     hice=1   ; rho_ice=917.0 ; emod=4.9e+12 ; visc=5e+7 ;
+!     h_water=deep (without using the IC3MAXTHK feature) the solution
 !     is rather irregular:
-!     T=11.11    k_i = 215.0e-5    
-!     T=10       k_i = 266.0e-5   
-!     T=9        k_i =   1.4e-5   
-!     T=8.1      k_i =   1.7e-5    
+!     T=11.11    k_i = 215.0e-5
+!     T=10       k_i = 266.0e-5
+!     T=9        k_i =   1.4e-5
+!     T=8.1      k_i =   1.7e-5
 !     With hice=0.1, ki is monotonically increasing in that range:
-!     T=11.11    k_i = 0.97e-5 
-!     T=10       k_i = 2.64e-5 
-!     T=9        k_i = 3.90e-5 
-!     T=8.1      k_i = 4.47e-5 
+!     T=11.11    k_i = 0.97e-5
+!     T=10       k_i = 2.64e-5
+!     T=9        k_i = 3.90e-5
+!     T=8.1      k_i = 4.47e-5
 !     Of course, when using IC3MAXTHK=0.1, the first example (hice=1)
 !     would switch to the "S_ice by F.A." model, and so this problem
 !     is circumvented.
-!     
+!
 !  3. Parameters :
 !
 !     Parameter list
@@ -290,24 +290,24 @@
 !     This feature is not understood by me (ER) and so omitted.
 !
 !/ ------------------------------------------------------------------- /
-!     On array size, S. Cheng says: 
-!     Upon checking the origin of CG, I would say CG = CG_IC3, this is 
-!     the topic ‘call W3IC3WNCG twice’. Recently I find they are not 
-!     exactly the same due to calculation and smoothing of cg using 
-!     several neighbor points. For different input array size, results 
-!     are slightly different. In subr. w3wave, the size of input arrays 
-!     is 0:NK+1, while in w3sic3, the size of all input arrays is 1:NK. 
-!     This array size  difference is reflected in the resulting cg. The 
-!     small difference in cg between calling IC3 twice or just calling 
-!     once produces small difference in SWH. To eliminate this small 
-!     difference, I suggest to keep CG instead of CG_IC3, as well as WN, 
-!     WN_I, because other source terms use CG. I confirmed this change 
-!     would make results of ICE the same whether calling twice or once 
-!     by defining dimension WN_R, WN_I, CG_IC3 as 0:NK+1 instead of 
+!     On array size, S. Cheng says:
+!     Upon checking the origin of CG, I would say CG = CG_IC3, this is
+!     the topic ‘call W3IC3WNCG twice’. Recently I find they are not
+!     exactly the same due to calculation and smoothing of cg using
+!     several neighbor points. For different input array size, results
+!     are slightly different. In subr. w3wave, the size of input arrays
+!     is 0:NK+1, while in w3sic3, the size of all input arrays is 1:NK.
+!     This array size  difference is reflected in the resulting cg. The
+!     small difference in cg between calling IC3 twice or just calling
+!     once produces small difference in SWH. To eliminate this small
+!     difference, I suggest to keep CG instead of CG_IC3, as well as WN,
+!     WN_I, because other source terms use CG. I confirmed this change
+!     would make results of ICE the same whether calling twice or once
+!     by defining dimension WN_R, WN_I, CG_IC3 as 0:NK+1 instead of
 !     1:NK. Then CG_IC3 = CG.
 !/ ------------------------------------------------------------------- /
 !     On optimization, S. Cheng says:
-!     For Wang and Shen’s model, D does not change in the loop 
+!     For Wang and Shen’s model, D does not change in the loop
 !     corresponding to NSTEPS in subr. W3SRCE. I find the most efficient
 !     and easy way to speed up is that Add D and NSTEPS as inputs of
 !     W3SIC3
@@ -315,7 +315,7 @@
 !          Current Wang and Shen’s model code above.
 !     ELSE
 !          S = D*A
-!     Endif 
+!     Endif
 !/ ------------------------------------------------------------------- /
 !
 !  8. Structure :
@@ -337,7 +337,7 @@
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPROC, NAPERR
 !     USE WMMDATMD, ONLY: IMPROC, NMPERR ! WMMDATMD unavailable to outp
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC3PARS, DDEN,  & 
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC3PARS, DDEN,  &
                           FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI,    &
                           INFLAGS2
@@ -369,7 +369,7 @@
       REAL                       :: VISCM=1.83E-6
       REAL                       :: FREQ
 !  ............VISCM=1.83E-6 :  molecular viscosity of water at freezing
-      REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
+      REAL                    :: PTURB, PVISC, DTURB, DVISC,   &
                                  SMOOTH, RE, UORB, AORB, EB,   &
                                  DELI1, DELI2, FW, XI, FTURB,  &
                                  MAXTHK, MAXCNC, USE_CHENG,    &
@@ -409,7 +409,7 @@
       FIXEDVISC=IC3PARS(14)
       FIXEDDENS=IC3PARS(15)
       FIXEDELAS=IC3PARS(16)
-            
+
 !     --- Error checking for input ----------------------------------- /
 !     --- Allow one and only one input option for each variable ------ /
       NUMIN=0
@@ -448,7 +448,7 @@
          CALL EXTCDE(2)
       ENDIF
 
-!     --- Set local value to be used subsequently (ICEPx variables 
+!     --- Set local value to be used subsequently (ICEPx variables
 !         are not used beyond this point). --------------------------- /
       IF (INFLAGS2(-7)) THEN
          ICECOEF1 = ICEP1(IX,IY) ! ice thickness
@@ -544,11 +544,11 @@
          !
       ELSE ! .. e.g. if ice thickness is .gt. 10 cm
          ! Alternative by F.A., see Remarks section.
-         IF (IC3PARS(2).GT.0.) THEN 
+         IF (IC3PARS(2).GT.0.) THEN
             UORB=0.
             AORB=0.
             FTURB = IC3PARS(2)
-            IF (IC3PARS(7).GT.0) THEN 
+            IF (IC3PARS(7).GT.0) THEN
                IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) &
                     FTURB = IC3PARS(7)
             END IF
@@ -583,7 +583,7 @@
             DTURB=-1.* FTURB*FW*UORB/GRAV
          ELSE ! so case of IC3PARS(2).LE.0.
             DTURB = 0.
-         END IF ! IF (IC3PARS(2).GT.0.)  
+         END IF ! IF (IC3PARS(2).GT.0.)
 
          DO IK=1, NK
             DVISC = -1. *IC3PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.)
@@ -599,7 +599,7 @@
       END DO
 
 !
-! sign convention (example): 
+! sign convention (example):
 !        S is from -10e-3 to 0
 !        A is from 0 to 10
 ! See Remarks section re: optimization
@@ -648,7 +648,7 @@
 !  1. Purpose :
 !
 !     Calculation of complex wavenumber for waves in ice. Outsourced
-!     from W3SIC3 to allow update on wavenumbers and  group 
+!     from W3SIC3 to allow update on wavenumbers and  group
 !     velocities at each time step an ice parameter is updated.
 !
 !  2. Method :
@@ -698,7 +698,7 @@
 !     which makes WW3 slow down quite a bit. This is done via ICEKILIM
 !     in the namelists.
 !
-!     This function does not get used in update by S. Cheng. 
+!     This function does not get used in update by S. Cheng.
 !     It should be removed if/when "V1" routines are removed.
 !
 !  8. Structure :
@@ -738,7 +738,7 @@
       IC3HILIM=IC3PARS(10)
       IC3KILIM=IC3PARS(11)
 !
-!     --- Input to routine (part 1): set 6 double precision variables 
+!     --- Input to routine (part 1): set 6 double precision variables
 !        using single precision variables. -------------------------- /
       HWAT    = DBLE(DPT)     ! water depth
       HICE    = DBLE(ICE1)    ! ice thickness
@@ -765,7 +765,7 @@
       WNCOMPLEX_OLD=CMPLX(0.0D0,0.0D0)
 
       DO IK = KL,KU
-!     --- Input to routine (part 2): set 2 double precision variables 
+!     --- Input to routine (part 2): set 2 double precision variables
 !         using single precision variable. --------------------------- /
          CALL WAVNU1(SIGMA(IK),DPT,K_OCEAN,CG_OCEAN)
          K_NOICE = DBLE(K_OCEAN)
@@ -791,7 +791,7 @@
 
          ENDIF
 
-!     --- Output from function is type of DOUBLE COMPLEX. Set 
+!     --- Output from function is type of DOUBLE COMPLEX. Set
 !         precision of imaginary to single precision array element --- /
          WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))
 
@@ -873,9 +873,9 @@
 !   This code is based on Fortran code provided by Hayley Shen (Clarkson
 !     University) to Erick Rogers (NRL) on April 19 2013.
 !
-!   Hayley Shen says, 
+!   Hayley Shen says,
 !     We have determined that it may not be necessary to use curve
-!     fitting or lookup tables to get the group velocity and the 
+!     fitting or lookup tables to get the group velocity and the
 !     attenuation coefficient. Attached is a short report with some
 !     sample numerical solutions. To implement the viscoelastic model,
 !     there are 4 fortran programs. According to Xin Zhao, the graduate
@@ -883,10 +883,10 @@
 !     try the pure viscous case by setting G=0 to start with. nu can be
 !     set at 0.05*ice concentration (m^2/s) to begin with, because for
 !     grease ice Newyear's data showed nu to be about 0.02-0.03 m^2/s.
-!     By setting G=0 in you get exactly the Keller model for pure 
-!     viscous layer. 
+!     By setting G=0 in you get exactly the Keller model for pure
+!     viscous layer.
 !
-!   This routine provides the initial guess according to the parameters 
+!   This routine provides the initial guess according to the parameters
 !   of the present case. T>10s use open water, T<10s cases, calculate
 !   T=10s first using open water as the initial guess.
 !
@@ -1017,13 +1017,13 @@
 !
 !   Original authors: Zhao and Shen.
 !     See notes in FUNCTION WN_CMPLX, not repeated here.
-!     New in this function, Hayley Shen says (Jan 15 2014) : 
-!     "To speed up the computation, we need to add a new function 
-!     WN_CMPLXA (attached) into the earlier version of the MODULE 
-!     W3SIC3MD. When wave period T>=10s, we call old function WN_CMPLX 
-!     directly. When T<10s, call the new function WN_CMPLXA with last 
-!     calculation step's information: last complex wave number, last 
-!     angular wave frequency. The calculation should be from large T 
+!     New in this function, Hayley Shen says (Jan 15 2014) :
+!     "To speed up the computation, we need to add a new function
+!     WN_CMPLXA (attached) into the earlier version of the MODULE
+!     W3SIC3MD. When wave period T>=10s, we call old function WN_CMPLX
+!     directly. When T<10s, call the new function WN_CMPLXA with last
+!     calculation step's information: last complex wave number, last
+!     angular wave frequency. The calculation should be from large T
 !     to small T."
 !
 !  8. Structure :
@@ -1060,7 +1060,7 @@
 !/
       IF (HICE<0.001) THEN
          WN  = CMPLX(WN_O,0.)
-      ELSE 
+      ELSE
          X0  = 0.90 * WN_LAST
          X1  = WN_LAST
          X2  = 1.1 * WN_LAST
@@ -1102,8 +1102,8 @@
 !
 !  2. Method :
 !
-!     Muller method for complex equations is a recursive approximation 
-!     with initial guess X0, X1, and X2. To the initial guesses a 
+!     Muller method for complex equations is a recursive approximation
+!     with initial guess X0, X1, and X2. To the initial guesses a
 !     quadratic parabola is fitted.
 !
 !  3. Parameters :
@@ -1363,7 +1363,7 @@
 !/
 !  1. Purpose :
 !
-!     Calculate the difference between the left and right side 
+!     Calculate the difference between the left and right side
 !     of the dispersion relation. It is called by the Muller method.
 !
 !  2. Method :
@@ -1398,7 +1398,7 @@
 !   This code is based on Fortran code provided by Hayley Shen (Clarkson
 !     University) to Erick Rogers (NRL) on April 19 2013.
 !
-!   This function does not get used in update by S. Cheng. 
+!   This function does not get used in update by S. Cheng.
 !     It should be removed if/when "V1" routines are removed.
 !
 !  8. Structure :
@@ -1469,7 +1469,7 @@
 !      FUNC1 CMPLX DBL O  Result (double complex)
 !      WN    CMPLX DBL I  Wavenumber (double complex)
 !      W     REAL  DBL I  Wave angular frequency
-!      ES    REAL  DBL I  Effective shear modulus on ice 
+!      ES    REAL  DBL I  Effective shear modulus on ice
 !      NU    REAL  DBL I  Effective viscosity
 !      DICE  REAL  DBL I  Density of ice
 !      HICE  REAL  DBL I  Thickness of ice
@@ -1500,7 +1500,7 @@
 !   This code is based on Fortran code provided by Hayley Shen (Clarkson
 !     University) to Erick Rogers (NRL) on April 19 2013.
 !
-!   This function does not get used in update by S. Cheng. 
+!   This function does not get used in update by S. Cheng.
 !     It should be removed if/when "V1" routines are removed.
 !
 !  8. Structure :
@@ -1633,7 +1633,7 @@
 !   This code is based on Fortran code provided by Hayley Shen (Clarkson
 !     University) to Erick Rogers (NRL) on April 19 2013.
 !
-!   This function does not get used in update by S. Cheng. 
+!   This function does not get used in update by S. Cheng.
 !     It should be removed if/when "V1" routines are removed.
 !
 !  8. Source code :
@@ -1736,7 +1736,7 @@
 !
 !  4. Remarks :
 !
-!     This function does not get used in update by S. Cheng. 
+!     This function does not get used in update by S. Cheng.
 !     It should be removed if/when "V1" routines are removed.
 !
 !  5. Called by :
@@ -1832,11 +1832,11 @@
 !     by IC3WN_R in the look up table. IC3WN_R is related to an ice
 !     thickness in the table, which is closest to HICE and less than
 !     HICE
-!   
+!
 !     Fix submitted by Sukun March 2017:
 !         replace :
 !            I = MIN(INT(HICE/IC3_DITK)+1,ITKNUM)
-!         with :   
+!         with :
 !            I = MIN(NINT(HICE/IC3_DITK),ITKNUM)
 !
 !  8. Structure :
@@ -1928,7 +1928,7 @@
 
 !!!     --- Update group velocitiy ----
       CALL CGinIC3_CHENG(CG,SIGMA,WN_R,KU-KL+1)
-      
+
       DEALLOCATE(SIGMA)
 
 900   FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC3_W3IC3WNCG : '/&
@@ -1951,7 +1951,7 @@
 !
 !     It's a Preprocess part to create a table of wave nubmer,
 !        attenuation and group velocity
-!     for all ice thickness in deep water situation for main 
+!     for all ice thickness in deep water situation for main
 !        computation.
 !
 !  2. Method :
@@ -1982,7 +1982,7 @@
 !     University) to Erick Rogers (NRL) on Aug 25 2015
 !
 !   **UNRESOLVED BUG** This routine should be called again if ice
-!     rheology (visc., elast.) changes (either time or space). 
+!     rheology (visc., elast.) changes (either time or space).
 !     It doesn't. We need to set CALLEDIC3TABLE=0 if either parameter is
 !     changed.
 !
@@ -2035,7 +2035,7 @@ END SUBROUTINE IC3TABLE_CHENG
 !  1. Purpose :
 !
 !     Preprocess part to create a table of wave nubmer, attenuation and
-!     group velocity for all ice thickness in deep water situation for 
+!     group velocity for all ice thickness in deep water situation for
 !     main computation.
 !
 !  2. Method :
@@ -2244,35 +2244,35 @@ END SUBROUTINE IC3TABLE_CHENG
 !/
 !/ ------------------------------------------------------------------- /
 !   compute shear wave and pressure wave modes
-      GV = CMPLX(ES_MOD,-SIGMA*NU*DICE)      
+      GV = CMPLX(ES_MOD,-SIGMA*NU*DICE)
       KP = SIGMA/SQRT(4*GV/DICE)
       KS = 2*KP
 !   RR,R2 are empirical coefficients
       RR  = 0.2
       R2  = 4
       EPS = 1.D-10   ! assuming variable =0, if it is less than this value
-!   compute root 1  
-!   initial guesses from wave number of open water 
+!   compute root 1
+!   initial guesses from wave number of open water
 !
       X1  = WN_O    ! initial guess
       X0  = X1*(1-RR)
       X2  = X1*(1+RR)
 
-      WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA, & 
+      WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA, &
            ES_MOD,NU,DICE,HICE,DEPTH)
-!   if root finder failed, or found shear wave mode, 
+!   if root finder failed, or found shear wave mode,
 !   redo searching using simplified dispersion relation form, index 2
       IF (REAL(WN1)<0.or.abs(wn1-ks)/abs(ks)<0.03 .or. &
           abs(wn1-kp)/abs(kp)<0.03.and.Es_mod>1.e7*nu)THEN
-         WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA, &     
-              ES_MOD,NU,DICE,HICE,DEPTH)   
+         WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA, &
+              ES_MOD,NU,DICE,HICE,DEPTH)
       ENDIF
 !   similar as wn1, but search with opposite order of inital guesses
-      WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA, &     
-           ES_MOD,NU,DICE,HICE,DEPTH)     
+      WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA, &
+           ES_MOD,NU,DICE,HICE,DEPTH)
       IF (REAL(WN2)<0.or.abs(wn2-ks)/abs(ks)<0.03)THEN
-         WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,2,SIGMA, &     
-              ES_MOD,NU,DICE,HICE,DEPTH) 
+         WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,2,SIGMA, &
+              ES_MOD,NU,DICE,HICE,DEPTH)
       ENDIF
       IF(ABS(REAL(WN1)-REAL(WN_O))<ABS(REAL(WN2)-REAL(WN_O)))THEN
          WN0 = WN1
@@ -2283,8 +2283,8 @@ END SUBROUTINE IC3TABLE_CHENG
       IF(SIGMAM1==0.)THEN
          WN = WN0
       ELSE
-         !      compute root 2        
-         !      Calculate the other wave number based on last frequency 
+         !      compute root 2
+         !      Calculate the other wave number based on last frequency
          !      in the frequency array
          R2    = MAX(ABS(WNM1-WNM2)/ABS(WNM2), ABS((SIGMA-SIGMAM1)/SIGMA))
          DO I  = 1,7,2
@@ -2307,18 +2307,18 @@ END SUBROUTINE IC3TABLE_CHENG
                IF(REAL(WN)<0)THEN   ! try another dispersion relation form
                    WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,3,SIGMA0, &
                         ES_MOD,NU,DICE,HICE,DEPTH)
-               ENDIF 
+               ENDIF
                KP = SIGMA0/SQRT(4*GV/DICE)
                KS = 2*KP
                !               set 3 means simple dispersion relation form
-               IF(ABS(WN-KS)/ABS(KS)<0.03.OR.REAL(WN)<0)THEN 
-                  WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA0, &  
+               IF(ABS(WN-KS)/ABS(KS)<0.03.OR.REAL(WN)<0)THEN
+                  WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA0, &
                        ES_MOD,NU,DICE,HICE,DEPTH)
                ENDIF
                X1 = WN
                IF( REAL(WN)<0.99*REAL(WNM1).OR. ABS(WN-WN0)>EPS .AND. &
                     (ABS(X1-WN)/ABS(WN)>0.3 .OR.                  &
-                    IMAG(WN)/(IMAG(X1)+EPS)>10.OR. REAL(WN)<0))THEN  
+                    IMAG(WN)/(IMAG(X1)+EPS)>10.OR. REAL(WN)<0))THEN
                   EXIT  ! redo with smaller intervals
                ENDIF
                X0 = X1
@@ -2328,17 +2328,17 @@ END SUBROUTINE IC3TABLE_CHENG
             IF(IX==NUM+1)THEN
                EXIT
             ENDIF
-            WN = X1  !/ --- if exit of inner loop: give an approximate wn             
+            WN = X1  !/ --- if exit of inner loop: give an approximate wn
          ENDDO !         DO I  = 1,7,2
-        
+
 ! part 2
 ! assume found two roots, choose from the two condidates.
          KP = SIGMA/SQRT(4*GV/DICE)
-         IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)>EPS)THEN  
-!do switch at last 3 points is not worth numerically. 
-!For v>5.e-2, it is low chance to be wrong at the last 3 points        
+         IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)>EPS)THEN
+!do switch at last 3 points is not worth numerically.
+!For v>5.e-2, it is low chance to be wrong at the last 3 points
 ! we suppose to use two mode in the future
-            IF(NU>0.AND.IK>=KU-1.OR.   &  
+            IF(NU>0.AND.IK>=KU-1.OR.   &
                  NU>0.AND.SWITCHID/=0)THEN
 ! assume one mode switch for general viscoelastic model
             ELSE
@@ -2348,12 +2348,12 @@ END SUBROUTINE IC3TABLE_CHENG
                IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
                     IMAG(WN0)>=0.1*IMAG(WNM1).AND. &
                     ABS(WN-KP)<ABS(WN0-KP)) .OR.  &
-! wn0 has larger attenuation and closer to k0                        
+! wn0 has larger attenuation and closer to k0
                     ( DIS>=1 .AND. KAPPA<1 .AND. &
                     ((KAPPA> 0.2 .AND. IMAG(WN0)/REAL(WN0)<0.5).or. &
                     ABS(REAL(WN)-REAL(KP))<ABS(REAL(WN0)-REAL(KP)))).OR.&
-! wn0 has smaller attenuation and farther to k0, 
-! wn0 could be wrong at high G 
+! wn0 has smaller attenuation and farther to k0,
+! wn0 could be wrong at high G
 ! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
                     ( KAPPA>1 .AND. DIS<1 .AND. &
                     ABS(REAL(WN)-REAL(WNM1))>   &
@@ -2364,9 +2364,9 @@ END SUBROUTINE IC3TABLE_CHENG
                ELSEIF(DIS<1 .AND. KAPPA<1) THEN
 ! keep wn without change
                ENDIF !  IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
-            ENDIF !   IF(NU>0.AND.IK>=KU-2.OR.   &  
+            ENDIF !   IF(NU>0.AND.IK>=KU-2.OR.   &
 
-! choose dominant mode is farther than pressure wave. 
+! choose dominant mode is farther than pressure wave.
 !but it doens't work for high viscosity.
             if (abs(wn-kp)/abs(kp)<0.03) then
                 wn = wn0
@@ -2375,7 +2375,7 @@ END SUBROUTINE IC3TABLE_CHENG
             !if (real(wn)<=real(wnm1))then
             !    wn = wn0
             !    switchid = ik
-            !endif  
+            !endif
 
             IF (REAL(WN0)>REAL(WNM1).AND.REAL(WN0)<REAL(WN).and. &
             ABS(IMAG(WN0)-IMAG(WNM1))<ABS(IMAG(WN)-IMAG(WNM1)))THEN
@@ -2386,7 +2386,7 @@ END SUBROUTINE IC3TABLE_CHENG
          ENDIF ! IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)....
       ENDIF   !      IF(SIGMAM1==0.)THEN
 
-      IF(REAL(WN)<0)THEN     
+      IF(REAL(WN)<0)THEN
          PRINT*, "MULLER METHOD FAILED, ES_MOD,NU,HICE:",ES_MOD,NU,HICE
       ENDIF
       RETURN
@@ -2438,7 +2438,7 @@ END SUBROUTINE IC3TABLE_CHENG
 !  6. Error messages :
 !
 !  7. Remarks :
-!      Smooth function is used due to jump problem when wave modes 
+!      Smooth function is used due to jump problem when wave modes
 !             switch
 !
 !  8. Structure :
@@ -2463,7 +2463,7 @@ END SUBROUTINE IC3TABLE_CHENG
       DO IK = 2,N-1
         CG1 = (SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
         CG2 = (SIGMA(IK+1)-SIGMA(IK))/(WN_R(IK+1)-WN_R(IK))
-        CG(IK) = 2.0/(1./CG1 + 1./CG2)        
+        CG(IK) = 2.0/(1./CG1 + 1./CG2)
       END DO
 
       RETURN
@@ -2475,7 +2475,7 @@ END SUBROUTINE IC3TABLE_CHENG
     REAL, INTENT(IN)  :: SIGMA(N)
     REAL              :: WN_R(N), WN_I(N),DIFF(N),REMOVEID(N)
     INTEGER           :: N,I,J,SWITCHID
-!    
+!
     DIFF = 0
 ! remove kr in mode switch zone,
 ! if it is a local extremum or suddenly increasing
@@ -2484,7 +2484,7 @@ END SUBROUTINE IC3TABLE_CHENG
         DO I = 2,N
       DIFF(I) = WN_R(I) - WN_R(I-1)
     ENDDO
-    DO I = 3,N            
+    DO I = 3,N
             IF(DIFF(I)<=0.OR.DIFF(I)>3*DIFF(I-1).OR.SWITCHID==I)THEN
                 REMOVEID(I) = 1
                 REMOVEID(I-1) = 1
@@ -2492,18 +2492,18 @@ END SUBROUTINE IC3TABLE_CHENG
         ENDDO
 ! fill removed location with kr,ki by interpolation
          DO I = 2,N-1
-             IF (REMOVEID(I) ==1) THEN             
+             IF (REMOVEID(I) ==1) THEN
                  WN_R(I) = WN_R(I-1) + (WN_R(I+1)-WN_R(I-1))/    &
          (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
                  WN_I(I) = WN_I(I-1) + (WN_I(I+1)-WN_I(I-1))/    &
          (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
              ENDIF
-         ENDDO         
-    ENDDO 
+         ENDDO
+    ENDDO
 ! mode switch upward at the last frequencies
     IF (DIFF(N)>3*DIFF(N-1))THEN
         I = N
-        WN_R(I) = WN_R(I-1) + (WN_R(I-1)-WN_R(I-2))/   & 
+        WN_R(I) = WN_R(I-1) + (WN_R(I-1)-WN_R(I-2))/   &
         (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
         WN_I(I) = WN_I(I-1) + (WN_I(I-1)-WN_I(I-2))/   &
         (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
@@ -2731,7 +2731,7 @@ END SUBROUTINE IC3TABLE_CHENG
 !
 !      Name        Type  Module   Description
 !     ----------------------------------------------------------------
-!      DRFUN_dble  Func. W3SIC3MD Function to find root with double 
+!      DRFUN_dble  Func. W3SIC3MD Function to find root with double
 !      precision.
 !      DRFUN_quad  Func. W3SIC3MD Function to find root with quadruple
 !      precision.
@@ -2809,7 +2809,7 @@ END SUBROUTINE IC3TABLE_CHENG
 !
 !  2. Method :
 !
-!     function based on dispersion relation derived by Wang and Shen 
+!     function based on dispersion relation derived by Wang and Shen
 !     2010
 !
 !  3. Parameters :
@@ -2870,7 +2870,7 @@ END SUBROUTINE IC3TABLE_CHENG
       COMPLEX(8), INTENT(IN)   :: WN
       REAL(8), INTENT(IN)      :: SIGMA, ES, NU, DICE, HICE, DEPTH
       COMPLEX(8)               :: FUNC1,AA(4,4)                   ! RESULT
-      INTEGER                  :: JUDGE  
+      INTEGER                  :: JUDGE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -2897,11 +2897,11 @@ END SUBROUTINE IC3TABLE_CHENG
       ELSE
           TH = 1.D0
       ENDIF
-!      JUDGE==3 is not used yet   
+!      JUDGE==3 is not used yet
       IF ((ES>=1.E5.AND.JUDGE/=2).or.JUDGE==3) THEN
           L     = 2 * WN * ALPHA * SIGMA * VE
           M     = (DBLE(DWAT)/DICE - 1) * DBLE(GRAV) * WN             &
-                - DBLE(DWAT) / DICE * SIGMA**2 / TH          
+                - DBLE(DWAT) / DICE * SIGMA**2 / TH
          AA(1,1) = 0.
          AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
          AA(1,3) = ALPHA**2. + WN**2.
@@ -2928,7 +2928,7 @@ END SUBROUTINE IC3TABLE_CHENG
                   + 16.* VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
                   *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))
           J2    = (4.*WN**3.*ALPHA*VE**2.*SK*CA+N**2.*SA*CK &
-                  -DBLE(GRAV)*WN*SK*SA)          
+                  -DBLE(GRAV)*WN*SK*SA)
           IF (JUDGE==2)THEN
             FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV)) - TH*J1/(J2+1.e-20)
           ELSEIF (JUDGE==1)THEN
@@ -3005,7 +3005,7 @@ END SUBROUTINE IC3TABLE_CHENG
 !   Original authors: Zhao and Shen.
 !   This code is based on Fortran code provided by Hayley Shen (Clarkson
 !     University) to Erick Rogers (NRL) on April 19 2013.
-!   ER: S. Cheng had "COMPLEX(16)" for the local parameters. This is not 
+!   ER: S. Cheng had "COMPLEX(16)" for the local parameters. This is not
 !     supported by my compiler (gfortran on linux machine), so I changed
 !     it to "COMPLEX(8)"
 !

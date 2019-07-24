@@ -22,7 +22,7 @@
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -51,7 +51,7 @@
 !
 !  5. Remarks :
 !
-!     - STRACE and !/S irrelevant for running code. The module is 
+!     - STRACE and !/S irrelevant for running code. The module is
 !       therefore fully portable to any other model.
 !
 !  6. Switches :

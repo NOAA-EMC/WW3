@@ -5,14 +5,14 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Parallel routines for implicit solver 
+!  1. Purpose : Parallel routines for implicit solver
 !  2. Method :
 !  3. Parameters :
 !
@@ -59,7 +59,7 @@
       REAL, ALLOCATABLE    :: AC_tot(:,:)
       INTEGER, ALLOCATABLE :: ListISPnextDir(:), ListISPprevDir(:)
       INTEGER, ALLOCATABLE :: ListISPnextFreq(:), ListISPprevFreq(:)
-      INTEGER, PARAMETER   :: IMEM = 2 
+      INTEGER, PARAMETER   :: IMEM = 2
 
       REAL,  PARAMETER     :: ONESIXTH  = 1.0d0/6.0d0
       REAL,  PARAMETER     :: ONETHIRD  = 1.0d0/3.0d0
@@ -78,7 +78,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -148,14 +148,14 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Print timings 
+!  1. Purpose : Print timings
 !  2. Method :
 !  3. Parameters :
 !
@@ -217,14 +217,14 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Compute refraction part in matrix 
+!  1. Purpose : Compute refraction part in matrix
 !  2. Method :
 !  3. Parameters :
 !
@@ -369,7 +369,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -495,7 +495,7 @@
            + FRK(MAPWN(ISP)) * (ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY)
 !
 ! Puts filtering on total velocity (including currents and great circle effects)
-! the filtering limits VCFLT to be less than CTMAX 
+! the filtering limits VCFLT to be less than CTMAX
 ! this modification was proposed by F. Ardhuin 2011/03/06
 !
         IF (DoLimiter .eqv. .TRUE.) THEN
@@ -519,7 +519,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -634,7 +634,7 @@
 !/DEBUG      FLUSH(740+IAPROC)
       DO IK=0, NK+1
         FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
-        VELFAC =  FACK/DB(IK+1) 
+        VELFAC =  FACK/DB(IK+1)
         DO ITH=1, NTH
           VELNOFILT = ( FKD0 + WN(IK,ISEA)*FKC(ITH) ) * VELFAC
           CFLK(IK+1,ITH) = VELNOFILT/VELFAC
@@ -662,14 +662,14 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Compute freq. shift alternative approach 
+!  1. Purpose : Compute freq. shift alternative approach
 !  2. Method :
 !  3. Parameters :
 !
@@ -834,18 +834,18 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Sync global local arrays 
+!  1. Purpose : Sync global local arrays
 !  2. Method :
-! 		All the process need to have IPGL_tot and IPGL_TO_PROC             
-! 		This is especially the case for the output process.                
-! 		So we need some painful exportation business                       
+! 		All the process need to have IPGL_tot and IPGL_TO_PROC
+! 		This is especially the case for the output process.
+! 		So we need some painful exportation business
 !  3. Parameters :
 !
 !     Parameter list
@@ -883,7 +883,7 @@
 !/PDLIB   USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
 !/PDLIB   USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
 !/PDLIB   USE WMMDATMD, ONLY: MDATAS
-          IMPLICIT NONE 
+          IMPLICIT NONE
 !/PDLIB   INCLUDE "mpif.h"
           INTEGER, intent(in) :: IMOD
           logical, intent(in) :: IsMulti
@@ -934,7 +934,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -1034,14 +1034,14 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
 !/
 !/   01-June-2018 : Origination.                        ( version 6.04 )
 !/
-!  1. Purpose : Set Jsea for all schemes  
+!  1. Purpose : Set Jsea for all schemes
 !  2. Method :
 !  3. Parameters :
 !
@@ -1126,7 +1126,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -1195,7 +1195,7 @@
           IBELONG=0
         END IF
       ELSE
-!/PDLIB      IF (GTYPE .ne. UNGTYPE) THEN       
+!/PDLIB      IF (GTYPE .ne. UNGTYPE) THEN
 !/PDLIB        JSEA   = 1 + (ISEA-1)/NAPROC
 !/PDLIB        ISPROC = ISEA - (JSEA-1)*NAPROC
 !/PDLIB        IF (ISPROC .eq. IAPROC) THEN
@@ -1233,7 +1233,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -1325,7 +1325,7 @@
 !/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   | 
+!/                  |                                   |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :        01-June-2018 |
 !/                  +-----------------------------------+
@@ -1334,8 +1334,8 @@
 !/
 !  1. Purpose : Sync global array in context of pdlib
 !  2. Method :
-!			An array of size (NSEA) is send but only the (1:NSEAL) values    
-! 			are correct. The program synchonizes everything on all nodes.    
+!			An array of size (NSEA) is send but only the (1:NSEAL) values
+! 			are correct. The program synchonizes everything on all nodes.
 !  3. Parameters :
 !
 !     Parameter list

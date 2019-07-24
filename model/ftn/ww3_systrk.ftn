@@ -26,7 +26,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       USE W3STRKMD
@@ -37,14 +37,14 @@
 !
 !  1. Purpose :
 !
-!     Perform spatial and temporal tracking of wave systems, based 
+!     Perform spatial and temporal tracking of wave systems, based
 !     on spectral partition (bulletin) output.
 !
 !  2. Method :
 !
-!     This is a controller program. It reads the input parameter file 
-!     ww3_systrk.inp and calls subroutine waveTracking_NWS_V2 to 
-!     perform the actual tracking procedure. Write output (fields and 
+!     This is a controller program. It reads the input parameter file
+!     ww3_systrk.inp and calls subroutine waveTracking_NWS_V2 to
+!     perform the actual tracking procedure. Write output (fields and
 !     point output).
 !
 !  3. Parameters :
@@ -103,7 +103,7 @@
               BL_latprt,BR_latprt,TR_latprt,TL_latprt
       REAL :: t, u, BL_W, BR_W, TR_W, TL_W
       REAL      :: PI
-      PARAMETER  (PI = 3.1416) 
+      PARAMETER  (PI = 3.1416)
 !
 !  4. Subroutines used :
 !
@@ -133,7 +133,7 @@
 !
 !/MPI/!     Start of parallel region
 !/MPI      CALL MPI_INIT(ierr)
-!/MPI    
+!/MPI
 !/MPI      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 !/MPI      CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
 !/MPI
@@ -200,7 +200,7 @@
 !/TRKNC     outputCheck1 = .FALSE.
          IF(outputCheck1)  THEN
             WRITE(6,993)
-            STOP 
+            STOP
          END IF
       ELSEIF (outputType.EQ.4) THEN
          !NetCDF 4 - requrires !/TRKNC and !/NC4 switch
@@ -237,7 +237,7 @@
          READ(10,'(A72)') inpstr
       END DO
       BACKSPACE(10)
-      READ(10,*) dirKnob, perKnob, hsKnob, wetPts, & 
+      READ(10,*) dirKnob, perKnob, hsKnob, wetPts, &
                 dirTimeKnob, tpTimeKnob
 
       READ(10,'(A72)') inpstr
@@ -260,7 +260,7 @@
          IF ((lonout(noutp).EQ.0.).AND.(latout(noutp).EQ.0.)) EXIT
          noutp = noutp + 1
       END DO
-      noutp = noutp - 1 
+      noutp = noutp - 1
 
       CLOSE(10)
 
@@ -271,9 +271,9 @@
       WRITE(20,'(A,2F7.2)') 'Domain limits: Longitude =',minlon, maxlon
       WRITE(20,'(A,2F7.2)') '               Latitude  =',minlat, maxlat
       WRITE(20,*) 'No. increments: Long, Lat  =',mxcwt, mycwt
-      WRITE(20,*) 'dirKnob, perKnob, hsKnob, wetPts, & 
+      WRITE(20,*) 'dirKnob, perKnob, hsKnob, wetPts, &
                 dirTimeKnob, tpTimeKnob, seedLat, seedLon ='
-      WRITE(20,'(8F6.2)') dirKnob, perKnob, hsKnob, wetPts, & 
+      WRITE(20,'(8F6.2)') dirKnob, perKnob, hsKnob, wetPts, &
                 dirTimeKnob, tpTimeKnob, seedLat, seedLon
       WRITE(20,*) 'No. output points =',noutp
       DO i = 1,noutp
@@ -292,7 +292,7 @@
 
 !/MPI      END IF
 
-!/MPI/!     MPI communication block 
+!/MPI/!     MPI communication block
 !/MPI      CALL MPI_BCAST(filename,80,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 !/MPI      CALL MPI_BCAST(tstart,1,MPI_DOUBLE_PRECISION,0, &
 !/MPI                     MPI_COMM_WORLD,IERR)
@@ -324,7 +324,7 @@
                                 tcur       ,filename   , &
                                 tstart     ,tend       , &
                                 dt         ,ntint      , &
-                                minlon     ,maxlon     , & 
+                                minlon     ,maxlon     , &
                                 minlat     ,maxlat     , &
                                 mxcwt      ,mycwt      , &
                                 dirKnob    ,             &
@@ -396,12 +396,12 @@
 !/TRKNC      ENDIF
 
       DO it = 1,SIZE(sysA)
-!        Loop through identified groups, limiting the output in file to ulimGroup    
+!        Loop through identified groups, limiting the output in file to ulimGroup
          IF(outputType == 1) THEN
             WRITE(22,'(F15.6,60x,A)') wsdat(it)%date,'Time'
             WRITE(22,'(I6,69x,A)') MIN(ulimGroup,maxGroup), &
                'Tot number of systems'
-         ENDIF 
+         ENDIF
          DO igrp = 1,MIN(ulimGroup,maxGroup)
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -421,9 +421,9 @@
             ELSE
                leng = 0
             END IF
-            
+
       IF(outputType == 1) THEN
-            WRITE(22,'(I6,69x,A)') igrp,'System number'  
+            WRITE(22,'(I6,69x,A)') igrp,'System number'
             WRITE(22,'(I6,69x,A)') leng,'Number of points in system'
 
             DO J = maxJ,1,-1
@@ -442,7 +442,7 @@
 
          END DO
       END DO
-        
+
 !/TRKNC      IF(outputType == 3 .OR. outputType == 4 ) THEN
 !/TRKNC      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
 !/TRKNC         maxGroup,date1,date2,dt,NTIME_NC,1,outputType)
@@ -464,7 +464,7 @@
             WRITE(23,'(F15.6,60x,A)') wsdat(it)%date,'Time'
             WRITE(23,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
                'Tot number of systems'
-         ENDIF 
+         ENDIF
          DO igrp = 1,MIN(ulimGroup,maxGroup)
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -484,9 +484,9 @@
             ELSE
                leng = 0
             END IF
-            
+
       IF(outputType == 1) THEN
-            WRITE(23,'(I6,69X,A)') igrp,'System number'  
+            WRITE(23,'(I6,69X,A)') igrp,'System number'
             WRITE(23,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
                DO i = 1,maxI
@@ -528,7 +528,7 @@
              WRITE(24,'(F15.6,60x,A)') wsdat(it)%date,'Time'
              WRITE(24,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
                'Tot number of systems'
-         ENDIF 
+         ENDIF
          DO igrp = 1,MIN(ulimGroup,maxGroup)
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -542,15 +542,15 @@
                leng = sysA(it)%sys(sysmatch)%nPoints
                DO ind = 1, leng
                   dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = & 
+                      sysA(it)%sys(sysmatch)%j(ind)) = &
                       sysA(it)%sys(sysmatch)%dir(ind)
                END DO
             ELSE
                leng = 0
             END IF
-            
+
       IF(outputType == 1) THEN
-            WRITE(24,'(I6,69X,A)') igrp,'System number'  
+            WRITE(24,'(I6,69X,A)') igrp,'System number'
             WRITE(24,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
                DO i = 1,maxI
@@ -603,15 +603,15 @@
                leng = sysA(it)%sys(sysmatch)%nPoints
                DO ind = 1, leng
                   dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = & 
+                      sysA(it)%sys(sysmatch)%j(ind)) = &
                       sysA(it)%sys(sysmatch)%dspr(ind)
                END DO
             ELSE
                leng = 0
             END IF
-            
+
       IF(outputType == 1) THEN
-            WRITE(25,'(I6,69X,A)') igrp,'System number'  
+            WRITE(25,'(I6,69X,A)') igrp,'System number'
             WRITE(25,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
                DO i = 1,maxI
@@ -663,7 +663,7 @@
            'TpSY09        TpSY10        ', &
            'DrSY01        DrSY02        DrSY03        DrSY04        ', &
            'DrSY05        DrSY06        DrSY07        DrSY08        ', &
-           'DrSY09        DrSY10'   
+           'DrSY09        DrSY10'
       WRITE(26,'(10A)') '%       [degr]        [degr]        ', &
            '[m]           [m]           [m]           [m]           ', &
            '[m]           [m]           [m]           [m]           ', &
@@ -833,11 +833,11 @@
                       tpprt(igrp) = 999.9999
                       dirprt(igrp) = 999.9999
                    END IF
-               END IF  
+               END IF
             END DO
       IF(outputType == 1) THEN
             WRITE(26,'(32F14.4)') lonprt,latprt, &
-                       hsprt(1:10),tpprt(1:10),dirprt(1:10)  
+                       hsprt(1:10),tpprt(1:10),dirprt(1:10)
         ENDIF
 !/TRKNC      IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
 !/TRKNC        lonprt_nc(ip)=lonprt
@@ -874,7 +874,7 @@
            'TpSY09        TpSY10        ', &
            'DrSY01        DrSY02        DrSY03        DrSY04        ', &
            'DrSY05        DrSY06        DrSY07        DrSY08        ', &
-           'DrSY09        DrSY10'   
+           'DrSY09        DrSY10'
       WRITE(28,'(10A)') '%       [degr]        [degr]        ', &
            '[m]           [m]           [m]           [m]           ', &
            '[m]           [m]           [m]           [m]           ', &
@@ -941,10 +941,10 @@
                          dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
                    END IF
                  END DO
-               END IF  
+               END IF
             END DO
             WRITE(28,'(32F14.4)') lonprt,latprt, &
-                       hsprt(1:10),tpprt(1:10),dirprt(1:10)  
+                       hsprt(1:10),tpprt(1:10),dirprt(1:10)
          END DO
       END DO
 
@@ -1063,7 +1063,7 @@
 !/TRKNC      Jday0=julday(1,1,1990)
 !/TRKNC      timenc=timenc-Jday0
 !/TRKNC      do rec=1,ntime
-!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0 
+!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
 !/TRKNC      enddo
 !/TRKNC      if( ivar == 1) then
 !/TRKNC       file_name = "sys_hs.ww3.nc"
@@ -1075,7 +1075,7 @@
 !/TRKNC      file_name = "sys_dspr.ww3.nc"
 !/TRKNC      endif
 !
-!/TRKNC! create the netcdf file. 
+!/TRKNC! create the netcdf file.
 !/TRKNC      if (outputType.EQ.3) then
 !/TRKNC      call check( nf90_create(file_name, NF90_CLOBBER, ncid) )
 !/TRKNC      endif
@@ -1100,7 +1100,7 @@
 !/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'long_name', 'longitude') )
 !/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'standard_name', 'longitude') )
 !/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'axis','X'))
-!/TRKNC      call check(nf90_put_att(ncid,rec_varid,units,& 
+!/TRKNC      call check(nf90_put_att(ncid,rec_varid,units,&
 !/TRKNC                  'days since 1990-01-01 00:00:00'))
 !/TRKNC      call check(nf90_put_att(ncid,rec_varid,'long_name','julian day (UT)'))
 !/TRKNC      call check( nf90_put_att(ncid, rec_varid,'standard_name', 'time') )
@@ -1135,11 +1135,11 @@
 !/TRKNC      call check( nf90_put_att(ncid, var4_varid,'missing_value','9999.00') )
 !/TRKNC      endif
 !/TRKNC      call check( nf90_enddef(ncid) )
-!  
+!
 !/TRKNC      call check( nf90_put_var(ncid, lat_varid, lats) )
 !/TRKNC      call check( nf90_put_var(ncid, lon_varid, lons) )
 !/TRKNC      call check( nf90_put_var(ncid, rec_varid, times) )
-!  
+!
 !/TRKNC      count = (/ nlons, nlats, nsys, ntime /)
 !/TRKNC      start = (/ 1, 1, 1, 1 /)
 !/TRKNC      if( ivar == 1) then
@@ -1161,14 +1161,14 @@
 !/TRKNC      subroutine check(status)
 !/TRKNC      use netcdf
 !/TRKNC      integer, intent ( in) :: status
-!/TRKNC      if(status /= nf90_noerr) then 
+!/TRKNC      if(status /= nf90_noerr) then
 !/TRKNC        write(6,996)
 !/TRKNC          996 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK:'/           &
 !/TRKNC                       'netCDF error:')
 !/TRKNC        print *, trim(nf90_strerror(status))
 !/TRKNC        stop "Stopped in netcdf output part"
 !/TRKNC      endif
-!/TRKNC      end subroutine check  
+!/TRKNC      end subroutine check
 !
 !/TRKNC      subroutine pt2netcdf(longitude,latitude,hs,tp,&
 !/TRKNC       dir,npoints,date1,date2,dt,ntime,outputType)
@@ -1222,7 +1222,7 @@
 !/TRKNC      Jday0=julday(1,1,1990)
 !/TRKNC      timenc=timenc-Jday0
 !/TRKNC      do rec=1,ntime
-!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0 
+!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
 !/TRKNC      enddo
 !
 !/TRKNC      if(outputType.EQ.3) then
@@ -1230,7 +1230,7 @@
 !/TRKNC      endif
 !/TRKNC      if (outputType.EQ.4) iret = nf90_create('sys_pnt.ww3.nc',NF90_NETCDF4, ncid)
 !/TRKNC      call check(iret)
-!/TRKNC      iret = nf90_set_fill(ncid,nf90_nofill,oldMode) 
+!/TRKNC      iret = nf90_set_fill(ncid,nf90_nofill,oldMode)
 !/TRKNC      call check(iret)
 !/TRKNC! define dimensions
 !/TRKNC      iret = nf90_def_dim(ncid, 'system_index', nsys, system_index_dim)
@@ -1269,7 +1269,7 @@
 !/TRKNC      dir_dims(3) = rec_dim
 !/TRKNC      dir_dims(2) = point_dim
 !/TRKNC      dir_dims(1) = system_index_dim
-!/TRKNC      iret = nf90_def_var(ncid, 'dir', NF90_REAL, & 
+!/TRKNC      iret = nf90_def_var(ncid, 'dir', NF90_REAL, &
 !/TRKNC        dir_dims, dir_id)
 !/TRKNC      call check(iret)
 !/NC4        call check( nf90_def_var_deflate(ncid,dir_id,1,1,deflate))
@@ -1306,7 +1306,7 @@
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_put_att(ncid, hs_id,'long_name','significant_wave_height')
 !/TRKNC      call check(iret)
-!/TRKNC      iret = nf90_put_att(ncid, hs_id, 'missing_value', & 
+!/TRKNC      iret = nf90_put_att(ncid, hs_id, 'missing_value', &
 !/TRKNC        '999.9999')
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_put_att(ncid, tp_id, 'units', 's')
@@ -1320,7 +1320,7 @@
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_put_att(ncid, dir_id,'long_name','peak_direction')
 !/TRKNC      call check(iret)
-!/TRKNC      iret = nf90_put_att(ncid, dir_id, 'missing_value',& 
+!/TRKNC      iret = nf90_put_att(ncid, dir_id, 'missing_value',&
 !/TRKNC         '999.9999')
 !/TRKNC      call check(iret)
 !/TRKNC! leave define mode
@@ -1331,10 +1331,10 @@
 !
 !/TRKNC      iret = nf90_put_var(ncid, longitude_id, longitude)
 !/TRKNC      call check(iret)
-! 
+!
 !/TRKNC      iret = nf90_put_var(ncid, time_id, times)
 !/TRKNC      call check(iret)
-! 
+!
 !/TRKNC      start = (/ 1, 1, 1 /)
 !/TRKNC      count = (/ nsys,npoints,ntime /)
 !

@@ -32,7 +32,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      W3XYPUG       Subr. Public   Generic fluctuation splitting operations 
+!      W3XYPUG       Subr. Public   Generic fluctuation splitting operations
 !      W3XYPFSN2     Subr. Public   advection with N scheme (Csik et al. 2002)
 !      W3XYPFSPSI    Subr. Public   advection with FCT scheme
 !      W3XYPFSFCT2   Subr. Public   advection with FCT scheme
@@ -46,7 +46,7 @@
 !
 !  5. Remarks :
 !     For a detailed description of the schemes and their properties, see
-!     Roland (2008), Ph.D. Thesis, T. U. Darmstadt. 
+!     Roland (2008), Ph.D. Thesis, T. U. Darmstadt.
 !
 !  6. Switches :
 !
@@ -58,7 +58,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-   SUBROUTINE W3XYPUG ( ISP, FACX, FACY, DTG, VQ, VGX, VGY, LCALC )    
+   SUBROUTINE W3XYPUG ( ISP, FACX, FACY, DTG, VQ, VGX, VGY, LCALC )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -77,7 +77,7 @@
 !
 !  2. Method :
 !
-!     
+!
 !
 !  3. Parameters :
 !
@@ -110,7 +110,7 @@
 !       None.
 !
 !  7. Remarks :
-!              make the interface between the WAVEWATCH and the WWM code. 
+!              make the interface between the WAVEWATCH and the WWM code.
 !
 !  8. Structure :
 !
@@ -120,7 +120,7 @@
 !       !/S     Enable subroutine tracing.
 !
 !
-! 10. Source code :     
+! 10. Source code :
 !/ ------------------------------------------------------------------- /
 !/
 !
@@ -142,7 +142,7 @@
 !      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !                          ISBPI, BBPI0, BBPIN
 !/S      USE W3SERVMD, ONLY: STRACE
-      
+
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -166,33 +166,33 @@
 !/
       REAL                    :: VLCFLX((NX+1)*NY), VLCFLY(NX*NY)
       DOUBLE PRECISION        :: AC(NX)
-!/ ------------------------------------------------------------------- /                                     
+!/ ------------------------------------------------------------------- /
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
-!      
-      
-!/S      CALL STRACE (IENT, 'W3XYPUG')      
+!
+
+!/S      CALL STRACE (IENT, 'W3XYPUG')
       ITH    = 1 + MOD(ISP-1,NTH)
-      IK     = 1 + (ISP-1)/NTH     
-   
-      CCOS   = FACX * ECOS(ITH) 
-      CSIN   = FACY * ESIN(ITH) 
-      CCURX  = FACX 
-      CCURY  = FACY  
+      IK     = 1 + (ISP-1)/NTH
+
+      CCOS   = FACX * ECOS(ITH)
+      CSIN   = FACY * ESIN(ITH)
+      CCURX  = FACX
+      CCURY  = FACY
 !
 ! 1.b Initialize arrays
 !
       VLCFLX = 0.
       VLCFLY = 0.
 !
-! 1.c Set depth 
+! 1.c Set depth
 !
       CALL SETDEPTH
 !
 !
 ! 2.  Calculate velocities ---------------- *
-! 
+!
       DO ISEA=1, NSEA
         IXY         =  MAPSF(ISEA,3)
         VQ(IXY)     = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
@@ -200,25 +200,25 @@
         VLCFLY(IXY) = CSIN * CG(IK,ISEA)
 !/MGP        VLCFLX(IXY) = VLCFLX(IXY) - CCURX*VGX/CLATS(ISEA)
 !/MGP        VLCFLY(IXY) = VLCFLY(IXY) - CCURY*VGY
-      END DO  
+      END DO
 
-      IF ( FLCUR ) THEN   
+      IF ( FLCUR ) THEN
         DO ISEA=1, NSEA
           IXY =  MAPSF(ISEA,3)
 !
 ! Currents are not included on coastal boundaries (IOBP(IXY).EQ.0)
 !
-          IF (IOBP(IXY) .EQ. 1) THEN                                  
+          IF (IOBP(IXY) .EQ. 1) THEN
             VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
             VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
-          END IF    
-        END DO     
+          END IF
+        END DO
       END IF
 
 !
-! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
+! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)
 !
-      AC(1:NX) = DBLE(VQ(1:NX))  
+      AC(1:NX) = DBLE(VQ(1:NX))
       C(1:NX,1)  = VLCFLX(1:NX)
       C(1:NX,2)  = VLCFLY(1:NX)
 !
@@ -232,8 +232,8 @@
         RD2=0.
       END IF
 !
-! 4. propagate using the selected scheme 
-!      
+! 4. propagate using the selected scheme
+!
        IF (FSN) THEN
          CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
        ELSE IF (FSPSI) THEN
@@ -242,13 +242,13 @@
          CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
        ELSE IF (FSNIMP) THEN
          CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC)
-       ENDIF  
+       ENDIF
 !
        DO IX=1,NX
          ISEA=MAPFS(1,IX)
          VQ(IX)=REAL(AC(IX))
-         ENDDO          
-    
+         ENDDO
+
 ! 6.  Store results in VQ in proper format --------------------------- *
 !
 !/C90/!DIR$ IVDEP
@@ -260,7 +260,7 @@
    END SUBROUTINE W3XYPUG
 !/ ------------------------------------------------------------------- /
    SUBROUTINE W3CFLUG ( ISEA, NKCFL, FACX, FACY, DT, MAPFS, CFLXYMAX,    &
-                          VGX, VGY )    
+                          VGX, VGY )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -271,7 +271,7 @@
 !/
 !/    01-Mar-2011 : Origination.                        ( version 3.14 )
 !/    20-Jun-2013 : Computes only up to NKCFL for tests ( version 4.10 )
-!/     1-Jun-2017 : Rewrite routine for performance     ( version 5.xx ) 
+!/     1-Jun-2017 : Rewrite routine for performance     ( version 5.xx )
 !/
 !  1. Purpose :
 !
@@ -279,7 +279,7 @@
 !
 !  2. Method :
 !
-!     
+!
 !
 !  3. Parameters :
 !
@@ -314,7 +314,7 @@
 !       None.
 !
 !  7. Remarks :
-!              make the interface between the WAVEWATCH and the WWM code. 
+!              make the interface between the WAVEWATCH and the WWM code.
 !
 !  8. Structure :
 !
@@ -324,7 +324,7 @@
 !       !/S     Enable subroutine tracing.
 !
 !
-! 10. Source code :     
+! 10. Source code :
 !/ ------------------------------------------------------------------- /
 !/
 !
@@ -343,7 +343,7 @@
 !/T      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !/T                          ISBPI, BBPI0, BBPIN
 !/S      USE W3SERVMD, ONLY: STRACE
-      
+
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -355,7 +355,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: ITH, IK    
+      INTEGER                 :: ITH, IK
       INTEGER                 :: IP, IP2, ISEA2, I, J, IE, IV, I1, I2, I3
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
@@ -363,40 +363,40 @@
       REAL*8                  :: KELEM(3), KTMP(3), LAMBDA(2)
       REAL*8                  :: KKSUM, DTMAXEXP
 !/
-!/  Velocities 
+!/  Velocities
 !/
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-       REAL,    PARAMETER :: THR       = TINY(1.0) 
+       REAL,    PARAMETER :: THR       = TINY(1.0)
 
-!/ ------------------------------------------------------------------- /                                     
+!/ ------------------------------------------------------------------- /
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
-!      
-      
-!/S      CALL STRACE (IENT, 'W3CFLUG')      
+!
+
+!/S      CALL STRACE (IENT, 'W3CFLUG')
       CFLXYMAX=1E-10
       IP = MAPSF(ISEA,3)
 !
-! CFL no important on boundary 
+! CFL no important on boundary
 !
-      IF (IOBP(IP).EQ.1) THEN       
-      CCURX  = FACX 
-      CCURY  = FACY  
+      IF (IOBP(IP).EQ.1) THEN
+      CCURX  = FACX
+      CCURY  = FACY
 !
 ! Loop over spectral components
 !
       DO IK=1,NKCFL
         DO ITH=1,NTH
-          CCOS   = FACX * ECOS(ITH) 
-          CSIN   = FACY * ESIN(ITH) 
+          CCOS   = FACX * ECOS(ITH)
+          CSIN   = FACY * ESIN(ITH)
           C(:,:)=0.
 
 !
 ! 2.  Calculate advection velocities: group speed ---------------- *
-! 
-!AR: needs to be rewritten for speed ... single node computation is costly ... 
+!
+!AR: needs to be rewritten for speed ... single node computation is costly ...
 !MA: you are right but now it is only called if CFX and UNST for CFL profiling
 
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
@@ -408,11 +408,11 @@
               C(IP2,2) = CSIN * CG(IK,ISEA2)
 !/MGP              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
 !/MGP              C(IP2,2) = C(IP2,2) - CCURY*VGY
-              IF ( FLCUR ) THEN   
-                IF (IOBP(IP2) .EQ. 1) THEN                                  
+              IF ( FLCUR ) THEN
+                IF (IOBP(IP2) .EQ. 1) THEN
                   C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
                   C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
-                  END IF    
+                  END IF
                 END IF  ! end of ( FLCUR )
               END DO
             END DO
@@ -421,16 +421,16 @@
 !
           KKSUM = 0.d0
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP
             IV=POS_CELL(I)
-            I1 = TRIGP(IE,1) 
+            I1 = TRIGP(IE,1)
             I2 = TRIGP(IE,2)
             I3 = TRIGP(IE,3)
             LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
             LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
-            KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
-            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4) ! K-Values - so called Flux Jacobians 
-            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians 
+            KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
+            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4) ! K-Values - so called Flux Jacobians
+            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians
 
             KTMP        = KELEM ! Copy
             KELEM       = MAX(0.d0,KTMP)
@@ -444,12 +444,12 @@
         END DO
         END IF
 !
-      RETURN    
- END SUBROUTINE W3CFLUG    
+      RETURN
+ END SUBROUTINE W3CFLUG
 !/ ------------------------------------------------------------------- /
 
       SUBROUTINE W3XYPFSN2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
-     
+
 !/
 !/
 !/                  +-----------------------------------+
@@ -508,16 +508,16 @@
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB
 !/REF1   USE W3GDATMD, ONLY : REFPARS
-       USE W3WDATMD, ONLY: TIME      
-       USE W3ADATMD, ONLY: CG, ITER    
+       USE W3WDATMD, ONLY: TIME
+       USE W3ADATMD, ONLY: CG, ITER
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
 !/S      USE W3SERVMD, ONLY: STRACE
-       IMPLICIT NONE  
-     
+       IMPLICIT NONE
+
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
-       REAL,    INTENT(IN)    :: C(:,:)                ! Velocity field in it's X- and Y- Components, 
+       REAL,    INTENT(IN)    :: C(:,:)                ! Velocity field in it's X- and Y- Components,
        DOUBLE PRECISION, INTENT(INOUT):: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
@@ -533,14 +533,14 @@
 
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-       REAL,    PARAMETER :: THR       = TINY(1.0) 
+       REAL,    PARAMETER :: THR       = TINY(1.0)
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !
 ! local integer
 !
-         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -558,33 +558,33 @@
          REAL*8  :: LAMBDA(2), KTMP(3)
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX)
-         REAL*8  :: NM(NTRI) 
+         REAL*8  :: NM(NTRI)
 
 !/S      CALL STRACE (IENT, 'W3XYPFSN')
 
 ! 1. initialisation
 
          ITH    = 1 + MOD(ISP-1,NTH)
-         IK     = 1 + (ISP-1)/NTH 
+         IK     = 1 + (ISP-1)/NTH
          DTMAXGL = DBLE(10.E10)
 !
-!2       Propagation 
+!2       Propagation
 !2.a     Calculate K-Values and contour based quantities ...
 !
-         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
+         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
            I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
            I2 = TRIGP(IE,2)
            I3 = TRIGP(IE,3)
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
+           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
            KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
            KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
 !
            KTMP        = KELEM(:,IE) ! Copy
-           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
+           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
            KELEM(:,IE) = MAX(0.d0,KTMP)
-           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration 
+           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
            FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
            FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
            FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
@@ -608,7 +608,7 @@
                NI = TRIGP(IE,:)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
-             DTMAXEXP = 1E10 ! initialize to large number 
+             DTMAXEXP = 1E10 ! initialize to large number
              DO IP = 1, NX
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
@@ -623,8 +623,8 @@
                ITER(IK,ITH) = ABS(NINT(CFLXY))
              END IF
            END IF ! LCALC
- 
-           DO IP = 1, NX               
+
+           DO IP = 1, NX
              DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
            END DO
 
@@ -639,20 +639,20 @@
 
              DO IP = 1, NX
 !
-! IOBPD=0  : waves coming from land (or outside grid) 
+! IOBPD=0  : waves coming from land (or outside grid)
 ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
-!/REF1             IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+!/REF1             IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
                END DO
-! update spectrum 
+! update spectrum
              AC = U
 !
-! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
 !
-             IF ( FLBPI ) THEN 
+             IF ( FLBPI ) THEN
 !
-! 4.1 In this case the boundary is read from the nest.ww3 file 
+! 4.1 In this case the boundary is read from the nest.ww3 file
 !
                RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
                RD2=RD20
@@ -664,7 +664,7 @@
                  RD2    = 1.
                  END IF
 !
-! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
 !
                 DO IBI=1, NBI
                   IP = MAPSF(ISBPI(IBI),1)
@@ -674,16 +674,16 @@
 
             ENDIF
 !
-           END DO ! End of loop on time steps        
+           END DO ! End of loop on time steps
 !        CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
       END SUBROUTINE W3XYPFSN2
-      
-!/ ------------------------------------------------------------------- /  
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
-     
+
 !/
 !/
 !/                  +-----------------------------------+
@@ -736,16 +736,16 @@
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ, IOBDP
 !/REF1   USE W3GDATMD, ONLY :  REFPARS
-       USE W3WDATMD, ONLY: TIME     
-       USE W3ADATMD, ONLY: CG, ITER    
+       USE W3WDATMD, ONLY: TIME
+       USE W3ADATMD, ONLY: CG, ITER
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
 !/S      USE W3SERVMD, ONLY: STRACE
-       IMPLICIT NONE  
-     
+       IMPLICIT NONE
+
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
-       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
+       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components,
        DOUBLE PRECISION,INTENT(INOUT) :: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
@@ -761,14 +761,14 @@
 
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-       REAL,    PARAMETER :: THR       = TINY(1.0) 
+       REAL,    PARAMETER :: THR       = TINY(1.0)
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !
 ! local integer
 !
-         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -787,32 +787,32 @@
          REAL*8  :: THETA_L(3), BET1(3), BETAHAT(3)
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX)
-         REAL*8  :: NM(NTRI) 
+         REAL*8  :: NM(NTRI)
 
 !/S      CALL STRACE (IENT, 'W3XYPFSN')
 
 ! 1. initialisation
 
          ITH    = 1 + MOD(ISP-1,NTH)
-         IK     = 1 + (ISP-1)/NTH 
+         IK     = 1 + (ISP-1)/NTH
          DTMAXGL = DBLE(10.E10)
 !
-!2       Propagation 
+!2       Propagation
 !2.a     Calculate K-Values and contour based quantities ...
 !
-         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
+         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
            I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
            I2 = TRIGP(IE,2)
            I3 = TRIGP(IE,3)
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
+           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
            KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
            KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
            KTMP        = KELEM(:,IE) ! Copy
-           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
+           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
            KELEM(:,IE) = MAX(0.d0,KTMP)
-           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration 
+           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
            FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
            FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
            FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
@@ -835,7 +835,7 @@
                NI = TRIGP(IE,:)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
-             DTMAXEXP = 1E10 ! initialize to large number 
+             DTMAXEXP = 1E10 ! initialize to large number
              DO IP = 1, NX
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
@@ -850,8 +850,8 @@
                ITER(IK,ITH) = ABS(NINT(CFLXY))
              END IF
            END IF ! LCALC
- 
-           DO IP = 1, NX               
+
+           DO IP = 1, NX
              DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
            END DO
 
@@ -884,17 +884,17 @@
 
              DO IP = 1, NX
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
-!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
                END DO
 
-! update spectrum 
+! update spectrum
              AC = U
 !
-! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
 !
              IF ( FLBPI ) THEN
 !
-! 4.1 In this case the boundary is read from the nest.ww3 file 
+! 4.1 In this case the boundary is read from the nest.ww3 file
 !
                RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
                RD2=RD20
@@ -906,7 +906,7 @@
                  RD2    = 1.
                  END IF
 !
-! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
 !
                 DO IBI=1, NBI
                   IP = MAPSF(ISBPI(IBI),1)
@@ -916,16 +916,16 @@
 
             ENDIF
 !
-           END DO ! End of loop on time steps      
+           END DO ! End of loop on time steps
 !      CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
       END SUBROUTINE W3XYPFSPSI2
-      
-!/ ------------------------------------------------------------------- /  
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE W3XYPFSNIMP ( ISP, C, LCALC, RD10, RD20, DT, AC)
-     
+
 !/
 !/
 !/                  +-----------------------------------+
@@ -981,16 +981,16 @@
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
                             TRIA, NNZ
 !/REF1  USE W3GDATMD, ONLY : REFPARS
-       USE W3WDATMD, ONLY: TIME      
-       USE W3ADATMD, ONLY: CG, ITER    
+       USE W3WDATMD, ONLY: TIME
+       USE W3ADATMD, ONLY: CG, ITER
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
 !/S      USE W3SERVMD, ONLY: STRACE
-       IMPLICIT NONE  
-     
+       IMPLICIT NONE
+
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
-       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
+       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components,
        DOUBLE PRECISION,INTENT(INOUT) :: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
@@ -1007,14 +1007,14 @@
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: ONETHIRD  = 1.0d0/3.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-       REAL,    PARAMETER :: THR       = TINY(1.0) 
+       REAL,    PARAMETER :: THR       = TINY(1.0)
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !
 ! local integer
 !
-         INTEGER :: IP, IE, POS, I1, I2, I3, I, J, ITH, IK    
+         INTEGER :: IP, IE, POS, I1, I2, I3, I, J, ITH, IK
          INTEGER :: IBI
 !
 ! local real
@@ -1064,7 +1064,7 @@
 ! 1. initialisation
 
          ITH    = 1 + MOD(ISP-1,NTH)
-         IK     = 1 + (ISP-1)/NTH 
+         IK     = 1 + (ISP-1)/NTH
          DTMAXGL = DBLE(10.E10)
 
         IF (.FALSE.) THEN
@@ -1075,10 +1075,10 @@
            WRITE(*,*) 'AC, AQ', SUM(AC)
          END IF
 !
-!2       Propagation 
+!2       Propagation
 !2.a     Calculate K-Values and contour based quantities ...
 !
-         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
+         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
            I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
            I2 = TRIGP(IE,2)
            I3 = TRIGP(IE,3)
@@ -1105,12 +1105,12 @@
            DELTAL(:,IE) = CRFS(:)- KP(:,IE)
            NM(IE)       = 1.d0/MIN(DBLE(THR),SUM(KM(:)))
          END DO ! NTRI
- 
+
          U = DBLE(AC)
-         J = 0 
+         J = 0
          ASPAR = 0.d0
          B     = 0.d0
-         DO IP = 1, NX 
+         DO IP = 1, NX
            DO I = 1, CCON(IP)
              J = J + 1
              IE    =  IE_CELL(J)
@@ -1122,9 +1122,9 @@
                I1    =  POSI(1,J)
                I2    =  POSI(2,J)
                I3    =  POSI(3,J)
-               ASPAR(I1) =  ONETHIRD * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1) 
+               ASPAR(I1) =  ONETHIRD * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1)
                ASPAR(I2) =                         - TMP3 * DELTAL(POS_TRICK(POS,1),IE) + ASPAR(I2)
-               ASPAR(I3) =                         - TMP3 * DELTAL(POS_TRICK(POS,2),IE) + ASPAR(I3) 
+               ASPAR(I3) =                         - TMP3 * DELTAL(POS_TRICK(POS,2),IE) + ASPAR(I3)
                B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
              ELSE
                I1    =  POSI(1,J)
@@ -1168,7 +1168,7 @@
            WRITE(*,*) 'AU, FLJAU, FLJU',SUM(AU), SUM(FLJAU), SUM(FLJU)
          END IF
 
-          INIU = U 
+          INIU = U
           X    = 0.d0
 
           CALL RUNRC (NX, B, X, IPAR, FPAR, WKSP, INIU, ASPAR, JAA, IAA, AU, FLJAU, FLJU, BCGSTAB)
@@ -1184,13 +1184,13 @@
 
           DO IP = 1,NX
             U(IP) = MAX(0.d0,X(IP)*DBLE(IOBPD(ITH,IP)))
-!/REF1      IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+!/REF1      IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
            END DO
 !
-! update spectrum 
+! update spectrum
              AC = REAL(U)
 !
-! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
 !
             IF ( FLBPI ) THEN
              RD1=RD10
@@ -1217,8 +1217,8 @@
 !/ End of W3XYPFSNIMP------------------------------------------------- /
 !/
       END SUBROUTINE W3XYPFSNIMP
-      
-!/ ------------------------------------------------------------------- /  
+
+!/ ------------------------------------------------------------------- /
 
       SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
 !/
@@ -1272,16 +1272,16 @@
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA, IOBDP
 !/REF1  USE W3GDATMD, ONLY : REFPARS
-       USE W3WDATMD, ONLY: TIME               
-       USE W3ADATMD, ONLY: CG, ITER    
+       USE W3WDATMD, ONLY: TIME
+       USE W3ADATMD, ONLY: CG, ITER
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
 !/S      USE W3SERVMD, ONLY: STRACE
-       IMPLICIT NONE  
-     
+       IMPLICIT NONE
+
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
-       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
+       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components,
        DOUBLE PRECISION,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary condition
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
@@ -1298,14 +1298,14 @@
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: ONETHIRD  = 1.0d0/3.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-       REAL,    PARAMETER :: THR       = TINY(1.0) 
+       REAL,    PARAMETER :: THR       = TINY(1.0)
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !
 ! local integer
 !
-         INTEGER :: IP, IE, IT, I1, I2, I3, I, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, I, ITH, IK
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -1329,31 +1329,31 @@
 
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX), BETA
-         REAL*8  :: NM(NTRI) 
+         REAL*8  :: NM(NTRI)
 
 !/S      CALL STRACE (IENT, 'W3XYPFSFCT2')
 
 ! 1. initialisation
 
          ITH    = 1 + MOD(ISP-1,NTH)
-         IK     = 1 + (ISP-1)/NTH 
+         IK     = 1 + (ISP-1)/NTH
          DTMAXGL = DBLE(10.E10)
 !
-!2       Propagation 
+!2       Propagation
 !2.a     Calculate K-Values and contour based quantities ...
 !
-         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
+         DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
            I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
            I2 = TRIGP(IE,2)
            I3 = TRIGP(IE,3)
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
+           KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
            KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
            KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
            KTMP        = KELEM(:,IE) ! Copy
-           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
-           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration 
+           NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
+           FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
            FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
            FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
            FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
@@ -1376,7 +1376,7 @@
              NI = TRIGP(IE,:)
              KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
            END DO ! IE
-           DTMAXEXP = 1E10 ! initialize to large number 
+           DTMAXEXP = 1E10 ! initialize to large number
            DO IP = 1, NX
              DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
              DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
@@ -1392,7 +1392,7 @@
            END IF
          END IF ! LCALC
 
-         DT4AI = DBLE(DT)/DBLE(ITER(IK,ITH)) 
+         DT4AI = DBLE(DT)/DBLE(ITER(IK,ITH))
          DTSI(:)  = DT4AI/SI(:) ! Some precalculations for the time integration.
 
          U = AC
@@ -1403,8 +1403,8 @@
          DO IT = 1, ITER(IK,ITH)
 
            ST = 0.d0
-         
-           DO IE = 1, NTRI 
+
+           DO IE = 1, NTRI
               NI      = TRIGP(IE,:)
               UTMP    = U(NI)
               FT      =  - ONESIXTH*DOT_PRODUCT(UTMP,FLALL(:,IE))
@@ -1431,33 +1431,33 @@
               THETA_ACE(:,IE) = ((THETA_H(:,IE) - THETA_L(:,IE))) * DT4AI/SI(NI)
               ST(NI)          = ST(NI) + THETA_L(:,IE)*DT4AI/SI(NI)
             END DO
-         
+
 !            UL          = MAX(0.d0,U-ST)*DBLE(IOBPD(ITH,:))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
-         
+
             DO IP = 1,NX
               UL(IP) = MAX(0.d0,U(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
               END DO
-         
+
             USTARI(1,:) = MAX(UL,U)
             USTARI(2,:) = MIN(UL,U)
-         
+
             UIP = -THR8
             UIM =  THR8
             PP  = 0.d0
             PM  = 0.d0
-            DO IE = 1, NTRI 
+            DO IE = 1, NTRI
               NI = TRIGP(IE,:)
-              PP(NI)  = PP(NI) + MAX(  THR8, -THETA_ACE(:,IE)) 
-              PM(NI)  = PM(NI) + MIN( -THR8, -THETA_ACE(:,IE)) 
+              PP(NI)  = PP(NI) + MAX(  THR8, -THETA_ACE(:,IE))
+              PM(NI)  = PM(NI) + MIN( -THR8, -THETA_ACE(:,IE))
               UIP(NI) = MAX (UIP(NI), MAXVAL( USTARI(1,NI) ))
               UIM(NI) = MIN (UIM(NI), MINVAL( USTARI(2,NI) ))
             END DO
-         
+
             WII(1,:) = MIN(1.0d0,(UIP-UL)/MAX( THR8,PP))
             WII(2,:) = MIN(1.0d0,(UIM-UL)/MIN(-THR8,PM))
-         
+
             ST = 0.d0
-            DO IE = 1, NTRI 
+            DO IE = 1, NTRI
               DO I = 1, 3
                 IP = TRIGP(IE,I)
                 IF (-THETA_ACE(I,IE) .GE. 0.) THEN
@@ -1470,23 +1470,23 @@
               NI = TRIGP(IE,:)
               ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
             END DO
-         
+
             DO IP = 1,NX
 !
-! IOBPD is the switch for removing energy coming from the shoreline 
+! IOBPD is the switch for removing energy coming from the shoreline
 !
-              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP)) 
-!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
+              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
+!/REF1               IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
                END DO
 !
-! update spectrum 
+! update spectrum
              AC = U
 !
-! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
 !
              IF ( FLBPI ) THEN
 !
-! 4.1 In this case the boundary is read from the nest.ww3 file 
+! 4.1 In this case the boundary is read from the nest.ww3 file
 !
                RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
                RD2=RD20
@@ -1498,7 +1498,7 @@
                  RD2    = 1.
                  END IF
 !
-! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
 !
                 DO IBI=1, NBI
                   IP = MAPSF(ISBPI(IBI),1)
@@ -1508,18 +1508,18 @@
 
               ENDIF
 !
-           END DO ! End of loop on time steps      
+           END DO ! End of loop on time steps
 !      CALL EXTCDE ( 99 )
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE W3XYPFSFCT2 
+      END SUBROUTINE W3XYPFSFCT2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SETDEPTH
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -1590,8 +1590,8 @@
      END SUBROUTINE
 
 !/ ------------------------------------------------------------------- /
-        
-END MODULE W3PROFSMD 
+
+END MODULE W3PROFSMD
 
 
 !--------------------------------------------------------------------------
@@ -1649,7 +1649,7 @@ END MODULE W3PROFSMD
 !       BCGSTAB == 8 * n
 !       TFQMR   == 11 * n
 !       FOM     == (n+3)*(m+2) + (m+1)*m/2 (m = ipar(5), default m=15)
-!       GMRES   == (n+3)*(m+2) + (m+1)*m/2 (m = ipar(5), default m=15) 
+!       GMRES   == (n+3)*(m+2) + (m+1)*m/2 (m = ipar(5), default m=15)
 !          GMRES is no longer available
 !       FGMRES  == 2*n*(m+1) + (m+1)*m/2 + 3*m + 2 (m = ipar(5),
 !                  default m=15)
@@ -2289,7 +2289,7 @@ END MODULE W3PROFSMD
 
       integer   :: k,np,n,npm1,j,ju,indp,lbp
       real*8    :: p(n,lbp), y(*), u(*), usav(*), x, flops
-      
+
 !-----------------------------------------------------------------------
 !     updates the conjugate directions p given the upper part of the
 !     banded upper triangular matrix u.  u contains the non zero
@@ -2434,7 +2434,7 @@ END MODULE W3PROFSMD
       parameter(zero=0.0D0)
 !
       if (ipar(12).ne.0) then
-         ipar(1) = ipar(12) 
+         ipar(1) = ipar(12)
       else if (ipar(1).gt.0) then
          if ((ipar(3).eq.999 .and. ipar(11).eq.1) .or. &
      &        fpar(6).le.fpar(4)) then
@@ -2445,7 +2445,7 @@ END MODULE W3PROFSMD
             ipar(1) = -10
          endif
       endif
-      if (fpar(3).gt.zero .and. fpar(6).gt.zero .and. ipar(7).gt.ipar(13)) then 
+      if (fpar(3).gt.zero .and. fpar(6).gt.zero .and. ipar(7).gt.ipar(13)) then
         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
       else
          fpar(7) = zero
@@ -2667,7 +2667,7 @@ END MODULE W3PROFSMD
 !
       nrm1 = sqrt(ddot(n,vec(1,ind),vec(1,ind)))
       ops = ops + n + n
-      hh(ind) = nrm1    ! statement label 75 
+      hh(ind) = nrm1    ! statement label 75
       if (nrm1.le.zero) then
          ierr = -3
          return
@@ -2720,12 +2720,12 @@ END MODULE W3PROFSMD
 !----------------------------------------------------------------------c
 ! 1)     M A T R I X    B Y    V E C T O R     P R O D U C T S         c
 !----------------------------------------------------------------------c
-      subroutine amux (n, x, y, a,ja,ia) 
-      real*8  x(*), y(*), a(*) 
+      subroutine amux (n, x, y, a,ja,ia)
+      real*8  x(*), y(*), a(*)
       integer n, ja(*), ia(*)
 !-----------------------------------------------------------------------
 !         A times a vector
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 ! multiplies a matrix by a vector using the dot product form
 ! Matrix A is stored in compressed sparse row storage.
 !
@@ -2750,13 +2750,13 @@ END MODULE W3PROFSMD
       do 100 i = 1,n
 !
 !     compute the inner product of row i with vector x
-! 
+!
          t = 0.0d0
          do 99 k=ia(i), ia(i+1)-1
             t = t + a(k)*x(ja(k))
  99      continue
 !
-!     store result in y(i) 
+!     store result in y(i)
 !
          y(i) = t
  100  continue
@@ -2809,11 +2809,11 @@ END MODULE W3PROFSMD
       end
 !-----------------------------------------------------------------------
       subroutine atmux (n, x, y, a, ja, ia)
-      real*8 x(*), y(*), a(*) 
+      real*8 x(*), y(*), a(*)
       integer n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 ! multiplies the transpose of a matrix by a vector when the original
 ! matrix is stored in compressed sparse row storage. Can also be
 ! viewed as the product of a matrix by a vector when the original
@@ -2833,13 +2833,13 @@ END MODULE W3PROFSMD
 ! y     = real array of length n, containing the product y=transp(A)*x
 !
 !-----------------------------------------------------------------------
-!     local variables 
+!     local variables
 !
-      integer i, k 
+      integer i, k
 !-----------------------------------------------------------------------
 !
 !     zero out output vector
-! 
+!
       do 1 i=1,n
          y(i) = 0.0
  1    continue
@@ -2847,24 +2847,24 @@ END MODULE W3PROFSMD
 ! loop over the rows
 !
       do 100 i = 1,n
-         do 99 k=ia(i), ia(i+1)-1 
+         do 99 k=ia(i), ia(i+1)-1
             y(ja(k)) = y(ja(k)) + x(i)*a(k)
  99      continue
  100  continue
 !
       return
-!-------------end-of-atmux---------------------------------------------- 
+!-------------end-of-atmux----------------------------------------------
 !-----------------------------------------------------------------------
       end
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
       subroutine atmuxr (m, n, x, y, a, ja, ia)
-      real*8 x(*), y(*), a(*) 
+      real*8 x(*), y(*), a(*)
       integer m, n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector, A can be rectangular
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 ! See also atmux.  The essential difference is how the solution vector
-! is initially zeroed.  If using this to multiply rectangular CSC 
+! is initially zeroed.  If using this to multiply rectangular CSC
 ! matrices by a vector, m number of rows, n is number of columns.
 !-----------------------------------------------------------------------
 !
@@ -2882,13 +2882,13 @@ END MODULE W3PROFSMD
 ! y     = real array of length n, containing the product y=transp(A)*x
 !
 !-----------------------------------------------------------------------
-!     local variables 
+!     local variables
 !
-      integer i, k 
+      integer i, k
 !-----------------------------------------------------------------------
 !
 !     zero out output vector
-! 
+!
       do 1 i=1,m
          y(i) = 0.0
  1    continue
@@ -2896,26 +2896,26 @@ END MODULE W3PROFSMD
 ! loop over the rows
 !
       do 100 i = 1,n
-         do 99 k=ia(i), ia(i+1)-1 
+         do 99 k=ia(i), ia(i+1)-1
             y(ja(k)) = y(ja(k)) + x(i)*a(k)
  99      continue
  100  continue
 !
       return
-!-------------end-of-atmuxr--------------------------------------------- 
+!-------------end-of-atmuxr---------------------------------------------
 !-----------------------------------------------------------------------
       end
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
       subroutine amuxe (n,x,y,na,ncol,a,ja)
         implicit none
 
       integer     :: n, na, ncol, ja(na,*)
       real*8      :: x(n), y(n), a(na,*)
-      
+
 !-----------------------------------------------------------------------
-!        A times a vector in Ellpack Itpack format (ELL)               
-!----------------------------------------------------------------------- 
-! multiplies a matrix by a vector when the original matrix is stored 
+!        A times a vector in Ellpack Itpack format (ELL)
+!-----------------------------------------------------------------------
+! multiplies a matrix by a vector when the original matrix is stored
 ! in the ellpack-itpack sparse format.
 !-----------------------------------------------------------------------
 !
@@ -2930,7 +2930,7 @@ END MODULE W3PROFSMD
 !         (i.e., the number of generalized diagonals in matrix.)
 ! a, ja = the real and integer arrays of the itpack format
 !         (a(i,k),k=1,ncol contains the elements of row i in matrix
-!          ja(i,k),k=1,ncol contains their column numbers) 
+!          ja(i,k),k=1,ncol contains their column numbers)
 !
 ! on return:
 !-----------
@@ -2939,10 +2939,10 @@ END MODULE W3PROFSMD
 !-----------------------------------------------------------------------
 ! local variables
 !
-      integer i, j 
+      integer i, j
 !-----------------------------------------------------------------------
       do 1 i=1, n
-         y(i) = 0.0 
+         y(i) = 0.0
  1    continue
       do 10 j=1,ncol
          do 25 i = 1,n
@@ -2951,17 +2951,17 @@ END MODULE W3PROFSMD
  10   continue
 !
       return
-!--------end-of-amuxe--------------------------------------------------- 
+!--------end-of-amuxe---------------------------------------------------
 !-----------------------------------------------------------------------
       end
 !-----------------------------------------------------------------------
-      subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff) 
-      integer n, ndiag, idiag, ioff(idiag) 
+      subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
+      integer n, ndiag, idiag, ioff(idiag)
       real*8 x(n), y(n), diag(ndiag,idiag)
 !-----------------------------------------------------------------------
-!        A times a vector in Diagonal storage format (DIA) 
-!----------------------------------------------------------------------- 
-! multiplies a matrix by a vector when the original matrix is stored 
+!        A times a vector in Diagonal storage format (DIA)
+!-----------------------------------------------------------------------
+! multiplies a matrix by a vector when the original matrix is stored
 ! in the diagonal storage format.
 !-----------------------------------------------------------------------
 !
@@ -2976,7 +2976,7 @@ END MODULE W3PROFSMD
 ! diag   = real array containing the diagonals stored of A.
 ! idiag  = number of diagonals in matrix.
 ! diag   = real array of size (ndiag x idiag) containing the diagonals
-!          
+!
 ! ioff   = integer array of length idiag, containing the offsets of the
 !          diagonals of the matrix:
 !          diag(i,k) contains the element a(i,i+ioff(k)) of the matrix.
@@ -2986,9 +2986,9 @@ END MODULE W3PROFSMD
 ! y     = real array of length n, containing the product y=A*x
 !
 !-----------------------------------------------------------------------
-!       local variables 
+!       local variables
 !
-      integer j, k, io, i1, i2 
+      integer j, k, io, i1, i2
 !-----------------------------------------------------------------------
       do 1 j=1, n
          y(j) = 0.0d0
@@ -2997,11 +2997,11 @@ END MODULE W3PROFSMD
          io = ioff(j)
          i1 = max0(1,1-io)
          i2 = min0(n,n-io)
-         do 9 k=i1, i2  
+         do 9 k=i1, i2
             y(k) = y(k)+diag(k,j)*x(k+io)
  9       continue
  10   continue
-! 
+!
       return
 !----------end-of-amuxd-------------------------------------------------
 !-----------------------------------------------------------------------
@@ -3011,9 +3011,9 @@ END MODULE W3PROFSMD
       integer n, jdiag, ja(*), ia(*)
       real*8 x(n), y(n), a(*)
 !-----------------------------------------------------------------------
-!        A times a vector in Jagged-Diagonal storage format (JAD) 
-!----------------------------------------------------------------------- 
-! multiplies a matrix by a vector when the original matrix is stored 
+!        A times a vector in Jagged-Diagonal storage format (JAD)
+!-----------------------------------------------------------------------
+! multiplies a matrix by a vector when the original matrix is stored
 ! in the jagged diagonal storage format.
 !-----------------------------------------------------------------------
 !
@@ -3024,8 +3024,8 @@ END MODULE W3PROFSMD
 !         the A matrix.
 ! jdiag  = integer. The number of jadded-diagonals in the data-structure.
 ! a      = real array containing the jadded diagonals of A stored
-!          in succession (in decreasing lengths) 
-! j      = integer array containing the colum indices of the 
+!          in succession (in decreasing lengths)
+! j      = integer array containing the colum indices of the
 !          corresponding elements in a.
 ! ia     = integer array containing the lengths of the  jagged diagonals
 !
@@ -3034,16 +3034,16 @@ END MODULE W3PROFSMD
 ! y      = real array of length n, containing the product y=A*x
 !
 ! Note:
-!------- 
+!-------
 ! Permutation related to the JAD format is not performed.
 ! this can be done by:
-!     call permvec (n,y,y,iperm) 
+!     call permvec (n,y,y,iperm)
 ! after the call to amuxj, where iperm is the permutation produced
 ! by csrjad.
 !-----------------------------------------------------------------------
-! local variables 
+! local variables
 !
-      integer i, ii, k1, ilen, j 
+      integer i, ii, k1, ilen, j
 !-----------------------------------------------------------------------
       do 1 i=1, n
          y(i) = 0.0d0
@@ -3052,12 +3052,12 @@ END MODULE W3PROFSMD
          k1 = ia(ii)-1
          ilen = ia(ii+1)-k1-1
          do 60 j=1,ilen
-            y(j)= y(j)+a(k1+j)*x(ja(k1+j)) 
+            y(j)= y(j)+a(k1+j)*x(ja(k1+j))
  60      continue
  70   continue
 !
       return
-!----------end-of-amuxj------------------------------------------------- 
+!----------end-of-amuxj-------------------------------------------------
 !-----------------------------------------------------------------------
       end
 !-----------------------------------------------------------------------
@@ -3116,85 +3116,85 @@ END MODULE W3PROFSMD
 ! 2)     T R I A N G U L A R    S Y S T E M    S O L U T I O N S       c
 !----------------------------------------------------------------------c
       subroutine lsol (n,x,y,al,jal,ial)
-      integer n, jal(*),ial(n+1) 
-      real*8  x(n), y(n), al(*) 
+      integer n, jal(*),ial(n+1)
+      real*8  x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !   solves    L x = y ; L = lower unit triang. /  CSR format
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 ! solves a unit lower triangular system by standard (sequential )
-! forward elimination - matrix stored in CSR format. 
+! forward elimination - matrix stored in CSR format.
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right side.
 !
 ! al,
 ! jal,
 ! ial,    = Lower triangular matrix stored in compressed sparse row
-!          format. 
+!          format.
 !
 ! On return:
-!----------- 
+!-----------
 !          x  = The solution of  L x  = y.
 !--------------------------------------------------------------------
-! local variables 
+! local variables
 !
-      integer k, j 
+      integer k, j
       real*8  t
 !-----------------------------------------------------------------------
-      x(1) = y(1) 
+      x(1) = y(1)
       do 150 k = 2, n
-         t = y(k) 
+         t = y(k)
          do 100 j = ial(k), ial(k+1)-1
             t = t-al(j)*x(jal(j))
  100     continue
-         x(k) = t 
+         x(k) = t
  150  continue
 !
       return
-!----------end-of-lsol-------------------------------------------------- 
+!----------end-of-lsol--------------------------------------------------
 !-----------------------------------------------------------------------
       end
-!----------------------------------------------------------------------- 
-      subroutine ldsol (n,x,y,al,jal) 
-      integer n, jal(*) 
-      real*8 x(n), y(n), al(*) 
-!----------------------------------------------------------------------- 
-!     Solves L x = y    L = triangular. MSR format 
 !-----------------------------------------------------------------------
-! solves a (non-unit) lower triangular system by standard (sequential) 
-! forward elimination - matrix stored in MSR format 
+      subroutine ldsol (n,x,y,al,jal)
+      integer n, jal(*)
+      real*8 x(n), y(n), al(*)
+!-----------------------------------------------------------------------
+!     Solves L x = y    L = triangular. MSR format
+!-----------------------------------------------------------------------
+! solves a (non-unit) lower triangular system by standard (sequential)
+! forward elimination - matrix stored in MSR format
 ! with diagonal elements already inverted (otherwise do inversion,
 ! al(1:n) = 1.0/al(1:n),  before calling ldsol).
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right hand side.
 !
 ! al,
-! jal,   = Lower triangular matrix stored in Modified Sparse Row 
-!          format. 
+! jal,   = Lower triangular matrix stored in Modified Sparse Row
+!          format.
 !
 ! On return:
-!----------- 
+!-----------
 !        x = The solution of  L x = y .
 !--------------------------------------------------------------------
-! local variables 
+! local variables
 !
-      integer k, j 
-      real*8 t 
+      integer k, j
+      real*8 t
 !-----------------------------------------------------------------------
-      x(1) = y(1)*al(1) 
+      x(1) = y(1)*al(1)
       do 150 k = 2, n
-         t = y(k) 
+         t = y(k)
          do 100 j = jal(k), jal(k+1)-1
             t = t - al(j)*x(jal(j))
  100     continue
-         x(k) = al(k)*t 
+         x(k) = al(k)*t
  150  continue
       return
 !----------end-of-ldsol-------------------------------------------------
@@ -3202,63 +3202,63 @@ END MODULE W3PROFSMD
       end
 !-----------------------------------------------------------------------
       subroutine lsolc (n,x,y,al,jal,ial)
-      integer n, jal(*),ial(*) 
-      real*8  x(n), y(n), al(*) 
+      integer n, jal(*),ial(*)
+      real*8  x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !       SOLVES     L x = y ;    where L = unit lower trang. CSC format
 !-----------------------------------------------------------------------
 ! solves a unit lower triangular system by standard (sequential )
-! forward elimination - matrix stored in CSC format. 
+! forward elimination - matrix stored in CSC format.
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real*8 array containg the right side.
 !
 ! al,
 ! jal,
-! ial,    = Lower triangular matrix stored in compressed sparse column 
-!          format. 
+! ial,    = Lower triangular matrix stored in compressed sparse column
+!          format.
 !
 ! On return:
-!----------- 
+!-----------
 !         x  = The solution of  L x  = y.
 !-----------------------------------------------------------------------
-! local variables 
+! local variables
 !
       integer k, j
       real*8 t
 !-----------------------------------------------------------------------
       do 140 k=1,n
-         x(k) = y(k) 
+         x(k) = y(k)
  140  continue
       do 150 k = 1, n-1
-         t = x(k) 
+         t = x(k)
          do 100 j = ial(k), ial(k+1)-1
-            x(jal(j)) = x(jal(j)) - t*al(j) 
+            x(jal(j)) = x(jal(j)) - t*al(j)
  100     continue
  150  continue
 !
       return
-!----------end-of-lsolc------------------------------------------------- 
+!----------end-of-lsolc-------------------------------------------------
 !-----------------------------------------------------------------------
       end
 !-----------------------------------------------------------------------
-      subroutine ldsolc (n,x,y,al,jal) 
+      subroutine ldsolc (n,x,y,al,jal)
       integer n, jal(*)
       real*8 x(n), y(n), al(*)
 !-----------------------------------------------------------------------
-!    Solves     L x = y ;    L = nonunit Low. Triang. MSC format 
-!----------------------------------------------------------------------- 
-! solves a (non-unit) lower triangular system by standard (sequential) 
-! forward elimination - matrix stored in Modified Sparse Column format 
+!    Solves     L x = y ;    L = nonunit Low. Triang. MSC format
+!-----------------------------------------------------------------------
+! solves a (non-unit) lower triangular system by standard (sequential)
+! forward elimination - matrix stored in Modified Sparse Column format
 ! with diagonal elements already inverted (otherwise do inversion,
 ! al(1:n) = 1.0/al(1:n),  before calling ldsol).
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right hand side.
 !
@@ -3268,45 +3268,45 @@ END MODULE W3PROFSMD
 !           format.
 !
 ! On return:
-!----------- 
+!-----------
 !         x = The solution of  L x = y .
 !--------------------------------------------------------------------
 ! local variables
 !
       integer k, j
-      real*8 t 
+      real*8 t
 !-----------------------------------------------------------------------
       do 140 k=1,n
-         x(k) = y(k) 
+         x(k) = y(k)
  140  continue
-      do 150 k = 1, n 
-         x(k) = x(k)*al(k) 
-         t = x(k) 
+      do 150 k = 1, n
+         x(k) = x(k)*al(k)
+         t = x(k)
          do 100 j = jal(k), jal(k+1)-1
-            x(jal(j)) = x(jal(j)) - t*al(j) 
+            x(jal(j)) = x(jal(j)) - t*al(j)
  100     continue
  150  continue
 !
       return
-!----------end-of-lsolc------------------------------------------------ 
+!----------end-of-lsolc------------------------------------------------
 !-----------------------------------------------------------------------
       end
-!-----------------------------------------------------------------------  
-      subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev) 
+!-----------------------------------------------------------------------
+      subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
       integer n, nlev, jal(*), ilev(nlev+1), lev(n)
       real*8 x(n), y(n), al(*)
 !-----------------------------------------------------------------------
-!    Solves L x = y    L = triangular. Uses LEVEL SCHEDULING/MSR format 
+!    Solves L x = y    L = triangular. Uses LEVEL SCHEDULING/MSR format
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right hand side.
 !
 ! al,
-! jal,   = Lower triangular matrix stored in Modified Sparse Row 
-!          format. 
+! jal,   = Lower triangular matrix stored in Modified Sparse Row
+!          format.
 ! nlev   = number of levels in matrix
 ! lev    = integer array of length n, containing the permutation
 !          that defines the levels in the level scheduling ordering.
@@ -3316,28 +3316,28 @@ END MODULE W3PROFSMD
 !          ordering.
 !
 ! On return:
-!----------- 
+!-----------
 !        x = The solution of  L x = y .
 !--------------------------------------------------------------------
       integer ii, jrow, i, k
-      real*8 t 
-!     
+      real*8 t
+!
 !     outer loop goes through the levels. (SEQUENTIAL loop)
-!     
+!
       do 150 ii=1, nlev
-!     
+!
 !     next loop executes within the same level. PARALLEL loop
-!     
-         do 100 i=ilev(ii), ilev(ii+1)-1 
+!
+         do 100 i=ilev(ii), ilev(ii+1)-1
             jrow = lev(i)
 !
 ! compute inner product of row jrow with x
-! 
-            t = y(jrow) 
-            do 130 k=jal(jrow), jal(jrow+1)-1 
+!
+            t = y(jrow)
+            do 130 k=jal(jrow), jal(jrow+1)-1
                t = t - al(k)*x(jal(k))
  130        continue
-            x(jrow) = t*al(jrow) 
+            x(jrow) = t*al(jrow)
  100     continue
  150  continue
       return
@@ -3345,150 +3345,150 @@ END MODULE W3PROFSMD
       end
 !-----------------------------------------------------------------------
       subroutine usol (n,x,y,au,jau,iau)
-      integer n, jau(*),iau(n+1) 
-      real*8  x(n), y(n), au(*) 
-!----------------------------------------------------------------------- 
-!             Solves   U x = y    U = unit upper triangular. 
+      integer n, jau(*),iau(n+1)
+      real*8  x(n), y(n), au(*)
+!-----------------------------------------------------------------------
+!             Solves   U x = y    U = unit upper triangular.
 !-----------------------------------------------------------------------
 ! solves a unit upper triangular system by standard (sequential )
-! backward elimination - matrix stored in CSR format. 
+! backward elimination - matrix stored in CSR format.
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right side.
 !
 ! au,
 ! jau,
 ! iau,    = Lower triangular matrix stored in compressed sparse row
-!          format. 
+!          format.
 !
 ! On return:
-!----------- 
-!         x = The solution of  U x = y . 
-!-------------------------------------------------------------------- 
-! local variables 
+!-----------
+!         x = The solution of  U x = y .
+!--------------------------------------------------------------------
+! local variables
 !
-      integer k, j 
+      integer k, j
       real*8  t
 !-----------------------------------------------------------------------
-      x(n) = y(n) 
-      do 150 k = n-1,1,-1 
-         t = y(k) 
+      x(n) = y(n)
+      do 150 k = n-1,1,-1
+         t = y(k)
          do 100 j = iau(k), iau(k+1)-1
             t = t - au(j)*x(jau(j))
  100     continue
-         x(k) = t 
+         x(k) = t
  150  continue
 !
       return
-!----------end-of-usol-------------------------------------------------- 
+!----------end-of-usol--------------------------------------------------
 !-----------------------------------------------------------------------
       end
-!----------------------------------------------------------------------- 
-      subroutine udsol (n,x,y,au,jau) 
-      integer n, jau(*) 
-      real*8  x(n), y(n),au(*) 
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
+      subroutine udsol (n,x,y,au,jau)
+      integer n, jau(*)
+      real*8  x(n), y(n),au(*)
+!-----------------------------------------------------------------------
 !             Solves   U x = y  ;   U = upper triangular in MSR format
 !-----------------------------------------------------------------------
 ! solves a non-unit upper triangular matrix by standard (sequential )
-! backward elimination - matrix stored in MSR format. 
+! backward elimination - matrix stored in MSR format.
 ! with diagonal elements already inverted (otherwise do inversion,
 ! au(1:n) = 1.0/au(1:n),  before calling).
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real array containg the right side.
 !
 ! au,
 ! jau,    = Lower triangular matrix stored in modified sparse row
-!          format. 
+!          format.
 !
 ! On return:
-!----------- 
+!-----------
 !         x = The solution of  U x = y .
 !--------------------------------------------------------------------
-! local variables 
+! local variables
 !
       integer k, j
       real*8 t
 !-----------------------------------------------------------------------
       x(n) = y(n)*au(n)
       do 150 k = n-1,1,-1
-         t = y(k) 
+         t = y(k)
          do 100 j = jau(k), jau(k+1)-1
             t = t - au(j)*x(jau(j))
  100     continue
-         x(k) = au(k)*t 
+         x(k) = au(k)*t
  150  continue
 !
       return
 !----------end-of-udsol-------------------------------------------------
 !-----------------------------------------------------------------------
       end
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
       subroutine usolc (n,x,y,au,jau,iau)
-      real*8  x(*), y(*), au(*) 
+      real*8  x(*), y(*), au(*)
       integer n, jau(*),iau(*)
 !-----------------------------------------------------------------------
 !       SOUVES     U x = y ;    where U = unit upper trang. CSC format
 !-----------------------------------------------------------------------
 ! solves a unit upper triangular system by standard (sequential )
-! forward elimination - matrix stored in CSC format. 
+! forward elimination - matrix stored in CSC format.
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real*8 array containg the right side.
 !
 ! au,
 ! jau,
-! iau,    = Uower triangular matrix stored in compressed sparse column 
-!          format. 
+! iau,    = Uower triangular matrix stored in compressed sparse column
+!          format.
 !
 ! On return:
-!----------- 
+!-----------
 !         x  = The solution of  U x  = y.
 !-----------------------------------------------------------------------
-! local variables 
-!     
+! local variables
+!
       integer k, j
       real*8 t
 !-----------------------------------------------------------------------
       do 140 k=1,n
-         x(k) = y(k) 
+         x(k) = y(k)
  140  continue
       do 150 k = n,1,-1
-         t = x(k) 
+         t = x(k)
          do 100 j = iau(k), iau(k+1)-1
-            x(jau(j)) = x(jau(j)) - t*au(j) 
+            x(jau(j)) = x(jau(j)) - t*au(j)
  100     continue
  150  continue
 !
       return
-!----------end-of-usolc------------------------------------------------- 
+!----------end-of-usolc-------------------------------------------------
 !-----------------------------------------------------------------------
       end
 !-----------------------------------------------------------------------
-      subroutine udsolc (n,x,y,au,jau)   
-      integer n, jau(*) 
-      real*8 x(n), y(n), au(*)  
+      subroutine udsolc (n,x,y,au,jau)
+      integer n, jau(*)
+      real*8 x(n), y(n), au(*)
 !-----------------------------------------------------------------------
-!    Solves     U x = y ;    U = nonunit Up. Triang. MSC format 
-!----------------------------------------------------------------------- 
-! solves a (non-unit) upper triangular system by standard (sequential) 
-! forward elimination - matrix stored in Modified Sparse Column format 
+!    Solves     U x = y ;    U = nonunit Up. Triang. MSC format
+!-----------------------------------------------------------------------
+! solves a (non-unit) upper triangular system by standard (sequential)
+! forward elimination - matrix stored in Modified Sparse Column format
 ! with diagonal elements already inverted (otherwise do inversion,
 ! auuuul(1:n) = 1.0/au(1:n),  before calling ldsol).
 !-----------------------------------------------------------------------
 !
 ! On entry:
-!---------- 
+!----------
 ! n      = integer. dimension of problem.
 ! y      = real*8 array containg the right hand side.
 !
@@ -3497,27 +3497,27 @@ END MODULE W3PROFSMD
 !          format.
 !
 ! On return:
-!----------- 
+!-----------
 !         x = The solution of  U x = y .
 !--------------------------------------------------------------------
-! local variables 
-! 
+! local variables
+!
       integer k, j
       real*8 t
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
       do 140 k=1,n
-         x(k) = y(k) 
+         x(k) = y(k)
  140  continue
       do 150 k = n,1,-1
-         x(k) = x(k)*au(k) 
-         t = x(k) 
+         x(k) = x(k)*au(k)
+         t = x(k)
          do 100 j = jau(k), jau(k+1)-1
-            x(jau(j)) = x(jau(j)) - t*au(j) 
+            x(jau(j)) = x(jau(j)) - t*au(j)
  100     continue
  150  continue
 !
       return
-!----------end-of-udsolc------------------------------------------------ 
+!----------end-of-udsolc------------------------------------------------
 !-----------------------------------------------------------------------
       end
 !-----------------------------------------------------------------------
@@ -3526,7 +3526,7 @@ END MODULE W3PROFSMD
 
         integer    :: n, jlu(*), ju(*)
         real*8     :: x(n), y(n), alu(*)
-        
+
 !-----------------------------------------------------------------------
         integer    :: i,k
 !
@@ -3549,12 +3549,12 @@ END MODULE W3PROFSMD
 !----------------end of lusol ------------------------------------------
         end
 !-----------------------------------------------------------------------
-        subroutine lutsol(n, y, x, alu, jlu, ju) 
+        subroutine lutsol(n, y, x, alu, jlu, ju)
           implicit none
 
         integer     :: n, jlu(*), ju(*)
         real*8      :: x(n), y(n), alu(*)
-        
+
 !-----------------------------------------------------------------------
 ! local variables
 !
@@ -3572,10 +3572,10 @@ END MODULE W3PROFSMD
               x(jlu(k)) = x(jlu(k)) - alu(k)* x(i)
  30        continue
  20     continue
-!     
+!
 !     backward solve (with L^T)
-!     
-        do 40 i = n, 1, -1 
+!
+        do 40 i = n, 1, -1
            do 50 k=jlu(i),ju(i)-1
               x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
  50        continue
@@ -3585,13 +3585,13 @@ END MODULE W3PROFSMD
 !----------------end of lutsol -----------------------------------------
 !-----------------------------------------------------------------------
          end
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
         subroutine qsplit(a,ind,n,ncut)
           implicit none
 
         integer    :: n, ind(n), ncut
         real*8     :: a(n)
-        
+
 !-----------------------------------------------------------------------
 !     does a quick-sort split of a real array.
 !     on input a(1:n). is a real array
@@ -3729,8 +3729,8 @@ END MODULE W3PROFSMD
 !
       subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
 !-----------------------------------------------------------------------
-      implicit none 
-      integer n 
+      implicit none
+      integer n
       real*8 a(*),alu(*),w(n+1),droptol
       integer ja(*),ia(n+1),jlu(*),ju(n),jw(2*n),lfil,iwk,ierr
 !----------------------------------------------------------------------*
@@ -3739,28 +3739,28 @@ END MODULE W3PROFSMD
 !----------------------------------------------------------------------*
 !     Author: Yousef Saad *May, 5, 1990, Latest revision, August 1996  *
 !----------------------------------------------------------------------*
-! PARAMETERS                                                           
-!-----------                                                           
+! PARAMETERS
+!-----------
 !
 ! on entry:
-!========== 
-! n       = integer. The row dimension of the matrix A. The matrix 
+!==========
+! n       = integer. The row dimension of the matrix A. The matrix
 !
-! a,ja,ia = matrix stored in Compressed Sparse Row format.              
+! a,ja,ia = matrix stored in Compressed Sparse Row format.
 !
 ! lfil    = integer. The fill-in parameter. Each row of L and each row
-!           of U will have a maximum of lfil elements (excluding the 
+!           of U will have a maximum of lfil elements (excluding the
 !           diagonal element). lfil must be .ge. 0.
 !           ** WARNING: THE MEANING OF LFIL HAS CHANGED WITH RESPECT TO
-!           EARLIER VERSIONS. 
+!           EARLIER VERSIONS.
 !
 ! droptol = real*8. Sets the threshold for dropping small terms in the
 !           factorization. See below for details on dropping strategy.
 !
-!  
+!
 ! iwk     = integer. The lengths of arrays alu and jlu. If the arrays
 !           are not big enough to store the ILU factorizations, ilut
-!           will stop with an error message. 
+!           will stop with an error message.
 !
 ! On return:
 !===========
@@ -3789,24 +3789,24 @@ END MODULE W3PROFSMD
 !=============
 ! jw      = integer work array of length 2*n.
 ! w       = real work array of length n+1.
-!  
+!
 !----------------------------------------------------------------------
-! w, ju (1:n) store the working array [1:ii-1 = L-part, ii:n = u] 
+! w, ju (1:n) store the working array [1:ii-1 = L-part, ii:n = u]
 ! jw(n+1:2n)  stores nonzero indicators
-! 
+!
 ! Notes:
 ! ------
 ! The diagonal elements of the input matrix must be  nonzero (at least
-! 'structurally'). 
+! 'structurally').
 !
-!----------------------------------------------------------------------* 
+!----------------------------------------------------------------------*
 !---- Dual drop strategy works as follows.                             *
 !                                                                      *
 !     1) Theresholding in L and U as set by droptol. Any element whose *
 !        magnitude is less than some tolerance (relative to the abs    *
 !        value of diagonal element in u) is dropped.                   *
 !                                                                      *
-!     2) Keeping only the largest lfil elements in the i-th row of L   * 
+!     2) Keeping only the largest lfil elements in the i-th row of L   *
 !        and the largest lfil elements in the i-th row of U (excluding *
 !        diagonal elements).                                           *
 !                                                                      *
@@ -3816,8 +3816,8 @@ END MODULE W3PROFSMD
 ! (however, fill-in is then mpredictible).                             *
 !----------------------------------------------------------------------*
 !     locals
-      integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,lenn 
-      real*8 tnorm, t, abs, s, fact 
+      integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,lenn
+      real*8 tnorm, t, abs, s, fact
       if (lfil .lt. 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
@@ -3826,7 +3826,7 @@ END MODULE W3PROFSMD
       ju0 = n+2
       jlu(1) = ju0
 !
-!     initialize nonzero indicator array. 
+!     initialize nonzero indicator array.
 !
       do 1 j=1,n
          jw(n+j)  = 0
@@ -3846,9 +3846,9 @@ END MODULE W3PROFSMD
          if (abs(tnorm) .lt. tiny(1.)) goto 999
 
          tnorm = tnorm/real(j2-j1+1)
-!     
-!     unpack L-part and U-part of row of A in arrays w 
-!     
+!
+!     unpack L-part and U-part of row of A in arrays w
+!
          lenu = 1
          lenl = 0
          jw(ii) = ii
@@ -3867,17 +3867,17 @@ END MODULE W3PROFSMD
                w(ii) = t
             else
                lenu = lenu+1
-               jpos = ii+lenu-1 
+               jpos = ii+lenu-1
                jw(jpos) = k
                w(jpos) = t
                jw(n+k) = jpos
             endif
  170     continue
          jj = 0
-         lenn = 0 
-!     
+         lenn = 0
+!
 !     eliminate previous rows
-!     
+!
  150     jj = jj+1
          if (jj .gt. lenl) goto 160
 !-----------------------------------------------------------------------
@@ -3886,9 +3886,9 @@ END MODULE W3PROFSMD
 !-----------------------------------------------------------------------
          jrow = jw(jj)
          k = jj
-!     
+!
 !     determine smallest column index
-!     
+!
          do 151 j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
@@ -3911,14 +3911,14 @@ END MODULE W3PROFSMD
          endif
 !
 !     zero out element in row by setting jw(n+jrow) to zero.
-!     
+!
          jw(n+jrow) = 0
 !
 !     get the multiplier for row to be eliminated (jrow).
-!     
+!
          fact = w(jj)*alu(jrow)
          if (abs(fact) .le. droptol) goto 150
-!     
+!
 !     combine current row and row jrow
 !
          do 203 k = ju(jrow), jlu(jrow+1)-1
@@ -3926,13 +3926,13 @@ END MODULE W3PROFSMD
             j = jlu(k)
             jpos = jw(n+j)
             if (j .ge. ii) then
-!     
+!
 !     dealing with upper part.
-!     
+!
                if (jpos .eq. 0) then
 !
 !     this is a fill-in element
-!     
+!
                   lenu = lenu+1
                   if (lenu .gt. n) goto 995
                   i = ii+lenu-1
@@ -3941,78 +3941,78 @@ END MODULE W3PROFSMD
                   w(i) = - s
                else
 !
-!     this is not a fill-in element 
+!     this is not a fill-in element
 !
                   w(jpos) = w(jpos) - s
 
                endif
             else
-!     
+!
 !     dealing  with lower part.
-!     
+!
                if (jpos .eq. 0) then
 !
 !     this is a fill-in element
-!     
+!
                   lenl = lenl+1
                   if (lenl .gt. n) goto 995
                   jw(lenl) = j
                   jw(n+j) = lenl
                   w(lenl) = - s
                else
-!     
-!     this is not a fill-in element 
-!     
+!
+!     this is not a fill-in element
+!
                   w(jpos) = w(jpos) - s
                endif
             endif
  203     continue
-!     
+!
 !     store this pivot element -- (from left to right -- no danger of
-!     overlap with the working elements in L (pivots). 
-!     
-         lenn = lenn+1 
+!     overlap with the working elements in L (pivots).
+!
+         lenn = lenn+1
          w(lenn) = fact
          jw(lenn)  = jrow
          goto 150
  160     continue
-!     
+!
 !     reset double-pointer to zero (U-part)
-!     
+!
          do 308 k=1, lenu
             jw(n+jw(ii+k-1)) = 0
  308     continue
-!     
+!
 !     update L-matrix
-!     
-         lenl = lenn 
+!
+         lenl = lenn
          lenn = min0(lenl,lfil)
-!     
+!
 !     sort by quick-split
 !
          call qsplit (w,jw,lenl,lenn)
 !
 !     store L-part
-! 
-         do 204 k=1, lenn 
+!
+         do 204 k=1, lenn
             if (ju0 .gt. iwk) goto 996
             alu(ju0) =  w(k)
             jlu(ju0) =  jw(k)
             ju0 = ju0+1
  204     continue
-!     
+!
 !     save pointer to beginning of row ii of U
-!     
+!
          ju(ii) = ju0
 !
-!     update U-matrix -- first apply dropping strategy 
+!     update U-matrix -- first apply dropping strategy
 !
          lenn = 0
          do k=1, lenu-1
-            if (abs(w(ii+k)) .gt. droptol*tnorm) then 
+            if (abs(w(ii+k)) .gt. droptol*tnorm) then
                lenn = lenn+1
-               w(ii+lenn) = w(ii+k) 
-               jw(ii+lenn) = jw(ii+k) 
+               w(ii+lenn) = w(ii+k)
+               jw(ii+lenn) = jw(ii+k)
             endif
          enddo
          lenu = lenn+1
@@ -4021,25 +4021,25 @@ END MODULE W3PROFSMD
          call qsplit (w(ii+1), jw(ii+1), lenu-1,lenn)
 !
 !     copy
-! 
+!
          t = abs(w(ii))
          if (lenn + ju0 .gt. iwk) goto 997
-         do 302 k=ii+1,ii+lenn-1 
+         do 302 k=ii+1,ii+lenn-1
             jlu(ju0) = jw(k)
             alu(ju0) = w(k)
             t = t + abs(w(k) )
             ju0 = ju0+1
  302     continue
-!     
+!
 !     store inverse of diagonal element of u
-!     
+!
 !2do check if it works ... after correction ...
          if (abs(w(ii)) .lt.  tiny(1.d0)) w(ii) = (0.0001d0 + droptol)*tnorm
-!     
-         alu(ii) = 1.0d0/ w(ii) 
-!     
+!
+         alu(ii) = 1.0d0/ w(ii)
+!
 !     update pointer to beginning of next row of U.
-!     
+!
          jlu(ii+1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
@@ -4049,27 +4049,27 @@ END MODULE W3PROFSMD
       return
 !
 !     incomprehensible error. Matrix must be wrong.
-!     
+!
  995  ierr = -1
       return
-!     
+!
 !     insufficient storage in L.
-!     
+!
  996  ierr = -2
       return
-!     
+!
 !     insufficient storage in U.
-!     
+!
  997  ierr = -3
       return
-!     
+!
 !     illegal lfil entered.
-!     
+!
  998  ierr = -4
       return
-!     
+!
 !     zero row encountered
-!     
+!
  999  ierr = -5
       return
 !----------------end-of-ilut--------------------------------------------
@@ -4391,7 +4391,7 @@ END MODULE W3PROFSMD
  999   continue
        ierr = -1
        return
-!--------------------------------------------------------------------- 
+!---------------------------------------------------------------------
        end
 !-----------------------------------------------------------------------
 

@@ -15,7 +15,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -128,7 +128,7 @@
 !
 ! ... Separate test output file
 !
-      INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML) 
+      INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML)
       IF (FLGNML) THEN
         CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
       ELSE

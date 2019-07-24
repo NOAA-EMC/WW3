@@ -129,7 +129,7 @@
 !
 !  7. Remarks :
 !
-!     - To achieve minimum storage but guaranteed storage of all 
+!     - To achieve minimum storage but guaranteed storage of all
 !       partitions DIMXP = ((NK+1)/2) * ((NTH-1)/2) unless specified
 !       otherwise below.
 !
@@ -241,7 +241,7 @@
         RETURN
       ENDIF ! PTMETH == 4
 !
-! PTMETH == 5 : produce "high" and "low" band partitions 
+! PTMETH == 5 : produce "high" and "low" band partitions
 ! using a frequency cutoff:
 !
       IF( PTMETH .EQ. 5 ) THEN
@@ -253,7 +253,7 @@
           ELSE
             IP = 1
           ENDIF
-       
+
           DO ITH=1, NTH
             ISP = IK + (ITH-1) * NK ! index into partition array IMO
             IMO(ISP) = IP
@@ -273,8 +273,8 @@
 !
 ! 1.b Invert spectrum and 'digitize'
 !
-      ZMIN   = MINVAL ( ZP ) 
-      ZMAX   = MAXVAL ( ZP ) 
+      ZMIN   = MINVAL ( ZP )
+      ZMAX   = MAXVAL ( ZP )
       IF ( ZMAX-ZMIN .LT. 1.E-9 ) RETURN
 !
       Z      = ZMAX - ZP
@@ -304,7 +304,7 @@
 !
 ! 2.d PTMETH == 2: move the wind sea part of the partitions into a
 !     seperate partition and recalculate the mean parameters.
-! 
+!
       IF ( NP .GT. 0 .AND. PTMETH .EQ. 2 ) THEN
          WIND_PART = NP_MAX
 
@@ -355,7 +355,7 @@
 
         RETURN ! Don't process any further
       ENDIF ! PTMETH == 3
-     
+
       ! -----------------------------------------------------------------
       ! PTMETH == 1: Default WW3 partitioning.
       ! -----------------------------------------------------------------
@@ -375,7 +375,7 @@
 ! 3.b Combine wind seas as needed and resort
 !
       IF ( NWS.GT.1 .AND. FLCOMB ) THEN
-          IPW    = PMAP(INDEX(1))                         
+          IPW    = PMAP(INDEX(1))
           DO IP=2, NWS
              IPT    = PMAP(INDEX(IP))
              DO ISP=1, NSPEC
@@ -528,7 +528,7 @@
 !/
       END SUBROUTINE PTSORT
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE PTNGHB 
+      SUBROUTINE PTNGHB
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -618,7 +618,7 @@
 !
 ! ... Point at the right (2)
 !
-        IF ( I .NE. NK ) THEN 
+        IF ( I .NE. NK ) THEN
             K           = K + 1
             NEIGH(K, N) = N + 1
           END IF
@@ -1214,7 +1214,7 @@
         !     the form used in w3iogomd and scaling should be
         !     based on the relationship between FTE and FT1, FTTR etc.
         !     as per w3iogomd and ww3_grid
-        FTEII = FTE / (DTH * SIG(NK)) 
+        FTEII = FTE / (DTH * SIG(NK))
         SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTEII
         SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * SIG(NK) * FTEII * (0.3333 / 0.25)
         SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * SIG(NK)**2 * FTEII * (0.5 / 0.25)
@@ -1239,7 +1239,7 @@
         M0 = SUME(IP)  * DTH * TPIINV
         HS     = 4. * SQRT ( MAX( M0 , 0. ) )
         IF ( HS .LT. HSPMIN ) THEN
-          ! For wind cutoff and 2-band partitioning methods, keep the 
+          ! For wind cutoff and 2-band partitioning methods, keep the
           ! partition, but set the integrated parameters to UNDEF
           ! for Hs values less that HSPMIN:
           IF( PTMETH .EQ. 4 .OR. PTMETH .EQ. 5 ) THEN

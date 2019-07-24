@@ -15,12 +15,12 @@
 !/
 !/    Copyright 2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Routines to determine and process grid dependencies in the 
+!     Routines to determine and process grid dependencies in the
 !     multi-grid wave model.
 !
 !  2. Variables and types :
@@ -29,14 +29,14 @@
 !
 !      Name                          Type  Scope      Description
 !     ----------------------------------------------------------------
-!      scrip_wrapper                  Subr. Public   as the name says ... 
-!      get_scrip_info_structured      Subr. Public   as the name says ... 
-!      get_scrip_info_unstructured    Subr. Public   as the name says ... 
-!      get_scrip_info                 Subr. Public   as the name says ... 
-!      scrip_info_renormalization     Subr. Public   as the name says ... 
-!      TRIANG_INDEXES                 Subr. Public   as the name says ... 
-!      get_unstructured_vertex_degree Subr. Public   as the name says ... 
-!      GET_BOUNDARY                   Subr. Public   as the name says ... 
+!      scrip_wrapper                  Subr. Public   as the name says ...
+!      get_scrip_info_structured      Subr. Public   as the name says ...
+!      get_scrip_info_unstructured    Subr. Public   as the name says ...
+!      get_scrip_info                 Subr. Public   as the name says ...
+!      scrip_info_renormalization     Subr. Public   as the name says ...
+!      TRIANG_INDEXES                 Subr. Public   as the name says ...
+!      get_unstructured_vertex_degree Subr. Public   as the name says ...
+!      GET_BOUNDARY                   Subr. Public   as the name says ...
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -47,8 +47,8 @@
 !     ----------------------------------------------------------------
 !
 !  5. Remarks :
-!     
-!     - The subroutines TRIANG_INDEXES, get_unstructured_vertex_degree, and 
+!
+!     - The subroutines TRIANG_INDEXES, get_unstructured_vertex_degree, and
 !       GET_BOUNDARY should probably be renamed and moved to the module w3triamd
 !
 !  6. Switches :
@@ -104,15 +104,15 @@
 !
 !  4. Copyright :
 !
-!  5. Purpose : 
+!  5. Purpose :
 !
 !     Compute grid information required by SCRIP
 !
 !  6. Method :
 !
 !  7. Parameters, Variables and types :
-!  
-!  8. Called by : 
+!
+!  8. Called by :
 !
 !     Subroutine WMGHGH
 !
@@ -120,7 +120,7 @@
 !
 !     Subroutine SCRIP
 !
-! 10. Error messages: 
+! 10. Error messages:
 !
 ! 11. Remarks :
 !
@@ -169,29 +169,29 @@
 !/T38      if(l_master)write(*,*)'flagll = ',flagll
 !/T38      if(l_master)write(*,*)'gridshift = ',gridshift
 
-! 
+!
 ! START: universal settings
-! 
+!
 
 !     Set variables for converting to degrees
 !     notes: SCRIP only operates on spherical coordinates, so for the case
-!         where the problem is specified by the user as in a 
-!         meters/cartesian coordinate system, it is necessary to make 
-!         a temporary conversion to a "fake" spherical coordinate grid, 
-!         to keep SCRIP happy. The good news here is that multi-grid 
-!         meters-grid simulations will be very rare: we will probably only 
-!         encounter them in the context of simple test cases. Strictly 
-!         speaking, this conversion does not even need to be physically 
-!         correct, e.g. we could say that 1000 km is 1 deg....as long as 
+!         where the problem is specified by the user as in a
+!         meters/cartesian coordinate system, it is necessary to make
+!         a temporary conversion to a "fake" spherical coordinate grid,
+!         to keep SCRIP happy. The good news here is that multi-grid
+!         meters-grid simulations will be very rare: we will probably only
+!         encounter them in the context of simple test cases. Strictly
+!         speaking, this conversion does not even need to be physically
+!         correct, e.g. we could say that 1000 km is 1 deg....as long as
 !         we are consistent between grids.
-!     Potential future improvement: make conv_dy and offset such that dst grid 
+!     Potential future improvement: make conv_dy and offset such that dst grid
 !         covers a specific longitude range, e.g. 1 deg east to 2 deg east
-     
-! 
-! START: set up src grid
-! 
 
-!notes: when we work out how to interface with an unstructured grid, 
+!
+! START: set up src grid
+!
+
+!notes: when we work out how to interface with an unstructured grid,
 !       we will need to revisit this issue of how to set grid1_rank, etc.
 !       strategy: declare variables in grid module, but allocate them here.
 !
@@ -220,7 +220,7 @@
 !           conv_dy=92.6*1200.0 ! physical, =92.6/(3/3600)=111000 m = 111 km
          CONV_DY=1.0E+6_SCRIP_R8 ! non-physical, 1e+6=1 deg
          CONV_DX=COS(LAT_CONVERSION)*CONV_DY
-! notes:    offset (in meters), is necessary so that our grid does 
+! notes:    offset (in meters), is necessary so that our grid does
 !           not lie on the branch cut
          OFFSET=75000.0_SCRIP_R8-MIN(MINVAL(GRID1_CENTER_LON),          &
      &                               MINVAL(GRID2_CENTER_LON))
@@ -274,20 +274,20 @@
 !/T38      if(l_master)write(*,*)'new maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
 
 !.....notes: at this point we have the following useful variables:
-!       num_wts, e.g. num_wts=3....for first order conservative remapping, 
+!       num_wts, e.g. num_wts=3....for first order conservative remapping,
 !       only the first one is relevant, the other two are for second-order
 !       remapping.
-!       max_links_map1, e.g. max_links_map1=1369, 
-!       grid2_size, e.g. grid2_size=1849, 
-!       wts_map1(num_wts,max_links_map1), e.g. wts_map1(3,1369), 
+!       max_links_map1, e.g. max_links_map1=1369,
+!       grid2_size, e.g. grid2_size=1849,
+!       wts_map1(num_wts,max_links_map1), e.g. wts_map1(3,1369),
 !       grid1_add_map1(max_links_map1),  e.g. grid1_add_map1(1369),
-!       grid2_add_map1(max_links_map1), e.g. grid2_add_map1(1369), 
-!       grid2_frac(grid2_size), e.g. grid2_frac(1849), 
+!       grid2_add_map1(max_links_map1), e.g. grid2_add_map1(1369),
+!       grid2_frac(grid2_size), e.g. grid2_frac(1849),
 !       (see earlier versions for notes re: equivalency in netcdf/matlab)
-! 
+!
 !.....test output (optional)
-! 
-!.....note re: notation: I use k for the combined i/j array, similar to isea, 
+!
+!.....note re: notation: I use k for the combined i/j array, similar to isea,
 !            but not necessarily the same as isea since some points may
 !            be land etc.
 !/T38     if(l_master)then
@@ -300,7 +300,7 @@
 !/T38     do ilink=1,max_links_map1
 !/T38        write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
 !/T38                                                ! my "src_address"
-!/T38        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to 
+!/T38        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to
 !/T38                                                ! my "dst_address"
 !/T38     end do
 !/T38     endif
@@ -308,8 +308,8 @@
 !.....organize results and return to wmghgh.
 
 ! what we need, for purpose of feeding back to ww3, for each dst grid node:
-!        a) the set of src grid nodes, in terms of isea, for which 
-!           weights are available  
+!        a) the set of src grid nodes, in terms of isea, for which
+!           weights are available
 !        b) the corresponding set of weights
 
       ALLOCATE ( WGTDATA(GRID2_SIZE), STAT=ISTAT )
@@ -317,13 +317,13 @@
 
 !.....step 1: count up NR0, NR1, NR2, NRL, NLOC (NR1 and NLOC are denoted
 !             "n" here)
-!     It is especially important to determine how large npnts gets, 
+!     It is especially important to determine how large npnts gets,
 !              so that we can allocate arrays properly
       WGTDATA%NR0=0
       WGTDATA%NR2=0
       WGTDATA%NRL=0
       WGTDATA%N=0
-      
+
       NI_SRC=GRID1_DIMS(1)
       NGOODPNTS=0
       NBADPNTS=0
@@ -361,7 +361,7 @@
             ELSEIF ( (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))>FRAC_LOWEST)   &
                  .AND. (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))<FRAC_HIGHEST)&
                  ) THEN
-               ! note that we don't bother giving a warning for the 
+               ! note that we don't bother giving a warning for the
                ! cases where grid1_frac is strange.
                NBADPNTS=NBADPNTS+1
                ! we also don't bother giving a warning if we've already
@@ -384,7 +384,7 @@
                   'grid2_frac(grid2_add_map1(ilink)) = ',              &
                   grid2_frac(grid2_add_map1(ilink))
                   WRITE(*,'(4x,A,F10.5)')'grid1_center_lat = ',        &
-                  grid1_center_lat(grid1_add_map1(ilink)) 
+                  grid1_center_lat(grid1_add_map1(ilink))
                   WRITE(*,'(4x,A,F10.5)')'grid1_center_lon = ',        &
                   grid1_center_lon(grid1_add_map1(ilink))
                   WRITE(*,'(4x,A,F10.5)')'grid2_center_lat = ',        &
@@ -484,7 +484,7 @@
 !
 !  4. Copyright :
 !
-!  5. Purpose : 
+!  5. Purpose :
 !
 !     Compute grid arrays for scrip for a specific unstructured grid
 !     For interior vertices, we select for every triangle the barycenter
@@ -504,14 +504,14 @@
 !  6. Method :
 !
 !  7. Parameters, Variables and types :
-!  
-!  8. Called by : 
+!
+!  8. Called by :
 !
 !     Subroutine get_scrip_info
 !
 !  9. Subroutines and functions used :
 !
-! 10. Error messages: 
+! 10. Error messages:
 !
 ! 11. Remarks :
 !
@@ -706,7 +706,7 @@
         IF (DODEBUG.EQ.1) THEN
           print *, 'nbplus=', nbplus, ' nbminus=', nbminus
         END IF
-        
+
         STATUS(:) = 0
         NEXTVERT(:) = 0
         PREVVERT(:) = 0
@@ -850,7 +850,7 @@
 !
 !  4. Copyright :
 !
-!  5. Purpose : 
+!  5. Purpose :
 !
 !     Compute grid arrays needed for scrip for a specific structured grid.
 !     This is adapted from Erick Rogers original code by splitting
@@ -859,14 +859,14 @@
 !  6. Method :
 !
 !  7. Parameters, Variables and types :
-!  
-!  8. Called by : 
+!
+!  8. Called by :
 !
 !     Subroutine get_scrip_info
 !
 !  9. Subroutines and functions used :
 !
-! 10. Error messages: 
+! 10. Error messages:
 !
 ! 11. Remarks :
 !
@@ -927,7 +927,7 @@
       GRID_CORNERS=4  ! hardwired: each cell has 4 corners
 
 !.....notes: unfortunately, scrip only works for spherical coordinates.
-!         thus, if we want to have a multi-grid case in meters, we have to 
+!         thus, if we want to have a multi-grid case in meters, we have to
 !         fake it. fortunately, it should be pretty rare to have a multi-grid
 !         case in meters.
 
@@ -943,7 +943,7 @@
       CHECK_ALLOC_STATUS ( ISTAT )
 
 !.....notes: this "gridshift" variable is included because SCRIP sometimes
-!            has trouble when grids cell locations are identical between 
+!            has trouble when grids cell locations are identical between
 !            the two grids. Thus we apply this to one of the two grids.
 
 !.....notes: The following block of code could be converted to a subroutine.
@@ -957,14 +957,14 @@
             GRID_MASK(IREC)=.TRUE.
 
 !..notes: normally, we'd apply the mask like this:
-!           if(abs(mapsta_src(j,i)).eq.1)then 
+!           if(abs(mapsta_src(j,i)).eq.1)then
 !              grid1_mask(irec)=.true.
 !           else
 !              grid1_mask(irec)=.false.
 !           endif
 !..but unfortunately, WMGHGH needs information about the overlaying high-res
-!           cells, even those that are masked, for calculating 
-!           NRL, NR0, NR1, NR2. 
+!           cells, even those that are masked, for calculating
+!           NRL, NR0, NR1, NR2.
 
 !...........corner 1 : halfway to i-1,j-1
             GRID_CORNER_LON(1,IREC)=GRID_CENTER_LON(IREC)-              &
@@ -972,7 +972,7 @@
             GRID_CORNER_LAT(1,IREC)=GRID_CENTER_LAT(IREC)-              &
      &        HALF*DYDP_GRD(J,I)-HALF*DYDQ_GRD(J,I)
 
-!...........corner 2: halfway to i+1,j-1 
+!...........corner 2: halfway to i+1,j-1
             GRID_CORNER_LON(2,IREC)=GRID_CENTER_LON(IREC)+              &
      &        HALF*DXDP_GRD(J,I)-HALF*DXDQ_GRD(J,I)
             GRID_CORNER_LAT(2,IREC)=GRID_CENTER_LAT(IREC)+              &
@@ -1013,7 +1013,7 @@
 !
 !  4. Copyright :
 !
-!  5. Purpose : 
+!  5. Purpose :
 !
 !     Compute grid for scrip for a specific structured grid.
 !     This is adapted from Erick Rogers code by making it cleaner.
@@ -1021,14 +1021,14 @@
 !  6. Method :
 !
 !  7. Parameters, Variables and types :
-!  
-!  8. Called by : 
+!
+!  8. Called by :
 !
 !     Subroutine scrip_wrapper
 !
 !  9. Subroutines and functions used :
 !
-! 10. Error messages: 
+! 10. Error messages:
 !
 ! 11. Remarks :
 !
@@ -1114,7 +1114,7 @@
 !
 !  4. Copyright :
 !
-!  5. Purpose : 
+!  5. Purpose :
 !
 !     This is adapted from Erick Rogers scrip_wrapper
 !     Purpose is to rescale according to whether the grid is spherical
@@ -1128,14 +1128,14 @@
 !    finite difference meshes.
 !
 !  7. Parameters, Variables and types :
-!  
-!  8. Called by : 
+!
+!  8. Called by :
 !
 !     Subroutine WMGHGH
 !
 !  9. Subroutines and functions used :
 !
-! 10. Error messages: 
+! 10. Error messages:
 !
 ! 11. Remarks :
 !
@@ -1227,7 +1227,7 @@
 !
 !  Description:
 !    this function returns the list of incidences
-!    
+!
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: MNP, MNE
       INTEGER, INTENT(IN) :: TRIGP(:,:)
@@ -1273,24 +1273,24 @@
 !    if a node belong to a boundary, the function
 !    returns the neighbor of this point on one side.
 !    if the point is interior then the value 0 is set.
-!    
+!
         USE W3SERVMD, ONLY: EXTCDE
         IMPLICIT NONE
-               
+
         INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
         INTEGER, INTENT(INOUT)          :: IOBP(MNP)
         INTEGER, INTENT(INOUT)          :: NEIGHBOR_PREV(MNP)
         INTEGER, INTENT(INOUT)          :: NEIGHBOR_NEXT(MNP)
-        
+
         INTEGER, POINTER :: STATUS(:)
         INTEGER, POINTER :: COLLECTED(:)
         INTEGER, POINTER :: NEXTVERT(:)
         INTEGER, POINTER :: PREVVERT(:)
-        
+
         INTEGER :: IE, I, IP, IP2, IP3
         INTEGER :: ISFINISHED, INEXT, IPREV
         INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
-        
+
         ALLOCATE(STATUS(MNP), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
@@ -1302,7 +1302,7 @@
         IOBP = 0
         NEIGHBOR_NEXT = 0
         NEIGHBOR_PREV = 0
-        
+
 !  Now computing the next items
         STATUS = 0
         NEXTVERT = 0
@@ -1437,7 +1437,7 @@
         CHECK_DEALLOC_STATUS ( ISTAT )
         DEALLOCATE(PREVVERT, STAT=ISTAT)
         CHECK_DEALLOC_STATUS ( ISTAT )
-        
+
       END SUBROUTINE
 !/
 !/ End of module WMSCRPMD -------------------------------------------- /

@@ -24,7 +24,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -132,7 +132,7 @@
 !
 !  7. Remarks :
 !
-!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where  
+!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where
 !       lowest possible value of JFIRST is JFIRST=-7
 !
 !  8. Structure :
@@ -401,7 +401,7 @@
 !/T      WRITE (MDST,9072) 8, 'MOV'        , INFLAGS1(8), TG0, TGN
 !
       RETURN
-!       
+!
 ! Error escape locations
 !
  2000 CONTINUE
@@ -700,8 +700,8 @@
 ! 8. Moving grid data ----------------------------------------------- /
 !
         CASE ( 8 )
-! notes: 
-! SUBROUTINE W3FLDM in w3fldsmd.ftn : 
+! notes:
+! SUBROUTINE W3FLDM in w3fldsmd.ftn :
 !<       INTEGER, INTENT(INOUT)  :: NH, THO(2,4,NHM), TF0(2), TFN(2)
 !>       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
 !<       REAL, INTENT(INOUT)     :: HA(NHM,4), HD(NHM,4), A0, AN, D0, DN
@@ -1013,7 +1013,7 @@
 ! 4. End of routine -------------------------------------------------- /
 !
       RETURN
-!       
+!
 ! Error escape locations
 !
  2999 CONTINUE
@@ -1100,7 +1100,7 @@
 !  7. Remarks :
 !
 !     - Grid pointers for output grid need to be set externally.
-!     - If input grid does not cover point of target grid, target grid 
+!     - If input grid does not cover point of target grid, target grid
 !       values are set to UNDEF.
 !
 !  8. Structure :
@@ -1650,7 +1650,7 @@
 !  7. Remarks :
 !
 !     - Grid pointers for output grid need to be set externally.
-!     - If input grid does not cover point of target grid, target grid 
+!     - If input grid does not cover point of target grid, target grid
 !       values are set to UNDEF.
 !
 !  8. Structure :

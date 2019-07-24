@@ -9,44 +9,44 @@
 !/                  | Last update :         21-Aug-2014 |
 !/                  +-----------------------------------+
 !/
-!/    XX-Jul-2010 : Origination by  PAEM JANSSEN     
+!/    XX-Jul-2010 : Origination by  PAEM JANSSEN
 !/    18-Oct-2012 : Adapted to WAVEWATCH III: F. Ardhuin( version 4.07 )
 !/    21-Aug-2014 : Bug corrected: only first call wasOK( version 5.01 )
-!/ 
-!  0. Note by F. Ardhuin: 
-!     In adapting the orginal program to be a WAVEWATCH module, I 
-!     have so far strived to keep the original code. As a result 
-!     some routines are unnecessarily duplicated (e.g. the calculation of 
-!     the group velocity ...). But this can improve the traceability of 
-!     the code. 
+!/
+!  0. Note by F. Ardhuin:
+!     In adapting the orginal program to be a WAVEWATCH module, I
+!     have so far strived to keep the original code. As a result
+!     some routines are unnecessarily duplicated (e.g. the calculation of
+!     the group velocity ...). But this can improve the traceability of
+!     the code.
 !     The first spectrum (JONSWAP) has been removed from the code
 !
 !  1. Purpose :
 !
 !
-!     CALCULATION OF THE SECOND ORDER CORRECTION TO THE SURFACE GRAVITY 
+!     CALCULATION OF THE SECOND ORDER CORRECTION TO THE SURFACE GRAVITY
 !     WAVE SPECTRUM
 !
 !     DOCUMENTATION.
 !     -------------
 !
-!     PRESENTLY, THE SOFTWARE IS SET UP TO DO FOR A GIVING FIRST-ORDER 
-!     SPECTRUM AT A GIVEN DEPTH THE DETERMINATION OF THE SECOND ORDER 
+!     PRESENTLY, THE SOFTWARE IS SET UP TO DO FOR A GIVING FIRST-ORDER
+!     SPECTRUM AT A GIVEN DEPTH THE DETERMINATION OF THE SECOND ORDER
 !     CORRECTION (INCLUDING SECOND-HARMONICS, WAVE SET DOWN AND DOPPLER SHIFT
 !     OWING TO THE STOKES FREQUENCY CORRECTION.
 !
 !     EVALUATION OF THE INTERACTION COEFFICIENTS FOR ARBRITRARY DEPTH WOULD
-!     BE VERY TIME CONSUMING. THEREFORE, THE APPROACH IN THE WAM MODEL IS 
+!     BE VERY TIME CONSUMING. THEREFORE, THE APPROACH IN THE WAM MODEL IS
 !     FOLLOWED, WHERE TABLES ARE GENERATED FOR A LOGARITHMIC DEPTH TABLE
 !
 !               D(JD) = DEPTHA*DEPTHD**(JD-1)
 !
-!     WITH JD AN INTEGER. IN THE PRESENT OPERATIONAL VERSION OF ECWAM JD 
+!     WITH JD AN INTEGER. IN THE PRESENT OPERATIONAL VERSION OF ECWAM JD
 !     RANGES FROM 1 TO NDEPTH = 74, WHILE DEPTHA = 1. AND DEPTHD = 1.1
 !
-!     FINALLY, THIS IS A VERY TIME-CONSUMING CALCULATION, AT LEAST FOR AN 
-!     OPERATIONAL MODEL. i HAVE THEREFORE INTRODUCED THE OPTION THAT THE SECOND-ORDER 
-!     SPECTRUM IS CALCULATED ON A LOWER RESOLUTION GRID (TYPICALLY HALF THE 
+!     FINALLY, THIS IS A VERY TIME-CONSUMING CALCULATION, AT LEAST FOR AN
+!     OPERATIONAL MODEL. i HAVE THEREFORE INTRODUCED THE OPTION THAT THE SECOND-ORDER
+!     SPECTRUM IS CALCULATED ON A LOWER RESOLUTION GRID (TYPICALLY HALF THE
 !     RESOLUTION) WHILE THE INFORMATION CONTAINED IN THE FIRST-ORDER SPECTRUM
 !     IS KEPT ON THE ORIGINAL SPECTRAL GRID.
 !
@@ -94,7 +94,7 @@
       REAL                     :: DEPTHA         ! first depth in table
       REAL, SAVE , PRIVATE, ALLOCATABLE   :: OMEGA(:)
       INTEGER, SAVE , PRIVATE             :: COUNTER = 0
-! Tables for non-linear coefficients ...   
+! Tables for non-linear coefficients ...
       REAL, SAVE , PRIVATE, ALLOCATABLE   :: TA(:,:,:,:),TB(:,:,:,:),TC_QL(:,:,:,:),&
                                              TT_4M(:,:,:,:),TT_4P(:,:,:,:),TFAKH(:,:),    &
                                              TFAK(:,:)
@@ -123,7 +123,7 @@
 !  2. Method :
 !
 !     Uses P. Janssen's code for the inverse canonical transform
-!      
+!
 !
 !  3. Parameters :
 !
@@ -141,7 +141,7 @@
 !       DEPTH     Real I     Water depth
 !       WN        R.A.       wavenumbers
 !       CG        R.A.       group velocities
-!       IACTION   Int  I     Switch to specify if the input spectrum 
+!       IACTION   Int  I     Switch to specify if the input spectrum
 !                            is E(f,theta) or A(k,theta)
 !     ----------------------------------------------------------------
 !
@@ -197,7 +197,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
-!/ 
+!/
       INTEGER           :: ISPEC, IK, ITH, M
       REAL              :: CO1, ATOE, DPTH
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -213,7 +213,7 @@
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
-       IF (FIRST) THEN 
+       IF (FIRST) THEN
          FIRST=.FALSE.
          NFRE=NK
          NANG=NTH
@@ -241,7 +241,7 @@
       DPTH = DEPTH
 
       DO IK=1,NK
-        IF (IACTION.EQ.0) THEN 
+        IF (IACTION.EQ.0) THEN
           ATOE=1
         ELSE
           ATOE=SIG(IK)*ZPI / CG(IK)
@@ -261,10 +261,10 @@
                               DTH,DPTH,+1., NFREH, NANGH)
 
 !
-! 2. Adds 2nd order spectrum to 1st order 
+! 2. Adds 2nd order spectrum to 1st order
 !
       DO IK=1,NK
-        IF (IACTION.EQ.0) THEN 
+        IF (IACTION.EQ.0) THEN
           ATOE=1
         ELSE
           ATOE=SIG(IK)*ZPI / CG(IK)
@@ -275,7 +275,7 @@
           END DO
          !WRITE(101,'(I3,100G16.8)') SIG(IK)*ZPI,(F3(ITH,IK),ITH=1,NTH)
         END DO
-      
+
 !/T      PRINT*,' END CAL_SEC_ORDER_SPEC'
       RETURN
 
@@ -310,11 +310,11 @@
 !                            *TH*    - DIRECTIONAL ARRAY
 !                            *DELTH* - DIRECTIONAL INCREMENT
 !                            *DPTH*  - DEPTH ARRAY
-!                            *SIGM*   - FOR SIGM = 1 FORWARD MAPPING 
+!                            *SIGM*   - FOR SIGM = 1 FORWARD MAPPING
 !                                      WHILE FOR SIGM = -1 INVERSE
 !                                      MAPPING.
 !
-!                       OUTPUT: 
+!                       OUTPUT:
 !                            *F3*    - 2-D SPECTRUM INCLUDING SECOND-ORDER
 !                                      CORRECTION
 !
@@ -334,10 +334,10 @@
       REAL, INTENT(OUT)       :: F3(NANG,NFRE)
 
       INTEGER, INTENT(IN)     :: NFRE,NANG,NFREH, NANGH
-      
+
       REAL, INTENT(IN)        :: DFIM(NFRE),FR(NFRE), TH(NANG), DELTH
       REAL, INTENT(IN)        :: DPTH, SIGM
- 
+
       LOGICAL FRSTIME,DOUBLEP
 
       INTEGER MDW,M,K, K0,M0,MP,KP,MM,KM,KL,KLL,ML,JD
@@ -352,7 +352,7 @@
 
       REAL DEPTH,ALPHA,GAM_J,DEPTHD
       REAL OM0,AA1,BB1,&
-     F,EPSMIN,DELFF,SPEC1,SQRTK  
+     F,EPSMIN,DELFF,SPEC1,SQRTK
       REAL FRAC,DEL,DELF,D1,D2,D3,D4,C1,&
      C2,XM,XK
       REAL, SAVE :: OMSTART
@@ -361,7 +361,7 @@
       REAL :: F13(NFREH,NANGH)
       REAL :: SUM0,AKMEAN
       REAL :: DELOM(NFREH),THH(NANGH),DFDTH(NFREH)
-     
+
       DATA FRSTIME/.TRUE./
 
       COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J,DEPTHD
@@ -388,10 +388,10 @@
         XMA = 1./FLOAT(MA)
         DELTHH = FLOAT(MA)*DELTH
 
-       IF (FRSTIME) THEN 
-       ! IF (COUNTER.GT.0) THEN 
+       IF (FRSTIME) THEN
+       ! IF (COUNTER.GT.0) THEN
        !  DEALLOCATE(OMEGA,TFAK,TA,TB,TC_QL,TT_4M,TT_4P,IM_P,IM_M,TFAKH)
-       ! ENDIF 
+       ! ENDIF
         ALLOCATE(OMEGA(NFREH))
         ALLOCATE(TFAK(NFRE,NDEPTH))
         ALLOCATE(TA(NANGH,NFREH,NFREH,NDEPTH))
@@ -430,7 +430,7 @@
 !/T      PRINT*,' NMAX = ',NMAX
 
         DEPTHD = 1.1
- 
+
         DO JD=1,NDEPTH
           DEPTH = DEPTHA*DEPTHD**(JD-1)
           DO M=1,NFRE
@@ -466,7 +466,7 @@
       ENDDO
 !
 ! NB: AKMEAN is the mean wavenumber corresponding to Tm0,-1 in deep water
-!     
+!
       AKMEAN = (SUM0/AKMEAN)**2
 
 !
@@ -477,7 +477,7 @@
 !
 !***     2.21 NO INTERPOLATION.
 !        ----------------------
-! 
+!
 !/T         PRINT*,' NO THINNING AND INTERPOLATION'
 !/T         PRINT*,'nanG:',NANG,NMAX,NFRE,NDEPTH,DEPTHA,DEPTHD,DPTH,'##',DELTH,DELTHH
 
@@ -525,7 +525,7 @@
                  PF1(K,M)=PF1(K,M)+SPEC1*DEL
                ENDDO
              ENDDO
-             PF1(K,M) =PF1(K,M)/DELFF 
+             PF1(K,M) =PF1(K,M)/DELFF
            ENDDO
          ENDDO
 !
@@ -557,7 +557,7 @@
              MP = MIN(NFREH,M0+1)
              KP = K0+1
              IF (KP.GT.NANGH) KP = KP-NANGH
- 
+
              C1 = PF3(K0,M0)*D4+PF3(KP,M0)*D3
              C2 = PF3(KP,MP)*D3+PF3(K0,MP)*D4
 
@@ -565,7 +565,7 @@
              F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
            ENDDO
          ENDDO
-   
+
       ENDIF
 
 
@@ -583,9 +583,9 @@
             ENDDO
             BB1 = MAX(BB1,EPSMIN)
             F   = OMEGA(M)/ZPI
-   
-!/T            WRITE(6,62) M,F,AA1,BB1,DELTHH     
-!/T            WRITE(80,62) M,F,AA1,BB1,DELTHH     
+
+!/T            WRITE(6,62) M,F,AA1,BB1,DELTHH
+!/T            WRITE(80,62) M,F,AA1,BB1,DELTHH
          ENDDO
 
          DO M=1,NFREH
@@ -597,7 +597,7 @@
 
 !
 !/T   62 FORMAT(I4,9F16.9)
-!      
+!
       RETURN
       END SUBROUTINE CAL_SEC_ORDER_SPEC
 !
@@ -633,7 +633,7 @@
 !
 !       NFRE      INTEGER   NUMBER OF FREQUENCIES
 !       NANG      INTEGER   NUMBER OF DIRECTIONS
-!       NDEPTH    INTEGER   NUMBER OF ENTRIES IN THE DEPTH TABLE 
+!       NDEPTH    INTEGER   NUMBER OF ENTRIES IN THE DEPTH TABLE
 !       OMSTART   REAL      START FREQUENCY
 !       FRAC      REAL      FRACTIONAL INCREASE IN FREQUENCY SPACE
 !       XMR       REAL      INVERSE OF THINNING FACTOR IN FREQUENCY SPACE
@@ -652,14 +652,14 @@
 !
 !     METHOD
 !     ------
-!             
+!
 !     EXTERNALS
 !     ---------
 !             NONE
 !
 !     REFERENCES
 !     ----------
-!             V.E. ZAKHAROV, HAMILTONIAN APPROACH (1968) 
+!             V.E. ZAKHAROV, HAMILTONIAN APPROACH (1968)
 !             M.A. SROKOSZ, J.G.R.,91,995-1006 (1986)
 !             P.A.E.M. JANSSEN, ECMWF TECH MEMO (2008),JFM PAPER (2009)
 !
@@ -667,11 +667,11 @@
 !--------------------------------------------------------------------
 !
 !
-!  
+!
       IMPLICIT NONE
-   
+
       INTEGER NFRE,NANG,NDEPTH,MDW,JD,M,K,M1,K1,MP,MM,L
-      
+
       REAL DEPTH,ALPHA,GAM_J,DEPTHA,DEPTHD
       REAL OM0,TH0,XK0,OM1,TH1,XK1,OM2,XK2,OM0P,XK0P,OM0M,XK0M,OMSTART,&
      FRAC,XMR,XM2,FAC
@@ -700,43 +700,43 @@
          DO M=1,NFRE
             OM0 = OMEGA(M)
             XK0 = TFAK(M,JD)
-          
+
             MP   = MIN(M+1,NFRE)
             OM0P = OMEGA(MP)
-            XK0P = TFAK(MP,JD) 
+            XK0P = TFAK(MP,JD)
 
-            MM   = MAX(M-1,1) 
+            MM   = MAX(M-1,1)
             OM0M = OMEGA(MM)
-            XK0M = TFAK(MM,JD) 
-                  
+            XK0M = TFAK(MM,JD)
+
             DO M1=1,NFRE
-                        
+
                OM1 = OMEGA(M1)
-           
+
                DO L=1,NANG
 !
-!              XK0-XK1 CASE 
-!           
+!              XK0-XK1 CASE
+!
                   K = K1+L
                   TH0 = TH(K)
                   OM2 = OM0-OM1
-         
-             
+
+
                   IF (ABS(OM1).LT.OM0/2.) THEN
                      XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
                      IM_M(M1,M) = NINT(XMR*(XM2+1.))
                      XK1 = TFAK(M1,JD)
-                     XK2 = AKI(OM2,DEPTH) 
+                     XK2 = AKI(OM2,DEPTH)
 
                      TA(L,M1,M,JD) = DFDTH(M1)*A(XK1,XK2,TH1,TH0)**2
                   ELSE
                      TA(L,M1,M,JD) = 0.
                      IM_M(M1,M) = 1
-                  ENDIF 
+                  ENDIF
 !
-!              XK1+XK0 CASE 
-!           
-                  OM2 = OM1+OM0 
+!              XK1+XK0 CASE
+!
+                  OM2 = OM1+OM0
                   XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
                   IM_P(M1,M) = NINT(XMR*(XM2+1.))
                   XK1 = TFAK(M1,JD)
@@ -745,13 +745,13 @@
                   TB(L,M1,M,JD) = DFDTH(M1)*B(XK1,XK2,TH1,TH0)**2
 !
 !              QUASI-LINEAR EFFECT
-!           
-!  
-                  TC_QL(L,M1,M,JD) = DFDTH(M1)*C_QL(XK0,XK1,TH0,TH1)
-!  
-!              STOKES-FREQUENCY CORRECTION 
 !
-!      
+!
+                  TC_QL(L,M1,M,JD) = DFDTH(M1)*C_QL(XK0,XK1,TH0,TH1)
+!
+!              STOKES-FREQUENCY CORRECTION
+!
+!
                   FAC = 2.*G/OM1*DFDTH(M1)
                   TT_4M(L,M1,M,JD) = &
                   FAC*(W2(XK0M,XK1,XK1,XK0M,TH0,TH1,TH1,TH0)+&
@@ -759,17 +759,17 @@
                   TT_4P(L,M1,M,JD) = &
                   FAC*(W2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0)+&
                        V2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0))
-! Table identical to Janssen: verified. 
+! Table identical to Janssen: verified.
 !              IF (JD.EQ.1) WRITE(998,'(F4.1,3I3,5G11.3)') DEPTH,M,M1,L, TB(L,M1,M,JD),  &
 !                           TC_QL(L,M1,M,JD) , FAC, TT_4M(L,M1,M,JD), TT_4P(L,M1,M,JD)
                ENDDO
             ENDDO
          ENDDO
        ENDDO
-! 
+!
 !
 !--------------------------------------------------------------------
-!      
+!
       RETURN
       END SUBROUTINE TABLES_2ND
 !
@@ -809,9 +809,9 @@
 !       F1        REAL      2D FREE WAVE SPECTRUM (INPUT)
 !       F3        REAL      BOUND WAVES SPECTRUM (OUTPUT)
 !       NFRE      INTEGER   NUMBER OF FREQUENCIES
-!       NANG      INTEGER   NUMBER OF DIRECTIONS 
+!       NANG      INTEGER   NUMBER OF DIRECTIONS
 !       NMAX      INTEGER   MAXIMUM INDEX CORRESPONDS TO TWICE THE CUT-OFF
-!                           FREQUENCY 
+!                           FREQUENCY
 !       NDEPTH    INTEGER   NUMBER OF ENTRIES IN DEPTH TABLE
 !       DEPTHA    REAL      START VALUE DEPTH ARRAY
 !       DEPTHD    REAL      INCREMENT DEPTH ARRAY
@@ -842,7 +842,7 @@
 !
 !     REFERENCES
 !     ----------
-!             V.E. ZAKHAROV, HAMILTONIAN APPROACH (1968) 
+!             V.E. ZAKHAROV, HAMILTONIAN APPROACH (1968)
 !             M.A. SROKOSZ, J.G.R.,91,995-1006 (1986)
 !             P.A.E.M. JANSSEN, JFM (2009)
 !
@@ -850,10 +850,10 @@
 !--------------------------------------------------------------------
 !
 !
-!     
+!
       USE W3GDATMD, ONLY: IGPARS
       IMPLICIT NONE
-   
+
       INTEGER NFRE,NANG,NDEPTH,M,K,M1,K1,M2_M,M2_P,K2,MP,&
         MM,L,MR,NMAX,JD,COUNTER
       INTEGER IM_P(NFRE,NFRE),IM_M(NFRE,NFRE),IL(NANG,NANG)
@@ -913,7 +913,7 @@
           G1(K,M) = OMEGA(NFRE)**5*G1(K,NFRE)/OMEGAHF(M)**5
         ENDDO
       ENDDO
-!     
+!
 !
 !
 !
@@ -923,10 +923,10 @@
 !
       DO M=1,NFRE
         OM0 = OMEGA(M)
-        OM0H = OM0/2.                  
+        OM0H = OM0/2.
         MP   = MIN(M+1,NFRE)
-        OM0P = OMEGA(MP) 
-        MM   = MAX(M-1,1) 
+        OM0P = OMEGA(MP)
+        MM   = MAX(M-1,1)
         OM0M = OMEGA(MM)
         DELM1 = 1./(OM0P-OM0M)
         DO K=1,NANG
@@ -945,7 +945,7 @@
 !
 !                   2.1 OM0-OM1 CASE: SECOND HARMONICS
 !                   OM2 = OM0-OM1
-!             
+!
               IF (LL2H) THEN
                 F2K2 = G1(K2,M2_M)
                 FAC1 = TA(L,M1,M,JD)
@@ -953,19 +953,19 @@
 
                 XINCR1 = FAC1*FAC2
                 G3(K,M) = G3(K,M)+XINCR1
-              ENDIF 
+              ENDIF
 !
 !                   2.2 OM1+OM0 CASE: INFRA-GRAVITY WAVES
-!                    OM2 = OM1+OM0 
+!                    OM2 = OM1+OM0
 !
               F2K2 = G1(K2,M2_P)
               FAC3 = 2.*TB(L,M1,M,JD)
               XINCR2 = FAC3*F2K2
 !
 !                   2.3 QUASI-LINEAR EFFECT
-!           
+!
               XINCR3 = TC_QL(L,M1,M,JD)*F2K
-!  
+!
 !                   2.4 STOKES-FREQUENCY CORRECTION
 !
               T_4M = TT_4M(L,M1,M,JD)
@@ -986,7 +986,7 @@
       ENDDO
 !
 !--------------------------------------------------------------------
-!      
+!
       RETURN
       END SUBROUTINE SECSPOM
 !
@@ -1038,7 +1038,7 @@
       RJ = XJ
       RK  = VABS(RI,RJ,THI,THJ)
       THK = VDIR(RI,RJ,THI,THJ)
-        
+
       OI=OMEG(RI)
       OJ=OMEG(RJ)
       OK=OMEG(RK)
@@ -1046,11 +1046,11 @@
       FI = SQRT(OI/(2.*G))
       FJ = SQRT(OJ/(2.*G))
       FK = SQRT(OK/(2.*G))
- 
-      
+
+
       A = FK/(FI*FJ)*(A1(RK,RI,RJ,THK,THI,THJ)+&
                 A3(RK,RI,RJ,THK-PI,THI,THJ))
-      
+
       RETURN
       END FUNCTION A
 !
@@ -1098,7 +1098,7 @@
       RI = XI
       RJ = XJ
       RK  = VABS(RJ,RI,THJ,THI-PI)
-      THK = VDIR(RJ,RI,THJ,THI-PI)      
+      THK = VDIR(RJ,RI,THJ,THI-PI)
 
       OI=OMEG(RI)+DEL
       OJ=OMEG(RJ)+DEL
@@ -1157,10 +1157,10 @@
 !
       OM1 = OMEG(XK1)
       F1  = SQRT(OM1/(2.*G))
-      
+
       C_QL = 2./F1**2*(B2(XK0,XK1,XK1,XK0,TH0,TH1,TH1,TH0)+&
                  B3(XK0,XK0,XK1,XK1,TH0-PI,TH0,TH1,TH1))
-           
+
       RETURN
       END FUNCTION C_QL
 
@@ -1173,7 +1173,7 @@
 !-----------------------------------------------------------------------
       REAL FUNCTION VPLUS(XI,XJ,XK,THI,THJ,THK)
 !
-!***  *VPLUS*  DETERMINES THE SECOND-ORDER TRANSFER COEFFICIENT 
+!***  *VPLUS*  DETERMINES THE SECOND-ORDER TRANSFER COEFFICIENT
 !              FOR THREE WAVE INTERACTIONS OF GRAVITY WAVES.
 !
 !     PETER JANSSEN
@@ -1249,7 +1249,7 @@
 !-----------------------------------------------------------------------
       REAL FUNCTION VMIN(XI,XJ,XK,THI,THJ,THK)
 !
-!***  *VMIN*  DETERMINES THE SECOND-ORDER TRANSFER COEFFICIENT FOR 
+!***  *VMIN*  DETERMINES THE SECOND-ORDER TRANSFER COEFFICIENT FOR
 !             THREE WAVE INTERACTIONS OF GRAVITY WAVES.
 !
 !     PETER JANSSEN
@@ -1391,7 +1391,7 @@
                   QIK+QJK+QIL+QJL) )
       RETURN
       END FUNCTION U
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *W2(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1440,10 +1440,10 @@
     U(XK,XJ,XI,XL,THK,THJ-PI,THI-PI,THL)-&
     U(XI,XK,XJ,XL,THI-PI,THK,THJ-PI,THL)-&
     U(XI,XL,XK,XJ,THI-PI,THL,THK,THJ-PI)-&
-    U(XL,XJ,XK,XI,THL,THJ-PI,THK,THI-PI) 
+    U(XL,XJ,XK,XI,THL,THJ-PI,THK,THI-PI)
       RETURN
       END FUNCTION W2
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *V2(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1451,7 +1451,7 @@
 !-----------------------------------------------------------------------
       REAL FUNCTION V2(XI,XJ,XK,XL,THI,THJ,THK,THL)
 !
-!***  *V2*  DETERMINES THE CONTRIBUTION OF THE VIRTUAL 
+!***  *V2*  DETERMINES THE CONTRIBUTION OF THE VIRTUAL
 !           FOUR-WAVE INTERACTIONS OF GRAVITY WAVES.
 !
 !     PETER JANSSEN
@@ -1461,7 +1461,7 @@
 !
 !              GIVES NONLINEAR TRANSFER COEFFICIENT FOR FOUR
 !              WAVE INTERACTIONS OF GRAVITY WAVES IN THE
-!              IDEAL CASE OF NO CURRENT. (CF.ZAKHAROV,AND 
+!              IDEAL CASE OF NO CURRENT. (CF.ZAKHAROV,AND
 !              CRAWFORD ET AL)
 !
 !     INTERFACE.
@@ -1530,24 +1530,24 @@
 
       RKL  = VABS(RK,RL,THK,THL)
       THKL = VDIR(RK,RL,THK,THL)
-   
+
       OIJ=OMEG(RIJ)
       OIK=OMEG(RIK)
       OJL=OMEG(RJL)
       OJK=OMEG(RJK)
       OLI=OMEG(RLI)
       OKL=OMEG(RKL)
-      
+
       XNIK = OK+OIK-OI
       XNJL = OJ+OJL-OL
       XNJK = OK+OJK-OJ
       XNIL = OI+OLI-OL
-      
+
       YNIL = OL+OLI-OI
       YNJK = OJ+OJK-OK
       YNJL = OL+OJL-OJ
       YNIK = OI+OIK-OK
-      
+
       ZNIJ = OIJ-OI-OJ
       ZNKL = OKL-OK-OL
       ZPIJ = OIJ+OI+OJ
@@ -1558,8 +1558,8 @@
       THKJ = THJK-PI
       THKI = THIK-PI
       THJI = THIJ-PI
-      THLK = THKL-PI 
-      
+      THLK = THKL-PI
+
       V2= VMIN(RI,RK,RIK,THI,THK,THIK)*VMIN(RL,RJ,RJL,THL,THJ,THLJ)*&
     (1./XNIK+1./XNJL)&
    +VMIN(RJ,RK,RJK,THJ,THK,THJK)*VMIN(RL,RI,RLI,THL,THI,THLI)*&
@@ -1577,7 +1577,7 @@
 
       RETURN
       END FUNCTION V2
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *W1(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1632,8 +1632,8 @@
      U(XJ,XL,XI,XK,THJ,THL,THI-PI,THK)+&
      U(XK,XL,XI,XJ,THK,THL,THI-PI,THJ)
 
-      W1=W1/3. 
-               
+      W1=W1/3.
+
       RETURN
       END FUNCTION W1
 !
@@ -1682,7 +1682,7 @@
 !***  1. DETERMINE NONLINEAR TRANSFER.
 !     --------------------------------
 !
- 
+
       W4= U(XI,XJ,XK,XL,THI,THJ,THK,THL)+&
     U(XI,XK,XJ,XL,THI,THK,THJ,THL)+&
     U(XI,XL,XJ,XK,THI,THL,THJ,THK)+&
@@ -1691,11 +1691,11 @@
     U(XK,XL,XI,XJ,THK,THL,THI,THJ)
 
 
-      W4=W4/3. 
-               
+      W4=W4/3.
+
       RETURN
       END FUNCTION W4
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *B3(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1811,7 +1811,7 @@
 
       RETURN
       END FUNCTION B3
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *B4(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1891,9 +1891,9 @@
       THJK = VDIR(RJ,RK,THJ,THK)
 
       RKL  = VABS(RK,RL,THK,THL)
-      THKL = VDIR(RK,RL,THK,THL)      
+      THKL = VDIR(RK,RL,THK,THL)
 
-      
+
       ZIJKL = OI+OJ+OK+OL
 
       B4= -1./ZIJKL*(2./3.*(    &
@@ -1907,7 +1907,7 @@
 
       RETURN
       END FUNCTION B4
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *B1(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -1995,10 +1995,10 @@
       THJK = VDIR(RJ,RK,THJ,THK)
 
       RKL  = VABS(RK,RL,THK,THL)
-      THKL = VDIR(RK,RL,THK,THL)      
-      
+      THKL = VDIR(RK,RL,THK,THL)
+
       ZIJKL = OI-OJ-OK-OL
-      
+
       B1= -1./ZIJKL*(2./3.*(    &
       MIN(RI,RJ,RIJ,THI,THJ,THIJ)*A1(RKL,RK,RL,THKL,THK,THL)&
     +VMIN(RI,RK,RIK,THI,THK,THIK)*A1(RJL,RJ,RL,THJL,THJ,THL)&
@@ -2006,11 +2006,11 @@
     +VMIN(RK,RI,RKI,THK,THI,THKI)*A3(RJL,RJ,RL,THJL-PI,THJ,THL)&
     +VMIN(RL,RI,RLI,THL,THI,THLI)*A3(RJK,RJ,RK,THJK-PI,THJ,THK)&
     +VMIN(RJ,RI,RJI,THJ,THI,THJI)*A3(RKL,RK,RL,THKL-PI,THK,THL) &
-    ) +W1(RI,RJ,RK,RL,THI,THJ,THK,THL) )    
+    ) +W1(RI,RJ,RK,RL,THI,THJ,THK,THL) )
       RETURN
       END FUNCTION B1
 
-!      
+!
 !-----------------------------------------------------------------------
 !
 !***  *REAL FUNCTION* *B2(XI,XJ,XK,XL,THI,THJ,THK,THL)
@@ -2096,7 +2096,7 @@
       THKJ = VDIR(RK,RJ,THK,THJ-PI)
 
       RKL  = VABS(RK,RL,THK,THL)
-      THKL = VDIR(RK,RL,THK,THL)   
+      THKL = VDIR(RK,RL,THK,THL)
 
       B2=  A3(RI,RJ,RIJ,THI,THJ,THIJ-PI)*A3(RK,RL,RKL,THK,THL,THKL-PI)&
     +A1(RJ,RK,RJK,THJ,THK,THJK)*A1(RL,RI,RLI,THL,THI,THLI)&
@@ -2254,7 +2254,7 @@
 !
 !***  1. DETERMINE NONLINEAR TRANSFER.
 !     --------------------------------
-!    
+!
       IF (DOUBLEP) THEN
          DEL1 = 10.**(-8)
       ELSE
@@ -2371,7 +2371,7 @@
       END FUNCTION VG
 !---------------------------------------------------------------------
       REAL FUNCTION AKI(OM,BETA)
-! This function gives the wavenumber ... 
+! This function gives the wavenumber ...
 !---------------------------------------------------------------------
 !
       IMPLICIT NONE

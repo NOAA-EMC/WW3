@@ -17,7 +17,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -99,7 +99,7 @@
 !     See notes in the file below where to add these elements.
 !
 !  6. Switches :
-!  
+!
 !     !/S  Enable subroutine tracing.
 !
 !  7. Source code :
@@ -466,7 +466,7 @@
 !     ***    The initialization routine should include all   ***
 !     *** initialization, including reading data from files. ***
 !     **********************************************************
-!      
+!
       IF ( FIRST ) THEN
           CALL INSDSX
           FIRST  = .FALSE.

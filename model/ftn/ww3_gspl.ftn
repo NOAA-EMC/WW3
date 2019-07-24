@@ -31,7 +31,7 @@
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -419,7 +419,7 @@
           IF ( IGY .EQ. NGY ) THEN
               IGYN   = NY
             ELSE
-              IGYN   = NINT ( REAL(NY*IGY) / REAL(NGY)  ) 
+              IGYN   = NINT ( REAL(NY*IGY) / REAL(NGY)  )
             END IF
           IGXN   = 0
 !
@@ -429,7 +429,7 @@
             IF ( IGX .EQ. NGX ) THEN
                 IGXN   = NX
               ELSE
-                IGXN   = NINT ( REAL(NX*IGX) / REAL(NGX)  ) 
+                IGXN   = NINT ( REAL(NX*IGX) / REAL(NGX)  )
               END IF
 !
             DO IX=IGX0, IGXN
@@ -723,7 +723,7 @@
         IF ( MSTATS%NMIN .GT. INGMIN ) THEN
             INGMIN = MSTATS%NMIN
             INGMNC = 0
-          ELSE 
+          ELSE
             INGMNC = INGMNC + 1
           END IF
 !
@@ -979,11 +979,11 @@
         WRITE (NDSM,980) MSPLIT(IY,:)
         END DO
 !
-!/O16      CLOSE ( NDSG ) 
+!/O16      CLOSE ( NDSG )
 !
 !/O16      OPEN ( NDSG,FILE='ww3.ctl')
 !/O16      WRITE (NDSG,985)  NX, X0, SX, NY, Y0, SY, NTGRDS
-!/O16      CLOSE ( NDSG ) 
+!/O16      CLOSE ( NDSG )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9.  End of program
@@ -1414,7 +1414,7 @@
         MY     = 1 + GSTATS(IG)%NYH - GSTATS(IG)%NYL
         MX     = 1 + GSTATS(IG)%NXH - GSTATS(IG)%NXL
         IF ( GSTATS(IG)%STRADLE ) MX     = MX + NX
-        ICIRC  = 2 * ( MX + MY ) 
+        ICIRC  = 2 * ( MX + MY )
 !
         NWDTH  = 1
 !
@@ -1785,7 +1785,7 @@
 !/
 !  1. Purpose :
 !
-!     Reassign unassigned grid points to gridsR. Dealing with lost 
+!     Reassign unassigned grid points to gridsR. Dealing with lost
 !     point by finding clostst grids.
 !
 ! 10. Source code :
@@ -2764,7 +2764,7 @@
 !
         IF ( NNEXT .GE. 1 ) THEN
             GSTATS(IG)%INSTAT = .FALSE.
-!/T6            WRITE (NDST,9032) 
+!/T6            WRITE (NDST,9032)
           ELSE
 !
 ! 3.c Biggest grid is isolated, should split
