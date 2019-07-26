@@ -329,7 +329,13 @@
             CALL W3SETG ( IMOD, MDSE, MDST )
             CALL W3SETI ( IMOD, MDSE, MDST )
 !
+! XXX RPH
+!           write(900,*) "CALLING WMUPD2"
+
             CALL WMUPD2 ( IMOD, J, JJ, IERR )
+! XXX RPH
+!           write(900,*) " WMUPD2 FINISH"
+
 !
 ! 4.  Forcing input from CPL ----------------------------------------- /
 !
@@ -905,6 +911,7 @@
 ! 2.a-3 Ice parameter 5
 !
         CASE (-3)
+
           CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP5,                      &
                         JMOD, INPUTS(JMOD)%ICEP5, 0. )
 !
@@ -942,16 +949,27 @@
 ! 2.c Wind speeds
 !
         CASE (3)
+! XXX RPH
+!           write(900,*) "CALLING WMUPDV FOR WIND"
+
           CALL WMUPDV ( IMOD, INPUTS(IMOD)%WXN, INPUTS(IMOD)%WYN,     &
                         JMOD, INPUTS(JMOD)%WXN, INPUTS(JMOD)%WYN,     &
                         0., ICONSW )
+! XXX RPH
+!           write(900,*) " WMUPDV getting out FOR WIND"
           IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS                 &
                       ( IMOD, INPUTS(IMOD)%DTN,                       &
                         JMOD, INPUTS(JMOD)%DTN, 0. )
+! XXX RPH
+!           write(900,*) "IDINP(IMOD,J)= ",IDINP(IMOD,J)
+
 !
 ! 2.d Ice concentrations
 !
         CASE (4)
+! XXX RPH
+           !write(900,*) "CALLING WMUPDS FOR ICE CONCENTRTION"
+
           CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEI,                      &
                         JMOD, INPUTS(JMOD)%ICEI, 0. )
           IF ( IDINP(IMOD,J) .EQ. 'ISI' ) CALL WMUPDS                 &
@@ -1057,6 +1075,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
 !
@@ -1157,11 +1177,11 @@
                                  WTOT, WL
 
       REAL                    :: LONC, LATC, SXC, SYC, SXYC,          &
-                                 XDI, DTOLER, VALUEINTER           !RP
+                                 XDI, DTOLER, VALUEX, VALUEY       !RP
 
       REAL, ALLOCATABLE       :: RXA(:,:), RYA(:,:)
 
-      REAL, ALLOCATABLE       :: VARIN(:,:)                        !RP
+!      REAL, ALLOCATABLE       :: VARIN(:,:)                        !RP
 
       LOGICAL                 :: MAP1(NX,NY), MAP2(NX,NY),            &
                                  MAP3(NX,NY), FLAGUP
@@ -1200,6 +1220,16 @@
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
+
+!XXX RPH NEW HERE
+
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
+
 
       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
@@ -1279,48 +1309,34 @@
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 !======================================================================
 !======================================================================
+        !ALLOCATE (VARIN(NXI,NYI)) 
 
-        ALLOCATE (VARIN(NXI,NYI)) 
-
-!       GETTING THE INFO FOR THE INPUT FIELD 
-!        NXI    => GRIDS(JMOD)%NX
-!        NYI    => GRIDS(JMOD)%NY
-!       X0I    => GRIDS(JMOD)%X0
-!       Y0I    => GRIDS(JMOD)%Y0
-!        SXI    => GRIDS(JMOD)%SX
-!        SYI    => GRIDS(JMOD)%SY
         XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
         YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
-!        HPFACI => GRIDS(JMOD)%HPFAC  !DELTAS IN LON FOR INPUT
-!        HQFACI => GRIDS(JMOD)%HQFAC  !DELTAS IN LAT FOR INPUT
-
-!         LONI=XGRDI    
-!         LATI=YGRDI   
 
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
         XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-
         HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
         HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
 
-
 ! 2.a.1  running over the vector components
-      DO IFIELDS=1,2
-        VARIN     = UNDEF
-        IF(IFIELDS==1) THEN
-          VARIN=VXI
-        ELSE
-          VARIN=VYI
-        END IF
+!!      DO IFIELDS=1,2
+!XX        VARIN     = UNDEF
+!XX        IF(IFIELDS==1) THEN
+!XX          VARIN=VXI
+!XX        ELSE
+!XX          VARIN=VYI
+!XX        END IF
+
+
 ! 2.a.2  running over the curvilinear grid
         DO J=1,NY
           DO I=1,NX
-
-            LONC=XGRDC(I,J)   !LON FOR EVERY CURVL GRID POINT
-            LATC=YGRDC(I,J)   !LAT FOR EVERY CURVL GRID POINT
-            SXC  =HPFAC(I,J)  !DELTA IN LON FOR CURVI GRID
-            SYC  =HQFAC(I,J)  !DELTA IN LAT FOR CURVI GRID
+            LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
+            LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
+            SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
+            SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
             !CHOOSING THE LARGEST DELTA
             SXYC=MAX(SXC,SYC)
@@ -1332,28 +1348,36 @@
             ENDIF
 
 
-            IF (MXA .EQ. 2) THEN
-              VALUEINTER=INTERPOLATE(NXI,XGRDI,NYI,YGRDI,  &
-                         VARIN,LONC,LATC,DTOLER)
+            !IF (MXA .EQ. 2) THEN
+            IF (.TRUE.) THEN
+              !write(998,*) "  CALLING INTERPOLATE"
+              CALL INTERPOLATE2D(NXI,XGRDI(1,:),NYI,YGRDI(:,1), &
+                         VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
             ELSE
               ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
               ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
               ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
               NPOIX=INT(SXC/SXI)
               NPOIY=INT(SYC/SYI)
-              VALUEINTER=AVERAGING(NXI,XGRDI,NYI,YGRDI,    &
-                         VARIN,LONC,LATC,NPOIX,NPOIY,MXA)
+              !write(998,*) "  CALLING AVERAGING"
+              ! XXX RPH  delete MXA from the input list when cleaning up
+              !!VALUEX=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
+              !!           VARIN,LONC,LATC,NPOIX,NPOIY,MXA)
             ENDIF
-   
-            IF(IFIELDS==1) THEN
-              VX(I,J)=VALUEINTER
-            ELSE
-              VY(I,J)=VALUEINTER
-            END IF
+            ! XXX RPH    VX and VY have dimensions NX, NY !!
+            !!IF(IFIELDS==1) THEN
+              VX(I,J)=VALUEX
+            !write(990,*) LONC, LATC, VX(I,J)
+            !!ELSE
+              VY(I,J)=VALUEY
+            !write(991,*) LONC, LATC, VY(I,J)
+            !!END IF
+
           END DO  !END I
         END DO  !END J
-      END DO  !END IFIELDS
-      DEALLOCATE (VARIN)
+      !!END DO  !END IFIELDS
+      !!DEALLOCATE (VARIN)
+
 !=======================================================================
 !=======================================================================
       ELSE
@@ -1372,9 +1396,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-        NXA    = 0
-        RXA    = 0.
+! XXX RPH        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+! XXX RPH        NXA    = 0
+! XXX RPH        RXA    = 0.
 !
         IF ( MXA .EQ. 2 ) THEN
 !
@@ -1481,9 +1505,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-        NYA    = 0
-        RYA    = 0.
+! XXX RPH        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+! XXX RPH        NYA    = 0
+! XXX RPH        RYA    = 0.
 !
         IF ( MYA .EQ. 2 ) THEN
 !
@@ -1544,6 +1568,7 @@
         END IF
 !
       END IF
+
 !
 !/T1      DO, IY=1, NY
 !/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
@@ -1556,6 +1581,7 @@
       MAP2   = .FALSE.
       FACTOR = 1.
 !
+
       DO IX=1, NX
         IF ( NXA(IX,0) .EQ. 0 ) CYCLE
         DO IY=1, NY
@@ -1602,6 +1628,7 @@
             END IF
           END DO
         END DO
+
 !
 ! 2.d Reconcile mask differences
 !
@@ -1668,6 +1695,7 @@
             EXIT
           END IF
         END DO
+
 !
 ! 3. End of routine -------------------------------------------------- /
 !
@@ -1710,6 +1738,8 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
 !
@@ -1840,6 +1870,18 @@
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
 
+
+!XXX RPH NEW HERE===================================
+
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
+!====================================================
+
+
       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
          ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
@@ -1917,39 +1959,24 @@
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 !======================================================================
 !======================================================================
-
 ! 2.a.1    Getting the info for reg and curvi grids
-!        NXI    => GRIDS(JMOD)%NX
-!        NYI    => GRIDS(JMOD)%NY
-!       X0I    => GRIDS(JMOD)%X0
-!       Y0I    => GRIDS(JMOD)%Y0
-!        SXI    => GRIDS(JMOD)%SX
-!        SYI    => GRIDS(JMOD)%SY
+
         XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
         YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
-!        HPFACI => GRIDS(JMOD)%HPFAC  !DELTAS IN LON FOR INPUT
-!        HQFACI => GRIDS(JMOD)%HQFAC  !DELTAS IN LAT FOR INPUT
-
-!         LONI=XGRDI
-!         LATI=YGRDI
 
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
         XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-
         HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
         HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
-
-
-
 
 ! 2.a.2  running over the curvilinear grid
       DO J=1,NY
         DO I=1,NX
-          LONC=XGRDC(I,J)   !LON FOR EVERY CURVL GRID POINT
-          LATC=YGRDC(I,J)   !LAT FOR EVERY CURVL GRID POINT
-          SXC  =HPFAC(I,J)  !DELTA IN LON FOR CURVI GRID
-          SYC  =HQFAC(I,J)  !DELTA IN LAT FOR CURVI GRID
+          LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
+          LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
+          SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
+          SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
           !CHOOSING THE LARGEST DELTA
           SXYC=MAX(SXC,SYC)
@@ -1961,19 +1988,23 @@
           ENDIF
 
 
-          IF (MXA .EQ. 2) THEN
-            VALUEINTER=INTERPOLATE(NXI,XGRDI,NYI,YGRDI,  &
+           !IF (MXA .EQ. 2) THEN
+            !IF (.TRUE.) THEN
+
+            VALUEINTER=INTERPOLATE(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
                        FDI,LONC,LATC,DTOLER)
-          ELSE
+
+            !ELSE
             ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
             ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
             ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
-            NPOIX=INT(SXC/SXI)
-            NPOIY=INT(SYC/SYI)
-            VALUEINTER=AVERAGING(NXI,XGRDI,NYI,YGRDI,   &
-                       FDI,LONC,LATC, NPOIX,NPOIY,MXA)
-          ENDIF
-
+            !NPOIX=INT(SXC/SXI)
+            !NPOIY=INT(SYC/SYI)
+            !write(999,*) "  FLAG 06.3"
+            !VALUEINTER=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),   &
+            !           FDI,LONC,LATC, NPOIX,NPOIY,MXA)
+            !write(999,*) "  FLAG 06.1"
+          !ENDIF
           FD(I,J)=VALUEINTER
         END DO  !END I
       END DO  !END J
@@ -1998,9 +2029,11 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-        NXA    = 0
-        RXA    = 0.
+! XXX RPH COMMENTING OUT and adding on the top of the subroutine
+!        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+!        NXA    = 0
+!        RXA    = 0.
+!
 !
         IF ( MXA .EQ. 2 ) THEN
 !
@@ -2105,9 +2138,11 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-        NYA    = 0
-        RYA    = 0.
+! XXX RPH  COMMENTIG OUT and adding these lines ad the top
+!        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+!        NYA    = 0
+!        RYA    = 0.
+!
 !
         IF ( MYA .EQ. 2 ) THEN
 !
@@ -2295,20 +2330,55 @@
       END SUBROUTINE WMUPDS
 !=======================================================================
 
-! !!MODULE INTERPREC2ANY
-
-!      CONTAINS
-
       FUNCTION XYCURVISEARCH(LENGTH, ARRAY, VALUE, DELTA)
-      ! GIVEN AN ARRAY  AND A VALUE TO SEARCH, IT RETURNS THE INDEX OF
-      ! THE ELEMENT ON THE RECTILINEAR GRID THAT IS CLOSEST TO, BUT 
-      ! LESS THAN, THE GIVEN VALUE.
-      ! "DELTA" IS THE THERSHOLD  USED TO DETERMINE IF TWO VALUES ARE EQUAL
-      ! IF ( ABS(X1 - X2) <= DELTA) THEN
-      !    ASSUME X1 = X2
-      ! ENDIF
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         20-Jan-2017 |
+!/                  +-----------------------------------+
+!/
+!/    01-Jul-2019 : Origination.                        ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/                  (R. Padilla-Hernandez, EMC/NOAA)
+!/
+!/    Copyright 2009 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!    Search the location of a point(XC,YC) in a regular grid
+!
+!
+!  2. Variables and types :
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!     See subroutine documentation.
+!
+!  5. Remarks :
+!       GIVEN AN ARRAY  AND A VALUE TO SEARCH, IT RETURNS THE INDEX OF
+!       THE ELEMENT ON THE RECTILINEAR GRID THAT IS CLOSEST TO, BUT 
+!       LESS THAN, THE GIVEN VALUE.
+!       "DELTA" IS THE THERSHOLD  USED TO DETERMINE IF TWO VALUES ARE EQUAL
+!       IF ( ABS(X1 - X2) <= DELTA) THEN
+!          ASSUME X1 = X2
+!       ENDIF
+!
+!  6. Switches :
+!
+!
+!  7. Source code :
 
-      !IMPLICIT NONE
       INTEGER, INTENT(IN) :: LENGTH
       REAL, DIMENSION(LENGTH), INTENT(IN) :: ARRAY
       REAL, INTENT(IN) :: VALUE
@@ -2348,7 +2418,6 @@
       ! BY XARRAY WITH DIMENSION X_LEN 
       ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
 
-      !IMPLICIT NONE
       INTEGER, INTENT(IN) :: X_LEN, Y_LEN
       REAL, DIMENSION(X_LEN), INTENT(IN) :: XARRAY
       REAL, DIMENSION(Y_LEN), INTENT(IN) :: YARRAY
@@ -2370,7 +2439,6 @@
       Y2 = YARRAY(JNX+1)
  
       DENOM = (X2 - X1)*(Y2 - Y1)
-      
 
       INTERPOLATE = (FUNC(INX,JNX)*(X2-X)*(Y2-Y) +           &
                      FUNC(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
@@ -2379,6 +2447,49 @@
 
       END FUNCTION INTERPOLATE
 
+!========================================================================
+
+       SUBROUTINE INTERPOLATE2D(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC1, &
+                                FUNC2,X,Y,DELTA,VAL1,VAL2)
+      ! THIS FUNCTION USES BILINEAR INTERPOLATION TO ESTIMATE THE VALUE
+      ! OF A FUNCTION F AT POINT (X,Y)
+      ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
+      ! BY XARRAY WITH DIMENSION X_LEN 
+      ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
+
+      INTEGER, INTENT(IN) :: X_LEN, Y_LEN
+      REAL, DIMENSION(X_LEN), INTENT(IN) :: XARRAY
+      REAL, DIMENSION(Y_LEN), INTENT(IN) :: YARRAY
+      REAL, DIMENSION(X_LEN, Y_LEN), INTENT(IN) :: FUNC1, FUNC2
+      REAL, INTENT(IN) :: X,Y
+      REAL, INTENT(IN), OPTIONAL :: DELTA
+      REAL, INTENT(OUT) :: VAL1,VAL2
+
+      REAL :: DENOM, X1, X2, Y1, Y2
+      INTEGER :: INX,JNX
+
+      INX = XYCURVISEARCH(X_LEN, XARRAY, X)
+      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y)
+
+      X1 = XARRAY(INX)
+      X2 = XARRAY(INX+1)
+
+      Y1 = YARRAY(JNX)
+      Y2 = YARRAY(JNX+1)
+ 
+      DENOM = (X2 - X1)*(Y2 - Y1)
+
+      VAL1 = (FUNC1(INX,JNX)*(X2-X)*(Y2-Y) +           &
+                     FUNC1(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
+                     FUNC1(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
+                     FUNC1(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
+      VAL2 = (FUNC2(INX,JNX)*(X2-X)*(Y2-Y) +           &
+                     FUNC2(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
+                     FUNC2(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
+                     FUNC2(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
+
+      END SUBROUTINE INTERPOLATE2D
+!====================================================================
 
       REAL FUNCTION AVERAGING(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
                               X,Y,NPX,NPY,MAM)
@@ -2438,8 +2549,8 @@
       END IF
 
 
-!      PRINT*,'AVERAGE MXA NPX NPY INITIALX INFINX INITIALY INFINY:',
-!     1          MAM, NPX, NPY, INITIALX, INFINX, INITIALY, INFINY
+      !WRITE(998,*)'AVERAGE MXA NPX NPY INITIALX INFINX INITIALY    &
+      !INFINY:', MAM, NPX, NPY, INITIALX, INFINX, INITIALY, INFINY
 
 
       SUM=0.0 
