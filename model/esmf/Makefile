@@ -174,6 +174,8 @@ gout:
 	$(WW3_BINDIR)/w3_make ww3_ounp
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/OMPG/ /g"\
+	     -e "s/OMPH/ /g"\
              -e "s/MPIT/ /g"\
              -e "s/MPI/ /g"\
              -e "s/PDLIB/ /g"\
