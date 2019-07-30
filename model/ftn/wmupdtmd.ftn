@@ -1176,8 +1176,8 @@
       REAL                    :: VXL, VYL, VA0, VA, VA2, FACTOR,      &
                                  WTOT, WL
 
-      REAL                    :: LONC, LATC, SXC, SYC, SXYC,          &
-                                 XDI, DTOLER, VALUEX, VALUEY       !RP
+      REAL                    :: LONC, LATC, SXYC,                    &
+                                 XDI, DTOLER, VALUEX, VALUEY 
 
       REAL, ALLOCATABLE       :: RXA(:,:), RYA(:,:)
 
@@ -1307,9 +1307,6 @@
 !
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-!======================================================================
-!======================================================================
-        !ALLOCATE (VARIN(NXI,NYI)) 
 
         XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
         YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
@@ -1317,69 +1314,46 @@
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
         XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-        HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
-        HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
-
-! 2.a.1  running over the vector components
-!!      DO IFIELDS=1,2
-!XX        VARIN     = UNDEF
-!XX        IF(IFIELDS==1) THEN
-!XX          VARIN=VXI
-!XX        ELSE
-!XX          VARIN=VYI
-!XX        END IF
-
-
-! 2.a.2  running over the curvilinear grid
+        !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+        !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+!IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
+        DTOLER = 1E-5 
+! 2.a.1  running over the curvilinear grid
         DO J=1,NY
           DO I=1,NX
             LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
             LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
-            SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
-            SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
+            !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
+            !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
             !CHOOSING THE LARGEST DELTA
-            SXYC=MAX(SXC,SYC)
-            XDI=SXYC/SXI
-            IF(XDI .LT. 2.00) THEN
-              MXA=2
-            ELSE
-              MXA=2+INT(XDI)
-            ENDIF
-
+            !!SXYC=MAX(SXC,SYC)
+            !!XDI=SXYC/SXI
+            !!IF(XDI .LT. 2.00) THEN
+            !!  MXA=2
+            !!ELSE
+            !!  MXA=2+INT(XDI)
+            !!ENDIF
 
             !IF (MXA .EQ. 2) THEN
-            IF (.TRUE.) THEN
-              !write(998,*) "  CALLING INTERPOLATE"
-              CALL INTERPOLATE2D(NXI,XGRDI(1,:),NYI,YGRDI(:,1), &
-                         VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
-            ELSE
-              ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
-              ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
-              ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
-              NPOIX=INT(SXC/SXI)
-              NPOIY=INT(SYC/SYI)
-              !write(998,*) "  CALLING AVERAGING"
-              ! XXX RPH  delete MXA from the input list when cleaning up
-              !!VALUEX=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
-              !!           VARIN,LONC,LATC,NPOIX,NPOIY,MXA)
-            ENDIF
-            ! XXX RPH    VX and VY have dimensions NX, NY !!
-            !!IF(IFIELDS==1) THEN
-              VX(I,J)=VALUEX
-            !write(990,*) LONC, LATC, VX(I,J)
-            !!ELSE
-              VY(I,J)=VALUEY
-            !write(991,*) LONC, LATC, VY(I,J)
-            !!END IF
+            CALL INTERPOLATE2D(NXI,XGRDI(1,:),NYI,YGRDI(:,1), &
+                       VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
+            !ELSE
+            ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
+            ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
+            ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
+            !NPOIX=INT(SXC/SXI)
+            !NPOIY=INT(SYC/SYI)
+            !!VALUEX=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
+            !!           VARIN,LONC,LATC,NPOIX,NPOIY)
+            !ENDIF
+
+            VX(I,J)=VALUEX
+            VY(I,J)=VALUEY
 
           END DO  !END I
         END DO  !END J
-      !!END DO  !END IFIELDS
-      !!DEALLOCATE (VARIN)
 
-!=======================================================================
-!=======================================================================
       ELSE
 !
 ! 2.b Rectilinear grids
@@ -1396,9 +1370,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-! XXX RPH        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-! XXX RPH        NXA    = 0
-! XXX RPH        RXA    = 0.
+! XXX         ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+! XXX         NXA    = 0
+! XXX         RXA    = 0.
 !
         IF ( MXA .EQ. 2 ) THEN
 !
@@ -1505,9 +1479,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-! XXX RPH        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-! XXX RPH        NYA    = 0
-! XXX RPH        RYA    = 0.
+! XXX         ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+! XXX         NYA    = 0
+! XXX         RYA    = 0.
 !
         IF ( MYA .EQ. 2 ) THEN
 !
@@ -1834,8 +1808,8 @@
                                  XSR, YFL, YFR, YSL, YSR
       REAL                    :: FDL, WTOT, WL
 
-      REAL                    :: LONC, LATC, SXC, SYC, SXYC,          &
-                                 XDI, DTOLER, VALUEINTER           !RP
+      REAL                    :: LONC, LATC,  SXYC,                   &
+                                 XDI, DTOLER, VALUEINTER 
 
       REAL, ALLOCATABLE       :: RXA(:,:), RYA(:,:)
 
@@ -1957,60 +1931,31 @@
 !
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-!======================================================================
-!======================================================================
-! 2.a.1    Getting the info for reg and curvi grids
 
+! 2.a.1    Getting the info for reg and curvi grids
         XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
         YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
 
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
         XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-        HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
-        HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
-
+        !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+        !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+!IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
+        DTOLER = 1E-5 
 ! 2.a.2  running over the curvilinear grid
       DO J=1,NY
         DO I=1,NX
           LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
           LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
-          SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
-          SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
+          !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
+          !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
-          !CHOOSING THE LARGEST DELTA
-          SXYC=MAX(SXC,SYC)
-          XDI=SXYC/SXI
-          IF(XDI .LT. 2.00) THEN
-            MXA=2
-          ELSE
-            MXA=2+INT(XDI)
-          ENDIF
-
-
-           !IF (MXA .EQ. 2) THEN
-            !IF (.TRUE.) THEN
-
-            VALUEINTER=INTERPOLATE(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
-                       FDI,LONC,LATC,DTOLER)
-
-            !ELSE
-            ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
-            ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
-            ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
-            !NPOIX=INT(SXC/SXI)
-            !NPOIY=INT(SYC/SYI)
-            !write(999,*) "  FLAG 06.3"
-            !VALUEINTER=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),   &
-            !           FDI,LONC,LATC, NPOIX,NPOIY,MXA)
-            !write(999,*) "  FLAG 06.1"
-          !ENDIF
+          VALUEINTER=INTERPOLATE(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
+                     FDI,LONC,LATC,DTOLER)
           FD(I,J)=VALUEINTER
         END DO  !END I
       END DO  !END J
-
-!=======================================================================
-!=======================================================================
 
       ELSE
 !
@@ -2029,7 +1974,6 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-! XXX RPH COMMENTING OUT and adding on the top of the subroutine
 !        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
 !        NXA    = 0
 !        RXA    = 0.
@@ -2337,10 +2281,10 @@
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
+!/                  (R. Padilla-Hernandez, EMC/NOAA)
 !/
 !/    01-Jul-2019 : Origination.                        ( version 7.XX )
 !/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
-!/                  (R. Padilla-Hernandez, EMC/NOAA)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2352,18 +2296,32 @@
 !    Search the location of a point(XC,YC) in a regular grid
 !
 !
-!  2. Variables and types :
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       LENGTH  Int.  Input  Dimension of input array 
+!       ARRAY   Int.  Input  1D array for lats or longs
+!       VALUE   Real  Input  Value to be located in ARRAY
+!       DELTA   Real  Input  Threshold to determine if two values 
+!                            are equal
+!     ----------------------------------------------------------------
+!
+!     Internal parameters
+!     ----------------------------------------------------------------
+! 
+!     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
 !
-!      Name      Type  Scope    Description
+!      Name           Type       Scope            Description
 !     ----------------------------------------------------------------
-!
+!     XYCURVISEARCH   Function   Find indexes     See bellow
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
 !
-!     See subroutine documentation.
+!     -
 !
 !  5. Remarks :
 !       GIVEN AN ARRAY  AND A VALUE TO SEARCH, IT RETURNS THE INDEX OF
@@ -2375,7 +2333,7 @@
 !       ENDIF
 !
 !  6. Switches :
-!
+!     -
 !
 !  7. Source code :
 
@@ -2387,7 +2345,7 @@
       INTEGER :: XYCURVISEARCH
 
       INTEGER :: LEFT, MIDDLE, RIGHT
-      REAL :: D
+      
       
       LEFT = 1
       RIGHT = LENGTH
@@ -2396,7 +2354,7 @@
              EXIT
           ENDIF
           MIDDLE = NINT((LEFT+RIGHT) / 2.0)
-          IF ( ABS(ARRAY(MIDDLE) - VALUE) <= D) THEN
+          IF ( ABS(ARRAY(MIDDLE) - VALUE) <= DELTA) THEN
              XYCURVISEARCH = MIDDLE
              RETURN
           ELSE IF (ARRAY(MIDDLE) > VALUE) THEN
@@ -2408,10 +2366,86 @@
       XYCURVISEARCH = RIGHT
 
       END FUNCTION XYCURVISEARCH
-
+!  End of function -------------------------------------------------- /
      
       REAL FUNCTION INTERPOLATE(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
                                 X,Y,DELTA)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        25-July-2019 |
+!/                  +-----------------------------------+
+!/
+!/                     (R. Padilla-Hernandez, EMC/NOAA)
+!/
+!/    29-July-2019 :                        ( version 7.XX )
+!/
+!  1. Purpose :
+!
+!     Perform interpolation from regular to curvilinear grid for a
+!     scalar field. THIS FUNCTION USES BILINEAR INTERPOLATION TO 
+!     ESTIMATE THE VALUE OF A FUNCTION F AT POINT (X,Y) F IS ASSUMED 
+!     TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED BY 
+!     XARRAY WITH DIMENSION X_LEN AND THE GRID Y VALUES SPECIFIED BY 
+!     YARRAY WITH DIMENSION Y_LEN
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       X_LEN    Int.  Dimension in X 
+!       XARRAY   Int.  1D array for Longitudes
+!       Y_LEN    Int.  Dimension in Y
+!       YARRAY   Int.  1D array for Latitudes
+!       FUNC     Int.  1D Field
+!       X,Y      Real  Long-Lat for point in the curv grid
+!       DELTA    Real  Threshold to determine if two values are equal
+!     ----------------------------------------------------------------
+!
+!     Internal parameters
+!     ----------------------------------------------------------------
+!       INX     Int.  Index in X on the rectiliniear grid that is 
+!                     closest to, but less than, the given value for a 
+!                     point in the curvilinear grid.
+!       JNX     Int.  Idem INX for for Y. 
+!       X1,Y1   Real  (Long, Lat) left-bottom corner for the square in
+!                     regular grid, where the given value for the point
+!                     in the curvilinear grid lies 
+!       X2,Y2   Real  (Long, Lat) right-upper corner for the square in
+!                     regular grid, where the given value for the point
+!                     in the curvilinear grid lies 
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines used :
+!
+!      Name          Type   Module   Description
+!     ----------------------------------------------------------------
+!     XYCURVISEARCH   Func. wmupdtmd Look for indexes in 1D array.
+!     ----------------------------------------------------------------
+!
+!  4. Called by :
+!
+!     Main program in which it is contained.
+!
+!  5. Error messages :
+!
+!       None.
+!
+!  6. Remarks :
+!
+!     -
+!
+!  7. Structure :
+!
+!     See source code.
+!
+!  8. Switches :
+!
+!       -
+!
+!  9. Source code :
       ! THIS FUNCTION USES BILINEAR INTERPOLATION TO ESTIMATE THE VALUE
       ! OF A FUNCTION F AT POINT (X,Y)
       ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
@@ -2429,8 +2463,8 @@
       REAL :: DENOM, X1, X2, Y1, Y2
       INTEGER :: INX,JNX
 
-      INX = XYCURVISEARCH(X_LEN, XARRAY, X)
-      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y)
+      INX = XYCURVISEARCH(X_LEN, XARRAY, X, DELTA)
+      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
 
       X1 = XARRAY(INX)
       X2 = XARRAY(INX+1)
@@ -2451,12 +2485,85 @@
 
        SUBROUTINE INTERPOLATE2D(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC1, &
                                 FUNC2,X,Y,DELTA,VAL1,VAL2)
-      ! THIS FUNCTION USES BILINEAR INTERPOLATION TO ESTIMATE THE VALUE
-      ! OF A FUNCTION F AT POINT (X,Y)
-      ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
-      ! BY XARRAY WITH DIMENSION X_LEN 
-      ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
-
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        25-July-2019 |
+!/                  +-----------------------------------+
+!/
+!/                     (R. Padilla-Hernandez, EMC/NOAA)
+!/
+!/    29-July-2019 :                        ( version 7.XX )
+!/
+!  1. Purpose :
+!
+!     Perform interpolation from regular to curvilinear grid for a
+!     Vector field. THIS FUNCTION USES BILINEAR INTERPOLATION TO 
+!     ESTIMATE THE VALUE OF A FUNCTION F AT POINT (X,Y) F IS ASSUMED
+!     TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED BY 
+!     XARRAY WITH DIMENSION X_LEN AND THE GRID Y VALUES SPECIFIED BY 
+!     YARRAY WITH DIMENSION Y_LEN
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       X_LEN     Int.  Dimension in X 
+!       XARRAY    Int.  1D array for Longitudes
+!       Y_LEN     Int.  Dimension in Y
+!       YARRAY    Int.  1D array for Latitudes
+!       FUNC1     Int.  First componen of the 2D array
+!       FUNC2     Int.  Second component of the 2D array
+!       X,Y       Real  Long-Lat for point in the curv grid
+!       DELTA     Real  Threshold to determine if two values are equal
+!       VAL1,VAL2 Real  Interpolated values at a point in curvi grid
+!     ----------------------------------------------------------------
+!
+!     Internal parameters
+!     ----------------------------------------------------------------
+!       INX     Int.  Index in X on the rectiliniear grid that is 
+!                     closest to, but less than, the given value for a 
+!                     point in the curvilinear grid.
+!       JNX     Int.  Idem INX for for Y. 
+!       X1,Y1   Real  (Long, Lat) left-bottom corner for the square in
+!                     regular grid, where the given value for the point
+!                     in the curvilinear grid lies 
+!       X2,Y2   Real  (Long, Lat) right-upper corner for the square in
+!                     regular grid, where the given value for the point
+!                     in the curvilinear grid lies 
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name          Type   Module   Description
+!     ----------------------------------------------------------------
+!     XYCURVISEARCH   Func. wmupdtmd Look for indexes in 1D array.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Main program in which it is contained.
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!     -
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       -
+!
+! 10. Source code :
+!
       INTEGER, INTENT(IN) :: X_LEN, Y_LEN
       REAL, DIMENSION(X_LEN), INTENT(IN) :: XARRAY
       REAL, DIMENSION(Y_LEN), INTENT(IN) :: YARRAY
@@ -2465,11 +2572,11 @@
       REAL, INTENT(IN), OPTIONAL :: DELTA
       REAL, INTENT(OUT) :: VAL1,VAL2
 
-      REAL :: DENOM, X1, X2, Y1, Y2
+      REAL :: DENOM, X1, X2, Y1, Y2,C1,C2,C3,C4
       INTEGER :: INX,JNX
 
-      INX = XYCURVISEARCH(X_LEN, XARRAY, X)
-      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y)
+      INX = XYCURVISEARCH(X_LEN, XARRAY, X, DELTA)
+      JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
 
       X1 = XARRAY(INX)
       X2 = XARRAY(INX+1)
@@ -2478,21 +2585,34 @@
       Y2 = YARRAY(JNX+1)
  
       DENOM = (X2 - X1)*(Y2 - Y1)
+      C1=(X2-X)*(Y2-Y)
+      C2=(X-X1)*(Y2-Y)
+      C3=(X2-X)*(Y-Y1)
+      C4=(X-X1)*(Y-Y1)
+      VAL1 = (FUNC1(INX,JNX)  *C1 + FUNC1(INX+1,JNX)  *C2 +  &
+              FUNC1(INX,JNX+1)*C3 + FUNC1(INX+1,JNX+1)*C4)/DENOM
 
-      VAL1 = (FUNC1(INX,JNX)*(X2-X)*(Y2-Y) +           &
-                     FUNC1(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
-                     FUNC1(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
-                     FUNC1(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
-      VAL2 = (FUNC2(INX,JNX)*(X2-X)*(Y2-Y) +           &
-                     FUNC2(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
-                     FUNC2(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
-                     FUNC2(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
+      VAL2 = (FUNC2(INX,JNX)  *C1 + FUNC2(INX+1,JNX)  *C2 +  &
+              FUNC2(INX,JNX+1)*C3 + FUNC2(INX+1,JNX+1)*C4)/DENOM
 
       END SUBROUTINE INTERPOLATE2D
 !====================================================================
 
       REAL FUNCTION AVERAGING(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
-                              X,Y,NPX,NPY,MAM)
+                              X,Y,NPX,NPY)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :        25-July-2019 |
+!/                  +-----------------------------------+
+!/
+!/                     (R. Padilla-Hernandez, EMC/NOAA)
+!/
+!/    29-July-2019 :                        ( version 7.XX )
+!/
+
       ! THIS FUNCTION USES AVERAGING TO ESTIMATE THE VALUE
       ! OF A FUNCTION F AT POINT (X,Y)
       ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
@@ -2502,7 +2622,7 @@
       ! IN X AND Y
 
       !IMPLICIT NONE
-      INTEGER  X_LEN, Y_LEN, MAM, INXEND, INYEND, NPX,NPY
+      INTEGER  X_LEN, Y_LEN, INXEND, INYEND, NPX,NPY
       REAL, DIMENSION(X_LEN) :: XARRAY
       REAL, DIMENSION(Y_LEN)  :: YARRAY
       REAL, DIMENSION(X_LEN, Y_LEN) :: FUNC
@@ -2549,10 +2669,6 @@
       END IF
 
 
-      !WRITE(998,*)'AVERAGE MXA NPX NPY INITIALX INFINX INITIALY    &
-      !INFINY:', MAM, NPX, NPY, INITIALX, INFINX, INITIALY, INFINY
-
-
       SUM=0.0 
       ICOUNT=0
       DO J=INITIALY,INFINY
@@ -2564,8 +2680,6 @@
       AVERAGING=SUM/REAL(ICOUNT)
 
       END FUNCTION AVERAGING
-
-!      END MODULE INTERPREC2ANY
 
 !=======================================================================
 
