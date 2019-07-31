@@ -709,8 +709,14 @@ EOF
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
         mkfile=$main_dir/nuopc.mk
-        mod_dir=$main_dir/mod_MPI
-        obj_dir=$main_dir/obj_MPI
+        if [ -n "`grep OMP $switch_file`" ]
+        then
+          mod_dir=$main_dir/mod_HYB
+          obj_dir=$main_dir/obj_HYB
+        else 
+          mod_dir=$main_dir/mod_MPI
+          obj_dir=$main_dir/obj_MPI
+        fi 
         rm -f $mkfile
         touch $mkfile
         echo "#-----------------------------------------------"      >> $mkfile
