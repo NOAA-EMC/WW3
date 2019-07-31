@@ -132,7 +132,6 @@
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_uprstr"
   reg_programs="$reg_programs libww3"
-  reg_programs="$reg_programs libww3.so"
 
 # PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
@@ -193,6 +192,12 @@
     reg_programs="$reg_programs ww3_gspl"
   fi
 
+  if [ -n "`grep -nri fPIC $comp_file`" ]
+  then
+    reg_programs="$reg_programs libww3.so"
+  else
+    echo 'Shared Object     : No'
+  fi
 
 # 1.f sort sequential and parallel programs - - - - - - - - - - - - - - - - - -
 
