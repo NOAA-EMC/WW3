@@ -90,7 +90,7 @@ ww3_nems: env setup gout switch
 	$(WW3_BINDIR)/w3_make ww3_multi
 
 ww3_nemslibonly: env setup switch
-        $(WW3_BINDIR)/w3_make ww3_multi_esmf
+	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 
 ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
