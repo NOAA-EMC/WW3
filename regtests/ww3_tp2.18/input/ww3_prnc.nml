@@ -66,7 +66,7 @@
 !     FILE%TIMESHIFT     = '00000000 000000' ! shift the time value to 'YYYYMMDD HHMMSS'
 ! -------------------------------------------------------------------- !
 &FILE_NML
-  FILE%FILENAME      = 'curlev.nc'
+  FILE%FILENAME      = '../input/curlev.nc'
   FILE%LONGITUDE     = 'latitude'
   FILE%LATITUDE      = 'longitude'
   FILE%VAR(1)        = 'ucur'

@@ -188,10 +188,10 @@ $
       103      3
       0.90     0.60   60.00
       -6.0300          47.6000         1.00
-      -0.10   0.30  20  0.001000  1  1 '(....)'  NAME  'iro1k.bot'
+      -0.10   0.30  20  0.001000  1  1 '(....)'  NAME  '../input/iro1k.bot'
 $ Sub-grid information
-$      30  0.010000  1  1  '(....)'  NAME  'iro1k.obstr_lev1'
-      25 1 1 '(....)' 'NAME' 'iro1k.mask'
+$      30  0.010000  1  1  '(....)'  NAME  '../input/iro1k.obstr_lev1'
+      25 1 1 '(....)' 'NAME' '../input/iro1k.mask'
 $
 $
 $ *** NOTE if this unit number is the same as the previous bottom

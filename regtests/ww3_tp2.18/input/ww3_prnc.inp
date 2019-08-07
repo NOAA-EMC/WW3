@@ -40,7 +40,7 @@ $
 $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
- 'curlev.nc'
+ '../input/curlev.nc'
 $
 $
 $ -------------------------------------------------------------------- $

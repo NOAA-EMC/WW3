@@ -227,7 +227,7 @@
     par_programs="ww3_shel ww3_multi ww3_sbs1"
     if  [ -n "`grep TIDE $switch_file`" ]
     then
-      par_programs="$par_programs ww3_prtide"
+      par_programs="$par_programs ww3_prtide ww3_prnc"
     fi
     if [ $ESMFMKFILE ]
     then
