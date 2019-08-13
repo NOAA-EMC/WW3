@@ -241,7 +241,7 @@ depth_format="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | c
 depth_from="$(echo ${lines[$il]} | awk -F' ' '{print $8}' | cut -d \" -f2  | cut -d \' -f2)"
 depth_filename="$(echo ${lines[$il]} | awk -F' ' '{print $9}' | cut -d \" -f2  | cut -d \' -f2)"
 echo 'depth : ' $depth_zlim $depth_dmin $depth_idf $depth_sf $depth_idla $depth_idfm $depth_format $depth_from $depth_filename
-if [ "$depth_from" == 'UNIT' ]
+if [ "$depth_from" == 'UNIT' ] || [ "$depth_idf" == '10' ]
 then
   foridepth=$cur_dir/${grdname}.depth
   fdepth=$cur_dir/${grdname}.depth.new
@@ -355,7 +355,7 @@ then
         obst_format="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
         obst_filename="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
         echo 'smc obst : ' $obst_idf $obst_idla $obst_idfm $obst_format $obst_filename
-        if [ "$obst_from" == 'UNIT' ]
+        if [ "$obst_from" == 'UNIT' ] || [ "$obst_idf" == '10' ]
         then
           foriobst=$cur_dir/${grdname}.obst
           fobst=$cur_dir/${grdname}.obst.new
@@ -521,7 +521,7 @@ then
         obst_from="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
         obst_filename="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
         echo 'obst : ' $obst_idf $obst_sf $obst_idla $obst_idfm $obst_format $obst_from $obst_filename
-        if [ "$obst_from" == 'UNIT' ]
+        if [ "$obst_from" == 'UNIT' ] || [ "$obst_idf" == '10' ]
         then
           foriobst=$cur_dir/${grdname}.obst
           fobst=$cur_dir/${grdname}.obst.new
@@ -628,60 +628,63 @@ mask_format="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cu
 mask_from="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
 mask_filename="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
 echo 'mask : ' $mask_idf $mask_idla $mask_idfm $mask_format $mask_from $mask_filename
-if [ "$mask_from" == 'UNIT' ]
+if [ "$mask_from" == 'UNIT' ] || [ "$mask_from" == 'NAME' ]
 then
-  forimask=$cur_dir/${grdname}.mask
-  fmask=$cur_dir/${grdname}.mask.new
-  mask_filename=$forimask
-  mask_from='NAME'
-  rm -f $fmask
-  num_total=0
-  iread=0
-  j=1
-  # unfold the array
-  while [ $num_total -lt $num_max ];  do
-    il=$(($il+1))
-    curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
-    line_elem=$(echo $curline} | awk -F' ' '{print NF}')  
-    for n_elem in $(seq 1 $line_elem); do
-      curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
-      if [ ! -z "$(echo $curelem | grep '*')" ]; then    
-        num_times=$(echo $curelem | awk -F'*' '{print $1}')
-        val_times=$(echo $curelem | awk -F'*' '{print $2}')
-      else
-        num_times=1
-        val_times=$curelem
-      fi
-      num_total=$(($num_total + $num_times))
-      for t in $(seq 1 $num_times); do
-        iread=$(($iread+1))
-        mask2d[$iread,$j]="$val_times"
-#        echo -n "$val_times " >> $fmask
-        if [ $iread -ge $nx ]; then
-          iread=0
-          j=$(($j+1))
-#          echo '' >> $fmask
-        fi
-      done
-    done
-    echo "${lines[$il]}" >> $fmask
-  done
-  # save file
-  if [ -f $forimask ]
+  if [ "$mask_idf" == '10' ]
   then
-    if [ -z "$(diff $forimask $fmask)" ]
+    forimask=$cur_dir/${grdname}.mask
+    fmask=$cur_dir/${grdname}.mask.new
+    mask_filename=$forimask
+    mask_from='NAME'
+    rm -f $fmask
+    num_total=0
+    iread=0
+    j=1
+    # unfold the array
+    while [ $num_total -lt $num_max ];  do
+      il=$(($il+1))
+      curline="$(echo ${lines[$il]} | sed -e 's/,/ /g')"
+      line_elem=$(echo $curline} | awk -F' ' '{print NF}')  
+      for n_elem in $(seq 1 $line_elem); do
+        curelem=$(echo $curline | awk -F' ' "{print \$$n_elem}" | cut -d \" -f2  | cut -d \' -f2)
+        if [ ! -z "$(echo $curelem | grep '*')" ]; then    
+          num_times=$(echo $curelem | awk -F'*' '{print $1}')
+          val_times=$(echo $curelem | awk -F'*' '{print $2}')
+        else
+          num_times=1
+          val_times=$curelem
+        fi
+        num_total=$(($num_total + $num_times))
+        for t in $(seq 1 $num_times); do
+          iread=$(($iread+1))
+          mask2d[$iread,$j]="$val_times"
+#          echo -n "$val_times " >> $fmask
+          if [ $iread -ge $nx ]; then
+            iread=0
+            j=$(($j+1))
+#            echo '' >> $fmask
+          fi
+        done
+      done
+      echo "${lines[$il]}" >> $fmask
+    done
+    # save file
+    if [ -f $forimask ]
     then
-      echo $forimask ' and ' $fmask 'are same.'
-      echo 'delete ' $fmask
-      rm $fmask
+      if [ -z "$(diff $forimask $fmask)" ]
+      then
+        echo $forimask ' and ' $fmask 'are same.'
+        echo 'delete ' $fmask
+        rm $fmask
+      else
+        echo 'diff between :' $forimask ' and new file : ' $fmask
+        echo 'inp2nml conversion stopped'
+        exit 1
+      fi
     else
-      echo 'diff between :' $forimask ' and new file : ' $fmask
-      echo 'inp2nml conversion stopped'
-      exit 1
+      echo 'mv '$fmask ' to ' $forimask
+      mv $fmask $forimask
     fi
-  else
-    echo 'mv '$fmask ' to ' $forimask
-    mv $fmask $forimask
   fi
 elif [ "$mask_from" == 'PART' ]
 then
@@ -709,7 +712,7 @@ then
       slope_from="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
       slope_filename="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
       echo 'slope : ' $slope_idf $slope_sf $slope_idla $slope_idfm $slope_format $slope_from $slope_filename
-      if [ "$slope_from" == 'UNIT' ]
+      if [ "$slope_from" == 'UNIT' ] || [ "$slope_idf" == '10' ]
       then
         forislope=$cur_dir/${grdname}.slope
         fslope=$cur_dir/${grdname}.slope.new
@@ -851,7 +854,7 @@ then
     sed_from="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
     sed_filename="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
     echo 'sed : ' $sed_idf $sed_sf $sed_idla $sed_idfm $sed_format $sed_from $sed_filename
-    if [ "$sed_from" == 'UNIT' ]
+    if [ "$sed_from" == 'UNIT' ] || [ "$sed_idf" == '10' ]
     then
       forised=$cur_dir/${grdname}.sed
       fsed=$cur_dir/${grdname}.sed.new
