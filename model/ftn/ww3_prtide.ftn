@@ -497,18 +497,6 @@
           DO IY = 1, NY
             DO IX=1, NX
               TIDEOK=1
-
-              ! NaN values
-!              DO I=1,TIDE_MF
-!                IF (TIDAL_CONST(IX,IY,I,1,1) .NE. TIDAL_CONST(IX,IY,I,1,1) .OR. &
-!                    TIDAL_CONST(IX,IY,I,2,1) .NE. TIDAL_CONST(IX,IY,I,2,1)) THEN
-!                  WRITE(NDSO,*) 'NAN: ', I, '/', TIDAL_CONST(IX,IY,I,1:2,1)
-!                  TIDAL_CONST(IX,IY,I,1,1)=0
-!                  TIDAL_CONST(IX,IY,I,2,1)=0
-!                END IF
-!              END DO
-
-              ! Over threshold values
               DO I=1,TIDE_MAX
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
                     ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN

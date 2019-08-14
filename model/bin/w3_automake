@@ -235,7 +235,7 @@
     fi
     if [ -n "`grep OASIS $switch_file`" ]
     then
-      par_programs="$par_programs ww3_prep"
+      par_programs="$par_programs ww3_prnc ww3_prep ww3_prtide"
     fi
     if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" ] || [ -n "$(grep PDLIB $switch_file)"]
     then
