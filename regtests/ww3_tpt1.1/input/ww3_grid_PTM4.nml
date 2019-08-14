@@ -15,9 +15,9 @@
 ! -------------------------------------------------------------------- !
 &SPECTRUM_NML
   SPECTRUM%XFR       =  1.1
-  SPECTRUM%FREQ1     =  0.010
+  SPECTRUM%FREQ1     =  0.04118
   SPECTRUM%NK        =  30
-  SPECTRUM%NTH       =  24
+  SPECTRUM%NTH       =  36
 /
 
 ! -------------------------------------------------------------------- !
@@ -33,10 +33,6 @@
 !     RUN%FLSOU            = F             ! source terms
 ! -------------------------------------------------------------------- !
 &RUN_NML
-  RUN%FLCX         =  T
-  RUN%FLCY         =  T
-  RUN%FLCTH        =  T
-  RUN%FLCK         =  T
   RUN%FLSOU        =  T
 /
 
@@ -72,10 +68,10 @@
 !     TIMESTEPS%DTMIN      = 0.         ! minimum source term time step (s)
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  20.
-  TIMESTEPS%DTXY         =  5.
-  TIMESTEPS%DTKTH        =  5.
-  TIMESTEPS%DTMIN        =  1.
+  TIMESTEPS%DTMAX        =  600.
+  TIMESTEPS%DTXY         =  100.
+  TIMESTEPS%DTKTH        =  100.
+  TIMESTEPS%DTMIN        =  60.
 /
 
 ! -------------------------------------------------------------------- !
@@ -136,13 +132,13 @@
 !     GRID%DMIN             = 0.        ! abs. minimum water depth (m)
 ! -------------------------------------------------------------------- !
 &GRID_NML
-  GRID%NAME         =  '1-D IG WAVE GENERATION'
-  GRID%NML          =  '../input_OBST/namelists_1-D.nml'
+  GRID%NAME         =  'Partitioning test grid'
+  GRID%NML          =  '../input/namelists_PTM4.nml'
   GRID%TYPE         =  'RECT'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  -3.
-  GRID%DMIN         =  0.5
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  2.50
 /
 
 ! -------------------------------------------------------------------- !
@@ -172,14 +168,13 @@
 !     RECT%SF0              = 1.       ! scaling division factor for x0,y0 coord
 ! -------------------------------------------------------------------- !
 &RECT_NML
-  RECT%NX           =  29
-  RECT%NY           =  3
-  RECT%SX           =  0.02
-  RECT%SY           =  0.1
-  RECT%SF           =  1
-  RECT%X0           =  -0.02
-  RECT%Y0           =  -0.1
-  RECT%SF0          =  1
+  RECT%NX           =  5
+  RECT%NY           =  5
+  RECT%SX           =  1.
+  RECT%SY           =  1.
+  RECT%SF           =  2.
+  RECT%X0           =  -1.
+  RECT%Y0           =  -1.
 /
 
 ! -------------------------------------------------------------------- !
@@ -219,25 +214,16 @@
 !     DEPTH%FORMAT         = '(....)' ! formatted read format
 ! -------------------------------------------------------------------- !
 &DEPTH_NML
-  DEPTH%SF        =  -10.
-  DEPTH%FILENAME  =  '../input_OBST/1-D.depth'
-  DEPTH%IDLA      =  2
+  DEPTH%SF        =  -100.
+  DEPTH%FILENAME  =  '../input/PTM4.depth'
+  DEPTH%IDLA      =  3
 /
 
 ! -------------------------------------------------------------------- !
-! Define the obstruction map via OBST_NML namelist
+! Define the point status map via MASK_NML namelist
 ! - only for RECT and CURV grids -
 !
-! * only used if &MISC FLAGTR = 1 in param.nml
-!                (transparencies at cell boundaries)
-!          or if &MISC FLAGTR = 2 in param.nml
-!                (transparencies at cell centers)
-!          or if &MISC FLAGTR = 3 in param.nml
-!                (transparencies at cell boundaries with cont. ice)
-!          or if &MISC FLAGTR = 4 in param.nml
-!                (transparencies at cell centers with cont. ice)
-!
-! * value <= value_read * scale_fac
+! * If no mask defined, INBOUND can be used to set active boundaries
 !
 ! * IDLA : Layout indicator :
 !                  1   : Read line-by-line bottom to top.  (default)
@@ -253,73 +239,29 @@
 !               '(f10.6)' : float type
 !
 ! * Example :
-!      IDF  SF      IDLA  IDFM   FORMAT    FILENAME
-!      70   0.0001  1     1     '(....)'  'GLOB-30M.obst'
+!      IDF  IDLA  IDFM   FORMAT    FILENAME
+!      60   1     1     '(....)'  'GLOB-30M.mask'
 !
-! * If the file unit number equals 10, then the data is read from this
-!   file. The data must follow the above record. No comment lines are
-!   allowed within the data input.
-!
-! * In the case of unstructured grids, no obstruction file can be added
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     OBST%SF              = 1.       ! scale factor
-!     OBST%FILENAME        = 'unset'  ! filename
-!     OBST%IDF             = 70       ! file unit number
-!     OBST%IDLA            = 1        ! layout indicator
-!     OBST%IDFM            = 1        ! format indicator
-!     OBST%FORMAT          = '(....)' ! formatted read format
-! -------------------------------------------------------------------- !
-&OBST_NML
-  OBST%SF        =  0.2
-  OBST%FILENAME  =  '../input_OBST/1-D.obst'
-  OBST%IDLA      =  3
-/
-
-! -------------------------------------------------------------------- !
-! Define the input boundary points via INBND_COUNT_NML and
-!                                      INBND_POINT_NML namelist
-! - for RECT, CURV and UNST grids -
-!
-! * If no mask defined, INBOUND can be used
-!
-! * If the actual input data is not defined in the actual wave model run
-!   the initial conditions will be applied as constant boundary conditions.
-!
-! * The number of points is defined by INBND_COUNT
-!
-! * The points must start from index 1 to N
-!
-! * Each line contains:
-!     Discrete grid counters (IX,IY) of the active point and a
-!     connect flag. If this flag is true, and the present and previous
-!     point are on a grid line or diagonal, all intermediate points
-!     are also defined as boundary points.
-!
-! * Included point :
-!     grid points from segment data
-!     Defines as lines identifying points at which
-!     input boundary conditions are to be defined. 
+! * The legend for the input map is :
+!    -2 : Excluded boundary point (covered by ice)
+!    -1 : Excluded sea point (covered by ice)
+!     0 : Excluded land point
+!     1 : Sea point
+!     2 : Active boundary point
+!     3 : Excluded grid point
+!     7 : Ice point
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     INBND_COUNT%N_POINT     = 0        ! number of segments
-!
-!     INBND_POINT(I)%X_INDEX  = 0        ! x index included point
-!     INBND_POINT(I)%Y_INDEX  = 0        ! y index included point
-!     INBND_POINT(I)%CONNECT  = F        ! connect flag
-!
-! OR
-!     INBND_POINT(I)          = 0 0 F    ! included point
+!     MASK%FILENAME         = 'unset'  ! filename
+!     MASK%IDF              = 60       ! file unit number
+!     MASK%IDLA             = 1        ! layout indicator
+!     MASK%IDFM             = 1        ! format indicator
+!     MASK%FORMAT           = '(....)' ! formatted read format
 ! -------------------------------------------------------------------- !
-&INBND_COUNT_NML
-  INBND_COUNT%N_POINT    =  2
-/
-
-&INBND_POINT_NML
-  INBND_POINT(1)         =  2 2 F
-  INBND_POINT(2)         =  2 2 T
+&MASK_NML
+  MASK%FILENAME  =  '../input/PTM4.mask'
+  MASK%IDLA      =  3
 /
 
 ! -------------------------------------------------------------------- !
