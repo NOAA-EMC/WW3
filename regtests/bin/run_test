@@ -1305,14 +1305,7 @@ then
     echo '+---------------------------------+'
     echo ' '
 
-    if [ $force_shrd ]
-    then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
-    else
-      \cp -f $file_c $path_b/switch
-    fi
+    \cp -f $file_c $path_b/switch
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
@@ -1320,6 +1313,20 @@ then
       rm $path_b/switch_noST
     fi
   
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then 
+          runcmd="$runcmd -n $nproc"
+        
+        else
+          runcmd="$runcmd -np $nproc"
+        fi
+      fi
+    fi
+
     if [ $time_count ]
     then # Add time counter if -T
       Tstart=`date +"%s.%2N"`
@@ -1387,7 +1394,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $path_e/$prog > $ofile
+        if $runcmd $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml

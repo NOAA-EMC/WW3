@@ -18,7 +18,9 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test -n 3 -p mpirun -f -o netcdf ../model  ww3_tp2.18          # 
+#  ./bin/run_test -s TIDE -o netcdf -N ../model  ww3_tp2.18                 # 
+#  ./bin/run_test -s TIDE_MPI -n 3 -p mpirun -f -o netcdf -N ../model       #
+#                 ww3_tp2.18                                                # 
 #                                                                           #
 #                                              Mickael Accensi, May 2019    #
 #                                                    Last Mod : May 2019    #
