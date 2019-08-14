@@ -206,28 +206,24 @@
       TYPE(NML_FILE_T)        :: NML_FILE
       TYPE(T_GSU)             :: GSI
 !
-      INTEGER                 :: NTI, NDSEN
-      INTEGER                 :: NIDIMS, NFIELDS
-      INTEGER                 :: IX, IY, JX
-      INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
+      INTEGER                 :: NTI, NDSEN, NIDIMS, NFIELDS, ICLO,   & 
+                                 NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, NFCOMP,        &
-                                 TIME(2), TIMESTART(2), TIMESTOP(2),  &
-                                 TIMESHIFT(2),                        &
-                                 NXI, NYI, NXJ(2), NYJ(2),            &
-                                 NDSLL, IDLALL, IDFMLL, NDSF(2),      &
-                                 IDLAF(2), IDFMF(2),                  &
+                                 IX, IY, JX, NXI, NYI, NDAT, JJ,      &
+                                 NDSLL, IDLALL, IDFMLL, NCID, IRET,   &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
-                                 NDAT, JJ, IS(4), JS(4)
+                                 NDIMSGRID, NDIMSVAR, VARIDTMP,       &
+                                 NUMDIMS, I, ITIME
       INTEGER                 :: ILAND = -999
-      INTEGER                 :: ICLO
       INTEGER                 :: GTYPEDUM = 0
-      INTEGER                 :: NCID, IRET,                            &
-                                 NDIMSGRID, NDIMSVAR, VARIDTMP, VARIDF(50)
-      INTEGER                 :: NUMDIMS
-      INTEGER                 :: DIMSVAR(4)
-      INTEGER                 :: DIMLN(5)
-      INTEGER                 :: I,ITIME
-      INTEGER                 :: REFDATE(8),CURDATE(8),STARTDATE(8),STPDATE(8)
+
+!
+      INTEGER                 :: TIME(2), TIMESTART(2), TIMESTOP(2),  &
+                                 TIMESHIFT(2), NXJ(2), NYJ(2),        &
+                                 NDSF(2), IDLAF(2), IDFMF(2),         &
+                                 IS(4), JS(4), VARIDF(50), DIMSVAR(4),&
+                                 DIMLN(5), REFDATE(8),CURDATE(8),     &
+                                 STARTDATE(8),STPDATE(8)
 !/MPI      INTEGER                 :: IERR_MPI, IND, REST, SLICE
 !/O15      INTEGER                 :: NDSTIME
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -237,20 +233,18 @@
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
                                  IY21(:,:), IY22(:,:),                &
                                  JX21(:,:), JX22(:,:),                &
-                                 JY21(:,:), JY22(:,:), MAPOVR(:,:)
-      INTEGER, ALLOCATABLE    :: MASK(:,:)
-      INTEGER, ALLOCATABLE    :: NELEM(:), CUMUL(:)
+                                 JY21(:,:), JY22(:,:),                &
+                                 MAPOVR(:,:), MASK(:,:),              &
+                                 NELEM(:), CUMUL(:)
 !/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
 !
-
-
-
       REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI,        &
-                                 X, Y, FACTOR, EFAC, NODATA, RW(4)
+                                 X, Y, FACTOR, EFAC, NODATA,          &
+                                 XCFAC, XCOFF, YCFAC, YCOFF,          &
+                                 FILLVALUE, TIMEDELAY
       REAL                    :: ACC = 0.05
-      REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
-      REAL                    :: FILLVALUE, TIMEDELAY
-      REAL                    :: SCFAC(2), ADDOFF(2)
+!
+      REAL                    :: SCFAC(2), ADDOFF(2), RW(4)
 !
       REAL, ALLOCATABLE       :: RD11(:,:), RD21(:,:),                &
                                  RD12(:,:), RD22(:,:),                &
@@ -287,10 +281,9 @@
 !
 ! Variables used in tidal analysis
 !
-      INTEGER                 :: K, L
-      INTEGER                 :: TIDEFLAG
+      INTEGER                 :: K, L, TIDEFLAG,                      &
+                                 TIDE_NDEF, TIDE_ITREND
 !/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
-      INTEGER                       :: TIDE_NDEF, TIDE_ITREND
 !/T      INTEGER, PARAMETER      :: LRB = 4
 !/T      INTEGER(KIND=8)         :: RPOS
 !/T      INTEGER                 ::   LRECL, NREC
@@ -299,13 +292,13 @@
 !
       REAL                          :: TIDE_LAT
 !
+      REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:),                &
+                                 SSQ(:), RES(:)
 !/MPI      REAL, ALLOCATABLE       :: TIDE1DL(:), TIDE1D(:)
-      REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:)
-      REAL, ALLOCATABLE             :: SSQ(:), RES(:)
 !/T      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
 !
-      DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
-      DOUBLE PRECISION, ALLOCATABLE :: SDEV0(:), SDEV(:), RMSR(:), &
+      DOUBLE PRECISION, ALLOCATABLE :: ALLTIMES(:),                   &
+                                       SDEV0(:), SDEV(:), RMSR(:),    &
                                        RMSR0(:), RMSRP(:), RESMAX(:)
 !
       CHARACTER*1024          :: TIDECONSTNAMES
