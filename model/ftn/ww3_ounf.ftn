@@ -111,6 +111,7 @@
       USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD, W3FLGRDFLAG
       USE W3INITMD, ONLY: WWVER, SWITCHES
       USE W3ODATMD, ONLY: NAPROC, NOSWLL, PTMETH, PTFCUT
+      USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
 !/DEBUG      USE W3ODATMD, only : IAPROC
 !/
       USE W3GDATMD
@@ -131,7 +132,7 @@
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-                          WN, USSP, WBT
+                          WN, USSP, WBT, NSEALM
       USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -207,6 +208,10 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     Also, set NSEAL and NSEALM
+      CALL SET_UP_NSEAL_NSEALM(NSEAL, NSEALM)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
