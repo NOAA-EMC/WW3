@@ -14,7 +14,7 @@
 # - current.ww3 must be renamed as current.ww3_tide                         #
 # - ww3_prtide run then to create the current field on the defined date     #
 #                                                                           #
-# - ww3_prnc and ww3_prtide must be launched with MPI                       #
+# - ww3_prnc and ww3_prtide can be launched with MPI                        #
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #

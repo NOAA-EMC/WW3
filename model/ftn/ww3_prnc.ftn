@@ -301,7 +301,7 @@
                                        SDEV0(:), SDEV(:), RMSR(:),    &
                                        RMSR0(:), RMSRP(:), RESMAX(:)
 !
-      CHARACTER*1024          :: TIDECONSTNAMES
+      CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
 !/T      CHARACTER*21            :: FNAMETXT
 !

@@ -54,7 +54,7 @@
     CHARACTER(15)               :: TIMESTOP
     TYPE(NML_FIELD_T)           :: FIELD
     TYPE(NML_GRID_T)            :: GRID
-    CHARACTER(64)               :: TIDAL
+    CHARACTER(256)              :: TIDAL
   END TYPE NML_FORCING_T
 
   ! file structure

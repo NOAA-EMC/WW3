@@ -4,14 +4,6 @@ $ -------------------------------------------------------------------- $
 $ Define input to be used with flag for use and flag for definition
 $ as a homogeneous field (first three only); seven input lines.
 $
-   F F     Ice parameter 1
-   F F     Ice parameter 2
-   F F     Ice parameter 3
-   F F     Ice parameter 4
-   F F     Ice parameter 5
-   F F     Mud parameter 1
-   F F     Mud parameter 2
-   F F     Mud parameter 3
    F F     Water levels
    T F     Currents
    F F     Winds

@@ -1164,7 +1164,7 @@ then
     echo '+-------------------------------+'
     echo ' '
 
-    if [ $force_shrd ]
+    if [ $force_shrd ] && [ -z "$(grep TIDE $file_c)" ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                     sed 's/OMPG //'    | sed 's/OMPX //'| \
@@ -1178,7 +1178,25 @@ then
       cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
-  
+
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then
+          runcmd="$runcmd -n $nproc"
+
+        else
+          runcmd="$runcmd -np $nproc"
+        fi
+      fi
+    fi
+    if [ -n "$(grep SHRD $path_b/switch)" ] 
+    then
+      runcmd=""
+    fi
+ 
     if [ $time_count ]
     then # Add time counter if -T
       Tstart=`date +"%s.%2N"`
@@ -1244,7 +1262,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $path_e/$prog > $ofile
+        if $runcmd $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml
@@ -1261,6 +1279,7 @@ then
           errmsg "Error occured during $path_e/$prog execution"
           exit 1
         fi
+
 
         if [ $time_count ]
         then # Add time counter if -T
