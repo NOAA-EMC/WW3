@@ -4876,7 +4876,8 @@
 !     ILOOP = 2 to fill data arrays
 !
       WRITE (NDSO,990)
-      OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
+      IF ( .NOT. FLGNML ) &
+        OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
 !
       DO ILOOP = 1, 2
 !
@@ -4888,11 +4889,13 @@
         NBO(0) = 0
         NBO2(0)= 0
         FIRST  = .TRUE.
-        REWIND (NDSS)
-        IF ( ILOOP .EQ. 1 ) THEN
-          NDSI2 = NDSI
-        ELSE
-          NDSI2 = NDSS
+        IF ( .NOT. FLGNML ) THEN
+          REWIND (NDSS)
+          IF ( ILOOP .EQ. 1 ) THEN
+            NDSI2 = NDSI
+          ELSE
+            NDSI2 = NDSS
+          END IF
         END IF
 !
         DO
@@ -4906,21 +4909,17 @@
               NPO = NML_OUTBND_LINE(I)%NP
               I=I+1
             ELSE
-              EXIT
+              NPO=0
             END IF
           ELSE
             CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
             READ (NDSI2,*,END=2001,ERR=2002) XO0, YO0, DXO, DYO, NPO
           END IF
 !
-          IF ( ILOOP .EQ. 1 ) THEN
-            IF (FLGNML) THEN
-              WRITE(NDSS,'(A)') NML_OUTBND_LINE(I-1)
-            ELSE
-              BACKSPACE (NDSI)
-              READ (NDSI,'(A)') LINE
-              WRITE (NDSS,'(A)') LINE
-            END IF
+          IF ( .NOT. FLGNML .AND. ILOOP .EQ. 1 ) THEN
+            BACKSPACE (NDSI)
+            READ (NDSI,'(A)') LINE
+            WRITE (NDSS,'(A)') LINE
           END IF
 !
 ! ... Check if new file to be used
@@ -5109,7 +5108,7 @@
 !
         END DO
 !
-      CLOSE ( NDSS, STATUS='DELETE' )
+      IF ( .NOT. FLGNML ) CLOSE ( NDSS, STATUS='DELETE' )
 !
       FLBPO  = NBOTOT .GT. 0
       IF ( .NOT. FLBPO ) THEN
