@@ -162,8 +162,8 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'DPT CUR HS FP DP DIR SPR'
-  ITYPE(2)%POINT%FILE      = 'points_2.list'
-  ITYPE(3)%POINT%FILE      = 'points_3.list'
+  ITYPE(2)%POINT%FILE      = '../input/points_2.list'
+  ITYPE(3)%POINT%FILE      = '../input/points_3.list'
 /
 
 ! -------------------------------------------------------------------- !

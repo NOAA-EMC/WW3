@@ -362,13 +362,13 @@ do
         done
         if [ ${pointdates[$irgrd,3]} != 0 ]
         then
-          pointfiles[$irgrd]="points_${irgrd}.list"
-          rm -f $cur_dir/${pointfiles[$irgrd]}
+          pointfiles[$irgrd]="$cur_dir/points_${irgrd}.list"
+          rm -f ${pointfiles[$irgrd]}
           il=$(($il+1))
           tmpname="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
           while [ "$tmpname" != "STOPSTRING" ]
           do
-            echo ${lines[$il]} >> $cur_dir/${pointfiles[$irgrd]}
+            echo ${lines[$il]} >> ${pointfiles[$irgrd]}
             il=$(($il+1))
             tmpname="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
           done
