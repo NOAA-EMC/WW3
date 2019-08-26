@@ -401,7 +401,7 @@
              IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
                                FLG2D(IFI,IFJ)=.TRUE.
           ENDDO
-          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
+          IF ( IAPROC .EQ. NAPOUT .AND. IFJ .LT. NOGE(IFI) ) WRITE(NDSEN,1007) IFI
          ENDIF
         END DO
 !
@@ -590,7 +590,7 @@
              IF (US3DF(1).GE.1) THEN
                FLG2D(6,8)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USF','US3D'
+               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
                END IF
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
@@ -602,7 +602,7 @@
              IF (USSPF(1).GE.1) THEN
                FLG2D(6,12)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USP','USSP'
+               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
                END IF
 !
 ! Group 7
@@ -1010,7 +1010,7 @@
            IF (US3DF(1).GE.1) THEN
              FLG2D(6,8)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USF','US3D'
+             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
              END IF
          CASE('P2L')
            FLG2D(6,9)=.TRUE.
@@ -1022,7 +1022,7 @@
            IF (USSPF(1).GE.1) THEN
              FLG2D(6,12)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USP','USSP'
+             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
              END IF
 
 !
