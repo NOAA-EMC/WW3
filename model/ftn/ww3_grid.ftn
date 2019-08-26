@@ -4876,7 +4876,6 @@
 !     ILOOP = 2 to fill data arrays
 !
       WRITE (NDSO,990)
-! ww3_grid.scratch is not used with namelist input (C.Hansen 20190701)
       IF ( .NOT. FLGNML ) &
         OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
 !
@@ -4910,13 +4909,6 @@
               NPO = NML_OUTBND_LINE(I)%NP
               I=I+1
             ELSE
-!              EXIT
-! Bug (minor): If we exit here, a code block below will not be reached that
-! writes info about the last boundary file:'File nestI.ww3  Number of points ..'
-! ( The block does WRITE(NDSO,991), WRITE (NDSO,992), etc.)
-! Instead, let NPO=0 mark that we have got the info for the last file, and the
-! do-loop over outbound lines will exit immediately after the block. This is a
-! minor bug because it only affects output messages (C. Hansen 20190701)
                NPO = 0
             END IF
           ELSE
@@ -4925,14 +4917,9 @@
           END IF
 !
           IF ( .NOT. FLGNML .AND. ILOOP .EQ. 1 ) THEN
-!            IF (FLGNML) THEN
-! NML_OUTBND_LINE are not strings (C. Hansen 20190701), but NDSS isn't used
-!              WRITE(NDSS,'(A)') NML_OUTBND_LINE(I-1)
-!            ELSE
               BACKSPACE (NDSI)
               READ (NDSI,'(A)') LINE
               WRITE (NDSS,'(A)') LINE
-!            END IF
           END IF
 !
 ! ... Check if new file to be used
