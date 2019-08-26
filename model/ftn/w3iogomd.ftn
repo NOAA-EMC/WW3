@@ -401,7 +401,7 @@
              IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
                                FLG2D(IFI,IFJ)=.TRUE.
           ENDDO
-          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
+          IF (NDSEN .GE. 0 .AND. IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
          ENDIF
         END DO
 !
@@ -590,7 +590,7 @@
              IF (US3DF(1).GE.1) THEN
                FLG2D(6,8)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USF','US3D'
+               IF (NDSEN .GE. 0) WRITE(NDSEN,1008) 'USF','US3D'
                END IF
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
@@ -602,7 +602,7 @@
              IF (USSPF(1).GE.1) THEN
                FLG2D(6,12)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USP','USSP'
+               IF (NDSEN .GE. 0) WRITE(NDSEN,1008) 'USP','USSP'
                END IF
 !
 ! Group 7
@@ -652,7 +652,7 @@
              FLG2D(10,2)=.TRUE.
 !/COU           CASE('DRY')
            CASE DEFAULT
-             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
+             IF (NDSEN .GE. 0) WRITE (NDSEN,1004) TRIM(TESTSTR)
            END SELECT
 !
           IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
@@ -683,20 +683,20 @@
       RETURN
 !
  2001 CONTINUE
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1001)
+      IF (NDSEN .GE. 0) WRITE (NDSEN,1001)
       RETURN
  2002 CONTINUE
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1002) IFI, IERR
+      IF (NDSEN .GE. 0) WRITE (NDSEN, 1002) IFI, IERR
       RETURN
  2003 CONTINUE
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1003) IERR
+      IF (NDSEN .GE. 0) WRITE (NDSEN, 1003) IERR
       RETURN
 !2004 CONTINUE ! replaced by warning in code ....
  2005 CONTINUE
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1005) AFLG
+      IF (NDSEN .GE. 0) WRITE (NDSEN, 1005) AFLG
       RETURN
  2006 CONTINUE
-      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1006) IFI,IERR
+      IF (NDSEN .GE. 0) WRITE (NDSEN, 1006) IFI,IERR
       RETURN
 !
  1945 FORMAT ( '            Fields   : ',A)
@@ -1010,7 +1010,7 @@
            IF (US3DF(1).GE.1) THEN
              FLG2D(6,8)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USF','US3D'
+             IF (NDSEN .GE. 0) WRITE(NDSEN,1008) 'USF','US3D'
              END IF
          CASE('P2L')
            FLG2D(6,9)=.TRUE.
@@ -1022,7 +1022,7 @@
            IF (USSPF(1).GE.1) THEN
              FLG2D(6,12)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USP','USSP'
+             IF (NDSEN .GE. 0) WRITE(NDSEN,1008) 'USP','USSP'
              END IF
 
 !
@@ -1073,7 +1073,7 @@
            FLG2D(10,1)=.TRUE.
 !/COU           CASE('DRY')
          CASE DEFAULT
-           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
+           IF (NDSEN .GE. 0) WRITE (NDSEN,1004) TRIM(TESTSTR)
          END SELECT
 !
         IOUT=IOUT+1
