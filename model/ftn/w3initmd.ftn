@@ -109,7 +109,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.01  '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.00  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     'PUT_SW1' // &
                     'PUT_SW2' // &
