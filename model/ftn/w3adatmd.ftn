@@ -720,6 +720,9 @@
         WADATS(I)%ITIME  = 0
         WADATS(I)%IPASS  = 0
         WADATS(I)%IDLAST = 0
+        WADATS(I)%NSEALM = 0
+        WADATS(I)%FLCOLD = .FALSE.
+        WADATS(I)%FLIWND = .FALSE.
         WADATS(I)%AINIT  = .FALSE.
         WADATS(I)%AINIT2 = .FALSE.
         WADATS(I)%FL_ALL = .FALSE.

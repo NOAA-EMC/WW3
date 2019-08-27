@@ -134,6 +134,7 @@ inpdir=input
 outopt=native
 grads=0
 coupl=none
+batchq=none
 while :
 do
   case "$1" in
