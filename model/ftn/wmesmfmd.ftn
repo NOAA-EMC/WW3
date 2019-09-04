@@ -2198,6 +2198,11 @@
         call w3seti ( impGridID, mdse, mdst )
         if (firstCall) then
           twn = tcur
+!/WRST  !For NEMS we do not have wnd at t0, so get it from restart  
+!/WRST          tw0 = twn
+!/WRST          wx0 = wxn
+!/WRST          wy0 = wyn
+!/WRST          twn = tend
         else
           tw0 = twn
           wx0 = wxn
@@ -2216,10 +2221,24 @@
         call FieldGather( impField(i2), nx, ny, wyn, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (firstCall) then
+!/WRST        if (.false.) then 
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
+!/WRST        else 
+!/WRST          tw0 = twn 
+!/WRST          wxn = wx0 !replace with values from restart
+!/WRST          wyn = wy0 
+!/WRST        endif ! if .false. for WRST    
         endif
+    
+!/WRST     if ( twn .leq. tw0  ) then 
+!/WRST        !If the time of the field is still initial time, replace
+!/WRST        !with restart field
+!/WRST        wxn = wx0 !replace with values from restart
+!/WRST        wyn = wy0     
+!/WRST        !and do not update other grids
+!/WRST     else    !twn>tw0
         do imod = 1,nrgrd
           call w3setg ( imod, mdse, mdst )
           call w3setw ( imod, mdse, mdst )
@@ -2232,6 +2251,7 @@
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           endif
         enddo
+!/WRST     endif  !if ( twn .leq. tw0  )
       endif
 !
 ! -------------------------------------------------------------------- /
