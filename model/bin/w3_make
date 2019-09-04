@@ -220,6 +220,13 @@
     reg_programs="$reg_programs ww3_shel"
   fi
 
+  if [ -n "`grep -nri fPIC $comp_file`" ]
+  then
+    reg_programs="$reg_programs libww3.so"
+  else
+    echo 'Shared Object     : No'
+  fi
+
   # if no progs in argument
   if [ -z "$all_programs" ]
   then
@@ -662,6 +669,9 @@ EOF
       # if program name is libww3, then
       # the target is compile and create archive
       elif [ "$prog" = "libww3" ]
+      then
+        target="$prog"
+      elif [ "$prog" = "libww3.so" ]
       then
         target="$prog"
       else
