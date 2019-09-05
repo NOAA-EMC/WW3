@@ -721,21 +721,25 @@
                           (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
                                           MIN(NSEA,IPART*NSIZE))
                     END DO
-!/WRST                  DO IPART=1,NPART
-!/WRST                    NREC  = NREC + 1
-!/WRST                    RPOS  = 1_8 + LRECL*(NREC-1_8)
-!/WRST                    WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-!/WRST                    WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
-!/WRST                          (WXN(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
-!/WRST                                          MIN(NSEA,IPART*NSIZE))
+!/WRST                  DO IY=1, NY
+!/WRST                    DO IPART=1,NPRTX2
+!/WRST                      NREC  = NREC + 1
+!/WRST                      RPOS  = 1_8 + LRECL*(NREC-1_8)
+!/WRST                      WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+!/WRST                      WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+!/WRST                          (WXN(IY,IXL),IXL=1+(IPART-1)*NSIZE,         &
+!/WRST                                                MIN(NX,IPART*NSIZE))
+!/WRST                    END DO        
 !/WRST                  END DO
-!/WRST                  DO IPART=1,NPART
-!/WRST                    NREC  = NREC + 1
-!/WRST                    RPOS  = 1_8 + LRECL*(NREC-1_8)
-!/WRST                    WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-!/WRST                    WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
-!/WRST                          (WYN(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
-!/WRST                                          MIN(NSEA,IPART*NSIZE))
+!/WRST                  DO IY=1, NY
+!/WRST                    DO IPART=1,NPRTX2
+!/WRST                      NREC  = NREC + 1
+!/WRST                      RPOS  = 1_8 + LRECL*(NREC-1_8)
+!/WRST                      WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+!/WRST                      WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+!/WRST                          (WYN(IY,IXL),IXL=1+(IPART-1)*NSIZE,         &
+!/WRST                                         MIN(NX,IPART*NSIZE))
+!/WRST                    END DO        
 !/WRST                  END DO
                   ALLOCATE ( MAPTMP(NY,NX) )
                   MAPTMP = MAPSTA + 8*MAPST2
@@ -797,6 +801,7 @@
               RPOS = 1_8 + LRECL*(NREC-1_8)
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TLEV, TICE     & 
 !/WRST                         , TWN
+!/WRST              write(*,*) 'JDM read value', TWN 
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WLV'
               DO IPART=1,NPART
                 NREC  = NREC + 1
@@ -813,23 +818,28 @@
                       (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
-!/WRST              DO IPART=1,NPART
+!/WRST              DO IY=1, NY
+!/WRST               DO IPART=1,NPRTX2
 !/WRST                NREC  = NREC + 1
 !/WRST                RPOS = 1_8 + LRECL*(NREC-1_8)
 !/WRST                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
-!/WRST                      (WXN(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
-!/WRST                                      MIN(NSEA,IPART*NSIZE))
+!/WRST                      (WXN(IY,IXL),IXL=1+(IPART-1)*NSIZE,             &
+!/WRST                                      MIN(NX,IPART*NSIZE))
+!/WRST               END DO
 !/WRST              END DO
-!/WRST              DO IPART=1,NPART
+!/WRST              DO IY=1, NY
+!/WRST               DO IPART=1,NPRTX2
 !/WRST                NREC  = NREC + 1
 !/WRST                RPOS = 1_8 + LRECL*(NREC-1_8)
 !/WRST                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
-!/WRST                      (WYN(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
-!/WRST                                      MIN(NSEA,IPART*NSIZE))
+!/WRST                      (WYN(IY,IXL),IXL=1+(IPART-1)*NSIZE,             &
+!/WRST                                      MIN(NX,IPART*NSIZE))
+!/WRST               END DO
 !/WRST              END DO
-!/WRST        TW0=TWN
-!/WRST        WX0=WXN 
-!/WRST        WY0=WYN
+!/WRST              TW0=TWN
+!/WRST              write(*,*) 'JDM Set TW0=TWN', TWN 
+!/WRST              WX0=WXN 
+!/WRST              WY0=WYN
               ALLOCATE ( MAPTMP(NY,NX) )
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading MAPTMP'
               DO IY=1, NY
@@ -902,6 +912,7 @@
 !/WRST              TW0  = TWN
 !/WRST              WX0     =  0. 
 !/WRST              WY0     =  0. 
+!/WRST              write(*,*) 'JDM setting everything to zero'
               WLV     =  0.
               ICE     =  0.
               ASF     =  1.
