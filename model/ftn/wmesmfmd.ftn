@@ -328,6 +328,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -482,6 +483,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -607,6 +609,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -1157,6 +1160,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -1461,6 +1465,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -1662,6 +1667,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -1872,6 +1878,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2039,6 +2046,7 @@
 !/ Parameter list
 !/
 !/MPI      USE WMMDATMD, ONLY: IMPROC
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2390,6 +2398,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2569,6 +2578,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2936,6 +2946,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -3458,6 +3469,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -3827,6 +3839,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -4277,6 +4290,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)      :: bmskField
       type(ESMF_Field)      :: impField
       real(ESMF_KIND_RX)    :: missingVal
@@ -4494,6 +4508,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)      :: impField
       type(ESMF_Field)      :: mbgField
       type(ESMF_Field)      :: bmskField
@@ -4595,6 +4610,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)                 :: field
       real(ESMF_KIND_RX)               :: fillVal
       integer,               optional  :: rc
@@ -4709,6 +4725,7 @@
 !/PDLIB      use yowNodepool, only: np, iplg
 !/PDLIB      use yowrankModule, only: rank
 !/
+      implicit none
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -4828,6 +4845,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character (6) :: fnameList(:)
       character (6) :: fname
       integer       :: rc
@@ -4911,6 +4929,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character(*) :: cname
       character(*) :: wtnam(:)
       integer      :: wtcnt(:)
@@ -4998,6 +5017,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       integer, intent(in)    :: nx, ny
       integer, intent(in)    :: nproc
       integer, intent(in)    :: npmin
@@ -5125,6 +5145,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character(*) :: cenv
       character(*) :: cval
       integer      :: rc
@@ -5210,6 +5231,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       integer      :: rc
 !/
 !/ ------------------------------------------------------------------- /
@@ -5318,6 +5340,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field) :: chkField
       integer          :: rc
 !/
@@ -5445,6 +5468,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field) :: wrlField
       integer          :: rc
 !/
@@ -5604,6 +5628,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: wbxField
       type(ESMF_Field) :: wbyField
@@ -5816,6 +5841,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: sxxField
       type(ESMF_Field) :: sxyField
@@ -6052,6 +6078,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: usxField
       type(ESMF_Field) :: usyField
