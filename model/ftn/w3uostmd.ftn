@@ -429,7 +429,7 @@
           FILESTART = .FALSE.
         ELSEIF (HEADER) THEN
           !  reading the position of an obstructed cell
-          READ(LINE, *), IX, IY
+          READ(LINE, *) IX, IY
           ISOBSTRUCTED(IX, IY) = .TRUE.
         IF ((IX .GT. NX) .OR. (IY .GT. NY)) THEN
           WRITE(NDSE,*) '*** WAVEWATCH III ERROR IN W3UOST: '// &
