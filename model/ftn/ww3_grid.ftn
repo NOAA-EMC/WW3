@@ -4551,7 +4551,7 @@
 !/O2b          WRITE (NDSO,1104)
 !/O2b        END IF
 !
-!/O2c      OPEN (NDSM,FILE=TRIM(FNMPRE)//'mapsta.ww3')
+!/O2c      OPEN (NDSM,FILE=TRIM(FNMPRE)//'mapsta.ww3', RECL=2*NX*NY*50+1)
 !/O2c      DO IY=NY,1, -1
 !/O2c        DO IX=1,NX
 !/O2c          DO I=1,50
