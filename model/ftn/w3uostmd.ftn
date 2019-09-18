@@ -9,6 +9,8 @@
 !/                  +-----------------------------------+
 !/
 !/    Aug-2018 : Origination.                        ( version 6.07 )
+!/ 18-Sep-2019 : Added UNIT_AB and changed unit      ( version 7.06 )
+!/               number to 110 (C. Bunney, UKMO)
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -71,6 +73,8 @@
     
       ! srctrm: global singleton source term
       CLASS(UOST_SOURCETERM), ALLOCATABLE :: SRCTRM
+
+      INTEGER, PARAMETER :: UNIT_AB = 110   ! Unit number for LOAD_ALPHABETA
 
 
       CONTAINS
@@ -156,7 +160,7 @@
   
       IF ( (IGRID .GT. 0) .AND. ( ALLOCATED(SRCTRM)) ) THEN
         !  loading local/shadow alpha/beta
-        CALL LOAD_ALPHABETA(GRD, SGD, 100)
+        CALL LOAD_ALPHABETA(GRD, SGD, UNIT_AB)
   
         !  warning the user that for cells too small UOST may be inaccurate
         CGMAX = 20 ! simply taking a high value for the max group velocity to give an indication of this threshold
