@@ -32,7 +32,14 @@
   echo "Save listings     : $list"
 
 # Set batchq queue to define headers etc (default to original version if empty)
-batchq="slurm"
+HOSTCHAR=`hostname | cut -c 1`
+if [ "$HOSTCHAR" = "h" ]
+then
+# If no other h, assuming Hera 
+  batchq="slurm"
+else
+  batchq=
+fi
 
 # 1. Set up
 # 1.a Computer/ user dependent set up
