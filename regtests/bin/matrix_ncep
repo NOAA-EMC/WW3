@@ -31,11 +31,19 @@
   echo "Save source codes : $source"
   echo "Save listings     : $list"
 
-# Set batchq queue to define headers etc (default to original version if empty)
+# Compiler option. Choose appropriate compiler and set cmplOption to
+# y if using for the first time or using a different compiler
+
+  cmplr=intel
+  export cmplOption='y'
+
+# Set batchq queue, choose modules and other custom variables to fit system and 
+# to define headers etc (default to original version if empty)
 ishera=`hostname | grep hfe`
 if [ $ishera ]
 then
 # If no other h, assuming Hera 
+  cmplr=hera
   batchq="slurm"
   modcomp='intel/18.0.5.274'
   modmpi='impi/2018.0.4'
@@ -79,12 +87,6 @@ fi
   echo "  export METIS_PATH=${metispath}"   >> matrix.head
   echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' ' 
-
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
-
-  cmplr=Intel
-  export cmplOption='y'
 
   if [ "$batchq" = 'slurm' ]
   then
