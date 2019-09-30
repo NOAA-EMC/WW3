@@ -1436,7 +1436,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ -z $batchq ] && [ $batchq = "slurm" ]
         then 
           runcmd="$runcmd -n $nproc"
         
