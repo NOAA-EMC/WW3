@@ -629,9 +629,9 @@
       character(ESMF_MAXSTR) :: wrkdir = '.'
       character(ESMF_MAXSTR) :: preamb = '.'
       character(ESMF_MAXSTR) :: ifname = 'ww3_multi.inp'
-      logical :: lsep_ss = .false.
-      logical :: lsep_st = .false.
-      logical :: lsep_se = .false.
+      logical :: lsep_ss = .true.
+      logical :: lsep_st = .true.
+      logical :: lsep_se = .true.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
@@ -2212,24 +2212,26 @@
         call w3seti ( impGridID, mdse, mdst )
         IF ( IMPROC .EQ. 1 ) write(*,*) 'impGridID', impGridID
         IF ( IMPROC .EQ. 1 ) write(*,*) 'JDM ready TW0', tw0(1), tw0(2)
-        IF ( IMPROC .EQ. 1 ) write(*,*) 'JDM  ready TWN', twn(1), twn(2)
+        IF ( IMPROC .EQ. 1 ) write(*,*) 'JDM ready TWN', twn(1), twn(2)
 
         if (firstCall) then
           twn = tcur
           IF ( IMPROC .EQ. 1 ) write(*,*) 'JDM firstcall 1' 
 !/WRST  !For NEMS we do not have wnd at t0, so get it from restart  
 !/WRST          tw0 = twn
+!/WRST          wxn = WXNwrst
+!/WRST          wyn = WYNwrst
 !/WRST          wx0 = wxn
 !/WRST          wy0 = wyn
-      IF (IMPROC .EQ. 1) write(*,*) 'JDM firstcall TW0', tw0(1), tw0(2)
-      IF (IMPROC .EQ. 1)write(*,*) 'JDM  firstcall TWN', twn(1), twn(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM firstcall TW0', tw0(1), tw0(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM firstcall TWN', twn(1), twn(2)
         else
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
           twn = tend
-       IF (IMPROC .EQ. 1) write(*,*) 'JDM notfirstcall TW0', tw0(1), tw0(2)
-      IF (IMPROC .EQ. 1) write(*,*) 'JDM  notfirstcall TWN', twn(1), twn(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM notfirstcall TW0', tw0(1), tw0(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM notfirstcall TWN', twn(1), twn(2)
         endif
         tfn(:,j) = twn
         if ( mbgFieldActive(i1) ) then
@@ -2248,15 +2250,15 @@
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
-       IF (IMPROC .EQ. 1) write(*,*) 'JDM badfirstcall2 TW0', tw0(1), tw0(2)
-       IF (IMPROC .EQ. 1) write(*,*) 'JDM  badfirstcall2 TWN', twn(1), twn(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM badfirstcall2 TW0', tw0(1), tw0(2)
+          IF (IMPROC .EQ. 1) write(*,*) 'JDM badfirstcall2 TWN', twn(1), twn(2)
 !/WRST        else 
-            IF (IMPROC .EQ. 1)    write(*,*) 'JDM first call 2' 
+                IF (IMPROC .EQ. 1) write(*,*) 'JDM first call 2' 
 !/WRST          tw0 = twn 
-!/WRST          wxn = wx0 !replace with values from restart
-!/WRST          wyn = wy0  
-      IF (IMPROC .EQ. 1)    write(*,*) 'JDM firstcall2 TW0', tw0(1), tw0(2)
-      IF (IMPROC .EQ. 1) write(*,*) 'JDM  firstcall2 TWN', twn(1), twn(2)
+!/WRST          wxn = WXNwrst !replace with values from restart
+!/WRST          wyn = WYNwrst  
+      IF (IMPROC .EQ. 1) write(*,*) 'JDM firstcall2 TW0', tw0(1), tw0(2)
+      IF (IMPROC .EQ. 1) write(*,*) 'JDM firstcall2 TWN', twn(1), twn(2)
 !/WRST        endif ! if .false. for WRST    
         endif
     
@@ -2267,11 +2269,11 @@
 !/WRST        !If the time of the field is still initial time, replace
 !/WRST        !with restart field
               IF (IMPROC .EQ. 1) write(*,*) 'JDM replacing values'
-!/WRST        wxn = wx0 !replace with values from restart
-!/WRST        wyn = wy0     
+!/WRST        wxn = WXNwrst !replace with values from restart
+!/WRST        wyn = WYNwrst     
 !/WRST        !and do not update other grids
 !/WRST     else    !twn>tw0
-        IF (IMPROC .EQ. 1) write(*,*) 'JDM twn<tw0' 
+        IF (IMPROC .EQ. 1) write(*,*) 'JDM twn>tw0' 
         IF (IMPROC .EQ. 1) write(*,*) 'JDM impGridID, ngrds',impGridID, nrgrd
         do imod = 1,nrgrd
           call w3setg ( imod, mdse, mdst )

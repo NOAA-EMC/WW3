@@ -151,6 +151,7 @@
         REAL                  :: GA0, GD0, GAN, GDN
         REAL, POINTER         :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
+!/WRST                                 WXNwrst(:,:),WYNwrst(:,:),           &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
@@ -179,6 +180,7 @@
       REAL, POINTER           :: GA0, GD0, GAN, GDN
       REAL, POINTER           :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
+!/WRST                                 WXNwrst(:,:),WYNwrst(:,:),           &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
@@ -527,6 +529,10 @@
 !/TIDE          CHECK_ALLOC_STATUS ( ISTAT )
 !/TIDE        END IF
 !
+
+!/WRST      ALLOCATE (     INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
+!/WRST                     INPUTS(IMOD)%WYNwrst(NX,NY) , STAT=ISTAT )
+
       IF ( FLWIND ) THEN
 !/SMC       IF( FSWND ) THEN
 !/SMC          ALLOCATE ( INPUTS(IMOD)%WX0(NSEA,1) ,              &
@@ -795,6 +801,10 @@
 !/TIDE              CYTIDE => INPUTS(IMOD)%CYTIDE
 !/TIDE            END IF
 !
+
+!/WRST          WXNwrst    => INPUTS(IMOD)%WXNwrst
+!/WRST          WYNwrst    => INPUTS(IMOD)%WYNwrst
+
           IF ( FLWIND  ) THEN
               WX0    => INPUTS(IMOD)%WX0
               WY0    => INPUTS(IMOD)%WY0
