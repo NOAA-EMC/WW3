@@ -164,8 +164,8 @@
 !           Expected input: the Analysis Hs field plus background wind speed
 !                           and direction, in text format
 !
-! PRCNTG is input for option 1 and it is the percentage of correction
-!applied  to all the gridpoints (e.g. 1.)
+! PRCNTG is input for option UPD0F and is the correction factor
+! applied  to all the gridpoints (e.g. 1.)
 !
 !   0.475
 !
@@ -625,8 +625,8 @@
 !/
       CASE ('UPD5')
          WRITE (NDSO,902) 'UPD5'
-         ! Cheat for the moment - set THRWSEA energy threshold here, 
-         ! not in input file
+         ! Presently set hardwired THRWSEA energy threshold here 
+         ! not user defined in input file
          THRWSEA = 0.7
 !
 !        Array allocation
@@ -718,8 +718,8 @@
 !/
       CASE ('UPD6')
          WRITE (NDSO,902) 'UPD6'
-         ! Cheat for the moment - set CORWSEA logical and THRWSEA energy
-         ! thresholds here, not in input file
+         ! Presently set hardwired CORWSEA logical and THRWSEA energy 
+         ! thresholds here, not user defined in input file
          CORWSEA = .FALSE.
          THRWSEA = 0.7
 !
@@ -1144,7 +1144,7 @@
 !/    No unauthorized use without permission.
 !/
 !  1. Purpose :
-!     Read gribtxt files that include wind data
+!     Read txt files that include wind data
 !  2. Method :
 !     
 !  3. Parameters :
@@ -1214,7 +1214,7 @@
                   A=0.
                   WS=0.
                   WD=0.
-                  READ(IP_FID,120)A, WS, WD 
+                  READ(IP_FID,*)A, WS, WD 
                   UPDPRCNT(N+1-L,K)=A
                   WSPD(N+1-L,K)=WS
                   WDIR(N+1-L,K)=WD
@@ -1232,8 +1232,6 @@
 !
          CLOSE(IP_FID)
 !
-110 format (2(I4) )
-120 format (F7.4,F8.4,F8.4)
 !         
 !/T         WRITE (NDSO,*) trim(myname), ' ends'         
       END SUBROUTINE READ_GRBTXTWS
@@ -1386,6 +1384,8 @@
             EwI    = 0.
             EsI    = 0.
             DO ITH=1, NTH
+               ! Relative wind-sea calc assumes input with in direction toward
+               ! i.e. same as for the wave spectrum
                RELWS = WSMULT * WS * MAX(0.0, COS(WD - TH(ITH)))
                E1I    = E1I + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
                IF ( RELWS > (SIG(IK)/WN) ) THEN
