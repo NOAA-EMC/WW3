@@ -31,8 +31,27 @@
   echo "Save source codes : $source"
   echo "Save listings     : $list"
 
-# Set batchq queue to define headers etc (default to original version if empty)
-batchq="slurm"
+# Compiler option. Choose appropriate compiler and set cmplOption to
+# y if using for the first time or using a different compiler
+
+  cmplr=intel
+  export cmplOption='y'
+
+# Set batchq queue, choose modules and other custom variables to fit system and 
+# to define headers etc (default to original version if empty)
+ishera=`hostname | grep hfe`
+if [ $ishera ]
+then
+# If no other h, assuming Hera 
+  cmplr=hera
+  batchq="slurm"
+  modcomp='intel/18.0.5.274'
+  modmpi='impi/2018.0.4'
+  modnetcdf='netcdf/4.6.1'
+  metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/parmetis-4.0.3'
+else
+  batchq=
+fi
 
 # 1. Set up
 # 1.a Computer/ user dependent set up
@@ -62,30 +81,16 @@ fi
 
 # Netcdf and Parmetis modules & variables
 
-istheia=`hostname | grep tfe`
-if [ $istheia ]
-then
-  modcomp='intel/14.0.2'
-  modmpi='impi/5.1.2.150'
-  modnetcdf='netcdf/4.3.0'
-fi
-
   echo "  module load $modcomp $modmpi $modnetcdf"                   >> matrix.head
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
-  echo "  export METIS_PATH=/scratch3/NCEPDEV/stmp2/Jessica.Meixner/parmetis-4.0.3"   >> matrix.head
+  echo "  export METIS_PATH=${metispath}"   >> matrix.head
   echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' ' 
 
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
-
-  cmplr=Intel
-  export cmplOption='y'
-
   if [ "$batchq" = 'slurm' ]
   then
-    export  mpi='srun'
+    export  mpi='mpirun'
   else
     export  mpi='mpirun'
   fi
