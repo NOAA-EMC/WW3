@@ -234,7 +234,7 @@
                           GNAME, FILEXT, GTYPE, UNGTYPE
       USE W3TRIAMD, ONLY: SETUGIOBP
       USE W3WDATMD
-!/WRST      USE W3IDATMD, ONLY: TWN, WXN, WYN, TW0, WX0, WY0, W3SETI,FLWIND
+!/WRST      USE W3IDATMD, ONLY: WXN, WYN, W3SETI
 !/WRST      USE W3IDATMD, ONLY: WXNwrst, WYNwrst 
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
@@ -707,7 +707,6 @@
                   WRITEBUFF(:) = 0.
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           & 
-!/WRST                          TWN,                                        &
                           TLEV, TICE                                  
                   DO IPART=1,NPART
                     NREC  = NREC + 1
@@ -804,7 +803,6 @@
           IF (TYPE.EQ.'FULL') THEN
               RPOS = 1_8 + LRECL*(NREC-1_8)
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
-!/WRST                      TWN,                                            & 
                       TLEV, TICE
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WLV'
               DO IPART=1,NPART
@@ -840,7 +838,6 @@
 !/WRST                                      MIN(NY,IPART*NSIZE))
 !/WRST               END DO
 !/WRST              END DO
-!/WRST              TW0=TWN
               ALLOCATE ( MAPTMP(NY,NX) )
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading MAPTMP'
               DO IY=1, NY
@@ -906,11 +903,8 @@
               TIC1(2) =  0
               TIC5(1) = -1
               TIC5(2) =  0
-!/WRST              TWN(1)  = -1
-!/WRST              TWN(2)  =  0
 !/WRST              WXNwrst =  0. 
 !/WRST              WYNwrst =  0. 
-!/WRST              TW0  = TWN
               WLV     =  0.
               ICE     =  0.
               ASF     =  1.

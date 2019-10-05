@@ -2209,12 +2209,6 @@
 
         if (firstCall) then
           twn = tcur
-!/WRST  !For NEMS we do not have wnd at t0, so get it from restart  
-!/WRST          tw0 = twn
-!/WRST          wxn = WXNwrst
-!/WRST          wyn = WYNwrst
-!/WRST          wx0 = wxn
-!/WRST          wy0 = wyn
         else
           tw0 = twn
           wx0 = wxn
@@ -2233,24 +2227,35 @@
         call FieldGather( impField(i2), nx, ny, wyn, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (firstCall) then
-!/WRST        if (.false.) then 
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
-!/WRST        else 
-!/WRST          tw0 = twn 
 !/WRST          wxn = WXNwrst !replace with values from restart
-!/WRST          wyn = WYNwrst  
-!/WRST        endif ! if .false. for WRST    
-        endif
+!/WRST          wyn = WYNwrst 
+!/WRST          wx0 = WXNwrst 
+!/WRST          wy0 = WYNwrst  
+!/WRST          do imod = 1,nrgrd
+!/WRST            call w3setg ( imod, mdse, mdst )
+!/WRST            call w3setw ( imod, mdse, mdst )
+!/WRST            call w3seti ( imod, mdse, mdst )
+!/WRST            call wmsetm ( imod, mdse, mdst )
+!/WRST            if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+!/WRST            INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
+!/WRST            INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
+!/WRST            wxn = WXNwrst !replace with values from restart
+!/WRST            wyn = WYNwrst 
+!/WRST            wx0 = WXNwrst 
+!/WRST            wy0 = WYNwrst  
+!/WRST            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!/WRST          enddo
+!/WRST        endif
     
-!/WRST     if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
+!/WRST       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
 !/WRST        !If the time of the field is still initial time, replace
 !/WRST        !with restart field
 !/WRST        wxn = WXNwrst !replace with values from restart
 !/WRST        wyn = WYNwrst     
-!/WRST        !and do not update other grids
-!/WRST     else    !twn>tw0
+!/WRST       else    !twn>tw0
         do imod = 1,nrgrd
           call w3setg ( imod, mdse, mdst )
           call w3setw ( imod, mdse, mdst )
@@ -2263,7 +2268,7 @@
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           endif
         enddo
-!/WRST     endif  !if ( twn-tw0 .le. 0  )
+!/WRST       endif  !if ( twn-tw0 .le. 0  )
       endif
 !
 ! -------------------------------------------------------------------- /

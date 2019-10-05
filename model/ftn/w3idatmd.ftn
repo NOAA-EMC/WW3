@@ -149,9 +149,9 @@
         INTEGER               :: TFN(2,-7:8), TC0(2), TW0(2),     &
                                  TDN(2), TG0(2)
         REAL                  :: GA0, GD0, GAN, GDN
+!/WRST        REAL, POINTER         :: WXNwrst(:,:),WYNwrst(:,:)
         REAL, POINTER         :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
-!/WRST                                 WXNwrst(:,:),WYNwrst(:,:),           &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
@@ -160,6 +160,7 @@
 !/TIDE REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
 !/TIDE                           WLTIDE(:,:,:,:)
         LOGICAL               :: IINIT
+!/WRST        LOGICAL               :: WRSTIINIT=.FALSE.
 ! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
         LOGICAL               :: INFLAGS1(-7:12), FLAGSC(-7:12),      &
@@ -530,8 +531,11 @@
 !/TIDE        END IF
 !
 
-!/WRST      ALLOCATE (     INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
+!/WRST      IF(.NOT.(INPUTS(IMOD)%WRSTIINIT)) THEN 
+!/WRST        ALLOCATE (   INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
 !/WRST                     INPUTS(IMOD)%WYNwrst(NX,NY) , STAT=ISTAT )
+!/WRST        INPUTS(IMOD)%WRSTIINIT=.TRUE.
+!/WRST      ENDIF
 
       IF ( FLWIND ) THEN
 !/SMC       IF( FSWND ) THEN
@@ -801,7 +805,6 @@
 !/TIDE              CYTIDE => INPUTS(IMOD)%CYTIDE
 !/TIDE            END IF
 !
-
 !/WRST          WXNwrst    => INPUTS(IMOD)%WXNwrst
 !/WRST          WYNwrst    => INPUTS(IMOD)%WYNwrst
 
