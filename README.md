@@ -1,6 +1,6 @@
 # The WAVEWATCH III Framework
 
-WAVEWATCH III &reg; is a community wave modeling framework that includes the 
+WAVEWATCH III<sup>&reg;</sup>  is a community wave modeling framework that includes the 
 latest scientific advancements in the field of wind-wave modeling and dynamics.
 
 ## General Features
@@ -11,11 +11,11 @@ for shallow-water (surf zone) applications, as well as wetting and drying of
 grid points. Propagation of a wave spectrum can be solved using regular 
 (rectilinear or curvilinear) and unstructured (triangular) grids. See 
 [About WW3](https://github.com/NOAA-EMC/WW3/wiki/About-WW3) for a 
-detailed description of WAVEWATCH III &reg;.
+detailed description of WAVEWATCH III<sup>&reg;</sup> .
 
 ## Installation
 
-The WAVEWATCH III framework package has two parts that need to be combined so 
+The WAVEWATCH III<sup>&reg;</sup>  framework package has two parts that need to be combined so 
 all runs smoothly: the GitHub repo itself, and a binary data file bundle that 
 needs to be obtained from our ftp site. Steps to successfully acquire and install 
 the framework are outlined in our [Quick Start](https://github.com/NOAA-EMC/WW3/wiki/Quick-Start)

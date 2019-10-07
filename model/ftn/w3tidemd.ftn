@@ -581,11 +581,11 @@
 !
               RR=EE(J)
               L2=IR(J)+1
-              GO TO (901,902,903),L2
-  902         RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-              GO TO 901
-  903         RR=EE(J)*2.59808*SLAT
-  901         CONTINUE
+              IF (L2.EQ.2) THEN
+                RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+              ELSE IF (L2.EQ.3) THEN
+                RR=EE(J)*2.59808*SLAT
+              END IF
               UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
               IUU=UUDBL
               UU=UUDBL-IUU
@@ -1905,11 +1905,11 @@
 !
       RR=EE(J)
       L=IR(J)+1
-      GO TO (901,902,903),L
-  902 RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-      GO TO 901
-  903 RR=EE(J)*2.59808*SLAT
-  901 CONTINUE
+      IF (L.EQ.2) THEN
+        RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+      ELSE IF (L.EQ.3) THEN
+        RR=EE(J)*2.59808*SLAT
+      END IF
       UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
       IUU=UUDBL
       UU=UUDBL-IUU
