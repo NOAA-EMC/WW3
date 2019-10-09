@@ -2030,7 +2030,29 @@ END MODULE W3PROFSMD
 !     where to go
 !
       if (ipar(1).gt.0) then
-         goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
+         !!goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)     
+        SELECT CASE (ipar(10))
+          CASE (1)
+            GOTO 10
+          CASE (2)
+            GOTO 20
+          CASE (3)
+            GOTO 40
+          CASE (4)
+            GOTO 50
+          CASE (5)
+            GOTO 60
+          CASE (6)
+            GOTO 70
+          CASE (7)
+            GOTO 80
+          CASE (8)
+            GOTO 90
+          CASE (9)
+            GOTO 100
+          CASE (10)
+            GOTO 110
+        END SELECT
       else if (ipar(1).lt.0) then
          goto 900
       endif

@@ -25,6 +25,10 @@ To make the library that will contain the \ws\ code and cap that can be included
 this makefile will subsequently call {\code w3\_make}. As part of this process a nuopc.mk makefile
 fragment will also be created, which tells NUOPC/ESMF where the \ws\ library is located. 
 
+Note there is a new switch {\code WRST} which will add 10 m wind to the restart file and use that wind field 
+at the initial time step of the wave model. This can be used in situations where the coupled atmospheric model 
+does not have 10 m wind speeds at initialization.
+
 \vssub
 \subsection{~Import/Export Fields in the NUOPC Cap} \label{sec:nuopcfields}
 \vssub

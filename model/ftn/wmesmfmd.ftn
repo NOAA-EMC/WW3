@@ -328,6 +328,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -482,6 +483,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -607,6 +609,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -626,9 +629,9 @@
       character(ESMF_MAXSTR) :: wrkdir = '.'
       character(ESMF_MAXSTR) :: preamb = '.'
       character(ESMF_MAXSTR) :: ifname = 'ww3_multi.inp'
-      logical :: lsep_ss = .false.
-      logical :: lsep_st = .false.
-      logical :: lsep_se = .false.
+      logical :: lsep_ss = .true.
+      logical :: lsep_st = .true.
+      logical :: lsep_se = .true.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
@@ -1157,6 +1160,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       type(ESMF_State)    :: impState
       type(ESMF_State)    :: expState
@@ -1461,6 +1465,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -1662,6 +1667,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -1872,6 +1878,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2038,6 +2045,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+!/MPI      USE WMMDATMD, ONLY: IMPROC
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2098,6 +2107,7 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       tend(1) = 10000*yy + 100*mm + dd
       tend(2) = 10000*h  + 100*m  + s
+
 !
 ! -------------------------------------------------------------------- /
 ! Water levels
@@ -2196,6 +2206,7 @@
       if ( impFieldActive(i1) ) then
         call w3setg ( impGridID, mdse, mdst )
         call w3seti ( impGridID, mdse, mdst )
+
         if (firstCall) then
           twn = tcur
         else
@@ -2219,7 +2230,32 @@
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
-        endif
+!/WRST          wxn = WXNwrst !replace with values from restart
+!/WRST          wyn = WYNwrst 
+!/WRST          wx0 = WXNwrst 
+!/WRST          wy0 = WYNwrst  
+!/WRST          do imod = 1,nrgrd
+!/WRST            call w3setg ( imod, mdse, mdst )
+!/WRST            call w3setw ( imod, mdse, mdst )
+!/WRST            call w3seti ( imod, mdse, mdst )
+!/WRST            call wmsetm ( imod, mdse, mdst )
+!/WRST            if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+!/WRST            INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
+!/WRST            INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
+!/WRST            wxn = WXNwrst !replace with values from restart
+!/WRST            wyn = WYNwrst 
+!/WRST            wx0 = WXNwrst 
+!/WRST            wy0 = WYNwrst  
+!/WRST            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!/WRST          enddo
+!/WRST        endif
+    
+!/WRST       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
+!/WRST        !If the time of the field is still initial time, replace
+!/WRST        !with restart field
+!/WRST        wxn = WXNwrst !replace with values from restart
+!/WRST        wyn = WYNwrst     
+!/WRST       else    !twn>tw0
         do imod = 1,nrgrd
           call w3setg ( imod, mdse, mdst )
           call w3setw ( imod, mdse, mdst )
@@ -2232,6 +2268,7 @@
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           endif
         enddo
+!/WRST       endif  !if ( twn-tw0 .le. 0  )
       endif
 !
 ! -------------------------------------------------------------------- /
@@ -2344,6 +2381,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2523,6 +2561,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -2890,6 +2929,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -3412,6 +3452,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -3781,6 +3822,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_GridComp) :: gcomp
       integer,intent(out) :: rc
 !/
@@ -4231,6 +4273,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)      :: bmskField
       type(ESMF_Field)      :: impField
       real(ESMF_KIND_RX)    :: missingVal
@@ -4448,6 +4491,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)      :: impField
       type(ESMF_Field)      :: mbgField
       type(ESMF_Field)      :: bmskField
@@ -4549,6 +4593,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field)                 :: field
       real(ESMF_KIND_RX)               :: fillVal
       integer,               optional  :: rc
@@ -4663,6 +4708,7 @@
 !/PDLIB      use yowNodepool, only: np, iplg
 !/PDLIB      use yowrankModule, only: rank
 !/
+      implicit none
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -4782,6 +4828,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character (6) :: fnameList(:)
       character (6) :: fname
       integer       :: rc
@@ -4865,6 +4912,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character(*) :: cname
       character(*) :: wtnam(:)
       integer      :: wtcnt(:)
@@ -4952,6 +5000,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       integer, intent(in)    :: nx, ny
       integer, intent(in)    :: nproc
       integer, intent(in)    :: npmin
@@ -5079,6 +5128,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       character(*) :: cenv
       character(*) :: cval
       integer      :: rc
@@ -5164,6 +5214,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       integer      :: rc
 !/
 !/ ------------------------------------------------------------------- /
@@ -5272,6 +5323,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field) :: chkField
       integer          :: rc
 !/
@@ -5399,6 +5451,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       type(ESMF_Field) :: wrlField
       integer          :: rc
 !/
@@ -5558,6 +5611,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: wbxField
       type(ESMF_Field) :: wbyField
@@ -5770,6 +5824,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: sxxField
       type(ESMF_Field) :: sxyField
@@ -6006,6 +6061,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      implicit none
       real             :: a(nth,nk,0:nseal)
       type(ESMF_Field) :: usxField
       type(ESMF_Field) :: usyField
