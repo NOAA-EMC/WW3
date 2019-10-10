@@ -3245,8 +3245,8 @@
                '     GRDHGH NOT YET ALLOCATED, CALL WMGLOW FIRST'/)
  1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     TMPINT AND TMPRL TOO SMALL (w/out SCRIP)'/)
- 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
-               '     TMPINT AND TMPRL TOO SMALL (w/SCRIP) '/)
+!/SCRIP 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
+!/SCRIP               '     TMPINT AND TMPRL TOO SMALL (w/SCRIP) '/)
 !
 !/T 9010 FORMAT ( ' TEST WMGHGH : INITIALIZE BOUNDARY DISTANCE MAPS')
 !/T 9011 FORMAT ( '               GRID = ',I3,'  RANK = ',I3,         &
