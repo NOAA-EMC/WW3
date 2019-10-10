@@ -43,13 +43,6 @@ module yowNodepool
   public :: finalizeNodepool, nodes, ghosts
 
 
-  type, public :: llist_type
-    integer                      :: rank=-1   ! Processor rank assignment
-    integer                      :: id=0      ! Local index on processor "rank"
-    type(llist_type),pointer :: next=>null()  ! Next entry in linked-list. ! we dont need this in pdlib
-  end type llist_type
-  type(llist_type), public, allocatable :: ARR_ipgl(:)
-
   !> Holds the nodes data.
   !> Such as x, y, z data or the number of connected nodes
   type, public :: t_Node
@@ -59,13 +52,6 @@ module yowNodepool
 
     !> the global node number
     integer :: id_global = 0
-
-    !> X Coordiante
-    real(rkind), pointer :: x=>null()
-    !> Y Coordiante
-    real(rkind), pointer :: y=>null()
-    !> Z Coordiante
-    real(rkind), pointer :: z=>null()
 
     !> number of connected nodes.
     !> holds the number of neighbors conntected to this node.
@@ -88,10 +74,6 @@ module yowNodepool
       !> returns true if this node is a ghost node
       procedure :: isGhost
   end type
-
-  !> coordinates of the node, ({x,y,z}, global ID)
-  !> \todo change to local ID, later
-  real(rkind), public, target, allocatable :: xyz(:,:)
 
   !> coordinates of the local +  ghost nodes. range [1:npa]
   real(rkind), public, target, allocatable :: x(:), y(:), z(:)
@@ -237,7 +219,6 @@ module yowNodepool
   subroutine finalizeNodepool()
     implicit none
 
-    if(allocated(xyz))            deallocate(xyz)
     if(allocated(x))              deallocate(x)
     if(allocated(y))              deallocate(y)
     if(allocated(z))              deallocate(z)

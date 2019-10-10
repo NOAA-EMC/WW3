@@ -312,7 +312,7 @@
 #  find . -iname "${name}.mod" -delete  # not all versions of find have -iname?
 
   # Fall back on grep -i 
-  mods=`ls *.mod | grep -i "${name}.mod 2> /dev/null"`
+  mods=`ls *.mod 2> /dev/null | grep -i "${name}.mod"`
   if [ -n ${mods} ]; then
     rm -f ${mods}
   fi 
@@ -402,7 +402,7 @@ then
 #      mods=`find . -iname "${name}.mod"` # not all versions of find have -iname?
 
       # Fall back on grep -i 
-      mods=`ls *.mod | grep -i "${name}.mod 2> /dev/null"`
+      mods=`ls *.mod 2> /dev/null | grep -i "${name}.mod"`
       if [ -n "$mods" ]
       then
         for mod in $mods

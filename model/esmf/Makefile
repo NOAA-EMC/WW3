@@ -34,9 +34,9 @@ ifeq ($(WW3_COMP),Portland)
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
 # intel
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","theia" "Intel"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","theia" "Intel" "hera"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_phase2" "wcoss_cray"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_phase2" "wcoss_cray" "wcoss_dell_p3"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
@@ -88,6 +88,9 @@ default: env setup gout switch
 ww3_nems: env setup gout switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 	$(WW3_BINDIR)/w3_make ww3_multi
+
+ww3_nemslibonly: env setup switch
+	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 
 ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
@@ -157,6 +160,8 @@ switch:
 gout: 
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/OMPG/ /g"\
+	     -e "s/OMPH/ /g"\
 	     -e "s/MPIT/ /g"\
              -e "s/MPI/ /g"\
              -e "s/PDLIB/ /g"\
@@ -172,6 +177,8 @@ gout:
 	$(WW3_BINDIR)/w3_make ww3_ounp
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/OMPG/ /g"\
+	     -e "s/OMPH/ /g"\
              -e "s/MPIT/ /g"\
              -e "s/MPI/ /g"\
              -e "s/PDLIB/ /g"\
