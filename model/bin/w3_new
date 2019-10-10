@@ -320,6 +320,9 @@
                                    touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn
                                    touch ww3_grid.ftn ;;
+     'rstwind') cd $main_dir/ftn ; touch wmesmfmd.ftn
+                                   touch w3idatmd.ftn
+                                   touch w3iorsmd.ftn ;;
      'curr'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 
