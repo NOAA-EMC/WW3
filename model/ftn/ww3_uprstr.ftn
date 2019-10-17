@@ -300,6 +300,7 @@
       USE W3ADATMD, ONLY: NSEALM
       USE W3ODATMD, ONLY: IAPROC, NAPERR, NAPLOG, NDS, NAPOUT
       USE W3ODATMD, ONLY: NDSE, NDSO, NDST, IDOUT, FNMPRE  
+!/WRST      USE W3IDATMD
 !
       IMPLICIT NONE
 !/
@@ -330,6 +331,7 @@
       REAL                    :: K
       CHARACTER(8), PARAMETER :: MYNAME='W3UPRSTR'
       LOGICAL                 :: SMCGRD = .FALSE.
+      LOGICAL                 :: WRSTON = .FALSE.
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -342,6 +344,8 @@
       CALL W3SETA ( 1, 6, 6 )
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
+!/WRST      CALL W3NINP (    6, 6 )
+!/WRST      CALL W3SETI ( 1, 6, 6 )
 !
       NDSE   = 6
       NDSI   = 10
@@ -365,7 +369,13 @@
 !
       WRITE (NDSO,900)
 !
+!
+!/WRST      !Compiling with WRST will allow access to options UPD5/6
+!/WRST      WRSTON = .TRUE.
+!/WRST      WRITE (NDSO,*) '*** UPRSTR will read wind from restart files'
+!/SMC      !Compiling with SMC option activates SMC grid logical
 !/SMC      SMCGRD = .TRUE.
+!/SMC      WRITE (NDSO,*) '*** UPRSTR set to work with SMC grid model'
 !/
 !/ ------------------------------------------------------------------- /
 !  2. Read the ww3_uprstr.inp
@@ -404,6 +414,9 @@
 !/ ------------------------------------------------------------------- /
 !  4. Read restart file
 !/
+!/WRST      ! Set the wind flag to true when reading restart wind
+!/WRST      INFLAGS1(3) = .TRUE.
+!/WRST      CALL W3DIMI ( 1, 6, 6 ) !Needs to be called after w3iogr to have correct dimensions?
       CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )!
       IF ( IAPROC .EQ. NAPLOG ) THEN
          IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
@@ -633,10 +646,12 @@
          ALLOCATE ( VATMP(SIZE(VA,1)))
          ALLOCATE ( VAMAPWS(SIZE(VA,1)))
          IF (.NOT. SMCGRD) THEN
+            ! SWH arrays allocated using Y,X convention as per wgrib write
             ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
             ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-            ALLOCATE( WSBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-            ALLOCATE( WDRBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+            ! Wind arrays allocated using X,Y convention as in w3idatmd
+            ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+            ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
 !/SMC         ELSE
 !/SMC            ALLOCATE( SWHBCKG(NSEA,1) )
 !/SMC            ALLOCATE( SWHANL(NSEA,1) )
@@ -653,7 +668,13 @@
          INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
          IF (anl_exists) THEN
 !/T            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+!/WRST            ! For WRST switch read only corrected SWH
+!/WRST            ! Wind will have been read from the restart
+!/WRST            IF (WRSTON) THEN
+!/WRST               CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+!/WRST            ELSE 
             CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
+!/WRST            ENDIF
 !/T            CALL writeMatrix('SWHANL_IN.txt',SWHANL)
          ELSE
             WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
@@ -661,6 +682,11 @@
 !/T            DEALLOCATE( SWHUPRSTR )
             STOP
          END IF
+!
+!/WRST         !Calculate wind speed and direction values from u,v..
+!/WRST         !..using cartesian direction convention
+!/WRST         !At present assume only needed for data read from restart
+!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCGRD)
 !
 !        Calculation
          DO ISEA=1, NSEA, 1
@@ -672,7 +698,7 @@
 !/SMC               IY = ISEA
             ENDIF
             VATMP = VA(:,ISEA)
-            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IY,IX), WDRBCKG(IY,IX), ISEA, &
+            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IX,IY), WDRBCKG(IX,IY), ISEA, &
                                SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
             SWHBCKG(IY,IX)=SWHBCKG_1
 !
@@ -727,10 +753,12 @@
          ALLOCATE ( VATMP(SIZE(VA,1)))
          ALLOCATE ( VAMAPWS(SIZE(VA,1)))
          IF (.NOT. SMCGRD) THEN
+            ! SWH arrays allocated using Y,X convention as per wgrib write
             ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
             ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-            ALLOCATE( WSBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-            ALLOCATE( WDRBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+            ! Wind arrays allocated using X,Y convention as in w3idatmd
+            ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+            ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
 !/SMC         ELSE
 !/SMC            ALLOCATE( SWHBCKG(NSEA,1) )
 !/SMC            ALLOCATE( SWHANL(NSEA,1) )
@@ -747,14 +775,25 @@
          INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
          IF (anl_exists) THEN
 !/T            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+!/WRST            ! For WRST switch read only corrected SWH
+!/WRST            ! Wind will have been read from the restart
+!/WRST            IF (WRSTON) THEN
+!/WRST               CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+!/WRST            ELSE 
             CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
+!/WRST            ENDIF
 !/T            CALL writeMatrix('SWHANL_IN.txt',SWHANL)
          ELSE
             WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
             DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
-!/            DEALLOCATE( SWHUPRSTR )
+!/T            DEALLOCATE( SWHUPRSTR )
             STOP
          END IF
+!
+!/WRST         !Calculate wind speed and direction values from u,v..
+!/WRST         !..using cartesian direction convention
+!/WRST         !At present assume only needed for data read from restart
+!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCGRD)
 !
 !        Calculation
          DO ISEA=1, NSEA, 1
@@ -766,7 +805,7 @@
 !/SMC               IY = ISEA
             ENDIF
             VATMP = VA(:,ISEA)
-            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IY,IX), WDRBCKG(IY,IX), ISEA, &
+            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IX,IY), WDRBCKG(IX,IY), ISEA, &
                                SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
             SWHBCKG(IY,IX)=SWHBCKG_1
 !/
@@ -817,6 +856,9 @@
 !/ ------------------------------------------------------------------- /
 ! 6. Write updated restart file
 !/
+!/WRST      ! Copy read wind values from restart for write out
+!/WRST      WXN = WXNwrst
+!/WRST      WYN = WYNwrst
       WRITE (NDSO,903)
       INTYPE = 3
       CALL W3IORS ( 'HOT', NDS(6), SIG(NK), INTYPE, 1 )   
@@ -1123,7 +1165,6 @@
 !/T         WRITE (NDSO,*) trim(myname), ' ends'         
       END SUBROUTINE READ_GRBTXT
 !/
-!/
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE READ_GRBTXTWS(UPDPRCNT,WSPD,WDIR,FLNMCOR,SMCGRD)
@@ -1215,9 +1256,11 @@
                   WS=0.
                   WD=0.
                   READ(IP_FID,*)A, WS, WD 
+                  !SWH data read onto Y,X grid
                   UPDPRCNT(N+1-L,K)=A
-                  WSPD(N+1-L,K)=WS
-                  WDIR(N+1-L,K)=WD
+                  !Wind data read onto X,Y grid
+                  WSPD(K,N+1-L)=WS
+                  WDIR(K,N+1-L)=WD
                END DO
             END DO
 !/SMC         ELSE
@@ -1225,8 +1268,8 @@
 !/SMC               A=0.
 !/SMC               READ(IP_FID,*)A, WS, WD 
 !/SMC               UPDPRCNT(L,1)=A
-!/SMC                  WSPD(L,1)=WS
-!/SMC                  WDIR(L,1)=WD
+!/SMC               WSPD(L,1)=WS
+!/SMC               WDIR(L,1)=WD
 !/SMC            END DO
          ENDIF
 !
@@ -1235,7 +1278,6 @@
 !         
 !/T         WRITE (NDSO,*) trim(myname), ' ends'         
       END SUBROUTINE READ_GRBTXTWS
-!/
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
@@ -1407,6 +1449,83 @@
 !
 !/T       WRITE (NDSO,*) trim(myname), ' ends'         
       END SUBROUTINE SWH_RSRT_1pw
+!/
+!/ ------------------------------------------------------------------- /
+!/ 
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Andy Saulter              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         16-Oct-2018 |
+!/                  +-----------------------------------+
+!/
+!/    16-Oct-2018 : Original Code                       ( version 6.07 )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!     Calculate the significant wave height for total, wind sea and
+!     swell components from the restart file for 1 point 
+!  2. Method :
+!     
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+!
+!/
+      SUBROUTINE UVTOCART (UVEC, VVEC, SPD, DCART, SMCGRD)  
+!
+         USE CONSTANTS, ONLY: TPI
+!
+         REAL, DIMENSION(:,:), INTENT(OUT) :: SPD, DCART
+         REAL, DIMENSION(:,:), INTENT(IN) :: UVEC, VVEC
+         LOGICAL, INTENT(IN) :: SMCGRD
+!
+!/T         WRITE (NDSO,*) trim(myname), ' starts'         
+!
+         DO ISEA=1, NSEA, 1
+            IF (.NOT. SMCGRD) THEN
+               IX = MAPSF(ISEA,1)
+               IY = MAPSF(ISEA,2)
+!/SMC            ELSE
+!/SMC               IX = 1
+!/SMC               IY = ISEA
+            ENDIF
+!
+            SPD(IY,IX) = SQRT( UVEC(IY,IX)**2 + VVEC(IY,IX)**2 )
+            IF( SPD(IY,IX) .GT. 1.E-7) THEN
+               DCART = MOD( TPI+ATAN2(UVEC(IY,IX),VVEC(IY,IX)) , TPI )
+            ELSE
+               DCART = 0
+            END IF
+            SPD(IY,IX) = MAX( SPD(IY,IX) , 0.001 )
+         END DO
+!
+!/T       WRITE (NDSO,*) trim(myname), ' ends'         
+      END SUBROUTINE UVTOCART
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
