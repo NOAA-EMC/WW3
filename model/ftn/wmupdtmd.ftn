@@ -329,13 +329,7 @@
             CALL W3SETG ( IMOD, MDSE, MDST )
             CALL W3SETI ( IMOD, MDSE, MDST )
 !
-! XXX RPH
-!           write(900,*) "CALLING WMUPD2"
-
             CALL WMUPD2 ( IMOD, J, JJ, IERR )
-! XXX RPH
-!           write(900,*) " WMUPD2 FINISH"
-
 !
 ! 4.  Forcing input from CPL ----------------------------------------- /
 !
@@ -949,27 +943,17 @@
 ! 2.c Wind speeds
 !
         CASE (3)
-! XXX RPH
-!           write(900,*) "CALLING WMUPDV FOR WIND"
-
           CALL WMUPDV ( IMOD, INPUTS(IMOD)%WXN, INPUTS(IMOD)%WYN,     &
                         JMOD, INPUTS(JMOD)%WXN, INPUTS(JMOD)%WYN,     &
                         0., ICONSW )
-! XXX RPH
-!           write(900,*) " WMUPDV getting out FOR WIND"
+!
           IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS                 &
                       ( IMOD, INPUTS(IMOD)%DTN,                       &
                         JMOD, INPUTS(JMOD)%DTN, 0. )
-! XXX RPH
-!           write(900,*) "IDINP(IMOD,J)= ",IDINP(IMOD,J)
-
 !
 ! 2.d Ice concentrations
 !
         CASE (4)
-! XXX RPH
-           !write(900,*) "CALLING WMUPDS FOR ICE CONCENTRTION"
-
           CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEI,                      &
                         JMOD, INPUTS(JMOD)%ICEI, 0. )
           IF ( IDINP(IMOD,J) .EQ. 'ISI' ) CALL WMUPDS                 &
@@ -1220,7 +1204,6 @@
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
-
 !
       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
@@ -1235,20 +1218,7 @@
 ! 0.b Initialize fields
 !
       VX     = UNDEF
-      VY     = UNDEF
-!XXX
-
-      write(124,*) '-----STARTING  WMUPDV ------ '
-      write(124,*) GRIDS(IMOD)%GTYPE, CLGTYPE 
-      write(124,*) GRIDS(JMOD)%GTYPE, CLGTYPE
-      CURVI=0
-      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
-           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-          CURVI=1
-           write(124,*) 'CURVILINEAR GRID CASE'
-      endif
-!XXX
- 
+      VY     = UNDEF 
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
       IF(CURVI .EQ. 0) THEN
@@ -1323,7 +1293,6 @@
         !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
         !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
 !
-        write(124,*) ' CURVILINEAR GRID INTERPOLATION'
 !
 !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2 
         MXA=2  
@@ -1875,22 +1844,6 @@
 ! 0.b Initialize fields
 !
       FD     = UNDEF
-
-
-!XXX
-
-      write(124,*) '-----STARTING  WMUPDV ------ '
-      write(124,*) GRIDS(IMOD)%GTYPE, CLGTYPE 
-      write(124,*) GRIDS(JMOD)%GTYPE, CLGTYPE
-      CURVI=0
-      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
-           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-          CURVI=1
-           write(124,*) 'CURVILINEAR GRID CASE'
-      endif
-!XXX
-
-
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
@@ -2655,8 +2608,6 @@
       VAL2 = (FUNC2(INX,JNX)  *C1 + FUNC2(INX+1,JNX)  *C2 +  &
               FUNC2(INX,JNX+1)*C3 + FUNC2(INX+1,JNX+1)*C4)/DENOM
 !
-!      write(123,*) X, Y,VAL1,VAL2
-
       END SUBROUTINE INTERPOLATE2D
 !====================================================================
 
