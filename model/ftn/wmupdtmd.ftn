@@ -1167,7 +1167,7 @@
                                  IYFN, IXS0, IXSN, IYS0, IYSN, IXS,   &
                                  MXA, MYA, J, J1, J2, IXC, IYC, JJ,   &
                                  JX, JY
-      INTEGER                 :: NPOIX, NPOIY, I,  IFIELDS   !RP
+      INTEGER                 :: NPOIX, NPOIY, I,  IFIELDS,curvi   !RP
 
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: NXA(:,:), NYA(:,:)
@@ -1221,16 +1221,7 @@
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
 
-!XXX RPH NEW HERE
-
-        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-        NXA    = 0
-        RXA    = 0.
-        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-        NYA    = 0
-        RYA    = 0.
-
-
+!
       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
          ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
@@ -1245,8 +1236,22 @@
 !
       VX     = UNDEF
       VY     = UNDEF
+!XXX
+
+      write(124,*) '-----STARTING  WMUPDV ------ '
+      write(124,*) GRIDS(IMOD)%GTYPE, CLGTYPE 
+      write(124,*) GRIDS(JMOD)%GTYPE, CLGTYPE
+      CURVI=0
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+          CURVI=1
+           write(124,*) 'CURVILINEAR GRID CASE'
+      endif
+!XXX
+ 
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
+      IF(CURVI .EQ. 0) THEN
 !
       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
@@ -1300,6 +1305,7 @@
           RETURN
 !
         END IF
+        END IF !CURVI
 !
 ! 2.  General case --------------------------------------------------- /
 !
@@ -1316,6 +1322,19 @@
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
         !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
         !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+!
+        write(124,*) ' CURVILINEAR GRID INTERPOLATION'
+!
+!  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2 
+        MXA=2  
+        MYA=2    
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
+
 !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
         DTOLER = 1E-5 
 ! 2.a.1  running over the curvilinear grid
@@ -1370,9 +1389,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-! XXX         ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-! XXX         NXA    = 0
-! XXX         RXA    = 0.
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
 !
         IF ( MXA .EQ. 2 ) THEN
 !
@@ -1479,9 +1498,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-! XXX         ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-! XXX         NYA    = 0
-! XXX         RYA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
 !
         IF ( MYA .EQ. 2 ) THEN
 !
@@ -1800,7 +1819,7 @@
                                  MXA, MYA, J, J1, J2, IXC, IYC, JJ,   &
                                  JX, JY
 
-      INTEGER                 :: NPOIX, NPOIY, I                    !RP
+      INTEGER                 :: NPOIX, NPOIY, I, CURVI               !RP
 
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: NXA(:,:), NYA(:,:)
@@ -1843,19 +1862,7 @@
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
-
-
-!XXX RPH NEW HERE===================================
-
-        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-        NXA    = 0
-        RXA    = 0.
-        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-        NYA    = 0
-        RYA    = 0.
-!====================================================
-
-
+!
       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
          ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
@@ -1868,9 +1875,26 @@
 ! 0.b Initialize fields
 !
       FD     = UNDEF
+
+
+!XXX
+
+      write(124,*) '-----STARTING  WMUPDV ------ '
+      write(124,*) GRIDS(IMOD)%GTYPE, CLGTYPE 
+      write(124,*) GRIDS(JMOD)%GTYPE, CLGTYPE
+      CURVI=0
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+          CURVI=1
+           write(124,*) 'CURVILINEAR GRID CASE'
+      endif
+!XXX
+
+
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
+      IF(CURVI .EQ. 0) THEN
       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
@@ -1923,6 +1947,7 @@
         RETURN
 !
       END IF
+      END IF !CURVI
 !
 ! 2.  General case --------------------------------------------------- /
 !
@@ -1941,6 +1966,17 @@
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
         !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
         !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+
+!  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2 
+        MXA=2  
+        MYA=2    
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
+!
 !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
         DTOLER = 1E-5 
 ! 2.a.2  running over the curvilinear grid
@@ -1974,9 +2010,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
-!        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-!        NXA    = 0
-!        RXA    = 0.
+        ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+        NXA    = 0
+        RXA    = 0.
 !
 !
         IF ( MXA .EQ. 2 ) THEN
@@ -2082,10 +2118,9 @@
 !/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
-! XXX RPH  COMMENTIG OUT and adding these lines ad the top
-!        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-!        NYA    = 0
-!        RYA    = 0.
+        ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+        NYA    = 0
+        RYA    = 0.
 !
 !
         IF ( MYA .EQ. 2 ) THEN
@@ -2451,34 +2486,38 @@
       ! F IS ASSUMED TO BE ON A REGULAR GRID, WITH THE GRID X VALUES SPECIFIED
       ! BY XARRAY WITH DIMENSION X_LEN 
       ! AND THE GRID Y VALUES SPECIFIED BY YARRAY WITH DIMENSION Y_LEN
-
+!
       INTEGER, INTENT(IN) :: X_LEN, Y_LEN
       REAL, DIMENSION(X_LEN), INTENT(IN) :: XARRAY
       REAL, DIMENSION(Y_LEN), INTENT(IN) :: YARRAY
       REAL, DIMENSION(X_LEN, Y_LEN), INTENT(IN) :: FUNC
       REAL, INTENT(IN) :: X,Y
       REAL, INTENT(IN), OPTIONAL :: DELTA
-   
-
       REAL :: DENOM, X1, X2, Y1, Y2
       INTEGER :: INX,JNX
 
       INX = XYCURVISEARCH(X_LEN, XARRAY, X, DELTA)
       JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
-
+!
+      IF (INX .GE. X_LEN) THEN
+       INX=INX-1
+      END IF
+      IF (JNX .GE. Y_LEN) THEN
+       JNX=JNX-1  
+      END IF
+!
       X1 = XARRAY(INX)
       X2 = XARRAY(INX+1)
-
       Y1 = YARRAY(JNX)
       Y2 = YARRAY(JNX+1)
- 
+!
       DENOM = (X2 - X1)*(Y2 - Y1)
-
+!
       INTERPOLATE = (FUNC(INX,JNX)*(X2-X)*(Y2-Y) +           &
                      FUNC(INX+1,JNX)*(X-X1)*(Y2-Y) +         &
                      FUNC(INX,JNX+1)*(X2-X)*(Y-Y1)+          &
                      FUNC(INX+1, JNX+1)*(X-X1)*(Y-Y1))/DENOM
-
+!
       END FUNCTION INTERPOLATE
 
 !========================================================================
@@ -2577,13 +2616,34 @@
 
       INX = XYCURVISEARCH(X_LEN, XARRAY, X, DELTA)
       JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
-
+!
+!     IF (INX .GE. X_LEN) THEN
+!        X1 = XARRAY(INX-1)
+!        X2 = XARRAY(INX)
+!      ELSE
+!        X1 = XARRAY(INX)
+!        X2 = XARRAY(INX+1)
+!      END IF
+!      IF (JNX .GE. Y_LEN) THEN
+!        Y1 = YARRAY(JNX-1)
+!        Y2 = YARRAY(JNX)
+!      ELSE
+!        Y1 = YARRAY(JNX)
+!        Y2 = YARRAY(JNX+1)
+!      END IF
+!
+      IF (INX .GE. X_LEN) THEN
+       INX=INX-1
+      END IF
+      IF (JNX .GE. Y_LEN) THEN
+       JNX=JNX-1  
+      END IF
+!
       X1 = XARRAY(INX)
       X2 = XARRAY(INX+1)
-
       Y1 = YARRAY(JNX)
       Y2 = YARRAY(JNX+1)
- 
+!
       DENOM = (X2 - X1)*(Y2 - Y1)
       C1=(X2-X)*(Y2-Y)
       C2=(X-X1)*(Y2-Y)
@@ -2594,6 +2654,8 @@
 
       VAL2 = (FUNC2(INX,JNX)  *C1 + FUNC2(INX+1,JNX)  *C2 +  &
               FUNC2(INX,JNX+1)*C3 + FUNC2(INX+1,JNX+1)*C4)/DENOM
+!
+!      write(123,*) X, Y,VAL1,VAL2
 
       END SUBROUTINE INTERPOLATE2D
 !====================================================================
