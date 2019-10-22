@@ -78,10 +78,8 @@
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
 
-opt="-c $list -O3 -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte"
-opt="$opt -xCORE-AVX2 -qno-opt-dynamic-align -ip -module $path_m"
-
-
+#opt="-c $list -O3 -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte"
+#opt="$opt -xCORE-AVX2 -qno-opt-dynamic-align -ip -module $path_m"
 # opt="-c $list -O3 -assume byterecl -ip -module $path_m"
   opt="-c $list -O2 -Wp,-w -fno-alias -auto -ftz -assume byterecl -nowarn -sox -align array64byte"
   opt="$opt -xHOST -qno-opt-dynamic-align -fp-model source -ip -module $path_m"
