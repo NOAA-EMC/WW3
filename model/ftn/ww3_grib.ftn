@@ -124,10 +124,6 @@
 !
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
-!      USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
-!                          THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
-!                          PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
-!                          USERO
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE, FLOGD
@@ -310,11 +306,11 @@
 !
 ! Chage this as parameters become available in grib2 tables
 !
-      ALLOCATE ( IFIA (16), IFJA(16) ) 
+      ALLOCATE ( IFIA (13), IFJA(13) ) 
 
-      IFIA = (/ 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 5, 9, 9, 9, 9 /)
-      IFJA = (/ 1, 4, 2 ,3, 5, 8, 3, 5, 6, 7, 8, 1, 1, 2, 3, 4 /)
-      DO I = 1, 16 
+      IFIA = (/ 1, 2, 2, 4, 4, 4, 4, 4, 5, 9, 9, 9, 9 /)
+      IFJA = (/ 4, 2, 8, 3, 5, 6, 7, 8, 1, 1, 2, 3, 4 /)
+      DO I = 1, 13 
         IF ( FLREQ(IFIA(I),IFJA(I)) ) THEN
           FLREQ(IFIA(I),IFJA(I)) = .FALSE. 
           WRITE(NDSO,946) IDOUT(IFIA(I),IFJA(I)),                      &
