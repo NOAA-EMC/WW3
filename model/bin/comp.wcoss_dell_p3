@@ -80,7 +80,7 @@
 
 # opt="-c $list -O3 -assume byterecl -ip -module $path_m"
 
-opt='-c -module $path_m -no-fma -ip -p -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias -sox'
+opt="-c $list -module $path_m -no-fma -ip -p -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias -sox"
 opt="$opt  -xHOST -qno-opt-dynamic-align -auto -nowarn -align array64byte -Wp,-w"
 
 ###  opt="-c $list -O2 -Wp,-w -fno-alias -auto -ftz -assume byterecl -nowarn -sox -align array64byte"
