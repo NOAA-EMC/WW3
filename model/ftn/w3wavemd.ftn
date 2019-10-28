@@ -425,7 +425,11 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
-      REAL                    :: ICEDAVE
+      REAL                    :: ICEDAVE                              &
+!INLINE RPH
+                                 ,FCSTTIME
+!XXX
+
 !/OASIS     INTEGER                 :: OASISED
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
@@ -902,7 +906,7 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 0'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-
+!
           ITIME  = ITIME + 1
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
@@ -2168,6 +2172,7 @@
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.21.2'
 !/DEBUGRUN        FLUSH(740+IAPROC)
+!
         IF ( TOFRST(1)  .EQ. -1 ) THEN
             DTTST  = 1.
           ELSE
@@ -2354,8 +2359,17 @@
 !/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
+!
+!XXX INLINE
+                 write(*,*)'***GENERATING OUTPUT AT: ***'
+                 FCSTTIME=ITIME*DTCFL/3600
+                 write(*,*) 'J, FCST HOUR IN W3WAVE: ',J, FCSTTIME
+                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
-                                 ( 'WRITE', NDS(7), ITEST, IMOD )
+                                 ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
+!XXX
+!
 !/SBS !
 !/SBS !     Generate output flag file for fields and SBS coupling.
 !/SBS !
@@ -2364,6 +2378,7 @@
 !/SBS                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
 !/SBS                                       // IDTIME(6:7) // IDTIME(9:10) &
 !/SBS                                      // IDTIME(12:13) // '.' // FILEXT(1:JJ)
+!
 !/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
 !/SBS                              CLOSE( NDSOFLG )
                             END IF

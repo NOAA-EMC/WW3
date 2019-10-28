@@ -51,6 +51,8 @@
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/    06-Jun-2018 : Add PDLIB/MEMCHECK/NETCDF_QAD/DEBUGINIT ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
+!/    04-Oct-2019 : Inline Output implementation        ( version 6.07 )
+!/                  (Roberto Padilla-Hernandez)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -243,6 +245,8 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
                           NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
+!XXX INLINE
+      USE W3ODATMD, ONLY: OFILES
 !/
       USE W3FLDSMD
       USE W3INITMD
@@ -293,7 +297,8 @@
                              TIME0(2), TIMEN(2), TTIME(2), TTT(2),     &
                              NH(-7:8), THO(2,-7:8,NHMAX), RCLD(5:7),   &
                              NODATA(5:7), ODAT(35), IPRT(6) = 0,       &
-                             STARTDATE(8), STOPDATE(8), IHH(-7:8)
+                             STARTDATE(8), STOPDATE(8), IHH(-7:8)      
+!
 !/OASIS      INTEGER             :: OASISED
 !/COU      INTEGER             :: OFL
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
@@ -1178,10 +1183,31 @@
 !/DEBUGINIT        write(740+IAPROC,*), 'J=', J, '/ NOTYPE=', NOTYPE
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
 !/DEBUGINIT        write(740+IAPROC,*), 'Before read 2002, case 7'
-          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!
+!INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
+!          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+        IF(J .LE. 2) THEN
+          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+        ELSE
+          OFILES(J)=0
+          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+        END IF
+!
 !/DEBUGINIT        write(740+IAPROC,*), ' After read 2002, case 7'
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
 !
+!INLINE RP
+          IF (IERR.GT.0 .OR. OFILES(J).GT.1 .OR. OFILES(J).LT.0) THEN
+            WRITE(*,*)' OUTPUT OPTION IS NOT DECLARED OR'
+            WRITE(*,*)' DECLARED INCORRECTLY OPTION= ', OFILES(J)
+            WRITE(*,*)' OUTPUT OPTION FOR OUTPUT TYPE ',J, 'SET TO 0'
+            OFILES(J)=0
+            WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
+            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J)
+          END IF    
+!XXX
+
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
@@ -1624,7 +1650,7 @@
      CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
                    FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
-
+!
 !      IF (MINVAL(VA) .LT. 0.) THEN
 !        WRITE(740+IAPROC,*) 'NEGATIVE ACTION SHELL 5', MINVAL(VA)
 !        CALL FLUSH(740+IAPROC)

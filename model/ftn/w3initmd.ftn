@@ -117,9 +117,11 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT,FLGRD,         &
+      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
+                          , FLGRD,                               &
                            FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
-                          IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN )
+                          IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
+
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -388,7 +390,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
-                                       ODAT(35), NPT, IPRT(6), MPI_COMM
+                                       ODAT(35),NPT, IPRT(6),&
+                                       MPI_COMM
       LOGICAL, INTENT(IN)           :: IsMulti
       REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
       LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),&
