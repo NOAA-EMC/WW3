@@ -80,9 +80,10 @@
 
 # opt="-c $list -O3 -assume byterecl -ip -module $path_m"
 
-opt="-c $list -module $path_m -no-fma -ip -p -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias -sox"
+opt="-c $list -module $path_m -no-fma -ip -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias -sox"
 opt="$opt  -xHOST -qno-opt-dynamic-align -auto -nowarn -align array64byte -Wp,-w"
-
+# Add profiling
+# opt="$opt -p"
 ###  opt="-c $list -O2 -Wp,-w -fno-alias -auto -ftz -assume byterecl -nowarn -sox -align array64byte"
 ###  opt="$opt -xHOST -qno-opt-dynamic-align -fp-model source -ip -module $path_m"
 ##  opt="$opt -nowarn -sox -align array64byte -real-size 32 -xHOST -qno-opt-dynamic-align"
