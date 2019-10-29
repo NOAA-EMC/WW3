@@ -420,7 +420,8 @@ then
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
-       [ "$cmplr" == "cray_xc" ] || [ "$cmplr" == "cray_xc_debug" ]; then
+       [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" $path_b/comp.tmpl > $path_b/comp
      echo "      sed $path_b/comp.tmpl => $path_b/comp"
@@ -445,7 +446,8 @@ then
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
-       [ "$cmplr" == "cray_xc" ] || [ "$cmplr" == "cray_xc_debug" ]; then
+       [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optl>/$optl/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" $path_b/link.tmpl > $path_b/link
     echo "      sed $path_b/link.tmpl => $path_b/link"
