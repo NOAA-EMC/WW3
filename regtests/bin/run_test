@@ -133,6 +133,7 @@ inpdir=input
 outopt=native
 grads=0
 coupl=none
+batchq=none
 while :
 do
   case "$1" in
@@ -1436,7 +1437,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ -z $batchq ] && [ $batchq = "slurm" ]
         then 
           runcmd="$runcmd -n $nproc"
         

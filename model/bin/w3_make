@@ -220,6 +220,13 @@
     reg_programs="$reg_programs ww3_shel"
   fi
 
+  if [ -n "`grep -nri fPIC $comp_file`" ]
+  then
+    reg_programs="$reg_programs libww3.so"
+  else
+    echo 'Shared Object     : No'
+  fi
+
   # if no progs in argument
   if [ -z "$all_programs" ]
   then
@@ -664,6 +671,9 @@ EOF
       elif [ "$prog" = "libww3" ]
       then
         target="$prog"
+      elif [ "$prog" = "libww3.so" ]
+      then
+        target="$prog"
       else
         target="$aPe/$prog"
       fi
@@ -699,8 +709,14 @@ EOF
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
         mkfile=$main_dir/nuopc.mk
-        mod_dir=$main_dir/mod_MPI
-        obj_dir=$main_dir/obj_MPI
+        if [ -n "`grep OMP $switch_file`" ]
+        then
+          mod_dir=$main_dir/mod_HYB
+          obj_dir=$main_dir/obj_HYB
+        else 
+          mod_dir=$main_dir/mod_MPI
+          obj_dir=$main_dir/obj_MPI
+        fi 
         rm -f $mkfile
         touch $mkfile
         echo "#-----------------------------------------------"      >> $mkfile
