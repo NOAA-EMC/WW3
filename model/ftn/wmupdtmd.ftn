@@ -1151,7 +1151,7 @@
                                  IYFN, IXS0, IXSN, IYS0, IYSN, IXS,   &
                                  MXA, MYA, J, J1, J2, IXC, IYC, JJ,   &
                                  JX, JY
-      INTEGER                 :: NPOIX, NPOIY, I,  IFIELDS,curvi   !RP
+      INTEGER                 :: NPOIX, NPOIY, I,  IFIELDS,CURVI   !RP
 
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: NXA(:,:), NYA(:,:)
@@ -1220,6 +1220,12 @@
       VX     = UNDEF
       VY     = UNDEF 
 !
+      CURVI=0
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+        CURVI=1
+      END IF
+
 ! 1. Case of identical resolution and coinciding grids --------------- /
       IF(CURVI .EQ. 0) THEN
 !
@@ -1845,6 +1851,12 @@
 !
       FD     = UNDEF
 !
+      CURVI=0
+      IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
+           GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
+        CURVI=1
+      END IF
+
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
       IF(CURVI .EQ. 0) THEN
@@ -2569,21 +2581,6 @@
 
       INX = XYCURVISEARCH(X_LEN, XARRAY, X, DELTA)
       JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
-!
-!     IF (INX .GE. X_LEN) THEN
-!        X1 = XARRAY(INX-1)
-!        X2 = XARRAY(INX)
-!      ELSE
-!        X1 = XARRAY(INX)
-!        X2 = XARRAY(INX+1)
-!      END IF
-!      IF (JNX .GE. Y_LEN) THEN
-!        Y1 = YARRAY(JNX-1)
-!        Y2 = YARRAY(JNX)
-!      ELSE
-!        Y1 = YARRAY(JNX)
-!        Y2 = YARRAY(JNX+1)
-!      END IF
 !
       IF (INX .GE. X_LEN) THEN
        INX=INX-1
