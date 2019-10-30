@@ -313,7 +313,8 @@
 !      REAL, ALLOCATABLE       :: BETAW(:)
 !      LOGICAL, ALLOCATABLE    :: MASK(:)
       LOGICAL                 :: anl_exists, CORWSEA
-      INTEGER                 :: IMOD, INTYPE, NDSEN, IX, IY, IK, ITH
+      INTEGER                 :: IMOD, INTYPE, NDSEN, IX, IY, IK, ITH, &
+                                 IXW, IYW
       REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),     &
                                  A(:), HS_ANAL(:,:), gues(:,:),         &
                                  HS_DIF(:,:),SWHANL(:,:), SWHBCKG(:,:), &
@@ -331,6 +332,7 @@
       REAL                    :: K
       CHARACTER(8), PARAMETER :: MYNAME='W3UPRSTR'
       LOGICAL                 :: SMCGRD = .FALSE.
+      LOGICAL                 :: SMCWND = .FALSE.
       LOGICAL                 :: WRSTON = .FALSE.
 !/
 !/ ------------------------------------------------------------------- /
@@ -373,8 +375,12 @@
 !/WRST      !Compiling with WRST will allow access to options UPD5/6
 !/WRST      WRSTON = .TRUE.
 !/WRST      WRITE (NDSO,*) '*** UPRSTR will read wind from restart files'
-!/SMC      !Compiling with SMC option activates SMC grid logical
+!/SMC      !Compiling with SMC option activates SMC grid logicals
 !/SMC      SMCGRD = .TRUE.
+!/SMC      SMCWND = .TRUE.
+!/WRST      ! Override SMCWND - at present restarts only store wind on
+!/WRST      ! a regular grid
+!/WRST      SMCWND = .FALSE.
 !/SMC      WRITE (NDSO,*) '*** UPRSTR set to work with SMC grid model'
 !/
 !/ ------------------------------------------------------------------- /
@@ -655,8 +661,14 @@
 !/SMC         ELSE
 !/SMC            ALLOCATE( SWHBCKG(NSEA,1) )
 !/SMC            ALLOCATE( SWHANL(NSEA,1) )
-!/SMC            ALLOCATE( WSBCKG(NSEA,1) )
-!/SMC            ALLOCATE( WDRBCKG(NSEA,1) )
+!/SMC            ! Use SMCWND to determine if reading a seapoint aray for wind
+!/SMC            IF( SMCWND ) THEN
+!/SMC               ALLOCATE( WSBCKG(NSEA,1) )
+!/SMC               ALLOCATE( WDRBCKG(NSEA,1) )
+!/SMC            ELSE
+!/SMC               ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+!/SMC               ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+!/SMC            ENDIF
          ENDIF
 !/T         IF (.NOT. SMCGRD) THEN
 !/T            ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
@@ -686,19 +698,28 @@
 !/WRST         !Calculate wind speed and direction values from u,v..
 !/WRST         !..using cartesian direction convention
 !/WRST         !At present assume only needed for data read from restart
-!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCGRD)
+!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
 !
 !        Calculation
          DO ISEA=1, NSEA, 1
             IF (.NOT. SMCGRD) THEN
                IX = MAPSF(ISEA,1)
                IY = MAPSF(ISEA,2)
+               IXW = IX
+               IYW = IY
 !/SMC            ELSE
 !/SMC               IX = 1
 !/SMC               IY = ISEA
+!/SMC               IF( SMCWND ) THEN
+!/SMC                  IXW = IX
+!/SMC                  IYW = IY
+!/SMC               ELSE
+!/SMC                  IXW = MAPSF(ISEA,1)
+!/SMC                  IYW= MAPSF(ISEA,2)
+!/SMC               ENDIF
             ENDIF
             VATMP = VA(:,ISEA)
-            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IX,IY), WDRBCKG(IX,IY), ISEA, &
+            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
                                SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
             SWHBCKG(IY,IX)=SWHBCKG_1
 !
@@ -762,8 +783,14 @@
 !/SMC         ELSE
 !/SMC            ALLOCATE( SWHBCKG(NSEA,1) )
 !/SMC            ALLOCATE( SWHANL(NSEA,1) )
-!/SMC            ALLOCATE( WSBCKG(NSEA,1) )
-!/SMC            ALLOCATE( WDRBCKG(NSEA,1) )
+!/SMC            ! Use SMCWND to determine if reading a seapoint aray for wind
+!/SMC            IF( SMCWND ) THEN
+!/SMC               ALLOCATE( WSBCKG(NSEA,1) )
+!/SMC               ALLOCATE( WDRBCKG(NSEA,1) )
+!/SMC            ELSE
+!/SMC               ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+!/SMC               ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+!/SMC            ENDIF
          ENDIF
 !/T         IF (.NOT. SMCGRD) THEN
 !/T            ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
@@ -793,19 +820,28 @@
 !/WRST         !Calculate wind speed and direction values from u,v..
 !/WRST         !..using cartesian direction convention
 !/WRST         !At present assume only needed for data read from restart
-!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCGRD)
+!/WRST         CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
 !
 !        Calculation
          DO ISEA=1, NSEA, 1
             IF (.NOT. SMCGRD) THEN
                IX = MAPSF(ISEA,1)
                IY = MAPSF(ISEA,2)
+               IXW = IX
+               IYW = IY
 !/SMC            ELSE
 !/SMC               IX = 1
 !/SMC               IY = ISEA
+!/SMC               IF( SMCWND ) THEN
+!/SMC                  IXW = IX
+!/SMC                  IYW = IY
+!/SMC               ELSE
+!/SMC                  IXW = MAPSF(ISEA,1)
+!/SMC                  IYW = MAPSF(ISEA,2)
+!/SMC               ENDIF
             ENDIF
             VATMP = VA(:,ISEA)
-            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IX,IY), WDRBCKG(IX,IY), ISEA, &
+            CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
                                SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
             SWHBCKG(IY,IX)=SWHBCKG_1
 !/
