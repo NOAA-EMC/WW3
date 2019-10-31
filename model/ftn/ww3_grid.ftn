@@ -2190,6 +2190,8 @@
       FLC    = .TRUE.
       TRCKCMPR = .TRUE.
       NOSW   = 5
+!/NCO/! NCEP operations retains first three swell systems.
+!/NCO      NOSW=3
       PTM    = 1    ! Default to standard WW3 partitioning. C. Bunney
       PTFC   = 0.1  ! Part. method 5 cutoff freq default. C. Bunney
       FMICHE = 1.6
