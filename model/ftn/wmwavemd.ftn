@@ -191,7 +191,9 @@
       USE W3GDATMD, ONLY: W3SETG
       USE W3WDATMD, ONLY: W3SETW
       USE W3ADATMD, ONLY: W3SETA
-      USE W3ODATMD, ONLY: W3SETO, NOTYPE
+      USE W3ODATMD, ONLY: W3SETO, NOTYPE                             &
+!XXX INLINE
+                          ,ITCOUNTER
       USE W3IOPOMD, ONLY: W3IOPE
       USE W3WAVEMD, ONLY: W3WAVE
       USE W3SERVMD, ONLY: EXTCDE, WWTIME
@@ -235,6 +237,9 @@
 !/
       INTEGER                 :: J, JJ, I, JO, TPRNT(2), TAUX(2),     &
                                  II, JJJ, IX, IY, UPNEXT(2), UPLAST(2)
+!XXX
+!      INTEGER                 :: ITCOUNTER         
+!XXX
 !/T      INTEGER                 :: ILOOP
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, NMPSCS
@@ -355,8 +360,15 @@
             CALL STME21 ( TSYNC(:,0), MTIME )
             CALL WWTIME ( WTIME )
             WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
+
+!
             TPRNT  = TSYNC(:,0)
             TSTAMP = .TRUE.
+!XXX
+            ITCOUNTER=ITCOUNTER+1
+!            write(*,*) '======ITCOUNTER: ', ITCOUNTER
+!XXX
+
           ENDIF
 !
 !/T        ILOOP  = ILOOP + 1

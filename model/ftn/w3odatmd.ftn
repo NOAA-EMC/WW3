@@ -127,7 +127,7 @@
 !                               suppl. data for output type 5.
 !      OUT6      TYPE  Public   Data structure of type OTYPE6 with
 !                               suppl. data for output type 6.
-!INLINE OFILES   I.A.  Public   Output in one or several files.
+!XXXINLINE OFILES   I.A.  Public   Output in one or several files.
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT1 are aliased to pointers with the same
@@ -403,6 +403,8 @@
                                  TBPI0(2), TBPIN(2), NDS(13)          &
 !XXX INLINE
                                  ,OFILES(7)
+        INTEGER               :: ITCOUNTER
+!XXX
         REAL                  :: DTOUT(7)
         LOGICAL               :: FLOUT(7)
         TYPE(OTYPE1)          :: OUT1
@@ -428,6 +430,8 @@
                                  TBPI0(:), TBPIN(:), NDS(:)
 !XXX INLINE
       INTEGER, POINTER        :: OFILES(:)
+      INTEGER, POINTER        :: ITCOUNTER
+!XXX
       REAL, POINTER           :: DTOUT(:)
       LOGICAL, POINTER        :: FLOUT(:)
 !/
@@ -1510,9 +1514,10 @@
       NDS    => OUTPTS(IMOD)%NDS
 !XXX INLINE
       OFILES => OUTPTS(IMOD)%OFILES
-      WRITE(*,*) 'W3SETO  IMOD:', IMOD
-      WRITE(*,*) 'OFILES(J)', (OFILES(J),J=1,7)
-      WRITE(*,*) 'OUTPTS(I)%OFILES(:)', OUTPTS(1)%OFILES(:)
+      ITCOUNTER=>OUTPTS(IMOD)%ITCOUNTER
+!      WRITE(*,*) 'W3SETO  IMOD:', IMOD
+!      WRITE(*,*) 'OFILES(J)', (OFILES(J),J=1,7)
+!      WRITE(*,*) 'OUTPTS(I)%OFILES(:)', OUTPTS(1)%OFILES(:)
 !XXX
 !
       DTOUT  => OUTPTS(IMOD)%DTOUT

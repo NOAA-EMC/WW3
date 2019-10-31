@@ -908,6 +908,10 @@
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
           ITIME  = ITIME + 1
+!XXX INLINE
+!            write(*,*) '-------ITCOUNTER: ', ITCOUNTER
+!XXX
+!
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
           IF ( ABS(DTRES) .LT. 0.001 ) DTRES  = 0.
@@ -2361,12 +2365,14 @@
 !/MPI                              FLGMPI(1) = .FALSE.
 !
 !XXX INLINE
-                 write(*,*)'***GENERATING OUTPUT AT: ***'
-                 FCSTTIME=ITIME*DTCFL/3600
-                 write(*,*) 'J, FCST HOUR IN W3WAVE: ',J, FCSTTIME
-                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+                 write(*,*)'*********************GENERATING OUTPUT AT: ******************'
+!                 WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
+                 FCSTTIME=ITCOUNTER*DTCFL/3600
+!                 write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
+!                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
 
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
+!replace                         ( 'WRITE', NDS(7), ITEST, IMOD )
                                  ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
 !XXX
 !
