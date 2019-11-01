@@ -1205,7 +1205,8 @@
             OFILES(J)=0
             WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
             WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J)
-          END IF    
+          END IF   
+            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J) 
 !XXX
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J

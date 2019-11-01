@@ -428,6 +428,7 @@
       REAL                    :: ICEDAVE                              &
 !INLINE RPH
                                  ,FCSTTIME
+      INTEGER, SAVE           :: ITCOUNTER2=0
 !XXX
 
 !/OASIS     INTEGER                 :: OASISED
@@ -909,7 +910,11 @@
 !
           ITIME  = ITIME + 1
 !XXX INLINE
-!            write(*,*) '-------ITCOUNTER: ', ITCOUNTER
+          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT &
+                      .AND. ITCOUNTER2 .EQ. 0) THEN
+             ITCOUNTER= ITCOUNTER-1
+             ITCOUNTER2=1
+          END IF 
 !XXX
 !
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
@@ -929,6 +934,9 @@
               CALL WWTIME ( STTIME )
               CALL STME21 ( TIME , IDTIME )
               WRITE (SCREEN,950) IDTIME, STTIME
+!XXX
+             ITCOUNTER=ITCOUNTER+1
+!XXX
             END IF
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 2'
@@ -2154,6 +2162,13 @@
 !
 !/PDLIB!/DEBUGCOH            CALL ALL_VA_INTEGRAL_PRINT(IMOD, "end of time loop")
 !/TIMINGS         CALL PRINT_MY_TIME("end of time loop")
+!
+!XXX
+!          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT ) THEN
+!              ITCOUNTER=ITCOUNTER+1
+!              write(*,*) '======W3WAVE  ITCOUNTER: ', ITCOUNTER
+!            END IF
+!XXX
         END DO
 
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.21.1'
@@ -2368,7 +2383,7 @@
                  write(*,*)'*********************GENERATING OUTPUT AT: ******************'
 !                 WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
                  FCSTTIME=ITCOUNTER*DTCFL/3600
-!                 write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
+                 write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
 !                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
 
                               IF ( J .EQ. 1 ) CALL W3IOGO             &

@@ -366,7 +366,7 @@
             TSTAMP = .TRUE.
 !XXX
             ITCOUNTER=ITCOUNTER+1
-!            write(*,*) '======ITCOUNTER: ', ITCOUNTER
+            write(*,*) '======WMWAVE ITCOUNTER: ', ITCOUNTER
 !XXX
 
           ENDIF

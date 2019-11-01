@@ -403,7 +403,7 @@
                                  TBPI0(2), TBPIN(2), NDS(13)          &
 !XXX INLINE
                                  ,OFILES(7)
-        INTEGER               :: ITCOUNTER
+        INTEGER               :: ITCOUNTER=0
 !XXX
         REAL                  :: DTOUT(7)
         LOGICAL               :: FLOUT(7)
