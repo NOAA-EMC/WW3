@@ -33,6 +33,7 @@
   FIELD%TIMESTART        =  '19680606 000000'
   FIELD%TIMESTRIDE       =  '3600.'
   FIELD%TIMECOUNT        =  '1000'
+  FIELD%TIMESPLIT        =  6
   FIELD%LIST             =  'DPT HS FC CFX'
   FIELD%PARTITION        =  '0 1 2'
   FIELD%TYPE             =  4
