@@ -41,12 +41,12 @@ $           applied to wind-sea parts of the spectrum only when        $
 $           wind-sea is the dominant component, otherwise the whole    $
 $           spectrum is corrected                                      $
 $           Expected input: the Analysis Hs field plus background wind $
-$                           speed and direction, in text format        $
+$                           speed and direction                        $
 $   UPD6 :: Option 6   Corrections are calculated as per UPD5 but      $
 $           wind-sea components are also shifted in frequency space    $
 $           using Toba (1973)                                          $
 $           Expected input: the Analysis Hs field plus background wind $
-$           speed and direction, in text format                        $
+$           speed and direction                                        $
    UPD3
 $
 $ PRCNTG is input for option UPD0F and is the correction factor        $

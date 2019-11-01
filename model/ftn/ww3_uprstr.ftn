@@ -23,6 +23,8 @@
 !/                   unified the operator, add/update the documentation.
 !/    05-Oct-2019 :  Added UPD5 and UPD6 options, plus logic for running
 !/                   with SMC grids (Andy Saulter)       ( version 6.07 )
+!/    01-Nov-2019 :  UPD5 and UPD6 use wind data either from anl.XXX file
+!/                   or from restart under WRST switch (Andy Saulter)
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -158,11 +160,11 @@
 !           is the dominant component, otherwise the whole spectrum is
 !           corrected
 !           Expected input: the Analysis Hs field plus background wind speed
-!                           and direction, in text format
+!                           and direction
 !   UPD6 :: Option 6   Corrections are calculated as per UPD5 but wind-sea
 !           components are also shifted in frequency space using Toba (1973)
 !           Expected input: the Analysis Hs field plus background wind speed
-!                           and direction, in text format
+!                           and direction
 !
 ! PRCNTG is input for option UPD0F and is the correction factor
 ! applied  to all the gridpoints (e.g. 1.)
@@ -187,6 +189,7 @@
 !
 !   ii. Data files anl.XXX
 ! 
+! FOR UPD2,3 and UPD5,6 with WRST switch
 ! USE THE grbtxt FORMAT, See Format E.
 !
 ! Format E. 
@@ -199,9 +202,26 @@
 !        ...
 !        VALNX*NY
 !
-! IMPORTANT : All the tests are with the format E. strongly recommended. 
-! The order of the values in .grbtxt, it is the same by 
-! defaults with the order in the restart file.
+! IMPORTANT : All the regtests are with the format E. strongly recommended. 
+! The order of the values in .grbtxt, is assumed the same by 
+! default as the order of spectral data in the restart file.
+!
+! NOTE: It is recommended to use UPD5,6 with the WRST switch enabled and
+! using SWH analysis data only as per Format E. However, the code includes
+! an option to run using a text file in which case:
+! USE THE grbtxtws format below
+!
+! Text file with following lines:
+!        NX NY
+!        SWH0001 WSPD0001 WDIR0001
+!        SWH0002 WSPD0002 WDIR0002
+!        ...
+!        SWHNX*NY WSPDNX*NY WDIRNX*NY
+!
+! The order of the values in .grbtxt, is assumed the same by 
+! default as the order of spectral data in the restart file.
+! Wind speeds and directions in the anl.XXX file are assumed to be
+! in CARTESIAN (GRID U,V) CONVENTION
 !
 ! NOTE About Format: if you prefer a different format; there are several 
 ! I/O subroutines ready, not included in the current version of the code, 
@@ -230,6 +250,9 @@
 !      W3SETG    Subr.   Id.    Point to selected model.
 !      W3NDAT    Subr. W3WDATMD Set number of model for wave data.
 !      W3SETW    Subr.   Id.    Point to selected model for wave data.
+!      W3NINP    Subr. W3IDATMD Set number of grids/models.
+!      W3SETI    Subr.   Id.    Point to data structure.
+!      W3DIMI    Subr.   Id.    Set array sizes in data structure.
 !      W2NAUX    Subr. W3ADATMD Set number of model for aux data.
 !      W3SETA    Subr.   Id.    Point to selected model for aux data.
 !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
@@ -980,6 +1003,7 @@
 !/ ------------------------------------------------------------------- /
 !/
    SUBROUTINE UPDATE_VA (PRCNTG, VATMP)
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
@@ -1033,6 +1057,8 @@
 !/
 !/ ---------------------------------------------------------------------
 !/
+   SUBROUTINE CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
@@ -1077,8 +1103,6 @@
 ! 10. Source code :
 !
 !/
-   SUBROUTINE CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
-!
       REAL, INTENT(INOUT)  ::    PRCNTG
       REAL, INTENT(IN   )  ::    PRCNTG_CAP
 ! local
@@ -1101,6 +1125,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE READ_GRBTXT(UPDPRCNT,FLNMCOR,SMCGRD)
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
@@ -1204,16 +1229,16 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE READ_GRBTXTWS(UPDPRCNT,WSPD,WDIR,FLNMCOR,SMCGRD)
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |         Stelios Flampouris        |
+!/                  |         Andy Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Created       :       15-Mar-2017 |
-!/                  | Last Update   :       16-Oct-2018 |
+!/                  | Original code :       24-Oct-2018 |
+!/                  | Last update :         05-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    15-Mar-2017 : Original Code                       ( version 6.04 )
-!/    16-Oct-2018 : Generalization of the reader        ( version 6.06 )
+!/    24-Oct-2018 : Original Code                       ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -1317,6 +1342,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
+      SUBROUTINE SWH_RSRT_1p (VA1p, ISEA1p, HSIG1p )  
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
@@ -1360,8 +1387,6 @@
 ! 10. Source code :
 !
 !/
-      SUBROUTINE SWH_RSRT_1p (VA1p, ISEA1p, HSIG1p )  
-!         
          REAL, INTENT(OUT) :: HSIG1p
          INTEGER, INTENT(IN) :: ISEA1p
          REAL, DIMENSION(:), INTENT(IN)  :: VA1p
@@ -1390,14 +1415,17 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
+      SUBROUTINE SWH_RSRT_1pw (VA1p, WS, WD, ISEA1p, HSIG1p, HSIGwp, HSIGsp, VAMAPWS )  
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Andy Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Oct-2018 |
+!/                  | Original code :       24-Oct-2018 |
+!/                  | Last update :         05-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    16-Oct-2018 : Original Code                       ( version 6.07 )
+!/    24-Oct-2018 : Original Code                       ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -1434,8 +1462,6 @@
 ! 10. Source code :
 !
 !/
-      SUBROUTINE SWH_RSRT_1pw (VA1p, WS, WD, ISEA1p, HSIG1p, HSIGwp, HSIGsp, VAMAPWS )  
-!
          USE W3GDATMD, ONLY: TH
          USE W3ODATMD, ONLY: WSMULT !same wind sea cut-off factor for sea/swell outputs
 !         
@@ -1488,14 +1514,16 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
+      SUBROUTINE UVTOCART (UVEC, VVEC, SPD, DCART, SMCGRD)  
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Andy Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Oct-2018 |
+!/                  | Original code :       05-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    16-Oct-2018 : Original Code                       ( version 6.07 )
+!/    05-Oct-2019 : Original Code                       ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -1503,8 +1531,8 @@
 !/    No unauthorized use without permission.
 !/
 !  1. Purpose :
-!     Calculate the significant wave height for total, wind sea and
-!     swell components from the restart file for 1 point 
+!     Calculate speed and cartesian convention directions from u,v
+!     input vectors
 !  2. Method :
 !     
 !  3. Parameters :
@@ -1532,8 +1560,6 @@
 ! 10. Source code :
 !
 !/
-      SUBROUTINE UVTOCART (UVEC, VVEC, SPD, DCART, SMCGRD)  
-!
          USE CONSTANTS, ONLY: TPI
 !
          REAL, DIMENSION(:,:), INTENT(OUT) :: SPD, DCART
@@ -1565,14 +1591,17 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
+      SUBROUTINE UPDTWSPEC(VATMP, PRCNTG, VAMAPWS)  
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Andy Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Oct-2018 |
+!/                  | Original code :       24-Oct-2018 |
+!/                  | Last update :         05-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    16-Oct-2018 : Original Code                       ( version 6.07 )
+!/    24-Oct-2018 : Original Code                       ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -1608,8 +1637,6 @@
 ! 10. Source code :
 !
 !/
-      SUBROUTINE UPDTWSPEC(VATMP, PRCNTG, VAMAPWS)  
-!
          REAL, DIMENSION(:), INTENT(INOUT)  :: VATMP
          INTEGER, DIMENSION(:), INTENT(IN) :: VAMAPWS
          REAL, INTENT(IN) :: PRCNTG
@@ -1629,14 +1656,17 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ 
+      SUBROUTINE UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA1p, ADJALL)  
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Andy Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Oct-2018 |
+!/                  | Original code :       24-Oct-2018 |
+!/                  | Last update :         05-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    16-Oct-2018 : Original Code                       ( version 6.07 )
+!/    24-Oct-2018 : Original Code                       ( version 6.07 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -1673,8 +1703,6 @@
 ! 10. Source code :
 !
 !/
-      SUBROUTINE UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA1p, ADJALL)  
-!
          REAL, DIMENSION(:), INTENT(INOUT)  :: VATMP
          INTEGER, DIMENSION(:), INTENT(IN) :: VAMAPWS
          REAL, INTENT(IN) :: PRCNTG
@@ -1775,6 +1803,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE WRITEMATRIX(FILENAME, RDA_A)
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |         Stelios Flampouris        |
