@@ -656,7 +656,9 @@
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
            FLG2(NOGRP,NRGRD)                                          &
+!XXX
            ,OUTFF(7,0:NRGRD))
+!XXX
 !
       MDS    = -1
       MDSF   = -1
@@ -1386,16 +1388,16 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
 !XXX ININE        READ (MDSI,*,END=2001,ERR=2002) (ODAT(II,I),II=5*(J-1)+1,5*J)
         IF(J .LE. 2) THEN
-          READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J),OUTFF(J,1)
+          READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,1),II=5*(J-1)+1,5*J),OUTFF(J,1)
         ELSE
-          READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
+          READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,1),II=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
         END IF
 !         
         write(*,*) 'endless loop ??????'
         write(*,*) 'J; ', J
         WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
-        WRITE(*,*) (ODAT(I,1),I=5*(J-1)+1,5*J), OUTFF(J,1)
+        WRITE(*,*) (ODAT(II,1),II=5*(J-1)+1,5*J), OUTFF(J,1)
         OUTPTS(1)%OFILES(J)=OUTFF(J,1)
         WRITE(*,*) 'OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
 !XXX 
@@ -3304,6 +3306,9 @@
       USE W3WDATMD, ONLY: W3NDAT, W3SETW
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
+!XXX INLINE
+      USE W3ODATMD, ONLY:  OFILES
+!XXX
       USE W3IDATMD, ONLY: W3NINP, W3SETI, W3DIMI
       USE WMMDATMD, ONLY: WMNDAT, WMSETM, WMDIMD
 !
@@ -3399,7 +3404,10 @@
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),     &
                                  TMPRNK(:), TMPGRP(:), NINGRP(:),      &
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),   &
-                                 NDPOUT(:)
+                                 NDPOUT(:)                            &
+!XXX
+                                 ,OUTFF(:,:)
+!XXX
 !
       REAL                    :: DTTST, XX, YY
 !/MPRF      REAL                    :: PRFT0, PRFTN
@@ -3657,7 +3665,10 @@
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
-           FLG2(NOGRP,NRGRD) )
+           FLG2(NOGRP,NRGRD)                                          &
+!XXX
+           ,OUTFF(7,0:NRGRD))
+!XXX
 !
       MDS    = -1
       MDSF   = -1
@@ -4152,9 +4163,18 @@
         READ(NML_OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
+!XXX
+
+        READ(NML_OUTPUT_DATE(I)%FIELD%OUTFFILE, *)  OUTFF(1,I)
+!XXX
         READ(NML_OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
+!XXX
+        READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
+        WRITE(*,*) ' LOOP OVER NRGRD'
+        WRITE(*,*) 'I,OUTFF(1,I),OUTFF(2,I)=',I,OUTFF(1,I),OUTFF(2,I)
+!XX
         READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)
@@ -4195,6 +4215,10 @@
 !
 ! 5.b Process standard line
 !
+!XXX
+          OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
+          WRITE(*,*) 'XXXX: ',OUTPTS(I)%OFILES(J), OUTFF(J,I)
+!XXX
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                   WRITE (MDSS,951) J, IDOTYP(J)
@@ -4225,6 +4249,14 @@
                     END DO
                   WRITE (MDSS,954) DTME21(1:19)
                 END IF
+
+!xxxxxxxxxxxxxxx
+!XXX
+!        OUTPTS(1)%OFILES(1)   = OUTFF(J,1)
+!        OUTFF(:,I) = OUTFF(:,1)
+!xxxxxxxxxxxxxxx
+
+
 
               IF ( J .EQ. 1 ) THEN
 !
