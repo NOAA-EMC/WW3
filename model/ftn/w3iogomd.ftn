@@ -2453,7 +2453,7 @@
 !
 !/ ------------------------------------------------------------------- /
      USE CONSTANTS
-!XXX INLINE
+!XXX INLINE DELETE THIS
 !     USE W3INITMD
      USE W3GDATMD
 !/
@@ -2512,7 +2512,7 @@
 !/
       INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
                                  MGRPP, ISEA, MOSWLL, IK, IFI, IFJ    &
-!XXX INLINE
+!XXX INLINE  DELETE THIS
                                  ,IFILOUT
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -2549,7 +2549,7 @@
         END IF
 !
 !INLINE      IF ( IPASS.EQ.1 ) THEN
-        IF ( IPASS.GE.1 ) THEN
+      IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
           IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
@@ -2628,6 +2628,17 @@
 !  IN CASE OF GENERATION OF A NEW FILE OUTPUT EVERY DELTA OUTPUT
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
+
+
+      IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
+          WRITE  = INXOUT.EQ.'WRITE'
+        ELSE
+          IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
+              WRITE (NDSE,901) INXOUT
+              CALL EXTCDE ( 2 )
+            END IF
+        END IF
+
 !
       IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
           I      = LEN_TRIM(FILEXT)
@@ -2644,12 +2655,11 @@
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
           WRITE(Hstr,"(f6.2)") FCSTTIME
           FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
-          WRITE(*,*)'OUT FILE: ',FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I)
 !
 !/T          WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I)
           IF ( WRITE ) THEN
-              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I), &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'  &
+                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
             ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
                     FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')

@@ -2380,7 +2380,7 @@
 !/MPI                              FLGMPI(1) = .FALSE.
 !
 !XXX INLINE
-                 write(*,*)'*********************GENERATING OUTPUT AT: ******************'
+                 write(*,*)'*********GENERATING FOR GRID: ******************'
 !                 WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
                  FCSTTIME=ITCOUNTER*DTCFL/3600
                  write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
@@ -2429,7 +2429,15 @@
 !   Gets the necessary spectral data
 !
                             CALL W3IOPE ( VA )
-                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
+!XXX  INLINE 
+               write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
+!              WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
+                           FCSTTIME=ITCOUNTER*DTCFL/3600
+                           write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
+!              write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+
+!XXX                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
+                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )
                             END IF
 !
                         ELSE IF ( J .EQ. 3 ) THEN
