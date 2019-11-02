@@ -1150,7 +1150,7 @@
 !/NCEP2                KPDS(2) = 11
                 DO ISEA=1, NSEA
                   IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
-                      FP0(ISEA) = 1. / FP0(ISEA)
+                      FP0(ISEA) = 1. / MAX(FR1,FP0(ISEA)) ! Limit FP to lowest discrete frequency
                     END IF
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FP0   , MAPSF, X1 )
