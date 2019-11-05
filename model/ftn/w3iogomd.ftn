@@ -2561,7 +2561,7 @@
 !/T      WRITE (NDST,9000) IPASS, INXOUT, WRITE, NDSOG, IGRD, FILEXT
 !
 !XXX INLINE
-            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
+!            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
 !XXX
 !
 ! open file ---------------------------------------------------------- *
@@ -2650,11 +2650,14 @@
             CO='00'
           ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
             CO='0'
+          ELSE IF (FCSTTIME .GE. 100) THEN
+            CO=''
           END IF
     
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
           WRITE(Hstr,"(f6.2)") FCSTTIME
           FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
+          write(*,*)'w3iogo OutPut Filename: out_grd.', FCSTNAM,'.',FILEXT(:I)
 !
 !/T          WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I)
           IF ( WRITE ) THEN

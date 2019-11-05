@@ -428,7 +428,8 @@
       REAL                    :: ICEDAVE                              &
 !INLINE RPH
                                  ,FCSTTIME
-      INTEGER, SAVE           :: ITCOUNTER2=0
+!      INTEGER, SAVE           :: ITCOUNTER2=0
+!      INTEGER, SAVE           ::OTHERCOUNTER=-1
 !XXX
 
 !/OASIS     INTEGER                 :: OASISED
@@ -910,11 +911,11 @@
 !
           ITIME  = ITIME + 1
 !XXX INLINE
-          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT &
-                      .AND. ITCOUNTER2 .EQ. 0) THEN
-             ITCOUNTER= ITCOUNTER-1
-             ITCOUNTER2=1
-          END IF 
+!          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT &
+!                      .AND. ITCOUNTER2 .EQ. 0) THEN
+!             ITCOUNTER= ITCOUNTER-1
+!             ITCOUNTER2=1
+!          END IF 
 !XXX
 !
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
@@ -935,7 +936,7 @@
               CALL STME21 ( TIME , IDTIME )
               WRITE (SCREEN,950) IDTIME, STTIME
 !XXX
-             ITCOUNTER=ITCOUNTER+1
+!             ITCOUNTER=ITCOUNTER+1
 !XXX
             END IF
 
@@ -2381,14 +2382,21 @@
 !
 !XXX INLINE
                  write(*,*)'*********GENERATING FOR GRID: ******************'
-!                 WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
-                 FCSTTIME=ITCOUNTER*DTCFL/3600
-                 write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
-!                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+                 write(*,*) '11111 J, ITCOUNTER,OUTSTRIDE: ',J, ITCOUNTER(J),OUTSTRIDE(J)
+                 FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
+                 IF ( J .EQ. 1 ) then
+                 WRITE(*,*) 'J TIME ITCOUNTER(J), ITIME: ',J, TIME, ITCOUNTER(J), ITIME 
+                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
+                 write(*,*) '  FCSTTIME: ', FCSTTIME
+                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+                 end if
 
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
 !replace                         ( 'WRITE', NDS(7), ITEST, IMOD )
                                  ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
+                              IF ( J .EQ. 1 ) ITCOUNTER(J)=ITCOUNTER(J)+1
+                 write(*,*) '22222 J, ITCOUNTER(J): ',J, ITCOUNTER(J)
+                 write(*,*) '================================================'
 !XXX
 !
 !/SBS !
@@ -2432,12 +2440,13 @@
 !XXX  INLINE 
                write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
 !              WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
-                           FCSTTIME=ITCOUNTER*DTCFL/3600
-                           write(*,*) 'J, FCSTTIME: ',J, FCSTTIME
+                           FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
+                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
 !              write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
 
 !XXX                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
                             CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )
+                            ITCOUNTER(J)=ITCOUNTER(J)+1
                             END IF
 !
                         ELSE IF ( J .EQ. 3 ) THEN

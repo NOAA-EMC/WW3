@@ -191,9 +191,9 @@
       USE W3GDATMD, ONLY: W3SETG
       USE W3WDATMD, ONLY: W3SETW
       USE W3ADATMD, ONLY: W3SETA
-      USE W3ODATMD, ONLY: W3SETO, NOTYPE                             &
+      USE W3ODATMD, ONLY: W3SETO, NOTYPE
 !XXX INLINE
-                          ,ITCOUNTER
+!                          ,ITCOUNTER
       USE W3IOPOMD, ONLY: W3IOPE
       USE W3WAVEMD, ONLY: W3WAVE
       USE W3SERVMD, ONLY: EXTCDE, WWTIME
@@ -365,8 +365,8 @@
             TPRNT  = TSYNC(:,0)
             TSTAMP = .TRUE.
 !XXX
-            ITCOUNTER=ITCOUNTER+1
-!            write(*,*) '======WMWAVE ITCOUNTER: ', ITCOUNTER
+!            ITCOUNTER=ITCOUNTER+1
+!!            write(*,*) '======WMWAVE ITCOUNTER: ', ITCOUNTER
 !XXX
 
           ENDIF

@@ -378,7 +378,7 @@
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
 !XXX INLINE
-      USE W3ODATMD, ONLY:  OFILES
+      USE W3ODATMD, ONLY:  OFILES, OUTSTRIDE
 ! 
 !/
       IMPLICIT NONE
@@ -412,7 +412,7 @@
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),  &
                                  NDPOUT(:)                            &
 !XXX
-                                 ,OUTFF(:,:)
+                                 ,OUTFF(:,:),OUTDELTA(:,:)
 !XXX
       REAL                    :: DTTST, XX, YY
 
@@ -657,7 +657,7 @@
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
            FLG2(NOGRP,NRGRD)                                          &
 !XXX
-           ,OUTFF(7,0:NRGRD))
+           ,OUTFF(7,0:NRGRD),OUTDELTA(7,NRGRD))
 !XXX
 !
       MDS    = -1
@@ -1139,7 +1139,16 @@
 !        WRITE(*,*) 'OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
 !XXX 
         ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
-!
+!XXX
+        OUTDELTA(J,1)=ODAT(5*(J-1)+3,1)
+        OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
+        OUTPTS(2)%OUTSTRIDE(J)=OUTDELTA(J,1)
+
+        WRITE(*,*)'J OUTDELTA(',J,',1): ',J,OUTDELTA(J,1)
+        WRITE(*,*)'OUTPTS(1)%OUTSTRIDE(J):',OUTPTS(1)%OUTSTRIDE(J)
+        WRITE(*,*)'OUTPTS(2)%OUTSTRIDE(J):',OUTPTS(2)%OUTSTRIDE(J)
+!XXX
+!!
         IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,951) J, IDOTYP(J)
@@ -1312,12 +1321,17 @@
         ODAT( 8 , 1) = 0
 !XXX
         OUTPTS(1)%OFILES(1)   = OUTFF(1,1)
+        OUTPTS(1)%OUTSTRIDE(1) = OUTDELTA(1,1)
         END IF
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
 !XXX
         OUTFF(:,I) = OUTFF(:,1)
+        OUTPTS(I)%OFILES(:)=OUTFF(:,1)
+        OUTPTS(I)%OUTSTRIDE(:)=OUTDELTA(:,1)
+        WRITE(*,*) 'OUTPTS(I)%OUTSTRIDE(:): ',OUTPTS(I)%OUTSTRIDE(:)
+!XXX
         FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
         FLG2(:,I) = FLG2(:,1)
@@ -1399,9 +1413,14 @@
         WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
         WRITE(*,*) (ODAT(II,1),II=5*(J-1)+1,5*J), OUTFF(J,1)
         OUTPTS(1)%OFILES(J)=OUTFF(J,1)
-        WRITE(*,*) 'OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
+        WRITE(*,*) '111OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
 !XXX 
         ODAT(5*(J-1)+3,I) = MAX ( 0 , ODAT(5*(J-1)+3,I) )
+!XXX
+        OUTSTRIDE(J)=ODAT(5*(J-1)+3,1)
+        OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
+        WRITE(*,*)'11OUTSTRIDE(J): ',OUTSTRIDE(J)
+!XXX
 ! 
         IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
             TTIME(1) = ODAT(5*(J-1)+1,I)
@@ -2576,6 +2595,8 @@
           OUTPTS(0)%TOLAST(2,2) =        ODAT(10,0)
 !XXXINLINE
           OUTPTS(0)%OFILES(:)   =        OUTFF(:,0)
+          OUTPTS(0)%OUTSTRIDE(:) =       OUTDELTA(:,0)
+!XXX
 !
           TOUT   = OUTPTS(0)%TONEXT(:,2)
           TLST   = OUTPTS(0)%TOLAST(:,2)
@@ -2723,7 +2744,7 @@
       DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD, FLG2, INAMES,&
                    MNAMES                                              &
 !XXX INLINE
-                   ,OUTFF )
+                   ,OUTFF, OUTDELTA )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
@@ -4164,14 +4185,15 @@
         READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
 !XXX
-
         READ(NML_OUTPUT_DATE(I)%FIELD%OUTFFILE, *)  OUTFF(1,I)
+        OUTPTS(I)%OUTSTRIDE(1)=ODAT(3,I)              
 !XXX
         READ(NML_OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
 !XXX
         READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
+        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)              
         WRITE(*,*) ' LOOP OVER NRGRD'
         WRITE(*,*) 'I,OUTFF(1,I),OUTFF(2,I)=',I,OUTFF(1,I),OUTFF(2,I)
 !XX
@@ -4216,8 +4238,10 @@
 ! 5.b Process standard line
 !
 !XXX
+!          OUTPTS(I)%OUTSTRIDE(J)=ODAT(8,I)              
           OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
-          WRITE(*,*) 'XXXX: ',OUTPTS(I)%OFILES(J), OUTFF(J,I)
+!          WRITE(*,*) 'XXXX: ',OUTPTS(I)%OFILES(J), OUTFF(J,I)
+
 !XXX
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &

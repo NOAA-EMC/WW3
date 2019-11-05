@@ -402,8 +402,7 @@
         INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
                                  TBPI0(2), TBPIN(2), NDS(13)          &
 !XXX INLINE
-                                 ,OFILES(7)
-        INTEGER               :: ITCOUNTER=0
+                                 ,OFILES(7),OUTSTRIDE(7),ITCOUNTER(7)
 !XXX
         REAL                  :: DTOUT(7)
         LOGICAL               :: FLOUT(7)
@@ -429,8 +428,7 @@
       INTEGER, POINTER        :: TOFRST(:), TONEXT(:,:), TOLAST(:,:), &
                                  TBPI0(:), TBPIN(:), NDS(:)
 !XXX INLINE
-      INTEGER, POINTER        :: OFILES(:)
-      INTEGER, POINTER        :: ITCOUNTER
+      INTEGER, POINTER        :: OFILES(:), OUTSTRIDE(:),ITCOUNTER(:)
 !XXX
       REAL, POINTER           :: DTOUT(:)
       LOGICAL, POINTER        :: FLOUT(:)
@@ -1514,10 +1512,13 @@
       NDS    => OUTPTS(IMOD)%NDS
 !XXX INLINE
       OFILES => OUTPTS(IMOD)%OFILES
+      OUTSTRIDE => OUTPTS(IMOD)%OUTSTRIDE
       ITCOUNTER=>OUTPTS(IMOD)%ITCOUNTER
 !      WRITE(*,*) 'W3SETO  IMOD:', IMOD
 !      WRITE(*,*) 'OFILES(J)', (OFILES(J),J=1,7)
-!      WRITE(*,*) 'OUTPTS(I)%OFILES(:)', OUTPTS(1)%OFILES(:)
+!      WRITE(*,*) 'OUTSTRIDE(J)', (OUTSTRIDE(J),J=1,7)
+!      WRITE(*,*) 'ITCOUNTER(J)', (ITCOUNTER(J),J=1,7)
+!      WRITE(*,*) 'OUTPTS(1)%OFILES(:)', OUTPTS(1)%OFILES(:)
 !XXX
 !
       DTOUT  => OUTPTS(IMOD)%DTOUT

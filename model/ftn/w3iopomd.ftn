@@ -1010,7 +1010,7 @@
             END IF
         END IF
 !XXX INLINE
-            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
+!            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
        write(*,*) 'In iopomd  IPASS, OFILES(2):',IPASS, OFILES(1) 
 !XXX
 !
@@ -1108,7 +1108,7 @@
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
           WRITE(Hstr,"(f6.2)") FCSTTIME
           FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
-
+          write(*,*)'w3iopo OutPut Filename: out_pnt.', FCSTNAM,'.',FILEXT(:I)
 !
 !/T          WRITE (NDST,9001) FNMPRE(:J)//'out_pnt.'//FCSTNAM//'.'// &
 !/T                               FILEXT(:I)
