@@ -91,6 +91,11 @@
   opt="$opt $ESMF_F90COMPILEPATHS"
   opt="$opt $EXTRA_COMP_OPTIONS"
 
+  # OMP support
+  if [ "$omp_mod" = 'yes' ] ; then
+    opt="$opt <optomp>"
+  fi
+
 # 2.b Compile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   $comp $opt $name.$fext 1> $name.out 2> $name.err
@@ -154,6 +159,7 @@
     cat $name.err       >> $name.l 2> /dev/null
     echo '------------' >> $name.l
   fi
+
   # remove empty warning and error files
   # find . -name "*.out" -or -name "*.err" -empty -delete
 
