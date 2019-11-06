@@ -2528,6 +2528,7 @@
 !
 ! test input parameters ---------------------------------------------- *
 !
+      write(*,*) ' aaaaaa w3iogo'
       IF ( PRESENT(IMOD) ) THEN
           IGRD   = IMOD
         ELSE
@@ -2543,10 +2544,12 @@
       IPASS  = IPASS + 1
       IOTST  = 0
 !
+      write(*,*) ' bbbbb w3iogo inxout: ', INXOUT
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE' ) THEN
           WRITE (NDSE,900) INXOUT
           CALL EXTCDE ( 1 )
         END IF
+      write(*,*) ' CCCC w3iogo OFILES(1): ', OFILES(1)
 !
 !INLINE      IF ( IPASS.EQ.1 ) THEN
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN

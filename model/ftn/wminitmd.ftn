@@ -3416,7 +3416,8 @@
                                  NPTS, JJ, IP1, IPN, MPI_COMM_LOC,     &
                                  NMPSC2, JJJ, NCPROC, NPOUTT, NAPLOC,  &
                                  NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW, &
-                                 IFT, ILOOP
+                                 IFT, ILOOP 
+!
       INTEGER                 :: TTIME(2), TOUT(2), STMPT(2), ETMPT(2),&
                                  TLST(2)
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
@@ -4193,8 +4194,12 @@
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
 !XXX
         READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
-        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)              
+        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)  
+
+            
         WRITE(*,*) ' LOOP OVER NRGRD'
+        write(*,*) ' STRIDE(1):', OUTPTS(I)%OUTSTRIDE(1)
+        write(*,*) ' STRIDE(2):', OUTPTS(I)%OUTSTRIDE(2)
         WRITE(*,*) 'I,OUTFF(1,I),OUTFF(2,I)=',I,OUTFF(1,I),OUTFF(2,I)
 !XX
         READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
@@ -4238,9 +4243,8 @@
 ! 5.b Process standard line
 !
 !XXX
-!          OUTPTS(I)%OUTSTRIDE(J)=ODAT(8,I)              
+
           OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
-!          WRITE(*,*) 'XXXX: ',OUTPTS(I)%OFILES(J), OUTFF(J,I)
 
 !XXX
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
@@ -4462,6 +4466,9 @@
 !
 ! ... End of loop I on NRGRD in 5.a
 !
+!XXX
+      WRITE(*,*) 'OUTPTS(1)%OUTSTRIDE:', (OUTPTS(1)%OUTSTRIDE(JJ),JJ=1,7)
+!XXX
       END DO
 !
 !/T      DO I=1, NRGRD
