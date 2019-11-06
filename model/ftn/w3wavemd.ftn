@@ -2164,12 +2164,7 @@
 !/PDLIB!/DEBUGCOH            CALL ALL_VA_INTEGRAL_PRINT(IMOD, "end of time loop")
 !/TIMINGS         CALL PRINT_MY_TIME("end of time loop")
 !
-!XXX
-!          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT ) THEN
-!              ITCOUNTER=ITCOUNTER+1
-!              write(*,*) '======W3WAVE  ITCOUNTER: ', ITCOUNTER
-!            END IF
-!XXX
+!
         END DO
 
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.21.1'
@@ -2381,22 +2376,22 @@
 !/MPI                              FLGMPI(1) = .FALSE.
 !
 !XXX INLINE
-                 write(*,*)'*********GENERATING FOR GRID: ******************'
-                 write(*,*) '11111 J, ITCOUNTER,OUTSTRIDE: ',J, ITCOUNTER(J),OUTSTRIDE(J)
+!!                 write(*,*)'*********GENERATING FOR GRID: ******************'
+!!                 write(*,*) '11111 J, ITCOUNTER,OUTSTRIDE: ',J, ITCOUNTER(J),OUTSTRIDE(J)
                  FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-                 IF ( J .EQ. 1 ) then
-                 WRITE(*,*) 'J TIME ITCOUNTER(J), ITIME: ',J, TIME, ITCOUNTER(J), ITIME 
-                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
-                 write(*,*) '  FCSTTIME: ', FCSTTIME
-                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
-                 end if
-
+!!                 IF ( J .EQ. 1 ) then
+!!                 WRITE(*,*) 'J TIME ITCOUNTER(J), ITIME: ',J, TIME, ITCOUNTER(J), ITIME 
+!!                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
+!!                 write(*,*) '  FCSTTIME: ', FCSTTIME
+!!                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+!!                 end if
+!
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
 !replace                         ( 'WRITE', NDS(7), ITEST, IMOD )
                                  ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
                               IF ( J .EQ. 1 ) ITCOUNTER(J)=ITCOUNTER(J)+1
-                 write(*,*) '22222 J, ITCOUNTER(J): ',J, ITCOUNTER(J)
-                 write(*,*) '================================================'
+!!                 write(*,*) '22222 J, ITCOUNTER(J): ',J, ITCOUNTER(J)
+!!                 write(*,*) '================================================'
 !XXX
 !
 !/SBS !
@@ -2438,12 +2433,12 @@
 !
                             CALL W3IOPE ( VA )
 !XXX  INLINE 
-               write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
-!              WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
+!!               write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
+!!              WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
                            FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
-!              write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
-
+!!                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
+!!              write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+!
 !XXX                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
                             CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )
                             ITCOUNTER(J)=ITCOUNTER(J)+1

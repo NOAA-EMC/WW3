@@ -2528,7 +2528,6 @@
 !
 ! test input parameters ---------------------------------------------- *
 !
-      write(*,*) ' aaaaaa w3iogo'
       IF ( PRESENT(IMOD) ) THEN
           IGRD   = IMOD
         ELSE
@@ -2544,12 +2543,10 @@
       IPASS  = IPASS + 1
       IOTST  = 0
 !
-      write(*,*) ' bbbbb w3iogo inxout: ', INXOUT
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE' ) THEN
           WRITE (NDSE,900) INXOUT
           CALL EXTCDE ( 1 )
         END IF
-      write(*,*) ' CCCC w3iogo OFILES(1): ', OFILES(1)
 !
 !INLINE      IF ( IPASS.EQ.1 ) THEN
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
@@ -2563,9 +2560,6 @@
 !
 !/T      WRITE (NDST,9000) IPASS, INXOUT, WRITE, NDSOG, IGRD, FILEXT
 !
-!XXX INLINE
-!            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
-!XXX
 !
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
@@ -2648,7 +2642,7 @@
           J      = LEN_TRIM(FNMPRE)
 !
 
-          write(*,*) '===FCSTTIME: ',FCSTTIME
+!!          write(*,*) '===FCSTTIME: ',FCSTTIME
           IF (FCSTTIME .LT. 10.) THEN
             CO='00'
           ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
@@ -2660,7 +2654,7 @@
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
           WRITE(Hstr,"(f6.2)") FCSTTIME
           FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
-          write(*,*)'w3iogo OutPut Filename: out_grd.', FCSTNAM,'.',FILEXT(:I)
+!!          write(*,*)'w3iogo OutPut Filename: out_grd.', FCSTNAM,'.',FILEXT(:I)
 !
 !/T          WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I)
           IF ( WRITE ) THEN

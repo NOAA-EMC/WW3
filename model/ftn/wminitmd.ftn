@@ -1144,9 +1144,9 @@
         OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
         OUTPTS(2)%OUTSTRIDE(J)=OUTDELTA(J,1)
 
-        WRITE(*,*)'J OUTDELTA(',J,',1): ',J,OUTDELTA(J,1)
-        WRITE(*,*)'OUTPTS(1)%OUTSTRIDE(J):',OUTPTS(1)%OUTSTRIDE(J)
-        WRITE(*,*)'OUTPTS(2)%OUTSTRIDE(J):',OUTPTS(2)%OUTSTRIDE(J)
+!!        WRITE(*,*)'J OUTDELTA(',J,',1): ',J,OUTDELTA(J,1)
+!!        WRITE(*,*)'OUTPTS(1)%OUTSTRIDE(J):',OUTPTS(1)%OUTSTRIDE(J)
+!!        WRITE(*,*)'OUTPTS(2)%OUTSTRIDE(J):',OUTPTS(2)%OUTSTRIDE(J)
 !XXX
 !!
         IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
@@ -1330,7 +1330,7 @@
         OUTFF(:,I) = OUTFF(:,1)
         OUTPTS(I)%OFILES(:)=OUTFF(:,1)
         OUTPTS(I)%OUTSTRIDE(:)=OUTDELTA(:,1)
-        WRITE(*,*) 'OUTPTS(I)%OUTSTRIDE(:): ',OUTPTS(I)%OUTSTRIDE(:)
+!        WRITE(*,*) 'OUTPTS(I)%OUTSTRIDE(:): ',OUTPTS(I)%OUTSTRIDE(:)
 !XXX
         FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
@@ -1408,18 +1408,19 @@
           OUTFF(J,1) = 0
         END IF
 !         
-        write(*,*) 'endless loop ??????'
-        write(*,*) 'J; ', J
-        WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
-        WRITE(*,*) (ODAT(II,1),II=5*(J-1)+1,5*J), OUTFF(J,1)
+!!        write(*,*) 'J; ', J
+!!        WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
+!!        WRITE(*,*) (ODAT(II,1),II=5*(J-1)+1,5*J), OUTFF(J,1)
+!
         OUTPTS(1)%OFILES(J)=OUTFF(J,1)
-        WRITE(*,*) '111OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
+!
+!!       WRITE(*,*) '111OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
 !XXX 
         ODAT(5*(J-1)+3,I) = MAX ( 0 , ODAT(5*(J-1)+3,I) )
 !XXX
         OUTSTRIDE(J)=ODAT(5*(J-1)+3,1)
         OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
-        WRITE(*,*)'11OUTSTRIDE(J): ',OUTSTRIDE(J)
+!!        WRITE(*,*)'OUTSTRIDE(J): ',OUTSTRIDE(J)
 !XXX
 ! 
         IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
@@ -4194,13 +4195,11 @@
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
 !XXX
         READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
-        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)  
-
-            
-        WRITE(*,*) ' LOOP OVER NRGRD'
-        write(*,*) ' STRIDE(1):', OUTPTS(I)%OUTSTRIDE(1)
-        write(*,*) ' STRIDE(2):', OUTPTS(I)%OUTSTRIDE(2)
-        WRITE(*,*) 'I,OUTFF(1,I),OUTFF(2,I)=',I,OUTFF(1,I),OUTFF(2,I)
+        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)             
+!!        WRITE(*,*) ' LOOP OVER NRGRD'
+!!        write(*,*) ' STRIDE(1):', OUTPTS(I)%OUTSTRIDE(1)
+!!        write(*,*) ' STRIDE(2):', OUTPTS(I)%OUTSTRIDE(2)
+!!        WRITE(*,*) 'I,OUTFF(1,I),OUTFF(2,I)=',I,OUTFF(1,I),OUTFF(2,I)
 !XX
         READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
@@ -4243,9 +4242,7 @@
 ! 5.b Process standard line
 !
 !XXX
-
           OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
-
 !XXX
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
@@ -4467,7 +4464,7 @@
 ! ... End of loop I on NRGRD in 5.a
 !
 !XXX
-      WRITE(*,*) 'OUTPTS(1)%OUTSTRIDE:', (OUTPTS(1)%OUTSTRIDE(JJ),JJ=1,7)
+!!      WRITE(*,*) 'OUTPTS(1)%OUTSTRIDE:', (OUTPTS(1)%OUTSTRIDE(JJ),JJ=1,7)
 !XXX
       END DO
 !
