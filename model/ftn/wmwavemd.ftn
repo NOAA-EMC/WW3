@@ -237,9 +237,7 @@
 !/
       INTEGER                 :: J, JJ, I, JO, TPRNT(2), TAUX(2),     &
                                  II, JJJ, IX, IY, UPNEXT(2), UPLAST(2)
-!XXX
-!      INTEGER                 :: ITCOUNTER         
-!XXX
+      INTEGER                 :: DUMMY2(35)=0
 !/T      INTEGER                 :: ILOOP
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, NMPSCS
@@ -364,11 +362,6 @@
 !
             TPRNT  = TSYNC(:,0)
             TSTAMP = .TRUE.
-!XXX
-!            ITCOUNTER=ITCOUNTER+1
-!!            write(*,*) '======WMWAVE ITCOUNTER: ', ITCOUNTER
-!XXX
-
           ENDIF
 !
 !/T        ILOOP  = ILOOP + 1
@@ -762,7 +755,7 @@
 !/MPRF                CALL PRTIME ( PRFT0 )
 !
                 CALL WMSETM ( I, MDSE, MDST )
-                CALL W3WAVE ( I, TSYNC(:,I), .FALSE., .TRUE. )
+                CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE., .TRUE. )
                 IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
                 IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 !
@@ -1023,7 +1016,7 @@
 !
                       END IF
 !
-                    CALL W3WAVE ( I, TSYNC(:,I), .FALSE. )
+                    CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE. )
 !
                     IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
                          GRDHGH(I,0).GT.0 ) THEN

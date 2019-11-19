@@ -175,7 +175,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3WAVE ( IMOD, TEND, STAMP, NO_OUT & 
+      SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT & 
 !/OASIS                  ,ID_LCOMM                 &
                          )
 !/
@@ -410,7 +410,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)           :: IMOD, TEND(2)
+      INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 !/OASIS INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
 !/
@@ -2377,11 +2377,14 @@
 !
 !XXX INLINE
 !!                 write(*,*)'*********GENERATING FOR GRID: ******************'
-!!                 write(*,*) '11111 J, ITCOUNTER,OUTSTRIDE: ',J, ITCOUNTER(J),OUTSTRIDE(J)
+                 IF (ODAT(3) .NE. 0) OUTSTRIDE(J)=ODAT(3)
+!                 write(*,*) 'FIELDS J, ITCOUNTER,ODAT(3): ',J, ITCOUNTER(J),ODAT(3)
+!                              write(*,*) ' OUTSTRIDE(J)', OUTSTRIDE(J)
                  FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
+!                           write(*,*) 'FIELDS: J, FCSTTIME: ',J, FCSTTIME
 !!                 IF ( J .EQ. 1 ) then
 !!                 WRITE(*,*) 'J TIME ITCOUNTER(J), ITIME: ',J, TIME, ITCOUNTER(J), ITIME 
-!!                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
+!                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
 !!                 write(*,*) '  FCSTTIME: ', FCSTTIME
 !!                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
 !!                 end if
@@ -2390,8 +2393,6 @@
 !replace                         ( 'WRITE', NDS(7), ITEST, IMOD )
                                  ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
                               IF ( J .EQ. 1 ) ITCOUNTER(J)=ITCOUNTER(J)+1
-!!                 write(*,*) '22222 J, ITCOUNTER(J): ',J, ITCOUNTER(J)
-!!                 write(*,*) '================================================'
 !XXX
 !
 !/SBS !
@@ -2434,10 +2435,11 @@
                             CALL W3IOPE ( VA )
 !XXX  INLINE 
 !!               write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
-!!              WRITE(*,*) 'TIME ITCOUNTER, ITIME: ', TIME, ITCOUNTER, ITIME 
+                 IF (ODAT(8) .NE. 0) OUTSTRIDE(J)=ODAT(3)
+!                 write(*,*) 'POINTS J, ITCOUNTER,ODAT(8): ',J, ITCOUNTER(J),ODAT(8)
+!                 write(*,*) 'POINTS J, ITCOUNTER,OUTSTRIDE(J): ',J, ITCOUNTER(J),ODAT(8)
                            FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-!!                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
-!!              write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
+!                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
 !
 !XXX                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
                             CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )

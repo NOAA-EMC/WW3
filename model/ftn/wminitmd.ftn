@@ -443,7 +443,11 @@
       CHARACTER(LEN=30)       :: IDOTYP(7)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
-!
+!XXX
+      CHARACTER(LEN=80)       :: LINEIN
+      CHARACTER(LEN=8)        :: WORDS(6)
+!XXX
+
       TYPE OT2TPE
         INTEGER                    :: NPTS
         REAL, POINTER              :: X(:), Y(:)
@@ -1124,7 +1128,37 @@
 !XXX INLINE RP  WORKING WITH 
 !        READ (MDSI,*,END=2001,ERR=2002) (ODAT(I,1),I=5*(J-1)+1,5*J)
         IF(J .LE. 2) THEN
-          READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J),OUTFF(J,1)
+!         READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J),OUTFF(J,1)
+          READ (MDSI,'(A)') LINEIN
+          WRITE(*,*) 'LINEIN:  ',LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+!          DO i=1,6
+!            WRITE(*,*) WORDS(I)
+!          END DO
+!
+          IF(J .LE. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1,1)
+            READ(WORDS( 2 ), * ) ODAT(2,1)
+            READ(WORDS( 3 ), * ) ODAT(3,1)
+            READ(WORDS( 4 ), * ) ODAT(4,1)
+            READ(WORDS( 5 ), * ) ODAT(5,1)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6,1)
+            READ(WORDS( 2 ), * ) ODAT(7,1)
+            READ(WORDS( 3 ), * ) ODAT(8,1)
+            READ(WORDS( 4 ), * ) ODAT(9,1)
+            READ(WORDS( 5 ), * ) ODAT(10,1)
+          END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OUTFF(J,1)=0
+            print*,' Number of data: ', 5
+          ELSE
+            READ(WORDS( 6 ), * ) OUTFF(J,1)
+!            print*,' Number of data: ', 6
+          END IF
+!          WRITE(*,*) 'WMINITMD OUTFF(J,1)= ', OUTFF(J,1)
+
         ELSE
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
@@ -1135,10 +1169,12 @@
 !
 !        write(*,*) 'J; ', J
 !        WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
-!        WRITE(*,*) (ODAT(I,1),I=5*(J-1)+1,5*J), OUTFF(J,1)
 !        WRITE(*,*) 'OUTPTS(1)%OFILES(J)', OUTPTS(1)%OFILES(J)   
-!XXX 
-        ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
+!XXX
+          ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
+!
+!        WRITE(*,*) 'AFTER READ AND TRANSFORM'
+!        WRITE(*,*) (ODAT(I,1),I=5*(J-1)+1,5*J), OUTFF(J,1)
 !XXX
         OUTDELTA(J,1)=ODAT(5*(J-1)+3,1)
         OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
@@ -1330,7 +1366,6 @@
         OUTFF(:,I) = OUTFF(:,1)
         OUTPTS(I)%OFILES(:)=OUTFF(:,1)
         OUTPTS(I)%OUTSTRIDE(:)=OUTDELTA(:,1)
-!        WRITE(*,*) 'OUTPTS(I)%OUTSTRIDE(:): ',OUTPTS(I)%OUTSTRIDE(:)
 !XXX
         FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
@@ -1402,7 +1437,37 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
 !XXX ININE        READ (MDSI,*,END=2001,ERR=2002) (ODAT(II,I),II=5*(J-1)+1,5*J)
         IF(J .LE. 2) THEN
-          READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,1),II=5*(J-1)+1,5*J),OUTFF(J,1)
+!          READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,1),II=5*(J-1)+1,5*J),OUTFF(J,1)
+          READ (MDSI,'(A)') LINEIN
+          WRITE(*,*) 'LINEIN  ', LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+!          DO i=1,6
+!            WRITE(*,*) WORDS(I)
+!          END DO
+!
+          IF(J .LE. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1,1)
+            READ(WORDS( 2 ), * ) ODAT(2,1)
+            READ(WORDS( 3 ), * ) ODAT(3,1)
+            READ(WORDS( 4 ), * ) ODAT(4,1)
+            READ(WORDS( 5 ), * ) ODAT(5,1)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6,1)
+            READ(WORDS( 2 ), * ) ODAT(7,1)
+            READ(WORDS( 3 ), * ) ODAT(8,1)
+            READ(WORDS( 4 ), * ) ODAT(9,1)
+            READ(WORDS( 5 ), * ) ODAT(10,1)
+          END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OUTFF(J,1)=0
+!            WRITE(*,*) ' Number of data: ', 5
+          ELSE
+            READ(WORDS( 6 ), * ) OUTFF(J,1)
+!            WRITE(*,*) ' Number of data: ', 6
+          END IF
+!          WRITE(*,*) 'OUTFF(J,1)= ', OUTFF(J,1)
+!
         ELSE
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,1),II=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
@@ -4274,15 +4339,7 @@
                     END DO
                   WRITE (MDSS,954) DTME21(1:19)
                 END IF
-
-!xxxxxxxxxxxxxxx
-!XXX
-!        OUTPTS(1)%OFILES(1)   = OUTFF(J,1)
-!        OUTFF(:,I) = OUTFF(:,1)
-!xxxxxxxxxxxxxxx
-
-
-
+!
               IF ( J .EQ. 1 ) THEN
 !
 ! 5.c Type 1: fields of mean wave parameters

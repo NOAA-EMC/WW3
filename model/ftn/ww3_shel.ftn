@@ -326,6 +326,11 @@
       CHARACTER(LEN=80)   :: LINE
       CHARACTER(LEN=256)  :: TMPLINE, TEST
       CHARACTER(LEN=1024) :: FLDIN
+!XXX
+      CHARACTER(LEN=80)   :: LINEIN
+      CHARACTER(LEN=8)    :: WORDS(6)=''
+!XXX
+
 !/COU      CHARACTER(LEN=30)       :: OFILE
 !
       LOGICAL             :: FLLSTL, FLLSTI, FLFLG, FLHOM, TFLAGI,     &
@@ -744,9 +749,17 @@
         READ(NML_OUTPUT_DATE%FIELD%START, *)   ODAT(1), ODAT(2)
         READ(NML_OUTPUT_DATE%FIELD%STRIDE, *)  ODAT(3)
         READ(NML_OUTPUT_DATE%FIELD%STOP, *)    ODAT(4), ODAT(5)
+
+        READ(NML_OUTPUT_DATE%FIELD%OUTFFILE, *)  OFILES(1)
+!        OUTPTS(I)%OUTSTRIDE(1)=ODAT(3,I)              
+
         READ(NML_OUTPUT_DATE%POINT%START, *)   ODAT(6), ODAT(7)
         READ(NML_OUTPUT_DATE%POINT%STRIDE, *)  ODAT(8)
         READ(NML_OUTPUT_DATE%POINT%STOP, *)    ODAT(9), ODAT(10)
+
+        READ(NML_OUTPUT_DATE%POINT%OUTFFILE, *)  OFILES(2)
+!        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)             
+
         READ(NML_OUTPUT_DATE%TRACK%START, *)   ODAT(11), ODAT(12)
         READ(NML_OUTPUT_DATE%TRACK%STRIDE, *)  ODAT(13)
         READ(NML_OUTPUT_DATE%TRACK%STOP, *)    ODAT(14), ODAT(15)
@@ -778,6 +791,7 @@
         NOTYPE = 6
 !/COU        NOTYPE = 7
         DO J = 1, NOTYPE
+!          OUTPTS(I)%OFILES(J)=OFILES(J)              
           IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
 ! Type 1: fields of mean wave parameters
@@ -1188,25 +1202,50 @@
 !          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
 !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
-          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+!          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          READ (NDSI,'(A)') LINEIN
+          WRITE(*,*) 'LINEIN: ', LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+          DO I=1,6
+!            WRITE(*,*) I, WORDS(I)
+          END DO
+!
+          IF(J .EQ. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1)
+            READ(WORDS( 2 ), * ) ODAT(2)
+            READ(WORDS( 3 ), * ) ODAT(3)
+            READ(WORDS( 4 ), * ) ODAT(4)
+            READ(WORDS( 5 ), * ) ODAT(5)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6)
+            READ(WORDS( 2 ), * ) ODAT(7)
+            READ(WORDS( 3 ), * ) ODAT(8)
+            READ(WORDS( 4 ), * ) ODAT(9)
+            READ(WORDS( 5 ), * ) ODAT(10)
+          END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OFILES(J)=0
+            print*,' Number of data: ', 5
+          ELSE
+            READ(WORDS( 6 ), * ) OFILES(J)
+            print*,' Number of data: ', 6
+          END IF
+
+
         ELSE
           OFILES(J)=0
           READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
         END IF
+!          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
 !
 !/DEBUGINIT        write(740+IAPROC,*), ' After read 2002, case 7'
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
 !
 !INLINE RP
-          IF (IERR.GT.0 .OR. OFILES(J).GT.1 .OR. OFILES(J).LT.0) THEN
-            WRITE(*,*)' OUTPUT OPTION IS NOT DECLARED OR'
-            WRITE(*,*)' DECLARED INCORRECTLY OPTION= ', OFILES(J)
-            WRITE(*,*)' OUTPUT OPTION FOR OUTPUT TYPE ',J, 'SET TO 0'
-            OFILES(J)=0
-            WRITE(*,*) 'INIT-TIME      TIMESTEP     END-TIME    OPTION:'
-            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J)
-          END IF   
-            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J) 
+!            WRITE(*,*) 'INIT-TIME                   TIMESTEP     &
+!                        END-TIME                    OPTION:'
+!            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J)
 !XXX
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
@@ -1717,7 +1756,7 @@
       IF ( .NOT. FLFLG ) THEN
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
-        CALL W3WAVE ( 1, TIMEN                      &
+        CALL W3WAVE ( 1, ODAT, TIMEN                      &
 !/OASIS                     ,.TRUE., .FALSE., MPI_COMM    &
                     )
 !
@@ -2197,7 +2236,7 @@
 !
       TIME0  = TTIME
 !
-      CALL W3WAVE ( 1, TIME0                                          &
+      CALL W3WAVE ( 1, ODAT, TIME0                                    &
 !/OASIS             ,.TRUE., .FALSE., MPI_COMM                        &
                   )
 
@@ -2239,7 +2278,7 @@
 
         IF ( DTTST .EQ. 0. ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
-          CALL W3WAVE ( 1, TIME0                                       & 
+          CALL W3WAVE ( 1, ODAT, TIME0                                 & 
 !/OASIS                       , .TRUE., .FALSE., MPI_COMM              &
                       )
         END IF

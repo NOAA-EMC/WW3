@@ -1103,6 +1103,8 @@
             CO='00'
           ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
             CO='0'
+          ELSE IF (FCSTTIME .GE. 100) THEN
+            CO=''
           END IF
     
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
