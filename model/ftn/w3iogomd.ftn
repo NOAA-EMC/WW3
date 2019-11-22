@@ -53,7 +53,8 @@
 !/    22-Aug-2018 : Add WBT output parameter            ( version 6.06 )
 !/    04-Oct-2019 : Inline Output implementation        ( version 6.07 )
 !/                  (Roberto Padilla-Hernandez)
-!/
+!/    25-Sep-2019 : Corrected th2m and sth2m            ( version 6.07 )
+!/                  calculations. (J Dykes, NRL)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -404,7 +405,7 @@
              IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
                                FLG2D(IFI,IFJ)=.TRUE.
           ENDDO
-          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI
+          IF ( IAPROC .EQ. NAPOUT .AND. IFJ .LT. NOGE(IFI) ) WRITE(NDSEN,1007) IFI
          ENDIF
         END DO
 !
@@ -593,7 +594,7 @@
              IF (US3DF(1).GE.1) THEN
                FLG2D(6,8)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USF','US3D'
+               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
                END IF
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
@@ -605,7 +606,7 @@
              IF (USSPF(1).GE.1) THEN
                FLG2D(6,12)=.TRUE.
              ELSE
-               WRITE(NDSEN,1008) 'USP','USSP'
+               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
                END IF
 !
 ! Group 7
@@ -1013,7 +1014,7 @@
            IF (US3DF(1).GE.1) THEN
              FLG2D(6,8)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USF','US3D'
+             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
              END IF
          CASE('P2L')
            FLG2D(6,9)=.TRUE.
@@ -1025,7 +1026,7 @@
            IF (USSPF(1).GE.1) THEN
              FLG2D(6,12)=.TRUE.
            ELSE
-             WRITE(NDSEN,1008) 'USP','USSP'
+             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
              END IF
 
 !
@@ -1148,6 +1149,8 @@
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
 !/    22-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    25-Sep-2019 : Corrected th2m and sth2m            ( version 6.07 )
+!/                  calculations. (J Dykes, NRL)
 !/
 !  1. Purpose :
 !
@@ -1221,7 +1224,6 @@
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0,               &
                           THM, THS, THP0
-
       USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT, SXX,   &
                           SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,    &
                           PWST, PNR, USERO, TUSX, TUSY, PRMS, TPMS,   &
@@ -1436,8 +1438,9 @@
             AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
             ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
             ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
-            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)
-            ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
+! Using trig identities to represent cos2theta and sin2theta.
+            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*(2*EC2(ITH) - 1)
+            ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*(2*ESC(ITH))
             ABYX(JSEA) = ABYX(JSEA) + A(ITH,IK,JSEA)*ESC(ITH)
             IF (ITH.LE.NTH/2) THEN
               ABST(JSEA) = ABST(JSEA) +                               &
