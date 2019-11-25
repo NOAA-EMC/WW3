@@ -1109,6 +1109,7 @@
     
 ! Convert integer FCSTTIME into a character Hstr with 3 columns 
           WRITE(Hstr,"(f6.2)") FCSTTIME
+          Hstr(4:4)='p'
           FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
 !!          write(*,*)'w3iopo OutPut Filename: out_pnt.', FCSTNAM,'.',FILEXT(:I)
 !
