@@ -475,9 +475,10 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -623,8 +624,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
 
     else
       \cp -f $file_c $path_b/switch
@@ -759,8 +761,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -892,9 +895,10 @@ then
   
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1025,9 +1029,10 @@ then
 
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1166,9 +1171,10 @@ then
 
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1543,8 +1549,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1684,9 +1691,10 @@ do
     
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
-        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'| \
-                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
@@ -1898,9 +1906,10 @@ do
 
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
-        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'| \
-                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
@@ -2059,8 +2068,9 @@ do
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
