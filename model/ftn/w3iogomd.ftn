@@ -2345,7 +2345,7 @@
 !/
       END SUBROUTINE W3OUTG
 !/ ------------------------------------------------------------------- /
-!XXX      SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
+!/
       SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD,FCSTTIME )
 !/
 !/                  +-----------------------------------+
@@ -2402,7 +2402,7 @@
 !                           0 : Fields read.
 !                          -1 : Past end of file.
 !       IMOD    Int.   I   Model number for W3GDAT etc.
-!XXX    FCSTTIME Real  I   Forecast time in hours from initial time
+!        FCSTTIME Real  I   Forecast time in hours from initial time
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -2456,8 +2456,6 @@
 !
 !/ ------------------------------------------------------------------- /
      USE CONSTANTS
-!XXX INLINE DELETE THIS
-!     USE W3INITMD
      USE W3GDATMD
 !/
       USE W3WDATMD, ONLY: W3SETW, W3DIMW
@@ -2489,7 +2487,6 @@
 !/
       USE W3SERVMD, ONLY: EXTCDE
       USE W3ODATMD, only : IAPROC
-!XXX INLINE
       USE W3ODATMD, ONLY :  OFILES
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -2503,19 +2500,16 @@
       INTEGER, INTENT(IN)           :: NDSOG
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
-!XXX
       REAL, INTENT(IN), OPTIONAL    :: FCSTTIME
       CHARACTER(LEN=3) :: CO
       CHARACTER(LEN=6) :: Hstr 
       CHARACTER(LEN=7) :: FCSTNAM
-!XXX
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
                                  MGRPP, ISEA, MOSWLL, IK, IFI, IFJ    &
-!XXX INLINE  DELETE THIS
                                  ,IFILOUT
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -2567,7 +2561,6 @@
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
 !
-!XXX INLINE      IF ( IPASS.EQ.1 ) THEN
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
@@ -2622,14 +2615,10 @@
 !
         END IF
 !
-!XXX INLINE POSPROC
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !  IN CASE OF GENERATION OF A NEW FILE OUTPUT EVERY DELTA OUTPUT
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
-
-
+!
       IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
@@ -2709,8 +2698,7 @@
 !/T                            UNDEF
 !
         END IF
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!
 ! TIME and flags ----------------------------------------------------- *
 !
       IF ( WRITE ) THEN
@@ -3524,10 +3512,8 @@
 ! Flush the buffers for write
 !
       IF ( WRITE ) CALL FLUSH ( NDSOG )
-!XXX
+!
       IF(OFILES(1) .EQ. 1) CLOSE(NDSOG)
-!      IF (IFILOUT .EQ. 1) CLOSE(NDSOG)
-!XXX
 !
 !/MPI      CALL W3SETA ( IGRD, NDSE, NDST )
 !

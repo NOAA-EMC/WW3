@@ -856,7 +856,6 @@
 !/
       END SUBROUTINE W3IOPE
 !/ ------------------------------------------------------------------- /
-!XXX      SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD )
       SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD, FCSTTIME )
 !/
 !/                  +-----------------------------------+
@@ -889,7 +888,7 @@
 !                           0 : Data read.
 !                          -1 : Past end of file.
 !       IMOD    I(O)   I   Model number for W3GDAT etc.
-!XXX    FCSTTIME Real  I   Forecast time in hours from initial time
+!       FCSTTIME Real  I   Forecast time in hours from initial time
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -941,9 +940,8 @@
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
                           GRDID, ICEO, ICEHO, ICEFO
-!XXX INLINE
       USE W3ODATMD, ONLY :  OFILES
-!XXX
+!/
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/
       USE W3SERVMD, ONLY: EXTCDE
@@ -958,9 +956,7 @@
       INTEGER, INTENT(OUT)          :: IOTST
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
-!XXX
       REAL, INTENT(IN), OPTIONAL    :: FCSTTIME
-!XXX
 !/
 !/ ------------------------------------------------------------------- /
 !/ local parameters
@@ -970,12 +966,10 @@
       LOGICAL,SAVE            :: WRITE
       CHARACTER(LEN=31)       :: IDTST
       CHARACTER(LEN=10)       :: VERTST
-!XXX
+!/
       CHARACTER(LEN=3) :: CO
       CHARACTER(LEN=6) :: Hstr 
       CHARACTER(LEN=7) :: FCSTNAM
-!XXX
-
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1009,10 +1003,6 @@
               CALL EXTCDE ( 2 )
             END IF
         END IF
-!XXX INLINE
-!!            WRITE(*,*) 'OFILES(J): ',(OFILES(i),i=1,7)
-!!       write(*,*) 'In iopomd  IPASS, OFILES(2):',IPASS, OFILES(1) 
-!XXX
 !
 ! open file ---------------------------------------------------------- *
 !
@@ -1078,9 +1068,6 @@
 !
         END IF
 !
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXX=================INLINE
 !
       IF ( IPASS.GE. 1  .AND. OFILES(2) .EQ. 1) THEN
           WRITE  = INXOUT.EQ.'WRITE'
@@ -1172,9 +1159,6 @@
 !
         END IF
 !
-!
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !
 ! TIME --------------------------------------------------------------- *
 !

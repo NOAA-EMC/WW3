@@ -245,7 +245,6 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
                           NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
-!XXX INLINE
       USE W3ODATMD, ONLY: OFILES
 !/
       USE W3FLDSMD
@@ -326,10 +325,8 @@
       CHARACTER(LEN=80)   :: LINE
       CHARACTER(LEN=256)  :: TMPLINE, TEST
       CHARACTER(LEN=1024) :: FLDIN
-!XXX
       CHARACTER(LEN=80)   :: LINEIN
       CHARACTER(LEN=8)    :: WORDS(6)=''
-!XXX
 
 !/COU      CHARACTER(LEN=30)       :: OFILE
 !
@@ -1242,12 +1239,6 @@
 !/DEBUGINIT        write(740+IAPROC,*), ' After read 2002, case 7'
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
 !
-!INLINE RP
-!            WRITE(*,*) 'INIT-TIME                   TIMESTEP     &
-!                        END-TIME                    OPTION:'
-!            WRITE(*,*) (ODAT(I),I=5*(J-1)+1,5*J), OFILES(J)
-!XXX
-
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)

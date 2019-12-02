@@ -426,12 +426,8 @@
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
       REAL                    :: ICEDAVE                              &
-!INLINE RPH
                                  ,FCSTTIME
-!      INTEGER, SAVE           :: ITCOUNTER2=0
-!      INTEGER, SAVE           ::OTHERCOUNTER=-1
-!XXX
-
+!
 !/OASIS     INTEGER                 :: OASISED
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
@@ -910,13 +906,6 @@
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 !
           ITIME  = ITIME + 1
-!XXX INLINE
-!          IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT &
-!                      .AND. ITCOUNTER2 .EQ. 0) THEN
-!             ITCOUNTER= ITCOUNTER-1
-!             ITCOUNTER2=1
-!          END IF 
-!XXX
 !
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
@@ -935,9 +924,6 @@
               CALL WWTIME ( STTIME )
               CALL STME21 ( TIME , IDTIME )
               WRITE (SCREEN,950) IDTIME, STTIME
-!XXX
-!             ITCOUNTER=ITCOUNTER+1
-!XXX
             END IF
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 2'
@@ -2375,25 +2361,12 @@
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
 !
-!XXX INLINE
-!!                 write(*,*)'*********GENERATING FOR GRID: ******************'
                  IF (ODAT(3) .NE. 0) OUTSTRIDE(J)=ODAT(3)
-!                 write(*,*) 'FIELDS J, ITCOUNTER,ODAT(3): ',J, ITCOUNTER(J),ODAT(3)
-!                              write(*,*) ' OUTSTRIDE(J)', OUTSTRIDE(J)
                  FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-!                           write(*,*) 'FIELDS: J, FCSTTIME: ',J, FCSTTIME
-!!                 IF ( J .EQ. 1 ) then
-!!                 WRITE(*,*) 'J TIME ITCOUNTER(J), ITIME: ',J, TIME, ITCOUNTER(J), ITIME 
-!                 WRITE(*,*) 'OUTSTRIDE(J): ', OUTSTRIDE(J) 
-!!                 write(*,*) '  FCSTTIME: ', FCSTTIME
-!!                 write(*,*) 'NDS(7), ITEST, IMOD: ',NDS(7), ITEST, IMOD
-!!                 end if
 !
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
-!replace                         ( 'WRITE', NDS(7), ITEST, IMOD )
                                  ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
                               IF ( J .EQ. 1 ) ITCOUNTER(J)=ITCOUNTER(J)+1
-!XXX
 !
 !/SBS !
 !/SBS !     Generate output flag file for fields and SBS coupling.
@@ -2433,15 +2406,8 @@
 !   Gets the necessary spectral data
 !
                             CALL W3IOPE ( VA )
-!XXX  INLINE 
-!!               write(*,*)'*********GENERATING OUTPUT FOR FOR POINTS: ******************'
                  IF (ODAT(8) .NE. 0) OUTSTRIDE(J)=ODAT(3)
-!                 write(*,*) 'POINTS J, ITCOUNTER,ODAT(8): ',J, ITCOUNTER(J),ODAT(8)
-!                 write(*,*) 'POINTS J, ITCOUNTER,OUTSTRIDE(J): ',J, ITCOUNTER(J),ODAT(8)
                            FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-!                           write(*,*) 'POINTS: J, FCSTTIME: ',J, FCSTTIME
-!
-!XXX                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
                             CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )
                             ITCOUNTER(J)=ITCOUNTER(J)+1
                             END IF
