@@ -51,6 +51,8 @@
 !/                  processing code)
 !/    05-Jun-2018 : Add DEBUGSTP/SETUP                  ( version 6.04 )
 !/    22-Aug-2018 : Add WBT output parameter            ( version 6.06 )
+!/    04-Oct-2019 : Inline Output implementation        ( version 6.07 )
+!/                  (Roberto Padilla-Hernandez)
 !/    25-Sep-2019 : Corrected th2m and sth2m            ( version 6.07 )
 !/                  calculations. (J Dykes, NRL)
 !/
@@ -2343,7 +2345,8 @@
 !/
       END SUBROUTINE W3OUTG
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
+!/
+      SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD,FCSTTIME )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2399,6 +2402,7 @@
 !                           0 : Fields read.
 !                          -1 : Past end of file.
 !       IMOD    Int.   I   Model number for W3GDAT etc.
+!        FCSTTIME Real  I   Forecast time in hours from initial time
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -2483,6 +2487,7 @@
 !/
       USE W3SERVMD, ONLY: EXTCDE
       USE W3ODATMD, only : IAPROC
+      USE W3ODATMD, ONLY :  OFILES
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -2495,12 +2500,17 @@
       INTEGER, INTENT(IN)           :: NDSOG
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
+      REAL, INTENT(IN), OPTIONAL    :: FCSTTIME
+      CHARACTER(LEN=3) :: CO
+      CHARACTER(LEN=6) :: Hstr 
+      CHARACTER(LEN=7) :: FCSTNAM
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
-                                 MGRPP, ISEA, MOSWLL, IK, IFI, IFJ
+                                 MGRPP, ISEA, MOSWLL, IK, IFI, IFJ    &
+                                 ,IFILOUT
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
@@ -2535,7 +2545,8 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-      IF ( IPASS.EQ.1 ) THEN
+!INLINE      IF ( IPASS.EQ.1 ) THEN
+      IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
           IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
@@ -2546,11 +2557,11 @@
 !
 !/T      WRITE (NDST,9000) IPASS, INXOUT, WRITE, NDSOG, IGRD, FILEXT
 !
+!
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
 !
-      IF ( IPASS.EQ.1 ) THEN
-!
+      IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
 !
@@ -2567,6 +2578,90 @@
 !
 ! test info --------------------------------------------------------- *
 ! ( IPASS = 1 )
+!
+          IF ( WRITE ) THEN
+              WRITE (NDSOG)                                           &
+                IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+                UNDEF, NOSWLL
+            ELSE
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
+                IDTST, VERTST, TNAME, MOGRP, MGRPP, NSEA, NX, NY,     &
+                UNDEF, MOSWLL
+!
+              IF ( IDTST .NE. IDSTR ) THEN
+                  WRITE (NDSE,902) IDTST, IDSTR
+                  CALL EXTCDE ( 20 )
+                END IF
+              IF ( VERTST .NE. VEROGR ) THEN
+                  WRITE (NDSE,903) VERTST, VEROGR
+                  CALL EXTCDE ( 21 )
+                END IF
+              IF ( NOGRP .NE. MOGRP .OR. NGRPP .NE. MGRPP ) THEN
+                  WRITE (NDSE,904) MOGRP, MGRPP, NOGRP, NGRPP
+                  CALL EXTCDE ( 22 )
+                END IF
+              IF ( TNAME .NE. GNAME ) THEN
+                  WRITE (NDSE,905) TNAME, GNAME
+                END IF
+              IF ( NOSWLL .NE. MOSWLL ) THEN
+                  WRITE (NDSE,906) MOSWLL, NOSWLL
+                  CALL EXTCDE ( 24 )
+                END IF
+!
+            END IF
+!
+!/T          WRITE (NDST,9002) IDSTR, VEROGR, GNAME, NSEA, NX, NY,    &
+!/T                            UNDEF
+!
+        END IF
+!
+!  IN CASE OF GENERATION OF A NEW FILE OUTPUT EVERY DELTA OUTPUT
+! open file ---------------------------------------------------------- *
+! ( IPASS = 1 )
+!
+      IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
+          WRITE  = INXOUT.EQ.'WRITE'
+        ELSE
+          IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
+              WRITE (NDSE,901) INXOUT
+              CALL EXTCDE ( 2 )
+            END IF
+        END IF
+
+!
+      IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
+          I      = LEN_TRIM(FILEXT)
+          J      = LEN_TRIM(FNMPRE)
+!
+
+!!          write(*,*) '===FCSTTIME: ',FCSTTIME
+          IF (FCSTTIME .LT. 10.) THEN
+            CO='00'
+          ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
+            CO='0'
+          ELSE IF (FCSTTIME .GE. 100) THEN
+            CO=''
+          END IF
+    
+! Convert integer FCSTTIME into a character Hstr with 3 columns 
+          WRITE(Hstr,"(f6.2)") FCSTTIME
+          Hstr(4:4)='p'
+          FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
+!!          write(*,*)'w3iogo OutPut Filename: out_grd.', FCSTNAM,'.',FILEXT(:I)
+!
+!/T          WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'//FILEXT(:I)
+          IF ( WRITE ) THEN
+              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FCSTNAM//'.'  &
+                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
+                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+            END IF
+!
+          REWIND ( NDSOG )
+!
+! test info --------------------------------------------------------- *
+! ( IPASS >= 1 & OFILES(1) = 1)
 !
           IF ( WRITE ) THEN
               WRITE (NDSOG)                                           &
@@ -3417,6 +3512,8 @@
 ! Flush the buffers for write
 !
       IF ( WRITE ) CALL FLUSH ( NDSOG )
+!
+      IF(OFILES(1) .EQ. 1) CLOSE(NDSOG)
 !
 !/MPI      CALL W3SETA ( IGRD, NDSE, NDST )
 !

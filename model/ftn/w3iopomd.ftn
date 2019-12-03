@@ -856,7 +856,7 @@
 !/
       END SUBROUTINE W3IOPE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD )
+      SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD, FCSTTIME )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -888,6 +888,7 @@
 !                           0 : Data read.
 !                          -1 : Past end of file.
 !       IMOD    I(O)   I   Model number for W3GDAT etc.
+!       FCSTTIME Real  I   Forecast time in hours from initial time
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -939,6 +940,8 @@
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
                           GRDID, ICEO, ICEHO, ICEFO
+      USE W3ODATMD, ONLY :  OFILES
+!/
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/
       USE W3SERVMD, ONLY: EXTCDE
@@ -953,6 +956,7 @@
       INTEGER, INTENT(OUT)          :: IOTST
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
+      REAL, INTENT(IN), OPTIONAL    :: FCSTTIME
 !/
 !/ ------------------------------------------------------------------- /
 !/ local parameters
@@ -962,6 +966,10 @@
       LOGICAL,SAVE            :: WRITE
       CHARACTER(LEN=31)       :: IDTST
       CHARACTER(LEN=10)       :: VERTST
+!/
+      CHARACTER(LEN=3) :: CO
+      CHARACTER(LEN=6) :: Hstr 
+      CHARACTER(LEN=7) :: FCSTNAM
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -986,7 +994,8 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-      IF ( IPASS.EQ.1 ) THEN
+!      IF ( IPASS.EQ.1 ) THEN
+      IF ( IPASS.EQ.1  .AND. OFILES(2) .EQ. 0) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
           IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
@@ -997,7 +1006,7 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-      IF ( IPASS.EQ.1 ) THEN
+      IF ( IPASS.EQ.1 .AND. OFILES(2) .EQ. 0 ) THEN
 !
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
@@ -1059,6 +1068,98 @@
 !
         END IF
 !
+!
+      IF ( IPASS.GE. 1  .AND. OFILES(2) .EQ. 1) THEN
+          WRITE  = INXOUT.EQ.'WRITE'
+        ELSE
+          IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
+              WRITE (NDSE,901) INXOUT
+              CALL EXTCDE ( 2 )
+            END IF
+        END IF
+
+! open file ---------------------------------------------------------- *
+!
+      IF ( IPASS.GE.1 .AND. OFILES(2) .EQ. 1) THEN
+!
+          I      = LEN_TRIM(FILEXT)
+          J      = LEN_TRIM(FNMPRE)
+
+!!          write(*,*) '===FCSTTIME: ',FCSTTIME
+          IF (FCSTTIME .LT. 10.) THEN
+            CO='00'
+          ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
+            CO='0'
+          ELSE IF (FCSTTIME .GE. 100) THEN
+            CO=''
+          END IF
+    
+! Convert integer FCSTTIME into a character Hstr with 3 columns 
+          WRITE(Hstr,"(f6.2)") FCSTTIME
+          Hstr(4:4)='p'
+          FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
+!!          write(*,*)'w3iopo OutPut Filename: out_pnt.', FCSTNAM,'.',FILEXT(:I)
+!
+!/T          WRITE (NDST,9001) FNMPRE(:J)//'out_pnt.'//FCSTNAM//'.'// &
+!/T                               FILEXT(:I)
+          IF ( WRITE ) THEN
+              OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FCSTNAM//'.'   &
+                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+!            ELSE
+!              OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),&
+!                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+            END IF
+!
+          REWIND ( NDSOP )
+!
+!
+! test info ---------------------------------------------------------- *
+! ( IPASS GE.1 .AND. OFILES(2) .EQ. 1)
+!
+          IF ( WRITE ) THEN
+              WRITE (NDSOP)                                           &
+                IDSTR, VEROPT, NK, NTH, NOPTS
+            ELSE
+              READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                &
+                IDTST, VERTST, MK, MTH, NOPTS
+!
+              IF ( IDTST .NE. IDSTR ) THEN
+                  WRITE (NDSE,902) IDTST, IDSTR
+                  CALL EXTCDE ( 10 )
+                END IF
+              IF ( VERTST .NE. VEROPT ) THEN
+                  WRITE (NDSE,903) VERTST, VEROPT
+                  CALL EXTCDE ( 11 )
+                END IF
+              IF (NK.NE.MK .OR. NTH.NE.MTH) THEN
+                  WRITE (NDSE,904) MK, MTH, NK, NTH
+                  CALL EXTCDE ( 12 )
+                END IF
+              IF ( .NOT. O2INIT )                                     &
+                  CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
+            END IF
+!
+!/T          WRITE (NDST,9002) IDSTR, VEROPT, NK, NTH, NOPTS
+!
+! Point specific info ------------------------------------------------ *
+! ( IPASS GE.1 .AND. OFILES(2) .EQ. 1)
+!
+          IF ( WRITE ) THEN
+              WRITE (NDSOP)                                           &
+                    ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+           ELSE
+              READ  (NDSOP,END=801,ERR=802,IOSTAT=IERR)               &
+                    ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+            END IF
+!
+!/T          WRITE (NDST,9003)
+!/T          DO I=1, NOPTS
+!/T            WRITE (NDST,9004) I, PTLOC(1,I), PTLOC(2,I), PTNME(I)
+!/T            END DO
+!
+        END IF
+!
+!
 ! TIME --------------------------------------------------------------- *
 !
       IF ( WRITE ) THEN
@@ -1094,6 +1195,7 @@
           END IF
 !
         END DO
+      IF (OFILES(2) .EQ. 1)  CLOSE (NDSOP)
 !
       RETURN
 !

@@ -28,6 +28,7 @@
     INTEGER                     :: IOSTYP
     CHARACTER(15)               :: START
     CHARACTER(15)               :: STOP
+    CHARACTER(1)                :: OUTFFILE
   END TYPE NML_DOMAIN_T
 
 
@@ -102,6 +103,7 @@
     CHARACTER(15)               :: START
     CHARACTER(15)               :: STRIDE
     CHARACTER(15)               :: STOP
+    CHARACTER(15)               :: OUTFFILE
   END TYPE NML_OUTPUT_TIME_T
 !
   TYPE NML_OUTPUT_DATE_T
@@ -732,6 +734,8 @@
     DATE%FIELD%START = '19680606 000000'
     DATE%FIELD%STRIDE = '0'
     DATE%FIELD%STOP = '19680607 000000'
+    DATE%FIELD%OUTFFILE = '0'
+    DATE%POINT%OUTFFILE = '0'
     DATE%POINT%START = '19680606 000000'
     DATE%POINT%STRIDE = '0'
     DATE%POINT%STOP = '19680607 000000'
