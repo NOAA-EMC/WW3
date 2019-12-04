@@ -118,6 +118,14 @@
 !                                 restart001.FILEXT
 !                                 restart002.FILEXT etc.
 !
+!     Optionally, a second stream of restart files is generated given
+!     a secondary stride definad by an additional start/end time line
+!     triggered by an optional argument added to the end of the stan-
+!     dard restart request line (a sixth argument flag set to T). File
+!     names include a time-tag prefix:
+!
+!                                 YYYYMMDD.HHMMSS.restart.FILEXT
+!
 !     The file to be read thus always is unnumbered, whereas all
 !     written files are automatically numbered.
 !

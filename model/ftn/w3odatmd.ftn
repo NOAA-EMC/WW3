@@ -127,6 +127,7 @@
 !                               suppl. data for output type 5.
 !      OUT6      TYPE  Public   Data structure of type OTYPE6 with
 !                               suppl. data for output type 6.
+!      OFILES   I.A.  Public   Output in one or several files.
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT1 are aliased to pointers with the same
@@ -399,7 +400,7 @@
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
         INTEGER               :: NOSWLL
         INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
-                                 TBPI0(2), TBPIN(2), NDS(13)
+                                 TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
         REAL                  :: DTOUT(7)
         LOGICAL               :: FLOUT(7)
         TYPE(OTYPE1)          :: OUT1
@@ -423,6 +424,7 @@
       INTEGER, POINTER        :: NOSWLL
       INTEGER, POINTER        :: TOFRST(:), TONEXT(:,:), TOLAST(:,:), &
                                  TBPI0(:), TBPIN(:), NDS(:)
+      INTEGER, POINTER        :: OFILES(:)
       REAL, POINTER           :: DTOUT(:)
       LOGICAL, POINTER        :: FLOUT(:)
 !/
@@ -1447,6 +1449,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NLOW
+      INTEGER                 :: J
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3SETO')
@@ -1501,6 +1504,7 @@
       TBPI0  => OUTPTS(IMOD)%TBPI0
       TBPIN  => OUTPTS(IMOD)%TBPIN
       NDS    => OUTPTS(IMOD)%NDS
+      OFILES => OUTPTS(IMOD)%OFILES
 !
       DTOUT  => OUTPTS(IMOD)%DTOUT
       FLOUT  => OUTPTS(IMOD)%FLOUT
