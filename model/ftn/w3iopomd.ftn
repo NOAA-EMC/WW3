@@ -33,6 +33,8 @@
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
+!/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
+!/                  (R. Padilla-Hernandez & J.H. Alves)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -856,7 +858,7 @@
 !/
       END SUBROUTINE W3IOPE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD, FCSTTIME )
+      SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -888,7 +890,6 @@
 !                           0 : Data read.
 !                          -1 : Past end of file.
 !       IMOD    I(O)   I   Model number for W3GDAT etc.
-!       FCSTTIME Real  I   Forecast time in hours from initial time
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -956,7 +957,6 @@
       INTEGER, INTENT(OUT)          :: IOTST
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
-      REAL, INTENT(IN), OPTIONAL    :: FCSTTIME
 !/
 !/ ------------------------------------------------------------------- /
 !/ local parameters
@@ -967,9 +967,7 @@
       CHARACTER(LEN=31)       :: IDTST
       CHARACTER(LEN=10)       :: VERTST
 !/
-      CHARACTER(LEN=3) :: CO
-      CHARACTER(LEN=6) :: Hstr 
-      CHARACTER(LEN=7) :: FCSTNAM
+      CHARACTER(LEN=15) :: TIMETAG
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1085,29 +1083,14 @@
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
 
-!!          write(*,*) '===FCSTTIME: ',FCSTTIME
-          IF (FCSTTIME .LT. 10.) THEN
-            CO='00'
-          ELSE IF (FCSTTIME .GE. 10. .AND. FCSTTIME .LT. 100.) THEN
-            CO='0'
-          ELSE IF (FCSTTIME .GE. 100) THEN
-            CO=''
-          END IF
-    
-! Convert integer FCSTTIME into a character Hstr with 3 columns 
-          WRITE(Hstr,"(f6.2)") FCSTTIME
-          Hstr(4:4)='p'
-          FCSTNAM='f'//TRIM(ADJUSTL(CO))//TRIM(ADJUSTL(Hstr))
-!!          write(*,*)'w3iopo OutPut Filename: out_pnt.', FCSTNAM,'.',FILEXT(:I)
+! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
+          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
 !
-!/T          WRITE (NDST,9001) FNMPRE(:J)//'out_pnt.'//FCSTNAM//'.'// &
+!/T          WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_pnt.'// &
 !/T                               FILEXT(:I)
           IF ( WRITE ) THEN
-              OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FCSTNAM//'.'   &
+              OPEN (NDSOP,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
                     //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
-!            ELSE
-!              OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),&
-!                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOP )

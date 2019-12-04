@@ -30,7 +30,8 @@
 #     + Spectral grid: ntheta = 12, nf = 3, f1 = 0.0368, fgamma = 1.10      #
 #                                                                           #
 #   *  Grid sets available :                                                #
-#     + grdset_d :   gbandd360 arcticsub                                    #
+#     + grdset_d   :   gbandd360 arcticsub                                  #
+#     + grdset_d_h :   gbandd360 arcticsub with hourly binary output        #
 #                                                                           #
 # - switch options (mostly self-explanatory).                               #
 #    + switch_PR3_UQ                                                        #

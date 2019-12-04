@@ -377,7 +377,7 @@
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
-      USE W3ODATMD, ONLY:  OFILES, OUTSTRIDE
+      USE W3ODATMD, ONLY:  OFILES
 ! 
 !/
       IMPLICIT NONE
@@ -409,8 +409,7 @@
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
                                  TMPRNK(:), TMPGRP(:), NINGRP(:),     &
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),  &
-                                 NDPOUT(:)                            &
-                                 ,OUTFF(:,:),OUTDELTA(:,:)
+                                 NDPOUT(:), OUTFF(:,:)
       REAL                    :: DTTST, XX, YY
 
 !/MPRF      REAL                    :: PRFT0, PRFTN
@@ -655,7 +654,7 @@
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
            FLG2(NOGRP,NRGRD)                                          &
-           ,OUTFF(7,0:NRGRD),OUTDELTA(7,NRGRD))
+           ,OUTFF(7,0:NRGRD))
 !
       MDS    = -1
       MDSF   = -1
@@ -1156,9 +1155,6 @@
 !         
 !
         ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
-        OUTDELTA(J,1)=ODAT(5*(J-1)+3,1)
-        OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
-        OUTPTS(2)%OUTSTRIDE(J)=OUTDELTA(J,1)
 !
         IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
@@ -1331,14 +1327,12 @@
         ODAT(6:10,0) = ODAT(6:10,1)
         ODAT( 8 , 1) = 0
         OUTPTS(1)%OFILES(1)   = OUTFF(1,1)
-        OUTPTS(1)%OUTSTRIDE(1) = OUTDELTA(1,1)
         END IF
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
         OUTFF(:,I) = OUTFF(:,1)
         OUTPTS(I)%OFILES(:)=OUTFF(:,1)
-        OUTPTS(I)%OUTSTRIDE(:)=OUTDELTA(:,1)
         FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
         FLG2(:,I) = FLG2(:,1)
@@ -1447,8 +1441,6 @@
         OUTPTS(1)%OFILES(J)=OUTFF(J,1)
 !
         ODAT(5*(J-1)+3,I) = MAX ( 0 , ODAT(5*(J-1)+3,I) )
-        OUTSTRIDE(J)=ODAT(5*(J-1)+3,1)
-        OUTPTS(1)%OUTSTRIDE(J)=OUTDELTA(J,1)
 ! 
         IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
             TTIME(1) = ODAT(5*(J-1)+1,I)
@@ -2621,7 +2613,6 @@
           OUTPTS(0)%TOLAST(1,2) =        ODAT( 9,0)
           OUTPTS(0)%TOLAST(2,2) =        ODAT(10,0)
           OUTPTS(0)%OFILES(:)   =        OUTFF(:,0)
-          OUTPTS(0)%OUTSTRIDE(:) =       OUTDELTA(:,0)
 !
           TOUT   = OUTPTS(0)%TONEXT(:,2)
           TLST   = OUTPTS(0)%TOLAST(:,2)
@@ -2768,7 +2759,7 @@
 !
       DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD, FLG2, INAMES,&
                    MNAMES                                              &
-                   ,OUTFF, OUTDELTA )
+                   ,OUTFF )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
@@ -4204,12 +4195,10 @@
         READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%OUTFFILE, *)  OUTFF(1,I)
-        OUTPTS(I)%OUTSTRIDE(1)=ODAT(3,I)              
         READ(NML_OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
         READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
-        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)             
         READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)

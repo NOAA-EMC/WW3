@@ -425,8 +425,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
-      REAL                    :: ICEDAVE                              &
-                                 ,FCSTTIME
+      REAL                    :: ICEDAVE
 !
 !/OASIS     INTEGER                 :: OASISED
 !/SEC1      INTEGER                 :: ISEC1
@@ -2361,12 +2360,8 @@
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
 !
-                 IF (ODAT(3) .NE. 0) OUTSTRIDE(J)=ODAT(3)
-                 FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-!
                               IF ( J .EQ. 1 ) CALL W3IOGO             &
-                                 ( 'WRITE', NDS(7), ITEST, IMOD,FCSTTIME )
-                              IF ( J .EQ. 1 ) ITCOUNTER(J)=ITCOUNTER(J)+1
+                                 ( 'WRITE', NDS(7), ITEST, IMOD )
 !
 !/SBS !
 !/SBS !     Generate output flag file for fields and SBS coupling.
@@ -2406,10 +2401,7 @@
 !   Gets the necessary spectral data
 !
                             CALL W3IOPE ( VA )
-                 IF (ODAT(8) .NE. 0) OUTSTRIDE(J)=ODAT(3)
-                           FCSTTIME=REAL(ITCOUNTER(J)*OUTSTRIDE(J))/3600.
-                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD, FCSTTIME )
-                            ITCOUNTER(J)=ITCOUNTER(J)+1
+                            CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
                             END IF
 !
                         ELSE IF ( J .EQ. 3 ) THEN

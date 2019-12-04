@@ -400,8 +400,7 @@
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
         INTEGER               :: NOSWLL
         INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
-                                 TBPI0(2), TBPIN(2), NDS(13)          &
-                                 ,OFILES(7),OUTSTRIDE(7),ITCOUNTER(7)
+                                 TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
         REAL                  :: DTOUT(7)
         LOGICAL               :: FLOUT(7)
         TYPE(OTYPE1)          :: OUT1
@@ -425,7 +424,7 @@
       INTEGER, POINTER        :: NOSWLL
       INTEGER, POINTER        :: TOFRST(:), TONEXT(:,:), TOLAST(:,:), &
                                  TBPI0(:), TBPIN(:), NDS(:)
-      INTEGER, POINTER        :: OFILES(:), OUTSTRIDE(:),ITCOUNTER(:)
+      INTEGER, POINTER        :: OFILES(:)
       REAL, POINTER           :: DTOUT(:)
       LOGICAL, POINTER        :: FLOUT(:)
 !/
@@ -1506,8 +1505,6 @@
       TBPIN  => OUTPTS(IMOD)%TBPIN
       NDS    => OUTPTS(IMOD)%NDS
       OFILES => OUTPTS(IMOD)%OFILES
-      OUTSTRIDE => OUTPTS(IMOD)%OUTSTRIDE
-      ITCOUNTER=>OUTPTS(IMOD)%ITCOUNTER
 !
       DTOUT  => OUTPTS(IMOD)%DTOUT
       FLOUT  => OUTPTS(IMOD)%FLOUT
