@@ -13,7 +13,7 @@ $   5) Flag for dedicated process for iunified point output.
 $   6) Flag for grids sharing dedicated output processes.
 $
 $ 3 1 T 1 T T  {example}
-  2 0 F 1 F F
+  2 0 T 1 F F
 $
 $ -------------------------------------------------------------------- $
 $ If there are input data grids defined ( NRINP > 0 ), then these
@@ -35,7 +35,7 @@ $ defined. Ths information is taken from a wave model grid, and only
 $ the spectral definitions from this grid are relevant. Define the
 $ name of this grid here
 $
-$  'points' {example}
+   'points'
 $
 $ In this example, we need the file mod_def.points to define the
 $ spectral output grid, and the point output will be written to the
