@@ -717,14 +717,14 @@
       END TYPE GRID
 !
       TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
-        INTEGER               :: NK, NK2, NTH, NSPEC
+        INTEGER               :: NK=0, NK2=0, NTH=0, NSPEC=0
         INTEGER, POINTER      :: MAPWN(:), MAPTH(:)
-        REAL                  :: DTH, XFR, FR1, FTE, FTF, FTWN, FTTR, &
-                                 FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+        REAL                  :: DTH=0., XFR=0., FR1=0., FTE=0., FTF=0., FTWN=0., FTTR=0., &
+                                 FTWL=0., FACTI1=0., FACTI2=0., FACHFA=0., FACHFE=0.
         REAL, POINTER         :: TH(:), ESIN(:), ECOS(:), ES2(:),     &
                                  ESC(:), EC2(:), SIG(:), SIG2(:),     &
                                  DSIP(:), DSII(:), DDEN(:), DDEN2(:)
-        LOGICAL               :: SINIT
+        LOGICAL               :: SINIT=.FALSE.
       END TYPE SGRD
 !
       TYPE NPAR
@@ -1718,6 +1718,20 @@
                  SGRDS(IMOD)%DDEN2(MSPEC),                            &
                  STAT=ISTAT                                           )
       CHECK_ALLOC_STATUS ( ISTAT )
+      SGRDS(IMOD)%MAPWN(:)=0.
+      SGRDS(IMOD)%MAPTH(:)=0.
+      SGRDS(IMOD)%TH(:)=0.
+      SGRDS(IMOD)%ESIN(:)=0.
+      SGRDS(IMOD)%ECOS(:)=0.
+      SGRDS(IMOD)%ES2(:)=0.
+      SGRDS(IMOD)%ESC(:)=0.
+      SGRDS(IMOD)%EC2(:)=0.
+      SGRDS(IMOD)%SIG(:)=0.
+      SGRDS(IMOD)%SIG2(:)=0.
+      SGRDS(IMOD)%DSIP(:)=0.
+      SGRDS(IMOD)%DSII(:)=0.
+      SGRDS(IMOD)%DDEN(:)=0.
+      SGRDS(IMOD)%DDEN2(:)=0.
 !/ST4      ALLOCATE ( MPARS(IMOD)%SRCPS%IKTAB(MK,NDTAB), &
 !/ST4                 MPARS(IMOD)%SRCPS%DCKI(NKHS,NKD),  &
 !/ST4                 MPARS(IMOD)%SRCPS%QBI(NKHS,NKD),   &
