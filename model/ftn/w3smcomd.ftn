@@ -526,7 +526,7 @@
       ALLOCATE(NNIDX(NXO,NYO), XDIST(NXO,NYO), YDIST(NXO,NYO))
 
       ! Indices and weights:
-      READ(NDSMC) (((NNIDX(I,J), xdist(i,j), ydist(i,j)),i=1,NXO),j=1,NYO)
+      READ(NDSMC)((NNIDX(I,J), XDIST(I,J), YDIST(I,J),I=1,NXO),J=1,NYO)
 
       CLOSE(NDSMC)
 

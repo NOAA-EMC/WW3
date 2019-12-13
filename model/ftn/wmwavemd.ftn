@@ -494,6 +494,7 @@
 !
 ! 3.b Normal processing
 !
+
             IF ( GRSTAT(I) .EQ. 1 ) THEN
 !/T                WRITE (MDST,9002) I, GRSTAT(I), 'SECOND PART'
 !/MPRF                CALL PRTIME ( PRFT0 )
@@ -915,6 +916,7 @@
                       END IF
 !
                   END IF
+
 !
 ! 7.c Stage data
 !

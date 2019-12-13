@@ -159,7 +159,7 @@
               binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
 
               #Generate list of files to skip
-              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out"
+              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt"
 
               nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
               echo "  found $nf_1 files in base directory" >> $home_dir/fulldiff.tmp
