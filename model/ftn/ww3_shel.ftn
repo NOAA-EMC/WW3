@@ -1201,7 +1201,6 @@
         IF(J .LE. 2) THEN
 !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
           READ (NDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN: ', LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           DO I=1,6
 !            WRITE(*,*) I, WORDS(I)

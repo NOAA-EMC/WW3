@@ -1118,7 +1118,6 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN:  ',LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !
           IF(J .LE. 1) THEN
@@ -1401,7 +1400,6 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN  ', LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !
           IF(J .LE. 1) THEN
