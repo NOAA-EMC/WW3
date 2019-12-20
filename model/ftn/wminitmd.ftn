@@ -436,11 +436,11 @@
 
       CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
-      CHARACTER(LEN=30)       :: IDOTYP(7)
+      CHARACTER(LEN=30)       :: IDOTYP(8)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
       CHARACTER(LEN=80)       :: LINEIN
-      CHARACTER(LEN=8)        :: WORDS(6)
+      CHARACTER(LEN=8)        :: WORDS(6)=' '
 
       TYPE OT2TPE
         INTEGER                    :: NPTS
@@ -469,7 +469,8 @@
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
                     'Separated wave field data     ' ,                &
-                    'Fields for coupling           ' /
+                    'Fields for coupling           ' ,                &
+                    'Restart files second request  '/
 !
       DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2' /
 !
@@ -649,7 +650,7 @@
 !
 ! 2.c Set up I/O for individual models (initial)
 !
-      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
+      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
@@ -1116,9 +1117,11 @@
 ! 5.b Process standard line
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+
+        WRITE(*,*) 'FLOUT(',J,'):', FLOUT(J)
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN:  ',LINEIN
+!          WRITE(*,*) 'LINEIN:  ',LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !
           IF(J .LE. 1) THEN
@@ -1137,15 +1140,38 @@
 
           IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
             OUTFF(J,1)=0
-            print*,' Number of data: ', 5
+!            print*,' Number of data: ', 5
           ELSE
             READ(WORDS( 6 ), * ) OUTFF(J,1)
 !            print*,' Number of data: ', 6
           END IF
-!          WRITE(*,*) 'WMINITMD OUTFF(J,1)= ', OUTFF(J,1)
+!         WRITE(*,*) 'WMINITMD OUTFF(J,1)= ', OUTFF(J,1)
+!!!!!!!        ELSE
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+!XXX CHECKPOINT
+        ELSE IF(J .EQ. 4) THEN
+            READ (MDSI,'(A)') LINEIN
+!            WRITE(*,*) 'LINEIN:  ',LINEIN
+            READ(LINEIN,*,iostat=ierr) WORDS
+!
+            READ(WORDS( 1 ), * ) ODAT(16,1)
+            READ(WORDS( 2 ), * ) ODAT(17,1)
+            READ(WORDS( 3 ), * ) ODAT(18,1)
+            READ(WORDS( 4 ), * ) ODAT(19,1)
+            READ(WORDS( 5 ), * ) ODAT(20,1)
+            IF (WORDS(6) .EQ. 'T') THEN
+              READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
 
+              WRITE(*,*) 'FLOUT(8):', FLOUT(8)
+
+!              WRITE(*,*)(ODAT(I,1),I=5*(8-1)+1,5*8)
+            ELSE
+!              FLOUT(8)=.FALSE.
+              END IF
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         ELSE
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
+!xxx          WRITE(*,*)(ODAT(I,1),I=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
         END IF
 !
@@ -1183,6 +1209,7 @@
                   DTME21(I:I) = ' '
                   END DO
                 WRITE (MDSS,954) DTME21(1:19)
+
               END IF
             IF ( J .EQ. 1 ) THEN
 !
@@ -1318,6 +1345,40 @@
 ! ... End of loop in 5.a
 !
         END DO
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+! Checkpoint
+      IF (ODAT(38,1) .NE. 0) THEN
+        IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+            WRITE (MDSS,951) 8, IDOTYP(8)
+          TTIME(1) = ODAT(5*(8-1)+1,1)
+          TTIME(2) = ODAT(5*(8-1)+2,1)
+          CALL STME21 ( TTIME , DTME21 )
+          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+               WRITE (MDSS,952) DTME21
+          TTIME(1) = ODAT(5*(8-1)+4,1)
+          TTIME(2) = ODAT(5*(8-1)+5,1)
+          CALL STME21 ( TTIME , DTME21 )
+          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+               WRITE (MDSS,953) DTME21
+          TTIME(1) = 0
+          TTIME(2) = 0
+          DTTST    = REAL ( ODAT(5*(8-1)+3,1) )
+          CALL TICK21 ( TTIME , DTTST  )
+          CALL STME21 ( TTIME , DTME21 )
+          IF ( ( ODAT(5*(8-1)+1,1) .NE. ODAT(5*(8-1)+4,1) .OR.      &
+                 ODAT(5*(8-1)+2,1) .NE. ODAT(5*(8-1)+5,1) ) .AND.   &
+                 MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+              DO I=1, 18
+                IF ( DTME21(I:I).NE.'0' .AND.                       &
+                     DTME21(I:I).NE.'/' .AND.                       &
+                     DTME21(I:I).NE.' ' .AND.                       &
+                     DTME21(I:I).NE.':' ) EXIT
+                DTME21(I:I) = ' '
+                END DO
+              WRITE (MDSS,954) DTME21(1:19)
+           END IF
+        END IF
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
 ! 5.i Set all grids to unified output
 !
@@ -2055,6 +2116,7 @@
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.a'
 !/MPRF      PRFT0  = PRFTN
 !
+        WRITE(*,*) ' WMINIT NRGRD: ', NRGRD
       DO I=1, NRGRD
         J      = LEN_TRIM(MNAMES(I))
         DO NMPSC2=1, NMPROC
@@ -2301,6 +2363,20 @@
                 ENDIF
             END IF
           END DO
+!
+!XXX CHECKPOINT
+        J=8
+        WRITE(*,*) ' WMINIT J, FLOUT(J): ', J, FLOUT(J)
+        IF ( FLOUT(J) ) THEN
+           IF ( TOUTP(1,I) .EQ. -1 ) THEN
+              TOUTP(:,I) = TONEXT(:,J)
+           ELSE
+              DTTST  = DSEC21 ( TOUTP(:,I), TONEXT(:,J) )
+              IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
+           ENDIF
+        END IF
+!XXXXXXXXXXXXXXXXX
+
 !
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
@@ -3464,7 +3540,7 @@
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
       CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
-      CHARACTER(LEN=30)       :: IDOTYP(7)
+      CHARACTER(LEN=30)       :: IDOTYP(8)
       CHARACTER(LEN=80)       :: TNAME, LINE
       CHARACTER(LEN=1024)     :: FLDOUT
 !
@@ -3489,7 +3565,8 @@
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
                     'Separated wave field data     ' ,                &
-                    'Fields for coupling           ' /
+                    'Fields for coupling           ' ,                &
+                    'Restart files second request  '/
 !
       DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5',                &
                     'MDN', 'MTH', 'MVS', 'LEV', 'CUR',                &
@@ -3686,7 +3763,7 @@
 !
 ! 2.c Set up I/O for individual models (initial)
 !
-      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
+      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &

@@ -854,7 +854,7 @@
 !/DEBUGINIT     WRITE(740+IAPROC,*) ' After ALL_VA_INTEGRAL_PRINT'
 !/DEBUGINIT     FLUSH(740+IAPROC)
 !/TIMINGS       CALL PRINT_MY_TIME("Before W3IORS")
-      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )
+      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD)
 !/TIMINGS       CALL PRINT_MY_TIME("After W3IORS")
 !/MEMCHECK      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3a'
 !/MEMCHECK      call getMallocInfo(mallinfos)
@@ -956,6 +956,20 @@
         TOLAST(1,J) =        ODAT(J0+4) 
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
+!
+! CKECKPOINT J=8, for second stream of restart files
+        J=8
+        J0 = (J-1)*5
+      IF(ODAT(J0+1) .NE. 0) THEN
+        TONEXT(1,J) =        ODAT(J0+1) 
+        TONEXT(2,J) =        ODAT(J0+2)
+        DTOUT (  J) = REAL ( ODAT(J0+3) )
+        TOLAST(1,J) =        ODAT(J0+4) 
+        TOLAST(2,J) =        ODAT(J0+5)
+        FLOUT(8) = .TRUE.
+      ELSE
+        FLOUT(8) = .FALSE.
+      END IF
 !
 ! 4.b Check if output available
 !
