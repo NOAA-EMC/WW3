@@ -2116,7 +2116,6 @@
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.a'
 !/MPRF      PRFT0  = PRFTN
 !
-        WRITE(*,*) ' WMINIT NRGRD: ', NRGRD
       DO I=1, NRGRD
         J      = LEN_TRIM(MNAMES(I))
         DO NMPSC2=1, NMPROC
