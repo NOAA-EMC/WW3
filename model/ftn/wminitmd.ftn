@@ -1347,36 +1347,37 @@
         END DO
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ! Checkpoint
-      IF (ODAT(38,1) .NE. 0) THEN
-        IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
-            WRITE (MDSS,951) 8, IDOTYP(8)
-          TTIME(1) = ODAT(5*(8-1)+1,1)
-          TTIME(2) = ODAT(5*(8-1)+2,1)
-          CALL STME21 ( TTIME , DTME21 )
-          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
-               WRITE (MDSS,952) DTME21
-          TTIME(1) = ODAT(5*(8-1)+4,1)
-          TTIME(2) = ODAT(5*(8-1)+5,1)
-          CALL STME21 ( TTIME , DTME21 )
-          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
-               WRITE (MDSS,953) DTME21
-          TTIME(1) = 0
-          TTIME(2) = 0
-          DTTST    = REAL ( ODAT(5*(8-1)+3,1) )
-          CALL TICK21 ( TTIME , DTTST  )
-          CALL STME21 ( TTIME , DTME21 )
-          IF ( ( ODAT(5*(8-1)+1,1) .NE. ODAT(5*(8-1)+4,1) .OR.      &
-                 ODAT(5*(8-1)+2,1) .NE. ODAT(5*(8-1)+5,1) ) .AND.   &
-                 MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-              DO I=1, 18
-                IF ( DTME21(I:I).NE.'0' .AND.                       &
-                     DTME21(I:I).NE.'/' .AND.                       &
-                     DTME21(I:I).NE.' ' .AND.                       &
-                     DTME21(I:I).NE.':' ) EXIT
-                DTME21(I:I) = ' '
-                END DO
-              WRITE (MDSS,954) DTME21(1:19)
-           END IF
+       J=8
+        IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                WRITE (MDSS,951) J, IDOTYP(J)
+            TTIME(1) = ODAT(5*(J-1)+1,1)
+            TTIME(2) = ODAT(5*(J-1)+2,1)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                 WRITE (MDSS,952) DTME21
+            TTIME(1) = ODAT(5*(J-1)+4,1)
+            TTIME(2) = ODAT(5*(J-1)+5,1)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                 WRITE (MDSS,953) DTME21
+            TTIME(1) = 0
+            TTIME(2) = 0
+            DTTST    = REAL ( ODAT(5*(J-1)+3,1) )
+            CALL TICK21 ( TTIME , DTTST  )
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( ( ODAT(5*(J-1)+1,1) .NE. ODAT(5*(J-1)+4,1) .OR.      &
+                   ODAT(5*(J-1)+2,1) .NE. ODAT(5*(J-1)+5,1) ) .AND.   &
+                   MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                DO I=1, 18
+                  IF ( DTME21(I:I).NE.'0' .AND.                       &
+                       DTME21(I:I).NE.'/' .AND.                       &
+                       DTME21(I:I).NE.' ' .AND.                       &
+                       DTME21(I:I).NE.':' ) EXIT
+                  DTME21(I:I) = ' '
+                  END DO
+                WRITE (MDSS,954) DTME21(1:19)
+              END IF
         END IF
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
@@ -4273,6 +4274,9 @@
         READ(NML_OUTPUT_DATE(I)%RESTART%START, *)   ODAT(16,I), ODAT(17,I)
         READ(NML_OUTPUT_DATE(I)%RESTART%STRIDE, *)  ODAT(18,I)
         READ(NML_OUTPUT_DATE(I)%RESTART%STOP, *)    ODAT(19,I), ODAT(20,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%START, *)   ODAT(36,I), ODAT(37,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%STRIDE, *)  ODAT(38,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%STOP, *)    ODAT(39,I), ODAT(40,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%START, *)   ODAT(21,I), ODAT(22,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%STRIDE, *)  ODAT(23,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%STOP, *)    ODAT(24,I), ODAT(25,I)
@@ -4292,6 +4296,7 @@
         ODAT(23,I) = MAX ( 0 , ODAT(23,I) )
         ODAT(28,I) = MAX ( 0 , ODAT(28,I) )
 !!/COU        ODAT(33,I) = MAX ( 0 , ODAT(33,I) )
+        ODAT(38,I) = MAX ( 0 , ODAT(38,I) )
 
         ! define the time of the output point grid (index 0) as the   &
         ! time of the first grid which should be the larger one by convention
@@ -4306,6 +4311,8 @@
         DO J=1, NOTYPE
 !
 ! 5.b Process standard line
+!XXx
+          WRITE(*,*) '->J, ODAT(5*(J-1)+3,I)',J, ODAT(5*(J-1)+3,I)
 !
           OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
@@ -4516,6 +4523,49 @@
 ! ... End of loop J on NOTYPE in 5.a
 !
         END DO
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+!  Checkpoint
+        J=8
+            WRITE(*,*) '1FLOUT(8)=', FLOUT(8)
+            WRITE(*,*) '1 ODAT(38,I)=', ODAT(38,I)
+            !OUTPTS(I)%FLOUT(8)=.FALSE.
+          IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
+             !OUTPTS(I)%FLOUT(8)=.TRUE.
+            WRITE(*,*) 'ODAT(38) .NE. 0 !!'
+            WRITE(*,*) 'FLOUT(8)=', FLOUT(8)
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                  WRITE (MDSS,951) J, IDOTYP(J)
+              TTIME(1) = ODAT(5*(J-1)+1,I)
+              TTIME(2) = ODAT(5*(J-1)+2,I)
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                   WRITE (MDSS,952) DTME21
+              TTIME(1) = ODAT(5*(J-1)+4,I)
+              TTIME(2) = ODAT(5*(J-1)+5,I)
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                   WRITE (MDSS,953) DTME21
+              TTIME(1) = 0
+              TTIME(2) = 0
+              DTTST    = REAL ( ODAT(5*(J-1)+3,I) )
+              CALL TICK21 ( TTIME , DTTST  )
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( ( ODAT(5*(J-1)+1,I) .NE. ODAT(5*(J-1)+4,I) .OR.      &
+                     ODAT(5*(J-1)+2,I) .NE. ODAT(5*(J-1)+5,I) ) .AND.   &
+                     MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                  DO II=1, 18
+                    IF ( DTME21(II:II).NE.'0' .AND.                     &
+                         DTME21(II:II).NE.'/' .AND.                     &
+                         DTME21(II:II).NE.' ' .AND.                     &
+                         DTME21(II:II).NE.':' ) EXIT
+                    DTME21(II:II) = ' '
+                    END DO
+                  WRITE (MDSS,954) DTME21(1:19)
+                END IF
+          ELSE
+            !OUTPTS(I)%FLOUT(8) = .FALSE.
+          END IF
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
 ! ... End of loop I on NRGRD in 5.a
 !
@@ -4632,6 +4682,10 @@
             IF ( ODAT( 3,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(13,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(28,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+!xxx
+! Checkpoint 
+            IF ( ODAT(38,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+!xxx
             IF ( ODAT( 8,I) .GT. 0 .OR.  ODAT(18,I) .GT. 0 .OR.       &
                  ODAT(23,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( IOSTYP .EQ. 2 ) NDPOUT(I) = MIN ( 1 , NDPOUT(I) )
@@ -5187,6 +5241,7 @@
 ! 8.a.3 Status indicator and model times
 !
         DO J=1, NOTYPE
+          WRITE(*,*) ' WMININML FLOUT(',J,')', FLOUT(J)
           IF ( FLOUT(J) ) THEN
               IF ( TOUTP(1,I) .EQ. -1 ) THEN
                   TOUTP(:,I) = TONEXT(:,J)
@@ -5196,6 +5251,29 @@
                 ENDIF
             END IF
           END DO
+!xxxxxxxxxxxxxxxxxxxxxxx
+!x Checkpoint
+        J=8
+            WRITE(*,*) '2FLOUT(8)=', FLOUT(8)
+            WRITE(*,*) '2 ODAT(38,I)=', ODAT(38,I)
+            OUTPTS(I)%FLOUT(8)=.FALSE.
+          IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
+             OUTPTS(I)%FLOUT(8)=.TRUE.
+          ELSE
+              OUTPTS(I)%FLOUT(8)=.FALSE.
+          ENDIF
+          WRITE(*,*) '3FLOUT(8)=', FLOUT(8)
+
+          IF ( FLOUT(J) ) THEN
+          WRITE(*,*) ' WMININML FLOUT(',J,')', FLOUT(J)
+              IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                  TOUTP(:,I) = TONEXT(:,J)
+                ELSE
+                  DTTST  = DSEC21 ( TOUTP(:,I), TONEXT(:,J) )
+                  IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
+                ENDIF
+            END IF
+!xxxxxxxxxxxxxxxxxxxxxxx
 !
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
