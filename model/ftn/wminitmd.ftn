@@ -1118,10 +1118,8 @@
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
 
-        WRITE(*,*) 'FLOUT(',J,'):', FLOUT(J)
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
-!          WRITE(*,*) 'LINEIN:  ',LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !
           IF(J .LE. 1) THEN
@@ -1145,13 +1143,11 @@
             READ(WORDS( 6 ), * ) OUTFF(J,1)
 !            print*,' Number of data: ', 6
           END IF
-!         WRITE(*,*) 'WMINITMD OUTFF(J,1)= ', OUTFF(J,1)
 !!!!!!!        ELSE
-!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-!XXX CHECKPOINT
+!
+! CHECKPOINT
         ELSE IF(J .EQ. 4) THEN
             READ (MDSI,'(A)') LINEIN
-!            WRITE(*,*) 'LINEIN:  ',LINEIN
             READ(LINEIN,*,iostat=ierr) WORDS
 !
             READ(WORDS( 1 ), * ) ODAT(16,1)
@@ -1161,17 +1157,10 @@
             READ(WORDS( 5 ), * ) ODAT(20,1)
             IF (WORDS(6) .EQ. 'T') THEN
               READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
-
-              WRITE(*,*) 'FLOUT(8):', FLOUT(8)
-
-!              WRITE(*,*)(ODAT(I,1),I=5*(8-1)+1,5*8)
-            ELSE
-!              FLOUT(8)=.FALSE.
               END IF
-!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+!
         ELSE
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
-!xxx          WRITE(*,*)(ODAT(I,1),I=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
         END IF
 !
@@ -1463,7 +1452,6 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN  ', LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !
           IF(J .LE. 1) THEN
@@ -2364,9 +2352,8 @@
             END IF
           END DO
 !
-!XXX CHECKPOINT
+! CHECKPOINT
         J=8
-        WRITE(*,*) ' WMINIT J, FLOUT(J): ', J, FLOUT(J)
         IF ( FLOUT(J) ) THEN
            IF ( TOUTP(1,I) .EQ. -1 ) THEN
               TOUTP(:,I) = TONEXT(:,J)
@@ -2375,8 +2362,7 @@
               IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
            ENDIF
         END IF
-!XXXXXXXXXXXXXXXXX
-
+!
 !
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
@@ -4311,8 +4297,6 @@
         DO J=1, NOTYPE
 !
 ! 5.b Process standard line
-!XXx
-          WRITE(*,*) '->J, ODAT(5*(J-1)+3,I)',J, ODAT(5*(J-1)+3,I)
 !
           OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
@@ -4526,13 +4510,9 @@
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !  Checkpoint
         J=8
-            WRITE(*,*) '1FLOUT(8)=', FLOUT(8)
-            WRITE(*,*) '1 ODAT(38,I)=', ODAT(38,I)
             !OUTPTS(I)%FLOUT(8)=.FALSE.
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
              !OUTPTS(I)%FLOUT(8)=.TRUE.
-            WRITE(*,*) 'ODAT(38) .NE. 0 !!'
-            WRITE(*,*) 'FLOUT(8)=', FLOUT(8)
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                   WRITE (MDSS,951) J, IDOTYP(J)
               TTIME(1) = ODAT(5*(J-1)+1,I)
@@ -4562,7 +4542,7 @@
                     END DO
                   WRITE (MDSS,954) DTME21(1:19)
                 END IF
-          ELSE
+            !ELSE
             !OUTPTS(I)%FLOUT(8) = .FALSE.
           END IF
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -5241,7 +5221,6 @@
 ! 8.a.3 Status indicator and model times
 !
         DO J=1, NOTYPE
-          WRITE(*,*) ' WMININML FLOUT(',J,')', FLOUT(J)
           IF ( FLOUT(J) ) THEN
               IF ( TOUTP(1,I) .EQ. -1 ) THEN
                   TOUTP(:,I) = TONEXT(:,J)
@@ -5251,21 +5230,17 @@
                 ENDIF
             END IF
           END DO
-!xxxxxxxxxxxxxxxxxxxxxxx
-!x Checkpoint
+!
+! Checkpoint
         J=8
-            WRITE(*,*) '2FLOUT(8)=', FLOUT(8)
-            WRITE(*,*) '2 ODAT(38,I)=', ODAT(38,I)
             OUTPTS(I)%FLOUT(8)=.FALSE.
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
              OUTPTS(I)%FLOUT(8)=.TRUE.
           ELSE
               OUTPTS(I)%FLOUT(8)=.FALSE.
           ENDIF
-          WRITE(*,*) '3FLOUT(8)=', FLOUT(8)
 
           IF ( FLOUT(J) ) THEN
-          WRITE(*,*) ' WMININML FLOUT(',J,')', FLOUT(J)
               IF ( TOUTP(1,I) .EQ. -1 ) THEN
                   TOUTP(:,I) = TONEXT(:,J)
                 ELSE
@@ -5273,7 +5248,7 @@
                   IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
                 ENDIF
             END IF
-!xxxxxxxxxxxxxxxxxxxxxxx
+!
 !
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)

@@ -1656,9 +1656,8 @@
           END IF
         END IF
       END DO
-
-!XXXXXXXXXXXX
-!XXX CHECKPOINT
+!
+! CHECKPOINT
       J=8
       IF (ODAT(38) .NE. 0) THEN
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
@@ -1687,8 +1686,7 @@
           END IF
         END IF
       END IF
-!XXXXXXXXXXXX
-
+!
 ! 2.5 Output types
 
 !/T      WRITE (NDST,9040) ODAT
@@ -1716,8 +1714,8 @@
           CONTINUE
         END IF
       END DO
-!XXXXXXXXXXXXXXX
-!XXX CHECKPOINT
+!
+! CHECKPOINT
       J = 8
       DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
       IF ( DTTST .LT. 0 ) THEN
@@ -1731,7 +1729,7 @@
         IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
         CONTINUE
       END IF
-!XXXXXXXXXXXXXXX
+!
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
 !/MEMCHECK      call getMallocInfo(mallinfos)
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)

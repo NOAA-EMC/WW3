@@ -1077,6 +1077,57 @@
 !
         END DO
 !
+! FOR CHECKPOINT (J=8): Second stream of restart files
+!
+      J=8
+!
+! ... check time step  
+!
+        DTOUT(J) = MAX ( 0. , DTOUT(J) )
+        FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
+!
+! ... get first time 
+!
+        IF ( FLOUT(J) ) THEN
+            TOUT = TONEXT(:,J)
+            TLST = TOLAST(:,J)
+!
+            DO
+              DTTST   = DSEC21 ( TIME , TOUT )
+              IF ( ( J.NE.4 .AND. DTTST.LT.0. ) .OR.                  &
+                   ( J.EQ.4 .AND. DTTST.LE.0. ) ) THEN
+                  CALL TICK21 ( TOUT, DTOUT(J) )
+                ELSE
+                  EXIT
+                END IF
+              END DO
+!
+! ... reset first time
+!
+            TONEXT(:,J) = TOUT
+!
+! ... check last time
+!
+            DTTST  = DSEC21 ( TOUT , TLST )
+            IF ( DTTST.LT.0.) FLOUT(J) = .FALSE.
+!
+! ... check overall first time
+!
+            IF ( FLOUT(J) ) THEN
+                IF ( TOFRST(1).EQ.-1 ) THEN
+                    TOFRST = TOUT
+                  ELSE
+                    DTTST  = DSEC21 ( TOUT , TOFRST )
+                    IF ( DTTST.GT.0.) THEN
+                        TOFRST = TOUT
+                      END IF
+                  END IF
+              END IF
+!
+          END IF
+! END J=8
+!
+!
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
