@@ -653,6 +653,8 @@
       MDS    = -1
       MDSF   = -1
       FLGR2  = .FALSE.
+      FLG2   = .FALSE.
+      LPRT   = .FALSE.
       IPRT   = 0
 !
 ! ... Fixed and recycleable unit numbers.      
