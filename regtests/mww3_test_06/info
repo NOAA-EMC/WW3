@@ -32,6 +32,7 @@
 #   *  Grid sets available :                                                #
 #     + grdset_d   :   gbandd360 arcticsub                                  #
 #     + grdset_d_h :   gbandd360 arcticsub with hourly binary output        #
+#     + grdset_d_r : gbandd360 arcticsub with check point output            #
 #                                                                           #
 # - switch options (mostly self-explanatory).                               #
 #    + switch_PR3_UQ                                                        #
@@ -66,8 +67,11 @@
 #      ../model mww3_test_06                                                #
 # ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI_SCRIP_T38 \       #         
 #      ../model mww3_test_06                                                #
+# ./bin/run_test -m grdset_d_r -n 3 -p mpirun -s PR3_UQ_SCRIP\              #         
+#      ../model mww3_test_06                                                # 
 #                                                                           #
-#                                              Erick Rogers,   Nov 2013     #
+#                                              Erick Rogers,    Nov 2013    #
+#                                              Roberto Padilla, Jan 2019    #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
