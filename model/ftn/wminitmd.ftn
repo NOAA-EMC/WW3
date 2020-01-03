@@ -440,7 +440,7 @@
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
       CHARACTER(LEN=80)       :: LINEIN
-      CHARACTER(LEN=8)        :: WORDS(6)=' '
+      CHARACTER(LEN=8)        :: WORDS(6)
 
       TYPE OT2TPE
         INTEGER                    :: NPTS
@@ -1117,7 +1117,7 @@
 ! 5.b Process standard line
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-
+!
         IF(J .LE. 2) THEN
           READ (MDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
@@ -1138,13 +1138,10 @@
 
           IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
             OUTFF(J,1)=0
-!            print*,' Number of data: ', 5
           ELSE
             READ(WORDS( 6 ), * ) OUTFF(J,1)
 !            print*,' Number of data: ', 6
           END IF
-!!!!!!!        ELSE
-!
 ! CHECKPOINT
         ELSE IF(J .EQ. 4) THEN
             READ (MDSI,'(A)') LINEIN
@@ -1158,7 +1155,6 @@
             IF (WORDS(6) .EQ. 'T') THEN
               READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
               END IF
-!
         ELSE
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
           OUTFF(J,1) = 0
