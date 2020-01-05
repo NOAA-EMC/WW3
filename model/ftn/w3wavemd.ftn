@@ -462,13 +462,13 @@
 !AR   SMC option is in conflict with lofical variables for regular grid ... chicken ... egg ... stuff 
       LOGICAL                 :: RGLGRD = .TRUE., ARCTIC = .FALSE.
 !!Li
-!/MPI      LOGICAL                 :: FLGMPI(0:6)
+!/MPI      LOGICAL                 :: FLGMPI(0:8)
 !/IC3      REAL                    :: FIXEDVISC,FIXEDDENS,FIXEDELAS
 !/IC3      REAL                    :: USE_CHENG, USE_CGICE, HICE
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=17)       :: IDACT 
-      CHARACTER(LEN=13)       :: OUTID
+      CHARACTER(LEN=15)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
       INTEGER eIOBP
       INTEGER ITH_F
@@ -557,7 +557,7 @@
 !
       IPASS  = IPASS + 1
       IDACT  = '                 '
-      OUTID  = '             '
+      OUTID  = '               '
       FLACT  = ITIME .EQ. 0
       FLMAP  = ITIME .EQ. 0
       FLDDIR = ITIME .EQ. 0 .AND. ( FLCTH .OR. FSREFRACTION        &
@@ -2293,6 +2293,17 @@
 !/MPI                  END IF
 !/MPI              END IF
 !
+! !/DEBUGRUN      WRITE(740+IAPROC,*) 'After DO_OUTPUT_EXCHANGES, step 2'
+! !/DEBUGRUN      FLUSH(740+IAPROC)
+! !/MPI            IF ( FLOUT(8) .AND. NRQRS.NE.0 ) THEN
+! !/MPI                IF ( DSEC21(TIME,TONEXT(:,8)).EQ.0. ) THEN
+! !/MPI                    CALL MPI_STARTALL ( NRQRS, IRQRS , IERR_MPI )
+! !/MPI                    FLGMPI(8) = .TRUE.
+! !/MPI                    NRQMAX    = MAX ( NRQMAX , NRQRS )
+! !/MPIT                    WRITE (NDST,9043) '8 ', NRQRS, NRQMAX, NAPRST
+! !/MPI                  END IF
+! !/MPI              END IF
+!
 !/DEBUGRUN      WRITE(740+IAPROC,*) 'After DO_OUTPUT_EXCHANGES, step 3'
 !/DEBUGRUN      FLUSH(740+IAPROC)
 !/MPI            IF ( FLOUT(5) .AND. NRQBP.NE.0 ) THEN
@@ -2514,6 +2525,8 @@
 !/MPI                             ( NRQPO, IRQPO1, STATIO, IERR_MPI )
 !/MPI            IF ( FLGMPI(4) ) CALL MPI_WAITALL                    &
 !/MPI                             ( NRQRS, IRQRS , STATIO, IERR_MPI )
+!/MPI            IF ( FLGMPI(8) ) CALL MPI_WAITALL                    &
+!/MPI                             ( NRQRS2, IRQRS2 , STATIO, IERR_MPI )
 !/MPI            IF ( FLGMPI(5) ) CALL MPI_WAITALL                    &
 !/MPI                             ( NRQBP, IRQBP1, STATIO, IERR_MPI )
 !/MPI            IF ( NRQMAX .NE. 0 ) DEALLOCATE ( STATIO )
@@ -2569,7 +2582,7 @@
           END IF
 !
         IDACT  = '         '
-        OUTID  = '           '
+        OUTID  = '               '
         FLACT  = .FALSE.
 !
 ! 6.  If time is not ending time, branch back to 2 ------------------- /

@@ -2458,13 +2458,13 @@
 !/MPI            CALL MPI_BCAST ( NBI  , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
-!/MPI            CALL MPI_BCAST ( FLOUT,  7, MPI_LOGICAL, 0,          &
+!/MPI            CALL MPI_BCAST ( FLOUT,  8, MPI_LOGICAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( DTOUT , 7, MPI_REAL, 0,             &
+!/MPI            CALL MPI_BCAST ( DTOUT , 8, MPI_REAL, 0,             &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TONEXT,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TONEXT,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TOLAST,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TOLAST,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI          END IF
@@ -4658,12 +4658,9 @@
             IF ( ODAT( 3,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(13,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(28,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
-!xxx
-! Checkpoint 
-            IF ( ODAT(38,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
-!xxx
             IF ( ODAT( 8,I) .GT. 0 .OR.  ODAT(18,I) .GT. 0 .OR.       &
-                 ODAT(23,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+                 ODAT(23,I) .GT. 0 )          &
+                                           NDPOUT(I) = NDPOUT(I) + 1
             IF ( IOSTYP .EQ. 2 ) NDPOUT(I) = MIN ( 1 , NDPOUT(I) )
             END DO
         END IF
@@ -5344,13 +5341,13 @@
 !/MPI            CALL MPI_BCAST ( NBI  , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
-!/MPI            CALL MPI_BCAST ( FLOUT,  7, MPI_LOGICAL, 0,          &
+!/MPI            CALL MPI_BCAST ( FLOUT,  8, MPI_LOGICAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( DTOUT , 7, MPI_REAL, 0,             &
+!/MPI            CALL MPI_BCAST ( DTOUT , 8, MPI_REAL, 0,             &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TONEXT,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TONEXT,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TOLAST,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TOLAST,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI          END IF
