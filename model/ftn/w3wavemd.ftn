@@ -2526,7 +2526,7 @@
 !/MPI            IF ( FLGMPI(4) ) CALL MPI_WAITALL                    &
 !/MPI                             ( NRQRS, IRQRS , STATIO, IERR_MPI )
 !/MPI            IF ( FLGMPI(8) ) CALL MPI_WAITALL                    &
-!/MPI                             ( NRQRS2, IRQRS2 , STATIO, IERR_MPI )
+!/MPI                             ( NRQRS, IRQRS , STATIO, IERR_MPI )
 !/MPI            IF ( FLGMPI(5) ) CALL MPI_WAITALL                    &
 !/MPI                             ( NRQBP, IRQBP1, STATIO, IERR_MPI )
 !/MPI            IF ( NRQMAX .NE. 0 ) DEALLOCATE ( STATIO )
