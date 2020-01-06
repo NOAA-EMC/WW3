@@ -2293,16 +2293,16 @@
 !/MPI                  END IF
 !/MPI              END IF
 !
-! !/DEBUGRUN      WRITE(740+IAPROC,*) 'After DO_OUTPUT_EXCHANGES, step 2'
-! !/DEBUGRUN      FLUSH(740+IAPROC)
-! !/MPI            IF ( FLOUT(8) .AND. NRQRS.NE.0 ) THEN
-! !/MPI                IF ( DSEC21(TIME,TONEXT(:,8)).EQ.0. ) THEN
-! !/MPI                    CALL MPI_STARTALL ( NRQRS, IRQRS , IERR_MPI )
-! !/MPI                    FLGMPI(8) = .TRUE.
-! !/MPI                    NRQMAX    = MAX ( NRQMAX , NRQRS )
-! !/MPIT                    WRITE (NDST,9043) '8 ', NRQRS, NRQMAX, NAPRST
-! !/MPI                  END IF
-! !/MPI              END IF
+!/DEBUGRUN      WRITE(740+IAPROC,*) 'After DO_OUTPUT_EXCHANGES, step 2'
+!/DEBUGRUN      FLUSH(740+IAPROC)
+!/MPI            IF ( FLOUT(8) .AND. NRQRS.NE.0 ) THEN
+!/MPI                IF ( DSEC21(TIME,TONEXT(:,8)).EQ.0. ) THEN
+!/MPI                    CALL MPI_STARTALL ( NRQRS, IRQRS , IERR_MPI )
+!/MPI                    FLGMPI(8) = .TRUE.
+!/MPI                    NRQMAX    = MAX ( NRQMAX , NRQRS )
+!/MPIT                    WRITE (NDST,9043) '8 ', NRQRS, NRQMAX, NAPRST
+!/MPI                  END IF
+!/MPI              END IF
 !
 !/DEBUGRUN      WRITE(740+IAPROC,*) 'After DO_OUTPUT_EXCHANGES, step 3'
 !/DEBUGRUN      FLUSH(740+IAPROC)

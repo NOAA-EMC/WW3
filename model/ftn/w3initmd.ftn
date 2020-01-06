@@ -3660,7 +3660,7 @@
 !/MPI      IH     = 0
 !/MPI      IROOT  = NAPRST - 1
 !
-!/MPI      IF ( FLOUT(4) ) THEN
+!/MPI      IF ( FLOUT(4) .OR. FLOUT(8) ) THEN
 !/MPI          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
 !
