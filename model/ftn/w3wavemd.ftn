@@ -410,7 +410,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(40)
+      INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 !/OASIS INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
 !/
