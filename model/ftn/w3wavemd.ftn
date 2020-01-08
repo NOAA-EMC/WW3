@@ -410,7 +410,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
+      INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(40)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 !/OASIS INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
 !/
@@ -557,7 +557,7 @@
 !
       IPASS  = IPASS + 1
       IDACT  = '                 '
-      OUTID  = '               '
+      OUTID  = '             '
       FLACT  = ITIME .EQ. 0
       FLMAP  = ITIME .EQ. 0
       FLDDIR = ITIME .EQ. 0 .AND. ( FLCTH .OR. FSREFRACTION        &
