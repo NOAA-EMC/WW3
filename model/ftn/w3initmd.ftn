@@ -215,6 +215,7 @@
 !                          16-20 Id. for OTYPE = 4; restart files.
 !                          21-25 Id. for OTYPE = 5; boundary data.
 !                          31-35 Id. for OTYPE = 7; coupling data.
+!                          36-40 Id. for OTYPE = 8; second restart file
 !       FLGRD   L.A.   I   Flags for gridded output.
 !       FLGR2   L.A.   I   Flags for coupling output.
 !       NPT     Int.   I   Number of output points
@@ -390,7 +391,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
-                                       ODAT(35),NPT, IPRT(6),&
+                                       ODAT(40),NPT, IPRT(6),&
                                        MPI_COMM
       LOGICAL, INTENT(IN)           :: IsMulti
       REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
@@ -3659,7 +3660,7 @@
 !/MPI      IH     = 0
 !/MPI      IROOT  = NAPRST - 1
 !
-!/MPI      IF ( FLOUT(4) ) THEN
+!/MPI      IF ( FLOUT(4) .OR. FLOUT(8) ) THEN
 !/MPI          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
 !
