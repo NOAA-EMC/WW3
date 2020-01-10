@@ -2541,7 +2541,6 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-!INLINE      IF ( IPASS.EQ.1 ) THEN
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
