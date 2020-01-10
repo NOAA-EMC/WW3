@@ -2469,8 +2469,7 @@
               END DO
 
 
-!/ CHECKPOINT
-!/ IF THERE IS A SECOND STREAM OF RESTART FILES THEN J=8 AND FLOUT(8)=.TRUE.
+! If there is a second stream of restart files then J=8 and FLOUT(8)=.TRUE.
             J=8
             IF ( FLOUT(J) ) THEN
 !
