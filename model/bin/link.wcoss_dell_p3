@@ -87,7 +87,7 @@
   # linking options
   libs=""
 
-  opt="-o $prog -g -xhost -O3 -p"
+  opt="-o $prog -g -xhost -O2 -p"
 
 # Add profiling
 # opt="$opt -p"
