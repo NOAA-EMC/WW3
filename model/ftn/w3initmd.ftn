@@ -958,7 +958,7 @@
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
 !
-! CKECKPOINT J=8, for second stream of restart files
+! J=8, second stream of restart files
         J=8
         J0 = (J-1)*5
       IF(ODAT(J0+1) .NE. 0) THEN
@@ -1078,7 +1078,7 @@
 !
         END DO
 !
-! FOR CHECKPOINT (J=8): Second stream of restart files
+! J=8, second stream of restart files
 !
       J=8
 !
