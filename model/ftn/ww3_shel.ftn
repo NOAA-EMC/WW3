@@ -1203,7 +1203,6 @@
         IF(J .EQ. 4) THEN
           ODAT(38)=0 
           READ (NDSI,'(A)') LINEIN
-          WRITE(*,*) 'LINEIN:  ',LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           READ(WORDS( 1 ), * ) ODAT(16)
           READ(WORDS( 2 ), * ) ODAT(17)
@@ -1243,10 +1242,8 @@
 
           IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
             OFILES(J)=0
-            print*,' Number of data: ', 5
           ELSE
             READ(WORDS( 6 ), * ) OFILES(J)
-            print*,' Number of data: ', 6
           END IF
 
 

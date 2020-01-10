@@ -2934,7 +2934,7 @@
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) T01(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
-                    WRITE ( NDSOG ) MAX(FR1,FP0(1:NSEA))
+                    WRITE ( NDSOG ) FP0(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) THM(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN

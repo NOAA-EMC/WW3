@@ -468,7 +468,7 @@
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=17)       :: IDACT 
-      CHARACTER(LEN=15)       :: OUTID
+      CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
       INTEGER eIOBP
       INTEGER ITH_F
@@ -557,7 +557,7 @@
 !
       IPASS  = IPASS + 1
       IDACT  = '                 '
-      OUTID  = '             '
+      OUTID  = '           '
       FLACT  = ITIME .EQ. 0
       FLMAP  = ITIME .EQ. 0
       FLDDIR = ITIME .EQ. 0 .AND. ( FLCTH .OR. FSREFRACTION        &
@@ -2582,7 +2582,7 @@
           END IF
 !
         IDACT  = '         '
-        OUTID  = '               '
+        OUTID  = '           '
         FLACT  = .FALSE.
 !
 ! 6.  If time is not ending time, branch back to 2 ------------------- /
