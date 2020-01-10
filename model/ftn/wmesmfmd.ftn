@@ -1937,26 +1937,25 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_TimeGet(currTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!      lerr=.false.
+      lerr=.false.
       do imod = 1,nrgrd
         tcur(1) = 10000*yy + 100*mm + dd
         tcur(2) = 10000*h  + 100*m  + s
         call w3setw ( imod, mdse, mdst )
         delt = dsec21 ( time, tcur )
         if ( abs(delt).gt.0 ) then
-!          lerr=.true.
+          lerr=.true.
           write(msg,'(a,i2,a,2(a,i8,a,i8,a))') &
           'Wave model grid ',imod,': ', &
           'Internal time (',time(1),'.',time(2),') /= ', &
           'Component time (',tcur(1),'.',tcur(2),')'
-!          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
-          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_WARNING)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
         endif
       enddo
-!      if (lerr) then
-!        rc = ESMF_FAILURE
-!        return
-!      endif
+      if (lerr) then
+        rc = ESMF_FAILURE
+        return
+      endif
 !
 ! 1.d Set end time of this advance
 !
