@@ -635,7 +635,7 @@
       logical :: lsep_se = .true.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
-      type(ESMF_Time) :: ttmp
+      type(ESMF_Time) :: ttmp, cttmp
       type(ESMF_TimeInterval) :: tstep, etstep
       integer :: i, j, n, istep, imod, jmod
       integer, allocatable :: cplmap(:,:)
@@ -752,10 +752,14 @@
 ! 1.e Set internal start/stop time from external start/stop time
 !
 
-!      call ESMF_ClockGet(extClock, startTime=ttmp, rc=rc)
-!      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      call ESMF_ClockGet(extClock, currTime=ttmp, rc=rc)
+      call ESMF_ClockGet(extClock, startTime=ttmp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ClockGet(extClock, currTime=cttmp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! Adjust internal start time to currTime in case of delayed start
+!
+      if ( cttmp.gt.ttmp ) ttmp=cttmp 
       call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       stime(1) = 10000*yy + 100*mm + dd
@@ -1898,7 +1902,7 @@
       type(ESMF_Clock) :: clock
       type(ESMF_Time) :: currTime, stopTime
       real :: delt
-!      logical :: lerr
+      logical :: lerr
 !
 ! -------------------------------------------------------------------- /
 ! Prep
