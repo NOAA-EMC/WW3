@@ -44,6 +44,7 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
+!/                  |         J. Meixner, NCEP          |
 !/                  |     A. J. van der Westhuysen      |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         09-Aug-2017 |
@@ -634,7 +635,7 @@
       logical :: lsep_se = .true.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
-      type(ESMF_Time) :: ttmp
+      type(ESMF_Time) :: ttmp, cttmp
       type(ESMF_TimeInterval) :: tstep, etstep
       integer :: i, j, n, istep, imod, jmod
       integer, allocatable :: cplmap(:,:)
@@ -750,8 +751,15 @@
 !
 ! 1.e Set internal start/stop time from external start/stop time
 !
+
       call ESMF_ClockGet(extClock, startTime=ttmp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ClockGet(extClock, currTime=cttmp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! Adjust internal start time to currTime in case of delayed start
+!
+      if ( cttmp.gt.ttmp ) ttmp=cttmp 
       call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       stime(1) = 10000*yy + 100*mm + dd
@@ -1942,9 +1950,9 @@
         if ( abs(delt).gt.0 ) then
           lerr=.true.
           write(msg,'(a,i2,a,2(a,i8,a,i8,a))') &
-            'Wave model grid ',imod,': ', &
-            'Internal time (',time(1),'.',time(2),') /= ', &
-            'Component time (',tcur(1),'.',tcur(2),')'
+          'Wave model grid ',imod,': ', &
+          'Internal time (',time(1),'.',time(2),') /= ', &
+          'Component time (',tcur(1),'.',tcur(2),')'
           call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
         endif
       enddo

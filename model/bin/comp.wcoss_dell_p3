@@ -80,17 +80,9 @@
 
 # opt="-c $list -O3 -assume byterecl -ip -module $path_m"
 
-opt="-c $list -module $path_m -no-fma -ip -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias -sox"
-opt="$opt  -xHOST -qno-opt-dynamic-align -auto -nowarn -align array64byte -Wp,-w"
+  opt="-c $list -module $path_m -no-fma -ip -g -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -sox -xhost -O2"
 # Add profiling
 # opt="$opt -p"
-###  opt="-c $list -O2 -Wp,-w -fno-alias -auto -ftz -assume byterecl -nowarn -sox -align array64byte"
-###  opt="$opt -xHOST -qno-opt-dynamic-align -fp-model source -ip -module $path_m"
-##  opt="$opt -nowarn -sox -align array64byte -real-size 32 -xHOST -qno-opt-dynamic-align"
-##  opt="$opt -debug minimal -fp-model source -qoverride-limits -qopt-prefetch=3"
-# opt="-c $list -O3 -assume byterecl -xSSE4.2 -ip  -module $path_m"
-# opt="-c $list -O3 -assume byterecl -prec-div -prec-sqrt -xHost -align array128byte -ip  -module $path_m"
-# opt="-c $list -O0 -assume byterecl -g -traceback -check all -fpe0 -ftrapuv -module $path_m"
 
   if [ "$name" != 'ww3_gspl' ]
   then
