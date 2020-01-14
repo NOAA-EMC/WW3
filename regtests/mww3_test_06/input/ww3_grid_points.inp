@@ -1,0 +1,29 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'Point output mww3_test_04     '
+$
+   1.03 0.075 20 24 0.
+$
+   F T T T T F
+   720.  720.  720.   15.
+$
+END OF NAMELISTS
+$
+    'RECT' T 'NONE'
+    3    3
+     5.E3    5.E3   1.
+    -5.E3   -5.E3   1.
+$
+  -0.1 0.25  10  -100. 3 1 '(....)' 'UNIT' 'dummy'
+$
+   1 1 1
+   1 1 1
+   1 1 1
+$
+   10 3 1 '(....)' 'PART' 'dummy' 
+   0   0   F
+   0   0   F
+   0   0
+$
+   0. 0. 0. 0. 0
+$

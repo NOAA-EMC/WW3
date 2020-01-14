@@ -86,16 +86,11 @@
 
   # linking options
   libs=""
-#  opt="-O2 -ip -o $prog"
-opt="-o $prog -g"
-opt="$opt -xhost"
+
+  opt="-o $prog -g -xhost -O2"
+
 # Add profiling
 # opt="$opt -p"
-
-# opt="-O3 -ip -o $prog"
-# opt="-O3 -xSSE4.2 -ip -o $prog"
-# opt="-O3 -prec-div -prec-sqrt -xHost -align array128byte -ip -o $prog"
-# opt="-O0 -g -traceback -check all -fpe0 -ftrapuv -o $prog"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
