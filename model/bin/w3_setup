@@ -398,9 +398,56 @@ else
 fi
 echo ' '
 
-# 3.c Setup comp & link files
+# 3.c Setup switch file
+if [ $swtch ]
+then
+  echo ' '
+  echo '   Setup switch file'
+  if [ -f $path_b/switch_$swtch ]
+  then
+    rm -f $path_b/switch
+    cp -f $path_b/switch_$swtch $path_b/switch
+    echo "      $path_b/switch_$swtch => $path_b/switch"
+  else
+    errmsg "$path_b/switch_$swtch not found"
+    exit 1
+  fi
+fi
+
+# 3.d Edit switch file
+if [ $edit ]
+  then
+  echo "      Edit $path_b/switch"
+  if [ ! -f $path_b/switch ]
+  then
+    errmsg "$path_b/switch not found"
+    exit 1
+  fi
+  if [ $EDITOR ]
+  then
+    if $EDITOR $path_b/switch
+    then :
+    else
+      errmsg "Error occured during edit of $path_b/switch"
+      exit 1
+    fi
+  else
+    errmsg "the EDITOR environment variable must be set"
+    exit 1
+  fi
+fi
+
+# 3.e Setup comp & link files
 if [ $cmplr ]
 then
+# Check for omp_mod
+  omp_mod=no
+  if [ -n "`grep OMP $path_b/switch`" ]
+  then
+    omp_mod=yes
+  fi
+  export omp_mod
+
   echo ' '
   echo '   Setup comp & link files'
   if [ -f $path_b/comp.$cmplr ]
@@ -414,8 +461,7 @@ then
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
-       [ "$cmplr" == "hera" ]                                                       || \
+       [ "$cmplr" == "hera" ] || [ "$cmplr" == "wcoss_cray" ]                       || \
        [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -440,8 +486,7 @@ then
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
-       [ "$cmplr" == "hera" ]                                                       || \
+       [ "$cmplr" == "hera" ] || [ "$cmplr" == "wcoss_cray" ]                       || \
        [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -456,44 +501,6 @@ then
     exit 1
   fi
   chmod 775 $path_b/comp $path_b/link
-fi
-# 3.d Setup switch file
-if [ $swtch ]
-then
-  echo ' '
-  echo '   Setup switch file'
-  if [ -f $path_b/switch_$swtch ]
-  then
-    rm -f $path_b/switch
-    cp -f $path_b/switch_$swtch $path_b/switch
-    echo "      $path_b/switch_$swtch => $path_b/switch"
-  else
-    errmsg "$path_b/switch_$swtch not found"
-    exit 1
-  fi
-fi
-
-# 3.e Edit switch file
-if [ $edit ] 
-  then
-  echo "      Edit $path_b/switch"
-  if [ ! -f $path_b/switch ]
-  then
-    errmsg "$path_b/switch not found"
-    exit 1
-  fi
-  if [ $EDITOR ]
-  then
-    if $EDITOR $path_b/switch
-    then :
-    else
-      errmsg "Error occured during edit of $path_b/switch"
-      exit 1
-    fi
-  else
-    errmsg "the EDITOR environment variable must be set"
-    exit 1
-  fi
 fi
 
 # --------------------------------------------------------------------------- #
