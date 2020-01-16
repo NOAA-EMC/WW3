@@ -58,9 +58,9 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%ICE_PARAM1    = 'T'
-  INPUT%FORCING%ICE_PARAM2    = 'H'
-  INPUT%FORCING%ICE_PARAM5    = 'T'
+  INPUT%FORCING%ICE_PARAM1    = 'H'
+  INPUT%FORCING%ICE_PARAM2    = 'F'
+  INPUT%FORCING%ICE_PARAM5    = 'F'
   INPUT%FORCING%WATER_LEVELS  = 'H'
   INPUT%FORCING%ICE_CONC      = 'T'
 /
@@ -330,14 +330,14 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_IC2                =  1
+  HOMOG_COUNT%N_IC1                =  1
   HOMOG_COUNT%N_LEV                =  1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'IC2'
+  HOMOG_INPUT(1)%NAME        = 'IC1'
   HOMOG_INPUT(1)%DATE        = '20120101 000000'
-  HOMOG_INPUT(1)%VALUE1      = 1536.0e-4
+  HOMOG_INPUT(1)%VALUE1      = 1.
 
   HOMOG_INPUT(2)%NAME        = 'LEV'
   HOMOG_INPUT(2)%DATE        = '20120101 000000'
