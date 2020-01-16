@@ -758,7 +758,7 @@
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLG2D(NOGRP,NGRPP)
-      INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6), S3
+      INTEGER, INTENT(INOUT) :: NCIDS(NOGRP,NGRPP,NOSWLL + 1), S3
       CHARACTER*30,INTENT(IN) :: STRSTOPDATE
 !/
 !/ ------------------------------------------------------------------- /
@@ -3402,7 +3402,10 @@
             ! Defines the netcdf extension
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
+<<<<<<< HEAD
 
+=======
+>>>>>>> cbf44501a2cd81f13e7b519a28410cf4fbbe9d80
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
               UNITVAR(:)=UNITS

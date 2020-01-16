@@ -109,7 +109,7 @@
   # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
-    opt="$opt -openmp"
+    opt="$opt -qopenmp"
   fi
 
   # oasis coupler archive

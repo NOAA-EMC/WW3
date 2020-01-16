@@ -53,7 +53,7 @@ else
   echo -e ' Not deleting tar file.' 
 fi
 
-echo -e "\n\n Files were copied from the data_regtests to the regstets folder."
+echo -e "\n\n Files were copied from the data_regtests to the regtests folder."
 echo -e "Do you want to delete the data_regtests folder? [y|n]: "
 read wnew2
 if [ "${wnew2}" = "Y" ] || [ "${wnew2}" = "y" ]
