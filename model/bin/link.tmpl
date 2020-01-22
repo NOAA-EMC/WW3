@@ -121,7 +121,14 @@
   fi
 
   # parmetis library 
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || \
+     [ "$prog" = 'ww3_grid' ] || [ "$prog" = 'ww3_strt' ] || [ "$prog" = 'ww3_bound' ] || \
+     [ "$prog" = 'ww3_outf' ] || [ "$prog" = 'ww3_outp' ] || [ "$prog" = 'ww3_grib' ] || \
+     [ "$prog" = 'ww3_gint' ] || [ "$prog" = 'gx_outf' ] || [ "$prog" = 'gx_outp' ] || \
+     [ "$prog" = 'ww3_uprstr' ] || [ "$prog" = 'ww3_prnc' ] || [ "$prog" = 'ww3_ounf' ] || \
+     [ "$prog" = 'ww3_ounp' ] || [ "$prog" = 'ww3_bounc' ] || [ "$prog" = 'ww3_systrk' ] || \
+     [ "$prog" = 'ww3_gspl' ] || [ "$prog" = 'ww3_prep' ]
+  then
     if [ "$pdlib_mod" = 'yes' ] ; then
       if [ -z "$(env | grep METIS_PATH)" ] ; then
         echo ''
