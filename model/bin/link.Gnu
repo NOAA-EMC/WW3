@@ -130,7 +130,8 @@
   fi
 
   # parmetis library 
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] 
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ||
+     [ "$prog" = 'ww3_grid' ]
   then
     if [ "$pdlib_mod" = 'yes' ]
     then
