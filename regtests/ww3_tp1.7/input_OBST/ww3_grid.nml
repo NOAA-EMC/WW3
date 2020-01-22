@@ -225,49 +225,6 @@
 /
 
 ! -------------------------------------------------------------------- !
-! Define the point status map via MASK_NML namelist
-! - only for RECT and CURV grids -
-!
-! * If no mask defined, INBOUND can be used to set active boundaries
-!
-! * IDLA : Layout indicator :
-!                  1   : Read line-by-line bottom to top.  (default)
-!                  2   : Like 1, single read statement.
-!                  3   : Read line-by-line top to bottom.
-!                  4   : Like 3, single read statement.
-! * IDFM : format indicator :
-!                  1   : Free format.  (default)
-!                  2   : Fixed format.
-!                  3   : Unformatted.
-! * FORMAT : element format to read :
-!               '(....)'  : auto detected  (default)
-!               '(f10.6)' : float type
-!
-! * Example :
-!      IDF  IDLA  IDFM   FORMAT    FILENAME
-!      60   1     1     '(....)'  'GLOB-30M.mask'
-!
-! * The legend for the input map is :
-!    -2 : Excluded boundary point (covered by ice)
-!    -1 : Excluded sea point (covered by ice)
-!     0 : Excluded land point
-!     1 : Sea point
-!     2 : Active boundary point
-!     3 : Excluded grid point
-!     7 : Ice point
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     MASK%FILENAME         = 'unset'  ! filename
-!     MASK%IDF              = 60       ! file unit number
-!     MASK%IDLA             = 1        ! layout indicator
-!     MASK%IDFM             = 1        ! format indicator
-!     MASK%FORMAT           = '(....)' ! formatted read format
-! -------------------------------------------------------------------- !
-&MASK_NML
-/
-
-! -------------------------------------------------------------------- !
 ! Define the obstruction map via OBST_NML namelist
 ! - only for RECT and CURV grids -
 !
@@ -316,62 +273,53 @@
 ! -------------------------------------------------------------------- !
 &OBST_NML
   OBST%SF        =  0.2
-  OBST%FILENAME  =  'obstr.inp'
+  OBST%FILENAME  =  '../input_OBST/1-D.obst'
   OBST%IDLA      =  3
 /
 
 ! -------------------------------------------------------------------- !
-! Define the output boundary points via OUTBND_COUNT_NML and
-!                                       OUTBND_LINE_NML namelist
-! - only for RECT and CURV grids -
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! - for RECT, CURV and UNST grids -
 !
-! * It will creates a nest file with output boundaries for a inner grid.
-!   The prefered way to do it is to use ww3_bounc program.
+! * If no mask defined, INBOUND can be used
 !
-! * These do not need to be defined for data transfer between grids in
-!    the multi grid driver.
+! * If the actual input data is not defined in the actual wave model run
+!   the initial conditions will be applied as constant boundary conditions.
 !
-! * The number of lines are defined by OUTBND_COUNT
+! * The number of points is defined by INBND_COUNT
 !
-! * The lines must start from index 1 to N
+! * The points must start from index 1 to N
 !
-! * Output boundary points are defined as a number of straight lines,
-!   defined by its starting point (X0,Y0), increments (DX,DY) and number
-!   of points. A negative number of points starts a new output file.
+! * Each line contains:
+!     Discrete grid counters (IX,IY) of the active point and a
+!     connect flag. If this flag is true, and the present and previous
+!     point are on a grid line or diagonal, all intermediate points
+!     are also defined as boundary points.
 !
-! * Example for spherical grid in degrees :
-!     '1.75  1.50  0.25 -0.10     3'
-!     '2.25  1.50 -0.10  0.00    -6'
-!     '0.10  0.10  0.10  0.00   -10'
+! * Included point :
+!     grid points from segment data
+!     Defines as lines identifying points at which
+!     input boundary conditions are to be defined. 
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
-!     OUTBND_COUNT%N_LINE   = 0               ! number of lines
+!     INBND_COUNT%N_POINT     = 0        ! number of segments
 !
-!     OUTBND_LINE(I)%X0     = 0.              ! x index start point
-!     OUTBND_LINE(I)%Y0     = 0.              ! y index start point
-!     OUTBND_LINE(I)%DX     = 0.              ! x-along increment
-!     OUTBND_LINE(I)%DY     = 0.              ! y-along increment
-!     OUTBND_LINE(I)%NP     = 0               ! number of points
+!     INBND_POINT(I)%X_INDEX  = 0        ! x index included point
+!     INBND_POINT(I)%Y_INDEX  = 0        ! y index included point
+!     INBND_POINT(I)%CONNECT  = F        ! connect flag
+!
 ! OR
-!     OUTBND_LINE(I)        = 0. 0. 0. 0. 0   ! included lines
+!     INBND_POINT(I)          = 0 0 F    ! included point
 ! -------------------------------------------------------------------- !
-&OUTBND_COUNT_NML
-  OUTBND_COUNT%N_LINE   =  11
+&INBND_COUNT_NML
+  INBND_COUNT%N_POINT    =  2
 /
 
-&OUTBND_LINE_NML
-  OUTBND_LINE(1)           =  0 0 4 0 0
-  OUTBND_LINE(2)           =  0 0 0 0 0
-  OUTBND_LINE(3)           =  0 0 0 0 0
-  OUTBND_LINE(4)           =  0 0 0 0 0
-  OUTBND_LINE(5)           =  0 0 0 0 0
-  OUTBND_LINE(6)           =  10 2 1 (....) PART
-  OUTBND_LINE(7)           =  2 2 F  
-  OUTBND_LINE(8)           =  2 2 T  
-  OUTBND_LINE(9)           =  0 0 F  
-  OUTBND_LINE(10)           =  0 0 F  
-  OUTBND_LINE(11)           =  0 0   
+&INBND_POINT_NML
+  INBND_POINT(1)         =  2 2 F
+  INBND_POINT(2)         =  2 2 T
 /
 
 ! -------------------------------------------------------------------- !

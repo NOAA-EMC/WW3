@@ -51,6 +51,8 @@
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
 !/    06-Jun-2018 : Add PDLIB/MEMCHECK/NETCDF_QAD/DEBUGINIT ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
+!/    04-Oct-2019 : Inline Output implementation        ( version 6.07 )
+!/                  (Roberto Padilla-Hernandez)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -243,6 +245,7 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
                           NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
+      USE W3ODATMD, ONLY: OFILES
 !/
       USE W3FLDSMD
       USE W3INITMD
@@ -292,8 +295,9 @@
       INTEGER             :: NDSF(-7:7), NDS(13), NTRACE(2), NDT(5:7), &
                              TIME0(2), TIMEN(2), TTIME(2), TTT(2),     &
                              NH(-7:8), THO(2,-7:8,NHMAX), RCLD(5:7),   &
-                             NODATA(5:7), ODAT(35), IPRT(6) = 0,       &
-                             STARTDATE(8), STOPDATE(8), IHH(-7:8)
+                             NODATA(5:7), ODAT(40), IPRT(6) = 0,       &
+                             STARTDATE(8), STOPDATE(8), IHH(-7:8)      
+!
 !/OASIS      INTEGER             :: OASISED
 !/COU      INTEGER             :: OFL
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
@@ -317,10 +321,13 @@
       CHARACTER(LEN=13)   :: IDFLDS(-7:8)
       CHARACTER(LEN=20)   :: STRNG
       CHARACTER(LEN=23)   :: DTME21
-      CHARACTER(LEN=30)   :: IDOTYP(7)
+      CHARACTER(LEN=30)   :: IDOTYP(8)
       CHARACTER(LEN=80)   :: LINE
       CHARACTER(LEN=256)  :: TMPLINE, TEST
       CHARACTER(LEN=1024) :: FLDIN
+      CHARACTER(LEN=80)   :: LINEIN
+      CHARACTER(LEN=8)    :: WORDS(6)=''
+
 !/COU      CHARACTER(LEN=30)       :: OFILE
 !
       LOGICAL             :: FLLSTL, FLLSTI, FLFLG, FLHOM, TFLAGI,     &
@@ -351,7 +358,8 @@
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
                     'Partitioned wave field data   ' ,                &
-                    'Fields for coupling           ' /
+                    'Fields for coupling           ' ,                &
+                    'Restart files second request  '/
       DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
                     'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1',  &
                     'DT2', 'MOV' /
@@ -739,15 +747,26 @@
         READ(NML_OUTPUT_DATE%FIELD%START, *)   ODAT(1), ODAT(2)
         READ(NML_OUTPUT_DATE%FIELD%STRIDE, *)  ODAT(3)
         READ(NML_OUTPUT_DATE%FIELD%STOP, *)    ODAT(4), ODAT(5)
+
+        READ(NML_OUTPUT_DATE%FIELD%OUTFFILE, *)  OFILES(1)
+!        OUTPTS(I)%OUTSTRIDE(1)=ODAT(3,I)              
+
         READ(NML_OUTPUT_DATE%POINT%START, *)   ODAT(6), ODAT(7)
         READ(NML_OUTPUT_DATE%POINT%STRIDE, *)  ODAT(8)
         READ(NML_OUTPUT_DATE%POINT%STOP, *)    ODAT(9), ODAT(10)
+
+        READ(NML_OUTPUT_DATE%POINT%OUTFFILE, *)  OFILES(2)
+!        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)             
+
         READ(NML_OUTPUT_DATE%TRACK%START, *)   ODAT(11), ODAT(12)
         READ(NML_OUTPUT_DATE%TRACK%STRIDE, *)  ODAT(13)
         READ(NML_OUTPUT_DATE%TRACK%STOP, *)    ODAT(14), ODAT(15)
         READ(NML_OUTPUT_DATE%RESTART%START, *)   ODAT(16), ODAT(17)
         READ(NML_OUTPUT_DATE%RESTART%STRIDE, *)  ODAT(18)
         READ(NML_OUTPUT_DATE%RESTART%STOP, *)    ODAT(19), ODAT(20)
+        READ(NML_OUTPUT_DATE%RESTART2%START, *)   ODAT(36), ODAT(37)
+        READ(NML_OUTPUT_DATE%RESTART2%STRIDE, *)  ODAT(38)
+        READ(NML_OUTPUT_DATE%RESTART2%STOP, *)    ODAT(39), ODAT(40)
         READ(NML_OUTPUT_DATE%BOUNDARY%START, *)   ODAT(21), ODAT(22)
         READ(NML_OUTPUT_DATE%BOUNDARY%STRIDE, *)  ODAT(23)
         READ(NML_OUTPUT_DATE%BOUNDARY%STOP, *)    ODAT(24), ODAT(25)
@@ -766,13 +785,14 @@
         ODAT(23) = MAX ( 0 , ODAT(23) )
         ODAT(28) = MAX ( 0 , ODAT(28) )
         ODAT(33) = MAX ( 0 , ODAT(33) )
-
+        ODAT(38) = MAX ( 0 , ODAT(38) )
 ! 2.5 Output types
 
         NPTS   = 0
         NOTYPE = 6
 !/COU        NOTYPE = 7
         DO J = 1, NOTYPE
+!          OUTPTS(I)%OFILES(J)=OFILES(J)              
           IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
 ! Type 1: fields of mean wave parameters
@@ -1178,7 +1198,61 @@
 !/DEBUGINIT        write(740+IAPROC,*), 'J=', J, '/ NOTYPE=', NOTYPE
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
 !/DEBUGINIT        write(740+IAPROC,*), 'Before read 2002, case 7'
-          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!
+! CHECKPOINT
+        IF(J .EQ. 4) THEN
+          ODAT(38)=0 
+          READ (NDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+          READ(WORDS( 1 ), * ) ODAT(16)
+          READ(WORDS( 2 ), * ) ODAT(17)
+          READ(WORDS( 3 ), * ) ODAT(18)
+          READ(WORDS( 4 ), * ) ODAT(19)
+          READ(WORDS( 5 ), * ) ODAT(20)
+          IF (WORDS(6) .EQ. 'T') THEN
+            READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
+            WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
+          END IF
+        ELSE
+!
+!INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
+!          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+        IF(J .LE. 2) THEN
+!          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          READ (NDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+          DO I=1,6
+!            WRITE(*,*) I, WORDS(I)
+          END DO
+!
+          IF(J .EQ. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1)
+            READ(WORDS( 2 ), * ) ODAT(2)
+            READ(WORDS( 3 ), * ) ODAT(3)
+            READ(WORDS( 4 ), * ) ODAT(4)
+            READ(WORDS( 5 ), * ) ODAT(5)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6)
+            READ(WORDS( 2 ), * ) ODAT(7)
+            READ(WORDS( 3 ), * ) ODAT(8)
+            READ(WORDS( 4 ), * ) ODAT(9)
+            READ(WORDS( 5 ), * ) ODAT(10)
+          END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OFILES(J)=0
+          ELSE
+            READ(WORDS( 6 ), * ) OFILES(J)
+          END IF
+
+
+        ELSE
+          OFILES(J)=0
+          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+        END IF
+!          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
+!
 !/DEBUGINIT        write(740+IAPROC,*), ' After read 2002, case 7'
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
 !
@@ -1322,6 +1396,7 @@
 
             END IF ! J
           END IF ! ODAT
+        END IF ! IF J=4
         END DO ! J
 
         ! force minimal allocation to avoid memory seg fault
@@ -1575,8 +1650,37 @@
           END IF
         END IF
       END DO
-
-
+!
+! CHECKPOINT
+      J=8
+      IF (ODAT(38) .NE. 0) THEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
+        TTIME(1) = ODAT(5*(J-1)+1)
+        TTIME(2) = ODAT(5*(J-1)+2)
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) DTME21
+        TTIME(1) = ODAT(5*(J-1)+4)
+        TTIME(2) = ODAT(5*(J-1)+5)
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) DTME21
+        TTIME(1) = 0
+        TTIME(2) = 0
+        DTTST    = REAL ( ODAT(5*(J-1)+3) )
+        CALL TICK21 ( TTIME , DTTST  )
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
+               ODAT(5*(J-1)+2) .NE. ODAT(5*(J-1)+5) ) .AND.       &
+               IAPROC .EQ. NAPOUT ) THEN
+          IF ( DTME21(9:9) .NE. '0' ) THEN
+            WRITE (NDSO,1944) DTME21( 9:19)
+          ELSE IF ( DTME21(10:10) .NE. '0' ) THEN
+            WRITE (NDSO,2944) DTME21(10:19)
+          ELSE
+            WRITE (NDSO,3944) DTME21(12:19)
+          END IF
+        END IF
+      END IF
+!
 ! 2.5 Output types
 
 !/T      WRITE (NDST,9040) ODAT
@@ -1604,7 +1708,22 @@
           CONTINUE
         END IF
       END DO
-
+!
+! CHECKPOINT
+      J = 8
+      DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
+      IF ( DTTST .LT. 0 ) THEN
+        ODAT(5*(J-1)+3) = 0
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
+        CONTINUE
+      END IF
+      DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
+      IF ( DTTST .LT. 0 ) THEN
+        ODAT(5*(J-1)+3) = 0
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
+        CONTINUE
+      END IF
+!
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
 !/MEMCHECK      call getMallocInfo(mallinfos)
 !/MEMCHECK      call printMallInfo(IAPROC,mallInfos)
@@ -1624,7 +1743,7 @@
      CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
                    FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
-
+!
 !      IF (MINVAL(VA) .LT. 0.) THEN
 !        WRITE(740+IAPROC,*) 'NEGATIVE ACTION SHELL 5', MINVAL(VA)
 !        CALL FLUSH(740+IAPROC)
@@ -1690,7 +1809,7 @@
       IF ( .NOT. FLFLG ) THEN
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
-        CALL W3WAVE ( 1, TIMEN                      &
+        CALL W3WAVE ( 1, ODAT, TIMEN                      &
 !/OASIS                     ,.TRUE., .FALSE., MPI_COMM    &
                     )
 !
@@ -2170,7 +2289,7 @@
 !
       TIME0  = TTIME
 !
-      CALL W3WAVE ( 1, TIME0                                          &
+      CALL W3WAVE ( 1, ODAT, TIME0                                    &
 !/OASIS             ,.TRUE., .FALSE., MPI_COMM                        &
                   )
 
@@ -2212,7 +2331,7 @@
 
         IF ( DTTST .EQ. 0. ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
-          CALL W3WAVE ( 1, TIME0                                       & 
+          CALL W3WAVE ( 1, ODAT, TIME0                                 & 
 !/OASIS                       , .TRUE., .FALSE., MPI_COMM              &
                       )
         END IF

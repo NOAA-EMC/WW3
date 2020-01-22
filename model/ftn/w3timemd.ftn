@@ -1590,12 +1590,12 @@ DAT(8) = 0  ! force milliseconds to 0
           READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
           READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
           ! seconds since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .TRUE.).EQ.25) THEN
+          IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
           ! seconds since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .TRUE.).EQ.26) THEN
+          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
@@ -1622,12 +1622,12 @@ DAT(8) = 0  ! force milliseconds to 0
           READ(UNITS(17:17),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
           READ(UNITS(19:19),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
           ! days since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .TRUE.).EQ.22) THEN
+          IF (INDEX(UNITS, ":", .FALSE.).EQ.22) THEN
             READ(UNITS(21:21),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(23:23),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(25:25),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
           ! days since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .TRUE.).EQ.23) THEN
+          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
             READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
@@ -1654,12 +1654,12 @@ DAT(8) = 0  ! force milliseconds to 0
           READ(UNITS(18:18),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
           READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
         ! hours since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .TRUE.).EQ.23) THEN
+          IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
             READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
         ! hours since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .TRUE.).EQ.24) THEN
+          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.24) THEN
             READ(UNITS(22:23),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(25:26),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(28:29),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
@@ -1686,12 +1686,12 @@ DAT(8) = 0  ! force milliseconds to 0
           READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
           READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
         ! minutes since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .TRUE.).EQ.25) THEN
+          IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
         ! minutes since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .TRUE.).EQ.26) THEN
+          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
             READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)

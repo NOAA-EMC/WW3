@@ -1965,9 +1965,9 @@
    echo ' ' >> matrix.body
    if [ "$dist" = 'y' ]
    then 
-     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -s MPI -w work_ug_MPI -i input_ug $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_ug_MPI -i input_ug -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
    else 
      echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
      echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
@@ -1987,6 +1987,12 @@
    echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_O     -i input_UPD5_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U_cap -i input_UPD5_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_U     -i input_UPD6_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_U_cap -i input_UPD6_U_cap $ww3 ww3_ta1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #
