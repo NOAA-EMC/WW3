@@ -127,6 +127,7 @@
 !                               suppl. data for output type 5.
 !      OUT6      TYPE  Public   Data structure of type OTYPE6 with
 !                               suppl. data for output type 6.
+!      OFILES   I.A.  Public   Output in one or several files.
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT1 are aliased to pointers with the same
@@ -343,7 +344,8 @@
                                  ICEFO(:), SPCO(:,:)
         REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
 
-        CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
+        CHARACTER(LEN=10), POINTER :: PTNME(:)
+        CHARACTER(LEN=13), POINTER :: GRDID(:)
         LOGICAL               :: O2INIT
 !/MPI        LOGICAL               :: O2IRQI
       END TYPE OTYPE2
@@ -398,10 +400,10 @@
                                  NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
         INTEGER               :: NOSWLL
-        INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
-                                 TBPI0(2), TBPIN(2), NDS(13)
-        REAL                  :: DTOUT(7)
-        LOGICAL               :: FLOUT(7)
+        INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
+                                 TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
+        REAL                  :: DTOUT(8)
+        LOGICAL               :: FLOUT(8)
         TYPE(OTYPE1)          :: OUT1
         TYPE(OTYPE2)          :: OUT2
         TYPE(OTYPE3)          :: OUT3
@@ -423,6 +425,7 @@
       INTEGER, POINTER        :: NOSWLL
       INTEGER, POINTER        :: TOFRST(:), TONEXT(:,:), TOLAST(:,:), &
                                  TBPI0(:), TBPIN(:), NDS(:)
+      INTEGER, POINTER        :: OFILES(:)
       REAL, POINTER           :: DTOUT(:)
       LOGICAL, POINTER        :: FLOUT(:)
 !/
@@ -447,7 +450,8 @@
                                  ICEFO(:), SPCO(:,:)
       REAL, POINTER           :: ZET_SETO(:)
 !
-      CHARACTER(LEN=10), POINTER :: PTNME(:), GRDID(:)
+      CHARACTER(LEN=10), POINTER :: PTNME(:)
+      CHARACTER(LEN=13), POINTER :: GRDID(:)
       LOGICAL, POINTER        :: O2INIT
 !/MPI        LOGICAL, POINTER      :: O2IRQI
 !/
@@ -1447,6 +1451,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NLOW
+      INTEGER                 :: J
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3SETO')
@@ -1501,6 +1506,7 @@
       TBPI0  => OUTPTS(IMOD)%TBPI0
       TBPIN  => OUTPTS(IMOD)%TBPIN
       NDS    => OUTPTS(IMOD)%NDS
+      OFILES => OUTPTS(IMOD)%OFILES
 !
       DTOUT  => OUTPTS(IMOD)%DTOUT
       FLOUT  => OUTPTS(IMOD)%FLOUT

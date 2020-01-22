@@ -36,15 +36,28 @@ $          individual spectra; the map is used to determine the        $
 $          weighting surfaces.                                         $
 $          Expected input: the Analysis field, grbtxt format and the   $
 $          functions(frq,theta) of the update to be applied.           $
+$   UPD5 :: Option 5   Corrections are calculated as per UPD2 but are  $
+$           applied to wind-sea parts of the spectrum only when        $
+$           wind-sea is the dominant component, otherwise the whole    $
+$           spectrum is corrected                                      $
+$           Expected input: the Analysis Hs field plus background wind $
+$                           speed and direction                        $
+$   UPD6 :: Option 6   Corrections are calculated as per UPD5 but      $
+$           wind-sea components are also shifted in frequency space    $
+$           using Toba (1973)                                          $
+$           Expected input: the Analysis Hs field plus background wind $
+$           speed and direction                                        $
    UPD3
-$                                                                      $
-$ PRCNTG is input for option 1 and it is the percentage of correction  $
-$  applied  to all the gridpoints (e.g. 1.)                            $
-$                                                                      $
+$
+$ PRCNTG is input for option UPD0F and is the correction factor        $
+$ applied  to all the gridpoints (e.g. 1.)                             $
+$
    0.6754
-$                                                                      $
-$ PRCNTG_CAP is global input for option UPD2 and UPD3 and it is a cap  $
-$ on the maximum correction applied to all the gridpoints (e.g. 0.5)   $
+$
+$ PRCNTG_CAP is global input for option UPD2+ and is a cap on          $
+$ the maximum SWH correction factor applied to all the gridpoints, as  $
+$ both a multiple or divisor (e.g. cap at 5.0 means SWHANL/SWHBKG<=5.0 $
+$ and SWHANL/SWHBKG>=0.2). The value given should not be less than 1.0 $
 $                                                                      $
   10.
 $                                                                      $

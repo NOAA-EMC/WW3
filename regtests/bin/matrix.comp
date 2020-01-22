@@ -71,7 +71,7 @@
 
 
   if [ "$ctest" = 'all' ] ; then
-    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? mww3_test_0?` ; fi
+    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? mww3_test_0?` ; fi
   echo "base directory : $base_dir" >> $home_dir/header.tmp
   echo "comp directory : $comp_dir" >> $home_dir/header.tmp
   echo "test(s)        : "          >> $home_dir/header.tmp

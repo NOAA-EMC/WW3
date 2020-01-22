@@ -61,7 +61,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, INTYPE, IMOD )
+      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, INTYPE, IMOD, FLRSTRT )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -97,6 +97,10 @@
 !/                  (T. Campbell, NRL)
 !/    05-Jun-2018 : Add PDLIB/TIMINGS/DEBUGIO           ( version 6.04 )
 !/                  DEBUGINIT/MPI
+!/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
+!/                  restart files 
+!/                  (Roberto Padilla-Hernandez & J.H. Alves)
+
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -117,6 +121,14 @@
 !                                 restart000.FILEXT
 !                                 restart001.FILEXT
 !                                 restart002.FILEXT etc.
+!
+!     Optionally, a second stream of restart files is generated given
+!     a secondary stride definad by an additional start/end time line
+!     triggered by an optional argument added to the end of the stan-
+!     dard restart request line (a sixth argument flag set to T). File
+!     names include a time-tag prefix:
+!
+!                                 YYYYMMDD.HHMMSS.restart.FILEXT
 !
 !     The file to be read thus always is unnumbered, whereas all
 !     written files are automatically numbered.
@@ -141,6 +153,7 @@
 !                           3 : for writing file.
 !                           4 : starting from calm.
 !       IMOD    Int.   I   Optional grid number, defaults to 1.
+!       FLRSTRT LOGIC  I    OTIONAL TRUE: A second request for restart files
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -238,7 +251,8 @@
 !/WRST      USE W3IDATMD, ONLY: WXNwrst, WYNwrst 
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
-!/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS, VAAUX
+!/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
+!/MPI                               VAAUX
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WCMP
 !/
       USE W3SERVMD, ONLY: EXTCDE
@@ -263,6 +277,7 @@
       INTEGER, INTENT(OUT)          :: INTYPE
       REAL, INTENT(INOUT)           :: DUMFPI
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
+      LOGICAL, INTENT(IN),OPTIONAL  :: FLRSTRT
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -285,9 +300,11 @@
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
-      CHARACTER(LEN=21)       :: FNAME
+!      CHARACTER(LEN=21)       :: FNAME
+      CHARACTER(LEN=40)       :: FNAME
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
+      CHARACTER(LEN=15)       :: TIMETAG
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -365,13 +382,20 @@
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
-      IF ( IFILE.EQ.0 ) THEN
-          FNAME  = 'restart.'//FILEXT(:I)
-        ELSE
-          FNAME  = 'restartNNN.'//FILEXT(:I)
-          IF ( WRITE .AND. IAPROC.EQ.NAPRST )                         &
+!CHECKPOINT
+      IF ( PRESENT(FLRSTRT) .AND. FLRSTRT) THEN
+          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+          FNAME=TIMETAG//'.restart.'//FILEXT(:I)
+      ELSE
+         IF ( IFILE.EQ.0 ) THEN
+            FNAME  = 'restart.'//FILEXT(:I)
+         ELSE
+            FNAME  = 'restartNNN.'//FILEXT(:I)
+            IF ( WRITE .AND. IAPROC.EQ.NAPRST )                         &
                WRITE (FNAME(8:10),'(I3.3)') IFILE
         END IF
+      END IF
+
       IFILE  = IFILE + 1
 !
 !/T      WRITE (NDST,9001) FNAME, LRECL

@@ -53,6 +53,8 @@
 !/    22-Aug-2018 : Add WBT output parameter            ( version 6.06 )
 !/    25-Sep-2019 : Corrected th2m and sth2m            ( version 6.07 )
 !/                  calculations. (J Dykes, NRL)
+!/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
+!/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2343,6 +2345,7 @@
 !/
       END SUBROUTINE W3OUTG
 !/ ------------------------------------------------------------------- /
+!/
       SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2483,6 +2486,7 @@
 !/
       USE W3SERVMD, ONLY: EXTCDE
       USE W3ODATMD, only : IAPROC
+      USE W3ODATMD, ONLY :  OFILES
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -2495,12 +2499,14 @@
       INTEGER, INTENT(IN)           :: NDSOG
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
+      CHARACTER(LEN=15) :: TIMETAG
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
-                                 MGRPP, ISEA, MOSWLL, IK, IFI, IFJ
+                                 MGRPP, ISEA, MOSWLL, IK, IFI, IFJ    &
+                                 ,IFILOUT
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
@@ -2535,7 +2541,7 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-      IF ( IPASS.EQ.1 ) THEN
+      IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           WRITE  = INXOUT.EQ.'WRITE'
         ELSE
           IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
@@ -2546,11 +2552,11 @@
 !
 !/T      WRITE (NDST,9000) IPASS, INXOUT, WRITE, NDSOG, IGRD, FILEXT
 !
+!
 ! open file ---------------------------------------------------------- *
 ! ( IPASS = 1 )
 !
-      IF ( IPASS.EQ.1 ) THEN
-!
+      IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
 !
@@ -2567,6 +2573,76 @@
 !
 ! test info --------------------------------------------------------- *
 ! ( IPASS = 1 )
+!
+          IF ( WRITE ) THEN
+              WRITE (NDSOG)                                           &
+                IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+                UNDEF, NOSWLL
+            ELSE
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
+                IDTST, VERTST, TNAME, MOGRP, MGRPP, NSEA, NX, NY,     &
+                UNDEF, MOSWLL
+!
+              IF ( IDTST .NE. IDSTR ) THEN
+                  WRITE (NDSE,902) IDTST, IDSTR
+                  CALL EXTCDE ( 20 )
+                END IF
+              IF ( VERTST .NE. VEROGR ) THEN
+                  WRITE (NDSE,903) VERTST, VEROGR
+                  CALL EXTCDE ( 21 )
+                END IF
+              IF ( NOGRP .NE. MOGRP .OR. NGRPP .NE. MGRPP ) THEN
+                  WRITE (NDSE,904) MOGRP, MGRPP, NOGRP, NGRPP
+                  CALL EXTCDE ( 22 )
+                END IF
+              IF ( TNAME .NE. GNAME ) THEN
+                  WRITE (NDSE,905) TNAME, GNAME
+                END IF
+              IF ( NOSWLL .NE. MOSWLL ) THEN
+                  WRITE (NDSE,906) MOSWLL, NOSWLL
+                  CALL EXTCDE ( 24 )
+                END IF
+!
+            END IF
+!
+!/T          WRITE (NDST,9002) IDSTR, VEROGR, GNAME, NSEA, NX, NY,    &
+!/T                            UNDEF
+!
+        END IF
+!
+!  IN CASE OF GENERATION OF A NEW FILE OUTPUT EVERY DELTA OUTPUT
+! open file ---------------------------------------------------------- *
+! ( IPASS = 1 )
+!
+      IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
+          WRITE  = INXOUT.EQ.'WRITE'
+        ELSE
+          IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
+              WRITE (NDSE,901) INXOUT
+              CALL EXTCDE ( 2 )
+            END IF
+        END IF
+
+!
+      IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
+          I      = LEN_TRIM(FILEXT)
+          J      = LEN_TRIM(FNMPRE)
+!
+! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
+          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+!/T          WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
+          IF ( WRITE ) THEN
+              OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
+                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+          ELSE
+              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
+                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+            END IF
+!
+          REWIND ( NDSOG )
+!
+! test info --------------------------------------------------------- *
+! ( IPASS >= 1 & OFILES(1) = 1)
 !
           IF ( WRITE ) THEN
               WRITE (NDSOG)                                           &
@@ -3417,6 +3493,8 @@
 ! Flush the buffers for write
 !
       IF ( WRITE ) CALL FLUSH ( NDSOG )
+!
+      IF(OFILES(1) .EQ. 1) CLOSE(NDSOG)
 !
 !/MPI      CALL W3SETA ( IGRD, NDSE, NDST )
 !
