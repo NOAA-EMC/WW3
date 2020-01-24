@@ -1,7 +1,7 @@
 #############################################################################
 #                                                                           #
-# ww3_tp1.10 Test script for WW-III, one-dimensional propagation.           #
-#           Bottom scattering  beach                                        #
+# ww3_tp1.11 Test script for WW-III, one-dimensional propagation.           #
+#           nesting with spectral interpolation                             #
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
@@ -19,12 +19,12 @@
 #   * input options :                                                       #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test  -o netcdf ../model ww3_tp1.10                            # 
+#  ./bin/run_test  -o netcdf ../model ww3_tp1.11                            # 
 #                                                                           #
-#                                            Fabrice Ardhuin,  Aug 2018     #
-#                                                   Last Mod : Nov 2018     #
+#                                            Fabrice Ardhuin,  Jan 2020     #
+#                                                   Last Mod : Feb 2020     #
 #                                                                           #
-#    Copyright 2018 National Weather Service (NWS),                         #
+#    Copyright 2020 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

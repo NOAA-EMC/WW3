@@ -580,6 +580,7 @@
 !
 ! In this case the spectral resolution is not compatible and 
 ! the spectrum TMPSPC in nest file must be re-gridded into ABPIN to fit the model run
+! spectral conversion is done by W3CSPC in w3cspcmd.ftn 
 !
               ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
               DO IP=1, NBI2
