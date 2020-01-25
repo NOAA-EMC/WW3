@@ -19,7 +19,7 @@
 #   * input options :                                                       #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test  -o netcdf ../model ww3_tp1.11                            # 
+#  ./bin/run_test  -N -o netcdf ../model ww3_tp1.11                            # 
 #                                                                           #
 #                                            Fabrice Ardhuin,  Jan 2020     #
 #                                                   Last Mod : Feb 2020     #

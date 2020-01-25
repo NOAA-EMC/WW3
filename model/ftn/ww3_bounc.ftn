@@ -740,7 +740,7 @@
       CALL EXTCDE ( 68 )
 !
  809 CONTINUE
-      WRITE (NDSE,1009) IERR
+      WRITE (NDSE,1009) FILE, IERR
       CALL EXTCDE ( 69 )
 !
   888 CONTINUE
@@ -804,7 +804,7 @@
                '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
 !
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
-               '     ERROR IN OPENING SPEC FILE'/                     &
+               '     ERROR IN OPENING SPEC FILE: ', A/                &
                '     IOSTAT =',I5/)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &

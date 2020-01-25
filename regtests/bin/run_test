@@ -461,6 +461,16 @@ then
   exit 0
 fi
 
+# 3.b2 Preprocess cdl files into nc files ----------------------------------- #
+
+filescdl=$path_i/*.cdl
+for f in $filescdl
+do
+  echo "Converting $f to NetCDF"
+  # take action on each file.  Note thae converted file is in $path_w
+  ncgen -b $f
+done
+
 # 3.c Grid pre-processor ---------------------------------------------------- #
 
 prog=ww3_grid
