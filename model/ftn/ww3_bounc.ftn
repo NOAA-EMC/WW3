@@ -445,7 +445,8 @@
             CALL D2J(REFDATE,REFJULDAY,IERR)
 
           ELSE 
-            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) GOTO 805  ! NOT NEEDED WITH W3CSPC
+            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1.OR.NT1.NE.NTI &
+                ) GOTO 805  
           END IF
 
           ! position variables : lon/lat or x/y
@@ -478,7 +479,7 @@
           CALL CHECK_ERR(IRET)
           IRET=NF90_GET_VAR(NCID(IP),VARID(5),THETA)
           CALL CHECK_ERR(IRET)
-          THETA=(PI/180)*THETA
+          THETA=MOD(2.5*PI-(PI/180)*THETA,TPI)
 
           ! 2D spectra depending on station name or lat/lon 
           IRET=NF90_INQ_VARID(NCID(IP),"efth",VARID(7))
@@ -524,6 +525,8 @@
                  ABS(XFRI/XFR-1.).GT.0.01 .OR.                      &
                  ABS(FR1I/FR1-1.).GT.0.01 .OR.                      &
                  ABS(TH1I-TH(1)).GT.0.01*DTH 
+
+         IF (VERBOSE.GE.1) WRITE(NDSO,*) 'SPCONV:', SPCONV, NKI, NK, NTHI, NTH
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 7. Loops on files and instanciate ABPIN2
@@ -550,7 +553,7 @@
               END DO           
             CALL W3CSPC ( TMPSPCI, NKI, NTHI, XFRI, FR1I, TH1I, &
                           TMPSPCO, NK,  NTH,  XFR,  FR1,  TH(1),&
-                          NBO2, NDST, NDSE, FACHFE )
+                          NTI, NDST, NDSE, FACHFE )
             ABPIN2(:,:,IP)=TMPSPCO(:,:)
             END DO
 !
@@ -560,8 +563,8 @@
 ! 8. Writes header
 !
 !       Writes header in nest.ww3 file 
-        WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH1, XFR, FREQ(1),       &
-        MOD(2.5*PI-THETA(1),TPI), NBO
+        WRITE(NDSB) IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1,       &
+        TH(1), NBO
         IPBPO(:,:)=1
         RDBPO(:,1)=1.
         RDBPO(:,2:4)=0.
@@ -665,7 +668,8 @@
           CALL D2T(CURDATE,TIME,IERR)
 
           ! write to output file nest.ww3
-          WRITE(NDSO,'(A,2I9,A,I6,A)') 'Writing boundary data for time:', TIME, ' at ',NBO2,' points'
+          WRITE(NDSO,'(A,2I9,A,I6,A,G16.5)') 'Writing boundary data for time:', &
+            TIME, ' at ',NBO2,' points. Max.: ', MAXVAL(ABPIN2(:,IT,:))
           WRITE(NDSB,IOSTAT=IERR) TIME, NBO2
           DO IP=1, NBO2
             WRITE(NDSB) ABPIN2(:,IT,IP)
@@ -698,20 +702,8 @@
       CALL EXTCDE ( 64 )
 !
  805 CONTINUE
-      WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1
+      WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
       CALL EXTCDE ( 65 )
-!
-! 806 CONTINUE
-!      WRITE (NDSE,1006) NK, NKI
-!      CALL EXTCDE ( 66 )
-!
-! 807 CONTINUE
-!      WRITE (NDSE,1007) XFR
-!      CALL EXTCDE ( 67 )
-!
-! 808 CONTINUE
-!      WRITE (NDSE,1008) NTH, NTHI
-!      CALL EXTCDE ( 68 )
 !
  809 CONTINUE
       WRITE (NDSE,1009) FILE, IERR
@@ -763,19 +755,9 @@
 !
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
                '     INCONSISTENT SPECTRAL DIMENSION FOR FILE ',A/    &
-               '     ILLEGAL NKI =',I3,' DIFFERS FROM NK1 =',I3/      &
-               '     ILLEGAL NTHI =',I3,' DIFFERS FROM NTH1 =',I3/)
-!
-! 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-!               '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
-!               '     IT WILL BE MANAGED SOON BY W3CSPC')
-!
-! 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-!               '     ILLEGAL XFR CALCULATED FROM FREQ(2)/FREQ(1)'/    &
-!               '     XFR DEFINED FROM MOD_DEF.WW3 =',F12.6/)
-!
-! 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-!               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
+               '     NKI =',I3,' DIFFERS FROM NK1 =',I3/      &
+               '     OR NTHI =',I3,' DIFFERS FROM NTH1 =',I3/ &
+               '     OR NTI =',I5,' DIFFERS FROM NT1 =',I5 /)
 !
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
                '     ERROR IN OPENING SPEC FILE: ', A/                &

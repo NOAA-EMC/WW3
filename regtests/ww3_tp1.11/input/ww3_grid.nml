@@ -14,7 +14,7 @@
 !     SPECTRUM%THOFF       = 0.            ! relative offset of first direction [-0.5,0.5]
 ! -------------------------------------------------------------------- !
 &SPECTRUM_NML
-  SPECTRUM%XFR       =  1.1
+  SPECTRUM%XFR       =  1.07
   SPECTRUM%FREQ1     =  0.04
   SPECTRUM%NK        =  24
   SPECTRUM%NTH       =  36  
@@ -259,7 +259,7 @@
 /
 
 &INBND_POINT_NML
-  INBND_POINT(1)         =  50 2 F
+  INBND_POINT(1)         =  51 2 F
 /
 
 ! -------------------------------------------------------------------- !
