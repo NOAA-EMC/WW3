@@ -17,7 +17,7 @@
   SPECTRUM%XFR       =  1.1
   SPECTRUM%FREQ1     =  0.04
   SPECTRUM%NK        =  24
-  SPECTRUM%NTH       =  24  
+  SPECTRUM%NTH       =  36  
 /
 
 ! -------------------------------------------------------------------- !

@@ -97,9 +97,12 @@
       USE CONSTANTS
       USE W3WDATMD, ONLY: W3NDAT, W3SETW
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
-      USE W3ODATMD, ONLY: W3NOUT, W3SETO, FNMPRE
+      USE W3ODATMD, ONLY: W3NOUT, W3SETO, FNMPRE, NDST, NDSE
+      USE W3CSPCMD, ONLY: W3CSPC
 
-      USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, GNAME, W3NMOD, W3SETG,     &
+
+      USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, DTH, TH, FACHFE,           &
+                          GNAME, W3NMOD, W3SETG,&
                           NSEA, MAPSTA, XYB, GTYPE, XGRD, YGRD, X0, Y0, &
                           SX, SY, MAPSF, UNGTYPE, CLGTYPE, RLGTYPE, FLAGLL
       USE W3ODATMD, ONLY: NDSO, NDSE
@@ -135,7 +138,7 @@
       INTEGER, ALLOCATABLE    :: IPBPI(:,:), IPBPO(:,:), NCID(:),      &
                                  DIMID(:,:), DIMLN(:,:)
 !
-      REAL                    :: FR1I, TH1I, FACTOR, OFFSET, DMIN,     &
+      REAL                    :: FR1I, XFRI, TH1I, FACTOR, OFFSET, DMIN,&
                                  DIST, DMIN2, COS1, DLON, DLAT, DLO
 !
       REAL, ALLOCATABLE       :: SPEC2D(:,:,:,:), LATS(:), LONS(:),    &
@@ -143,6 +146,9 @@
                                  XBPI(:), YBPI(:), RDBPI(:,:),         &
                                  XBPO(:), YBPO(:), RDBPO(:,:),         &
                                  ABPIN(:,:), ABPIN2(:,:,:)
+!
+      REAL, ALLOCATABLE       :: TMPSPCI(:,:),TMPSPCO(:,:)
+      
 !
       DOUBLE PRECISION        :: REFJULDAY, CURJULDAY
       DOUBLE PRECISION, ALLOCATABLE       :: TIMES(:)
@@ -155,7 +161,7 @@
       CHARACTER*512, ALLOCATABLE          :: SPECFILES(:)
       CHARACTER, ALLOCATABLE              :: STATION(:,:)
 !
-      LOGICAL                 :: FLGNML
+      LOGICAL                 :: FLGNML, SPCONV
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -419,7 +425,7 @@
             ALLOCATE(TIMES(NT1))
             ALLOCATE (FREQ(NK1),THETA(NTH1))
             ALLOCATE (SPEC2D(NTH1,NK1,NT1,NBO2))
-            ALLOCATE (ABPIN2(NK*NTH1,NT1,NBO2))
+            ALLOCATE (ABPIN2(NK*NTH,NT1,NBO2))
 
             ! instanciates time
             REFDATE(:)=0.
@@ -439,7 +445,7 @@
             CALL D2J(REFDATE,REFJULDAY,IERR)
 
           ELSE 
-            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) GOTO 805
+            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) GOTO 805  ! NOT NEEDED WITH W3CSPC
           END IF
 
           ! position variables : lon/lat or x/y
@@ -501,86 +507,54 @@
           IRET=NF90_CLOSE(NCID(IP))
           CALL CHECK_ERR(IRET)
 !
-        END DO ! IP=1,NBO2
+          END DO ! IP=1,NBO2
 
 
 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 6. Defines frequency range in spectra
+! 6.  Checks on spectral discretization 
+!     reminder: fr(NK)=fr1*XFR**(NK-1) 
 !
+        FR1I=FREQ(1)
+        XFRI=EXP(ALOG(FREQ(NKI)/FREQ(1))/(NKI-1))
+        TH1I=THETA(1)
 
-        ! Checks consistency of NK
-        IF (NKI.GT.NK) GOTO 806
-!
-        ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
-        ! such that source spec SPEC (read in input) links with output spec
-        ! APBIN2 with APBIN2(IFMIN2:IFMAX2) = SPEC(IFMIN:IFMAX)
-        ! Then APBIN2(1:IFMIN2) = 0 and APBIN2(IFMAX2:end) = 0
-        IFMIN=1  ! index of first freq. in source spectrum
-        IFMIN2=1 ! index of first freq. in output spectrum
-        IFMAX=NK1 ! index of last freq. in source spectrum
-!        IFMAX2=NK ! index of last freq. in output spectrum
-!
-        ! Checks consistency of XFR
-        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 807
-!
-        ! Checks consistency of NTH
-        ! WARNING: check is only done on number of directions, no check 
-        ! is done on the relative offset of first direction in terms of 
-        ! the directional increment [-0.5,0.5] (last parameter of the 
-        ! spectral definition in ww3_grid.inp, on second active line) 
-        IF (NTHI.NE.NTH) GOTO 808
-!
-        IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
-          DO J=1,MIN(NK1,NK)
-            IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
-              IFMIN=J
-            END IF
-          END DO  
-        END IF
-!     
-        IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN 
-          DO J=1,MIN(NK,NK1)
-            IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN 
-              IFMIN2=J
-            END IF
-          END DO  
-        END IF
-!
-        IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN 
-          DO J=1,NK
-            IF (ABS(FREQ(J)-FR1*XFR**(NK1-1)) .LT. &
-                ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN 
-              IFMAX=J
-            END IF
-          END DO 
-        END IF 
-
+        SPCONV = NKI.NE.NK .OR. NTHI.NE.NTH .OR.                    &
+                 ABS(XFRI/XFR-1.).GT.0.01 .OR.                      &
+                 ABS(FR1I/FR1-1.).GT.0.01 .OR.                      &
+                 ABS(TH1I-TH(1)).GT.0.01*DTH 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 7. Loops on files and instanciate ABPIN2
 !
-        DO IP=1,NBO2
-!         Fills in the low frequency end of the spectrum
-          IF (IFMIN2.GT.1) THEN 
-            ABPIN2(1:(IFMIN2-1)*NTH,:,IP)=0.
-          END IF
+        IF ( .NOT. SPCONV ) THEN
 
-!         Copies spectrum in frequency and direction ranges
-          DO I=IFMIN,IFMAX
-            DO J=1,NTH
-              ABPIN2((I-IFMIN+(IFMIN2-1))*NTH+J,:,IP)=SPEC2D(J,I,:,IP)*tpiinv
+          DO IP=1,NBO2
+! Copies spectrum in frequency and direction ranges
+            DO I=1,NK
+              DO J=1,NTH
+                ABPIN2((I-1)*NTH+J,:,IP)=SPEC2D(J,I,:,IP)*tpiinv
+                END DO
+              END DO
+            END DO ! IP=1,NBO2
+!
+        ELSE
+          ALLOCATE(TMPSPCI(NKI*NTHI,NTI))
+          ALLOCATE(TMPSPCO(NK*NTH,  NTI))
+          DO IP=1,NBO2
+            DO I=1,NKI
+              DO J=1,NTHI
+                TMPSPCI((I-1)*NTHI+J,:)=SPEC2D(J,I,:,IP)*tpiinv
+                END DO
+              END DO           
+            CALL W3CSPC ( TMPSPCI, NKI, NTHI, XFRI, FR1I, TH1I, &
+                          TMPSPCO, NK,  NTH,  XFR,  FR1,  TH(1),&
+                          NBO2, NDST, NDSE, FACHFE )
+            ABPIN2(:,:,IP)=TMPSPCO(:,:)
             END DO
-          END DO
-
-!         Fills tail of spectrum            
-          IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN 
-            IF (VERBOSE.GE.2) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
-            ABPIN2((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,:,IP)=0.
-          END IF 
-        END DO ! IP=1,NBO2
-
+!
+          END IF              
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8. Writes header
@@ -727,17 +701,17 @@
       WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1
       CALL EXTCDE ( 65 )
 !
- 806 CONTINUE
-      WRITE (NDSE,1006) NK, NKI
-      CALL EXTCDE ( 66 )
+! 806 CONTINUE
+!      WRITE (NDSE,1006) NK, NKI
+!      CALL EXTCDE ( 66 )
 !
- 807 CONTINUE
-      WRITE (NDSE,1007) XFR
-      CALL EXTCDE ( 67 )
+! 807 CONTINUE
+!      WRITE (NDSE,1007) XFR
+!      CALL EXTCDE ( 67 )
 !
- 808 CONTINUE
-      WRITE (NDSE,1008) NTH, NTHI
-      CALL EXTCDE ( 68 )
+! 808 CONTINUE
+!      WRITE (NDSE,1008) NTH, NTHI
+!      CALL EXTCDE ( 68 )
 !
  809 CONTINUE
       WRITE (NDSE,1009) FILE, IERR
@@ -792,16 +766,16 @@
                '     ILLEGAL NKI =',I3,' DIFFERS FROM NK1 =',I3/      &
                '     ILLEGAL NTHI =',I3,' DIFFERS FROM NTH1 =',I3/)
 !
- 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
-               '     IT WILL BE MANAGED SOON BY SPCONV')
+! 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+!               '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
+!               '     IT WILL BE MANAGED SOON BY W3CSPC')
 !
- 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL XFR CALCULATED FROM FREQ(2)/FREQ(1)'/    &
-               '     XFR DEFINED FROM MOD_DEF.WW3 =',F12.6/)
+! 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+!               '     ILLEGAL XFR CALCULATED FROM FREQ(2)/FREQ(1)'/    &
+!               '     XFR DEFINED FROM MOD_DEF.WW3 =',F12.6/)
 !
- 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
+! 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+!               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
 !
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
                '     ERROR IN OPENING SPEC FILE: ', A/                &
