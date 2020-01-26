@@ -235,6 +235,7 @@
 !/
       INTEGER                 :: J, JJ, I, JO, TPRNT(2), TAUX(2),     &
                                  II, JJJ, IX, IY, UPNEXT(2), UPLAST(2)
+      INTEGER                 :: DUMMY2(35)=0
 !/T      INTEGER                 :: ILOOP
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, NMPSCS
@@ -355,6 +356,8 @@
             CALL STME21 ( TSYNC(:,0), MTIME )
             CALL WWTIME ( WTIME )
             WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
+
+!
             TPRNT  = TSYNC(:,0)
             TSTAMP = .TRUE.
           ENDIF
@@ -751,7 +754,7 @@
 !/MPRF                CALL PRTIME ( PRFT0 )
 !
                 CALL WMSETM ( I, MDSE, MDST )
-                CALL W3WAVE ( I, TSYNC(:,I), .FALSE., .TRUE. )
+                CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE., .TRUE. )
                 IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
                 IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 !
@@ -1013,7 +1016,7 @@
 !
                       END IF
 !
-                    CALL W3WAVE ( I, TSYNC(:,I), .FALSE. )
+                    CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE. )
 !
                     IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
                          GRDHGH(I,0).GT.0 ) THEN
@@ -1044,6 +1047,16 @@
                           IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
                         ENDIF
                       END DO
+! CHECKPOINT
+                    JO=8
+                      IF ( .NOT.FLOUT(JO) ) CYCLE
+                      IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                          TOUTP(:,I) = TONEXT(:,JO)
+                        ELSE
+                          DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+                          IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+                        ENDIF
+! END CHECKPOINT
 !
 !/T                    WRITE (MDST,9091) TOUTP(:,I)
 !
@@ -1121,6 +1134,36 @@
 !
 !/MPI                  END DO
 !
+! Checkpoint
+!
+!/MPI                JO=8
+!
+!/MPI                  IF ( FLOUT(JO) ) THEN
+!/MPI                      DO
+!/MPI                        DTTST = DSEC21 ( TIME, TONEXT(:,JO) )
+!/MPI                        IF ( DTTST .LE. 0. ) THEN
+!/MPI                            CALL TICK21 ( TONEXT(:,JO), DTOUT(JO) )
+!/MPI                            DTTST = DSEC21 ( TONEXT(:,JO), TOLAST(:,JO) )
+!/MPI                            IF ( DTTST .LT. 0. ) THEN
+!/MPI                                FLOUT(JO) = .FALSE.
+!/MPI                                EXIT
+!/MPI                              END IF
+!/MPI                          ELSE
+!/MPI                            EXIT
+!/MPI                          END IF
+!/MPI                        END DO
+!/MPI                    END IF
+!
+!/MPI                  IF ( .NOT.FLOUT(JO) ) CYCLE
+!/MPI                  IF ( TOUTP(1,I) .EQ. -1 ) THEN
+!/MPI                      TOUTP(:,I) = TONEXT(:,JO)
+!/MPI                    ELSE
+!/MPI                      DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+!/MPI                      IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+!/MPI                    ENDIF
+!
+
+! End Checkpoint
 !/MPIT                WRITE (MDST,9991) TOUTP(:,I)
 !/MPI              END IF
 !
