@@ -193,6 +193,7 @@
       USE W3WDATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NAPROC, IAPROC,           &
                           NAPOUT, NAPERR, FNMPRE
+!/WRST      USE W3IDATMD, ONLY: W3NINP
 !/
       IMPLICIT NONE
 !
@@ -233,6 +234,7 @@
 !/NL1      CALL W3SETA ( 1, 6, 6 )
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
+!/WRST      CALL W3NINP(    6, 6 )
 !
 ! 1.b IO set-up.
 !

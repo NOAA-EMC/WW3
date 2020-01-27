@@ -157,6 +157,10 @@
       REAL                    :: DTREQ, DTEST, RFTIME
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
+      CHARACTER(LEN=80)       :: LINEIN
+      CHARACTER(LEN=8)        :: WORDS(5)
+      INTEGER                 :: GEN_PRO
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -221,7 +225,20 @@
 !     Output times
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+      READ (NDSI,'(A)') LINEIN
+      WRITE(NDSO,*)' LINEIN:  ',LINEIN
+      READ(LINEIN,*,iostat=ierr) WORDS
+      WRITE (NDSO,*) WORDS
+          READ(WORDS( 1 ), * ) TOUT(1)
+          READ(WORDS( 2 ), * ) TOUT(2)
+          READ(WORDS( 3 ), * ) DTREQ
+          READ(WORDS( 4 ), * ) NOUT
+       IF (WORDS(5) .NE. '0' .AND. WORDS(5) .NE. '1') THEN
+            GEN_PRO=-99999
+          ELSE
+            READ(WORDS( 5 ), * ) GEN_PRO
+      ENDIF
+      WRITE(NDSO,*) 'GEN_PRO  ',GEN_PRO 
       DTREQ  = MAX ( 0. , DTREQ )
       IF ( DTREQ.EQ.0 ) NOUT = 1
       NOUT   = MAX ( 1 , NOUT )
@@ -664,8 +681,17 @@
 !     (14) Scaled factor of (13)
 !     (15) Scaled value of (13)
 !
+!
+!      KPDS(3)=4 ensemble forecast:ww3_grib.inp has gen_pro set to 1
+!             =2 deterministic forecast: ww3_grib.inp gen_pro set to 0
+!             =2 legacy :with no gen_pro set in ww3_grib.inp
+!              (in the case of legacy the params revert back to old names)
 !/NCEP2       KPDSNUM = 0
-!/NCEP2       KPDS( 3) = 2
+!/NCEP2      if ( gen_pro.eq.1 ) then
+!/NCEP2       KPDS( 3) = 4
+!/NCEP2      else
+!/NCEP2       KPDS(3)=2
+!/NCEP2      endif
 !/NCEP2       KPDS( 4) = 0
 !/NCEP2       KPDS( 5) = PID
 !/NCEP2       KPDS( 8) = 1
@@ -955,7 +981,8 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    ::  X1(NX*NY), X2(NX*NY), XX(NX*NY),    &
                                   XY(NX*NY), CABS, UABS,              &
-                                  YY(NX*NY,0:NOSWLL), KPDS5A, KPDS5B
+                                  YY(NX*NY,0:NOSWLL), KPDS5A, KPDS5B, &
+                                  KPDS5A1(3)
       LOGICAL*1               ::  BITMAP(NX*NY)
       LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI, FLPRT
 !/
@@ -1123,7 +1150,12 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
 !/NCEP2                KPDS(2) = 28
+!/NCEP2         else
+!/NCEP2                KPDS(2) = 25
+!/NCEP2         endif
+
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
 !     Mean wave period (based on first moment)
@@ -1139,7 +1171,11 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 25
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2                KPDS(2) = 34
+!/NCEP2         else
+!/NCEP2                KPDS(2) = 15
+!/NCEP2         endif 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Peak frequency
@@ -1150,7 +1186,7 @@
 !/NCEP2                KPDS(2) = 11
                 DO ISEA=1, NSEA
                   IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
-                      FP0(ISEA) = 1. / FP0(ISEA)
+                      FP0(ISEA) = 1. / MAX(FR1,FP0(ISEA)) ! Limit FP to lowest discrete frequency
                     END IF
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FP0   , MAPSF, X1 )
@@ -1183,7 +1219,11 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = 107
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2                KPDS(2) = 46
+!/NCEP2         else
 !/NCEP2                KPDS(2) = 10
+!/NCEP2                endif    
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
                 DO ISEA=1, NSEA
@@ -1201,6 +1241,13 @@
 !/NCEP1                KPDS5B  = 105
 !/NCEP2                KPDS5A  = 5
 !/NCEP2                KPDS5B  = 8
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2                KPDS5A1(1)  =47
+!/NCEP2                KPDS5A1(2)  =48
+!/NCEP2                KPDS5A1(3)  =49
+!/NCEP2         else
+!/NCEP2                KPDS5B  = 8
+!/NCEP2         endif
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PHS(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1215,7 +1262,14 @@
 !/NCEP1                KPDS5A  = 110
 !/NCEP1                KPDS5B  = 106
 !/NCEP2                KPDS5A  = 6
-!/NCEP2                KPDS5B  = 9
+!/NCEP2                KPDS5B = 9
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2                KPDS5A1(1)  = 50
+!/NCEP2                KPDS5A1(2)  = 51
+!/NCEP2                KPDS5A1(3)  = 52
+!/NCEP2         else
+!/NCEP2                KPDS5B = 9
+!/NCEP2         endif
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PTP(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1245,7 +1299,14 @@
 !/NCEP1                KPDS5A  = 109
 !/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
-!/NCEP2                KPDS5B  = 7
+!/NCEP2                KPDS5B = 7
+!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2                KPDS5A1(1)  = 53
+!/NCEP2                KPDS5A1(2)  = 54
+!/NCEP2                KPDS5A1(3)  = 55
+!/NCEP2         else
+!/NCEP2                KPDS5B = 7
+!/NCEP2         endif
 !/RTD                DO I = 0,NOSWLL
 !/RTD                  ! Rotate direction back to standard pole
 !/RTD                  IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,I), AnglD, .FALSE.)
@@ -1393,6 +1454,32 @@
 !/NCEP2                IF (IO .NE. 0) GOTO 830
 !/NCEP2                CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 !
+!/NCEP2               if ((gen_pro.eq.0) .or. (gen_pro.eq.1)) then
+!/NCEP1                KPDS(5) = KPDS5B
+!/NCEP1                KPDS(6) = 241
+!/NCEP2                KPDS(10) = 241
+                DO I=1, NOSWLL
+!/NCEP1                  KPDS(7) = I
+!/NCEP2                KPDS(2) = KPDS5A1(I)
+!/NCEP2                  KPDS(12) = I
+                  DO IXY=1, NX*NY
+                    BITMAP(IXY) = YY(IXY,I) .NE. UNDEF
+                    END DO
+!/NCEP1                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
+!/NCEP2                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+!/NCEP2                  IF (IO .NE. 0) GOTO 810
+!/NCEP2                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
+!/NCEP2                               IDEFNUM, IO)
+!/NCEP2                  IF (IO .NE. 0) GOTO 820
+!/NCEP2                  CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
+!/NCEP2                                 COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
+!/NCEP2                                 200,YY(:,I), NDATA, IBMP, BITMAP, IO)
+!/NCEP2                  IF (IO .NE. 0) GOTO 820
+!/NCEP2                  CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+!/NCEP2                  IF (IO .NE. 0) GOTO 830
+!/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+                  END DO
+!/NCEP2           ELSE
 !/NCEP1                KPDS(5) = KPDS5B
 !/NCEP1                KPDS(6) = 241
 !/NCEP2                KPDS(2) = KPDS5B
@@ -1417,6 +1504,7 @@
 !/NCEP2                  IF (IO .NE. 0) GOTO 830
 !/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
                   END DO
+!/NCEP2           ENDIF
 !/NCEP1                KPDS(6) = 1
 !/NCEP1                KPDS(7) = 1
 !/NCEP2                KPDS(10) = 1

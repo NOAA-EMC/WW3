@@ -117,9 +117,11 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT,FLGRD,         &
+      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
+                          , FLGRD,                               &
                            FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
-                          IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN )
+                          IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
+
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -213,6 +215,7 @@
 !                          16-20 Id. for OTYPE = 4; restart files.
 !                          21-25 Id. for OTYPE = 5; boundary data.
 !                          31-35 Id. for OTYPE = 7; coupling data.
+!                          36-40 Id. for OTYPE = 8; second restart file
 !       FLGRD   L.A.   I   Flags for gridded output.
 !       FLGR2   L.A.   I   Flags for coupling output.
 !       NPT     Int.   I   Number of output points
@@ -388,7 +391,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
-                                       ODAT(35), NPT, IPRT(6), MPI_COMM
+                                       ODAT(40),NPT, IPRT(6),&
+                                       MPI_COMM
       LOGICAL, INTENT(IN)           :: IsMulti
       REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
       LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),&
@@ -851,7 +855,7 @@
 !/DEBUGINIT     WRITE(740+IAPROC,*) ' After ALL_VA_INTEGRAL_PRINT'
 !/DEBUGINIT     FLUSH(740+IAPROC)
 !/TIMINGS       CALL PRINT_MY_TIME("Before W3IORS")
-      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )
+      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD)
 !/TIMINGS       CALL PRINT_MY_TIME("After W3IORS")
 !/MEMCHECK      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3a'
 !/MEMCHECK      call getMallocInfo(mallinfos)
@@ -953,6 +957,20 @@
         TOLAST(1,J) =        ODAT(J0+4) 
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
+!
+! J=8, second stream of restart files
+        J=8
+        J0 = (J-1)*5
+      IF(ODAT(J0+1) .NE. 0) THEN
+        TONEXT(1,J) =        ODAT(J0+1) 
+        TONEXT(2,J) =        ODAT(J0+2)
+        DTOUT (  J) = REAL ( ODAT(J0+3) )
+        TOLAST(1,J) =        ODAT(J0+4) 
+        TOLAST(2,J) =        ODAT(J0+5)
+        FLOUT(8) = .TRUE.
+      ELSE
+        FLOUT(8) = .FALSE.
+      END IF
 !
 ! 4.b Check if output available
 !
@@ -1059,6 +1077,57 @@
           END IF
 !
         END DO
+!
+! J=8, second stream of restart files
+!
+      J=8
+!
+! ... check time step  
+!
+        DTOUT(J) = MAX ( 0. , DTOUT(J) )
+        FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
+!
+! ... get first time 
+!
+        IF ( FLOUT(J) ) THEN
+            TOUT = TONEXT(:,J)
+            TLST = TOLAST(:,J)
+!
+            DO
+              DTTST   = DSEC21 ( TIME , TOUT )
+              IF ( ( J.NE.4 .AND. DTTST.LT.0. ) .OR.                  &
+                   ( J.EQ.4 .AND. DTTST.LE.0. ) ) THEN
+                  CALL TICK21 ( TOUT, DTOUT(J) )
+                ELSE
+                  EXIT
+                END IF
+              END DO
+!
+! ... reset first time
+!
+            TONEXT(:,J) = TOUT
+!
+! ... check last time
+!
+            DTTST  = DSEC21 ( TOUT , TLST )
+            IF ( DTTST.LT.0.) FLOUT(J) = .FALSE.
+!
+! ... check overall first time
+!
+            IF ( FLOUT(J) ) THEN
+                IF ( TOFRST(1).EQ.-1 ) THEN
+                    TOFRST = TOUT
+                  ELSE
+                    DTTST  = DSEC21 ( TOUT , TOFRST )
+                    IF ( DTTST.GT.0.) THEN
+                        TOFRST = TOUT
+                      END IF
+                  END IF
+              END IF
+!
+          END IF
+! END J=8
+!
 !
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -3591,7 +3660,7 @@
 !/MPI      IH     = 0
 !/MPI      IROOT  = NAPRST - 1
 !
-!/MPI      IF ( FLOUT(4) ) THEN
+!/MPI      IF ( FLOUT(4) .OR. FLOUT(8) ) THEN
 !/MPI          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
 !
