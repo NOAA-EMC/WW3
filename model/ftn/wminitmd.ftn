@@ -377,6 +377,8 @@
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
+      USE W3ODATMD, ONLY:  OFILES
+! 
 !/
       IMPLICIT NONE
 !
@@ -407,8 +409,9 @@
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
                                  TMPRNK(:), TMPGRP(:), NINGRP(:),     &
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),  &
-                                 NDPOUT(:)
+                                 NDPOUT(:), OUTFF(:,:)
       REAL                    :: DTTST, XX, YY
+
 !/MPRF      REAL                    :: PRFT0, PRFTN
 !/MPRF      REAL(KIND=8)            :: get_memory
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
@@ -433,10 +436,12 @@
 
       CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
-      CHARACTER(LEN=30)       :: IDOTYP(7)
+      CHARACTER(LEN=30)       :: IDOTYP(8)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
-!
+      CHARACTER(LEN=80)       :: LINEIN
+      CHARACTER(LEN=8)        :: WORDS(6)
+
       TYPE OT2TPE
         INTEGER                    :: NPTS
         REAL, POINTER              :: X(:), Y(:)
@@ -464,7 +469,8 @@
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
                     'Separated wave field data     ' ,                &
-                    'Fields for coupling           ' /
+                    'Fields for coupling           ' ,                &
+                    'Restart files second request  '/
 !
       DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2' /
 !
@@ -644,15 +650,17 @@
 !
 ! 2.c Set up I/O for individual models (initial)
 !
-      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
+      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
-           FLG2(NOGRP,NRGRD) )
+           FLG2(NOGRP,NRGRD),OUTFF(7,0:NRGRD))
 !
       MDS    = -1
       MDSF   = -1
       FLGR2  = .FALSE.
+      FLG2   = .FALSE.
+      LPRT   = .FALSE.
       IPRT   = 0
 !
 ! ... Fixed and recycleable unit numbers.      
@@ -1067,6 +1075,7 @@
         ELSE
           READ (MDSI,*,END=2001,ERR=2002) STIME, ETIME
         END IF
+!
       CALL STME21 ( STIME , DTME21 )
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
       CALL STME21 ( ETIME , DTME21 )
@@ -1110,9 +1119,54 @@
 ! 5.b Process standard line
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-        READ (MDSI,*,END=2001,ERR=2002) (ODAT(I,1),I=5*(J-1)+1,5*J)
+!
+        IF(J .LE. 2) THEN
+          READ (MDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+!        
+          IF(J .LE. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1,1)
+            READ(WORDS( 2 ), * ) ODAT(2,1)
+            READ(WORDS( 3 ), * ) ODAT(3,1)
+            READ(WORDS( 4 ), * ) ODAT(4,1)
+            READ(WORDS( 5 ), * ) ODAT(5,1)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6,1)
+            READ(WORDS( 2 ), * ) ODAT(7,1)
+            READ(WORDS( 3 ), * ) ODAT(8,1)
+            READ(WORDS( 4 ), * ) ODAT(9,1)
+            READ(WORDS( 5 ), * ) ODAT(10,1)
+          END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OUTFF(J,1)=0
+          ELSE
+            READ(WORDS( 6 ), * ) OUTFF(J,1)
+!            print*,' Number of data: ', 6
+          END IF
+! CHECKPOINT
+        ELSE IF(J .EQ. 4) THEN
+            READ (MDSI,'(A)') LINEIN
+            READ(LINEIN,*,iostat=ierr) WORDS
+!
+            READ(WORDS( 1 ), * ) ODAT(16,1)
+            READ(WORDS( 2 ), * ) ODAT(17,1)
+            READ(WORDS( 3 ), * ) ODAT(18,1)
+            READ(WORDS( 4 ), * ) ODAT(19,1)
+            READ(WORDS( 5 ), * ) ODAT(20,1)
+            IF (WORDS(6) .EQ. 'T') THEN
+              READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
+              END IF
+        ELSE
+          READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
+          OUTFF(J,1) = 0
+        END IF
+!
+        OUTPTS(1)%OFILES(J)=OUTFF(J,1)
+!         
+!
         ODAT(5*(J-1)+3,1) = MAX ( 0 , ODAT(5*(J-1)+3,1) )
-!                 
+!
         IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,951) J, IDOTYP(J)
@@ -1142,6 +1196,7 @@
                   DTME21(I:I) = ' '
                   END DO
                 WRITE (MDSS,954) DTME21(1:19)
+
               END IF
             IF ( J .EQ. 1 ) THEN
 !
@@ -1277,16 +1332,54 @@
 ! ... End of loop in 5.a
 !
         END DO
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+! Checkpoint
+       J=8
+        IF ( ODAT(5*(J-1)+3,1) .NE. 0 ) THEN
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                WRITE (MDSS,951) J, IDOTYP(J)
+            TTIME(1) = ODAT(5*(J-1)+1,1)
+            TTIME(2) = ODAT(5*(J-1)+2,1)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                 WRITE (MDSS,952) DTME21
+            TTIME(1) = ODAT(5*(J-1)+4,1)
+            TTIME(2) = ODAT(5*(J-1)+5,1)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                 WRITE (MDSS,953) DTME21
+            TTIME(1) = 0
+            TTIME(2) = 0
+            DTTST    = REAL ( ODAT(5*(J-1)+3,1) )
+            CALL TICK21 ( TTIME , DTTST  )
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( ( ODAT(5*(J-1)+1,1) .NE. ODAT(5*(J-1)+4,1) .OR.      &
+                   ODAT(5*(J-1)+2,1) .NE. ODAT(5*(J-1)+5,1) ) .AND.   &
+                   MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                DO I=1, 18
+                  IF ( DTME21(I:I).NE.'0' .AND.                       &
+                       DTME21(I:I).NE.'/' .AND.                       &
+                       DTME21(I:I).NE.' ' .AND.                       &
+                       DTME21(I:I).NE.':' ) EXIT
+                  DTME21(I:I) = ' '
+                  END DO
+                WRITE (MDSS,954) DTME21(1:19)
+              END IF
+        END IF
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
 ! 5.i Set all grids to unified output
 !
       IF ( UNIPTS ) THEN
         ODAT(6:10,0) = ODAT(6:10,1)
         ODAT( 8 , 1) = 0
+        OUTPTS(1)%OFILES(1)   = OUTFF(1,1)
         END IF
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
+        OUTFF(:,I) = OUTFF(:,1)
+        OUTPTS(I)%OFILES(:)=OUTFF(:,1)
         FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
         FLG2(:,I) = FLG2(:,1)
@@ -1355,7 +1448,37 @@
 ! 5.k Process standard line
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-        READ (MDSI,*,END=2001,ERR=2002) (ODAT(II,I),II=5*(J-1)+1,5*J)
+        IF(J .LE. 2) THEN
+          OUTFF(J,I)=0
+          WORDS(6) =''
+          READ (MDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+          IF(J .EQ. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1,I)
+            READ(WORDS( 2 ), * ) ODAT(2,I)
+            READ(WORDS( 3 ), * ) ODAT(3,I)
+            READ(WORDS( 4 ), * ) ODAT(4,I)
+            READ(WORDS( 5 ), * ) ODAT(5,I)
+          ELSE
+            READ(WORDS( 1 ), * ) ODAT(6,I)
+            READ(WORDS( 2 ), * ) ODAT(7,I)
+            READ(WORDS( 3 ), * ) ODAT(8,I)
+            READ(WORDS( 4 ), * ) ODAT(9,I)
+            READ(WORDS( 5 ), * ) ODAT(10,I)
+          END IF
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OUTFF(J,I)=0
+          ELSE
+            READ(WORDS( 6 ), * ) OUTFF(J,I)
+          END IF
+!
+        ELSE
+          READ (MDSI,*,END=2001,ERR=2002)(ODAT(II,I),II=5*(J-1)+1,5*J)
+          OUTFF(J,I) = 0
+        END IF
+!         
+        OUTPTS(I)%OFILES(J)=OUTFF(J,I)
+!
         ODAT(5*(J-1)+3,I) = MAX ( 0 , ODAT(5*(J-1)+3,I) )
 ! 
         IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
@@ -1514,6 +1637,7 @@
 !/T      DO I=1, NRGRD
 !/T          WRITE (MDST,9050) I
 !/T          WRITE (MDST,9051) ODAT(:,I)
+!/T          WRITE (MDST,9051) OUTFF(:,I)
 !/T          WRITE (MDST,9052) FLGRD(:,:,I)
 !/T        END DO
 !
@@ -2047,10 +2171,11 @@
 !
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
 
-        CALL W3INIT ( I, .TRUE., MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
+        CALL W3INIT ( I, .TRUE., MNAMES(I), MDS(:,I), NTRACE(:,I),    &
+                      ODAT(:,I),                          &
                       FLGRD(:,:,I),FLGR2(:,:,I),FLGD(:,I),FLG2(:,I),  &
                       OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, &
-                      IPRT(:,I), LPRT(I), MPI_COMM_LOC )
+                      IPRT(:,I), LPRT(I), MPI_COMM_LOC)
 !
 ! ..... Finalize I/O file hook up
 !
@@ -2225,6 +2350,18 @@
             END IF
           END DO
 !
+! CHECKPOINT
+        J=8
+        IF ( FLOUT(J) ) THEN
+           IF ( TOUTP(1,I) .EQ. -1 ) THEN
+              TOUTP(:,I) = TONEXT(:,J)
+           ELSE
+              DTTST  = DSEC21 ( TOUTP(:,I), TONEXT(:,J) )
+              IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
+           ENDIF
+        END IF
+!
+!
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
 !
@@ -2323,13 +2460,13 @@
 !/MPI            CALL MPI_BCAST ( NBI  , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
-!/MPI            CALL MPI_BCAST ( FLOUT,  7, MPI_LOGICAL, 0,          &
+!/MPI            CALL MPI_BCAST ( FLOUT,  8, MPI_LOGICAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( DTOUT , 7, MPI_REAL, 0,             &
+!/MPI            CALL MPI_BCAST ( DTOUT , 8, MPI_REAL, 0,             &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TONEXT,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TONEXT,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TOLAST,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TOLAST,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI          END IF
@@ -2526,6 +2663,8 @@
           OUTPTS(0)%DTOUT (  2) = REAL ( ODAT( 8,0) )
           OUTPTS(0)%TOLAST(1,2) =        ODAT( 9,0)
           OUTPTS(0)%TOLAST(2,2) =        ODAT(10,0)
+          OUTPTS(0)%OFILES(1)   =        OUTFF(1,1)
+          OUTPTS(0)%OFILES(2)   =        OUTFF(2,1)
 !
           TOUT   = OUTPTS(0)%TONEXT(:,2)
           TLST   = OUTPTS(0)%TOLAST(:,2)
@@ -2671,7 +2810,8 @@
       IF ( TSTOUT ) CALL WMUDMP ( MDST, 0 )
 !
       DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD, FLG2, INAMES,&
-                   MNAMES )
+                   MNAMES                                              &
+                   ,OUTFF )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
@@ -2983,6 +3123,8 @@
 !/T 9050 FORMAT ( ' TEST WMINIT : GRID NUMBER',I3,' =================')
 !/T 9051 FORMAT ( ' TEST WMINIT : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
 !/T                                  5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
+!/T 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
+!/T                                  5(/24X,I9.8) )
 !/T 9052 FORMAT ( ' TEST WMINIT : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
 !
 !/T 9060 FORMAT ( ' TEST WMINIT : GRID MOVEMENT DATA')
@@ -3252,6 +3394,7 @@
       USE W3WDATMD, ONLY: W3NDAT, W3SETW
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
+      USE W3ODATMD, ONLY:  OFILES
       USE W3IDATMD, ONLY: W3NINP, W3SETI, W3DIMI
       USE WMMDATMD, ONLY: WMNDAT, WMSETM, WMDIMD
 !
@@ -3338,7 +3481,8 @@
                                  NPTS, JJ, IP1, IPN, MPI_COMM_LOC,     &
                                  NMPSC2, JJJ, NCPROC, NPOUTT, NAPLOC,  &
                                  NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW, &
-                                 IFT, ILOOP
+                                 IFT, ILOOP 
+!
       INTEGER                 :: TTIME(2), TOUT(2), STMPT(2), ETMPT(2),&
                                  TLST(2)
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
@@ -3347,7 +3491,8 @@
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),     &
                                  TMPRNK(:), TMPGRP(:), NINGRP(:),      &
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),   &
-                                 NDPOUT(:)
+                                 NDPOUT(:)                             &
+                                 ,OUTFF(:,:)
 !
       REAL                    :: DTTST, XX, YY
 !/MPRF      REAL                    :: PRFT0, PRFTN
@@ -3379,7 +3524,7 @@
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
       CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
-      CHARACTER(LEN=30)       :: IDOTYP(7)
+      CHARACTER(LEN=30)       :: IDOTYP(8)
       CHARACTER(LEN=80)       :: TNAME, LINE
       CHARACTER(LEN=1024)     :: FLDOUT
 !
@@ -3404,7 +3549,8 @@
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
                     'Separated wave field data     ' ,                &
-                    'Fields for coupling           ' /
+                    'Fields for coupling           ' ,                &
+                    'Restart files second request  '/
 !
       DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5',                &
                     'MDN', 'MTH', 'MVS', 'LEV', 'CUR',                &
@@ -3601,11 +3747,12 @@
 !
 ! 2.c Set up I/O for individual models (initial)
 !
-      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
+      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
-           FLG2(NOGRP,NRGRD) )
+           FLG2(NOGRP,NRGRD)                                          &
+           ,OUTFF(7,0:NRGRD))
 !
       MDS    = -1
       MDSF   = -1
@@ -4100,15 +4247,20 @@
         READ(NML_OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
+        READ(NML_OUTPUT_DATE(I)%FIELD%OUTFFILE, *)  OUTFF(1,I)
         READ(NML_OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
         READ(NML_OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
+        READ(NML_OUTPUT_DATE(I)%POINT%OUTFFILE, *)  OUTFF(2,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
         READ(NML_OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)
         READ(NML_OUTPUT_DATE(I)%RESTART%START, *)   ODAT(16,I), ODAT(17,I)
         READ(NML_OUTPUT_DATE(I)%RESTART%STRIDE, *)  ODAT(18,I)
         READ(NML_OUTPUT_DATE(I)%RESTART%STOP, *)    ODAT(19,I), ODAT(20,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%START, *)   ODAT(36,I), ODAT(37,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%STRIDE, *)  ODAT(38,I)
+        READ(NML_OUTPUT_DATE(I)%RESTART2%STOP, *)    ODAT(39,I), ODAT(40,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%START, *)   ODAT(21,I), ODAT(22,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%STRIDE, *)  ODAT(23,I)
         READ(NML_OUTPUT_DATE(I)%BOUNDARY%STOP, *)    ODAT(24,I), ODAT(25,I)
@@ -4128,6 +4280,7 @@
         ODAT(23,I) = MAX ( 0 , ODAT(23,I) )
         ODAT(28,I) = MAX ( 0 , ODAT(28,I) )
 !!/COU        ODAT(33,I) = MAX ( 0 , ODAT(33,I) )
+        ODAT(38,I) = MAX ( 0 , ODAT(38,I) )
 
         ! define the time of the output point grid (index 0) as the   &
         ! time of the first grid which should be the larger one by convention
@@ -4143,6 +4296,7 @@
 !
 ! 5.b Process standard line
 !
+          OUTPTS(I)%OFILES(J)=OUTFF(J,I)              
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                   WRITE (MDSS,951) J, IDOTYP(J)
@@ -4173,7 +4327,7 @@
                     END DO
                   WRITE (MDSS,954) DTME21(1:19)
                 END IF
-
+!
               IF ( J .EQ. 1 ) THEN
 !
 ! 5.c Type 1: fields of mean wave parameters
@@ -4351,6 +4505,45 @@
 ! ... End of loop J on NOTYPE in 5.a
 !
         END DO
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+!  Checkpoint
+        J=8
+            !OUTPTS(I)%FLOUT(8)=.FALSE.
+          IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
+             !OUTPTS(I)%FLOUT(8)=.TRUE.
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                  WRITE (MDSS,951) J, IDOTYP(J)
+              TTIME(1) = ODAT(5*(J-1)+1,I)
+              TTIME(2) = ODAT(5*(J-1)+2,I)
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                   WRITE (MDSS,952) DTME21
+              TTIME(1) = ODAT(5*(J-1)+4,I)
+              TTIME(2) = ODAT(5*(J-1)+5,I)
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
+                   WRITE (MDSS,953) DTME21
+              TTIME(1) = 0
+              TTIME(2) = 0
+              DTTST    = REAL ( ODAT(5*(J-1)+3,I) )
+              CALL TICK21 ( TTIME , DTTST  )
+              CALL STME21 ( TTIME , DTME21 )
+              IF ( ( ODAT(5*(J-1)+1,I) .NE. ODAT(5*(J-1)+4,I) .OR.      &
+                     ODAT(5*(J-1)+2,I) .NE. ODAT(5*(J-1)+5,I) ) .AND.   &
+                     MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                  DO II=1, 18
+                    IF ( DTME21(II:II).NE.'0' .AND.                     &
+                         DTME21(II:II).NE.'/' .AND.                     &
+                         DTME21(II:II).NE.' ' .AND.                     &
+                         DTME21(II:II).NE.':' ) EXIT
+                    DTME21(II:II) = ' '
+                    END DO
+                  WRITE (MDSS,954) DTME21(1:19)
+                END IF
+            !ELSE
+            !OUTPTS(I)%FLOUT(8) = .FALSE.
+          END IF
+!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
 ! ... End of loop I on NRGRD in 5.a
 !
@@ -4358,7 +4551,7 @@
 !
 !/T      DO I=1, NRGRD
 !/T          WRITE (MDST,9050) I
-!/T          WRITE (MDST,9051) ODAT(:,I)
+!/T          WRITE (MDST,9053) ODAT(:,I)
 !/T          WRITE (MDST,9052) FLGRD(:,:,I)
 !/T        END DO
 !
@@ -4467,8 +4660,13 @@
             IF ( ODAT( 3,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(13,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
             IF ( ODAT(28,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+!xxx
+! Checkpoint 
+            IF ( ODAT(38,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+!xxx
             IF ( ODAT( 8,I) .GT. 0 .OR.  ODAT(18,I) .GT. 0 .OR.       &
-                 ODAT(23,I) .GT. 0 ) NDPOUT(I) = NDPOUT(I) + 1
+                 ODAT(23,I) .GT. 0 )          &
+                                           NDPOUT(I) = NDPOUT(I) + 1
             IF ( IOSTYP .EQ. 2 ) NDPOUT(I) = MIN ( 1 , NDPOUT(I) )
             END DO
         END IF
@@ -4853,7 +5051,7 @@
 ! ..... Model initialization
 !
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
-
+!
         CALL W3INIT ( I, .TRUE., MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
                       FLGRD(:,:,I),FLGR2(:,:,I),FLGD(:,I),FLG2(:,I),  &
                       OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, &
@@ -5032,6 +5230,25 @@
             END IF
           END DO
 !
+! Checkpoint
+        J=8
+            OUTPTS(I)%FLOUT(8)=.FALSE.
+          IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
+             OUTPTS(I)%FLOUT(8)=.TRUE.
+          ELSE
+              OUTPTS(I)%FLOUT(8)=.FALSE.
+          ENDIF
+
+          IF ( FLOUT(J) ) THEN
+              IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                  TOUTP(:,I) = TONEXT(:,J)
+                ELSE
+                  DTTST  = DSEC21 ( TOUTP(:,I), TONEXT(:,J) )
+                  IF ( DTTST .LT. 0. ) TOUTP(:,I) = TONEXT(:,J)
+                ENDIF
+            END IF
+!
+!
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
 !
@@ -5130,13 +5347,13 @@
 !/MPI            CALL MPI_BCAST ( NBI  , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
-!/MPI            CALL MPI_BCAST ( FLOUT,  7, MPI_LOGICAL, 0,          &
+!/MPI            CALL MPI_BCAST ( FLOUT,  8, MPI_LOGICAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( DTOUT , 7, MPI_REAL, 0,             &
+!/MPI            CALL MPI_BCAST ( DTOUT , 8, MPI_REAL, 0,             &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TONEXT,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TONEXT,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TOLAST,14, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TOLAST,16, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI          END IF
