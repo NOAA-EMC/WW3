@@ -103,6 +103,7 @@
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    22-Jan-2020 : Update default values for IS2       ( version 7.00 ) 
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2250,7 +2251,7 @@
 !/IS2      IS2BACKSCAT = 1.
 !/IS2      IS2BREAK = .FALSE.
 !/IS2      IS2BREAKF = 3.6
-!/IS2      IS2FLEXSTR=2.7414E+05  ! value used in Boutin et al. JGR 2018. 
+!/IS2      IS2FLEXSTR=6.00E+05   ! value used in Ardhuin et al. 2020
 !/IS2      IS2ISOSCAT=.TRUE.     ! uses isotropic back-scatter
 !/IS2      IS2DISP=.FALSE. !not dispersion only attenuation following Liu disp. eq.
 !/IS2      IS2DUPDATE=.TRUE.
@@ -2258,14 +2259,15 @@
 !/IS2      IS2DMIN=20
 !/IS2      IS2DAMP=0.
 !/IS2      IS2CREEPB=0.
-!/IS2      IS2CREEPC=0.2
-!/IS2      IS2CREEPD=0.4
+!/IS2      IS2CREEPC=0.4     ! This gives an impact of break-up over a wider freq. range
+!                            ! compared to the 0.2 value in Boutin et al. 2018
+!/IS2      IS2CREEPD=0.5
 !/IS2      IS2CREEPN=3.0
 !/IS2      IS2BREAKE=1.
 !/IS2      IS2WIM1=1.
-!/IS2      IS2ANDISB=.FALSE. !anelastic instead of inelastic dissipation if IS2CREEPB>0
+!/IS2      IS2ANDISB=.TRUE.  !anelastic instead of inelastic dissipation if IS2CREEPB>0
 !/IS2      IS2ANDISE=0.55    !energy of activation
-!/IS2      IS2ANDISD=1.672E-9!
+!/IS2      IS2ANDISD=2.0E-9  !see Ardhuin et al. 2020
 !/IS2      IS2ANDISN=1.      !dependency on stress. Equal to 1 normally?
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
