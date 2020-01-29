@@ -575,7 +575,7 @@ ELSE
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SIS2 (A, DEPTH, CICE, ICEH, ICEF, ICEDMAX, IX, IY, &
-                         S, D, DCREEP, WN, CG, WN_R, CG_ICE, R)
+                         S, D, DISSIP, WN, CG, WN_R, CG_ICE, R)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -619,7 +619,7 @@ ELSE
 !       IX,IY   Int   I     Not used
 !       S       R.A.  O     Source term (1-D version)
 !       D       R.A.  O     Diagonal part of scattering (1-D version)
-!       DCREEP  R.A.  O     Diagonal creep term (1-D version)
+!       DISSIP  R.A.  O     Diagonal dissipation term (1-D version)
 !       WN      R.A.  I     Wave number
 !       CG      R.A.  I     Group speed
 !       WN_R    R.A.  I     Wave number in ice
@@ -680,7 +680,7 @@ ELSE
 !/ Parameter list
       REAL, INTENT(IN)        :: A(NSPEC), DEPTH, CICE, ICEH, ICEDMAX
       INTEGER, INTENT(IN)     :: IX, IY
-      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DCREEP(NSPEC), R(NK)
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DISSIP(NSPEC), R(NK)
       REAL, INTENT(INOUT)     :: ICEF
       REAL, INTENT(IN)        :: WN(NK), CG(NK), WN_R(NK), CG_ICE(NK)
 
@@ -701,8 +701,6 @@ ELSE
       REAL, PARAMETER         :: YOUNG = 5.49E+9   ! Young modulus 
       REAL, PARAMETER         :: POISSON = 0.3     ! Poisson Ratio 
       REAL                    :: SIGMA_C
-!      REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
-                                                         ! this is now a parametrer IS2PARS(19) 
       REAL, PARAMETER         :: DENS = 1025.0     ! ice density 
       REAL                    :: GAMMA_TOY 
       REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I,   &
@@ -717,7 +715,7 @@ ELSE
 !
       S = 0.
       D = 0.
-      DCREEP = 0.
+      DISSIP = 0.
       DUMMY = WN
       WN_I = 0.
       WN_RP = 0.
@@ -731,11 +729,9 @@ ELSE
       !B_COLE=1.205E-9 * EXP(0.55*1.60218E-19/(1.38064852e-23*263.15))
       B_COLE=1.205E-9 * EXP(IS2PARS(24)*1.60218E-19/(1.38064852e-23*268.15))
       TAU_D=B_COLE/0.07
-      S_D=LOG(SIG(:)*TAU_D)
-      !IF ((IX.EQ.50).AND.(IY.EQ.20)) WRITE(*,*) 'B', B_COLE, 'SD1' ,S_D(1), 'SD5', S_D(5), 'TAU_D', TAU_D
+      S_D=LOG(SIG(1:NK)*TAU_D)
       DELTA_D=IS2PARS(21) 
-      !SIGMA_RATIO =1.
-      !
+! 
       IF (IS2PARS(9).GT.0) ICEDMIN = IS2PARS(9)
       IF (IS2PARS(12).GT.0) THEN 
         B=IS2PARS(12)
@@ -951,29 +947,29 @@ ELSE
             END IF
           END IF  !end of test  (IS2PARS(3).GT.0.5)
 !
-!  5. creep dissipation 
+!  5. inelastic or anelastic dissipation 
 !      
         IF (IS2PARS(12).GT.0) THEN
           DO IK = 1, NK 
 !        
 ! The TANH((DMAX-D*WLG_I(IK))/DMAX*C) 
 ! is an ad hoc factor that goes to zero for WLG << DMAX and 1 for WLG >> DMAX 
-! this should probably be adjusted... 
+! this should probably be adjusted. 
 !
             IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
               SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13)))
-              IF (IS2PARS(23).LE.0.5) THEN
-                DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)                & 
+              IF (IS2PARS(23).LE.0.5) THEN  ! this is the inelastic option 
+                DISSIP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)                & 
                                             *((2*PI)/WLG_I(IK))**(IS2PARS(15)+1) &
                                             /(CGRATIO(IK)**1*R(IK)**2)           &
                                             *SMOOTHD
-              ELSE
-                DCREEP(1+(IK-1)*NTH:IK*NTH) =-4*4/3*SIG(IK)* DELTA_D*ALPHA_D *WN_I(IK)**4 * (YOUNG/MP2)**2         &
+              ELSE ! this is the inelastic option
+                DISSIP(1+(IK-1)*NTH:IK*NTH) =-4*4/3*SIG(IK)* DELTA_D*ALPHA_D *WN_I(IK)**4 * (YOUNG/MP2)**2         &
                                              * (ICEH/2)**3/3 * 1/( EXP(ALPHA_D*S_D(IK)) + EXP(-ALPHA_D*S_D(IK))) &
                                              * SMOOTHD /(R(IK)**2*CGRATIO(IK)) / (DWAT*GRAV) *TPIINV 
               END IF
             END IF
-            S=S+DCREEP*CICE*A
+            S=S+DISSIP*CICE*A
             END DO ! end of loop on IK
           ENDIF ! end of test (IS2PARS(12).GT.0)
 !
