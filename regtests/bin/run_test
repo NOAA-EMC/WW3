@@ -468,7 +468,7 @@ filescdl=$path_i/*.cdl
 for f in $filescdl
 do
   echo "Converting $f to NetCDF"
-  # take action on each file.  Note thae converted file is in $path_w
+  # take action on each file.  Note that converted file is in $path_w
   ncgen -b $f
 done
 

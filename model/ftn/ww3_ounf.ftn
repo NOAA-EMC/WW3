@@ -32,7 +32,6 @@
 !/    12-Sep-2018 : Added extra partitioned fields      ( version 6.06 )
 !/    25-Sep-2018 : Add WBT parameter                   ( version 6.06 )
 !/    28-Mar-2019 : Bugfix to NBIPART check.            ( version 6.07 )
-!/    21-May-2019 : Feature fixed filename              ( version 7.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1991,8 +1990,7 @@
                   'wave_peak_enhancement_factor_partition_',IPART
               WRITE(VARNG(1),'(A,I1)') &
                   'wave_peak_enhancement_factor_partition_',IPART
-              VARNC(1)="JONSWAP peak enhancement factor; " //  &
-                        PARTCOM
+              VARNC(1)='JONSWAP peak enhancement factor; ' // PARTCOM
               VARND(1)=''
               VMIN = 0
               VMAX = 32000
@@ -2015,8 +2013,7 @@
               WRITE(VARNG(1),'(A,I1)') &
                   'Gaussian_frequency_spread_partition_',IPART
               VARNC(1)='Gaussian least-square fit to ' // &
-                       'omni-directional spectral partition; ' // &
-                       PARTCOM
+                       'omni-directional spectral partition; ' // PARTCOM
               VARND(1)=''
               VMIN = 0
               VMAX = 32000

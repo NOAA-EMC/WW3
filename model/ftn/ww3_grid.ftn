@@ -2212,11 +2212,11 @@
       I1E3D=1
       I2E3D=NK
       P2SF   = 0
-      I1P2SF = 1	
+      I1P2SF = 1
       I2P2SF = 15
-      US3D   = 0 
-      I1US3D = 1
-      I2US3D = NK
+      US3D=0 
+      I1US3D=1
+      I2US3D=NK
       USSP=0
       IUSSP=1
       STK_WN(:)=0.0
@@ -2257,15 +2257,15 @@
 !/IS2      IS2FRAGILITY=0.9
 !/IS2      IS2DMIN=20
 !/IS2      IS2DAMP=0.
-!/IS2      IS2CREEPB=2.0E+07
-!/IS2      IS2CREEPC=0.4
-!/IS2      IS2CREEPD=0.5
+!/IS2      IS2CREEPB=0.
+!/IS2      IS2CREEPC=0.2
+!/IS2      IS2CREEPD=0.4
 !/IS2      IS2CREEPN=3.0
 !/IS2      IS2BREAKE=1.
 !/IS2      IS2WIM1=1.
-!/IS2      IS2ANDISB=.TRUE.  !anelastic instead of inelastic dissipation if IS2CREEPB>0
+!/IS2      IS2ANDISB=.FALSE. !anelastic instead of inelastic dissipation if IS2CREEPB>0
 !/IS2      IS2ANDISE=0.55    !energy of activation
-!/IS2      IS2ANDISD=2.0E-9  !relaxation of dislocations in 1/Pa
+!/IS2      IS2ANDISD=1.672E-9!
 !/IS2      IS2ANDISN=1.      !dependency on stress. Equal to 1 normally?
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
