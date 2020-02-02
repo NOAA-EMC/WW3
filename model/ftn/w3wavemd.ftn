@@ -496,7 +496,7 @@
 !
 ! 0.a Set pointers to data structure
 !
-!/OMPX      FLOMP  = .TRUE.
+!!/OMPX      FLOMP  = .TRUE.
 !
 !/COU      SCREEN   =  333
 !
@@ -1725,14 +1725,14 @@
 !/MPI         CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
 !/MPI       END IF
 !
-!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
+!!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.14'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 
             IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
-!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
+!!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
@@ -1781,11 +1781,11 @@
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 
 
-!/OMPX/!$OMP END DO
+!!/OMPX/!$OMP END DO
 
               IF ( FLOMP ) DEALLOCATE ( FIELD )
 
-!/OMPX/!$OMP END PARALLEL
+!!/OMPX/!$OMP END PARALLEL
 
 !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
               IK=1
