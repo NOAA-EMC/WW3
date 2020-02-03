@@ -1201,6 +1201,7 @@
 !
 ! CHECKPOINT
         IF(J .EQ. 4) THEN
+          WORDS(1:6)=''
           ODAT(38)=0 
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
@@ -1219,6 +1220,7 @@
 !          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
 !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
+          WORDS(1:6)=''
 !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS

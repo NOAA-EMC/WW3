@@ -1121,6 +1121,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
 !
         IF(J .LE. 2) THEN
+          WORDS(1:6)=''
           READ (MDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !        
@@ -1146,6 +1147,7 @@
           END IF
 ! CHECKPOINT
         ELSE IF(J .EQ. 4) THEN
+            WORDS(1:6)=''
             READ (MDSI,'(A)') LINEIN
             READ(LINEIN,*,iostat=ierr) WORDS
 !
