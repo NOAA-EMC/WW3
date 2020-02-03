@@ -97,9 +97,9 @@
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
-              wind windx wcor rwind curr currx mgwind mgprop mggse \
+              wind windx rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
-              cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind
+              cou oasis agcm ogcm igcm trknc setup pdlib memck uost dbtest
   do
     case $type in
 #sort:mach:
@@ -163,6 +163,11 @@
                ID='directive controlled threading'
                TS='OMP'
                OK='OMPG OMPX OMPH' ;;
+#sort:dbtest:
+      dbtest ) TY='upto1'
+               ID='test for T1 conflict eith OMPH'
+               TS='T1'
+               OK='T1' ;;
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
@@ -247,23 +252,11 @@
       windx  ) TY='one'
                ID='wind interpolation in space'
                OK='WNX0 WNX1 WNX2' ;;
-#sort:wcor:
-      wcor   ) TY='upto1'
-               ID='wind speed correction'
-               TS='WCOR'
-               OK='WCOR' ;;
 #sort:rwind:
       rwind  ) TY='upto1'
                ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
-
-#sort:rstwind:
-      rstwind  ) TY='upto1'
-               ID='wind in restart for wmesmf'
-               TS='WRST'
-               OK='WRST' ;;
-
 #sort:curr:
       curr   ) TY='one'
                ID='current interpolation in time'
@@ -508,6 +501,7 @@
       memck  ) memck=$sw ;;
       setup  ) setup=$sw ;;
       uost   ) uost=$sw ;;
+      dbtest ) dbtest=$sw ;;
               *    ) ;;
     esac
   done
@@ -674,6 +668,14 @@
       echo ' '
       echo "   *** !/ST6 cannot be used in combination with !/$stress"
       echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
+      echo ' ' ; exit 11
+  fi
+
+  if [ "$dbtest" = 'T1' ] && [ "$thread2" = 'OMPH' ]
+  then
+      echo ' '
+      echo "   *** !/T1 cannot be used in combination with !/OMPH"
+      echo "       Remove OMPH if desire is to test T1 GRINFO."
       echo ' ' ; exit 11
   fi
 
@@ -863,7 +865,6 @@
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
   progs="$progs ww3_multi_esmf  ww3_uprstr"
   progs="$progs libww3"
-  progs="$progs libww3.so"
 
   for prog in $progs
   do
@@ -1072,13 +1073,6 @@
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
-     libww3.so) IDstring='Object file archive'
-               core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
-               data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop="$pr"
-             source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
-                 IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;  
      ww3_uprstr) IDstring='Update Restart File' 
               core= 
 	          data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
@@ -1098,7 +1092,7 @@
       filesl="$data $core $prop $source $IO $aux"
     # if program name is libww3, then
     # the target is compile and create archive
-    elif [ "$prog" = "libww3" ] ||  [ "$prog" = "libww3.so" ]
+    elif [ "$prog" = "libww3" ]
     then
       d_string="$prog"' : $(aPo)/'
       files="$aux $core $data $prop $source $IO"
@@ -1143,19 +1137,6 @@
       done
       echo "	@cd \$(aPo); $ar_cmd $lib $objs" >> makefile
       echo ' '                                   >> makefile
-    # if program name is libww3.so, then
-    # the target is compile and create archive
-    elif [ "$prog" = "libww3.so" ]
-    then
-      lib=$prog
-      objs=""
-      for file in $filesl
-      do
-        objs="$objs $file.o"
-      done
-      echo "	@cd \$(aPo); ld -o $lib -shared $objs" >> makefile
-      echo ' '                                   >> makefile
-      
     else
       echo '	@$(aPb)/link '"$filesl"          >> makefile
       echo ' '                                   >> makefile
