@@ -496,7 +496,7 @@
 !
 ! 0.a Set pointers to data structure
 !
-!!/OMPX      FLOMP  = .TRUE.
+!/OMPX      FLOMP  = .TRUE.
 !
 !/COU      SCREEN   =  333
 !
