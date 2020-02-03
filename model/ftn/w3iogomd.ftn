@@ -3786,7 +3786,6 @@
                ENDDO
                MINDIFF=1.e8
                !Put spectral energey into whichever band central wavenumber fits in
-               NB=NK!allocated to size2*NK! STKBND_IN(NK)
                USSP(JSEA,Spc2Bnd(IK))    =  USSP(JSEA,Spc2Bnd(IK)) + ABX(JSEA)*USSCO
                USSP(JSEA,NK+Spc2BND(IK)) =  USSP(JSEA,NK+Spc2Bnd(IK)) + ABY(JSEA)*USSCO
             ENDIF
