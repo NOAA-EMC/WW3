@@ -3679,8 +3679,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, ISEA, JSEA
-      INTEGER                 :: IKST, IKFI, IB, NB
-      INTEGER                 :: STKBND_INDEX
+      INTEGER                 :: IKST, IKFI, IB
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FACTOR, FKD,KD
       REAL                    :: ABX(NSEAL), ABY(NSEAL), USSCO
