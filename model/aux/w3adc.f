@@ -6,6 +6,7 @@ C/                  |                        FORTRAN 77 |
 C/                  | Last update :         03-Feb-2020 |
 C/                  +-----------------------------------+
 C/
+C/    05-Jan-2001 : Origination
 C/    03-Feb-2020 : Added ability to process multiple   ( version 7.00 )
 C/                  switches on a single line. Chris Bunney, UKMO
 C/
