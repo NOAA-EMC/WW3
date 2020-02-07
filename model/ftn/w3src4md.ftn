@@ -1566,9 +1566,15 @@
 !  2. Method :
 !       
 !       This codes does either one or the other of 
-!       Ardhuin et al. (JPO 2010)   
-!       Filipot & Ardhuin (JGR 2012)
-!       the choice depends on SDSBCK 
+!       Ardhuin et al. (JPO 2010)    : T4?? 
+!       Filipot & Ardhuin (JGR 2012) : T500
+!       Leckler et al. (OM 2013)     : T5??  
+!
+!     Computation of breaking probability :
+!       If SDSBCK=0 and SDSC1=0 : from saturation spectrum (T4??) - (setting setting)
+!       If SDSBCK>0 and SDSC1=0 : from wave scale (T5??) - (comput. from saturation spectrum is disabled)
+!       If SDSBCK>0 and SDSC1=1 : from both saturation spectrum and wave scale (T500)
+!
 !
 !  3. Parameters :
 !
@@ -1601,6 +1607,20 @@
 !  6. Error messages :
 !
 !  7. Remarks :
+!
+!      SSDSC(1), Real  Public   Flag to activate T500
+!      SSDSC(2), Real  Public   Spontaneous dissipation constant
+!      SSDSC(3), Real  Public   Cumulative dissipation constant (SDSCUM)
+!      SSDSC(4), Real  Public   Not used anymore
+!      SSDSC(5), Real  Public   Wave-turbulence dissipation factor
+!      SSDSC(6), Real  Public   dissipation parameter
+!      SSDSC(7), Real  Public   fraction of breaker wavelength covered
+!                               by foam (WHITECAPWIDTH)
+!      SSDSC(8), Real  Public   modulation parameter? (SDSSTRAIN)
+!      SSDSC(9), Real  Public   modulation parameter?(SDSSTRAINA)
+!      SSDSC(10),Real  Public   modulation parameter?(SDSSTRAIN2)
+!      SSDSC(11),Real  Public   low frequency generation? (SDSLFGEN)
+!      SSDSC(12),Real  Public   high frequency generation? (SDSHFGEN)
 !
 !  8. Structure :
 !
@@ -1706,19 +1726,19 @@
 
       !IF (IX == DEBUG_NODE) WRITE(*,'(A20,4F20.10)') 'ST4 DISSIP ANFANG', SUM(SRHS), SUM(DDIAG)
 !/IG1  IK1=NINT(IGPARS(5))+1
-      NTHSUM=MIN(FLOOR(SSDSC(10)+0.5),NTH-1)  ! number of angular bins for enhanced modulation
+      NTHSUM=MIN(FLOOR(SSDSC(9)+0.5),NTH-1)  ! number of angular bins for enhanced modulation
       IF (NTHSUM.GT.0) THEN 
         WTHSUM(1:NTHSUM)=1
-        WTHSUM(NTHSUM+1)=SSDSC(10)+0.5-NTHSUM
+        WTHSUM(NTHSUM+1)=SSDSC(9)+0.5-NTHSUM
       ELSE 
-        WTHSUM(1)=2*SSDSC(10)
+        WTHSUM(1)=2*SSDSC(9)
         END IF
 !
-! 2.   Estimation of spontaneous breaking 
+! 2.   Estimation of spontaneous breaking
 !
-      IF ( (SSDSBCK-SSDSC(1)).LE.0 ) THEN 
+      IF ( SSDSBCK.EQ.0 .OR. SSDSC(1).EQ.1 ) THEN 
 !
-! 2.a  Case of a direction-dependent breaking term (TEST441) 
+! 2.a  Computes spontaneous breaking from saturation spectrum (T4??+T500)
 !
         EPSR = SQRT(SSDSBR)
 !
@@ -1753,7 +1773,7 @@
 ! straining effect: first finds the mean direction of mss, then applies cos^2
 !                   straining
 !
-            IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
+            IF (SSDSC(8).GT.0.OR.SSDSC(10).GT.0) THEN 
               IKC = MAX(1,IK-DIKCUMUL)
               IMSSMAX (IK) = 1
               MSSP   = 0.
@@ -1814,7 +1834,7 @@
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
 !
-                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
+                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(10)*SQRT(MSSSUM2(IKC,ITH))
                 FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 
@@ -1940,7 +1960,7 @@
 !/
         END IF ! End of test for (Ardhuin et al. 2010)'s spontaneous dissipation source term
 !
-! 2.b             Computes spontaneous breaking for T500 //////////////
+! 2.b  Computes spontaneous breaking from wave scales (T5??)
 !
       IF (SSDSBCK.GT.0) THEN ! test for (Filipot et al. 2010)'s disspation source term
         E1 = 0.
@@ -2141,23 +2161,23 @@
 !
 ! Adds non-diagonal part: high and low frequency generation 
 !
-      IF (SSDSC(1).GT.0) THEN 
+      IF (SSDSC(11).GT.0) THEN 
         DO IK2 = IK1+DIKCUMUL, NK
           DO IK = IK2-DIKCUMUL, IK2-1
             DO ITH=1,NTH 
               IS2=ITH+(IK2-1)*NTH
               IS=ITH+(IK-1)*NTH
-              SRHS(IS) = SRHS(IS) + SSDSC(1)*ABS(SBK(IS2))/DIKCUMUL
+              SRHS(IS) = SRHS(IS) + SSDSC(11)*ABS(SBK(IS2))/DIKCUMUL
               END DO
             END DO
           END DO
         END IF
 !
-      IF (SSDSC(9).GT.0) THEN 
+      IF (SSDSC(12).GT.0) THEN 
         DO IK2 = IK1, NK-DIKCUMUL
           IKM= MIN(NK,IK2+2*DIKCUMUL)
           NKM=IKM-(IK2+DIKCUMUL)+1
-          FACHF=SSDSC(9)/FLOAT(NKM*NTH)
+          FACHF=SSDSC(12)/FLOAT(NKM*NTH)
           DO IK = IK2+DIKCUMUL, IKM
             SRHS((IK-1)*NTH+1:IK*NTH) = SRHS((IK-1)*NTH+1:IK*NTH) + ABS(SBKT(IK2))*FACHF
             END DO

@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         06-Feb-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -103,6 +103,7 @@
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    06-Feb-2020 : Clean and update SSDSC array        ( version 7.00 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1675,16 +1676,16 @@
 !/ST3      SDSDELTA1 = 0.4 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !/ST3      SDSDELTA2 = 0.6 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !
-!/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
 !/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
-!/ST4      FXFM3 = 2.5 
+!/ST4      FXFM3   = 2.5 
 !/ST4      FXFMAGE = 0. 
 !/ST4      FXINCUT = 0. 
 !/ST4      FXDSCUT = 0. 
-!/ST4      FXPM3 = 4.
+!/ST4      FXPM3   = 4.
 !/ST4      WNMEANPTAIL = -0.5 
+!/ST4      SDSC1     = 0.0
 !/ST4      SDSC2     = -2.2E-5
-!/ST4      SDSCUM     = -0.40344
+!/ST4      SDSCUM    = -0.40344
 !/ST4      SDSC4     = 1.
 !/ST4      SDSC5     = 0. 
 !/ST4      SDSC6     = 0.3
@@ -1769,18 +1770,23 @@
 !
 !/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
 !/ST4      WRITE (NDSO,924) STATUS
-!/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP 
-!/ST4      SSDSC(1)   = SDSLFGEN
+!/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP
+!/ST4      IF (SDSC1.NE.0 .AND. SDSC1.NE.1) THEN
+!/ST4        WRITE(NDSE,1014)
+!/ST4        CALL EXTCDE(30)
+!/ST4      END IF 
+!/ST4      SSDSC(1)   = SDSC1
 !/ST4      SSDSC(2)   = SDSC2
 !/ST4      SSDSC(3)   = SDSCUM
-!/ST4      SSDSC(4)   = SDSC4
+!/ST4      SSDSC(4)   = SDSC4  ! not used anymore, set to 1
 !/ST4      SSDSC(5)   = SDSC5
 !/ST4      SSDSC(6)   = SDSC6
 !/ST4      SSDSC(7)   = WHITECAPWIDTH
 !/ST4      SSDSC(8)   = SDSSTRAIN ! Straining constant ... 
-!/ST4      SSDSC(9)   = SDSHFGEN
-!/ST4      SSDSC(10)   = SDSSTRAINA*NTH/360. ! angle for enhanced straining
-!/ST4      SSDSC(11)   = SDSSTRAIN2 ! enhanced straining constant ... 
+!/ST4      SSDSC(9)   = SDSSTRAINA*NTH/360. ! angle for enhanced straining
+!/ST4      SSDSC(10)  = SDSSTRAIN2 ! enhanced straining constant ... 
+!/ST4      SSDSC(11)  = SDSLFGEN
+!/ST4      SSDSC(12)  = SDSHFGEN
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
 !/ST4      SSDSBRFDF= SDSBRFDF
@@ -5960,6 +5966,9 @@
                '     AND REPLACED WITH A STRING INDICATING THE TYPE'/ &
                '     OF GRID INDEX CLOSURE (NONE, SMPL or TRPL).'/    &
                ' *** PLEASE UPDATE YOUR GRID INPUT FILE ACCORDINGLY ***'/)
+!
+!/ST4 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+!/ST4               '     ILLEGAL VALUE FOR SDSC1'/)
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)

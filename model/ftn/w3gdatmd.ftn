@@ -396,6 +396,7 @@
 !      SSDSC4,   Real  Public   Threshold shift in saturation diss.
 !      SSDSC5,   Real  Public   Wave-turbulence dissipation factor
 !      SSDSC6,   Real  Public   dissipation parameter
+!      SSDSC,    R.A   Public   Dissipation parameters (!/ST4)
 !      DDELTA1   Real  Public   Low-frequency dissipation coefficient
 !                               in WAM4
 !      DDELTA2   Real  Public   High-frequency dissipation coefficient
@@ -790,7 +791,7 @@
 !/ST4        REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
 !/ST4        REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
 !/ST4                                 SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-!/ST4                                 SSDSC(1:11), SSDSBR,                 &
+!/ST4                                 SSDSC(1:12), SSDSBR,                 &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
 !/ST4                                 FFXPM, FFXFM, FFXFA, FFXFI, FFXFD,   &
 !/ST4                                 SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
