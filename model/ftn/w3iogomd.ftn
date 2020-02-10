@@ -3745,8 +3745,7 @@
 ! 2.c Finalize integration over band and update mean arrays
 !
 !
-!/OMPG/!$OMP PARALLEL DO
-!PRIVATE(JSEA,ISEA,FACTOR,KD,FKD,USSCO,MINDIFF,IB)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,KD,FKD,USSCO,MINDIFF,IB)
 !
          DO JSEA=1, NSEAL
 !/DIST              ISEA         = IAPROC + (JSEA-1)*NAPROC
