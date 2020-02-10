@@ -1202,6 +1202,7 @@
 ! CHECKPOINT
         IF(J .EQ. 4) THEN
           ODAT(38)=0 
+          WORDS(1:6)=''
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           READ(WORDS( 1 ), * ) ODAT(16)
@@ -1210,6 +1211,7 @@
           READ(WORDS( 4 ), * ) ODAT(19)
           READ(WORDS( 5 ), * ) ODAT(20)
           IF (WORDS(6) .EQ. 'T') THEN
+          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
             WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
           END IF
@@ -1219,12 +1221,10 @@
 !          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
 !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
+          WORDS(1:6)=''
 !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
-          DO I=1,6
-!            WRITE(*,*) I, WORDS(I)
-          END DO
 !
           IF(J .EQ. 1) THEN
             READ(WORDS( 1 ), * ) ODAT(1)
