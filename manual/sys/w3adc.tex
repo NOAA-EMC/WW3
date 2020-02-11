@@ -6,7 +6,7 @@ The \ws\ source code files are not ready to use {\fortran} files; mandatory
 and optional program options still have to be selected, and test output may be
 activated\footnote{~Exceptions are some modules that are not originally part
   of \ws, like the exact interaction modules. Such modules with the extension
-  {\file .f} of {\file .f90} bypass the preprocessor and get copied to the
+  {\file .f} or {\file .f90} bypass the preprocessor and get copied to the
   work directory with the {\file .f} extension.}. Compile level options are
 activated using `switches'. The arbitrary switch '{\F swt}' is included in the
 \ws\ files as comment of the form {\F !/swt}, where the switch name {\F swt}
@@ -15,9 +15,29 @@ preprocessor removes the comment characters, thus activating the corresponding
 source code line. If '{\F/}' follows the switch, it is also removed, thus
 allowing the selective inclusion of hardware-dependent compiler directives
 etc. The switches are case sensitive, and available switches are presented in
-\para\ref{sec:switches}. Files which contain the switch {\F c/swt} can be
+\para\ref{sec:switches}.
+
+Files which contain the switch {\F c/swt} can be
 found by typing \command{find\_switch '!/SWT'} A list of all switches included
 in the \ws\ files can be obtained by typing \command{all\_switches}
+
+\pb
+\noindent
+Traditionally, only one switch can be used per line of source code. However,
+as of {\ww} version 7.00, multiple switches (up to 4) can be set on a single
+line. For the line to be included in the compilation step all switches must
+be activated. Multiple switches must be chained together at the beginning of
+the line, with no spaces in between. Each switch must start with '{\F !/}' and
+may optionally be terminated with '{\F /}'. This allows for the handling of
+circumstances where a source code line needs to be included only if a
+particular combination of switches is set. For example, to enable a line only
+if the '{\F /OMPH}' and '{\F /T1}' switches are set:
+
+\begin{footnotesize}
+\begin{verbatim}
+!/OMPH!/!T1     ! Line included only if OMPH and T1 activated
+\end{verbatim}
+\end{footnotesize}
 
 \pb
 %\vspace{\baselineskip}
