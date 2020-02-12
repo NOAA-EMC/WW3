@@ -1462,7 +1462,7 @@
 ! 2.c Finalize integration over band and update mean arrays
 !
 !
-!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,MA,MC,MB,KD,FKD,USSCO,M1,M2)
 !
         DO JSEA=1, NSEAL
           CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -1680,7 +1680,7 @@
 !
         END DO
 
-!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY,STEX,STEY,STED,ITL,IK)
 !
         DO JSEA=1, NSEAL
 !/DIST        ISEA      = IAPROC + (JSEA-1)*NAPROC
@@ -2239,7 +2239,7 @@
 !
 ! 6.b Loop over local sea points
 !
-!/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA,IX,IY,I)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA,IX,IY,I,J)
 !
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -3679,8 +3679,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, ISEA, JSEA
-      INTEGER                 :: IKST, IKFI, IB, NB
-      INTEGER                 :: STKBND_INDEX
+      INTEGER                 :: IKST, IKFI, IB
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FACTOR, FKD,KD
       REAL                    :: ABX(NSEAL), ABY(NSEAL), USSCO
@@ -3730,7 +3729,7 @@
 !
          DO ITH=1, NTH
 !
-!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
             DO JSEA=1, NSEAL
 !/DIST                ISEA         = IAPROC + (JSEA-1)*NAPROC
@@ -3746,8 +3745,7 @@
 ! 2.c Finalize integration over band and update mean arrays
 !
 !
-!/OMPG/!$OMP PARALLEL DO
-!PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,KD,FKD,USSCO,MINDIFF,IB)
 !
          DO JSEA=1, NSEAL
 !/DIST              ISEA         = IAPROC + (JSEA-1)*NAPROC
@@ -3786,11 +3784,11 @@
                ENDDO
                MINDIFF=1.e8
                !Put spectral energey into whichever band central wavenumber fits in
-               NB=NK!allocated to size2*NK! STKBND_IN(NK)
                USSP(JSEA,Spc2Bnd(IK))    =  USSP(JSEA,Spc2Bnd(IK)) + ABX(JSEA)*USSCO
                USSP(JSEA,NK+Spc2BND(IK)) =  USSP(JSEA,NK+Spc2Bnd(IK)) + ABY(JSEA)*USSCO
             ENDIF
          END DO
+!/OMPG/!$OMP END PARALLEL DO
       END DO
 !
       RETURN
