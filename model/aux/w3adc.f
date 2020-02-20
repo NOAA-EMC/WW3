@@ -6,6 +6,7 @@ C/                  |                        FORTRAN 77 |
 C/                  | Last update :         03-Feb-2020 |
 C/                  +-----------------------------------+
 C/
+C/    05-Jan-2001 : Origination
 C/    03-Feb-2020 : Added ability to process multiple   ( version 7.00 )
 C/                  switches on a single line. Chris Bunney, UKMO
 C/
@@ -13,8 +14,8 @@ C/    Version to preprocess FORTRAN 90 free format code.
 C/
 C  1. Purpose :
 C
-C     Pre-processing of FORTRAN files by switching on and of of
-C     selected lines and by including COMMON's.
+C     Pre-processing of FORTRAN files by switching on and off of
+C     selected lines and by including COMMONs.
 C
 C                                  - Based on ADCOM by N. Booij,
 C                                    Delft University of Technology.
@@ -48,6 +49,7 @@ C     Data in PARAMETER statements :
 C     ----------------------------------------------------------------
 C       MMLOUT  Int.  Line length of output.
 C       MMSWTC  Int.  Maximum number of switches.
+C       MMSWLN  Int.  Maximum number of switches on a single line.
 C       MMFILE  Int.  Maximum number of include files.
 C       MMLINE  Int.  Maximum length of include files.
 C     ----------------------------------------------------------------
@@ -131,9 +133,10 @@ C
       PARAMETER ( MMLOUT = 132 )
       PARAMETER ( MMFILE =  30 )
       PARAMETER ( MMSWTC =  52 )
+      PARAMETER ( MMSWLN =   4 )
       PARAMETER ( MMLINE = 200 )
 *
-      INTEGER       NSWTCH, IDLEN(MMFILE), NLINES(MMFILE), LL,
+      INTEGER       NSWTCH, IDLEN(MMFILE), NLINES(MMFILE), LL, NSWLN,
      &              LENGTH(MMFILE,MMLINE), NINCF(MMFILE), LS(MMSWTC)
       LOGICAL       FLOLD, FLKEEP, FLINCL, FLSWTC, LSTEXC, NOWEXC,
      &              QUOTES
@@ -253,6 +256,7 @@ C
       LSTEXC = .FALSE.
   130 CONTINUE
       READ (NDSINC,'(A)',END=190,ERR=190) NEWLNE
+      OLDLNE = NEWLNE
       ILINE1 = ILINE1 + 1
 *
 * switches
@@ -262,7 +266,12 @@ C
 *
       ! Rewrite for multiple switches on single line
       ! Chris Bunney, Feb 2020.
+      NSWLN = 0
       DO 140
+        IF(NSWLN .GT. MMSWLN) THEN
+          WRITE(*,9950) ILINE1, TRIM(FNAMER), TRIM(OLDLNE)
+          STOP
+        ENDIF
         IF(NEWLNE(1:2) .EQ. '!/') THEN
           ! Potential switch
           FLSWTC = .FALSE.
@@ -284,12 +293,14 @@ C
      &             NEWLNE(3+J:3+J) .EQ. '!') THEN
                 NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J-1)
                 FLSWTC = .TRUE.
+                NSWLN = NSWLN + 1
                 GOTO 140
               ENDIF
 *
               IF(NEWLNE(3+J:3+J) .EQ. '/' ) THEN
                 NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J-1)
                 FLSWTC = .TRUE.
+                NSWLN = NSWLN + 1
                 GOTO 140
               ENDIF
 *
@@ -399,7 +410,12 @@ C
 *
       ! Rewrite for multiple switches on single line
       ! Chris Bunney, Feb 2020.
+      NSWLN = 0
       DO 310
+        IF(NSWLN .GT. MMSWLN) THEN
+          WRITE(*,9950) ILINE1, TRIM(FNAMEI), TRIM(OLDLNE)
+          STOP
+        ENDIF
         IF(NEWLNE(1:2) .EQ. '!/') THEN
           ! Potential switch
           FLSWTC = .FALSE.
@@ -421,12 +437,14 @@ C
      &             NEWLNE(3+J:3+J) .EQ. '!') THEN
                 NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J-1)
                 FLSWTC = .TRUE.
+                NSWLN = NSWLN + 1
                 GOTO 310
               ENDIF
 *
               IF(NEWLNE(3+J:3+J) .EQ. '/' ) THEN
                 NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J-1)
                 FLSWTC = .TRUE.
+                NSWLN = NSWLN + 1
                 GOTO 310
               ENDIF
 *
@@ -593,6 +611,13 @@ C
  9941 FORMAT ( '   |',A33,'|    |',A33,'|')
  9942 FORMAT ( '   +---------------------------------+  ',
      &         '  +---------------------------------+')
+*
+ 9950 FORMAT (/'*** ERROR: MAXIMUM NUMBER OF SWITCHES ON',
+     &         ' INPUT LINE EXCEEDED                  ',/
+     &         '       LINE NUMBER: ', I5, /
+     &         '       FILENAME: ', A, /
+     &         '       LINE: ', A//)
+*
  9999 FORMAT ( ' TEST W3ADC/2 : PROGRAM ENDED DUE TO VALUE OF ITEST'/)
 *
 * End of W3ADC  --------------------------------------------------------
