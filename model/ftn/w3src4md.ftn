@@ -76,8 +76,8 @@
       REAL,    PARAMETER      :: TAUWMAX = 2.2361 !SQRT(5.)
       INTEGER                 :: DIKCUMUL
 !  Size of wave height table for integrating the PDF of wave heights
-      INTEGER,    PARAMETER      :: NKHI=100
-      REAL,    PARAMETER      :: FAC_KD1=1.01, FAC_KD2=1000., KHSMAX=2., KHMAX=2.
+      INTEGER,    PARAMETER      :: NKHI=100, FAC_KD2=1000
+      REAL,    PARAMETER      :: FAC_KD1=1.01, KHSMAX=2., KHMAX=2.
       REAL,    PARAMETER      ::KDMAX=200000.
 !/
       CONTAINS
@@ -369,7 +369,7 @@
       USE CONSTANTS, ONLY: GRAV,nu_air,KAPPA,TPI,FWTABLE,SIZEFWTABLE, & 
 !/T                        RADE,                                      & 
                            DELAB,ABMIN
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, DDEN, SIG, SIG2, TH,         &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
                           ZZ0RAT, SSINBR
@@ -1147,7 +1147,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: KAPPA, GRAV
 !/S      USE W3SERVMD, ONLY: STRACE
-      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE, ZZ0MAX
+      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, FACHFE, ZZ0MAX
 !/T      USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
@@ -1221,7 +1221,7 @@
                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
                ZLOG     = MIN(ALOG(ZMU),0.)
                ZBETA        = CONST1*ZMU*ZLOG**4
-               ! Power of Y in denominator should be FACHFE-4
+               ! Power of Y in denominator should be FACHFE-4  tail applied here
                TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
                END DO
 !/T      WRITE (NDST,9000) L,K,AALPHA+FLOAT(L)*DELALP,UST,TAUHFT(K,L)
@@ -1290,7 +1290,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: KAPPA, GRAV
 !/S      USE W3SERVMD, ONLY: STRACE
-      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE,  &
+      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, FACHFE,  &
                           TTAUWSHELTER, ZZ0MAX
       USE W3ODATMD, ONLY: NDSE
 !/T      USE W3ODATMD, ONLY: NDST
@@ -1619,13 +1619,13 @@
       USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, TPI, RADE, DEBUG_NODE
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
                           SSDSC, EC2, ES2, ESC,                      &
-                          SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
-                          SSDSISO, SSDSDTH, SSDSBR2, SSDSBM,         &
-                          SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
+                          SIG, SSDSP, ECOS, ESIN, DTH,               &
+                          SSDSISO, SSDSDTH, SSDSBM,                  &
+                          SSDSBRFDF, SSDSBCK, IKTAB, DCKI,           &
                           SATINDICES, SATWEIGHTS, CUMULW, NKHS, NKD, &
                           NDTAB, QBI
 !/IG1      USE W3GDATMD, ONLY: IGPARS
-      USE W3ODATMD, ONLY: UNDEF, FLOGRD
+      USE W3ODATMD, ONLY: FLOGRD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ODATMD, ONLY: NDST
@@ -1804,12 +1804,12 @@
 ! Testing straining effect of long waves on short waves
 ! extended from Longuet-Higgins and Stewart (JFM 1960, eq. 2.27) the amplitude modulation 
 ! in deep water is equal to the long wave slope k*a cos(theta1-theta2)
-! Here we assume that the saturation is modulated as (1 + 2*SSDSC(8) *  sqrt(mss_theta) )
+! Here we assume that the saturation is modulated as (1 + SSDSC(8) *  sqrt(mss) )
 ! where mss_theta is the mss in direction ITH. 
 ! 
-! Note: SSDSC(8) is 2 times the MTF: close to 4x2=8 for very small ka but can be 20 or larger for ak~0.1
+! Note: SSDSC(8) is sqrt(2)*times the mss MTF: equal to 4*sqrt(2) according to Longuet-Higgins and Stewart
 !
-                IF (SSDSC(8).GT.0) THEN 
+                IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
 !
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
@@ -1820,8 +1820,6 @@
 
                 BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
                        A(IS0+SATINDICES(:,ITH)) )*FACSAT
-!              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
-!                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
               END DO
 
             IF (SSDSISO.EQ.1) THEN
@@ -1830,11 +1828,7 @@
               BTH0(IK)=MAXVAL(BTH(IS0+1:IS0+NTH))
               END IF
             END IF
-
-!/DEBUGSRC            IF(IX == DEBUG_NODE) THEN
-!/DEBUGSRC              WRITE(*,'(A10,I10,10F20.10)') 'ST4 D2', IK, BTH0(IK), SUM(BTH(IS0+1:IS0+NTH))
-!/DEBUGSRC            ENDIF
-
+!
           END DO !NK END
 ! 
 !   Optional smoothing of B and B0 over frequencies
@@ -1919,9 +1913,6 @@
           COEF3=-2.*SIG(IK)*K(IK)*FACTURB
           DDIAG((IK-1)*NTH+1:IK*NTH) = SDIAGISO + &
                                    COEF2*((MAX(0.,BTH((IK-1)*NTH+1:IK*NTH)-COEF1))**SSDSP) 
-!            IF (IX == DEBUG_NODE) THEN
-!              WRITE(*,'(A10,I10,10F15.6)') 'ST4 D3',IK,BTH0(IK),SUM(BTH((IK-1)*NTH+1:IK*NTH)),COEF1,COEF2,COEF3,SSDSP,SDIAGISO
-!            ENDIF
           END DO
 
           !IF(IX == DEBUG_NODE) WRITE(*,'(A20,4F15.6)') 'ST4 DISSIP 1', SUM(SRHS), SUM(DDIAG), SUM(BTH)
@@ -2164,7 +2155,6 @@
           END DO
         END IF
 
-        !IF(IX == DEBUG_NODE) WRITE(*,'(A10,4F20.10)') 'ST4 DISSIP 3', SUM(SRHS), SUM(DDIAG), SUM(A)
 !
 !  COMPUTES WHITECAP PARAMETERS
 !
