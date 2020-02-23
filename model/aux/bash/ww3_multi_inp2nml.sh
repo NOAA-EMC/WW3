@@ -630,7 +630,7 @@ do
     if [ "${rank[$irgrd]}" != "$irgrd" ]; then  echo "  MODEL($irgrd)%RESOURCE%RANK_ID      = ${rank[$irgrd]}" >> $nmlfile; fi
     if [ "${group[$irgrd]}" != 1 ];       then  echo "  MODEL($irgrd)%RESOURCE%GROUP_ID     = ${group[$irgrd]}" >> $nmlfile; fi
     if [ "${comm0[$irgrd]},${comm1[$irgrd]}" != '0.00,1.00' ];then  
-                                                echo "  MODEL($irgrd)%RESOURCE%COMM_FLAG    = ${comm0[$irgrd]},${comm1[$irgrd]}" >> $nmlfile; fi
+                                                echo "  MODEL($irgrd)%RESOURCE%COMM_FRAC    = ${comm0[$irgrd]},${comm1[$irgrd]}" >> $nmlfile; fi
     if [ "${bound[$irgrd]}" != 'F' ];     then  echo "  MODEL($irgrd)%RESOURCE%BOUND_FLAG   = ${bound[$irgrd]}" >> $nmlfile; fi
   fi
 done
