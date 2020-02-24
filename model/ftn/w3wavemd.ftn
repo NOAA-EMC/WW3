@@ -2424,8 +2424,7 @@
 !
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
                         ELSE IF ( J .EQ. 4 ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD,&
-                                        FLOUT(8) )
+                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
                           ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
@@ -2484,6 +2483,7 @@
               DTTST   = DSEC21 ( TIME, TOUT )
               IF ( DTTST .EQ. 0. ) THEN
                 CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+                 ITEST = RSTYPE
                  CALL TICK21 ( TOUT, DTOUT(J) )
                  TONEXT(:,J) = TOUT
                  TLST        = TOLAST(:,J)
