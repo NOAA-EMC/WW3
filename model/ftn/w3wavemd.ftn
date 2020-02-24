@@ -581,8 +581,6 @@
 !/SMC !!Li   Otherwise use sea point only field
 !/SMC       ALLOCATE ( FIELD(NCel) )
 !
-!     FIELD(:) = 0.
-!
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
       IF (FLAGLL) THEN 
@@ -1732,6 +1730,9 @@
 
             IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
+! Initialize FIELD variable 
+             FIELD = 0.
+!
 !!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
             DO ISPEC=1, NSPEC
@@ -2423,8 +2424,9 @@
 !
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
                         ELSE IF ( J .EQ. 4 ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD,&
+                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD,&
                                         FLOUT(8) )
+                          ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
 !/MPI                              IF (NRQBP2.NE.0) CALL MPI_WAITALL  &
@@ -2481,8 +2483,7 @@
               TOUT(:) = TONEXT(:,J)
               DTTST   = DSEC21 ( TIME, TOUT )
               IF ( DTTST .EQ. 0. ) THEN
-                CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD,    &
-                              FLOUT(8) )
+                CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
                  CALL TICK21 ( TOUT, DTOUT(J) )
                  TONEXT(:,J) = TOUT
                  TLST        = TOLAST(:,J)

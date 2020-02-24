@@ -138,6 +138,7 @@
 !                               RLGTYPE: Rectilinear grid
 !                               CLGTYPE: Curvilinear grid
 !                               UNGTYPE: Unstructured triangular grid                       
+!      RSTYPE    Int.  Public   Integer identifyng restart type
 !      ICLOSE    Int.  Public   Parameter indicating type of index closure of grid.
 !                               ICLOSE_NONE: No grid closure
 !                               ICLOSE_SMPL: Simple grid closure
@@ -610,6 +611,7 @@
 !/ Grid type
       TYPE GRID          ! this is the geographical grid with all associated parameters 
         INTEGER          :: GTYPE
+        INTEGER          :: RSTYPE = -1
         INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
 !/SEC1     INTEGER          :: NITERSEC1
@@ -934,6 +936,7 @@
 !/ Data aliases for structure GRID(S)
 !/
       INTEGER, POINTER :: GTYPE
+      INTEGER, POINTER :: RSTYPE
       INTEGER, POINTER :: ICLOSE
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
       INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:), USSPF(:)
@@ -1919,6 +1922,7 @@
 ! 3.  Set pointers in structure GRID
 !
       GTYPE  => GRIDS(IMOD)%GTYPE
+      RSTYPE => GRIDS(IMOD)%RSTYPE
       ICLOSE => GRIDS(IMOD)%ICLOSE
 !
       NX     => GRIDS(IMOD)%NX

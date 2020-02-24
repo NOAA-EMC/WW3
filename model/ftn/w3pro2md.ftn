@@ -627,6 +627,7 @@
 !/
       INTEGER                 :: ITH, IK, NTLOC, ITLOC, ISEA, IXY,    &
                                  IX,IY, IY0, IP, IBI
+      INTEGER                 :: SECT,TSEC,RES2,TMIN,THRS
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,  &
                                  CXMIN, CXMAX, CYMIN, CYMAX
@@ -728,7 +729,12 @@
           DFAC = 1.
       END IF
 !
-      YFIRST = MOD(ITIME,2) .EQ. 0
+      TSEC=MOD(TIME(2),100)
+      RES2=(TIME(2) - TSEC)/100
+      TMIN=MOD(RES2,100)
+      THRS=(RES2 - TMIN)/100
+      SECT=3600*THRS+60*TMIN+TSEC
+      YFIRST = MOD(SECT,INT(DTG)) .EQ. 0
 !
 !/T      WRITE (NDST,9000) YFIRST
 !/T      WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
