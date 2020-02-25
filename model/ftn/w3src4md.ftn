@@ -2083,12 +2083,13 @@
 !
 ! directional saturation I 
 ! integrate in azimuth
-      KO=(GRAV/USTAR**2)/(28./SSDSC(16))**2
+      KO=(GRAV/(1E-6+USTAR**2))/(28./SSDSC(16))**2
       DO IK=1,NK
         IS0=(IK-1)*NTH
         BTH(1:NTH)=MAX(A(IS0+1:IS0+NTH)*SIG(IK)*K(IK)**3,.00000000000001)
         C=SIG(IK)/K(IK)
-        BTH0(IK)=sum(BTH(IS0+1:IS0+NTH)*DTH)   
+        BTH0(IK)=sum(BTH(1:NTH)*DTH)   
+
         DO ITH=1,NTH
           IF (SSDSC(11).GT.0) THEN 
             MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
@@ -2101,7 +2102,7 @@
           LMODULATION(ITH)= FACSTRAIN**SSDSC(19) 
           END DO
 ! Lambda
-        BRLAMBDA(IS0+1:IS0+NTH)=1.*SSDSC(9)*EXP(-SSDSBR/BTH(1:NTH))              &
+        BRLAMBDA(IS0+1:IS0+NTH)=SSDSC(9)*EXP(-SSDSBR/BTH(1:NTH))              &
                                  *( 1.0+SSDSC(13)*MAX(1.,(K(IK)/KO))**SSDSC(15) ) &
                                  /(SSDSC(13)+1)*LMODULATION(1:NTH)
 ! Breaking strength : generalisation of Duncan's b parameter
@@ -2116,7 +2117,6 @@
         END DO
 !  Breaking probability (Is actually the breaking rate)
       PB = BRLAMBDA *C
-WRITE(998,*) SSDSC(2),SSDSC(5),SSDSC(3),KO,SSDSC(15) 
 !
       END SELECT
 !
