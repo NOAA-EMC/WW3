@@ -425,6 +425,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
+      INTEGER                 :: SECT,TSEC,RES2,TMIN,THRS
       REAL                    :: ICEDAVE
 !
 !/OASIS     INTEGER                 :: OASISED
@@ -1571,7 +1572,13 @@
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, NTLOC=', NTLOC
 !/DEBUGRUN        FLUSH(740+IAPROC)
           FACK   = DTG / REAL(NTLOC)
-          ITLOCH = ( NTLOC + 1 - MOD(ITIME,2) ) / 2
+
+          TSEC=MOD(TIME(2),100)
+          RES2=(TIME(2) - TSEC)/100
+          TMIN=MOD(RES2,100)
+          THRS=(RES2 - TMIN)/100
+          SECT=3600*THRS+60*TMIN+TSEC
+          ITLOCH = ( NTLOC + MOD(SECT,2*INT(DTG))/INT(DTG) ) / 2
 !
 ! 3.6.2 Intra-spectral part 1
 !

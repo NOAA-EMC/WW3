@@ -818,7 +818,7 @@
       TMIN=MOD(RES2,100)
       THRS=(RES2 - TMIN)/100
       SECT=3600*THRS+60*TMIN+TSEC
-      YFIRST = MOD(SECT,INT(DTG)) .EQ. 0
+      YFIRST = MOD(SECT,2*INT(DTG))/INT(DTG) .EQ. 0
 !
 !/T      WRITE (NDST,9000) YFIRST
 !/T      WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
@@ -1159,32 +1159,32 @@
 !
 !/OMPH/!$OMP END PARALLEL DO
 !
-        IF ( YFIRST ) THEN
+!!         IF ( YFIRST ) THEN
+!! !
+!! !/UQ            IF ( FLCY ) CALL W3QCK3                               &
+!! !/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
+!! !/UQ                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
+!! !/UQ                         NMY1, NMY2, NDSE, NDST )
+!! !/UQ            IF ( FLCX ) CALL W3QCK3                               &
+!! !/UQ                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
+!! !/UQ                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
+!! !/UQ                         NMX1, NMX2, NDSE, NDST )
+!! !
+!! !/UNO            IF ( FLCY ) CALL W3UNO2s                             &
+!! !/UNO                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
+!! !/UNO                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
+!! !/UNO                         NMY1, NMY2, NDSE, NDST )
+!! !/UNO            IF ( FLCX ) CALL W3UNO2s                             &
+!! !/UNO                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
+!! !/UNO                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
+!! !/UNO                         NMX1, NMX2, NDSE, NDST )
+!! !
+!!           ELSE
 !
-!/UQ            IF ( FLCY ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
-!/UQ                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
-!/UQ                         NMY1, NMY2, NDSE, NDST )
 !/UQ            IF ( FLCX ) CALL W3QCK3                               &
 !/UQ                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
 !/UQ                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
 !/UQ                         NMX1, NMX2, NDSE, NDST )
-!
-!/UNO            IF ( FLCY ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
-!/UNO                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
-!/UNO                         NMY1, NMY2, NDSE, NDST )
-!/UNO            IF ( FLCX ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
-!/UNO                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
-!/UNO                         NMX1, NMX2, NDSE, NDST )
-!
-          ELSE
-!
-!/UQ            IF ( FLCX ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
-!/UQ                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
-!/UQ                         NMX1, NMX2, NDSE, NDST )
 !/UQ            IF ( FLCY ) CALL W3QCK3                               &
 !/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
 !/UQ                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
@@ -1199,7 +1199,7 @@
 !/UNO                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
 !/UNO                         NMY1, NMY2, NDSE, NDST )
 !
-          END IF
+!!           END IF
 !
 !     Transform VQ back to normal space
 !
