@@ -92,6 +92,8 @@
       INTEGER, ALLOCATABLE :: TEND(:,:)
       LOGICAL              :: FLGNML
 !/MPI      INTEGER              :: IERR_MPI
+!/MPI      LOGICAL              :: FLHYBR = .FALSE.
+!/OMPH      INTEGER              :: THRLEV
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initialization necessary for driver
@@ -99,7 +101,13 @@
 !
 ! 0.b MPI environment: Here, we use MPI_COMM_WORLD
 !
+!/OMPH      FLHYBR = .TRUE.
+!/OMPH      ! For hybrid MPI-OpenMP specify required thread level:
+!/OMPH      IF( FLHYBR ) THEN
+!/OMPH         CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, THRLEV, IERR_MPI)
+!/OMPH      ELSE
 !/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/OMPH      ENDIF
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NMPROC, IERR_MPI )
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM, IMPROC, IERR_MPI )
@@ -108,6 +116,8 @@
 ! 0.c Identifying output to "screen" unit
 !
       IF ( IMPROC .EQ. NMPSCR ) WRITE (*,900)
+!/OMPH      IF ( IMPROC .EQ. NMPSCR ) WRITE (*,905) &
+!/OMPH                                        MPI_THREAD_FUNNELED, THRLEV
 !
 !/ ------------------------------------------------------------------- /
 ! 1.  Initialization of all wave models / grids
@@ -167,6 +177,9 @@
 !
   900 FORMAT (/15X,'     *** WAVEWATCH III Multi-grid shell ***    '/ &
                15X,'================================================='/)
+!/OMPH  905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
+!/OMPH               '     Requested: ', I2/                          &
+!/OMPH               '      Provided: ', I2/ )
 !
   999 FORMAT(//'  End of program '/                                   &
                ' ========================================'/           &
