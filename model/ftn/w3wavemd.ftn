@@ -425,7 +425,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
-      INTEGER                 :: SECT,TSEC,RES2,TMIN,THRS
+      INTEGER                 :: TTEST(2),DTTEST
       REAL                    :: ICEDAVE
 !
 !/OASIS     INTEGER                 :: OASISED
@@ -1573,12 +1573,10 @@
 !/DEBUGRUN        FLUSH(740+IAPROC)
           FACK   = DTG / REAL(NTLOC)
 
-          TSEC=MOD(TIME(2),100)
-          RES2=(TIME(2) - TSEC)/100
-          TMIN=MOD(RES2,100)
-          THRS=(RES2 - TMIN)/100
-          SECT=3600*THRS+60*TMIN+TSEC
-          ITLOCH = ( NTLOC + MOD(SECT,2*INT(DTG))/INT(DTG) ) / 2
+          TTEST(1) = TIME(1)
+          TTEST(2) = 0
+          DTTEST = DSEC21(TTEST,TIME)
+          ITLOCH = ( NTLOC + MOD(NINT(DTTEST/DTG),2) ) / 2
 !
 ! 3.6.2 Intra-spectral part 1
 !

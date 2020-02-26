@@ -730,7 +730,7 @@
       INTEGER                 :: IX, IY, IXC, IYC, IBI
       INTEGER                 :: IIXY1(NSEA), IIXY2(NSEA),            &
                                  IIXY3(NSEA), IIXY4(NSEA)
-      INTEGER                 :: SECT,TSEC,RES2,TMIN,THRS
+      INTEGER                 :: TTEST(2),DTTST
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,   &
                                  CXMIN, CXMAX, CYMIN, CYMAX
@@ -813,12 +813,10 @@
       DTRAD  = DTLOC
       IF ( FLAGLL ) DTRAD=DTRAD/(DERA*RADIUS)
 !
-      TSEC=MOD(TIME(2),100)
-      RES2=(TIME(2) - TSEC)/100
-      TMIN=MOD(RES2,100)
-      THRS=(RES2 - TMIN)/100
-      SECT=3600*THRS+60*TMIN+TSEC
-      YFIRST = MOD(SECT,2*INT(DTG))/INT(DTG) .EQ. 0
+      TTEST(1) = TIME(1)
+      TTEST(2) = 0
+      DTTST = DSEC21(TTEST,TIME)
+      YFIRST = MOD(NINT(DTTST/DTG),2) .EQ. 0
 !
 !/T      WRITE (NDST,9000) YFIRST
 !/T      WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
