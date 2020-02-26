@@ -136,7 +136,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = 'III  3.00 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = '2019-10-04'
       CHARACTER(LEN=30), PARAMETER, PRIVATE ::                        &
                             IDSTR = 'WAVEWATCH III GRID OUTPUT FILE'
 !/
