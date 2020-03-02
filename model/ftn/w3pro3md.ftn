@@ -960,7 +960,7 @@
       IF ( FLCUR ) THEN
 !/T          WRITE (NDST,9022)
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA,IXY)
 !
           DO ISEA=1, NSEA
             IXY         = MAPSF(ISEA,3)
@@ -974,7 +974,7 @@
 !
         END IF
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY, CP, CQ)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA,IX, IY, IXY, CP, CQ)
 !
       DO ISEA=1, NSEA
          IX     = MAPSF(ISEA,1)
