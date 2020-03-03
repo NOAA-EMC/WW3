@@ -1576,7 +1576,7 @@
           TTEST(1) = TIME(1)
           TTEST(2) = 0
           DTTEST = DSEC21(TTEST,TIME)
-          ITLOCH = ( NTLOC + MOD(NINT(DTTEST/DTG),2) ) / 2
+          ITLOCH = ( NTLOC + 1 - MOD(NINT(DTTEST/DTG),2) ) / 2
 !
 ! 3.6.2 Intra-spectral part 1
 !
