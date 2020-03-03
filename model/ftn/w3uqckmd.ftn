@@ -1,3 +1,4 @@
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3UQCKMD
@@ -877,6 +878,7 @@
 !/T1      WRITE (NDST,9011) NB0, 'CENTRAL'
 !
 !/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, QB, IXYU, IXYD, &
+!/OMPH/!/T1!$OMP                      QBO, QN, IX, IY, IX2, IY2,              &
 !/OMPH/!$OMP&                     DQ, DQNZ, QCN, QBN, QBR, CFAC )
 !
       DO IP=1, NB0

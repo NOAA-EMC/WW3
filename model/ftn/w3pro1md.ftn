@@ -583,7 +583,7 @@
         NYMAX=NY-1
         IF ( ICLOSE.EQ.ICLOSE_TRPL ) NYMAX=NY
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
 !
         DO IX=1, NX
            DO IY=1, NYMAX
@@ -627,7 +627,7 @@
         IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
            IY=NY
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY, VCB, IX, IY)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY, VCB, IX)
 !
            DO IX=1, NX
               IXY    = IY +(IX-1)*NY
