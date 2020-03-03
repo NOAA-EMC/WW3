@@ -1708,7 +1708,7 @@
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
-!/ST4      SDSSTRAIN = 0.       ! Romero:= 400.   ! MTF factor 
+!/ST4      SDSSTRAIN = 0.       ! 400 for Romero (2019)   ! MTF factor 
 !/ST4      SDSSTRAINA = 0.
 !/ST4      SDSSTRAIN2 = 0.
 !/ST4      WHITECAPDUR   = 0.56 ! breaking duration factor 
