@@ -61,7 +61,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, INTYPE, IMOD, FLRSTRT )
+      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -146,7 +146,7 @@
 !                          'CALM' Starting from calm conditions.
 !       NDSR    Int.  I/O  File unit number.
 !       DUMFPI  Real   I   Dummy values for FPIS for cold start.
-!       INTYPE  Int.   O   Type of input field,
+!       RSTYPE  Int.   O   Type of input field,
 !                           0 : cold start,
 !                           1 : cold start with fetch-limited spectra,
 !                           2 : full restart,
@@ -240,7 +240,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: W3SETG, W3SETREF
+      USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
@@ -274,7 +274,6 @@
       INTEGER                       :: NDSR
 !      INTEGER, INTENT(IN)           :: NDSR
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
-      INTEGER, INTENT(OUT)          :: INTYPE
       REAL, INTENT(INOUT)           :: DUMFPI
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
       LOGICAL, INTENT(IN),OPTIONAL  :: FLRSTRT
@@ -433,7 +432,7 @@
 !           --- Replace zeros with data ---
             WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA, NSPEC
           END IF
-          INTYPE = 3
+          RSTYPE = 3
 !
         ELSE
           READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
@@ -465,13 +464,13 @@
               CALL EXTCDE ( 13 )
             END IF
           IF (TYPE.EQ.'FULL') THEN
-              INTYPE = 2
+              RSTYPE = 2
             ELSE IF (TYPE.EQ.'WIND') THEN
-              INTYPE = 1
+              RSTYPE = 1
             ELSE IF (TYPE.EQ.'CALM') THEN
-              INTYPE = 4
+              RSTYPE = 4
             ELSE
-              INTYPE = 0
+              RSTYPE = 0
             END IF
 !
         END IF
@@ -954,13 +953,13 @@
 !
   800 CONTINUE
 !/LN0      TYPE   = 'WIND'
-!/LN0      INTYPE = 1
+!/LN0      RSTYPE = 1
 !/SEED      TYPE   = 'CALM'
-!/SEED      INTYPE = 4
+!/SEED      RSTYPE = 4
 !/LN1      TYPE   = 'CALM'
-!/LN1      INTYPE = 4
+!/LN1      RSTYPE = 4
 !/LNX      TYPE   = 'CALM'
-!/LNX      INTYPE = 4
+!/LNX      RSTYPE = 4
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,990) TYPE, IERR
       GOTO 100
 !
@@ -1036,7 +1035,7 @@
 !/T 9007 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED ')
 !/T 9008 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED (DUMMY)')
 !
-!/T 9020 FORMAT (' TEST W3IORS : INTYPE = ',A,', PERFORMED BY W3INIT')
+!/T 9020 FORMAT (' TEST W3IORS : RSTYPE = ',A,', PERFORMED BY W3INIT')
 !/
 !/ End of W3IORS ----------------------------------------------------- /
 !/

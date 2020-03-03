@@ -327,7 +327,7 @@
       USE CONSTANTS
 !/MEMCHECK      USE MallocInfo_m
 !/
-      USE W3GDATMD, ONLY: W3SETG, P2MSF, E3DF, US3DF, USSPF
+      USE W3GDATMD, ONLY: W3SETG, P2MSF, E3DF, US3DF, USSPF, RSTYPE
       USE W3WDATMD, ONLY: W3SETW, W3DIMW
       USE W3ADATMD, ONLY: W3SETA, W3DIMA, P2SMS, HS, EF, US3D, USSP
 !/MEMCHECK USE W3ADATMD, ONLY: MALLINFOS
@@ -408,7 +408,7 @@
 !/
       integer :: IRANK, I, ISTAT
       INTEGER                 :: IE, IFL, IFT, IERR, NTTOT, NTLOC,    &
-                                 NTTARG, IK, IP, ITH, INTYPE, IX, IY, &
+                                 NTTARG, IK, IP, ITH, IX, IY, &
                                  J, J0, TOUT(2), TLST(2), ISEA, IS,   &
                                  K, I1, I2, JSEA, NTTMAX
 !/DIST      INTEGER                 :: ISTEP, ISP, IW
@@ -855,7 +855,7 @@
 !/DEBUGINIT     WRITE(740+IAPROC,*) ' After ALL_VA_INTEGRAL_PRINT'
 !/DEBUGINIT     FLUSH(740+IAPROC)
 !/TIMINGS       CALL PRINT_MY_TIME("Before W3IORS")
-      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD)
+      CALL W3IORS ( 'READ', NDS(6), SIG(NK), IMOD)
 !/TIMINGS       CALL PRINT_MY_TIME("After W3IORS")
 !/MEMCHECK      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3a'
 !/MEMCHECK      call getMallocInfo(mallinfos)
@@ -868,13 +868,13 @@
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4.1'
 !/DEBUGINIT     WRITE(740+IAPROC,*) '    sum(VA)=', sum(VA)
 !/DEBUGINIT     FLUSH(740+IAPROC)
-      FLCOLD = INTYPE.LE.1  .OR. INTYPE.EQ.4
+      FLCOLD = RSTYPE.LE.1  .OR. RSTYPE.EQ.4
       IF ( IAPROC .EQ. NAPLOG ) THEN
-          IF (INTYPE.EQ.0) THEN
+          IF (RSTYPE.EQ.0) THEN
               WRITE (NDSO,930) 'cold start (idealized).'
-            ELSE IF ( INTYPE .EQ. 1 ) THEN
+            ELSE IF ( RSTYPE .EQ. 1 ) THEN
               WRITE (NDSO,930) 'cold start (wind).'
-            ELSE IF ( INTYPE .EQ. 4 ) THEN
+            ELSE IF ( RSTYPE .EQ. 4 ) THEN
               WRITE (NDSO,930) 'cold start (calm).'
             ELSE
               WRITE (NDSO,930) 'full restart.'
@@ -913,7 +913,7 @@
 !
 ! 3.c Initialization from wind fields
 !
-      FLIWND = INTYPE.EQ.1
+      FLIWND = RSTYPE.EQ.1
 !/T      IF ( FLIWND ) WRITE (NDST,9030)
 !
 ! 3.d Initialization with calm conditions
@@ -921,7 +921,7 @@
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 5'
 !/DEBUGINIT     FLUSH(740+IAPROC)
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 5")
-      IF ( INTYPE .EQ. 4 ) THEN
+      IF ( RSTYPE .EQ. 4 ) THEN
           VA(:,:) = 0.
 !/T          WRITE (NDST,9031)
         END IF
