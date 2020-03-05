@@ -742,7 +742,7 @@
 !/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
 !/ST4                                 SDSBRF1,                             &
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
-!/ST4                                 SDSBM4,                              &
+!/ST4                                 SDSBM4, SDSFACMTF,                   &
 !/ST4                                 SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
 !
 !/ST6      REAL                    :: SINA0, SINWS, SINFC,                 &
@@ -841,7 +841,7 @@
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSBCHOICE, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3, &
 !/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSSTRAINA,  &
-!/ST4                      SDSSTRAIN2, SDSC4,                              &
+!/ST4                      SDSSTRAIN2, SDSC4, SDSFACMTF, SDSNMTF,          &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
@@ -1708,7 +1708,8 @@
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
-!/ST4      SDSSTRAIN = 0.       ! 400 for Romero (2019)   ! MTF factor 
+!/ST4      SDSSTRAIN = 0.       
+!/ST4      SDSFACMTF = 0.  ! 400 for Romero (2019)   ! MTF factor for Lambda 
 !/ST4      SDSSTRAINA = 0.
 !/ST4      SDSSTRAIN2 = 0.
 !/ST4      WHITECAPDUR   = 0.56 ! breaking duration factor 
@@ -1791,14 +1792,14 @@
 !/ST4      SSDSC(8)   = SDSSTRAIN   ! Straining constant ... 
 !/ST4      SSDSC(9)   = SDSL
 !/ST4      SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle Aor enhanced straining
-!/ST4      SSDSC(11)  = SDSSTRAIN2 ! enhanced straining constant ... 
+!/ST4      SSDSC(11)  = SDSSTRAIN2  ! straining constant for directional part 
 !/ST4      SSDSC(12)  = SDSBT
 !/ST4      SSDSC(13)  = SDSMWD
 !/ST4      SSDSC(14)  = SPMSS
 !/ST4      SSDSC(15)  = SDSMWPOW 
 !/ST4      SSDSC(16)  = SDKOF
 !/ST4      SSDSC(17)  = WHITECAPDUR  
-!/ST4      SSDSC(18)  = 0.
+!/ST4      SSDSC(18)  = SDSFACMTF
 !/ST4      SSDSC(19)  = SDSNMTF 
 !
 !/ST4      SSDSBR   = SDSBR
@@ -2663,7 +2664,7 @@
 !/ST4                    SDSBR, SDSSTRAIN,  SDSSTRAINA,  SDSSTRAIN2,       &
 !/ST4                    SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
 !/ST4                    SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
-!/ST4                    SPMSS, SDKOF, SDSMWD, SDSMWPOW, SDSNMTF, &
+!/ST4                    SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
 !/ST4                    WHITECAPWIDTH, WHITECAPDUR
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1, CSTB1
@@ -5438,11 +5439,11 @@
 !/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
-!/ST4               ', FXFM3 =',F4.2,', FXFMAGE =',F6.3, ', '/       &
+!/ST4               ', FXFM3 =',F4.1,', FXFMAGE =',F6.3, ', '/       &
 !/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
 !/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
 !/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4,       &
-!/ST4               ', SDSSTRAIN =',F4.1,', SDSSTRAINA =',F4.1,       &
+!/ST4               ', SDSSTRAIN =',F5.1,', SDSSTRAINA =',F4.1,       &
 !/ST4               ', SDSSTRAIN2 =',F5.1,', '/                       &
 !/ST4               '        SDSBT =',F5.2,', SDSP =',F5.2,          &
 !/ST4               ', SDSISO =',I2, &
@@ -5452,7 +5453,7 @@
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', '/,                                       &
 !/ST4               '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
-!/ST4               ', SDSMWD =',F5.2,', SDSMWPOW =',F5.2,            &
+!/ST4               ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', SDSMWPOW =',F3.1,            &
 !/ST4               ', SDSNMTF =', F5.2,', '/,                        &
 !/ST4               '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 !

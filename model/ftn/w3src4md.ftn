@@ -1671,7 +1671,7 @@
       REAL                    :: DK(NK), HS(NK), KBAR(NK), DCK(NK)
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
       INTEGER                 :: IKSUP(NK)
-      REAL                    :: FACSAT, DKHS, FACSTRAIN 
+      REAL                    :: FACSAT, DKHS, FACSTRAINB, FACSTRAINL
       REAL                    :: BTH0(NK)     !saturation spectrum 
       REAL                    :: BTH(NSPEC)   !saturation spectrum 
       REAL                    :: BTH0S(NK)    !smoothed saturation spectrum 
@@ -1815,13 +1815,13 @@
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
                         +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
 !
-                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
+                FACSTRAINB=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
               ELSE 
-                FACSTRAIN=1
+                FACSTRAINB=1
                 END IF
 !
               BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),  A(IS0+SATINDICES(:,ITH)) ) &
-                    *FACSAT*FACSTRAIN
+                    *FACSAT*FACSTRAINB
               END DO
 
             IF (SSDSISO.NE.1) THEN
@@ -1930,153 +1930,151 @@
 !
     CASE(2)              
 !
-! 2.b             Computes spontaneous breaking for T500 //////////////
+! 2.b             Computes spontaneous breaking for T500 (Filipot et al. JGR 2010)
 !
-      IF (SSDSBCK.GT.0) THEN ! test for (Filipot et al. 2010)'s disspation source term
-        E1 = 0.
-        HS = 0.  
-        SRHS  = 0.
-        DDIAG = 0.
-        PB2  = 0.
+      E1 = 0.
+      HS = 0.  
+      SRHS  = 0.
+      DDIAG = 0.
+      PB2  = 0.
 !
-          E1(IK)=0.
-          DO ITH=1,NTH
-            IS=ITH+(IK-1)*NTH
-            E1(IK)=E1(IK)+(A(IS)*SIG(IK))*DTH
-            END DO
-          DK(IK)=DDEN(IK)/(DTH*SIG(IK)*CG(IK))
+! Computes Wavenumber spectrum E1 integrated over direction and computes dk
+!
+      DO IK=IK1, NK
+        E1(IK)=0.
+        DO ITH=1,NTH
+          IS=ITH+(IK-1)*NTH
+          E1(IK)=E1(IK)+(A(IS)*SIG(IK))*DTH
           END DO
+        DK(IK)=DDEN(IK)/(DTH*SIG(IK)*CG(IK))
+        END DO
 !
 ! Gets windows indices of IKTAB
 !
-        ID=MIN(NINT(DEPTH),NDTAB) 
-        IF (ID < 1) THEN
-          ID = 1
-        ELSE IF(ID > NDTAB) THEN
-          ID = NDTAB 
-          END IF
+      ID=MIN(NINT(DEPTH),NDTAB) 
+      IF (ID < 1) THEN
+        ID = 1
+      ELSE IF(ID > NDTAB) THEN
+        ID = NDTAB 
+        END IF
 !
 ! loop over wave scales
 !
-        HS=0.  
-        EFDF=0.
-        KBAR=0.
-        EFDF=0. 
-        NKL=0. !number of windows
-        DO IKL=1,NK 
-          IKSUP(IKL)=IKTAB(IKL,ID)
-          IF (IKSUP(IKL) .LE. NK) THEN
-            EFDF(IKL) = DOT_PRODUCT(E1(IKL:IKSUP(IKL)-1),DK(IKL:IKSUP(IKL)-1))
-            IF (EFDF(IKL) .NE. 0) THEN
-              KBAR(IKL) = DOT_PRODUCT(K(IKL:IKSUP(IKL)-1)*E1(IKL:IKSUP(IKL)-1), &
-                                      DK(IKL:IKSUP(IKL)-1)) / EFDF(IKL) 
-            ELSE 
-              KBAR(IKL)=0. 
-              END IF
-! estimation of Significant wave height of a given scale
-            HS(IKL) = 4*SQRT(EFDF(IKL)) 
-            NKL = NKL+1
+      HS=0.  
+      EFDF=0.
+      KBAR=0.
+      NKL=0. !number of windows
+      DO IKL=1,NK 
+        IKSUP(IKL)=IKTAB(IKL,ID)
+        IF (IKSUP(IKL) .LE. NK) THEN
+          EFDF(IKL) = DOT_PRODUCT(E1(IKL:IKSUP(IKL)-1),DK(IKL:IKSUP(IKL)-1))
+          IF (EFDF(IKL) .NE. 0) THEN
+            KBAR(IKL) = DOT_PRODUCT(K(IKL:IKSUP(IKL)-1)*E1(IKL:IKSUP(IKL)-1), &
+                                    DK(IKL:IKSUP(IKL)-1)) / EFDF(IKL) 
+          ELSE 
+            KBAR(IKL)=0. 
             END IF
-          END DO
+! estimation of Significant wave height of a given scale
+          HS(IKL) = 4*SQRT(EFDF(IKL)) 
+          NKL = NKL+1
+          END IF
+        END DO
 !   
 ! Computes Dissipation and breaking probability in each scale  
 !
-        DCK=0.
-        QB =0.
-        DKHS = KHSMAX/NKHS 
-        DO IKL=1, NKL
-          IF (HS(IKL) .NE. 0. .AND. KBAR(IKL) .NE. 0.)  THEN 
-!
+      DCK=0.
+      QB =0.
+      DKHS = KHSMAX/NKHS 
+      DO IKL=1, NKL
+        IF (HS(IKL) .NE. 0. .AND. KBAR(IKL) .NE. 0.)  THEN 
 ! gets indices for tabulated dissipation DCKI and breaking probability QBI
 !
-            IKD = FAC_KD2+ANINT(LOG(KBAR(IKL)*DEPTH)/LOG(FAC_KD1))
-            IKHS= 1+ANINT(KBAR(IKL)*HS(IKL)/DKHS)
-            IF (IKD > NKD) THEN    ! Deep water
-              IKD = NKD
-            ELSE IF (IKD < 1) THEN ! Shallow water
-              IKD = 1
-              END IF
-            IF (IKHS > NKHS) THEN
-              IKHS = NKHS
-            ELSE IF (IKHS < 1) THEN
-              IKHS = 1
-              END IF  
-            XT = TANH(KBAR(IKL)*DEPTH)
+          IKD = FAC_KD2+ANINT(LOG(KBAR(IKL)*DEPTH)/LOG(FAC_KD1))
+          IKHS= 1+ANINT(KBAR(IKL)*HS(IKL)/DKHS)
+          IF (IKD > NKD) THEN    ! Deep water
+            IKD = NKD
+          ELSE IF (IKD < 1) THEN ! Shallow water
+            IKD = 1
+            END IF
+          IF (IKHS > NKHS) THEN
+            IKHS = NKHS
+          ELSE IF (IKHS < 1) THEN
+            IKHS = 1
+            END IF  
+          XT = TANH(KBAR(IKL)*DEPTH)
 !
-!  Gamma corrected for water depth
+! Gamma corrected for water depth
 !
-            GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
+          GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
 !
 ! Computes the energy dissipated for the scale IKL
 ! using DCKI which is tabulated in INSIN4
 !
-            DCK(IKL)=((KBAR(IKL)**(-2.5))*(KBAR(IKL)/(2*PI)))*DCKI(IKHS,IKD)
+          DCK(IKL)=((KBAR(IKL)**(-2.5))*(KBAR(IKL)/(2*PI)))*DCKI(IKHS,IKD)
 !
 ! Get the breaking probability for the scale IKL
 !
-            QB(IKL) = QBI(IKHS,IKD) ! QBI is tabulated in INSIN4
-          ELSE   
-            DCK(IKL)=0.
-            QB(IKL) =0.
-            END IF  
-          END DO
+          QB(IKL) = QBI(IKHS,IKD) ! QBI is tabulated in INSIN4
+        ELSE   
+          DCK(IKL)=0.
+          QB(IKL) =0.
+          END IF  
+        END DO
 !
 ! Distributes scale dissipation over the frequency spectrum
 !
-        S1 = 0.
-        S2 = 0.
-        NTIMES = 0
-        DO IKL=1, NKL
-          IF (EFDF(IKL) .GT. 0.) THEN 
-            S1(IKL:IKSUP(IKL))    = S1(IKL:IKSUP(IKL)) + &
-                                     DCK(IKL)*E1(IKL:IKSUP(IKL)) / EFDF(IKL)
-            S2(IKL:IKSUP(IKL))    = S2(IKL:IKSUP(IKL)) + &
-                                     QB(IKL) *E1(IKL:IKSUP(IKL)) / EFDF(IKL)
-            NTIMES(IKL:IKSUP(IKL)) = NTIMES(IKL:IKSUP(IKL)) + 1
-            END IF
-          END DO
+      S1 = 0.
+      S2 = 0.
+      NTIMES = 0
+      DO IKL=1, NKL
+        IF (EFDF(IKL) .GT. 0.) THEN 
+          S1(IKL:IKSUP(IKL))    = S1(IKL:IKSUP(IKL)) + &
+                                  DCK(IKL)*E1(IKL:IKSUP(IKL)) / EFDF(IKL)
+          S2(IKL:IKSUP(IKL))    = S2(IKL:IKSUP(IKL)) + &
+                                  QB(IKL) *E1(IKL:IKSUP(IKL)) / EFDF(IKL)
+          NTIMES(IKL:IKSUP(IKL)) = NTIMES(IKL:IKSUP(IKL)) + 1
+          END IF
+        END DO
 !
 ! Finish the average
 ! 
-        WHERE (NTIMES .GT. 0)
-          S1 = S1 / NTIMES
-          S2 = S2 / NTIMES
-        ELSEWHERE
-          S1 = 0.
-          S2 = 0.
-          END WHERE
+      WHERE (NTIMES .GT. 0)
+        S1 = S1 / NTIMES
+        S2 = S2 / NTIMES
+      ELSEWHERE
+        S1 = 0.
+        S2 = 0.
+        END WHERE
 ! goes back to action for dissipation source term 
-        S1(1:NK) = S1(1:NK) / SIG(1:NK)
+      S1(1:NK) = S1(1:NK) / SIG(1:NK)
 !
 ! Makes Isotropic distribution
 !
-        ASUM = 0.
-        DO IK = 1, NK 
-          ASUM = (SUM(A(((IK-1)*NTH+1):(IK*NTH)))*DTH)
-          IF (ASUM.GT.1.E-8) THEN
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = S1(IK)/ASUM
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = S2(IK)/ASUM
-          ELSE
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = 0.
-            FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
-            END IF  
-          IF (PB2(1+(IK-1)*NTH).GT.0.001) THEN 
-            BTH0(IK) = 2.*SSDSBR
-          ELSE
-            BTH0(IK) = 0. 
-            END IF
-          END DO   
+      ASUM = 0.
+      DO IK = 1, NK 
+        ASUM = (SUM(A(((IK-1)*NTH+1):(IK*NTH)))*DTH)
+        IF (ASUM.GT.1.E-8) THEN
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = S1(IK)/ASUM
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = S2(IK)/ASUM
+        ELSE
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = 0.
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
+          END IF  
+        IF (PB2(1+(IK-1)*NTH).GT.0.001) THEN 
+          BTH0(IK) = 2.*SSDSBR
+        ELSE
+          BTH0(IK) = 0. 
+          END IF
+        END DO   
 !
-        PB = (1-SSDSC(1))*PB2*A + SSDSC(1)*PB
+      PB = (1-SSDSC(1))*PB2*A + SSDSC(1)*PB
 ! Compute Lambda = PB* l(k,th) 
 ! with l(k,th)=1/(2*pi²)= the breaking crest density
-        BRLAMBDA = PB / (2.*PI**2.)
-!
-        END IF   ! END OF TEST ON SSDSBCK
+      BRLAMBDA = PB / (2.*PI**2.)
 !
     CASE(3) 
 !
-! 2c Romero
+! 2c Romero (GRL 2019) 
 !
 ! directional saturation I 
 ! integrate in azimuth
@@ -2084,20 +2082,34 @@
       DO IK=1,NK
         IS0=(IK-1)*NTH
         BTH(1:NTH)=MAX(A(IS0+1:IS0+NTH)*SIG(IK)*K(IK)**3,.00000000000001)
+!
+        IF (SSDSC(8).GT.0) THEN ! Applies modulation factor on B
+          DO ITH=1,NTH
+            MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
+                 +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))
+            BTH(ITH)=BTH(ITH)*(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)))
+            END DO
+          END IF
+!
         C=SIG(IK)/K(IK)
         BTH0(IK)=sum(BTH(1:NTH)*DTH)   
 
-        DO ITH=1,NTH
-          IF (SSDSC(11).GT.0) THEN 
-            MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
+        IF (SSDSC(18).GT.0) THEN ! Applies modulation factor on Lambda
+          DO ITH=1,NTH
+            IF (SSDSC(11).GT.0) THEN 
+              MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
                        +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))
-            FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH))
-          ELSE 
-            FACSTRAIN=1.+SSDSC(8)*(MSSSUM(IK,1)**SSDSC(14) *          &   ! Romero
+              FACSTRAINL=1.+SSDSC(18)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH))
+            ELSE 
+              FACSTRAINL=1.+SSDSC(18)*(MSSSUM(IK,1)**SSDSC(14) *          &   ! Romero
                 (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)   
-            ENDIF
-          LMODULATION(ITH)= FACSTRAIN**SSDSC(19) 
-          END DO
+              ENDIF
+            LMODULATION(ITH)= FACSTRAINL**SSDSC(19) 
+            END DO
+        ELSE 
+          LMODULATION(:)= 1.
+          END IF
+
 ! Lambda
         BRLAMBDA(IS0+1:IS0+NTH)=SSDSC(9)*EXP(-SSDSBR/BTH(1:NTH))              &
                                  *( 1.0+SSDSC(13)*MAX(1.,(K(IK)/KO))**SSDSC(15) ) &
