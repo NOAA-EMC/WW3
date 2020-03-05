@@ -1725,7 +1725,7 @@
 !
 ! 1.b MSS parameters used for Modulation factors for B or lambda
 !
-      IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
+      IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0.OR.SSDSC(18).GT.0) THEN 
         DO IK=1,NK
           IMSSMAX (IK) = 1
           MSSP   = 0.
@@ -2093,7 +2093,6 @@
 !
         C=SIG(IK)/K(IK)
         BTH0(IK)=sum(BTH(1:NTH)*DTH)   
-
         IF (SSDSC(18).GT.0) THEN ! Applies modulation factor on Lambda
           DO ITH=1,NTH
             IF (SSDSC(11).GT.0) THEN 
@@ -2105,6 +2104,7 @@
                 (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)   
               ENDIF
             LMODULATION(ITH)= FACSTRAINL**SSDSC(19) 
+!WRITE(998,*) IK,ITH,SSDSC(19),SSDSC(11),FACSTRAINL,LMODULATION(ITH)
             END DO
         ELSE 
           LMODULATION(:)= 1.
@@ -2123,8 +2123,8 @@
         SRHS(IS0+1:IS0+NTH)= BRM12(IK)/GRAV**2*BRLAMBDA(IS0+1:IS0+NTH)*C**5
 ! diagonal 
         DDIAG(IS0+1:IS0+NTH) = SRHS(IS0+1:IS0+NTH)*SSDSBR/MAX(1.e-20,BTH(1:NTH))/MAX(1e-20,A(IS0+1:IS0+NTH))  ! 
-        END DO
-!  Breaking probability (Is actually the breaking rate)
+       END DO
+!   Breaking probability (Is actually the breaking rate)
       PB = BRLAMBDA *C
 !
       END SELECT
