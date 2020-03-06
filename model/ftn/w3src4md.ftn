@@ -1726,6 +1726,7 @@
 ! 1.b MSS parameters used for Modulation factors for B or lambda
 !
       IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0.OR.SSDSC(18).GT.0) THEN 
+        MSSSUM2(:,:)=0.
         DO IK=1,NK
           IMSSMAX (IK) = 1
           MSSP   = 0.
@@ -2087,7 +2088,8 @@
           DO ITH=1,NTH
             MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
                  +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))
-            BTH(ITH)=BTH(ITH)*(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)))
+            FACSTRAINB=(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)))
+            BTH(ITH)=BTH(ITH)*FACSTRAINB
             END DO
           END IF
 !
@@ -2104,7 +2106,6 @@
                 (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)   
               ENDIF
             LMODULATION(ITH)= FACSTRAINL**SSDSC(19) 
-!WRITE(998,*) IK,ITH,SSDSC(19),SSDSC(11),FACSTRAINL,LMODULATION(ITH)
             END DO
         ELSE 
           LMODULATION(:)= 1.
