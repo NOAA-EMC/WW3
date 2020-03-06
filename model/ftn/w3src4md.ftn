@@ -1681,7 +1681,7 @@
       REAL                    :: MSSSUM2(NK,NTH)
       REAL                    :: MSSLONG(NK,NTH)
       REAL                    :: MSSPCS, MSSPC2, MSSPS2, MSSP, MSSD, MSSTH
-      REAL                    :: MICHE, X
+      REAL                    :: MICHE, X, KLOC
 !/T0    REAL                    :: DOUT(NK,NTH)
       REAL                    :: QB(NK), S2(NK)
       REAL                    :: TSTR, TMAX, DT, T, MFT
@@ -1738,10 +1738,12 @@
 !
           DO ITH=1,NTH         
             IS=ITH+(IK-1)*NTH
-            MSSLONG(IK,ITH) = K(IK)**2 * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
+            MSSLONG(IK,ITH) = K(IK)**SSDSC(20) * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
+            END DO
+          DO ITH=1,NTH
             DO JTH=-NTHSUM,NTHSUM 
               ITH2 = 1+MOD(ITH-1+JTH+NTH,NTH)
-              MSSSUM2(IK:NK,ITH2) = MSSSUM2(IK:NK,ITH2)+MSSLONG(IK,ITH)*WTHSUM(ABS(JTH)+1)
+              MSSSUM2(IK,ITH) = MSSSUM2(IK,ITH)+MSSLONG(IK,ITH2)*WTHSUM(ABS(JTH)+1)
               END DO
             MSSPC2 = MSSPC2 +MSSLONG(IK,ITH)*EC2(ITH)
             MSSPS2 = MSSPS2 +MSSLONG(IK,ITH)*ES2(ITH)
@@ -1795,8 +1797,8 @@
           ASUM = SUM(A(IS0+1:IS0+NTH))
           BTH0(IK)=ASUM*FACSAT
           IKC = MAX(1,IK-DIKCUMUL)
- 
-
+          KLOC=K(IK)**(2-SSDSC(20)) ! local wavenumber factor, if mss not used.
+        
           IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
             BTH(IS0+1:IS0+NTH)=BTH0(IK)
           ELSE  
@@ -1814,9 +1816,9 @@
               IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
 !
                 MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
-                        +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
+                        +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))*KLOC
 !
-                FACSTRAINB=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH))
+                FACSTRAINB=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH)*KLOC)
               ELSE 
                 FACSTRAINB=1
                 END IF
@@ -2082,13 +2084,14 @@
       KO=(GRAV/(1E-6+USTAR**2))/(28./SSDSC(16))**2
       DO IK=1,NK
         IS0=(IK-1)*NTH
+        KLOC=K(IK)**(2-SSDSC(20)) ! local wavenumber factor, if mss not used.
         BTH(1:NTH)=MAX(A(IS0+1:IS0+NTH)*SIG(IK)*K(IK)**3,.00000000000001)
 !
         IF (SSDSC(8).GT.0) THEN ! Applies modulation factor on B
           DO ITH=1,NTH
             MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
-                 +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))
-            FACSTRAINB=(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)))
+                 +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))*KLOC
+            FACSTRAINB=(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH))*KLOC)
             BTH(ITH)=BTH(ITH)*FACSTRAINB
             END DO
           END IF
@@ -2099,11 +2102,11 @@
           DO ITH=1,NTH
             IF (SSDSC(11).GT.0) THEN 
               MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
-                       +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))
-              FACSTRAINL=1.+SSDSC(18)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH))
+                       +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))*KLOC
+              FACSTRAINL=1.+SSDSC(18)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)*KLOC)
             ELSE 
-              FACSTRAINL=1.+SSDSC(18)*(MSSSUM(IK,1)**SSDSC(14) *          &   ! Romero
-                (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)   
+              FACSTRAINL=1.+SSDSC(18)*((MSSSUM(IK,1)*KLOC)**SSDSC(14) *      &   ! Romero
+                (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)  
               ENDIF
             LMODULATION(ITH)= FACSTRAINL**SSDSC(19) 
             END DO

@@ -742,7 +742,7 @@
 !/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
 !/ST4                                 SDSBRF1,                             &
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
-!/ST4                                 SDSBM4, SDSFACMTF,                   &
+!/ST4                                 SDSBM4, SDSFACMTF, SDSCUMP,          &
 !/ST4                                 SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
 !
 !/ST6      REAL                    :: SINA0, SINWS, SINFC,                 &
@@ -841,7 +841,7 @@
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSBCHOICE, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3, &
 !/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSSTRAINA,  &
-!/ST4                      SDSSTRAIN2, SDSC4, SDSFACMTF, SDSNMTF,          &
+!/ST4                      SDSSTRAIN2, SDSC4, SDSFACMTF, SDSNMTF,SDSCUMP,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
@@ -1709,8 +1709,8 @@
 !/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
 !/ST4      SDSSTRAIN = 0.       
-!/ST4      SDSFACMTF = 0.  ! 400 for Romero (2019)   ! MTF factor for Lambda 
-!/ST4      SDSSTRAINA = 0.
+!/ST4      SDSFACMTF =  400    ! MTF factor for Lambda , Romero (2019)
+!/ST4      SDSSTRAINA = 15.
 !/ST4      SDSSTRAIN2 = 0.
 !/ST4      WHITECAPDUR   = 0.56 ! breaking duration factor 
 !/ST4! b (strength of breaking)
@@ -1720,6 +1720,7 @@
 !/ST4! MTF
 !/ST4      SPMSS     = 0.5    ! cmss^SPMSS 
 !/ST4      SDSNMTF   = 1.5    ! MTF power 
+!/ST4      SDSCUMP   = 2.
 !/ST4! MW
 !/ST4      SDSMWD    = .9  ! new AFo
 !/ST4      SDSMWPOW  = 1.  ! (k )^pow
@@ -1801,6 +1802,7 @@
 !/ST4      SSDSC(17)  = WHITECAPDUR  
 !/ST4      SSDSC(18)  = SDSFACMTF
 !/ST4      SSDSC(19)  = SDSNMTF 
+!/ST4      SSDSC(20)  = SDSCUMP 
 !
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
@@ -2665,7 +2667,7 @@
 !/ST4                    SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
 !/ST4                    SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
 !/ST4                    SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-!/ST4                    WHITECAPWIDTH, WHITECAPDUR
+!/ST4                    SDSCUMP, WHITECAPWIDTH, WHITECAPDUR
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1, CSTB1
 !/BT1          WRITE (NDSO,2926) GAMMA
@@ -5454,7 +5456,7 @@
 !/ST4               F5.2,', '/,                                       &
 !/ST4               '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
 !/ST4               ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', SDSMWPOW =',F3.1,            &
-!/ST4               ', SDSNMTF =', F5.2,', '/,                        &
+!/ST4               ', SDSNMTF =', F5.2,', SDSCUMP =', F3.1,', '/,       &
 !/ST4               '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
