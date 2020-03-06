@@ -742,7 +742,7 @@
 !/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
 !/ST4                                 SDSBRF1,                             &
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
-!/ST4                                 SDSBM4, SDSFACMTF, SDSCUMP,          &
+!/ST4                                 SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
 !/ST4                                 SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
 !
 !/ST6      REAL                    :: SINA0, SINWS, SINFC,                 &
@@ -844,7 +844,7 @@
 !/ST4                      SDSSTRAIN2, SDSC4, SDSFACMTF, SDSNMTF,SDSCUMP,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
-!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
+!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,  SDSNUW,     &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
 !/ST4                      WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
 
@@ -1689,6 +1689,7 @@
 !/ST4      SDSCUM    = -0.40344
 !/ST4      SDSC4     = 1.
 !/ST4      SDSC5     = 0. 
+!/ST4      SDSNUW    = 0.
 !/ST4      SDSC6     = 0.3
 !/ST4      SDSBR     = 0.90E-3     ! 0.005 for Romero                                
 !/ST4      SDSBRFDF  = 0
@@ -1803,6 +1804,7 @@
 !/ST4      SSDSC(18)  = SDSFACMTF
 !/ST4      SSDSC(19)  = SDSNMTF 
 !/ST4      SSDSC(20)  = SDSCUMP 
+!/ST4      SSDSC(21)  = SDSNUW 
 !
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
@@ -2667,7 +2669,7 @@
 !/ST4                    SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
 !/ST4                    SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
 !/ST4                    SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-!/ST4                    SDSCUMP, WHITECAPWIDTH, WHITECAPDUR
+!/ST4                    SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1, CSTB1
 !/BT1          WRITE (NDSO,2926) GAMMA
@@ -5455,8 +5457,9 @@
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', '/,                                       &
 !/ST4               '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
-!/ST4               ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', SDSMWPOW =',F3.1,            &
-!/ST4               ', SDSNMTF =', F5.2,', SDSCUMP =', F3.1,', '/,       &
+!/ST4               ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
+!/ST4               '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
+!/ST4               ', SDSCUMP =', F3.1,', SDSNUW =', E8.3,', '/,     &
 !/ST4               '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &

@@ -1663,7 +1663,7 @@
       REAL                    :: COEF1, COEF2, COEF4(NK),      &
                                  COEF5(NK)
 
-      REAL                    :: FACTURB, FACTURB2, DTURB, DIAG2, BREAKFRACTION
+      REAL                    :: FACTURB, FACTURB2, DTURB, DVISC, DIAG2, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: S1(NK), E1(NK)
       INTEGER                 :: NTIMES(NK)
@@ -2142,9 +2142,11 @@
 !
 ! loop over spectrum
 !
-    IF ( (SSDSC(3).NE.0.) .OR. (SSDSC(5).NE.0.) ) THEN 
+    IF ( (SSDSC(3).NE.0.) .OR. (SSDSC(5).NE.0.) .OR. (SSDSC(21).NE.0.) ) THEN 
       DO  IK=IK1, NK
         FACTURB2=-2.*SIG(IK)*K(IK)*FACTURB
+        DVISC=-4.*SSDSC(21)*K(IK)*K(IK)
+!
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
 !
@@ -2167,8 +2169,7 @@
 !
 ! Add effects
 !
-          DIAG2 = (SSDSC(3)*RENEWALFREQ+DTURB) 
-WRITE(998,*) 'TEST:',IK,ITH,FACTURB2,DTURB,COSWIND,DIAG2,DDIAG(IS)
+          DIAG2 = (SSDSC(3)*RENEWALFREQ+DTURB+DVISC) 
           DDIAG(IS) = DDIAG(IS) + DIAG2
           SRHS(IS)  = SRHS(IS)  + A(IS)* DIAG2
           END DO
