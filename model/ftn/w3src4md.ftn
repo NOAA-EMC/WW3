@@ -1663,7 +1663,7 @@
       REAL                    :: COEF1, COEF2, COEF4(NK),      &
                                  COEF5(NK)
 
-      REAL                    :: FACTURB, DTURB, DIAG2, BREAKFRACTION
+      REAL                    :: FACTURB, FACTURB2, DTURB, DIAG2, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: S1(NK), E1(NK)
       INTEGER                 :: NTIMES(NK)
@@ -2144,6 +2144,7 @@
 !
     IF ( (SSDSC(3).NE.0.) .OR. (SSDSC(5).NE.0.) ) THEN 
       DO  IK=IK1, NK
+        FACTURB2=-2.*SIG(IK)*K(IK)*FACTURB
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
 !
@@ -2161,14 +2162,15 @@
 !
 ! Computes wave turbulence interaction
 !
-          COSWIND=(ECOS(IS)*COS(USDIR)+ESIN(IS)*SIN(USDIR))
-          DTURB=-2.*SIG(IK)*K(IK)*FACTURB*COSWIND  ! Theory -> stress direction
+          COSWIND=(ECOS(ITH)*COS(USDIR)+ESIN(ITH)*SIN(USDIR))
+          DTURB=FACTURB2*MAX(0.,COSWIND)  ! Theory -> stress direction
 !
 ! Add effects
 !
           DIAG2 = (SSDSC(3)*RENEWALFREQ+DTURB) 
+WRITE(998,*) 'TEST:',IK,ITH,FACTURB2,DTURB,COSWIND,DIAG2,DDIAG(IS)
           DDIAG(IS) = DDIAG(IS) + DIAG2
-          SRHS(IS)  = DDIAG(IS) + A(IS)* DIAG2
+          SRHS(IS)  = SRHS(IS)  + A(IS)* DIAG2
           END DO
         END DO
       END IF
