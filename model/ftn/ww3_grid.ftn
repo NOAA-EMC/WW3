@@ -846,7 +846,7 @@
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
-!/ST4                      WHITECAPWIDTH, WHITECAPDUR
+!/ST4                      WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
 
 !/ST6      NAMELIST /SIN6/ SINA0, SINWS, SINFC
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
