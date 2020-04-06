@@ -41,6 +41,7 @@
   cd $main_dir/ftn
 
   all=`sed -n '/^!\/[[:alpha:]]/'p *.ftn | awk '{print $1}' | \
+       awk -F'!/' 'BEGIN{OFS="\n"}{$1=$1; print $0}' | \
        sed 's/^!\///' | sed 's/[\/!].*$//' | sort -u`
 
   set $all

@@ -204,8 +204,7 @@
 !/
       INTEGER                 :: NDSI, NDSM, NDSR, NDSTRC, NTRACE,    &
                                  NDSEN, IERR, ITYPE, NCOS, IKM, IK,   &
-                                 ITHM, ITH, JSEA, ISEA, IX, IY,      &
-                                 INTYPE, J
+                                 ITHM, ITH, JSEA, ISEA, IX, IY, J 
 !/MPI      INTEGER                 :: IERR_MPI
 !/S      INTEGER, SAVE           :: IENT = 0
 !/O6      INTEGER                 :: NSX, NSY
@@ -773,7 +772,7 @@
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
 !/DEBUGINIT      FLUSH(740+IAPROC)
-      CALL W3IORS ( INXOUT, NDSR, SIG(NK), INTYPE )
+      CALL W3IORS ( INXOUT, NDSR, SIG(NK) )
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
 !/DEBUGINIT      DO ISEA=1,NSEA

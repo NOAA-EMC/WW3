@@ -425,6 +425,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       INTEGER                 :: ISP, IP_glob
+      INTEGER                 :: TTEST(2),DTTEST
       REAL                    :: ICEDAVE
 !
 !/OASIS     INTEGER                 :: OASISED
@@ -580,8 +581,6 @@
 !
 !/SMC !!Li   Otherwise use sea point only field
 !/SMC       ALLOCATE ( FIELD(NCel) )
-!
-!     FIELD(:) = 0.
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
@@ -1490,7 +1489,7 @@
                       NKCFL=NK
 !/T                   NKCFL=1
 !
-!/OMPG/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
+!/OMPG/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA) SCHEDULE (DYNAMIC,1)
 !
                       DO JSEA=1, NSEAL
                         CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -1573,7 +1572,11 @@
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, NTLOC=', NTLOC
 !/DEBUGRUN        FLUSH(740+IAPROC)
           FACK   = DTG / REAL(NTLOC)
-          ITLOCH = ( NTLOC + 1 - MOD(ITIME,2) ) / 2
+
+          TTEST(1) = TIME(1)
+          TTEST(2) = 0
+          DTTEST = DSEC21(TTEST,TIME)
+          ITLOCH = ( NTLOC + 1 - MOD(NINT(DTTEST/DTG),2) ) / 2
 !
 ! 3.6.2 Intra-spectral part 1
 !
@@ -1585,7 +1588,7 @@
           IF ( FLCTH .OR. FLCK ) THEN
               DO ITLOC=1, ITLOCH
 !
-!/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH)
+!/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH,IXrel)
 !/OMPG/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
 !/DEBUGRUN                WRITE(740+IAPROC,*) ' ITLOC=', ITLOC
@@ -1725,14 +1728,17 @@
 !/MPI         CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
 !/MPI       END IF
 !
-!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
+!!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.14'
 !/DEBUGRUN        FLUSH(740+IAPROC)
 
             IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
-!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
+! Initialize FIELD variable 
+             FIELD = 0.
+!
+!!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
@@ -1781,11 +1787,11 @@
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
 
 
-!/OMPX/!$OMP END DO
+!!/OMPX/!$OMP END DO
 
               IF ( FLOMP ) DEALLOCATE ( FIELD )
 
-!/OMPX/!$OMP END PARALLEL
+!!/OMPX/!$OMP END PARALLEL
 
 !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
               IK=1
@@ -1873,7 +1879,7 @@
           IF ( FLCTH .OR. FLCK ) THEN
               DO ITLOC=ITLOCH+1, NTLOC
 !
-!/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH)
+!/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH,IXrel)
 !/OMPG/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
 !/DEBUGRUN                WRITE(740+IAPROC,*) ' ITLOC=', ITLOC
@@ -1964,7 +1970,7 @@
 !/PDLIB!/DEBUGSRC          END IF
 !
 !/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
-!/OMPG/!$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3)
+!/OMPG/!$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3,TMP4)
 !/OMPG/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
               DO JSEA=1, NSEAL
@@ -2423,8 +2429,8 @@
 !
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
                         ELSE IF ( J .EQ. 4 ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD,&
-                                        FLOUT(8) )
+                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+                          ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
 !/MPI                              IF (NRQBP2.NE.0) CALL MPI_WAITALL  &
@@ -2481,8 +2487,8 @@
               TOUT(:) = TONEXT(:,J)
               DTTST   = DSEC21 ( TIME, TOUT )
               IF ( DTTST .EQ. 0. ) THEN
-                CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD,    &
-                              FLOUT(8) )
+                CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+                 ITEST = RSTYPE
                  CALL TICK21 ( TOUT, DTOUT(J) )
                  TONEXT(:,J) = TOUT
                  TLST        = TOLAST(:,J)
