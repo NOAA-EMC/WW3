@@ -61,33 +61,39 @@
   then
     echo '  module load intel-comp/18'                                                >> matrix.head
     echo '  module load impi/2018.1.163'                                              >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/INTEL/bin::${PATH}'          >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/INTEL/bin/nf-config'>> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/INTEL'                     >> matrix.head
+    echo '  export PATH=/home/datawork-wave/NETCDF2019/INTEL/bin::${PATH}'            >> matrix.head
+    echo '  export CPATH=/home/datawork-wave/NETCDF2019/INTEL/include::${PATH}'       >> matrix.head
+    echo '  export LD_LIBRARY_PATH=/home/datawork-wave/NETCDF2019/INTEL/lib::${PATH}' >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/INTEL/bin/nf-config'  >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/INTEL'                 >> matrix.head
 
   elif [ $cmplr = "datarmor_mpt_debug" ]
   then
     echo '  module load intel-comp/18'                                                >> matrix.head
-    echo '  module load mpt/2.15'                                                     >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/MPT/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/MPT/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/MPT'                       >> matrix.head
+    echo '  module load mpt/2.18'                                                     >> matrix.head
+    echo '  export PATH=/home/datawork-wave/NETCDF2019/MPT/bin::${PATH}'              >> matrix.head
+    echo '  export CPATH=/home/datawork-wave/NETCDF2019/MPT/include::${PATH}'         >> matrix.head
+    echo '  export LD_LIBRARY_PATH=/home/datawork-wave/NETCDF2019/MPT/lib::${PATH}'   >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/MPT/bin/nf-config'    >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/MPT'                   >> matrix.head
 
   elif [ $cmplr = "datarmor_gnu_debug" ]
   then
     echo '  module load impi/2018.1.163'                                              >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/GNU/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/GNU/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/GNU'                       >> matrix.head
+    echo '  export PATH=/home/datawork-wave/NETCDF2019/GNU/bin::${PATH}'              >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/GNU/bin/nf-config'    >> matrix.head
+    echo '  export CPATH=/home/datawork-wave/NETCDF2019/GNU/include::${PATH}'         >> matrix.head
+    echo '  export LD_LIBRARY_PATH=/home/datawork-wave/NETCDF2019/GNU/lib::${PATH}'   >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/GNU'                   >> matrix.head
 
   elif [ $cmplr = "datarmor_pgi_debug" ]
   then
-    echo '  module load pgi/17.10'                                                   >> matrix.head
-    echo '  module load mpt/2.17'                                                    >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/PGI/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/PGI/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/PGI'                       >> matrix.head
-
+    echo '  module load pgi/17.10'                                                    >> matrix.head
+    echo '  export PATH=/home/datawork-wave/NETCDF2019/PGI/bin::${PATH}'              >> matrix.head
+    echo '  export CPATH=/home/datawork-wave/NETCDF2019/PGI/include::${PATH}'         >> matrix.head
+    echo '  export LD_LIBRARY_PATH=/home/datawork-wave/NETCDF2019/PGI/lib::${PATH}'   >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/PGI/bin/nf-config'    >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/PGI'                   >> matrix.head
   fi
 
   echo ' '
