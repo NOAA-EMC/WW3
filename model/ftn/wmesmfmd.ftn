@@ -4730,9 +4730,9 @@
 !/
       character(ESMF_MAXSTR) :: cname
       character(500) :: msg
-      integer :: k, ir, ip, count
+      integer :: i, j, k, ir, ip, count
       real(ESMF_KIND_RX) :: floc(n1,n2)
-      real(ESMF_KIND_RX) :: floc1d(n1)
+      real(ESMF_KIND_RX) :: floc1d(n1), floc1dary(n1*n2)
 !/PDLIB      real(ESMF_KIND_R8), pointer :: fldptr(:)
 !
 ! -------------------------------------------------------------------- /
@@ -4742,16 +4742,30 @@
 
 !      call ESMF_FieldWrite(field,fileName="ww3_import_dump.nc",overwrite=.true.,rc=rc)
       if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        count = n1 * n2
+        floc = 0.
+        floc1dary = 0.
+        call ESMF_FieldGather( field,  floc, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            floc1dary(i+(j-1)*n1) = floc(i,j)
+          enddo
         enddo
-        fout(1:n1,1:n2) = floc(1:n1,1:n2)
+        call ESMF_VMbroadcast( vm, bcstData=floc1dary, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            fout(i,j) = floc1dary(i+(j-1)*n1)
+          enddo
+        enddo
       elseif (GTYPE.eq.UNGTYPE) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc1d, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        enddo
+        count = n1
+        floc1d = 0.
+        call ESMF_FieldGather( field,  floc1d, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_VMbroadcast( vm, bcstData=floc1d, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/PDLIB      if ( LPDLIB == .FALSE. ) then
         do k = 1, n1
           fout(k,1) = floc1d(k)
