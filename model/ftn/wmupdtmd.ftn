@@ -1177,7 +1177,7 @@
                                  YGRDC(:,:), HPFACI(:,:), HQFACI(:,:) !RP
 
       INTEGER, POINTER        :: ICLOSE
-      real,allocatable :: XGRTMP(:),YGRTMP(:)
+      REAL, ALLOCATABLE       :: XGRTMP(:),YGRTMP(:)
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
 !/ ------------------------------------------------------------------- /
