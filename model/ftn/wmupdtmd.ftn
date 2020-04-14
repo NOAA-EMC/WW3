@@ -1177,6 +1177,7 @@
                                  YGRDC(:,:), HPFACI(:,:), HQFACI(:,:) !RP
 
       INTEGER, POINTER        :: ICLOSE
+      REAL, ALLOCATABLE       :: XGRTMP(:),YGRTMP(:)
 !/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
 !/ ------------------------------------------------------------------- /
@@ -1185,7 +1186,6 @@
 !
 !/S      CALL STRACE (IENT, 'WMUPDV')
 !
-
       IF ( GRIDS(IMOD)%GTYPE .EQ. UNGTYPE .OR. &
                 GRIDS(JMOD)%GTYPE .EQ. UNGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
@@ -1313,40 +1313,24 @@
 !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
         DTOLER = 1E-5 
 ! 2.a.1  running over the curvilinear grid
+        ALLOCATE (XGRTMP(NXI),YGRTMP(NYI))
+        XGRTMP=XGRDI(1,:)
+        YGRTMP=YGRDI(:,1)
+!/OMPH!$OMP PARALLEL DO PRIVATE(J,I,LONC,LATC,VALUEX,VALUEY)
         DO J=1,NY
           DO I=1,NX
             LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
             LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
 
-            !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
-            !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
-            !CHOOSING THE LARGEST DELTA
-            !!SXYC=MAX(SXC,SYC)
-            !!XDI=SXYC/SXI
-            !!IF(XDI .LT. 2.00) THEN
-            !!  MXA=2
-            !!ELSE
-            !!  MXA=2+INT(XDI)
-            !!ENDIF
-
-            !IF (MXA .EQ. 2) THEN
-            CALL INTERPOLATE2D(NXI,XGRDI(1,:),NYI,YGRDI(:,1), &
+            CALL INTERPOLATE2D(NXI,XGRTMP,NYI,YGRTMP, &
                        VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
-            !ELSE
-            ! COMPUTING THE NUMBER OF POINTS IN THE REGULAR GRID THAT
-            ! SURROUND THE POINT IN THE CURVILINEAR GRID, COULD BE 
-            ! DIFFERENT FOR LAT AND LONG, IN THE AVERAGING PROCESS.
-            !NPOIX=INT(SXC/SXI)
-            !NPOIY=INT(SYC/SYI)
-            !!VALUEX=AVERAGING(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
-            !!           VARIN,LONC,LATC,NPOIX,NPOIY)
-            !ENDIF
-
             VX(I,J)=VALUEX
             VY(I,J)=VALUEY
 
           END DO  !END I
         END DO  !END J
+!/OMPH/!$OMP END PARALLEL DO
+        DEALLOCATE (XGRTMP, YGRTMP)
 
       ELSE
 !
