@@ -1949,6 +1949,9 @@
         DDIAG = 0.
         PB2  = 0.
 !
+! Computes Wavenumber spectrum E1 integrated over direction and computes dk
+!
+        DO IK=IK1, NK
           E1(IK)=0.
           DO ITH=1,NTH
             IS=ITH+(IK-1)*NTH
