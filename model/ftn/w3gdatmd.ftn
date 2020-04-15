@@ -21,7 +21,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -91,6 +91,7 @@
 !/                  (Q. Liu, UoM)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.xx )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -890,6 +891,7 @@
          LOGICAL :: FSREFRACTION = .FALSE. 
          LOGICAL :: FSFREQSHIFT  = .FALSE. 
          LOGICAL :: FSSOURCE     = .FALSE. 
+         LOGICAL :: FSBCCFL      = .FALSE. 
          LOGICAL :: DO_CHANGE_WLV 
          REAL(8) :: SOLVERTHR_STP 
          REAL(8) :: CRIT_DEP_STP
@@ -1149,7 +1151,7 @@
 !/
 !/ Data aliasing for structure SCHM(S)
       LOGICAL, POINTER  :: FSN,FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP
-      LOGICAL, POINTER  :: FSREFRACTION, FSFREQSHIFT, FSSOURCE
+      LOGICAL, POINTER  :: FSREFRACTION, FSFREQSHIFT, FSSOURCE, FSBCCFL
       LOGICAL, POINTER  :: DO_CHANGE_WLV
       REAL(8), POINTER  :: SOLVERTHR_STP
       REAL(8), POINTER  :: CRIT_DEP_STP
@@ -2376,6 +2378,7 @@
 !/IS1      IS1C2  => MPARS(IMOD)%SICPS%IS1C2
 !
 !    Structure SCHM
+       FSBCCFL => MPARS(IMOD)%SCHMS%FSBCCFL
        FSN => MPARS(IMOD)%SCHMS%FSN
        FSPSI => MPARS(IMOD)%SCHMS%FSPSI
        FSFCT => MPARS(IMOD)%SCHMS%FSFCT

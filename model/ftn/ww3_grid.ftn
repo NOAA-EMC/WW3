@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -103,6 +103,7 @@
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    15-Apr-2020 : Allows no CFL on UNST boundary      ( version 6.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -770,6 +771,7 @@
            LOGICAL :: JGS_USE_JACOBI = .TRUE.
            LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
            LOGICAL :: UGOBCAUTO = .FALSE.
+           LOGICAL :: UGBCCFL   = .FALSE.
            LOGICAL :: EXPFSN    = .TRUE.
            LOGICAL :: EXPFSPSI  = .FALSE.
            LOGICAL :: EXPFSFCT  = .FALSE.
@@ -862,7 +864,7 @@
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH, UGOBCFILE,          &
-                           EXPFSN, EXPFSPSI, EXPFSFCT,                &
+                           UGBCCFL, EXPFSN, EXPFSPSI, EXPFSFCT,       &
                            IMPFSN, IMPTOTAL, EXPTOTAL,                &
                            IMPREFRACTION, IMPFREQSHIFT,               &
                            IMPSOURCE,                                 &
@@ -1946,6 +1948,7 @@
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
+       UGBCCFL = .TRUE.
        UGOBCDEPTH= -10.
        UGOBCOK = .FALSE.
        UGOBCFILE = 'unset'
@@ -2652,7 +2655,7 @@
 !/SMC                      AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND 
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
-        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH, TRIM(UGOBCFILE),     &
+        WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
                           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
                           IMPSOURCE, SETUP_APPLY_WLV,                 &
@@ -2921,6 +2924,7 @@
           END IF
         END DO
  
+        FSBCCFL = UGBCCFL
         SELECT CASE (UNSTSCHEME)
         CASE (1) 
           FSN = EXPFSN
@@ -5595,8 +5599,8 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,        &
-               ', UGOBCFILE=',A,','/                                   &
+ 2956 FORMAT ( '  &UNST UGBCCFL =',L3,', UGOBCAUTO =',L3,             &
+               ', UGOBCDEPTH =', F8.3,', UGOBCFILE=',A,','/           &
                ',  EXPFSN =',L3,',EXPFSPSI =',L3,                     &
                ',  EXPFSFCT =', L3,',IMPFSN =',L3,',EXPTOTAL=',L3,    &
                ',  IMPTOTAL=',L3,',IMPREFRACTION=', L3,               &
