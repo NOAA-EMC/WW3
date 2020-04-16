@@ -2906,7 +2906,7 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 !
-!/REF1      RREF=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
+!/REF1      RREF(1:4)=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
 !/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
