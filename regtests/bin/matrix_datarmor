@@ -37,7 +37,7 @@
 
   echo '#!/bin/bash'                                        > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -q mpi_2'                                      >> matrix.head
+  echo '#PBS -q mpi_1'                                      >> matrix.head
   echo '#PBS -l mem=20G'                                    >> matrix.head
   echo '#PBS -l walltime=48:00:00'                          >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
@@ -104,8 +104,8 @@
   export cmplOption='y'
 
   export  mpi='$MPI_LAUNCH'
-  export   np='56'
-  export   nr='28'
+  export   np='28'
+  export   nr='14'
   export  nth='2'
 
   if [ "$cmplOption" = 'y' ]
