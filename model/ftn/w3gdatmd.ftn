@@ -1508,6 +1508,10 @@
 !/REF1                 GRIDS(IMOD)%REFPARS(10), &
 !/REF1                 STAT=ISTAT               )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
+!
+!/REF1      GRIDS(IMOD)%RREF(:)=.FALSE.
+!/REF1      GRIDS(IMOD)%REFPARS(:)=0.
+!
 !/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
 !/REF1! where reflection can occur. 
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA), &
@@ -2906,7 +2910,6 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 !
-!/REF1      RREF(1:4)=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
 !/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
