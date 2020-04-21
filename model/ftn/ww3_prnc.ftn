@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jan-2018 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -24,8 +24,8 @@
 !/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
-!/    29-May-2019 : Correction in MPI for tide          ( version X.XX )
-!/    29-May-2019 : Correction in scale factor          ( version X.XX )
+!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
+!/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

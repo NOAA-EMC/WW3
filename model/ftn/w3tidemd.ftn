@@ -6,12 +6,12 @@
 !/                  | WAVEWATCH III                     |
 !/                  !            M. Foreman, IOS        !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Mar-2013 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    01-Sep-2012 : Origination.                        ( version 4.07 )
 !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
-!/    29-May-2019 : Correction of time and implicit none( version X.XX )
+!/    21-Apr-2020 : Correction of time and implicit none( version 7.XX )
 !/
 !  1. Purpose :
 !
@@ -337,10 +337,11 @@
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Feb-2013 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    29-Jun-2013 : Creation                            ( version 4.11 )
+!/    21-Apr-2020 : Add 5 additional tidal const.       ( version 7.XX )
 !/
 !  1. Purpose :
 !

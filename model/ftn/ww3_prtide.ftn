@@ -6,15 +6,15 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    29-Mar-2013 : Creation                            ( version 4.11 )   
 !/    17-Oct-2013 : Manages missing data for UNST grids ( version 4.12 )
 !/    06-Jun-2018 : COMPUTE VNEIGH: calculate the number of connected 
 !/                  triangles for a given point         ( version 6.04 )   
-!/    19-Mar-2019 : MPI implementation                  ( version X.XX )
-!/    29-May-2109 : bug fix for rectilinear grid        ( version X.XX )
+!/    21-Apr-2020 : MPI implementation                  ( version 7.XX )
+!/    21-Apr-2020 : bug fix for rectilinear grid        ( version 7.XX )
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

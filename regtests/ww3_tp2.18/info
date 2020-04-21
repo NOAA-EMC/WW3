@@ -22,8 +22,8 @@
 #  ./bin/run_test -s TIDE_MPI -n 3 -p mpirun -f -o netcdf -N ../model       #
 #                 ww3_tp2.18                                                # 
 #                                                                           #
-#                                              Mickael Accensi, May 2019    #
-#                                                    Last Mod : May 2019    #
+#                                              Mickael Accensi, Apr 2020    #
+#                                                    Last Mod : Apr 2020    #
 #                                                                           #
 #    Copyright 2009-2019 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
