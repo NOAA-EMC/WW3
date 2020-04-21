@@ -1857,6 +1857,11 @@
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
+  if [ "$smcgr" = 'y' ] && [ "$hybd" = 'y' ]; then
+    echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.10" >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.16" >> matrix.body
+  fi
+
 # mud/ice cases
 
   if [ "$mudice" = 'y' ] && [ "$shrd" = 'y' ]
@@ -1988,6 +1993,12 @@
    echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_O     -i input_UPD5_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U_cap -i input_UPD5_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_U     -i input_UPD6_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_U_cap -i input_UPD6_U_cap $ww3 ww3_ta1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #

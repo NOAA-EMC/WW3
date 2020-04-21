@@ -55,13 +55,13 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = 'III  5.10 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2019-12-29'
       CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
                                IDSTR = 'WAVEWATCH III RESTART FILE'
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, INTYPE, IMOD )
+      SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -97,6 +97,10 @@
 !/                  (T. Campbell, NRL)
 !/    05-Jun-2018 : Add PDLIB/TIMINGS/DEBUGIO           ( version 6.04 )
 !/                  DEBUGINIT/MPI
+!/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
+!/                  restart files 
+!/                  (Roberto Padilla-Hernandez & J.H. Alves)
+
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -118,6 +122,14 @@
 !                                 restart001.FILEXT
 !                                 restart002.FILEXT etc.
 !
+!     Optionally, a second stream of restart files is generated given
+!     a secondary stride definad by an additional start/end time line
+!     triggered by an optional argument added to the end of the stan-
+!     dard restart request line (a sixth argument flag set to T). File
+!     names include a time-tag prefix:
+!
+!                                 YYYYMMDD.HHMMSS.restart.FILEXT
+!
 !     The file to be read thus always is unnumbered, whereas all
 !     written files are automatically numbered.
 !
@@ -134,13 +146,14 @@
 !                          'CALM' Starting from calm conditions.
 !       NDSR    Int.  I/O  File unit number.
 !       DUMFPI  Real   I   Dummy values for FPIS for cold start.
-!       INTYPE  Int.   O   Type of input field,
+!       RSTYPE  Int.   O   Type of input field,
 !                           0 : cold start,
 !                           1 : cold start with fetch-limited spectra,
 !                           2 : full restart,
 !                           3 : for writing file.
 !                           4 : starting from calm.
 !       IMOD    Int.   I   Optional grid number, defaults to 1.
+!       FLRSTRT LOGIC  I    OTIONAL TRUE: A second request for restart files
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -227,7 +240,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: W3SETG, W3SETREF
+      USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
@@ -238,7 +251,8 @@
 !/WRST      USE W3IDATMD, ONLY: WXNwrst, WYNwrst 
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
-!/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS, VAAUX
+!/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
+!/MPI                               VAAUX
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WCMP
 !/
       USE W3SERVMD, ONLY: EXTCDE
@@ -260,9 +274,9 @@
       INTEGER                       :: NDSR
 !      INTEGER, INTENT(IN)           :: NDSR
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
-      INTEGER, INTENT(OUT)          :: INTYPE
       REAL, INTENT(INOUT)           :: DUMFPI
       CHARACTER, INTENT(IN)         :: INXOUT*(*)
+      LOGICAL, INTENT(IN),OPTIONAL  :: FLRSTRT
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -285,9 +299,11 @@
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
-      CHARACTER(LEN=21)       :: FNAME
+!      CHARACTER(LEN=21)       :: FNAME
+      CHARACTER(LEN=40)       :: FNAME
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
+      CHARACTER(LEN=15)       :: TIMETAG
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -365,13 +381,20 @@
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
-      IF ( IFILE.EQ.0 ) THEN
-          FNAME  = 'restart.'//FILEXT(:I)
-        ELSE
-          FNAME  = 'restartNNN.'//FILEXT(:I)
-          IF ( WRITE .AND. IAPROC.EQ.NAPRST )                         &
+!CHECKPOINT
+      IF ( PRESENT(FLRSTRT) .AND. FLRSTRT) THEN
+          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+          FNAME=TIMETAG//'.restart.'//FILEXT(:I)
+      ELSE
+         IF ( IFILE.EQ.0 ) THEN
+            FNAME  = 'restart.'//FILEXT(:I)
+         ELSE
+            FNAME  = 'restartNNN.'//FILEXT(:I)
+            IF ( WRITE .AND. IAPROC.EQ.NAPRST )                         &
                WRITE (FNAME(8:10),'(I3.3)') IFILE
         END IF
+      END IF
+
       IFILE  = IFILE + 1
 !
 !/T      WRITE (NDST,9001) FNAME, LRECL
@@ -409,7 +432,7 @@
 !           --- Replace zeros with data ---
             WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA, NSPEC
           END IF
-          INTYPE = 3
+          RSTYPE = 3
 !
         ELSE
           READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
@@ -441,13 +464,13 @@
               CALL EXTCDE ( 13 )
             END IF
           IF (TYPE.EQ.'FULL') THEN
-              INTYPE = 2
+              RSTYPE = 2
             ELSE IF (TYPE.EQ.'WIND') THEN
-              INTYPE = 1
+              RSTYPE = 1
             ELSE IF (TYPE.EQ.'CALM') THEN
-              INTYPE = 4
+              RSTYPE = 4
             ELSE
-              INTYPE = 0
+              RSTYPE = 0
             END IF
 !
         END IF
@@ -930,13 +953,13 @@
 !
   800 CONTINUE
 !/LN0      TYPE   = 'WIND'
-!/LN0      INTYPE = 1
+!/LN0      RSTYPE = 1
 !/SEED      TYPE   = 'CALM'
-!/SEED      INTYPE = 4
+!/SEED      RSTYPE = 4
 !/LN1      TYPE   = 'CALM'
-!/LN1      INTYPE = 4
+!/LN1      RSTYPE = 4
 !/LNX      TYPE   = 'CALM'
-!/LNX      INTYPE = 4
+!/LNX      RSTYPE = 4
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,990) TYPE, IERR
       GOTO 100
 !
@@ -1012,7 +1035,7 @@
 !/T 9007 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED ')
 !/T 9008 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED (DUMMY)')
 !
-!/T 9020 FORMAT (' TEST W3IORS : INTYPE = ',A,', PERFORMED BY W3INIT')
+!/T 9020 FORMAT (' TEST W3IORS : RSTYPE = ',A,', PERFORMED BY W3INIT')
 !/
 !/ End of W3IORS ----------------------------------------------------- /
 !/

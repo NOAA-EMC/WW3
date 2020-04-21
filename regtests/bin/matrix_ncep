@@ -121,7 +121,7 @@ fi
   export     shrd='y' # Do shared architecture tests
   export     dist='y' # Do distributed architecture (MPI) tests
   export      omp='y' # Threaded (OpenMP) tests
-  export     hybd='n' # Hybrid options
+  export     hybd='y' # Hybrid options
 
   export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
   export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)

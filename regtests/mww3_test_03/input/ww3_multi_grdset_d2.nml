@@ -111,22 +111,22 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'low1'
-  MODEL(1)%RESOURCE%COMM_FLAG    = 0.00,0.33
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.33
   MODEL(2)%NAME                  = 'low2'
   MODEL(2)%RESOURCE%RANK_ID      = 1
-  MODEL(2)%RESOURCE%COMM_FLAG    = 0.33,0.67
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.33,0.67
   MODEL(3)%NAME                  = 'low3'
   MODEL(3)%RESOURCE%RANK_ID      = 1
-  MODEL(3)%RESOURCE%COMM_FLAG    = 0.67,1.00
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.67,1.00
   MODEL(4)%NAME                  = 'hgh1'
   MODEL(4)%RESOURCE%RANK_ID      = 2
-  MODEL(4)%RESOURCE%COMM_FLAG    = 0.00,0.33
+  MODEL(4)%RESOURCE%COMM_FRAC    = 0.00,0.33
   MODEL(5)%NAME                  = 'hgh2'
   MODEL(5)%RESOURCE%RANK_ID      = 2
-  MODEL(5)%RESOURCE%COMM_FLAG    = 0.33,0.67
+  MODEL(5)%RESOURCE%COMM_FRAC    = 0.33,0.67
   MODEL(6)%NAME                  = 'hgh3'
   MODEL(6)%RESOURCE%RANK_ID      = 2
-  MODEL(6)%RESOURCE%COMM_FLAG    = 0.67,1.00
+  MODEL(6)%RESOURCE%COMM_FRAC    = 0.67,1.00
 /
 
 ! -------------------------------------------------------------------- !

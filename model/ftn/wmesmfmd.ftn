@@ -44,6 +44,7 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
+!/                  |         J. Meixner, NCEP          |
 !/                  |     A. J. van der Westhuysen      |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         09-Aug-2017 |
@@ -634,7 +635,7 @@
       logical :: lsep_se = .true.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
-      type(ESMF_Time) :: ttmp
+      type(ESMF_Time) :: ttmp, cttmp
       type(ESMF_TimeInterval) :: tstep, etstep
       integer :: i, j, n, istep, imod, jmod
       integer, allocatable :: cplmap(:,:)
@@ -750,8 +751,15 @@
 !
 ! 1.e Set internal start/stop time from external start/stop time
 !
+
       call ESMF_ClockGet(extClock, startTime=ttmp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ClockGet(extClock, currTime=cttmp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! Adjust internal start time to currTime in case of delayed start
+!
+      if ( cttmp.gt.ttmp ) ttmp=cttmp 
       call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       stime(1) = 10000*yy + 100*mm + dd
@@ -1942,9 +1950,9 @@
         if ( abs(delt).gt.0 ) then
           lerr=.true.
           write(msg,'(a,i2,a,2(a,i8,a,i8,a))') &
-            'Wave model grid ',imod,': ', &
-            'Internal time (',time(1),'.',time(2),') /= ', &
-            'Component time (',tcur(1),'.',tcur(2),')'
+          'Wave model grid ',imod,': ', &
+          'Internal time (',time(1),'.',time(2),') /= ', &
+          'Component time (',tcur(1),'.',tcur(2),')'
           call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
         endif
       enddo
@@ -3175,7 +3183,7 @@
 ! -------------------------------------------------------------------- /
 ! 4.  Create ESMF grid with arbitrary domain decomposition to match
 !     the native domain decomposition of the non-excluded points
-!     Note that the native grid layout is dim1=Y, dim2=X
+!     Note that the native grid layout is dim1=X, dim2=Y
 !     Note that coordinates and mask are not needed since this
 !     grid is only used to define fields for a redist operation
 !
@@ -3200,9 +3208,9 @@
             if (ipass.eq.2) then
               ix = mapsf(isea,1)
               iy = mapsf(isea,2)
-              ! native grid layout: dim1=Y, dim2=X
-              arbIndexList(arbIndexCount,1) = iy
-              arbIndexList(arbIndexCount,2) = ix
+              ! native grid layout: dim1=X, dim2=Y
+              arbIndexList(arbIndexCount,1) = ix
+              arbIndexList(arbIndexCount,2) = iy
             endif
           enddo
         endif
@@ -3213,9 +3221,9 @@
               if ( mapsta(iy,ix).ne.0 ) cycle ! skip non-excluded point
               arbIndexCount = arbIndexCount+1
               if (ipass.eq.2) then
-                ! native grid layout: dim1=Y, dim2=X
-                arbIndexList(arbIndexCount,1) = iy
-                arbIndexList(arbIndexCount,2) = ix
+                ! native grid layout: dim1=X, dim2=Y
+                arbIndexList(arbIndexCount,1) = ix
+                arbIndexList(arbIndexCount,2) = iy
               endif
             enddo
           enddo
@@ -3228,7 +3236,7 @@
         case (iclose_none)
           natGrid = ESMF_GridCreateNoPeriDim( &
             minIndex=(/ 1, 1/), &
-            maxIndex=(/ny,nx/), &
+            maxIndex=(/nx,ny/), &
             coordDep1=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             coordDep2=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             arbIndexCount=arbIndexCount, &
@@ -3239,11 +3247,11 @@
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         case (iclose_smpl)
           natGrid = ESMF_GridCreate1PeriDim( &
-            periodicDim=2, &
-            poleDim=1, &
+            periodicDim=1, &
+            poleDim=2, &
             poleKindFlag=(/ESMF_POLEKIND_NONE,ESMF_POLEKIND_NONE/), &
             minIndex=(/ 1, 1/), &
-            maxIndex=(/ny,nx/), &
+            maxIndex=(/nx,ny/), &
             coordDep1=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             coordDep2=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             arbIndexCount=arbIndexCount, &
@@ -4722,9 +4730,9 @@
 !/
       character(ESMF_MAXSTR) :: cname
       character(500) :: msg
-      integer :: k, ir, ip, count
+      integer :: i, j, k, ir, ip, count
       real(ESMF_KIND_RX) :: floc(n1,n2)
-      real(ESMF_KIND_RX) :: floc1d(n1)
+      real(ESMF_KIND_RX) :: floc1d(n1), floc1dary(n1*n2)
 !/PDLIB      real(ESMF_KIND_R8), pointer :: fldptr(:)
 !
 ! -------------------------------------------------------------------- /
@@ -4734,16 +4742,30 @@
 
 !      call ESMF_FieldWrite(field,fileName="ww3_import_dump.nc",overwrite=.true.,rc=rc)
       if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        count = n1 * n2
+        floc = 0.
+        floc1dary = 0.
+        call ESMF_FieldGather( field,  floc, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            floc1dary(i+(j-1)*n1) = floc(i,j)
+          enddo
         enddo
-        fout(1:n1,1:n2) = floc(1:n1,1:n2)
+        call ESMF_VMbroadcast( vm, bcstData=floc1dary, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            fout(i,j) = floc1dary(i+(j-1)*n1)
+          enddo
+        enddo
       elseif (GTYPE.eq.UNGTYPE) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc1d, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        enddo
+        count = n1
+        floc1d = 0.
+        call ESMF_FieldGather( field,  floc1d, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_VMbroadcast( vm, bcstData=floc1d, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/PDLIB      if ( LPDLIB == .FALSE. ) then
         do k = 1, n1
           fout(k,1) = floc1d(k)

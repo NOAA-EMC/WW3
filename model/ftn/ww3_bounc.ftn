@@ -150,7 +150,7 @@
       CHARACTER               :: COMSTR*1, LINE*512, FILENAME*512,     &
                                  INXOUT*5, FILE*128
       CHARACTER*50            :: TIMEUNITS, CALENDAR
-      CHARACTER*10            :: VERTEST  ! = 'III  1.03 '
+      CHARACTER*10            :: VERTEST  ! = '2018-03-01'
       CHARACTER*32            :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
       CHARACTER*512, ALLOCATABLE          :: SPECFILES(:)
       CHARACTER, ALLOCATABLE              :: STATION(:,:)

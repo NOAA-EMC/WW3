@@ -138,6 +138,7 @@
 !                               RLGTYPE: Rectilinear grid
 !                               CLGTYPE: Curvilinear grid
 !                               UNGTYPE: Unstructured triangular grid                       
+!      RSTYPE    Int.  Public   Integer identifyng restart type
 !      ICLOSE    Int.  Public   Parameter indicating type of index closure of grid.
 !                               ICLOSE_NONE: No grid closure
 !                               ICLOSE_SMPL: Simple grid closure
@@ -610,6 +611,7 @@
 !/ Grid type
       TYPE GRID          ! this is the geographical grid with all associated parameters 
         INTEGER          :: GTYPE
+        INTEGER          :: RSTYPE = -1
         INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
 !/SEC1     INTEGER          :: NITERSEC1
@@ -717,14 +719,14 @@
       END TYPE GRID
 !
       TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
-        INTEGER               :: NK, NK2, NTH, NSPEC
+        INTEGER               :: NK=0, NK2=0, NTH=0, NSPEC=0
         INTEGER, POINTER      :: MAPWN(:), MAPTH(:)
-        REAL                  :: DTH, XFR, FR1, FTE, FTF, FTWN, FTTR, &
-                                 FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+        REAL                  :: DTH=0., XFR=0., FR1=0., FTE=0., FTF=0., FTWN=0., FTTR=0., &
+                                 FTWL=0., FACTI1=0., FACTI2=0., FACHFA=0., FACHFE=0.
         REAL, POINTER         :: TH(:), ESIN(:), ECOS(:), ES2(:),     &
                                  ESC(:), EC2(:), SIG(:), SIG2(:),     &
                                  DSIP(:), DSII(:), DDEN(:), DDEN2(:)
-        LOGICAL               :: SINIT
+        LOGICAL               :: SINIT=.FALSE.
       END TYPE SGRD
 !
       TYPE NPAR
@@ -934,6 +936,7 @@
 !/ Data aliases for structure GRID(S)
 !/
       INTEGER, POINTER :: GTYPE
+      INTEGER, POINTER :: RSTYPE
       INTEGER, POINTER :: ICLOSE
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
       INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:), USSPF(:)
@@ -1718,6 +1721,20 @@
                  SGRDS(IMOD)%DDEN2(MSPEC),                            &
                  STAT=ISTAT                                           )
       CHECK_ALLOC_STATUS ( ISTAT )
+      SGRDS(IMOD)%MAPWN(:)=0.
+      SGRDS(IMOD)%MAPTH(:)=0.
+      SGRDS(IMOD)%TH(:)=0.
+      SGRDS(IMOD)%ESIN(:)=0.
+      SGRDS(IMOD)%ECOS(:)=0.
+      SGRDS(IMOD)%ES2(:)=0.
+      SGRDS(IMOD)%ESC(:)=0.
+      SGRDS(IMOD)%EC2(:)=0.
+      SGRDS(IMOD)%SIG(:)=0.
+      SGRDS(IMOD)%SIG2(:)=0.
+      SGRDS(IMOD)%DSIP(:)=0.
+      SGRDS(IMOD)%DSII(:)=0.
+      SGRDS(IMOD)%DDEN(:)=0.
+      SGRDS(IMOD)%DDEN2(:)=0.
 !/ST4      ALLOCATE ( MPARS(IMOD)%SRCPS%IKTAB(MK,NDTAB), &
 !/ST4                 MPARS(IMOD)%SRCPS%DCKI(NKHS,NKD),  &
 !/ST4                 MPARS(IMOD)%SRCPS%QBI(NKHS,NKD),   &
@@ -1905,6 +1922,7 @@
 ! 3.  Set pointers in structure GRID
 !
       GTYPE  => GRIDS(IMOD)%GTYPE
+      RSTYPE => GRIDS(IMOD)%RSTYPE
       ICLOSE => GRIDS(IMOD)%ICLOSE
 !
       NX     => GRIDS(IMOD)%NX

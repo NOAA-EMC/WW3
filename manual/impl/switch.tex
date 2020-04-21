@@ -282,6 +282,13 @@ compatible with switches used in previous model versions.
 \sit{omph}{Idem, but for directives used only for hybrid MPI-OpenMP
     parallelization.}
 \sit{pdlib}{Domain Decomposition for Explicit and Implicit Solver on triangular unstructured grids. ({\code ParMetis} is required for this option)}
+\sit{b4b}{Enforce bit-for-bit reproducibility of OpenMP enabled code. Certain
+OpenMP operations (especially reductions like summations) can result in slightly
+different results between runs due to floating point rounding errors.
+This switch enables intermediate steps (such as scaling values to an integer
+value) to ensure that results are bit-for-bit reproducible between runs. Useful
+for running the regression tests where such reproducibility is required.
+Currently only affects code compiled with the {\F smc} switch.}
 \end{slist}
 Note that these switches can only be used in certain combinations, as enforced
 in the model installation scripts (particularly {\file make\_makefile.sh}. A
