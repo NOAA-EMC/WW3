@@ -160,7 +160,7 @@ do
   -N) nml_input=1 ;;
   -o) shift; outopt="$1" ;;
   -O) pomp=1 ;;
-  -p) shift; runcmd="$1" ; runcmd1=$runcmd ; pmpi=1 ;;
+  -p) shift; runcmd="$1" ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
@@ -1186,22 +1186,23 @@ then
       rm $path_b/switch_noST
     fi
 
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ $batchq = "slurm" ]
         then
-          runcmd="$runcmd -n $nproc"
+          runprog="$runprog -n $nproc"
 
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
     fi
     if [ -n "$(grep SHRD $path_b/switch)" ] 
     then
-      runcmd=""
+      runprog=$runcmd
     fi
  
     if [ $time_count ]
@@ -1269,7 +1270,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $runcmd $path_e/$prog > $ofile
+        if $runprog $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml
@@ -1338,17 +1339,17 @@ then
       cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
-  
+
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ $batchq = "slurm" ]
         then 
-          runcmd="$runcmd -n $nproc"
-        
+          runprog="$runprog -n $nproc"
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
     fi
@@ -1420,7 +1421,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $runcmd $path_e/$prog > $ofile
+        if $runprog $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml
@@ -1609,24 +1610,26 @@ then
   
     echo "   Processing $ifile"
     echo "   Screen output copied to $ofile"
+
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ -z $batchq ] && [ $batchq = "slurm" ]
         then 
-          runcmd="$runcmd -n $nproc"
+          runprog="$runprog -n $nproc"
         
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
       if [ $nthrd ]
       then
         if ( which omplace ) ; then
-          runcmd="$runcmd omplace -nt $nthrd"
+          runprog="$runprog omplace -nt $nthrd"
         else
-          runcmd="$runcmd /usr/bin/env OMP_NUM_THREADS=$nthrd"
+          runprog="$runprog /usr/bin/env OMP_NUM_THREADS=$nthrd"
         fi
       fi
     fi
@@ -1646,7 +1649,7 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd1 -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -1655,7 +1658,7 @@ then
         exit 1
       fi
     else
-      if $runcmd $path_e/$prgb | tee $ofile
+      if $runprog $path_e/$prgb | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -2454,16 +2457,17 @@ then
     echo "   Processing $ifile"
     echo "   Screen output copied to $ofile"
 
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ $batchq = "slurm" ]
         then
-          runcmd="$runcmd -n $nproc"
+          runprog="$runprog -n $nproc"
   
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
     fi
@@ -2471,7 +2475,7 @@ then
     then # Add time counter if -T
       Tstart=`date +"%s.%2N"`
     fi
-    if $runcmd $path_e/$prog | tee $ofile
+    if $runprog $path_e/$prog | tee $ofile
     then
       \rm -f $prog.inp
       \rm -f $prog.nml
@@ -2596,16 +2600,17 @@ then
      \ln -s "$path_i/anl.grbtxt" anl.grbtxt
      
      mv -f restart001.ww3 restart.ww3
-    
+
+     runprog=$runcmd
      if [ $pmpi ]
      then
        if [ $nproc ]
        then
          if [ $batchq = "slurm" ]
          then
-           runcmd="$runcmd -n $nproc"
+           runprog="$runprog -n $nproc"
          else
-           runcmd="$runcmd -np $nproc"
+           runprog="$runprog -np $nproc"
          fi
        fi
      fi
@@ -2614,7 +2619,7 @@ then
        Tstart=`date +"%s.%2N"`
      fi
   
-     if $runcmd $path_e/$prog | tee $ofile
+     if $runprog $path_e/$prog | tee $ofile
      then
        \rm -f $prog.inp
        \rm -f $prog.nml
