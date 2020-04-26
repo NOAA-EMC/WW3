@@ -100,7 +100,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = 'III  2.01 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = '2019-10-04'
       CHARACTER(LEN=31), PARAMETER, PRIVATE ::                        &
                            IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
 !/
