@@ -22,8 +22,8 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%START   = '20120101 000000'
-  DOMAIN%STOP    = '20120102 120000'
+  DOMAIN%START   = '20120103 180000'
+  DOMAIN%STOP    = '20120105 120000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -58,9 +58,8 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%ICE_PARAM1    = 'T'
+  INPUT%FORCING%ICE_PARAM1    = 'H'
   INPUT%FORCING%ICE_PARAM2    = 'H'
-  INPUT%FORCING%ICE_PARAM5    = 'T'
   INPUT%FORCING%WATER_LEVELS  = 'H'
   INPUT%FORCING%ICE_CONC      = 'T'
 /
@@ -280,8 +279,8 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '20120101 000000' '900' '20120102 120000'
-  DATE%POINT          = '20120101 000000' '900' '20120102 120000'
+  DATE%FIELD          = '20120101 000000' '900' '20120108 120000'
+  DATE%POINT          = '20120101 000000' '900' '20120108 120000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -330,18 +329,23 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
+  HOMOG_COUNT%N_IC1                =  1
   HOMOG_COUNT%N_IC2                =  1
   HOMOG_COUNT%N_LEV                =  1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'IC2'
+  HOMOG_INPUT(1)%NAME        = 'IC1'
   HOMOG_INPUT(1)%DATE        = '20120101 000000'
-  HOMOG_INPUT(1)%VALUE1      = 1536.0e-4
+  HOMOG_INPUT(1)%VALUE1      = 0.8
 
-  HOMOG_INPUT(2)%NAME        = 'LEV'
+  HOMOG_INPUT(2)%NAME        = 'IC2'
   HOMOG_INPUT(2)%DATE        = '20120101 000000'
-  HOMOG_INPUT(2)%VALUE1      = 1.1
+  HOMOG_INPUT(2)%VALUE1      = 1536.0e-4
+
+  HOMOG_INPUT(3)%NAME        = 'LEV'
+  HOMOG_INPUT(3)%DATE        = '20120101 000000'
+  HOMOG_INPUT(3)%VALUE1      = 1.1
 /
 
 ! -------------------------------------------------------------------- !
