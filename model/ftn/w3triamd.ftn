@@ -730,6 +730,8 @@ CONTAINS
 !/ ------------------------------------------------------------------- /   
          USE W3GDATMD  
 !/S      USE W3SERVMD, ONLY: STRACE
+         USE W3ODATMD, ONLY: NDSE
+
          IMPLICIT NONE
 !	 
 !local parameters	 
@@ -764,7 +766,9 @@ CONTAINS
          I2 = TRIGP(K,2)
          I3 = TRIGP(K,3)
          TRIA(K) = -1.d0*TRIA(K)
-         STOP 'WRONG TRIANGLE' 
+         WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, XYB(I2,2)-XYB(I1,2), &
+                          XYB(I1,1)-XYB(I3,1),XYB(I3,2)-XYB(I1,2), XYB(I2,1)-XYB(I1,1)
+         STOP 
          END IF    
        END DO
      END SUBROUTINE
