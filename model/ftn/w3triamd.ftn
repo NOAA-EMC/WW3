@@ -221,7 +221,6 @@ CONTAINS
       ALLOCATE(XYBTMP1(NODES,3))
       DO I= 1, NODES
         READ(NDS,*) j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
-WRITE(6,*) NODES, I, j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
         END DO
 !
 ! read number of elements and elements from Gmsh files

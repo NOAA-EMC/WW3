@@ -62,7 +62,7 @@
 !/
 !/ Public variables  (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER :: VERBPTBC = 'III  1.03 '
+      CHARACTER(LEN=10), PARAMETER :: VERBPTBC = '2018-03-01'
       CHARACTER(LEN=32), PARAMETER ::                        &
                           IDSTRBC  = 'WAVEWATCH III BOUNDARY DATA FILE'
 !/

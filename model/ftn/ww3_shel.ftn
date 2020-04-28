@@ -338,6 +338,8 @@
                              FLLST_ALL(-7:8)
       LOGICAL             :: DEBUG_NCC = .FALSE.
 !/NCC      LOGICAL             :: CFLAG(10) 
+!/MPI      LOGICAL             :: FLHYBR = .FALSE.
+!/OMPH      INTEGER             :: THRLEV
 !/OASIS      LOGICAL             :: L_MASTER    
 !
 !/
@@ -398,11 +400,18 @@
 !/SHRD      NAPROC = 1
 !/SHRD      IAPROC = 1
 !
+!/OMPH      FLHYBR = .TRUE.
+
 !/OASIS IF (OASISED.EQ.1) THEN
 !/OASIS   CALL CPL_OASIS_INIT(MPI_COMM)
 !/OASIS ELSE
 !/DEBUGINIT      write(740+IAPROC,*), 'Before MPI_INIT, ww3_shel'
+!/OMPH       ! For hybrid MPI-OpenMP specify required thread level. JGLi06Sep2019
+!/OMPH       IF( FLHYBR ) THEN
+!/OMPH         CALL MPI_INIT_THREAD( MPI_THREAD_FUNNELED, THRLEV, IERR_MPI)
+!/OMPH       ELSE
 !/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/OMPH       ENDIF
 !/DEBUGINIT      write(740+IAPROC,*), 'After MPI_INIT, ww3_shel'
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/OASIS END IF
@@ -490,6 +499,8 @@
       ELSE
         NDSEN  = -1
       END IF
+!/OMPH      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,905) &
+!/OMPH                                        MPI_THREAD_FUNNELED, THRLEV
 !
 
 !
@@ -1202,6 +1213,7 @@
 ! CHECKPOINT
         IF(J .EQ. 4) THEN
           ODAT(38)=0 
+          WORDS(1:6)=''
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           READ(WORDS( 1 ), * ) ODAT(16)
@@ -1210,6 +1222,7 @@
           READ(WORDS( 4 ), * ) ODAT(19)
           READ(WORDS( 5 ), * ) ODAT(20)
           IF (WORDS(6) .EQ. 'T') THEN
+          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
             WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
           END IF
@@ -1219,12 +1232,10 @@
 !          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
 !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
+          WORDS(1:6)=''
 !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
-          DO I=1,6
-!            WRITE(*,*) I, WORDS(I)
-          END DO
 !
           IF(J .EQ. 1) THEN
             READ(WORDS( 1 ), * ) ODAT(1)
@@ -2435,6 +2446,9 @@
                15X,'==============================================='/)
   901 FORMAT ( '  Comment character is ''',A,''''/)
 !
+!/OMPH  905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
+!/OMPH               '     Requested: ', I2/                          &
+!/OMPH               '      Provided: ', I2/ )
   920 FORMAT (/'  Input fields : '/                                   &
                ' --------------------------------------------------')
   921 FORMAT ( '       ',A,2X,A,2X,A)

@@ -318,7 +318,7 @@
       USE W3DISPMD, ONLY: WAVNU1
 !
       USE W3GDATMD, ONLY: GNAME, NX, NY, MAPSTA, SIG, NK, NTH, NSEA,  &
-                          NSEAL, MAPSF, DMIN, ZB, DSIP, DTH
+                          NSEAL, MAPSF, DMIN, ZB, DSIP, DTH, RSTYPE
       USE W3WDATMD, ONLY: VA, TIME
       USE W3ADATMD, ONLY: NSEALM
       USE W3ODATMD, ONLY: IAPROC, NAPERR, NAPLOG, NDS, NAPOUT
@@ -336,7 +336,7 @@
 !      REAL, ALLOCATABLE       :: BETAW(:)
 !      LOGICAL, ALLOCATABLE    :: MASK(:)
       LOGICAL                 :: anl_exists, CORWSEA
-      INTEGER                 :: IMOD, INTYPE, NDSEN, IX, IY, IK, ITH, &
+      INTEGER                 :: IMOD,  NDSEN, IX, IY, IK, ITH, &
                                  IXW, IYW
       REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),     &
                                  A(:), HS_ANAL(:,:), gues(:,:),         &
@@ -446,9 +446,9 @@
 !/WRST      ! Set the wind flag to true when reading restart wind
 !/WRST      INFLAGS1(3) = .TRUE.
 !/WRST      CALL W3DIMI ( 1, 6, 6 ) !Needs to be called after w3iogr to have correct dimensions?
-      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )!
+      CALL W3IORS ( 'READ', NDS(6), SIG(NK), IMOD )!
       IF ( IAPROC .EQ. NAPLOG ) THEN
-         IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
+         IF (RSTYPE.EQ.0.OR.RSTYPE.EQ.1.OR.RSTYPE.EQ.4) THEN
             WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart ' // &
                                'file is not read'
             CALL EXTCDE ( 1 )
@@ -919,8 +919,8 @@
 !/WRST      WXN = WXNwrst
 !/WRST      WYN = WYNwrst
       WRITE (NDSO,903)
-      INTYPE = 3
-      CALL W3IORS ( 'HOT', NDS(6), SIG(NK), INTYPE, 1 )   
+      RSTYPE = 3
+      CALL W3IORS ( 'HOT', NDS(6), SIG(NK), 1 )   
 !/T      WRITE (NDST,*), MYNAME,' : Exporting VA at the end of the re-analysis'
 !/T      CALL writeMatrix('VA02.txt', REAL(VA))
 ! 

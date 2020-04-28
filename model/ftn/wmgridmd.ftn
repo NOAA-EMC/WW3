@@ -1489,6 +1489,7 @@
                   DO JBND=1,NY
                      IF ( ABS(MAPSTA(JBND,IBND)) .EQ. 2 ) THEN
                         ! (boundary point)
+!/OMPH/!$OMP PARALLEL DO PRIVATE(IDST,JDST,DD),SCHEDULE(DYNAMIC)
                         DO IDST=NX_BEG(IMPROC), NX_END(IMPROC)
                            DO JDST=1, NY
                               IF (ABS(MAPSTA(JDST,IDST)) .EQ. 1) THEN
@@ -1508,6 +1509,7 @@
                               ENDIF
                            END DO ! DO JDST
                         END DO ! DO IDST
+!/OMPH/!$OMP END PARALLEL DO
                      ENDIF ! (if BND point)
 
                   END DO ! DO JBND

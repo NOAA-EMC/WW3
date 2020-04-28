@@ -383,7 +383,7 @@
 !/ST3      USE W3SRC3MD
 !/ST3      USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM
 !/ST4      USE W3SRC4MD, ONLY : W3SPR4, W3SIN4, W3SDS4
-!/ST4      USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA, FFXFI, FFXFD
+!/ST4      USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA
 !/ST6      USE W3SRC6MD
 !/ST6      USE W3SWLDMD, ONLY : W3SWL6
 !/ST6      USE W3GDATMD, ONLY : SWL6S6
@@ -470,7 +470,7 @@
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
 !/ST3      REAL                    :: FMEANS, FH1, FH2
-!/ST4      REAL                    :: FMEANS, FH1, FH2, FAGE
+!/ST4      REAL                    :: FMEANS, FH1, FH2, FAGE, DLWMEAN
       REAL                    :: QCERR  = 0.     !/XNL2 and !/NNT
 !/SEED      REAL                    :: UC, SLEV
 !/MLIM      REAL                    :: HM, EM
@@ -683,7 +683,7 @@
 !/ST4      ELSE
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
-!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 
 !/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
 !/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
@@ -710,7 +710,7 @@
 
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
-!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/ST4      TWS = 1./FMEANWS
 !/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
 !
@@ -815,7 +815,7 @@
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 !/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 
 !/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
 !/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
@@ -918,9 +918,6 @@
           VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
           END IF
 !
-!/ST4        NKI    = MAX ( 2 , MIN ( NKH1 ,                           &
-!/ST4                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FFXFI* FMEAN1)) ) ) )
-
         VS = 0
         VD = 0
         DO IS=IS1, NSPECH
@@ -1157,7 +1154,7 @@
 !/ST3                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,           &
-!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/ST6        CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !
 !/FLX2        CALL W3FLX2 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &

@@ -815,7 +815,9 @@
 !/T1      WRITE (NDST,9010)
 !/T1      WRITE (NDST,9011) NB0, 'CENTRAL'
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, IXYD, QB)  
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL,                       &
+!/OMPH/!/T1!$OMP QBO, IX, IY, IY2, IX2, QN                   &
+!/OMPH/!$OMP IXYC, IXYD, QB)  
 !
       DO IP=1, NB0
 !
@@ -910,7 +912,9 @@
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, JN, JP )
+!/OMPH/!$OMP PARALLEL DO  &
+!/OMPH/!/T2/!$OMP       PRIVATE(QOLD), &
+!/OMPH/!$OMP       PRIVATE (IP, IXY, JN, JP)
 !
       DO IP=1, NACT
 !
