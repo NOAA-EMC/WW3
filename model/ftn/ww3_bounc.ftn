@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         04-May-2020 |
 !/                  +-----------------------------------+
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
@@ -17,6 +17,7 @@
 !/    20-Oct-2016 : Error statement updates             ( version 5.15 )
 !/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
+!/    04-May-2020 : Update spectral conversion          ( version 7.XX ) 
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
