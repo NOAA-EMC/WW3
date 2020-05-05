@@ -1202,7 +1202,7 @@ then
     fi
     if [ -n "$(grep SHRD $path_b/switch)" ] 
     then
-      runprog=$runcmd
+      runprog=''
     fi
  
     if [ $time_count ]
