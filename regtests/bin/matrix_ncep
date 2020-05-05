@@ -40,6 +40,7 @@
 # Set batchq queue, choose modules and other custom variables to fit system and 
 # to define headers etc (default to original version if empty)
 ishera=`hostname | grep hfe`
+isorion=`hostname | grep Orion`
 if [ $ishera ]
 then
 # If no other h, assuming Hera 
@@ -49,6 +50,14 @@ then
   modmpi='impi/2018.0.4'
   modnetcdf='netcdf/4.6.1'
   metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/parmetis-4.0.3'
+elif [ $isorion ]
+then
+  cmplr=orion
+  batchq="slurm"
+  modcomp='intel/2018.4'
+  modmpi='impi/2018.4'
+  modnetcdf='netcdf/4.7.2'
+  metispath='/work/noaa/marine/ali.abdolali/Source/parmetis-4.0.3'
 else
   batchq=
 fi
@@ -58,7 +67,16 @@ fi
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-if [ $batchq = "slurm" ]
+if [ $batchq = "slurm" ] && [ $isorion ]
+then
+  echo '#SBATCH -n 24'                                      >> matrix.head
+  echo '#SBATCH -q batch'                                   >> matrix.head
+  echo '#SBATCH -t 08:00:00'                                >> matrix.head
+  echo '#SBATCH -A marine-cpu'                              >> matrix.head
+  echo '#SBATCH -J ww3_regtest'                             >> matrix.head
+  echo '#SBATCH -o matrix.out'                              >> matrix.head
+  echo '#SBATCH -p orion'                                   >> matrix.head
+elif [ $batchq = "slurm" ]
 then
   echo '#SBATCH -n 24'                                      >> matrix.head
   echo '#SBATCH -q batch'                                   >> matrix.head

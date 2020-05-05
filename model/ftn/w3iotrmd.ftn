@@ -59,7 +59,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERTRK = 'III  1.02 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERTRK = '2018-06-08'
       CHARACTER(LEN=34), PARAMETER, PRIVATE ::                        &
                        IDSTRI = 'WAVEWATCH III TRACK LOCATIONS DATA', &
                        IDSTRO = 'WAVEWATCH III TRACK OUTPUT SPECTRA'
