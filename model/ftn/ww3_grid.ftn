@@ -105,7 +105,7 @@
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/    22-Jan-2020 : Update default values for IS2       ( version 7.XX ) 
 !/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.XX )
-!/    15-Apr-2020 : Allows no CFL on UNST boundary      ( version 7.xx )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
