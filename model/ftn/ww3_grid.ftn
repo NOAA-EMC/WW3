@@ -103,8 +103,8 @@
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    22-Jan-2020 : Update default values for IS2       ( version 7.XX ) 
-!/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.XX )
+!/    22-Jan-2020 : Update default values for IS2       ( version 7.05 ) 
+!/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.06 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
