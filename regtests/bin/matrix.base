@@ -667,6 +667,7 @@
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst -i input_BJ -w work_BJ_PR3_UQ $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.9" >> matrix.body
+      echo "$rtst -o netcdf   -w work_PR3_UQ    $ww3 ww3_tp1.11" >> matrix.body
     fi
 
     if [ "$unstr" = 'y' ]
