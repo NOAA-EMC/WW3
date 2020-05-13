@@ -233,7 +233,8 @@
           READ(WORDS( 2 ), * ) TOUT(2)
           READ(WORDS( 3 ), * ) DTREQ
           READ(WORDS( 4 ), * ) NOUT
-       IF (WORDS(5) .NE. '0' .AND. WORDS(5) .NE. '1') THEN
+       IF (WORDS(5) .NE. '0' .AND. WORDS(5) .NE. '1' .AND.            &
+                                   WORDS(5) .NE. '2') THEN
             GEN_PRO=-99999
           ELSE
             READ(WORDS( 5 ), * ) GEN_PRO
@@ -687,11 +688,11 @@
 !             =2 legacy :with no gen_pro set in ww3_grib.inp
 !              (in the case of legacy the params revert back to old names)
 !/NCEP2       KPDSNUM = 0
-!/NCEP2      if ( gen_pro.eq.1 ) then
+!/NCEP2      IF ( GEN_PRO .GE. 1 ) THEN
 !/NCEP2       KPDS( 3) = 4
-!/NCEP2      else
+!/NCEP2      ELSE
 !/NCEP2       KPDS(3)=2
-!/NCEP2      endif
+!/NCEP2      ENDIF
 !/NCEP2       KPDS( 4) = 0
 !/NCEP2       KPDS( 5) = PID
 !/NCEP2       KPDS( 8) = 1
@@ -1150,11 +1151,11 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .or. (GEN_PRO.EQ.0)) then
 !/NCEP2                KPDS(2) = 28
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS(2) = 25
-!/NCEP2         endif
+!/NCEP2         ENDIF
 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
@@ -1171,11 +1172,11 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .OR. (GEN_PRO.EQ.0)) then
 !/NCEP2                KPDS(2) = 34
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS(2) = 15
-!/NCEP2         endif 
+!/NCEP2         ENDIF 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Peak frequency
@@ -1219,11 +1220,11 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = 107
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .OR. (GEN_PRO.EQ.0)) THEN
 !/NCEP2                KPDS(2) = 46
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS(2) = 10
-!/NCEP2                endif    
+!/NCEP2         ENDIF    
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
                 DO ISEA=1, NSEA
@@ -1241,13 +1242,13 @@
 !/NCEP1                KPDS5B  = 105
 !/NCEP2                KPDS5A  = 5
 !/NCEP2                KPDS5B  = 8
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .or. (GEN_PRO.EQ.0)) then
 !/NCEP2                KPDS5A1(1)  =47
 !/NCEP2                KPDS5A1(2)  =48
 !/NCEP2                KPDS5A1(3)  =49
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS5B  = 8
-!/NCEP2         endif
+!/NCEP2         ENDIF
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PHS(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1263,13 +1264,13 @@
 !/NCEP1                KPDS5B  = 106
 !/NCEP2                KPDS5A  = 6
 !/NCEP2                KPDS5B = 9
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .or. (GEN_PRO.EQ.0)) then
 !/NCEP2                KPDS5A1(1)  = 50
 !/NCEP2                KPDS5A1(2)  = 51
 !/NCEP2                KPDS5A1(3)  = 52
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS5B = 9
-!/NCEP2         endif
+!/NCEP2         ENDIF
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PTP(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1300,13 +1301,13 @@
 !/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
 !/NCEP2                KPDS5B = 7
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+!/NCEP2         if ((GEN_PRO.EQ.1) .or. (GEN_PRO.EQ.0)) then
 !/NCEP2                KPDS5A1(1)  = 53
 !/NCEP2                KPDS5A1(2)  = 54
 !/NCEP2                KPDS5A1(3)  = 55
-!/NCEP2         else
+!/NCEP2         ELSE
 !/NCEP2                KPDS5B = 7
-!/NCEP2         endif
+!/NCEP2         ENDIF
 !/RTD                DO I = 0,NOSWLL
 !/RTD                  ! Rotate direction back to standard pole
 !/RTD                  IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,I), AnglD, .FALSE.)
@@ -1454,7 +1455,7 @@
 !/NCEP2                IF (IO .NE. 0) GOTO 830
 !/NCEP2                CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 !
-!/NCEP2               if ((gen_pro.eq.0) .or. (gen_pro.eq.1)) then
+!/NCEP2               if ((GEN_PRO.EQ.0) .or. (GEN_PRO.EQ.1)) then
 !/NCEP1                KPDS(5) = KPDS5B
 !/NCEP1                KPDS(6) = 241
 !/NCEP2                KPDS(10) = 241
