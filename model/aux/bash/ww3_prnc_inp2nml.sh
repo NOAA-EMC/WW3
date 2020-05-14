@@ -202,6 +202,7 @@ if [ "$format" = "LL" ]; then echo "  FORCING%GRID%LATLON          = T" >> $nmlf
 
 if [ "$format" = "AT" ]
 then
+  if [ "$format" = "AT" ]; then echo "  FORCING%GRID%ASIS            = T" >> $nmlfile; fi
   if [ "$field" = "CUR" ] || [ "$field" = "LEV" ] ; then echo "  FORCING%TIDAL                = '$tide'" >> $nmlfile; fi
 fi
 
