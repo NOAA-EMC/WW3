@@ -97,7 +97,7 @@
 !/    03-Oct-2007 : Origination.                        ( version 3.13 )
 !/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
 !/    08-Jun-2018 : use STRACE and FLUSH                ( version 6.04 )
-!/    22-Feb-2020 : Merge Romero (2019) and cleanup     ( version 7.XX )
+!/    22-Feb-2020 : Merge Romero (2019) and cleanup     ( version 7.06 )
 !/
 !  1. Purpose :
 !
@@ -1565,7 +1565,7 @@
 !/    23-Jan-2012 : Add output of lambdas to be used in SIN
 !/    13-Nov-2013 : Reduced frequency range with IG1 switch 
 !/    06-Jun-2018 : Add optional DEBUGSRC              ( version 6.04 )
-!/    22-Feb-2020 : Option to use Romero (GRL 2019)    ( version 7.XX )
+!/    22-Feb-2020 : Option to use Romero (GRL 2019)    ( version 7.06 )
 !/
 !  1. Purpose :
 !
