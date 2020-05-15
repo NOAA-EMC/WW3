@@ -91,7 +91,7 @@
 !/                  (Q. Liu, UoM)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
-!/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.XX )
+!/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.xx )
 !/
 !/
