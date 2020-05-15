@@ -3689,7 +3689,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FACTOR, FKD,KD
       REAL                    :: ABX(NSEAL), ABY(NSEAL), USSCO
-      REAL                    :: MINDIFF=1.e8
+      REAL                    :: MINDIFF
       INTEGER                 :: Spc2Bnd(NK)
 !/
 !/ ------------------------------------------------------------------- /
@@ -3782,13 +3782,15 @@
                ENDIF
             ELSEIF (USS_SWITCH==2) THEN
                ! Match each spectral component to the nearest partition
-               DO IB=1,USSPF(2)
+               MINDIFF=1.e8
+               Spc2BND(IK) = 1
+               MINDIFF=abs(USSP_WN(1)-WN(IK,ISEA))
+               DO IB=2,USSPF(2)
                   IF (MinDiff .gt. abs(USSP_WN(IB)-WN(IK,ISEA))) then
                      Spc2BND(IK) = IB
                      MinDiff = abs(USSP_WN(IB)-WN(IK,ISEA))
                   ENDIF
                ENDDO
-               MINDIFF=1.e8
                !Put spectral energey into whichever band central wavenumber fits in
                USSP(JSEA,Spc2Bnd(IK))    =  USSP(JSEA,Spc2Bnd(IK)) + ABX(JSEA)*USSCO
                USSP(JSEA,NK+Spc2BND(IK)) =  USSP(JSEA,NK+Spc2Bnd(IK)) + ABY(JSEA)*USSCO
