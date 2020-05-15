@@ -6,11 +6,12 @@
 !/                  | WAVEWATCH III                     |
 !/                  !            M. Foreman, IOS        !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Mar-2013 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    01-Sep-2012 : Origination.                        ( version 4.07 )
 !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
+!/    21-Apr-2020 : Correction of time and implicit none( version 7.XX )
 !/
 !  1. Purpose :
 !
@@ -287,6 +288,8 @@
 !
 ! 10. Source code :
 !
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
+      USE W3ODATMD, ONLY: NDSE, NDSO
 !/S      USE W3SERVMD, ONLY: STRACE
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   
@@ -303,13 +306,13 @@
 !/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
 !
       TIDE_PRMF=0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+      IF (TRIM(LIST(1)).EQ.'VFAST' .OR. TRIM(LIST(1)).EQ.'FAST') THEN 
         DO J=1,TIDE_MF
           INDS(J)=J
-          END DO
+        END DO
         TIDE_PRMF = TIDE_MF
         RETURN
-        END IF
+      END IF
 !
       DO WHILE (len_trim(LIST(TIDE_PRMF+1)).NE.0)
         TIDE_PRMF=TIDE_PRMF+1
@@ -318,11 +321,13 @@
           IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN 
             INDS(TIDE_PRMF)=J
             FOUND=1
-            WRITE(6,*) 'Tidal constituent to be used in pre:',TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
-            END IF
-          END DO
-        IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)),' not available.'
+            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used in pre:', &
+                                                            TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
+          END IF
         END DO
+        IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(3A)') 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)), &
+                                                                  ' not available.'
+      END DO
 !
       END SUBROUTINE TIDE_FIND_INDICES_PREDICTION
 
@@ -332,10 +337,11 @@
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Feb-2013 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    29-Jun-2013 : Creation                            ( version 4.11 )
+!/    21-Apr-2020 : Add 5 additional tidal const.       ( version 7.XX )
 !/
 !  1. Purpose :
 !
@@ -373,6 +379,9 @@
 !       !/T  Enable test output.
 !
 ! 10. Source code :
+!
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
+      USE W3ODATMD, ONLY: NDSE, NDSO
 !/S      USE W3SERVMD, ONLY: STRACE
 !
 !/ ------------------------------------------------------------------- /
@@ -384,9 +393,9 @@
       CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
 !
       INTEGER TIDE_MF_ALL
-      CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(60)      ! array of names of tidal constituents
-      REAL                         :: TIDE_FREQC_ALL(60)        ! array of freq. of tidal constituents
-      INTEGER                      :: INDS(60), J, FOUND, NTIDES
+      CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(65)      ! array of names of tidal constituents
+      REAL                         :: TIDE_FREQC_ALL(65)        ! array of freq. of tidal constituents
+      INTEGER                      :: INDS(65), J, FOUND, NTIDES
 !/S      INTEGER, SAVE           :: IENT   =   0
 !
 !/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
@@ -397,9 +406,10 @@
        'J1   ', 'SO1  ', 'OO1  ', 'UPS1 ', 'OQ2  ', 'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
        'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
        'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
+       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ',  &
+       'N4   ', 'R2   ', 'S1   ', 'SA   ', 'T2   ' /) 
 !
-       TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
+      TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
                   0.0343965698, 0.0357063505, 0.0359087218, 0.0372185025, 0.0374208738, &
                   0.0387306544, 0.0389588136, 0.0400404351, 0.0402685943, 0.0404709655, &
                   0.0415525871, 0.0417807462, 0.0420089053, 0.0430905269, 0.0432928982, &
@@ -410,13 +420,10 @@
                   0.1222921469, 0.1251140796, 0.1595106494, 0.1610228013, 0.1623325820, &
                   0.1638447340, 0.1640728931, 0.1666666667, 0.1668948258, 0.2028035476, &
                   0.2084474129, 0.2400220500, 0.2415342020, 0.2443561347, 0.2445842938, &
-                  0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027 /)
+                  0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027, &
+                  0.157998497 , 0.083447407 , 0.041666667 , 0.000114080 , 0.083219259 /)
 
       INDS(:) = 0
-      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
-        WRITE(6,*) 'Tidal constituent ALL not available anymore.'
-        RETURN
-        END IF
 !
       IF (TRIM(LIST(1)).EQ.'FAST') THEN 
         TIDE_MF = 44
@@ -436,30 +443,33 @@
 !
           TIDE_MF=TIDE_MF+1
           FOUND = 0
-          DO J=1,60
+          DO J=1,65
             IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN 
               NTIDES=NTIDES+1
               INDS(NTIDES)=J
               FOUND = 1
-              WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
-              END IF
-            END DO
-          IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
-! 
+              IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,2A,E12.2)')  &
+                                    'Tidal constituent in analysis:', J, ' ', &
+                                    TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
+            END IF
           END DO
+          IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,A,A)') &
+                                                 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
+! 
+        END DO
 !
         TIDE_MF=NTIDES
-        END IF
+      END IF
 !
 ! Defines names and frequencies
 !
-        IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
-        ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
+      IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
+      ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 
-        DO J=1,TIDE_MF 
-          TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
-          TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
-          END DO
+      DO J=1,TIDE_MF 
+        TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
+        TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
+      END DO
       CALL TIDE_SET_INDICES
 
 !
@@ -1210,7 +1220,7 @@
 ! See numerical recipes 2nd ed. The order of month and day have been swapped!
 !*********************************************************************
       IMPLICIT NONE
-           INTEGER id,mm,iyyy
+      INTEGER id,mm,iyyy
       INTEGER IGREG 
       INTEGER*4 ja,jm,jy
       INTEGER*4 JULDAYT
@@ -1238,7 +1248,7 @@
 ! Should be removed : same is now in W3TIMEMD
 !*********************************************************************
    IMPLICIT NONE
-        INTEGER(KIND=4),    INTENT(in)  :: julian
+   INTEGER(KIND=4),    INTENT(in)  :: julian
    INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
    INTEGER(KIND=4), PARAMETER :: IGREG=2299161
    INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
@@ -1315,8 +1325,9 @@
       real, intent(IN)                  :: toler
       real, intent(INOUT)               :: q(mm,N2), ssq, res
       integer, intent(INOUT)            :: jc
+      double precision, intent(INOUT)   :: sig(mm)
       double precision, intent(OUT)     :: u(mm,N2),v(N2,N2),cov(N2,N2),      &
-                                           w(N2),b(mm),p(N2),sig(mm)
+                                           w(N2),b(mm),p(N2)
 
 ! LOCAL VARIABLES
       double precision          :: wti(nwt)
@@ -1325,7 +1336,6 @@
       double precision          :: eps, sum, resi
       
       jc=0
-      sig(:)=1.
       do i=1,mm
         b(i)=q(i,N2)
       enddo
@@ -1375,7 +1385,7 @@
         resi=abs(b(i)-sum)
 !      TIDE_MF addition
         q(i,N2)=b(i)-sum
-        res=max(res,REAL(resi))
+        res=max(res,resi)
         ssq=ssq+resi**2
       enddo
 ! compute variances, covariances, these may need to be given dimension
@@ -1408,7 +1418,7 @@
 
       IMPLICIT NONE
 
-      integer          :: JLM
+      INTEGER          :: JLM
 
       NTIDAL_CON = 45
       NTOTAL_CON = 45+101
@@ -1841,18 +1851,25 @@
 !/ ------------------------------------------------------------------- /
      SUBROUTINE SETVUF(hr,XLAT,ITIME)
 !      setvuf calculates the V,u,f values at time hr for all constituents
-      REAL,         INTENT(IN)  :: XLAT
+
+      IMPLICIT NONE
+
       REAL(KIND=8), INTENT(IN)  :: hr
+      REAL,         INTENT(IN)  :: XLAT
+      INTEGER,      INTENT(IN)  :: ITIME
+
 !
 !   Local variables
 !
-      INTEGER                   :: ITIME, KD0, INT24, INTDYS, &
+      INTEGER                   :: KD0, INT24, INTDYS, &
                                    JBASE, J, K, L, J1, K1, JL, LK, iflag
+      INTEGER                   :: IV, IUU
+!
       REAL(KIND=4), PARAMETER   :: PI=3.1415926536
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
-
-      REAL                      :: SLAT, VDBL, IV, VV, SUMC, SUMS, RR, &
-                                   UUDBL, IUU, UU
+!
+      REAL                      :: SLAT, VDBL, VV, SUMC, SUMS, RR, &
+                                   UUDBL, UU
       REAL(KIND=8)              :: d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp,hh,tau
 
       INTEGER                   :: indx(170)
@@ -1872,7 +1889,8 @@
       ! KD0= 693961
       !KD0=JULDAYT(31,12,1899)   ! JULDAYT(id,mm,iyyy)
       KD0= 2415020
-      d1=d1-dfloat(KD0)-0.5d0
+      ! substracting 0.5day is not necessary anymore with new time functions
+      d1=d1-dfloat(KD0)
       call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
       INT24=24
       INTDYS=int((hr+0.00001)/INT24)

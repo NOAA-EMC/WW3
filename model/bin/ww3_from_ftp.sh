@@ -27,6 +27,7 @@ tar -xvzf ww3_from_ftp.${ww3ver}.tar.gz
 
 #Move regtest info from data_regtests to regtests:
 echo -e "Moving data from data_regtests to regtests"  
+cp -r data_regtests/ww3_tp2.18/input/*.nc  regtests/ww3_tp2.18/input/
 cp -r data_regtests/ww3_tp2.15/input/*.nc  regtests/ww3_tp2.15/input/
 cp -r data_regtests/ww3_tp2.13/*.png       regtests/ww3_tp2.13/
 cp -r data_regtests/ww3_tic1.4/input/*.nc  regtests/ww3_tic1.4/input/

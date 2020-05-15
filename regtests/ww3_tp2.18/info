@@ -1,0 +1,33 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.18 Tidal harmonics on a regular grid                              #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   F90 NOGRB NC4 TRKNC DIST MPI PR3 UQ FLX0 LN0 ST4 STAB0 NL0 BT0 DB0      #
+#   MLIM TR0 BS0 IC0 IS0 REF1 XX0 WNT2 WNX1 RWND CRT1 CRX1 TIDE             #
+#   O0 O1 O2 O2a O2b O2c O3 O4 O5 O6 O7                                     #
+#                                                                           #
+# Remarks :                                                                 #
+# - TIDE switch must be used for tidal harmonics                            #
+# - ww3_prnc run first to create tidal constituents in current.ww3          #
+# - current.ww3 must be renamed as current.ww3_tide                         #
+# - ww3_prtide run then to create the current field on the defined date     #
+#                                                                           #
+# - ww3_prnc and ww3_prtide can be launched with MPI                        #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test -s TIDE -o netcdf -N ../model  ww3_tp2.18                 # 
+#  ./bin/run_test -s TIDE_MPI -n 3 -p mpirun -f -o netcdf -N ../model       #
+#                 ww3_tp2.18                                                # 
+#                                                                           #
+#                                              Mickael Accensi, Apr 2020    #
+#                                                    Last Mod : Apr 2020    #
+#                                                                           #
+#    Copyright 2009-2019 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

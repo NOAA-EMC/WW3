@@ -10,7 +10,7 @@ $ Request flags identifying fields as in ww3_shel input and section 2.4 of the m
 $
 N
 $
-DPT HS FP DIR SPR
+DPT CUR HS FP DIR SPR
 $
 $ Output type ITYPE [0,1,2,3]
   3 0
