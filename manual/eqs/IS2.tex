@@ -104,21 +104,8 @@ $F_{break} \, E_s$ is thus the maximum strain for random waves. \\
 
 
 
-Inelastic dissipation was added in this routine, following \cite{art:Wad73}, because it critically 
-depends on the floe size.  It assumes that the floes deformation is not fully elastic, and that the secondary creep under the wave-induced cyclic causes the dissipation of wave energy into heat. 
-We use the ice floe law
-\begin{equation}
-%\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^{n-1}}{B^n}\sigma_{i,j}'
-\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^2}{B^3}\sigma_{i,j}',
-\end{equation}
-$B$ is the floe law  constant and is a function of ice temperature. Using the normalized parameter estimated by \cite{art:Cea98} from 
-laboratory experiments, $A=10^{11}$,  and  a uniform ice temperature of 270~K  gives a value 
-of $B=10^7$~s$^{1/3}$. The volumic dissipation rate is 
-\begin{equation}
-%\frac{de}{dt}= | \sigma_{xx}^{n+1}/(2B)^{n} |.
-\frac{de}{dt}= | \sigma_{xx}^{4}/(2B)^3 |.
-\end{equation}
-Also, the cyclic deformation of the ice can require a much larger elastic energy than the gravity potential 
+Anelastic or inelastic dissipation was inclued in this routine instead of ICn, because it critically 
+depends on the floe size. Following \cite{art:Bea18}, it is assumed that the floes deformation is not fully elastic, and that the wave-induced cyclic strain and stress cause the dissipation of wave energy into heat. The cyclic deformation of the ice can require a much larger elastic energy than the gravity potential 
 energy, but this is only true if the ice is not broken. As a result, working with a wave elevation spectrum $E(k)$ 
 could introduce large changes in $E(k)$ when the ice is broken or reformed. Instead we prefer 
 to work with an energy spectrum $ R C_g E(k)/C_{g,\mathrm{ice}}$, using the coefficient $R$ introduced by \cite{art:Wad73}, which 
@@ -136,12 +123,52 @@ For unbroken ice  $R$ is
 R=1+C_R\frac{4Y^*h^3\pi^4}{3\rho g \lambda^4(1-\nu^2)},
 \label{R}
 \end{equation}
-where we have been careful that \cite{art:Wad73} used $2h$ for the  ice thickness, 
+where we have been careful  that \cite{art:Wad73} used $2h$ for the  ice thickness, 
 and $C_R$ is by default set to 1.0 using the namelist parameter {\code IS2BREAKE}, but it can 
 be set to zero to work with the true elevation spectrum instead. This factor $R$ is also 
 applied in the calculation of ice breakup by the waves.\\
 
+By default, the anelastic dissipation term is used, activated by the namelist parameter {\code IS2ANDISB} set to {\code TRUE}. 
+Anelastic dissipation corresponds to the energy dissipated into heat during the oscillatory motion of the dislocations induced by the cyclic stress associated to waves.  This behaviour results in a hysteresis that can be seen in stress-strain diagrams when sea ice is submitted to a sinusoidal stress as presented in Fig.~4 of \cite{art:Cea98} study. This latter article also suggests a model for the anelastic behaviour of sea ice, with a stress-strain relationship that enables to compute the area within the ellipse which results from the hysteresis. Anelastic dissipation is linearized as  $S_{\mathrm{ane}}=-\alpha_{\mathrm{ane}} E_{ice}$. 
+\cite{art:Bea18} have derived  $\alpha_{\mathrm{ane}}$  from \cite{art:Cea98} model for a monochromatic stress, 
+\begin{equation}
+\alpha_{\mathrm{ane}}= \dfrac{A}{6}\left(k_i^{2}\dfrac{Y^*}{(1-\nu^{2})\rho gG}\right)^{2}h^{3}\frac{C_g}{GC_{g,i}} F_{\rm broken},
+\label{eq:alpha_ane}
+\end{equation}  
+where $F_{\rm broken}$  is a heuristic smooth transition from unbroken to broken ice, so that the dissipation 
+gradually goes to zero for waves much longer than the floe sizes, because in that case the ice does 
+not deform and produces no dissipation of wave energy, 
+\begin{equation}
+F_{\rm broken}=\tanh \left( {\frac{D_{\max}-C_{\lambda}\lambda_{ice}} {D_{\max}C_{smooth} } }\right).
+\label{smooth}
+\end{equation}
+Anelastic or inelastic dissipation is computed after updating $D_{\max}$. 
+%dissipation is full for
+%$\lambda_{ice}\leq D_{\max}$ and disappears for $C_{\lambda}\lambda_{ice}< D_{\max}$.  
+The two parameters in this smooth transition $C_{\lambda}$ and $C_{smooth}$ are 
+set to  $0.5$ and $0.4$ by default, as adujsted to Southern Ocean wave data. They can be modified by the namelist parameters {\code IS2CREEPD} and {\code IS2CREEPC}.
+FInally,  $A$ is given by 
+\begin{equation}
+A=\dfrac{4}{3}\sigma \alpha_{d}~\delta D^{d}~\dfrac{1}{\exp(\alpha_{d}s)+\exp(-\alpha_{d}s)}, 
+\label{eq:A_ane}
+\end{equation}  
+in which terms are detailed in the table at the end of this section. The magnitude of the dissipation is controlled by the dislocation relaxation parameter $\delta D^{d}$ .\\
 
+
+An alternative inelastic dissipation can be activated by setting {\code IS2ANDISB} to {\code FALSE}. In this case the following dissipation is used: 
+
+We use the ice floe law
+\begin{equation}
+%\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^{n-1}}{B^n}\sigma_{i,j}'
+\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^2}{B^3}\sigma_{i,j}',
+\end{equation}
+$B$ is the floe law  constant and is a function of ice temperature. Using the normalized parameter estimated by \cite{art:Cea98} from 
+laboratory experiments, $A=10^{11}$,  and  a uniform ice temperature of 270~K  gives a value 
+of $B=10^7$~s$^{1/3}$. The volumic dissipation rate is 
+\begin{equation}
+%\frac{de}{dt}= | \sigma_{xx}^{n+1}/(2B)^{n} |.
+\frac{de}{dt}= | \sigma_{xx}^{4}/(2B)^3 |.
+\end{equation}
 The inelastic dissipation is linearized as  $S_{\mathrm{ine}}=-\alpha_{\mathrm{ine}} E_{ice}$. 
 The coefficient $\alpha_{\mathrm{creep}}$ was adapted from the 
 \cite{art:Wad73} monochromatic formula and is equal to
@@ -150,33 +177,8 @@ The coefficient $\alpha_{\mathrm{creep}}$ was adapted from the
 \alpha_{\mathrm{ine}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{4} I_3 k^4 \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F_{\rm broken} \int_{k_1}^{k_2} k_{ice}^4 E(k)dk, 
 \label{eq:alpha_creep}
 \end{equation}
-where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$. Details of the computation are given in \cite{art:Bea18}.
-$F_{\rm broken}$  is a heuristic smooth transition from unbroken to broken ice, so that the dissipation 
-gradually goes to zero for waves much longer than the floe sizes, because in that case the ice does 
-not deform and produces no dissipation of wave energy, 
-\begin{equation}
-F_{\rm broken}=\tanh \left( {\frac{D_{\max}-C_{\lambda}\lambda_{ice}} {D_{\max}C_{smooth} } }\right) .
-\label{smooth}
-\end{equation}
-Inelastic dissipation is computed after updating $D_{\max}$. 
-%dissipation is full for
-%$\lambda_{ice}\leq D_{\max}$ and disappears for $C_{\lambda}\lambda_{ice}< D_{\max}$.  
-The two parameters in this smooth transition $C_{\lambda}$ and $C_{smooth}$ are 
-set to  $0.4$ and $0.2$ by the adjustable namelist parameters {\code IS2CREEPD} and {\code IS2CREEPC}.\\
-
-Possibility of subsituting this inelastic dissipation by an anelastic dissipation term has also been added. It is activated by setting the namelist parameter {\code IS2ANDISB} to {\code TRUE}. 
-Anelastic dissipation corresponds to the energy dissipated into heat during the oscillatory motion of the dislocations induced by the cyclic stress associated to waves.  This behaviour results in a hysteresis that can be seen in stress-strain diagrams when sea ice is submitted to a sinusoidal stress as presented in Fig.~4 of \cite{art:Cea98} study. This latter article also suggests a model for the anelastic behaviour of sea ice, with a stress-strain relationship that enables to compute the area within the ellipse which results from the hysteresis. Similarly to what has been done for inelastic dissipation, anelastic dissipation is linearized as  $S_{\mathrm{ane}}=-\alpha_{\mathrm{ane}} E_{ice}$. 
-\cite{art:Bea18} have derived  $\alpha_{\mathrm{ane}}$  from \cite{art:Cea98} model for a monochromatic stress. They obtained the following coefficient: 
-\begin{equation}
-\alpha_{\mathrm{ane}}= \dfrac{A}{6}\left(k_i^{2}\dfrac{Y^*}{(1-\nu^{2})\rho gG}\right)^{2}h^{3}\frac{C_g}{GC_{g,i}} F_{\rm broken},
-\label{eq:alpha_ane}
-\end{equation}  
-where  $F_{\rm broken}$ is the same as for inelastic dissipation and $A$ is equal to:
-\begin{equation}
-A=\dfrac{4}{3}\sigma \alpha_{d}~\delta D^{d}~\dfrac{1}{\exp(\alpha_{d}s)+\exp(-\alpha_{d}s)}, 
-\label{eq:A_ane}
-\end{equation}  
-in which terms are detailed in the table at the end of this section.\\
+where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$, and $F_{\rm broken}$ was defined above.
+ Details of the computation are given in \cite{art:Bea18}.
 
 Finally we recall the various model parameters used in IS2 in the following table. Some are defined 
 as constants in the {\code W3IS2MD} module, others can be adjusted with the {\F SIS2} namelist. 
@@ -195,10 +197,10 @@ Flexural strength            &  $\sigma_c$   & N. A. & 0.27~MPa \\
 Flow law parameter           &$n$            & {\code IS2CREEPN} & 3\\
 Flow law parameter           &$B$            & {\code IS2CREEPB} &  10$^7$~s$^{1/3}$\\
 Elastic energy correction    & $C_R$         & {\code IS2BREAKE} & 1.0 \\
-Relax. of disloc. compliance & $\delta D^{d}$& {\code IS2ANDISD} & $\Delta_d \Omega b^2/K$ (Pa$^{-1}$)\\
-Dislocation density          & $\Delta_d$    & N. A. & 1.8$\times10^{9}$ (m$^{-2}$)\\
-Restoring stress term        & $K$           & N. A. & 0.07 (Pa) \\
-Orientation factor           & $\Omega$      & N. A. & $\pi^{-1}$ \\
+Relax. of disloc. compliance & $\delta D^{d}$& {\code IS2ANDISD} & $2  \times 10^{-9}$~(Pa$^{-1}$)\\
+%Dislocation density          & $\Delta_d$    & N. A. & 1.8$\times10^{9}$ (m$^{-2}$)\\
+%Restoring stress term        & $K$           & N. A. & 0.07 (Pa) \\
+%Orientation factor           & $\Omega$      & N. A. & $\pi^{-1}$ \\
 Burgers vector               & $b$           & N. A. & 4.52$\times10^{-10}$ (m) \\
 Drag term                    & $B$           & N. A. & $B_0 \exp(Q_v/(k_bT_K)$ (Pa.s)\\
  -                           & $B_0$         & N. A. & 1.205$\times10^{-9}$ (Pa.s)\\

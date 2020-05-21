@@ -677,16 +677,16 @@
 !
 ! Formats
 !
- 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE1 : '/        &
                '     ILLEGAL INXOUT STRING : ',A/)
- 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE1 : '/        &
                '     ILLEGAL FIELD ID STRING : ',A/)
- 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE1 : '/        &
                '     ERROR IN WRITING TO ',A,' FILE, IOSTAT =',I6/)
- 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE1 : '/        &
                '     ERROR IN READING ',A,' FILE, IOSTAT =',I6/)
 
- 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE1 : '/        &
                '     PREMATURE END OF ',A,' FILE'/)
 !/
 !/ End of W3FLDO  ---------------------------------------------------- /
@@ -710,7 +710,7 @@
 !/
 !  1. Purpose :
 !
-!     Reads and writes tidal consituents
+!     Reads and writes tidal constituents
 !
 !  2. Method :
 !
@@ -818,7 +818,7 @@
 !/TIDE        ELSE
 !/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
 !/TIDE               IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
-!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAME)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
+!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
 !/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
 !/TIDE                     TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
 !/TIDE                     LIST(:)=''
@@ -845,7 +845,7 @@
 !/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
 !/TIDET END DO
 !/TIDET DO IX=1,NX
-!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)'),IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
+!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)') IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
 !/TIDET            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
 !/TIDET  END DO
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)

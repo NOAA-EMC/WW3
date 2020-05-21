@@ -667,6 +667,7 @@
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst -i input_BJ -w work_BJ_PR3_UQ $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.9" >> matrix.body
+      echo "$rtst -o netcdf -N -w work_PR3_UQ    $ww3 ww3_tp1.11" >> matrix.body
     fi
 
     if [ "$unstr" = 'y' ]
@@ -699,10 +700,10 @@
       echo "$rtst -s PR3_UQ -w work_PR3_UQ_a    -g a    $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR3_UQ -w work_PR3_UQ_b    -g b    $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst           -w work_PR3_UQ  -o netcdf   $ww3 ww3_tp2.8" >> matrix.body
-      echo "$rtst -s TIDE  -w work_TIDE     -o netcdf   $ww3 ww3_tp2.8" >> matrix.body
       echo "$rtst -s PR3_UQ -w work_PR3_UQ              $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -o netcdf -w work_PR3_UQ              $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf -w work_5km -g 5km          $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s TIDE   -w work_TIDE -o netcdf      $ww3 ww3_tp2.18" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -791,7 +792,8 @@
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_b_MPI    -g b     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -s MPI          -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s MPI          -w work_MPI_5km         -g 5km    -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s MPI          -w work_MPI_5km         -g 5km   -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s TIDE_MPI     -w work_TIDE_MPI -o netcdf       -f -p $mpi -n $np $ww3 ww3_tp2.18" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -1854,6 +1856,11 @@
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.10" >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.11" >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.16" >> matrix.body
+  fi
+
+  if [ "$smcgr" = 'y' ] && [ "$hybd" = 'y' ]; then
+    echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.10" >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
 # mud/ice cases

@@ -1,36 +1,22 @@
 #############################################################################
 #                                                                           #
-# ww3_tp2.8 Test for WW-III, two-dimensional propagation.                   #
+# ww3_tp2.8 Test for WW-III, two-dimensional propagation with current.      #
 #           Forcing by boundary conditons on regular lat/lon grid           #
 #           This is a very coarse grid of the sea around Brest, France.     #
-# when using the TIDE switch and changing ww3_shel.inp to activate current  #
 #                                                                           # 
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
-#                        Select the 'no source terms' option.               #
-#   !/PRn                Selecting one of the propagation schemes.          #
-#                         1: First order.                                   #
-#                         2: UQ with diffusion term.                        #
-#                         3: UQ with averaging (set to zero here).          #
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
-#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
 #                                                                           #
-# Remarks :                                                                 #
-#                                                                           #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
-#       switch_PRn_MPI : for parallel run with MPI                          #
 #                                                                           #
 #  Example run_test commands:                                               #
 #  ./bin/run_test -o netcdf ../model ww3_tp2.8                              #
 #  ./bin/run_test -o netcdf -N ../model ww3_tp2.8                           #
-#  ./bin/run_test -o netcdf -s TIDE ../model ww3_tp2.8                      #
 #  (Note : This regtest recquires NETCDF capability. See w3_make in the     #
 #   bin directory for details on required variables)                        #
 #                                                                           #
 #                                                  F. Ardhuin, Aug 2012     #
 #                                                               Ifremer     #
-#                                                   Last Mod : Apr 2015     #
+#                                                   Last Mod : Apr 2020     #
 #                                                                           #
 #############################################################################

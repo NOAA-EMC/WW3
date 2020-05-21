@@ -99,7 +99,7 @@
               dstress s_ice s_is reflection s_xx \
               wind windx wcor rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
-              cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind
+              cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
   do
     case $type in
 #sort:mach:
@@ -392,6 +392,11 @@
                ID='unresolved obstacles source term'
                TS='UOST'
                OK='UOST' ;;
+#sort:b4b:
+      b4b    ) TY='upto1'
+               ID='bit-for-bit reproducability'
+               TS='B4B'
+               OK='B4B' ;;
    esac
 
     n_found='0'
@@ -508,6 +513,7 @@
       memck  ) memck=$sw ;;
       setup  ) setup=$sw ;;
       uost   ) uost=$sw ;;
+      b4b    ) b4b=$sw ;;
               *    ) ;;
     esac
   done
@@ -544,6 +550,13 @@
   then
       echo ' '
       echo "   *** !/ARC has to be used in combination with !/SMC"
+      echo ' ' ; exit 9
+  fi
+
+  if [ -n "$b4b" ] && [ -z "$thread2" ]
+  then
+      echo ' '
+      echo "   *** !/B4B should be used in combination with !/OMPG, !/OMPH or !/OMPX"
       echo ' ' ; exit 9
   fi
 
@@ -909,7 +922,7 @@
                prop=
              source="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode w3nmlprncmd" ;;
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd w3nmlprncmd" ;;
     ww3_prtide) IDstring='Tide prediction'
                core='w3fldsmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"

@@ -3,10 +3,11 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
-#                    Last update :         27-Jan-2014                        #
+#                    Last update :         04-May-2020                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
-#    27-Jan-2014 : Adapts ww3_ounf section for multigrid  ( version 4.18 )
+#    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
+#    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.XX ) 
 #
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
@@ -127,6 +128,7 @@ ARGS=$args
 # 2.b Process command-line options
 exit_p=none
 exec_p=none
+batchq=none
 multi=0
 dist=0
 inpdir=input
@@ -159,7 +161,7 @@ do
   -N) nml_input=1 ;;
   -o) shift; outopt="$1" ;;
   -O) pomp=1 ;;
-  -p) shift; runcmd="$1" ; runcmd1=$runcmd ; pmpi=1 ;;
+  -p) shift; runcmd="$1" ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
@@ -461,6 +463,16 @@ then
   exit 0
 fi
 
+# 3.b2 Preprocess cdl files into nc files ----------------------------------- #
+
+filescdl=$path_i/*.cdl
+for f in $filescdl
+do
+  echo "Converting $f to NetCDF"
+  # take action on each file.  Note that converted file is in $path_w
+  ncgen -b $f
+done
+
 # 3.c Grid pre-processor ---------------------------------------------------- #
 
 prog=ww3_grid
@@ -475,9 +487,10 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -623,8 +636,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
 
     else
       \cp -f $file_c $path_b/switch
@@ -759,8 +773,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -892,9 +907,10 @@ then
   
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1025,9 +1041,10 @@ then
 
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1164,11 +1181,12 @@ then
     echo '+-------------------------------+'
     echo ' '
 
-    if [ $force_shrd ]
+    if [ $force_shrd ] && [ -z "$(grep TIDE $file_c)" ]
     then # build pre- & post-processing programs with SHRD only
-      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+      cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1178,7 +1196,26 @@ then
       cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
-  
+
+    runprog=$runcmd
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then
+          runprog="$runprog -n $nproc"
+
+        else
+          runprog="$runprog -np $nproc"
+        fi
+      fi
+    fi
+    if [ -n "$(grep SHRD $path_b/switch)" ] 
+    then
+      runprog=''
+    fi
+ 
     if [ $time_count ]
     then # Add time counter if -T
       Tstart=`date +"%s.%2N"`
@@ -1244,7 +1281,158 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $path_e/$prog > $ofile
+        if $runprog $path_e/$prog > $ofile
+        then
+          \rm -f $prog.inp
+          \rm -f $prog.nml
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            mv $otype.ww3 $otype.$g
+            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            then
+              mv $prog.nml.log ${prog}_$g.nml.log
+            fi
+          fi
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+
+
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tend=`date +"%s.%2N"`
+          Maketime=`echo "$Tend - $Tstart" | bc`
+          cumult_run=`echo "$Maketime + $cumult_run" | bc`
+          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        fi
+
+      done
+
+    done
+
+  fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.e.2 Prtide forcing fields ------------------------------------------------- #
+
+prog=ww3_prtide
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+# select inp/nml files
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+  then
+    inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+  else
+    inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+  fi
+
+  if [ $? = 0 ]
+  then
+    echo ' '
+    echo '+---------------------------------+'
+    echo '| Prtide of NetCDF forcing fields |'
+    echo '+---------------------------------+'
+    echo ' '
+
+    \cp -f $file_c $path_b/switch
+    if [ $testST ]
+    then #add S T switches 
+      \cp -f $path_b/switch $path_b/switch_noST
+      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      rm $path_b/switch_noST
+    fi
+
+    runprog=$runcmd
+    if [ $pmpi ]
+    then
+      if [ $nproc ]
+      then
+        if [ $batchq = "slurm" ]
+        then 
+          runprog="$runprog -n $nproc"
+        else
+          runprog="$runprog -np $nproc"
+        fi
+      fi
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tstart=`date +"%s.%2N"`
+    fi
+
+    if $path_b/w3_make $prog
+    then :
+    else
+      errmsg "Error occured during WW3 $prog build"
+      exit 1
+    fi
+
+    if [ $time_count ]
+    then # Add time counter if -T
+      Tend=`date +"%s.%2N"`
+      Maketime=`echo "$Tend - $Tstart" | bc`
+      printf "\n $prog \n %8.2f sec compile time" $Maketime  >> time_count.txt
+      cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+    fi
+  
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+
+    for g in $input_grids
+    do
+
+      if [ $multi -eq 2 ]
+      then
+        gu="_$g"
+      fi
+
+      for ifile in $inputs
+      do
+
+# link conf file
+        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        then
+          \rm -f $prog.nml
+          \ln -s $ifile $prog.nml
+          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .nml`.out"
+        else
+          \rm -f $prog.inp
+          \ln -s $ifile $prog.inp
+          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          ofile="$path_w/`basename $ifile .inp`.out"
+        fi
+  
+        echo "   Processing $ifile"
+        echo "   Screen output routed to $ofile"
+  
+        if [ $multi -eq 2 ]
+        then
+          \rm -f mod_def.ww3
+          \ln -s mod_def.$g mod_def.ww3
+        fi
+
+        mv $otype.ww3 $otype.ww3_tide
+  
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $runprog $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml
@@ -1433,24 +1621,26 @@ then
   
     echo "   Processing $ifile"
     echo "   Screen output copied to $ofile"
+
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ -z $batchq ] && [ $batchq = "slurm" ]
         then 
-          runcmd="$runcmd -n $nproc"
+          runprog="$runprog -n $nproc"
         
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
       if [ $nthrd ]
       then
         if ( which omplace ) ; then
-          runcmd="$runcmd omplace -nt $nthrd"
+          runprog="$runprog omplace -nt $nthrd"
         else
-          runcmd="$runcmd /usr/bin/env OMP_NUM_THREADS=$nthrd"
+          runprog="$runprog /usr/bin/env OMP_NUM_THREADS=$nthrd"
         fi
       fi
     fi
@@ -1470,7 +1660,7 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd1 -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -1479,7 +1669,7 @@ then
         exit 1
       fi
     else
-      if $runcmd $path_e/$prgb | tee $ofile
+      if $runprog $path_e/$prgb | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -1543,8 +1733,9 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_b/switch
     else
       \cp -f $file_c $path_b/switch
     fi
@@ -1684,9 +1875,10 @@ do
     
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
-        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'| \
-                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
@@ -1898,9 +2090,10 @@ do
 
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
-        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'| \
-                      sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
@@ -2059,8 +2252,9 @@ do
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'| \
-                    sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switch
+                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                    sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
@@ -2274,16 +2468,17 @@ then
     echo "   Processing $ifile"
     echo "   Screen output copied to $ofile"
 
+    runprog=$runcmd
     if [ $pmpi ]
     then
       if [ $nproc ]
       then
         if [ $batchq = "slurm" ]
         then
-          runcmd="$runcmd -n $nproc"
+          runprog="$runprog -n $nproc"
   
         else
-          runcmd="$runcmd -np $nproc"
+          runprog="$runprog -np $nproc"
         fi
       fi
     fi
@@ -2291,7 +2486,7 @@ then
     then # Add time counter if -T
       Tstart=`date +"%s.%2N"`
     fi
-    if $runcmd $path_e/$prog | tee $ofile
+    if $runprog $path_e/$prog | tee $ofile
     then
       \rm -f $prog.inp
       \rm -f $prog.nml
@@ -2416,16 +2611,17 @@ then
      \ln -s "$path_i/anl.grbtxt" anl.grbtxt
      
      mv -f restart001.ww3 restart.ww3
-    
+
+     runprog=$runcmd
      if [ $pmpi ]
      then
        if [ $nproc ]
        then
          if [ $batchq = "slurm" ]
          then
-           runcmd="$runcmd -n $nproc"
+           runprog="$runprog -n $nproc"
          else
-           runcmd="$runcmd -np $nproc"
+           runprog="$runprog -np $nproc"
          fi
        fi
      fi
@@ -2434,7 +2630,7 @@ then
        Tstart=`date +"%s.%2N"`
      fi
   
-     if $runcmd $path_e/$prog | tee $ofile
+     if $runprog $path_e/$prog | tee $ofile
      then
        \rm -f $prog.inp
        \rm -f $prog.nml

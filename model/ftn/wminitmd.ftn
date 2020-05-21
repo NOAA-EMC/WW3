@@ -1121,6 +1121,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
 !
         IF(J .LE. 2) THEN
+          WORDS(1:6)=''
           READ (MDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
 !        
@@ -1146,6 +1147,7 @@
           END IF
 ! CHECKPOINT
         ELSE IF(J .EQ. 4) THEN
+            WORDS(1:6)=''
             READ (MDSI,'(A)') LINEIN
             READ(LINEIN,*,iostat=ierr) WORDS
 !
@@ -1155,6 +1157,7 @@
             READ(WORDS( 4 ), * ) ODAT(19,1)
             READ(WORDS( 5 ), * ) ODAT(20,1)
             IF (WORDS(6) .EQ. 'T') THEN
+              CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
               READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
               END IF
         ELSE
@@ -1450,7 +1453,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         IF(J .LE. 2) THEN
           OUTFF(J,I)=0
-          WORDS(6) =''
+          WORDS(1:6) =''
           READ (MDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           IF(J .EQ. 1) THEN

@@ -457,6 +457,7 @@
                                    touch w3srcemd.ftn
                                    touch w3wavemd.ftn
                                    touch ww3_grid.ftn ;;
+       'b4b'  ) cd $main_dir/ftn ; touch w3psmcmd.ftn ;; 
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done
