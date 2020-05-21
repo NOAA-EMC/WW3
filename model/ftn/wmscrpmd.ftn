@@ -540,6 +540,7 @@
       REAL*8 :: ELAT1, ELAT2, ELAT3, ELAT, ELATC
       REAL *8 :: DELTALON12, DELTALON13, DELTALAT12, DELTALAT13
       REAL *8 :: THEDET
+      REAL*8 :: PT(3,2)
       INTEGER, POINTER :: IOBP(:), TRIGINCD(:)
       INTEGER, POINTER :: NEIGHBOR_PREV(:), NEIGHBOR_NEXT(:)
       INTEGER, POINTER :: NBASSIGNEDCORNER(:), LISTNBCORNER(:)
@@ -618,10 +619,13 @@
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(LAT_CENT_TRIG(MNE), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
+
         CALL GET_UNSTRUCTURED_VERTEX_DEGREE (MNP, MNE,             &
                GRIDS(ID_GRD)%TRIGP, TRIGINCD)
         CALL GET_BOUNDARY(MNP, MNE, GRIDS(id_grd)%TRIGP, IOBP,     &
                NEIGHBOR_PREV, NEIGHBOR_NEXT)
+
+        ! Find max number of corners
         MAXCORNER=0
         DO IP=1,MNP
           IF (NEIGHBOR_NEXT(IP) .EQ. 0) THEN
@@ -635,6 +639,7 @@
           END IF
         END DO
         GRID_CORNERS=MAXCORNER
+
         ALLOCATE(GRID_CENTER_LON(MNP), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(GRID_CENTER_LAT(MNP), STAT=ISTAT)
@@ -645,6 +650,8 @@
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(GRID_MASK(MNP), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
+
+        ! Add first three corners for boundaries
         NBASSIGNEDCORNER(:)=0
         DO IP=1,MNP
           GRID_MASK(IP)=.TRUE.
@@ -657,10 +664,36 @@
             ELATNEXT=DBLE(GRIDS(ID_GRD)%XYB(IPNEXT,2))
             ELONPREV=DBLE(GRIDS(ID_GRD)%XYB(IPPREV,1))
             ELATPREV=DBLE(GRIDS(ID_GRD)%XYB(IPPREV,2))
-            ELONN=(ELONIP+ELONNEXT)/2
-            ELATN=(ELATIP+ELATNEXT)/2
-            ELONP=(ELONIP+ELONPREV)/2
-            ELATP=(ELATIP+ELATPREV)/2
+ 
+            ! Periodicity fix for corner node
+            IF (ELONIP > 100.0 .AND. ELONNEXT < -100.0) THEN
+              ELONNEXT = ELONNEXT + 360.0       
+            ELSEIF (ELONIP < -100.0 .AND. ELONNEXT > 100.0) THEN
+              ELONNEXT = ELONNEXT - 360.0       
+            ENDIF
+            IF (ELONIP > 100.0 .AND. ELONPREV < -100.0) THEN
+              ELONPREV = ELONPREV + 360.0       
+            ELSEIF (ELONIP < -100.0 .AND. ELONPREV > 100.0) THEN
+              ELONPREV = ELONPREV - 360.0       
+            ENDIF
+            ELONN=(ELONIP+ELONNEXT)/2.0
+            ELATN=(ELATIP+ELATNEXT)/2.0
+            ELONP=(ELONIP+ELONPREV)/2.0
+            ELATP=(ELATIP+ELATPREV)/2.0
+
+            ! Ensure corner is in -180,+180 range
+            IF (ELONN > 180.0) THEN
+              ELONN = ELONN - 360.0
+            ENDIF
+            IF (ELONN < -180.0) THEN
+              ELONN = ELONN + 360.0
+            ENDIF
+            IF (ELONP > 180.0) THEN
+              ELONP = ELONP - 360.0
+            ENDIF
+            IF (ELONP < -180.0) THEN
+              ELONP = ELONP + 360.0
+            ENDIF
             GRID_CORNER_LON(1,IP)=ELONN
             GRID_CORNER_LAT(1,IP)=ELATN
             GRID_CORNER_LON(2,IP)=ELONIP
@@ -670,22 +703,38 @@
             NBASSIGNEDCORNER(IP)=3
           END IF
         END DO
+
+        ! Compute centers
         DO IP=1,MNP
           GRID_CENTER_LON(IP)=DBLE(GRIDS(ID_GRD)%XYB(IP,1))
           GRID_CENTER_LAT(IP)=DBLE(GRIDS(ID_GRD)%XYB(IP,2))
         END DO
+
+        ! Check triangle node orientation
+        ! Compute triangle centers
         NBPLUS=0
         NBMINUS=0
         DO IE=1,MNE
           I1=GRIDS(ID_GRD)%TRIGP(IE,1)
           I2=GRIDS(ID_GRD)%TRIGP(IE,2)
           I3=GRIDS(ID_GRD)%TRIGP(IE,3)
-          ELON1=DBLE(GRIDS(ID_GRD)%XYB(I1,1))
-          ELON2=DBLE(GRIDS(ID_GRD)%XYB(I2,1))
-          ELON3=DBLE(GRIDS(ID_GRD)%XYB(I3,1))
-          ELAT1=DBLE(GRIDS(ID_GRD)%XYB(I1,2))
-          ELAT2=DBLE(GRIDS(ID_GRD)%XYB(I2,2))
-          ELAT3=DBLE(GRIDS(ID_GRD)%XYB(I3,2))
+
+          PT(1,1)=DBLE(GRIDS(ID_GRD)%XYB(I1,1))
+          PT(2,1)=DBLE(GRIDS(ID_GRD)%XYB(I2,1))
+          PT(3,1)=DBLE(GRIDS(ID_GRD)%XYB(I3,1))
+          PT(1,2)=DBLE(GRIDS(ID_GRD)%XYB(I1,2))
+          PT(2,2)=DBLE(GRIDS(ID_GRD)%XYB(I2,2))
+          PT(3,2)=DBLE(GRIDS(ID_GRD)%XYB(I3,2))
+
+          CALL FIX_PERIODCITY(PT)
+
+          ELON1 = PT(1,1)
+          ELON2 = PT(2,1)
+          ELON3 = PT(3,1)
+          ELAT1 = PT(1,2)
+          ELAT2 = PT(2,2)
+          ELAT3 = PT(3,2)
+
           DELTALON12=ELON2 - ELON1
           DELTALON13=ELON3 - ELON1
           DELTALAT12=ELAT2 - ELAT1
@@ -697,12 +746,21 @@
           IF (THEDET.LT.0) THEN
             NBMINUS=NBMINUS+1
           END IF
-          ELON=(ELON1 + ELON2 + ELON3)/3
-          ELAT=(ELAT1 + ELAT2 + ELAT3)/3
+          ELON=(ELON1 + ELON2 + ELON3)/3.0
+          ELAT=(ELAT1 + ELAT2 + ELAT3)/3.0
+       
+          ! Ensure center is in -180,+180 range
+          IF (ELON > 180.0) THEN
+            ELON = ELON - 360.0
+          ENDIF
+          IF (ELON < -180.0) THEN
+            ELON = ELON + 360.0
+          ENDIF
           LON_CENT_TRIG(IE)=ELON
           LAT_CENT_TRIG(IE)=ELAT
+
         END DO
-        DODEBUG=0
+        DODEBUG=1
         IF (DODEBUG.EQ.1) THEN
           print *, 'nbplus=', nbplus, ' nbminus=', nbminus
         END IF
@@ -1050,10 +1108,11 @@
       INTEGER, INTENT(OUT) :: GRID_SIZE, GRID_CORNERS, GRID_RANK
       REAL*8 :: DLON1, DLAT1, DLON2, DLAT2, THEDET
       INTEGER :: I, J
-      INTEGER :: IC, JC, IP, CHECKSIGNS, NBPLUS, NBMINUS
+      INTEGER :: IC, JC, IP, CHECKSIGNS, NBPLUS, NBMINUS, NBZERO
       INTEGER :: PRINTDATA, PRINTMINMAX
       REAL*8 :: MINLON, MINLAT, MAXLON, MAXLAT
       REAL*8 :: MINLONCORNER, MAXLONCORNER, MINLATCORNER, MAXLATCORNER
+      REAL*8 :: PT(3,2)
       IF (GRIDS(ID_GRD)%GTYPE .EQ. UNGTYPE) THEN
         CALL GET_SCRIP_INFO_UNSTRUCTURED (ID_GRD,                       &
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
@@ -1065,10 +1124,11 @@
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
      &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
       END IF
-      CHECKSIGNS=0
+      CHECKSIGNS=1
       IF (CHECKSIGNS.EQ.1) THEN
         NBPLUS=0
         NBMINUS=0
+        NBZERO=0
         DO IP=1,GRID_SIZE
           DO IC=1,GRID_CORNERS
             IF (IC.EQ.GRID_CORNERS) THEN
@@ -1076,20 +1136,34 @@
             ELSE
               JC=IC+1
             END IF
-            DLON1=GRID_CORNER_LON(IC,IP)-GRID_CENTER_LON(IP)
-            DLON2=GRID_CORNER_LON(JC,IP)-GRID_CENTER_LON(IP)
-            DLAT1=GRID_CORNER_LAT(IC,IP)-GRID_CENTER_LAT(IP)
-            DLAT2=GRID_CORNER_LAT(JC,IP)-GRID_CENTER_LAT(IP)
+
+            PT(1,1) = GRID_CENTER_LON(IP) 
+            PT(1,2) = GRID_CENTER_LAT(IP)
+            PT(2,1) = GRID_CORNER_LON(IC,IP)
+            PT(2,2) = GRID_CORNER_LAT(IC,IP)
+            PT(3,1) = GRID_CORNER_LON(JC,IP)
+            PT(3,2) = GRID_CORNER_LAT(JC,IP)
+
+            CALL FIX_PERIODCITY(PT)
+
+            DLON1=PT(2,1)-PT(1,1)
+            DLON2=PT(3,1)-PT(1,1)
+            DLAT1=PT(2,2)-PT(1,2)
+            DLAT2=PT(3,2)-PT(1,2)
+
             THEDET=DLON1*DLAT2 - DLON2*DLAT1
-            IF (THEDET.GT.0) THEN
+            IF (THEDET.GT.1d-8) THEN
               NBPLUS=NBPLUS+1
-            END IF
-            IF (THEDET.LT.0) THEN
+            ELSE IF (THEDET.LT.-1d-8) THEN
               NBMINUS=NBMINUS+1
+            ELSE
+              NBZERO=NBZERO+1
             END IF
           END DO
         END DO
-        WRITE(*,*) 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus
+
+        PRINT*, 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus, ' nbZero=', nbZero
+
       END IF
       END SUBROUTINE GET_SCRIP_INFO
 
@@ -1439,6 +1513,98 @@
         CHECK_DEALLOC_STATUS ( ISTAT )
         
       END SUBROUTINE
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE FIX_PERIODCITY(PT)
+
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        Steven Brus                |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-May-2020 |
+!/                  +-----------------------------------+
+!/
+!/    21-May-2020 : Origination.                        ( version 6.07 )
+!/    
+!/
+!  1. Purpose :
+!
+!     Adjust element longitude coordinates for elements straddling the
+!     dateline (+180/-180)
+!
+!  2. Method :
+!
+!     Detect if element has nodes on both sides of dateline and adjust
+!     coordinates so that all nodes have the same sign
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+      IMPLICIT NONE
+      REAL*8, INTENT(INOUT) :: PT(3,2)
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+      INTEGER :: I
+      INTEGER :: LEFT_FLAG(3), RIGHT_FLAG(3)
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+
+!  5. Called by :
+!
+!      Name         Type  Module   Description
+!     ----------------------------------------------------------------
+!      GET_SCRIP_INFO_UNSTRUCTURED Subr. WMSCRPMD  Element center calculation 
+!      GET_SCRIP_INFO              Subr. WMSCRPMD  Check signs 
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :     
+!/ ------------------------------------------------------------------- /
+
+      LEFT_FLAG = 0
+      DO I = 1,3
+        IF ( PT(I,1) > 100.0 ) THEN
+          LEFT_FLAG(I) = 1
+        ENDIF
+      ENDDO
+
+      RIGHT_FLAG = 0
+      DO I = 1,3
+        IF ( PT(I,1) < -100.0 ) THEN
+          RIGHT_FLAG(I) = 1
+        ENDIF
+      ENDDO
+
+      IF ( SUM(RIGHT_FLAG) == 2 .AND. SUM(LEFT_FLAG) == 1 ) THEN
+        DO I = 1,3
+          IF ( LEFT_FLAG(I) == 1 ) THEN
+            PT(I,1) = PT(I,1) - 360.0 
+          ENDIF
+        ENDDO
+      ELSE IF ( SUM(LEFT_FLAG) == 2 .AND. SUM(RIGHT_FLAG) == 1 ) THEN
+        DO I = 1,3
+          IF ( RIGHT_FLAG(I) == 1) THEN
+            PT(I,1) = PT(I,1) + 360.0
+          ENDIF
+        ENDDO
+
+      ENDIF 
+      RETURN
+      END SUBROUTINE FIX_PERIODCITY
 !/
 !/ End of module WMSCRPMD -------------------------------------------- /
 !/
