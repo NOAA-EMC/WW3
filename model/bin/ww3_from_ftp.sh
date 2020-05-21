@@ -7,6 +7,9 @@
 
 curr_dir=`pwd`
 
+# Set WW3 code version
+ww3ver=v7.06
+
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
 echo -e "Enter the relative path to the main/top level directory, this would "
@@ -19,11 +22,12 @@ cd $ww3dir
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
-wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/ww3_from_ftp.v6.07.tar.gz
-tar -xvzf ww3_from_ftp.v6.07.tar.gz
+wget ftp://polar.ncep.noaa.gov/tempor/ww3ftp/ww3_from_ftp.${ww3ver}.tar.gz
+tar -xvzf ww3_from_ftp.${ww3ver}.tar.gz
 
 #Move regtest info from data_regtests to regtests:
 echo -e "Moving data from data_regtests to regtests"  
+cp -r data_regtests/ww3_tp2.18/input/*.nc  regtests/ww3_tp2.18/input/
 cp -r data_regtests/ww3_tp2.15/input/*.nc  regtests/ww3_tp2.15/input/
 cp -r data_regtests/ww3_tp2.13/*.png       regtests/ww3_tp2.13/
 cp -r data_regtests/ww3_tic1.4/input/*.nc  regtests/ww3_tic1.4/input/
@@ -43,12 +47,12 @@ cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 
 
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
-echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.v6.07.tar.gz [y|n]: "
+echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "
 read wnew
 if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
 then
-  echo -e '\n Deleting tar file ww3_from_ftp.v6.07.tar.gz'
-  rm ww3_from_ftp.v6.07.tar.gz
+  echo -e '\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz'
+  rm ww3_from_ftp.${ww3ver}.tar.gz
 else
   echo -e ' Not deleting tar file.' 
 fi

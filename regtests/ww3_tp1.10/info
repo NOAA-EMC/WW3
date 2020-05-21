@@ -1,7 +1,7 @@
 #############################################################################
 #                                                                           #
 # ww3_tp1.10 Test script for WW-III, one-dimensional propagation.           #
-#           Bottom scattering  beach        œ                               #
+#           Bottom scattering  beach                                        #
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
@@ -19,7 +19,7 @@
 #   * input options :                                                       #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test  -o netcdf ../model ww3_tp2.10                            # 
+#  ./bin/run_test  -o netcdf ../model ww3_tp1.10                            # 
 #                                                                           #
 #                                            Fabrice Ardhuin,  Aug 2018     #
 #                                                   Last Mod : Nov 2018     #

@@ -58,6 +58,7 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
+  INPUT%FORCING%CURRENTS      = 'T'
   INPUT%FORCING%WINDS         = 'H'
 /
 
@@ -238,7 +239,7 @@
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'DPT HS FP DIR SPR'
+  TYPE%FIELD%LIST          = 'DPT CUR HS FP DIR SPR'
   TYPE%POINT%FILE          = '../input/points.list'
 /
 

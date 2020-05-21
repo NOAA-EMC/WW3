@@ -29,6 +29,7 @@
 #   (Note: mpirun commands differ by local system)                          #
 #  ./bin/run_test                             ../model ww3_tp2.16           #
 #  ./bin/run_test -n 3 -p mpirun -f -s MPI    ../model ww3_tp2.16           #
+#  ./bin/run_test -n 3 -t 3 -p mpirun -f -s MPI_OMPH  ../model ww3_tp2.16   #
 #                                                                           #
 #                                                Jian-Guo Li,  Aug 2017     #
 #                                                     U. K.  Met Office     #

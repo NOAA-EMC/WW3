@@ -67,7 +67,16 @@ fi
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-if [ $batchq = "slurm" ]
+if [ $batchq = "slurm" ] && [ $isorion ]
+then
+  echo '#SBATCH -n 24'                                      >> matrix.head
+  echo '#SBATCH -q batch'                                   >> matrix.head
+  echo '#SBATCH -t 08:00:00'                                >> matrix.head
+  echo '#SBATCH -A marine-cpu'                              >> matrix.head
+  echo '#SBATCH -J ww3_regtest'                             >> matrix.head
+  echo '#SBATCH -o matrix.out'                              >> matrix.head
+  echo '#SBATCH -p orion'                                   >> matrix.head
+elif [ $batchq = "slurm" ]
 then
   echo '#SBATCH -n 24'                                      >> matrix.head
   echo '#SBATCH -q batch'                                   >> matrix.head
