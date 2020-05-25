@@ -7,7 +7,7 @@
 !/                  |           Aron Roland             |
 !/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Aug-2016 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
@@ -17,6 +17,7 @@
 !/    17-Oct-2013 : Removes boundary nodes from CFL     ( version 4.12 )
 !/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
 !/    18-Aug-2016 : Corrected boundary treatment        ( version 4.16 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !
 !  1. Purpose :
 !
@@ -458,12 +459,13 @@
 !/                  |     and Fabrice  Ardhuin          |
 !/                  |  for use in WWIII                 |
 !/                  |  GPL License                      |
-!/                  |  Last update :        03-Nov-2011 |
+!/                  |  Last update :        15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    19-Dec-2007 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
 !/    03-Nov-2011 : Addition of shoreline reflection    ( version 4.04 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/
 !/
 !  1. Purpose :
@@ -506,7 +508,8 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP, IOBPA, XYB
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,  &
+                            IOBPA, XYB, FSBCCFL
 !/REF1   USE W3GDATMD, ONLY : REFPARS
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
@@ -610,8 +613,10 @@
              END DO ! IE
              DTMAXEXP = 1E10 ! initialize to large number 
              DO IP = 1, NX
-               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
-               DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+               IF (IOBP(IP) .EQ. 1.OR.FSBCCFL) THEN
+                 DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
+                 DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+                 END IF
              END DO ! IP
              CFLXY = DBLE(DT)/DTMAXGL
              REST  = ABS(MOD(CFLXY,1.0d0))
