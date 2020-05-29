@@ -116,7 +116,6 @@
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           if [ "`$NETCDF_CONFIG --fc`" = 'mpiifort' ]; then comp='mpiifort'; fi
            libs="$libs `$NETCDF_CONFIG --flibs`" ;;
     esac
   fi
