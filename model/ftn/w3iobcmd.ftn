@@ -62,7 +62,7 @@
 !/
 !/ Public variables  (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER :: VERBPTBC = 'III  1.03 '
+      CHARACTER(LEN=10), PARAMETER :: VERBPTBC = '2018-03-01'
       CHARACTER(LEN=32), PARAMETER ::                        &
                           IDSTRBC  = 'WAVEWATCH III BOUNDARY DATA FILE'
 !/
@@ -93,7 +93,7 @@
 !/                  TH1I to W3ODATMD.                   ( version 3.14.3 )
 !/    31-Oct-2010 : Implementing unstructured grid      ( version 3.14.3 )
 !/                  (A. Roland and F. Ardhuin) 
-!/    05-Apr-2011 : Moved the SPCONV call into loop     ( version 3.14.3 )
+!/    05-Apr-2011 : Moved the W3CSPC call into loop     ( version 3.14.3 )
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
@@ -580,6 +580,7 @@
 !
 ! In this case the spectral resolution is not compatible and 
 ! the spectrum TMPSPC in nest file must be re-gridded into ABPIN to fit the model run
+! spectral conversion is done by W3CSPC in w3cspcmd.ftn 
 !
               ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
               DO IP=1, NBI2

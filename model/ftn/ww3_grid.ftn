@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -103,6 +103,9 @@
 !/    20-Jun-2018 : Update of ST6  (Q. Liu)             ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    22-Jan-2020 : Update default values for IS2       ( version 7.05 ) 
+!/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -423,7 +426,8 @@
 !     !/ST1   WAM-3 physics package.
 !     !/ST2   Tolman and Chalikov (1996) physics package.
 !     !/ST3   WAM 4+ source terms from P.A.E.M. Janssen and J-R. Bidlot
-!     !/ST4   Ardhuin et al. (2009,2010) input and dissipation 
+!     !/ST4   Input and dissipation using saturation following Ardhuin et al. (2009,2010)
+!             Filipot & Ardhuin (2010) or Romero (2019)
 !     !/ST6   BYDRZ source term package featuring Donelan et al.
 !             (2006) input and Babanin et al. (2001,2010) dissipation.
 !     !/STX   Open slot.
@@ -706,6 +710,7 @@
       LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
       INTEGER                 :: PTM   ! Partitioning method
       REAL                    :: PTFC  ! Part. cut off freq (for method 5)
+      REAL                    :: AIRCMIN, AIRGB
       CHARACTER               :: PMNAME*45, PMNAM2*45  ! Part. method desc.
 !/FLD1      INTEGER                 :: TAILTYPE
 !/FLD1      REAL                    :: TAILLEV, TAILT1, TAILT2
@@ -724,23 +729,23 @@
 !/ST3      REAL                    :: STXFTFTAIL, SDSC1,                   &
 !/ST3                                 SDSDELTA1, SDSDELTA2
 !
-!/ST4      INTEGER                 :: SWELLFPAR,SDSISO,SDSBRFDF
+!/ST4      INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF
+!/ST4      REAL 		   :: SDSBCHOICE
 !/ST4      REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
 !/ST4                                 ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
 !/ST4                                 SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
 !/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3,      &
-!/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF,        &
-!/ST4                                 STXFTWN, SINBR, FXFMAGE, FXINCUT,    &
-!/ST4                                 FXDSCUT
-!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,    &
-!/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH,  &
+!/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTFTAIL,       &
+!/ST4                                 STXFTWN, SINBR, FXFMAGE,             &
+!/ST4                                 SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, WHITECAPWIDTH, WHITECAPDUR, &
 !/ST4                                 SDSSTRAIN, SDSSTRAINA, SDSSTRAIN2,   &
-!/ST4                                 SDSBR, SDSP,                         &
+!/ST4                                 SDSBR, SDSP, SDSBT, SDS4A, SDKOF,    &
 !/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK,      &
 !/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
-!/ST4                                 SDSBR2, SDSBRF1,                     &
+!/ST4                                 SDSBRF1,                             &
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
-!/ST4                                 SDSBM4, SDSLFGEN, SDSHFGEN
+!/ST4                                 SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
+!/ST4                                 SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
 !
 !/ST6      REAL                    :: SINA0, SINWS, SINFC,                 &
 !/ST6                                 SDSA1, SDSA2, SWLB1
@@ -770,6 +775,7 @@
            LOGICAL :: JGS_USE_JACOBI = .TRUE.
            LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
            LOGICAL :: UGOBCAUTO = .FALSE.
+           LOGICAL :: UGBCCFL   = .FALSE.
            LOGICAL :: EXPFSN    = .TRUE.
            LOGICAL :: EXPFSPSI  = .FALSE.
            LOGICAL :: EXPFSFCT  = .FALSE.
@@ -836,14 +842,15 @@
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,        &
 !/ST3                      SDSDELTA2
-!/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3,      &
+!/ST4      NAMELIST /SDS4/ SDSBCHOICE, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3, &
 !/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSSTRAINA,  &
-!/ST4                      SDSSTRAIN2, SDSC4,                              &
-!/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
+!/ST4                      SDSSTRAIN2, SDSC4, SDSFACMTF, SDSNMTF,SDSCUMP,  &
+!/ST4                      SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
-!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
+!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,  SDSNUW,     &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
-!/ST4                      SDSHFGEN, SDSLFGEN, WHITECAPWIDTH, FXINCUT, FXDSCUT
+!/ST4                      WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
+
 !/ST6      NAMELIST /SIN6/ SINA0, SINWS, SINFC
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6      NAMELIST /SWL6/ SWLB1, CSTB1
@@ -862,7 +869,7 @@
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH, UGOBCFILE,          &
-                           EXPFSN, EXPFSPSI, EXPFSFCT,                &
+                           UGBCCFL, EXPFSN, EXPFSPSI, EXPFSFCT,       &
                            IMPFSN, IMPTOTAL, EXPTOTAL,                &
                            IMPREFRACTION, IMPFREQSHIFT,               &
                            IMPSOURCE,                                 &
@@ -1675,20 +1682,19 @@
 !/ST3      SDSDELTA1 = 0.4 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !/ST3      SDSDELTA2 = 0.6 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !
-!/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
 !/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
 !/ST4      FXFM3 = 2.5 
 !/ST4      FXFMAGE = 0. 
-!/ST4      FXINCUT = 0. 
-!/ST4      FXDSCUT = 0. 
 !/ST4      FXPM3 = 4.
-!/ST4      WNMEANPTAIL = -0.5 
-!/ST4      SDSC2     = -2.2E-5
-!/ST4      SDSCUM     = -0.40344
+!/ST4      WNMEANPTAIL = -0.5
+!/ST4      SDSBCHOICE =1 ! 1: Ardhuin et al., 2: Filipot & Ardhuin, 3: Romero 
+!/ST4      SDSC2     = -2.2E-5     ! -3.8 for Romero
+!/ST4      SDSCUM    = -0.40344
 !/ST4      SDSC4     = 1.
 !/ST4      SDSC5     = 0. 
+!/ST4      SDSNUW    = 0.
 !/ST4      SDSC6     = 0.3
-!/ST4      SDSBR     = 0.90E-3                                     
+!/ST4      SDSBR     = 0.90E-3     ! 0.005 for Romero                                
 !/ST4      SDSBRFDF  = 0
 !/ST4      SDSBRF1   = 0.5
 !/ST4      SDSP      = 2.   ! this is now fixed in w3sds4, should be cleaned up 
@@ -1700,18 +1706,29 @@
 !/ST4      SDSBM2    = 0.
 !/ST4      SDSBM3    = 0.
 !/ST4      SDSBM4    = 0.
-!/ST4      SDSBR2    = 0.8
 !/ST4      SDSBCK    = 0.
 !/ST4      SDSABK    = 1.5
 !/ST4      SDSPBK    = 4.
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
-!/ST4      SDSSTRAIN = 0.
-!/ST4      SDSSTRAINA = 0.
+!/ST4      SDSSTRAIN = 0.       
+!/ST4      SDSFACMTF =  400    ! MTF factor for Lambda , Romero (2019)
+!/ST4      SDSSTRAINA = 15.
 !/ST4      SDSSTRAIN2 = 0.
-!/ST4      SDSHFGEN  = 0.
-!/ST4      SDSLFGEN  = 0.
+!/ST4      WHITECAPDUR   = 0.56 ! breaking duration factor 
+!/ST4! b (strength of breaking)
+!/ST4      SDSBT     = 1.100E-3 ! B_T (sturation threshold for dissipation rate b) 
+!/ST4! Lambda parameters
+!/ST4      SDSL     = 3.5000e-05  ! L scaling 
+!/ST4! MTF
+!/ST4      SPMSS     = 0.5    ! cmss^SPMSS 
+!/ST4      SDSNMTF   = 1.5    ! MTF power 
+!/ST4      SDSCUMP   = 2.
+!/ST4! MW
+!/ST4      SDSMWD    = .9  ! new AFo
+!/ST4      SDSMWPOW  = 1.  ! (k )^pow
+!/ST4      SDKOF     = 3.  !  ko factor such that ko= g (SDKOF/(28 us))^2 
 !
 !/ST6      SDSET  = .TRUE.
 !/ST6      SDSA1  = 4.75E-06
@@ -1770,17 +1787,28 @@
 !/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
 !/ST4      WRITE (NDSO,924) STATUS
 !/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP 
-!/ST4      SSDSC(1)   = SDSLFGEN
+!/ST4      SSDSC(1)   = REAL(SDSBCHOICE)
 !/ST4      SSDSC(2)   = SDSC2
 !/ST4      SSDSC(3)   = SDSCUM
 !/ST4      SSDSC(4)   = SDSC4
 !/ST4      SSDSC(5)   = SDSC5
 !/ST4      SSDSC(6)   = SDSC6
 !/ST4      SSDSC(7)   = WHITECAPWIDTH
-!/ST4      SSDSC(8)   = SDSSTRAIN ! Straining constant ... 
-!/ST4      SSDSC(9)   = SDSHFGEN
-!/ST4      SSDSC(10)   = SDSSTRAINA*NTH/360. ! angle for enhanced straining
-!/ST4      SSDSC(11)   = SDSSTRAIN2 ! enhanced straining constant ... 
+!/ST4      SSDSC(8)   = SDSSTRAIN   ! Straining constant ... 
+!/ST4      SSDSC(9)   = SDSL
+!/ST4      SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle Aor enhanced straining
+!/ST4      SSDSC(11)  = SDSSTRAIN2  ! straining constant for directional part 
+!/ST4      SSDSC(12)  = SDSBT
+!/ST4      SSDSC(13)  = SDSMWD
+!/ST4      SSDSC(14)  = SPMSS
+!/ST4      SSDSC(15)  = SDSMWPOW 
+!/ST4      SSDSC(16)  = SDKOF
+!/ST4      SSDSC(17)  = WHITECAPDUR  
+!/ST4      SSDSC(18)  = SDSFACMTF
+!/ST4      SSDSC(19)  = SDSNMTF 
+!/ST4      SSDSC(20)  = SDSCUMP 
+!/ST4      SSDSC(21)  = SDSNUW 
+!
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
 !/ST4      SSDSBRFDF= SDSBRFDF
@@ -1789,7 +1817,7 @@
 !/ST4      SSDSBM(2)   = SDSBM2
 !/ST4      SSDSBM(3)   = SDSBM3
 !/ST4      SSDSBM(4)   = SDSBM4
-!/ST4      SSDSBR2  = SDSBR2
+!/ST4      SSDSBT   = SDSBT
 !/ST4      SSDSISO  = SDSISO
 !/ST4      SSDSCOS  = SDSCOS
 !/ST4      SSDSP    = SDSP
@@ -1797,8 +1825,6 @@
 !/ST4      WWNMEANP   = WNMEANP
 !/ST4      FFXFM = FXFM3 * TPI
 !/ST4      FFXFA = FXFMAGE * TPI
-!/ST4      FFXFI = FXINCUT * TPI
-!/ST4      FFXFD = FXDSCUT * TPI
 !/ST4      FFXPM = FXPM3 * GRAV / 28.
 !/ST4      WWNMEANPTAIL   = WNMEANPTAIL
 !/ST4      SSDSBCK   = SDSBCK
@@ -1946,6 +1972,7 @@
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
+       UGBCCFL = .TRUE.
        UGOBCDEPTH= -10.
        UGOBCOK = .FALSE.
        UGOBCFILE = 'unset'
@@ -2190,6 +2217,12 @@
       FLC    = .TRUE.
       TRCKCMPR = .TRUE.
       NOSW   = 5
+!
+! Gas fluxes 
+!
+      AIRCMIN   = 2.0  ! cmin for whitecap coverage and entrained air
+      AIRGB     = 0.2  ! volume of entrained air constant (Deike et al. 2017)
+!
 !/NCO/! NCEP operations retains first three swell systems.
 !/NCO      NOSW=3
       PTM    = 1    ! Default to standard WW3 partitioning. C. Bunney
@@ -2212,11 +2245,11 @@
       I1E3D=1
       I2E3D=NK
       P2SF   = 0
-      I1P2SF = 1
+      I1P2SF = 1	
       I2P2SF = 15
-      US3D=0 
-      I1US3D=1
-      I2US3D=NK
+      US3D   = 0 
+      I1US3D = 1
+      I2US3D = NK
       USSP=0
       IUSSP=1
       STK_WN(:)=0.0
@@ -2250,7 +2283,7 @@
 !/IS2      IS2BACKSCAT = 1.
 !/IS2      IS2BREAK = .FALSE.
 !/IS2      IS2BREAKF = 3.6
-!/IS2      IS2FLEXSTR=2.7414E+05  ! value used in Boutin et al. JGR 2018. 
+!/IS2      IS2FLEXSTR=6.00E+05   ! value used in Ardhuin et al. 2020
 !/IS2      IS2ISOSCAT=.TRUE.     ! uses isotropic back-scatter
 !/IS2      IS2DISP=.FALSE. !not dispersion only attenuation following Liu disp. eq.
 !/IS2      IS2DUPDATE=.TRUE.
@@ -2258,14 +2291,15 @@
 !/IS2      IS2DMIN=20
 !/IS2      IS2DAMP=0.
 !/IS2      IS2CREEPB=0.
-!/IS2      IS2CREEPC=0.2
-!/IS2      IS2CREEPD=0.4
+!/IS2      IS2CREEPC=0.4     ! This gives an impact of break-up over a wider freq. range
+!                            ! compared to the 0.2 value in Boutin et al. 2018
+!/IS2      IS2CREEPD=0.5
 !/IS2      IS2CREEPN=3.0
 !/IS2      IS2BREAKE=1.
 !/IS2      IS2WIM1=1.
-!/IS2      IS2ANDISB=.FALSE. !anelastic instead of inelastic dissipation if IS2CREEPB>0
+!/IS2      IS2ANDISB=.TRUE.  !anelastic instead of inelastic dissipation if IS2CREEPB>0
 !/IS2      IS2ANDISE=0.55    !energy of activation
-!/IS2      IS2ANDISD=1.672E-9!
+!/IS2      IS2ANDISD=2.0E-9  !see Ardhuin et al. 2020
 !/IS2      IS2ANDISN=1.      !dependency on stress. Equal to 1 normally?
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
@@ -2448,6 +2482,8 @@
       PFMOVE = PMOVE
 !
       BTBETA = MIN(MAX (1., BTBET), 2.)
+      AAIRCMIN = ALOG(GRAV/AIRCMIN/SIG(1))/ALOG(XFR)+1 ! goes from phase speed C=g/sig to index
+      AAIRGB = AIRGB
 !
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
@@ -2627,14 +2663,16 @@
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
-!/ST4                    WNMEANP, FXPM3, FXFM3, FXFMAGE, FXINCUT, FXDSCUT, &
+
+!/ST4          WRITE (NDSO,2924) SDSBCHOICE, SDSC2, SDSCUM, SDSC4,         &
+!/ST4                            SDSC5, SDSC6, &
+!/ST4                    WNMEANP, FXPM3, FXFM3, FXFMAGE,                   &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSSTRAIN,  SDSSTRAINA,  SDSSTRAIN2,       &
-!/ST4                    SDSBR2, SDSP, SDSISO, SDSCOS,   &
-!/ST4                    SDSDTH, SDSBRF1, SDSBRFDF,                        &
-!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,           &
-!/ST4                    WHITECAPWIDTH, SDSLFGEN, SDSHFGEN
+!/ST4                    SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
+!/ST4                    SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
+!/ST4                    SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
+!/ST4                    SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1, CSTB1
 !/BT1          WRITE (NDSO,2926) GAMMA
@@ -2652,7 +2690,7 @@
 !/SMC                      AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND 
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
-        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH, TRIM(UGOBCFILE),     &
+        WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
                           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
                           IMPSOURCE, SETUP_APPLY_WLV,                 &
@@ -2921,6 +2959,7 @@
           END IF
         END DO
  
+        FSBCCFL = UGBCCFL
         SELECT CASE (UNSTSCHEME)
         CASE (1) 
           FSN = EXPFSN
@@ -5397,31 +5436,35 @@
 !/ST3               '        SDSDELTA1 =', F5.2,', SDSDELTA2 =',F5.2, &
 !/ST3               ' /')                               
 !
-!/ST4  924 FORMAT (/' Dissipation (Ardhuin et al. 2010) ',A/          &
+!/ST4  924 FORMAT (/' Dissipation (Ardhuin / Filipot / Romero ) ',A/          &
 !/ST4        ' --------------------------------------------------')
 !/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
-!/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSCUM =',F6.2,', '/                           &
+
+
+!/ST4 2924 FORMAT ( '  &SDS4 SDSBCHOICE = ',F3.1,                       &
+!/ST4               ', SDSC2 =',E12.4,', SDSCUM =',F6.2,', '/         &
 !/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
-!/ST4               ', FXFM3 =',F4.2,', FXFMAGE =',F6.3,              &
-!/ST4               ', FXINCUT =',F6.3,', FXDSCUT =',F6.3,', '/       &
+!/ST4               ', FXFM3 =',F4.1,', FXFMAGE =',F6.3, ', '/       &
 !/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
 !/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
 !/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4,       &
-!/ST4               ', SDSSTRAIN =',F4.1,', SDSSTRAINA =',F4.1,       &
+!/ST4               ', SDSSTRAIN =',F5.1,', SDSSTRAINA =',F4.1,       &
 !/ST4               ', SDSSTRAIN2 =',F5.1,', '/                       &
-!/ST4               '        SDSBR2 =',F5.2,', SDSP =',F5.2,          &
+!/ST4               '        SDSBT =',F5.2,', SDSP =',F5.2,          &
 !/ST4               ', SDSISO =',I2, &
 !/ST4               ', SDSCOS =',F3.1,', SDSDTH =',F5.1,', '/         &
 !/ST4               '        SDSBRF1 = ',F5.2,', SDSBRFDF =',I2,', '/ &
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', '/,                                       &
-!/ST4               '        WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
-!/ST4               F5.2,', SDSHFGEN = ',F5.2,' /')
+!/ST4               '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
+!/ST4               ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
+!/ST4               '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
+!/ST4               ', SDSCUMP =', F3.1,', SDSNUW =', E8.3,', '/,     &
+!/ST4               '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
 !/ST6               ' --------------------------------------------------')
@@ -5595,8 +5638,8 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,        &
-               ', UGOBCFILE=',A,','/                                   &
+ 2956 FORMAT ( '  &UNST UGBCCFL =',L3,', UGOBCAUTO =',L3,             &
+               ', UGOBCDEPTH =', F8.3,', UGOBCFILE=',A,','/           &
                ',  EXPFSN =',L3,',EXPFSPSI =',L3,                     &
                ',  EXPFSFCT =', L3,',IMPFSN =',L3,',EXPTOTAL=',L3,    &
                ',  IMPTOTAL=',L3,',IMPREFRACTION=', L3,               &

@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jan-2018 |
+!/                  | Last update :         21-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -24,6 +24,8 @@
 !/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
+!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
+!/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -188,7 +190,7 @@
       USE W3GSRUMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, FNMPRE
 
-!/TIDE      USE W3TIDEMD
+      USE W3TIDEMD
       USE W3TIMEMD
       USE W3NMLPRNCMD
       USE NETCDF
@@ -204,51 +206,45 @@
       TYPE(NML_FILE_T)        :: NML_FILE
       TYPE(T_GSU)             :: GSI
 !
-      INTEGER                 :: NTI, NDSEN, IND
-      INTEGER                 :: NIDIMS, NFIELDS
-      INTEGER                 :: JPC
-      INTEGER                 :: IX, IY, JX, NXLM
-      INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
+      INTEGER                 :: NTI, NDSEN, NIDIMS, NFIELDS, ICLO,   & 
+                                 NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, NFCOMP,        &
-                                 TIME(2), TIMESTART(2), TIMESTOP(2),  &
-                                 TIMESHIFT(2),                        &
-                                 NXI, NYI, NXJ(2), NYJ(2),            &
-                                 NDSLL, IDLALL, IDFMLL, NDSF(2),      &
-                                 IDLAF(2), IDFMF(2),                  &
+                                 IX, IY, JX, NXI, NYI, NDAT, JJ,      &
+                                 NDSLL, IDLALL, IDFMLL, NCID, IRET,   &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
-                                 NDAT, JJ, IS(4), JS(4)
+                                 NDIMSGRID, NDIMSVAR, VARIDTMP,       &
+                                 NUMDIMS, I, ITIME
       INTEGER                 :: ILAND = -999
-      INTEGER                 :: ICLO
       INTEGER                 :: GTYPEDUM = 0
-      INTEGER                 :: NCID, IRET,                            &
-                                 NDIMSGRID, NDIMSVAR, VARIDTMP, VARIDF(50)
-      INTEGER                 :: NUMDIMS
-      INTEGER                 :: DIMSVAR(4)
-      INTEGER                 :: DIMLN(5)
-      INTEGER                 :: I,ITIME
-      INTEGER                 :: REFDATE(8),CURDATE(8),STARTDATE(8),STPDATE(8)
-!/MPI      INTEGER                 :: IERR_MPI
+
+!
+      INTEGER                 :: TIME(2), TIMESTART(2), TIMESTOP(2),  &
+                                 TIMESHIFT(2), NXJ(2), NYJ(2),        &
+                                 NDSF(2), IDLAF(2), IDFMF(2),         &
+                                 IS(4), JS(4), VARIDF(50), DIMSVAR(4),&
+                                 DIMLN(5), REFDATE(8),CURDATE(8),     &
+                                 STARTDATE(8),STPDATE(8)
+!/MPI      INTEGER                 :: IERR_MPI, IND, REST, SLICE
 !/O15      INTEGER                 :: NDSTIME
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
 !/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
 !
-      INTEGER, ALLOCATABLE    :: NXL(:)
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
                                  IY21(:,:), IY22(:,:),                &
                                  JX21(:,:), JX22(:,:),                &
-                                 JY21(:,:), JY22(:,:), MAPOVR(:,:)
-      INTEGER, ALLOCATABLE    :: MASK(:,:)
+                                 JY21(:,:), JY22(:,:),                &
+                                 MAPOVR(:,:), MASK(:,:),              &
+                                 NELEM(:), CUMUL(:)
 !/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
 !
-
-
-
       REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI,        &
-                                 X, Y, FACTOR, EFAC, NODATA, RW(4)
+                                 X, Y, FACTOR, EFAC, NODATA,          &
+                                 XCFAC, XCOFF, YCFAC, YCOFF,          &
+                                 FILLVALUE, TIMEDELAY
       REAL                    :: ACC = 0.05
-      REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
-      REAL                    :: FILLVALUE, TIMEDELAY
+!
+      REAL                    :: SCFAC(2), ADDOFF(2), RW(4)
 !
       REAL, ALLOCATABLE       :: RD11(:,:), RD21(:,:),                &
                                  RD12(:,:), RD22(:,:),                &
@@ -285,33 +281,29 @@
 !
 ! Variables used in tidal analysis
 !
-      INTEGER                 :: TIDESIZ, K, L
-      INTEGER                 :: TIDALSTUFF
-      INTEGER                 :: TIDEFLAG
+      INTEGER                 :: K, L, TIDEFLAG,                      &
+                                 TIDE_NDEF, TIDE_ITREND
 !/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
-!/TIDE      INTEGER                       :: TIDE_NDEF, TIDE_ITREND
-!/TIDET      INTEGER, PARAMETER      :: LRB = 4
-!/TIDET      INTEGER(KIND=8)         :: RPOS
-!/TIDET      INTEGER                 ::   LRECL, NREC
+!/T      INTEGER, PARAMETER      :: LRB = 4
+!/T      INTEGER(KIND=8)         :: RPOS
+!/T      INTEGER                 ::   LRECL, NREC
 !
-!/TIDE      INTEGER, ALLOCATABLE          :: IMAX(:)
+      INTEGER, ALLOCATABLE          :: IMAX(:)
 !
-!/TIDE      REAL                          :: TIDE_LAT
+      REAL                          :: TIDE_LAT
 !
-      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
-      REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:)
-!/TIDE      REAL, ALLOCATABLE             :: SSQ(:), RES(:)
-!/TIDET      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
+      REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:),                &
+                                 SSQ(:), RES(:)
+!/MPI      REAL, ALLOCATABLE       :: TIDE1DL(:), TIDE1D(:)
+!/T      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
 !
-      DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
-!/TIDE      DOUBLE PRECISION, ALLOCATABLE :: SDEV0(:), SDEV(:), RMSR(:), &
-!/TIDE                                       RMSR0(:), RMSRP(:), RESMAX(:)
+      DOUBLE PRECISION, ALLOCATABLE :: ALLTIMES(:),                   &
+                                       SDEV0(:), SDEV(:), RMSR(:),    &
+                                       RMSR0(:), RMSRP(:), RESMAX(:)
 !
-      CHARACTER*1024          :: TIDECONSTNAMES
+      CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
-!/TIDET      CHARACTER*21            :: FNAMETXT
-!
-      LOGICAL                 :: TIDESWITCH, DISTSWITCH 
+!/T      CHARACTER*21            :: FNAMETXT
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
@@ -810,7 +802,7 @@
 
 
 !
-! ... type 1: "As Is" (AI)
+! ... type 1 or 6 : "As Is" (AI) or "As Is with tide" (AT)
 !
       IF (ITYPE.EQ.1.OR.ITYPE.EQ.6) THEN
 !
@@ -835,7 +827,7 @@
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2933) RW(1),RW(2),RW(3),RW(4)
         END IF
 !
-! ... type 2
+! ... type 2 : "Lat/Lon" (LL)
 !
       ELSE IF (ITYPE.EQ.2) THEN
 !
@@ -861,7 +853,7 @@
                            FACTOR*Y0I, FACTOR*YNI
         END IF
 !
-! ... type 5
+! ... type 5 : "Data" (DAT)
 !
       ELSE IF (ITYPE.EQ.5) THEN
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -974,14 +966,14 @@
               IF (IX21(IX,1).LE.1 .AND. RW(1).LT.ACC) THEN
                 IF (RW(1).LT.0.) THEN
                   RW(1) = 0.
-                  WRITE (NDSO,1043) X
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
 !/T                  FLMOD  = .TRUE.
                   END IF
                 END IF
 !
               IF (IX21(IX,1).GE.(NXI-1) .AND. RW(1).GT.1.-ACC) THEN
                 IF (RW(1).GT.1.) THEN
-                  WRITE (NDSO,1043) X
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
                   RW(1) = 1.
 !/T                       FLMOD  = .TRUE.
                   END IF
@@ -989,7 +981,7 @@
 !
               IF (IY21(IX,1).LE.1 .AND. RW(2).LT.ACC) THEN
                 IF (RW(2).LT.0.) THEN
-                  WRITE (NDSO,1044) Y
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 0.
 !/T                  FLMOD  = .TRUE.
                 END IF
@@ -997,7 +989,7 @@
 !
               IF (IY21(IX,1).GE.NYI .AND. RW(2).GT.1.-ACC) THEN
                 IF (RW(2).GT.1) THEN
-                  WRITE (NDSO,1044) Y
+                  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 1.
 !/T                       FLMOD  = .TRUE.
                 END IF
@@ -1011,6 +1003,7 @@
               RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
               RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
               RD22(IX,1) = EFAC *    RW(1)   *    RW(2)
+
             END DO ! IX=1, NX
           END IF ! GTYPE .NE. UNGTYPE
 !
@@ -1247,33 +1240,41 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971)
       J      = LEN_TRIM(FNMPRE)
+
+      ! define tidal constituents for analysis
+      IF (ITYPE.EQ.6) THEN 
+        CALL VUF_SET_PARAMETERS
+        TIDE_NDEF = NFIELDS
+        IF (TRIM(LIST(1)).EQ.'ALL') THEN
+          WRITE(NDSE,'(A)') 'Tidal constituent ALL not available anymore'
+          CALL EXTCDE(29)
+        END IF
+        CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
+      END IF
+
+      ! Create output binary file
       IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
-!/TIDE          IF (ITYPE.EQ.6) THEN 
-!/TIDE            CALL VUF_SET_PARAMETERS
-!/TIDE            TIDE_NDEF = NFIELDS
-!/TIDE            CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
-!/TIDE            END IF
-            IF ( IAPROC .EQ. NAPOUT )  &
-               CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,      &
-               NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
-               FHDR=FLHDR, TIDEFLAGIN=TIDEFLAG)
+        IF ( IAPROC .EQ. NAPOUT )  &
+             CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,      &
+             NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
+             FHDR=FLHDR, TIDEFLAGIN=TIDEFLAG)
         ELSE
           IF ( IAPROC .EQ. NAPOUT )  &
           CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
                RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
         END IF
-!/TIDET   IF (TIDEFLAG.GT.0) THEN  
-!/TIDET   LRECL  = TIDE_MF*LRB*NFIELDS*2
-!/TIDET   NREC = LRECL / LRB
-!/TIDET   ALLOCATE(NULLBUFF(NREC))
-!/TIDET   NULLBUFF(1:NREC) = 0.
 
-!/TIDET   OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED',       &
-!/TIDET                 ACCESS='STREAM')
-!/TIDET   FNAMETXT  = 'tidanaNNN.txt'
-!/TIDET          WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
-!/TIDET   OPEN (989,FILE=FNAMETXT,status='unknown')
-!/TIDET   ENDIF 
+!/T   IF (TIDEFLAG.GT.0) THEN  
+!/T     LRECL  = TIDE_MF*LRB*NFIELDS*2
+!/T     NREC = LRECL / LRB
+!/T     ALLOCATE(NULLBUFF(NREC))
+!/T     NULLBUFF(1:NREC) = 0.
+!/T     OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED', ACCESS='STREAM')
+!/T     FNAMETXT  = 'tidanaNNN.txt'
+!/T     WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
+!/T     OPEN (989,FILE=FNAMETXT,status='unknown')
+!/T   ENDIF 
+
 !
 ! 7.c Initialize fields
 !
@@ -1293,12 +1294,15 @@
           AC = 0.
         END IF
 !
-! For ITYPE.LE.5 time steps are read one by one. 
-! Otherwise points are read one by one for tidal analysis
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-      TIDESWITCH=.FALSE.
-!/TIDE      TIDESWITCH=.TRUE.
-      IF (ITYPE.GE.6.AND.TIDESWITCH) THEN
+! Dedicated section to ITYPE.EQ.6 
+!
+! points are read one by one for tidal analysis
+! For other ITYPE, time steps are read one by one. 
+!
+
+      IF (ITYPE.GE.6.AND.TIDEFLAG.GT.0) THEN
 ! 
 ! Reads in the full time vector
 !
@@ -1321,253 +1325,243 @@
         IRET=NF90_GET_VAR(NCID,VARIDTMP,ALLTIMES,start=(/1/))
         CALL CHECK_ERR(IRET)
         IF (INDEX(TIMEUNITS, "seconds").NE.0)   ALLTIMES=ALLTIMES/86400.
-        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/3600.
+        IF (INDEX(TIMEUNITS, "minutes").NE.0)   ALLTIMES=ALLTIMES/1440.
         IF (INDEX(TIMEUNITS, "hours").NE.0)   ALLTIMES=ALLTIMES/24.
         ALLTIMES=REFJULDAY+ALLTIMES
 
 ! 
 ! Performs tidal analysis
 !
-!/TIDE        TIDE_NTI = NTI 
-!/TIDE        TIDE_NDEF = NFIELDS
-!/TIDE        ALLOCATE(SDEV0(TIDE_NDEF),SDEV(TIDE_NDEF), RMSR(TIDE_NDEF), &
-!/TIDE                   RES(TIDE_NDEF), SSQ(TIDE_NDEF),RMSR0(TIDE_NDEF), &
-!/TIDE                 RMSRP(TIDE_NDEF), IMAX(TIDE_NDEF), RESMAX(TIDE_NDEF))
+        TIDE_NTI = NTI 
+        TIDE_NDEF = NFIELDS
+        ALLOCATE(SDEV0(TIDE_NDEF),SDEV(TIDE_NDEF), RMSR(TIDE_NDEF), &
+                   RES(TIDE_NDEF), SSQ(TIDE_NDEF),RMSR0(TIDE_NDEF), &
+                 RMSRP(TIDE_NDEF), IMAX(TIDE_NDEF), RESMAX(TIDE_NDEF))
 
-!/TIDE        ALLOCATE( TIDE_DATA(TIDE_NTI,TIDE_NDEF) )  
-!/TIDE        ALLOCATE( TIDE_DAYS(TIDE_NTI), TIDE_SECS(TIDE_NTI), TIDE_HOURS(TIDE_NTI) )  
-!/TIDE        ALLOCATE(V_ARG(170,TIDE_NTI),F_ARG(170,TIDE_NTI),U_ARG(170,TIDE_NTI))
-!/TIDE        TIDE_NX=NX
-!/TIDE        TIDE_NY=NY
-!/TIDE        ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
-!/TIDE        TIDAL_CONST(:,:,:,:,:)=0.
-!/TIDE        DO I=1,NFIELDS
-!/TIDE          IRET=NF90_INQ_VARID(NCID,FIELDSNAME(I),VARIDF(I))
-!/TIDE        END DO
-!/TIDE        IRET=NF90_GET_ATT(NCID,VARIDTMP,"_FillValue", FILLVALUE)
+        ALLOCATE( TIDE_DATA(TIDE_NTI,TIDE_NDEF) )  
+        ALLOCATE( TIDE_DAYS(TIDE_NTI), TIDE_SECS(TIDE_NTI), TIDE_HOURS(TIDE_NTI) )  
+        ALLOCATE(V_ARG(170,TIDE_NTI),F_ARG(170,TIDE_NTI),U_ARG(170,TIDE_NTI))
+        TIDE_NX=NX
+        TIDE_NY=NY
+        ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+        TIDAL_CONST(:,:,:,:,:)=0.
+        DO I=1,NFIELDS
+          IRET=NF90_INQ_VARID(NCID,FIELDSNAME(I),VARIDF(I))
+        END DO
+        IRET=NF90_GET_ATT(NCID,VARIDTMP,"_FillValue", FILLVALUE)
 
-!/TIDE        IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'scale_factor')
-!/TIDE        IF ( IRET .EQ. NF90_NOERR ) THEN
-!/TIDE          IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
-!/TIDE        ENDIF
-!/TIDE        IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'add_offset')
-!/TIDE        IF ( IRET .EQ. NF90_NOERR) THEN
-!/TIDE          IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
-!/TIDE        END IF
-!/TIDE        IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
-!/TIDE          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'scale_factor')
-!/TIDE          IF (IRET .EQ. NF90_NOERR) THEN
-!/TIDE            IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
-!/TIDE          ENDIF
-!/TIDE          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'add_offset')
-!/TIDE          IF (IRET .EQ. NF90_NOERR) THEN
-!/TIDE            IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
-!/TIDE          END IF
-!/TIDE        END IF
+        IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',SCFAC(1))
+        IF (IRET .NE. 0) SCFAC(1) = 1.0
+        IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
+        IF (IRET .NE. 0) ADDOFF(1) = 0.0
+        IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
+          IF (IRET .NE. 0) SCFAC(2) = 1.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
+          IF (IRET .NE. 0) ADDOFF(1) = 0.0
+        END IF
+
 
 !
-! Loop on grid points: reads all points for same IY to limit I/O time
-! this may require too much memory
-! Modified on 12-Feb-2013: now reads one block from IX to IX+NXLM-1
-!       NSEAL  = 1 + (NSEA-IAPROC)/NAPROC
-        ALLOCATE(NXL(NAPROC))
-        DO JPC=1,NAPROC
-          NXL(JPC)  = 1 + (NX-JPC)/NAPROC
-        END DO
-        NXLM=NXL(1)   ! this is the max value of NXL
-        NXL(1:NAPROC-1) = NXLM
-        NXL(NAPROC)=NX-(NAPROC-1)*NXLM
+! Set arrays for MPI exchanges
+!
+        IF (NX .LT. NAPROC) THEN
+          WRITE(NDSE,*) 'NUMBER OF NX POINTS LESS THAN NUMBER OF PROC'
+          CALL EXTCDE (30)
+        END IF
 
-        ALLOCATE(TIDE_DATA_ALL(NXL(IAPROC),NTI,NFIELDS))
+!/MPI        SLICE=NX/NAPROC
+!/MPI        REST=MOD(NX,NAPROC)
+!/MPI        IF(REST.GE.IAPROC) SLICE=SLICE+1
+
+!/MPI        ! set total 1D array (nx)
+!/MPI        ALLOCATE (TIDE1D(NX * TIDE_MF * NFIELDS * 2))
+!/MPI        TIDE1D(:)=0.
+
+!/MPI       ! set local 1D array (slice)
+!/MPI        ALLOCATE(TIDE1DL(SLICE * TIDE_MF * NFIELDS * 2))
+!/MPI        TIDE1DL(:)=0.
+
+        ! set arrays for number of elements per MPI proc
+        ALLOCATE(CUMUL(NAPROC))
+        ALLOCATE(NELEM(NAPROC))
+        CUMUL(1) = 0
+        NELEM(1) = NX / NAPROC
+!/MPI        IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
+!/MPI        DO I=2,NAPROC
+!/MPI          CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
+!/MPI          NELEM(I) = NX / NAPROC
+!/MPI          IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
+!/MPI        END DO
+      
+!/MPIT        WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
+!/MPIT        WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+
+        ALLOCATE(TIDE_DATA_ALL(NELEM(IAPROC),NTI,NFIELDS))
 
 
-        WRITE(NDSE,*) "Number of points for this processor :", IAPROC,NXL(IAPROC)
-              DISTSWITCH = .FALSE.
-!/DIST        DISTSWITCH = .TRUE.
-!/TIDE        IF (DISTSWITCH) THEN 
-!/TIDE          TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
-!/MPI!/TIDE         CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
-!/MPI!/TIDE         CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
-!/TIDE          ALLOCATE(TIDALSTUFFA(TIDESIZ))
-!/TIDE          TIDALSTUFFA(:)=0.
-!/TIDE          END IF
+
+
+
 !
 ! Loops on Y dimension
 !
         DO IY=1,NY
-          IND=0
+!/MPI            IND=0
 !
-! big data read split in small data read ... 
           IF (NDIMSGRID.EQ.1) THEN 
             DO I=1,NFIELDS
-                IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
-                                start=(/1+(IAPROC-1)*NXLM,1/),count=(/NXL(IAPROC),NTI/))
-              CALL CHECK_ERR(IRET)
-           if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
-           if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
-              END DO
-          ELSE 
-            DO I=1,NFIELDS
               IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
-                                start=(/1+(IAPROC-1)*NXLM,IY,1/),count=(/NXL(IAPROC),1,NTI/))
+                                start=(/CUMUL(IAPROC)+1,1/),count=(/NELEM(IAPROC),NTI/))
               CALL CHECK_ERR(IRET)
-              if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
-              if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
+              WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
+            END DO
+          ELSE IF (NDIMSGRID.EQ.2) THEN
+            IF (NDIMSVAR.EQ.3) THEN
+              DO I=1,NFIELDS
+                IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
+                                  start=(/CUMUL(IAPROC)+1,IY,1/),count=(/NELEM(IAPROC),1,NTI/))
+                CALL CHECK_ERR(IRET)
+                WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
               END DO
-          END IF
+            ELSE IF (NDIMSVAR.EQ.4) THEN
+              DO I=1,NFIELDS
+                IRET=NF90_GET_VAR(NCID,VARIDF(I),TIDE_DATA_ALL(:,:,I), &
+                                  start=(/CUMUL(IAPROC)+1,IY,1,1/),count=(/NELEM(IAPROC),1,1,NTI/))
+                CALL CHECK_ERR(IRET)
+                WHERE (TIDE_DATA_ALL(:,:,I).NE.FILLVALUE) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*SCFAC(I)+ADDOFF(I)
+              END DO
+            END IF ! NDIMSVAR
+          END IF ! NDIMSGRID
+
+          
 !
-          DO JX=1,NXL(IAPROC)  ! This loop is parallelized with MPI 
-!/DIST      IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
-!/SHRD      IX = JX
+          DO JX=1,NELEM(IAPROC)
+!/MPI            IX=CUMUL(IAPROC)+JX
+!/SHRD           IX=JX
+
 !
-!/TIDE            TIDE_NTI=0
-!/TIDE            DO I=1,NTI
+            TIDE_NTI=0
+            DO I=1,NTI
 !
 ! Defines usable timesteps ... criteria could be improved
 ! remove the times when the point IX,IY is dry ... 
 ! and redefine TIDE_NTI based on wet times only
 !
-!/TIDE              IF (TIDE_DATA_ALL(JX,I,1).NE.FILLVALUE     &
-!/TIDE                  .AND.TIDE_DATA_ALL(JX,I,NFIELDS).NE.FILLVALUE                   &
-!/TIDE                  .AND.TIDE_DATA_ALL(JX,I,1).NE.0.0) THEN 
-!/TIDE                TIDE_NTI=TIDE_NTI+1            
-!/TIDE                TIDE_DATA(TIDE_NTI,:)=TIDE_DATA_ALL(JX,I,:)
-!/TIDE                TIDE_DAYS(TIDE_NTI)=INT(ALLTIMES(I))
-!/TIDE                TIDE_SECS(TIDE_NTI)=(ALLTIMES(I)-TIDE_DAYS(TIDE_NTI))*86400
-!/TIDE              END IF
-!/TIDE            END DO
-!
-!/TIDE            TIDE_HOURS(1:TIDE_NTI)=24.d0*dfloat(TIDE_DAYS(1:TIDE_NTI)) &
-!/TIDE                                   +dfloat(TIDE_SECS(1:TIDE_NTI))/3600.d0
-!
-!/TIDE            IF (TIDE_NTI.GT.(TIDE_MF*3)) THEN 
-!/TIDE              TIDE_LAT= YGRD(IY,IX)
-!/TIDE              IF (ABS(TIDE_LAT).LT.5.) TIDE_LAT=SIGN(5.,TIDE_LAT)
-!/TIDE                DO I=1,TIDE_NTI
-!/TIDE                  CALL SETVUF(TIDE_HOURS(I),TIDE_LAT,I)
-!/TIDE                END DO
-!/TIDE                CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
-!/TIDE                                         TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
-!/TIDE                                         SDEV0, RMSR, RESMAX, IMAX, 0)
-                
-!/TIDE                TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
-!/TIDE                TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
-!/TIDET    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS) !,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
-!/TIDET    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
-!/TIDET    RPOS = 1_8 + LRECL*(IX-1_8)
-!/TIDET    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
-!/TIDET    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
-!              
-! Only keeps constituents with high enough SNR ? (T-TEST > 2 : not a very good test ...)
-!
-!              DO J=1,TIDE_MF
-!                DO I=1,NFIELDS
-!                  WRITE(990+IAPROC,*) IX,IY,J,I,TIDE_TTEST(J,I),TIDE_AMPC(J,I),TIDE_PHG(J,I)
-!                  IF (TIDE_TTEST(J,I).GT.1.) THEN 
-!                    TIDAL_CONST(IX,IY,J,I,1)=TIDE_AMPC(J,I)
-!                    TIDAL_CONST(IX,IY,J,I,2)=TIDE_PHG(J,I)
-!                  END IF
-!                END DO
-!              END DO
-
-! Fills 1-D array for MPI communication
-            IF (DISTSWITCH) THEN 
-!/TIDE         DO J=1,TIDE_MF
-!/TIDE           DO K=1,NFIELDS
-!/TIDE             DO L=1,2
-!/TIDE              IND=IND+1
-!/TIDE               TIDALSTUFFA(IND)=TIDAL_CONST(IX,IY,J,K,L)
-!/TIDE             END DO
-!/TIDE           END DO
-!/TIDE         END DO
-!/TIDE         IF (IAPROC.EQ.NAPOUT) WRITE(6,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
-!/TIDE           IY,',',JX, ' out of  ', NXL(IAPROC)
+              IF (TIDE_DATA_ALL(JX,I,1).NE.FILLVALUE     &
+                  .AND.TIDE_DATA_ALL(JX,I,NFIELDS).NE.FILLVALUE                   &
+                  .AND.TIDE_DATA_ALL(JX,I,1).NE.0.0) THEN 
+                TIDE_NTI=TIDE_NTI+1            
+                TIDE_DATA(TIDE_NTI,:)=TIDE_DATA_ALL(JX,I,:)
+                TIDE_DAYS(TIDE_NTI)=INT(ALLTIMES(I))
+                TIDE_SECS(TIDE_NTI)=(ALLTIMES(I)-TIDE_DAYS(TIDE_NTI))*86400
               END IF
-!/TIDE            ELSE 
-!/TIDE              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, & 
-!/TIDE                                                            NTI, TIDE_NTI
-!/TIDE              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=0.
-!/TIDE              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=0.
-!/TIDE              IND=IND+TIDE_MF*NFIELDS*2
-!/TIDE            END IF ! end of test on TIDE_NTI
-!/TIDET            DO J=1,TIDE_MF
-!/TIDET              DO K=1,NFIELDS
-!/TIDET                DO L=1,2
-!/TIDET                  WRITE(990+IAPROC,'(6I5,F10.4)') IAPROC,NAPOUT,IX,J,K,L,TIDAL_CONST(IX,1,J,K,L)
-!/TIDET                END DO
-!/TIDET              END DO
-!/TIDET            END DO
-
-          END DO  ! JX=1,NXL  - End of parallization
-!/TIDET         CLOSE(990+IAPROC)
+            END DO ! NTI
+!
+            TIDE_HOURS(1:TIDE_NTI)=24.d0*dfloat(TIDE_DAYS(1:TIDE_NTI)) &
+                                   +dfloat(TIDE_SECS(1:TIDE_NTI))/3600.d0
 
 !
-! We need to send and receive the bits of TIDAL_CONST(:,IY,:,:,:)
+! Compute amplitude and phase
 !
-!/TIDE     IF (DISTSWITCH) THEN 
-!/TIDE     IF (IAPROC.NE.NAPOUT)  THEN
-!/DIST!/TIDE       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
-!/DIST!/TIDE                       MPI_COMM_WORLD, IERR_MPI )
-!/TIDE     ELSE
-!/TIDET           DO JX=1,NXL(IAPROC)
-!/TIDET             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
-!/TIDET             DO J=1,TIDE_MF
-!/TIDET               DO K=1,NFIELDS
-!/TIDET                 DO L=1,2
-!/TIDET    WRITE(987,'(6I5,F10.4)') IAPROC,IAPROC,IX,J,K,L,TIDAL_CONST(IX,1,J,K,L)
-!/TIDET                 END DO
-!/TIDET               END DO
-!/TIDET             END DO
-!/TIDET           END DO       ! JX=1,NXL
-!/TIDE       DO JPC=1,NAPROC
-!/TIDE         IF (JPC .NE. NAPOUT )  THEN 
-!/DIST!/TIDE           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
-!/DIST!/TIDE                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
-!/TIDE           ! Now unpacks the 1-D array
-!/TIDE           IND=0
-!/TIDE           DO JX=1,NXL(JPC)
-!/TIDE             IX = JX + (JPC-1)*NXLM ! JPC    + (JX-1)*NAPROC
-!/TIDE!
-!/TIDE             DO J=1,TIDE_MF
-!/TIDE               DO K=1,NFIELDS
-!/TIDE                 DO L=1,2
-!/TIDE                   IND=IND+1
-!/TIDE                   TIDAL_CONST(IX,IY,J,K,L)=TIDALSTUFFA(IND)
-!/TIDE                 END DO
-!/TIDE               END DO
-!/TIDE             END DO
-!/TIDE           END DO       ! JX=1,NXL
-!/TIDE         END IF         ! JPC .NE. NAPOUT
-!/TIDE       END DO           ! JPC=0,NAPROC-1
-!/TIDET       WRITE(NDSE,*) "IY = ", IY, "on ", NY
-!/TIDE     END IF
-!/TIDE     END IF
+            IF (TIDE_NTI.GT.(TIDE_MF*3)) THEN 
+              TIDE_LAT= YGRD(IY,IX)
+              IF (ABS(TIDE_LAT).LT.5.) TIDE_LAT=SIGN(5.,TIDE_LAT)
+              DO I=1,TIDE_NTI
+                CALL SETVUF(TIDE_HOURS(I),TIDE_LAT,I)
+              END DO
+              TIDE_ITREND=0
+              CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
+                                       TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
+                                       SDEV0, RMSR, RESMAX, IMAX, 0)
+
+!/T    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
+!/T    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+!/T    RPOS = 1_8 + LRECL*(IX-1_8)
+!/T    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
+!/T    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+
+            ELSE ! TIDE_NTI.GT.(TIDE_MF*3)
+              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, NTI, TIDE_NTI
+              TIDE_AMPC(1:TIDE_MF,1:NFIELDS)=0.
+              TIDE_PHG(1:TIDE_MF,1:NFIELDS)=0.
+            END IF ! end of test on TIDE_NTI
+
+
+!
+! Save tidal amplitude and phase
+!
+
+!/MPI          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
+!/MPI                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
+!/MPI          DO J=1,TIDE_MF
+!/MPI            DO K=1,NFIELDS
+!/MPI              IND=IND+1
+!/MPI              TIDE1DL(IND)=TIDE_AMPC(J,K)
+!/MPI              IND=IND+1
+!/MPI              TIDE1DL(IND)=TIDE_PHG(J,K)
+!/MPI            END DO
+!/MPI          END DO
+
+!/SHRD            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
+!/SHRD            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+
+          END DO  ! JX=1,NELEM(IAPROC)
+
+!
+! Gather from other MPI tasks
+!
+
+!/MPI          IF (NAPROC.GT.1) THEN
+!/MPI            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
+!/MPI                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
+!/MPI                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI          ELSE
+!/MPI            TIDE1D = TIDE1DL
+!/MPI          END IF
+
+!
+! Convert from 1D to 2D array
+!
+!/MPI          IF (IAPROC .EQ. NAPOUT) THEN
+!/MPI            IND=0 
+!/MPI            DO IX=1,NX
+!/MPI              DO J=1,TIDE_MF
+!/MPI                DO K=1,NFIELDS
+!/MPI                  DO L=1,2
+!/MPI                    IND=IND+1
+!/MPI                    TIDAL_CONST(IX,IY,J,K,L)=TIDE1D(IND)
+!/MPI                  END DO
+!/MPI                END DO
+!/MPI              END DO
+!/MPI            END DO
+!/MPI          END IF
+
+
           
         END DO ! IY=1,NY
-!/TIDET    CLOSE (990)
-!/TIDET    CLOSE (989)
-!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
-!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
 
-!/TIDE   IF (DISTSWITCH) THEN 
-!/DIST!/TIDE     CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
-!/TIDE     DEALLOCATE(TIDALSTUFFA)
-!/TIDE   END IF
+!/T    CLOSE (990)
+!/T    CLOSE (989)
+!/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
+!/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
 
-!/MPI   IF (IAPROC .EQ. NAPOUT )  THEN 
-!/MPI     WRITE(NDSE,*) "parallelization done"
-!/MPI   ELSE
-!/MPI     GOTO 888
-!/MPI   END IF
-!/TIDE!
-!/TIDE! After loop on points, write tidal constituents to file. 
-!/TIDE!
-!/TIDE   IF ( IAPROC .EQ. NAPOUT.AND.TIDEFLAG.GE.1)  &
-!/TIDE     CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
-!/TIDE   CALL W3FLDTIDE2 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
-!/TIDE!
-!/TIDE   GOTO 880
-      END IF ! end of test   IF (ITYPE.GE.6.AND.TIDESWITCH)
+!/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
+!/MPI          WRITE(NDSO,*) "parallelization done"
+!/MPI        ELSE
+!/MPI          GOTO 888
+!/MPI        END IF
+
+!
+! After loop on points, write tidal constituents to file.
+!
+        IF ( IAPROC .EQ. NAPOUT.AND.TIDEFLAG.GE.1)  &
+          CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
+        CALL W3FLDTIDE2 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
+!
+   GOTO 880
+
+      END IF ! end of test   IF (ITYPE.GE.6.AND.TIDEFLAG.GT.0)
 
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1580,23 +1574,15 @@
         YCOFF = 0.0
 !
         IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
-          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'scale_factor')
-          IF ( IRET .EQ. NF90_NOERR ) THEN
-             IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
-          ENDIF
-          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'add_offset')
-          IF ( IRET .EQ. NF90_NOERR) THEN
-             IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
-          END IF
+          IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
+          IF (IRET.NE.0 ) XCFAC = 1.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
+          IF (IRET.NE.0 ) XCOFF = 0.0
           IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
-            IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'scale_factor')
-            IF (IRET .EQ. NF90_NOERR) THEN
-               IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
-            ENDIF
-            IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'add_offset')
-            IF (IRET .EQ. NF90_NOERR) THEN
-               IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
-            END IF
+            IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
+            IF (IRET.NE.0 ) YCFAC = 1.0
+            IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
+          IF (IRET.NE.0 ) YCOFF = 0.0
           END IF
         END IF
 !
@@ -1659,11 +1645,12 @@
                 IRET=NF90_GET_VAR(NCID,VARIDF(1),XC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
               END IF
             END IF
-            ! forces to 0 values that are undefined
-            WHERE(XC.NE.XC) XC = 0. 
-            WHERE(XC.EQ.FILLVALUE) XC = 0.
             CALL CHECK_ERR(IRET)
-            XC  = XC * XCFAC + XCOFF
+            ! forces to 0 values that are undefined
+            WHERE(XC.NE.XC) XC = FILLVALUE
+            WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
+            WHERE (XC.EQ.FILLVALUE) XC=0.
+
 !
 !/T2            WRITE (NDST,9060) 1
 !/T2            IXP0   = 1
@@ -1693,10 +1680,10 @@
                         END IF
                       END IF
 ! The following line forces to 0 values that are undefine
-                    WHERE(YC.NE.YC) YC = 0.
-                    WHERE(YC.EQ.FILLVALUE) YC = 0.
                     CALL CHECK_ERR(IRET)
-                    YC  = YC * YCFAC + YCOFF
+                    WHERE(YC.NE.YC) YC = FILLVALUE
+                    WHERE (YC.NE.FILLVALUE) YC=YC*YCFAC+YCOFF
+                    WHERE (YC.EQ.FILLVALUE) YC=0.
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
@@ -1988,7 +1975,7 @@
         END IF
         IF (IERR.NE.0) CALL EXTCDE ( 30 )
 !
-      END DO
+      END DO ! NTI
 !
       DEALLOCATE(XC,YC,AC)  
       IF (ASSOCIATED(ALA)) DEALLOCATE(ALA,ALO)
@@ -1996,7 +1983,7 @@
 !     End loop over input fields
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!/TIDE  880 CONTINUE
+  880 CONTINUE
       GOTO 888
 !
 ! Error escape locations
@@ -2187,6 +2174,11 @@
                '     ILLEGAL SIZE OF INPUT GRID : ',I5,1X,I5/)
  1038 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
                '     DATA READ FROM INPUT FILE')
+ 1039 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/       &
+               '     NAN VALUES IN HARMONICS '/                 &
+               '     REMOVE NON-LINEAR TIDAL COMPONENTS '/      &
+               '     2MS2 2MN2 2NK2 MNS2 MSN2 2SM2 3MSN2 '      &
+               '     M4 MS4 MN4 M6 2MS6 2MN6'/)
 !
  1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PRNC : '/                &
                '     GRID POINT ',2I6,2F7.2,/                         &

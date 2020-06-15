@@ -338,6 +338,8 @@
                              FLLST_ALL(-7:8)
       LOGICAL             :: DEBUG_NCC = .FALSE.
 !/NCC      LOGICAL             :: CFLAG(10) 
+!/MPI      LOGICAL             :: FLHYBR = .FALSE.
+!/OMPH      INTEGER             :: THRLEV
 !/OASIS      LOGICAL             :: L_MASTER    
 !
 !/
@@ -398,11 +400,18 @@
 !/SHRD      NAPROC = 1
 !/SHRD      IAPROC = 1
 !
+!/OMPH      FLHYBR = .TRUE.
+
 !/OASIS IF (OASISED.EQ.1) THEN
 !/OASIS   CALL CPL_OASIS_INIT(MPI_COMM)
 !/OASIS ELSE
 !/DEBUGINIT      write(740+IAPROC,*), 'Before MPI_INIT, ww3_shel'
+!/OMPH       ! For hybrid MPI-OpenMP specify required thread level. JGLi06Sep2019
+!/OMPH       IF( FLHYBR ) THEN
+!/OMPH         CALL MPI_INIT_THREAD( MPI_THREAD_FUNNELED, THRLEV, IERR_MPI)
+!/OMPH       ELSE
 !/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/OMPH       ENDIF
 !/DEBUGINIT      write(740+IAPROC,*), 'After MPI_INIT, ww3_shel'
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/OASIS END IF
@@ -490,6 +499,8 @@
       ELSE
         NDSEN  = -1
       END IF
+!/OMPH      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,905) &
+!/OMPH                                        MPI_THREAD_FUNNELED, THRLEV
 !
 
 !
@@ -2435,6 +2446,9 @@
                15X,'==============================================='/)
   901 FORMAT ( '  Comment character is ''',A,''''/)
 !
+!/OMPH  905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
+!/OMPH               '     Requested: ', I2/                          &
+!/OMPH               '      Provided: ', I2/ )
   920 FORMAT (/'  Input fields : '/                                   &
                ' --------------------------------------------------')
   921 FORMAT ( '       ',A,2X,A,2X,A)

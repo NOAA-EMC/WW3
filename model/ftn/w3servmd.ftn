@@ -861,31 +861,31 @@
 !/MPI          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
 !/MPI          CALL MPI_FINALIZE (IERR_MPI )
 !/MPI        ELSE ! error state
-!/MPI          WRITE(*,*) 'w3servmd MPI_ABORT, IEXIT=', IEXIT
+!/MPI          WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
 !/MPI          IF (PRESENT(UNIT)) THEN
-!/MPI            WRITE(*,*) 'w3servmd UNIT=', UNIT
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'w3servmd UNIT missing'
+!/MPI            WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(MSG)) THEN
-!/MPI            WRITE(*,*) 'w3servmd MSG=', MSG
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'w3servmd MSG missing'
+!/MPI            WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(FILE)) THEN
-!/MPI            WRITE(*,*) 'w3servmd FILE=', FILE
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'w3servmd FILE missing'
+!/MPI            WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(LINE)) THEN
-!/MPI            WRITE(*,*) 'w3servmd LINE=', LINE
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'w3servmd LINE missing'
+!/MPI            WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
 !/MPI          END IF
 !/MPI          IF (PRESENT(COMM)) THEN
-!/MPI            WRITE(*,*) 'w3servmd COMM=', COMM
-!/MPI          ELSE
-!/MPI            WRITE(*,*) 'w3servmd COMM missing'
+!/MPI            WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
 !/MPI          END IF
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
@@ -1506,7 +1506,7 @@
 
 
 
-      CHARACTER(LEN=1024), intent(IN)      :: STRING
+      CHARACTER(LEN=*), intent(IN)         :: STRING
       CHARACTER(LEN=100), intent(INOUT)    :: TAB(*)
       INTEGER                              :: cnt, I
       CHARACTER(LEN=1024)                  :: tmp_str, ori_str

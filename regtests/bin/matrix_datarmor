@@ -37,7 +37,7 @@
 
   echo '#!/bin/bash'                                        > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -q mpi_2'                                      >> matrix.head
+  echo '#PBS -q mpi_1'                                      >> matrix.head
   echo '#PBS -l mem=20G'                                    >> matrix.head
   echo '#PBS -l walltime=48:00:00'                          >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
@@ -50,44 +50,50 @@
 
 # Netcdf modules
 
-  cmplr=datarmor_mpt_debug
+  cmplr=datarmor_intel
 
   echo '  source /usr/share/Modules/3.2.10/init/bash'                                 >> matrix.head
   echo '  module purge'                                                               >> matrix.head
   echo '  export WWATCH3_NETCDF=NC4'                                                  >> matrix.head
   echo "  export WW3_PARCOMPN=4"                                                      >> matrix.head
 
-  if [ $cmplr = "datarmor_intel_debug" ]
+  if [ $cmplr = "datarmor_intel_debug" ] || [ $cmplr = "datarmor_intel" ]
   then
     echo '  module load intel-comp/18'                                                >> matrix.head
     echo '  module load impi/2018.1.163'                                              >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/INTEL/bin::${PATH}'          >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/INTEL/bin/nf-config'>> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/INTEL'                     >> matrix.head
+    echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/INTEL/bin'             >> matrix.head
+    echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/INTEL/include'       >> matrix.head
+    echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/INTEL/lib'  >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/INTEL/bin/nf-config'  >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/INTEL'                 >> matrix.head
 
-  elif [ $cmplr = "datarmor_mpt_debug" ]
+  elif [ $cmplr = "datarmor_mpt_debug" ] || [ $cmplr = "datarmor_mpt" ]
   then
     echo '  module load intel-comp/18'                                                >> matrix.head
-    echo '  module load mpt/2.15'                                                     >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/MPT/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/MPT/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/MPT'                       >> matrix.head
+    echo '  module load mpt/2.18'                                                     >> matrix.head
+    echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/MPT/bin'               >> matrix.head
+    echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/MPT/include'          >> matrix.head
+    echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/MPT/lib'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/MPT/bin/nf-config'    >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/MPT'                   >> matrix.head
 
-  elif [ $cmplr = "datarmor_gnu_debug" ]
+  elif [ $cmplr = "datarmor_gnu_debug" ] || [ $cmplr = "datarmor_gnu" ]
   then
     echo '  module load impi/2018.1.163'                                              >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/GNU/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/GNU/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/GNU'                       >> matrix.head
+    echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/GNU/bin'               >> matrix.head
+    echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/GNU/include'          >> matrix.head
+    echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/GNU/lib'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/GNU/bin/nf-config'    >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/GNU'                   >> matrix.head
 
-  elif [ $cmplr = "datarmor_pgi_debug" ]
+  elif [ $cmplr = "datarmor_pgi_debug" ] || [ $cmplr = "datarmor_pgi" ]
   then
-    echo '  module load pgi/17.10'                                                   >> matrix.head
-    echo '  module load mpt/2.17'                                                    >> matrix.head
-    echo '  export PATH=/home/datawork-wave/NETCDF-FINAL/PGI/bin::${PATH}'            >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF-FINAL/PGI/bin/nf-config'  >> matrix.head
-    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS/PGI'                       >> matrix.head
-
+    echo '  module load pgi/17.10'                                                    >> matrix.head
+    echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/PGI/bin'               >> matrix.head
+    echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/PGI/include'          >> matrix.head
+    echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/PGI/lib'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/PGI/bin/nf-config'    >> matrix.head
+    echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/PGI'                   >> matrix.head
   fi
 
   echo ' '
@@ -98,8 +104,8 @@
   export cmplOption='y'
 
   export  mpi='$MPI_LAUNCH'
-  export   np='56'
-  export   nr='28'
+  export   np='28'
+  export   nr='14'
   export  nth='2'
 
   if [ "$cmplOption" = 'y' ]

@@ -7,7 +7,7 @@
 !/                  | Adv, GCT, Rfr, Dif subroutines.    |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:    18 Apr 2018      |
+!/                  | Last modified:    23 Mar 2020      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Coding started by adapting w3pro2md.ftn.
@@ -33,6 +33,8 @@
 !/    14-Sep-2015 : Modify DHDX/Y for Arctic part refraction term.  
 !/     8-Aug-2017 : Update SMCGradn for 0 or 1 boundary conditions. 
 !/     9-Jan-2018 : Parallelization by adding OpenMP directives. 
+!/    19-Feb-2020 : Additions for OMP bit-reproducability (C.Bunney)
+!/    23-Mar-2018 : Add extra parenthese for single ATOMIC line update.
 !/
 !  1. Purpose :
 !
@@ -359,31 +361,31 @@
       VLCFLY = 0.
 
 !Li    Pass spectral element VQ to CQ and define size-1 cell CFL
-!/OMPG!$OMP Parallel DO Private(ISEA)
+!/OMPG/!$OMP Parallel DO Private(ISEA)
       DO ISEA=1, NSEA
 !Li  Transported variable is divided by CG as in WW3 (???)
            CQ(ISEA) = VQ(ISEA)/CG(IK,ISEA) 
 !Li  Resetting NaNQ VQ to zero if any.   JGLi18Mar2013
          IF( .NOT. (CQ(ISEA) .EQ. CQ(ISEA)) )  CQ(ISEA) = 0.0
       END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !Li  Add current components if any to wave velocity.
       IF ( FLCUR ) THEN
-!/OMPG!$OMP Parallel DO Private(ISEA)
+!/OMPG/!$OMP Parallel DO Private(ISEA)
          DO ISEA=1, NSEA
             CXTOT(ISEA) = (CGCOS * CG(IK,ISEA) + CX(ISEA))
             CYTOT(ISEA) = (CGSIN * CG(IK,ISEA) + CY(ISEA))
          ENDDO 
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
       ELSE
 !Li   No current case use group speed only.
-!/OMPG!$OMP Parallel DO Private(ISEA)
+!/OMPG/!$OMP Parallel DO Private(ISEA)
          DO ISEA=1, NSEA
             CXTOT(ISEA) =  CGCOS * CG(IK,ISEA) 
             CYTOT(ISEA) =  CGSIN * CG(IK,ISEA)
          END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 !Li   End of IF( FLCUR ) block.
       ENDIF
 
@@ -404,12 +406,12 @@
 !/ARC
 
 !Li     Convert velocity components into CFL factors.
-!/OMPG!$OMP Parallel DO Private(ISEA)
+!/OMPG/!$OMP Parallel DO Private(ISEA)
          DO ISEA=1, NSEA
             UCFL(ISEA) = DTLDX*CXTOT(ISEA)/CLATS(ISEA)
             VCFL(ISEA) = DTLDY*CYTOT(ISEA) 
          ENDDO 
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !Li  Initialise boundary cell CQ and Velocity values.
            CQ(-9:0)=0.0
@@ -437,7 +439,7 @@
            ENDIF
 
 !  Store conservative flux in FCNt advective one in AFCN
-!/OMPG!$OMP Parallel DO Private(i, M, N, FUTRN)
+!/OMPG/!$OMP Parallel DO Private(i, M, N, FUTRN)
            DO i=1, NUFc
               M=IJKUFc(5,i)
               N=IJKUFc(6,i)
@@ -445,33 +447,56 @@
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
 !! Transparency is also applied on diffusion flux.   JGLi12Mar2012
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
+!! Remove boundary cell flux update or M N > 0.  JGLi28Mar2019
+           IF( M > 0 ) THEN
               IF( (CTRNX(M)+CTRNX(N)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 FCNt(M) = FCNt(M) - FUTRN
+              ELSE IF( ULCFLX(i) .GE. 0.0 )  THEN
+!/OMPG/!$OMP ATOMIC 
+                FCNt(M) = FCNt(M) - FUTRN*CTRNX(M)
+              ELSE
+!/OMPG/!$OMP ATOMIC 
+                FCNt(M) = FCNt(M) - FUTRN*CTRNX(N)*CTRNX(M)
+              ENDIF
+!  Also divided by another cell length as UCFL is in basic unit.
+!/OMPG/!$OMP ATOMIC 
+              ! ChrisB: Re-arranged the RHS term below to make it
+              ! valid for OMP ATMOIC directive.
+              AFCN(M) = AFCN(M) - (FUMD(i)*UCFL(M) - FUDIFX(i))
+           ENDIF
+
+           IF( N > 0 ) THEN
+              IF( (CTRNX(M)+CTRNX(N)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 FCNt(N) = FCNt(N) + FUTRN
               ELSE IF( ULCFLX(i) .GE. 0.0 )  THEN
-                FCNt(M) = FCNt(M) - FUTRN*CTRNX(M)
+!/OMPG/!$OMP ATOMIC 
                 FCNt(N) = FCNt(N) + FUTRN*CTRNX(M)*CTRNX(N)
               ELSE
-                FCNt(M) = FCNt(M) - FUTRN*CTRNX(N)*CTRNX(M)
+!/OMPG/!$OMP ATOMIC 
                 FCNt(N) = FCNt(N) + FUTRN*CTRNX(N) 
               ENDIF
 !  Also divided by another cell length as UCFL is in basic unit.
-              AFCN(M) = AFCN(M) - FUMD(i)*UCFL(M) + FUDIFX(i)
-              AFCN(N) = AFCN(N) + FUMD(i)*UCFL(N) - FUDIFX(i)
-!/OMPG!$OMP END CRITICAL 
+!/OMPG/!$OMP ATOMIC 
+              AFCN(N) = AFCN(N) + (FUMD(i)*UCFL(N) - FUDIFX(i))
+           ENDIF
+!! !$OMP END CRITICAL 
+
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !  Store conservative update in CQA and advective update in CQ
 !  The side length in MF value has to be cancelled with cell length
 !  Note ULCFLX has been divided by the cell size inside SMCxUNO2.
-!/OMPG!$OMP Parallel DO Private(n)
+!/OMPG/!$OMP Parallel DO Private(n)
            DO n=1, NSEA
               CQA(n)=CQ(n) + FCNt(n)/FLOAT(IJKCel(3,n))
               CQ (n)=CQ(n) + AFCN(n)/FLOAT(IJKCel(3,n))
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !  Call advection subs.
            IF( FUNO3 ) THEN
@@ -482,7 +507,7 @@
            CALL SMCyUNO2r(1, NVFc, CQ, VCFL, VLCFLY, DSSD, FVMD, FVDIFY)
            ENDIF
 
-!/OMPG!$OMP Parallel DO Private(j, M, N, FVTRN)
+!/OMPG/!$OMP Parallel DO Private(j, M, N, FVTRN)
            DO j=1, NVFc
               M=IJKVFc(5,j)
               N=IJKVFc(6,j)
@@ -490,29 +515,45 @@
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
 !! Transparency is also applied on diffusion flux.   JGLi12Mar2012
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL
+!! Remove boundary cell flux update or M N > 0.  JGLi28Mar2019
+           IF( M > 0 ) THEN
               IF( (CTRNY(M)+CTRNY(N)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 BCNt(M) = BCNt(M) - FVTRN
+              ELSE IF( VLCFLY(j) .GE. 0.0 )  THEN
+!/OMPG/!$OMP ATOMIC 
+                BCNt(M) = BCNt(M) - FVTRN*CTRNY(M)
+              ELSE
+!/OMPG/!$OMP ATOMIC 
+                BCNt(M) = BCNt(M) - FVTRN*CTRNY(N)*CTRNY(M) 
+              ENDIF
+           ENDIF
+           IF( N > 0 ) THEN
+              IF( (CTRNY(M)+CTRNY(N)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 BCNt(N) = BCNt(N) + FVTRN
               ELSE IF( VLCFLY(j) .GE. 0.0 )  THEN
-                BCNt(M) = BCNt(M) - FVTRN*CTRNY(M)
+!/OMPG/!$OMP ATOMIC 
                 BCNt(N) = BCNt(N) + FVTRN*CTRNY(M)*CTRNY(N) 
               ELSE
-                BCNt(M) = BCNt(M) - FVTRN*CTRNY(N)*CTRNY(M) 
+!/OMPG/!$OMP ATOMIC 
                 BCNt(N) = BCNt(N) + FVTRN*CTRNY(N) 
               ENDIF
-!/OMPG!$OMP END CRITICAL 
+           ENDIF
+!! !$OMP END CRITICAL
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !  Store conservative update of CQA in CQ
 !  The v side length in MF value has to be cancelled with cell length
 !! One cosine factor is also needed to be divided for SMC grid
-!/OMPG!$OMP Parallel DO Private(n)
+!/OMPG/!$OMP Parallel DO Private(n)
            DO n=1, NSEA
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel(3,n)) )
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 !/ARC  !Li  Polar cell needs a special area factor, one-level case.
 !/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
 
@@ -552,40 +593,61 @@
            ENDIF
 
 !  Store fineset level conservative flux in FCNt advective one in AFCN
-!/OMPG!$OMP Parallel DO Private(i, L, M, FUTRN)
+!/OMPG/!$OMP Parallel DO Private(i, L, M, FUTRN)
            DO i=iuf, juf 
               L=IJKUFc(5,i)
               M=IJKUFc(6,i)
               FUTRN = FUMD(i)*ULCFLX(i) - FUDIFX(i)
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
 !! Add sub-grid blocking for refined cells.   JGLi18Apr2018 
               IF( (CTRNX(M)+CTRNX(L)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 FCNt(L) = FCNt(L) - FUTRN
+              ELSE IF( ULCFLX(i) .GE. 0.0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+                FCNt(L) = FCNt(L) - FUTRN*CTRNX(L) 
+              ELSE
+!/OMPG/!$OMP ATOMIC 
+                FCNt(L) = FCNt(L) - FUTRN*CTRNX(L)*CTRNX(M) 
+              ENDIF 
+!/OMPG/!$OMP ATOMIC 
+              ! ChrisB: Re-arranged the RHS term below to make it
+              ! valid for OMP ATMOIC directive.
+              AFCN(L) = AFCN(L) - (FUMD(i)*UCFL(L)*FMR - FUDIFX(i))
+           ENDIF
+           IF( M > 0 ) THEN
+!! Add sub-grid blocking for refined cells.   JGLi18Apr2018 
+              IF( (CTRNX(M)+CTRNX(L)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 FCNt(M) = FCNt(M) + FUTRN
               ELSE IF( ULCFLX(i) .GE. 0.0 ) THEN
-                FCNt(L) = FCNt(L) - FUTRN*CTRNX(L) 
+!/OMPG/!$OMP ATOMIC 
                 FCNt(M) = FCNt(M) + FUTRN*CTRNX(M)*CTRNX(L) 
               ELSE
-                FCNt(L) = FCNt(L) - FUTRN*CTRNX(L)*CTRNX(M) 
+!/OMPG/!$OMP ATOMIC 
                 FCNt(M) = FCNt(M) + FUTRN*CTRNX(M) 
               ENDIF 
-              AFCN(L) = AFCN(L) - FUMD(i)*UCFL(L)*FMR + FUDIFX(i)
-              AFCN(M) = AFCN(M) + FUMD(i)*UCFL(M)*FMR - FUDIFX(i)
-!/OMPG!$OMP END CRITICAL 
+!/OMPG/!$OMP ATOMIC 
+              AFCN(M) = AFCN(M) + (FUMD(i)*UCFL(M)*FMR - FUDIFX(i))
+           ENDIF
+!! !$OMP END CRITICAL 
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !  Store conservative update in CQA and advective update in CQ
 !  The side length in MF value has to be cancelled with cell y-length.
 !  Also divided by another cell x-size as UCFL is in size-1 unit.
-!/OMPG!$OMP Parallel DO Private(n)
+!/OMPG/!$OMP Parallel DO Private(n)
            DO n=icl, jcl 
               CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
               CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
               FCNt(n)=0.0
               AFCN(n)=0.0
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 !
 !  Use 3rd order UNO3 scheme.  JGLi03Sep2015
            IF( FUNO3 ) THEN
@@ -596,38 +658,55 @@
            ENDIF
 !
 !  Store conservative flux in BCNt
-!/OMPG!$OMP Parallel DO Private(j, L, M, FVTRN)
+!/OMPG/!$OMP Parallel DO Private(j, L, M, FVTRN)
            DO j=ivf, jvf 
               L=IJKVFc(5,j)
               M=IJKVFc(6,j)
               FVTRN = FVMD(j)*VLCFLY(j) - FVDIFY(j)
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
 !! Add sub-grid blocking for refined cells.   JGLi18Apr2018 
               IF( (CTRNY(M)+CTRNY(L)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 BCNt(L) = BCNt(L) - FVTRN
+              ELSE IF( VLCFLY(j) .GE. 0.0 )  THEN
+!/OMPG/!$OMP ATOMIC 
+                BCNt(L) = BCNt(L) - FVTRN*CTRNY(L) 
+              ELSE
+!/OMPG/!$OMP ATOMIC 
+                BCNt(L) = BCNt(L) - FVTRN*CTRNY(L)*CTRNY(M) 
+              ENDIF
+           ENDIF
+           IF( M > 0 ) THEN
+!! Add sub-grid blocking for refined cells.   JGLi18Apr2018 
+              IF( (CTRNY(M)+CTRNY(L)) .GE. 1.96 )  THEN
+!/OMPG/!$OMP ATOMIC 
                 BCNt(M) = BCNt(M) + FVTRN
               ELSE IF( VLCFLY(j) .GE. 0.0 )  THEN
-                BCNt(L) = BCNt(L) - FVTRN*CTRNY(L) 
+!/OMPG/!$OMP ATOMIC 
                 BCNt(M) = BCNt(M) + FVTRN*CTRNY(M)*CTRNY(L) 
               ELSE
-                BCNt(L) = BCNt(L) - FVTRN*CTRNY(L)*CTRNY(M) 
+!/OMPG/!$OMP ATOMIC 
                 BCNt(M) = BCNt(M) + FVTRN*CTRNY(M) 
               ENDIF
-!/OMPG!$OMP END CRITICAL 
+           ENDIF
+!! !$OMP END CRITICAL 
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !  Store conservative update of CQA in CQ
 !  The v side length in MF value has to be cancelled with x-size. 
 !  Also divided by cell y-size as VCFL is in size-1 unit.
 !! One cosine factor is also needed to be divided for SMC grid.
-!/OMPG!$OMP Parallel DO Private(n)
+!/OMPG/!$OMP Parallel DO Private(n)
            DO n=icl, jcl
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*            &
       &             FLOAT( IJKCel(3, n)*IJKCel(4, n) ) )
               BCNt(n)=0.0
            ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 !/ARC  !Li  Polar cell needs a special area factor, multi-level case.
 !/ARC       IF( jcl .EQ. NSEA ) THEN
 !/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
@@ -673,11 +752,11 @@
 !
 ! 4.  Store results in VQ in proper format --------------------------- *
 !
-!/OMPG!$OMP Parallel DO Private(ISEA)
+!/OMPG/!$OMP Parallel DO Private(ISEA)
       DO ISEA=1, NSEA
             VQ(ISEA) =  MAX ( 0. , CQ(ISEA)*CG(IK,ISEA) )
         END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 !
       RETURN
 !
@@ -1030,14 +1109,14 @@
 !    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8,CNST9)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8,CNST9)
 
 !    Notice an extra side length L is multiplied to mid-flux to give correct
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO i=NUA, NUB
 
@@ -1105,9 +1184,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCxUNO2 ended.'
 
@@ -1142,10 +1221,10 @@
 !    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
-!/OMPG!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8)
+!/OMPG/!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO j=NVA, NVB
 
@@ -1220,9 +1299,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCyUNO2 ended.'
 
@@ -1253,10 +1332,10 @@
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO i=NUA, NUB
 
@@ -1317,9 +1396,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCxUNO2r ended.'
 
@@ -1346,10 +1425,10 @@
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST8)
+!/OMPG/!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST8)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO j=NVA, NVB
 
@@ -1407,9 +1486,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCyUNO2r ended.'
 
@@ -1447,10 +1526,10 @@
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO i=NUA, NUB
 
@@ -1547,9 +1626,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCxUNO3 ended.'
 
@@ -1585,10 +1664,10 @@
 !    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
-!/OMPG!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
+!/OMPG/!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO j=NVA, NVB
 
@@ -1695,9 +1774,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCyUNO3 ended.'
 
@@ -1728,10 +1807,10 @@
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO i=NUA, NUB
 
@@ -1811,9 +1890,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCxUNO3r ended.'
 
@@ -1841,10 +1920,10 @@
 !    proportion of flux into the cells.  This length will be removed by the
 !    cell length when the tracer concentration is updated.
 
-!/OMPG!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
+!/OMPG/!$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
       DO j=NVA, NVB
 
@@ -1925,9 +2004,9 @@
 
       END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 ! 999  PRINT*, ' Sub SMCyUNO3r ended.'
 
@@ -1980,10 +2059,10 @@
         DX0I   = MRFct/ ( SX * DERA * RADIUS )
         DY0I   = MRFct/ ( SY * DERA * RADIUS )
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, j, K, L, M, N),  &
-!/OMPG!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, j, K, L, M, N),  &
+!/OMPG/!$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
 !!   Calculate x-gradient by averaging U-face gradients. 
         DO i=1, NUFc
@@ -2005,23 +2084,36 @@
 !    Side gradients over 2 cell lengths for central cell.
 !    Face size factor is also included for average.
            CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+!/B4B!/OMPG           CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
 
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL
 !    Store side gradient in two neighbouring cells
-           AUN(L) = AUN(L) + CNST5
-           AUN(M) = AUN(M) + CNST5
-!/OMPG!$OMP END CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AUN(L) = AUN(L) + CNST5
+           ENDIF
+           IF( M > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AUN(M) = AUN(M) + CNST5
+           ENDIF
+!! !$OMP END CRITICAL
 
         ENDIF
         END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
+
+!/B4B!/OMPG/!$OMP SINGLE 
+!/B4B!/OMPG        AUN = AUN / 1.0e6  ! CB B4B
+!/B4B!/OMPG/!$OMP END SINGLE 
 
 !  Assign averaged side-gradient to GrdX, plus latitude factor
 !  Note averaging over 2 times of cell y-width factor but AUN
 !  has already been divied by two cell lengths. 
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
         DO n=1, NSEA
 !  Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AUN. 
@@ -2031,9 +2123,9 @@
 
         ENDDO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
 !!   Calculate y-gradient by averaging V-face gradients. 
         DO j=1, NVFc
@@ -2055,19 +2147,32 @@
 !    Side gradients over 2 cell lengths for central cell.
 !    Face size factor is also included for average.
            CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+!/B4B!/OMPG           CNST6 = int(CNST6 * 1.0e6) ! CB B4B
 
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
 !    Store side gradient in two neighbouring cells
-           AVN(L) = AVN(L) + CNST6 
-           AVN(M) = AVN(M) + CNST6 
-!/OMPG!$OMP END CRITICAL 
+!/OMPG/!$OMP ATOMIC 
+              AVN(L) = AVN(L) + CNST6 
+           ENDIF
+           IF( M > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AVN(M) = AVN(M) + CNST6 
+           ENDIF
+!! !$OMP END CRITICAL 
 
         ENDIF
         END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP DO
+!/B4B!/OMPG/!$OMP SINGLE 
+!/B4B!/OMPG        AVN = AVN / 1.0e6  !CB B4B
+!/B4B!/OMPG/!$OMP END SINGLE 
+
+!/OMPG/!$OMP DO
 
 !  Assign averaged side-gradient to GrdY.
         DO n=1, NSEA 
@@ -2077,9 +2182,9 @@
 
         END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 !/ARC  !!Li  Polar cell (if any) y-gradient is set to zero.
 !/ARC        IF( NSEA .GT. NGLO ) GrdY(NSEA) = 0.0
@@ -2121,10 +2226,10 @@
 !/ARC !!Li  Save polar cell value 
 !/ARC       CNST0 = CVQ(NSEA)
 
-!/OMPG!$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
-!/OMPG!$OMP& Private(CNST3,CNST4,CNST5,CNST6)
+!/OMPG/!$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
+!/OMPG/!$OMP& Private(CNST3,CNST4,CNST5,CNST6)
 
-!/OMPG!$OMP DO
+!/OMPG/!$OMP DO
 
 !!   Calculate x-gradient by averaging U-face gradients. 
         DO i=1, NUFc
@@ -2135,18 +2240,31 @@
 
 !    Multi-resolution SMC grid requires flux multiplied by face factor.
            CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
+!/B4B/!OMPG           CNST5=int(CNST5 * 1.0e6)
 
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
 !    Store side gradient in two neighbouring cells
-           AUN(L) = AUN(L) + CNST5 
-           AUN(M) = AUN(M) + CNST5 
-!/OMPG!$OMP END CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AUN(L) = AUN(L) + CNST5 
+           ENDIF
+           IF( M > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AUN(M) = AUN(M) + CNST5 
+           ENDIF
+!! !$OMP END CRITICAL 
 
         END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP DO
+!/B4B!/OMPG/!$OMP SINGLE 
+!/B4B!/OMPG        AUN = AUN / 1.0e6  !CB B4B
+!/B4B!/OMPG/!$OMP END SINGLE 
+
+!/OMPG/!$OMP DO
 
 !!   Calculate y-gradient by averaging V-face gradients. 
         DO j=1, NVFc
@@ -2157,18 +2275,31 @@
 
 !    Face size is required for multi-resolution grid.
            CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
+!/B4B!/OMPG           CNST6=INT(CNST6 * 1e6)
 
-!/OMPG!$OMP CRITICAL 
+!! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
+!! !$OMP CRITICAL 
 !    Store side gradient in two neighbouring cells
-           AVN(L) = AVN(L) + CNST6 
-           AVN(M) = AVN(M) + CNST6 
-!/OMPG!$OMP END CRITICAL 
+!! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
+           IF( L > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AVN(L) = AVN(L) + CNST6 
+           ENDIF
+           IF( M > 0 ) THEN
+!/OMPG/!$OMP ATOMIC 
+              AVN(M) = AVN(M) + CNST6 
+           ENDIF
+!! !$OMP END CRITICAL 
 
        END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP DO
+!/B4B!/OMPG/!$OMP SINGLE 
+!/B4B!/OMPG        AVN = AVN / 1.0e6  !CB B4B
+!/B4B!/OMPG/!$OMP END SINGLE 
+
+!/OMPG/!$OMP DO
 
 !  Assign averaged value back to CVQ.
        DO n=1, NSEA 
@@ -2181,9 +2312,9 @@
 
        END DO
 
-!/OMPG!$OMP END DO
+!/OMPG/!$OMP END DO
 
-!/OMPG!$OMP END Parallel 
+!/OMPG/!$OMP END Parallel 
 
 !/ARC !!Li  Polar cell (if any) keep original value. 
 !/ARC       IF( NSEA .GT. NGLO ) CVQ(NSEA) = CNST0
@@ -2391,11 +2522,11 @@
        HCel(1:NSEA)= DW(1:NSEA) 
 
 !!   Reset shallow water depth with minimum depth
-!/OMPG!$OMP Parallel DO Private(k)
+!/OMPG/!$OMP Parallel DO Private(k)
        DO k=1, NSEA
           IF(DW(k) .LT. DMIN)  HCel(k)=DMIN
        ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !!   Initialize full grid gradient arrays
        DDDX = 0.
@@ -2412,7 +2543,7 @@
        DHDY(1:NSEA) = GrHy
 
 !!   Apply limiter to depth-gradient and copy to full grid.
-!/OMPG!$OMP Parallel DO Private(i,j,k,m,n, CNST0, CNST1, CNST2)
+!/OMPG/!$OMP Parallel DO Private(i,j,k,m,n, CNST0, CNST1, CNST2)
        DO n=1,NSEA
 
 !  A limiter of gradient <= 0.1 is applied.
@@ -2438,12 +2569,12 @@
 !/ARC       ENDIF
 
        END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !! Calculate the depth gradient limiter for refraction.  
-       L = 0
+!/T       L = 0 !CB - added T switch
 
-!/OMPG!$OMP Parallel DO Private(i, n, CNST4, CNST6)
+!/OMPG/!$OMP Parallel DO Private(i, n, CNST4, CNST6)
        DO n=1,NSEA
 
 !Li   Work out magnitude of depth gradient
@@ -2452,9 +2583,9 @@
 !Li   Directional depedent depth gradient limiter.  JGLi16Jun2011
           IF ( CNST4 .GT. 1.0E-5 ) THEN
 
-!/OMPG!$OMP ATOMIC Update
-             L = L + 1
-!/OMPG!$OMP END ATOMIC
+!/T!/OMPG/!$OMP ATOMIC Update   !CB - added T switch
+!/T             L = L + 1       !CB - added T switch
+!/T!/OMPG/!$OMP END ATOMIC      !CB - added T switch
 
              DO i=1, NTH
 !Li   Refraction is done only when depth gradient is non-zero.
@@ -2472,9 +2603,9 @@
           ENDIF
 
        ENDDO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
-!/T       WRITE(NDST,*) ' No. Refraction points =', L 
+!/T    WRITE(NDST,*) ' No. Refraction points =', L 
 
 !/T 999  PRINT*, ' Sub SMCDHXY ended.'
 
@@ -2516,7 +2647,7 @@
        CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
 !!   Apply limiter to CX-gradient and copy to full grid.
-!/OMPG!$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
+!/OMPG/!$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
        DO n=1,NSEA
 
 !  A limiter of gradient <= 0.01 is applied.
@@ -2542,7 +2673,7 @@
            DCXDY(j:j+m-1,i:i+k-1)  = GrHy(n)
 
        END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !/DEBUGDCXDX        WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
 
@@ -2560,7 +2691,7 @@
        CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
 !!   Apply limiter to CX-gradient and copy to full grid.
-!/OMPG!$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
+!/OMPG/!$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
        DO n=1,NSEA
 
 !  A limiter of gradient <= 0.1 is applied.
@@ -2586,7 +2717,7 @@
            DCYDY(j:j+m-1,i:i+k-1)  = GrHy(n)
 
        END DO
-!/OMPG!$OMP END Parallel DO
+!/OMPG/!$OMP END Parallel DO
 
 !/T 999  PRINT*, ' Sub SMCDCXY ended.'
 

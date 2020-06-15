@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Aug-2016 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-09-20'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-04-15'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -83,7 +83,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -145,6 +145,7 @@
 !/                  (C. Bunney, UKMO)
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -594,7 +595,7 @@
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
@@ -691,7 +692,7 @@
 !/DEBUGIOGR     FLUSH(740+IAPROC)
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
@@ -1077,12 +1078,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
-!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+!/ST4                SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
@@ -1091,12 +1092,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
-!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+!/ST4                 SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW

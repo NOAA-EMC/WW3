@@ -21,7 +21,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -91,6 +91,8 @@
 !/                  (Q. Liu, UoM)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
+!/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -630,7 +632,7 @@
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
                             PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
                             IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
-                            IICEDDISP, IICEFDISP, BTBETA
+                            IICEDDISP, IICEFDISP, BTBETA, AAIRCMIN, AAIRGB
 
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
@@ -792,13 +794,13 @@
 !/ST4        REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
 !/ST4        REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
 !/ST4                                 SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-!/ST4                                 SSDSC(1:11), SSDSBR,                 &
+!/ST4                                 SSDSC(1:21), SSDSBR,                 &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
-!/ST4                                 FFXPM, FFXFM, FFXFA, FFXFI, FFXFD,   &
+!/ST4                                 FFXPM, FFXFM, FFXFA,   &
 !/ST4                                 SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
 !/ST4                                 SSDSHCK, SSDSABK, SSDSPBK, SSINBR
 !/ST4        REAL                  :: ZZWND
-!/ST4        REAL                  :: SSDSCOS, SSDSDTH, SSDSBR2, SSDSBM(0:4)
+!/ST4        REAL                  :: SSDSCOS, SSDSDTH, SSDSBT, SSDSBM(0:4)
 !
 !/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
 !/ST6                                 SIN6WS, SIN6FC
@@ -890,6 +892,7 @@
          LOGICAL :: FSREFRACTION = .FALSE. 
          LOGICAL :: FSFREQSHIFT  = .FALSE. 
          LOGICAL :: FSSOURCE     = .FALSE. 
+         LOGICAL :: FSBCCFL      = .FALSE. 
          LOGICAL :: DO_CHANGE_WLV 
          REAL(8) :: SOLVERTHR_STP 
          REAL(8) :: CRIT_DEP_STP
@@ -997,7 +1000,7 @@
                                  FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
                                  IICEHMIN, IICEHINIT, ICESCALES(:),    &
                                  IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP, &
-                                 BTBETA
+                                 BTBETA, AAIRCMIN, AAIRGB
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: PoLat, PoLon
 !/RTD        REAL, POINTER         :: AnglD(:)
@@ -1091,20 +1094,20 @@
 !/ST3                                 SSINTHP, TTAUWSHELTER, SSWELLF(:),   &
 !/ST3                                 SSDSC1, SSDSC2, SSDSC3, SSDSBR,      &
 !/ST3                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
-!/ST3                                 SSDSC4, SSDSC5, SSDSC6, SSDSBR2,     &
+!/ST3                                 SSDSC4, SSDSC5, SSDSC6, SSDSBT,      &
 !/ST3                                 DDELTA1, DDELTA2,                    &
 !/ST3                                 SSDSCOS, SSDSDTH, SSDSBM(:)
 !/ST4      INTEGER, POINTER        :: SSWELLFPAR, SSDSISO,SSDSBRFDF,       &
 !/ST4                                 IKTAB(:,:), SATINDICES(:,:),SSDSDIK
 !/ST4      REAL, POINTER           :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
 !/ST4      REAL, POINTER           :: ZZWND, AALPHA, BBETA, ZZ0MAX, ZZ0RAT,&
-!/ST4                                 ZZALP, FFXFA, FFXFI, FFXFD,          &
+!/ST4                                 ZZALP, FFXFA,          &
 !/ST4                                 FFXFM, FFXPM, SSDSBRF1, SSDSBRF2,    &
 !/ST4                                 SSDSBINT, SSDSBCK, SSDSHCK, SSDSABK, &
 !/ST4                                 SSDSPBK, SSINBR,SSINTHP,TTAUWSHELTER,&
 !/ST4                                 SSWELLF(:), SSDSC(:), SSDSBR,        &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
-!/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
+!/ST4                                 SSDSBT, SSDSCOS, SSDSDTH, SSDSBM(:)
 !/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
 !/ST6                                 SIN6WS, SIN6FC
 !/ST6      INTEGER, POINTER        :: SDS6P1, SDS6P2
@@ -1149,7 +1152,7 @@
 !/
 !/ Data aliasing for structure SCHM(S)
       LOGICAL, POINTER  :: FSN,FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP
-      LOGICAL, POINTER  :: FSREFRACTION, FSFREQSHIFT, FSSOURCE
+      LOGICAL, POINTER  :: FSREFRACTION, FSFREQSHIFT, FSSOURCE, FSBCCFL
       LOGICAL, POINTER  :: DO_CHANGE_WLV
       REAL(8), POINTER  :: SOLVERTHR_STP
       REAL(8), POINTER  :: CRIT_DEP_STP
@@ -1508,6 +1511,10 @@
 !/REF1                 GRIDS(IMOD)%REFPARS(10), &
 !/REF1                 STAT=ISTAT               )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
+!
+!/REF1      GRIDS(IMOD)%RREF(:)=.FALSE.
+!/REF1      GRIDS(IMOD)%REFPARS(:)=0.
+!
 !/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
 !/REF1! where reflection can occur. 
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA), &
@@ -1993,6 +2000,8 @@
       STEYU  => GRIDS(IMOD)%STEYU
       STEDU  => GRIDS(IMOD)%STEDU
       BTBETA => GRIDS(IMOD)%BTBETA
+      AAIRGB => GRIDS(IMOD)%AAIRGB
+      AAIRCMIN => GRIDS(IMOD)%AAIRCMIN
 !
       GINIT  => GRIDS(IMOD)%GINIT
       GUGINIT  => GRIDS(IMOD)%GUGINIT      
@@ -2257,7 +2266,7 @@
 !/ST4      SSWELLF  => MPARS(IMOD)%SRCPS%SSWELLF
 !/ST4      SSDSC    => MPARS(IMOD)%SRCPS%SSDSC
 !/ST4      SSDSBR   => MPARS(IMOD)%SRCPS%SSDSBR
-!/ST4      SSDSBR2  => MPARS(IMOD)%SRCPS%SSDSBR2
+!/ST4      SSDSBT   => MPARS(IMOD)%SRCPS%SSDSBT
 !/ST4      SSDSBRF1 => MPARS(IMOD)%SRCPS%SSDSBRF1
 !/ST4      SSDSBRF2 => MPARS(IMOD)%SRCPS%SSDSBRF2
 !/ST4      SSDSBRFDF  => MPARS(IMOD)%SRCPS%SSDSBRFDF
@@ -2271,8 +2280,6 @@
 !/ST4      WWNMEANP => MPARS(IMOD)%SRCPS%WWNMEANP
 !/ST4      FFXFM    => MPARS(IMOD)%SRCPS%FFXFM
 !/ST4      FFXFA    => MPARS(IMOD)%SRCPS%FFXFA
-!/ST4      FFXFI    => MPARS(IMOD)%SRCPS%FFXFI
-!/ST4      FFXFD    => MPARS(IMOD)%SRCPS%FFXFD
 !/ST4      FFXPM    => MPARS(IMOD)%SRCPS%FFXPM
 !/ST4      SSDSDTH  => MPARS(IMOD)%SRCPS%SSDSDTH
 !/ST4      SSTXFTF  => MPARS(IMOD)%SRCPS%SSTXFTF
@@ -2376,6 +2383,7 @@
 !/IS1      IS1C2  => MPARS(IMOD)%SICPS%IS1C2
 !
 !    Structure SCHM
+       FSBCCFL => MPARS(IMOD)%SCHMS%FSBCCFL
        FSN => MPARS(IMOD)%SCHMS%FSN
        FSPSI => MPARS(IMOD)%SCHMS%FSPSI
        FSFCT => MPARS(IMOD)%SCHMS%FSFCT
@@ -2906,7 +2914,6 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 !
-!/REF1      RREF=.FALSE.  !JDM initializing to false helps with b4b mod_defs 
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
 !/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.

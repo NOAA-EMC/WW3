@@ -78,7 +78,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERPRT = 'III  1.01 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERPRT = '2018-07-25'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III PARTITIONED DATA FILE'
 !/

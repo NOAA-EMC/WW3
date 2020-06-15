@@ -136,7 +136,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = 'III  3.00 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = '2019-10-04'
       CHARACTER(LEN=30), PARAMETER, PRIVATE ::                        &
                             IDSTR = 'WAVEWATCH III GRID OUTPUT FILE'
 !/
@@ -198,7 +198,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, STEXU, STEYU, STEDU
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF
       USE W3ODATMD, ONLY: NOGRP, NGRPP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -361,7 +361,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER             :: I, IFI, IFJ, IOUT
+      INTEGER             :: IFI, IFJ, IOUT
 !/S      INTEGER, SAVE           :: IENT = 0
       CHARACTER(LEN=1)    :: AFLG
       LOGICAL             :: FLT, NAMES
@@ -803,7 +803,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT
       USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
       USE W3GDATMD, ONLY: US3DF, USSPF
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1268,6 +1268,7 @@
                                  EBD(NK,NSEAL), EC(NSEAL),            &
                                  ABR(NSEAL), UBR(NSEAL), UBS(NSEAL),  &
                                  ABX2(NSEAL), ABY2(NSEAL),            &
+                                 AB2X(NSEAL), AB2Y(NSEAL),            &
                                  ABST(NSEAL), ABXX(NSEAL),            &
                                  ABYY(NSEAL), ABXY(NSEAL),            &
                                  ABYX(NSEAL), EET1(NSEAL),            &
@@ -1420,6 +1421,8 @@
         ABY    = 0.
         ABX2   = 0.
         ABY2   = 0.
+        AB2X   = 0.
+        AB2Y   = 0.
         ABXX   = 0.
         ABYY   = 0.
         ABXY   = 0.
@@ -1438,9 +1441,12 @@
             AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
             ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
             ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
+! These are the integrals with cos^2 and sin^2
+            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)        
+            ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
 ! Using trig identities to represent cos2theta and sin2theta.
-            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*(2*EC2(ITH) - 1)
-            ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*(2*ESC(ITH))
+            AB2X(JSEA) = AB2X(JSEA) + A(ITH,IK,JSEA)*(2*EC2(ITH) - 1)
+            AB2Y(JSEA) = AB2Y(JSEA) + A(ITH,IK,JSEA)*(2*ESC(ITH))
             ABYX(JSEA) = ABYX(JSEA) + A(ITH,IK,JSEA)*ESC(ITH)
             IF (ITH.LE.NTH/2) THEN
               ABST(JSEA) = ABST(JSEA) +                               &
@@ -1590,8 +1596,8 @@
           IF ( FLOLOC( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
              STH1M(JSEA,IK)= SQRT(ABS(2.*(1-M1)))*RADE
           IF ( FLOLOC( 3, 4).AND.(IK.GE.E3DF(2,4).AND.IK.LE.E3DF(3,4)))  &
-            TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),ABX2(JSEA)) , 180. )
-          M2 = SQRT(ABX2(JSEA)**2+ABY2(JSEA)**2)/MAX(1E-20,AB(JSEA))
+            TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),AB2X(JSEA)) , 180. )
+          M2 = SQRT(AB2X(JSEA)**2+AB2Y(JSEA)**2)/MAX(1E-20,AB(JSEA))
           IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
              STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
           END DO
@@ -3683,7 +3689,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FACTOR, FKD,KD
       REAL                    :: ABX(NSEAL), ABY(NSEAL), USSCO
-      REAL                    :: MINDIFF=1.e8
+      REAL                    :: MINDIFF
       INTEGER                 :: Spc2Bnd(NK)
 !/
 !/ ------------------------------------------------------------------- /
@@ -3776,13 +3782,15 @@
                ENDIF
             ELSEIF (USS_SWITCH==2) THEN
                ! Match each spectral component to the nearest partition
-               DO IB=1,USSPF(2)
+               MINDIFF=1.e8
+               Spc2BND(IK) = 1
+               MINDIFF=abs(USSP_WN(1)-WN(IK,ISEA))
+               DO IB=2,USSPF(2)
                   IF (MinDiff .gt. abs(USSP_WN(IB)-WN(IK,ISEA))) then
                      Spc2BND(IK) = IB
                      MinDiff = abs(USSP_WN(IB)-WN(IK,ISEA))
                   ENDIF
                ENDDO
-               MINDIFF=1.e8
                !Put spectral energey into whichever band central wavenumber fits in
                USSP(JSEA,Spc2Bnd(IK))    =  USSP(JSEA,Spc2Bnd(IK)) + ABX(JSEA)*USSCO
                USSP(JSEA,NK+Spc2BND(IK)) =  USSP(JSEA,NK+Spc2Bnd(IK)) + ABY(JSEA)*USSCO
