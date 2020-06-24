@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(ww3nemslib VERSION 1.0 LANGUAGES Fortran)
+project(ww3nemslib VERSION 7.00 LANGUAGES Fortran)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
