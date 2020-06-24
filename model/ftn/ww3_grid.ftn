@@ -692,7 +692,8 @@
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
-                                 STATUS*20,FNAME2*60, PNAME2*40
+                                 STATUS*20,FNAME2*60, PNAME2*40,      &
+                                 CALTYPE*60
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
 !/ ------------------------------------------------------------------- /
@@ -1096,21 +1097,27 @@
         FLCTH=NML_RUN%FLCTH
         FLCK=NML_RUN%FLCK
         FLSOU=NML_RUN%FLSOU
+        FL360CAL=NML_RUN%FL360CAL
       ELSE
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=2001,ERR=2002)                                 &
-          FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+          FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FL360CAL
       END IF
 !
       IYN = 2
-      IF ( FLDRY ) IYN(1) = 1
-      IF ( FLCX  ) IYN(2) = 1
-      IF ( FLCY  ) IYN(3) = 1
-      IF ( FLCTH ) IYN(4) = 1
-      IF ( FLCK  ) IYN(5) = 1
-      IF ( FLSOU ) IYN(6) = 1
+      IF ( FLDRY )    IYN(1) = 1
+      IF ( FLCX  )    IYN(2) = 1
+      IF ( FLCY  )    IYN(3) = 1
+      IF ( FLCTH )    IYN(4) = 1
+      IF ( FLCK  )    IYN(5) = 1
+      IF ( FLSOU )    IYN(6) = 1
+      IF ( FL360CAL ) THEN
+        CALTYPE = 'Climate (360 days)'
+      ELSE
+        CALTYPE = 'Gregorian (365 days + leap)'
+      ENDIF
 !
-      WRITE (NDSO,911) (YESXNO(IYN(IFL)),IFL=1,NFL)
+      WRITE (NDSO,911) ((YESXNO(IYN(IFL)),IFL=1,NFL),CALTYPE)
 !
       IF ( .NOT. (FLDRY.OR.FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
           WRITE (NDSE,1010)
@@ -5227,7 +5234,8 @@
                '       Propagation in Y-direction  :  ',A/            &
                '       Refraction                  :  ',A/            &
                '       Current-induced k-shift     :  ',A/            &
-               '       Source term calc. and int.  :  ',A/)
+               '       Source term calc. and int.  :  ',A/            &
+               '       Calendar type (days in year):  ',A/)
   912 FORMAT (/'  Time steps : '/                                     &
                ' --------------------------------------------------'/ &
                '       Maximum global time step      (s) :',F8.2/     &

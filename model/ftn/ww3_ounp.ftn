@@ -2665,12 +2665,25 @@
       IRET=NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, DIMID(1), VARID(1))
       CALL CHECK_ERR(IRET)
 !/NC4      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
+      IF (FL360CAL) THEN
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','days since 1900-01-01')
+      ELSE
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
+      ENDIF
       IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','time')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
+      IF (FL360CAL) THEN
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1900-01-01 00:00:00')
+      ELSE
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
+      ENDIF
       IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions','Relative julian days with decimal part (as parts of the day)')
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T') 
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T')
+      IF (FL360CAL) THEN
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','gregorian')
+      ELSE
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','360_day')
+      ENDIF
 
 !  station
       IRET=NF90_DEF_VAR(NCID, 'station', NF90_INT, (/DIMID(2)/), VARID(27))
