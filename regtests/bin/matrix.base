@@ -889,6 +889,7 @@
     echo "$rtst -s ST4_WRT  -w work_ST4_WRT  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_GMD  -w work_ST4_GMD  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_TSA  -w work_ST4_TSA  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_CAL  -w work_ST4_CAL -i input_fld_CAL $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6  -o netcdf  $ww3 ww3_ts1" >> matrix.body
   fi
 

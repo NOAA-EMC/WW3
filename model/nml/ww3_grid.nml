@@ -33,12 +33,14 @@
 !     RUN%FLCTH            = F             ! direction shift
 !     RUN%FLCK             = F             ! wavenumber shift
 !     RUN%FLSOU            = F             ! source terms
+!     RUN%FL360CAL         = F             ! 360-day calendar 
 ! -------------------------------------------------------------------- !
 &RUN_NML
   RUN%FLCX            = T
   RUN%FLCY            = T
   RUN%FLCTH           = T
   RUN%FLSOU           = T
+  RUN%FL360CAL        = F
 /
 
 

@@ -19,7 +19,8 @@ $  - FLDRY         Dry run (input/output only, no calculation).
 $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
-   F T F T T T
+$  - FL360CAL      Activate 360-day calendar
+   F T F T T T F
 $
 $ Set time steps ----------------------------------------------------- $
 $   4. 1. 2. 1.

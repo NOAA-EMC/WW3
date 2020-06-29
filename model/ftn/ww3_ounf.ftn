@@ -4996,7 +4996,7 @@
       IF (FL360CAL) THEN
         IRET=NF90_PUT_ATT(NCID,VARID(3+extradim),'calendar', '360_day')
       ELSE
-        IRET=NF90_PUT_ATT(NCID,VARID(3+extradim),'calendar', 'gregorian')
+        IRET=NF90_PUT_ATT(NCID,VARID(3+extradim),'calendar', 'standard')
       ENDIF
       CALL CHECK_ERR(IRET)
 !

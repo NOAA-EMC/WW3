@@ -4,7 +4,7 @@ $ ------------------------------------------
 $
    1.1 0.03679  3   12  0.
 $
-   F T T T F F
+   F T T T F F F
 $ geogr. CFL time step is the 2nd one....
 $ 360.  180.0  360.  360.
 $ tp2.4 w/out GSE, 3hr output : 2200 unstable , 1600 stable

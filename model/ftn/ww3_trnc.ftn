@@ -811,7 +811,7 @@
       IF (FL360CAL) THEN
         IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','360_day')
       ELSE
-        IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','gregorian')
+        IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
       ENDIF
 
 ! frequency

@@ -6,7 +6,7 @@ $ 0.0418 31: fmax = 0.7294 Hz ; max Cg
   1.1 0.0418  31 36 5.0
 $
 $ Set model flags 
-   F T T T F T
+   F T T T F T F
 $ CFL time step: 10 km, 446 sec is OK
  800. 400. 400. 40.
 $

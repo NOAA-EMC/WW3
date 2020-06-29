@@ -23,6 +23,7 @@
 #     + switch_ST2      : Tolman and Chalikov (default).                    #
 #     + switch_ST3      : WAM 4 physics.                                    #
 #     + switch_ST4      : Ardhuin et al. (2010).                            #
+#     + switch_ST4_CAL  : Ardhuin et al. (2010) - 360-day calendar.         #
 #     + switch_ST6      : BYDRZ physics (2013).                             #
 #                                                                           #
 #  Example run_test commands:                                               #
