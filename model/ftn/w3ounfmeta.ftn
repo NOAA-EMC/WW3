@@ -1,0 +1,1519 @@
+      MODULE W3OUNFMETA
+
+      USE NETCDF
+      USE CONSTANTS, ONLY: TPIINV
+      USE W3GDATMD, ONLY: SIG, NK
+      USE W3ODATMD, ONLY: PTMETH, PTFCUT
+       
+      IMPLICIT NONE
+
+      INTEGER :: NCVARTYPE = 4 !! TODO - GET FROM WW3_OUNF
+
+      TYPE META_T
+        REAL :: FSC, VMIN, VMAX
+        CHARACTER*24  :: UNITS
+        CHARACTER*10  :: ENAME
+        CHARACTER*80  :: VARNM, VARNL
+        CHARACTER*120 :: VARNS ,VARNG, VARND
+        CHARACTER*512 :: VARNC
+      ENDTYPE META_T
+
+      CHARACTER*128 :: PARTCOM(6)
+!      DATA PARTCOM / &
+!        "Wind sea and swells defined using topographic &
+!          partitions and partition wave-age cut-off &
+!          (WWIII default scheme)",                                    &
+!        "Wind sea and swells defined using topographic &
+!          partitions and spectral wave-age cut-off",                  &
+!        "Wave components defined using topographic partitions only",  &
+!        "Wind sea and swell defined using spectral wave-age cut-off", &
+!        "Wave components defined using spectral frequency cutoff",    &
+!        "Unknown" /
+
+      CONTAINS
+
+      SUBROUTINE INIT_META
+        ! Maybe put initialisation of partcom in here? Requies an 
+        ! explicit call to INIT though.
+        
+        !  partitioning method comment string:
+        IF ( PTMETH .EQ. 1 ) THEN
+          PARTCOM = "Wind sea and swells defined using topographic " //  &
+                    "partitions and partition wave-age cut-off "     //  &
+                    "(WWIII default scheme)"
+        ELSE IF ( PTMETH .EQ. 2 ) THEN
+          PARTCOM = "Wind sea and swells defined using topographic " //  &
+                    "partitions and spectral wave-age cut-off"
+        ELSE IF ( PTMETH .EQ. 3 ) THEN
+          PARTCOM = "Wave components defined using topographic "     //  &
+                    "partitions only"
+        ELSE IF ( PTMETH .EQ. 4 ) THEN
+          PARTCOM = "Wind sea and swell defined using spectral wave-age cut-off"
+        ELSE IF ( PTMETH .EQ. 5 ) THEN
+          WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //  &
+                    '"Hz spectral frequency cutoff")') PTFCUT
+        ELSE
+          WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
+        ENDIF
+      END SUBROUTINE INIT_META
+
+
+      FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: IFI, IFJ
+        INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
+        INTEGER :: IFP, IFC
+        TYPE(META_T) :: META
+         
+        IFC = 0
+        IFP = 1
+        IF(PRESENT(ICOMP)) IFC = ICOMP
+        IF(PRESENT(IPART)) IFP = IPART
+
+        ! Set some optional values to empty
+        META%VARNC = ''
+        META%VARND = ''
+        META%VARNG = ''
+
+        IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.5
+          META%UNITS  = 'm'
+          META%ENAME  = '.dpt'
+          META%VARNM = 'dpt'
+          META%VARNL ='depth'
+          META%VARNS ='depth'
+          META%VARNG ='depth'
+          META%VARNC =''
+          META%VARND =''
+          META%VMIN = -90000 
+          META%VMAX = 140000
+        
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 0.01
+          META%ENAME  = '.cur'
+          META%UNITS  = 'm s-1'
+          META%VMIN = -990
+          META%VMAX =  990
+
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='ucur'
+            META%VARNL='eastward current'
+            META%VARNS='eastward_sea_water_velocity'
+            META%VARNG='eastward_sea_water_velocity'
+            META%VARNC='cur=sqrt(U**2+V**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vcur'
+            META%VARNL='northward current'
+            META%VARNS='northward_sea_water_velocity'
+            META%VARNG='northward_sea_water_velocity'
+            META%VARNC='cur=sqrt(U**2+V**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          
+!
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.1
+          META%ENAME  = '.wnd'
+          META%UNITS  = 'm s-1'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uwnd'
+            META%VARNL='eastward_wind'
+            META%VARNS='eastward_wind'
+            META%VARNG='eastward_wind'
+            META%VARNC='wind=sqrt(U10**2+V10**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vwnd'
+            META%VARNL='northward_wind'
+            META%VARNS='northward_wind'
+            META%VARNG='northward_wind'
+            META%VARNC='wind=sqrt(U10**2+V10**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -990
+          META%VMAX =  990
+!
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%ENAME = '.ast'
+          META%UNITS = 'K'
+          META%VARNM='ast'
+          META%VARNL='air sea temperature difference'
+          META%VARNS='air_sea_temperature_difference'
+          META%VARNG='air_sea_temperature_difference'
+          META%VMIN = 0    
+          META%VMAX = 4000
+!
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 'm'
+          META%ENAME  = '.wlv'
+          META%VARNM='wlv'
+          META%VARNL='sea surface height above sea level'
+          META%VARNS='sea_surface_height_above_sea_level'
+          META%VARNG='sea_surface_height_above_sea_level'
+          META%VMIN = 0 
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = '1'
+          META%ENAME  = '.ice'
+          META%VARNM='ice'
+          META%VARNL='sea ice area fraction'
+          META%VARNS='sea_ice_area_fraction'
+          META%VARNG='sea_ice_area_fraction'
+          META%VMIN = 0
+          META%VMAX = 1000
+!
+        ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
+          META%FSC    = 0.0001
+          META%UNITS  = 'km-1'
+          META%ENAME  = '.ibg'
+          META%VARNM='ibg'
+          META%VARNL='icebergs_damping'
+          META%VARNS='icebergs_induced_attenuation_scale_for_waves'
+          META%VARNG='icebergs_damping'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4              META%FSC    = 0.001
+!/BT4              META%UNITS  = 'Krumbein phi scale'
+!/BT4              META%ENAME  = '.d50'
+!/BT4              META%VARNM='d50'
+!/BT4              META%VARNL='grain_size'
+!/BT4              META%VARNS='sediment_grain_size'
+!/BT4              META%VARNG='sediment_grain_size'
+!/BT4              META%VMIN = -10000
+!/BT4              META%VMAX = 32000
+!
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2              META%FSC = 0.001
+!/IS2              META%UNITS = 'm'
+!/IS2              META%ENAME = '.ic1'
+!/IS2              META%VARNM='ic1'
+!/IS2              META%VARNL='ice thickness'
+!/IS2              META%VARNS='ice_thickness'
+!/IS2              META%VARNG='ice_thickness'
+!/IS2              META%VMIN = 0
+!/IS2              META%VMAX = 30000
+!
+!
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2              META%FSC = 0.05
+!/IS2              META%UNITS = 'm'
+!/IS2              META%ENAME = '.ic5'
+!/IS2              META%VARNM='ic5'
+!/IS2              META%VARNL='maximum floe diameter'
+!/IS2              META%VARNS='maximum_ice_floe_diameter'
+!/IS2              META%VARNG='maximum_ice_floe_diameter'
+!/IS2              META%VMIN = 0
+!/IS2              META%VMAX = 30000
+
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.hs'
+          META%VARNM='hs'
+          META%VARNL='significant height of wind and swell waves'
+          META%VARNS='sea_surface_wave_significant_height' 
+          META%VARNG='significant_wave_height'
+          META%VMIN = 0 
+          META%VMAX = 32000
+
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 1.
+          META%UNITS  = 'm'
+          META%ENAME  = '.lm'
+          META%VARNM='lm'
+          META%VARNL='mean wave length'
+          META%VARNS='mean_wave_length' 
+          META%VARNG='mean_wave_length' 
+          META%VMIN = 0 
+          META%VMAX = 3200
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          META%ENAME  = '.t02'
+          META%VARNM='t02'
+          META%VARNL='mean period T02'
+          META%VARNS='sea_surface_wind_wave_mean_period' // &
+          '_from_variance_spectral_density_second_frequency_moment'
+          META%VARNG='mean_period_t02'
+          META%VMIN = 0
+          META%VMAX = 5000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          META%ENAME  = '.t0m1'
+          META%VARNM='t0m1'
+          META%VARNL='mean period T0m1'
+          META%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                     '_spectral_density_inverse_frequency_moment'
+          META%VARNG='mean_period_t0m1'
+          META%VMIN = 0 
+          META%VMAX = 5000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          META%ENAME  = '.t01'
+          META%VARNM='t01'
+          META%VARNL='mean period T01'
+          META%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                    '_spectral_density_first_frequency_moment' 
+          META%VARNG='mean_period_t01'
+          META%VMIN = 0
+          META%VMAX = 5000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = 's-1'
+          META%ENAME  = '.fp'
+          META%VARNM='fp'
+          META%VARNL='wave peak frequency'
+          META%VARNS='sea_surface_wave_peak_frequency'
+          META%VARNG='dominant_wave_frequency'
+          META%VMIN = 0 
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          META%ENAME  = '.dir'
+          META%VARNM='dir'
+          META%VARNL='wave mean direction'
+          META%VARNS='sea_surface_wave_from_direction'
+          META%VARNG='wave_from_direction'
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          META%ENAME  = '.spr'
+          META%VARNM='spr'
+          META%VARNL='directional spread'
+          META%VARNS='sea_surface_wave_directional_spread'
+          META%VARNG='directional_spread'
+          META%VMIN = 0
+          META%VMAX = 900
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
+          META%FSC    = 1.
+          META%UNITS  = 'degree'
+          META%ENAME  = '.dp'
+          META%VARNM='dp'
+          META%VARNL='peak direction'
+          META%VARNS='sea_surface_wave_peak_direction'
+          META%VARNG='dominant_wave_direction'
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0 
+          META%VMAX = 360
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
+          META%FSC    = 0.0002
+          META%UNITS  = 'm'
+          META%ENAME  = '.hig'
+          META%VARNM='hig'
+          META%VARNL='infragravity_wave_height'
+          META%VARNS='sea_surface_wave_infragravity_significant_height' 
+          META%VARNG='infragravity_significant_wave_height' 
+          META%VMIN = 0 
+          META%VMAX = 5000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.mxe'
+          META%VARNM='stmaxe'
+          META%VARNL='expected maximum sea surface elevation (nonlinear,2nd order)'
+          META%VARNS='expected maximum sea surface elevation (nonlinear,2nd order)'
+          META%VARNG='expected maximum sea surface elevation (nonlinear,2nd order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.mxes'
+          META%VARNM='stmaxd'
+          META%VARNL='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+          META%VARNS='std of expected maximum sea surface elevation (nonlinear,2nd order)'
+          META%VARNG='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.mxh'
+          META%VARNM='hmaxe'
+          META%VARNL='expected maximum wave height (linear, 1st order)'
+          META%VARNS='expected maximum wave height (linear, 1st order)'
+          META%VARNG='expected maximum wave height (linear, 1st order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.mxhc'
+          META%VARNM='hcmaxe'
+          META%VARNL='expected maximum wave height from crest (linear, 1st order)'
+          META%VARNS='expected maximum wave height from crest (linear, 1st order)'
+          META%VARNG='expected maximum wave height from crest (linear, 1st order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.sdmh'
+          META%VARNM='hmaxd'
+          META%VARNL='STD of maximum wave height (linear, 1st order)'
+          META%VARNS='STD of maximum wave height (linear, 1st order)'
+          META%VARNG='STD of maximum wave height (linear, 1st order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          META%ENAME  = '.sdmhc'
+          META%VARNM='hcmaxd'
+          META%VARNL='STD of maximum wave height from crest (linear, 1st order)'
+          META%VARNS='STD of maximum wave height from crest (linear, 1st order)'
+          META%VARNG='STD of maximum wave height from crest (linear, 1st order)'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = '1'
+          META%ENAME  = '.wbt'
+          META%VARNM='wbt'
+          META%VARNL='domiant wave breaking probability'
+          META%VARNS='domiant_wave_breaking_probability'
+          META%VARNG='domiant_wave_breaking_probability'
+          META%VMIN = 0
+          META%VMAX = 1000
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
+          ! Information for spectral
+          META%VARNM='ef'
+          META%VARNL='wave_elevation_spectrum'
+          IF (NCVARTYPE.LE.3) THEN 
+            META%UNITS  = 'log10(m2 s+1E-12)'
+            META%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+            META%FSC     = 0.0004
+          ELSE
+            META%UNITS  = 'm2 s'
+            META%VARNS='power_spectral_density_of_surface_elevation'
+            META%FSC     = 1.
+          END IF
+          META%ENAME  = '.ef'
+          META%VARNG=META%VARNS
+          META%VMIN = -30000
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
+          ! Information for spectral
+          META%FSC     = 0.1
+          META%VARNM='th1m'
+          META%VARNL='mean wave direction frequency spectrum'
+          META%VARNS='sea_surface_wave_from_direction_frequency_spectrum'
+          META%VARNG=META%VARNS
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%UNITS  = 'degree'
+          META%ENAME  = '.th1m'
+          META%VMIN = 0 
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
+          ! Information for spectral
+          META%FSC     = 0.01
+          META%VARNM='sth1m'
+          META%VARNL='spreading frequency spectrum'
+          META%VARNS='sea_surface_wave_spreading_spectrum'
+          META%VARNG=META%VARNS
+          META%UNITS  = 'degree'
+          META%ENAME  = '.sth1m'
+          META%VMIN = 0 
+          META%VMAX = 9000
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
+          ! Information for spectral
+          META%FSC     = 0.1
+          META%VARNM='th2m'
+          META%VARNL='second mean wave direction frequency spectrum'
+          META%VARNS='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
+          META%VARNG=META%VARNS
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%UNITS  = 'degree'
+          META%ENAME  = '.th2m'
+          META%VMIN = 0 
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
+          ! Information for spectral
+          META%FSC     = 0.01
+          META%VARNM='sth2m'
+          META%VARNL='second spreading frequency spectrum'
+          META%VARNS='sea_surface_wave_spreading_spectrum_from_second_moments'
+          META%VARNG=META%VARNS
+          META%UNITS  = 'degree'
+          META%ENAME  = '.sth2m'
+          META%VMIN = 0 
+          META%VMAX = 9000
+!
+        ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
+          ! Information for spectral
+          META%FSC    = 0.001
+          META%UNITS  = 'm-1'
+          META%ENAME  = '.wn'
+          META%VARNM='wn'
+          META%VARNL='wave numbers'
+          META%VARNS='wave_numbers'
+          META%VARNG='wave_numbers'
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 'm'
+          PRINT*,'IPART =',IPART
+          WRITE(META%ENAME,'(A4,I1)') '.phs',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'phs',IPART 
+          WRITE(META%VARNL,'(A,I1)') 'wave significant height partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
+          WRITE(META%VARNG,'(A,I1)') 'significant_wave_height_partition_',IPART 
+          META%VARNC=PARTCOM(PTMETH)
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          WRITE(META%ENAME,'(A4,I1)') '.ptp',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'ptp',IPART 
+          WRITE(META%VARNL,'(A,I1)') 'peak period partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'sea_surface_wave_period_at_' // &
+                                    'variance_spectral_density_maximum_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') 'dominant_wave_period_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VMIN = 0 
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 1.
+          META%UNITS  = 'm'
+          WRITE(META%ENAME,'(A4,I1)') '.plp',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'plp',IPART 
+          WRITE(META%VARNL,'(A,I1)') 'peak wave length partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'peak_wave_length_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') 'peak_wave_length_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0 
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          WRITE(META%ENAME,'(A5,I1)') '.pdir',IPART
+          WRITE(META%VARNM,'(A4,I1)') 'pdir',IPART 
+          WRITE(META%VARNL,'(A,I1)') 'wave mean direction partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') 'wave_from_direction_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          WRITE(META%ENAME,'(A5,I1)') '.pspr',IPART
+          WRITE(META%VARNM,'(A4,I1)') 'pspr',IPART 
+          WRITE(META%VARNL,'(A,I1)') 'directional spread partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') 'directional_spread_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0 
+          META%VMAX = 900
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = '1'
+          WRITE(META%ENAME,'(A4,I1)') '.pws',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'pws',IPART
+          WRITE(META%VARNL,'(A,I1)') 'wind sea fraction in partition ',IPART 
+          WRITE(META%VARNS,'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
+          WRITE(META%VARNG,'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0 
+          META%VMAX = 1000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          WRITE(META%ENAME,'(A4,I1)') '.pdp',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'pdp',IPART
+          WRITE(META%VARNL,'(A,I1)') &
+              'peak direction partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_peak_from_direction_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'dominant_wave_from_direction_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = '1'
+          WRITE(META%ENAME,'(A4,I1)') '.pqp',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'pqp',IPART
+          WRITE(META%VARNL,'(A,I1)') 'peakedness partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_peakedness_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'wave_peakedness_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = '1'
+          WRITE(META%ENAME,'(A4,I1)') '.ppe',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'ppe',IPART
+          WRITE(META%VARNL,'(A,I1)') &
+              'peak enhancement factor partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'wave_peak_enhancement_factor_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'wave_peak_enhancement_factor_partition_',IPART
+          META%VARNC='JONSWAP peak enhancement factor; ' // PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
+          META%FSC    = 0.0001
+          META%UNITS  = 's-1'
+          WRITE(META%ENAME,'(A4,I1)') '.pgw',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'pgw',IPART
+          WRITE(META%VARNL,'(A,I1)') &
+              'frequency width partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'Gaussian_frequency_spread_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'Gaussian_frequency_spread_partition_',IPART
+          META%VARNC='Gaussian least-square fit to ' // &
+                    'omni-directional spectral partition; ' // PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
+          META%FSC    = 0.0001
+          META%UNITS  = '1'
+          WRITE(META%ENAME,'(A4,I1)') '.psw',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'psw',IPART
+          WRITE(META%VARNL,'(A,I1)') 'spectral width partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_spectral_width_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'wave_spectral_width_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          WRITE(META%ENAME,'(A7,I1)') '.ptm10c',IPART
+          WRITE(META%VARNM,'(A6,I1)') 'ptm10c',IPART
+          WRITE(META%VARNL,'(A,I1)') 'mean period Tm10 partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_mean_period_tm10_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'mean_wave_period_Tm10_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          WRITE(META%ENAME,'(A6,I1)') '.pt01c',IPART
+          WRITE(META%VARNM,'(A5,I1)') 'pt01c',IPART
+          WRITE(META%VARNL,'(A,I1)') 'mean period T01 partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_mean_period_t01_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'mean_wave_period_T01_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = 's'
+          WRITE(META%ENAME,'(A6,I1)') '.pt02c',IPART
+          WRITE(META%VARNM,'(A5,I1)') 'pt02c',IPART
+          WRITE(META%VARNL,'(A,I1)') 'mean period T02 partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_mean_period_t02_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'mean_wave_period_T02_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
+          META%FSC    = 0.02
+          META%UNITS  = 'm2 s rad-1'
+          WRITE(META%ENAME,'(A4,I1)') '.pep',IPART
+          WRITE(META%VARNM,'(A3,I1)') 'pep',IPART
+          WRITE(META%VARNL,'(A,I1)') 'energy at peak frequency partition ',IPART
+          WRITE(META%VARNS,'(A,I1)') &
+              'sea_surface_wave_energy_at_variance_spectral_density_maximum_partition_',IPART
+          WRITE(META%VARNG,'(A,I1)') &
+              'wave_energy_at_variance_spectral_density_maximum_partition_',IPART
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = '1'
+          META%ENAME  = '.tws'
+          META%VARNM='tws'
+          META%VARNL='wind sea fraction'
+          META%VARNS='wind_sea_fraction'
+          META%VARNG='wind_sea_fraction'
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0 
+          META%VMAX = 1000
+!
+        ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
+          META%FSC    = 1.
+          META%UNITS  = '1'
+          META%ENAME  = '.pnr'
+          META%VARNM='pnr'
+          META%VARNL='number of wave partitions'
+          META%VARNS='number_of_wave_partitions'
+          META%VARNG='number_of_wave_partitions'
+          META%VARNC=PARTCOM(PTMETH)
+          META%VARND=''
+          META%VMIN = 0 
+          META%VMAX = 100
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.01
+          META%ENAME  = '.ust'
+          META%UNITS  = 'm s-1'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uust'
+            META%VARNL='eastward friction velocity'
+            META%VARNS='eastward_friction_velocity'
+            META%VARNG='eastward_friction_velocity'
+            META%VARNC='ust=sqrt(uust**2+vust**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vust'
+            META%VARNL='northward friction velocity'
+            META%VARNS='northward_friction_velocity'
+            META%VARNG='northward_friction_velocity'
+            META%VARNC='ust=sqrt(uust**2+vust**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -9900
+          META%VMAX =  9900
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 1.E-5
+          META%UNITS  = '1'
+          META%ENAME  = '.cha'
+          META%VARNM='cha'
+          META%VARNL='charnock coefficient for surface roughness length for momentum in air'
+          META%VARNS='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+          META%VARNG='charnock_coefficient'
+          META%VMIN = 0
+          META%VMAX = 32700
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.1           !0.01
+          META%UNITS  = 'kW m-1'
+          META%ENAME  = '.cge' 
+          META%VARNM='cge'
+          META%VARNL='wave energy flux'
+          META%VARNS='sea_surface_wind_wave_energy_flux'
+          META%VARNG='wave_energy_flux'
+          META%VMIN = 0
+          META%VMAX = 9990
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'W m-2'
+          META%ENAME  = '.faw'
+          META%VARNM='faw'
+          META%VARNL='wind to wave energy flux'
+          META%VARNS='wind_mixing_energy_flux_into_sea_water'
+          META%VARNG='wind_to_wave_energy_flux'
+          META%VMIN = 0
+          META%VMAX = 9990
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.000001
+          META%UNITS  = 'm2 s-2'
+          META%ENAME  = '.taw'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='utaw'
+            META%VARNL='eastward wave supported wind stress'
+            META%VARNS='eastward_wave_supported_wind_stress'
+            META%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+            META%VARNG='eastward_wave_supported_wind_stress'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtaw'
+            META%VARNL='northward wave supported wind stress'
+            META%VARNS='northward_wave_supported_wind_stress'
+            META%VARNG='northward_wave_supported_wind_stress'
+            META%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -32000
+          META%VMAX =  32000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
+          META%FSC    = 0.0001
+          META%ENAME  = '.twa'
+          META%UNITS  = 'm2 s-2'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='utwa'
+            META%VARNL='eastward wave to wind stress'
+            META%VARNS='eastward_wave_to_wind_stress'
+            META%VARNG='eastward_wave_to_wind_stress'
+            META%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtwa'
+            META%VARNL='northward wave to wind stress'
+            META%VARNS='northward_wave_to_wind_stress'
+            META%VARNG='northward_wave_to_wind_stress'
+            META%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -32000
+          META%VMAX =  32000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
+          META%FSC    = 0.0001
+          META%UNITS  = '1'
+          META%ENAME  = '.wcc'
+          META%VARNM='wcc'
+          META%VARNL='whitecap coverage'         
+          META%VARNS='whitecap_coverage'
+          META%VARNG='whitecap_coverage'            
+          META%VARNC=''
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = 'm'
+          META%ENAME  = '.wcf'
+          META%VARNM='wcf'
+          META%VARNL='whitecap foam thickness' 
+          META%VARNS='whitecap_foam_thickness'
+          META%VARNG='whitecap_foam_thickness' 
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
+          META%FSC    = 0.002 
+          META%UNITS  = 'm'
+          META%ENAME  = '.wch'
+          META%VARNM='wch'
+          META%VARNL='significant breaking wave height'
+          META%VARNS='significant_breaking_wave_height'
+          META%VARNG='significant_breaking_wave_height'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
+          META%FSC    = 0.0001
+          META%UNITS  = '1'
+          META%ENAME  = '.wcm'
+          META%VARNM='wcm'
+          META%VARNL='whitecap moment'
+          META%VARNS='whitecap_moment'
+          META%VARNG='whitecap_moment'
+          META%VMIN = 0
+          META%VMAX = 10000
+!
+        ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
+          META%FSC    = 0.002
+          META%UNITS  = 's'
+          META%ENAME  = '.fws'
+          META%VARNM='fws'
+          META%VARNL='Wind_sea_mean_period_T0M1'
+          META%VARNS='Wind_sea_mean_period_T0M1'
+          META%VARNG='Wind_sea_mean_period_T0M1'
+          META%VARNC=''
+          META%VARND=''
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 10.
+          !FSC3    = 1.
+          META%UNITS  = 'N m-1'
+          META%ENAME  = '.sxy'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='sxx'
+            META%VARNL='Radiation stress component Sxx'
+            META%VARNS='Radiation_stress_component_Sxx'
+            META%VARNS='radiation_stress_component_sxx'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='syy'
+            META%VARNL='Radiation stress component Syy'
+            META%VARNS='Radiation_stress_component_Syy'
+            META%VARNS='radiation_stress_component_syy'
+          ELSE IF (ICOMP .EQ. 3) THEN
+            META%VARNM='sxy'
+            META%VARNL='Radiation stress component Sxy'
+            META%VARNS='Radiation_stress_component_Sxy'
+            META%VARNS='radiation_stress_component_sxy'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+          META%VMIN = -3000
+          META%VMAX = 3000     
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 0.000001
+          META%UNITS  = 'm2 s-2'
+          META%ENAME  = '.two'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='utwo'
+            META%VARNL='eastward wave to ocean stress'
+            META%VARNS='eastward_wave_to_ocean_stress'
+            META%VARNG='eastward_wave_to_ocean_stress'
+            META%VARNC='two=sqrt(utwo**2+vtwo**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtwo'
+            META%VARNL='northward wave to ocean stress'
+            META%VARNS='northward_wave_to_ocean_stress'
+            META%VARNG='northward_wave_to_ocean_stress'
+            META%VARNC='two=sqrt(utwo**2+vtwo**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -32000 
+          META%VMAX =  32000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'm2 s-2'
+          META%ENAME  = '.bhd'
+          META%VARNM='bhd'
+          META%VARNL='radiation pressure (Bernouilli Head)'
+          META%VARNS='radiation_pressure'
+          META%VARNG='radiation_pressure'
+          META%VMIN = 0 
+          META%VMAX = 1000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'W m-2'
+          META%ENAME  = '.foc'
+          META%VARNM='foc'
+          META%VARNL='wave to ocean energy flux'
+          META%VARNS='wave_to_ocean_energy_flux'
+          META%VARNG='wave_to_ocean_energy_flux'
+          META%VMIN = 0 
+          META%VMAX = 9990
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = 'm2 s-1'
+          META%ENAME  = '.tus'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='utus'
+            META%VARNL='eastward stokes transport'
+            META%VARNS='eastward_stokes_transport'
+            META%VARNG='eastward_stokes_transport'
+            META%VARNC='tus=sqrt(utus**2+vtus**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtus'
+            META%VARNL='northward stokes transport'
+            META%VARNS='northward_stokes_transport'
+            META%VARNG='northward_stokes_transport'
+            META%VARNC='tus=sqrt(utus**2+vtus**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -9900 
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
+          META%FSC    = 0.0005
+          META%UNITS  = 'm s-1'
+          META%ENAME  = '.uss'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uuss'
+            META%VARNL='eastward surface stokes drift'
+            META%VARNS='eastward_surface_stokes_drift'
+            META%VARNG='eastward_surface_stokes_drift'
+            META%VARNC='uss=sqrt(uuss**2+vuss**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vuss'
+            META%VARNL='northward surface stokes drift'
+            META%VARNS='northward_surface_stokes_drift'
+            META%VARNG='northward_surface_stokes_drift'
+            WRITE(META%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -9900 
+          META%VMAX =  9900
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
+          META%FSC    = 0.01
+          META%ENAME  = '.p2s'
+          META%UNITS  = 'm4'
+!          UNITS2 = 's-1'    !! TODO!
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNL='power spectral density of equivalent surface pressure'
+            META%VARNS='power_spectral_density_of_equivalent_surface_pressure'
+            META%VARNG='power_spectral_density_of_equivalent_surface_pressure'
+            META%VARNM='fp2s'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='pp2s'
+            META%VARNL='peak period of power spectral density of equivalent surface pressure'
+            META%VARNS='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+            META%VARNG='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+          ENDIF
+          META%VMIN = -15000 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
+          ! Information for spectral distribution of surface Stokes drift (2nd file)
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uusf'
+            META%VARNL='eastward spectral variance of surface stokes drift'
+            META%VARNS='eastward_spectral_variance_of_surface_stokes_drift'
+            META%VARNC='usf=sqrt(uusf**2+vusf**2)'
+            META%VARNG='eastward_spectral_variance_of_surface_stokes_drift'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vusf'
+            META%VARNL='northward spectral variance of surface stokes drift'
+            META%VARNS='northward_spectral_variance_of_surface_stokes_drift'
+            META%VARNG='northward_spectral_variance_of_surface_stokes_drift'
+            META%VARNC='usf=sqrt(uusf**2+vusf**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%UNITS   = 'm s-1 Hz-1'
+          META%FSC    = 0.0005
+          META%ENAME  = '.usf'
+          META%VMIN = -9900 
+          META%VMAX =  9900
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
+            ! Information for spectral microseismic generation data (2nd file)
+          META%FSC    = 0.0004
+          META%VARNM='p2l'
+          META%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
+          META%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+          META%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+          IF (NCVARTYPE.EQ.2) THEN 
+            META%UNITS='log10(Pa2 m2 s+1E-12)'
+          ELSE 
+            META%UNITS='Pa2 m2 s'
+          ENDIF
+          META%VARNC=''
+          META%VARND=''
+          META%ENAME='.p2l'
+          META%VMIN = -30000 
+          META%VMAX = 30000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+          META%FSC    = 0.000001
+          META%UNITS  = 'm2 s-2'
+          META%ENAME  = '.tic'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNL='eastward wave to sea ice stress'
+            META%VARNM='utic'
+            META%VARNS='eastward_wave_to_sea_ice_stress'
+            META%VARNG='eastward_wave_to_sea_ice_stress'
+            META%VARNC='two=sqrt(utwo**2+vtwo**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtic'
+            META%VARNL='northward wave to sea ice stress'
+            META%VARNS='northward_wave_to_sea_ice_stress'
+            META%VARNG='northward_wave_to_sea_ice_stress'
+            META%VARNC='two=sqrt(utwo**2+vtwo**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -32000 
+          META%VMAX =  32000
+!
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'W m-2'
+          META%ENAME  = '.fic'
+          META%VARNM='fic'
+          META%VARNL='wave to sea ice energy flux'
+          META%VARNS='wave_to_sea_ice_energy_flux'
+          META%VARNG='wave_to_sea_ice_energy_flux'
+          META%VMIN = 0 
+          META%VMAX = 9990
+
+        ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
+          ! Information for spectral distribution of surface Stokes drift (2nd file)
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='ussp'
+            META%VARNL='eastward partitioned surface stokes drift'
+            META%VARNS='eastward_partitioned_surface_stokes_drift'
+            META%VARNG='eastward_partitioned_surface_stokes_drift'
+            META%VARNC='usp=sqrt(ussp**2+vssp**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vssp'
+            META%VARNL='northward partitioned surface stokes drift'
+            META%VARNS='northward_partitioned_surface_stokes_drift'
+            META%VARNG='northward_partitioned_surface_stokes_drift'
+            META%VARNC='usp=sqrt(ussp**2+vssp**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%UNITS   = 'm s-1'
+          META%FSC    = 0.0005
+          META%ENAME  = '.usp'
+!
+        ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.01
+          META%ENAME  = '.abr'
+          META%UNITS  = 'm'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uabr'
+            META%VARNL='rms of bottom displacement amplitude zonal'
+            META%VARNS='rms_of_bottom_displacement_amplitude_zonal'
+            META%VARNG='rms_of_bottom_displacement_amplitude_zonal'
+            META%VARNC='abr=sqrt(uabr**2+vabr**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vabr'
+            META%VARNL='rms of bottom displacement amplitude meridional'
+            META%VARNS='rms_of_bottom_displacement_amplitude_meridional'
+            META%VARNG='rms_of_bottom_displacement_amplitude_meridional'
+            META%VARNC='abr=sqrt(uabr**2+vabr**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -18000
+          META%VMAX = 18000
+!
+        ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 0.01
+          META%ENAME  = '.ubr'
+          META%UNITS  = 'm s-1'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='uubr'
+            META%VARNL='rms of bottom velocity amplitude zonal'
+            META%VARNS='rms_of_bottom_velocity_amplitude_zonal'
+            META%VARNG='rms_of_bottom_velocity_amplitude_zonal'
+            META%VARNC='ubr=sqrt(uubr**2+vubr**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vubr'
+            META%VARNL='rms of bottom velocity amplitude meridional'
+            META%VARNS='rms_of_bottom_velocity_amplitude_meridional'
+            META%VARNG='rms_of_bottom_velocity_amplitude_meridional'
+            META%VARNC='ubr=sqrt(uubr**2+vubr**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -18000 
+          META%VMAX = 18000
+!
+        ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = 'm'
+          META%ENAME  = '.bed'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='bed'
+            META%VARNL='bottom roughness'
+            META%VARNS='sea bottom roughness length'
+            META%VARNG='ripple_wavelength'
+            META%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='ripplex'
+            META%VARNL='eastward sea bottom ripple wavelength'
+            META%VARNS='eastward_ripple_wavelength'
+            META%VARNG='eastward_ripple_wavelength'
+            META%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+          ELSE IF (ICOMP .EQ. 3) THEN
+            META%VARNM='rippley'
+            META%VARNL='northward sea bottom ripple wavelength'
+            META%VARNS='northward_ripple_wavelength'
+            META%VARNG='northward_ripple_wavelength'
+            META%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR .AND. ICOMP .GT. 1 ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR .AND. ICOMP .GT. 1 ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 30000
+!
+        ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'W m-2'
+          META%ENAME  = '.fbb'
+          META%VARNM='fbb'
+          META%VARNL='wave dissipation in bbl'
+          META%VARNS='wave_energy_dissipation_in_bottom_boundary_layer'
+          META%VARNG='wave_dissipation_in_bbl'
+          META%VMIN = 0
+          META%VMAX = 9990
+!
+        ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.000001
+          META%UNITS  = 'm2 s-2'
+          META%ENAME  = '.tbb'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='utbb'
+            META%VARNL='eastward wave to bbl stress'
+            META%VARNS='eastward_wave_to_bottom_boundary_layer_stress'
+            META%VARNG='eastward_wave_to_bbl_stress'
+            META%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='vtbb'
+            META%VARNL='northward wave to bbl stress'
+            META%VARNS='northward_wave_to_bottom_boundary_layer_stress'
+            META%VARNG='northward_wave_to_bbl_stress'
+            META%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = -32000 
+          META%VMAX =  32000
+!
+        ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.00001
+          META%ENAME  = '.mss'
+          META%UNITS  = '1'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='mssu'
+            META%VARNL='downwave mean square slope'
+            META%VARNS='x_mean_square_slope'
+            META%VARNG='x_mean_square_slope'
+            META%VARNC='mss=mssu+mssc'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='mssc'
+            META%VARNL='crosswave mean square slope'
+            META%VARNS='y_mean_square_slope'
+            META%VARNG='y_mean_square_slope'
+          ENDIF
+          WRITE(META%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0 
+          META%VMAX = 30000
+!
+        ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 1E-7     
+          META%ENAME  = '.msc'
+          META%UNITS  = '1'
+          IF (ICOMP .EQ. 1) THEN
+            META%VARNM='mscx'
+            META%VARNL='eastward phillips constant'
+            META%VARNS='eastward_phillips_constant'
+            META%VARNG='eastward_phillips_constant'
+            META%VARNC='msc=mscx+mscy'
+          ELSE IF (ICOMP .EQ. 2) THEN
+            META%VARNM='mscy'
+            META%VARNL='northward phillips constant'
+            META%VARNS='northward_phillips_constant'
+            META%VARNG='northward_phillips_constant'
+            META%VARNC='msc=mscx+mscy'
+          ENDIF
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0 
+          META%VMAX = 30000
+!
+        ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          META%ENAME  = '.msd'
+          META%VARNM='mssd'
+          META%VARNL='u direction for mss'
+          META%VARNS='sea_surface_wave_dominant_mean_square_slope_direction'
+          META%VARNG='sea_surface_wave_dominant_mean_square_slope_direction'
+          WRITE(META%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 3600
+!
+        ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'degree'
+          META%ENAME  = '.mcd'
+          META%VARNM='mscd'
+          META%VARNL='x direction for msc'
+          META%VARNS='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+          META%VARNG='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                META%VARND = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                META%VARND = 'Rotated Pole Grid North'
+!/RTD              END IF
+          META%VMIN = 0
+          META%VMAX = 3600
+!
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = '1'
+          META%ENAME  = '.qp'
+          META%VARNM='qp'
+          META%VARNL='peakedness'
+          META%VARNS='sea_surface_wave_peakedness'
+          META%VARNG='wave_peakedness'
+          META%VARNC='Goda wave peakedness parameter'
+          META%VMIN = 0
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'min.'
+          META%ENAME  = '.dtd'
+          META%VARNM='dtd'
+          META%VARNL='dynamic time step'
+          META%VARNS='dynamic_time_step'
+          META%VARNG='dynamic_time_step'
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
+          META%FSC    = 0.001
+          META%UNITS  = 's-1'
+          META%ENAME  = '.fc'
+          META%VARNM='fc'
+          META%VARNL='cut off frequency'
+          META%VARNS='cut_off_frequency'
+          META%VARNG='cut_off_frequency'
+          META%VMIN = 0 
+          META%VMAX = 8000
+!
+        ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = '1'
+          META%ENAME  = '.cfx'
+          META%VARNM='cfx'
+          META%VARNL='maximum cfl for spatial advection'
+          META%VARNS='maximum_cfl_for_spatial_advection'
+          META%VARNG='maximum_cfl_for_spatial_advection'
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = '1'
+          META%ENAME  = '.cfd'
+          META%VARNM='cfd'
+          META%VARNL='maximum cfl for direction advection'
+          META%VARNS='maximum_cfl_for_direction_advection'
+          META%VARNG='maximum_cfl_for_direction_advection'
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
+          META%FSC    = 0.01
+          META%UNITS  = '1'
+          META%ENAME  = '.cfk'
+          META%VARNM='cfk'
+          META%VARNL='maximum cfl for frequency advection'
+          META%VARNS='maximum_cfl_for_frequency_advection'
+          META%VARNG='maximum_cfl_for_frequency_advection'
+          META%VMIN = 0 
+          META%VMAX = 32000
+!
+        ELSE IF ( IFI .EQ. 10 ) THEN
+          META%FSC    = 0.1
+          META%UNITS  = 'm'
+          WRITE (META%ENAME,'(A2,I2.2)') '.u', IFJ
+          WRITE (META%VARNM,'(A1,I2.2)') 'u', IFJ
+          WRITE (META%VARNL,'(A12,I2.2)') 'User_defined', IFJ
+          WRITE (META%VARNS,'(A12,I2.2)') 'User_defined', IFJ
+          WRITE (META%VARNG,'(A12,I2.2)') 'user_defined', IFJ
+          META%VMIN = 0
+          META%VMAX = 9990
+!
+        ELSE
+          PRINT*,'No netCDF metadata entry for IFI, IFJ',ifi, ifj
+          STOP
+        ENDIF
+      END FUNCTION GETMETA
+
+      SUBROUTINE WRITE_META(ncid, varid, meta, err)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: ncid, varid
+        TYPE(META_T), INTENT(IN) :: meta
+        INTEGER, INTENT(OUT) :: err
+
+        err = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
+        IF(err /= NF90_NOERR) RETURN
+        err = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
+        IF(err /= NF90_NOERR) RETURN
+        IF(META%VARNC .NE. '') THEN
+          err = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+          IF(err /= NF90_NOERR) RETURN
+        ENDIF
+        IF (META%VARND .NE. '') THEN
+          err = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+          IF(err /= NF90_NOERR) RETURN
+        END IF
+
+        ! TODO: Write optional, user defined meta-data:
+        
+
+
+      END SUBROUTINE WRITE_META
+
+      END MODULE W3OUNFMETA
