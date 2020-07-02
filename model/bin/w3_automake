@@ -142,13 +142,13 @@
 
 
   # PRTIDE
-  if [ -n "`grep TIDE $switch_file`" ]
+  if [ -n "$(grep TIDE $switch_file)" ]
   then
     cdf_programs="$cdf_programs ww3_prtide"
   fi
 
   # MULTI MULTI_ESMF SBS1
-  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
+  if [ -n "$(grep SCRIPNC $switch_file)" ] || [ -n "$(grep OASIS $switch_file)" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
@@ -166,12 +166,12 @@
   fi
 
   # SYSTRK
-  if [ -n "`grep TRKNC $switch_file`" ]
+  if [ -n "$(grep TRKNC $switch_file)" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
     systrck_nc4notrknc=0
   else
-    if [ -n "`grep NC4 $switch_file`" ]
+    if [ -n "$(grep NC4 $switch_file)" ]
     then
       systrck_nc4notrknc=1
     else
@@ -181,7 +181,7 @@
   fi
 
   # SHEL PREP GSPL
-  if [ -n "`grep OASIS $switch_file`" ]
+  if [ -n "$(grep OASIS $switch_file)" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
     cdf_programs="$cdf_programs ww3_prep"
@@ -192,7 +192,7 @@
     reg_programs="$reg_programs ww3_gspl"
   fi
 
-  if [ -n "`grep -nri fPIC $comp_file`" ]
+  if [ -n "$(grep -nri fPIC $comp_file)" ]
   then
     reg_programs="$reg_programs libww3.so"
   else
@@ -225,11 +225,15 @@
 
     # sort in seq or mpi programs
     par_programs="ww3_shel ww3_multi ww3_sbs1"
+    if  [ -n "$(grep TIDE $switch_file)" ]
+    then
+      par_programs="$par_programs ww3_prtide ww3_prnc"
+    fi
     if [ $ESMFMKFILE ]
     then
       par_programs="$par_programs ww3_multi_esmf"
     fi
-    if [ -n "`grep OASIS $switch_file`" ]
+    if [ -n "$(grep OASIS $switch_file)" ]
     then
       par_programs="$par_programs ww3_prnc ww3_prep ww3_prtide"
     fi
@@ -240,6 +244,11 @@
         par_progs="$par_progs $prog"
       else
         seq_progs="$seq_progs $prog"
+      fi
+      # add seq compilation of ww3_prnc if already compiled in par for TIDE
+      if [ "$(echo $prog)" == "ww3_prnc" ] && [ -n "$(grep TIDE $switch_file)" ]
+      then
+        seq_progs="$seq_progs ww3_prnc"
       fi
     else
       seq_progs="$seq_progs $prog"
@@ -376,6 +385,11 @@
     rm -rf ${temp_dir}_$MODE
     mv $temp_dir  ${temp_dir}_$MODE
 
+    # add seq compilation of ww3_prnc if already compiled in par for TIDE
+    if [ "$MODE" == "MPI" ] && [ "$(ls $main_dir/exe_$MODE | grep "ww3_prnc")" == "ww3_prnc" ] && [ -n "$(grep TIDE $main_dir/exe_$MODE/switch.$MODE)" ]
+    then
+      mv $main_dir/exe_$MODE/ww3_prnc $main_dir/exe_$MODE/ww3_prnc.$MODE
+    fi
   done
 
 

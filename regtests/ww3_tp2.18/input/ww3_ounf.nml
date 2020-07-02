@@ -30,13 +30,9 @@
 !     FIELD%TYPE                 = 3                  ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &FIELD_NML
-  FIELD%TIMESTART        =  '20080310 000000'
-  FIELD%TIMESTRIDE       =  '600'
-  FIELD%TIMECOUNT        =  '100'
-  FIELD%TIMESPLIT        =  10
-  FIELD%LIST             =  'DPT CUR HS FP DIR SPR'
-  FIELD%PARTITION        =  '0 1 2'
-  FIELD%TYPE             =  4
+  FIELD%TIMESTART        =  '20190201 000000'
+  FIELD%TIMESTRIDE       =  '1800'
+  FIELD%LIST             =  'DPT CUR'
 /
 
 ! -------------------------------------------------------------------- !

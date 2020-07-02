@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Aug-2016 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-09-20'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-04-15'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -83,7 +83,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -145,6 +145,7 @@
 !/                  (C. Bunney, UKMO)
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -594,7 +595,7 @@
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
@@ -691,7 +692,7 @@
 !/DEBUGIOGR     FLUSH(740+IAPROC)
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
