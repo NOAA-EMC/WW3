@@ -24,8 +24,7 @@ $    attiva la propagazione nelle direzioni x, y (TT)
 $    attiva lo shift direzionale (T)
 $    non attiva lo shift di frequenza indotto dalla corrente (pag 54, paragr. 3.4) (F)
 $    attiva i source terms
-$    activate 360-day calendar
-   F T T T F T F
+   F T T T F T
 $
 $ Definizione time step:
 $   3600 è il time step globale massimo

@@ -440,6 +440,14 @@ $                           STDX   : Space-Time Extremes X-Length
 $                           STDY   : Space-Time Extremes Y-Length
 $                           STDT   : Space-Time Extremes Duration
 $                           P2SF   : ......
+$                           CAL360 : Logical variable. Set to T to
+$                                    change the 'standard' calendar by a
+$                                    360-day per year calendar, useful
+$                                    in climatological studies.
+$                           NOLEAP : Logical variable. Set to T to
+$                                    change the 'standard' calendar by a
+$                                    365-day per year calendar without
+$                                    leap years.
 $
 $ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -
 $   Reichl et al. 2014  : Namelist FLD1

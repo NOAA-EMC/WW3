@@ -220,7 +220,6 @@
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
 !      FLSOU     Log.  Public   Flag for source term calculation.
-!      FL360CAL  Log.  Public   Flag for 360-day calendar
 !      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FSWND     Log.  Public   Flag for sea-point only wind input on SMC grid.
@@ -657,8 +656,8 @@
         REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
-        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FL360CAL, &
-                            IICEDISP, IICESMOOTH
+        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
+                            IICESMOOTH
         LOGICAL          :: FLAGLL
         LOGICAL          :: CMPRTRCK
         LOGICAL, POINTER :: FLAGST(:)
@@ -1021,8 +1020,8 @@
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
-      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FL360CAL, &
-                          IICEDISP, IICESMOOTH
+      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
+                          IICESMOOTH
       LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: CMPRTRCK
       LOGICAL, POINTER :: FLAGST(:)
@@ -2010,7 +2009,6 @@
       FLCTH  => GRIDS(IMOD)%FLCTH
       FLCK   => GRIDS(IMOD)%FLCK
       FLSOU  => GRIDS(IMOD)%FLSOU
-      FL360CAL  => GRIDS(IMOD)%FL360CAL
       IICEDISP => GRIDS(IMOD)%IICEDISP
       IICESMOOTH => GRIDS(IMOD)%IICESMOOTH
 !

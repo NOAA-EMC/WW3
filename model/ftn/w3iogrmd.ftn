@@ -233,7 +233,7 @@
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
-      USE W3TIMEMD, ONLY: NOLEAP
+      USE W3TIMEMD, ONLY: CAL360, NOLEAP
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -637,9 +637,9 @@
           WRITE (NDSM)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
-               FLCK, FLSOU, FL360CAL, FLBPI, FLBPO, CLATS, CLATIS,    &
-               CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC,  &
+               FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
+               STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
+               ICESCALES(1:4), CAL360, NOLEAP, CMPRTRCK, IICEHFAC,    &
                IICEHDISP, IICEDDISP, IICEFDISP, BTBETA
 
           WRITE(NDSM)GRIDSHIFT
@@ -777,9 +777,9 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
-               FLCTH, FLCK, FLSOU, FL360CAL, FLBPI, FLBPO, CLATS,     &
-               CLATIS, CTHG0S, STEXU, STEYU, STEDU, IICEHMIN,         &
-               IICEHINIT, IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, &
+               FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
+               CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
+               IICEDISP, ICESCALES(1:4), CAL360, NOLEAP, CMPRTRCK,    &
                IICEHFAC, IICEDDISP, IICEHDISP, IICEFDISP, BTBETA
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
@@ -839,7 +839,7 @@
 !/T                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE,  &
 !/T                        STEXU, STEYU, STEDU
 !/T      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
-!/T                        FLSOU, FL360CAL, FLBPI, FLBPO
+!/T                        FLSOU, FLBPI, FLBPO
 !/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
 !/T                        (CLATIS(ISEA),ISEA=1,1), (CTHG0S(IY),ISEA=1,1)
 !
@@ -1459,7 +1459,7 @@
 !/T              '      STEYU  : ',F9.2 /                             &
 !/T              '      STEDU  : ',F9.2)
 !
-!/T 9016 FORMAT ('      FLAGS  : ',9L2)
+!/T 9016 FORMAT ('      FLAGS  : ',8L2)
 !/T 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &
 !/T              '      CLATIS  : ',3F8.3,' ...'/                      &
 !/T              '      CTHG0S  : ',3E11.3,' ...')

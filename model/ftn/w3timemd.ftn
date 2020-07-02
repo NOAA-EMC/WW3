@@ -68,13 +68,11 @@
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: FL360CAL
-!
       PUBLIC
 !
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
-      LOGICAL, PUBLIC         :: NOLEAP
+      LOGICAL, PUBLIC         :: CAL360, NOLEAP
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -259,7 +257,7 @@
 !
 ! Declare the number of days in month depending on calendar
 !
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
       ELSE
         NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
@@ -271,11 +269,12 @@
       NM   = MOD(NYMD,10000) / 100
       NM   = MIN ( 12 , MAX(1,NM) )
       ND   = MOD(NYMD,100) + M
-      LEAP = MOD(NY,400).EQ.0 .OR.                              &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       ! Add override for simulations with no leap years
-      IF (NOLEAP .OR. FL360CAL) THEN
+      IF (NOLEAP .OR. CAL360) THEN
          LEAP = .false.
+      ELSE
+         LEAP = MOD(NY,400).EQ.0 .OR.                           &
+              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       END IF
 !
 ! M = -1, change month if necessary :
@@ -412,13 +411,13 @@
           IF (NY1.EQ.NY2) GOTO 200
           IF (NST.GT.0) THEN
               NY2    = NY2 - 1
-              IF (FL360CAL) THEN
+              IF (CAL360) THEN
                 ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
               ELSE
                 ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
               END IF
             ELSE
-              IF (FL360CAL) THEN
+              IF (CAL360) THEN
                 ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
               ELSE
                 ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
@@ -511,7 +510,7 @@
 !
 ! Declare the number of days in month depending on calendar
 !
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
       ELSE
         NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
@@ -522,11 +521,12 @@
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       ND   = MOD(NYMD,100)
-      LEAP = MOD(NY,400).EQ.0 .OR.                              &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       !Allow override for NoLeap simulations
-      IF (NOLEAP .OR. FL360CAL) THEN
+      IF (NOLEAP .OR. CAL360) THEN
          LEAP=.false.
+      ELSE
+         LEAP = MOD(NY,400).EQ.0 .OR.                           &
+              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       ENDIF
 !
 ! Loop over months :
@@ -1512,7 +1512,7 @@
 !
 ! Convert dates and times :
 !
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
 
         E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0

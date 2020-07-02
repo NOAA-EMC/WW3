@@ -9,10 +9,9 @@ $  - FLDRY         Dry run (input/output only, no calculation).
 $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
-$  - FL360CAL      Activate 360-day calendar
 $
-  F T T T F F F
-$ F T T F F F F
+  F T T T F F
+$ F T T F F F
 $ geogr. CFL time step is the 2nd one....
 $ note that PR1 shows instability before PR3
 $ min spacing for active portion of grid is 10 km

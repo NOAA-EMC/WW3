@@ -73,7 +73,6 @@
     LOGICAL                     :: FLCTH
     LOGICAL                     :: FLCK
     LOGICAL                     :: FLSOU
-    LOGICAL                     :: FL360CAL
   END TYPE NML_RUN_T
 
   ! timesteps structure
@@ -671,7 +670,6 @@
     RUN%FLCTH      = .FALSE.
     RUN%FLCK       = .FALSE.
     RUN%FLSOU      = .FALSE.
-    RUN%FL360CAL   = .FALSE.
 
     ! read run namelist
     REWIND (NDSI)
@@ -2453,7 +2451,6 @@
       WRITE (NDSN,13) TRIM(MSG),'FLCTH      = ', NML_RUN%FLCTH
       WRITE (NDSN,13) TRIM(MSG),'FLCK       = ', NML_RUN%FLCK
       WRITE (NDSN,13) TRIM(MSG),'FLSOU      = ', NML_RUN%FLSOU
-      WRITE (NDSN,13) TRIM(MSG),'FL360CAL   = ', NML_RUN%FL360CAL
 
 
 10  FORMAT (A,2X,A,A)

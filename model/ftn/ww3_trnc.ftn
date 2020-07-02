@@ -57,7 +57,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 
-      USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR, FL360CAL
+      USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR
       USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
@@ -791,24 +791,22 @@
 !  time
       IRET=NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, (/DIMID(1)/), VARID(1))
 !/NC4      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','days since 1900-01-01')
       ELSE
         IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
       ENDIF
       IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','time')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1900-01-01 00:00:00')
       ELSE
         IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
       ENDIF
       IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions',                   &
          'Relative julian days with decimal part (as parts of the day)')
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions',                   &
-         'Relative julian days with decimal part (as parts of the day)')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T') 
-      IF (FL360CAL) THEN
+      IF (CAL360) THEN
         IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','360_day')
       ELSE
         IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
