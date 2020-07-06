@@ -300,7 +300,7 @@
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
 !      CHARACTER(LEN=21)       :: FNAME
-      CHARACTER(LEN=40)       :: FNAME
+      CHARACTER(LEN=100)       :: FNAME
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
@@ -384,7 +384,9 @@
 !CHECKPOINT
       IF ( PRESENT(FLRSTRT) .AND. FLRSTRT) THEN
           WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
-          FNAME=TIMETAG//'.restart.'//FILEXT(:I)
+!         FNAME=TIMETAG//'.restart.'//FILEXT(:I)
+          FNAME='restart_wave/'//TIMETAG//'.restart.'//FILEXT(:I)
+          print*,"FNAME:  ",trim(FNAME)
       ELSE
          IF ( IFILE.EQ.0 ) THEN
             FNAME  = 'restart.'//FILEXT(:I)
@@ -411,10 +413,11 @@
 
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
+          print*,"FNAME-- ",FNMPRE(:J)//trim(FNAME) 
+          OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),FORM='UNFORMATTED',       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR)
         ELSE
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
+          OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),FORM='UNFORMATTED',       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                 STATUS='OLD',ACTION='READ')
         END IF
