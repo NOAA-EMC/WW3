@@ -146,6 +146,7 @@
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+!/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

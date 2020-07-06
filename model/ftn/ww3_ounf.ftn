@@ -32,6 +32,7 @@
 !/    12-Sep-2018 : Added extra partitioned fields      ( version 6.06 )
 !/    25-Sep-2018 : Add WBT parameter                   ( version 6.06 )
 !/    28-Mar-2019 : Bugfix to NBIPART check.            ( version 6.07 )
+!/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
