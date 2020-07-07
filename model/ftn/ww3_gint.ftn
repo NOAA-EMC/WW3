@@ -1191,8 +1191,8 @@
               MAPLNDT = 0
               MAPMSKT = 0
               IF ( INTMETHOD == 2 ) THEN
-                ! Nearest neighbour
-                INRST = MINLOC(GR_INTS(ISEA)%IND_WTS(IG)%WT, DIM=1)
+                ! Nearest neighbour is the one with the most weight
+                INRST = MAXLOC(GR_INTS(ISEA)%IND_WTS(IG)%WT, DIM=1)
                 GR_INTS(ISEA)%IND_WTS(IG)%WT(:) = -1.
                 GR_INTS(ISEA)%IND_WTS(IG)%WT(INRST) = 1.
               END IF
