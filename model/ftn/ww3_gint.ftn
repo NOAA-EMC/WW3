@@ -232,6 +232,7 @@
 
         CALL NEXTLN ( COMSTR, NDSI, NDSE )
         READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
+        WRITE (NDSO,917) INTMETHOD
 
 !
 ! 3.e Allocate memory for integration map and initialize with grid status map
@@ -858,7 +859,7 @@
  905    FORMAT ( '    Grid Particulars are : '/                                &
                  '      Dimensions =  ',2(I9,2X)/                              &
                  '       Grid Type = ',I3,'  ==> 1 Rect, 2 Curv, 3 Unstr'/     &
-                 '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar')
+                 '    Grid Closure = ',I3,'  ==> -1 None, 2 Simple, 8 Tripolar')
  907    FORMAT ( /' NOTE :  The no. of swell partitions from input and',       &
                     ' target grids do not match',/                             &
                   '  The Min. no. of partitions from input grids =',I5/        &
@@ -867,7 +868,7 @@
                   ' number of the partitions,',/                               &
                   '  rest will be marked undefined.'                           )
  908    FORMAT (/'  Preparing interpolation weights for output grid ' /        &
-                 '  Total number of wet points for interpolation ',I6/)
+                 '  Total number of wet points for interpolation ',I7/)
  909    FORMAT (/'  *** WARNING !! No interpolation points at ',2(I5)/)
  910    FORMAT (/'  Interpolating fields .... '/)
  911    FORMAT ('     Output group   ', I5)
@@ -876,6 +877,8 @@
  914    FORMAT ( '        OUTPUT TIME : ',A)
  915    FORMAT ( '   ------------------------------------------------')
  916    FORMAT ( I5,A,2X,A)
+ 917    FORMAT ('   Interpolation scheme = ',I1,'  ==> 0 linear, ', /          &
+                ' 1 extrapolate unstructured, 2 nearest')
  950    FORMAT (/'  End of file reached'/)
  999    FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
                  15X,'==============================================='/)
