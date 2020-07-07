@@ -126,7 +126,7 @@
         INTEGER                 :: I, J, IERR, NG, IG, JG, ISEA, IX, IY, IXT
         INTEGER                 :: IYT, NS, COUNTF, COUNTG, NOSWLL_MIN, ITOUT
         INTEGER                 :: NDSM, NDSI, NDSE, NDSO, NDSTRC, NTRACE, IOTST
-        INTEGER                 :: EXTRA, NSEA_FILE
+        INTEGER                 :: INTMETHOD, NSEA_FILE
         INTEGER, ALLOCATABLE    :: FIDOUT(:), MAP(:,:), TMP_INDX(:)
         REAL                    :: SXT, SYT, XT, YT, XTT
         DOUBLE PRECISION        :: DAREA, SAREA
@@ -231,7 +231,7 @@
         END IF
 
         CALL NEXTLN ( COMSTR, NDSI, NDSE )
-        READ (NDSI,'(I1)',END=2001,ERR=2002) EXTRA
+        READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
 
 !
 ! 3.e Allocate memory for integration map and initialize with grid status map
@@ -321,11 +321,11 @@
               IF (ITOUT.GT.0) INGRID=.TRUE.
 !              ! If extrapolation activated, force to find if a triangles is inside 
 !              ! the coarse grid cell even if there is no triangle in the cell center
-              IF (EXTRA.GT.0) THEN
+              IF (INTMETHOD.EQ.1) THEN
                 WRITE(991,'(2I6,2F9.4,I8,3I8,3F5.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 IF (ITOUT.EQ.0)  WRITE(992,*) IX,IY,ISEA,XGRD(IY,IX), YGRD(IY,IX)
                 IF (ITOUT.EQ.0) THEN 
-                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), EXTRA,  &
+                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), INTMETHOD,  &
                                                  ITOUT, IS, JS, RW)
                    WRITE(993,'(2I6,2F9.4,I8,3I8,3F6.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 ENDIF  
@@ -814,7 +814,7 @@
           CALL W3SETA(NG, 6, 6)
           CALL W3SETW(NG, 6, 6)
 !
-          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN )
+          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD )
 !
           CALL TICK21 ( TOUT , DTREQ )
           IF ( IOUT .GE. NOUT ) EXIT
@@ -896,7 +896,7 @@
 !/
         CONTAINS
 !/ -----------------------------------------------------------------------/
-        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN )
+        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN, INTMETHOD )
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
@@ -949,12 +949,12 @@
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
-        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN
+        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN, INTMETHOD
 !/
 !/ Local Parameters
 !/
         INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
-                         IY, ISWLL, ICAP, IBED, IFREQ, IK
+                         IY, ISWLL, ICAP, IBED, IFREQ, IK, INRST
         INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
                          NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
                          LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
@@ -1187,6 +1187,12 @@
               MAPDRYT = 0
               MAPLNDT = 0
               MAPMSKT = 0
+              IF ( INTMETHOD == 2 ) THEN
+                ! Nearest neighbour
+                INRST = MINLOC(GR_INTS(ISEA)%IND_WTS(IG)%WT, DIM=1)
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(:) = -1.
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(INRST) = 1.
+              END IF
               DO IPTS = 1,GR_INTS(ISEA)%IND_WTS(IG)%NP
                 IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                 IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
@@ -1394,6 +1400,10 @@
                   IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                   IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
                   WT = GR_INTS(ISEA)%IND_WTS(IG)%WT(IPTS)
+                  IF (  WT < 0. ) THEN
+                     ! Point is not nearest
+                     CYCLE
+                  END IF
                   GSEA = GRIDS(IGRID)%MAPFS(IGY,IGX)
 !
 ! Group 1 variables
