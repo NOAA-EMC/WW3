@@ -140,7 +140,7 @@
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       USE W3NMLOUNFMD
-      USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, META_T
+      USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, WRITE_USER_META, META_T
       USE NETCDF
 
 !/SMC      USE W3SMCOMD
@@ -815,7 +815,7 @@
       CHARACTER*30            :: UNITVAR(3),FORMAT1
       CHARACTER*30            :: STRSTARTDATE
       CHARACTER               :: FNAMENC*50,                           &
-                                 ENAME*10,FORMF*11, UNITS*24, UNITS2*24
+                                 FORMF*11, UNITS*24, UNITS2*24
       CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
 !
@@ -947,7 +947,7 @@
 !
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
-          ENAME='      '
+          !CB ENAME='      '
           ! If the flag for the variable IFI of the group IFJ is .TRUE.
           IF ( FLG2D(IFI,IFJ) ) THEN
             ! Instanciates the partition array
@@ -1937,7 +1937,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLKMAX  , MAPSF, X1 )
 !
             ELSE IF ( IFI .EQ. 10 ) THEN
-              WRITE (ENAME,'(A2,I2.2)') '.u', IFJ
+              !CB WRITE (ENAME,'(A2,I2.2)') '.u', IFJ
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
                                                         , MAPSF, X1 )
             ELSE
@@ -1981,7 +1981,7 @@
 
 ! 2.3 Setups the output type 4 ( NetCDF file )
 
-            S2=LEN_TRIM(ENAME)
+            S2=LEN_TRIM(META%ENAME)
             S1=LEN_TRIM(FILEPREFIX)+S4
             FNAMENC(S1+1:50)='       '
             FNAMENC(S1+1:S1+1) = '_'
@@ -1993,7 +1993,7 @@
             ! If NOT flag TOGETHER or variable with freq dim &
             ! (ef, p2l, ...), add variable name in file name
             ELSE
-              FNAMENC(S1+2:S1+S2) = ENAME(2:S2)
+              FNAMENC(S1+2:S1+S2) = META%ENAME(2:S2)
             ENDIF
             ! Defines the netcdf extension
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
@@ -2493,6 +2493,8 @@
                 !! CB - USE NEW W3META MODULE
                 CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
+                CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
+                CALL CHECK_ERR(IRET) ! CB
 
                 !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
                 !CALL CHECK_ERR(IRET)
@@ -2505,6 +2507,7 @@
 
                 IF (NCVARTYPE.EQ.2) THEN 
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
+                  FSC = META%FSC
                 ELSE 
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
                   FSC=1.
@@ -2660,7 +2663,9 @@
                   !! CB - USE NEW W3META MODULE
                   CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
-              
+                  CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
+                  CALL CHECK_ERR(IRET) ! CB
+  
                   !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
                   !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name',VARNS(I))
                   !CALL CHECK_ERR(IRET)
@@ -2670,6 +2675,7 @@
                   
                   IF (NCVARTYPE.EQ.2) THEN 
                     IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
+                    FSC = META%FSC
                   ELSE 
                     IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
                     FSC=1.
@@ -2718,6 +2724,7 @@
                   META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IRET=NF90_INQ_VARID (NCID, META%VARNM, VARID(IVAR))
+                  FSC = META%FSC ! CB: Get the scaling factor again
                   CALL CHECK_ERR(IRET)
                 END DO  
                 IRET=NF90_ENDDEF(NCID)
@@ -2730,7 +2737,7 @@
             CALL T2D(TIME,CURDATE,IERR)
             OUTJULDAY=TSUB(REFDATE,CURDATE)
             WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
-                    'Writing new record ', ENAME(2:) ,'number ',N,                  & 
+                    'Writing new record ', META%ENAME(2:) ,'number ',N,             &
                     ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
                     ':',CURDATE(6),':',CURDATE(7),' in file ',TRIM(FNAMENC)
 

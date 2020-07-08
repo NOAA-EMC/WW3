@@ -1,9 +1,13 @@
+#define CHECK_ERR(I) CALL CHECK_ERROR(I, __LINE__)
+
       MODULE W3OUNFMETA
 
       USE NETCDF
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: SIG, NK
       USE W3ODATMD, ONLY: PTMETH, PTFCUT
+
+      USE W3NCMETAMD
        
       IMPLICIT NONE
 
@@ -30,12 +34,28 @@
 !        "Wave components defined using spectral frequency cutoff",    &
 !        "Unknown" /
 
+      TYPE EXTRA_META_T
+         INTEGER :: I,J
+         TYPE(METALIST_T) :: metalist
+      END TYPE EXTRA_META_T
+
+      INTEGER, PARAMETER :: MAXXM = 100
+      TYPE(EXTRA_META_T) :: EXTRA_META(MAXXM)
+      INTEGER :: NXM = 0 ! Number of extra meta-data entries
+
       CONTAINS
 
       SUBROUTINE INIT_META
-        ! Maybe put initialisation of partcom in here? Requies an 
-        ! explicit call to INIT though.
-        
+
+        ! Test of user meta:
+        EXTRA_META(1)%i=2
+        EXTRA_META(1)%j=1
+        EXTRA_META(1)%metalist = LIST_NEW()
+        CALL LIST_APPEND(EXTRA_META(1)%metalist, "chrisb", "is ace")
+        CALL LIST_APPEND(EXTRA_META(1)%metalist, "random_int", 5778)
+        CALL LIST_APPEND(EXTRA_META(1)%metalist, "keep_it_real", 123.456)
+        NXM = 3
+
         !  partitioning method comment string:
         IF ( PTMETH .EQ. 1 ) THEN
           PARTCOM = "Wind sea and swells defined using topographic " //  &
@@ -1487,6 +1507,7 @@
         TYPE(META_T), INTENT(IN) :: meta
         INTEGER, INTENT(OUT) :: err
 
+
         err = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
         IF(err /= NF90_NOERR) RETURN
         err = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
@@ -1509,11 +1530,62 @@
           err = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
           IF(err /= NF90_NOERR) RETURN
         END IF
-
-        ! TODO: Write optional, user defined meta-data:
-        
-
-
       END SUBROUTINE WRITE_META
 
+
+      SUBROUTINE WRITE_USER_META(NCID, VARID, IFI, IFJ, IRET)
+         ! Write out any user meta-data associated with this field
+        INTEGER, INTENT(IN) :: NCID, VARID, IFI, IFJ
+        INTEGER, INTENT(OUT) :: IRET
+
+        INTEGER :: I
+        TYPE(METANODE_T), POINTER :: pmeta
+
+        DO I = 1, NXM
+          IF(EXTRA_META(I)%I .EQ. IFI .AND. EXTRA_META(I)%J .EQ. IFJ) THEN
+            pmeta => EXTRA_META(I)%METALIST%root
+            DO 
+              WRITE(6,*) 'CB: Extra meta: ', pmeta%attname
+              IF(pmeta%type .eq. "c") then
+                iret = NF90_PUT_ATT(ncid, varid, pmeta%attname, GET_CHAR(pmeta))
+                CHECK_ERR(iret)
+              ELSE IF(pmeta%type .eq. "f") then
+                iret = NF90_PUT_ATT(ncid, varid, pmeta%attname, GET_FLOAT(pmeta))
+                CHECK_ERR(iret)
+              ELSE IF(pmeta%type .eq. "i") then
+                iret = NF90_PUT_ATT(ncid, varid, pmeta%attname, GET_INT(pmeta))
+                CHECK_ERR(iret)
+              ENDIF
+
+              IF(.NOT. ASSOCIATED(pmeta%next)) EXIT
+              pmeta => pmeta%next
+            ENDDO
+          ENDIF
+        ENDDO
+        
+        IRET = 0
+  
+      END SUBROUTINE WRITE_USER_META
+
+      SUBROUTINE CHECK_ERROR(IRET, ILINE)
+
+        USE NETCDF
+        USE W3ODATMD, ONLY: NDSE
+        USE W3SERVMD, ONLY: EXTCDE
+  
+        IMPLICIT NONE
+  
+        INTEGER IRET, ILINE
+  
+        IF (IRET .NE. NF90_NOERR) THEN
+          WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3OUNFMETA :'
+          WRITE(NDSE,*) ' LINE NUMBER ', ILINE
+          WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+          WRITE(NDSE,*) NF90_STRERROR(IRET)
+          CALL EXTCDE ( 59 )
+        END IF
+        RETURN
+  
+      END SUBROUTINE CHECK_ERROR
+      
       END MODULE W3OUNFMETA
