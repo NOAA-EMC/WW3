@@ -386,7 +386,6 @@
           WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
 !         FNAME=TIMETAG//'.restart.'//FILEXT(:I)
           FNAME='restart_wave/'//TIMETAG//'.restart.'//FILEXT(:I)
-          print*,"FNAME:  ",trim(FNAME)
       ELSE
          IF ( IFILE.EQ.0 ) THEN
             FNAME  = 'restart.'//FILEXT(:I)
