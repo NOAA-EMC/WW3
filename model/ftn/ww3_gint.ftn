@@ -269,7 +269,7 @@
         FNAMEWHT='WHTGRIDINT.bin'
         OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
         NSEA_FILE = 0
-        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic security check ... 
+        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic consistency check ... 
         IF (NSEA_FILE.EQ.NSEA) THEN 
           DO ISEA = 1, NSEA
             READ(994) COUNTG
@@ -385,6 +385,8 @@
                 DO I = 1,4 
 ! The following two IF tests are separated because for triangles, JS(4)=IS(4)=0
                   IF ( RW(I) .GT. 0.0 ) THEN 
+                    ! MAPSTA == 0 indicated excluded point (either land
+                    ! or truly excluded) 
                     IF ( GRIDS(IG)%MAPSTA(JS(I),IS(I)) .NE. 0) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
@@ -877,8 +879,8 @@
  914    FORMAT ( '        OUTPUT TIME : ',A)
  915    FORMAT ( '   ------------------------------------------------')
  916    FORMAT ( I5,A,2X,A)
- 917    FORMAT ('   Interpolation scheme = ',I1,'  ==> 0 linear, ', /          &
-                ' 1 extrapolate unstructured, 2 nearest')
+ 917    FORMAT (/'   Interpolation scheme = ',I1,'  ==> 0 linear, ',           &
+                '1 extrapolate unstructured, 2 nearest'/)
  950    FORMAT (/'  End of file reached'/)
  999    FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
                  15X,'==============================================='/)
