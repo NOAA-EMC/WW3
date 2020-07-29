@@ -726,12 +726,10 @@ ELSE
       GAMMA_TOY =  2 + log(0.9)/log(2.)
       ! Variables from Cole et al. 1995
       ALPHA_D=0.54
-      !B_COLE=1.205E-9 * EXP(0.55*1.60218E-19/(1.38064852e-23*263.15))
       B_COLE=1.205E-9 * EXP(IS2PARS(24)*1.60218E-19/(1.38064852e-23*268.15))
       TAU_D=B_COLE/0.07
       S_D=LOG(SIG(1:NK)*TAU_D)
       DELTA_D=IS2PARS(21) 
-! 
       IF (IS2PARS(9).GT.0) ICEDMIN = IS2PARS(9)
       IF (IS2PARS(12).GT.0) THEN 
         B=IS2PARS(12)
