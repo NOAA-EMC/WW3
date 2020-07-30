@@ -399,7 +399,7 @@
                                        FLGR2(NOGRP,NGRPP), FLG2(NOGRP),&
                                        PRTFRM
       CHARACTER, INTENT(IN)         :: FEXT*(*)
-      CHARACTER(LEN=10), INTENT(IN) :: PNAMES(NPT)
+      CHARACTER(LEN=40), INTENT(IN) :: PNAMES(NPT)
       LOGICAL, INTENT(IN), OPTIONAL :: FLAGSTIDEIN(4)
       INTEGER                       :: NSEALout, NSEALMout
 !/
