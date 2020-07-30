@@ -151,7 +151,7 @@
 !       NPT     Int.   I   Number of output points in input.
 !       XPT     R.A.  I/O  X (longitude) coordinates of output points.
 !       YPT     R.A.  I/O  Id. Y.
-!       PNAMES  C*10   I   Names of output points.
+!       PNAMES  C*40   I   Names of output points.
 !       IMOD    Int.   I   Grid ID number.
 !     ----------------------------------------------------------------
 !
@@ -232,7 +232,7 @@
 !/
       INTEGER, INTENT(IN)          :: NPT, IMOD
       REAL, INTENT(INOUT)          :: XPT(NPT), YPT(NPT)
-      CHARACTER(LEN=10),INTENT(IN) :: PNAMES(NPT)
+      CHARACTER(LEN=40),INTENT(IN) :: PNAMES(NPT)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
