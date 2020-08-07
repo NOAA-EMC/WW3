@@ -39,7 +39,8 @@ then
      [ "$cmplr" == "zeus_pgi" ] || [ "$cmplr" == "zeus_pgi_debug" ]               || \
      [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
      [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ] ; then
+     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+     [ "$cmplr" == "hera" ] ; then
      source $WWATCH3_DIR/bin/cmplr.env
      # shortlist optl
      alloptl=( $optl )
