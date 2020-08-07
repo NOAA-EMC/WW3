@@ -72,7 +72,7 @@
 !
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
-      LOGICAL, PUBLIC         :: NOLEAP
+      CHARACTER, PUBLIC       :: CALTYPE*8
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -192,13 +192,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Nov-1999 |
+!/                  | Last update :         18-Jun-2020 |
 !/                  +-----------------------------------+
 !/                                Based on INCYMD of the GLA GCM.
 !/
 !/    18-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.00 )
+!/    18-Jun-2020 : Add 360-day calendar option         ( version 7.08 )
 !/
 !  1. Purpose :
 !
@@ -247,7 +248,6 @@
 !/
       INTEGER                 :: NY, NM, ND
       INTEGER, SAVE           :: NDPM(12)
-      DATA     NDPM / 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL                 :: LEAP
 !/
@@ -255,18 +255,27 @@
 !/
 !/S      CALL STRACE (IENT, 'IYMD21')
 !
+! Declare the number of days in month depending on calendar
+!
+      IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+        NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
+      ELSE
+        NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+      END IF
+!
 ! "Unpack" and increment date :
 !
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       NM   = MIN ( 12 , MAX(1,NM) )
       ND   = MOD(NYMD,100) + M
-      LEAP = MOD(NY,400).EQ.0 .OR.                              &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       ! Add override for simulations with no leap years
-      IF (NOLEAP) then
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+         LEAP = MOD(NY,400).EQ.0 .OR.                           &
+              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+      ELSE
          LEAP = .false.
-      ENDIF
+      END IF
 !
 ! M = -1, change month if necessary :
 !
@@ -314,12 +323,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jan-2001 |
+!/                  | Last update :         18-Jun-2020 |
 !/                  +-----------------------------------+
 !/
 !/    23-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    05-Jan-2001 : Y2K leap year error correction.     ( version 2.05 )
+!/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
 !/
 !/
 !  1. Purpose :
@@ -401,9 +411,17 @@
           IF (NY1.EQ.NY2) GOTO 200
           IF (NST.GT.0) THEN
               NY2    = NY2 - 1
-              ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
+              IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+                ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+              ELSE
+                ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
+              END IF
             ELSE
-              ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
+              IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+                ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
+              ELSE
+                ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
+              END IF
               NY2    = NY2 + 1
             ENDIF
           GOTO 100
@@ -428,13 +446,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Nov-1999 |
+!/                  | Last update :         18-Jun-2020 |
 !/                  +-----------------------------------+
 !/                                Based on MODYMD of the GLA GCM.
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.01 )
+!/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
 !/
 !  1. Purpose :
 !
@@ -482,7 +501,6 @@
 !/
       INTEGER                 :: NY, NM, ND
       INTEGER, SAVE           :: NDPM(12)
-      DATA    NDPM / 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL                 :: LEAP
 !/
@@ -490,15 +508,24 @@
 !/
 !/S      CALL STRACE (IENT, 'MYMD21')
 !
+! Declare the number of days in month depending on calendar
+!
+      IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+        NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
+      ELSE
+        NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+      END IF
+!
 ! "Unpack" and increment date :
 !
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       ND   = MOD(NYMD,100)
-      LEAP = MOD(NY,400).EQ.0 .OR.                              &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       !Allow override for NoLeap simulations
-      IF (NOLEAP) THEN
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+         LEAP = MOD(NY,400).EQ.0 .OR.                           &
+              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+      ELSE
          LEAP=.false.
       ENDIF
 !
@@ -1431,10 +1458,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         18-Jun-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-May-2018 : Origination                         ( version 6.05 )
+!/    18-Jun-2020 : Addition of 360-day calendar        ( version 7.08 )
 !/
 !  1. Purpose :
 !
@@ -1484,19 +1512,34 @@
 !
 ! Convert dates and times :
 !
-      A1 = (14-T1(2))/12
-      B1 = T1(1) + 4800 - A1
-      C1 = T1(2) + 12*A1 - 3
-      D1 = T1(3) + (153*C1 + 2)/5 + 365*B1 + B1/4 -B1/100 + B1/400
-      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+      IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+        A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
+
+        E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+        E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
 !
-      A2 = (14-T2(2))/12
-      B2 = T2(1) + 4800 - A2
-      C2 = T2(2) + 12*A2 - 3
-      D2 = T2(3) + (153*C2 + 2)/5 + 365*B2 + B2/4 -B2/100 + B2/400
-      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+        TSUB = DBLE(A1) + (E2-E1)/86400.0d0
+      ELSE
+        A1 = (14-T1(2))/12
+        B1 = T1(1) + 4800 - A1
+        C1 = T1(2) + 12*A1 - 3
+        D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
+        IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+          D1 = D1 + B1/4 -B1/100 + B1/400
+        ENDIF
+        E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
 !
-      TSUB = DBLE(D2-D1) + (E2-E1)/86400.0d0
+        A2 = (14-T2(2))/12
+        B2 = T2(1) + 4800 - A2
+        C2 = T2(2) + 12*A2 - 3
+        D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
+        IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+          D2 = D2 + B2/4 -B2/100 + B2/400
+        ENDIF
+        E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+!
+        TSUB = DBLE(D2-D1) + (E2-E1)/86400.0d0
+      ENDIF
 !
       RETURN
 !/

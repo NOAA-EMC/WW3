@@ -1,10 +1,10 @@
 !****************************************************************************************
-SUBROUTINE read_dimgrid (nlon,nlat,data_filename,w_unit)
+SUBROUTINE read_dimgrid (nlon,nlat,data_filename,w_unit,krank)
   !**************************************************************************************
   USE netcdf
   IMPLICIT NONE
   !
-  INTEGER                  :: i,w_unit
+  INTEGER                  :: i,w_unit,krank
   !
   INTEGER                  :: il_file_id,il_lon_id, &
      il_lat_id,il_indice_id, &
@@ -45,10 +45,12 @@ SUBROUTINE read_dimgrid (nlon,nlat,data_filename,w_unit)
   ENDDO
   !
   IF ( (lat_dims_len(1) .NE. lon_dims_len(1)).OR.(lat_dims_len(2) .NE. lon_dims_len(2)) ) THEN
+    IF(krank.EQ.0) THEN
       WRITE(w_unit,*) 'Problem model1 in read_dimgrid'
       WRITE(w_unit,*) 'Dimensions of the latitude are not the same as the ones of the longitude'
       CALL flush(w_unit)
       STOP
+    ENDIF
   ENDIF
   !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   !
@@ -61,9 +63,11 @@ SUBROUTINE read_dimgrid (nlon,nlat,data_filename,w_unit)
   !
   CALL hdlerr(NF90_CLOSE(il_file_id), __LINE__,__FILE__ )
   !
-  WRITE(w_unit,*) 'Reading input file ',data_filename
-  WRITE(w_unit,*) 'Global dimensions nlon=',nlon,' nlat=',nlat
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Reading input file ',data_filename
+    WRITE(w_unit,*) 'Global dimensions nlon=',nlon,' nlat=',nlat
+    CALL flush(w_unit)
+  ENDIF
   !
   !
 END SUBROUTINE read_dimgrid

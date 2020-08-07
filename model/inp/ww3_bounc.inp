@@ -16,6 +16,9 @@ $ List of spectra files. These NetCDF files use the WAVEWATCH III
 $ format as described in the ww3_ounp.inp file. The files are 
 $ defined relative to the directory in which the program is run.
 $
+$ Note: When using a rotated pole WW3 grid, these input spectra are
+$ always assumed to be formulated on a standard pole.
+$
 SPECTRA_NC/ww3.62163_spec.nc
 SPECTRA_NC/ww3.62069_spec.nc
 'STOPSTRING'

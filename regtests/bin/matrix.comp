@@ -111,7 +111,7 @@
 # 3.  Looping over work directories                                           #
 # --------------------------------------------------------------------------- #
 
-        cases=$(find . -maxdepth 1 -type d -name "work*")
+        cases=$(find . -maxdepth 1 -type d -name "work*" | grep -v work_oasis)
         # skip to next tst if no work directory
         echo 'run : ' $cases
         if [ -z "$cases" ] ; then 
@@ -159,7 +159,7 @@
               binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
 
               #Generate list of files to skip
-              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt"
+              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt oasis_make.out oasis_clean.out toy_make.out toy_clean.out"
 
               nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
               echo "  found $nf_1 files in base directory" >> $home_dir/fulldiff.tmp
@@ -192,7 +192,7 @@
                   if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
                   then
                     filetype="skip"
-                  elif [[ $file == log.* ]]
+                  elif [[ $file == log.* ]] || [[ $file == "output.ww3" ]]
                   then
                     filetype="log"
                   elif [[ $binaryfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
@@ -232,7 +232,9 @@
                           sed -n '/version/!p'         | \
                           sed -n '/date :/!p'          | \
                           sed -n '/time :/!p'          | \
-                          sed -n '/Elapsed/!p' > diff_tempfile
+                          sed -n '/Elapsed/!p'         | \
+                          sed -n '/calculating for/!p' | \
+                          sed -n '/computation loop at/!p' > diff_tempfile
                       else
                         diff $file $return_comp/$run/$file > diff_tempfile
                       fi

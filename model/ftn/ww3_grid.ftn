@@ -106,6 +106,7 @@
 !/    22-Jan-2020 : Update default values for IS2       ( version 7.05 ) 
 !/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+!/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -519,7 +520,7 @@
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
                           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB,       &
                           NOSWLL, PTMETH, PTFCUT
-      USE W3TIMEMD, ONLY: NOLEAP
+      USE W3TIMEMD, ONLY: CALTYPE
       USE W3NMLGRIDMD
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
@@ -892,8 +893,8 @@
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
                       ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
-                      ICEHDISP, ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR, &
-                      PTM, PTFC, BTBET
+                      ICEHDISP, ICEDDISP, ICEFDISP, CALTYPE,          &
+                      TRCKCMPR, PTM, PTFC, BTBET
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -2239,7 +2240,7 @@
       STDY = -1. 
       STDT = -1. 
       ICEDISP = .FALSE.
-      NOLEAP = .FALSE.
+      CALTYPE = 'standard'
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -2582,6 +2583,11 @@
 !/MLIM      J      = 1
       WRITE (NDSO,967) FHMAX, FHMAX/SQRT(2.), YESXNO(J)
       IF ( FHMAX.LT.0.50 .AND. J.EQ.1 ) WRITE (NDST,968)
+!
+      IF (TRIM(CALTYPE) .NE. 'standard' .AND.                           &
+          TRIM(CALTYPE) .NE. '360_day'  .AND.                           &
+          TRIM(CALTYPE) .NE. '365_day' ) GOTO 2003 
+      WRITE (NDST,1973) CALTYPE
       WRITE (NDSO,*)
 !
 ! 6.x Read values for FLD stress calculation
@@ -2761,7 +2767,7 @@
                                 STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
                                 ICEHINIT, ICEDISP, ICEHDISP,          &
                                 ICESLN, ICEWIND, ICESNL, ICESDS,      &
-                                ICEDDISP,ICEFDISP, NOLEAP, TRCKCMPR,  &
+                                ICEDDISP,ICEFDISP, CALTYPE, TRCKCMPR, &
                                 BTBETA
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -2771,7 +2777,7 @@
                                 STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
                                 ICEHINIT, ICEDISP, ICEHDISP,          &
                                 ICESLN, ICEWIND, ICESNL, ICESDS,      &
-                                ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR, &
+                                ICEDDISP, ICEFDISP, CALTYPE, TRCKCMPR,&
                                 BTBETA
           END IF
 !
@@ -4414,7 +4420,18 @@
 !/SMC          JS=MAX(1, IJKCel(4,ISEA)/MRFct)
 !/ARC        ENDIF
 !/ARC
-!/SMC !!Li  Minimum DMIN depth is used as well for SMC. 
+!/SMC !      Check that IX, IY are in the bound of [1,NX] and [1,NY] respec.
+!/SMC        IF ((IX+IK-1 .GT. NX) .OR. (IX .LE. 0)) THEN
+!/SMC             WRITE (NDSE,1014) ISEA, IX, IX+IK-1, NX
+!/SMC             CALL EXTCDE(65)
+!/SMC        END IF
+!/SMC 
+!/SMC        IF ((IY+JS-1 .GT. NY) .OR. (IY .LE. 0)) THEN
+!/SMC             WRITE (NDSE,1015) ISEA, IY, IY+JS-1, NY
+!/SMC             CALL EXTCDE(65)
+!/SMC        END IF
+!/SMC
+!/SMC !Li  Minimum DMIN depth is used as well for SMC. 
 !/SMC          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKCel(5, ISEA) ) )
 !/SMC          MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
 !/SMC         MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
@@ -5189,6 +5206,10 @@
       WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 62 )
 !
+ 2003 CONTINUE
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 64 )
+!
  2222 CONTINUE
       IF ( GTYPE .NE. UNGTYPE) THEN
           IF ( NX*NY .NE. NSEA ) THEN
@@ -5689,6 +5710,7 @@
                '       Hrms,max/d factor       (-) :',F9.3/           &
                '       Limiter activated           :  ',A)
   968 FORMAT ( '          *** FACTOR DANGEROUSLY LOW ***')
+ 1973 FORMAT (/'    Calendar type                  :  ',A)
 !
 !/REF1  969 FORMAT (/'  Shoreline reflection     ',A/                  &
 !/REF1               ' --------------------------------------------------')
@@ -5781,7 +5803,7 @@
                '        ICESLN = ',F6.2,', ICEWIND = ',F6.2,          &
                      ', ICESNL = ',F6.2,', ICESDS = ',F5.2,','/       &
                '        ICEDDISP = ',F5.2,', ICEFDISP = ',F5.2,       &
-                     ', NOLEAP = ',L3,' , TRCKCMPR = ', L3,','/       &
+                     ', CALTYPE = ',A8,' , TRCKCMPR = ', L3,','/      &
                '        BTBET  = ', F6.2, ' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
@@ -5965,6 +5987,10 @@
                '     ERROR IN READING FROM INPUT FILE'/               &
                '     IOSTAT =',I5/)
 !
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
+               '     INVALID CALENDAR TYPE: SELECT ONE OF:',          &
+               '     standard, 360_day, or 365_day '/)
+!
  1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID : '/               &
                '     CANNOT READ UNFORMATTED (IDFM = 3) FROM UNIT',   &
                I4,' (ww3_grid.inp)'/)
@@ -6003,6 +6029,14 @@
                '     AND REPLACED WITH A STRING INDICATING THE TYPE'/ &
                '     OF GRID INDEX CLOSURE (NONE, SMPL or TRPL).'/    &
                ' *** PLEASE UPDATE YOUR GRID INPUT FILE ACCORDINGLY ***'/)
+!
+ 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
+               '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
+!
+ 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
+               '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)
