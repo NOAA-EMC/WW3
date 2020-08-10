@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-04-15'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-06-18'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -146,6 +146,7 @@
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+!/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -234,7 +235,7 @@
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
-      USE W3TIMEMD, ONLY: NOLEAP
+      USE W3TIMEMD, ONLY: CALTYPE
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -640,7 +641,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-               ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC, IICEHDISP, &
+               ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
                IICEDDISP, IICEFDISP, BTBETA
 
           WRITE(NDSM)GRIDSHIFT
@@ -780,7 +781,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC,  &
+               IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
                IICEDDISP, IICEHDISP, IICEFDISP, BTBETA
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
 !/DEBUGIOGR     FLUSH(740+IAPROC)

@@ -440,6 +440,9 @@ $                           STDX   : Space-Time Extremes X-Length
 $                           STDY   : Space-Time Extremes Y-Length
 $                           STDT   : Space-Time Extremes Duration
 $                           P2SF   : ......
+$                           CALTYPE: Calendar type. The only accepted
+$                                    values are 'standard' (default),
+$                                    '365_day', or '360_day'.
 $
 $ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -
 $   Reichl et al. 2014  : Namelist FLD1

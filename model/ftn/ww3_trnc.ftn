@@ -12,6 +12,7 @@
 !/    17-Feb-2016 : Creation                            ( version 5.11 )
 !/    11-Apr-2016 : Adapted to use more options         ( version 5.11 )
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
+!/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/
 !/    Copyright 2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -791,13 +792,20 @@
 !  time
       IRET=NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, (/DIMID(1)/), VARID(1))
 !/NC4      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
+      SELECT CASE (TRIM(CALTYPE))
+        CASE ('360_day')
+          IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 360 day calendar')
+        CASE ('365_day')
+          IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 365 day calendar')
+        CASE ('standard')
+          IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
+      END CASE
       IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','time')
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar','standard')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions',                   &
          'Relative julian days with decimal part (as parts of the day)')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','T') 
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'calendar',TRIM(CALTYPE))
 
 ! frequency
       IRET=NF90_DEF_VAR(NCID, 'frequency', NF90_FLOAT, (/DIMID(2)/),VARID(2))
