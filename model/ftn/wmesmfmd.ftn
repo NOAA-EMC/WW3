@@ -5621,9 +5621,6 @@
 !/ST4                           dlwmean )
             endif !firstCall
             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-          else  
-            !ice value 
-            wrln(jsea) = 0.00001d0
           endif 
         enddo jsea_loop
 
