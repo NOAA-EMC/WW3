@@ -1576,7 +1576,8 @@
 !       This codes does either one or the other of 
 !       Ardhuin et al. (JPO 2010)   
 !       Filipot & Ardhuin (JGR 2012)
-!       the choice depends on SDSBCK 
+!       Romero (GRL 2009)
+!       the choice depends on SDSBCHOICE
 !
 !  3. Parameters :
 !
