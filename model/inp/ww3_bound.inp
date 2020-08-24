@@ -26,6 +26,9 @@ $
 $ If data is used other than from previous WAVEWATCH III runs, then
 $ this data will need to be converted to the WAVEWATCH III format.
 $
+$ Note: When using a rotated pole WW3 grid, these input spectra are
+$ always assumed to be formulated on a standard pole.
+$
 $ In the case of NetCDF files see ww3_bounc.inp  
 $
 SPECTRI/mww3.W004N476.spec

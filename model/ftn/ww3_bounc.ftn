@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-May-2020 |
+!/                  | Last update :         21-Jul-2020 |
 !/                  +-----------------------------------+
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
@@ -18,6 +18,8 @@
 !/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/    04-May-2020 : Update spectral conversion          ( version 7.XX ) 
+!/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
+!/
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -53,6 +55,7 @@
 !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
 !      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
+!      W3EQTOLL  Subr  W3SERVMD Convert coordinates from rotated pole.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -65,6 +68,9 @@
 !
 !     - Can be used also to diagnose contents of nest.ww3 file
 !       in read mode
+!
+!     - Input spectra are assumed to be formulated on a standard
+!       pole. However, the model grid can be on a rotated pole.
 !
 !  8. Structure :
 !
@@ -106,11 +112,13 @@
                           GNAME, W3NMOD, W3SETG,&
                           NSEA, MAPSTA, XYB, GTYPE, XGRD, YGRD, X0, Y0, &
                           SX, SY, MAPSF, UNGTYPE, CLGTYPE, RLGTYPE, FLAGLL
+!/RTD      USE W3GDATMD, ONLY : POLAT, POLON
       USE W3ODATMD, ONLY: NDSO, NDSE
       USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3TIMEMD
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_SPHERE
+!/RTD      USE W3SERVMD, ONLY: W3EQTOLL
       USE W3NMLBOUNCMD
       USE NETCDF
 !/S      USE W3SERVMD, ONLY : STRACE
@@ -147,6 +155,8 @@
                                  XBPI(:), YBPI(:), RDBPI(:,:),         &
                                  XBPO(:), YBPO(:), RDBPO(:,:),         &
                                  ABPIN(:,:), ABPIN2(:,:,:)
+!/RTD      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
+!/RTD      LOGICAL               :: ISRTD
 !
       REAL, ALLOCATABLE       :: TMPSPCI(:,:),TMPSPCO(:,:)
       
@@ -204,6 +214,9 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!/RTD!
+!/RTD      ISRTD = POLAT .LT. 90.0
+!/RTD!
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read requests from input file.
@@ -359,6 +372,7 @@
           END IF
         END DO
         ALLOCATE(XBPO(NBO),YBPO(NBO))
+!/RTD       IF (ISRTD) ALLOCATE(XTMP(NBO), YTMP(NBO), ANGTMP(NBO))
         ALLOCATE (IPBPO(NBO,4),RDBPO(NBO,4))
         IBO=0
         DO ISEA=1,NSEA
@@ -379,7 +393,16 @@
             END SELECT !GTYPE
           END IF
         END DO
-
+!/RTD!
+!/RTD        IF (ISRTD) THEN
+!/RTD          ! Convert grid boundary cell locations to standard pole
+!/RTD          XTMP = XBPO
+!/RTD          YTMP = YBPO
+!/RTD          CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
+!/RTD          DEALLOCATE(XTMP, YTMP, ANGTMP)
+!/RTD        ENDIF
+!/RTD!
+!
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
         ALLOCATE(DIMID(NBO2,3),DIMLN(NBO2,3),NCID(NBO2))
 

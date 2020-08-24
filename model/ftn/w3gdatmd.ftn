@@ -220,7 +220,7 @@
 !      FLDRY     Log.  Public   Flag for 'dry' run (IO and data
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
-!      FLSOU     Log.  Public   Flag for source term calcualtion.
+!      FLSOU     Log.  Public   Flag for source term calculation.
 !      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FSWND     Log.  Public   Flag for sea-point only wind input on SMC grid.
