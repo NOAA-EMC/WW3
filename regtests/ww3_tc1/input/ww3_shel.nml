@@ -22,7 +22,8 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%STOP    = '19690101 000000'
+  DOMAIN%START   = '19680228 000000'
+  DOMAIN%STOP    = '19680301 000000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -63,7 +64,8 @@
 ! -------------------------------------------------------------------- !
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 !
-! * the point file is a space separated values per line : lon lat 'name'
+! * the point file is a space separated values per line :
+!   longitude latitude 'name' (C*40)
 !
 ! * the full list of field names is :
 !  All parameters listed below are available in output file of the types
@@ -238,7 +240,6 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS'
-  TYPE%POINT%FILE          = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -275,8 +276,7 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '19680228 000000' '86400' '19690101 000000'
-  DATE%POINT          = '19680228 000000' '86400' '19690101 000000'
+  DATE%FIELD          = '19680228 000000' '86400' '19680301 000000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -325,19 +325,15 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_CUR                =  1
   HOMOG_COUNT%N_WND                =  1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'CUR'
-  HOMOG_INPUT(1)%VALUE1      = 2.
-  HOMOG_INPUT(1)%VALUE2      = 90.
-
-  HOMOG_INPUT(2)%NAME        = 'WND'
-  HOMOG_INPUT(2)%VALUE1      = 6.
-  HOMOG_INPUT(2)%VALUE2      = 128.
-  HOMOG_INPUT(2)%VALUE3      = 0.
+  HOMOG_INPUT(1)%NAME        = 'WND'
+  HOMOG_INPUT(1)%DATE        = '19680228 000000'
+  HOMOG_INPUT(1)%VALUE1      = 6.
+  HOMOG_INPUT(1)%VALUE2      = 128.
+  HOMOG_INPUT(1)%VALUE3      = 0.
 /
 
 ! -------------------------------------------------------------------- !
