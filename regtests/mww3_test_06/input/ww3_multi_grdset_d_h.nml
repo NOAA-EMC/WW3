@@ -20,10 +20,10 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
+  DOMAIN%NRGRD	= 2
+  DOMAIN%UNIPTS = T
   DOMAIN%FLGHG1 = T
   DOMAIN%FLGHG2 = T
-  DOMAIN%START  = '20151025 000000'
-  DOMAIN%STOP   = '20151026 000000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -110,9 +110,8 @@
 !     MODEL(2)%RESOURCE = 1 1 0.00 1.00 F
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
-  MODEL(1)%NAME                  = 'lowres'
-  MODEL(1)%FORCING%WINDS         = 'native'
-  MODEL(1)%FORCING%ICE_CONC      = 'native'
+  MODEL(1)%NAME                  = 'gbandd360'
+  MODEL(2)%NAME                  = 'arcticsub'
 /
 
 ! -------------------------------------------------------------------- !
@@ -160,9 +159,9 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'HS WND ICE DPT DIR'
-  ALLTYPE%POINT%FILE       = '../i_lowres_multi/points.list'
-  ALLTYPE%PARTITION        = 0 999 1 0 999 1 F
+  ALLTYPE%FIELD%LIST       = 'DPT HS'
+  ALLTYPE%POINT%NAME       = 'points'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -202,9 +201,8 @@
 !     IDATE(3)%PARTITION%START    =  '19680606 000000' 
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  ALLDATE%FIELD          = '20151025 000000' '10800' '20151031 000000'
-  ALLDATE%POINT          = '20151025 000000' '10800' '20151031 000000'
-  ALLDATE%PARTITION      = '20090525 000000' '36000' '20090526 000000'
+  ALLDATE%FIELD          = '19680606 000000' '3600' '19680608 000000'
+  ALLDATE%POINT          = '19680606 000000' '3600' '19680608 000000'
 /
 
 ! -------------------------------------------------------------------- !
