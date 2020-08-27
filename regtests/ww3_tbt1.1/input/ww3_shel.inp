@@ -68,7 +68,7 @@ $----------------------------------------------------------------
 $
 $ Type 2 : Point output
 $          Standard line and a number of lines identifying the 
-$          longitude, latitude and name (C*10) of output points.
+$          longitude, latitude and name (C*40) of output points.
 $          The list is closed by defining a point with the name
 $          'STOPSTRING'. No point info read if no point output is
 $          requested (i.e., no 'STOPSTRING' needed).

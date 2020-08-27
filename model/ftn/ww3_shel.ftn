@@ -316,8 +316,8 @@
       CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:8)
       CHARACTER(LEN=3)    :: IDSTR(-7:8), IDTST
       CHARACTER(LEN=6)    :: YESXNO
-      CHARACTER(LEN=10)   :: PN
-      CHARACTER(LEN=10),                                               &
+      CHARACTER(LEN=40)   :: PN
+      CHARACTER(LEN=40),                                               &
               ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=13)   :: IDFLDS(-7:8)
       CHARACTER(LEN=20)   :: STRNG
