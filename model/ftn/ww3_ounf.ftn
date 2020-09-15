@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Mar-2019 |
+!/                  | Last update :         07-Oct-2019 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -33,6 +33,8 @@
 !/    25-Sep-2018 : Add WBT parameter                   ( version 6.06 )
 !/    28-Mar-2019 : Bugfix to NBIPART check.            ( version 6.07 )
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
+!/    07-Oct-2019 : RTD option with standard lat-lon
+!/                  grid when nesting to rotated grid   ( version 7.11 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -744,6 +746,10 @@
 !/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
       USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2
+      USE W3GDATMD, ONLY : NK, UNGTYPE, MAPSF, NTRI, CLGTYPE, RLGTYPE, &
+                           XGRD, YGRD, SX, SY, X0, Y0, XYB, TRIGP, USSP_WN
+!/RTD ! Rotated pole data from the mod_def file
+!/RTD      USE W3GDATMD, ONLY : POLAT, POLON, FLAGUNR, AnglD
 !/T      USE W3ODATMD, ONLY : NDST
       USE NETCDF
       IMPLICIT NONE
@@ -812,13 +818,18 @@
       LOGICAL                 :: FLFRQ, FLDIR, FEXIST, FREMOVE
       LOGICAL                 :: CUSTOMFRQ=.FALSE.
 !/T      LOGICAL                 :: LTEMP(NGRPP)
-
+!/RTD ! RTDL == False for a standard lat-lon grid. Will be set to True if the
+!/RTD ! grid is rotated
+!/RTD      LOGICAL                 :: RTDL = .FALSE.
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !
 !/S      CALL STRACE (IENT, 'W3EXNC')
 !
+!/RTD ! Is the grid really rotated
+!/RTD      IF ( Polat < 90. ) RTDL = .True.
+!/RTD !
 !/T      DO IFI=1, NOGRP 
 !/T        LTEMP  = FLG2D(IFI,:)
 !/T        WRITE (NDST,9000) IFI, LTEMP
@@ -1043,7 +1054,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -1101,7 +1112,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -1388,7 +1399,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0
@@ -1441,7 +1452,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0 
@@ -1649,7 +1660,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS  = 'degree'
@@ -1709,7 +1720,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               UNITS  = 'degree'
@@ -1870,7 +1881,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0
@@ -1947,7 +1958,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0
@@ -2222,7 +2233,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2335,7 +2346,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2374,7 +2385,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2520,9 +2531,11 @@
               VARND(2)=''
               VARND(3)=''
 !/RTD              ! Override standard direction comment
+!/RTD              IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD                VARND(3) = 'Rotated Pole Grid North'
+!/RTD              END IF
               VMIN = -3000
               VMAX = 3000     
 !
@@ -2558,7 +2571,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2624,23 +2637,27 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSY(1:NSEA)      &
                                                         , MAPSF, XY )
               ENDIF ! SMCGRD
-              DO ISEA=1, NSEA
-                CABS   = SQRT(TUSX(ISEA)**2+TUSY(ISEA)**2)
-                IF ( CABS .NE. UNDEF ) THEN
-                    TUSY(ISEA) = MOD ( 630. -                         &
-                          RADE*ATAN2(TUSY(ISEA),TUSX(ISEA)) , 360. )
-                  ELSE
-                    TUSY(ISEA) = UNDEF
-                  END IF
-                TUSX(ISEA) = CABS
-                END DO
-              IF( SMCGRD ) THEN
-!/SMC                CALL W3S2XY_SMC( TUSX(:), X1 )
-!/SMC                CALL W3S2XY_SMC( TUSY(:), X2 ) ! TODO: CHRISB: TUSY is in degrees....W3S2XY_SMC expects radians...
-              ELSE
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSX,MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSY,MAPSF, X2 )
-              ENDIF ! SMCGRD
+! X1, X2 will not be output when NFIELD == 2
+! ( Like for .cur, .wnd, .ust, .taw, and .uss ) (CHA at FCOO 2019-06-13): 
+              !! Commented out unnecessary statements below for time being
+              !! (...) X1,X2 are not actually written out below
+              !DO ISEA=1, NSEA
+              !  CABS   = SQRT(TUSX(ISEA)**2+TUSY(ISEA)**2)
+              !  IF ( CABS .NE. UNDEF ) THEN
+              !      TUSY(ISEA) = MOD ( 630. -                         &
+              !            RADE*ATAN2(TUSY(ISEA),TUSX(ISEA)) , 360. )
+              !    ELSE
+              !      TUSY(ISEA) = UNDEF
+              !    END IF
+              !  TUSX(ISEA) = CABS
+              !  END DO
+              !IF( SMCGRD ) THEN
+!/SMC                !CALL W3S2XY_SMC( TUSX(:), X1 )
+!/SMC                !CALL W3S2XY_SMC( TUSY(:), X2 ) ! TODO: CHRISB: TUSY is in degrees....W3S2XY_SMC expects radians...
+              !ELSE
+              !  CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSX,MAPSF, X1 )
+              !  CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSY,MAPSF, X2 )
+              !ENDIF ! SMCGRD
               NFIELD=2
               VARNM(1)='utus'
               VARNM(2)='vtus'
@@ -2658,7 +2675,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2715,7 +2732,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2772,7 +2789,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2863,7 +2880,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2917,7 +2934,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -2973,7 +2990,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3008,7 +3025,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3051,7 +3068,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(2) = 'True North'
 !/RTD                VARND(3) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD                VARND(3) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3102,7 +3119,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3134,7 +3151,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3166,7 +3183,7 @@
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
 !/RTD                VARND(2) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD                VARND(2) = 'Rotated Pole Grid North'
 !/RTD              END IF
@@ -3195,7 +3212,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0
@@ -3223,7 +3240,7 @@
 !/RTD              ! Override standard direction comment
 !/RTD              IF ( FLAGUNR ) THEN
 !/RTD                VARND(1) = 'True North'
-!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD              ELSE IF ( RTDL ) THEN
 !/RTD                VARND(1) = 'Rotated Pole Grid North'
 !/RTD              END IF
               VMIN = 0
@@ -3571,13 +3588,15 @@
                   ! instanciates lon with x/lon for regular grid or nodes for unstructured mesh
                   IF (.NOT.ALLOCATED(LON)) ALLOCATE(LON(NX))
 !/RTD                  ! 2d longitude array for standard grid coordinates
-!/RTD                  IF (.NOT.ALLOCATED(LON2D)) ALLOCATE(LON2D(NX,NY),LON2DEQ(NX,NY),ANGLD2D(NX,NY))
+!/RTD                  IF ( RTDL .AND. .NOT.ALLOCATED(LON2D)) &
+!/RTD                    ALLOCATE(LON2D(NX,NY),LON2DEQ(NX,NY),ANGLD2D(NX,NY))
                   IF (.NOT.ALLOCATED(LAT)) THEN 
                     ! If regular grid, instanciates lat with y/lat
                     IF (GTYPE.EQ.RLGTYPE) THEN 
                       ALLOCATE(LAT(NY))
 !/RTD                      ! 2d latitude array for standard grid coordinates
-!/RTD                      IF (.NOT.ALLOCATED(LAT2D)) ALLOCATE(LAT2D(NX,NY),LAT2DEQ(NX,NY))
+!/RTD                      IF ( RTDL .AND. .NOT.ALLOCATED(LAT2D)) &
+!/RTD                        ALLOCATE(LAT2D(NX,NY),LAT2DEQ(NX,NY))
                     ! If unstructured mesh, instanciates lat with nodes
                     ELSE 
                       ALLOCATE(LAT(NX))
@@ -3640,23 +3659,27 @@
 !/RTD                                  ANGLD2D, POLAT, POLON, RTDNY*RTDNX)
 !/SMC                  ENDIF ! SMCTYPE
                 ELSE ! SMCGRD
-                  SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SX)) ))
-                  SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SY)) ))
-                  X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(X0)) ))
-                  Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(Y0)) ))
-                  DO I=1,NX
-                    LON(I)=REAL(X0D+SXD*DBLE(I-1))
-!/RTD                    LON2DEQ(I,1:NY)=LON(I)
-                  END DO
-                  DO I=1,NY
-                    LAT(I)=REAL(Y0D+SYD*DBLE(I-1))
-!/RTD                    LAT2DEQ(1:NX,I)=LAT(I)
-                  END DO
-!/RTD                  ! Calculate the standard grid coordinates
-!/RTD                  DO I=1,NX
-!/RTD                    CALL W3EQTOLL(LAT2DEQ(I,1:NY), LON2DEQ(I,1:NY), LAT2D(I,1:NY), &
-!/RTD                                   LON2D(I,1:NY), ANGLD2D(I,1:NY), POLAT, POLON, NY)
-!/RTD                  END DO   
+                    SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SX)) ))
+                    SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SY)) ))
+                    X0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(X0)) ))
+                    Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(Y0)) ))
+                    DO I=1,NX
+                      LON(I)=REAL(X0D+SXD*DBLE(I-1))
+                    END DO
+                    DO I=1,NY
+                      LAT(I)=REAL(Y0D+SYD*DBLE(I-1))
+                    END DO
+!/RTD                  IF ( RTDL ) THEN
+!/RTD                    ! Calculate the standard grid coordinates
+!/RTD                    DO I=1,NX
+!/RTD                      LON2DEQ(I,:)=LON(I)
+!/RTD                    END DO
+!/RTD                    DO I=1,NY
+!/RTD                      LAT2DEQ(:,I)=LAT(I)
+!/RTD                    END DO                    
+!/RTD                    CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
+!/RTD                                  ANGLD2D, POLAT, POLON, NY*NX)
+!/RTD                  END IF ! RTDL
                   WRITE(STR2,'(F12.0)') SY
                   STR2=ADJUSTL(STR2)
                   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
@@ -3737,11 +3760,13 @@
                   'altitude_resolution','n/a')
               CALL CHECK_ERR(IRET)
 
+!/RTD              IF ( RTDL ) THEN
 !/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
 !/RTD                      'grid_north_pole_latitude',POLAT)
 !/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
 !/RTD                      'grid_north_pole_longitude',POLON)
-
+!/RTD                END IF
+              
               CALL T2D(TIME,STARTDATE,IERR)
               WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
                     STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
@@ -3772,13 +3797,15 @@
                   IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(IY1:IYN))
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
-!/RTD                IRET=NF90_PUT_VAR(NCID,VARID(291),LON2D(IX1:IXN,IY1:IYN))
-!/RTD                CALL CHECK_ERR(IRET)
-!/RTD                IRET=NF90_PUT_VAR(NCID,VARID(292),LAT2D(IX1:IXN,IY1:IYN))
-!/RTD                CALL CHECK_ERR(IRET)
+!/RTD                IF ( RTDL ) THEN
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(291),LON2D(IX1:IXN,IY1:IYN))
+!/RTD                  CALL CHECK_ERR(IRET)
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(292),LAT2D(IX1:IXN,IY1:IYN))
+!/RTD                  CALL CHECK_ERR(IRET)
+!/RTD                  END IF
               END IF
 
-              ! If spherical grid
+              ! If curvilinear grid
               IF (GTYPE.EQ.CLGTYPE) THEN 
                 IRET=NF90_PUT_VAR(NCID,VARID(1),LON2D(IX1:IXN,IY1:IYN))
                 CALL CHECK_ERR(IRET)
@@ -3922,10 +3949,12 @@
                   CALL CHECK_ERR(IRET)
                 END IF
 !/RTD
+!/RTD                IF ( RTDL ) THEN
 !/RTD                  ! Add grid mapping attribute for rotated pole grids:
 !/RTD                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
 !/RTD                                    'rotated_pole')
 !/RTD                  CALL CHECK_ERR(IRET)
+!/RTD                  END IF
 !/RTD
               END DO
 !
@@ -4082,10 +4111,12 @@
                     CALL CHECK_ERR(IRET)
                   END IF
 !/RTD
-!/RTD                  ! Add grid mapping attribute for rotated pole grids:
-!/RTD                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
-!/RTD                                    'rotated_pole')
-!/RTD                  CALL CHECK_ERR(IRET)
+!/RTD                  IF ( RTDL ) THEN
+!/RTD                    ! Add grid mapping attribute for rotated pole grids:
+!/RTD                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',   &
+!/RTD                                      'rotated_pole')
+!/RTD                    CALL CHECK_ERR(IRET)
+!/RTD                    END IF
 !/RTD
                 END DO
                 IRET = NF90_ENDDEF(NCID)
@@ -4715,7 +4746,10 @@
 !--------------------------------------------------------------------------    
       SUBROUTINE W3CRNC (NCFILE, NCID, DIMID, DIMLN, VARID,  &
                          EXTRADIM, NCTYPE, MAPSTAOUT )
-      USE W3GDATMD
+!
+      USE W3GDATMD, ONLY : GTYPE, FLAGLL, UNGTYPE, CLGTYPE, RLGTYPE
+!/RTD ! Rotated pole parameters from the mod_def file 
+!/RTD      USE W3GDATMD, ONLY : POLAT, POLON
       USE NETCDF
       USE W3TIMEMD
 
@@ -4741,7 +4775,12 @@
 !
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
 
+!/RTD ! RTDL == False for a standard lat-lon grid. Will be set to True if the
+!/RTD ! grid is rotated
+!/RTD      LOGICAL                           :: RTDL = .FALSE.
 
+!/RTD ! Is the grid really rotated
+!/RTD        IF ( Polat < 90. ) RTDL = .True.
 !      
 ! Creation in netCDF3 or netCDF4
 !
@@ -4851,20 +4890,27 @@
           IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(2), VARID(2))
           END IF
         IRET=NF90_PUT_ATT(NCID,VARID(1),'units','degree_east')
+!/RTD ! Is the grid really rotated
+!/RTD        IF ( .NOT. RTDL ) THEN        
         IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude')
         IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','longitude')
+!/RTD        ELSE     
 !/RTD        ! Override the above for RTD pole:
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude in rotated pole grid')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','grid_longitude')
+!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude in rotated pole grid')
+!/RTD          IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','grid_longitude')
+!/RTD        END IF        
         IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_min',-180.0)
         IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_max',360.)
 !
         IRET=NF90_PUT_ATT(NCID,VARID(2),'units','degree_north')
+!/RTD        IF ( .NOT. RTDL ) THEN        
         IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude')
         IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','latitude')
+!/RTD        ELSE        
 !/RTD        ! Override the above for RTD pole:
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude in rotated pole grid')
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','grid_latitude')
+!/RTD        END IF        
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_min',-90.0)
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',180.)
 !
@@ -4888,6 +4934,7 @@
 !/RTD            call CHECK_ERR(IRET)
 !/SMC          ENDIF
         ELSE
+!/RTD      IF ( RTDL ) THEN
 !/RTD        !Add secondary coordinate system linking rotated grid back to standard lat-lon
 !/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
 !/RTD                             VARID(291))
@@ -4896,8 +4943,10 @@
 !/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
 !/RTD                             VARID(292))
 !/RTD        call CHECK_ERR(IRET)
+!/RTD      END IF
         ENDIF ! SMCGRD
 !/RTD
+!/RTD      IF ( RTDL ) THEN
 !/RTD        ! Attributes for standard_longitude:
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'units','degree_east')
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'long_name','longitude')
@@ -4919,6 +4968,7 @@
 !/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_north_pole_longitude',POLON)
 !/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_mapping_name',              &
 !/RTD                                   'rotated_latitude_longitude')
+!/RTD      END IF
 !
       ELSE 
         IF (GTYPE.EQ.RLGTYPE) THEN 

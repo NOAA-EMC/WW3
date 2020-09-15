@@ -30,7 +30,7 @@
   for par in mpi np nr nth rtst ww3 shrd dist omp \
              prop1D prop2D time fetch hur1mg \
              multi01 multi02 multi03 multi04 multi05 \
-             hybd shwtr unstr pdlib smcgr mudice infgrv \
+             hybd shwtr unstr pdlib smcgr rtd mudice infgrv \
              uost assim calendar oasis multi06 multi07 multi08
   do
     eval " value=\$$par"
@@ -72,7 +72,8 @@
   echo "  echo '      Growth curves (fetch)              : $fetch'"            >> matrix.head
   echo "  echo '      Shallow water tests                : $shwtr'"            >> matrix.head
   echo "  echo '      Unstructured grid tests            : $unstr'"            >> matrix.head
-  echo "  echo '      SMC / Rotated grid tests           : $smcgr'"            >> matrix.head
+  echo "  echo '      SMC grid tests                     : $smcgr'"            >> matrix.head
+  echo "  echo '      Rotated pole tests                 : $rtd'"              >> matrix.head
   echo "  echo '      Hurricane with one moving grid     : $hur1mg'"           >> matrix.head
   echo "  echo '      Mud/Ice and wave interaction tests : $mudice'"           >> matrix.head
   echo "  echo '      Second harmonic generation tests   : $infgrv'"           >> matrix.head
@@ -1843,13 +1844,12 @@
     echo "$rtst $ww3 -w work_IG1 -o netcdf ww3_tig1.1" >> matrix.body
   fi
 
-# SMC and rotated grid cases, MPI only if requested
+# SMC grid cases, MPI only if requested
 
   if [ "$smcgr" = 'y' ] && [ "$shrd" = 'y' ] && [ "$dist" != 'y' ]
   then
     echo ' ' >> matrix.body
     echo "$rtst $ww3 -w work_SHRD_SMC -o both ww3_tp2.10" >> matrix.body
-    echo "$rtst $ww3 -w work_SHRD_RTD -o both ww3_tp2.11" >> matrix.body
     echo "$rtst -w work_SHRD $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
@@ -1857,13 +1857,34 @@
   then
     echo ' ' >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.10" >> matrix.body
-    echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.11" >> matrix.body
     echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
   if [ "$smcgr" = 'y' ] && [ "$hybd" = 'y' ]; then
     echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.10" >> matrix.body
     echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.16" >> matrix.body
+  fi
+
+# Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
+
+  if [ "$rtd" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst $ww3 ww3_tr1" >> matrix.body
+    echo "$rtst -i input_std -w work_std $ww3 ww3_tr1" >> matrix.body
+    echo "$rtst -i input_bndin -w work_bndin $ww3 ww3_tr1" >> matrix.body
+  fi
+
+  if [ "$rtd" = 'y' ] && [ "$shrd" = 'y' ] && [ "$dist" != 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst $ww3 -w work_SHRD_RTD -o both ww3_tp2.11" >> matrix.body
+  fi
+
+  if [ "$rtd" = 'y' ] && [ "$dist" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -s MPI -w work_MPI -f -p $mpi -n $np $ww3 -o both ww3_tp2.11" >> matrix.body
   fi
 
 # mud/ice cases
