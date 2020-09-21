@@ -2384,7 +2384,7 @@
 !/OASIS ! Send variables to atmospheric or ocean circulation or ice model
 !/OASIS !
 !/OASIS                              IF (DTOUT(7).NE.0) THEN
-!/OASIS                                IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
+!/OASIS                                IF ( (MOD(ID_OASIS_TIME,NINT(DTOUT(7))) .EQ. 0 ) .AND. &
 !/OASIS                                     (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
 !/OASACM                                  CALL SND_FIELDS_TO_ATMOS()
 !/OASOCM                                  CALL SND_FIELDS_TO_OCEAN()
