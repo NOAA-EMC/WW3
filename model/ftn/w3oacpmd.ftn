@@ -6,12 +6,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          April-2016 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/      July-2013 : Origination.                         ( version 4.18 )
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
+!/    25-Sep-2020 : Coupling at T+0 support              ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -74,6 +75,8 @@
       TYPE(CPL_FIELD), DIMENSION(IP_MAXFLD), PUBLIC :: RCV_FLD, SND_FLD   ! Coupling fields
 !
       INTEGER, PUBLIC       :: ID_OASIS_TIME=0           ! time counter for coupling exchanges
+!
+      LOGICAL, PUBLIC       :: CPLT0                     ! Flag for coupling at T+0
 !
 ! * Accessibility
       PUBLIC CPL_OASIS_INIT

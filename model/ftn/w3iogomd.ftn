@@ -284,12 +284,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -655,11 +656,10 @@
            CASE('U2')
              FLG2D(10,2)=.TRUE.
 !/COU           CASE('DRY')
+           CASE('UNSET')
            CASE DEFAULT
              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
            END SELECT
-!
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
 !
           IOUT=IOUT+1
 !
@@ -667,9 +667,9 @@
 !
       END IF
 !
-      IF ( IAPROC .EQ. NAPOUT ) THEN
-        FLT    = .TRUE.
-        DO IFI=1, NOGRP
+      FLT    = .TRUE.
+      DO IFI=1, NOGRP
+        IF ( IAPROC .EQ. NAPOUT ) THEN
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -680,7 +680,10 @@
               END IF
             END IF
           END DO
-        END DO
+        END IF
+        IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
+      END DO
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       END IF
 !
@@ -745,13 +748,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    17-Feb-2016 : New version for namelist use        ( version 5.11 )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1084,9 +1088,9 @@
 !
       END DO
 !
-      IF ( IAPROC .EQ. NAPOUT ) THEN
-        FLT    = .TRUE.
-        DO IFI=1, NOGRP
+      FLT    = .TRUE.
+      DO IFI=1, NOGRP
+        IF ( IAPROC .EQ. NAPOUT ) THEN
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -1097,10 +1101,12 @@
               END IF
             END IF
           END DO
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
-        END DO
+        ENDIF
+        IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
+      END DO
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
-      END IF
+      ENDIF
 !
       RETURN
 !

@@ -1,5 +1,5 @@
 ! -------------------------------------------------------------------- !
-! WAVEWATCH III - ww3_shel.nml - single-grid model                     !
+! WAVEWATCH III ww3_shel.nml - single-grid model                       !
 ! -------------------------------------------------------------------- !
 
 
@@ -22,11 +22,9 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%START  = '20100101 120000'
-  DOMAIN%STOP   = '20101231 000000'
+  DOMAIN%START   = '20110902 000000'
+  DOMAIN%STOP    = '20110902 010000'
 /
-
-
 
 ! -------------------------------------------------------------------- !
 ! Define each forcing via the INPUT_NML namelist
@@ -60,23 +58,17 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%WINDS = 'T'
-  INPUT%FORCING%WATER_LEVELS  = 'C'
-  INPUT%FORCING%CURRENTS      = 'C'
+  INPUT%FORCING%WINDS         = 'F'
 /
-
-
-
 
 ! -------------------------------------------------------------------- !
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 !
-! * the point file is a space separated values per line :
-!   longitude latitude 'name' (C*40)
+! * the point file is a space separated values per line : lon lat 'name'
 !
-! * the full list of field names is : 
+! * the full list of field names is :
 !  All parameters listed below are available in output file of the types
-!  ASCII and NetCDF. If selected output file types are grads or grib, 
+!  ASCII and NetCDF. If selected output file types are grads or grib,
 !  some parameters may not be available. The first two columns in the
 !  table below identify such cases by flags, cols 1 (GRB) and 2 (GXO)
 !  refer to grib (ww3_grib) and grads (gx_outf), respectively.
@@ -84,13 +76,13 @@
 ! Columns 3 and 4 provide group and parameter numbers per group.
 ! Columns 5, 6 and 7 provide:
 !   5 - code name (internal)
-!   6 - output tags (names used is ASCII file extensions, NetCDF 
+!   6 - output tags (names used is ASCII file extensions, NetCDF
 !       variable names and namelist-based selection
 !   7 - Long parameter name/definition
 !
 !  G  G
 !  R  X Grp  Param Code     Output  Parameter/Group
-!  B  O Numb Numbr Name        Tag  Definition 
+!  B  O Numb Numbr Name        Tag  Definition
 !  --------------------------------------------------
 !        1                          Forcing Fields
 !   -------------------------------------------------
@@ -110,7 +102,7 @@
 !  T  T  2     1   HS         HS    Wave height.
 !  T  T  2     2   WLM        LM    Mean wave length.
 !  T  T  2     3   T02        T02   Mean wave period (Tm0,2).
-!  T  T  2     4   T0M1       T0M1  Mean wave period (Tm0,-1).
+!  T  T  2     4   TM10       TM10  Mean wave period (Tm-1,0).
 !  T  T  2     5   T01        T01   Mean wave period (Tm0,1).
 !  T  T  2     6   FP0        FP    Peak frequency.
 !  T  T  2     7   THM        DIR   Mean wave direction.
@@ -123,7 +115,7 @@
 !  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
 !  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 !  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
-!  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
+!  F  T  2    17   WBT        WBT   Domiant wave breaking probability bT
 !   -------------------------------------------------
 !        3                          Spectral Parameters (first 5)
 !   -------------------------------------------------
@@ -134,7 +126,7 @@
 !  F  F  3     5   STH2M      STH2M Directional spreading from a2,b2
 !  F  F  3     6   WN         WN    Wavenumber array
 !   -------------------------------------------------
-!        4                          Spectral Partition Parameters 
+!        4                          Spectral Partition Parameters
 !   -------------------------------------------------
 !  T  T  4     1   PHS        PHS   Partitioned wave heights.
 !  T  T  4     2   PTP        PTP   Partitioned peak period.
@@ -142,14 +134,14 @@
 !  T  T  4     4   PDIR       PDIR  Partitioned mean direction.
 !  T  T  4     5   PSI        PSPR  Partitioned mean directional spread.
 !  T  T  4     6   PWS        PWS   Partitioned wind sea fraction.
-!  T  T  4     7   PDP        PDP   Peak wave direction of partition.
+!  T  T  4     7   PTHP0      PDP   Peak wave direction of partition.
 !  T  T  4     8   PQP        PQP   Goda peakdedness parameter of partition.
 !  T  T  4     9   PPE        PPE   JONSWAP peak enhancement factor of partition.
 !  T  T  4    10   PGW        PGW   Gaussian frequency width of partition.
 !  T  T  4    11   PSW        PSW   Spectral width of partition.
-!  T  T  4    12   PTM1       PTM10 Mean wave period (m-1,0) of partition.
-!  T  T  4    13   PT1        PT01  Mean wave period (m0,1) of partition.
-!  T  T  4    14   PT2        PT02  Mean wave period (m0,2) of partition.
+!  T  T  4    12   PTM1       PTM10 Mean wave period (Tm-1,0) of partition.
+!  T  T  4    13   PT1        PT01  Mean wave period (Tm0,1) of partition.
+!  T  T  4    14   PT2        PT02  Mean wave period (Tm0,2) of partition.
 !  T  T  4    15   PEP        PEP   Peak spectral density of partition.
 !  T  T  4    16   PWST       TWS   Total wind sea fraction.
 !  T  T  4    17   PNR        PNR   Number of partitions.
@@ -168,27 +160,26 @@
 !  F  F  5    10   WHITECAP   WCM   Whitecap moment
 !  F  F  5    11   FWS        FWS   Wind sea mean period
 !   -------------------------------------------------
-!        6                          Wave-ocean layer 
+!        6                          Wave-ocean layer
 !   -------------------------------------------------
 !  F  F  6     1   S[XX,YY,XY] SXY  Radiation stresses.
 !  F  F  6     2   TAUO[X,Y]  TWO   Wave to ocean momentum flux
-!  F  F  6     3   BHD        BHD   Bernoulli head (J term) 
+!  F  F  6     3   BHD        BHD   Bernoulli head (J term)
 !  F  F  6     4   PHIOC      FOC   Wave to ocean energy flux
 !  F  F  6     5   TUS[X,Y]   TUS   Stokes transport
 !  F  F  6     6   USS[X,Y]   USS   Surface Stokes drift
-!  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure 
+!  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure
 !  F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
 !  F  F  6     9   P2SMS      P2L   Micro seism  source term
 !  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 !  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
-!  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 !   -------------------------------------------------
-!        7                          Wave-bottom layer 
+!        7                          Wave-bottom layer
 !   -------------------------------------------------
 !  F  F  7     1   ABA        ABR   Near bottom rms amplitides.
 !  F  F  7     2   UBA        UBR   Near bottom rms velocities.
 !  F  F  7     3   BEDFORMS   BED   Bedforms
-!  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction 
+!  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction
 !  F  F  7     5   TAUBBL     TBB   Momentum flux due to bottom friction
 !   -------------------------------------------------
 !        8                          Spectrum parameters
@@ -200,15 +191,15 @@
 !  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
 !  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
 !   -------------------------------------------------
-!        9                          Numerical diagnostics  
+!        9                          Numerical diagnostics
 !   -------------------------------------------------
 !  T  T  9     1   DTDYN      DTD   Average time step in integration.
 !  T  T  9     2   FCUT       FC    Cut-off frequency.
-!  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection. 
-!  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection. 
-!  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection. 
+!  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection.
+!  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection.
+!  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection.
 !   -------------------------------------------------
-!        10                         User defined          
+!        10                         User defined
 !   -------------------------------------------------
 !  F  F  10    1              U1    User defined #1. (requires coding ...)
 !  F  F  10    2              U2    User defined #1. (requires coding ...)
@@ -230,11 +221,6 @@
 !       - Atmospheric model : WND
 !       - Ice model : ICE IC1 IC5
 !
-! * Coupling at T+0 (extra fields in the restart needed)
-!
-! * extra fields to be written to the restart:
-!   - The list includes all fields sent by coupling exchange only
-!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     TYPE%FIELD%LIST         =  'unset'
@@ -249,15 +235,12 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
-!     TYPE%COUPLING%COUPLET0  = .FALSE.
-!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST     = 'HS DIR SPR WND ICE CUR LEV'
+  TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
+  TYPE%RESTART%EXTRA       = 'CHA'
 /
-
-
 
 ! -------------------------------------------------------------------- !
 ! Define output dates via OUTPUT_DATE_NML namelist
@@ -293,18 +276,9 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD%START         = '20100101 000000'
-  DATE%FIELD%STRIDE        = '3600'
-  DATE%FIELD%STOP          = '20101231 000000'
-  DATE%POINT%START         = '20100101 000000'
-  DATE%POINT%STRIDE        = '3600'
-  DATE%POINT%STOP          = '20101231 000000'
-
-  DATE%RESTART             = '20101231 000000' '43200' '20501231 000000'
+  DATE%FIELD          = '20110902 000000' '180' '20110902 010000'
+  DATE%RESTART        = '20110902 010000' '3600' '20110902 020000'
 /
-
-
-
 
 ! -------------------------------------------------------------------- !
 ! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
@@ -352,33 +326,11 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_WND        = 2
-  HOMOG_COUNT%N_LEV        = 1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME       = 'WND'
-  HOMOG_INPUT(1)%DATE       ='20100610 000000'
-  HOMOG_INPUT(1)%VALUE1     = 5.
-  HOMOG_INPUT(1)%VALUE2     = 90.
-
-  HOMOG_INPUT(2)%NAME       = 'WND'
-  HOMOG_INPUT(2)%DATE       = '20100610 060000'
-  HOMOG_INPUT(2)%VALUE1     = 25.
-  HOMOG_INPUT(2)%VALUE2     = 120.
-
-  HOMOG_INPUT(3)%NAME       = 'LEV'
-  HOMOG_INPUT(3)%DATE       = '20100610 060000'
-  HOMOG_INPUT(3)%VALUE1     = 5.
 /
-
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
-
-
-
-
-
-
