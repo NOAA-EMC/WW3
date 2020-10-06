@@ -80,6 +80,8 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.08 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
+!/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
+!/                  defunct OMPX switches.
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -154,7 +156,6 @@
 !       !/DIST  Id.
 !       !/MPI   Id.
 !       !/OMPG  Id.
-!       !/OMPX  Id.
 !
 !       !/PR1   First order propagation schemes.
 !       !/PR2   ULTIMATE QUICKEST scheme.
@@ -456,8 +457,7 @@
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
                                  FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
-                                 FLPART, LOCAL, FLOUTG2,              &
-                                 FLOMP = .FALSE.
+                                 FLPART, LOCAL, FLOUTG2
 !
 !Li   Logical variable to control regular gird lines in conflict with SMC option.
 !AR   SMC option is in conflict with lofical variables for regular grid ... chicken ... egg ... stuff 
@@ -496,8 +496,6 @@
 !/ARC        ARCTIC = .TRUE.
 !
 ! 0.a Set pointers to data structure
-!
-!/OMPX      FLOMP  = .TRUE.
 !
 !/COU      SCREEN   =  333
 !
@@ -576,8 +574,7 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-!!Li  ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
-      IF( RGLGRD .AND. .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+      IF( RGLGRD ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
 !/SMC !!Li   Otherwise use sea point only field
 !/SMC       ALLOCATE ( FIELD(NCel) )
@@ -1728,17 +1725,11 @@
 !/MPI         CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
 !/MPI       END IF
 !
-!!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
-!
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.14'
 !/DEBUGRUN        FLUSH(740+IAPROC)
-
-            IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
 ! Initialize FIELD variable 
              FIELD = 0.
-!
-!!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
@@ -1785,14 +1776,7 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 17'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-
-
-!!/OMPX/!$OMP END DO
-
-              IF ( FLOMP ) DEALLOCATE ( FIELD )
-
-!!/OMPX/!$OMP END PARALLEL
-
+!
 !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
               IK=1
               IX=1
@@ -2400,7 +2384,7 @@
 !/OASIS ! Send variables to atmospheric or ocean circulation or ice model
 !/OASIS !
 !/OASIS                              IF (DTOUT(7).NE.0) THEN
-!/OASIS                                IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
+!/OASIS                                IF ( (MOD(ID_OASIS_TIME,NINT(DTOUT(7))) .EQ. 0 ) .AND. &
 !/OASIS                                     (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
 !/OASACM                                  CALL SND_FIELDS_TO_ATMOS()
 !/OASOCM                                  CALL SND_FIELDS_TO_OCEAN()
@@ -2609,8 +2593,7 @@
 
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
 !
-      IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
-!
+      DEALLOCATE(FIELD)
       DEALLOCATE(TAUWX, TAUWY)
 !
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE END W3WAVE'

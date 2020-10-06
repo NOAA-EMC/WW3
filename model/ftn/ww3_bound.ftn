@@ -12,7 +12,7 @@
 !/    28-Aug-2012 : adaptation from SHOM/Ifremer code   ( version 4.08 )
 !/    01-Nov-2012 : Bug correction for NKI != NK        ( version 4.08 )
 !/    20-Oct-2016 : Error statement updates             ( version 5.15 ) 
-!/    21-Jul-2020 : Support rotated pole grid           ( version 7.06 )
+!/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
 !/                                  Chris Bunney, UKMO.
 !/
 !/    Copyright 2012-2012 National Weather Service (NWS),
