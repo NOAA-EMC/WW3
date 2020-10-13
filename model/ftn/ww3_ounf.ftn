@@ -140,7 +140,8 @@
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       USE W3NMLOUNFMD
-      USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, WRITE_USER_META, META_T
+      !USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, WRITE_USER_META, META_T
+      USE W3NMLOUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, META_T
       USE NETCDF
 
 !/SMC      USE W3SMCOMD
@@ -2446,6 +2447,7 @@
               DO I=1,NFIELD
                 IVAR=IVAR1+I
 
+                ! Get Meta-data for field
                 META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART) 
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
@@ -2493,7 +2495,7 @@
                 !! CB - USE NEW W3META MODULE
                 CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
-                CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
+                !CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
 
                 !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
@@ -2614,6 +2616,7 @@
 
                 ! Loops on all the fields of the variable (i.e. ucur/vcur for current)
                 DO I=1,NFIELD
+                  ! Get meta-data for field
                   META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IF (COORDTYPE.EQ.1) THEN
@@ -2663,7 +2666,7 @@
                   !! CB - USE NEW W3META MODULE
                   CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
-                  CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
+                  !CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
   
                   !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
@@ -2721,6 +2724,7 @@
                 IRET=NF90_REDEF(NCID)
                 CALL CHECK_ERR(IRET)
                 DO I=1,NFIELD
+                  ! Get meta-data for field
                   META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IRET=NF90_INQ_VARID (NCID, META%VARNM, VARID(IVAR))

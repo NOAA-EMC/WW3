@@ -1,0 +1,1437 @@
+      MODULE W3NMLOUNFMETA
+
+      USE NETCDF
+      USE CONSTANTS, ONLY: TPIINV
+      !USE W3GDATMD, ONLY: SIG, NK
+      !USE W3ODATMD, ONLY: PTMETH, PTFCUT
+
+      IMPLICIT NONE
+
+      TYPE META_PAIR_T
+        CHARACTER(LEN=64)  :: ATTNAME
+        CHARACTER(LEN=120) :: ATTVAL
+        CHARACTER          :: TYPE     ! c,i,f/r
+      END TYPE META_PAIR_T
+
+      TYPE META_T
+        REAL :: FSC, VMIN, VMAX
+        CHARACTER*24  :: UNITS
+        CHARACTER*10  :: ENAME
+        CHARACTER*80  :: VARNM, VARNL
+        CHARACTER*120 :: VARNS ,VARNG, VARND
+        CHARACTER*512 :: VARNC
+        TYPE(META_PAIR_T) :: EXTRA
+      ENDTYPE META_T
+
+      TYPE META_POINTER_T
+         ! To facilitate and array of pointers to META_T 
+         TYPE(META_T), POINTER, DIMENSION(:) :: p
+      END TYPE META_POINTER_T
+
+      CHARACTER(LEN=30)  :: DIRCOM
+      CHARACTER(LEN=128) :: PARTCOM
+
+      TYPE(META_T), TARGET ::                             &
+         GRP1_META(10), GRP1_META2(10),                   &
+         GRP2_META(17),                                   &
+         GRP3_META(6),                                    &
+         GRP4_META(17),                                   &
+         GRP5_META(11), GRP5_META2(11),                   &
+         GRP6_META(12), GRP6_META2(12), GRP6_META3(12),   &
+         GRP7_META(5), GRP7_META2(5), GRP7_META3(5),      &
+         GRP8_META(5), GRP8_META2(5),                     &
+         GRP9_META(5),                                    &
+         GRP10_META(1)
+
+      !TYPE(META_T), POINTER, DIMENSION(:) :: ALL_META(10,3) ! max 3 components
+      TYPE(META_POINTER_T) :: ALL_META(10,3) ! max 3 components
+
+
+      !!! TODO TEM<PORARY VARIABLES !!!
+      INTEGER :: NCVARTYPE !TODO: SET FROM WW3_OUNF
+      INTEGER :: PTMETH = 1 ! TODO: FET FROM W3IOGO
+      REAL :: PTFCUT = 0.3
+      REAL :: SIG(1)
+      INTEGER :: NK=0
+      
+      
+
+      CONTAINS 
+      SUBROUTINE INIT_META()
+
+      IMPLICIT NONE
+
+      LOGICAL :: FLGNML
+
+      ! Set direction convention:
+      DIRCOM = ""
+!/RTD      IF ( FLAGUNR ) THEN
+!/RTD        DIRCOM = 'True North'
+!/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD        DIRCOM = 'Rotated Pole Grid North'
+!/RTD      ENDIF
+      !  Set partitioning method comment:
+      IF ( PTMETH .EQ. 1 ) THEN
+         PARTCOM = "Wind sea and swells defined using topographic " //  &
+                      "partitions and partition wave-age cut-off "     //  &
+                      "(WWIII default scheme)"
+      ELSE IF ( PTMETH .EQ. 2 ) THEN
+         PARTCOM = "Wind sea and swells defined using topographic " //  &
+                  "partitions and spectral wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 3 ) THEN
+         PARTCOM = "Wave components defined using topographic "     //  &
+                  "partitions only"
+      ELSE IF ( PTMETH .EQ. 4 ) THEN
+         PARTCOM = "Wind sea and swell defined using spectral wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 5 ) THEN
+         WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //  &
+                  '"Hz spectral frequency cutoff")') PTFCUT
+      ELSE
+         WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
+      ENDIF
+
+      ! Set the default values for the OUNF netCDF meta data.
+!
+!----------GROUP 1 ----------------
+!
+! 1
+      GRP1_META(1)%FSC    = 0.5
+      GRP1_META(1)%UNITS  = 'm'
+      GRP1_META(1)%ENAME  = '.dpt'
+      GRP1_META(1)%VARNM = 'dpt'
+      GRP1_META(1)%VARNL ='depth'
+      GRP1_META(1)%VARNS ='depth'
+      GRP1_META(1)%VARNG ='depth'
+      GRP1_META(1)%VARNC =''
+      GRP1_META(1)%VARND =''
+      GRP1_META(1)%VMIN = -90000 
+      GRP1_META(1)%VMAX = 140000
+      WRITE(6,*) "INIT 1"
+      FLUSH(6)
+! 2        
+      GRP1_META(2)%FSC    = 0.01
+      GRP1_META(2)%ENAME  = '.cur'
+      GRP1_META(2)%UNITS  = 'm s-1'
+      GRP1_META(2)%VMIN = -990
+      GRP1_META(2)%VMAX =  990
+      GRP1_META(2)%VARNM='ucur'
+      GRP1_META(2)%VARNL='eastward current'
+      GRP1_META(2)%VARNS='eastward_sea_water_velocity'
+      GRP1_META(2)%VARNG='eastward_sea_water_velocity'
+      GRP1_META(2)%VARNC='cur=sqrt(U**2+V**2)'
+      GRP1_META(2)%VARND = DIRCOM
+      
+      ! Second component
+      GRP1_META2(2) = GRP1_META(2)
+      GRP1_META2(2)%VARNM='vcur'
+      GRP1_META2(2)%VARNL='northward current'
+      GRP1_META2(2)%VARNS='northward_sea_water_velocity'
+      GRP1_META2(2)%VARNG='northward_sea_water_velocity'
+      GRP1_META2(2)%VARNC='cur=sqrt(U**2+V**2)'
+! 3         
+      GRP1_META(3)%FSC    = 0.1
+      GRP1_META(3)%ENAME  = '.wnd'
+      GRP1_META(3)%UNITS  = 'm s-1'
+      GRP1_META(3)%VARNM='uwnd'
+      GRP1_META(3)%VARNL='eastward_wind'
+      GRP1_META(3)%VARNS='eastward_wind'
+      GRP1_META(3)%VARNG='eastward_wind'
+      GRP1_META(3)%VARNC='wind=sqrt(U10**2+V10**2)'
+      GRP1_META(3)%VMIN = -990
+      GRP1_META(3)%VMAX =  990
+      GRP1_META(3)%VARND = DIRCOM
+
+      ! Second component
+      GRP1_META2(3) = GRP1_META(3)
+      GRP1_META2(3)%VARNM='vwnd'
+      GRP1_META2(3)%VARNL='northward_wind'
+      GRP1_META2(3)%VARNS='northward_wind'
+      GRP1_META2(3)%VARNG='northward_wind'
+      GRP1_META2(3)%VARNC='wind=sqrt(U10**2+V10**2)'
+! 4
+      GRP1_META(4)%FSC    = 0.1
+      GRP1_META(4)%ENAME = '.ast'
+      GRP1_META(4)%UNITS = 'K'
+      GRP1_META(4)%VARNM='ast'
+      GRP1_META(4)%VARNL='air sea temperature difference'
+      GRP1_META(4)%VARNS='air_sea_temperature_difference'
+      GRP1_META(4)%VARNG='air_sea_temperature_difference'
+      GRP1_META(4)%VMIN = 0    
+      GRP1_META(4)%VMAX = 4000
+! 5
+      GRP1_META(5)%FSC    = 0.01
+      GRP1_META(5)%UNITS  = 'm'
+      GRP1_META(5)%ENAME  = '.wlv'
+      GRP1_META(5)%VARNM='wlv'
+      GRP1_META(5)%VARNL='sea surface height above sea level'
+      GRP1_META(5)%VARNS='sea_surface_height_above_sea_level'
+      GRP1_META(5)%VARNG='sea_surface_height_above_sea_level'
+      GRP1_META(5)%VMIN = 0 
+      GRP1_META(5)%VMAX = 10000
+! 6
+      GRP1_META(6)%FSC    = 0.001
+      GRP1_META(6)%UNITS  = '1'
+      GRP1_META(6)%ENAME  = '.ice'
+      GRP1_META(6)%VARNM='ice'
+      GRP1_META(6)%VARNL='sea ice area fraction'
+      GRP1_META(6)%VARNS='sea_ice_area_fraction'
+      GRP1_META(6)%VARNG='sea_ice_area_fraction'
+      GRP1_META(6)%VMIN = 0
+      GRP1_META(6)%VMAX = 1000
+! 7
+      GRP1_META(7)%FSC    = 0.0001
+      GRP1_META(7)%UNITS  = 'km-1'
+      GRP1_META(7)%ENAME  = '.ibg'
+      GRP1_META(7)%VARNM='ibg'
+      GRP1_META(7)%VARNL='icebergs_damping'
+      GRP1_META(7)%VARNS='icebergs_induced_attenuation_scale_for_waves'
+      GRP1_META(7)%VARNG='icebergs_damping'
+      GRP1_META(7)%VMIN = 0
+      GRP1_META(7)%VMAX = 32000
+! 8
+      GRP1_META(8)%FSC    = 0.001
+      GRP1_META(8)%UNITS  = 'Krumbein phi scale'
+      GRP1_META(8)%ENAME  = '.d50'
+      GRP1_META(8)%VARNM='d50'
+      GRP1_META(8)%VARNL='grain_size'
+      GRP1_META(8)%VARNS='sediment_grain_size'
+      GRP1_META(8)%VARNG='sediment_grain_size'
+      GRP1_META(8)%VMIN = -10000
+      GRP1_META(8)%VMAX = 32000
+! 9
+      GRP1_META(9)%FSC = 0.001
+      GRP1_META(9)%UNITS = 'm'
+      GRP1_META(9)%ENAME = '.ic1'
+      GRP1_META(9)%VARNM='ic1'
+      GRP1_META(9)%VARNL='ice thickness'
+      GRP1_META(9)%VARNS='ice_thickness'
+      GRP1_META(9)%VARNG='ice_thickness'
+      GRP1_META(9)%VMIN = 0
+      GRP1_META(9)%VMAX = 30000
+! 10
+      GRP1_META(10)%FSC = 0.05
+      GRP1_META(10)%UNITS = 'm'
+      GRP1_META(10)%ENAME = '.ic5'
+      GRP1_META(10)%VARNM='ic5'
+      GRP1_META(10)%VARNL='maximum floe diameter'
+      GRP1_META(10)%VARNS='maximum_ice_floe_diameter'
+      GRP1_META(10)%VARNG='maximum_ice_floe_diameter'
+      GRP1_META(10)%VMIN = 0
+      GRP1_META(10)%VMAX = 30000
+!
+!----------GROUP 2 ----------------
+!
+! 1
+      GRP2_META(1)%FSC    = 0.002
+      GRP2_META(1)%UNITS  = 'm'
+      GRP2_META(1)%ENAME  = '.hs'
+      GRP2_META(1)%VARNM='hs'
+      GRP2_META(1)%VARNL='significant height of wind and swell waves'
+      GRP2_META(1)%VARNS='sea_surface_wave_significant_height' 
+      GRP2_META(1)%VARNG='significant_wave_height'
+      GRP2_META(1)%VMIN = 0 
+      GRP2_META(1)%VMAX = 32000
+! 2
+      GRP2_META(2)%FSC    = 1.
+      GRP2_META(2)%UNITS  = 'm'
+      GRP2_META(2)%ENAME  = '.lm'
+      GRP2_META(2)%VARNM='lm'
+      GRP2_META(2)%VARNL='mean wave length'
+      GRP2_META(2)%VARNS='mean_wave_length' 
+      GRP2_META(2)%VARNG='mean_wave_length' 
+      GRP2_META(2)%VMIN = 0 
+      GRP2_META(2)%VMAX = 3200
+! 3
+      GRP2_META(3)%FSC    = 0.01
+      GRP2_META(3)%UNITS  = 's'
+      GRP2_META(3)%ENAME  = '.t02'
+      GRP2_META(3)%VARNM='t02'
+      GRP2_META(3)%VARNL='mean period T02'
+      GRP2_META(3)%VARNS='sea_surface_wind_wave_mean_period' // &
+      '_from_variance_spectral_density_second_frequency_moment'
+      GRP2_META(3)%VARNG='mean_period_t02'
+      GRP2_META(3)%VMIN = 0
+      GRP2_META(3)%VMAX = 5000
+! 4
+      GRP2_META(4)%FSC    = 0.01
+      GRP2_META(4)%UNITS  = 's'
+      GRP2_META(4)%ENAME  = '.t0m1'
+      GRP2_META(4)%VARNM='t0m1'
+      GRP2_META(4)%VARNL='mean period T0m1'
+      GRP2_META(4)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                 '_spectral_density_inverse_frequency_moment'
+      GRP2_META(4)%VARNG='mean_period_t0m1'
+      GRP2_META(4)%VMIN = 0 
+      GRP2_META(4)%VMAX = 5000
+! 5
+      GRP2_META(5)%FSC    = 0.01
+      GRP2_META(5)%UNITS  = 's'
+      GRP2_META(5)%ENAME  = '.t01'
+      GRP2_META(5)%VARNM='t01'
+      GRP2_META(5)%VARNL='mean period T01'
+      GRP2_META(5)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                '_spectral_density_first_frequency_moment' 
+      GRP2_META(5)%VARNG='mean_period_t01'
+      GRP2_META(5)%VMIN = 0
+      GRP2_META(5)%VMAX = 5000
+! 6
+      GRP2_META(6)%FSC    = 0.001
+      GRP2_META(6)%UNITS  = 's-1'
+      GRP2_META(6)%ENAME  = '.fp'
+      GRP2_META(6)%VARNM='fp'
+      GRP2_META(6)%VARNL='wave peak frequency'
+      GRP2_META(6)%VARNS='sea_surface_wave_peak_frequency'
+      GRP2_META(6)%VARNG='dominant_wave_frequency'
+      GRP2_META(6)%VMIN = 0 
+      GRP2_META(6)%VMAX = 10000
+! 7
+      GRP2_META(7)%FSC    = 0.1
+      GRP2_META(7)%UNITS  = 'degree'
+      GRP2_META(7)%ENAME  = '.dir'
+      GRP2_META(7)%VARNM='dir'
+      GRP2_META(7)%VARNL='wave mean direction'
+      GRP2_META(7)%VARNS='sea_surface_wave_from_direction'
+      GRP2_META(7)%VARNG='wave_from_direction'
+      GRP2_META(7)%VARND=DIRCOM
+      GRP2_META(7)%VMIN = 0
+      GRP2_META(7)%VMAX = 3600
+! 8
+      GRP2_META(8)%FSC    = 0.1
+      GRP2_META(8)%UNITS  = 'degree'
+      GRP2_META(8)%ENAME  = '.spr'
+      GRP2_META(8)%VARNM='spr'
+      GRP2_META(8)%VARNL='directional spread'
+      GRP2_META(8)%VARNS='sea_surface_wave_directional_spread'
+      GRP2_META(8)%VARNG='directional_spread'
+      GRP2_META(8)%VMIN = 0
+      GRP2_META(8)%VMAX = 900
+! 9
+      GRP2_META(9)%FSC    = 1.
+      GRP2_META(9)%UNITS  = 'degree'
+      GRP2_META(9)%ENAME  = '.dp'
+      GRP2_META(9)%VARNM='dp'
+      GRP2_META(9)%VARNL='peak direction'
+      GRP2_META(9)%VARNS='sea_surface_wave_peak_direction'
+      GRP2_META(9)%VARNG='dominant_wave_direction'
+      GRP2_META(9)%VARND=DIRCOM
+      GRP2_META(9)%VMIN = 0 
+      GRP2_META(9)%VMAX = 360
+! 10
+      GRP2_META(10)%FSC    = 0.0002
+      GRP2_META(10)%UNITS  = 'm'
+      GRP2_META(10)%ENAME  = '.hig'
+      GRP2_META(10)%VARNM='hig'
+      GRP2_META(10)%VARNL='infragravity_wave_height'
+      GRP2_META(10)%VARNS='sea_surface_wave_infragravity_significant_height' 
+      GRP2_META(10)%VARNG='infragravity_significant_wave_height' 
+      GRP2_META(10)%VMIN = 0 
+      GRP2_META(10)%VMAX = 5000
+! 11
+      GRP2_META(11)%FSC    = 0.002
+      GRP2_META(11)%UNITS  = 'm'
+      GRP2_META(11)%ENAME  = '.mxe'
+      GRP2_META(11)%VARNM='stmaxe'
+      GRP2_META(11)%VARNL='expected maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(11)%VARNS='expected maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(11)%VARNG='expected maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(11)%VMIN = 0
+      GRP2_META(11)%VMAX = 32000
+! 12
+      GRP2_META(12)%FSC    = 0.002
+      GRP2_META(12)%UNITS  = 'm'
+      GRP2_META(12)%ENAME  = '.mxes'
+      GRP2_META(12)%VARNM='stmaxd'
+      GRP2_META(12)%VARNL='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(12)%VARNS='std of expected maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(12)%VARNG='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+      GRP2_META(12)%VMIN = 0
+      GRP2_META(12)%VMAX = 32000
+! 13
+      GRP2_META(13)%FSC    = 0.002
+      GRP2_META(13)%UNITS  = 'm'
+      GRP2_META(13)%ENAME  = '.mxh'
+      GRP2_META(13)%VARNM='hmaxe'
+      GRP2_META(13)%VARNL='expected maximum wave height (linear, 1st order)'
+      GRP2_META(13)%VARNS='expected maximum wave height (linear, 1st order)'
+      GRP2_META(13)%VARNG='expected maximum wave height (linear, 1st order)'
+      GRP2_META(13)%VMIN = 0
+      GRP2_META(13)%VMAX = 32000
+! 14
+      GRP2_META(14)%FSC    = 0.002
+      GRP2_META(14)%UNITS  = 'm'
+      GRP2_META(14)%ENAME  = '.mxhc'
+      GRP2_META(14)%VARNM='hcmaxe'
+      GRP2_META(14)%VARNL='expected maximum wave height from crest (linear, 1st order)'
+      GRP2_META(14)%VARNS='expected maximum wave height from crest (linear, 1st order)'
+      GRP2_META(14)%VARNG='expected maximum wave height from crest (linear, 1st order)'
+      GRP2_META(14)%VMIN = 0
+      GRP2_META(14)%VMAX = 32000
+! 15
+      GRP2_META(15)%FSC    = 0.002
+      GRP2_META(15)%UNITS  = 'm'
+      GRP2_META(15)%ENAME  = '.sdmh'
+      GRP2_META(15)%VARNM='hmaxd'
+      GRP2_META(15)%VARNL='STD of maximum wave height (linear, 1st order)'
+      GRP2_META(15)%VARNS='STD of maximum wave height (linear, 1st order)'
+      GRP2_META(15)%VARNG='STD of maximum wave height (linear, 1st order)'
+      GRP2_META(15)%VMIN = 0
+      GRP2_META(15)%VMAX = 32000
+! 16
+      GRP2_META(16)%FSC    = 0.002
+      GRP2_META(16)%UNITS  = 'm'
+      GRP2_META(16)%ENAME  = '.sdmhc'
+      GRP2_META(16)%VARNM='hcmaxd'
+      GRP2_META(16)%VARNL='STD of maximum wave height from crest (linear, 1st order)'
+      GRP2_META(16)%VARNS='STD of maximum wave height from crest (linear, 1st order)'
+      GRP2_META(16)%VARNG='STD of maximum wave height from crest (linear, 1st order)'
+      GRP2_META(16)%VMIN = 0
+      GRP2_META(16)%VMAX = 32000
+! 17
+      GRP2_META(17)%FSC    = 0.001
+      GRP2_META(17)%UNITS  = '1'
+      GRP2_META(17)%ENAME  = '.wbt'
+      GRP2_META(17)%VARNM='wbt'
+      GRP2_META(17)%VARNL='domiant wave breaking probability'
+      GRP2_META(17)%VARNS='domiant_wave_breaking_probability'
+      GRP2_META(17)%VARNG='domiant_wave_breaking_probability'
+      GRP2_META(17)%VMIN = 0
+      GRP2_META(17)%VMAX = 1000
+!
+!---------- GROUP 3 ----------------
+!
+! 1
+      GRP3_META(1)%VARNM='ef'
+      GRP3_META(1)%VARNL='wave_elevation_spectrum'
+      IF (NCVARTYPE.LE.3) THEN 
+        GRP3_META(1)%UNITS  = 'log10(m2 s+1E-12)'
+        GRP3_META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+        GRP3_META(1)%FSC     = 0.0004
+      ELSE
+        GRP3_META(1)%UNITS  = 'm2 s'
+        GRP3_META(1)%VARNS='power_spectral_density_of_surface_elevation'
+        GRP3_META(1)%FSC     = 1.
+      END IF
+      GRP3_META(1)%ENAME  = '.ef'
+      GRP3_META(1)%VARNG=GRP3_META(1)%VARNS
+      GRP3_META(1)%VMIN = -30000
+      GRP3_META(1)%VMAX = 32000
+! 2
+      ! Information for spectral
+      GRP3_META(2)%FSC     = 0.1
+      GRP3_META(2)%VARNM='th1m'
+      GRP3_META(2)%VARNL='mean wave direction frequency spectrum'
+      GRP3_META(2)%VARNS='sea_surface_wave_from_direction_frequency_spectrum'
+      GRP3_META(2)%VARNG=GRP3_META(2)%VARNS
+      GRP3_META(2)%VARND=DIRCOM
+      GRP3_META(2)%UNITS  = 'degree'
+      GRP3_META(2)%ENAME  = '.th1m'
+      GRP3_META(2)%VMIN = 0 
+      GRP3_META(2)%VMAX = 3600
+! 3
+      ! Information for spectral
+      GRP3_META(3)%FSC     = 0.01
+      GRP3_META(3)%VARNM='sth1m'
+      GRP3_META(3)%VARNL='spreading frequency spectrum'
+      GRP3_META(3)%VARNS='sea_surface_wave_spreading_spectrum'
+      GRP3_META(3)%VARNG=GRP3_META(3)%VARNS
+      GRP3_META(3)%UNITS  = 'degree'
+      GRP3_META(3)%ENAME  = '.sth1m'
+      GRP3_META(3)%VMIN = 0 
+      GRP3_META(3)%VMAX = 9000
+! 4
+      GRP3_META(4)%FSC     = 0.1
+      GRP3_META(4)%VARNM='th2m'
+      GRP3_META(4)%VARNL='second mean wave direction frequency spectrum'
+      GRP3_META(4)%VARNS='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
+      GRP3_META(4)%VARNG=GRP3_META(4)%VARNS
+      GRP3_META(4)%VARND=DIRCOM
+      GRP3_META(4)%UNITS  = 'degree'
+      GRP3_META(4)%ENAME  = '.th2m'
+      GRP3_META(4)%VMIN = 0 
+      GRP3_META(4)%VMAX = 3600
+! 5
+      GRP3_META(5)%FSC     = 0.01
+      GRP3_META(5)%VARNM='sth2m'
+      GRP3_META(5)%VARNL='second spreading frequency spectrum'
+      GRP3_META(5)%VARNS='sea_surface_wave_spreading_spectrum_from_second_moments'
+      GRP3_META(5)%VARNG=GRP3_META(5)%VARNS
+      GRP3_META(5)%UNITS  = 'degree'
+      GRP3_META(5)%ENAME  = '.sth2m'
+      GRP3_META(5)%VMIN = 0 
+      GRP3_META(5)%VMAX = 9000
+! 6
+      ! Information for spectral
+      GRP3_META(6)%FSC    = 0.001
+      GRP3_META(6)%UNITS  = 'm-1'
+      GRP3_META(6)%ENAME  = '.wn'
+      GRP3_META(6)%VARNM='wn'
+      GRP3_META(6)%VARNL='wave numbers'
+      GRP3_META(6)%VARNS='wave_numbers'
+      GRP3_META(6)%VARNG='wave_numbers'
+      GRP3_META(6)%VMIN = 0 
+      GRP3_META(6)%VMAX = 32000
+!
+!---------- GROUP 4 ----------------
+!
+! 1
+      GRP4_META(1)%FSC    = 0.002
+      GRP4_META(1)%UNITS  = 'm'
+      GRP4_META(1)%ENAME = '.phs'! ! ,IPART
+      GRP4_META(1)%VARNM = 'phs'! ,IPART 
+      GRP4_META(1)%VARNL = 'wave significant height partition '! ,IPART 
+      GRP4_META(1)%VARNS = 'sea_surface_wave_significant_height_partition_'! ,IPART 
+      GRP4_META(1)%VARNG = 'significant_wave_height_partition_'! ,IPART 
+      GRP4_META(1)%VARNC = PARTCOM
+      GRP4_META(1)%VMIN = 0 
+      GRP4_META(1)%VMAX = 32000
+! 2
+      GRP4_META(2)%FSC = 0.01
+      GRP4_META(2)%UNITS = 's'
+      GRP4_META(2)%ENAME = '.ptp'! ,IPART
+      GRP4_META(2)%VARNM = 'ptp'! ,IPART 
+      GRP4_META(2)%VARNL = 'peak period partition '! ,IPART 
+      GRP4_META(2)%VARNS = 'sea_surface_wave_period_at_' // &
+                             'variance_spectral_density_maximum_partition_'! ,IPART
+      GRP4_META(2)%VARNG = 'dominant_wave_period_partition_'! ,IPART
+      GRP4_META(2)%VARNC = PARTCOM
+      GRP4_META(2)%VMIN = 0 
+      GRP4_META(2)%VMAX = 10000
+! 3
+      GRP4_META(3)%FSC = 1.
+      GRP4_META(3)%UNITS = 'm'
+      GRP4_META(3)%ENAME = '.plp'! ,IPART
+      GRP4_META(3)%VARNM = 'plp'! ,IPART 
+      GRP4_META(3)%VARNL = 'peak wave length partition '! ,IPART 
+      GRP4_META(3)%VARNS = 'peak_wave_length_partition_'! ,IPART
+      GRP4_META(3)%VARNG = 'peak_wave_length_partition_'! ,IPART
+      GRP4_META(3)%VARNC = PARTCOM
+      GRP4_META(3)%VMIN = 0 
+      GRP4_META(3)%VMAX = 10000
+! 4
+      GRP4_META(4)%FSC = 0.1
+      GRP4_META(4)%UNITS = 'degree'
+      GRP4_META(4)%ENAME =  '.pdir'! ,IPART
+      GRP4_META(4)%VARNM =  'pdir'! ,IPART 
+      GRP4_META(4)%VARNL = 'wave mean direction partition '! ,IPART 
+      GRP4_META(4)%VARNS = 'sea_surface_wave_from_direction_partition_'! ,IPART
+      GRP4_META(4)%VARNG = 'wave_from_direction_partition_'! ,IPART
+      GRP4_META(4)%VARNC = PARTCOM
+      GRP4_META(4)%VARND = DIRCOM
+      GRP4_META(4)%VMIN = 0
+      GRP4_META(4)%VMAX = 3600
+! 5
+      GRP4_META(5)%FSC = 0.1
+      GRP4_META(5)%UNITS = 'degree'
+      GRP4_META(5)%ENAME = '.pspr'! ,IPART
+      GRP4_META(5)%VARNM = 'pspr'! ,IPART 
+      GRP4_META(5)%VARNL = 'directional spread partition '! ,IPART 
+      GRP4_META(5)%VARNS = 'sea_surface_wave_directional_spread_partition_'! ,IPART
+      GRP4_META(5)%VARNG = 'directional_spread_partition_'! ,IPART
+      GRP4_META(5)%VARNC = PARTCOM
+      GRP4_META(5)%VMIN = 0 
+      GRP4_META(5)%VMAX = 900
+! 6
+      GRP4_META(6)%FSC = 0.001
+      GRP4_META(6)%UNITS = '1'
+      GRP4_META(6)%ENAME = '.pws'! ,IPART
+      GRP4_META(6)%VARNM = 'pws'! ,IPART
+      GRP4_META(6)%VARNL = 'wind sea fraction in partition '! ,IPART 
+      GRP4_META(6)%VARNS = 'wind_sea_fraction_in_partition_'! ,IPART 
+      GRP4_META(6)%VARNG = 'wind_sea_fraction_in_partition_'! ,IPART
+      GRP4_META(6)%VARNC = PARTCOM
+      GRP4_META(6)%VMIN = 0 
+      GRP4_META(6)%VMAX = 1000
+! 7
+      GRP4_META(7)%FSC = 0.1
+      GRP4_META(7)%UNITS = 'degree'
+      GRP4_META(7)%ENAME = '.pdp'! ,IPART
+      GRP4_META(7)%VARNM = 'pdp'! ,IPART
+      GRP4_META(7)%VARNL = 'peak direction partition '! ,IPART
+      GRP4_META(7)%VARNS = 'sea_surface_wave_peak_from_direction_partition_'! ,IPART
+      GRP4_META(7)%VARNG = 'dominant_wave_from_direction_partition_'! ,IPART
+      GRP4_META(7)%VARNC = PARTCOM
+      GRP4_META(7)%VARND = DIRCOM
+      GRP4_META(7)%VMIN = 0
+      GRP4_META(7)%VMAX = 3600
+! 8
+      GRP4_META(8)%FSC = 0.01
+      GRP4_META(8)%UNITS = '1'
+      GRP4_META(8)%ENAME = '.pqp'! ,IPART
+      GRP4_META(8)%VARNM = 'pqp'! ,IPART
+      GRP4_META(8)%VARNL = 'peakedness partition '! ,IPART
+      GRP4_META(8)%VARNS = 'sea_surface_wave_peakedness_partition_'! ,IPART
+      GRP4_META(8)%VARNG = 'wave_peakedness_partition_'! ,IPART
+      GRP4_META(8)%VARNC = PARTCOM
+      GRP4_META(8)%VMIN = 0
+      GRP4_META(8)%VMAX = 32000
+! 9
+      GRP4_META(9)%FSC = 0.01
+      GRP4_META(9)%UNITS = '1'
+      GRP4_META(9)%ENAME = '.ppe'! ,IPART
+      GRP4_META(9)%VARNM = 'ppe'! ,IPART
+      GRP4_META(9)%VARNL = 'peak enhancement factor partition '! ,IPART
+      GRP4_META(9)%VARNS = 'wave_peak_enhancement_factor_partition_'! ,IPART
+      GRP4_META(9)%VARNG = 'wave_peak_enhancement_factor_partition_'! ,IPART
+      GRP4_META(9)%VARNC = 'JONSWAP peak enhancement factor; ' // PARTCOM
+      GRP4_META(9)%VARND = ''
+      GRP4_META(9)%VMIN = 0
+      GRP4_META(9)%VMAX = 32000
+! 10
+      GRP4_META(10)%FSC = 0.0001
+      GRP4_META(10)%UNITS = 's-1'
+      GRP4_META(10)%ENAME =  '.pgw'! ,IPART
+      GRP4_META(10)%VARNM = 'pgw'! ,IPART
+      GRP4_META(10)%VARNL = 'frequency width partition '! ,IPART
+      GRP4_META(10)%VARNS = 'Gaussian_frequency_spread_partition_'! ,IPART
+      GRP4_META(10)%VARNG = 'Gaussian_frequency_spread_partition_'! ,IPART
+      GRP4_META(10)%VARNC =' Gaussian least-square fit to ' // &
+          'omni-directional spectral partition; ' // PARTCOM
+      GRP4_META(10)%VMIN = 0
+      GRP4_META(10)%VMAX = 32000
+! 11
+      GRP4_META(11)%FSC = 0.0001
+      GRP4_META(11)%UNITS = '1'
+      GRP4_META(11)%ENAME = '.psw'! ,IPART
+      GRP4_META(11)%VARNM = 'psw'! ,IPART
+      GRP4_META(11)%VARNL = 'spectral width partition '! ,IPART
+      GRP4_META(11)%VARNS = 'sea_surface_wave_spectral_width_partition_'! ,IPART
+      GRP4_META(11)%VARNG = 'wave_spectral_width_partition_'! ,IPART
+      GRP4_META(11)%VARNC = PARTCOM
+      GRP4_META(11)%VMIN = 0
+      GRP4_META(11)%VMAX = 32000
+! 12
+      GRP4_META(12)%FSC = 0.01
+      GRP4_META(12)%UNITS = 's'
+      GRP4_META(12)%ENAME = '.ptm10c'! ,IPART
+      GRP4_META(12)%VARNM = 'ptm10c'! ,IPART
+      GRP4_META(12)%VARNL = 'mean period Tm10 partition '! ,IPART
+      GRP4_META(12)%VARNS = 'sea_surface_wave_mean_period_tm10_partition_'! ,IPART
+      GRP4_META(12)%VARNG = 'mean_wave_period_Tm10_partition_'! ,IPART
+      GRP4_META(12)%VARNC = PARTCOM
+      GRP4_META(12)%VMIN = 0
+      GRP4_META(12)%VMAX = 10000
+! 13
+      GRP4_META(13)%FSC = 0.01
+      GRP4_META(13)%UNITS = 's'
+      GRP4_META(13)%ENAME = '.pt01c'! ,IPART
+      GRP4_META(13)%VARNM = 'pt01c'! ,IPART
+      GRP4_META(13)%VARNL = 'mean period T01 partition '! ,IPART
+      GRP4_META(13)%VARNS = 'sea_surface_wave_mean_period_t01_partition_'! ,IPART
+      GRP4_META(13)%VARNG = 'mean_wave_period_T01_partition_'! ,IPART
+      GRP4_META(13)%VARNC = PARTCOM
+      GRP4_META(13)%VMIN = 0
+      GRP4_META(13)%VMAX = 10000
+! 14
+      GRP4_META(14)%FSC = 0.01
+      GRP4_META(14)%UNITS = 's'
+      GRP4_META(14)%ENAME = '.pt02c'! ,IPART
+      GRP4_META(14)%VARNM = 'pt02c'! ,IPART
+      GRP4_META(14)%VARNL = 'mean period T02 partition '! ,IPART
+      GRP4_META(14)%VARNS = 'sea_surface_wave_mean_period_t02_partition_'! ,IPART
+      GRP4_META(14)%VARNG = 'mean_wave_period_T02_partition_'! ,IPART
+      GRP4_META(14)%VARNC = PARTCOM
+      GRP4_META(14)%VMIN = 0
+      GRP4_META(14)%VMAX = 10000
+! 15
+      GRP4_META(15)%FSC = 0.02
+      GRP4_META(15)%UNITS = 'm2 s rad-1'
+      GRP4_META(15)%ENAME = '.pep'! ,IPART
+      GRP4_META(15)%VARNM = 'pep'! ,IPART
+      GRP4_META(15)%VARNL = 'energy at peak frequency partition '! ,IPART
+      GRP4_META(15)%VARNS = 'sea_surface_wave_energy_at_variance_spectral_density_maximum_partition_'! ,IPART
+      GRP4_META(15)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_'! ,IPART
+      GRP4_META(15)%VARNC = PARTCOM
+      GRP4_META(15)%VMIN = 0
+      GRP4_META(15)%VMAX = 10000
+! 16
+      GRP4_META(16)%FSC = 0.001
+      GRP4_META(16)%UNITS = '1'
+      GRP4_META(16)%ENAME = '.tws'
+      GRP4_META(16)%VARNM = 'tws'
+      GRP4_META(16)%VARNL = 'wind sea fraction'
+      GRP4_META(16)%VARNS = 'wind_sea_fraction'
+      GRP4_META(16)%VARNG = 'wind_sea_fraction'
+      GRP4_META(16)%VARNC = PARTCOM
+      GRP4_META(16)%VMIN = 0 
+      GRP4_META(16)%VMAX = 1000
+! 17
+      GRP4_META(17)%FSC = 1.
+      GRP4_META(17)%UNITS = '1'
+      GRP4_META(17)%ENAME = '.pnr'
+      GRP4_META(17)%VARNM = 'pnr'
+      GRP4_META(17)%VARNL = 'number of wave partitions'
+      GRP4_META(17)%VARNS = 'number_of_wave_partitions'
+      GRP4_META(17)%VARNG = 'number_of_wave_partitions'
+      GRP4_META(17)%VARNC = PARTCOM
+      GRP4_META(17)%VMIN = 0 
+      GRP4_META(17)%VMAX = 100
+!
+!---------- GROUP 5 ----------------
+!
+! 1
+      ! First component
+      GRP5_META(1)%FSC    = 0.01
+      GRP5_META(1)%ENAME  = '.ust'
+      GRP5_META(1)%UNITS  = 'm s-1'
+      GRP5_META(1)%VARNM='uust'
+      GRP5_META(1)%VARNL='eastward friction velocity'
+      GRP5_META(1)%VARNS='eastward_friction_velocity'
+      GRP5_META(1)%VARNG='eastward_friction_velocity'
+      GRP5_META(1)%VARNC='ust=sqrt(uust**2+vust**2)'
+      GRP5_META(1)%VARNC=DIRCOM
+      GRP5_META(1)%VMIN = -9900
+      GRP5_META(1)%VMAX =  9900
+      
+      ! Second component
+      GRP5_META2(1) = GRP5_META(1)
+      GRP5_META2(1)%VARNM='vust'
+      GRP5_META2(1)%VARNL='northward friction velocity'
+      GRP5_META2(1)%VARNS='northward_friction_velocity'
+      GRP5_META2(1)%VARNG='northward_friction_velocity'
+! 2
+      GRP5_META(2)%FSC    = 1.E-5
+      GRP5_META(2)%UNITS  = '1'
+      GRP5_META(2)%ENAME  = '.cha'
+      GRP5_META(2)%VARNM='cha'
+      GRP5_META(2)%VARNL='charnock coefficient for surface roughness length for momentum in air'
+      GRP5_META(2)%VARNS='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+      GRP5_META(2)%VARNG='charnock_coefficient'
+      GRP5_META(2)%VMIN = 0
+      GRP5_META(2)%VMAX = 32700
+! 3
+      GRP5_META(3)%FSC    = 0.1           !0.01
+      GRP5_META(3)%UNITS  = 'kW m-1'
+      GRP5_META(3)%ENAME  = '.cge' 
+      GRP5_META(3)%VARNM='cge'
+      GRP5_META(3)%VARNL='wave energy flux'
+      GRP5_META(3)%VARNS='sea_surface_wind_wave_energy_flux'
+      GRP5_META(3)%VARNG='wave_energy_flux'
+      GRP5_META(3)%VMIN = 0
+      GRP5_META(3)%VMAX = 9990
+! 4
+      GRP5_META(4)%FSC    = 0.1
+      GRP5_META(4)%UNITS  = 'W m-2'
+      GRP5_META(4)%ENAME  = '.faw'
+      GRP5_META(4)%VARNM='faw'
+      GRP5_META(4)%VARNL='wind to wave energy flux'
+      GRP5_META(4)%VARNS='wind_mixing_energy_flux_into_sea_water'
+      GRP5_META(4)%VARNG='wind_to_wave_energy_flux'
+      GRP5_META(4)%VMIN = 0
+      GRP5_META(4)%VMAX = 9990
+! 5  
+      ! First component
+      GRP5_META(5)%FSC    = 0.000001
+      GRP5_META(5)%UNITS  = 'm2 s-2'
+      GRP5_META(5)%ENAME  = '.taw'
+      GRP5_META(5)%VARNM='utaw'
+      GRP5_META(5)%VARNL='eastward wave supported wind stress'
+      GRP5_META(5)%VARNS='eastward_wave_supported_wind_stress'
+      GRP5_META(5)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+      GRP5_META(5)%VARNG='eastward_wave_supported_wind_stress'
+      GRP5_META(5)%VARND=DIRCOM
+      GRP5_META(5)%VMIN = -32000
+      GRP5_META(5)%VMAX =  32000
+     
+      ! Second component
+      GRP5_META2(5) = GRP5_META2(5)
+      GRP5_META2(5)%VARNM='vtaw'
+      GRP5_META2(5)%VARNL='northward wave supported wind stress'
+      GRP5_META2(5)%VARNS='northward_wave_supported_wind_stress'
+      GRP5_META2(5)%VARNG='northward_wave_supported_wind_stress'
+      GRP5_META2(5)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+! 6
+      ! First component
+      GRP5_META(6)%FSC    = 0.0001
+      GRP5_META(6)%ENAME  = '.twa'
+      GRP5_META(6)%UNITS  = 'm2 s-2'
+      GRP5_META(6)%VARNM='utwa'
+      GRP5_META(6)%VARNL='eastward wave to wind stress'
+      GRP5_META(6)%VARNS='eastward_wave_to_wind_stress'
+      GRP5_META(6)%VARNG='eastward_wave_to_wind_stress'
+      GRP5_META(6)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+      GRP5_META(6)%VARND=DIRCOM
+      GRP5_META(6)%VMIN = -32000
+      GRP5_META(6)%VMAX =  32000
+
+      ! Second component
+      GRP5_META2(6) = GRP5_META(6)
+      GRP5_META2(6)%VARNM='vtwa'
+      GRP5_META2(6)%VARNL='northward wave to wind stress'
+      GRP5_META2(6)%VARNS='northward_wave_to_wind_stress'
+      GRP5_META2(6)%VARNG='northward_wave_to_wind_stress'
+      GRP5_META2(6)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+! 7
+      GRP5_META(7)%FSC    = 0.0001
+      GRP5_META(7)%UNITS  = '1'
+      GRP5_META(7)%ENAME  = '.wcc'
+      GRP5_META(7)%VARNM='wcc'
+      GRP5_META(7)%VARNL='whitecap coverage'         
+      GRP5_META(7)%VARNS='whitecap_coverage'
+      GRP5_META(7)%VARNG='whitecap_coverage'            
+      GRP5_META(7)%VARNC=''
+      GRP5_META(7)%VARND=''
+      GRP5_META(7)%VMIN = 0
+      GRP5_META(7)%VMAX = 10000
+! 8
+      GRP5_META(8)%FSC    = 0.001
+      GRP5_META(8)%UNITS  = 'm'
+      GRP5_META(8)%ENAME  = '.wcf'
+      GRP5_META(8)%VARNM='wcf'
+      GRP5_META(8)%VARNL='whitecap foam thickness' 
+      GRP5_META(8)%VARNS='whitecap_foam_thickness'
+      GRP5_META(8)%VARNG='whitecap_foam_thickness' 
+      GRP5_META(8)%VMIN = 0
+      GRP5_META(8)%VMAX = 10000
+! 9
+      GRP5_META(9)%FSC    = 0.002 
+      GRP5_META(9)%UNITS  = 'm'
+      GRP5_META(9)%ENAME  = '.wch'
+      GRP5_META(9)%VARNM='wch'
+      GRP5_META(9)%VARNL='significant breaking wave height'
+      GRP5_META(9)%VARNS='significant_breaking_wave_height'
+      GRP5_META(9)%VARNG='significant_breaking_wave_height'
+      GRP5_META(9)%VMIN = 0
+      GRP5_META(9)%VMAX = 32000
+! 10
+      GRP5_META(10)%FSC    = 0.0001
+      GRP5_META(10)%UNITS  = '1'
+      GRP5_META(10)%ENAME  = '.wcm'
+      GRP5_META(10)%VARNM='wcm'
+      GRP5_META(10)%VARNL='whitecap moment'
+      GRP5_META(10)%VARNS='whitecap_moment'
+      GRP5_META(10)%VARNG='whitecap_moment'
+      GRP5_META(10)%VMIN = 0
+      GRP5_META(10)%VMAX = 10000
+! 11
+      GRP5_META(11)%FSC    = 0.002
+      GRP5_META(11)%UNITS  = 's'
+      GRP5_META(11)%ENAME  = '.fws'
+      GRP5_META(11)%VARNM='fws'
+      GRP5_META(11)%VARNL='Wind_sea_mean_period_T0M1'
+      GRP5_META(11)%VARNS='Wind_sea_mean_period_T0M1'
+      GRP5_META(11)%VARNG='Wind_sea_mean_period_T0M1'
+      GRP5_META(11)%VARNC=''
+      GRP5_META(11)%VARND=''
+      GRP5_META(11)%VMIN = 0
+      GRP5_META(11)%VMAX = 32000
+!
+!---------- GROUP 6 ----------------
+!   
+! 1 
+
+      GRP6_META(1)%FSC  = 10.
+      !FSC3    = 1.
+      GRP6_META(1)%UNITS = 'N m-1'
+      GRP6_META(1)%ENAME = '.sxy'
+      GRP6_META(1)%VARND = DIRCOM
+      GRP6_META(1)%VMIN = -3000
+      GRP6_META(1)%VMAX = 3000     
+      
+      ! First component
+      GRP6_META(1)%VARNM='sxx'
+      GRP6_META(1)%VARNL='Radiation stress component Sxx'
+      GRP6_META(1)%VARNS='Radiation_stress_component_Sxx'
+      GRP6_META(1)%VARNS='radiation_stress_component_sxx'
+      
+      ! S6cond component
+      GRP6_META2(1) = GRP6_META(1)
+      GRP6_META2(1)%VARNM='syy'
+      GRP6_META2(1)%VARNL='Radiation stress component Syy'
+      GRP6_META2(1)%VARNS='Radiation_stress_component_Syy'
+      GRP5_META2(1)%VARNS='radiation_stress_component_syy'
+      
+      ! Third component
+      GRP6_META3(1) = GRP6_META(1)
+      GRP6_META3(1)%VARNM='sxy'
+      GRP6_META3(1)%VARNL='Radiation stress component Sxy'
+      GRP6_META3(1)%VARNS='Radiation_stress_component_Sxy'
+      GRP6_META3(1)%VARNS='radiation_stress_component_sxy'
+! 2
+      GRP6_META(2)%FSC    = 0.000001
+      GRP6_META(2)%UNITS  = 'm2 s-2'
+      GRP6_META(2)%ENAME  = '.two'
+      GRP6_META(2)%VMIN = -32000 
+      GRP6_META(2)%VMAX =  32000
+      GRP6_META(2)%VARND = DIRCOM
+
+      ! First component
+      GRP6_META(2)%VARNM='utwo'
+      GRP6_META(2)%VARNL='eastward wave to ocean stress'
+      GRP6_META(2)%VARNS='eastward_wave_to_ocean_stress'
+      GRP6_META(2)%VARNG='eastward_wave_to_ocean_stress'
+      GRP6_META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      
+      ! Second component
+      GRP6_META2(2) = GRP6_META(2)
+      GRP6_META2(2)%VARNM='vtwo'
+      GRP6_META2(2)%VARNL='northward wave to ocean stress'
+      GRP6_META2(2)%VARNS='northward_wave_to_ocean_stress'
+      GRP6_META2(2)%VARNG='northward_wave_to_ocean_stress'
+      GRP6_META2(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+! 3
+      GRP6_META(3)%FSC    = 0.1
+      GRP6_META(3)%UNITS  = 'm2 s-2'
+      GRP6_META(3)%ENAME  = '.bhd'
+      GRP6_META(3)%VARNM='bhd'
+      GRP6_META(3)%VARNL='radiation pressure (Bernouilli Head)'
+      GRP6_META(3)%VARNS='radiation_pressure'
+      GRP6_META(3)%VARNG='radiation_pressure'
+      GRP6_META(3)%VMIN = 0 
+      GRP6_META(3)%VMAX = 1000
+! 4
+      GRP6_META(4)%FSC    = 0.1
+      GRP6_META(4)%UNITS  = 'W m-2'
+      GRP6_META(4)%ENAME  = '.foc'
+      GRP6_META(4)%VARNM='foc'
+      GRP6_META(4)%VARNL='wave to ocean energy flux'
+      GRP6_META(4)%VARNS='wave_to_ocean_energy_flux'
+      GRP6_META(4)%VARNG='wave_to_ocean_energy_flux'
+      GRP6_META(4)%VMIN = 0 
+      GRP6_META(4)%VMAX = 9990
+! 5
+      GRP6_META(5)%FSC    = 0.001
+      GRP6_META(5)%UNITS  = 'm2 s-1'
+      GRP6_META(5)%ENAME  = '.tus'
+      GRP6_META(5)%VARND = DIRCOM
+      GRP6_META(5)%VMIN = -9900 
+      !TODO WHERE IS VMAX?
+      
+      ! First component
+      GRP6_META(5)%VARNM='utus'
+      GRP6_META(5)%VARNL='eastward stokes transport'
+      GRP6_META(5)%VARNS='eastward_stokes_transport'
+      GRP6_META(5)%VARNG='eastward_stokes_transport'
+      GRP6_META(5)%VARNC='tus=sqrt(utus**2+vtus**2)'
+
+      ! Second component
+      GRP6_META2(5) = GRP6_META(5)
+      GRP6_META2(5)%VARNM='vtus'
+      GRP6_META2(5)%VARNL='northward stokes transport'
+      GRP6_META2(5)%VARNS='northward_stokes_transport'
+      GRP6_META2(5)%VARNG='northward_stokes_transport'
+      GRP6_META2(5)%VARNC='tus=sqrt(utus**2+vtus**2)'
+
+! 6
+      GRP6_META(6)%FSC    = 0.0005
+      GRP6_META(6)%UNITS  = 'm s-1'
+      GRP6_META(6)%ENAME  = '.uss'
+      
+      ! First component
+      GRP6_META(6)%VARNM='uuss'
+      GRP6_META(6)%VARNL='eastward surface stokes drift'
+      GRP6_META(6)%VARNS='eastward_surface_stokes_drift'
+      GRP6_META(6)%VARNG='eastward_surface_stokes_drift'
+      GRP6_META(6)%VARNC='uss=sqrt(uuss**2+vuss**2)'
+      GRP6_META(6)%VARND=DIRCOM
+      GRP6_META(6)%VMIN = -9900 
+      GRP6_META(6)%VMAX =  9900
+      
+      ! Second component
+      GRP6_META2(6)%VARNM='vuss'
+      GRP6_META2(6)%VARNL='northward surface stokes drift'
+      GRP6_META2(6)%VARNS='northward_surface_stokes_drift'
+      GRP6_META2(6)%VARNG='northward_surface_stokes_drift'
+      WRITE(GRP6_META2(6)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+! 7
+      GRP6_META(7)%FSC    = 0.01
+      GRP6_META(7)%ENAME  = '.p2s'
+      GRP6_META(7)%UNITS  = 'm4'
+      GRP6_META(7)%VMIN = -15000 
+      GRP6_META(7)%VMAX = 32000
+      
+      ! First component
+      GRP6_META(7)%VARNL='power spectral density of equivalent surface pressure'
+      GRP6_META(7)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
+      GRP6_META(7)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
+      GRP6_META(7)%VARNM='fp2s'
+
+      ! Second component
+      GRP6_META2(7) = GRP6_META(7)
+      GRP6_META2(7)%VARNM='pp2s'
+      GRP6_META2(7)%UNITS= 's-1'
+      GRP6_META2(7)%VARNL='peak period of power spectral density of equivalent surface pressure'
+      GRP6_META2(7)%VARNS='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+      GRP6_META2(7)%VARNG='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+      
+! 8
+      GRP6_META(8)%UNITS = 'm s-1 Hz-1'
+      GRP6_META(8)%FSC = 0.0005
+      GRP6_META(8)%ENAME = '.usf'
+      GRP6_META(8)%VMIN = -9900 
+      GRP6_META(8)%VMAX =  9900
+      GRP6_META(8)%VARND = DIRCOM
+      
+      ! First component
+      GRP6_META(8)%VARNM='uusf'
+      GRP6_META(8)%VARNL='eastward spectral variance of surface stokes drift'
+      GRP6_META(8)%VARNS='eastward_spectral_variance_of_surface_stokes_drift'
+      GRP6_META(8)%VARNC='usf=sqrt(uusf**2+vusf**2)'
+      GRP6_META(8)%VARNG='eastward_spectral_variance_of_surface_stokes_drift'
+
+      ! Second component
+      GRP6_META2(8) = GRP6_META(8)
+      GRP6_META2(8)%VARNM='vusf'
+      GRP6_META2(8)%VARNL='northward spectral variance of surface stokes drift'
+      GRP6_META2(8)%VARNS='northward_spectral_variance_of_surface_stokes_drift'
+      GRP6_META2(8)%VARNG='northward_spectral_variance_of_surface_stokes_drift'
+      GRP6_META2(8)%VARNC='usf=sqrt(uusf**2+vusf**2)'
+! 9
+        ! Information for spectral microseismic generation data (2nd file)
+      GRP6_META(9)%FSC = 0.0004
+      GRP6_META(9)%VARNM='p2l'
+      GRP6_META(9)%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
+      GRP6_META(9)%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+      GRP6_META(9)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+      IF (NCVARTYPE.EQ.2) THEN 
+        GRP6_META(9)%UNITS='log10(Pa2 m2 s+1E-12)'
+      ELSE 
+        GRP6_META(9)%UNITS='Pa2 m2 s'
+      ENDIF
+      GRP6_META(9)%VARNC=''
+      GRP6_META(9)%VARND=''
+      GRP6_META(9)%ENAME='.p2l'
+      GRP6_META(9)%VMIN = -30000 
+      GRP6_META(9)%VMAX = 30000
+! 10
+      GRP6_META(10)%FSC = 0.000001
+      GRP6_META(10)%UNITS = 'm2 s-2'
+      GRP6_META(10)%ENAME = '.tic'
+      GRP6_META(10)%VMIN = -32000 
+      GRP6_META(10)%VMAX =  32000
+      GRP6_META(10)%VARND = DIRCOM
+ 
+      ! First component
+      GRP6_META(10)%VARNL='eastward wave to sea ice stress'
+      GRP6_META(10)%VARNM='utic'
+      GRP6_META(10)%VARNS='eastward_wave_to_sea_ice_stress'
+      GRP6_META(10)%VARNG='eastward_wave_to_sea_ice_stress'
+      GRP6_META(10)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      ! Second component
+      GRP6_META2(10) = GRP6_META(10)
+      GRP6_META2(10)%VARNM='vtic'
+      GRP6_META2(10)%VARNL='northward wave to sea ice stress'
+      GRP6_META2(10)%VARNS='northward_wave_to_sea_ice_stress'
+      GRP6_META2(10)%VARNG='northward_wave_to_sea_ice_stress'
+      GRP6_META2(10)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+! 11        
+      GRP6_META(11)%FSC    = 0.1
+      GRP6_META(11)%UNITS  = 'W m-2'
+      GRP6_META(11)%ENAME  = '.fic'
+      GRP6_META(11)%VARNM='fic'
+      GRP6_META(11)%VARNL='wave to sea ice energy flux'
+      GRP6_META(11)%VARNS='wave_to_sea_ice_energy_flux'
+      GRP6_META(11)%VARNG='wave_to_sea_ice_energy_flux'
+      GRP6_META(11)%VMIN = 0 
+      GRP6_META(11)%VMAX = 9990
+ ! 12 
+      GRP6_META(12)%UNITS   = 'm s-1'
+      GRP6_META(12)%FSC    = 0.0005
+      GRP6_META(12)%ENAME  = '.usp'
+      GRP6_META(12)%VARND  = DIRCOM
+  
+      ! First component
+      GRP6_META(12)%VARNM='ussp'
+      GRP6_META(12)%VARNL='eastward partitioned surface stokes drift'
+      GRP6_META(12)%VARNS='eastward_partitioned_surface_stokes_drift'
+      GRP6_META(12)%VARNG='eastward_partitioned_surface_stokes_drift'
+      GRP6_META(12)%VARNC='usp=sqrt(ussp**2+vssp**2)'
+    
+      ! Second component
+      GRP6_META2(12) = GRP6_META(12)
+      GRP6_META2(12)%VARNM='vssp'
+      GRP6_META2(12)%VARNL='northward partitioned surface stokes drift'
+      GRP6_META2(12)%VARNS='northward_partitioned_surface_stokes_drift'
+      GRP6_META2(12)%VARNG='northward_partitioned_surface_stokes_drift'
+      GRP6_META2(12)%VARNC='usp=sqrt(ussp**2+vssp**2)'
+!
+!---------- GROUP 7 ----------------
+!   
+! 1 
+      GRP7_META(1)%FSC    = 0.01
+      GRP7_META(1)%ENAME  = '.abr'
+      GRP7_META(1)%UNITS  = 'm'
+      GRP7_META(1)%VMIN = -18000
+      GRP7_META(1)%VMAX = 18000
+      GRP7_META(1)%VARND = DIRCOM
+      
+      ! First component
+      GRP7_META(1)%VARNM='uabr'
+      GRP7_META(1)%VARNL='rms of bottom displacement amplitude zonal'
+      GRP7_META(1)%VARNS='rms_of_bottom_displacement_amplitude_zonal'
+      GRP7_META(1)%VARNG='rms_of_bottom_displacement_amplitude_zonal'
+      GRP7_META(1)%VARNC='abr=sqrt(uabr**2+vabr**2)'
+      
+      ! Second component
+      GRP7_META2(1) = GRP7_META(1)
+      GRP7_META2(1)%VARNM='vabr'
+      GRP7_META2(1)%VARNL='rms of bottom displacement amplitude meridional'
+      GRP7_META2(1)%VARNS='rms_of_bottom_displacement_amplitude_meridional'
+      GRP7_META2(1)%VARNG='rms_of_bottom_displacement_amplitude_meridional'
+      GRP7_META2(1)%VARNC='abr=sqrt(uabr**2+vabr**2)'
+! 2
+      GRP7_META(2)%FSC    = 0.01
+      GRP7_META(2)%ENAME  = '.ubr'
+      GRP7_META(2)%UNITS  = 'm s-1'
+      GRP7_META(2)%VMIN = -18000 
+      GRP7_META(2)%VMAX = 18000
+      GRP7_META(2)%VARND = DIRCOM
+
+      ! First component
+      GRP7_META(2)%VARNM='uubr'
+      GRP7_META(2)%VARNL='rms of bottom velocity amplitude zonal'
+      GRP7_META(2)%VARNS='rms_of_bottom_velocity_amplitude_zonal'
+      GRP7_META(2)%VARNG='rms_of_bottom_velocity_amplitude_zonal'
+      GRP7_META(2)%VARNC='ubr=sqrt(uubr**2+vu7r**2)'
+
+      ! Second component
+      GRP7_META2(2) = GRP7_META(2)
+      GRP7_META(2)%VARNM='vubr'
+      GRP7_META(2)%VARNL='rms of bottom velocity amplitude meridional'
+      GRP7_META(2)%VARNS='rms_of_bottom_velocity_amplitude_meridional'
+      GRP7_META(2)%VARNG='rms_of_bottom_velocity_amplitude_meridional'
+      GRP7_META(2)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
+! 3
+      GRP7_META(3)%FSC    = 0.001
+      GRP7_META(3)%UNITS  = 'm'
+      GRP7_META(3)%ENAME  = '.bed'
+      GRP7_META(3)%VMIN = 0
+      GRP7_META(3)%VMAX = 30000
+      GRP7_META(3)%VARND = DIRCOM
+
+      ! First component
+      GRP7_META(3)%VARNM='bed'
+      GRP7_META(3)%VARNL='bottom roughness'
+      GRP7_META(3)%VARNS='sea bottom roughness length'
+      GRP7_META(3)%VARNG='ripple_wavelength'
+      GRP7_META(3)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+      
+      ! Second component
+      GRP7_META2(3) = GRP7_META(3)
+      GRP7_META2(3)%VARNM='ripplex'
+      GRP7_META2(3)%VARNL='eastward sea bottom ripple wavelength'
+      GRP7_META2(3)%VARNS='eastward_ripple_wavelength'
+      GRP7_META2(3)%VARNG='eastward_ripple_wavelength'
+      GRP7_META2(3)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+
+      ! Third component
+      GRP7_META3(3) = GRP7_META(3)
+      GRP7_META3(3)%VARNM='rippley'
+      GRP7_META3(3)%VARNL='northward sea bottom ripple wavelength'
+      GRP7_META3(3)%VARNS='northward_ripple_wavelength'
+      GRP7_META3(3)%VARNG='northward_ripple_wavelength'
+      GRP7_META3(3)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+ ! 4
+      GRP7_META(4)%FSC    = 0.1
+      GRP7_META(4)%UNITS  = 'W m-2'
+      GRP7_META(4)%ENAME  = '.fbb'
+      GRP7_META(4)%VARNM='fbb'
+      GRP7_META(4)%VARNL='wave dissipation in bbl'
+      GRP7_META(4)%VARNS='wave_energy_dissipation_in_bottom_boundary_layer'
+      GRP7_META(4)%VARNG='wave_dissipation_in_bbl'
+      GRP7_META(4)%VMIN = 0
+      GRP7_META(4)%VMAX = 9990
+! 5
+      GRP7_META(5)%FSC    = 0.000001
+      GRP7_META(5)%UNITS  = 'm2 s-2'
+      GRP7_META(5)%ENAME  = '.tbb'
+      GRP7_META(5)%VMIN = -32000 
+      GRP7_META(5)%VMAX =  32000
+      GRP7_META(5)%VARND = DIRCOM
+      
+      ! First component
+      GRP7_META(5)%VARNM='utbb'
+      GRP7_META(5)%VARNL='eastward wave to bbl stress'
+      GRP7_META(5)%VARNS='eastward_wave_to_bottom_boundary_layer_stress'
+      GRP7_META(5)%VARNG='eastward_wave_to_bbl_stress'
+      GRP7_META(5)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+      
+      ! Second component
+      GRP7_META2(5) = GRP7_META(5)
+      GRP7_META2(5)%VARNM='vtbb'
+      GRP7_META2(5)%VARNL='northward wave to bbl stress'
+      GRP7_META2(5)%VARNS='northward_wave_to_bottom_boundary_layer_stress'
+      GRP7_META2(5)%VARNG='northward_wave_to_bbl_stress'
+      GRP7_META2(5)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+!
+!---------- GROUP 8 ----------------
+! 1
+      GRP8_META(1)%FSC    = 0.00001
+      GRP8_META(1)%ENAME  = '.mss'
+      GRP8_META(1)%UNITS  = '1'
+      GRP8_META(1)%VMIN = 0 
+      GRP8_META(1)%VMAX = 30000
+      GRP8_META(1)%VARND = DIRCOM
+      WRITE(GRP8_META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+      
+      ! First component
+      GRP8_META(1)%VARNM='mssu'
+      GRP8_META(1)%VARNL='downwave mean square slope'
+      GRP8_META(1)%VARNS='x_mean_square_slope'
+      GRP8_META(1)%VARNG='x_mean_square_slope'
+      GRP8_META(1)%VARNC='mss=mssu+mssc'
+      
+      ! Second component
+      GRP8_META2(1) = GRP8_META(1)
+      GRP8_META2(1)%VARNM='mssc'
+      GRP8_META2(1)%VARNL='crosswave mean square slope'
+      GRP8_META2(1)%VARNS='y_mean_square_slope'
+      GRP8_META2(1)%VARNG='y_mean_square_slope'
+! 2
+      GRP8_META2(2)%FSC    = 1E-7     
+      GRP8_META2(2)%ENAME  = '.msc'
+      GRP8_META2(2)%UNITS  = '1'
+      GRP8_META2(2)%VMIN = 0 
+      GRP8_META2(2)%VMAX = 30000
+      GRP8_META2(2)%VARND = DIRCOM
+      
+      ! First component
+      GRP8_META(2)%VARNM='mscx'
+      GRP8_META(2)%VARNL='eastward phillips constant'
+      GRP8_META(2)%VARNS='eastward_phillips_constant'
+      GRP8_META(2)%VARNG='eastward_phillips_constant'
+      GRP8_META(2)%VARNC='msc=mscx+mscy'
+      
+      ! Second component
+      GRP8_META2(2) = GRP8_META(2)
+      GRP8_META2(2)%VARNM='mscy'
+      GRP8_META2(2)%VARNL='northward phillips constant'
+      GRP8_META2(2)%VARNS='northward_phillips_constant'
+      GRP8_META2(2)%VARNG='northward_phillips_constant'
+      GRP8_META2(2)%VARNC='msc=mscx+mscy'
+! 3
+      GRP8_META(3)%FSC    = 0.1
+      GRP8_META(3)%UNITS  = 'degree'
+      GRP8_META(3)%ENAME  = '.msd'
+      GRP8_META(3)%VARNM='mssd'
+      GRP8_META(3)%VARNL='u direction for mss'
+      GRP8_META(3)%VARNS='sea_surface_wave_dominant_mean_square_slope_direction'
+      GRP8_META(3)%VARNG='sea_surface_wave_dominant_mean_square_slope_direction'
+      WRITE(GRP8_META(3)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+      GRP8_META(3)%VARND = DIRCOM
+      GRP8_META(3)%VMIN = 0
+      GRP8_META(3)%VMAX = 3600
+! 4
+      GRP8_META(4)%FSC    = 0.1
+      GRP8_META(4)%UNITS  = 'degree'
+      GRP8_META(4)%ENAME  = '.mcd'
+      GRP8_META(4)%VARNM='mscd'
+      GRP8_META(4)%VARNL='x direction for msc'
+      GRP8_META(4)%VARNS='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+      GRP8_META(4)%VARNG='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+      GRP8_META(4)%VARND = DIRCOM
+      GRP8_META(4)%VMIN = 0
+      GRP8_META(4)%VMAX = 3600
+! 5
+      GRP8_META(5)%FSC    = 0.001
+      GRP8_META(5)%UNITS  = '1'
+      GRP8_META(5)%ENAME  = '.qp'
+      GRP8_META(5)%VARNM='qp'
+      GRP8_META(5)%VARNL='peakedness'
+      GRP8_META(5)%VARNS='sea_surface_wave_peakedness'
+      GRP8_META(5)%VARNG='wave_peakedness'
+      GRP8_META(5)%VARNC='Goda wave peakedness parameter'
+      GRP8_META(5)%VMIN = 0
+      GRP8_META(5)%VMAX = 32000
+!
+!---------- GROUP 8 ----------------
+!
+! 1
+      GRP9_META(1)%FSC    = 0.1
+      GRP9_META(1)%UNITS  = 'min.'
+      GRP9_META(1)%ENAME  = '.dtd'
+      GRP9_META(1)%VARNM='dtd'
+      GRP9_META(1)%VARNL='dynamic time step'
+      GRP9_META(1)%VARNS='dynamic_time_step'
+      GRP9_META(1)%VARNG='dynamic_time_step'
+      GRP9_META(1)%VMIN = 0 
+      GRP9_META(1)%VMAX = 32000
+! 2
+      GRP9_META(2)%FSC    = 0.001
+      GRP9_META(2)%UNITS  = 's-1'
+      GRP9_META(2)%ENAME  = '.fc'
+      GRP9_META(2)%VARNM='fc'
+      GRP9_META(2)%VARNL='cut off frequency'
+      GRP9_META(2)%VARNS='cut_off_frequency'
+      GRP9_META(2)%VARNG='cut_off_frequency'
+      GRP9_META(2)%VMIN = 0 
+      GRP9_META(2)%VMAX = 8000
+! 3
+      GRP9_META(3)%FSC    = 0.01
+      GRP9_META(3)%UNITS  = '1'
+      GRP9_META(3)%ENAME  = '.cfx'
+      GRP9_META(3)%VARNM='cfx'
+      GRP9_META(3)%VARNL='maximum cfl for spatial advection'
+      GRP9_META(3)%VARNS='maximum_cfl_for_spatial_advection'
+      GRP9_META(3)%VARNG='maximum_cfl_for_spatial_advection'
+      GRP9_META(3)%VMIN = 0 
+      GRP9_META(3)%VMAX = 32000
+! 4
+      GRP9_META(4)%FSC    = 0.01
+      GRP9_META(4)%UNITS  = '1'
+      GRP9_META(4)%ENAME  = '.cfd'
+      GRP9_META(4)%VARNM='cfd'
+      GRP9_META(4)%VARNL='maximum cfl for direction advection'
+      GRP9_META(4)%VARNS='maximum_cfl_for_direction_advection'
+      GRP9_META(4)%VARNG='maximum_cfl_for_direction_advection'
+      GRP9_META(4)%VMIN = 0 
+      GRP9_META(4)%VMAX = 32000
+! 5
+      GRP9_META(5)%FSC    = 0.01
+      GRP9_META(5)%UNITS  = '1'
+      GRP9_META(5)%ENAME  = '.cfk'
+      GRP9_META(5)%VARNM='cfk'
+      GRP9_META(5)%VARNL='maximum cfl for frequency advection'
+      GRP9_META(5)%VARNS='maximum_cfl_for_frequency_advection'
+      GRP9_META(5)%VARNG='maximum_cfl_for_frequency_advection'
+      GRP9_META(5)%VMIN = 0 
+      GRP9_META(5)%VMAX = 32000
+!
+! ------ Group 10 (User defined) -------
+!
+      GRP10_META(1)%FSC    = 0.1
+      GRP10_META(1)%UNITS  = 'm'
+      GRP10_META(1)%VMIN = 0
+      GRP10_META(1)%VMAX = 0
+      WRITE (GRP10_META(1)%ENAME,'(A2,I2.2)') '.u'
+      WRITE (GRP10_META(1)%VARNM,'(A1,I2.2)') 'u'
+      WRITE (GRP10_META(1)%VARNL,'(A12,I2.2)') 'User_defined'
+      WRITE (GRP10_META(1)%VARNS,'(A12,I2.2)') 'User_defined'
+      WRITE (GRP10_META(1)%VARNG,'(A12,I2.2)') 'user_defined'
+!
+
+      !!! Now, setup ALL_META array of pointers to individual GRPX_META arrays
+      !NULLIFY(ALL_META)
+      ALL_META(1,1)%p => GRP1_META
+      ALL_META(1,2)%p => GRP1_META2
+      ALL_META(2,1)%p => GRP2_META
+      ALL_META(3,1)%p => GRP3_META
+      ALL_META(4,1)%p => GRP4_META
+      ALL_META(5,1)%p => GRP5_META
+      ALL_META(5,2)%p => GRP5_META2
+      ALL_META(6,1)%p => GRP6_META
+      ALL_META(6,2)%p => GRP6_META2
+      ALL_META(6,3)%p => GRP6_META3
+      ALL_META(7,1)%p => GRP7_META
+      ALL_META(7,2)%p => GRP7_META2
+      ALL_META(7,3)%p => GRP7_META3
+      ALL_META(8,1)%p => GRP8_META
+      ALL_META(8,2)%p => GRP8_META2
+      ALL_META(9,1)%p => GRP9_META
+      ALL_META(10,1)%p => GRP10_META
+
+
+      ! If the ounfmeta.nml exists, read this in to override any
+      ! meta data set above
+      INQUIRE(FILE="ounfmeta.nml", EXIST=FLGNML)
+      IF(FLGNML) THEN 
+         CALL READ_NML()
+      ENDIF
+
+      END SUBROUTINE INIT_META
+
+      SUBROUTINE READ_NML()
+
+         IMPLICIT NONE
+   
+         INTEGER ::  ierr
+         CHARACTER(LEN=128) :: msg
+   
+         NAMELIST /OUNF_META/                       &
+               GRP1_META, GRP1_META2, GRP2_META,    &
+               GRP2_META, GRP3_META,  GRP4_META,    &
+               GRP5_META, GRP5_META2, GRP6_META,    &
+               GRP6_META2, GRP6_META3, GRP7_META,   &
+               GRP7_META2, GRP7_META3, GRP8_META,   &
+               GRP8_META2, GRP9_META, GRP10_META 
+   
+         OPEN(10, file="ounfmeta.nml", status="old", form="formatted")
+         READ(10, nml=ounf_meta, iostat=ierr, iomsg=msg)
+         if(ierr.ne.0) THEN
+            PRINT*,'Error reading namelist'
+            PRINT*,msg
+            CALL EXIT(1)
+         endif
+
+         WRITE(*,*) "Read ounfmeta.nml"
+         CLOSE(10)
+
+      END SUBROUTINE READ_NML
+
+      FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
+         
+         IMPLICIT NONE
+         INTEGER, INTENT(IN) :: IFI, IFJ
+         INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
+         INTEGER :: IFP, IFC
+         TYPE(META_T), POINTER :: META
+               
+         IFC = 1
+         IFP = 1
+         IF(PRESENT(ICOMP)) IFC = ICOMP
+         IF(PRESENT(IPART)) IFP = IPART
+   
+         ! TODO: Error checking on size of IFJ, ICOMP, IPART.
+
+         META => ALL_META(IFI,IFC)%p(IFJ)
+
+         ! TODO: For partitioned data, expand in the partition number
+         IF(IFI .EQ. 4) THEN
+         ENDIF
+   
+         RETURN
+
+      END FUNCTION GETMETA
+
+
+      SUBROUTINE WRITE_META(ncid, varid, meta, err)
+         IMPLICIT NONE
+         INTEGER, INTENT(IN) :: ncid, varid
+         TYPE(META_T), INTENT(IN) :: meta
+         INTEGER, INTENT(OUT) :: err
+   
+   
+         err = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
+         IF(err /= NF90_NOERR) RETURN
+         IF(META%VARNC .NE. '') THEN
+               err = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+               IF(err /= NF90_NOERR) RETURN
+         ENDIF
+         IF (META%VARND .NE. '') THEN
+               err = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+               IF(err /= NF90_NOERR) RETURN
+         END IF
+      END SUBROUTINE WRITE_META
+    
+
+      SUBROUTINE PRINT_META(META)
+         IMPLICIT NONE
+
+         TYPE(META_T), INTENT(IN) :: META
+
+         WRITE(*,*) META%VARNM
+         WRITE(*,"(A20,':',1X,A)") "Standard name", TRIM(META%VARNS)
+         WRITE(*,"(A20,':',1X,A)") "Long name", TRIM(META%VARNL)
+         WRITE(*,"(A20,':',1X,A)") "Units", TRIM(META%UNITS)
+         WRITE(*,"(A20,':',1X,A)") "GLOBWAVE name", TRIM(META%VARNG)
+         WRITE(*,"(A20,':',1X,A)") "Direction conv", TRIM(META%VARND)
+         WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
+         WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
+         WRITE(*,"(A20,':')") "Extra metadata"
+         WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
+         WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
+         PRINT*,META%EXTRA%TYPE == ""
+      END SUBROUTINE PRINT_META
+
+      END MODULE W3NMLOUNFMETA
