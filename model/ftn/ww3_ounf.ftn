@@ -142,6 +142,7 @@
       USE W3NMLOUNFMD
       !USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, WRITE_USER_META, META_T
       USE W3NMLOUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, META_T
+      USE W3NMLOUNFMETA, ONLY: PRINT_META
       USE NETCDF
 
 !/SMC      USE W3SMCOMD
@@ -827,7 +828,7 @@
 !/RTD ! grid is rotated
 !/RTD      LOGICAL                 :: RTDL = .FALSE.
 
-      TYPE(META_T)            :: AMETA(8), META
+      TYPE(META_T)            :: META, AMETA(3)
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -1947,6 +1948,19 @@
 !
             END IF ! IFI AND IFJ
 
+            ! CB: Get MetaData for IFI, IFJ combination.
+            ! Likely we will need to get meta data for all components of the field
+            ! here and store in an array as it is used several times later
+            META = GETMETA(IFI, IFJ, ICOMP=1) ! TODO: Get all components
+
+            DO i=1,NFIELD
+              AMETA(I) = GETMETA(IFI, IFJ, ICOMP=I) ! TODO: Get all components
+            ENDDO
+
+            PRINT*,AMETA(1:NFIELD)
+            STOP
+
+
             ! Defines a differents for the second variable if specified
             UNITVAR(:)=UNITS
             IF (UNITS2.NE.'SAME') UNITVAR(2)=UNITS2
@@ -1994,6 +2008,7 @@
             ! If NOT flag TOGETHER or variable with freq dim &
             ! (ef, p2l, ...), add variable name in file name
             ELSE
+              CALL PRINT_META(META)
               FNAMENC(S1+2:S1+S2) = META%ENAME(2:S2)
             ENDIF
             ! Defines the netcdf extension

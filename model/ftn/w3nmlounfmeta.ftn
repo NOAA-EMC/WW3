@@ -2,8 +2,8 @@
 
       USE NETCDF
       USE CONSTANTS, ONLY: TPIINV
-      !USE W3GDATMD, ONLY: SIG, NK
-      !USE W3ODATMD, ONLY: PTMETH, PTFCUT
+      USE W3GDATMD, ONLY: SIG, NK
+      USE W3ODATMD, ONLY: PTMETH, PTFCUT
 
       IMPLICIT NONE
 
@@ -47,13 +47,12 @@
       TYPE(META_POINTER_T) :: ALL_META(10,3) ! max 3 components
 
 
-      !!! TODO TEM<PORARY VARIABLES !!!
+      !!! TODO TEMPORARY VARIABLES FOR TESTING !!!
       INTEGER :: NCVARTYPE !TODO: SET FROM WW3_OUNF
-      INTEGER :: PTMETH = 1 ! TODO: FET FROM W3IOGO
-      REAL :: PTFCUT = 0.3
-      REAL :: SIG(1)
-      INTEGER :: NK=0
-      
+!      INTEGER :: PTMETH = 1 ! TODO: FET FROM W3IOGO
+!      REAL :: PTFCUT = 0.3
+!      REAL :: SIG(1)
+!      INTEGER :: NK=0
       
 
       CONTAINS 
@@ -1371,7 +1370,7 @@
          IF(PRESENT(IPART)) IFP = IPART
    
          ! TODO: Error checking on size of IFJ, ICOMP, IPART.
-
+         PRINT*,"GET META I,J,C: ",IFI,IFJ,IFC
          META => ALL_META(IFI,IFC)%p(IFJ)
 
          ! TODO: For partitioned data, expand in the partition number
