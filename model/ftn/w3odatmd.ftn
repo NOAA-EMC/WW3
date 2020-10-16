@@ -686,7 +686,7 @@
 !
 ! 2) Standard mean wave parameters
 !
-      NOGE(2) = 17
+      NOGE(2) = 18
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -705,6 +705,7 @@
       IDOUT( 2, 15)  = 'STD Space-Time Hmax'
       IDOUT( 2, 16)  = 'STD ST Hmax^crest  '
       IDOUT( 2, 17)  = 'Dominant wave bT   '
+      IDOUT( 2, 18)  = 'Mean wave number   '
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
 !      IDOUT( 2,12)  = 'Windsea height(Sin)'
@@ -762,7 +763,7 @@
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 12 
+      NOGE(6) = 13 
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -776,6 +777,7 @@
       IDOUT( 6,10)  = 'Wave-ice mom. flux  '
       IDOUT( 6,11)  = 'Wave-ice energy flux'
       IDOUT( 6,12)  = 'Split Surface Stokes'
+      IDOUT( 6,13)  = 'Tot wav-ocn mom flux'
 !
 ! 7) Wave-bottom layer
 !

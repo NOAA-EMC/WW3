@@ -121,7 +121,7 @@
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
-                          PTM1, PT1, PT2, PEP,                        &
+                          PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
                           PTHP0, PQP, PSW, PPE, PGW, QP,              &
                           TAUOX, TAUOY, TAUWIX,BHD,                   &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -129,7 +129,8 @@
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
-                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT
+                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
+                          WNMEAN
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -1080,6 +1081,17 @@
                   CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1)
                 ENDIF
 !
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = 'm-1'
+                ENAME  = '.wnm'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = WNMEAN
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1)
+                ENDIF
+!
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
@@ -1703,6 +1715,49 @@
                 ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,PRMS,MAPSF, X1 )
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TPMS,MAPSF, X2 )
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 1.E-6
+                UNITS  = 'm2 s-2'
+                ENAME  = '.toc'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOCX, TAUOCY, AnglD)
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = TAUOCX(1:NSEA)
+                   XS2    = TAUOCY(1:NSEA)
+                ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCX(1:NSEA)    &
+                                                          , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)    &
+                                                          , MAPSF, XY )
+                ENDIF
+                DO ISEA=1, NSEA
+                  UABS   = SQRT(TAUOCX(ISEA)**2+TAUOCY(ISEA)**2)
+                  IF ( TAUOCX(ISEA) .EQ. UNDEF ) THEN
+                      TAUOCY(ISEA) = UNDEF
+                      UABS         = UNDEF
+                    ELSE IF ( UABS .GT. 1.E-8 ) THEN
+                      TAUOCY(ISEA) = MOD ( 630. -                    &
+                        RADE*ATAN2(TAUOCY(ISEA),TAUOCX(ISEA)) , 360. )
+                    ELSE
+                      TAUOCY(ISEA) = UNDEF
+                    END IF
+                  TAUOCX(ISEA) = UABS
+                  END DO
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS3    = TAUOCX(1:NSEA)
+                   XS4    = TAUOCY(1:NSEA)
+                ELSE
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOCX(1:NSEA)        &
+                                                      , MAPSF, X1 )
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOCY(1:NSEA)        &
+                                                      , MAPSF, X2 )
                 ENDIF
 !
               ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN

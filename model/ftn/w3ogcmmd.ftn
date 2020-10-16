@@ -108,9 +108,9 @@
 !
       USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
-      USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
+      USE W3ADATMD,  ONLY: HS, T0M1, T01, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
                            TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM, &
-                           PHIBBL,TAUBBL, CHARN
+                           PHIBBL,TAUBBL, CHARN, TAUOCX, TAUOCY, WNMEAN
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
 !
@@ -153,6 +153,24 @@
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_T0M1') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(T0M1 /= UNDEF) TMP=T0M1
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Mean wave period (tmn in s) (m0,1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__T01') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(T01 /= UNDEF) TMP=T01
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Mean wave number (wnm in m-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WNM') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(WNMEAN /= UNDEF) TMP=WNMEAN
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -214,6 +232,24 @@
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOY') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(TAUOY /= UNDEF) TMP(:)=TAUOY (:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-ocean total momentum flux (tauocx in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOCX /= UNDEF) TMP(:)=TAUOCX(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-ocean total momentum flux (tauocy in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOCY /= UNDEF) TMP(:)=TAUOCY (:)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF

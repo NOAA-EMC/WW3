@@ -59,7 +59,7 @@
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
                           TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
                           D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
-                          PHICE, COEF) 
+                          PHICE, TAUOCX, TAUOCY, WNMEAN, COEF) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -212,6 +212,8 @@
 !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
 !       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
 !       PHICE   Real   O   Energy flux to sea ice         ( !/ICx ) 
+!       TAUOCX-YReal   O   Total ocean momentum components
+!       WNMEAN  Real   O   Mean wave number
 !     ----------------------------------------------------------------
 !       Note: several pars are set to I/O to avoid compiler warnings.
 !
@@ -447,7 +449,7 @@
                                  CHARN, TWS, BEDFORM(3), PHIBBL,      &
                                  TAUBBL(2), TAUICE(2), WHITECAP(4),   &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
-                                 ICEF
+                                 ICEF, TAUOCX, TAUOCY, WNMEAN
       REAL, INTENT(OUT)       :: DTDYN, FCUT
       REAL, INTENT(IN)        :: COEF
 !/
@@ -462,7 +464,7 @@
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
 ! Scaling factor for SIN, SDS, SNL
       REAL                    :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS  
-      REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT,    &
+      REAL                    :: EMEAN, FMEAN, AMAX, CD, Z0, SCAT,    &
                                  SMOOTH_ICEDISP
       REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2,&
                                  R(NK)
@@ -633,6 +635,9 @@
       TAUBBL = 0.
       TAUICE = 0.
       PHICE  = 0.
+      TAUOCX = 0.
+      TAUOCY = 0.
+      WNMEAN = 0.
 
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
@@ -1329,6 +1334,8 @@
       TAUWNX=TAUWNX/DTG
       TAUWNY=TAUWNY/DTG
       TAUBBL(:)=TAUBBL(:)/DTG
+      TAUOCX = DAIR*USTAR*USTAR*COS(USTDIR) + DWAT * ( TAUOX -TAUWIX )
+      TAUOCY = DAIR*USTAR*USTAR*SIN(USTDIR) + DWAT * ( TAUOY -TAUWIY )
 !
 ! Transformation in wave energy flux in W/m^2=kg / s^3 
 !

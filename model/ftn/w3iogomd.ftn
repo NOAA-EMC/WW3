@@ -493,6 +493,8 @@
              FLG2D(2,16)=.TRUE.
            CASE('WBT')
              FLG2D(2,17)=.TRUE.
+           CASE('WNM')
+             FLG2D(2,18)=.TRUE.
 !
 ! Group 3
 !
@@ -609,6 +611,8 @@
              ELSE
                IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
                END IF
+           CASE('TOC')
+             FLG2D(6,13)=.TRUE.
 !
 ! Group 7
 !
@@ -916,6 +920,8 @@
            FLG2D(2,16)=.TRUE.
          CASE('WBT')
            FLG2D(2,17)=.TRUE.
+         CASE('WNM')
+           FLG2D(2,18)=.TRUE.
 !
 ! Group 3
 !
@@ -1032,7 +1038,8 @@
            ELSE
              IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
              END IF
-
+         CASE('TOC')
+           FLG2D(6,13)=.TRUE.
 !
 ! Group 7
 !
@@ -1080,6 +1087,7 @@
          CASE('U2')
            FLG2D(10,1)=.TRUE.
 !/COU           CASE('DRY')
+         CASE('UNSET')
          CASE DEFAULT
            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
          END SELECT
@@ -2477,7 +2485,7 @@
                           UST,  USTDIR, ASF
       USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
-                          WBT
+                          WBT, WNMEAN
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,     &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
@@ -2490,7 +2498,7 @@
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
                           TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-                          USSP
+                          USSP, TAUOCX, TAUOCY
 !/
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2743,6 +2751,7 @@
                 IF ( FLOGRD( 2,15) ) HMAXD (ISEA) = UNDEF
                 IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
                 IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
+                IF ( FLOGRD( 2,18) ) WNMEAN(ISEA) = UNDEF
 !
                 IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
                 IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
@@ -2812,6 +2821,10 @@
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
                 IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 13) ) THEN
+                                     TAUOCX(ISEA) = UNDEF
+                                     TAUOCY(ISEA) = UNDEF
+                  END IF
 !
                 IF ( FLOGRD( 7, 1) ) THEN
                                      ABA   (ISEA) = UNDEF
@@ -2968,6 +2981,8 @@
                     WRITE ( NDSOG ) HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     WRITE ( NDSOG ) WBT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                    WRITE ( NDSOG ) WNMEAN(1:NSEA)
 !
 !     Section 3)
 !
@@ -3097,6 +3112,9 @@
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
                     WRITE ( NDSOG ) USSP(1:NSEA,   1:USSPF(2))
                     WRITE ( NDSOG ) USSP(1:NSEA,NK+1:NK+USSPF(2))
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                    WRITE ( NDSOG ) TAUOCX(1:NSEA)
+                    WRITE ( NDSOG ) TAUOCY(1:NSEA)
 !
 !     Section 7)
 !
@@ -3248,6 +3266,9 @@
                                                          HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WBT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                         WNMEAN(1:NSEA)
 !
 !     Section 3)
 !
@@ -3417,6 +3438,11 @@
                                    USSP(1:NSEA,1:USSPF(2))
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
                                    USSP(1:NSEA,NK+1:NK+USSPF(2))
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOCX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOCY(1:NSEA)
 
 !
 !     Section 7)

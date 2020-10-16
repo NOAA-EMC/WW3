@@ -123,7 +123,7 @@
                           THS, FP0, THP0, DTDYN, FCUT,                 &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
-                          PTM1, PT1, PT2, PEP,                         &
+                          PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,         &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -134,7 +134,7 @@
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-                          WN, USSP, WBT
+                          WN, USSP, WBT, WNMEAN
       USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -1611,6 +1611,25 @@
               VMIN = 0
               VMAX = 1000
 !
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+              FSC    = 0.001
+              UNITS  = 'm-1'
+              ENAME  = '.wnm'
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( WNMEAN, X1 )
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
+              END IF
+              NFIELD=1
+              VARNM(1)='wnm'
+              VARNL(1)='mean wave number'
+              VARNS(1)='mean wave number'
+              VARNG(1)='mean wave number'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 32000
+!
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -2956,6 +2975,45 @@
               END DO
               FSC    = 0.0005
               ENAME  = '.usp'
+!
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+              FSC    = 0.000001
+              UNITS  = 'm2 s-2'
+              ENAME  = '.toc'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOCX(1:NSEA), TAUOCY(1:NSEA), AnglD)
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( TAUOCX(1:NSEA), XX )
+!/SMC                CALL W3S2XY_SMC( TAUOCY(1:NSEA), XY )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCX(1:NSEA)     &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)     &
+                                                        , MAPSF, XY )
+              ENDIF ! SMCGRD
+              NFIELD=2
+              VARNM(1)='utoc'
+              VARNM(2)='vtoc'
+              VARNL(1)='eastward total wave to ocean stress'
+              VARNL(2)='northward total wave to ocean stress'
+              VARNS(1)='eastward_total_wave_to_ocean_stress'
+              VARNS(2)='northward_total_wave_to_ocean_stress'
+              VARNG(1)='eastward_total_wave_to_ocean_stress'
+              VARNG(2)='northward_total_wave_to_ocean_stress'
+              VARNC(1)='toc=sqrt(utoc**2+vtoc**2)'
+              VARNC(2)='toc=sqrt(utoc**2+vtoc**2)'
+              VARND(1)=''
+              VARND(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
+!/RTD              ELSE IF ( RTDL ) THEN
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
+              VMIN = -32000
+              VMAX =  32000
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01

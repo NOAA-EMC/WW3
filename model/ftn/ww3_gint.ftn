@@ -970,7 +970,7 @@
                          FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1,   &
                          THP0AUX2, HSIGAUX, STMAXEAUX,STMAXDAUX,       &
                          HMAXEAUX, HCMAXEAUX, HMAXDAUX, HCMAXDAUX,     &
-                         WBTAUX, SUMWT2(NOGE(2))
+                         WBTAUX, WNMEANAUX, SUMWT2(NOGE(2))
 ! Local group 3 variables
         REAL          :: EFAUX(E3DF(2,1):E3DF(3,1)),                   &
                          TH1MAUX(E3DF(2,2):E3DF(3,2)),                 &
@@ -1005,6 +1005,7 @@
                          BHDAUX, PHIOCAUX, TUSXAUX, TUSYAUX, USSXAUX,  &
                          USSYAUX, PRMSAUX, TPMSAUX, SUMWT6(NOGE(6)),   &
                          TAUICEAUX(2), PHICEAUX,                       &
+                         TAUOCXAUX, TAUOCYAUX,                         &
                          US3DAUX(2*NK), SUMWT68(2*NK),                 &
                          P2SMSAUX(P2MSF(2):P2MSF(3)),                  &
                          SUMWT69(P2MSF(2):P2MSF(3)),                   &
@@ -1059,6 +1060,7 @@
         HMAXD    = UNDEF
         HCMAXD   = UNDEF
         WBT      = UNDEF
+        WNMEAN   = UNDEF
 !
 ! Group 3 variables
 !
@@ -1115,6 +1117,8 @@
         TUSY     = UNDEF
         USSX     = UNDEF
         USSY     = UNDEF
+        TAUOCX   = UNDEF
+        TAUOCY   = UNDEF
         PRMS     = UNDEF
         TPMS     = UNDEF
         IF ( US3DF(1).GT.0 ) THEN
@@ -1284,6 +1288,7 @@
                 HMAXDAUX    = UNDEF
                 HCMAXDAUX   = UNDEF
                 WBTAUX      = UNDEF
+                WNMEANAUX   = UNDEF
                 SUMWT2      = 0
 !
 ! Group 3 variables
@@ -1351,6 +1356,8 @@
                 TUSYAUX     = UNDEF
                 USSXAUX     = UNDEF
                 USSYAUX     = UNDEF
+                TAUOCXAUX   = UNDEF
+                TAUOCYAUX   = UNDEF
                 PRMSAUX     = UNDEF
                 TPMSAUX     = UNDEF
                 P2SMSAUX    = UNDEF
@@ -1680,6 +1687,14 @@
                       SUMWT2(17) = SUMWT2(17) + WT
                       IF ( WBTAUX .EQ. UNDEF )   WBTAUX = 0.
                       WBTAUX = WBTAUX + WADATS(IGRID)%WBT(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,18) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%WNMEAN(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(18) = SUMWT2(18) + WT
+                      IF ( WNMEANAUX .EQ. UNDEF )   WNMEANAUX = 0.
+                      WNMEANAUX = WNMEANAUX + WADATS(IGRID)%WNMEAN(GSEA)*WT
                     END IF
                   END IF
 !
@@ -2194,6 +2209,19 @@
                     END DO
                   END IF
 !
+                  IF ( FLOGRD(6,13) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%TAUOCX(GSEA) .NE. UNDEF ) THEN
+                      SUMWT6(13) = SUMWT6(13) + WT
+                      IF ( TAUOCXAUX .EQ. UNDEF ) THEN
+                        TAUOCXAUX = WADATS(IGRID)%TAUOCX(GSEA)*WT
+                        TAUOCYAUX = WADATS(IGRID)%TAUOCY(GSEA)*WT
+                      ELSE
+                        TAUOCXAUX = TAUOCXAUX + WADATS(IGRID)%TAUOCX(GSEA)*WT
+                        TAUOCYAUX = TAUOCYAUX + WADATS(IGRID)%TAUOCY(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
 ! Group 7 variables
 !
                   IF ( FLOGRD(7,1) .AND. ACTIVE ) THEN
@@ -2561,6 +2589,12 @@
                   IF ( WBT(ISEA) .EQ. UNDEF )   WBT(ISEA) = 0.
                   WBT(ISEA) = WBT(ISEA) +                            &
                                WBTAUX / REAL( SUMWT2(17)+SUMGRD )
+                END IF
+!
+                IF ( WNMEANAUX .NE. UNDEF ) THEN
+                  IF ( WNMEAN(ISEA) .EQ. UNDEF )   WNMEAN(ISEA) = 0.
+                  WNMEAN(ISEA) = WNMEAN(ISEA) +                      &
+                               WNMEANAUX / REAL( SUMWT2(18)+SUMGRD )
                 END IF
 !
 ! Group 3 variables
@@ -3015,6 +3049,18 @@
                        USSPAUX(NK+IK) / REAL( SUMWT612(NK+IK) + SUMGRD )
                     END IF
                   END DO
+                END IF
+!
+                IF ( TAUOCXAUX .NE. UNDEF ) THEN
+                  TAUOCXAUX = TAUOCXAUX / SUMWT6(13)
+                  TAUOCYAUX = TAUOCYAUX / SUMWT6(13)
+                  IF ( TAUOCX(ISEA) .EQ. UNDEF )  THEN
+                    TAUOCX(ISEA) = TAUOCXAUX / REAL( SUMGRD )
+                    TAUOCY(ISEA) = TAUOCYAUX / REAL( SUMGRD )
+                  ELSE
+                    TAUOCX(ISEA) = TAUOCX(ISEA) + TAUOCXAUX / REAL( SUMGRD )
+                    TAUOCY(ISEA) = TAUOCY(ISEA) + TAUOCYAUX / REAL( SUMGRD )
+                  END IF
                 END IF
 !
 ! Group 7 variables

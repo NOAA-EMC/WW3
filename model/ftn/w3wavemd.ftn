@@ -1428,6 +1428,7 @@
 !/PDLIB                   TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),       &
 !/PDLIB                   TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2, &
 !/PDLIB                   PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),         &
+!/PDLIB                   TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),      &
 !/PDLIB                   ASF(ISEA))
 !/PDLIB!/DEBUGSRC      WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
 !/PDLIB!/DEBUGSRC      WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
@@ -2012,6 +2013,7 @@
 !/PDLIB                      TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
 !/PDLIB                      TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,&
 !/PDLIB                      PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),      &
+!/PDLIB                      TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
 !/PDLIB                      ASF(ISEA))
 !/PDLIB              ELSE
                        CALL W3SRCE(srce_direct, IT, JSEA, IX, IY, IMOD, &
@@ -2032,6 +2034,7 @@
                             TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
                             TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,&
                             PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),     &
+                            TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
                             ASF(ISEA))
 !/PDLIB              END IF
                      WHITECAP(JSEA,1:4) = TMP1

@@ -247,10 +247,11 @@
       USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
       USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
-      USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, FP0, THM, CHARN,     &
+      USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
                           TAUWIX, TAUWIY, TWS, TAUOX, TAUOY, BHD,     &
                           PHIOC, TUSX, TUSY, USSX, USSY, TAUICE,      &
-                          UBA, UBD, PHIBBL, TAUBBL
+                          UBA, UBD, PHIBBL, TAUBBL, TAUOCX, TAUOCY,   &
+                          WNMEAN
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
                           GNAME, FILEXT, GTYPE, UNGTYPE
@@ -844,10 +845,14 @@
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) WLM(1:NSEA)
                   IF ( FLOGRR(2,4) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) T0M1(1:NSEA)
+                  IF ( FLOGRR(2,5) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) T01(1:NSEA)
                   IF ( FLOGRR(2,6) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) FP0(1:NSEA)
                   IF ( FLOGRR(2,7) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) THM(1:NSEA)
+                  IF ( FLOGRR(2,18) )                                 &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) WNMEAN(1:NSEA)
                   IF ( FLOGRR(5,2) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CHARN(1:NSEA)
                   IF ( FLOGRR(5,5) ) THEN
@@ -875,6 +880,10 @@
                   IF ( FLOGRR(6,10) ) THEN
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,1)
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,2)
+                  ENDIF
+                  IF ( FLOGRR(6,13) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCY(1:NSEA)
                   ENDIF
                   IF ( FLOGRR(7,2) ) THEN
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) UBA(1:NSEA)
@@ -1034,9 +1043,15 @@
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
                   J = IAPROC + (I-1)*NAPROC
-                  IF (J .LE. NSEA) THEN
-                    T0M1(I) = TMP(J)
-                  ENDIF
+                  IF (J .LE. NSEA) T0M1(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading T01'
+              IF ( FLOGRR(2,5) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) T01(I) = TMP(J)
                 ENDDO
               ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading FP0'
@@ -1053,6 +1068,14 @@
                 DO I=1, NSEALM
                   J = IAPROC + (I-1)*NAPROC
                   IF (J .LE. NSEA) THM(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WNMEAN'
+              IF ( FLOGRR(2,18) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) WNMEAN(I) = TMP(J)
                 ENDDO
               ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading CHARN'
@@ -1147,6 +1170,18 @@
                   ENDIF
                 ENDDO
               ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TAUOC'
+              IF ( FLOGRR(6,13) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TAUOCX(I) = TMP(J)
+                    TAUOCY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading UB'
               IF ( FLOGRR(7,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
@@ -1205,8 +1240,10 @@
               HS      = 0.
               WLM     = 0.
               T0M1    = 0.
+              T01     = 0.
               FP0     = 1.
               THM     = 0.
+              WNMEAN  = 0.
               CHARN   = 0.0185
               TAUWIX  = 0.
               TAUWIY  = 0.
@@ -1219,6 +1256,8 @@
               TUSY    = 0.
               USSX    = 0.
               USSY    = 0.
+              TAUOCX  = 0.
+              TAUOCY  = 0.
               TAUICE  = 0.
               UBA     = 0.
               UBD     = 0.

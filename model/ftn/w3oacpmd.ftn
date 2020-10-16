@@ -866,6 +866,11 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_T0M1'
 !
+!/OASOCM         CASE('T01')
+!/OASOCM            ! T01 / wave_t01 : mean period (s)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__T01'
+!
 !/OASOCM         CASE('DIR')
 !/OASOCM            ! THM / wave_thm : cosinus of mean direction (n/a)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
@@ -888,6 +893,15 @@
 !/OASOCM            ! tauoy / wave_tauoy : y-component of the wave-ocean momentum flux (tauox in m2.s-2)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWOY'
+!
+!/OASOCM         CASE('TOC')
+!/OASOCM            ! tauocx / wave_tauocx : x-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCX'
+!
+!/OASOCM            ! tauocy / wave_tauocy : y-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCY'
 !
 !/OASOCM         CASE('FOC')
 !/OASOCM            ! phioc / wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
@@ -930,6 +944,11 @@
 !/OASOCM            ! wlm / wave_wlm : mean length wave (m)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___LM'
+!
+!/OASOCM         CASE('WNM')
+!/OASOCM            ! wnmean / wave_wnmean : mean wave number (m-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__WNM'
 !
 !/OASOCM         CASE('TUS')
 !/OASOCM            ! Volume transport associated to Stokes drift, u component (m2.s-1)

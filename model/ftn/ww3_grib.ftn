@@ -1233,6 +1233,14 @@
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THP0  , MAPSF, X1 )
 !
+!     Mean wave number
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                FLONE = .TRUE.
+!/NCEP1                KPDS(5) = -1
+!/NCEP2                KPDS(2) = 255
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, WNMEAN, MAPSF, X1 )
+!
 !     Partitioned wave height
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN

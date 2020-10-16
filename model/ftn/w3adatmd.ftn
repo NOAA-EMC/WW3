@@ -116,6 +116,7 @@
 !      HCMAXD    R.A.  Public   STD of HCMAXE
 !      WBT       R.A.  Public   Dominant wave breaking probability
 !                               (b_T in Babanin et al. (2001, JGR))
+!      WNMEAN    R.A.  Public   Mean wave number
 !
 !      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
 !      TWS       R.A.  Public   Wind sea period (used for flux parameterizations)
@@ -134,6 +135,7 @@
 !      PHIOC     R.A.  Public   Waves to ocean energy flux.
 !      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
 !      USSX/Y    R.A.  Public   Surface Stokes drift.
+!      TAUOCX/Y  R.A.  Public   Total ocean momentum flux
 !      TAUICE    R.A.  Public   Wave-ice momentum flux.
 !      PHICE     R.A.  Public   Waves to ice energy flux.
 !
@@ -364,13 +366,14 @@
                                  THS(:),  THP0(:),  FP1(:), THP1(:), &
                                  HSIG(:), STMAXE(:), STMAXD(:),      &
                                  HMAXE(:), HCMAXE(:), HMAXD(:),      &
-                                 HCMAXD(:), QP(:), WBT(:)
+                                 HCMAXD(:), QP(:), WBT(:), WNMEAN(:)
         REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
                                  XT01 (:), XFP0(:), XTHM(:),          &
                                  XTHS(:), XTHP0(:), XFP1(:), XTHP1(:),&
                                  XHSIG(:), XSTMAXE(:), XSTMAXD(:),    &
                                  XHMAXE(:), XHCMAXE(:), XHMAXD(:),    &
-                                 XHCMAXD(:), XQP(:), XWBT(:)
+                                 XHCMAXD(:), XQP(:), XWBT(:),         &
+                                 XWNMEAN(:)
 !
 ! Output fields group 3)
 !
@@ -408,14 +411,16 @@
         REAL, POINTER         ::  SXX(:),  SYY(:),  SXY(:),  TAUOX(:),&
                                   TAUOY(:),  BHD(:),  PHIOC(:),       &
                                   TUSX(:),  TUSY(:),  USSX(:),        &
-                                  USSY(:),  PRMS(:),  TPMS(:),        &
-                                  PHICE(:), TAUICE(:,:)
+                                  USSY(:), TAUOCX(:), TAUOCY(:),      &
+                                  PRMS(:),  TPMS(:), PHICE(:),        &
+                                  TAUICE(:,:)
         REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:), USSP(:,:)
         REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
                                  XTAUOY(:), XBHD(:), XPHIOC(:),       &
                                  XTUSX(:), XTUSY(:), XUSSX(:),        &
-                                 XUSSY(:), XPRMS(:), XTPMS(:),        &
-                                 XPHICE(:), XTAUICE(:,:)
+                                 XUSSY(:), XTAUOCX(:), XTAUOCY(:),    &
+                                 XPRMS(:), XTPMS(:), XPHICE(:),       &
+                                 XTAUICE(:,:)
         REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
 !
 ! Output fields group 7)
@@ -528,8 +533,8 @@
                                  T01 (:), FP0(:), THM(:), THS(:),     &
                                  THP0(:), FP1(:), THP1(:), HSIG(:),   &
                                  STMAXE(:), STMAXD(:), HMAXE(:),      &
-                                 HCMAXE(:), HMAXD(:), HCMAXD(:), QP(:),&
-                                 WBT(:)
+                                 HCMAXE(:), HMAXD(:), HCMAXD(:),      &
+                                 QP(:), WBT(:), WNMEAN(:)
 !
       REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
                                  TH2M(:,:), STH2M(:,:)
@@ -547,8 +552,8 @@
       REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
                                  TAUOY(:), BHD(:), PHIOC(:),          &
                                  TUSX(:), TUSY(:), USSX(:), USSY(:),  &
-                                 PRMS(:), TPMS(:), PHICE(:),          &
-                                 TAUICE(:,:)
+                                 TAUOCX(:), TAUOCY(:), PRMS(:),       &
+                                 TPMS(:), PHICE(:), TAUICE(:,:)
       REAL, POINTER           :: P2SMS(:,:), US3D(:,:), USSP(:,:)
 !
       REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
@@ -946,6 +951,7 @@
                  WADATS(IMOD)%HCMAXE(NSEALM),                           &
                  WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
                  WADATS(IMOD)%WBT(NSEALM),                              &
+                 WADATS(IMOD)%WNMEAN(NSEALM),                           &
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !
@@ -962,13 +968,14 @@
       WADATS(IMOD)%THP1   = UNDEF
       WADATS(IMOD)%HSIG   = UNDEF
       WADATS(IMOD)%STMAXE = UNDEF
-      WADATS(IMOD)%STMAXD= UNDEF
-      WADATS(IMOD)%HMAXE = UNDEF
-      WADATS(IMOD)%HMAXD = UNDEF
-      WADATS(IMOD)%HCMAXE= UNDEF
-      WADATS(IMOD)%HCMAXD= UNDEF
+      WADATS(IMOD)%STMAXD = UNDEF
+      WADATS(IMOD)%HMAXE  = UNDEF
+      WADATS(IMOD)%HMAXD  = UNDEF
+      WADATS(IMOD)%HCMAXE = UNDEF
+      WADATS(IMOD)%HCMAXD = UNDEF
       WADATS(IMOD)%QP     = UNDEF
       WADATS(IMOD)%WBT    = UNDEF
+      WADATS(IMOD)%WNMEAN = UNDEF
 
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -1104,6 +1111,8 @@
                  WADATS(IMOD)%TUSY  (NSEALM) ,                        &
                  WADATS(IMOD)%USSX  (NSEALM) ,                        &
                  WADATS(IMOD)%USSY  (NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOCX(NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOCY(NSEALM) ,                        &
                  WADATS(IMOD)%PRMS  (NSEALM) ,                        &
                  WADATS(IMOD)%TPMS  (NSEALM) ,                        &
                  WADATS(IMOD)%PHICE (NSEALM) ,                        &
@@ -1141,6 +1150,8 @@
       WADATS(IMOD)%TUSY   = UNDEF
       WADATS(IMOD)%USSX   = UNDEF
       WADATS(IMOD)%USSY   = UNDEF
+      WADATS(IMOD)%TAUOCX = UNDEF
+      WADATS(IMOD)%TAUOCY = UNDEF
       WADATS(IMOD)%PRMS   = UNDEF
       WADATS(IMOD)%TPMS   = UNDEF
       WADATS(IMOD)%PHICE  = UNDEF
@@ -1600,6 +1611,14 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
+      IF ( OUTFLAGS( 2, 18) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XWNMEAN(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XWNMEAN(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
 !     IF ( OUTFLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
 !         CHECK_ALLOC_STATUS ( ISTAT )
@@ -1633,6 +1652,7 @@
       WADATS(IMOD)%XHCMAXE= UNDEF
       WADATS(IMOD)%XHCMAXD= UNDEF
       WADATS(IMOD)%XWBT   = UNDEF
+      WADATS(IMOD)%XWNMEAN= UNDEF
 !     WADATS(IMOD)%XFP1   = UNDEF
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
@@ -2030,6 +2050,18 @@
           ALLOCATE ( WADATS(IMOD)%XUSSP(1,1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+!
+      IF ( OUTFLAGS( 6, 13) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUOCX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOCY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUOCX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOCY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 
 !
       WADATS(IMOD)%XSXX    = UNDEF
@@ -2050,6 +2082,8 @@
       WADATS(IMOD)%XPHICE  = UNDEF
       WADATS(IMOD)%XTAUICE = UNDEF
       WADATS(IMOD)%XUSSP   = UNDEF
+      WADATS(IMOD)%XTAUOCX = UNDEF
+      WADATS(IMOD)%XTAUOCY = UNDEF
 !
       IF ( OUTFLAGS( 7, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
@@ -2650,6 +2684,7 @@
           HCMAXD => WADATS(IMOD)%HCMAXD
           QP     => WADATS(IMOD)%QP
           WBT    => WADATS(IMOD)%WBT
+          WNMEAN => WADATS(IMOD)%WNMEAN
 !
           EF     => WADATS(IMOD)%EF
           TH1M   => WADATS(IMOD)%TH1M
@@ -2703,6 +2738,8 @@
           PHICE  => WADATS(IMOD)%PHICE
           TAUICE => WADATS(IMOD)%TAUICE
           USSP   => WADATS(IMOD)%USSP
+          TAUOCX => WADATS(IMOD)%TAUOCX
+          TAUOCY => WADATS(IMOD)%TAUOCY
 !
           ABA    => WADATS(IMOD)%ABA
           ABD    => WADATS(IMOD)%ABD
@@ -2949,6 +2986,7 @@
           HCMAXD => WADATS(IMOD)%XHCMAXD
           QP     => WADATS(IMOD)%XQP
           WBT    => WADATS(IMOD)%XWBT
+          WNMEAN => WADATS(IMOD)%XWNMEAN
 !         FP1    => WADATS(IMOD)%XFP1
 !         THP1   => WADATS(IMOD)%XTHP1
 !
@@ -3004,6 +3042,8 @@
           PHICE  => WADATS(IMOD)%XPHICE
           TAUICE => WADATS(IMOD)%XTAUICE
           USSP   => WADATS(IMOD)%XUSSP
+          TAUOCX => WADATS(IMOD)%XTAUOCX
+          TAUOCY => WADATS(IMOD)%XTAUOCY
           ABA    => WADATS(IMOD)%XABA
           ABD    => WADATS(IMOD)%XABD
           UBA    => WADATS(IMOD)%XUBA

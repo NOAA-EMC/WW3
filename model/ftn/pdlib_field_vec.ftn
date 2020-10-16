@@ -163,6 +163,9 @@ MODULE PDLIB_FIELD_VEC
       IF ( FLGRDALL( 2, 17) ) THEN
         IH = IH + 1
       END IF
+      IF ( FLGRDALL( 2, 18) ) THEN
+        IH = IH + 1
+      END IF
       IF ( FLGRDALL( 3, 1) ) THEN
         DO IK=E3DF(2,1),E3DF(3,1)
           IH = IH + 1
@@ -315,6 +318,10 @@ MODULE PDLIB_FIELD_VEC
         IH = IH + 1
       END IF
       IF ( FLGRDALL( 6, 11) ) THEN
+        IH = IH + 1
+      END IF
+      IF ( FLGRDALL( 6, 13) ) THEN
+        IH = IH + 1
         IH = IH + 1
       END IF
       IF ( FLGRDALL( 7, 1) ) THEN
@@ -863,7 +870,7 @@ MODULE PDLIB_FIELD_VEC
                           DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
                           SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
                           PDIR, PSI, PWS, PWST, PNR, PHIAW,      &
-                          PHIOC,                                 &
+                          PHIOC, TAUOCX, TAUOCY, WNMEAN,         &
                           TUSX, TUSY, TAUWIX, TAUWIY, TAUOX,     &
                           TAUOY, USSX, USSY, MSSX, MSSY,         &
                           MSCX, MSCY, PRMS, TPMS, CHARN,         &
@@ -1012,6 +1019,10 @@ MODULE PDLIB_FIELD_VEC
             IF ( FLGRDALL( 2, 17) ) THEN
               IH = IH + 1
               Arrexch(IH,JSEA)=WBT(JSEA)
+            END IF
+            IF ( FLGRDALL( 2, 18) ) THEN
+              IH = IH + 1
+              Arrexch(IH,JSEA)=WNMEAN(JSEA)
             END IF
             IF ( FLGRDALL( 3, 1) ) THEN 
               DO IK=E3DF(2,1),E3DF(3,1)
@@ -1251,6 +1262,12 @@ MODULE PDLIB_FIELD_VEC
               IH = IH + 1
               Arrexch(IH,JSEA)=PHICE(JSEA)
             END IF
+            IF ( FLGRDALL( 6, 13) ) THEN
+              IH = IH + 1
+              Arrexch(IH,JSEA)=TAUOCX(JSEA)
+              IH = IH + 1
+              Arrexch(IH,JSEA)=TAUOCY(JSEA)
+            END IF
             IF ( FLGRDALL( 7, 1) ) THEN
               IH = IH + 1
               Arrexch(IH,JSEA)=ABA(JSEA)
@@ -1473,6 +1490,10 @@ MODULE PDLIB_FIELD_VEC
               IF ( FLGRDALL( 2, 17) ) THEN
                 IH = IH + 1
                 WBT(1:NSEA) = ARRtotal(IH,:)
+              END IF
+              IF ( FLGRDALL( 2, 18) ) THEN
+                IH = IH + 1
+                WNMEAN(1:NSEA) = ARRtotal(IH,:)
               END IF
               IF ( FLGRDALL( 3, 1) ) THEN 
                 DO IK=E3DF(2,1),E3DF(3,1)
@@ -1711,6 +1732,12 @@ MODULE PDLIB_FIELD_VEC
               IF (  FLGRDALL( 6, 11) ) THEN
                 IH = IH + 1
                 PHICE(1:NSEA) = ARRtotal(IH,:)
+              END IF
+              IF ( FLGRDALL( 6, 13) ) THEN
+                IH = IH + 1
+                TAUOCX(1:NSEA) = ARRtotal(IH,:)
+                IH = IH + 1
+                TAUOCY(1:NSEA) = ARRtotal(IH,:)
               END IF
               IF ( FLGRDALL( 7, 1) ) THEN
                 IH = IH + 1
