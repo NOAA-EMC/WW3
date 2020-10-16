@@ -107,6 +107,7 @@
 !/    20-Feb-2020 : Include Romero's dissipation in ST4 ( version 7.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
+!/    24-Jun-2020 : RTD output b. c. to rotated grid.   ( version 7.11 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -480,7 +481,7 @@
 !             correction for swell dispersion.
 !     !/PR3   Averaging ULTIMATE QUICKEST scheme.
 !
-!     !/RTD   Rotated regular lat-lon grid. 
+!     !/RTD   Rotated regular lat-lon grid. Special case is standard Polat=90.
 !     !/SMC   UNO2 scheme on Spherical Multiple-Cell grid.   
 !     !/ARC   Append the Arctic part to the SMC grid.
 !
@@ -507,7 +508,7 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
-!/RTD      USE W3SERVMD, ONLY: W3EQTOLL 
+!/RTD      USE W3SERVMD, ONLY: W3EQTOLL, W3LLTOEQ
 !/ARC      USE W3SERVMD, ONLY: W3LLTOEQ 
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3ARRYMD, ONLY: INA2R, INA2I
@@ -630,6 +631,12 @@
 !/ARC      REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
 !
 !/RTD      REAL, ALLOCATABLE       :: AnglDin(:,:),StdLon(:,:),StdLat(:,:)
+!/RTD ! 1-dim boundary sectors
+!/RTD      REAL, ALLOCATABLE       :: BDYLON(:), BDYLAT(:),                &
+!/RTD                                 ELatbdy(:), ELonbdy(:), Anglbdy(:)
+!/RTD ! If the destination grid for an output b.c. is rotated, its pole is:
+!/RTD      REAL                    :: bPolat, bPolon
+!/RTD!
       REAL, ALLOCATABLE       :: XGRDIN(:,:), YGRDIN(:,:)
       REAL, ALLOCATABLE       :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
       REAL, ALLOCATABLE       :: REFD(:,:), REFD2(:,:), REFS(:,:)
@@ -804,6 +811,8 @@
 
 !/RTD      REAL                    :: PLAT, PLON
 !/RTD      LOGICAL                 :: UNROT
+!/RTD ! Poles of the output nested grids. May be a mix of rotated and standard
+!/RTD      REAL, DIMENSION(9)      :: BPLAT, BPLON
 !
 !/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV, TAILT1, TAILT2
 !/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV, TAILT1, TAILT2
@@ -916,6 +925,8 @@
 !/REF1                          REFFREQPOW, REFUNSTSOURCE
 !/
 !/RTD      NAMELIST /ROTD/ PLAT, PLON, UNROT
+!/RTD! Poles of destination grids for boundary conditions output 
+!/RTD      NAMELIST /ROTB/ BPLAT, BPLON
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -2183,11 +2194,33 @@
       CTMAX  = CFLTM
 !
 !/RTD ! Set/ read in rotation values - these will be written out
-!/RTD ! out later with the rest of the grid info
-!/RTD      PLAT = -999.9
-!/RTD      PLON = -999.9
-!/RTD      UNROT = .TRUE.
+!/RTD ! later with the rest of the grid info
+!/RTD ! Default is a non-rotated lat-lon grid
+!/RTD      PLAT = 90.
+!/RTD      PLON = -180.
+!/RTD      UNROT = .FALSE.
 !/RTD      CALL READNL ( NDSS, 'ROTD', STATUS )
+!/RTD      PLON = MOD( PLON + 180., 360. ) - 180.
+!/RTD ! Ensure that a grid with pole at the geographic North is standard lat-lon
+!/RTD      IF ( PLAT == 90. .AND. ( PLON /= -180. .OR. UNROT ) ) THEN
+!/RTD         WRITE( NDSE, 1052 )
+!/RTD         CALL EXTCDE ( 33 )
+!/RTD       ENDIF
+!/RTD ! Default poles of output b. c. are non-rotated: 
+!/RTD      BPLAT = 90.
+!/RTD      BPLON = -180.
+!/RTD      CALL READNL ( NDSS, 'ROTB', STATUS )
+!/RTD ! A b. c. dest. grid with pole at the geographic North must be non-rotated
+!/RTD      DO I=1,9
+!/RTD        IF ( BPLAT(I) == 90. ) THEN
+!/RTD ! Require BPLON(I) == -180., but don't blaim the user if BPLON(I) == 180.
+!/RTD          IF ( BPLON(I) == 180. ) BPLON(I) = -180.
+!/RTD          IF ( BPLON(I) == -180. ) CYCLE
+!/RTD          END IF
+!/RTD        IF ( BPLAT(I) < 90. ) CYCLE
+!/RTD        WRITE( NDSE, 1053 )
+!/RTD        CALL EXTCDE ( 34 )
+!/RTD       END DO
 !
 ! 6.n Set miscellaneous parameters (ice, seeding, numerics ... )
 !
@@ -2783,6 +2816,8 @@
 !
 !/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+!/RTD         WRITE(NDSO,4991) PLAT, PLON, UNROT
+!/RTD         WRITE(NDSO,4992) BPLAT, BPLON
 !
         WRITE (NDSO,918)
         END IF
@@ -3469,24 +3504,26 @@
 !Li 
 !
 !/RTD ! 7.h Calculate rotation angles for configs with rotated pole
-!/RTD !     Check that pole lat/lon values have been read in
-!/RTD !     and exit the program if they have not
 !/RTD       PoLon = PLON
 !/RTD       PoLat = PLAT
 !/RTD       FLAGUNR = UNROT
-!/RTD       IF( PoLon .EQ. -999.9 .OR. PoLat .EQ. -999.9 ) THEN
-!/RTD         WRITE( NDSE, 1050 )
-!/RTD         CALL EXTCDE ( 63 )
-!/RTD       ENDIF
+!/RTD ! Default values PLON=-180, PLAT=90, UNROT=.FALSE. for standard lat-lon
 !/RTD
 !/RTD       ALLOCATE( AnglDin(NX,NY) )
-!/RTD       ALLOCATE(StdLat(NX,NY), StdLon(NX,NY))
+!/RTD ! For standard lat-lon the rotation angles are zero 
+!/RTD       IF ( PoLat == 90. ) THEN
+!/RTD         AnglDin = 0.
+!/RTD       ELSE
+!/RTD         ALLOCATE(StdLat(NX,NY), StdLon(NX,NY))
 !/RTD
-!/RTD !     Calculate rotation angles; (StdLon/Lat are returned, but not used)
-!/RTD !     The regular grid X/YGRDIN are used as equatorial lon and lat
-!/RTD       CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon, AnglDin, &
+!/RTD !       Calculate rotation angles; (StdLon/Lat are returned, but not used)
+!/RTD !       The regular grid X/YGRDIN are used as equatorial lon and lat
+!/RTD         CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon, AnglDin, &
 !/RTD                      PoLat, PoLon, NX*NY )
 !/RTD
+!/RTD !       Clean up
+!/RTD         DEALLOCATE( StdLat, StdLon )
+!/RTD         END IF
 !/RTD !     Write out rotation information
 !/RTD       WRITE (NDSO,4203)   PoLat, PoLon
 !/RTD       WRITE (NDSO,4200) 
@@ -3496,8 +3533,6 @@
 !/RTD       IF ( FLAGUNR ) WRITE (NDSO,4204)
 !/RTD       WRITE (NDSO,*) ' '
 !/RTD
-!/RTD !     Clean up
-!/RTD       DEALLOCATE( StdLat, StdLon )
 !
 !/SMC !! 7.i  Read SMC grid cell and face integer arrays.
 !/SMC       IF (FLGNML) THEN
@@ -4992,9 +5027,19 @@
 !
               FIRST  = .FALSE.
 !
+!/RTD              IF ( NPO.NE.0 ) THEN
+!/RTD ! Destination pole lat, lon from namelist
+!/RTD                  bPolat = BPLAT(NFBPO+1)
+!/RTD                  bPolon = BPLON(NFBPO+1)
+!/RTD                END IF
+!/RTD !          
               IF ( NFBPO.GE.1 .AND. ILOOP.EQ.2 ) THEN
                   WRITE (NDSO,991)  NFBPO, NBO(NFBPO) - NBO(NFBPO-1), &
                                           NBO2(NFBPO) - NBO2(NFBPO-1)
+!/RTD ! Print dest. Pole lat/lon if either the dest or present grid is rotated 
+!/RTD                 IF ( BPLAT(NFBPO) < 90. .OR. Polat < 90. )      &
+!/RTD                     WRITE (NDSO,1991) BPLAT(NFBPO), BPLON(NFBPO)
+!/RTD !
 !/O1                  IF ( NBO(NFBPO) - NBO(NFBPO-1) .EQ. 1 ) THEN
 !/O1                      IF ( FLAGLL ) THEN
 !/O1                          WRITE (NDSO,992)
@@ -5057,13 +5102,73 @@
 !
 ! ... Loop over line segment - - - - - - - - - - - - - - - - - - - - -
 !
+!/RTD ! If either base or destination grid is rotated lat-lon
+!/RTD          IF ( allocated(BDYLON) .eqv. .TRUE. ) THEN
+!/RTD            deallocate( BDYLON, BDYLAT )
+!/RTD            IF ( bPolat < 90. .OR. Polat < 90. ) &
+!/RTD              deallocate( ELatbdy, ELonbdy, Anglbdy )
+!/RTD            END IF
+!/RTD          allocate( BDYLON(NPO), BDYLAT(NPO))
+!/RTD          IF ( bPolat < 90. .OR. Polat < 90. ) &
+!/RTD            allocate( ELatbdy(NPO), ELonbdy(NPO), Anglbdy(NPO) )
+!/RTD !            
 !/T          WRITE (NDST,9090)
 !
           DO IP=1, NPO
 !
             XO     = XO0 + REAL(IP-1)*DXO
             YO     = YO0 + REAL(IP-1)*DYO
-!
+!/RTD !
+!/RTD ! Boundary points are specified in coordinates of the destination grid
+!/RTD !
+!/RTD ! Collect the line segment points into arrays
+!/RTD            BDYLON(IP)     = XO
+!/RTD            BDYLAT(IP)     = YO
+!/RTD ! Close the loop before calculating rotated lat-lon coordinates.
+!/RTD            END DO
+!/RTD
+!/RTD ! Create one or two sets of the segment points:
+!/RTD ! 1. (BDYLAT, BDYLON) in standard lat-lon coordinates,
+!/RTD ! 2. Also (ELatbdy, ELonbdy) in case the base grid is rotated
+!/RTD
+!/RTD            IF ( bPolat < 90. ) THEN
+!/RTD              ! The destination grid is rotated (std->rot or rot->rot)
+!/RTD              ! Change BDYLAT, BDYLON to their standard lat-lon positions
+!/RTD              ! Let ELatbdy,ELonbdy contain the rotated lat-lon coordinates
+!/RTD              ELatbdy(:) = BDYLAT(:)
+!/RTD              ELonbdy(:) = BDYLON(:)
+!/RTD              CALL W3EQTOLL ( ELatbdy, ELonbdy, BDYLAT, BDYLON,     &
+!/RTD             &                Anglbdy, bPolat, bPolon, NPO )
+!/RTD ! Let the standard longitudes BDYLON be within the range [-180.,180.[
+!/RTD ! or [0., 360.[ depending on the grid pole
+!/RTD              IF ( Polon < -90. .OR. Polon > 90. ) THEN
+!/RTD                BDYLON(:) = MOD( BDYLON(:) + 180., 360. ) - 180.
+!/RTD              ELSE
+!/RTD                BDYLON(:) = MOD( BDYLON(:) + 360., 360. )
+!/RTD                END IF
+!/RTD              END IF ! bPolat < 90.
+!/RTD ! From now, BDYLAT, BDYLON are defined in standard lat-lon coordinates
+!/RTD !
+!/RTD            IF ( Polat < 90. ) THEN
+!/RTD              ! The base grid is rotated (rot->std or rot->rot)
+!/RTD              ! Find lat-lon in coordinates of the rotated base grid
+!/RTD              CALL W3LLTOEQ ( BDYLAT, BDYLON, ELatbdy, ELonbdy,     &
+!/RTD             &                Anglbdy, Polat, Polon, NPO )
+!/RTD              END IF
+!/RTD !
+!/RTD ! Take up again the loop over the line segment points
+!/RTD          DO IP=1, NPO
+!/RTD            IF ( Polat < 90. ) THEN
+!/RTD              ! The base grid is rotated (rot->std, rot->rot)
+!/RTD              ! (The std. lat-lon values BDYLAT, BDYLON go to YBPO, XBPO)
+!/RTD              XO = ELonbdy(IP)
+!/RTD              YO = ELatbdy(IP)
+!/RTD            ELSE
+!/RTD              ! The base grid is standard geographic (std->rot or std->std)
+!/RTD              XO = BDYLON(IP)
+!/RTD              YO = BDYLAT(IP)
+!/RTD              END IF
+!   
 ! ... Compute bilinear remapping weights
 !
             INGRID = W3GRMP( GSU, XO, YO, IXR, IYR, RD )
@@ -5082,22 +5187,28 @@
 !
 ! ... Check if point not on land
 !
-                IF ( ( MAPSTA(IYR(1),IXR(1)).GT.0 .AND.               &
-                                          RD(1).GT.0.05 ) .OR.        &
-                     ( MAPSTA(IYR(2),IXR(2)).GT.0 .AND.               &
-                                          RD(2).GT.0.05 ) .OR.        &
-                     ( MAPSTA(IYR(3),IXR(3)).GT.0 .AND.               &
-                                          RD(3).GT.0.05 ) .OR.        &
-                     ( MAPSTA(IYR(4),IXR(4)).GT.0 .AND.               &
-                                          RD(4).GT.0.05 ) ) THEN
+              IF ( ( MAPSTA(IYR(1),IXR(1)).GT.0 .AND.                 &
+                                        RD(1).GT.0.05 ) .OR.          &
+                   ( MAPSTA(IYR(2),IXR(2)).GT.0 .AND.                 &
+                                        RD(2).GT.0.05 ) .OR.          &
+                   ( MAPSTA(IYR(3),IXR(3)).GT.0 .AND.                 &
+                                        RD(3).GT.0.05 ) .OR.          &
+                   ( MAPSTA(IYR(4),IXR(4)).GT.0 .AND.                 &
+                                        RD(4).GT.0.05 ) ) THEN
 !
 ! ... Check storage and store coordinates
 !
-                    NBOTOT = NBOTOT + 1
-                    IF ( ILOOP .EQ. 1 ) CYCLE
+                NBOTOT = NBOTOT + 1
+                IF ( ILOOP .EQ. 1 ) CYCLE
 !
-                    XBPO(NBOTOT) = XO
-                    YBPO(NBOTOT) = YO
+!/RTD ! BDYLAT, BDYLON contain Y0, X0, which are remapped to standard lat/lon.
+!/RTD ! BDYLAT, BDYLON are stored in the mod_def file.
+!/RTD                IF ( Polat < 90. ) THEN
+!/RTD                  XO = BDYLON(IP)
+!/RTD                  YO = BDYLAT(IP)
+!/RTD                  END IF
+                XBPO(NBOTOT) = XO
+                YBPO(NBOTOT) = YO
 !
 ! ... Interpolation factors
 !
@@ -5112,9 +5223,9 @@
                     RDTOT = RDTOT + RDBPO(NBOTOT,J)
                   END DO
 !
-              DO J=1, 4
-                RDBPO(NBOTOT,J) = RDBPO(NBOTOT,J) / RDTOT
-                END DO
+                DO J=1, 4
+                  RDBPO(NBOTOT,J) = RDBPO(NBOTOT,J) / RDTOT
+                  END DO
 !
 !/T              WRITE (NDST,9092) RDTOT, (RDBPO(NBOTOT,J),J=1,4)
 !
@@ -5147,11 +5258,19 @@
 !
 ! ... Error output
 !
-                  ELSE
-                    WRITE (NDSE,995) FACTOR*XO, FACTOR*YO
-                  END IF
+                ELSE
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSE,2995) FACTOR*XO, FACTOR*YO
+                    ELSE
+                      WRITE (NDSE,995) FACTOR*XO, FACTOR*YO
+                    END IF
+                END IF
               ELSE
-                WRITE (NDSE,994) FACTOR*XO, FACTOR*YO
+                IF ( FLAGLL ) THEN
+                    WRITE (NDSE,2994) FACTOR*XO, FACTOR*YO
+                  ELSE
+                    WRITE (NDSE,994) FACTOR*XO, FACTOR*YO
+                  END IF
               END IF
 !
             END DO
@@ -5822,7 +5941,11 @@
 !
  2987 FORMAT ( '  &FLD TAIL_ID =',I1,' TAIL_LEV =',F5.4,' TAILT1 =',F5.3,&
                ' TAILT2 =',F5.3,' /')
-
+!/RTD
+!/RTD 4991 FORMAT ( '  &ROTD PLAT =', F6.2,', PLON =', F7.2,', UNROT =',L3,' /')
+!/RTD 4992 FORMAT ( '  &ROTB BPLAT =',9(F6.1,",")/                        &
+!/RTD               '        BPLON =',9(F6.1,","),' /')
+      
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &
               /'       Grid type                   : ',A)
@@ -5945,6 +6068,7 @@
                ' --------------------------------------------------')
   991 FORMAT ( '       File nest',I1,'.ww3  Number of points  :',I6/  &
                '                       Number of spectra :',I6)
+ 1991 FORMAT ( '                       Dest. grid Polat:',F6.2,', Polon:',F8.2)
   992 FORMAT (/'         Nr.|  Long.  |   Lat.  '/               &
                '       -----|---------|---------')
  1992 FORMAT (/'         Nr.|  Long.  |   Lat.  ',               &
@@ -5954,8 +6078,8 @@
   993 FORMAT ( '       ',I4,2(' |',F8.2))
  1993 FORMAT ( '       ',I4,2(' |',F8.2),                        &
               '        ',I4,2(' |',F8.2))
-  994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2F7.2)
-  995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2F7.2)
+  994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2F10.5)
+  995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2F10.5)
  2992 FORMAT (/'         Nr.|     X     |     Y     '/           &
                '       -----|-----------|-----------')
  3992 FORMAT (/'         Nr.|     X     |     Y     ',           &
@@ -6074,9 +6198,12 @@
                '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
  1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/ISn SWITCHES :',I3)
-!/RTD 1050 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-!/RTD               '     ROTATED POLE SWITCH IS SET (RTD), BUT'/          &
-!/RTD               '     PLAT/PLON NAMELIST VALUES NOT SET IN ROTD' )
+!/RTD 1052 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+!/RTD               '     WITH NAMELIST VALUE PLAT == 90, PLON MUST BE -180'/ &
+!/RTD               '     AND UNROT MUST BE .FALSE.' )
+!
+!/RTD 1053 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+!/RTD               '     WITH NAMELIST VALUE BPLAT == 90, BPLON MUST BE -180')
 !
  1040 FORMAT ( '       Space-time extremes DX      :',F10.2)
  1041 FORMAT ( '       Space-time extremes DX      :',F10.2)
@@ -6292,7 +6419,9 @@
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
 !/RTD                        CASE('ROTD') 
 !/RTD                          READ (NDS,NML=ROTD,END=801,ERR=802,IOSTAT=J)
-!/REF1                        CASE('REF1') 
+!/RTD                        CASE('ROTB')
+!/RTD                          READ (NDS,NML=ROTB,END=801,ERR=802,IOSTAT=J) 
+!/REF1                       CASE('REF1') 
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
 !/IG1                        CASE('SIG1') 
 !/IG1                         READ (NDS,NML=SIG1,END=801,ERR=802,IOSTAT=J)

@@ -2302,7 +2302,7 @@
 !/WRST            wy0 = WYNwrst  
 !/WRST            if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/WRST          enddo
-!/WRST        endif
+        endif
     
 !/WRST       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
 !/WRST        !If the time of the field is still initial time, replace
@@ -5621,9 +5621,6 @@
 !/ST4                           dlwmean )
             endif !firstCall
             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-          else  
-            !ice value 
-            wrln(jsea) = 0.00001d0
           endif 
         enddo jsea_loop
 
