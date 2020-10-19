@@ -799,7 +799,7 @@
           IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 365 day calendar')
         CASE ('standard')
           IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
-      END CASE
+      END SELECT
       IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','time')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
       IRET=NF90_PUT_ATT(NCID,VARID(1),'conventions',                   &
