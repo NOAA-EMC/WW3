@@ -633,6 +633,7 @@
       TAUBBL = 0.
       TAUICE = 0.
       PHICE  = 0.
+      DLWMEAN= 0.
 
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
@@ -644,6 +645,7 @@
 !/DEBUGSRC     END IF
 
 !/ST4      BRLAMBDA(:)=0.
+!/ST4      WHITECAP(:)=0.
 !
 ! 1.c Set mean parameters
 !

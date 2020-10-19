@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-06-18'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-10-19'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -83,7 +83,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Apr-2020 |
+!/                  | Last update :         19-Oct-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -147,6 +147,7 @@
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
+!/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -642,7 +643,8 @@
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
                ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
-               IICEDDISP, IICEFDISP, BTBETA
+               IICEDDISP, IICEFDISP, BTBETA,                          &
+               AAIRCMIN, AAIRGB
 
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
@@ -782,7 +784,8 @@
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
                IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
-               IICEDDISP, IICEHDISP, IICEFDISP, BTBETA
+               IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,               &
+               AAIRCMIN, AAIRGB
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
 
