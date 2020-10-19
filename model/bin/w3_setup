@@ -415,6 +415,8 @@ then
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
        [ "$cmplr" == "hera" ] || [ "$cmplr" == "orion" ]                            || \
+       [ "$cmplr" == "stampede" ]                                                   || \
+       [ "$cmplr" == "cheyenne" ]                                                   || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -440,6 +442,8 @@ then
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
        [ "$cmplr" == "hera" ] || [ "$cmplr" == "orion" ]                            || \
+       [ "$cmplr" == "stampede" ]                                                   || \
+       [ "$cmplr" == "cheyenne" ]                                                   || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \

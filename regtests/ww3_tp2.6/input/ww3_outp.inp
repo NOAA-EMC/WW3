@@ -43,7 +43,7 @@ $ - Bin directions in radians for all bins (Oceanographic conv.).
 $                                                         -+
 $ - Time in yyyymmdd hhmmss format                         | loop
 $                                             -+           |
-$ - Point name (C*10), lat, lon, d, U10 and    |  loop     | over
+$ - Point name (C*40), lat, lon, d, U10 and    |  loop     | over
 $   direction, current speed and direction     |   over    |
 $ - E(f,theta)                                 |  points   | times
 $                                             -+          -+
@@ -98,7 +98,7 @@ $ - Bin directions in radians for all bins (Oceanographic conv.).
 $                                                         -+
 $ - Time in yyyymmdd hhmmss format                         | loop
 $                                             -+           |
-$ - Point name (C*10), depth, wind speed and   |  loop     | over
+$ - Point name (C*40), depth, wind speed and   |  loop     | over
 $   direction, current speed and direction     |   over    |
 $ - E(f,theta) if requested                    |  points   | times
 $ - Sin(f,theta) if requested                  |           |

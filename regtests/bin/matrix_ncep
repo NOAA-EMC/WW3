@@ -149,7 +149,8 @@ fi
   export    shwtr='y' # shallow water tests
   export    unstr='y' # unstructured grid tests
   export    pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
-  export    smcgr='y' # SMC/Rotated grid test
+  export    smcgr='y' # SMC grid test
+  export      rtd='y' # Rotated pole test
   export   mudice='y' # Mud/Ice and wave interaction tests 
   export   infgrv='y' # Second harmonic generation tests
   export     uost='y' # ww3_ts4 Unresolved Obstacles Source Term (UOST)

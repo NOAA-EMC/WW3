@@ -345,19 +345,44 @@ $                           SEAWND : Use sea-point only wind input.  .FALSE.
 $ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
 $
 $ Rotated pole ------------------------------------------------------ $
-$   Pole  parameters    : Namelist ROTD
-$                           PLAT  : Rotated pole latitude
-$                           PLON  : Rotated pole longitude
-$                           UNROT : Logical, un-rotate directions to true north
+$   Pole  parameters   : Namelist ROTD
+$                        PLAT  : Rotated pole latitude
+$                        PLON  : Rotated pole longitude
+$                        UNROT : Logical, un-rotate directions to
+$                                true north
 $
-$    These will be used to derive rotation angle corrections in the
-$    model. The corrections are used for rotation of boundary spectra 
-$    and for restoring conventional lat/lon orientation of the
-$    output spectra, mean direction or any related variables.
-$    The PLAT/LON example below is a standard setting for Met
-$    Office UK regional models.
+$   Compile switch /RTD required.
+$
+$   These will be used to derive rotation angle corrections in the
+$   model. The corrections are used for rotation of boundary spectra 
+$   and for restoring conventional lat/lon orientation of the
+$   output spectra, mean direction or any related variables.
+$   The PLAT/LON example below is a standard setting for Met
+$   Office UK regional models.
 $
 $ &ROTD PLAT = 37.5, PLON = 177.5, UNROT = .TRUE. /
+$
+$   The default values for ROTD represent a non-rotated lat/lon grid:
+$
+$ &ROTD PLAT = 90.0, PLON = -180.0, UNROT = .FALSE. /
+$
+$ Output boundary conditions to rotated pole grids ------------------ $
+$
+$   Pole parameters    : Namelist ROTB
+$                        BPLAT(1:9) : Pole latitude of each destination grid
+$                        BPLON(1:9) : Pole longitude of each destination grid
+$
+$   Compile switch /RTD required.
+$
+$   In the section 'Output boundary points' later in this file, the points must
+$   be given as straight lines in the reference system of each destination grid.
+$   The index J of BPLAT(J),BPLON(J) is incremented by one where a new output
+$   file is started by specifying a negative value for the number of points.
+$
+$   Each destination may be either a rotated grid or a standard (non-rotated)
+$   lat/lon grid. The default values for ROTB represent standard lat/lon grids:
+$
+$ &ROTB BPLAT(1)=90., BPLON(1)=-180., BPLAT(2)=90. / $ (etc.)
 $
 $ Output of 3D arrays------------------------------------------------- $
 $ In order to limit the use of memory, arrays for 3D output fiels (i.e. 
