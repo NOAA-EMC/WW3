@@ -356,7 +356,7 @@
                 err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, rval)
               CASE('c')
                 err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
-                        META%EXTRA%ATTNAME)
+                        META%EXTRA%ATTVAL)
               CASE DEFAULT
                 WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
             END SELECT
