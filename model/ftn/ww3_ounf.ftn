@@ -141,7 +141,7 @@
 !
       USE W3NMLOUNFMD
       !USE W3OUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, WRITE_USER_META, META_T
-      USE W3NMLOUNFMETA, ONLY: INIT_META, GETMETA, WRITE_META, META_T
+      USE W3NMLOUNFMETA, ONLY: INIT_META, TEARDOWN_META, GETMETA, WRITE_META, META_T
       USE W3NMLOUNFMETA, ONLY: PRINT_META
       USE NETCDF
 
@@ -509,6 +509,10 @@
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
       END DO
+
+
+      WRITE(0,*) "Tearing down META"
+      CALL TEARDOWN_META()
 
 
 ! 5.2 Closes the netCDF file
@@ -1957,8 +1961,8 @@
               AMETA(I) = GETMETA(IFI, IFJ, ICOMP=I) ! TODO: Get all components
             ENDDO
 
-            PRINT*,AMETA(1:NFIELD)
-            STOP
+            !PRINT*,AMETA(1:NFIELD)
+            !STOP
 
 
             ! Defines a differents for the second variable if specified
@@ -2509,8 +2513,6 @@
 !
                 !! CB - USE NEW W3META MODULE
                 CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
-                CALL CHECK_ERR(IRET) ! CB
-                !CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
 
                 !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))

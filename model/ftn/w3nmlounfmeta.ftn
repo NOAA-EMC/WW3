@@ -1,0 +1,1803 @@
+      MODULE W3NMLOUNFMETA
+
+      USE NETCDF
+      USE CONSTANTS, ONLY: TPIINV
+      USE W3GDATMD, ONLY: SIG, NK
+      USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP, NDSE
+
+
+      IMPLICIT NONE
+
+      TYPE META_PAIR_T
+        CHARACTER(LEN=64)  :: ATTNAME = ''
+        CHARACTER(LEN=120) :: ATTVAL = ''
+        CHARACTER          :: TYPE = 'c'    ! c,i,f/r
+      END TYPE META_PAIR_T
+
+      TYPE META_T
+        REAL :: FSC, VMIN, VMAX = 0.0
+        CHARACTER*24  :: UNITS = ''
+        CHARACTER*20  :: ENAME = ''
+        CHARACTER*80  :: VARNM = '', VARNL = ''
+        CHARACTER*120 :: VARNS = '' ,VARNG = '', VARND = ''
+        CHARACTER*512 :: VARNC = ''
+        TYPE(META_PAIR_T) :: EXTRA
+
+        ! For updating meta only:
+        INTEGER :: IFI = 0, IFJ = 0, IFC = 0
+        CHARACTER(LEN=6) :: FLDID = ''
+      ENDTYPE META_T
+
+      TYPE FIELD_T
+        TYPE(META_T), POINTER :: META(:)
+      END TYPE FIELD_T
+
+      TYPE GROUP_T
+        TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
+      END TYPE GROUP_T
+
+      TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
+
+      CHARACTER(LEN=30)  :: DIRCOM
+      CHARACTER(LEN=128) :: PARTCOM
+
+      CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
+      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
+      REAL, PARAMETER :: UNSETR = -123456789.0
+
+      !!! TODO TEMPORARY VARIABLES FOR TESTING !!!
+      INTEGER :: NCVARTYPE !TODO: SET FROM WW3_OUNF
+
+      CONTAINS 
+      SUBROUTINE INIT_META()
+
+      IMPLICIT NONE
+
+      LOGICAL :: FLGNML
+      INTEGER :: I, J
+
+      ! 1. Allocate nested GROUP, FIELD structure:
+      WRITE(0,*) "Allocating meta"
+      PRINT*,'  GROUPS: ', NOGRP
+      ALLOCATE(GROUP(NOGRP))
+      DO I = 1,NOGRP
+        PRINT*,'    GROUP ',I, ' FIELDS: ',NOGE(I)
+        ALLOCATE(GROUP(I)%FIELD(NOGE(I)))
+        DO J = 1,NOGE(I)
+          PRINT*,'       FIELD ',J, ' META: ', 3
+          ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
+        ENDDO
+      ENDDO 
+
+      WRITE(0,*) "Setting string constants"
+      ! 2. Set direction convention:
+      DIRCOM = ""
+!/RTD      IF ( FLAGUNR ) THEN
+!/RTD        DIRCOM = 'True North'
+!/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD        DIRCOM = 'Rotated Pole Grid North'
+!/RTD      ENDIF
+      !  Set partitioning method comment:
+      IF ( PTMETH .EQ. 1 ) THEN
+         PARTCOM = "Wind sea and swells defined using topographic " //  &
+                      "partitions and partition wave-age cut-off "     //  &
+                      "(WWIII default scheme)"
+      ELSE IF ( PTMETH .EQ. 2 ) THEN
+         PARTCOM = "Wind sea and swells defined using topographic " //  &
+                  "partitions and spectral wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 3 ) THEN
+         PARTCOM = "Wave components defined using topographic "     //  &
+                  "partitions only"
+      ELSE IF ( PTMETH .EQ. 4 ) THEN
+         PARTCOM = "Wind sea and swell defined using spectral wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 5 ) THEN
+         WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //  &
+                  '"Hz spectral frequency cutoff")') PTFCUT
+      ELSE
+         WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
+      ENDIF
+
+      ! 3. Set the default values for the OUNF netCDF meta data.
+      CALL DEFAULT_META()
+
+      ! If the ounfmeta.nml exists, read this in to override any
+      ! meta data set above
+      INQUIRE(FILE="ounfmeta.nml", EXIST=FLGNML)
+      IF(FLGNML) THEN 
+         CALL READ_NML()
+      ENDIF
+
+      END SUBROUTINE INIT_META
+
+
+      SUBROUTINE TEARDOWN_META()
+      IMPLICIT NONE
+      ! Free up allocated space
+      INTEGER :: I, J
+
+      DO I = 1,NOGRP
+        DO J = 1,NOGE(I)
+          DEALLOCATE(GROUP(I)%FIELD(J)%META)
+        ENDDO
+        DEALLOCATE(GROUP(I)%FIELD)
+      ENDDO 
+      DEALLOCATE(GROUP)
+
+      END SUBROUTINE TEARDOWN_META
+
+
+      SUBROUTINE READ_NML()
+         USE W3IOGOMD, ONLY: W3FLDTOIJ
+
+         IMPLICIT NONE
+   
+         INTEGER ::  ierr, I
+         CHARACTER(LEN=128) :: msg
+         INTEGER :: MAX_NML_META = NOGRP * NGRPP * 3
+   
+         TYPE(META_T), ALLOCATABLE :: NML_META(:)
+         TYPE(META_T), POINTER :: PMETA, NEWMETA
+         NAMELIST /META/ NML_META
+
+         INTEGER :: IFI, IFJ, IFC
+
+         ALLOCATE(NML_META(MAX_NML_META))
+
+         ! Mark all fields as unset (NOTE: THIS IS MAKING THIS VARIABLE
+         ! IMPICITLY A "SAVE" - PROBABLY DONT WANT TO DO THIS
+         NML_META = META_T(UNSETR,UNSETR,UNSETR,'unset','unset','unset','unset', & 
+            'unset','unset','unset','unset',META_PAIR_T('unset','unset'),     &
+            0, 0, 1, '')
+
+   
+         OPEN(10, file="ounfmeta.nml", status="old", form="formatted")
+         READ(10, nml=meta, iostat=ierr, iomsg=msg)
+         if(ierr.ne.0) THEN
+            PRINT*,'Error reading namelist'
+            PRINT*,msg
+            CALL EXIT(1)
+         endif
+         CLOSE(10)
+
+
+         ! Process meta data:
+         DO I=1,MAX_NML_META
+            IF(NML_META(I)%IFI .EQ. 0 .AND. NML_META(I)%IFJ .EQ. 0 .AND. &
+                  NML_META(I)%FLDID == '') EXIT
+    
+            CALL PRINT_META(NML_META(I))
+            ! Try getting IFI and IFJ from field ID, if set:
+            IF(NML_META(I)%FLDID /= '') THEN
+               ! GET IFI and IFJ from field name lookup.
+               CALL W3FLDTOIJ(NML_META(I)%FLDID, IFI, IFJ, 1, 1, NDSE)
+               IF(IFI .NE. -1) THEN
+                 NML_META(I)%IFI = IFI
+                 NML_META(I)%IFJ = IFJ
+                 PRINT*,'Got IFI,IFJ ',IFI,IFJ, ' for ', NML_META(I)%FLDID
+               ELSE
+                 WRITE(0,*) "Unknown field id: ",NML_META(I)%FLDID
+                 CALL EXIT(1)
+               ENDIF
+            ELSEIF(NML_META(I)%IFI .EQ. 0 .OR.  NML_META(I)%IFJ .EQ. 0) THEN
+               WRITE(0,*) "ERROR: Meta ",I," has neither fldid or IFI/IFJ set"
+               CALL EXIT(1)
+            ENDIF
+
+            IFI = NML_META(I)%IFI
+            IFJ = NML_META(I)%IFJ
+            IFC = NML_META(I)%IFC
+
+            ! Do check of IFI and IFJ
+            IF(IFI .GT. NOGRP) THEN
+                WRITE(0,*) "ERROR: IFI for meta ", I, " > ",NOGRP
+                CALL EXIT(1)
+            ENDIF
+
+            IF(IFJ .GT. NOGE(IFI)) THEN
+                WRITE(0,*) "ERROR: IFJ for meta ", I, " > ",NOGE(IFI)
+                CALL EXIT(1)
+            ENDIF
+
+
+            IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
+                WRITE(0,*) "ERROR: IFC for meta ", I, " should be in range 1,3"
+                CALL EXIT(1)
+            ENDIF
+
+           PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC) 
+
+           IF(NML_META(I)%ENAME .NE. UNSETC) PMETA%ENAME = NML_META(I)%ENAME
+           IF(NML_META(I)%VARNM .NE. UNSETC) PMETA%VARNM = NML_META(I)%VARNM
+           IF(NML_META(I)%VARNS .NE. UNSETC) PMETA%VARNS = NML_META(I)%VARNS
+           IF(NML_META(I)%VARNL .NE. UNSETC) PMETA%VARNL = NML_META(I)%VARNL
+           IF(NML_META(I)%VARNG .NE. UNSETC) PMETA%VARNG = NML_META(I)%VARNG
+           IF(NML_META(I)%VARND .NE. UNSETC) PMETA%VARND = NML_META(I)%VARND
+           IF(NML_META(I)%VARNC .NE. UNSETC) PMETA%VARNC = NML_META(I)%VARNC
+           IF(NML_META(I)%UNITS .NE. UNSETC) PMETA%UNITS = NML_META(I)%UNITS
+
+           IF(NML_META(I)%FSC .NE. UNSETR) PMETA%FSC = NML_META(I)%FSC
+           IF(NML_META(I)%VMIN .NE. UNSETR) PMETA%VMIN = NML_META(I)%VMIN
+           IF(NML_META(I)%VMAX .NE. UNSETR) PMETA%VMAX = NML_META(I)%VMAX
+
+           IF(NML_META(I)%EXTRA%ATTNAME .NE. 'unset')                  &
+                PMETA%EXTRA%ATTNAME = NML_META(I)%EXTRA%ATTNAME
+           IF(NML_META(I)%EXTRA%ATTVAL .NE. 'unset')                   &
+                PMETA%EXTRA%ATTVAL = NML_META(I)%EXTRA%ATTVAL
+           IF(NML_META(I)%EXTRA%TYPE .NE. 'unset')                     &
+                PMETA%EXTRA%TYPE = NML_META(I)%EXTRA%TYPE
+
+         ENDDO
+         
+
+      END SUBROUTINE READ_NML
+
+      FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
+         
+         IMPLICIT NONE
+         INTEGER, INTENT(IN) :: IFI, IFJ
+         INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
+         INTEGER :: IFP, IFC
+         !TYPE(META_T), POINTER :: META
+         TYPE(META_T) :: META ! Not pointer as we might need to modify it
+               
+         IFC = 1
+         IFP = 1
+         IF(PRESENT(ICOMP)) IFC = ICOMP
+         IF(PRESENT(IPART)) IFP = IPART
+   
+         ! TODO: Error checking on size of IFJ, ICOMP, IPART.
+         META = GROUP(IFI)%FIELD(IFJ)%META(IFC)
+
+         ! TODO: For partitioned data, expand in the partition number
+         IF(IFI .EQ. 4) THEN
+           CALL ADD_PARTNO(META, IFP)
+         ENDIF
+   
+         RETURN
+
+      END FUNCTION GETMETA
+
+
+      SUBROUTINE ADD_PARTNO(META, IPART)
+      IMPLICIT NONE
+      TYPE(META_T), INTENT(INOUT) :: META
+      INTEGER, INTENT(IN) :: IPART
+
+      CHARACTER(LEN=80) :: TMP
+      INTEGER :: I, J
+
+      CALL PARTNO_STRING_SUB(META%ENAME, IPART)
+      CALL PARTNO_STRING_SUB(META%VARNM, IPART)
+      CALL PARTNO_STRING_SUB(META%VARNL, IPART)
+      CALL PARTNO_STRING_SUB(META%VARNS, IPART)
+      CALL PARTNO_STRING_SUB(META%VARNG, IPART)
+      CALL PARTNO_STRING_SUB(META%VARNC, IPART)
+      CALL PARTNO_STRING_SUB(META%VARND, IPART)
+      CALL PARTNO_STRING_SUB(META%EXTRA%ATTNAME, IPART)
+      CALL PARTNO_STRING_SUB(META%EXTRA%ATTVAL, IPART)
+
+      END SUBROUTINE ADD_PARTNO
+
+
+      SUBROUTINE PARTNO_STRING_SUB(INSTR, IPART)
+      IMPLICIT NONE
+      CHARACTER(LEN=*), INTENT(INOUT) :: INSTR
+      INTEGER, INTENT(IN) :: IPART
+
+      INTEGER :: I, J
+
+      I = INDEX(INSTR, "<IPART>")
+      J = I + LEN_TRIM("<IPART>")
+      IF(I .GT. 0) THEN
+        WRITE(INSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
+      ENDIF
+
+      END SUBROUTINE PARTNO_STRING_SUB
+
+
+      FUNCTION FUNC_PARTNO_STRING_SUB(INSTR, IPART) RESULT(OUTSTR)
+      IMPLICIT NONE
+      CHARACTER(LEN=*), INTENT(IN) :: INSTR
+      INTEGER, INTENT(IN) :: IPART
+      CHARACTER(LEN=256) :: OUTSTR
+
+      INTEGER :: I, J
+
+      I = INDEX(INSTR, "<IPART>")
+      J = I + LEN_TRIM("<IPART>")
+      IF(I .GT. 0) THEN
+        WRITE(OUTSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
+      ELSE
+        OUTSTR = INSTR
+      ENDIF
+
+      END FUNCTION FUNC_PARTNO_STRING_SUB
+
+
+      SUBROUTINE WRITE_META(ncid, varid, meta, err)
+         IMPLICIT NONE
+         INTEGER, INTENT(IN) :: ncid, varid
+         TYPE(META_T), INTENT(IN) :: meta
+         INTEGER, INTENT(OUT) :: err
+         INTEGER :: ival
+         REAL :: rval
+   
+   
+         err = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
+         IF(err /= NF90_NOERR) RETURN
+         err = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
+         IF(err /= NF90_NOERR) RETURN
+         IF(META%VARNC .NE. '') THEN
+               err = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+               IF(err /= NF90_NOERR) RETURN
+         ENDIF
+         IF (META%VARND .NE. '') THEN
+               err = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+               IF(err /= NF90_NOERR) RETURN
+         END IF
+
+         IF (META%EXTRA%ATTNAME .NE. '') THEN
+            SELECT CASE(META%EXTRA%TYPE)
+              CASE('i')
+                READ(META%EXTRA%ATTVAL, *) ival
+                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, ival)
+              CASE('r', 'f')
+                READ(META%EXTRA%ATTVAL, *) rval
+                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, rval)
+              CASE('c')
+                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
+                        META%EXTRA%ATTNAME)
+              CASE DEFAULT
+                WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
+            END SELECT
+         ENDIF
+      END SUBROUTINE WRITE_META
+    
+
+      SUBROUTINE PRINT_META(META)
+         IMPLICIT NONE
+
+         TYPE(META_T), INTENT(IN) :: META
+
+         WRITE(*,*) META%VARNM
+         WRITE(*,"(A20,':',1X,A)") "Standard name", TRIM(META%VARNS)
+         WRITE(*,"(A20,':',1X,A)") "Long name", TRIM(META%VARNL)
+         WRITE(*,"(A20,':',1X,A)") "Units", TRIM(META%UNITS)
+         WRITE(*,"(A20,':',1X,A)") "GLOBWAVE name", TRIM(META%VARNG)
+         WRITE(*,"(A20,':',1X,A)") "Direction conv", TRIM(META%VARND)
+         WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
+         WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
+         WRITE(*,"(A20,':')") "Extra metadata"
+         WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
+         WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
+         PRINT*,META%EXTRA%TYPE == ""
+      END SUBROUTINE PRINT_META
+
+      SUBROUTINE CLEAR_META(META)
+      TYPE(META_T), INTENT(INOUT) :: META(3)
+      META(:)%FSC    = 1
+      META(:)%UNITS  = ''
+      META(:)%ENAME  = ''
+      META(:)%VARNM = ''
+      META(:)%VARNL =''
+      META(:)%VARNS =''
+      META(:)%VARNG =''
+      META(:)%VARNC =''
+      META(:)%VARND =''
+      META(:)%VMIN = 0
+      META(:)%VMAX = 0
+      END SUBROUTINE CLEAR_META
+
+      SUBROUTINE SET_META(IFI, IFJ, META)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IFI, IFJ
+      TYPE(META_T) :: META(3)
+
+      IF(IFI .GT. NOGRP) RETURN
+      IF(IFJ .GT. NOGE(IFI)) RETURN
+
+      GROUP(IFI)%FIELD(IFJ)%META = META
+
+      END SUBROUTINE SET_META
+
+
+      SUBROUTINE DEFAULT_META()
+      IMPLICIT NONE
+      TYPE(META_T) :: META(3)
+!
+!----------GROUP 1 ----------------
+!
+! IFI=1, IFJ=1
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.5
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.dpt'
+      META(1)%VARNM = 'dpt'
+      META(1)%VARNL ='depth'
+      META(1)%VARNS ='depth'
+      META(1)%VARNG ='depth'
+      META(1)%VARNC =''
+      META(1)%VARND =''
+      META(1)%VMIN = -90000 
+      META(1)%VMAX = 140000
+      CALL SET_META(1,1,META)
+! IFI=1, IFJ=2        
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.cur'
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VMIN = -990
+      META(1)%VMAX =  990
+      META(1)%VARNM='ucur'
+      META(1)%VARNL='eastward current'
+      META(1)%VARNS='eastward_sea_water_velocity'
+      META(1)%VARNG='eastward_sea_water_velocity'
+      META(1)%VARNC='cur=sqrt(U**2+V**2)'
+      META(1)%VARND = DIRCOM
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vcur'
+      META(2)%VARNL='northward current'
+      META(2)%VARNS='northward_sea_water_velocity'
+      META(2)%VARNG='northward_sea_water_velocity'
+      META(2)%VARNC='cur=sqrt(U**2+V**2)'
+      CALL SET_META(1,2,META)
+! IFI=1, IFJ=3         
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%ENAME  = '.wnd'
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VARNM='uwnd'
+      META(1)%VARNL='eastward_wind'
+      META(1)%VARNS='eastward_wind'
+      META(1)%VARNG='eastward_wind'
+      META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
+      META(1)%VMIN = -990
+      META(1)%VMAX =  990
+      META(1)%VARND = DIRCOM
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vwnd'
+      META(2)%VARNL='northward_wind'
+      META(2)%VARNS='northward_wind'
+      META(2)%VARNG='northward_wind'
+      META(2)%VARNC='wind=sqrt(U10**2+V10**2)'
+      CALL SET_META(1,3,META)
+! IFI=1, IFJ=4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%ENAME = '.ast'
+      META(1)%UNITS = 'K'
+      META(1)%VARNM='ast'
+      META(1)%VARNL='air sea temperature difference'
+      META(1)%VARNS='air_sea_temperature_difference'
+      META(1)%VARNG='air_sea_temperature_difference'
+      META(1)%VMIN = 0    
+      META(1)%VMAX = 4000
+      CALL SET_META(1,4,META)
+! IFI=1, IFJ=5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.wlv'
+      META(1)%VARNM='wlv'
+      META(1)%VARNL='sea surface height above sea level'
+      META(1)%VARNS='sea_surface_height_above_sea_level'
+      META(1)%VARNG='sea_surface_height_above_sea_level'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 10000
+      CALL SET_META(1,5,META)
+! IFI=1, IFJ=6
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.ice'
+      META(1)%VARNM='ice'
+      META(1)%VARNL='sea ice area fraction'
+      META(1)%VARNS='sea_ice_area_fraction'
+      META(1)%VARNG='sea_ice_area_fraction'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 1000
+      CALL SET_META(1,6,META)
+! IFI=1, IFJ=7
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.0001
+      META(1)%UNITS  = 'km-1'
+      META(1)%ENAME  = '.ibg'
+      META(1)%VARNM='ibg'
+      META(1)%VARNL='icebergs_damping'
+      META(1)%VARNS='icebergs_induced_attenuation_scale_for_waves'
+      META(1)%VARNG='icebergs_damping'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(1,7,META)
+! IFI=1, IFJ=8
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'Krumbein phi scale'
+      META(1)%ENAME  = '.d50'
+      META(1)%VARNM='d50'
+      META(1)%VARNL='grain_size'
+      META(1)%VARNS='sediment_grain_size'
+      META(1)%VARNG='sediment_grain_size'
+      META(1)%VMIN = -10000
+      META(1)%VMAX = 32000
+      CALL SET_META(1,8,META)
+! IFI=1, IFJ=9
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.001
+      META(1)%UNITS = 'm'
+      META(1)%ENAME = '.ic1'
+      META(1)%VARNM='ic1'
+      META(1)%VARNL='ice thickness'
+      META(1)%VARNS='ice_thickness'
+      META(1)%VARNG='ice_thickness'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 30000
+      CALL SET_META(1,9,META)
+! IFI=1, IFJ=10
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.05
+      META(1)%UNITS = 'm'
+      META(1)%ENAME = '.ic5'
+      META(1)%VARNM='ic5'
+      META(1)%VARNL='maximum floe diameter'
+      META(1)%VARNS='maximum_ice_floe_diameter'
+      META(1)%VARNG='maximum_ice_floe_diameter'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 30000
+      CALL SET_META(1,10,META)
+!
+!----------GROUP 2 ----------------
+!
+      WRITE(0,*) "Group 2"
+! IFI=2, IFJ=1
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.hs'
+      META(1)%VARNM='hs'
+      META(1)%VARNL='significant height of wind and swell waves'
+      META(1)%VARNS='sea_surface_wave_significant_height' 
+      META(1)%VARNG='significant_wave_height'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(2,1,META)
+! IFI=2, IFJ=2
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 1.
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.lm'
+      META(1)%VARNM='lm'
+      META(1)%VARNL='mean wave length'
+      META(1)%VARNS='mean_wave_length' 
+      META(1)%VARNG='mean_wave_length' 
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 3200
+      CALL SET_META(2,2,META)
+! IFI=2, IFJ=3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.t02'
+      META(1)%VARNM='t02'
+      META(1)%VARNL='mean period T02'
+      META(1)%VARNS='sea_surface_wind_wave_mean_period' // &
+      '_from_variance_spectral_density_second_frequency_moment'
+      META(1)%VARNG='mean_period_t02'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 5000
+      CALL SET_META(2,3,META)
+! IFI=2, IFJ=4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.t0m1'
+      META(1)%VARNM='t0m1'
+      META(1)%VARNL='mean period T0m1'
+      META(1)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                 '_spectral_density_inverse_frequency_moment'
+      META(1)%VARNG='mean_period_t0m1'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 5000
+      CALL SET_META(2,4,META)
+! IFI=2, IFJ=5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.t01'
+      META(1)%VARNM='t01'
+      META(1)%VARNL='mean period T01'
+      META(1)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
+                '_spectral_density_first_frequency_moment' 
+      META(1)%VARNG='mean_period_t01'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 5000
+      CALL SET_META(2,5,META)
+! IFI=2, IFJ=6
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 's-1'
+      META(1)%ENAME  = '.fp'
+      META(1)%VARNM='fp'
+      META(1)%VARNL='wave peak frequency'
+      META(1)%VARNS='sea_surface_wave_peak_frequency'
+      META(1)%VARNG='dominant_wave_frequency'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 10000
+      CALL SET_META(2,6,META)
+! IFI=2, IFJ=7
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.dir'
+      META(1)%VARNM='dir'
+      META(1)%VARNL='wave mean direction'
+      META(1)%VARNS='sea_surface_wave_from_direction'
+      META(1)%VARNG='wave_from_direction'
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 3600
+      CALL SET_META(2,7,META)
+! IFI=2, IFJ=8
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.spr'
+      META(1)%VARNM='spr'
+      META(1)%VARNL='directional spread'
+      META(1)%VARNS='sea_surface_wave_directional_spread'
+      META(1)%VARNG='directional_spread'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 900
+      CALL SET_META(2,8,META)
+! IFI=2, IFJ=9
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 1.
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.dp'
+      META(1)%VARNM='dp'
+      META(1)%VARNL='peak direction'
+      META(1)%VARNS='sea_surface_wave_peak_direction'
+      META(1)%VARNG='dominant_wave_direction'
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 360
+      CALL SET_META(2,9,META)
+! IFI=2, IFJ=10
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.0002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.hig'
+      META(1)%VARNM='hig'
+      META(1)%VARNL='infragravity_wave_height'
+      META(1)%VARNS='sea_surface_wave_infragravity_significant_height' 
+      META(1)%VARNG='infragravity_significant_wave_height' 
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 5000
+      CALL SET_META(2,10,META)
+! IFI=2, IFJ=11
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.mxe'
+      META(1)%VARNM='stmaxe'
+      META(1)%VARNL='expected maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VARNS='expected maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VARNG='expected maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,11,META)
+! IFI=2, IFJ=12
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.mxes'
+      META(1)%VARNM='stmaxd'
+      META(1)%VARNL='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VARNS='std of expected maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VARNG='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,12,META)
+! IFI=2, IFJ=13
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.mxh'
+      META(1)%VARNM='hmaxe'
+      META(1)%VARNL='expected maximum wave height (linear, 1st order)'
+      META(1)%VARNS='expected maximum wave height (linear, 1st order)'
+      META(1)%VARNG='expected maximum wave height (linear, 1st order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,13,META)
+! IFI=2, IFJ=14
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.mxhc'
+      META(1)%VARNM='hcmaxe'
+      META(1)%VARNL='expected maximum wave height from crest (linear, 1st order)'
+      META(1)%VARNS='expected maximum wave height from crest (linear, 1st order)'
+      META(1)%VARNG='expected maximum wave height from crest (linear, 1st order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,14,META)
+! IFI=2, IFJ=15
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.sdmh'
+      META(1)%VARNM='hmaxd'
+      META(1)%VARNL='STD of maximum wave height (linear, 1st order)'
+      META(1)%VARNS='STD of maximum wave height (linear, 1st order)'
+      META(1)%VARNG='STD of maximum wave height (linear, 1st order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,15,META)
+! IFI=2, IFJ=16
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.sdmhc'
+      META(1)%VARNM='hcmaxd'
+      META(1)%VARNL='STD of maximum wave height from crest (linear, 1st order)'
+      META(1)%VARNS='STD of maximum wave height from crest (linear, 1st order)'
+      META(1)%VARNG='STD of maximum wave height from crest (linear, 1st order)'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(2,16,META)
+! IFI=2, IFJ=17
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.wbt'
+      META(1)%VARNM='wbt'
+      META(1)%VARNL='domiant wave breaking probability'
+      META(1)%VARNS='domiant_wave_breaking_probability'
+      META(1)%VARNG='domiant_wave_breaking_probability'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 1000
+      CALL SET_META(2,17,META)
+!
+!---------- GROUP 3 ----------------
+!
+! 1
+      CALL CLEAR_META(META)
+      META(1)%VARNM='ef'
+      META(1)%VARNL='wave_elevation_spectrum'
+      IF (NCVARTYPE.LE.3) THEN 
+        META(1)%UNITS  = 'log10(m2 s+1E-12)'
+        META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+        META(1)%FSC     = 0.0004
+      ELSE
+        META(1)%UNITS  = 'm2 s'
+        META(1)%VARNS='power_spectral_density_of_surface_elevation'
+        META(1)%FSC     = 1.
+      END IF
+      META(1)%ENAME  = '.ef'
+      META(1)%VARNG = META(1)%VARNS
+      META(1)%VMIN = -30000
+      META(1)%VMAX = 32000
+      CALL SET_META(3,1,META)
+! 2
+      CALL CLEAR_META(META)
+      ! Information for spectral
+      META(1)%FSC     = 0.1
+      META(1)%VARNM='th1m'
+      META(1)%VARNL='mean wave direction frequency spectrum'
+      META(1)%VARNS='sea_surface_wave_from_direction_frequency_spectrum'
+      META(1)%VARNG = META(1)%VARNS
+      META(1)%VARND=DIRCOM
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.th1m'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 3600
+      CALL SET_META(3,2,META)
+! 3
+      CALL CLEAR_META(META)
+      ! Information for spectral
+      META(1)%FSC     = 0.01
+      META(1)%VARNM='sth1m'
+      META(1)%VARNL='spreading frequency spectrum'
+      META(1)%VARNS='sea_surface_wave_spreading_spectrum'
+      META(1)%VARNG = META(1)%VARNS
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.sth1m'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 9000
+      CALL SET_META(3,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC     = 0.1
+      META(1)%VARNM='th2m'
+      META(1)%VARNL='second mean wave direction frequency spectrum'
+      META(1)%VARNS='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
+      META(1)%VARNG = META(1)%VARNS
+      META(1)%VARND=DIRCOM
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.th2m'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 3600
+      CALL SET_META(3,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC     = 0.01
+      META(1)%VARNM='sth2m'
+      META(1)%VARNL='second spreading frequency spectrum'
+      META(1)%VARNS='sea_surface_wave_spreading_spectrum_from_second_moments'
+      META(1)%VARNG = META(1)%VARNS
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.sth2m'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 9000
+      CALL SET_META(3,5,META)
+! 6
+      CALL CLEAR_META(META)
+      ! Information for spectral
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'm-1'
+      META(1)%ENAME  = '.wn'
+      META(1)%VARNM='wn'
+      META(1)%VARNL='wave numbers'
+      META(1)%VARNS='wave_numbers'
+      META(1)%VARNG='wave_numbers'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(3,6,META)
+!
+!---------- GROUP 4 ----------------
+!
+! 1
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME = '.phs<IPART>'
+      META(1)%VARNM = 'phs<IPART>'
+      META(1)%VARNL = 'wave significant height partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_significant_height_partition_<IPART>'
+      META(1)%VARNG = 'significant_wave_height_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(4,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = 's'
+      META(1)%ENAME = '.ptp<IPART>'
+      META(1)%VARNM = 'ptp<IPART>' 
+      META(1)%VARNL = 'peak period partition <IPART>' 
+      META(1)%VARNS = 'sea_surface_wave_period_at_<IPART>' // &
+                             'variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%VARNG = 'dominant_wave_period_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 10000
+      CALL SET_META(4,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC = 1.
+      META(1)%UNITS = 'm'
+      META(1)%ENAME = '.plp<IPART>'
+      META(1)%VARNM = 'plp<IPART>' 
+      META(1)%VARNL = 'peak wave length partition <IPART>' 
+      META(1)%VARNS = 'peak_wave_length_partition_<IPART>'
+      META(1)%VARNG = 'peak_wave_length_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 10000
+      CALL SET_META(4,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.1
+      META(1)%UNITS = 'degree'
+      META(1)%ENAME =  '.pdir<IPART>'
+      META(1)%VARNM =  'pdir<IPART>' 
+      META(1)%VARNL = 'wave mean direction partition <IPART>' 
+      META(1)%VARNS = 'sea_surface_wave_from_direction_partition_<IPART>'
+      META(1)%VARNG = 'wave_from_direction_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 3600
+      CALL SET_META(4,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.1
+      META(1)%UNITS = 'degree'
+      META(1)%ENAME = '.pspr<IPART>'
+      META(1)%VARNM = 'pspr<IPART>' 
+      META(1)%VARNL = 'directional spread partition <IPART>' 
+      META(1)%VARNS = 'sea_surface_wave_directional_spread_partition_<IPART>'
+      META(1)%VARNG = 'directional_spread_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 900
+      CALL SET_META(4,5,META)
+! 6
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.001
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.pws<IPART>'
+      META(1)%VARNM = 'pws<IPART>'
+      META(1)%VARNL = 'wind sea fraction in partition <IPART>' 
+      META(1)%VARNS = 'wind_sea_fraction_in_partition_<IPART>' 
+      META(1)%VARNG = 'wind_sea_fraction_in_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 1000
+      CALL SET_META(4,6,META)
+! 7
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.1
+      META(1)%UNITS = 'degree'
+      META(1)%ENAME = '.pdp<IPART>'
+      META(1)%VARNM = 'pdp<IPART>'
+      META(1)%VARNL = 'peak direction partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_peak_from_direction_partition_<IPART>'
+      META(1)%VARNG = 'dominant_wave_from_direction_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 3600
+      CALL SET_META(4,7,META)
+! 8
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.pqp<IPART>'
+      META(1)%VARNM = 'pqp<IPART>'
+      META(1)%VARNL = 'peakedness partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_peakedness_partition_<IPART>'
+      META(1)%VARNG = 'wave_peakedness_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(4,8,META)
+! 9
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.ppe<IPART>'
+      META(1)%VARNM = 'ppe<IPART>'
+      META(1)%VARNL = 'peak enhancement factor partition <IPART>'
+      META(1)%VARNS = 'wave_peak_enhancement_factor_partition_<IPART>'
+      META(1)%VARNG = 'wave_peak_enhancement_factor_partition_<IPART>'
+      META(1)%VARNC = 'JONSWAP peak enhancement factor; ' // PARTCOM
+      META(1)%VARND = ''
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(4,9,META)
+! 10
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.0001
+      META(1)%UNITS = 's-1'
+      META(1)%ENAME =  '.pgw<IPART>'
+      META(1)%VARNM = 'pgw<IPART>'
+      META(1)%VARNL = 'frequency width partition <IPART>'
+      META(1)%VARNS = 'Gaussian_frequency_spread_partition_<IPART>'
+      META(1)%VARNG = 'Gaussian_frequency_spread_partition_<IPART>'
+      META(1)%VARNC =' Gaussian least-square fit to ' // &
+          'omni-directional spectral partition; ' // PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(4,10,META)
+! 11
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.0001
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.psw<IPART>'
+      META(1)%VARNM = 'psw<IPART>'
+      META(1)%VARNL = 'spectral width partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_spectral_width_partition_<IPART>'
+      META(1)%VARNG = 'wave_spectral_width_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(4,11,META)
+! 12
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = 's'
+      META(1)%ENAME = '.ptm10c<IPART>'
+      META(1)%VARNM = 'ptm10c<IPART>'
+      META(1)%VARNL = 'mean period Tm10 partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_mean_period_tm10_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_Tm10_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(4,12,META)
+! 13
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = 's'
+      META(1)%ENAME = '.pt01c<IPART>'
+      META(1)%VARNM = 'pt01c<IPART>'
+      META(1)%VARNL = 'mean period T01 partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_mean_period_t01_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_T01_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(4,13,META)
+! 14
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.01
+      META(1)%UNITS = 's'
+      META(1)%ENAME = '.pt02c<IPART>'
+      META(1)%VARNM = 'pt02c<IPART>'
+      META(1)%VARNL = 'mean period T02 partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_mean_period_t02_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_T02_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(4,14,META)
+! 15
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.02
+      META(1)%UNITS = 'm2 s rad-1'
+      META(1)%ENAME = '.pep<IPART>'
+      META(1)%VARNM = 'pep<IPART>'
+      META(1)%VARNL = 'energy at peak frequency partition <IPART>'
+      META(1)%VARNS = 'sea_surface_wave_energy_at_variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(4,15,META)
+! 16
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.001
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.tws'
+      META(1)%VARNM = 'tws'
+      META(1)%VARNL = 'wind sea fraction'
+      META(1)%VARNS = 'wind_sea_fraction'
+      META(1)%VARNG = 'wind_sea_fraction'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 1000
+      CALL SET_META(4,16,META)
+! 17
+      CALL CLEAR_META(META)
+      META(1)%FSC = 1.
+      META(1)%UNITS = '1'
+      META(1)%ENAME = '.pnr'
+      META(1)%VARNM = 'pnr'
+      META(1)%VARNL = 'number of wave partitions'
+      META(1)%VARNS = 'number_of_wave_partitions'
+      META(1)%VARNG = 'number_of_wave_partitions'
+      META(1)%VARNC = PARTCOM
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 100
+      CALL SET_META(4,17,META)
+!
+!---------- GROUP 5 ----------------
+!
+! 1
+      CALL CLEAR_META(META)
+      ! First component
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.ust'
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VARNM='uust'
+      META(1)%VARNL='eastward friction velocity'
+      META(1)%VARNS='eastward_friction_velocity'
+      META(1)%VARNG='eastward_friction_velocity'
+      META(1)%VARNC='ust=sqrt(uust**2+vust**2)'
+      META(1)%VARNC=DIRCOM
+      META(1)%VMIN = -9900
+      META(1)%VMAX =  9900
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vust'
+      META(2)%VARNL='northward friction velocity'
+      META(2)%VARNS='northward_friction_velocity'
+      META(2)%VARNG='northward_friction_velocity'
+      CALL SET_META(5,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 1.E-5
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.cha'
+      META(1)%VARNM='cha'
+      META(1)%VARNL='charnock coefficient for surface roughness length for momentum in air'
+      META(1)%VARNS='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+      META(1)%VARNG='charnock_coefficient'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32700
+      CALL SET_META(5,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1           !0.01
+      META(1)%UNITS  = 'kW m-1'
+      META(1)%ENAME  = '.cge' 
+      META(1)%VARNM='cge'
+      META(1)%VARNL='wave energy flux'
+      META(1)%VARNS='sea_surface_wind_wave_energy_flux'
+      META(1)%VARNG='wave_energy_flux'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 9990
+      CALL SET_META(5,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'W m-2'
+      META(1)%ENAME  = '.faw'
+      META(1)%VARNM='faw'
+      META(1)%VARNL='wind to wave energy flux'
+      META(1)%VARNS='wind_mixing_energy_flux_into_sea_water'
+      META(1)%VARNG='wind_to_wave_energy_flux'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 9990
+      CALL SET_META(5,4,META)
+! 5  
+      CALL CLEAR_META(META)
+      ! First component
+      META(1)%FSC    = 0.000001
+      META(1)%UNITS  = 'm2 s-2'
+      META(1)%ENAME  = '.taw'
+      META(1)%VARNM='utaw'
+      META(1)%VARNL='eastward wave supported wind stress'
+      META(1)%VARNS='eastward_wave_supported_wind_stress'
+      META(1)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+      META(1)%VARNG='eastward_wave_supported_wind_stress'
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = -32000
+      META(1)%VMAX =  32000
+     
+      ! Second component
+      META(2) = META(2)
+      META(2)%VARNM='vtaw'
+      META(2)%VARNL='northward wave supported wind stress'
+      META(2)%VARNS='northward_wave_supported_wind_stress'
+      META(2)%VARNG='northward_wave_supported_wind_stress'
+      META(2)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
+      CALL SET_META(5,5,META)
+! 6
+      CALL CLEAR_META(META)
+      ! First component
+      META(1)%FSC    = 0.0001
+      META(1)%ENAME  = '.twa'
+      META(1)%UNITS  = 'm2 s-2'
+      META(1)%VARNM='utwa'
+      META(1)%VARNL='eastward wave to wind stress'
+      META(1)%VARNS='eastward_wave_to_wind_stress'
+      META(1)%VARNG='eastward_wave_to_wind_stress'
+      META(1)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = -32000
+      META(1)%VMAX =  32000
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtwa'
+      META(2)%VARNL='northward wave to wind stress'
+      META(2)%VARNS='northward_wave_to_wind_stress'
+      META(2)%VARNG='northward_wave_to_wind_stress'
+      META(2)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
+      CALL SET_META(5,6,META)
+! 7
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.0001
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.wcc'
+      META(1)%VARNM='wcc'
+      META(1)%VARNL='whitecap coverage'         
+      META(1)%VARNS='whitecap_coverage'
+      META(1)%VARNG='whitecap_coverage'            
+      META(1)%VARNC=''
+      META(1)%VARND=''
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(5,7,META)
+! 8
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.wcf'
+      META(1)%VARNM='wcf'
+      META(1)%VARNL='whitecap foam thickness' 
+      META(1)%VARNS='whitecap_foam_thickness'
+      META(1)%VARNG='whitecap_foam_thickness' 
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(5,8,META)
+! 9
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002 
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.wch'
+      META(1)%VARNM='wch'
+      META(1)%VARNL='significant breaking wave height'
+      META(1)%VARNS='significant_breaking_wave_height'
+      META(1)%VARNG='significant_breaking_wave_height'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(5,9,META)
+! 10
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.0001
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.wcm'
+      META(1)%VARNM='wcm'
+      META(1)%VARNL='whitecap moment'
+      META(1)%VARNS='whitecap_moment'
+      META(1)%VARNG='whitecap_moment'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10000
+      CALL SET_META(5,10,META)
+! 11
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.002
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.fws'
+      META(1)%VARNM='fws'
+      META(1)%VARNL='Wind_sea_mean_period_T0M1'
+      META(1)%VARNS='Wind_sea_mean_period_T0M1'
+      META(1)%VARNG='Wind_sea_mean_period_T0M1'
+      META(1)%VARNC=''
+      META(1)%VARND=''
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(5,11,META)
+!
+!---------- GROUP 6 ----------------
+!   
+! 1 
+      CALL CLEAR_META(META)
+      META(1)%FSC  = 10.
+      !FSC3    = 1.
+      META(1)%UNITS = 'N m-1'
+      META(1)%ENAME = '.sxy'
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = -3000
+      META(1)%VMAX = 3000     
+      
+      ! First component
+      META(1)%VARNM='sxx'
+      META(1)%VARNL='Radiation stress component Sxx'
+      META(1)%VARNS='Radiation_stress_component_Sxx'
+      META(1)%VARNS='radiation_stress_component_sxx'
+      
+      ! S6cond component
+      META(2) = META(1)
+      META(2)%VARNM='syy'
+      META(2)%VARNL='Radiation stress component Syy'
+      META(2)%VARNS='Radiation_stress_component_Syy'
+      META(2)%VARNS='radiation_stress_component_syy'
+      
+      ! Third component
+      META(3) = META(1)
+      META(3)%VARNM='sxy'
+      META(3)%VARNL='Radiation stress component Sxy'
+      META(3)%VARNS='Radiation_stress_component_Sxy'
+      META(3)%VARNS='radiation_stress_component_sxy'
+      CALL SET_META(6,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.000001
+      META(1)%UNITS  = 'm2 s-2'
+      META(1)%ENAME  = '.two'
+      META(1)%VMIN = -32000 
+      META(1)%VMAX =  32000
+      META(1)%VARND = DIRCOM
+
+      ! First component
+      META(1)%VARNM='utwo'
+      META(1)%VARNL='eastward wave to ocean stress'
+      META(1)%VARNS='eastward_wave_to_ocean_stress'
+      META(1)%VARNG='eastward_wave_to_ocean_stress'
+      META(1)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtwo'
+      META(2)%VARNL='northward wave to ocean stress'
+      META(2)%VARNS='northward_wave_to_ocean_stress'
+      META(2)%VARNG='northward_wave_to_ocean_stress'
+      META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      CALL SET_META(6,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'm2 s-2'
+      META(1)%ENAME  = '.bhd'
+      META(1)%VARNM='bhd'
+      META(1)%VARNL='radiation pressure (Bernouilli Head)'
+      META(1)%VARNS='radiation_pressure'
+      META(1)%VARNG='radiation_pressure'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 1000
+      CALL SET_META(6,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'W m-2'
+      META(1)%ENAME  = '.foc'
+      META(1)%VARNM='foc'
+      META(1)%VARNL='wave to ocean energy flux'
+      META(1)%VARNS='wave_to_ocean_energy_flux'
+      META(1)%VARNG='wave_to_ocean_energy_flux'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 9990
+      CALL SET_META(6,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'm2 s-1'
+      META(1)%ENAME  = '.tus'
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = -9900 
+      !TODO WHERE IS VMAX?
+      
+      ! First component
+      META(1)%VARNM='utus'
+      META(1)%VARNL='eastward stokes transport'
+      META(1)%VARNS='eastward_stokes_transport'
+      META(1)%VARNG='eastward_stokes_transport'
+      META(1)%VARNC='tus=sqrt(utus**2+vtus**2)'
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtus'
+      META(2)%VARNL='northward stokes transport'
+      META(2)%VARNS='northward_stokes_transport'
+      META(2)%VARNG='northward_stokes_transport'
+      META(2)%VARNC='tus=sqrt(utus**2+vtus**2)'
+
+      CALL SET_META(6,5,META)
+! 6
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.0005
+      META(1)%UNITS  = 'm s-1'
+      META(1)%ENAME  = '.uss'
+      
+      ! First component
+      META(1)%VARNM='uuss'
+      META(1)%VARNL='eastward surface stokes drift'
+      META(1)%VARNS='eastward_surface_stokes_drift'
+      META(1)%VARNG='eastward_surface_stokes_drift'
+      META(1)%VARNC='uss=sqrt(uuss**2+vuss**2)'
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = -9900 
+      META(1)%VMAX =  9900
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vuss'
+      META(2)%VARNL='northward surface stokes drift'
+      META(2)%VARNS='northward_surface_stokes_drift'
+      META(2)%VARNG='northward_surface_stokes_drift'
+      WRITE(META(2)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+      CALL SET_META(6,6,META)
+! 7
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.p2s'
+      META(1)%UNITS  = 'm4'
+      META(1)%VMIN = -15000 
+      META(1)%VMAX = 32000
+      
+      ! First component
+      META(1)%VARNL='power spectral density of equivalent surface pressure'
+      META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
+      META(1)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
+      META(1)%VARNM='fp2s'
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='pp2s'
+      META(2)%UNITS= 's-1'
+      META(2)%VARNL='peak period of power spectral density of equivalent surface pressure'
+      META(2)%VARNS='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+      META(2)%VARNG='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+      
+      CALL SET_META(6,7,META)
+! 8
+      CALL CLEAR_META(META)
+      META(1)%UNITS = 'm s-1 Hz-1'
+      META(1)%FSC = 0.0005
+      META(1)%ENAME = '.usf'
+      META(1)%VMIN = -9900 
+      META(1)%VMAX =  9900
+      META(1)%VARND = DIRCOM
+      
+      ! First component
+      META(1)%VARNM='uusf'
+      META(1)%VARNL='eastward spectral variance of surface stokes drift'
+      META(1)%VARNS='eastward_spectral_variance_of_surface_stokes_drift'
+      META(1)%VARNC='usf=sqrt(uusf**2+vusf**2)'
+      META(1)%VARNG='eastward_spectral_variance_of_surface_stokes_drift'
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vusf'
+      META(2)%VARNL='northward spectral variance of surface stokes drift'
+      META(2)%VARNS='northward_spectral_variance_of_surface_stokes_drift'
+      META(2)%VARNG='northward_spectral_variance_of_surface_stokes_drift'
+      META(2)%VARNC='usf=sqrt(uusf**2+vusf**2)'
+      CALL SET_META(6,8,META)
+! 9
+      CALL CLEAR_META(META)
+        ! Information for spectral microseismic generation data (2nd file)
+      META(1)%FSC = 0.0004
+      META(1)%VARNM='p2l'
+      META(1)%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
+      META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+      META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+      IF (NCVARTYPE.EQ.2) THEN 
+        META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
+      ELSE 
+        META(1)%UNITS='Pa2 m2 s'
+      ENDIF
+      META(1)%VARNC=''
+      META(1)%VARND=''
+      META(1)%ENAME='.p2l'
+      META(1)%VMIN = -30000 
+      META(1)%VMAX = 30000
+      CALL SET_META(6,9,META)
+! 10
+      CALL CLEAR_META(META)
+      META(1)%FSC = 0.000001
+      META(1)%UNITS = 'm2 s-2'
+      META(1)%ENAME = '.tic'
+      META(1)%VMIN = -32000 
+      META(1)%VMAX =  32000
+      META(1)%VARND = DIRCOM
+ 
+      ! First component
+      META(1)%VARNL='eastward wave to sea ice stress'
+      META(1)%VARNM='utic'
+      META(1)%VARNS='eastward_wave_to_sea_ice_stress'
+      META(1)%VARNG='eastward_wave_to_sea_ice_stress'
+      META(1)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtic'
+      META(2)%VARNL='northward wave to sea ice stress'
+      META(2)%VARNS='northward_wave_to_sea_ice_stress'
+      META(2)%VARNG='northward_wave_to_sea_ice_stress'
+      META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
+      CALL SET_META(6,10,META)
+! 11        
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'W m-2'
+      META(1)%ENAME  = '.fic'
+      META(1)%VARNM='fic'
+      META(1)%VARNL='wave to sea ice energy flux'
+      META(1)%VARNS='wave_to_sea_ice_energy_flux'
+      META(1)%VARNG='wave_to_sea_ice_energy_flux'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 9990
+      CALL SET_META(6,11,META)
+! 12 
+      CALL CLEAR_META(META)
+      META(1)%UNITS   = 'm s-1'
+      META(1)%FSC    = 0.0005
+      META(1)%ENAME  = '.usp'
+      META(1)%VARND  = DIRCOM
+  
+      ! First component
+      META(1)%VARNM='ussp'
+      META(1)%VARNL='eastward partitioned surface stokes drift'
+      META(1)%VARNS='eastward_partitioned_surface_stokes_drift'
+      META(1)%VARNG='eastward_partitioned_surface_stokes_drift'
+      META(1)%VARNC='usp=sqrt(ussp**2+vssp**2)'
+    
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vssp'
+      META(2)%VARNL='northward partitioned surface stokes drift'
+      META(2)%VARNS='northward_partitioned_surface_stokes_drift'
+      META(2)%VARNG='northward_partitioned_surface_stokes_drift'
+      META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
+      CALL SET_META(6,12,META)
+!
+!---------- GROUP 7 ----------------
+!   
+! 1 
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.abr'
+      META(1)%UNITS  = 'm'
+      META(1)%VMIN = -18000
+      META(1)%VMAX = 18000
+      META(1)%VARND = DIRCOM
+      
+      ! First component
+      META(1)%VARNM='uabr'
+      META(1)%VARNL='rms of bottom displacement amplitude zonal'
+      META(1)%VARNS='rms_of_bottom_displacement_amplitude_zonal'
+      META(1)%VARNG='rms_of_bottom_displacement_amplitude_zonal'
+      META(1)%VARNC='abr=sqrt(uabr**2+vabr**2)'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vabr'
+      META(2)%VARNL='rms of bottom displacement amplitude meridional'
+      META(2)%VARNS='rms_of_bottom_displacement_amplitude_meridional'
+      META(2)%VARNG='rms_of_bottom_displacement_amplitude_meridional'
+      META(2)%VARNC='abr=sqrt(uabr**2+vabr**2)'
+      CALL SET_META(7,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.ubr'
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VMIN = -18000 
+      META(1)%VMAX = 18000
+      META(1)%VARND = DIRCOM
+
+      ! First component
+      META(1)%VARNM='uubr'
+      META(1)%VARNL='rms of bottom velocity amplitude zonal'
+      META(1)%VARNS='rms_of_bottom_velocity_amplitude_zonal'
+      META(1)%VARNG='rms_of_bottom_velocity_amplitude_zonal'
+      META(1)%VARNC='ubr=sqrt(uubr**2+vu7r**2)'
+
+      ! Second component
+      META(2) = META(1)
+      META(1)%VARNM='vubr'
+      META(1)%VARNL='rms of bottom velocity amplitude meridional'
+      META(1)%VARNS='rms_of_bottom_velocity_amplitude_meridional'
+      META(1)%VARNG='rms_of_bottom_velocity_amplitude_meridional'
+      META(1)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
+      CALL SET_META(7,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'm'
+      META(1)%ENAME  = '.bed'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 30000
+      META(1)%VARND = DIRCOM
+
+      ! First component
+      META(1)%VARNM='bed'
+      META(1)%VARNL='bottom roughness'
+      META(1)%VARNS='sea bottom roughness length'
+      META(1)%VARNG='ripple_wavelength'
+      META(1)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='ripplex'
+      META(2)%VARNL='eastward sea bottom ripple wavelength'
+      META(2)%VARNS='eastward_ripple_wavelength'
+      META(2)%VARNG='eastward_ripple_wavelength'
+      META(2)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+
+      ! Third component
+      META(3) = META(1)
+      META(3)%VARNM='rippley'
+      META(3)%VARNL='northward sea bottom ripple wavelength'
+      META(3)%VARNS='northward_ripple_wavelength'
+      META(3)%VARNG='northward_ripple_wavelength'
+      META(3)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
+      CALL SET_META(7,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'W m-2'
+      META(1)%ENAME  = '.fbb'
+      META(1)%VARNM='fbb'
+      META(1)%VARNL='wave dissipation in bbl'
+      META(1)%VARNS='wave_energy_dissipation_in_bottom_boundary_layer'
+      META(1)%VARNG='wave_dissipation_in_bbl'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 9990
+      CALL SET_META(7,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.000001
+      META(1)%UNITS  = 'm2 s-2'
+      META(1)%ENAME  = '.tbb'
+      META(1)%VMIN = -32000 
+      META(1)%VMAX =  32000
+      META(1)%VARND = DIRCOM
+      
+      ! First component
+      META(1)%VARNM='utbb'
+      META(1)%VARNL='eastward wave to bbl stress'
+      META(1)%VARNS='eastward_wave_to_bottom_boundary_layer_stress'
+      META(1)%VARNG='eastward_wave_to_bbl_stress'
+      META(1)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtbb'
+      META(2)%VARNL='northward wave to bbl stress'
+      META(2)%VARNS='northward_wave_to_bottom_boundary_layer_stress'
+      META(2)%VARNG='northward_wave_to_bbl_stress'
+      META(2)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
+      CALL SET_META(7,5,META)
+!
+!---------- GROUP 8 ----------------
+! 1
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.00001
+      META(1)%ENAME  = '.mss'
+      META(1)%UNITS  = '1'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 30000
+      META(1)%VARND = DIRCOM
+      WRITE(META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+      
+      ! First component
+      META(1)%VARNM='mssu'
+      META(1)%VARNL='downwave mean square slope'
+      META(1)%VARNS='x_mean_square_slope'
+      META(1)%VARNG='x_mean_square_slope'
+      META(1)%VARNC='mss=mssu+mssc'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='mssc'
+      META(2)%VARNL='crosswave mean square slope'
+      META(2)%VARNS='y_mean_square_slope'
+      META(2)%VARNG='y_mean_square_slope'
+      CALL SET_META(8,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(2)%FSC    = 1E-7     
+      META(2)%ENAME  = '.msc'
+      META(2)%UNITS  = '1'
+      META(2)%VMIN = 0 
+      META(2)%VMAX = 30000
+      META(2)%VARND = DIRCOM
+      
+      ! First component
+      META(1)%VARNM='mscx'
+      META(1)%VARNL='eastward phillips constant'
+      META(1)%VARNS='eastward_phillips_constant'
+      META(1)%VARNG='eastward_phillips_constant'
+      META(1)%VARNC='msc=mscx+mscy'
+      
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='mscy'
+      META(2)%VARNL='northward phillips constant'
+      META(2)%VARNS='northward_phillips_constant'
+      META(2)%VARNG='northward_phillips_constant'
+      META(2)%VARNC='msc=mscx+mscy'
+      CALL SET_META(8,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.msd'
+      META(1)%VARNM='mssd'
+      META(1)%VARNL='u direction for mss'
+      META(1)%VARNS='sea_surface_wave_dominant_mean_square_slope_direction'
+      META(1)%VARNG='sea_surface_wave_dominant_mean_square_slope_direction'
+      WRITE(META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 3600
+      CALL SET_META(8,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'degree'
+      META(1)%ENAME  = '.mcd'
+      META(1)%VARNM='mscd'
+      META(1)%VARNL='x direction for msc'
+      META(1)%VARNS='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+      META(1)%VARNG='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+      META(1)%VARND = DIRCOM
+      META(1)%VMIN = 0
+      META(1)%VMAX = 3600
+      CALL SET_META(8,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.qp'
+      META(1)%VARNM='qp'
+      META(1)%VARNL='peakedness'
+      META(1)%VARNS='sea_surface_wave_peakedness'
+      META(1)%VARNG='wave_peakedness'
+      META(1)%VARNC='Goda wave peakedness parameter'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32000
+      CALL SET_META(8,5,META)
+!
+!---------- GROUP 9 ----------------
+!
+! 1
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'min.'
+      META(1)%ENAME  = '.dtd'
+      META(1)%VARNM='dtd'
+      META(1)%VARNL='dynamic time step'
+      META(1)%VARNS='dynamic_time_step'
+      META(1)%VARNG='dynamic_time_step'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(9,1,META)
+! 2
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 's-1'
+      META(1)%ENAME  = '.fc'
+      META(1)%VARNM='fc'
+      META(1)%VARNL='cut off frequency'
+      META(1)%VARNS='cut_off_frequency'
+      META(1)%VARNG='cut_off_frequency'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 8000
+      CALL SET_META(9,2,META)
+! 3
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.cfx'
+      META(1)%VARNM='cfx'
+      META(1)%VARNL='maximum cfl for spatial advection'
+      META(1)%VARNS='maximum_cfl_for_spatial_advection'
+      META(1)%VARNG='maximum_cfl_for_spatial_advection'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(9,3,META)
+! 4
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.cfd'
+      META(1)%VARNM='cfd'
+      META(1)%VARNL='maximum cfl for direction advection'
+      META(1)%VARNS='maximum_cfl_for_direction_advection'
+      META(1)%VARNG='maximum_cfl_for_direction_advection'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(9,4,META)
+! 5
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = '1'
+      META(1)%ENAME  = '.cfk'
+      META(1)%VARNM='cfk'
+      META(1)%VARNL='maximum cfl for frequency advection'
+      META(1)%VARNS='maximum_cfl_for_frequency_advection'
+      META(1)%VARNG='maximum_cfl_for_frequency_advection'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 32000
+      CALL SET_META(9,5,META)
+!
+! ------ Group 10 (User defined) -------
+!
+      CALL CLEAR_META(META)
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'm'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 0
+      WRITE (META(1)%ENAME,'(A2,I2.2)') '.u'
+      WRITE (META(1)%VARNM,'(A1,I2.2)') 'u'
+      WRITE (META(1)%VARNL,'(A12,I2.2)') 'User_defined'
+      WRITE (META(1)%VARNS,'(A12,I2.2)') 'User_defined'
+      WRITE (META(1)%VARNG,'(A12,I2.2)') 'user_defined'
+      CALL SET_META(9,5,META)
+!
+      END SUBROUTINE DEFAULT_META
+
+      END MODULE W3NMLOUNFMETA
