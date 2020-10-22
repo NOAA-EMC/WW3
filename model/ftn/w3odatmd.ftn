@@ -671,6 +671,8 @@
 !
       NOGE(1) = 7
 !/BT4      NOGE(1) = 8
+!/IS2      NOGE(1) = 10    ! CB
+!/SETUP    NOGE(1) = 11    ! CB
 !
       IDOUT( 1, 1)  = 'Water depth         '
       IDOUT( 1, 2)  = 'Current vel.        '
