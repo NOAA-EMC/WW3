@@ -2043,8 +2043,9 @@
 ! NRQMAX is the maximum number of fields, it is the sum of the 
 ! sizes of scalar fields (Hs) + 2-component vectors (CUR) + 3-comp ... 
 !
-!/MPI          NRQMAX = 0 + 13 + 0 + 2+(NOGE(4)-2)*(NOSWLL+1) + 10+4 + &
-!/MPI                   6+7+1 + 5+5 + 2+2 + 5+0 + NOEXTR
+!/MPI          NRQMAX = 1+0+0 + 18+0+0 + 0+0+0 +                     &
+!/MPI                   2+(NOGE(4)-2)*(NOSWLL+1) + 11+3+1 +          &
+!/MPI                   10+7+1 + 5+4+1 + 5+2+0 + 5+NOEXTR
 !/MPI          DO IFJ=1,5
 !/MPI            IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
 !/MPI                                    E3DF(3,IFJ) - E3DF(2,IFJ) + 1

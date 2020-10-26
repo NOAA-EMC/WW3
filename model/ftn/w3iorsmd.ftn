@@ -1004,23 +1004,12 @@
             IF (OARST) THEN
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading CUR'
               IF ( FLOGRR(1,2) ) THEN
-                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
-                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
-                DO I=1, NSEALM
-                  J = IAPROC + (I-1)*NAPROC
-                  IF (J .LE. NSEA) THEN
-                    CX(I) = TMP(J)
-                    CY(I) = TMP2(J)
-                  ENDIF
-                ENDDO
+                READ (NDSR,ERR=802,IOSTAT=IERR) CX(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) CY(1:NSEA)
               ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading ICEF'
               IF ( FLOGRR(1,9) ) THEN
-                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
-                DO I=1, NSEALM
-                  J = IAPROC + (I-1)*NAPROC
-                  IF (J .LE. NSEA) ICEF(I) = TMP(J)
-                ENDDO
+                READ (NDSR,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
               ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading HS'
               IF ( FLOGRR(2,1) ) THEN

@@ -2977,7 +2977,7 @@
               ENAME  = '.usp'
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
-              FSC    = 0.000001
+              FSC    = 0.01
               UNITS  = 'm2 s-2'
               ENAME  = '.toc'
 !/RTD              ! Rotate x,y vector back to standard pole
