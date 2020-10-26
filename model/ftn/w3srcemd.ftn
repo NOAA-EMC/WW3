@@ -643,7 +643,9 @@
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', USTAR
 !/DEBUGSRC     END IF
 
+!/ST4      DLWMEAN= 0.
 !/ST4      BRLAMBDA(:)=0.
+!/ST4      WHITECAP(:)=0.
 !
 ! 1.c Set mean parameters
 !
