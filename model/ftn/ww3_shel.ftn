@@ -1957,7 +1957,7 @@
 !/T                        IDSTR(2), INFLAGS1(2), TC0, TCN,  &
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
-!/T                        IDSTR(5), INFLAGS1(5), TUN,       &
+!/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
 !/T                        IDSTR(6), INFLAGS1(6), TRN,       &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
@@ -2251,6 +2251,49 @@
 !/NCC                     WRITE(9752) TIN, ICEI
               END IF
 
+! TAU : atmospheric momentum
+            ELSE IF ( J .EQ. 5 ) THEN
+              IF ( FLH(J) ) THEN
+                CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                             TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                             TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
+!
+!/SMC !!Li  Reshape the CX0/N CY0/N space for sea-point only current. 
+!/SMC !!Li              JGLi26Jun2018. 
+!/SMC              ELSE IF( FSWND ) THEN
+!/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+!/SMC                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TU0, &
+!/SMC                      UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR) 
+!/SMC !!Li  
+              ELSE
+!/OASIS                COUPL_COMM = MPI_COMM
+!/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+                CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                             NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                             TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX,    &
+                             IERR, FLAGSC(J)                            &
+!/OASACM                             , COUPL_COMM                               &
+                             )
+              END IF
+
+! RHO : air density
+            ELSE IF ( J .EQ. 6 ) THEN
+              IF ( FLH(J) ) THEN
+                CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
+                             TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                             TRT, XXX, XXX, XXX, TRN, XXX, XXX, WLEV, IERR)
+              ELSE
+!/OASIS                COUPL_COMM = MPI_COMM
+!/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+                CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                             NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
+                             TRT, XXX, XXX, XXX, TRN, XXX, XXX, WLEV,   &
+                             IERR, FLAGSC(J)                            &
+!/OASASCM                             , COUPL_COMM                               &
+                             )
+                IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
+              END IF
+
 ! Assim data
             ELSE IF ( J .EQ. 7 ) THEN
               CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
@@ -2371,7 +2414,7 @@
 !/T                        IDSTR(2), INFLAGS1(2), TC0, TCN,  &
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
-!/T                        IDSTR(5), INFLAGS1(5), TUN,       &
+!/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
 !/T                        IDSTR(6), INFLAGS1(6), TRN,       &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
