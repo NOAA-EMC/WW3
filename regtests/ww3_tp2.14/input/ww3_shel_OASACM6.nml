@@ -22,8 +22,8 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%START   = '20110902 010000'
-  DOMAIN%STOP    = '20110902 020000'
+  DOMAIN%START   = '20110902 000000'
+  DOMAIN%STOP    = '20110902 010000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -236,13 +236,14 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  = .FALSE.
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
   TYPE%COUPLING%SENT       = 'ACHA'
   TYPE%COUPLING%RECEIVED   = 'WND'
-  TYPE%COUPLING%COUPLET0   = .TRUE.
+  TYPE%COUPLING%COUPLET0  = .TRUE.
 /
 
 ! -------------------------------------------------------------------- !
@@ -279,9 +280,8 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '20110902 010000' '180' '20110902 020000'
-  DATE%RESTART        = '20110902 020000' '3600' '20110902 030000'
-  DATE%COUPLING       = '20110902 010000' '360' '20110902 020000'
+  DATE%FIELD          = '20110902 000000' '180' '20110902 010000'
+  DATE%COUPLING       = '20110902 000000' '180' '20110902 010000'
 /
 
 ! -------------------------------------------------------------------- !

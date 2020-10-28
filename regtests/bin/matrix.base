@@ -2045,6 +2045,10 @@
    echo "$rtst -r ww3_grid -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
    echo "$rtst -r ww3_shel -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
    echo "$rtst -r ww3_ounf -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mv ww3_tp2.14/input/ww3_ounf.inp ww3_tp2.14/input/ww3_ounf.inp.bak"                                  >> matrix.body
+   echo "cp ww3_tp2.14/input/ww3_ounf.inp-OASACM6 ww3_tp2.14/input/ww3_ounf.inp"                              >> matrix.body
+   echo "$rtst -g OASACM6  -s OASACM6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mv ww3_tp2.14/input/ww3_ounf.inp.bak ww3_tp2.14/input/ww3_ounf.inp"                                  >> matrix.body
    echo "$rtst             -s OASOCM  -w work_OASOCM  -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
    echo "$rtst             -s OASICM  -w work_OASICM  -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
  fi

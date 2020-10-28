@@ -15,7 +15,7 @@ $ Include ice and mud parameters only if IC1/2/3/4 used :
    F F     Mud parameter 3
    F F     Water levels
    F F     Currents
-   F F     Winds
+   C F     Winds
    F       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
@@ -82,7 +82,7 @@ $          requested (i.e., no 'STOPSTRING' needed).
 $                               The raw data file is out_pnt.ww3, 
 $                               see w3iogo.ftn for additional doc.
 $
-   20110902 000000 0   20110902 010000
+   20110902 000000 0   20110902 020000
 $    -4.97 48.29  '62069'
 $    -6.00 48.29  'Boundary'
 $     0.0   0.0   'STOPSTRING'
@@ -93,48 +93,47 @@ $          Flag for formatted input file.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
 $
-   20110902 000000   0  20110902 010000
+   20110902 000000   0  20110902 020000
 $     T
 $
 $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
 $
-   20110902 010000   3600  20110902 020000 F T
-CHA
+   20110902 000000   0  20110902 020000
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
 $                               w3iobcmd.ftn for additional doc.
 $
-   20110902 000000   0  20110902 010000
+   20110902 000000   0  20110902 020000
 $
 $ Type 6 : Separated wave field data (dummy for now).
 $          First, last step IX and IY, flag for formatted file
 $
-   20110902 000000   0  20110902 010000
+   20110902 000000   0  20110902 020000
 $       0 999 1 0 999 1 T
 $
 $ Type 7 : Coupling. (must be fully commented if not used with switch COU)
 $          Namelist type selection is used here.
 $          Diagnostic fields to exchange. (see namcouple for more information)
 $
-$   20110902 000000  360  20110902 010000
-$ N
+   20110902 000000  180  20110902 010000 T
+ N
 $
 $   - Sent fields by ww3:
 $       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
 $       - Atmospheric model : ACHA AHS TP (or FP) FWS
 $       - Ice model : IC5 TWI
 $
-$ ACHA
+ ACHA
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
 $       - Atmospheric model : WND
 $       - Ice model : ICE IC1 IC5
 $
-$ WND
+ WND
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
