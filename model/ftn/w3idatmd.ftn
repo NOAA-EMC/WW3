@@ -75,7 +75,9 @@
 !      FLCUR     Log.  Public   Flag for current input.
 !      FLWIND    Log.  Public   Flag for wind input.
 !      FLICE     Log.  Public   Flag for ice input.
-!      INFLAGS1  L.A.  Public   Array consolidating the above four 
+!      FLTAUA    Log.  Public   Flag for atmospheric momentum input
+!      FLRHOA    Log.  Public   Flag for air density input
+!      INFLAGS1  L.A.  Public   Array consolidating the above six 
 !                               flags, as well as four additional
 !                               data flags.
 !      INFLAGS2  L.A.  Public   Like INFLAGS1 but does *not* get changed
@@ -85,7 +87,7 @@
 !                               input fields.  At present this is
 !                               hardwired below. Field-related arrays
 !                               (e.g., INFLAGS1) will be allocated from
-!                               JFIRST:7 (e.g., ALLOCATE(INFLAGS1(JFIRST:7))).
+!                               JFIRST:9 (e.g., ALLOCATE(INFLAGS1(JFIRST:9))).
 !       CXTIDE    R.A.  Public   Tidal constituents of X current component
 !       CYTIDE    R.A.  Public   Tidal constituents of Y current component
 !       WLTIDE    R.A.  Public   Tidal constituents of water level
@@ -116,7 +118,7 @@
 !     - The number of grids is taken from W3GDATMD, and needs to be
 !       set first with W3DIMG.
 !
-!     - INFLAGS1 dimensioning is hardwired as INFLAGS1(-7:12) where lowest possible 
+!     - INFLAGS1 dimensioning is hardwired as INFLAGS1(-7:14) where lowest possible 
 !       value of JFIRST is JFIRST=-7
 !
 !  6. Switches :
@@ -146,7 +148,7 @@
 !/ Data structure INPUT
 !/
       TYPE INPUT
-        INTEGER               :: TFN(2,-7:8), TC0(2), TW0(2),     &
+        INTEGER               :: TFN(2,-7:10), TC0(2), TW0(2),        &
                                  TDN(2), TG0(2)
         REAL                  :: GA0, GD0, GAN, GDN
 !/WRST        REAL, POINTER         :: WXNwrst(:,:),WYNwrst(:,:)
@@ -163,8 +165,8 @@
 !/WRST        LOGICAL               :: WRSTIINIT=.FALSE.
 ! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
-        LOGICAL               :: INFLAGS1(-7:12), FLAGSC(-7:12),      &
-                                 INFLAGS2(-7:12)
+        LOGICAL               :: INFLAGS1(-7:14), FLAGSC(-7:14),      &
+                                 INFLAGS2(-7:14)
       END TYPE INPUT
 !/
 !/ Data storage
@@ -449,10 +451,10 @@
 !
       FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
       FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
-!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(9)
-!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(10)
-!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(11)
-!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(12)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(11)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(12)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(13)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(14)
 !/TIDE!
 !/TIDE      FLLEVTIDE = FLAGSTIDE(1)
 !/TIDE      FLCURTIDE = FLAGSTIDE(2)
@@ -461,6 +463,8 @@
  
       FLWIND => INPUTS(IMOD)%INFLAGS1(3)
       FLICE  => INPUTS(IMOD)%INFLAGS1(4)
+      FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
+      FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 !
 ! notes: future improvement: flags for ICEPx should be 
 !     "all or nothing" rather than 5 individual flags
@@ -724,10 +728,12 @@
       TCN    => INPUTS(IMOD)%TFN(:,2)
       TWN    => INPUTS(IMOD)%TFN(:,3)
       TIN    => INPUTS(IMOD)%TFN(:,4)
-      T0N    => INPUTS(IMOD)%TFN(:,5)
-      T1N    => INPUTS(IMOD)%TFN(:,6)
-      T2N    => INPUTS(IMOD)%TFN(:,7)
-      TGN    => INPUTS(IMOD)%TFN(:,8)
+      TUN    => INPUTS(IMOD)%TFN(:,5)
+      TRN    => INPUTS(IMOD)%TFN(:,6)
+      T0N    => INPUTS(IMOD)%TFN(:,7)
+      T1N    => INPUTS(IMOD)%TFN(:,8)
+      T2N    => INPUTS(IMOD)%TFN(:,9)
+      TGN    => INPUTS(IMOD)%TFN(:,10)
 !
       GA0    => INPUTS(IMOD)%GA0
       GD0    => INPUTS(IMOD)%GD0
@@ -751,13 +757,15 @@
 !
       FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
       FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
-!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(9)
-!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(10)
-!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(11)
-!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(12)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(11)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(12)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(13)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(14)
 
       FLWIND => INPUTS(IMOD)%INFLAGS1(3)
       FLICE  => INPUTS(IMOD)%INFLAGS1(4)
+      FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
+      FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 !
       IF ( IINIT ) THEN
 !

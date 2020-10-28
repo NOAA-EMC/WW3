@@ -247,7 +247,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*65, FROMF*4, NAMEF*65
-      CHARACTER(LEN=12)       :: IDSTR1(-7:5)
+      CHARACTER(LEN=12)       :: IDSTR1(-7:7)
       CHARACTER(LEN=15)       :: IDSTR3(3)
       CHARACTER(LEN=32)       :: FORMT(2), FORMF(2)
       CHARACTER(LEN=20)       :: IDSTR2(5)
@@ -267,7 +267,8 @@
                     'mud thkness ' , 'mud viscos. ' ,                 &
                     'ice         ' , 'water levels' ,                 &
                     'winds       ' , 'currents    ' ,                 &
-                    'data        ' /
+                    'data        ' , 'momentum    ' ,                 &
+                    'air density ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
                     'data (assimilation) ' /
@@ -375,6 +376,10 @@
           IFLD    = 4
         ELSE IF ( IDFLD.EQ.'DAT' ) THEN
           IFLD    = 5
+        ELSE IF ( IDFLD.EQ.'TAU' ) THEN
+          IFLD    = 6
+        ELSE IF ( IDFLD.EQ.'RHO' ) THEN
+          IFLD    = 7
         ELSE
           WRITE (NDSE,1030) IDFLD
           CALL EXTCDE ( 1 )

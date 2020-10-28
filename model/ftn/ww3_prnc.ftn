@@ -265,7 +265,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*80, NAMEF*80, IDTIME2*23
-      CHARACTER*14            :: IDSTR1(-7:5)
+      CHARACTER*14            :: IDSTR1(-7:7)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(6)
@@ -312,10 +312,11 @@
       DATA IDSTR1 / 'ice thickness ' , 'ice viscosity' ,              &
                     'ice density   ' , 'ice modulus  ' ,              &
                     'ice flow diam.' , 'mud density  ' ,              &
-                    'mud thickness ', 'mud viscosity ' ,              &
+                    'mud thickness ' , 'mud viscosity ',              &
                     'ice conc.     ' , 'water levels ' ,              &
                     'winds         ' , 'currents     ' ,              &
-                    'data          ' /
+                    'data          ' , 'momentum     ' ,              &
+                    'air density   ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
                     'data (assimilation) ' , 'pre-pro. file + tide'  /
@@ -472,6 +473,14 @@
            IFLD = 5
            ITYPE = 5
            NFIELDS = 1
+         ELSE IF (NML_FORCING%FIELD%ATM_MOMENTUM) THEN
+           IDFLD = 'TAU'
+           IFLD = 6 
+           NFIELDS = 2
+         ELSE IF (NML_FORCING%FIELD%AIR_DENSITY) THEN
+           IDFLD = 'RHO'
+           IFLD = 7
+           NFIELDS = 1
          ELSE
             GOTO 810
          END IF ! NML_FORCING
@@ -568,6 +577,10 @@
             IFLD    = 4
           ELSE IF ( IDFLD.EQ.'DAT' ) THEN
             IFLD    = 5
+          ELSE IF ( IDFLD.EQ.'TAU' ) THEN
+            IFLD    = 6
+          ELSE IF ( IDFLD.EQ.'RHO' ) THEN
+            IFLD    = 7
           ELSE
             WRITE (NDSE,1030) IDFLD
             CALL EXTCDE ( 30 )

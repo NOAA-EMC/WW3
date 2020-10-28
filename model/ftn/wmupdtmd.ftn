@@ -134,7 +134,7 @@
 !
 !  7. Remarks :
 !
-!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where  
+!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:9) where  
 !       lowest possible value of JFIRST is JFIRST=-7
 !
 !  8. Structure :
@@ -184,7 +184,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTTST
       LOGICAL                 :: FIRST
-      CHARACTER(LEN=13)       :: IDFLDS(-7:8)
+      CHARACTER(LEN=13)       :: IDFLDS(-7:10)
       CHARACTER(LEN=23)       :: DTME21
 !
       DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
@@ -194,6 +194,7 @@
                     'mud viscos.  ' ,                                 &
                     'water levels ' , 'currents     ' ,               &
                     'winds        ' , 'ice fields   ' ,               &
+                    'momentum     ' , 'air density  ' ,               &
                     'mean param.  ' , '1D spectra   ' ,               &
                     '2D spectra   ' , 'grid speed   ' /
 !/
@@ -241,15 +242,17 @@
 !/T      WRITE (MDST,9003) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
 !/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
-!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), INFLAGS1(5), T0N
-!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), T1N
-!/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T2N
-!/T      WRITE (MDST,9003) 8, 'MOV'        , INFLAGS1(8), TG0, TGN
+!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), INFLAGS1(5), TUN
+!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
+!/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
+!/T      WRITE (MDST,9002) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
+!/T      WRITE (MDST,9002) 9, IDINP(IMOD,9), INFLAGS1(9), T2N
+!/T      WRITE (MDST,9003) 10, 'MOV'        , INFLAGS1(10), TG0, TGN
 !/T      WRITE (MDST,9004)    'GRD', NX, NY
 !
 ! 1.  Loop over input types ------------------------------------------ /
 !
-      DO J=JFIRST, 8
+      DO J=JFIRST, 10
 !
 ! 1.a Check if update needed
 !
@@ -362,7 +365,7 @@
 !
       TDATA  = ETIME
 !
-      DO J=JFIRST, 8
+      DO J=JFIRST, 10
         IF ( .NOT. INFLAGS1(J) ) CYCLE
         DTTST  = DSEC21 ( TFN(:,J) , TDATA )
         IF ( DTTST.GT.0. .AND. .NOT.  ( (FLLSTL .AND. J.EQ.1) .OR.    &
@@ -375,7 +378,7 @@
 !
       TDN    = TDATA
       CALL TICK21 ( TDN, 1. )
-      DO J=5, 7
+      DO J=7, 9
         IF ( INFLAGS1(J) ) THEN
             DTTST  = DSEC21 ( TFN(:,J) , TDN )
             IF ( DTTST.GT.0. ) TDN = TFN(:,J)
@@ -397,10 +400,10 @@
 !/T      WRITE (MDST,9072) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
 !/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
-!/T      WRITE (MDST,9071) 5, IDINP(IMOD,5), INFLAGS1(5), T0N
-!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), INFLAGS1(6), T1N
-!/T      WRITE (MDST,9073) 7, IDINP(IMOD,7), INFLAGS1(7), T2N, TDN
-!/T      WRITE (MDST,9072) 8, 'MOV'        , INFLAGS1(8), TG0, TGN
+!/T      WRITE (MDST,9071) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
+!/T      WRITE (MDST,9071) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
+!/T      WRITE (MDST,9073) 9, IDINP(IMOD,9), INFLAGS1(9), T2N, TDN
+!/T      WRITE (MDST,9072) 10, 'MOV'        , INFLAGS1(10), TG0, TGN
 !
       RETURN
 !       
@@ -644,7 +647,7 @@
 !
 ! 5.  Data type 0 ---------------------------------------------------- /
 !
-        CASE (5)
+        CASE (7)
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                         TIME, T0N, RCLD(1), NDT(1), NDTNEW,           &
                         DATA0, IERR )
@@ -663,7 +666,7 @@
 !
 ! 6.  Data type 1 ---------------------------------------------------- /
 !
-        CASE ( 6 )
+        CASE ( 8 )
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                         TIME, T1N, RCLD(2), NDT(2), NDTNEW,           &
                         DATA1, IERR )
@@ -682,7 +685,7 @@
 !
 ! 7.  Data type 2 ---------------------------------------------------- /
 !
-        CASE ( 7 )
+        CASE ( 9 )
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                         TIME, T2N, RCLD(3), NDT(3), NDTNEW,           &
                         DATA2, IERR )
@@ -701,7 +704,7 @@
 !
 ! 8. Moving grid data ----------------------------------------------- /
 !
-        CASE ( 8 )
+        CASE ( 10 )
 ! notes: 
 ! SUBROUTINE W3FLDM in w3fldsmd.ftn : 
 !<       INTEGER, INTENT(INOUT)  :: NH, THO(2,4,NHM), TF0(2), TFN(2)
@@ -962,17 +965,17 @@
 !
 ! 2.e Assimilation data 0
 !
-        CASE (5)
+        CASE (7)
           GOTO 2999
 !
 ! 2.f Assimilation data 1
 !
-        CASE (6)
+        CASE (8)
           GOTO 2999
 !
 ! 2.g Assimilation data 2
 !
-        CASE (7)
+        CASE (9)
           GOTO 2999
 !
       END SELECT

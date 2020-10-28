@@ -945,7 +945,7 @@
 !
           VGX = 0.
           VGY = 0. 
-          IF(INFLAGS1(8)) THEN
+          IF(INFLAGS1(10)) THEN
               DTTST1 = DSEC21 ( TIME, TGN ) 
               DTTST2 = DSEC21 ( TG0, TGN )
               FAC    = DTTST1 / MAX ( 1. , DTTST2 )
