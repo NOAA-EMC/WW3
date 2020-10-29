@@ -86,6 +86,10 @@
 !                               in W3UWND                       (rad)
 !      AS0-I     R.A.  Public   Stability par. (initial and incr.)
 !                               in W3UWND                      (degr)
+!      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
+!                               and inc.) in W3UTAUA.
+!      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
+!                               increment) in W3UTAUA.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
 !
 !     Fields of mean wave parameters:
@@ -352,6 +356,7 @@
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
+                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
 ! Output fields group 1)
@@ -524,6 +529,7 @@
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
+                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
@@ -835,7 +841,7 @@
                           USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
-      USE W3IDATMD, ONLY: FLCUR, FLWIND
+      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -894,7 +900,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
-!     Call W3SETA to assure of pointes FLCUR an FLWND
+!     Call W3SETA to assure of pointes FLCUR, FLWND, and FLTAUA
 !
       CALL W3SETA ( IMOD, NDSE, NDST )
 
@@ -1267,6 +1273,15 @@
                          WADATS(IMOD)%UDI(NSEA) ,           &
                          WADATS(IMOD)%AS0(NSEA) ,           &
                          WADATS(IMOD)%ASI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
+!
+          IF ( FLTAUA  ) THEN
+              ALLOCATE ( WADATS(IMOD)%MA0(NSEA) ,           &
+                         WADATS(IMOD)%MAI(NSEA) ,           &
+                         WADATS(IMOD)%MD0(NSEA) ,           &
+                         WADATS(IMOD)%MDI(NSEA) ,           &
                          STAT=ISTAT )
               CHECK_ALLOC_STATUS ( ISTAT )
             END IF
@@ -2803,6 +2818,13 @@
                   UDI    => WADATS(IMOD)%UDI
                   AS0    => WADATS(IMOD)%AS0
                   ASI    => WADATS(IMOD)%ASI
+                END IF
+!
+              IF ( INPUTS(IMOD)%INFLAGS1(5) ) THEN
+                  MA0    => WADATS(IMOD)%MA0
+                  MAI    => WADATS(IMOD)%MAI
+                  MD0    => WADATS(IMOD)%MD0
+                  MDI    => WADATS(IMOD)%MDI
                 END IF
 !
 !/PR1              IS0    => WADATS(IMOD)%IS0

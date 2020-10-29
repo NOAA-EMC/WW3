@@ -747,7 +747,7 @@
                   WRITEBUFF(:) = 0.
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           & 
-                          TLEV, TICE                                  
+                          TLEV, TICE, TRHO 
                   DO IPART=1,NPART
                     NREC  = NREC + 1
                     RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -911,7 +911,7 @@
           IF (TYPE.EQ.'FULL') THEN
               RPOS = 1_8 + LRECL*(NREC-1_8)
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
-                      TLEV, TICE
+                      TLEV, TICE, TRHO
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WLV'
               DO IPART=1,NPART
                 NREC  = NREC + 1
@@ -1210,6 +1210,8 @@
               TLEV(2) =  0
               TICE(1) = -1
               TICE(2) =  0
+              TRHO(1) = -1
+              TTHO(2) =  0
               TIC1(1) = -1
               TIC1(2) =  0
               TIC5(1) = -1

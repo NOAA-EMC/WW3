@@ -121,6 +121,7 @@
 !                               and output for areas of grid overlap.
 !      IFLSTI    L.A.  Public   FLags for last ice per grid.
 !      IFLSTL    L.A.  Public   FLags for last level per grid.
+!      IFLSTR    L.A.  Public   FLags for last air density per grid.
 !
 !      MDATA     TYPE  Public   Data structure for grid dependent data.
 !      MDATAS    MDATA Public   Array of data structures.
@@ -154,6 +155,7 @@
 !                Log.  Public   Flags for array initializations.
 !      FLLSTI    Log.  Public   FLag for last ice per grid.
 !      FLLSTL    Log.  Public   FLag for last level per grid.
+!      FLLSTR    Log.  Public   FLag for last air density per grid.
 !
 !      NMV       Int.  Public   Number of moving grid data.
 !      TMV       I.A.  Public   Moving grid times.
@@ -316,7 +318,7 @@
       REAL, ALLOCATABLE       :: DTRES(:)
       LOGICAL                 :: FLGBDI=.FALSE., FLGHG1, FLGHG2
       LOGICAL, ALLOCATABLE    :: RESPEC(:,:), BCDUMP(:),              &
-                                 IFLSTI(:), IFLSTL(:)
+                                 IFLSTI(:), IFLSTL(:), IFLSTR(:)
       CHARACTER(LEN=3), ALLOCATABLE :: IDINP(:,:)
 !/
 !/ Data structures
@@ -332,8 +334,8 @@
                                  AMV(:,:), DMV(:,:)
         REAL, POINTER         :: MAPBDI(:,:), MAPODI(:,:)
 !/PDLIB     INTEGER, POINTER    :: SEA_IPGL(:), SEA_IPGL_TO_PROC(:)
-        LOGICAL               :: MINIT, MSKINI, FLLSTL, FLLSTI,       &
-                                 FLDAT0, FLDAT1, FLDAT2
+        LOGICAL               :: MINIT, MSKINI, FLLSTL, FLLSTR,       &
+                                 FLLSTI, FLDAT0, FLDAT1, FLDAT2
 !/MPI        LOGICAL               :: FBCAST
       END TYPE MDATA
 !
@@ -386,7 +388,7 @@
                                  AMV(:,:), DMV(:,:)
       REAL, POINTER           :: MAPBDI(:,:), MAPODI(:,:)
 !/PDLIB      INTEGER, POINTER    :: SEA_IPGL(:), SEA_IPGL_TO_PROC(:)
-      LOGICAL, POINTER        :: MINIT, FLLSTL, FLLSTI,               &
+      LOGICAL, POINTER        :: MINIT, FLLSTL, FLLSTR, FLLSTI,       &
                                  FLDAT0, FLDAT1, FLDAT2
 !/MPI      LOGICAL, POINTER        :: FBCAST
 !/
@@ -483,7 +485,7 @@
       ALLOCATE ( MDATAS(NGRIDS), BPSTGE(NGRIDS,NGRIDS),               &
                  HGSTGE(NGRIDS,NGRIDS), EQSTGE(NGRIDS,NGRIDS),        &
                  BCDUMP(NRGRD), IFLSTI(NRINP), IFLSTL(NRINP),         &
-                 STAT=ISTAT )
+                 IFLSTR(NRINP), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !/MPI      ALLOCATE ( NBISTA(NGRIDS), HGHSTA(NGRIDS), EQLSTA(NGRIDS), &
 !/MPI                 STAT=ISTAT )
@@ -499,6 +501,7 @@
 !
       IFLSTI = .FALSE.
       IFLSTL = .FALSE.
+      IFLSTR = .FALSE.
 !
       DO I=1, NGRIDS
         MDATAS(I)%MINIT  = .FALSE.
@@ -996,6 +999,7 @@
       MINIT  => MDATAS(IMOD)%MINIT
       FLLSTL => MDATAS(IMOD)%FLLSTL
       FLLSTI => MDATAS(IMOD)%FLLSTI
+      FLLSTR => MDATAS(IMOD)%FLLSTR
       MAPBDI => MDATAS(IMOD)%MAPBDI
       MAPODI => MDATAS(IMOD)%MAPODI
 !/PDLIB      SEA_IPGL => MDATAS(IMOD)%SEA_IPGL

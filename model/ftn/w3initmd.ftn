@@ -348,7 +348,7 @@
                           ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
                           FLCK, NK, NTH, NSPEC, SIG, GNAME
 !/PDLIB     USE W3GDATMD, ONLY : FLCTH
-      USE W3WDATMD, ONLY: TIME, TLEV, TICE, WLV, UST, USTDIR, VA
+      USE W3WDATMD, ONLY: TIME, TLEV, TICE, TRHO, WLV, UST, USTDIR, VA
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NDS, NTPROC,      &
                           NAPROC, IAPROC, NAPLOG, NAPOUT, NAPERR,     &
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
@@ -361,8 +361,8 @@
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
-      USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLMDN, FLMTH,  &
-                          FLMVS, FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
+      USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLRHOA, FLMDN, &
+                          FLMTH, FLMVS, FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
       USE W3DISPMD, ONLY: WAVNU1, WAVNU3
       USE W3PARALL, ONLY : AC_tot
       USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
@@ -1313,6 +1313,10 @@
           IF (.NOT. FLWIND) WRITE (NDSO,973) 'No'
           IF (   FLICE    ) WRITE (NDSO,974) 'Prescribed'
           IF (.NOT. FLICE ) WRITE (NDSO,974) 'No'
+          IF (   FLTAUA   ) WRITE (NDSO,988) 'Prescribed'
+          IF (.NOT. FLTAUA) WRITE (NDSO,988) 'No'
+          IF (   FLRHOA   ) WRITE (NDSO,989) 'Prescribed'
+          IF (.NOT. FLRHOA) WRITE (NDSO,989) 'No'
 !
           IF (   FLMDN    ) WRITE (NDSO,9972) 'Prescribed'
           IF (.NOT. FLMDN ) WRITE (NDSO,9972) 'No'
@@ -1382,8 +1386,12 @@
               CALL STME21 ( TICE , DTME21 )
               WRITE (NDSO,983) DTME21
             END IF
+          IF (FLRHOA) THEN
+              CALL STME21 ( TRHO , DTME21 )
+              WRITE (NDSO,984) DTME21
+            END IF
 !
-          WRITE (NDSO,984)
+          WRITE (NDSO,985)
 !
         END IF
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.8'
@@ -1460,6 +1468,8 @@
   972 FORMAT ( ' ',A,' curents.')
   973 FORMAT ( ' ',A,' winds.')
   974 FORMAT ( ' ',A,' ice fields.')
+  988 FORMAT ( ' ',A,' momentum')
+  989 FORMAT ( ' ',A,' air density')
   9972 FORMAT( ' ',A,' mud density.')
   9971 FORMAT( ' ',A,' mud thickness.')
   9970 FORMAT( ' ',A,' mud viscosity.')
@@ -1489,8 +1499,9 @@
   981 FORMAT (/' Initial time     : ',A)
   982 FORMAT ( ' Water level time : ',A)
   983 FORMAT ( ' Ice field time   : ',A)
+  984 FORMAT ( ' Air density time : ',A)
 !
-  984 FORMAT (//                                                      &
+  985 FORMAT (//                                                      &
         37X,'  |       input       |     output    |'/                &
         37X,'  |-------------------|---------------|'/                &
          2X,'   step | pass |    date      time   |',                 &

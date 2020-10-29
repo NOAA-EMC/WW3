@@ -161,13 +161,14 @@
       USE W3GDATMD, ONLY: NX, NY, FILEXT
       USE W3WDATMD, ONLY: TIME
 
-      USE W3IDATMD, ONLY: INFLAGS1, TLN, TC0, TCN, TW0, TWN, TIN, T0N,   &
-                          T1N, T2N, TG0, TGN, TFN, TDN, TTN, TVN,     &
-                          TZN, TI1, TI2, TI3, TI4, TI5, JFIRST
+      USE W3IDATMD, ONLY: INFLAGS1, TLN, TC0, TCN, TW0, TWN, TU0,     &
+                          TUN, TIN, T0N, T1N, T2N, TG0, TGN, TFN,     &
+                          TDN, TTN, TVN, TZN, TI1, TI2, TI3, TI4,     &
+                          TI5, JFIRST
 
       USE WMMDATMD, ONLY: IMPROC, MDSO, MDSS, MDST, MDSE, NMPSCR,     &
-                          NMPERR, ETIME, FLLSTL, FLLSTI, INPMAP,      &
-                          IDINP, IFLSTI, IFLSTL
+                          NMPERR, ETIME, FLLSTL, FLLSTR, FLLSTI,      &
+                          INPMAP, IDINP, IFLSTI, IFLSTL, IFLSTR
 !/
       IMPLICIT NONE
 !/
@@ -220,6 +221,7 @@
 !
       FLLSTL = .FALSE.
       FLLSTI = .FALSE.
+      FLLSTR = .FALSE.
       IERR   = 0
 !
 ! 0.c Output
@@ -242,7 +244,7 @@
 !/T      WRITE (MDST,9003) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
 !/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
-!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), INFLAGS1(5), TUN
+!/T      WRITE (MDST,9003) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
 !/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
 !/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
 !/T      WRITE (MDST,9002) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
@@ -300,7 +302,8 @@
                 DTTST  = 0.
               ELSE
                 IF ( FIRST .OR. ( J.EQ.1 .AND. IFLSTL(-JJ) )          &
-                           .OR. ( J.EQ.4 .AND. IFLSTI(-JJ) ) ) THEN
+                           .OR. ( J.EQ.4 .AND. IFLSTI(-JJ) )          &
+                           .OR. ( J.EQ.6 .AND. IFLSTR(-JJ) ) ) THEN
                     DTTST  = 1.
                   ELSE
                     DTTST  = DSEC21 ( TIME , TFN(:,J) )
@@ -309,6 +312,7 @@
 !
             IF ( J .EQ. 1 ) FLLSTL = IFLSTL(-JJ)
             IF ( J .EQ. 4 ) FLLSTI = IFLSTI(-JJ)
+            IF ( J .EQ. 6 ) FLLSTR = IFLSTR(-JJ)
 !
 !/T            WRITE (MDST,9031) J, IDINP(JJ,J), DTTST, TFN(:,J)
 !
@@ -324,6 +328,7 @@
 !
                 IF ( J .EQ. 1 ) IFLSTL(-JJ) = FLLSTL
                 IF ( J .EQ. 4 ) IFLSTI(-JJ) = FLLSTI
+                IF ( J .EQ. 6 ) IFLSTR(-JJ) = FLLSTR
 !
               END IF
 !
@@ -369,7 +374,8 @@
         IF ( .NOT. INFLAGS1(J) ) CYCLE
         DTTST  = DSEC21 ( TFN(:,J) , TDATA )
         IF ( DTTST.GT.0. .AND. .NOT.  ( (FLLSTL .AND. J.EQ.1) .OR.    &
-                                        (FLLSTI .AND. J.EQ.4) ) ) THEN
+                                        (FLLSTI .AND. J.EQ.4) .OR.    &
+                                        (FLLSTR .AND. J.EQ.6) ) ) THEN
             TDATA  = TFN(:,J)
           END IF
         END DO
@@ -400,6 +406,8 @@
 !/T      WRITE (MDST,9072) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
 !/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
+!/T      WRITE (MDST,9072) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
+!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
 !/T      WRITE (MDST,9071) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
 !/T      WRITE (MDST,9071) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
 !/T      WRITE (MDST,9073) 9, IDINP(IMOD,9), INFLAGS1(9), T2N, TDN
@@ -516,15 +524,15 @@
       USE W3GDATMD, ONLY: NX, NY
       USE W3WDATMD, ONLY: TIME
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
-                          TW0, TWN, WX0, WXN, WY0, WYN, DT0, DTN,     &
-                          TIN, ICEI, T0N, T1N, T2N, TDN, INFLAGS1,       &
-                          TG0, TGN, GA0, GD0, GAN, GDN, BERGI,        &
-                          TTN, MUDT, TVN, MUDV, TZN, MUDD,            &
-                          TI1, TI2, TI3, TI4, TI5,                    &
-                          ICEP1, ICEP2,ICEP3, ICEP4, ICEP5
+                          TW0, TWN, TU0, TUN, WX0, WXN, WY0, WYN,     &
+                          DT0, DTN, TIN, TRN, ICEI, UX0, UXN, UY0,    &
+                          UYN, RAIR, T0N, T1N, T2N, TDN, INFLAGS1,    &
+                          TG0, TGN, GA0, GD0, GAN, GDN, BERGI, TTN,   &
+                          MUDT, TVN, MUDV, TZN, MUDD, TI1, TI2, TI3,  &
+                          TI4, TI5, ICEP1, ICEP2,ICEP3, ICEP4, ICEP5
       USE WMMDATMD, ONLY: IMPROC, NMPERR, MDST, MDSE, MDSF, ETIME,    &
-                          FLLSTL, FLLSTI, RCLD, NDT, DATA0, DATA1,    &
-                          DATA2, NMV, NMVMAX, TMV, AMV, DMV
+                          FLLSTL, FLLSTI, FLLSTR, RCLD, NDT, DATA0,   &
+                          DATA1, DATA2, NMV, NMVMAX, TMV, AMV, DMV
 !/
       IMPLICIT NONE
 !/
@@ -645,7 +653,22 @@
                        XXX, XXX, XXX, TIN, XXX , BERGI, ICEI, IERR)
           IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !
-! 5.  Data type 0 ---------------------------------------------------- /
+! 5.  Momentum ------------------------------------------------------- /
+!
+        CASE (5)
+          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+                       NX, NY, NX, NY, TIME, ETIME, TU0,              &
+                       UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
+!
+! 6.  Air density ---------------------------------------------------- /
+!
+        CASE (6)
+          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+                       NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+                       XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+          IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
+!
+! 7.  Data type 0 ---------------------------------------------------- /
 !
         CASE (7)
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
@@ -664,7 +687,7 @@
                             NDTNEW, DATA0, IERR )
             END IF
 !
-! 6.  Data type 1 ---------------------------------------------------- /
+! 8.  Data type 1 ---------------------------------------------------- /
 !
         CASE ( 8 )
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
@@ -683,7 +706,7 @@
                            NDTNEW, DATA1, IERR )
             END IF
 !
-! 7.  Data type 2 ---------------------------------------------------- /
+! 9.  Data type 2 ---------------------------------------------------- /
 !
         CASE ( 9 )
           CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
@@ -702,15 +725,15 @@
                            NDTNEW, DATA2, IERR )
             END IF
 !
-! 8. Moving grid data ----------------------------------------------- /
+! 10. Moving grid data ---------------------------------------------- /
 !
         CASE ( 10 )
 ! notes: 
 ! SUBROUTINE W3FLDM in w3fldsmd.ftn : 
-!<       INTEGER, INTENT(INOUT)  :: NH, THO(2,4,NHM), TF0(2), TFN(2)
-!>       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
-!<       REAL, INTENT(INOUT)     :: HA(NHM,4), HD(NHM,4), A0, AN, D0, DN
-!>       REAL, INTENT(INOUT)     :: HA(NHM,-7:4), HD(NHM,-7:4), A0, AN, D0, DN
+!<       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
+!>       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
+!<       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
+!>       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
 ! Arguments #
 !   THO     8
 !   HA      9
@@ -822,7 +845,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: ICONSC, ICONSW
+      INTEGER                 :: ICONSC, ICONSW, ICONSU
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
@@ -842,6 +865,9 @@
 !/WNX0      ICONSW = 0
 !/WNX1      ICONSW = 1
 !/WNX2      ICONSW = 2
+!/UNX0      ICONSU = 0
+!/UNX1      ICONSU = 1
+!/UNX2      ICONSU = 2
 !
 ! 1. Shift fields ( currents and winds only ) ------------------------ /
 !
@@ -867,6 +893,18 @@
               INPUTS(IMOD)%WX0    = INPUTS(IMOD)%WXN
               INPUTS(IMOD)%WY0    = INPUTS(IMOD)%WYN
               INPUTS(IMOD)%DT0    = INPUTS(IMOD)%DTN
+!/T              WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
+!/T            ELSE
+!/T              WRITE (MDST,9011) J
+            END IF
+!
+! 1.c Momentum
+!
+        CASE (5)
+          IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
+              INPUTS(IMOD)%TU0(:) = INPUTS(IMOD)%TFN(:,J)
+              INPUTS(IMOD)%UX0    = INPUTS(IMOD)%UXN
+              INPUTS(IMOD)%UY0    = INPUTS(IMOD)%UYN
 !/T              WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
 !/T            ELSE
 !/T              WRITE (MDST,9011) J
@@ -963,17 +1001,30 @@
                       ( IMOD, INPUTS(IMOD)%BERGI,                     &
                         JMOD, INPUTS(JMOD)%BERGI, 0. )
 !
-! 2.e Assimilation data 0
+! 2.e Momentum
+!
+        CASE (5)
+          CALL WMUPDV ( IMOD, INPUTS(IMOD)%UXN, INPUTS(IMOD)%UYN,     &
+                        JMOD, INPUTS(JMOD)%UXN, INPUTS(JMOD)%UYN,     &
+                        0., ICONSU )
+!
+! 2.f Air density 
+!
+        CASE (6)
+          CALL WMUPDS ( IMOD, INPUTS(IMOD)%RAIR,                      &
+                        JMOD, INPUTS(JMOD)%RAIR, 0. )
+!
+! 2.g Assimilation data 0
 !
         CASE (7)
           GOTO 2999
 !
-! 2.f Assimilation data 1
+! 2.h Assimilation data 1
 !
         CASE (8)
           GOTO 2999
 !
-! 2.g Assimilation data 2
+! 2.i Assimilation data 2
 !
         CASE (9)
           GOTO 2999
@@ -1013,6 +1064,20 @@
               IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS             &
                           ( IMOD, INPUTS(IMOD)%DT0,                   &
                             JMOD, INPUTS(JMOD)%DT0, 0. )
+            END IF
+!
+! 3.c Momentum
+!
+        CASE (5)
+          IF ( INPUTS(IMOD)%TU0(1) .LT. 0 ) THEN
+              INPUTS(IMOD)%TU0(:) = INPUTS(JMOD)%TU0(:)
+!/T              WRITE (MDST,9030) J, INPUTS(IMOD)%TU0(:)
+!/CRX0              ICONSU = 0
+!/CRX1              ICONSU = 1
+!/CRX2              ICONSU = 2
+              CALL WMUPDV ( IMOD, INPUTS(IMOD)%UX0, INPUTS(IMOD)%UY0, &
+                            JMOD, INPUTS(JMOD)%UX0, INPUTS(JMOD)%UY0, &
+                            0., ICONSU )
             END IF
 !
       END SELECT

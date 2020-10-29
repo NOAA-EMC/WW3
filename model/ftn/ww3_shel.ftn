@@ -338,8 +338,8 @@
 
 !/COU      CHARACTER(LEN=30)       :: OFILE
 !
-      LOGICAL             :: FLLSTL, FLLSTI, FLFLG, FLHOM, TFLAGI,     &
-                             PRTFRM, FLAGSCI, FLGNML
+      LOGICAL             :: FLLSTL, FLLSTI, FLLSTR, FLFLG, FLHOM,     &
+                             TFLAGI, PRTFRM, FLAGSCI, FLGNML
       LOGICAL             :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),          &
                              FLGR2(NOGRP,NGRPP), FLG2(NOGRP),          &
                              FLAGSTIDE(4), FLH(-7:10), FLGDAS(3),      &
@@ -563,6 +563,7 @@
 !   field has been read from a file.
       FLLSTL = .FALSE. ! This is associated with J.EQ.1 (wlev)
       FLLSTI = .FALSE. ! This is associated with J.EQ.4 (ice)
+      FLLSTR = .FALSE. ! This is associated with J.EQ.6 (rhoa)
       FLLST_ALL = .FALSE. ! For all
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'ww3_shel, step 3'
 !/DEBUGINIT      FLUSH(740+IAPROC)
@@ -2228,7 +2229,7 @@
               IF ( FLH(J) ) THEN
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                             TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+                             TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
@@ -2258,7 +2259,7 @@
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                              TU0, UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
 !
-!/SMC !!Li  Reshape the CX0/N CY0/N space for sea-point only current. 
+!/SMC !!Li  Reshape the UX0/N UY0/N space for sea-point only current. 
 !/SMC !!Li              JGLi26Jun2018. 
 !/SMC              ELSE IF( FSWND ) THEN
 !/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
@@ -2281,13 +2282,13 @@
               IF ( FLH(J) ) THEN
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                             TRT, XXX, XXX, XXX, TRN, XXX, XXX, WLEV, IERR)
+                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                             TRT, XXX, XXX, XXX, TRN, XXX, XXX, WLEV,   &
+                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR,   &
                              IERR, FLAGSC(J)                            &
 !/OASASCM                             , COUPL_COMM                               &
                              )

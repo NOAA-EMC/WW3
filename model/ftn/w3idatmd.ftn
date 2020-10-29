@@ -51,6 +51,8 @@
 !      TTN       I.A.  Public   Time for mud thickness field.
 !      TVN       I.A.  Public   Time for mud viscosity field.
 !      TIN       I.A.  Public   Time for ice field. (concentration)
+!      TU0/N     I.A.  Public   Times for momentum fields.
+!      TRN       I.A.  Public   Time for air density fields.
 !      TI1N      I.A.  Public   Time for ice field. (parameter 1)
 !      TI2N      I.A.  Public   Time for ice field. (parameter 2)
 !      TI3N      I.A.  Public   Time for ice field. (parameter 3)
@@ -69,6 +71,9 @@
 !      CY0/N     R.A.  Public      for both times.
 !      WLEV      R.A.  Public   Next water level field.
 !      ICEI      R.A.  Public   Ice concentrations.
+!      UX0/N     R.A.  Public   Cartesian X and Y momentum components
+!      UY0/N     R.A.  Public      for both times.
+!      RAIR      R.A.  Public   Air density
 !      BERGI     R.A.  Public   Iceberg damping coefficient
 !      IINIT     Log.  Public   Flag for array initialization.
 !      FLLEV     Log.  Public   Flag for water level input.
@@ -149,16 +154,18 @@
 !/
       TYPE INPUT
         INTEGER               :: TFN(2,-7:10), TC0(2), TW0(2),        &
-                                 TDN(2), TG0(2)
+                                 TU0(2), TDN(2), TG0(2)
         REAL                  :: GA0, GD0, GAN, GDN
 !/WRST        REAL, POINTER         :: WXNwrst(:,:),WYNwrst(:,:)
         REAL, POINTER         :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
-                                 BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
-                                 MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
-                                 ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
+                                 UX0(:,:), UY0(:,:), UXN(:,:),        &
+                                 UYN(:,:), RAIR(:,:), BERGI(:,:),     &
+                                 MUDT(:,:), MUDV(:,:), MUDD(:,:),     &
+                                 ICEP1(:,:), ICEP2(:,:), ICEP3(:,:),  &
+                                 ICEP4(:,:), ICEP5(:,:)
 !/TIDE REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
 !/TIDE                           WLTIDE(:,:,:,:)
         LOGICAL               :: IINIT
@@ -176,24 +183,28 @@
 !/ Data aliasses for structure INPUT(S)
 !/
       INTEGER, POINTER        :: TFN(:,:), TLN(:), TC0(:), TCN(:),    &
-                                 TW0(:), TWN(:), TIN(:), T0N(:),      &
-                                 T1N(:), T2N(:), TDN(:), TG0(:),      &
-                                 TGN(:), TTN(:), TVN(:), TZN(:),      &
-                                 TI1(:), TI2(:), TI3(:), TI4(:), TI5(:) 
+                                 TW0(:), TWN(:), TU0(:), TUN(:),      &
+                                 TIN(:), TRN(:), T0N(:), T1N(:),      &
+                                 T2N(:), TDN(:), TG0(:), TGN(:),      &
+                                 TTN(:), TVN(:), TZN(:), TI1(:),      &
+                                 TI2(:), TI3(:), TI4(:), TI5(:) 
       REAL, POINTER           :: GA0, GD0, GAN, GDN
       REAL, POINTER           :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
 !/WRST                                 WXNwrst(:,:),WYNwrst(:,:),           &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
-                                 BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
-                                 MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
-                                 ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
+                                 UX0(:,:), UY0(:,:), UXN(:,:),        &
+                                 UYN(:,:), RAIR(:,:), BERGI(:,:),     &
+                                 MUDT(:,:), MUDV(:,:), MUDD(:,:),     &
+                                 ICEP1(:,:), ICEP2(:,:), ICEP3(:,:),  &
+                                 ICEP4(:,:), ICEP5(:,:)
 !/TIDE       REAL, POINTER           :: CXTIDE(:,:,:,:),         &
 !/TIDE                                  CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
       LOGICAL, POINTER        :: IINIT
       LOGICAL, POINTER        :: INFLAGS1(:), INFLAGS2(:), FLAGSC(:)
-      LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
+      LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, &
+                                 FLRHOA
       LOGICAL, POINTER        :: FLMTH, FLMVS, FLMDN
       LOGICAL, POINTER        :: FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
 !/TIDE      LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
@@ -298,6 +309,8 @@
         INPUTS(I)%TC0(2)   =  0
         INPUTS(I)%TW0(1)   = -1
         INPUTS(I)%TW0(2)   =  0
+        INPUTS(I)%TU0(1)   = -1
+        INPUTS(I)%TU0(2)   =  0
         INPUTS(I)%TDN(1)   = -1
         INPUTS(I)%TDN(2)   =  0
         INPUTS(I)%TG0(1)   = -1
@@ -569,6 +582,26 @@
           INPUTS(IMOD)%BERGI = 0.
         END IF
 !
+      IF ( FLTAUA  ) THEN
+!/SMC       IF( FSWND ) THEN
+!/SMC          ALLOCATE ( INPUTS(IMOD)%UX0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%UY0(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%UXN(NSEA,1) ,              &
+!/SMC                     INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
+!/SMC       ELSE
+          ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
+                     INPUTS(IMOD)%UY0(NX,NY) ,              &
+                     INPUTS(IMOD)%UXN(NX,NY) ,              &
+                     INPUTS(IMOD)%UYN(NX,NY) , STAT=ISTAT )
+!/SMC       ENDIF
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
+      IF ( FLRHOA  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%RAIR(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
       INPUTS(IMOD)%IINIT  = .TRUE.
 !
 !/T      WRITE (NDST,9001)
@@ -711,6 +744,7 @@
       TFN    => INPUTS(IMOD)%TFN
       TC0    => INPUTS(IMOD)%TC0
       TW0    => INPUTS(IMOD)%TW0
+      TU0    => INPUTS(IMOD)%TU0
       TG0    => INPUTS(IMOD)%TG0
       TDN    => INPUTS(IMOD)%TDN
 !
@@ -828,6 +862,17 @@
           IF ( FLICE  ) THEN
               ICEI   => INPUTS(IMOD)%ICEI
               BERGI  => INPUTS(IMOD)%BERGI
+            END IF
+!
+          IF ( FLTAUA  ) THEN
+              UX0    => INPUTS(IMOD)%UX0
+              UY0    => INPUTS(IMOD)%UY0
+              UXN    => INPUTS(IMOD)%UXN
+              UYN    => INPUTS(IMOD)%UYN
+            END IF
+!
+          IF ( FLRHOA  ) THEN
+              RAIR   => INPUTS(IMOD)%RAIR
             END IF
 !
         END IF
