@@ -140,8 +140,11 @@
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       USE W3NMLOUNFMD
-      USE W3OUNFMETAMD, ONLY: INIT_META, TEARDOWN_META, GETMETA, WRITE_META, META_T
-      USE W3OUNFMETAMD, ONLY: PRINT_META
+!
+      USE W3OUNFMETAMD, ONLY: INIT_META, TEARDOWN_META, GETMETA,       &
+                              WRITE_META, META_T, NCVARTYPE
+!
+      USE W3OUNFMETAMD, ONLY: PRINT_META ! TODO: For testing
       USE NETCDF
 
 !/SMC      USE W3SMCOMD
@@ -161,8 +164,7 @@
                                  IOTEST, NOUT,                         &
                                  IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
                                  IOUT, S3, IRET, HASNC4,               &
-                                 NBIPART, CNTIPART, NCVARTYPE, IPART,  &
-                                 RTDNX, RTDNY
+                                 NBIPART, CNTIPART, IPART, RTDNX, RTDNY
       INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
 !
       INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
