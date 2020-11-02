@@ -1390,8 +1390,6 @@
          'PDLIB_W3PROFSMD'   ) modtest=w3profsmd_pdlib.o ;;
          'W3PARALL'     ) modtest=w3parall.o ;;
          'W3SMCOMD'     ) modtest=w3smcomd.o ;;
-#         'W3OUNFMETA'   ) modtest=w3ounfmeta.o ;;
-#         'W3NCMETAMD'   ) modtest=w3ncmetamd.o ;;
          'W3NMLOUNFMETA') modtest=w3nmlounfmeta.o ;;
          *              ) modfound=no ;; 
       esac
