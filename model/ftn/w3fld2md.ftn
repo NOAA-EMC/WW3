@@ -62,7 +62,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLD2(  ASPC,FPI, WNDX,WNDY, ZWND,                 &
-                DEPTH, RIB, UST, USTD, Z0, TAUNUX,TAUNUY,CHARN)
+                DEPTH, RIB, DAIR, UST, USTD, Z0, TAUNUX,TAUNUY,CHARN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
@@ -93,6 +93,7 @@
 !       ZWND    Real   I   Wind height.
 !       DEPTH   Real   I   Water depth.
 !       RIB     Real   I   Bulk Richardson number in lower atm
+!       DAIR    Real   I   Air density
 !       TAUNUX  Real   0   X-dir viscous stress (guessed from prev.)
 !       TAUNUY  Real   0   Y-dir viscous stress (guessed from prev.)
 !       UST     Real   O   Friction velocity.
@@ -139,7 +140,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: DWAT, DAIR, GRAV, TPI, PI, KAPPA
+      USE CONSTANTS, ONLY: DWAT, GRAV, TPI, PI, KAPPA
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
       USE W3ODATMD,  ONLY: NDSE
       USE W3SERVMD,  ONLY: EXTCDE
@@ -154,7 +155,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: ASPC(NSPEC), WNDX, WNDY, &
-                                 ZWND, DEPTH, RIB, FPI 
+                                 ZWND, DEPTH, RIB, DAIR, FPI 
       REAL, INTENT(OUT)       :: UST, USTD, Z0 
       REAL, INTENT(OUT),OPTIONAL :: CHARN
       REAL, INTENT(INOUT)     :: TAUNUX, TAUNUY

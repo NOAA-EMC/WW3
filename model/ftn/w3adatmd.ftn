@@ -101,6 +101,8 @@
 !      U10D      R.A.  Public   Wind direction used.
 !      AS        R.A.  Public   Stability parameter.
 !      CX/Y      R.A.  Public   Current components.
+!      TAUA      R.A.  Public   Absolute atmospheric momentum.
+!      TAUADIR   R.A.  Public   Absolute atmospheric momentum direction.
 !
 !      HS        R.A.  Public   Wave Height.
 !      WLM       R.A.  Public   Mean wave length.
@@ -362,7 +364,7 @@
 ! Output fields group 1)
 !
         REAL, POINTER         :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:)
+                                 AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
 !
 ! Output fields group 2)
 !
@@ -533,7 +535,7 @@
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:)
+                                 AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
 !
       REAL, POINTER           :: HS(:), WLM(:),  T02(:), T0M1(:),     &
                                  T01 (:), FP0(:), THM(:), THS(:),     &
@@ -926,6 +928,12 @@
                  WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
                  WADATS(IMOD)%AS(0:NSEA) , STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
+!
+      ALLOCATE ( WADATS(IMOD)%TAUA(0:NSEA) ,                         &
+                 WADATS(IMOD)%TAUADIR(0:NSEA), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      WADATS(IMOD)%TAUA(:)   =0.
+      WADATS(IMOD)%TAUADIR(:)=0.     
 
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -2676,6 +2684,8 @@
           AS     => WADATS(IMOD)%AS
           CX     => WADATS(IMOD)%CX
           CY     => WADATS(IMOD)%CY
+          TAUA   => WADATS(IMOD)%TAUA
+          TAUADIR=> WADATS(IMOD)%TAUADIR
 !
           HS     => WADATS(IMOD)%HS
           WLM    => WADATS(IMOD)%WLM

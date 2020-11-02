@@ -117,7 +117,8 @@
 !/DEBUG      USE W3ODATMD, only : IAPROC
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG,            &
+                          UST, USTDIR, RHOAIR
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
                           THS, FP0, THP0, DTDYN, FCUT,                 &
@@ -128,7 +129,7 @@
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
-                          MSCD, CHARN, TWS,                            &
+                          MSCD, CHARN, TWS, TAUA, TAUDIR               &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
@@ -1200,7 +1201,69 @@
               VMIN = 0
               VMAX = 32000
 !
-!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+              FSC    = 0.01
+              ENAME  = '.taua'
+              UNITS  = 'm2 s-2'
+              !! Note - TAUA and TAUADIR read in from .ww3 file are TAUAX,TAUAY
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA(1:NSEA), TAUADIR(1:NSEA), AnglD)
+              
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( TAUA   (1:NSEA), XX )
+!/SMC                 CALL W3S2XY_SMC( TAUADIR(1:NSEA), XY )
+              ELSE ! IF(SMCGRD)
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUA(1:NSEA)      &
+                                                        , MAPSF, XX )
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUADIR(1:NSEA)   &
+                                                        , MAPSF, XY )
+              ENDIF
+              NFIELD=2
+              VARNM(1)='utaua'
+              VARNM(2)='vtaua'
+              VARNL(1)='eastward_atm_momentum'
+              VARNL(2)='northward_atm_momentum'
+              VARNS(1)='eastward_atm_momentum'
+              VARNS(2)='northward_atm_momentum'
+              VARNG(1)='eastward_atm_momentum'
+              VARNG(2)='northward_atm_momentum'
+              VARNC(1)='taua=sqrt(utaua**2+vtaua**2)'
+              VARNC(2)='taua=sqrt(utaua**2+vtaua**2)'
+              VARND(1)=''
+              VARND(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                VARND(1) = 'True North'
+!/RTD                VARND(2) = 'True North'
+!/RTD              ELSE IF ( RTDL ) THEN
+!/RTD                VARND(1) = 'Rotated Pole Grid North'
+!/RTD                VARND(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
+              VMIN = -32000
+              VMAX =  32000
+!
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+              FSC    = 0.0001
+              UNITS  = 'km m-3'
+              ENAME  = '.rhoa'
+
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC(RHOAIR, X1)
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, RHOAIR, MAPSF, X1 )
+              ENDIF
+              WHERE ( X1.NE.UNDEF) X1 = X1*0.1
+              NFIELD=1
+              VARNM(1)='rhoa'
+              VARNL(1)='air_density'
+              VARNS(1)='air_density'
+              VARNG(1)='air_density'
+              VARNC(1)=''
+              VARND(1)=''
+              VMIN = 0
+              VMAX = 2 
+!
+!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4              FSC    = 0.001
 !/BT4              UNITS  = 'Krumbein phi scale'
 !/BT4              ENAME  = '.d50'
@@ -1216,7 +1279,7 @@
 !/BT4              VMIN = -10000
 !/BT4              VMAX = 32000
 !
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2              FSC = 0.001
 !/IS2              UNITS = 'm'
 !/IS2              ENAME = '.ic1'
@@ -1232,7 +1295,7 @@
 !/IS2              VMAX = 30000
 !
 !
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2              FSC = 0.05
 !/IS2              UNITS = 'm'
 !/IS2              ENAME = '.ic5'
@@ -1246,7 +1309,7 @@
 !/IS2              VARND(1)=''
 !/IS2              VMIN = 0
 !/IS2              VMAX = 30000
-
+!
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
 !
               NFIELD=1

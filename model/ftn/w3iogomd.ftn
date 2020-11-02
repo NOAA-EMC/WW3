@@ -443,14 +443,18 @@
              FLG2D(1,6)=.TRUE.
            CASE('IBG')
              FLG2D(1,7)=.TRUE.
+           CASE('TAU')
+             FLG2D(1,8)=.TRUE.
+           CASE('RHO')
+             FLG2D(1,9)=.TRUE.
 !/BT4           CASE('D50')
-!/BT4             FLG2D(1,8)=.TRUE.
+!/BT4             FLG2D(1,10)=.TRUE.
 !/IS2           CASE('IC1')
-!/IS2             FLG2D(1,9)=.TRUE.
+!/IS2             FLG2D(1,11)=.TRUE.
 !/IS2           CASE('IC5')
-!/IS2             FLG2D(1,10)=.TRUE.
+!/IS2             FLG2D(1,12)=.TRUE.
 !/SETUP           CASE('STP')
-!/SETUP             FLG2D(1,11)=.TRUE.
+!/SETUP             FLG2D(1,13)=.TRUE.
 !
 !
 ! Group 2
@@ -874,12 +878,16 @@
            FLG2D(1,6)=.TRUE.
          CASE('IBG')
            FLG2D(1,7)=.TRUE.
+         CASE('TAU')
+           FLG2D(1,8)=.TRUE.
+         CASE('RHO')
+           FLG2D(1,9)=.TRUE.
 !/BT4           CASE('D50')
-!/BT4             FLG2D(1,8)=.TRUE.
+!/BT4             FLG2D(1,10)=.TRUE.
 !/IS2           CASE('IC1')
-!/IS2             FLG2D(1,9)=.TRUE.
+!/IS2             FLG2D(1,11)=.TRUE.
 !/IS2           CASE('IC5')
-!/IS2             FLG2D(1,10)=.TRUE.!
+!/IS2             FLG2D(1,12)=.TRUE.!
 ! Group 2
 !
 !/OASACM         CASE('AHS')
@@ -2482,8 +2490,9 @@
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, ICEF, ICEH, BERG,    &
-                          UST,  USTDIR, ASF
-      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
+                          UST,  USTDIR, ASF, RHOAIR
+      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN,          &
+                          TAUA, TAUADIR
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
                           WBT, WNMEAN
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
@@ -2935,13 +2944,32 @@
                     WRITE ( NDSOG ) ICE(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) BERG(1:NSEA)
-!/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                    DO ISEA=1, NSEA
+!/ARC  !!Li  Rotate map-east momentum in Arctic part back to local east.  JGLi02Feb2016
+!/ARC                      IF(ISEA .GT. NGLO) THEN
+!/ARC                        UDARC = TAUADIR(ISEA) - ANGARC(ISEA - NGLO)*DERA
+!/ARC                        TAUADIR(ISEA) = MOD(TPI + UDARC, TPI)
+!/ARC                      ENDIF
+                      IF (TAUA(ISEA) .NE.UNDEF) THEN
+                          AUX1(ISEA) = TAUA(ISEA)*COS(TAUADIR(ISEA))
+                          AUX2(ISEA) = TAUA(ISEA)*SIN(TAUADIR(ISEA))
+                       ELSE
+                        AUX1(ISEA) = UNDEF
+                        AUX2(ISEA) = UNDEF
+                       END IF
+                      END DO
+                    WRITE ( NDSOG ) AUX1
+                    WRITE ( NDSOG ) AUX2
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                    WRITE ( NDSOG ) RHOAIR(1:NSEA)
+!/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4                    WRITE ( NDSOG ) SED_D50(1:NSEA)
-!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2                    WRITE (NDSOG ) ICEH(1:NSEA)
-!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2                    WRITE (NDSOG ) ICEF(1:NSEA)
-!/SETUP                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 13 ) THEN
 !/SETUP                   WRITE ( NDSOG ) ZETA_SETUP(1:NSEA)
 
 !
@@ -3213,13 +3241,18 @@
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICE(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) BERG(1:NSEA)
-!/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TAUA(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TAUADIR(1:NSEA)
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) RHOAIR(1:NSEA)
+!/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SED_D50(1:NSEA)
-!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9) THEN
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEH(1:NSEA)
-!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10) THEN
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
-!/SETUP                 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 13 ) THEN
 !/SETUP                   READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ZETA_SETUP(1:NSEA)
 !
 !     Section 2)

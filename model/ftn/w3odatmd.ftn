@@ -669,8 +669,8 @@
 !
 ! 1) Forcing fields
 !
-      NOGE(1) = 7
-!/BT4      NOGE(1) = 8
+      NOGE(1) = 9
+!/BT4      NOGE(1) = 10
 !
       IDOUT( 1, 1)  = 'Water depth         '
       IDOUT( 1, 2)  = 'Current vel.        '
@@ -679,10 +679,12 @@
       IDOUT( 1, 5)  = 'Water level         '
       IDOUT( 1, 6)  = 'Ice concentration   '
       IDOUT( 1, 7)  = 'Iceberg damp coeffic'
-!/BT4      IDOUT( 1, 8)  = 'Sediment diam D50   '
-!/IS2      IDOUT( 1, 9)  = 'ice thickness   '
-!/IS2      IDOUT( 1, 10) = 'Avg. ice floe diam. '
-!/SETUP    IDOUT( 1, 11)  = 'wave induced setup'
+      IDOUT( 1, 8)  = 'Atmospheric momentum'
+      IDOUT( 1, 9)  = 'Air density         '
+!/BT4      IDOUT( 1, 10)  = 'Sediment diam D50   '
+!/IS2      IDOUT( 1, 11)  = 'ice thickness   '
+!/IS2      IDOUT( 1, 12) = 'Avg. ice floe diam. '
+!/SETUP    IDOUT( 1, 13)  = 'wave induced setup'
 !
 ! 2) Standard mean wave parameters
 !

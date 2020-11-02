@@ -118,7 +118,7 @@
                                  TIC1(2), TIC5(2)
 !/OASIS        INTEGER               :: TIME00(2)
 !/OASIS        INTEGER               :: TIMEEND(2)
-        REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(),   &
+        REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),   &
                                  UST(:), USTDIR(:), ASF(:), FPIS(:),  &
                                  BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
 !/SETUP  REAL, POINTER :: ZETA_SETUP(:), FX_zs(:), FY_zs(:)

@@ -124,12 +124,13 @@
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG,            &
+                          UST, USTDIR, RHOAIR
       USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
-                          PTM1, PT1, PT2, PEP,                         &
+                          PTM1, PT1, PT2, PEP, TAUA, TAUADIR,          &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,      &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -970,6 +971,21 @@
               ELSE IF ( J.EQ.1 .AND. K.EQ.6 ) THEN
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
+!
+!     Atmospheric momentum 
+!
+              ELSE IF ( J.EQ.1 .AND. K.EQ.7 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, XY )
+!
+!     Air density
+!
+              ELSE IF ( J.EQ.1 .AND. K.EQ.8 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
 !
 !     Ice thickness
 !

@@ -97,7 +97,7 @@
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
-              wind windx wcor rwind curr currx mgwind mgprop mggse \
+              wind windx wcor rwind curr currx mgwind tau taux mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
               cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
   do
@@ -277,6 +277,14 @@
                ID='moving grid wind correction'
                TS='MGW'
                OK='MGW' ;;
+#sort:tau:
+      tau    ) TY='one'
+               ID='momentum interpolation in time'
+               OK='ATT0 ATT1 ATT2' ;;
+#sort:taux:
+      taux   ) TY='one'
+               ID='momentum interpolation in space'
+               OK='ATX0 ATX1 ATX2' ;;
 #sort:mgprop:
       mgprop ) TY='upto1'
                ID='moving grid propagation correction'

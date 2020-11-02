@@ -328,6 +328,89 @@
             ENDIF
             !
          ENDIF
+         IF (IDFLD == 'TAU') THEN
+            !
+            ! Atmospheric momentum (m2.s-2) (u-component)
+            ! ----------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UTAU') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+                  SND_BUFF(1:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF(IB_J) = TMP(IB_I)
+                  ENDDO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                                     RCV_BUFF(1:NSEA), &
+                                     NSEA,     &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+                  !
+               ENDIF
+            ENDIF
+            !
+            ! Atmospheric momentum (m2.s-2) (v-component)
+            ! ----------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_VTAU') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+                  SND_BUFF(1:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF(IB_J) = TMP(IB_I)
+                  END DO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                                     RCV_BUFF(1:NSEA),       &
+                                     NSEA,     &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
+                  !
+               ENDIF
+            ENDIF
+            !
+         ENDIF
+         IF (IDFLD == 'RHO') THEN
+            !
+            ! Air density (kg.m-3)
+            ! ----------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_RHOA') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+                  SND_BUFF(1:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF(IB_J) = TMP(IB_I)
+                  ENDDO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                                     RCV_BUFF(1:NSEA), &
+                                     NSEA,     &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+                  !
+               ENDIF
+            ENDIF
+         ENDIF
       ENDDO
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE RCV_FIELDS_FROM_ATMOS

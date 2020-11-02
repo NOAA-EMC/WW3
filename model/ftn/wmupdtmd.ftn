@@ -63,6 +63,10 @@
 !       !/WNX1   Wind speed conservation.
 !       !/WNX2   Wind exenrgy conservation.
 !
+!       !/ATX0   Momentum vector component conservation.
+!       !/ATX1   Momentum module conservation.
+!       !/ATX2   Momentum exenrgy conservation.
+!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !       !/T1    Test output interpolation data.
@@ -818,6 +822,12 @@
 !       !/CRX2   Current exenrgy conservation.
 !
 !       !/WNX0   Wind vector component conservation.
+!       !/WNX1   Wind speed conservation.
+!       !/WNX2   Wind exenrgy conservation.
+!
+!       !/ATX0   Momentum vector component conservation.
+!       !/ATX1   Momentum module conservation.
+!       !/ATX2   Momentum exenrgy conservation.
 !
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
@@ -865,9 +875,9 @@
 !/WNX0      ICONSW = 0
 !/WNX1      ICONSW = 1
 !/WNX2      ICONSW = 2
-!/UNX0      ICONSU = 0
-!/UNX1      ICONSU = 1
-!/UNX2      ICONSU = 2
+!/ATX0      ICONSU = 0
+!/ATX1      ICONSU = 1
+!/ATX2      ICONSU = 2
 !
 ! 1. Shift fields ( currents and winds only ) ------------------------ /
 !
@@ -1072,9 +1082,9 @@
           IF ( INPUTS(IMOD)%TU0(1) .LT. 0 ) THEN
               INPUTS(IMOD)%TU0(:) = INPUTS(JMOD)%TU0(:)
 !/T              WRITE (MDST,9030) J, INPUTS(IMOD)%TU0(:)
-!/CRX0              ICONSU = 0
-!/CRX1              ICONSU = 1
-!/CRX2              ICONSU = 2
+!/ATX0              ICONSU = 0
+!/ATX1              ICONSU = 1
+!/ATX2              ICONSU = 2
               CALL WMUPDV ( IMOD, INPUTS(IMOD)%UX0, INPUTS(IMOD)%UY0, &
                             JMOD, INPUTS(JMOD)%UX0, INPUTS(JMOD)%UY0, &
                             0., ICONSU )

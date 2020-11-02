@@ -94,7 +94,8 @@
         USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
         USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
-        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF, UST, USTDIR, ASF
+        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
+                             UST, USTDIR, ASF, RHOAIR
         USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
         USE W3ARRYMD, ONLY : PRTBLK
@@ -964,7 +965,8 @@
 ! Local group 1 variables
         REAL          :: DWAUX, CXAUX, CYAUX, UAAUX, UDAUX, ASAUX,     &
                          WLVAUX, ICEAUX, ICEHAUX, ICEFAUX, BERGAUX,    &
-                         SED_D50AUX, SUMWT1(NOGE(1))
+                         SED_D50AUX, RHOAIRAUX, TAUAAUX, TAUADIRAUX,   &
+                         SUMWT1(NOGE(1))
 ! Local group 2 variables
         REAL          :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,       &
                          FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1,   &
@@ -1037,6 +1039,9 @@
         WLV      = UNDEF
         ICE      = UNDEF
         BERG     = UNDEF
+        RHOAIR   = UNDEF
+        TAUA     = UNDEF
+        TAUADIR  = UNDEF
 !/BT4        SED_D50  = UNDEF
 !/IS2        ICEH     = UNDEF
 !/IS2        ICEF     = UNDEF
@@ -1265,6 +1270,9 @@
                 SED_D50AUX  = UNDEF
                 ICEHAUX     = UNDEF
                 ICEFAUX     = UNDEF
+                RHOAIRAUX   = UNDEF
+                TAUAAUX     = UNDEF
+                TAUADIRAUX  = UNDEF
                 SUMWT1      = 0
 !
 ! Group 2 variables
@@ -1486,9 +1494,33 @@
                     END IF
                   END IF
 !
-!/BT4                  IF ( FLOGRD(1,8) ) THEN
+                  IF ( FLOGRD(1,8) ) THEN
+                    IF ( WADATS(IGRID)%TAUA(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(8) = SUMWT1(8) + WT
+                      IF ( TAUAAUX .EQ. UNDEF ) THEN
+                        TAUAAUX = WADATS(IGRID)%TAUA(GSEA)*WT
+                        TAUADIRAUX = WADATS(IGRID)%TAUADIR(GSEA)*WT
+                      ELSE
+                        TAUAAUX = TAUAAUX + WADATS(IGRID)%TAUA(GSEA)*WT
+                        TAUADIRAUX = TAUADIRAUX + WADATS(IGRID)%TAUADIR(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(1,9) .AND. ACTIVE ) THEN
+                    IF ( WDATAS(IGRID)%RHOAIR(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(9) = SUMWT1(9) + WT
+                      IF ( RHOAIRAUX .EQ. UNDEF ) THEN
+                        RHOAIRAUX = WDATAS(IGRID)%RHOAIR(GSEA)*WT
+                      ELSE
+                        RHOAIRAUX = RHOAIRAUX + WDATAS(IGRID)%RHOAIR(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
+!/BT4                  IF ( FLOGRD(1,9) ) THEN
 !/BT4                    IF ( GRIDS(IGRID)%SED_D50(GSEA) .NE. UNDEF ) THEN
-!/BT4                      SUMWT1(8) = SUMWT1(8) + WT
+!/BT4                      SUMWT1(9) = SUMWT1(9) + WT
 !/BT4                      IF ( SED_D50AUX .EQ. UNDEF ) THEN
 !/BT4                        SED_D50AUX = GRIDS(IGRID)%SED_D50(GSEA)*WT
 !/BT4                      ELSE
@@ -1497,9 +1529,9 @@
 !/BT4                    END IF
 !/BT4                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,9) ) THEN
+!/IS2                  IF ( FLOGRD(1,10) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(9) = SUMWT1(9) + WT
+!/IS2                      SUMWT1(10) = SUMWT1(10) + WT
 !/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
 !/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
 !/IS2                      ELSE 
@@ -1508,9 +1540,9 @@
 !/IS2                    END IF
 !/IS2                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,10) ) THEN
+!/IS2                  IF ( FLOGRD(1,11) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(10) = SUMWT1(10) + WT
+!/IS2                      SUMWT1(11) = SUMWT1(11) + WT
 !/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
 !/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
 !/IS2                      ELSE 
@@ -2423,8 +2455,29 @@
                   END IF
                 END IF
 !
+                IF ( TAUAAUX .NE. UNDEF ) THEN
+                  TAUAAUX = TAUAAUX / SUMWT1(8)
+                  TAUADIRAUX = TAUADIRAUX / SUMWT1(8)
+                  IF ( TAUA(ISEA) .EQ. UNDEF )  THEN
+                    TAUA(ISEA) = TAUAAUX / REAL( SUMGRD ) 
+                    TAUADIR(ISEA) = TAUADIRAUX / REAL( SUMGRD )
+                  ELSE
+                    TAUA(ISEA) = TAUA(ISEA) + TAUAAUX / REAL( SUMGRD ) 
+                    TAUADIR(ISEA) = TAUADIR(ISEA) + TAUADIRAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+!
+                IF ( RHOAIRAUX .NE. UNDEF ) THEN
+                  RHOAIRAUX = RHOAIRAUX / SUMWT1(9)
+                  IF ( RHOAIR(ISEA) .EQ. UNDEF )  THEN
+                    RHOAIR(ISEA) = RHOAIRAUX / REAL( SUMGRD )
+                  ELSE
+                    RHOAIR(ISEA) = RHOAIR(ISEA) + RHOAIRAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+!
 !/BT4                IF ( SED_D50AUX .NE. UNDEF ) THEN
-!/BT4                  SED_D50AUX = SED_D50AUX / SUMWT1(8)
+!/BT4                  SED_D50AUX = SED_D50AUX / SUMWT1(10)
 !/BT4                  IF ( SED_D50(ISEA) .EQ. UNDEF )  THEN
 !/BT4                    SED_D50(ISEA) = SED_D50AUX / REAL( SUMGRD )
 !/BT4                  ELSE
@@ -2433,7 +2486,7 @@
 !/BT4                END IF
 !
 !/IS2                IF ( ICEHAUX .NE. UNDEF ) THEN
-!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(9)
+!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(11)
 !/IS2                  IF ( ICEH(ISEA) .EQ. UNDEF )  THEN
 !/IS2                    ICEH(ISEA) = ICEHAUX / REAL( SUMGRD )
 !/IS2                  ELSE
@@ -2442,7 +2495,7 @@
 !/IS2                END IF
 !
 !/IS2                IF ( ICEFAUX .NE. UNDEF ) THEN
-!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(10)
+!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(12)
 !/IS2                  IF ( ICEF(ISEA) .EQ. UNDEF )  THEN
 !/IS2                    ICEF(ISEA) = ICEFAUX / REAL( SUMGRD )
 !/IS2                  ELSE

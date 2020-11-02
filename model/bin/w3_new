@@ -330,6 +330,10 @@
      'mgwind' ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch wminitmd.ftn
                                    touch ww3_shel.ftn ;; 
+     'tau'    ) cd $main_dir/ftn ; touch w3updtmd.ftn
+                                   touch ww3_prnc.ftn
+                                   touch ww3_prep.ftn ;; 
+     'taux'   ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
      'mgprop' ) cd $main_dir/ftn ; touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn

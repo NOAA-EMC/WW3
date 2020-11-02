@@ -123,7 +123,7 @@
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR, RHOAIR
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE, FLOGD
@@ -1128,6 +1128,49 @@
 !/NCEP2                KPDS(2) = 0
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
+!
+!     Atmospheric momentum
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  8 ) THEN
+                FLTWO = .TRUE.
+!/NCEP1                KPDS(5) = 032
+!/NCEP2                KPDS(2) = 1
+!/NCEP2                KPDS(1) = 2
+!/NCEP2                LISTSEC0(1) = 0
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA, TAUADIR, AnglD)
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  IF (TAUA(ISEA) .NE. UNDEF) THEN
+                     UABS   = SQRT(TAUA(ISEA)**2+TAUADIR(ISEA)**2)
+                     IF ( UABS .GT. 0.001 ) THEN
+                         TAUADIR(ISEA) = MOD ( 630. -                 &
+                               RADE*ATAN2(TAUADIR(ISEA),TAUA(ISEA)) , 360. )
+                       ELSE
+                         TAUADIR(ISEA) = 0.
+                       END IF
+                    ELSE
+                       UABS = UNDEF
+                       TAUADIR(ISEA) = UNDEF
+                     END IF
+                  TAUA(ISEA) = UABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, X2 )
+!
+!     Air density
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                FLONE = .TRUE.
+!/NCEP1                KPDS(5) = 091
+!/NCEP2                KPDS(2) = 0
+!/NCEP2                KPDS(1) = 2
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
 !
 !     Significant wave height
 !

@@ -811,6 +811,20 @@
 !/OASACM         ID_NB_RCV=ID_NB_RCV+1
 !/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__V10'
 !
+!/OASACM      CASE('TAU')
+!/OASACM         ! UTAUA : u-momentum (m2.s-2)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_UTAU'
+!
+!/OASACM         ! V10 : v-momentum speed (m2.s-2)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_VTAU'
+!
+!/OASACM      CASE('RHO')
+!/OASACM         ! rhoa : air density (kg.m-3)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_RHOA'
+!
 
 !
 ! ICE MODEL VARIABLES

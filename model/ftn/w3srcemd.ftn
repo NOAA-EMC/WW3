@@ -59,7 +59,7 @@
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
                           TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
                           D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
-                          PHICE, TAUOCX, TAUOCY, WNMEAN, COEF) 
+                          PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -354,7 +354,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: DWAT
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
@@ -1474,14 +1474,14 @@
 !/FLD1      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD1          CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD1                    DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD1      ELSE 
 !/FLD1          CHARN = AALPHA 
 !/FLD1      ENDIF
 !/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD2          CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD2                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD2                    DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD2      ELSE 
 !/FLD2          CHARN = AALPHA 
 !/FLD2      ENDIF

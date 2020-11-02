@@ -170,6 +170,10 @@
 !     !/WNT2  Id. energy (USE ONLY ONE !)
 !     !/CRT1  Like !/WNT1 for currents.
 !     !/CRT2  Like !/WNT2 for currents.
+!     !/ATT0  = !/ATT1
+!     !/ATT1  Correct momentum to (approximately) conserve the
+!             momentum over the interpolation box.
+!     !/ATT2  Id. energy (USE ONLY ONE !)
 !
 !     !/O3    Additional output in fields processing loop.
 !     !/O15   Generate file with the times of the processed fields.
@@ -411,6 +415,9 @@
 !/WNT2          IF (IFLD.EQ.3) WRITE (NDSO,2930)
 !/CRT1          IF (IFLD.EQ.4) WRITE (NDSO,1930)
 !/CRT2          IF (IFLD.EQ.4) WRITE (NDSO,2930)
+!/ATT0          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/ATT1          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/ATT2          IF (IFLD.EQ.6) WRITE (NDSO,2930)
         END IF
       IF ( FLBERG ) WRITE (NDSO,938)
       IF ( FLSTAB ) WRITE (NDSO,939)
@@ -1257,6 +1264,27 @@
 !/CRT2                      END DO
 !/CRT2                 END IF
 !
+! ... Momentum, correct for velocity or energy conservation
+!
+!/ATT1                IF (IFLD.EQ.6) THEN
+!/ATT1                    DO IY=1,NY
+!/ATT1                      DO IX=1,NX
+!/ATT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+!/ATT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/ATT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/ATT1                        END DO
+!/ATT1                      END DO
+!/ATT1                  END IF
+!
+!/ATT2                IF (IFLD.EQ.6) THEN
+!/ATT2                    DO IY=1,NY
+!/ATT2                      DO IX=1,NX
+!/ATT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+!/ATT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/ATT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/ATT2                        END DO
+!/ATT2                      END DO
+!/ATT2                  END IF
               END IF
 !
           END IF

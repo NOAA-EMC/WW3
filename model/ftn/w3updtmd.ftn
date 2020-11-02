@@ -79,7 +79,6 @@
 !      W3UBPT    Subr. Public   Update boundary conditions.
 !      W3UICE    Subr. Public   Update ice concentrations.
 !      W3ULEV    Subr. Public   Update water levels.
-!      W3UTAUA   Subr. Public   Update atmospheric momentum.
 !      W3URHOA   Subr. Public   Update air density.
 !      W3UTRN    Subr. Public   Update cell boundary transparancies.
 !      W3DZXY    Subr. Public   Calculate derivatives of a field.
@@ -112,6 +111,10 @@
 !       !/WNT0   No wind interpolation.
 !       !/WNT1   Linear wind interpolation.
 !       !/WNT2   Energy conservation in wind interpolation.
+!
+!       !/ATT0   No momentum interpolation.
+!       !/ATT1   Linear momentum interpolation.
+!       !/ATT2   Energy conservation in momentum interpolation.
 !
 !       !/RWND   Use wind speeds relative to currents.
 !
@@ -713,18 +716,15 @@
 !      1.  Prepare auxiliary arrays.
 !      2.  Calculate interpolation factors
 !      3.  Get actual momentum
-!      4.  Correct for currents
-!      5.  Convert to stresses
-!      6.  Stability correction
 !     --------------------------------------
 !
 !  9. Switches :
 !
 !     !/OMPG   OpenMP compiler directives.
 !
-!     !/WNT0   No wind interpolation.
-!     !/WNT1   Linear wind interpolation.
-!     !/WNT2   Energy conservation in wind interpolation.
+!     !/ATT0   No momentum interpolation.
+!     !/ATT1   Linear momentum interpolation.
+!     !/ATT2   Energy conservation in momentum interpolation.
 !
 !     !/S      Enable subroutine tracing.
 !     !/T      Test output.
@@ -802,10 +802,10 @@
       DT0N    = DSEC21 ( TU0, TUN )
       DT0T   = DSEC21 ( TU0, TIME )
 !
-!/UNT0      RD     = 0.
-!/UNT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
-!/UNT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
-!/UNT2      RD2    =  1. - RD
+!/ATT0      RD     = 0.
+!/ATT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/ATT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/ATT2      RD2    =  1. - RD
 !/OASACM     RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
@@ -817,9 +817,9 @@
       DO ISEA=1, NSEA
 !
         TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
-!/UNT2        MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
-!/UNT2                          RD  *(MA0(ISEA)+MAI(ISEA))**2 )
-!/UNT2        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
+!/ATT2        MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
+!/ATT2                          RD  *(MA0(ISEA)+MAI(ISEA))**2 )
+!/ATT2        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
         TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
 !/ARC  !Li   Rotate momentum direction by ANGARC for Arctic part cells.
 !/ARC        IF( ISEA .GT. NGLO ) THEN
@@ -2155,7 +2155,6 @@
 !/
       END SUBROUTINE W3ULEV
 !/ ------------------------------------------------------------------- /
-
       SUBROUTINE W3URHOA ( )
 !/
 !/                  +-----------------------------------+
