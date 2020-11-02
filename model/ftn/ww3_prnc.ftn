@@ -303,6 +303,9 @@
 !
       CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
+!
+      LOGICAL                 :: FTIDAL
+!
 !/T      CHARACTER*21            :: FNAMETXT
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
@@ -1314,8 +1317,8 @@
 !/MPI                         ' points. This can take hours ...'
 !/MPI     ENDIF 
 !/MPI     IF (NX*NY.LT.4000) THEN 
-          WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY, ' points.'
-          IF (NAPROC.EQ.1) WRITE(NDSE,*) 'This can take hours ...Consider running this with MPI '
+          WRITE(NDSE,'(A,I8,A)') 'Starting tidal analysis for ',NX*NY, ' points.'
+          IF (NAPROC.EQ.1) WRITE(NDSE,'(A)') 'This can take hours ...Consider running this with MPI '
           END IF
 !/MPI     END IF
         IRET=NF90_INQ_VARID(NCID,"time",VARIDTMP)
@@ -1366,7 +1369,7 @@
 ! Set arrays for MPI exchanges
 !
         IF (NX .LT. NAPROC) THEN
-          WRITE(NDSE,*) 'NUMBER OF NX POINTS LESS THAN NUMBER OF PROC'
+          WRITE(NDSE,'(A)') 'NUMBER OF NX POINTS LESS THAN NUMBER OF PROC'
           CALL EXTCDE (30)
         END IF
 
@@ -1481,8 +1484,8 @@
 !/T    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
 !/T    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
 
-            ELSE ! TIDE_NTI.GT.(TIDE_MF*3)
-              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, NTI, TIDE_NTI
+            ELSE
+              WRITE(NDSE,'(A,I8,A,I8,A)') 'WARNING NO TIDAL COMPUTATION AT POINT [',IX,',',IY,']'
               TIDE_AMPC(1:TIDE_MF,1:NFIELDS)=0.
               TIDE_PHG(1:TIDE_MF,1:NFIELDS)=0.
             END IF ! end of test on TIDE_NTI
@@ -1492,8 +1495,8 @@
 ! Save tidal amplitude and phase
 !
 
-!/MPI          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
-!/MPI                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
+!/MPIT          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
+!/MPIT                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
 !/MPI          DO J=1,TIDE_MF
 !/MPI            DO K=1,NFIELDS
 !/MPI              IND=IND+1
@@ -1537,7 +1540,6 @@
 !/MPI            END DO
 !/MPI          END IF
 
-
           
         END DO ! IY=1,NY
 
@@ -1546,10 +1548,10 @@
 !/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
 !/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
 
-!/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
-!/MPI          WRITE(NDSO,*) "parallelization done"
-!/MPI        ELSE
+!/MPI        IF (IAPROC .NE. NAPOUT )  THEN 
 !/MPI          GOTO 888
+!/MPIT        ELSE
+!/MPIT          WRITE(NDSO,*) "parallelization done"
 !/MPI        END IF
 
 !

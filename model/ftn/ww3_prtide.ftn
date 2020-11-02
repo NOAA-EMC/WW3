@@ -395,7 +395,11 @@
             TIDE_MAX=TIDE_MAX+1
             INDMAX(TIDE_MAX)=J
             READ(TIDECON_MAXVALS(TIDE_MAXI),*) MAXVALCON(TIDE_MAX)
-            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,*) 'Maximum allowed value for amplitude:',J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
+            IF (IAPROC.EQ.NAPOUT) THEN
+              WRITE(NDSO,'(A,I8,A,F10.2)') &
+                   'Maximum allowed value for amplitude:',&
+                   J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
+            END IF
           END IF
         END DO
       END DO
@@ -501,14 +505,15 @@
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
                     ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN
                   TIDEOK = 0
-                  WRITE(NDSO,*) 'BAD: ', INDMAX(I), MAXVALCON(I), '/', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
+                  WRITE(NDSO,'(A,I8,F10.2,A,F10.2)') 'BAD: ', INDMAX(I), MAXVALCON(I), &
+                        '/', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
                 END IF
                 BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
               END DO
 
               IF (BADPOINTS(IX,IY).GT.0) THEN 
                 NBAD = NBAD +1
-                WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
+                WRITE(NDSE,'(A,I8,I8,F10.2,A,F10.2)') 'BAD POINT:',IX,IY,NBAD, &
                    TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 END IF
             END DO
@@ -593,8 +598,9 @@
                 END IF         
               END DO
               IF (ABS(WCURTIDEX).GT.10..OR.ABS(WCURTIDEY).GT.10.)  THEN
-                WRITE(NDSE,*) 'WARNING: VERY STRONG CURRENT... BAD CONSTITUENTS?', &
-                        IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
+                WRITE(NDSE,'(A,I8,F10.2,F10.2,F10.2,A,F10.2)') &
+                     'WARNING: VERY STRONG CURRENT... BAD CONSTITUENTS?', &
+                     IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 STOP
               END IF
 !/MPI                IND=IND+1
@@ -611,9 +617,12 @@
 !
 
 !/MPI            IF (NAPROC.GT.1) THEN
-!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, &
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, &
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, &
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
 !/MPI            ELSE
 !/MPI              FX1D = FX1DL
 !/MPI              FY1D = FY1DL
@@ -659,7 +668,7 @@
                     TIDEOK = 0
                 END DO
                 IF (TIDEOK.EQ.0) THEN   
-                  WRITE(NDSE,*) 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
+                  WRITE(NDSE,'(A,I8,I8,F10.2)') 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
                   TIDAL_CONST(IX,IY,:,1,1)=0
                 END IF
               END IF   
@@ -689,9 +698,12 @@
 !
 
 !/MPI            IF (NAPROC.GT.1) THEN
-!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM,&
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM,&
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM,&
+!/MPI                               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
 !/MPI            ELSE
 !/MPI              FX1D = FX1DL
 !/MPI              FY1D = FY1DL
