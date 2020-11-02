@@ -1,12 +1,70 @@
+!/ ------------------------------------------------------------------- /
       MODULE W3OUNFMETAMD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!/    For updates see subroutines.
+!/
+!  1. Purpose :
+!
+!     Manages user configurable netCDF meta-data for ww3_ounf program.
+!
+!  2. Method :
+!
+!     Default netCDF meta data is provided for each WW3 output variable
+!     and is stored intentally via the META_T type. The meta values are
+!     grouped by component (max 3), field (IFI) and group (IFJ).
+!     
+!     The user can override this meta data via a namelist file. Variable
+!     overrides can be specified with the IFI,IFJ combination or the 
+!     WW3 internal variable name (e.g. HS, WND, etc). For variables
+!     with multiple output components, each component is specified 
+!     seperately and indexed using the IFC field. Example input file:
+! 
+!       &NML_OUNF_META
+!          ! Select by field name (as per ww3_ounf and ww3_shel)
+!          META(1)%FLDID = ‘HS’
+!          META(1)%VARNL = ‘sig wave height’
+!
+!          ! Select by IFI,IFJ (1,2 = WND)
+!          META(2)%IFI = 1 
+!          META(2)%IFJ = 2
+!          META(2)%VARNC = “A comment”
+!
+!          ! Multi-component fields are set using the IFC value
+!          META(3)%IFI = 1 
+!          META(3)%IFJ = 3
+!          META(3)%IFC = 1  ! default is 1
+!          META(3)%VARNS = “u-wind”
+!
+!          META(4)%IFI = 1 
+!          META(4)%IFJ = 3
+!          META(4)%IFC = 2
+!          META(4)%VARNS = “v-wind”
+!
+!          ! Partitioned fields (IFI=4) have a place holder for 
+!          ! <IPART> that will be replaced by the partition number:
+!          META(5)%FLDID = ‘PHS’
+!          META(5)%VARNL = ‘Sig. wave height for partition no. <IPART>’
+!       /
+!
+!/ ------------------------------------------------------------------- /
 
       USE NETCDF
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: SIG, NK
-      USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP, NDSE
-
+      USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
+                          NDSE, FNMPRE
 
       IMPLICIT NONE
+
+      PUBLIC
 
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
       CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
@@ -46,24 +104,39 @@
       CHARACTER(LEN=30)  :: DIRCOM
       CHARACTER(LEN=128) :: PARTCOM
 
-
       CONTAINS 
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_META()
-
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Allocates space for the META_T arrays and sets some constants.
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       LOGICAL :: FLGNML
       INTEGER :: I, J
 
       ! 1. Allocate nested GROUP, FIELD structure:
-      WRITE(0,*) "Allocating meta"
-      PRINT*,'  GROUPS: ', NOGRP
       ALLOCATE(GROUP(NOGRP))
       DO I = 1,NOGRP
-        PRINT*,'    GROUP ',I, ' FIELDS: ',NOGE(I)
         ALLOCATE(GROUP(I)%FIELD(NOGE(I)))
+        PRINT*,"GRP/FIELDS: ",I, NOGE(I)
         DO J = 1,NOGE(I)
-          PRINT*,'       FIELD ',J, ' META: ', 3
           ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
         ENDDO
       ENDDO 
@@ -101,7 +174,7 @@
 
       ! If the ounfmeta.nml exists, read this in to override any
       ! meta data set above
-      INQUIRE(FILE="ounfmeta.nml", EXIST=FLGNML)
+      INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.nml", EXIST=FLGNML)
       IF(FLGNML) THEN 
          CALL READ_NML()
       ENDIF
@@ -109,9 +182,28 @@
       END SUBROUTINE INIT_META
 
 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE TEARDOWN_META()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     De-allocates memory used for the META_T arrays
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      ! Free up allocated space
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       INTEGER :: I, J
 
       DO I = 1,NOGRP
@@ -125,32 +217,59 @@
       END SUBROUTINE TEARDOWN_META
 
 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_NML()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Reads the ounfmeta.nml namelist file to override individual
+!     netCDF meta-data entries.
+!
+!  2. Method :
+!
+!     As we are not exposing the internal meta data arrays directly via
+!     the namelist, we cannot rely on Fortran's built in ability to 
+!     override specific namelist entries. Therefore we have to merge in
+!     "changed" values manually.
+!
+!/ ------------------------------------------------------------------- /
          USE W3IOGOMD, ONLY: W3FLDTOIJ
 
          IMPLICIT NONE
-   
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
          INTEGER ::  ierr, I
          CHARACTER(LEN=128) :: msg
          INTEGER :: MAX_NML_META = NOGRP * NGRPP * 3
    
-         TYPE(META_T), ALLOCATABLE :: NML_META(:)
+         TYPE(META_T), ALLOCATABLE :: META(:)
          TYPE(META_T), POINTER :: PMETA, NEWMETA
-         NAMELIST /META/ NML_META
+         NAMELIST /NML_OUNF_META/ META
 
          INTEGER :: IFI, IFJ, IFC
 
-         ALLOCATE(NML_META(MAX_NML_META))
+         ALLOCATE(META(MAX_NML_META))
 
          ! Mark all fields as unset (NOTE: THIS IS MAKING THIS VARIABLE
          ! IMPICITLY A "SAVE" - PROBABLY DONT WANT TO DO THIS
-!         NML_META = META_T(UNSETR,UNSETR,UNSETR,'unset','unset','unset','unset', & 
+!         META = META_T(UNSETR,UNSETR,UNSETR,'unset','unset','unset','unset', & 
 !            'unset','unset','unset','unset',META_PAIR_T('unset','unset'),     &
 !            0, 0, 1, '')
 
-   
+         ! TODO - file I/O error handling... 
          OPEN(10, file="ounfmeta.nml", status="old", form="formatted")
-         READ(10, nml=meta, iostat=ierr, iomsg=msg)
+         READ(10, nml=nml_ounf_meta, iostat=ierr, iomsg=msg)
          if(ierr.ne.0) THEN
             PRINT*,'Error reading namelist'
             PRINT*,msg
@@ -161,82 +280,116 @@
 
          ! Process meta data:
          DO I=1,MAX_NML_META
-            IF(NML_META(I)%IFI .EQ. 0 .AND. NML_META(I)%IFJ .EQ. 0 .AND. &
-                  NML_META(I)%FLDID == '') EXIT
+            IF(META(I)%IFI .EQ. 0 .AND. META(I)%IFJ .EQ. 0 .AND. &
+                  META(I)%FLDID == '') EXIT
     
-            CALL PRINT_META(NML_META(I))
+            CALL PRINT_META(META(I))
             ! Try getting IFI and IFJ from field ID, if set:
-            IF(NML_META(I)%FLDID /= '') THEN
+            IF(META(I)%FLDID /= '') THEN
                ! GET IFI and IFJ from field name lookup.
-               CALL W3FLDTOIJ(NML_META(I)%FLDID, IFI, IFJ, 1, 1, NDSE)
+               CALL W3FLDTOIJ(META(I)%FLDID, IFI, IFJ, 1, 1, NDSE)
                IF(IFI .NE. -1) THEN
-                 NML_META(I)%IFI = IFI
-                 NML_META(I)%IFJ = IFJ
-                 PRINT*,'Got IFI,IFJ ',IFI,IFJ, ' for ', NML_META(I)%FLDID
+                 META(I)%IFI = IFI
+                 META(I)%IFJ = IFJ
+                 PRINT*,'Got IFI,IFJ ',IFI,IFJ, ' for ', META(I)%FLDID
                ELSE
-                 WRITE(0,*) "Unknown field id: ",NML_META(I)%FLDID
-                 CALL EXIT(1)
+                 WRITE(0,*) "Unknown field id: ",META(I)%FLDID
+                 CALL EXIT(1) ! TODO exit with EXTCDE
                ENDIF
-            ELSEIF(NML_META(I)%IFI .EQ. 0 .OR.  NML_META(I)%IFJ .EQ. 0) THEN
+            ELSEIF(META(I)%IFI .EQ. 0 .OR.  META(I)%IFJ .EQ. 0) THEN
                WRITE(0,*) "ERROR: Meta ",I," has neither fldid or IFI/IFJ set"
-               CALL EXIT(1)
+               CALL EXIT(1) ! TODO exit with EXTCDE
             ENDIF
 
-            IFI = NML_META(I)%IFI
-            IFJ = NML_META(I)%IFJ
-            IFC = NML_META(I)%IFC
+            IFI = META(I)%IFI
+            IFJ = META(I)%IFJ
+            IFC = META(I)%IFC
 
             ! Do check of IFI and IFJ
             IF(IFI .GT. NOGRP) THEN
                 WRITE(0,*) "ERROR: IFI for meta ", I, " > ",NOGRP
-                CALL EXIT(1)
+                CALL EXIT(1) ! TODO exit with EXTCDE
             ENDIF
 
             IF(IFJ .GT. NOGE(IFI)) THEN
                 WRITE(0,*) "ERROR: IFJ for meta ", I, " > ",NOGE(IFI)
-                CALL EXIT(1)
+                CALL EXIT(1) ! TODO exit with EXTCDE
             ENDIF
-
 
             IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
                 WRITE(0,*) "ERROR: IFC for meta ", I, " should be in range 1,3"
-                CALL EXIT(1)
+                CALL EXIT(1) ! TODO exit with EXTCDE
             ENDIF
 
            PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC) 
 
-           IF(NML_META(I)%ENAME .NE. UNSETC) PMETA%ENAME = NML_META(I)%ENAME
-           IF(NML_META(I)%VARNM .NE. UNSETC) PMETA%VARNM = NML_META(I)%VARNM
-           IF(NML_META(I)%VARNS .NE. UNSETC) PMETA%VARNS = NML_META(I)%VARNS
-           IF(NML_META(I)%VARNL .NE. UNSETC) PMETA%VARNL = NML_META(I)%VARNL
-           IF(NML_META(I)%VARNG .NE. UNSETC) PMETA%VARNG = NML_META(I)%VARNG
-           IF(NML_META(I)%VARND .NE. UNSETC) PMETA%VARND = NML_META(I)%VARND
-           IF(NML_META(I)%VARNC .NE. UNSETC) PMETA%VARNC = NML_META(I)%VARNC
-           IF(NML_META(I)%UNITS .NE. UNSETC) PMETA%UNITS = NML_META(I)%UNITS
+           IF(META(I)%ENAME .NE. UNSETC) PMETA%ENAME = META(I)%ENAME
+           IF(META(I)%VARNM .NE. UNSETC) PMETA%VARNM = META(I)%VARNM
+           IF(META(I)%VARNS .NE. UNSETC) PMETA%VARNS = META(I)%VARNS
+           IF(META(I)%VARNL .NE. UNSETC) PMETA%VARNL = META(I)%VARNL
+           IF(META(I)%VARNG .NE. UNSETC) PMETA%VARNG = META(I)%VARNG
+           IF(META(I)%VARND .NE. UNSETC) PMETA%VARND = META(I)%VARND
+           IF(META(I)%VARNC .NE. UNSETC) PMETA%VARNC = META(I)%VARNC
+           IF(META(I)%UNITS .NE. UNSETC) PMETA%UNITS = META(I)%UNITS
 
-           IF(NML_META(I)%FSC .NE. UNSETR) PMETA%FSC = NML_META(I)%FSC
-           IF(NML_META(I)%VMIN .NE. UNSETR) PMETA%VMIN = NML_META(I)%VMIN
-           IF(NML_META(I)%VMAX .NE. UNSETR) PMETA%VMAX = NML_META(I)%VMAX
+           IF(META(I)%FSC .NE. UNSETR) PMETA%FSC = META(I)%FSC
+           IF(META(I)%VMIN .NE. UNSETR) PMETA%VMIN = META(I)%VMIN
+           IF(META(I)%VMAX .NE. UNSETR) PMETA%VMAX = META(I)%VMAX
 
-           IF(NML_META(I)%EXTRA%ATTNAME .NE. 'unset')                  &
-                PMETA%EXTRA%ATTNAME = NML_META(I)%EXTRA%ATTNAME
-           IF(NML_META(I)%EXTRA%ATTVAL .NE. 'unset')                   &
-                PMETA%EXTRA%ATTVAL = NML_META(I)%EXTRA%ATTVAL
-           IF(NML_META(I)%EXTRA%TYPE .NE. 'unset')                     &
-                PMETA%EXTRA%TYPE = NML_META(I)%EXTRA%TYPE
+           IF(META(I)%EXTRA%ATTNAME .NE. 'unset')                  &
+                PMETA%EXTRA%ATTNAME = META(I)%EXTRA%ATTNAME
+           IF(META(I)%EXTRA%ATTVAL .NE. 'unset')                   &
+                PMETA%EXTRA%ATTVAL = META(I)%EXTRA%ATTVAL
+           IF(META(I)%EXTRA%TYPE .NE. 'unset')                     &
+                PMETA%EXTRA%TYPE = META(I)%EXTRA%TYPE
 
          ENDDO
-         
-
       END SUBROUTINE READ_NML
 
+!/ ------------------------------------------------------------------- /
       FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Returns a META_T type containig the netCDF matadata for the 
+!     requested field
+!
+!  2. Method :
+!
+!     A copy of the meta-data is returned, rather than a pointer. This
+!     is because in the case of paritioned parameters, the metadata
+!     will be updated with the partition number.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IFI     Int.  I  Output group number
+!       IFJ     Int.  I  Output field number
+!       ICOMP   Int.  I  Component number (defaults to 1)
+!       IPART   Int.  I  Partition number (defaults to 1)
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
          
          IMPLICIT NONE
          INTEGER, INTENT(IN) :: IFI, IFJ
          INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
+
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
          INTEGER :: IFP, IFC
-         !TYPE(META_T), POINTER :: META
          TYPE(META_T) :: META ! Not pointer as we might need to modify it
                
          IFC = 1
@@ -257,11 +410,43 @@
       END FUNCTION GETMETA
 
 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Adds partition number to meta-data.
+!
+!  2. Method :
+!
+!     Replaces all instances of "<IPART>" in the provided meta data with
+!     the partition number IPART.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       META  META_T  I  Meta data type
+!       IPART   Int.  I  Partition number
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(INOUT) :: META
       INTEGER, INTENT(IN) :: IPART
-
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       CHARACTER(LEN=80) :: TMP
       INTEGER :: I, J
 
@@ -278,11 +463,40 @@
       END SUBROUTINE ADD_PARTNO
 
 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PARTNO_STRING_SUB(INSTR, IPART)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Replaces occurancs of "<IPART>" in a string with the value provided
+!     in IPART.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       INSTR  Char.  I/O  Input string
+!       IPART   Int.  I    Partition number
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       CHARACTER(LEN=*), INTENT(INOUT) :: INSTR
       INTEGER, INTENT(IN) :: IPART
-
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       INTEGER :: I, J
 
       I = INDEX(INSTR, "<IPART>")
@@ -294,55 +508,85 @@
       END SUBROUTINE PARTNO_STRING_SUB
 
 
-      FUNCTION FUNC_PARTNO_STRING_SUB(INSTR, IPART) RESULT(OUTSTR)
-      IMPLICIT NONE
-      CHARACTER(LEN=*), INTENT(IN) :: INSTR
-      INTEGER, INTENT(IN) :: IPART
-      CHARACTER(LEN=256) :: OUTSTR
+!      FUNCTION FUNC_PARTNO_STRING_SUB(INSTR, IPART) RESULT(OUTSTR)
+!      IMPLICIT NONE
+!      CHARACTER(LEN=*), INTENT(IN) :: INSTR
+!      INTEGER, INTENT(IN) :: IPART
+!      CHARACTER(LEN=256) :: OUTSTR
+!
+!      INTEGER :: I, J
+!
+!      I = INDEX(INSTR, "<IPART>")
+!      J = I + LEN_TRIM("<IPART>")
+!      IF(I .GT. 0) THEN
+!        WRITE(OUTSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
+!      ELSE
+!        OUTSTR = INSTR
+!      ENDIF
+!
+!      END FUNCTION FUNC_PARTNO_STRING_SUB
 
-      INTEGER :: I, J
 
-      I = INDEX(INSTR, "<IPART>")
-      J = I + LEN_TRIM("<IPART>")
-      IF(I .GT. 0) THEN
-        WRITE(OUTSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
-      ELSE
-        OUTSTR = INSTR
-      ENDIF
-
-      END FUNCTION FUNC_PARTNO_STRING_SUB
-
-
-      SUBROUTINE WRITE_META(ncid, varid, meta, err)
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE WRITE_META(NCID, VARID, META, ERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Writes the meta-data entries for a variable.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID    Int.  I/O  NetCDF file ID
+!       VARID   Int.  I/O  NetCDF variable ID
+!       META    Int.  I    Meta data type
+!       ERR     Int.  O    Error value
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
          IMPLICIT NONE
-         INTEGER, INTENT(IN) :: ncid, varid
-         TYPE(META_T), INTENT(IN) :: meta
-         INTEGER, INTENT(OUT) :: err
-         INTEGER :: ival
-         REAL :: rval
+
+         INTEGER, INTENT(IN) :: NCID, VARID
+         TYPE(META_T), INTENT(IN) :: META
+         INTEGER, INTENT(OUT) :: ERR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+         INTEGER :: IVAL
+         REAL :: RVAL
    
-   
-         err = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
-         IF(err /= NF90_NOERR) RETURN
-         err = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
-         IF(err /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
+         IF(ERR /= NF90_NOERR) RETURN
+         ERR = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
+         IF(ERR /= NF90_NOERR) RETURN
          IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
-               err = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
-               IF(err /= NF90_NOERR) RETURN
+               ERR = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+               IF(ERR /= NF90_NOERR) RETURN
          ENDIF
          IF (META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
-               err = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
-               IF(err /= NF90_NOERR) RETURN
+               ERR = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+               IF(ERR /= NF90_NOERR) RETURN
          END IF
 
          IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
@@ -350,12 +594,12 @@
             SELECT CASE(META%EXTRA%TYPE)
               CASE('i')
                 READ(META%EXTRA%ATTVAL, *) ival
-                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, ival)
+                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, ival)
               CASE('r', 'f')
                 READ(META%EXTRA%ATTVAL, *) rval
-                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, rval)
+                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, rval)
               CASE('c')
-                err = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
+                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
                         META%EXTRA%ATTVAL)
               CASE DEFAULT
                 WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
@@ -364,7 +608,30 @@
       END SUBROUTINE WRITE_META
     
 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_META(META)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Writes meta-data to the screen - for debugging purposes.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       VARID   Int.  I/O  NetCDF variable ID
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
          IMPLICIT NONE
 
          TYPE(META_T), INTENT(IN) :: META
@@ -380,40 +647,55 @@
          WRITE(*,"(A20,':')") "Extra metadata"
          WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
          WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
-         PRINT*,META%EXTRA%TYPE == ""
+
       END SUBROUTINE PRINT_META
 
-      SUBROUTINE CLEAR_META(META)
-      TYPE(META_T), INTENT(INOUT) :: META(3)
-      META(:)%FSC    = 1
-      META(:)%UNITS  = ''
-      META(:)%ENAME  = ''
-      META(:)%VARNM = ''
-      META(:)%VARNL =''
-      META(:)%VARNS =''
-      META(:)%VARNG =''
-      META(:)%VARNC =''
-      META(:)%VARND =''
-      META(:)%VMIN = 0
-      META(:)%VMAX = 0
-      END SUBROUTINE CLEAR_META
+!      SUBROUTINE CLEAR_META(META)
+!      TYPE(META_T), INTENT(INOUT) :: META(3)
+!      META(:)%FSC    = 1
+!      META(:)%UNITS  = ''
+!      META(:)%ENAME  = ''
+!      META(:)%VARNM = ''
+!      META(:)%VARNL =''
+!      META(:)%VARNS =''
+!      META(:)%VARNG =''
+!      META(:)%VARNC =''
+!      META(:)%VARND =''
+!      META(:)%VMIN = 0
+!      META(:)%VMAX = 0
+!      END SUBROUTINE CLEAR_META
 
-      SUBROUTINE SET_META(IFI, IFJ, META)
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: IFI, IFJ
-      TYPE(META_T) :: META(3)
+!      SUBROUTINE SET_META(IFI, IFJ, META)
+!      IMPLICIT NONE
+!      INTEGER, INTENT(IN) :: IFI, IFJ
+!      TYPE(META_T) :: META(3)
+!
+!      IF(IFI .GT. NOGRP) RETURN
+!      IF(IFJ .GT. NOGE(IFI)) RETURN
+!
+!      GROUP(IFI)%FIELD(IFJ)%META = META
+!
+!      END SUBROUTINE SET_META
 
-      IF(IFI .GT. NOGRP) RETURN
-      IF(IFJ .GT. NOGE(IFI)) RETURN
 
-      GROUP(IFI)%FIELD(IFJ)%META = META
-
-      END SUBROUTINE SET_META
-
-
+!/ ------------------------------------------------------------------- /
       SUBROUTINE DEFAULT_META()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Populates the default meta data for ww3_ounf.
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      !TYPE(META_T) :: META(3)
       TYPE(META_T), POINTER :: META(:)
 !
 !----------GROUP 1 ----------------
@@ -575,7 +857,6 @@
 !
 !----------GROUP 2 ----------------
 !
-      WRITE(0,*) "Group 2"
 ! IFI=2, IFJ=1
       !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(1)%META
@@ -589,7 +870,6 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 32000
       !CALL SET_META(2,1,META)
-      return
 ! IFI=2, IFJ=2
  !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(2)%META
@@ -1892,5 +2172,6 @@
 !      CALL SET_META(9,5,META)
 !
       END SUBROUTINE DEFAULT_META
+!/ ------------------------------------------------------------------- /
 
       END MODULE W3OUNFMETAMD
