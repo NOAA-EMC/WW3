@@ -135,13 +135,11 @@
       ALLOCATE(GROUP(NOGRP))
       DO I = 1,NOGRP
         ALLOCATE(GROUP(I)%FIELD(NOGE(I)))
-        PRINT*,"GRP/FIELDS: ",I, NOGE(I)
         DO J = 1,NOGE(I)
           ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
         ENDDO
       ENDDO 
 
-      WRITE(0,*) "Setting string constants"
       ! 2. Set direction convention:
       DIRCOM = ""
 !/RTD      IF ( FLAGUNR ) THEN
@@ -249,7 +247,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-         INTEGER ::  ierr, I
+         INTEGER ::  IERR, I, MCNT = 0
          CHARACTER(LEN=128) :: msg
          INTEGER :: MAX_NML_META = NOGRP * NGRPP * 3
    
@@ -283,7 +281,8 @@
             IF(META(I)%IFI .EQ. 0 .AND. META(I)%IFJ .EQ. 0 .AND. &
                   META(I)%FLDID == '') EXIT
     
-            CALL PRINT_META(META(I))
+            MCNT = MCNT + 1
+
             ! Try getting IFI and IFJ from field ID, if set:
             IF(META(I)%FLDID /= '') THEN
                ! GET IFI and IFJ from field name lookup.
@@ -291,7 +290,6 @@
                IF(IFI .NE. -1) THEN
                  META(I)%IFI = IFI
                  META(I)%IFJ = IFJ
-                 PRINT*,'Got IFI,IFJ ',IFI,IFJ, ' for ', META(I)%FLDID
                ELSE
                  WRITE(0,*) "Unknown field id: ",META(I)%FLDID
                  CALL EXIT(1) ! TODO exit with EXTCDE
@@ -342,8 +340,14 @@
                 PMETA%EXTRA%ATTVAL = META(I)%EXTRA%ATTVAL
            IF(META(I)%EXTRA%TYPE .NE. 'unset')                     &
                 PMETA%EXTRA%TYPE = META(I)%EXTRA%TYPE
+         ENDDO ! I=1,MAX_NML_META
 
-         ENDDO
+         WRITE(*, 3000) MCNT
+
+
+!
+ 3000 FORMAT('Read in ',I3,' namelist metadata entries')
+!
       END SUBROUTINE READ_NML
 
 !/ ------------------------------------------------------------------- /
@@ -570,8 +574,10 @@
          IF(ERR /= NF90_NOERR) RETURN
          ERR = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
          IF(ERR /= NF90_NOERR) RETURN
-         ERR = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
-         IF(ERR /= NF90_NOERR) RETURN
+         IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
+           ERR = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+           IF(ERR /= NF90_NOERR) RETURN
+         ENDIF
          ERR = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
          IF(ERR /= NF90_NOERR) RETURN
          ERR = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
@@ -581,12 +587,12 @@
          ERR = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
          IF(ERR /= NF90_NOERR) RETURN
          IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
-               ERR = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
-               IF(ERR /= NF90_NOERR) RETURN
+           ERR = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+           IF(ERR /= NF90_NOERR) RETURN
          ENDIF
          IF (META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
-               ERR = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
-               IF(ERR /= NF90_NOERR) RETURN
+           ERR = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+           IF(ERR /= NF90_NOERR) RETURN
          END IF
 
          IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
@@ -738,8 +744,6 @@
       META(2)%VARNG='northward_sea_water_velocity'
       META(2)%VARNC='cur=sqrt(U**2+V**2)'
       !CALL SET_META(1,2,META)
-      call PRINT_META(META(1))
-      call PRINT_META(META(2))
 ! IFI=1, IFJ=3         
       !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(3)%META
@@ -1200,8 +1204,8 @@
       META(1)%ENAME = '.ptp<IPART>'
       META(1)%VARNM = 'ptp<IPART>' 
       META(1)%VARNL = 'peak period partition <IPART>' 
-      META(1)%VARNS = 'sea_surface_wave_period_at_<IPART>' // &
-                             'variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%VARNS = 'sea_surface_wave_period_at_variance_spectral' // &
+                         '_density_maximum_partition_<IPART>'
       META(1)%VARNG = 'dominant_wave_period_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 

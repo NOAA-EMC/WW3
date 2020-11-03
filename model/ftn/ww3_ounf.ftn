@@ -36,6 +36,8 @@
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/    07-Oct-2019 : RTD option with standard lat-lon
 !/                  grid when nesting to rotated grid   ( version 7.11 )
+!/    03-Nov-2020 : Moved NetCDF metadata to seperate   ( version 7.11 )
+!/                  module.
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -144,7 +146,6 @@
       USE W3OUNFMETAMD, ONLY: INIT_META, TEARDOWN_META, GETMETA,       &
                               WRITE_META, META_T, NCVARTYPE
 !
-      USE W3OUNFMETAMD, ONLY: PRINT_META ! TODO: For testing
       USE NETCDF
 
 !/SMC      USE W3SMCOMD
@@ -694,6 +695,8 @@
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
+!/    03-Nov-2020 : NetCDF metadata moved to seperate   ( version 7.11 )
+!/                  module.
 !/
 !  1. Purpose :
 !
@@ -2013,7 +2016,6 @@
             ! If NOT flag TOGETHER or variable with freq dim &
             ! (ef, p2l, ...), add variable name in file name
             ELSE
-              CALL PRINT_META(META)
               FNAMENC(S1+2:S1+S2) = META%ENAME(2:S2)
             ENDIF
             ! Defines the netcdf extension
