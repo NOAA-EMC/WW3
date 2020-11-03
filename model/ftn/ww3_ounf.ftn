@@ -129,7 +129,7 @@
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
-                          MSCD, CHARN, TWS, TAUA, TAUDIR               &
+                          MSCD, CHARN, TWS, TAUA, TAUADIR,             &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &

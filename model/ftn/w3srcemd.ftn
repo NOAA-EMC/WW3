@@ -214,6 +214,7 @@
 !       PHICE   Real   O   Energy flux to sea ice         ( !/ICx ) 
 !       TAUOCX-YReal   O   Total ocean momentum components
 !       WNMEAN  Real   O   Mean wave number
+!       DAIR    Real   I   Air density
 !     ----------------------------------------------------------------
 !       Note: several pars are set to I/O to avoid compiler warnings.
 !
@@ -354,7 +355,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: DWAT
+      USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
+                           srce_direct, GRAV, TPI, TPIINV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
@@ -441,7 +443,7 @@
                                  ICE, ICEH
       INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
-                                 TRNX, TRNY, BERG, ICEDMAX
+                                 TRNX, TRNY, BERG, ICEDMAX, DAIR
       REAL, INTENT(INOUT)     :: WN1(NK), CG1(NK), &
                                  SPEC(NSPEC), ALPHA(NK), USTAR,       &
                                  USTDIR, FPI, TAUOX, TAUOY,           &

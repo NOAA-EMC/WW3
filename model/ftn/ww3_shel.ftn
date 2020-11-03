@@ -715,8 +715,6 @@
         END DO
 !/COU          IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
 !/COU          IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
-        IF ( (INFLAGS1(3) .AND. INFLAGS1(5)) .OR.                          &
-             (FLAGSC  (3) .AND. FLAGSC  (5) ) GOTO 2103
 
         INFLAGS1(10) = .FALSE.
 !/MGW        INFLAGS1(10) = .TRUE.
@@ -734,7 +732,7 @@
                  .OR. INFLAGS1(9)
         FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
                  .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
-                 .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4) .OR. &
+                 .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
                  .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
@@ -1150,8 +1148,6 @@
         END DO
 !/COU          IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
 !/COU          IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
-        IF ( (INFLAGS1(3) .AND. INFLAGS1(5)) .OR.                          &
-             (FLAGSC  (3) .AND. FLAGSC  (5) ) GOTO 2103
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2b'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -2507,10 +2503,6 @@
  2102 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1102)
       CALL EXTCDE ( 1102 )
-!
- 2103 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1103)
-      CALL EXTCDE ( 1103 )
 !
  2003 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)

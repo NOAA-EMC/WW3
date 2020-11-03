@@ -1389,10 +1389,10 @@
             END IF
           IF (FLRHOA) THEN
               CALL STME21 ( TRHO , DTME21 )
-              WRITE (NDSO,984) DTME21
+              WRITE (NDSO,990) DTME21
             END IF
 !
-          WRITE (NDSO,985)
+          WRITE (NDSO,984)
 !
         END IF
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.8'
@@ -1500,9 +1500,9 @@
   981 FORMAT (/' Initial time     : ',A)
   982 FORMAT ( ' Water level time : ',A)
   983 FORMAT ( ' Ice field time   : ',A)
-  984 FORMAT ( ' Air density time : ',A)
+  990 FORMAT ( ' Air density time : ',A)
 !
-  985 FORMAT (//                                                      &
+  984 FORMAT (//                                                      &
         37X,'  |       input       |     output    |'/                &
         37X,'  |-------------------|---------------|'/                &
          2X,'   step | pass |    date      time   |',                 &

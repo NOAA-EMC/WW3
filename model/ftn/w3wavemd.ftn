@@ -1165,7 +1165,7 @@
                   IF ( DTR0 .LT. 0. ) THEN
                       IDACT(11:11) = 'B'
                     ELSE
-                      DTTST  = DSEC21 ( TIME, TR0 )
+                      DTTST  = DSEC21 ( TIME, TRN )
                       IF ( DTTST .LE. 0.5*DTR0 ) IDACT(11:11) = 'U'
                     END IF
                 ELSE
