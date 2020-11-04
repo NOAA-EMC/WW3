@@ -21,38 +21,7 @@
 !     and is stored intentally via the META_T type. The meta values are
 !     grouped by component (max 3), field (IFI) and group (IFJ).
 !     
-!     The user can override this meta data via a namelist file. Variable
-!     overrides can be specified with the IFI,IFJ combination or the 
-!     WW3 internal variable name (e.g. HS, WND, etc). For variables
-!     with multiple output components, each component is specified 
-!     seperately and indexed using the IFC field. Example input file:
-! 
-!       &NML_OUNF_META
-!          ! Select by field name (as per ww3_ounf and ww3_shel)
-!          META(1)%FLDID = ‘HS’
-!          META(1)%VARNL = ‘sig wave height’
-!
-!          ! Select by IFI,IFJ (1,2 = WND)
-!          META(2)%IFI = 1 
-!          META(2)%IFJ = 2
-!          META(2)%VARNC = “A comment”
-!
-!          ! Multi-component fields are set using the IFC value
-!          META(3)%IFI = 1 
-!          META(3)%IFJ = 3
-!          META(3)%IFC = 1  ! default is 1
-!          META(3)%VARNS = “u-wind”
-!
-!          META(4)%IFI = 1 
-!          META(4)%IFJ = 3
-!          META(4)%IFC = 2
-!          META(4)%VARNS = “v-wind”
-!
-!          ! Partitioned fields (IFI=4) have a place holder for 
-!          ! <IPART> that will be replaced by the partition number:
-!          META(5)%FLDID = ‘PHS’
-!          META(5)%VARNL = ‘Sig. wave height for partition no. <IPART>’
-!       /
+!     The user can override this meta data via an input text file:
 !
 !/ ------------------------------------------------------------------- /
 
@@ -172,9 +141,9 @@
 
       ! If the ounfmeta.nml exists, read this in to override any
       ! meta data set above
-      INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.nml", EXIST=FLGNML)
+      INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
       IF(FLGNML) THEN 
-         CALL READ_NML()
+         CALL READ_META()
       ENDIF
 
       END SUBROUTINE INIT_META
@@ -216,139 +185,245 @@
 
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE READ_NML()
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           C. Bunney               |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
-!/                  +-----------------------------------+
-!/
-!
-!  1. Purpose :
-!
-!     Reads the ounfmeta.nml namelist file to override individual
-!     netCDF meta-data entries.
-!
-!  2. Method :
-!
-!     As we are not exposing the internal meta data arrays directly via
-!     the namelist, we cannot rely on Fortran's built in ability to 
-!     override specific namelist entries. Therefore we have to merge in
-!     "changed" values manually.
-!
+      SUBROUTINE READ_META()
 !/ ------------------------------------------------------------------- /
-         USE W3IOGOMD, ONLY: W3FLDTOIJ
 
-         IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-         INTEGER ::  IERR, I, MCNT = 0
-         CHARACTER(LEN=128) :: msg
-         INTEGER :: MAX_NML_META = NOGRP * NGRPP * 3
-   
-         TYPE(META_T), ALLOCATABLE :: META(:)
-         TYPE(META_T), POINTER :: PMETA, NEWMETA
-         NAMELIST /NML_OUNF_META/ META
+      IMPLICIT NONE
 
-         INTEGER :: IFI, IFJ, IFC
+      INTEGER ::  IERR, I, NDMI
+      CHARACTER(LEN=256) :: BUF
+      TYPE(META_T), POINTER :: PMETA
 
-         ALLOCATE(META(MAX_NML_META))
+      INTEGER :: IFI, IFJ, IFC
+      INTEGER :: ILINE, MCNT
 
-         ! Mark all fields as unset (NOTE: THIS IS MAKING THIS VARIABLE
-         ! IMPICITLY A "SAVE" - PROBABLY DONT WANT TO DO THIS
-!         META = META_T(UNSETR,UNSETR,UNSETR,'unset','unset','unset','unset', & 
-!            'unset','unset','unset','unset',META_PAIR_T('unset','unset'),     &
-!            0, 0, 1, '')
+      NDMI = 10
+      iline = 0
+      MCNT = 0
 
-         ! TODO - file I/O error handling... 
-         OPEN(10, file="ounfmeta.nml", status="old", form="formatted")
-         READ(10, nml=nml_ounf_meta, iostat=ierr, iomsg=msg)
-         if(ierr.ne.0) THEN
-            PRINT*,'Error reading namelist'
-            PRINT*,msg
-            CALL EXIT(1)
-         endif
-         CLOSE(10)
-
-
-         ! Process meta data:
-         DO I=1,MAX_NML_META
-            IF(META(I)%IFI .EQ. 0 .AND. META(I)%IFJ .EQ. 0 .AND. &
-                  META(I)%FLDID == '') EXIT
+      OPEN(unit=NDMI, file=TRIM(FNMPRE)//"ounfmeta.inp", status="old", iostat=ierr)
+      IF(ierr .NE. 0) THEN
+        PRINT*,'Error opening ounfmeta.inp'
+        STOP
+      ENDIF
     
-            MCNT = MCNT + 1
+      ! Loop over file, skipping comments or blank lines
+      DO
+        READ(NDMI, '(A)', end=100) buf
+        print*,' --- ', TRIM(buf)
+    
+        iline = iline + 1
+        buf = ADJUSTL(buf)
+        IF(BUF(1:1) == "$" .OR. TRIM(BUF) == '') THEN
+          print*,'Blank line/comment'
+          CYCLE
+        ENDIF
+    
+    
+        IF(BUF(1:4) == "META") THEN
+           PRINT*,'    +++ Got meta line'
 
-            ! Try getting IFI and IFJ from field ID, if set:
-            IF(META(I)%FLDID /= '') THEN
-               ! GET IFI and IFJ from field name lookup.
-               CALL W3FLDTOIJ(META(I)%FLDID, IFI, IFJ, 1, 1, NDSE)
-               IF(IFI .NE. -1) THEN
-                 META(I)%IFI = IFI
-                 META(I)%IFJ = IFJ
-               ELSE
-                 WRITE(0,*) "Unknown field id: ",META(I)%FLDID
-                 CALL EXIT(1) ! TODO exit with EXTCDE
-               ENDIF
-            ELSEIF(META(I)%IFI .EQ. 0 .OR.  META(I)%IFJ .EQ. 0) THEN
-               WRITE(0,*) "ERROR: Meta ",I," has neither fldid or IFI/IFJ set"
-               CALL EXIT(1) ! TODO exit with EXTCDE
-            ENDIF
+           MCNT = MCNT + 1
+        
+           ! Get the IFI, IFJ, IFC values from the header
+           CALL DECODE_HEADER(BUF(5:), IFI, IFJ, IFC)
+ 
+           ! TODO: Select correct meta entry
+           pmeta => GROUP(IFI)%FIELD(IFJ)%META(IFC)
+ 
+           ! Update the metadata with values from file:
+           CALL READ_META_PAIRS(NDMI, pmeta)
 
-            IFI = META(I)%IFI
-            IFJ = META(I)%IFJ
-            IFC = META(I)%IFC
+           CALL PRINT_META(pmeta)
+        ELSE
+           PRINT*,'   !!! Syntax error, line ', iline
+           PRINT*,TRIM(BUF)
+        ENDIF
+      ENDDO
+    
+  100 CONTINUE
+      CLOSE(NDMI)
 
-            ! Do check of IFI and IFJ
-            IF(IFI .GT. NOGRP) THEN
-                WRITE(0,*) "ERROR: IFI for meta ", I, " > ",NOGRP
-                CALL EXIT(1) ! TODO exit with EXTCDE
-            ENDIF
-
-            IF(IFJ .GT. NOGE(IFI)) THEN
-                WRITE(0,*) "ERROR: IFJ for meta ", I, " > ",NOGE(IFI)
-                CALL EXIT(1) ! TODO exit with EXTCDE
-            ENDIF
-
-            IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
-                WRITE(0,*) "ERROR: IFC for meta ", I, " should be in range 1,3"
-                CALL EXIT(1) ! TODO exit with EXTCDE
-            ENDIF
-
-           PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC) 
-
-           IF(META(I)%ENAME .NE. UNSETC) PMETA%ENAME = META(I)%ENAME
-           IF(META(I)%VARNM .NE. UNSETC) PMETA%VARNM = META(I)%VARNM
-           IF(META(I)%VARNS .NE. UNSETC) PMETA%VARNS = META(I)%VARNS
-           IF(META(I)%VARNL .NE. UNSETC) PMETA%VARNL = META(I)%VARNL
-           IF(META(I)%VARNG .NE. UNSETC) PMETA%VARNG = META(I)%VARNG
-           IF(META(I)%VARND .NE. UNSETC) PMETA%VARND = META(I)%VARND
-           IF(META(I)%VARNC .NE. UNSETC) PMETA%VARNC = META(I)%VARNC
-           IF(META(I)%UNITS .NE. UNSETC) PMETA%UNITS = META(I)%UNITS
-
-           IF(META(I)%FSC .NE. UNSETR) PMETA%FSC = META(I)%FSC
-           IF(META(I)%VMIN .NE. UNSETR) PMETA%VMIN = META(I)%VMIN
-           IF(META(I)%VMAX .NE. UNSETR) PMETA%VMAX = META(I)%VMAX
-
-           IF(META(I)%EXTRA%ATTNAME .NE. 'unset')                  &
-                PMETA%EXTRA%ATTNAME = META(I)%EXTRA%ATTNAME
-           IF(META(I)%EXTRA%ATTVAL .NE. 'unset')                   &
-                PMETA%EXTRA%ATTVAL = META(I)%EXTRA%ATTVAL
-           IF(META(I)%EXTRA%TYPE .NE. 'unset')                     &
-                PMETA%EXTRA%TYPE = META(I)%EXTRA%TYPE
-         ENDDO ! I=1,MAX_NML_META
-
-         WRITE(*, 3000) MCNT
-
-
+      WRITE(*, 3000) MCNT
+    
 !
  3000 FORMAT('Read in ',I3,' namelist metadata entries')
-!
-      END SUBROUTINE READ_NML
+
+      END SUBROUTINE READ_META
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE DECODE_HEADER(buf, ifi, ifj, ifc)
+!/ ------------------------------------------------------------------- /
+      USE W3IOGOMD, ONLY: W3FLDTOIJ
+      
+      IMPLICIT NONE
+ 
+      CHARACTER(*), INTENT(IN) :: buf
+      INTEGER, INTENT(OUT) :: ifi, ifj, ifc
+
+      INTEGER :: ierr
+      CHARACTER(LEN=10) :: fld
+      
+      ifi = 0
+      ifj = 1
+      ifc = 1
+      fld = ''
+      
+      ! Is first value an int?
+      READ(buf, *, iostat=ierr) ifi
+      IF(ierr .EQ. 0) THEN
+        ! Try reading 3 values:
+        READ(buf, *, iostat=ierr) ifi, ifj, ifc
+        IF(ierr .NE. 0) THEN
+          ! Try just two values:
+          READ(buf, *, iostat=ierr) ifi, ifj
+        ENDIF
+      ELSE
+        ! Try reading field ID plus component
+        READ(buf, *, iostat=ierr) fld, ifc
+      
+        IF(ierr .NE. 0) THEN
+          ! Try just fldid
+          READ(buf, *, iostat=ierr) fld
+        ENDIF
+      ENDIF
+      
+      IF(ierr .NE. 0) THEN
+        PRINT*,'FAILED TO PARSE LINE: ',buf
+        STOP
+      ENDIf
+
+      IF(fld /= '') THEN
+        PRINt*,'DECODING FLDID', fld
+        CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
+      ENDIF
+
+      PRINT*,'I,J,K,FLD:',ifi,ifj,ifc,fld
+      
+      END SUBROUTINE DECODE_HEADER
+      
+      
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE READ_META_PAIRS(NDMI, meta)
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      INTEGER :: NDMI
+      TYPE(META_T), POINTER :: meta
+      
+      CHARACTER(LEN=256) :: buf
+      CHARACTER(LEN=128) :: attn, attv, tmp
+      CHARACTER(LEN=16) :: att_type
+      INTEGER :: i, ierr
+      REAL :: r
+      DO
+        READ(NDMI, '(A)', iostat=ierr, end=200) buf
+        buf = ADJUSTL(buf)
+      
+        IF(BUF(1:4) == "META") THEN
+            ! Start of new meta data entry
+            BACKSPACE(NDMI)
+            EXIT
+        ENDIF
+      
+        IF(BUF(1:1) == "$" .OR. TRIM(BUF) == '') THEN
+          CYCLE
+        ENDIF
+      
+        ! Meta data should be formatted as "attr_name = attr_value"
+        I = INDEX(BUF, "=")
+        IF( I .LT. 1 ) THEN
+           PRINT*,'syntax error: should be "attr_name = attr_value"'
+           print*,'   !!! ', buf
+           CYCLE
+        ENDIF
+      
+        attn = ADJUSTL(BUF(1:I-1))
+        attv = ADJUSTL(BUF(I+1:))
+      
+        SELECT CASE(TRIM(attn))
+          ! Character variables
+          ! Note: Using internal reads will allow the use of quote marks in strings
+          CASE("varnm")
+             READ(attv, *) META%VARNM
+      
+          CASE("ename")
+             READ(attv, *) META%ENAME
+        
+          CASE("standard_name", "varns")
+             READ(attv, *) META%VARNS
+      
+          CASE("long_name", "varnl")
+             READ(attv, *) META%VARNL
+      
+          CASE("globwave_name", "varng")
+             READ(attv, *) META%VARNG
+      
+          CASE("direction_reference", "dir_ref", "varnd")
+             READ(attv, *) META%VARND
+      
+          CASE("comment", "varnc")
+             READ(attv, *) META%VARNC
+      
+          CASE("units")
+             READ(attv, *) META%UNITS
+      
+          ! Real variables
+          CASE("valid_min", "vmin")
+             READ(attv, *) META%VMIN
+      
+          CASE("valid_max", "vmax")
+             READ(attv, *) META%VMAX
+      
+          CASE("scale_value", "fsc")
+             READ(attv, *) META%FSC
+      
+          ! Default case will be the "extra" meta data variable
+          CASE DEFAULT
+             tmp = attv
+             READ(tmp, *) attv, att_type
+             !READ(attv, *) attv, i
+             PRINT*,'Got some other att: '
+             PRINT*,'  - Attname: ', TRIM(attn)
+             PRINT*,'  -  Attval: ', TRIM(attv)
+             PRINT*,'  -    Type: ', att_type
+             !PRINT*,'  -    Type: ', i
+      
+             ! Check attr values are valid w.r.t. attr type
+             SELECT CASE(TRIM(att_type))
+               CASE("i")
+                  READ(attv, *, iostat=ierr) i
+                  IF(ierr .ne. 0) then
+                    PRINT*,'Value is not valid integer: ', attv
+                    stop
+                  ENDIF
+               CASE("r", "f")
+                  READ(attv, *, iostat=ierr) r
+                  IF(ierr .ne. 0) then
+                    PRINT*,'Value is not vaiud real: ', attv
+                    stop
+                  ENDIF
+               CASE("c")
+                  ! Always ok.
+               CASE DEFAULT
+                 PRINT*,'Exrta meta data type should be one of [c,i,r]'
+             END SELECT
+
+             ! Set extra data
+             META%EXTRA%ATTNAME = TRIM(attn)
+             META%EXTRA%ATTVAL = TRIM(attv)
+             META%EXTRA%TYPE = TRIM(att_type)
+        END SELECT
+      ENDDO
+      
+      RETURN
+      
+      ! If we hit EOF - backsapce to ensure this can be read by loop 
+      ! in calling subroutine
+      200 BACKSPACE(NDMI)
+      RETURN
+      
+      END SUBROUTINE READ_META_PAIRS
+
 
 !/ ------------------------------------------------------------------- /
       FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
