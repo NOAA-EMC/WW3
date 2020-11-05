@@ -512,8 +512,6 @@
         IF ( IOUT .GE. NOUT ) EXIT
       END DO
 
-
-      WRITE(0,*) "Tearing down META"
       CALL TEARDOWN_META()
 
 
