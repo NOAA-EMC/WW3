@@ -498,7 +498,7 @@
 !/MPI                          MPI_COMM_WAVE, IERR_MPI )
 !/MPI          DTSIZ  = ICPRT(NSEAL+1,2) - 1
 !
-!/MPIT          WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
+!/T             WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
 !
 !/MPI          IT     = IT0PRT + NAPROC + IAPROC - 1
 !/MPI          IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
@@ -537,7 +537,7 @@
 !/MPI            JSLM   = 1 + (NSEA-JAPROC)/NAPROC
 !/MPI            DTSIZ  = ICP(JSLM+1,2) - 1
 !
-!/MPIT            WRITE (NDST,9031)  JAPROC, DTSIZ
+!/T               WRITE (NDST,9031)  JAPROC, DTSIZ
 !
 !/MPI            ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
 !/MPI            DTP   => PROC(JAPROC)%DTPRT

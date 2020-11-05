@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -43,6 +43,7 @@
 !/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -143,8 +144,10 @@
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
 !      FLOGR2    L.A.  Public   FLags for coupling fields.
+!      FLOGRR    L.A.  Public   FLags for optional coupling restart (2D).
 !      FLOGD     L.A.  Public   Flags for output groups
 !      FLOG2     L.A.  Public   Flags for coupling groups
+!      FLOGR     L.A.  Public   FLags for optional coupling restart (1D).
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -330,6 +333,7 @@
 !/MPI        INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
         LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
                                  FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
+                                 FLOGRR(NOGRP,NGRPP), FLOGR(NOGRP),   &
                                  WRITE1
       END TYPE OTYPE1
 !/
@@ -435,8 +439,9 @@
       INTEGER, POINTER        :: IPASS1
 !/MPI      INTEGER, POINTER        :: NRQGO, NRQGO2
 !/MPI      INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
-      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOGD(:), &
-                                 FLOG2(:), WRITE1
+      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:),            &
+                                 FLOGRR(:,:),FLOGD(:), FLOG2(:),      &
+                                 FLOGR(:), WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -1377,7 +1382,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Dec-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1391,6 +1396,7 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1519,8 +1525,10 @@
 !/MPI      IF ( NRQGO2 .NE. 0 ) IRQGO2 => OUTPTS(IMOD)%OUT1%IRQGO2
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
       FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
+      FLOGRR => OUTPTS(IMOD)%OUT1%FLOGRR
       FLOGD   => OUTPTS(IMOD)%OUT1%FLOGD
       FLOG2   => OUTPTS(IMOD)%OUT1%FLOG2
+      FLOGR   => OUTPTS(IMOD)%OUT1%FLOGR
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS

@@ -2547,12 +2547,12 @@ then
 # Check for input file
 
 # select inp/nml files
-#if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-#then
-#  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-#else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-#fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+  fi
 
   if [ $? = 0 ]
   then
