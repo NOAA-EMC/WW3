@@ -974,7 +974,7 @@
 !
 !     Atmospheric momentum 
 !
-              ELSE IF ( J.EQ.1 .AND. K.EQ.7 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.8 ) THEN
                 FLTWO = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -983,19 +983,19 @@
 !
 !     Air density
 !
-              ELSE IF ( J.EQ.1 .AND. K.EQ.8 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.9 ) THEN
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
 !
 !     Ice thickness
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.9 ) THEN
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.11 ) THEN
 !/IS2          FLONE = .TRUE.
 !/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
 !
 !     Average sea ice floe diameter
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.10) THEN
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.12) THEN
 !/IS2          FLONE = .TRUE.
 !/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )
 !

@@ -52,7 +52,7 @@
 !      TVN       I.A.  Public   Time for mud viscosity field.
 !      TIN       I.A.  Public   Time for ice field. (concentration)
 !      TU0/N     I.A.  Public   Times for momentum fields.
-!      TRN       I.A.  Public   Time for air density fields.
+!      TRN       I.A.  Public   Time for air density field.
 !      TI1N      I.A.  Public   Time for ice field. (parameter 1)
 !      TI2N      I.A.  Public   Time for ice field. (parameter 2)
 !      TI3N      I.A.  Public   Time for ice field. (parameter 3)

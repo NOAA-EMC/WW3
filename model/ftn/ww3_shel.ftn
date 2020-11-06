@@ -2652,10 +2652,6 @@
                '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
                '     IT MUST BE FULLY COUPLED OR DISABLED '/)
 !
- 1103 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-               '     THE MODEL CAN NOT BE DRIVEN BY WIND AND'/        &
-               '     MOMENTUM AT THE SAME TIME '/)
-!
  1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
                '     ILLEGAL TIME INTERVAL'/)
 !

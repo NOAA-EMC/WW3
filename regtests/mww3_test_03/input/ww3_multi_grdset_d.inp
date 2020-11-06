@@ -1,12 +1,12 @@
 $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
   6 0 F 1 F F
- 'low1'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
- 'low2'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
- 'low3'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
- 'hgh1'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
- 'hgh2'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
- 'hgh3'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+ 'low1'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'low2'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'low3'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'hgh1'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+ 'hgh2'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+ 'hgh3'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
 $
    19680606 000000   19680606 120000
 $

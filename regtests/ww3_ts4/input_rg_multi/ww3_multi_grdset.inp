@@ -4,8 +4,8 @@ $ ------------------------------------
 $
   'wind' F F T F F F F
 $
-  'large'  'no' 'no' 'wind' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
-  'nest'   'no' 'no' 'wind' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+  'large'  'no' 'no' 'wind' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+  'nest'   'no' 'no' 'wind' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
 $
    20000101 000000   20000103 000000
 $

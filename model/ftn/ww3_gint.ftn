@@ -1518,9 +1518,9 @@
                     END IF
                   END IF
 !
-!/BT4                  IF ( FLOGRD(1,9) ) THEN
+!/BT4                  IF ( FLOGRD(1,10) ) THEN
 !/BT4                    IF ( GRIDS(IGRID)%SED_D50(GSEA) .NE. UNDEF ) THEN
-!/BT4                      SUMWT1(9) = SUMWT1(9) + WT
+!/BT4                      SUMWT1(10) = SUMWT1(10) + WT
 !/BT4                      IF ( SED_D50AUX .EQ. UNDEF ) THEN
 !/BT4                        SED_D50AUX = GRIDS(IGRID)%SED_D50(GSEA)*WT
 !/BT4                      ELSE
@@ -1529,9 +1529,9 @@
 !/BT4                    END IF
 !/BT4                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,10) ) THEN
+!/IS2                  IF ( FLOGRD(1,11) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(10) = SUMWT1(10) + WT
+!/IS2                      SUMWT1(11) = SUMWT1(11) + WT
 !/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
 !/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
 !/IS2                      ELSE 
@@ -1540,9 +1540,9 @@
 !/IS2                    END IF
 !/IS2                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,11) ) THEN
+!/IS2                  IF ( FLOGRD(1,12) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(11) = SUMWT1(11) + WT
+!/IS2                      SUMWT1(12) = SUMWT1(12) + WT
 !/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
 !/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
 !/IS2                      ELSE 
