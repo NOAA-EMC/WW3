@@ -44,13 +44,13 @@
 !         -  "varnm"
 !         -  "ename"
 !         -  "standard_name", or "varns"
-!         -  "long_name" or “varnl"
+!         -  "long_name" or "varnl"
 !         -  "globwave_name" or "varng"
 !         -  "direction_reference", "dir_ref" or "varnd"
 !         -  "comment" or "varnc"
 !         -  "units"
-!         -  “valid_min” or "vmin"
-!         -  “valid_max” or "vmax"
+!         -  "valid_min" or "vmin"
+!         -  "valid_max" or "vmax"
 !         -  "scale_value" or "fsc"
 !
 !     Any other attribute name is assumed to be an optional "extra" 
@@ -72,8 +72,8 @@
 !
 !        $ Next one is HSig (group 2, field 1)
 !        META 2 1
-!          varns = “sig. wave height"
-!          varnl = “this is long name”
+!          varns = "sig. wave height"
+!          varnl = "this is long name"
 !
 !        $ Next one is second component of wind. It also sets an
 !        $ "extra" meta data value (height - a float)
