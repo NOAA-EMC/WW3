@@ -2480,9 +2480,12 @@
 !/SMC                        ! SMC Regridded file
 !/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                      ENDIF
+!/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                      CALL CHECK_ERR(IRET)
 !/NC4                           IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                           CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
                   ELSE
                     IF( SMCGRD ) THEN
@@ -2493,24 +2496,28 @@
 !/SMC                        ! SMC Regridded file
 !/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                      ENDIF
+!/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/NC4                          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                          CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
                   END IF
-                  CALL CHECK_ERR(IRET)
                 ELSE
                   DIMFIELD(1)=DIMID(2)
                   DIMFIELD(2)=DIMID(4)
                   DIMFIELD(3)=DIMID(5)
                   IF (NCVARTYPE.EQ.2) THEN 
                     IRET = NF90_DEF_VAR(NCID,META%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                    CALL CHECK_ERR(IRET)
 !/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                        CALL CHECK_ERR(IRET)
                   ELSE 
                     IRET = NF90_DEF_VAR(NCID,META%VARNM, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                    CALL CHECK_ERR(IRET)
 !/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                        CALL CHECK_ERR(IRET)
                   END IF  
-                  CALL CHECK_ERR(IRET)                      
                 END IF
 !
                 !! CB - USE NEW W3META MODULE
@@ -2524,7 +2531,7 @@
                 !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'globwave_name',VARNG(I))
                 !CALL CHECK_ERR(IRET)
                 !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units',UNITVAR(I))
-                !CALL CHECK_ERR(IRET)              
+                !CALL CHECK_ERR(IRET)
 
                 IF (NCVARTYPE.EQ.2) THEN 
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
@@ -2650,6 +2657,7 @@
 !/SMC                        ENDIF
                       ELSE
                          IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                         CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     ELSE
@@ -2674,18 +2682,19 @@
                     DIMFIELD(3)=DIMID(5)
                     IF (NCVARTYPE.EQ.2) THEN 
                       IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                      CALL CHECK_ERR(IRET)
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                      CALL CHECK_ERR(IRET)
                     ELSE
                       IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                      CALL CHECK_ERR(IRET)
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                      CALL CHECK_ERR(IRET)
                     END IF
                   END IF
-                  CALL CHECK_ERR(IRET)
 !
                   !! CB - USE NEW W3META MODULE
                   CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
-                  CALL CHECK_ERR(IRET) ! CB
-                  !CALL WRITE_USER_META(NCID, VARID(IVAR), IFI, IFJ, IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
   
                   !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
@@ -2751,7 +2760,7 @@
                   CALL CHECK_ERR(IRET)
                 END DO  
                 IRET=NF90_ENDDEF(NCID)
-                CALL CHECK_ERR(IRET)            
+                CALL CHECK_ERR(IRET)
               END IF !   N.EQ.1
             END IF  ! IERR.EQ.0
               
