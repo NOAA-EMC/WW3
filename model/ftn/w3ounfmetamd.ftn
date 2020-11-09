@@ -6,7 +6,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -51,7 +51,7 @@
 !         -  "units"
 !         -  "valid_min" or "vmin"
 !         -  "valid_max" or "vmax"
-!         -  "scale_value" or "fsc"
+!         -  "scale_factor" or "fsc"
 !
 !     Any other attribute name is assumed to be an optional "extra" 
 !     attribute. This extra attribute can take an optional "type"
@@ -59,6 +59,13 @@
 !     no type is supplied, it defaults to a characer type. Valud
 !     types are one of ["c", "r", "i"] for character/string, 
 !     real/float or integer values respectively.
+!
+!     Global meta data can be specified with a special "META global" line:
+!
+!       META global
+!         extra_attr = extra_value [type]
+!         extra_attr = extra_value [type]
+!
 !
 !     Example file:
 !
@@ -81,6 +88,11 @@
 !          standard_name = "v-wind"
 !          height = 10.0 "r"
 !
+!        $ Global metadata:
+!        META global
+!          institution = UKMO
+!          comment "space seperated strings should be quoted" c
+!          version = 1.0 r
 !
 !/ ------------------------------------------------------------------- /
 !/
@@ -95,7 +107,7 @@
 
       PUBLIC
 
-      LOGICAL :: DEBUG = .FALSE.
+      LOGICAL :: DEBUG = .TRUE.
 
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
       CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
@@ -121,6 +133,8 @@
         CHARACTER(LEN=6) :: FLDID = ''
       ENDTYPE META_T
 
+
+      ! Storage for META data aggregated by component, field and group:
       TYPE FIELD_T
         TYPE(META_T), POINTER :: META(:)
       END TYPE FIELD_T
@@ -130,6 +144,12 @@
       END TYPE GROUP_T
 
       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
+
+      ! Storage for the Global meta data (free form):
+      ! TODO - implement as a linked list?
+      TYPE(META_PAIR_T), ALLOCATABLE :: GLOBAL_META(:)
+      INTEGER, PARAMETER :: MAX_GBLMETA = 30
+      INTEGER            :: N_GBLMETA
 
       INTEGER            :: NCVARTYPE
       CHARACTER(LEN=30)  :: DIRCOM
@@ -145,7 +165,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
@@ -170,6 +190,10 @@
           ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
         ENDDO
       ENDDO 
+
+      ! Allocate storage for Global meta-data
+      ALLOCATE(GLOBAL_META(MAX_GBLMETA))
+      N_GBLMETA = 0
 
       ! 2. Set direction convention:
       DIRCOM = ""
@@ -218,7 +242,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
@@ -242,8 +266,140 @@
       ENDDO 
       DEALLOCATE(GROUP)
 
+      DEALLOCATE(GLOBAL_META)
+
       END SUBROUTINE TEARDOWN_META
 
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE NEXT_LINE(NDMI, BUF, ILINE, EOF)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Reads the next valid line from the user meta input file.
+!
+!  2. Method :
+!     Lines are repeatedly read in from the input file until
+!     a valid input line is reached. Blank lines and comment lines
+!     (starting with $) are skipped.
+!
+!     If the end of file is reached before any valid line is read
+!     then EOF is set to true.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI    Int.  I  Unit number of input file
+!       BUF    Char.  O  Next input line read from file
+!       ILINE   Int. I/O Line number of file
+!       EOF    Bool.  O  True if end-of-file is reached.
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN)       :: NDMI
+      CHARACTER(*), INTENT(OUT) :: BUF
+      INTEGER, INTENT(INOUT)    :: ILINE
+      LOGICAL, INTENT(OUT)      :: EOF
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: IERR
+      CHARACTER(LEN=10) :: TEST
+      
+      EOF = .FALSE.
+
+      ! Keep reading from file until we read a line that is not:
+      !   - a blank line
+      !   - a comment line (starting with $)
+      !   - the end of the file
+      DO
+        READ(NDMI, '(A)', iostat=IERR, err=101, end=100) BUF
+
+        ILINE = ILINE + 1
+
+        ! Remove any tab characters from buffer (replace with a space)
+        CALL NOTABS(BUF)
+
+        ! Empty line?
+        IF(TRIM(BUF) == '') THEN
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank line]'
+          CYCLE
+        ENDIF
+
+        ! Read first token on line:
+        READ(BUF, *) TEST
+
+        ! Check for comment:
+        IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
+          CYCLE
+        ENDIF
+
+        ! Anything else can be considered the "next line"
+        RETURN
+      ENDDO
+
+      ! Escape locations
+!
+!     End of file
+  100 CONTINUE
+      BUF = ''
+      EOF = .TRUE.
+      RETURN
+!
+!     I/O Error
+  101 CONTINUE
+      PRINT*,'ERROR reading metadata line ', ILINE
+      PRINT*,'IOSTAT=', IERR
+      CALL EXTCDE(10)
+
+      END SUBROUTINE NEXT_LINE
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE NOTABS(STR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Replaces tab characters in a string with spaces.
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      CHARACTER(*), INTENT(INOUT) :: STR
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER, PARAMETER :: ASCII_TAB = 9
+      INTEGER :: SLEN
+      INTEGER :: I
+!       
+      SLEN = LEN_TRIM(STR)
+
+      DO I=1,SLEN
+        IF(ICHAR(STR(I:I)) == ASCII_TAB) THEN
+          STR(I:I) = ' '
+        ENDIF
+      ENDDO
+
+      END SUBROUTINE NOTABS
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META()
@@ -253,7 +409,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
@@ -273,6 +429,7 @@
 
       INTEGER :: IFI, IFJ, IFC
       INTEGER :: ILINE, MCNT
+      LOGICAL :: EOF
 
       NDMI = 60
       ILINE = 0
@@ -289,28 +446,13 @@
       ! Loop over file, skipping comments or blank lines, until we find
       ! a META line.
       DO
-        READ(NDMI, '(A)', IOSTAT=IERR, ERR=101, END=100) BUF
-    
-        ILINE = ILINE + 1
 
-        ! Remove any tab characters from buffer (replace with a space)
-        CALL NOTABS(BUF)
-
-        ! Empty line
-        IF(TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank/comment]'
-          CYCLE
-        ENDIF
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        IF(EOF) GOTO 200
 
         ! Read first token on line:
         READ(BUF, *) TEST
 
-        ! Check for comment or blank line (or line that is just whitespace)
-        IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[blank/comment]', TRIM(BUF)
-          CYCLE
-        ENDIF
-    
         ! A new meta-data section will start with the keyword "META"
         IF(TEST == "META") THEN
            MCNT = MCNT + 1
@@ -324,8 +466,14 @@
               PRINT*,'ERORR: Unknown meta field', buf
               STOP
            ENDIF
+
+           ! IFI = 999 is a section for the "global" meta data 
+           IF(IFI .EQ. 999) THEN
+             CALL READ_GLOBAL_META(NDMI, ILINE)
+             CYCLE
+           ENDIF
  
-           ! Select correct meta entry:
+           ! Select correct variable metadata entry:
            PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC)
  
            ! Update the metadata with values from file:
@@ -338,18 +486,13 @@
         ENDIF
       ENDDO
     
-  100 CONTINUE
+  200 CONTINUE
       CLOSE(NDMI)
-      WRITE(*, 3000) MCNT
+      WRITE(*, 2000) MCNT
+      PRINT*,'READ IN ',N_GBLMETA,' Global meta entries'
       RETURN
 !
-! Error escape locations
-  101 PRINT*,"ERROR reading ounfmeta.nml"
-      PRINT*,'Line number: ',ILINE
-      PRINT*,'IOSTAT: ',IERR
-      CALL EXTCDE(10)
-!
- 3000 FORMAT(/' Read in ',I3,' metadata entries')
+ 2000 FORMAT(/' Read in ',I3,' metadata entries')
 !
       END SUBROUTINE READ_META
 
@@ -361,7 +504,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
@@ -393,10 +536,12 @@
       IMPLICIT NONE
  
       CHARACTER(*), INTENT(IN) :: BUF
-      INTEGER, INTENT(OUT) :: ifi, ifj, ifc
-
-      INTEGER :: ierr
-      CHARACTER(LEN=10) :: fld
+      INTEGER, INTENT(OUT) :: IFI, IFJ, IFC
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: IERR
+      CHARACTER(LEN=10) :: FLD
       
       IFI = 0
       IFJ = 1
@@ -427,15 +572,21 @@
         STOP
       ENDIf
 
+      ! If string value (FLDID), then decode into IFI,IFJ value:
       IF(FLD /= '') THEN
-        IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
-        CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
+        ! Special case for "global" attributes
+        IF(TRIM(FLD) == "global") THEN
+          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Global meta sec.]', TRIM(BUF)
+          IFI = 999  ! Marker for global section
+        ELSE
+          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
+          CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
+        ENDIF
       ENDIF
 
       IF(DEBUG) WRITE(*,'(6X,A20,1X,3I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
       
       END SUBROUTINE DECODE_HEADER
-      
       
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META_PAIRS(NDMI, META, ILINE)
@@ -445,7 +596,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
@@ -456,7 +607,7 @@
 !
 !  2. Method:
 !
-!     Keeps looping over input linse in file until next META section 
+!     Keeps looping over input lines in file until next META section 
 !     or EOF is found. Splits meta pairs on the = character.
 !
 !     Note - the "extra" metadata pair can also provide a variable
@@ -466,7 +617,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       NDMI     Char.   I  Unit number of metadata input file
+!       NDMI      Int.   I  Unit number of metadata input file
 !       META  Int.Ptr.   O  Pointer to META type
 !       ILINE     Int. I/O  Current line number in file
 !     ----------------------------------------------------------------
@@ -478,48 +629,36 @@
       INTEGER, INTENT(INOUT)            :: ILINE
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
-!/
+!
       CHARACTER(LEN=256) :: BUF
       CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
       CHARACTER(LEN=16)  :: ATT_TYPE, TEST
       INTEGER            :: I, IERR
       REAL               :: R
-
+      LOGICAL            :: EOF
+!
       EXTRA = ''
 
       ! Keep reading lines until we hit EOF or anoter META keyword
       DO
-        READ(NDMI, '(A)', iostat=IERR, err=201, end=200) BUF
-
-        ILINE = ILINE + 1
-
-        ! Remove any tab characters from buffer (replace with a space)
-        CALL NOTABS(BUF)
-
-        ! Empty line?
-        IF(TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank/comment]'
-          CYCLE
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        IF(EOF) THEN
+          BACKSPACE(NDMI)
+          RETURN
         ENDIF
+
 
         ! Read first token on line:
         READ(BUF, *) TEST
 
-        ! A new meta-data section will start with the keyword META
         IF(TEST == "META") THEN
-            ! Start of new meta data entry
-            IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
-            BACKSPACE(NDMI)
-            EXIT
+          ! Start of new meta data entry
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          BACKSPACE(NDMI)
+          EXIT
         ENDIF
 
         IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
-      
-        ! Blank line or comment:
-        IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank/comment]'
-          CYCLE
-        ENDIF
       
         ! Meta data should be formatted as "attr_name = attr_value"
         I = INDEX(BUF, "=")
@@ -530,8 +669,8 @@
            CALL EXTCDE(11)
         ENDIF
       
-        attn = ADJUSTL(BUF(1:I-1))
-        attv = ADJUSTL(BUF(I+1:))
+        ATTN = ADJUSTL(BUF(1:I-1))
+        ATTV = ADJUSTL(BUF(I+1:))
       
         SELECT CASE(TRIM(attn))
           ! Character variables
@@ -567,53 +706,27 @@
           CASE("valid_max", "vmax")
              READ(attv, *) META%VMAX
       
-          CASE("scale_value", "fsc")
+          CASE("scale_factor", "fsc")
              READ(attv, *) META%FSC
       
           ! Default case will be the "extra" meta data variable
           CASE DEFAULT
 
-             ! Check EXTRA attribute not alreadt set
+             ! Check EXTRA attribute not already set
              IF(EXTRA /= '') THEN
                PRINT*,'ERROR: "Extra" attribute already set: ', TRIM(EXTRA)
+               PRINT*,'Extra=[',TRIM(EXTRA),']'
                CALL EXTCDE(12)
              ENDIF
 
-             ! Get attribute and type (default to "c" if no type set)
              TMP = ATTV
-             ATT_TYPE = 'c'
-             READ(TMP, *, IOSTAT=IERR) ATTV, ATT_TYPE
-             IF(IERR /= 0) READ(tmp, *, IOSTAT=IERR) ATTV
-
-             EXTRA = ATTN
+             CALL GET_ATTVAL_TYPE(TMP, ATTV, ATT_TYPE)
 
              IF(DEBUG) THEN
-               PRINT*,ILINE, ' Got extra att: '
-               PRINT*,ILINE, '   - Attname: ', TRIM(attn)
-               PRINT*,ILINE, '   -  Attval: ', TRIM(attv)
-               PRINT*,ILINE, '   -    Type: ', att_type
+               WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
+                 TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
              ENDIF
-      
-             ! Check attr values are valid w.r.t. attr type
-             SELECT CASE(TRIM(att_type))
-               CASE("i")
-                  READ(attv, *, iostat=ierr) i
-                  IF(ierr .ne. 0) then
-                    PRINT*,'ERROR: Value is not valid integer: ', attv
-                    stop
-                  ENDIF
-               CASE("r", "f")
-                  READ(attv, *, iostat=ierr) r
-                  IF(ierr .ne. 0) then
-                    PRINT*,'ERROR: Value is not valid real: ', attv
-                    stop
-                  ENDIF
-               CASE("c")
-                  ! Always ok.
-               CASE DEFAULT
-                 PRINT*,'Exrta meta data type should be one of [c,i,r]'
-             END SELECT
-
+ 
              ! Set extra data
              META%EXTRA%ATTNAME = TRIM(attn)
              META%EXTRA%ATTVAL = TRIM(attv)
@@ -623,59 +736,182 @@
       
       RETURN
 
-      !---------------------------
-      ! Escape locations
-      !---------------------------
-      
-      ! If we hit EOF - backsapce to ensure this can be read by loop 
-      ! in calling subroutine
-      200 BACKSPACE(NDMI)
-      RETURN
-
-      ! I/O error:
-      201 CONTINUE
-      PRINT*,'ERROR reading metadata line ',iline
-      PRINT*,'IOSTAT=',ierr
-      CALL EXTCDE(10)
-      
       END SUBROUTINE READ_META_PAIRS
 
-
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE NOTABS(STR)
+      SUBROUTINE GET_ATTVAL_TYPE(BUF, ATTV, ATT_TYPE)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         09-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !
 !  1. Purpose :
 !
-!     Replaces tab characters in a string with spaces.
+!     Gets the attribute value and optional variable type from
+!     the passed in string.
+!
+!  2. Method:
+!
+!     If two freeform values can be read from the input string, it is
+!     assumed to be a value and type, otherwise if only one value can
+!     be read the type is assumed to be "character".
+!
+!     It is important to quote strings if they contain spaces.
+!
+!     Valid types are "c" "r/f", and "i" for character, real/float and
+!     integer values. 
+
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       BUF      Char.   I  Input string to process
+!       ATTV     Char.   O  Attribute value
+!       ATT_TYPE Char.   O  Attribute type
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      CHARACTER(*), INTENT(INOUT) :: STR
+
+      CHARACTER(*), INTENT(IN)  :: BUF
+      CHARACTER(*), INTENT(OUT) :: ATTV, ATT_TYPE
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!
+      REAL :: R
+      INTEGER :: I, IERR
+
+      ! Get attribute and type (default to "c" if no type set)
+      ATT_TYPE = 'c'
+      READ(BUF, *, IOSTAT=IERR) ATTV, ATT_TYPE
+      IF(IERR /= 0) READ(BUF, *, IOSTAT=IERR) ATTV
+ 
+      ! Check attr values are valid w.r.t. attr type
+      SELECT CASE(TRIM(att_type))
+        
+        CASE("i")
+           READ(attv, *, iostat=ierr) i
+           IF(ierr .ne. 0) then
+             PRINT*,'ERROR: Value is not valid integer: ', attv
+             stop
+           ENDIF
+        
+        CASE("r", "f")
+           READ(attv, *, iostat=ierr) r
+           IF(ierr .ne. 0) then
+             PRINT*,'ERROR: Value is not valid real: ', attv
+             stop
+           ENDIF
+        
+        CASE("c")
+           ! Always ok.
+        
+        CASE DEFAULT
+          PRINT*,'Exrta meta data type should be one of [c,i,r]'
+          CALL EXTCDE(12)
+      
+      END SELECT
+
+      END SUBROUTINE GET_ATTVAL_TYPE
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE READ_GLOBAL_META(NDMI, ILINE)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Reads in attribute name/value pairs for the "global" section.
+!
+!  2. Method:
+!
+!     Keeps looping over input lines in file until next META section 
+!     or EOF is found. Splits meta pairs on the = character.
+!
+!     Global metadata pair can also provide a variable type 
+!     ("c", "i", or "r"; for character, int or real respectively).
+!     String values with spaces should be quoted.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI     Char.   I  Unit number of metadata input file
+!       ILINE     Int. I/O  Current line number in file
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      INTEGER, INTENT(IN)               :: NDMI
+      INTEGER, INTENT(INOUT)            :: ILINE
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER, PARAMETER :: ASCII_TAB = 9
-      INTEGER :: SLEN
-      INTEGER :: I
-       
-      SLEN = LEN_TRIM(STR)
-
-      DO I=1,SLEN
-        IF(ICHAR(STR(I:I)) == ASCII_TAB) THEN
-          STR(I:I) = ' '
+      CHARACTER(LEN=256) :: BUF
+      CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
+      CHARACTER(LEN=16)  :: ATT_TYPE, TEST
+      INTEGER            :: I, IERR
+      REAL               :: R
+      LOGICAL            :: EOF
+!
+      ! Keep reading lines until we hit EOF or anoter META keyword
+      DO
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        IF(EOF) THEN
+          BACKSPACE(NDMI)
+          RETURN
         ENDIF
+
+        ! Read first token on line:
+        READ(BUF, *) TEST
+
+        IF(TEST == "META") THEN
+          ! Start of new meta data entry
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          BACKSPACE(NDMI)
+          EXIT
+        ENDIF
+
+        ! Split attr name/value pair
+        I = INDEX(BUF, "=")
+        IF( I .LT. 1 ) THEN
+          PRINT*,'syntax error: should be "attr_name = attr_value"'
+          PRINT*,'Line no', iline
+          print*,'   !!! ', BUF
+          CALL EXTCDE(11)
+        ENDIF
+      
+        ATTN = ADJUSTL(BUF(1:I-1))
+        TMP = ADJUSTL(BUF(I+1:))
+
+        ! Get type, if set:
+        CALL GET_ATTVAL_TYPE(TMP, ATTV, ATT_TYPE)
+
+        IF(DEBUG) THEN
+          WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[GLOBAL meta]', &
+            TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
+        ENDIF
+
+        N_GBLMETA = N_GBLMETA + 1
+        GLOBAL_META(N_GBLMETA)%ATTNAME = TRIM(ATTN)
+        GLOBAL_META(N_GBLMETA)%ATTVAL = TRIM(ATTV)
+        GLOBAL_META(N_GBLMETA)%TYPE = TRIM(ATT_TYPE)
+
       ENDDO
 
-      END SUBROUTINE NOTABS
-
+      END SUBROUTINE READ_GLOBAL_META
 
 !/ ------------------------------------------------------------------- /
       FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
@@ -738,6 +974,7 @@
 
       END FUNCTION GETMETA
 
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
 !/
@@ -789,7 +1026,6 @@
       CALL PARTNO_STRING_SUB(META%EXTRA%ATTVAL, IPART)
 
       END SUBROUTINE ADD_PARTNO
-
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PARTNO_STRING_SUB(INSTR, IPART)
@@ -874,48 +1110,133 @@
          INTEGER :: IVAL
          REAL :: RVAL
    
-         ERR = NF90_PUT_ATT(NCID, VARID, 'long_name',META%VARNL)
+         ERR = NF90_PUT_ATT(NCID, VARID, 'long_name', META%VARNL)
          IF(ERR /= NF90_NOERR) RETURN
-         ERR = NF90_PUT_ATT(NCID,VARID, 'standard_name',META%VARNS)
+         
+         ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
          IF(ERR /= NF90_NOERR) RETURN
+         
          IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID,VARID, 'globwave_name',META%VARNG)
+           ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
            IF(ERR /= NF90_NOERR) RETURN
          ENDIF
-         ERR = NF90_PUT_ATT(NCID,VARID, 'units', META%UNITS)
+         
+         ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
          IF(ERR /= NF90_NOERR) RETURN
-         ERR = NF90_PUT_ATT(NCID,VARID, 'add_offset',0.)
+         
+         ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
          IF(ERR /= NF90_NOERR) RETURN
-         ERR = NF90_PUT_ATT(NCID,VARID,'valid_min',META%VMIN)
+         
+         ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
          IF(ERR /= NF90_NOERR) RETURN
-         ERR = NF90_PUT_ATT(NCID,VARID,'valid_max',META%VMAX)
+         
+         ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
          IF(ERR /= NF90_NOERR) RETURN
+         
          IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID,VARID,'comment',META%VARNC)
+           ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
            IF(ERR /= NF90_NOERR) RETURN
          ENDIF
+         
          IF (META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID,VARID,'direction_reference',META%VARND)
+           ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
            IF(ERR /= NF90_NOERR) RETURN
          END IF
 
          IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
                META%EXTRA%ATTNAME .NE. UNSETC) THEN
-            SELECT CASE(META%EXTRA%TYPE)
-              CASE('i')
-                READ(META%EXTRA%ATTVAL, *) ival
-                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, ival)
-              CASE('r', 'f')
-                READ(META%EXTRA%ATTVAL, *) rval
-                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, rval)
-              CASE('c')
-                ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
-                        META%EXTRA%ATTVAL)
-              CASE DEFAULT
-                WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
-            END SELECT
+
+           SELECT CASE(META%EXTRA%TYPE)
+             
+             CASE('i')
+               READ(META%EXTRA%ATTVAL, *) IVAL
+               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, IVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+             
+             CASE('r', 'f')
+               READ(META%EXTRA%ATTVAL, *) RVAL
+               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, RVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+             
+             CASE('c')
+               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
+                       META%EXTRA%ATTVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+             
+             CASE DEFAULT
+               WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
+           
+           END SELECT
          ENDIF
       END SUBROUTINE WRITE_META
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE WRITE_GLOBAL_META(NCID, ERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!
+!  1. Purpose :
+!
+!     Writes the user meta-data entries for the global attributes
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID    Int.  I/O  NetCDF file ID
+!       ERR     Int.  O    Error value
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+         IMPLICIT NONE
+
+         INTEGER, INTENT(IN) :: NCID
+         INTEGER, INTENT(OUT) :: ERR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+         INTEGER :: VARID = NF90_GLOBAL
+         INTEGER :: I, IVAL
+         REAL    :: RVAL
+
+         ! Loop over global metadata pairs:
+         DO I=1,N_GBLMETA
+
+           IF (GLOBAL_META(I)%ATTNAME .EQ. '' .OR.                      &
+                 GLOBAL_META(I)%ATTNAME .EQ. UNSETC) CYCLE
+
+           SELECT CASE(GLOBAL_META(I)%TYPE)
+
+             CASE('i')
+               READ(GLOBAL_META(I)%ATTVAL, *) IVAL
+               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, IVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+
+             CASE('r', 'f')
+               READ(GLOBAL_META(I)%ATTVAL, *) RVAL
+               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, RVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+
+             CASE('c')
+               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME,    &
+                       GLOBAL_META(I)%ATTVAL)
+               IF(ERR /= NF90_NOERR) RETURN
+
+             CASE DEFAULT
+               WRITE(0,*) "Unknown data type for extra meta: ",GLOBAL_META(I)%TYPE
+
+           END SELECT
+         ENDDO
+
+      END SUBROUTINE WRITE_GLOBAL_META
     
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_META(META)
@@ -958,21 +1279,6 @@
          WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
 
       END SUBROUTINE PRINT_META
-
-!      SUBROUTINE CLEAR_META(META)
-!      TYPE(META_T), INTENT(INOUT) :: META(3)
-!      META(:)%FSC    = 1
-!      META(:)%UNITS  = ''
-!      META(:)%ENAME  = ''
-!      META(:)%VARNM = ''
-!      META(:)%VARNL =''
-!      META(:)%VARNS =''
-!      META(:)%VARNG =''
-!      META(:)%VARNC =''
-!      META(:)%VARND =''
-!      META(:)%VMIN = 0
-!      META(:)%VMAX = 0
-!      END SUBROUTINE CLEAR_META
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DEFAULT_META()
