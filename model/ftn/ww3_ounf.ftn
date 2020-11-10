@@ -778,7 +778,7 @@
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLG2D(NOGRP,NGRPP)
-      INTEGER, INTENT(INOUT) :: NCIDS(NOGRP,NGRPP,NOSWLL + 1), S3
+      INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,NOSWLL + 1), S3
       CHARACTER*30,INTENT(IN) :: STRSTOPDATE
 !/
 !/ ------------------------------------------------------------------- /
@@ -787,7 +787,7 @@
       INTEGER                 :: IFI, IFJ, MFILL, I, J, ISEA, IX, IY,  &
                                  I1, J1, IPART, INDEXIPART, COORDTYPE
       INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
-                                 MAPSTAOUT, NDSDAT, VMIN, VMAX,        &
+                                 MAPSTAOUT, NDSDAT,                    &
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
                                  IVAR1, IDVAROUT, NCVARTYPE
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
@@ -835,7 +835,7 @@
 !/RTD ! grid is rotated
 !/RTD      LOGICAL                 :: RTDL = .FALSE.
 
-      TYPE(META_T)            :: META, AMETA(3)
+      TYPE(META_T)            :: META!, AMETA(3)
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -1052,51 +1052,17 @@
               WHERE ( X1.NE.UNDEF) X1 = X1*0.1
 !
 !/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
-!/BT4              FSC    = 0.001
-!/BT4              UNITS  = 'Krumbein phi scale'
-!/BT4              ENAME  = '.d50'
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
 !/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
-!/BT4              VARNM(1)='d50'
-!/BT4              VARNL(1)='grain_size'
-!/BT4              VARNS(1)='sediment_grain_size'
-!/BT4              VARNG(1)='sediment_grain_size'
-!/BT4              VARNC(1)=''
-!/BT4              VARND(1)=''
-!/BT4              VMIN = -10000
-!/BT4              VMAX = 32000
 !
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
-!/IS2              FSC = 0.001
-!/IS2              UNITS = 'm'
-!/IS2              ENAME = '.ic1'
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
-!/IS2              VARNM(1)='ic1'
-!/IS2              VARNL(1)='ice thickness'
-!/IS2              VARNS(1)='ice_thickness'
-!/IS2              VARNG(1)='ice_thickness'
-!/IS2              VARNC(1)=''
-!/IS2              VARND(1)=''
-!/IS2              VMIN = 0
-!/IS2              VMAX = 30000
-!
 !
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
-!/IS2              FSC = 0.05
-!/IS2              UNITS = 'm'
-!/IS2              ENAME = '.ic5'
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
-!/IS2              VARNM(1)='ic5'
-!/IS2              VARNL(1)='maximum floe diameter'
-!/IS2              VARNS(1)='maximum_ice_floe_diameter'
-!/IS2              VARNG(1)='maximum_ice_floe_diameter'
-!/IS2              VARNC(1)=''
-!/IS2              VARND(1)=''
-!/IS2              VMIN = 0
-!/IS2              VMAX = 30000
 
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
@@ -1235,16 +1201,6 @@
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
-              !! TODO - Need to share  NCVARTYPE with w3ounfmeta
-              !IF (NCVARTYPE.LE.3) THEN 
-              !  UNITS  = 'log10(m2 s+1E-12)'
-              !  VARNS(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
-              !  FSC     = 0.0004
-              !ELSE
-              !  UNITS  = 'm2 s'
-              !  VARNS(1)='power_spectral_density_of_surface_elevation'
-              !  FSC     = 1.
-              !  END IF
               I1F=E3DF(2,1)
               I2F=E3DF(3,1)
               DO IK=I1F,I2F
@@ -1780,9 +1736,7 @@
                   END IF
                 
                   XK(:,:,IK)=XX
-                  END DO
-              VMIN = -30000 
-              VMAX = 30000
+                END DO
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
@@ -1960,13 +1914,9 @@
             ! here and store in an array as it is used several times later
             META = GETMETA(IFI, IFJ, ICOMP=1) ! TODO: Get all components
 
-            DO i=1,NFIELD
-              AMETA(I) = GETMETA(IFI, IFJ, ICOMP=I) ! TODO: Get all components
-            ENDDO
-
-            !PRINT*,AMETA(1:NFIELD)
-            !STOP
-
+          !  DO i=1,NFIELD
+          !    AMETA(I) = GETMETA(IFI, IFJ, ICOMP=I) ! TODO: Get all components
+          !  ENDDO
 
             ! Defines a differents for the second variable if specified
             UNITVAR(:)=UNITS
@@ -2524,15 +2474,6 @@
                 CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
 
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name',VARNS(I))
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'globwave_name',VARNG(I))
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units',UNITVAR(I))
-                !CALL CHECK_ERR(IRET)
-
                 IF (NCVARTYPE.EQ.2) THEN 
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
                   FSC = META%FSC
@@ -2542,26 +2483,16 @@
                   FSC3=1.
                 END IF
                 CALL CHECK_ERR(IRET)
+                
+                ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
+                ! here rather than in the meta module.
                 IF (I.LE.2) THEN 
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
                 ELSE
                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
                 ENDIF 
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'add_offset',0.)
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',VMIN)
-                !CALL CHECK_ERR(IRET)
-                !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',VMAX)
-                !CALL CHECK_ERR(IRET)
-                !IF (VARNC(I).NE.'') THEN
-                !  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'comment',VARNC(I))
-                !  CALL CHECK_ERR(IRET)
-                !END IF
-                !IF (VARND(I).NE.'') THEN
-                !  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'direction_reference',VARND(I))
-                !  CALL CHECK_ERR(IRET)
-                !END IF
+                CALL CHECK_ERR(IRET)
+!
 !/RTD
 !/RTD                IF ( RTDL ) THEN
 !/RTD                  ! Add grid mapping attribute for rotated pole grids:
@@ -2696,14 +2627,7 @@
                   !! CB - USE NEW W3META MODULE
                   CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
-  
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name',VARNL(I))
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name',VARNS(I))
-                  !CALL CHECK_ERR(IRET)
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'globwave_name',VARNG(I))
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units',UNITVAR(I))
-                  !CALL CHECK_ERR(IRET)
-                  
+
                   IF (NCVARTYPE.EQ.2) THEN 
                     IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
                     FSC = META%FSC
@@ -2713,7 +2637,9 @@
                     FSC3=1.
                   END IF
                   CALL CHECK_ERR(IRET)
-!
+
+                  ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
+                  ! here rather than in the meta module.
                   IF (I.LE.2) THEN 
                     IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
                   ELSE
@@ -2721,20 +2647,6 @@
                   ENDIF 
                   CALL CHECK_ERR(IRET)
 !
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'add_offset',0.)
-                  !CALL CHECK_ERR(IRET)
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',VMIN)
-                  !CALL CHECK_ERR(IRET)
-                  !IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',VMAX)
-                  !CALL CHECK_ERR(IRET)
-                  !IF (VARNC(I).NE.'') THEN
-                  !  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'comment',VARNC(I))
-                  !  CALL CHECK_ERR(IRET)
-                  !END IF
-                  !IF (VARND(I).NE.'') THEN
-                  !  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'direction_reference',VARND(I))
-                  !  CALL CHECK_ERR(IRET)
-                  !END IF
 !/RTD
 !/RTD                  IF ( RTDL ) THEN
 !/RTD                    ! Add grid mapping attribute for rotated pole grids:
