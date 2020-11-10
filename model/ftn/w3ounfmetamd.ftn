@@ -1235,7 +1235,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER :: IVAL
+      INTEGER :: IVAL, VAL
       REAL :: RVAL
 !/
       ERR = NF90_PUT_ATT(NCID, VARID, 'long_name', META%VARNL)
@@ -1255,10 +1255,16 @@
       ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
       IF(ERR /= NF90_NOERR) RETURN
       
-      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
+      ! Note: Valid min/max are scaled by scale_factor 
+      !       and converted to integers.
+      VAL = NINT(META%VMIN / META%FSC)
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', VAL)
+      !ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
       IF(ERR /= NF90_NOERR) RETURN
       
-      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
+      VAL = NINT(META%VMAX / META%FSC)
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', VAL)
+      !ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
       IF(ERR /= NF90_NOERR) RETURN
       
       IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
@@ -1450,8 +1456,10 @@
       META(1)%VARNG ='depth'
       META(1)%VARNC =''
       META(1)%VARND =''
-      META(1)%VMIN = -90000 
-      META(1)%VMAX = 140000
+      !META(1)%VMIN = -90000 
+      !META(1)%VMAX = 140000
+      META(1)%VMIN = -45000 
+      META(1)%VMAX = 70000
 !!      CALL SET_META(1,1,META)
 ! IFI=1, IFJ=2        
       !CALL CLEAR_META(META)
@@ -1459,8 +1467,10 @@
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.cur'
       META(1)%UNITS  = 'm s-1'
-      META(1)%VMIN = -990
-      META(1)%VMAX =  990
+      !META(1)%VMIN = -990
+      !META(1)%VMAX =  990
+      META(1)%VMIN = -9.9
+      META(1)%VMAX =  9.9
       META(1)%VARNM='ucur'
       META(1)%VARNL='eastward current'
       META(1)%VARNS='eastward_sea_water_velocity'
@@ -1487,8 +1497,10 @@
       META(1)%VARNS='eastward_wind'
       META(1)%VARNG='eastward_wind'
       META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
-      META(1)%VMIN = -990
-      META(1)%VMAX =  990
+      !META(1)%VMIN = -990
+      !META(1)%VMAX =  990
+      META(1)%VMIN = -9.9
+      META(1)%VMAX =  9.9
       META(1)%VARND = DIRCOM
 
       ! Second component
@@ -1510,7 +1522,8 @@
       META(1)%VARNS='air_sea_temperature_difference'
       META(1)%VARNG='air_sea_temperature_difference'
       META(1)%VMIN = 0    
-      META(1)%VMAX = 4000
+      !META(1)%VMAX = 4000
+      META(1)%VMAX = 400
       !CALL SET_META(1,4,META)
 ! IFI=1, IFJ=5
       !CALL CLEAR_META(META)
@@ -1523,7 +1536,8 @@
       META(1)%VARNS='sea_surface_height_above_sea_level'
       META(1)%VARNG='sea_surface_height_above_sea_level'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 10000
+      !META(1)%VMAX = 10000
+      META(1)%VMAX = 100
       !CALL SET_META(1,5,META)
 ! IFI=1, IFJ=6
       !CALL CLEAR_META(META)
@@ -1536,7 +1550,8 @@
       META(1)%VARNS='sea_ice_area_fraction'
       META(1)%VARNG='sea_ice_area_fraction'
       META(1)%VMIN = 0
-      META(1)%VMAX = 1000
+      !META(1)%VMAX = 1000
+      META(1)%VMAX = 1
       !CALL SET_META(1,6,META)
 ! IFI=1, IFJ=7
  !CALL CLEAR_META(META)
@@ -1549,7 +1564,8 @@
       META(1)%VARNS='icebergs_induced_attenuation_scale_for_waves'
       META(1)%VARNG='icebergs_damping'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      !META(1)%VMAX = 32000
+      META(1)%VMAX = 3.2
 !      CALL SET_META(1,7,META)
 ! IFI=1, IFJ=8
  !CALL CLEAR_META(META)
@@ -1561,8 +1577,10 @@
 !/BT4      META(1)%VARNL='grain_size'
 !/BT4      META(1)%VARNS='sediment_grain_size'
 !/BT4      META(1)%VARNG='sediment_grain_size'
-!/BT4      META(1)%VMIN = -10000
-!/BT4      META(1)%VMAX = 32000
+!/BT4      !META(1)%VMIN = -10000
+!/BT4      !META(1)%VMAX = 32000
+!/BT4      META(1)%VMIN = -10.0
+!/BT4      META(1)%VMAX = 32.0
 !      CALL SET_META(1,8,META)
 ! IFI=1, IFJ=9
  !CALL CLEAR_META(META)
@@ -1575,7 +1593,8 @@
 !/IS2      META(1)%VARNS='ice_thickness'
 !/IS2      META(1)%VARNG='ice_thickness'
 !/IS2      META(1)%VMIN = 0
-!/IS2      META(1)%VMAX = 30000
+!/IS2      !META(1)%VMAX = 30000
+!/IS2      META(1)%VMAX = 30
 !      CALL SET_META(1,9,META)
 ! IFI=1, IFJ=10
  !CALL CLEAR_META(META)
@@ -1588,7 +1607,8 @@
 !/IS2      META(1)%VARNS='maximum_ice_floe_diameter'
 !/IS2      META(1)%VARNG='maximum_ice_floe_diameter'
 !/IS2      META(1)%VMIN = 0
-!/IS2      META(1)%VMAX = 30000
+!/IS2      !META(1)%VMAX = 30000
+!/IS2      META(1)%VMAX = 1500
 !      CALL SET_META(1,10,META)
 !
 !----------GROUP 2 ----------------
@@ -1604,7 +1624,8 @@
       META(1)%VARNS='sea_surface_wave_significant_height' 
       META(1)%VARNG='significant_wave_height'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
       !CALL SET_META(2,1,META)
 ! IFI=2, IFJ=2
  !CALL CLEAR_META(META)
@@ -1631,7 +1652,8 @@
       '_from_variance_spectral_density_second_frequency_moment'
       META(1)%VARNG='mean_period_t02'
       META(1)%VMIN = 0
-      META(1)%VMAX = 5000
+      META(1)%VMAX = 50
+      !META(1)%VMAX = 5000
 !      CALL SET_META(2,3,META)
 ! IFI=2, IFJ=4
  !CALL CLEAR_META(META)
@@ -1645,7 +1667,8 @@
                  '_spectral_density_inverse_frequency_moment'
       META(1)%VARNG='mean_period_t0m1'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 5000
+      META(1)%VMAX = 50
+      !META(1)%VMAX = 5000
 !      CALL SET_META(2,4,META)
 ! IFI=2, IFJ=5
  !CALL CLEAR_META(META)
@@ -1659,7 +1682,8 @@
                 '_spectral_density_first_frequency_moment' 
       META(1)%VARNG='mean_period_t01'
       META(1)%VMIN = 0
-      META(1)%VMAX = 5000
+      META(1)%VMAX = 50
+      !META(1)%VMAX = 5000
 !      CALL SET_META(2,5,META)
 ! IFI=2, IFJ=6
  !CALL CLEAR_META(META)
@@ -1672,7 +1696,8 @@
       META(1)%VARNS='sea_surface_wave_peak_frequency'
       META(1)%VARNG='dominant_wave_frequency'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 10
+      !META(1)%VMAX = 10000
 !      CALL SET_META(2,6,META)
 ! IFI=2, IFJ=7
  !CALL CLEAR_META(META)
@@ -1686,7 +1711,8 @@
       META(1)%VARNG='wave_from_direction'
       META(1)%VARND=DIRCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(2,7,META)
 ! IFI=2, IFJ=8
  !CALL CLEAR_META(META)
@@ -1699,7 +1725,8 @@
       META(1)%VARNS='sea_surface_wave_directional_spread'
       META(1)%VARNG='directional_spread'
       META(1)%VMIN = 0
-      META(1)%VMAX = 900
+      META(1)%VMAX = 90
+      !META(1)%VMAX = 900
 !      CALL SET_META(2,8,META)
 ! IFI=2, IFJ=9
  !CALL CLEAR_META(META)
@@ -1726,7 +1753,8 @@
       META(1)%VARNS='sea_surface_wave_infragravity_significant_height' 
       META(1)%VARNG='infragravity_significant_wave_height' 
       META(1)%VMIN = 0 
-      META(1)%VMAX = 5000
+      META(1)%VMAX = 1.0
+      !META(1)%VMAX = 5000
 !      CALL SET_META(2,10,META)
 ! IFI=2, IFJ=11
  !CALL CLEAR_META(META)
@@ -1739,7 +1767,8 @@
       META(1)%VARNS='expected maximum sea surface elevation (nonlinear,2nd order)'
       META(1)%VARNG='expected maximum sea surface elevation (nonlinear,2nd order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,11,META)
 ! IFI=2, IFJ=12
  !CALL CLEAR_META(META)
@@ -1752,7 +1781,8 @@
       META(1)%VARNS='std of expected maximum sea surface elevation (nonlinear,2nd order)'
       META(1)%VARNG='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,12,META)
 ! IFI=2, IFJ=13
  !CALL CLEAR_META(META)
@@ -1765,7 +1795,8 @@
       META(1)%VARNS='expected maximum wave height (linear, 1st order)'
       META(1)%VARNG='expected maximum wave height (linear, 1st order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,13,META)
 ! IFI=2, IFJ=14
  !CALL CLEAR_META(META)
@@ -1778,7 +1809,8 @@
       META(1)%VARNS='expected maximum wave height from crest (linear, 1st order)'
       META(1)%VARNG='expected maximum wave height from crest (linear, 1st order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,14,META)
 ! IFI=2, IFJ=15
  !CALL CLEAR_META(META)
@@ -1791,7 +1823,8 @@
       META(1)%VARNS='STD of maximum wave height (linear, 1st order)'
       META(1)%VARNG='STD of maximum wave height (linear, 1st order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,15,META)
 ! IFI=2, IFJ=16
  !CALL CLEAR_META(META)
@@ -1804,7 +1837,8 @@
       META(1)%VARNS='STD of maximum wave height from crest (linear, 1st order)'
       META(1)%VARNG='STD of maximum wave height from crest (linear, 1st order)'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(2,16,META)
 ! IFI=2, IFJ=17
  !CALL CLEAR_META(META)
@@ -1817,7 +1851,8 @@
       META(1)%VARNS='domiant_wave_breaking_probability'
       META(1)%VARNG='domiant_wave_breaking_probability'
       META(1)%VMIN = 0
-      META(1)%VMAX = 1000
+      META(1)%VMAX = 1
+      !META(1)%VMAX = 1000
 !      CALL SET_META(2,17,META)
 !
 !---------- GROUP 3 ----------------
@@ -1838,8 +1873,10 @@
       END IF
       META(1)%ENAME  = '.ef'
       META(1)%VARNG = META(1)%VARNS
-      META(1)%VMIN = -30000
-      META(1)%VMAX = 32000
+      META(1)%VMIN = -12
+      META(1)%VMAX = -12.8
+      !META(1)%VMIN = -30000
+      !META(1)%VMAX = 32000
 !      CALL SET_META(3,1,META)
 ! 2
  !CALL CLEAR_META(META)
@@ -1854,7 +1891,8 @@
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.th1m'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(3,2,META)
 ! 3
  !CALL CLEAR_META(META)
@@ -1868,7 +1906,8 @@
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.sth1m'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 9000
+      META(1)%VMAX = 90
+      !META(1)%VMAX = 9000
 !      CALL SET_META(3,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -1882,7 +1921,8 @@
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.th2m'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(3,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -1895,7 +1935,8 @@
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.sth2m'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 9000
+      META(1)%VMAX = 90
+      !META(1)%VMAX = 9000
 !      CALL SET_META(3,5,META)
 ! 6
  !CALL CLEAR_META(META)
@@ -1909,7 +1950,8 @@
       META(1)%VARNS='wave_numbers'
       META(1)%VARNG='wave_numbers'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 32
+      !META(1)%VMAX = 32000
 !      CALL SET_META(3,6,META)
 !
 !---------- GROUP 4 ----------------
@@ -1926,7 +1968,8 @@
       META(1)%VARNG = 'significant_wave_height_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      !META(1)%VMAX = 32000
+      META(1)%VMAX = 64
 !      CALL SET_META(4,1,META)
 ! 2
  !CALL CLEAR_META(META)
@@ -1941,7 +1984,8 @@
       META(1)%VARNG = 'dominant_wave_period_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,2,META)
 ! 3
  !CALL CLEAR_META(META)
@@ -1955,7 +1999,8 @@
       META(1)%VARNG = 'peak_wave_length_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -1970,7 +2015,8 @@
       META(1)%VARNC = PARTCOM
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(4,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -1984,7 +2030,8 @@
       META(1)%VARNG = 'directional_spread_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 900
+      META(1)%VMAX = 90
+      !META(1)%VMAX = 900
 !      CALL SET_META(4,5,META)
 ! 6
  !CALL CLEAR_META(META)
@@ -1998,7 +2045,8 @@
       META(1)%VARNG = 'wind_sea_fraction_in_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 1000
+      META(1)%VMAX = 1
+      !META(1)%VMAX = 1000
 !      CALL SET_META(4,6,META)
 ! 7
  !CALL CLEAR_META(META)
@@ -2013,7 +2061,8 @@
       META(1)%VARNC = PARTCOM
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(4,7,META)
 ! 8
  !CALL CLEAR_META(META)
@@ -2027,7 +2076,8 @@
       META(1)%VARNG = 'wave_peakedness_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 320
+      !META(1)%VMAX = 32000
 !      CALL SET_META(4,8,META)
 ! 9
  !CALL CLEAR_META(META)
@@ -2042,7 +2092,8 @@
       META(1)%VARNC = 'JONSWAP peak enhancement factor; ' // PARTCOM
       META(1)%VARND = ''
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 320
+      !META(1)%VMAX = 32000
 !      CALL SET_META(4,9,META)
 ! 10
  !CALL CLEAR_META(META)
@@ -2057,7 +2108,8 @@
       META(1)%VARNC =' Gaussian least-square fit to ' // &
           'omni-directional spectral partition; ' // PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 3.2
+      !META(1)%VMAX = 32000
 !      CALL SET_META(4,10,META)
 ! 11
  !CALL CLEAR_META(META)
@@ -2071,7 +2123,8 @@
       META(1)%VARNG = 'wave_spectral_width_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 3.2
+      !META(1)%VMAX = 32000
 !      CALL SET_META(4,11,META)
 ! 12
  !CALL CLEAR_META(META)
@@ -2085,7 +2138,8 @@
       META(1)%VARNG = 'mean_wave_period_Tm10_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,12,META)
 ! 13
  !CALL CLEAR_META(META)
@@ -2099,7 +2153,8 @@
       META(1)%VARNG = 'mean_wave_period_T01_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,13,META)
 ! 14
  !CALL CLEAR_META(META)
@@ -2113,7 +2168,8 @@
       META(1)%VARNG = 'mean_wave_period_T02_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,14,META)
 ! 15
  !CALL CLEAR_META(META)
@@ -2127,7 +2183,8 @@
       META(1)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 200
+      !META(1)%VMAX = 10000
 !      CALL SET_META(4,15,META)
 ! 16
  !CALL CLEAR_META(META)
@@ -2141,7 +2198,8 @@
       META(1)%VARNG = 'wind_sea_fraction'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 1000
+      META(1)%VMAX = 1
+      !META(1)%VMAX = 1000
 !      CALL SET_META(4,16,META)
 ! 17
  !CALL CLEAR_META(META)
@@ -2173,8 +2231,10 @@
       META(1)%VARNG='eastward_friction_velocity'
       META(1)%VARNC='ust=sqrt(uust**2+vust**2)'
       META(1)%VARNC=DIRCOM
-      META(1)%VMIN = -9900
-      META(1)%VMAX =  9900
+      META(1)%VMIN = -9.9
+      META(1)%VMAX =  9.9
+      !META(1)%VMIN = -9900
+      !META(1)%VMAX =  9900
       
       ! Second component
       META(2) = META(1)
@@ -2194,7 +2254,8 @@
       META(1)%VARNS='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
       META(1)%VARNG='charnock_coefficient'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32700
+      META(1)%VMAX = 0.327
+      !META(1)%VMAX = 32700
 !      CALL SET_META(5,2,META)
 ! 3
  !CALL CLEAR_META(META)
@@ -2207,7 +2268,8 @@
       META(1)%VARNS='sea_surface_wind_wave_energy_flux'
       META(1)%VARNG='wave_energy_flux'
       META(1)%VMIN = 0
-      META(1)%VMAX = 9990
+      META(1)%VMAX = 999
+      !META(1)%VMAX = 9990
 !      CALL SET_META(5,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -2220,7 +2282,8 @@
       META(1)%VARNS='wind_mixing_energy_flux_into_sea_water'
       META(1)%VARNG='wind_to_wave_energy_flux'
       META(1)%VMIN = 0
-      META(1)%VMAX = 9990
+      META(1)%VMAX = 999
+      !META(1)%VMAX = 9990
 !      CALL SET_META(5,4,META)
 ! 5  
  !CALL CLEAR_META(META)
@@ -2235,8 +2298,10 @@
       META(1)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
       META(1)%VARNG='eastward_wave_supported_wind_stress'
       META(1)%VARND=DIRCOM
-      META(1)%VMIN = -32000
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -0.032
+      META(1)%VMAX =  0.032
+      !META(1)%VMIN = -32000
+      !META(1)%VMAX =  32000
      
       ! Second component
       META(2) = META(2)
@@ -2259,8 +2324,10 @@
       META(1)%VARNG='eastward_wave_to_wind_stress'
       META(1)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
       META(1)%VARND=DIRCOM
-      META(1)%VMIN = -32000
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -3.2
+      META(1)%VMAX =  3.2
+      !META(1)%VMIN = -32000
+      !META(1)%VMAX =  32000
 
       ! Second component
       META(2) = META(1)
@@ -2283,7 +2350,8 @@
       META(1)%VARNC=''
       META(1)%VARND=''
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 1
+      !META(1)%VMAX = 10000
 !      CALL SET_META(5,7,META)
 ! 8
  !CALL CLEAR_META(META)
@@ -2296,7 +2364,8 @@
       META(1)%VARNS='whitecap_foam_thickness'
       META(1)%VARNG='whitecap_foam_thickness' 
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 10
+      !META(1)%VMAX = 10000
 !      CALL SET_META(5,8,META)
 ! 9
  !CALL CLEAR_META(META)
@@ -2309,7 +2378,8 @@
       META(1)%VARNS='significant_breaking_wave_height'
       META(1)%VARNG='significant_breaking_wave_height'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(5,9,META)
 ! 10
  !CALL CLEAR_META(META)
@@ -2322,7 +2392,8 @@
       META(1)%VARNS='whitecap_moment'
       META(1)%VARNG='whitecap_moment'
       META(1)%VMIN = 0
-      META(1)%VMAX = 10000
+      META(1)%VMAX = 1
+      !META(1)%VMAX = 10000
 !      CALL SET_META(5,10,META)
 ! 11
  !CALL CLEAR_META(META)
@@ -2337,7 +2408,8 @@
       META(1)%VARNC=''
       META(1)%VARND=''
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 64
+      !META(1)%VMAX = 32000
 !      CALL SET_META(5,11,META)
 !
 !---------- GROUP 6 ----------------
@@ -2350,8 +2422,10 @@
       META(1)%UNITS = 'N m-1'
       META(1)%ENAME = '.sxy'
       META(1)%VARND = DIRCOM
-      META(1)%VMIN = -3000
-      META(1)%VMAX = 3000     
+      META(1)%VMIN = -30000
+      META(1)%VMAX = 30000
+      !META(1)%VMIN = -3000
+      !META(1)%VMAX = 3000
       
       ! First component
       META(1)%VARNM='sxx'
@@ -2379,8 +2453,10 @@
       META(1)%FSC    = 0.000001
       META(1)%UNITS  = 'm2 s-2'
       META(1)%ENAME  = '.two'
-      META(1)%VMIN = -32000 
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -0.032 
+      META(1)%VMAX =  0.032
+      !META(1)%VMIN = -32000 
+      !META(1)%VMAX =  32000
       META(1)%VARND = DIRCOM
 
       ! First component
@@ -2409,7 +2485,8 @@
       META(1)%VARNS='radiation_pressure'
       META(1)%VARNG='radiation_pressure'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 1000
+      META(1)%VMAX = 100
+      !META(1)%VMAX = 1000
 !      CALL SET_META(6,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -2422,7 +2499,8 @@
       META(1)%VARNS='wave_to_ocean_energy_flux'
       META(1)%VARNG='wave_to_ocean_energy_flux'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 9990
+      META(1)%VMAX = 999
+      !META(1)%VMAX = 9990
 !      CALL SET_META(6,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -2431,7 +2509,8 @@
       META(1)%UNITS  = 'm2 s-1'
       META(1)%ENAME  = '.tus'
       META(1)%VARND = DIRCOM
-      META(1)%VMIN = -9900 
+      META(1)%VMIN = -9.9
+      !META(1)%VMIN = -9900 
       !TODO WHERE IS VMAX?
       
       ! First component
@@ -2464,8 +2543,10 @@
       META(1)%VARNG='eastward_surface_stokes_drift'
       META(1)%VARNC='uss=sqrt(uuss**2+vuss**2)'
       META(1)%VARND=DIRCOM
-      META(1)%VMIN = -9900 
-      META(1)%VMAX =  9900
+      META(1)%VMIN = -4.95 
+      META(1)%VMAX =  4.95
+      !META(1)%VMIN = -9900 
+      !META(1)%VMAX =  9900
       
       ! Second component
       META(2) = META(1)
@@ -2481,8 +2562,10 @@
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.p2s'
       META(1)%UNITS  = 'm4'
-      META(1)%VMIN = -15000 
-      META(1)%VMAX = 32000
+      META(1)%VMIN = -150
+      META(1)%VMAX = 320
+      !META(1)%VMIN = -15000 
+      !META(1)%VMAX = 32000
       
       ! First component
       META(1)%VARNL='power spectral density of equivalent surface pressure'
@@ -2505,8 +2588,10 @@
       META(1)%UNITS = 'm s-1 Hz-1'
       META(1)%FSC = 0.0005
       META(1)%ENAME = '.usf'
-      META(1)%VMIN = -9900 
-      META(1)%VMAX =  9900
+      META(1)%VMIN = -4.95
+      META(1)%VMAX =  4.95
+      !META(1)%VMIN = -9900 
+      !META(1)%VMAX =  9900
       META(1)%VARND = DIRCOM
       
       ! First component
@@ -2541,8 +2626,10 @@
       META(1)%VARNC=''
       META(1)%VARND=''
       META(1)%ENAME='.p2l'
-      META(1)%VMIN = -30000 
-      META(1)%VMAX = 30000
+      META(1)%VMIN = -12
+      META(1)%VMAX = 12
+      !META(1)%VMIN = -30000 
+      !META(1)%VMAX = 30000
 !      CALL SET_META(6,9,META)
 ! 10
  !CALL CLEAR_META(META)
@@ -2550,8 +2637,10 @@
       META(1)%FSC = 0.000001
       META(1)%UNITS = 'm2 s-2'
       META(1)%ENAME = '.tic'
-      META(1)%VMIN = -32000 
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -0.032
+      META(1)%VMAX =  0.032
+      !META(1)%VMIN = -32000 
+      !META(1)%VMAX =  32000
       META(1)%VARND = DIRCOM
  
       ! First component
@@ -2579,7 +2668,8 @@
       META(1)%VARNS='wave_to_sea_ice_energy_flux'
       META(1)%VARNG='wave_to_sea_ice_energy_flux'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 9990
+      META(1)%VMAX = 999
+      !META(1)%VMAX = 9990
 !      CALL SET_META(6,11,META)
 ! 12 
  !CALL CLEAR_META(META)
@@ -2613,8 +2703,10 @@
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.abr'
       META(1)%UNITS  = 'm'
-      META(1)%VMIN = -18000
-      META(1)%VMAX = 18000
+      META(1)%VMIN = -180
+      META(1)%VMAX = 180
+      !META(1)%VMIN = -18000
+      !META(1)%VMAX = 18000
       META(1)%VARND = DIRCOM
       
       ! First component
@@ -2638,8 +2730,10 @@
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.ubr'
       META(1)%UNITS  = 'm s-1'
-      META(1)%VMIN = -18000 
-      META(1)%VMAX = 18000
+      META(1)%VMIN = -180
+      META(1)%VMAX = 180
+      !META(1)%VMIN = -18000 
+      !META(1)%VMAX = 18000
       META(1)%VARND = DIRCOM
 
       ! First component
@@ -2664,7 +2758,8 @@
       META(1)%UNITS  = 'm'
       META(1)%ENAME  = '.bed'
       META(1)%VMIN = 0
-      META(1)%VMAX = 30000
+      META(1)%VMAX = 30
+      !META(1)%VMAX = 30000
       META(1)%VARND = DIRCOM
 
       ! First component
@@ -2701,7 +2796,8 @@
       META(1)%VARNS='wave_energy_dissipation_in_bottom_boundary_layer'
       META(1)%VARNG='wave_dissipation_in_bbl'
       META(1)%VMIN = 0
-      META(1)%VMAX = 9990
+      META(1)%VMAX = 999
+      !META(1)%VMAX = 9990
 !      CALL SET_META(7,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -2709,8 +2805,10 @@
       META(1)%FSC    = 0.000001
       META(1)%UNITS  = 'm2 s-2'
       META(1)%ENAME  = '.tbb'
-      META(1)%VMIN = -32000 
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -0.032
+      META(1)%VMAX =  0.032
+      !META(1)%VMIN = -32000 
+      !META(1)%VMAX =  32000
       META(1)%VARND = DIRCOM
       
       ! First component
@@ -2737,7 +2835,8 @@
       META(1)%ENAME  = '.mss'
       META(1)%UNITS  = '1'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 30000
+      META(1)%VMAX = 0.3
+      !META(1)%VMAX = 30000
       META(1)%VARND = DIRCOM
       WRITE(META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
       
@@ -2762,7 +2861,8 @@
       META(2)%ENAME  = '.msc'
       META(2)%UNITS  = '1'
       META(2)%VMIN = 0 
-      META(2)%VMAX = 30000
+      META(2)%VMAX = 0.003
+      !META(2)%VMAX = 30000
       META(2)%VARND = DIRCOM
       
       ! First component
@@ -2793,7 +2893,8 @@
       WRITE(META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(8,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -2807,7 +2908,8 @@
       META(1)%VARNG='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
-      META(1)%VMAX = 3600
+      META(1)%VMAX = 360
+      !META(1)%VMAX = 3600
 !      CALL SET_META(8,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -2821,7 +2923,8 @@
       META(1)%VARNG='wave_peakedness'
       META(1)%VARNC='Goda wave peakedness parameter'
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 32
+      !META(1)%VMAX = 32000
 !      CALL SET_META(8,5,META)
 !
 !---------- GROUP 9 ----------------
@@ -2837,7 +2940,8 @@
       META(1)%VARNS='dynamic_time_step'
       META(1)%VARNG='dynamic_time_step'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 3200
+      !META(1)%VMAX = 32000
 !      CALL SET_META(9,1,META)
 ! 2
  !CALL CLEAR_META(META)
@@ -2850,7 +2954,8 @@
       META(1)%VARNS='cut_off_frequency'
       META(1)%VARNG='cut_off_frequency'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 8000
+      META(1)%VMAX = 8
+      !META(1)%VMAX = 8000
 !      CALL SET_META(9,2,META)
 ! 3
  !CALL CLEAR_META(META)
@@ -2863,7 +2968,8 @@
       META(1)%VARNS='maximum_cfl_for_spatial_advection'
       META(1)%VARNG='maximum_cfl_for_spatial_advection'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 320
+      !META(1)%VMAX = 32000
 !      CALL SET_META(9,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -2876,7 +2982,8 @@
       META(1)%VARNS='maximum_cfl_for_direction_advection'
       META(1)%VARNG='maximum_cfl_for_direction_advection'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 320
+      !META(1)%VMAX = 32000
 !      CALL SET_META(9,4,META)
 ! 5
  !CALL CLEAR_META(META)
@@ -2889,7 +2996,8 @@
       META(1)%VARNS='maximum_cfl_for_frequency_advection'
       META(1)%VARNG='maximum_cfl_for_frequency_advection'
       META(1)%VMIN = 0 
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 320
+      !META(1)%VMAX = 32000
 !      CALL SET_META(9,5,META)
 !
 ! ------ Group 10 (User defined) -------
