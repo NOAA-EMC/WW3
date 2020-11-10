@@ -109,6 +109,8 @@
 
       LOGICAL :: DEBUG = .TRUE.
 
+      CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
+
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
       CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
       REAL, PARAMETER :: UNSETR = HUGE(1.0)
@@ -133,7 +135,6 @@
         CHARACTER(LEN=6) :: FLDID = ''
       ENDTYPE META_T
 
-
       ! Storage for META data aggregated by component, field and group:
       TYPE FIELD_T
         TYPE(META_T), POINTER :: META(:)
@@ -150,6 +151,7 @@
       TYPE(META_PAIR_T), ALLOCATABLE :: GLOBAL_META(:)
       INTEGER, PARAMETER :: MAX_GBLMETA = 30
       INTEGER            :: N_GBLMETA
+      !INTEGER            :: ILINE  ! TODO: Make ILINE module variable?
 
       INTEGER            :: NCVARTYPE
       CHARACTER(LEN=30)  :: DIRCOM
@@ -205,7 +207,7 @@
       !  Set partitioning method comment:
       IF ( PTMETH .EQ. 1 ) THEN
          PARTCOM = "Wind sea and swells defined using topographic " //  &
-                      "partitions and partition wave-age cut-off "     //  &
+                      "partitions and partition wave-age cut-off "  //  &
                       "(WWIII default scheme)"
       ELSE IF ( PTMETH .EQ. 2 ) THEN
          PARTCOM = "Wind sea and swells defined using topographic " //  &
@@ -350,7 +352,7 @@
         RETURN
       ENDDO
 
-      ! Escape locations
+!/    Escape locations
 !
 !     End of file
   100 CONTINUE
@@ -360,10 +362,15 @@
 !
 !     I/O Error
   101 CONTINUE
-      PRINT*,'ERROR reading metadata line ', ILINE
-      PRINT*,'IOSTAT=', IERR
+      WRITE(NDSE, 1000) FN_META, ILINE, IERR
       CALL EXTCDE(10)
-
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     ERROR READING METADATA FILE'/                    &
+               '     FILENAME = ', A /                                &
+               '     LINE NO = ', I5 /                                &
+               '     IOSTAT =',I5 /)
+!
       END SUBROUTINE NEXT_LINE
 
 !/ ------------------------------------------------------------------- /
@@ -381,6 +388,18 @@
 !  1. Purpose :
 !
 !     Replaces tab characters in a string with spaces.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       STR    Char.  I/O  Character string to process
+!     ----------------------------------------------------------------
+!
+!  3. Remarks : 
+!
+!     Assumes ASCII encoding! Tab character is ASCII value 9.
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       CHARACTER(*), INTENT(INOUT) :: STR
@@ -415,7 +434,8 @@
 !
 !  1. Purpose :
 !
-!     Reads meta data entries from the ountmeta.inp file.
+!     Reads meta data entries from the ountmeta.inp file and update
+!     default values set via the DEFAULT_META subroutine.
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
@@ -429,26 +449,26 @@
 
       INTEGER :: IFI, IFJ, IFC
       INTEGER :: ILINE, MCNT
+      !INTEGER :: MCNT
       LOGICAL :: EOF
 
       NDMI = 60
       ILINE = 0
       MCNT = 0
 
-      OPEN(UNIT=NDMI, FILE=TRIM(FNMPRE)//"ounfmeta.inp",                &
+      OPEN(UNIT=NDMI, FILE=TRIM(FNMPRE)//TRIM(FN_META),                &
            STATUS="OLD", IOSTAT=IERR)
 
       IF(IERR .NE. 0) THEN
-        PRINT*,'Error opening ounfmeta.inp'
-        STOP
+        WRITE(NDSE, 5010) TRIM(FNMPRE)//TRIM(FN_META), IERR
+        CALL EXTCDE(10)
       ENDIF
     
       ! Loop over file, skipping comments or blank lines, until we find
       ! a META line.
       DO
-
         CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
-        IF(EOF) GOTO 200
+        IF(EOF) EXIT !GOTO 500
 
         ! Read first token on line:
         READ(BUF, *) TEST
@@ -461,10 +481,10 @@
 
            ! Get the IFI, IFJ, IFC values from the header:
            I = INDEX(BUF,'META') + 4
-           CALL DECODE_HEADER(BUF(I:), IFI, IFJ, IFC)
+           CALL DECODE_HEADER(BUF(I:), ILINE, IFI, IFJ, IFC)
            IF(IFI .EQ. -1) THEN
-              PRINT*,'ERORR: Unknown meta field', buf
-              STOP
+              WRITE(NDSE, 5011) TRIM(BUF(I:)), TRIM(FN_META), ILINE
+              CALL EXTCDE(10)
            ENDIF
 
            ! IFI = 999 is a section for the "global" meta data 
@@ -472,6 +492,20 @@
              CALL READ_GLOBAL_META(NDMI, ILINE)
              CYCLE
            ENDIF
+
+           ! Error checking on size of IFJ, ICOMP, IPART.
+          IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
+            WRITE(NDSE,5013) NOGRP, TRIM(FN_META), ILINE
+            CALL EXTCDE(1)
+          ENDIF
+          IF(IFJ .LT. 1 .OR. IFJ .GT. NOGE(IFI)) THEN
+            WRITE(NDSE,5014) NOGE(IFI), TRIM(FN_META), ILINE
+            CALL EXTCDE(1)
+          ENDIF
+          IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
+            WRITE(NDSE,5015) TRIM(FN_META), ILINE
+            CALL EXTCDE(1)
+          ENDIF
  
            ! Select correct variable metadata entry:
            PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC)
@@ -480,24 +514,57 @@
            CALL READ_META_PAIRS(NDMI, PMETA, ILINE)
         ELSE
            ! Anything else is a syntax error
-           PRINT*,'ERROR: Syntax error, line ', ILINE
-           PRINT*,TRIM(BUF)
+           WRITE(NDSE, 5012) TRIM(FN_META), ILINE, TRIM(BUF)
            CALL EXTCDE(10)
         ENDIF
       ENDDO
     
-  200 CONTINUE
+  !500 CONTINUE
       CLOSE(NDMI)
-      WRITE(*, 2000) MCNT
-      PRINT*,'READ IN ',N_GBLMETA,' Global meta entries'
+      WRITE(*, 5000) MCNT, N_GBLMETA
       RETURN
 !
- 2000 FORMAT(/' Read in ',I3,' metadata entries')
+ 5000 FORMAT(/' Read in: ',I3,' variable metadata entries' /          &
+              '     and: ',I3,' global meta data entries' /)
+!
+ 5010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     ERROR OPENING METADATA FILE'/                    &
+               '     FILENAME = ', A /                                &
+               '     IOSTAT =', I5 /)
+!
+ 5011 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     UNKNOWN FIELD ID: ',A /                          &
+               '     FILENAME = ', A /                                &
+               '     LINE =', I5 /)
+!
+ 5012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     SYNTAX ERROR ' /                                 &
+               '     FILENAME = ', A /                                &
+               '     LINE =', I5 /                                    &
+               '  => ', A /)
+!
+ 5013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : ' /          &
+               '     IFI value should be in range 1,',I2 /            &
+               '     FILENAME = ', A /                                &
+               '     LINE =', I5 /                                    &
+               '  => ', A /)
+!
+ 5014 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : ' /          &
+               '     IFJ value should be in range 1,',I2 /            &
+               '     FILENAME = ', A /                                &
+               '     LINE =', I5 /                                    &
+               '  => ', A /)
+!
+ 5015 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : ' /          &
+               '     IFC value should be in range 1,3' /              &
+               '     FILENAME = ', A /                                &
+               '     LINE =', I5 /                                    &
+               '  => ', A /)
 !
       END SUBROUTINE READ_META
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE DECODE_HEADER(BUF, IFI, IFJ, IFC)
+      SUBROUTINE DECODE_HEADER(BUF, ILINE, IFI, IFJ, IFC)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -525,6 +592,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       BUF    Char.  I  Input header string (without leading META tag)
+!       ILINE   Int.  I  Line number (for error reporting)            
 !       IFI     Int.  O  Output group number
 !       IFJ     Int.  O  Output field number
 !       IFC     Int.  O  Component number (defaults to 1)
@@ -536,6 +604,7 @@
       IMPLICIT NONE
  
       CHARACTER(*), INTENT(IN) :: BUF
+      INTEGER, INTENT(IN) :: ILINE
       INTEGER, INTENT(OUT) :: IFI, IFJ, IFC
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -568,8 +637,8 @@
       ENDIF
       
       IF(IERR .NE. 0) THEN
-        PRINT*,'FAILED TO PARSE LINE: ',BUF
-        STOP
+        WRITE(NDSE, 6000) TRIM(FN_META), ILINE, TRIM(BUF)
+        CALL EXTCDE(10)
       ENDIf
 
       ! If string value (FLDID), then decode into IFI,IFJ value:
@@ -585,7 +654,13 @@
       ENDIF
 
       IF(DEBUG) WRITE(*,'(6X,A20,1X,3I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
-      
+!    
+ 6000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     SYNTAX ERROR IN SECTION HEADER. ' /              &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
       END SUBROUTINE DECODE_HEADER
       
 !/ ------------------------------------------------------------------- /
@@ -647,13 +722,13 @@
           RETURN
         ENDIF
 
-
         ! Read first token on line:
         READ(BUF, *) TEST
 
         IF(TEST == "META") THEN
           ! Start of new meta data entry
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          ILINE = ILINE - 1
           BACKSPACE(NDMI)
           EXIT
         ENDIF
@@ -663,10 +738,8 @@
         ! Meta data should be formatted as "attr_name = attr_value"
         I = INDEX(BUF, "=")
         IF( I .LT. 1 ) THEN
-           PRINT*,'syntax error: should be "attr_name = attr_value"'
-           PRINT*,'Line no', iline
-           print*,'   !!! ', BUF
-           CALL EXTCDE(11)
+          WRITE(NDSE, 7000) FN_META, ILINE, TRIM(BUF)
+           CALL EXTCDE(10)
         ENDIF
       
         ATTN = ADJUSTL(BUF(1:I-1))
@@ -711,35 +784,48 @@
       
           ! Default case will be the "extra" meta data variable
           CASE DEFAULT
-
              ! Check EXTRA attribute not already set
              IF(EXTRA /= '') THEN
-               PRINT*,'ERROR: "Extra" attribute already set: ', TRIM(EXTRA)
-               PRINT*,'Extra=[',TRIM(EXTRA),']'
-               CALL EXTCDE(12)
+               WRITE(NDSE, 7001) FN_META, ILINE, TRIM(BUF)
+               CALL EXTCDE(10)
              ENDIF
 
              TMP = ATTV
-             CALL GET_ATTVAL_TYPE(TMP, ATTV, ATT_TYPE)
+             CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
              IF(DEBUG) THEN
                WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
                  TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
              ENDIF
  
-             ! Set extra data
+             ! Set "extra" data
              META%EXTRA%ATTNAME = TRIM(attn)
              META%EXTRA%ATTVAL = TRIM(attv)
              META%EXTRA%TYPE = TRIM(att_type)
+
+             EXTRA = ATTN
+
         END SELECT
       ENDDO
       
       RETURN
-
+! 
+ 7000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     SYNTAX ERROR IN METADATA FILE ' /                &
+               '     SHOULD BE "attr_name = attr_value" ' /           &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
+ 7001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     "EXTRA" ATTRIBUTE ALREADY SET FOR VARIABLE' /    &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
       END SUBROUTINE READ_META_PAIRS
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE GET_ATTVAL_TYPE(BUF, ATTV, ATT_TYPE)
+      SUBROUTINE GET_ATTVAL_TYPE(BUF, ILINE, ATTV, ATT_TYPE)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -771,6 +857,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       BUF      Char.   I  Input string to process
+!       ILINE    Int.    I  Line number (for error reporting)
 !       ATTV     Char.   O  Attribute value
 !       ATT_TYPE Char.   O  Attribute type
 !     ----------------------------------------------------------------
@@ -779,6 +866,7 @@
       IMPLICIT NONE
 
       CHARACTER(*), INTENT(IN)  :: BUF
+      INTEGER, INTENT(IN)       :: ILINE
       CHARACTER(*), INTENT(OUT) :: ATTV, ATT_TYPE
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -797,27 +885,40 @@
         CASE("i")
            READ(attv, *, iostat=ierr) i
            IF(ierr .ne. 0) then
-             PRINT*,'ERROR: Value is not valid integer: ', attv
-             stop
+             WRITE(NDSE, 8001) "INTEGER", TRIM(FN_META), ILINE, TRIM(ATTV)
+             CALL EXTCDE(10)
            ENDIF
         
         CASE("r", "f")
            READ(attv, *, iostat=ierr) r
-           IF(ierr .ne. 0) then
-             PRINT*,'ERROR: Value is not valid real: ', attv
-             stop
+           IF(ierr .ne. 0) THEN
+             WRITE(NDSE, 8001) "REAL/FLOAT", TRIM(FN_META), ILINE, TRIM(ATTV)
+             CALL EXTCDE(10)
            ENDIF
         
         CASE("c")
            ! Always ok.
         
         CASE DEFAULT
-          PRINT*,'Exrta meta data type should be one of [c,i,r]'
-          CALL EXTCDE(12)
+          WRITE(NDSE, 8002) TRIM(FN_META), ILINE, TRIM(BUF)
+          CALL EXTCDE(10)
       
       END SELECT
-
+!
+ 8001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     VALUE IS NOT A VALID ', A /                      &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
+ 8002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     ATTRIBUTE TYPE SHOULD BE ONE OF [c,i,r] '/       & 
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
       END SUBROUTINE GET_ATTVAL_TYPE
+      
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_GLOBAL_META(NDMI, ILINE)
@@ -880,6 +981,7 @@
         IF(TEST == "META") THEN
           ! Start of new meta data entry
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          ILINE = ILINE - 1
           BACKSPACE(NDMI)
           EXIT
         ENDIF
@@ -887,17 +989,15 @@
         ! Split attr name/value pair
         I = INDEX(BUF, "=")
         IF( I .LT. 1 ) THEN
-          PRINT*,'syntax error: should be "attr_name = attr_value"'
-          PRINT*,'Line no', iline
-          print*,'   !!! ', BUF
-          CALL EXTCDE(11)
+          WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
+          CALL EXTCDE(10)
         ENDIF
       
         ATTN = ADJUSTL(BUF(1:I-1))
         TMP = ADJUSTL(BUF(I+1:))
 
         ! Get type, if set:
-        CALL GET_ATTVAL_TYPE(TMP, ATTV, ATT_TYPE)
+        CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
         IF(DEBUG) THEN
           WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[GLOBAL meta]', &
@@ -910,7 +1010,14 @@
         GLOBAL_META(N_GBLMETA)%TYPE = TRIM(ATT_TYPE)
 
       ENDDO
-
+!
+ 9000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     SYNTAX ERROR IN METADATA FILE ' /                &
+               '     SHOULD BE "attr_name = attr_value" ' /           &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
       END SUBROUTINE READ_GLOBAL_META
 
 !/ ------------------------------------------------------------------- /
@@ -947,33 +1054,54 @@
 !     ----------------------------------------------------------------
 !
 !/ ------------------------------------------------------------------- /
-         IMPLICIT NONE
-         INTEGER, INTENT(IN) :: IFI, IFJ
-         INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IFI, IFJ
+      INTEGER, INTENT(IN), OPTIONAL :: ICOMP, IPART
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-         INTEGER :: IFP, IFC
-         TYPE(META_T) :: META ! Not pointer as we might need to modify it
-               
-         IFC = 1
-         IFP = 1
-         IF(PRESENT(ICOMP)) IFC = ICOMP
-         IF(PRESENT(IPART)) IFP = IPART
-   
-         ! TODO: Error checking on size of IFJ, ICOMP, IPART.
-         META = GROUP(IFI)%FIELD(IFJ)%META(IFC)
+      INTEGER :: IFP, IFC
+      TYPE(META_T) :: META ! Not pointer as we might need to modify it
+            
+      IFC = 1
+      IFP = 1
+      IF(PRESENT(ICOMP)) IFC = ICOMP
+      IF(PRESENT(IPART)) IFP = IPART
 
-         ! For partitioned data, expand in the partition number:
-         IF(IFI .EQ. 4) THEN
-           CALL ADD_PARTNO(META, IFP)
-         ENDIF
-   
-         RETURN
+      ! Error checking on size of IFJ, ICOMP, IPART.
+      IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
+        WRITE(NDSE,1000) NOGRP
+        CALL EXTCDE(1)
+      ENDIF
+      IF(IFJ .LT. 1 .OR. IFJ .GT. NOGE(IFI)) THEN
+        WRITE(NDSE,1001) NOGE(IFI)
+        CALL EXTCDE(1)
+      ENDIF
+      IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
+        WRITE(NDSE,1002)
+        CALL EXTCDE(1)
+      ENDIF
 
+      META = GROUP(IFI)%FIELD(IFJ)%META(IFC)
+
+      ! For partitioned data, expand in the partition number:
+      IF(IFI .EQ. 4) THEN
+        CALL ADD_PARTNO(META, IFP)
+      ENDIF
+
+      RETURN
+
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
+               '     GETMETA: IFI value should be in range 1,',I2     / )
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '           / &
+               '     GETMETA: IFJ value should be in range 1,',I2    / )
+!               
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '           / &
+               '     GETMETA: IFC value should be in range 1,3'      / )
+!               
       END FUNCTION GETMETA
-
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
@@ -1098,76 +1226,82 @@
 !     ----------------------------------------------------------------
 !
 !/ ------------------------------------------------------------------- /
-         IMPLICIT NONE
+      IMPLICIT NONE
 
-         INTEGER, INTENT(IN) :: NCID, VARID
-         TYPE(META_T), INTENT(IN) :: META
-         INTEGER, INTENT(OUT) :: ERR
+      INTEGER, INTENT(IN) :: NCID, VARID
+      TYPE(META_T), INTENT(IN) :: META
+      INTEGER, INTENT(OUT) :: ERR
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-         INTEGER :: IVAL
-         REAL :: RVAL
-   
-         ERR = NF90_PUT_ATT(NCID, VARID, 'long_name', META%VARNL)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
-           IF(ERR /= NF90_NOERR) RETURN
-         ENDIF
-         
-         ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
-         IF(ERR /= NF90_NOERR) RETURN
-         
-         IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
-           IF(ERR /= NF90_NOERR) RETURN
-         ENDIF
-         
-         IF (META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
-           ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
-           IF(ERR /= NF90_NOERR) RETURN
-         END IF
+      INTEGER :: IVAL
+      REAL :: RVAL
+!/
+      ERR = NF90_PUT_ATT(NCID, VARID, 'long_name', META%VARNL)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
+        ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
+        IF(ERR /= NF90_NOERR) RETURN
+      ENDIF
+      
+      ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
+      IF(ERR /= NF90_NOERR) RETURN
+      
+      IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
+        ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
+        IF(ERR /= NF90_NOERR) RETURN
+      ENDIF
+      
+      IF (META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
+        ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
+        IF(ERR /= NF90_NOERR) RETURN
+      END IF
+      
+      IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
+            META%EXTRA%ATTNAME .NE. UNSETC) THEN
 
-         IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
-               META%EXTRA%ATTNAME .NE. UNSETC) THEN
+        SELECT CASE(META%EXTRA%TYPE)
+          
+          CASE('i')
+            READ(META%EXTRA%ATTVAL, *) IVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, IVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+          
+          CASE('r', 'f')
+            READ(META%EXTRA%ATTVAL, *) RVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, RVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+          
+          CASE('c')
+            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
+                    META%EXTRA%ATTVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+          
+          CASE DEFAULT
+            WRITE(1000,*) META%EXTRA%TYPE
+            CALL EXTCDE(10)
+        END SELECT
+      ENDIF
 
-           SELECT CASE(META%EXTRA%TYPE)
-             
-             CASE('i')
-               READ(META%EXTRA%ATTVAL, *) IVAL
-               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, IVAL)
-               IF(ERR /= NF90_NOERR) RETURN
-             
-             CASE('r', 'f')
-               READ(META%EXTRA%ATTVAL, *) RVAL
-               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, RVAL)
-               IF(ERR /= NF90_NOERR) RETURN
-             
-             CASE('c')
-               ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
-                       META%EXTRA%ATTVAL)
-               IF(ERR /= NF90_NOERR) RETURN
-             
-             CASE DEFAULT
-               WRITE(0,*) "Unknown data type for extra meta: ",META%EXTRA%TYPE
-           
-           END SELECT
-         ENDIF
+      RETURN
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
+               '     WRITEMETA: Unknown meta data type: ', A1         / )
+!
       END SUBROUTINE WRITE_META
 
 !/ ------------------------------------------------------------------- /
@@ -1195,47 +1329,50 @@
 !     ----------------------------------------------------------------
 !
 !/ ------------------------------------------------------------------- /
-         IMPLICIT NONE
+      IMPLICIT NONE
 
-         INTEGER, INTENT(IN) :: NCID
-         INTEGER, INTENT(OUT) :: ERR
+      INTEGER, INTENT(IN) :: NCID
+      INTEGER, INTENT(OUT) :: ERR
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-         INTEGER :: VARID = NF90_GLOBAL
-         INTEGER :: I, IVAL
-         REAL    :: RVAL
+      INTEGER :: VARID = NF90_GLOBAL
+      INTEGER :: I, IVAL
+      REAL    :: RVAL
 
          ! Loop over global metadata pairs:
-         DO I=1,N_GBLMETA
+      DO I=1,N_GBLMETA
 
-           IF (GLOBAL_META(I)%ATTNAME .EQ. '' .OR.                      &
-                 GLOBAL_META(I)%ATTNAME .EQ. UNSETC) CYCLE
+        IF (GLOBAL_META(I)%ATTNAME .EQ. '' .OR.                      &
+              GLOBAL_META(I)%ATTNAME .EQ. UNSETC) CYCLE
 
-           SELECT CASE(GLOBAL_META(I)%TYPE)
+        SELECT CASE(GLOBAL_META(I)%TYPE)
 
-             CASE('i')
-               READ(GLOBAL_META(I)%ATTVAL, *) IVAL
-               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, IVAL)
-               IF(ERR /= NF90_NOERR) RETURN
+          CASE('i')
+            READ(GLOBAL_META(I)%ATTVAL, *) IVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, IVAL)
+            IF(ERR /= NF90_NOERR) RETURN
 
-             CASE('r', 'f')
-               READ(GLOBAL_META(I)%ATTVAL, *) RVAL
-               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, RVAL)
-               IF(ERR /= NF90_NOERR) RETURN
+          CASE('r', 'f')
+            READ(GLOBAL_META(I)%ATTVAL, *) RVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, RVAL)
+            IF(ERR /= NF90_NOERR) RETURN
 
-             CASE('c')
-               ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME,    &
-                       GLOBAL_META(I)%ATTVAL)
-               IF(ERR /= NF90_NOERR) RETURN
+          CASE('c')
+            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME,    &
+                    GLOBAL_META(I)%ATTVAL)
+            IF(ERR /= NF90_NOERR) RETURN
 
-             CASE DEFAULT
-               WRITE(0,*) "Unknown data type for extra meta: ",GLOBAL_META(I)%TYPE
-
-           END SELECT
-         ENDDO
-
+          CASE DEFAULT
+            WRITE(1000,*) GLOBAL_META(I)%TYPE
+            CALL EXTCDE(10)
+        END SELECT
+      ENDDO
+!
+  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
+                '     WRITEMETA: Unknown meta data type: ', A1         / )
+!
       END SUBROUTINE WRITE_GLOBAL_META
     
 !/ ------------------------------------------------------------------- /
@@ -1262,21 +1399,20 @@
 !     ----------------------------------------------------------------
 !
 !/ ------------------------------------------------------------------- /
-         IMPLICIT NONE
+      IMPLICIT NONE
+      TYPE(META_T), INTENT(IN) :: META
 
-         TYPE(META_T), INTENT(IN) :: META
-
-         WRITE(*,*) META%VARNM
-         WRITE(*,"(A20,':',1X,A)") "Standard name", TRIM(META%VARNS)
-         WRITE(*,"(A20,':',1X,A)") "Long name", TRIM(META%VARNL)
-         WRITE(*,"(A20,':',1X,A)") "Units", TRIM(META%UNITS)
-         WRITE(*,"(A20,':',1X,A)") "GLOBWAVE name", TRIM(META%VARNG)
-         WRITE(*,"(A20,':',1X,A)") "Direction conv", TRIM(META%VARND)
-         WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
-         WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
-         WRITE(*,"(A20,':')") "Extra metadata"
-         WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
-         WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
+      WRITE(*,*) META%VARNM
+      WRITE(*,"(A20,':',1X,A)") "Standard name", TRIM(META%VARNS)
+      WRITE(*,"(A20,':',1X,A)") "Long name", TRIM(META%VARNL)
+      WRITE(*,"(A20,':',1X,A)") "Units", TRIM(META%UNITS)
+      WRITE(*,"(A20,':',1X,A)") "GLOBWAVE name", TRIM(META%VARNG)
+      WRITE(*,"(A20,':',1X,A)") "Direction conv", TRIM(META%VARND)
+      WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
+      WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
+      WRITE(*,"(A20,':')") "Extra metadata"
+      WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
+      WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
 
       END SUBROUTINE PRINT_META
 
