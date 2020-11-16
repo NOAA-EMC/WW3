@@ -789,7 +789,7 @@
       INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
                                  MAPSTAOUT, NDSDAT,                    &
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
-                                 IVAR1, IDVAROUT, NCVARTYPE
+                                 IVAR1, IDVAROUT
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
                                  COUNT(4), DIMLN(6),START1D(2),        &
                                  COUNT1D(2), DIMFIELD(3),              &
@@ -804,7 +804,7 @@
       INTEGER(KIND=2), ALLOCATABLE    :: MX1(:,:), MXX(:,:), MYY(:,:), &
                                          MXY(:,:), MAPOUT(:,:)
 !
-      REAL                    :: FSC, FSC3, CABS, UABS, MFILLR
+      REAL                    :: CABS, UABS, MFILLR
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
 !
       REAL,DIMENSION(:),  ALLOCATABLE    :: LON, LAT, FREQ
@@ -835,8 +835,8 @@
 !/RTD ! grid is rotated
 !/RTD      LOGICAL                 :: RTDL = .FALSE.
 
-      TYPE(META_T)            :: META!, AMETA(3)
-
+      TYPE(META_T)            :: META(3)
+      !TYPE(META_T)            :: META
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -956,7 +956,6 @@
 !
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
-          !CB ENAME='      '
           ! If the flag for the variable IFI of the group IFJ is .TRUE.
           IF ( FLG2D(IFI,IFJ) ) THEN
             ! Instanciates the partition array
@@ -1565,7 +1564,6 @@
               ENDIF ! SMCGRD
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
-              FSC3    = 1. !! TODO - make this configurable?
 !/RTD         ! Radition stress components are always left on rotated pole
 !/RTD         ! at present - need to confirm how to de-rotate
 
@@ -1909,14 +1907,10 @@
 !
             END IF ! IFI AND IFJ
 
-            ! CB: Get MetaData for IFI, IFJ combination.
-            ! Likely we will need to get meta data for all components of the field
-            ! here and store in an array as it is used several times later
-            META = GETMETA(IFI, IFJ, ICOMP=1) ! TODO: Get all components
-
-          !  DO i=1,NFIELD
-          !    AMETA(I) = GETMETA(IFI, IFJ, ICOMP=I) ! TODO: Get all components
-          !  ENDDO
+            ! CB Get netCDF metadata for IFI, IFJ combination (all components).
+            DO I=1,NFIELD
+              META(I) = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
+            ENDDO
 
             ! Defines a differents for the second variable if specified
             UNITVAR(:)=UNITS
@@ -1953,7 +1947,7 @@
 
 ! 2.3 Setups the output type 4 ( NetCDF file )
 
-            S2=LEN_TRIM(META%ENAME)
+            S2=LEN_TRIM(META(1)%ENAME)
             S1=LEN_TRIM(FILEPREFIX)+S4
             FNAMENC(S1+1:50)='       '
             FNAMENC(S1+1:S1+1) = '_'
@@ -1965,7 +1959,7 @@
             ! If NOT flag TOGETHER or variable with freq dim &
             ! (ef, p2l, ...), add variable name in file name
             ELSE
-              FNAMENC(S1+2:S1+S2) = META%ENAME(2:S2)
+              FNAMENC(S1+2:S1+S2) = META(1)%ENAME(2:S2)
             ENDIF
             ! Defines the netcdf extension
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
@@ -2417,22 +2411,21 @@
               CALL CHECK_ERR(IRET)
               DO I=1,NFIELD
                 IVAR=IVAR1+I
-
                 ! Get Meta-data for field
-                META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART) 
+                !CB META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART) 
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
                     IF( SMCGRD ) THEN
 !/SMC                      IF( SMCTYPE .EQ. 1 ) THEN
 !/SMC                        ! SMC Flat file
-!/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+!/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                      ELSE
 !/SMC                        ! SMC Regridded file
-!/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                      ENDIF
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
-                      IRET=NF90_DEF_VAR(NCID,META%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                      IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
 !/NC4                           IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                           CALL CHECK_ERR(IRET)
@@ -2441,14 +2434,14 @@
                     IF( SMCGRD ) THEN
 !/SMC                      IF( SMCTYPE .EQ. 1 ) THEN
 !/SMC                        ! SMC Flat file
-!/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+!/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                      ELSE
 !/SMC                        ! SMC Regridded file
-!/SMC                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                      ENDIF
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
-                      IRET=NF90_DEF_VAR(NCID,META%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                      IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/NC4                          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                          CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
@@ -2458,40 +2451,41 @@
                   DIMFIELD(2)=DIMID(4)
                   DIMFIELD(3)=DIMID(5)
                   IF (NCVARTYPE.EQ.2) THEN 
-                    IRET = NF90_DEF_VAR(NCID,META%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                    IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
 !/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                        CALL CHECK_ERR(IRET)
                   ELSE 
-                    IRET = NF90_DEF_VAR(NCID,META%VARNM, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                    IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
 !/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                        CALL CHECK_ERR(IRET)
                   END IF  
                 END IF
 !
-                !! CB - USE NEW W3META MODULE
-                CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
-                CALL CHECK_ERR(IRET) ! CB
+!CB                IF (NCVARTYPE.EQ.2) THEN 
+!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
+!CB                ELSE 
+!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
+!CB                  META(I)%FSC=1.
+!CB                END IF
+!CB                CALL CHECK_ERR(IRET)
 
-                IF (NCVARTYPE.EQ.2) THEN 
-                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
-                  FSC = META%FSC
-                ELSE 
-                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
-                  FSC=1.
-                  FSC3=1.
-                END IF
-                CALL CHECK_ERR(IRET)
+                ! Set scale factor to 1.0 if using FLOAT variables for output
+                IF(NCVARTYPE .GT. 2) META(I)%FSC = 1.0
+
+                !! CB - USE NEW W3META MODULE
+                CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
+                CALL CHECK_ERR(IRET) ! CB
                 
-                ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
-                ! here rather than in the meta module.
-                IF (I.LE.2) THEN 
-                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
-                ELSE
-                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
-                ENDIF 
-                CALL CHECK_ERR(IRET)
+!CB                ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
+!CB                ! here rather than in the meta module.
+!CB                IF (I.LE.2) THEN 
+!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
+!CB                ELSE
+!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
+!CB                ENDIF 
+!CB                CALL CHECK_ERR(IRET)
 !
 !/RTD
 !/RTD                IF ( RTDL ) THEN
@@ -2574,20 +2568,20 @@
                 ! Loops on all the fields of the variable (i.e. ucur/vcur for current)
                 DO I=1,NFIELD
                   ! Get meta-data for field
-                  META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
+                  !CB META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IF (COORDTYPE.EQ.1) THEN
                     IF (NCVARTYPE.EQ.2) THEN 
                       IF( SMCGRD ) THEN
 !/SMC                        IF( SMCTYPE .EQ. 1 ) THEN
 !/SMC                          ! SMC Flat file
-!/SMC                          IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+!/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                        ELSE
 !/SMC                          ! SMC Regridded file
-!/SMC                          IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                        ENDIF
                       ELSE
-                         IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                         IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                          CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
@@ -2595,13 +2589,13 @@
                       IF( SMCGRD ) THEN
 !/SMC                        IF( SMCTYPE .EQ. 1 ) THEN
 !/SMC                          ! SMC Flat file
-!/SMC                          IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+!/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                        ELSE
 !/SMC                          ! SMC Regridded file
-!/SMC                          IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+!/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
 !/SMC                        ENDIF
                       ELSE
-                        IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                         CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
@@ -2612,40 +2606,44 @@
                     DIMFIELD(2)=DIMID(4)
                     DIMFIELD(3)=DIMID(5)
                     IF (NCVARTYPE.EQ.2) THEN 
-                      IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                      CALL CHECK_ERR(IRET)
                     ELSE
-                      IRET = NF90_DEF_VAR(NCID,META%varnm, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
+                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
 !/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
 !/NC4                      CALL CHECK_ERR(IRET)
                     END IF
                   END IF
 !
-                  !! CB - USE NEW W3META MODULE
-                  CALL WRITE_META(NCID, VARID(IVAR), META, IRET) ! CB
-                  CALL CHECK_ERR(IRET) ! CB
+!CB                  IF (NCVARTYPE.EQ.2) THEN 
+!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
+!CB                    !FSC = META%FSC
+!CB                  ELSE 
+!CB                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
+!CB                    !FSC=1.
+!CB                    !FSC3=1.
+!CB                    META(I)%FSC=1.
+!CB                  END IF
+!CB                  CALL CHECK_ERR(IRET)
 
-                  IF (NCVARTYPE.EQ.2) THEN 
-                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
-                    FSC = META%FSC
-                  ELSE 
-                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
-                    FSC=1.
-                    FSC3=1.
-                  END IF
-                  CALL CHECK_ERR(IRET)
+                  ! Set scale factor to 1.0 if using FLOAT variables for output
+                  IF(NCVARTYPE .GT. 2) META(I)%FSC = 1.0
+
+                  !! CB - USE NEW W3META MODULE
+                  CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
+                  CALL CHECK_ERR(IRET) ! CB
 
                   ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
                   ! here rather than in the meta module.
-                  IF (I.LE.2) THEN 
-                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
-                  ELSE
-                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
-                  ENDIF 
-                  CALL CHECK_ERR(IRET)
+!CB                  IF (I.LE.2) THEN 
+!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
+!CB                  ELSE
+!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
+!CB                  ENDIF 
+!CB                  CALL CHECK_ERR(IRET)
 !
 !/RTD
 !/RTD                  IF ( RTDL ) THEN
@@ -2665,10 +2663,10 @@
                 CALL CHECK_ERR(IRET)
                 DO I=1,NFIELD
                   ! Get meta-data for field
-                  META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
+                  !META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
-                  IRET=NF90_INQ_VARID (NCID, META%VARNM, VARID(IVAR))
-                  FSC = META%FSC ! CB: Get the scaling factor again
+                  IRET=NF90_INQ_VARID (NCID, META(I)%VARNM, VARID(IVAR))
+                  !FSC = META%FSC ! CB: Get the scaling factor again
                   CALL CHECK_ERR(IRET)
                 END DO  
                 IRET=NF90_ENDDEF(NCID)
@@ -2681,7 +2679,7 @@
             CALL T2D(TIME,CURDATE,IERR)
             OUTJULDAY=TSUB(REFDATE,CURDATE)
             WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
-                    'Writing new record ', META%ENAME(2:) ,'number ',N,             &
+                    'Writing new record ', META(1)%ENAME(2:) ,'number ',N,             &
                     ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
                     ':',CURDATE(6),':',CURDATE(7),' in file ',TRIM(FNAMENC)
 
@@ -2726,9 +2724,9 @@
 !/SMC                        MYY(IX,IY) = MFILL
 !/SMC                        MXY(IX,IY) = MFILL
 !/SMC                      ELSE
-!/SMC                        MXX(IX,IY) = NINT(X1(IX,IY)/FSC)
-!/SMC                        MYY(IX,IY) = NINT(X2(IX,IY)/FSC)
-!/SMC                        MXY(IX,IY) = NINT(XY(IX,IY)/FSC3)
+!/SMC                        MXX(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
+!/SMC                        MYY(IX,IY) = NINT(X2(IX,IY)/META(2)%FSC)
+!/SMC                        MXY(IX,IY) = NINT(XY(IX,IY)/META(3)%FSC)
 !/SMC                      END IF
 !/SMC                    END DO
 !/SMC                  END DO
@@ -2761,9 +2759,9 @@
                         MYY(IX,IY) = MFILL
                         MXY(IX,IY) = MFILL
                       ELSE
-                        MXX(IX,IY) = NINT(X1(IX,IY)/FSC)
-                        MYY(IX,IY) = NINT(X2(IX,IY)/FSC)
-                        MXY(IX,IY) = NINT(XY(IX,IY)/FSC3)
+                        MXX(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
+                        MYY(IX,IY) = NINT(X2(IX,IY)/META(2)%FSC)
+                        MXY(IX,IY) = NINT(XY(IX,IY)/META(3)%FSC)
                       END IF
                     END DO
                   END DO
@@ -2790,8 +2788,8 @@
 !/SMC                          MXX(IX,IY) = MFILL
 !/SMC                          MYY(IX,IY) = MFILL
 !/SMC                        ELSE
-!/SMC                          MXX(IX,IY) = NINT(XX(IX,IY)/FSC)
-!/SMC                          MYY(IX,IY) = NINT(XY(IX,IY)/FSC)
+!/SMC                          MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
+!/SMC                          MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
@@ -2817,8 +2815,8 @@
                           MXX(IX,IY) = MFILL
                           MYY(IX,IY) = MFILL
                         ELSE
-                          MXX(IX,IY) = NINT(XX(IX,IY)/FSC)
-                          MYY(IX,IY) = NINT(XY(IX,IY)/FSC)
+                          MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
+                          MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
                         END IF
                       END DO
                     END DO
@@ -2843,8 +2841,8 @@
 !/SMC                            MXX(IX,IY) = MFILL
 !/SMC                            MYY(IX,IY) = MFILL
 !/SMC                          ELSE
-!/SMC                            MXX(IX,IY) = NINT(XXK(IX,IY,IK)/FSC)
-!/SMC                            MYY(IX,IY) = NINT(XYK(IX,IY,IK)/FSC)
+!/SMC                            MXX(IX,IY) = NINT(XXK(IX,IY,IK)/META(1)%FSC)
+!/SMC                            MYY(IX,IY) = NINT(XYK(IX,IY,IK)/META(2)%FSC)
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
@@ -2872,8 +2870,8 @@
                             MXX(IX,IY) = MFILL
                             MYY(IX,IY) = MFILL
                           ELSE
-                            MXX(IX,IY) = NINT(XXK(IX,IY,IK)/FSC)
-                            MYY(IX,IY) = NINT(XYK(IX,IY,IK)/FSC)
+                            MXX(IX,IY) = NINT(XXK(IX,IY,IK)/META(1)%FSC)
+                            MYY(IX,IY) = NINT(XYK(IX,IY,IK)/META(2)%FSC)
                           END IF
                         END DO
                       END DO
@@ -2895,7 +2893,7 @@
 !/SMC                        IF ( X1(IX,IY) .EQ. UNDEF ) THEN
 !/SMC                          MX1(IX,IY) = MFILL
 !/SMC                        ELSE
-!/SMC                          MX1(IX,IY) = NINT(X1(IX,IY)/FSC)
+!/SMC                          MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
@@ -2914,7 +2912,7 @@
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
                           MX1(IX,IY) = MFILL
                         ELSE
-                          MX1(IX,IY) = NINT(X1(IX,IY)/FSC)
+                          MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
                         END IF
                       END DO
                     END DO
@@ -2935,7 +2933,7 @@
 !/SMC                          IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
 !/SMC                            MX1(IX,IY) = MFILL
 !/SMC                          ELSE
-!/SMC                            MX1(IX,IY) = NINT(XK(IX,IY,IK)/FSC)
+!/SMC                            MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
@@ -2954,7 +2952,7 @@
                           IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
                             MX1(IX,IY) = MFILL
                           ELSE
-                            MX1(IX,IY) = NINT(XK(IX,IY,IK)/FSC)
+                            MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
                           END IF
                         END DO
                       END DO

@@ -1277,6 +1277,17 @@
       
       ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
       IF(ERR /= NF90_NOERR) RETURN
+
+      ! Fill value dependent on variable type
+      IF(NCVARTYPE .EQ. 2) THEN 
+        ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_SHORT)
+      ELSE 
+        ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_FLOAT)
+      END IF
+      IF(ERR /= NF90_NOERR) RETURN
+
+      ERR = NF90_PUT_ATT(NCID, VARID, 'scale_factor', META%FSC)
+      IF(ERR /= NF90_NOERR) RETURN
       
       ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
       IF(ERR /= NF90_NOERR) RETURN
@@ -2450,7 +2461,6 @@
  !CALL CLEAR_META(META)
       META => GROUP(6)%FIELD(1)%META
       META(1)%FSC  = 10.
-      !FSC3    = 1.
       META(1)%UNITS = 'N m-1'
       META(1)%ENAME = '.sxy'
       META(1)%VARND = DIRCOM
@@ -2474,6 +2484,7 @@
       
       ! Third component
       META(3) = META(1)
+      META(3)%FSC = 1.
       META(3)%VARNM='sxy'
       META(3)%VARNL='Radiation stress component Sxy'
       META(3)%VARNS='Radiation_stress_component_Sxy'
