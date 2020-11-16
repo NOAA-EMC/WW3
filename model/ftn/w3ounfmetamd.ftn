@@ -1542,8 +1542,8 @@
       META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
       !META(1)%VMIN = -990
       !META(1)%VMAX =  990
-      META(1)%VMIN = -9.9
-      META(1)%VMAX =  9.9
+      META(1)%VMIN = -99.9
+      META(1)%VMAX =  99.9
       META(1)%VARND = DIRCOM
 
       ! Second component
