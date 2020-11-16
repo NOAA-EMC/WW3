@@ -36,7 +36,7 @@
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/    07-Oct-2019 : RTD option with standard lat-lon
 !/                  grid when nesting to rotated grid   ( version 7.11 )
-!/    03-Nov-2020 : Moved NetCDF metadata to seperate   ( version 7.11 )
+!/    03-Nov-2020 : Moved NetCDF metadata to seperate   ( version 7.XX )
 !/                  module.
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
