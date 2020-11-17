@@ -166,7 +166,8 @@
                                  IOTEST, NOUT,                         &
                                  IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
                                  IOUT, S3, IRET, HASNC4,               &
-                                 NBIPART, CNTIPART, IPART, RTDNX, RTDNY
+                                 NBIPART, CNTIPART, NCVARTYPEI, IPART, &
+                                 RTDNX, RTDNY
       INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
 !
       INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
@@ -333,6 +334,8 @@
 
       END IF ! .NOT. FLGNML
 
+      ! Keep track of original NCVARTYPE, as it may change
+      NCVARTYPEI = NCVARTYPE
 !
 
 ! 4.1 Time setup
@@ -501,7 +504,7 @@
 
 ! 5.1.2  Processes the variable value for the time step IOUT
         CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
-                      E3DF, P2MSF, US3DF, USSPF, NCTYPE, TOGETHER, NCVARTYPE,&
+                      E3DF, P2MSF, US3DF, USSPF, NCTYPE, TOGETHER, NCVARTYPEI,&
                       FLG2D, NCIDS, S3, STRSTOPDATE )
 
 ! 5.1.3 Defines the stop date
@@ -821,10 +824,11 @@
 !      
       CHARACTER*120           :: STR2
       CHARACTER*512           :: PARTCOM
-      CHARACTER*30            :: UNITVAR(3),FORMAT1
+      !CHARACTER*30            :: UNITVAR(3),FORMAT1
+      CHARACTER*30            :: FORMAT1
       CHARACTER*30            :: STRSTARTDATE
       CHARACTER               :: FNAMENC*50,                           &
-                                 FORMF*11, UNITS*24, UNITS2*24
+                                 FORMF*11
       CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
 !
@@ -978,7 +982,6 @@
             ! Initializes the flags for freq and direction dimensions
             FLFRQ = .FALSE.
             FLDIR = .FALSE.
-            UNITS2='SAME'
             IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
 !
             IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
@@ -1685,7 +1688,6 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
               NFIELD=2
-              UNITS2 = 's-1' ! TODO!!! Possiby not needed now we have seperate meta for each field?
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PRMS(1:NSEA), XX )
 !/SMC                CALL W3S2XY_SMC( TPMS(1:NSEA), XY )
@@ -1912,11 +1914,6 @@
               META(I) = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
             ENDDO
 
-            ! Defines a differents for the second variable if specified
-            UNITVAR(:)=UNITS
-            IF (UNITS2.NE.'SAME') UNITVAR(2)=UNITS2
-
-
 ! 2.2 Make map
 
             ! CB: TODO - need to handle MAPSTA differently for SMC grid output.
@@ -1966,7 +1963,6 @@
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
-              UNITVAR(:)=UNITS
               DIMLN(4)=I2F-I1F+1
               EXTRADIM=1
             ELSE
@@ -2411,8 +2407,6 @@
               CALL CHECK_ERR(IRET)
               DO I=1,NFIELD
                 IVAR=IVAR1+I
-                ! Get Meta-data for field
-                !CB META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART) 
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
                     IF( SMCGRD ) THEN
@@ -2462,14 +2456,6 @@
 !/NC4                        CALL CHECK_ERR(IRET)
                   END IF  
                 END IF
-!
-!CB                IF (NCVARTYPE.EQ.2) THEN 
-!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
-!CB                ELSE 
-!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
-!CB                  META(I)%FSC=1.
-!CB                END IF
-!CB                CALL CHECK_ERR(IRET)
 
                 ! Set scale factor to 1.0 if using FLOAT variables for output
                 IF(NCVARTYPE .GT. 2) META(I)%FSC = 1.0
@@ -2477,15 +2463,6 @@
                 !! CB - USE NEW W3META MODULE
                 CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
-                
-!CB                ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
-!CB                ! here rather than in the meta module.
-!CB                IF (I.LE.2) THEN 
-!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
-!CB                ELSE
-!CB                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
-!CB                ENDIF 
-!CB                CALL CHECK_ERR(IRET)
 !
 !/RTD
 !/RTD                IF ( RTDL ) THEN
@@ -2567,8 +2544,6 @@
 
                 ! Loops on all the fields of the variable (i.e. ucur/vcur for current)
                 DO I=1,NFIELD
-                  ! Get meta-data for field
-                  !CB META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IF (COORDTYPE.EQ.1) THEN
                     IF (NCVARTYPE.EQ.2) THEN 
@@ -2618,32 +2593,12 @@
                     END IF
                   END IF
 !
-!CB                  IF (NCVARTYPE.EQ.2) THEN 
-!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_SHORT)
-!CB                    !FSC = META%FSC
-!CB                  ELSE 
-!CB                   IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'_FillValue',NF90_FILL_FLOAT)
-!CB                    !FSC=1.
-!CB                    !FSC3=1.
-!CB                    META(I)%FSC=1.
-!CB                  END IF
-!CB                  CALL CHECK_ERR(IRET)
-
                   ! Set scale factor to 1.0 if using FLOAT variables for output
                   IF(NCVARTYPE .GT. 2) META(I)%FSC = 1.0
 
                   !! CB - USE NEW W3META MODULE
                   CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
-
-                  ! CB- TODO: Currently, scale factor (FSC and FSC3) are written
-                  ! here rather than in the meta module.
-!CB                  IF (I.LE.2) THEN 
-!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC)
-!CB                  ELSE
-!CB                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'scale_factor',FSC3)
-!CB                  ENDIF 
-!CB                  CALL CHECK_ERR(IRET)
 !
 !/RTD
 !/RTD                  IF ( RTDL ) THEN
@@ -2666,7 +2621,6 @@
                   !META = GETMETA(IFI, IFJ, ICOMP=I, IPART=IPART)
                   IVAR=IVAR1+I
                   IRET=NF90_INQ_VARID (NCID, META(I)%VARNM, VARID(IVAR))
-                  !FSC = META%FSC ! CB: Get the scaling factor again
                   CALL CHECK_ERR(IRET)
                 END DO  
                 IRET=NF90_ENDDEF(NCID)

@@ -151,7 +151,6 @@
       TYPE(META_PAIR_T), ALLOCATABLE :: GLOBAL_META(:)
       INTEGER, PARAMETER :: MAX_GBLMETA = 30
       INTEGER            :: N_GBLMETA
-      !INTEGER            :: ILINE  ! TODO: Make ILINE module variable?
 
       INTEGER            :: NCVARTYPE
       CHARACTER(LEN=30)  :: DIRCOM
@@ -2042,8 +2041,7 @@
       META(1)%VARNG = 'peak_wave_length_partition_<IPART>'
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
-      META(1)%VMAX = 100
-      !META(1)%VMAX = 10000
+      META(1)%VMAX = 10000
 !      CALL SET_META(4,3,META)
 ! 4
  !CALL CLEAR_META(META)
@@ -2148,7 +2146,7 @@
       META(1)%VARNL = 'frequency width partition <IPART>'
       META(1)%VARNS = 'Gaussian_frequency_spread_partition_<IPART>'
       META(1)%VARNG = 'Gaussian_frequency_spread_partition_<IPART>'
-      META(1)%VARNC =' Gaussian least-square fit to ' // &
+      META(1)%VARNC = 'Gaussian least-square fit to ' // &
           'omni-directional spectral partition; ' // PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
@@ -2273,9 +2271,9 @@
       META(1)%VARNS='eastward_friction_velocity'
       META(1)%VARNG='eastward_friction_velocity'
       META(1)%VARNC='ust=sqrt(uust**2+vust**2)'
-      META(1)%VARNC=DIRCOM
-      META(1)%VMIN = -9.9
-      META(1)%VMAX =  9.9
+      META(1)%VARND=DIRCOM
+      META(1)%VMIN = -99.0
+      META(1)%VMAX =  99.0
       !META(1)%VMIN = -9900
       !META(1)%VMAX =  9900
       
@@ -2347,7 +2345,7 @@
       !META(1)%VMAX =  32000
      
       ! Second component
-      META(2) = META(2)
+      META(2) = META(1)
       META(2)%VARNM='vtaw'
       META(2)%VARNL='northward wave supported wind stress'
       META(2)%VARNS='northward_wave_supported_wind_stress'
@@ -2784,15 +2782,15 @@
       META(1)%VARNL='rms of bottom velocity amplitude zonal'
       META(1)%VARNS='rms_of_bottom_velocity_amplitude_zonal'
       META(1)%VARNG='rms_of_bottom_velocity_amplitude_zonal'
-      META(1)%VARNC='ubr=sqrt(uubr**2+vu7r**2)'
+      META(1)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
 
       ! Second component
       META(2) = META(1)
-      META(1)%VARNM='vubr'
-      META(1)%VARNL='rms of bottom velocity amplitude meridional'
-      META(1)%VARNS='rms_of_bottom_velocity_amplitude_meridional'
-      META(1)%VARNG='rms_of_bottom_velocity_amplitude_meridional'
-      META(1)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
+      META(2)%VARNM='vubr'
+      META(2)%VARNL='rms of bottom velocity amplitude meridional'
+      META(2)%VARNS='rms_of_bottom_velocity_amplitude_meridional'
+      META(2)%VARNG='rms_of_bottom_velocity_amplitude_meridional'
+      !META(2)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
 !      CALL SET_META(7,2,META)
 ! 3
  !CALL CLEAR_META(META)
