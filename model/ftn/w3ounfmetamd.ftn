@@ -107,27 +107,32 @@
 
       PUBLIC
 
-      LOGICAL :: DEBUG = .TRUE.
+      LOGICAL :: DEBUG = .FALSE.
 
       CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
 
+      ! String token used to merge in partition number:
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
-      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
-      REAL, PARAMETER :: UNSETR = HUGE(1.0)
 
+      ! Values to represent "unset" data:
+      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
+      REAL, PARAMETER             :: UNSETR = HUGE(1.0)
+
+      ! Type for storing a user defined metadata pair:
       TYPE META_PAIR_T
         CHARACTER(LEN=64)  :: ATTNAME = UNSETC
         CHARACTER(LEN=120) :: ATTVAL = UNSETC
         CHARACTER          :: TYPE = 'c'    ! c,i,f/r
       END TYPE META_PAIR_T
 
+      ! Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
         REAL :: FSC, VMIN, VMAX = UNSETR
-        CHARACTER*24  :: UNITS = UNSETC
-        CHARACTER*20  :: ENAME = UNSETC
-        CHARACTER*80  :: VARNM = UNSETC, VARNL = UNSETC
-        CHARACTER*120 :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
-        CHARACTER*512 :: VARNC = UNSETC
+        CHARACTER(LEN=24)  :: UNITS = UNSETC
+        CHARACTER(LEN=20)  :: ENAME = UNSETC
+        CHARACTER(LEN=80)  :: VARNM = UNSETC, VARNL = UNSETC
+        CHARACTER(LEN=120) :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
+        CHARACTER(LEN=512) :: VARNC = UNSETC
         TYPE(META_PAIR_T) :: EXTRA
 
         ! For updating meta only:
@@ -135,26 +140,28 @@
         CHARACTER(LEN=6) :: FLDID = ''
       ENDTYPE META_T
 
-      ! Storage for META data aggregated by component, field and group:
+      ! Storage for meta data aggregated by component (NFIELD) ...
       TYPE FIELD_T
         TYPE(META_T), POINTER :: META(:)
       END TYPE FIELD_T
-
+       
+      ! ... field (IFJ) ...
       TYPE GROUP_T
         TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
       END TYPE GROUP_T
 
+      ! ... and group (IFI).
       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
 
       ! Storage for the Global meta data (free form):
-      ! TODO - implement as a linked list?
+      ! TODO - maybe implement as a linked list?
       TYPE(META_PAIR_T), ALLOCATABLE :: GLOBAL_META(:)
       INTEGER, PARAMETER :: MAX_GBLMETA = 30
       INTEGER            :: N_GBLMETA
 
-      INTEGER            :: NCVARTYPE
-      CHARACTER(LEN=30)  :: DIRCOM
-      CHARACTER(LEN=128) :: PARTCOM
+      INTEGER            :: NCVARTYPE   ! netCDF variable type
+      CHARACTER(LEN=30)  :: DIRCOM      ! Direction convention comment
+      CHARACTER(LEN=128) :: PARTCOM     ! Partitioning method comment
 
       CONTAINS 
 
@@ -208,19 +215,20 @@
       !  Set partitioning method comment:
       IF ( PTMETH .EQ. 1 ) THEN
          PARTCOM = "Wind sea and swells defined using topographic " //  &
-                      "partitions and partition wave-age cut-off "  //  &
-                      "(WWIII default scheme)"
+                   "partitions and partition wave-age cut-off "     //  &
+                   "(WWIII default scheme)"
       ELSE IF ( PTMETH .EQ. 2 ) THEN
          PARTCOM = "Wind sea and swells defined using topographic " //  &
-                  "partitions and spectral wave-age cut-off"
+                   "partitions and spectral wave-age cut-off"
       ELSE IF ( PTMETH .EQ. 3 ) THEN
          PARTCOM = "Wave components defined using topographic "     //  &
-                  "partitions only"
+                   "partitions only"
       ELSE IF ( PTMETH .EQ. 4 ) THEN
-         PARTCOM = "Wind sea and swell defined using spectral wave-age cut-off"
+         PARTCOM = "Wind sea and swell defined using spectral "     //  &
+                   "wave-age cut-off"
       ELSE IF ( PTMETH .EQ. 5 ) THEN
          WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //  &
-                  '"Hz spectral frequency cutoff")') PTFCUT
+                   '"Hz spectral frequency cutoff")') PTFCUT
       ELSE
          WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
       ENDIF
@@ -228,8 +236,7 @@
       ! 3. Set the default values for the OUNF netCDF meta data.
       CALL DEFAULT_META()
 
-      ! If the ounfmeta.nml exists, read this in to override any
-      ! meta data set above
+      ! If the ounfmeta.nml exists, read this in to override defaults:
       INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
       IF(FLGNML) THEN 
          CALL READ_META()
@@ -1487,7 +1494,6 @@
 !----------GROUP 1 ----------------
 !
 ! IFI=1, IFJ=1
-!!      CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(1)%META
       META(1)%FSC    = 0.5
       META(1)%UNITS  = 'm'
@@ -1502,9 +1508,7 @@
       !META(1)%VMAX = 140000
       META(1)%VMIN = -45000 
       META(1)%VMAX = 70000
-!!      CALL SET_META(1,1,META)
 ! IFI=1, IFJ=2        
-      !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(2)%META
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.cur'
@@ -1527,9 +1531,7 @@
       META(2)%VARNS='northward_sea_water_velocity'
       META(2)%VARNG='northward_sea_water_velocity'
       META(2)%VARNC='cur=sqrt(U**2+V**2)'
-      !CALL SET_META(1,2,META)
 ! IFI=1, IFJ=3         
-      !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(3)%META
       META(1)%FSC    = 0.1
       META(1)%ENAME  = '.wnd'
@@ -1552,9 +1554,7 @@
       META(2)%VARNS='northward_wind'
       META(2)%VARNG='northward_wind'
       META(2)%VARNC='wind=sqrt(U10**2+V10**2)'
-      !CALL SET_META(1,3,META)
 ! IFI=1, IFJ=4
-      !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%ENAME = '.ast'
@@ -1566,9 +1566,7 @@
       META(1)%VMIN = 0    
       !META(1)%VMAX = 4000
       META(1)%VMAX = 400
-      !CALL SET_META(1,4,META)
 ! IFI=1, IFJ=5
-      !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(5)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = 'm'
@@ -1580,9 +1578,7 @@
       META(1)%VMIN = 0 
       !META(1)%VMAX = 10000
       META(1)%VMAX = 100
-      !CALL SET_META(1,5,META)
 ! IFI=1, IFJ=6
-      !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(6)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = '1'
@@ -1594,9 +1590,7 @@
       META(1)%VMIN = 0
       !META(1)%VMAX = 1000
       META(1)%VMAX = 1
-      !CALL SET_META(1,6,META)
 ! IFI=1, IFJ=7
- !CALL CLEAR_META(META)
       META => GROUP(1)%FIELD(7)%META
       META(1)%FSC    = 0.0001
       META(1)%UNITS  = 'km-1'
@@ -1608,9 +1602,7 @@
       META(1)%VMIN = 0
       !META(1)%VMAX = 32000
       META(1)%VMAX = 3.2
-!      CALL SET_META(1,7,META)
 ! IFI=1, IFJ=8
- !CALL CLEAR_META(META)
 !/BT4      META => GROUP(1)%FIELD(8)%META
 !/BT4      META(1)%FSC    = 0.001
 !/BT4      META(1)%UNITS  = 'Krumbein phi scale'
@@ -1623,9 +1615,7 @@
 !/BT4      !META(1)%VMAX = 32000
 !/BT4      META(1)%VMIN = -10.0
 !/BT4      META(1)%VMAX = 32.0
-!      CALL SET_META(1,8,META)
 ! IFI=1, IFJ=9
- !CALL CLEAR_META(META)
 !/IS2      META => GROUP(1)%FIELD(9)%META
 !/IS2      META(1)%FSC = 0.001
 !/IS2      META(1)%UNITS = 'm'
@@ -1637,9 +1627,7 @@
 !/IS2      META(1)%VMIN = 0
 !/IS2      !META(1)%VMAX = 30000
 !/IS2      META(1)%VMAX = 30
-!      CALL SET_META(1,9,META)
 ! IFI=1, IFJ=10
- !CALL CLEAR_META(META)
 !/IS2      META => GROUP(1)%FIELD(10)%META
 !/IS2      META(1)%FSC = 0.05
 !/IS2      META(1)%UNITS = 'm'
@@ -1651,12 +1639,10 @@
 !/IS2      META(1)%VMIN = 0
 !/IS2      !META(1)%VMAX = 30000
 !/IS2      META(1)%VMAX = 1500
-!      CALL SET_META(1,10,META)
 !
 !----------GROUP 2 ----------------
 !
 ! IFI=2, IFJ=1
-      !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(1)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1668,9 +1654,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-      !CALL SET_META(2,1,META)
 ! IFI=2, IFJ=2
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(2)%META
       META(1)%FSC    = 1.
       META(1)%UNITS  = 'm'
@@ -1681,9 +1665,7 @@
       META(1)%VARNG='mean_wave_length' 
       META(1)%VMIN = 0 
       META(1)%VMAX = 3200
-!      CALL SET_META(2,2,META)
 ! IFI=2, IFJ=3
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(3)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = 's'
@@ -1696,9 +1678,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 50
       !META(1)%VMAX = 5000
-!      CALL SET_META(2,3,META)
 ! IFI=2, IFJ=4
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(4)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = 's'
@@ -1711,9 +1691,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 50
       !META(1)%VMAX = 5000
-!      CALL SET_META(2,4,META)
 ! IFI=2, IFJ=5
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(5)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = 's'
@@ -1726,9 +1704,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 50
       !META(1)%VMAX = 5000
-!      CALL SET_META(2,5,META)
 ! IFI=2, IFJ=6
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(6)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 's-1'
@@ -1740,9 +1716,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 10
       !META(1)%VMAX = 10000
-!      CALL SET_META(2,6,META)
 ! IFI=2, IFJ=7
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(7)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'degree'
@@ -1755,9 +1729,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(2,7,META)
 ! IFI=2, IFJ=8
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(8)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'degree'
@@ -1769,9 +1741,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 90
       !META(1)%VMAX = 900
-!      CALL SET_META(2,8,META)
 ! IFI=2, IFJ=9
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(9)%META
       META(1)%FSC    = 1.
       META(1)%UNITS  = 'degree'
@@ -1783,9 +1753,7 @@
       META(1)%VARND=DIRCOM
       META(1)%VMIN = 0 
       META(1)%VMAX = 360
-!      CALL SET_META(2,9,META)
 ! IFI=2, IFJ=10
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(10)%META
       META(1)%FSC    = 0.0002
       META(1)%UNITS  = 'm'
@@ -1797,9 +1765,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 1.0
       !META(1)%VMAX = 5000
-!      CALL SET_META(2,10,META)
 ! IFI=2, IFJ=11
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(11)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1811,9 +1777,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,11,META)
 ! IFI=2, IFJ=12
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(12)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1825,9 +1789,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,12,META)
 ! IFI=2, IFJ=13
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(13)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1839,9 +1801,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,13,META)
 ! IFI=2, IFJ=14
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(14)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1853,9 +1813,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,14,META)
 ! IFI=2, IFJ=15
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(15)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1867,9 +1825,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,15,META)
 ! IFI=2, IFJ=16
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(16)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -1881,9 +1837,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(2,16,META)
 ! IFI=2, IFJ=17
- !CALL CLEAR_META(META)
       META => GROUP(2)%FIELD(17)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = '1'
@@ -1895,12 +1849,10 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 1
       !META(1)%VMAX = 1000
-!      CALL SET_META(2,17,META)
 !
 !---------- GROUP 3 ----------------
 !
-! 1
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=1
       META => GROUP(3)%FIELD(1)%META
       META(1)%VARNM='ef'
       META(1)%VARNL='wave_elevation_spectrum'
@@ -1919,9 +1871,7 @@
       META(1)%VMAX = -12.8
       !META(1)%VMIN = -30000
       !META(1)%VMAX = 32000
-!      CALL SET_META(3,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=2
       META => GROUP(3)%FIELD(2)%META
       ! Information for spectral
       META(1)%FSC     = 0.1
@@ -1935,9 +1885,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(3,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=3
       META => GROUP(3)%FIELD(3)%META
       ! Information for spectral
       META(1)%FSC     = 0.01
@@ -1950,9 +1898,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 90
       !META(1)%VMAX = 9000
-!      CALL SET_META(3,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=4
       META => GROUP(3)%FIELD(4)%META
       META(1)%FSC     = 0.1
       META(1)%VARNM='th2m'
@@ -1965,9 +1911,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(3,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=5
       META => GROUP(3)%FIELD(5)%META
       META(1)%FSC     = 0.01
       META(1)%VARNM='sth2m'
@@ -1979,9 +1923,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 90
       !META(1)%VMAX = 9000
-!      CALL SET_META(3,5,META)
-! 6
- !CALL CLEAR_META(META)
+! IFI=3, IFJ=6
       META => GROUP(3)%FIELD(6)%META
       ! Information for spectral
       META(1)%FSC    = 0.001
@@ -1994,12 +1936,10 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 32
       !META(1)%VMAX = 32000
-!      CALL SET_META(3,6,META)
 !
 !---------- GROUP 4 ----------------
 !
-! 1
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=1
       META => GROUP(4)%FIELD(1)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
@@ -2012,9 +1952,7 @@
       META(1)%VMIN = 0 
       !META(1)%VMAX = 32000
       META(1)%VMAX = 64
-!      CALL SET_META(4,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=2
       META => GROUP(4)%FIELD(2)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
@@ -2028,9 +1966,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 100
       !META(1)%VMAX = 10000
-!      CALL SET_META(4,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=3
       META => GROUP(4)%FIELD(3)%META
       META(1)%FSC = 1.
       META(1)%UNITS = 'm'
@@ -2042,9 +1978,7 @@
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
       META(1)%VMAX = 10000
-!      CALL SET_META(4,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=4
       META => GROUP(4)%FIELD(4)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
@@ -2058,9 +1992,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(4,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=5
       META => GROUP(4)%FIELD(5)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
@@ -2073,9 +2005,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 90
       !META(1)%VMAX = 900
-!      CALL SET_META(4,5,META)
-! 6
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=6
       META => GROUP(4)%FIELD(6)%META
       META(1)%FSC = 0.001
       META(1)%UNITS = '1'
@@ -2088,9 +2018,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 1
       !META(1)%VMAX = 1000
-!      CALL SET_META(4,6,META)
-! 7
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=7
       META => GROUP(4)%FIELD(7)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
@@ -2104,9 +2032,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(4,7,META)
-! 8
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=8
       META => GROUP(4)%FIELD(8)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = '1'
@@ -2119,9 +2045,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 320
       !META(1)%VMAX = 32000
-!      CALL SET_META(4,8,META)
-! 9
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=9
       META => GROUP(4)%FIELD(9)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = '1'
@@ -2135,9 +2059,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 320
       !META(1)%VMAX = 32000
-!      CALL SET_META(4,9,META)
-! 10
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=10
       META => GROUP(4)%FIELD(10)%META
       META(1)%FSC = 0.0001
       META(1)%UNITS = 's-1'
@@ -2151,9 +2073,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
       !META(1)%VMAX = 32000
-!      CALL SET_META(4,10,META)
-! 11
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=11
       META => GROUP(4)%FIELD(11)%META
       META(1)%FSC = 0.0001
       META(1)%UNITS = '1'
@@ -2166,9 +2086,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
       !META(1)%VMAX = 32000
-!      CALL SET_META(4,11,META)
-! 12
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=12
       META => GROUP(4)%FIELD(12)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
@@ -2181,9 +2099,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 100
       !META(1)%VMAX = 10000
-!      CALL SET_META(4,12,META)
-! 13
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=13
       META => GROUP(4)%FIELD(13)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
@@ -2196,9 +2112,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 100
       !META(1)%VMAX = 10000
-!      CALL SET_META(4,13,META)
-! 14
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=14
       META => GROUP(4)%FIELD(14)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
@@ -2211,9 +2125,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 100
       !META(1)%VMAX = 10000
-!      CALL SET_META(4,14,META)
-! 15
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=15
       META => GROUP(4)%FIELD(15)%META
       META(1)%FSC = 0.02
       META(1)%UNITS = 'm2 s rad-1'
@@ -2226,9 +2138,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 200
       !META(1)%VMAX = 10000
-!      CALL SET_META(4,15,META)
-! 16
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=16
       META => GROUP(4)%FIELD(16)%META
       META(1)%FSC = 0.001
       META(1)%UNITS = '1'
@@ -2241,9 +2151,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 1
       !META(1)%VMAX = 1000
-!      CALL SET_META(4,16,META)
-! 17
- !CALL CLEAR_META(META)
+! IFI=4, IFJ=17
       META => GROUP(4)%FIELD(17)%META
       META(1)%FSC = 1.
       META(1)%UNITS = '1'
@@ -2255,12 +2163,10 @@
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0 
       META(1)%VMAX = 100
-!      CALL SET_META(4,17,META)
 !
 !---------- GROUP 5 ----------------
 !
-! 1
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=1
       META => GROUP(5)%FIELD(1)%META
       ! First component
       META(1)%FSC    = 0.01
@@ -2283,9 +2189,7 @@
       META(2)%VARNL='northward friction velocity'
       META(2)%VARNS='northward_friction_velocity'
       META(2)%VARNG='northward_friction_velocity'
-!      CALL SET_META(5,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=2
       META => GROUP(5)%FIELD(2)%META
       META(1)%FSC    = 1.E-5
       META(1)%UNITS  = '1'
@@ -2297,9 +2201,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 0.327
       !META(1)%VMAX = 32700
-!      CALL SET_META(5,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=3
       META => GROUP(5)%FIELD(3)%META
       META(1)%FSC    = 0.1           !0.01
       META(1)%UNITS  = 'kW m-1'
@@ -2311,9 +2213,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 999
       !META(1)%VMAX = 9990
-!      CALL SET_META(5,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=4
       META => GROUP(5)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'W m-2'
@@ -2325,9 +2225,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 999
       !META(1)%VMAX = 9990
-!      CALL SET_META(5,4,META)
-! 5  
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=5  
       META => GROUP(5)%FIELD(5)%META
       ! First component
       META(1)%FSC    = 0.000001
@@ -2351,9 +2249,7 @@
       META(2)%VARNS='northward_wave_supported_wind_stress'
       META(2)%VARNG='northward_wave_supported_wind_stress'
       META(2)%VARNC='taw=sqrt(utaw**2+vtaw**2)'
-!      CALL SET_META(5,5,META)
-! 6
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=6
       META => GROUP(5)%FIELD(6)%META
       ! First component
       META(1)%FSC    = 0.0001
@@ -2377,9 +2273,7 @@
       META(2)%VARNS='northward_wave_to_wind_stress'
       META(2)%VARNG='northward_wave_to_wind_stress'
       META(2)%VARNC='twa=sqrt(utwa**2+vtwa**2)'
-!      CALL SET_META(5,6,META)
-! 7
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=7
       META => GROUP(5)%FIELD(7)%META
       META(1)%FSC    = 0.0001
       META(1)%UNITS  = '1'
@@ -2393,9 +2287,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 1
       !META(1)%VMAX = 10000
-!      CALL SET_META(5,7,META)
-! 8
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=8
       META => GROUP(5)%FIELD(8)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 'm'
@@ -2407,9 +2299,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 10
       !META(1)%VMAX = 10000
-!      CALL SET_META(5,8,META)
-! 9
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=9
       META => GROUP(5)%FIELD(9)%META
       META(1)%FSC    = 0.002 
       META(1)%UNITS  = 'm'
@@ -2421,9 +2311,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(5,9,META)
-! 10
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=10
       META => GROUP(5)%FIELD(10)%META
       META(1)%FSC    = 0.0001
       META(1)%UNITS  = '1'
@@ -2435,9 +2323,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 1
       !META(1)%VMAX = 10000
-!      CALL SET_META(5,10,META)
-! 11
- !CALL CLEAR_META(META)
+! IFI=5, IFJ=11
       META => GROUP(5)%FIELD(11)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 's'
@@ -2451,12 +2337,10 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 64
       !META(1)%VMAX = 32000
-!      CALL SET_META(5,11,META)
 !
 !---------- GROUP 6 ----------------
 !   
-! 1 
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=1 
       META => GROUP(6)%FIELD(1)%META
       META(1)%FSC  = 10.
       META(1)%UNITS = 'N m-1'
@@ -2487,9 +2371,7 @@
       META(3)%VARNL='Radiation stress component Sxy'
       META(3)%VARNS='Radiation_stress_component_Sxy'
       META(3)%VARNS='radiation_stress_component_sxy'
-!      CALL SET_META(6,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=2
       META => GROUP(6)%FIELD(2)%META
       META(1)%FSC    = 0.000001
       META(1)%UNITS  = 'm2 s-2'
@@ -2514,9 +2396,7 @@
       META(2)%VARNS='northward_wave_to_ocean_stress'
       META(2)%VARNG='northward_wave_to_ocean_stress'
       META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
-!      CALL SET_META(6,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=3
       META => GROUP(6)%FIELD(3)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'm2 s-2'
@@ -2528,9 +2408,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 100
       !META(1)%VMAX = 1000
-!      CALL SET_META(6,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=4
       META => GROUP(6)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'W m-2'
@@ -2542,9 +2420,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 999
       !META(1)%VMAX = 9990
-!      CALL SET_META(6,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=5
       META => GROUP(6)%FIELD(5)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 'm2 s-1'
@@ -2569,9 +2445,7 @@
       META(2)%VARNG='northward_stokes_transport'
       META(2)%VARNC='tus=sqrt(utus**2+vtus**2)'
 
-!      CALL SET_META(6,5,META)
-! 6
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=6
       META => GROUP(6)%FIELD(6)%META
       META(1)%FSC    = 0.0005
       META(1)%UNITS  = 'm s-1'
@@ -2596,9 +2470,7 @@
       META(2)%VARNS='northward_surface_stokes_drift'
       META(2)%VARNG='northward_surface_stokes_drift'
       WRITE(META(2)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
-!      CALL SET_META(6,6,META)
-! 7
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=7
       META => GROUP(6)%FIELD(7)%META
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.p2s'
@@ -2622,9 +2494,7 @@
       META(2)%VARNS='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
       META(2)%VARNG='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
       
-!      CALL SET_META(6,7,META)
-! 8
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=8
       META => GROUP(6)%FIELD(8)%META
       META(1)%UNITS = 'm s-1 Hz-1'
       META(1)%FSC = 0.0005
@@ -2649,9 +2519,7 @@
       META(2)%VARNS='northward_spectral_variance_of_surface_stokes_drift'
       META(2)%VARNG='northward_spectral_variance_of_surface_stokes_drift'
       META(2)%VARNC='usf=sqrt(uusf**2+vusf**2)'
-!      CALL SET_META(6,8,META)
-! 9
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=9
       META => GROUP(6)%FIELD(9)%META
         ! Information for spectral microseismic generation data (2nd file)
       META(1)%FSC = 0.0004
@@ -2671,9 +2539,7 @@
       META(1)%VMAX = 12
       !META(1)%VMIN = -30000 
       !META(1)%VMAX = 30000
-!      CALL SET_META(6,9,META)
-! 10
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=10
       META => GROUP(6)%FIELD(10)%META
       META(1)%FSC = 0.000001
       META(1)%UNITS = 'm2 s-2'
@@ -2697,9 +2563,7 @@
       META(2)%VARNS='northward_wave_to_sea_ice_stress'
       META(2)%VARNG='northward_wave_to_sea_ice_stress'
       META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
-!      CALL SET_META(6,10,META)
-! 11        
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=11        
       META => GROUP(6)%FIELD(11)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'W m-2'
@@ -2711,9 +2575,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 999
       !META(1)%VMAX = 9990
-!      CALL SET_META(6,11,META)
-! 12 
- !CALL CLEAR_META(META)
+! IFI=6, IFJ=12 
       META => GROUP(6)%FIELD(12)%META
       META(1)%UNITS   = 'm s-1'
       META(1)%FSC    = 0.0005
@@ -2734,12 +2596,10 @@
       META(2)%VARNS='northward_partitioned_surface_stokes_drift'
       META(2)%VARNG='northward_partitioned_surface_stokes_drift'
       META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
-!      CALL SET_META(6,12,META)
 !
 !---------- GROUP 7 ----------------
 !   
-! 1 
- !CALL CLEAR_META(META)
+! IFI=7, IFJ=1 
       META => GROUP(7)%FIELD(1)%META
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.abr'
@@ -2764,9 +2624,7 @@
       META(2)%VARNS='rms_of_bottom_displacement_amplitude_meridional'
       META(2)%VARNG='rms_of_bottom_displacement_amplitude_meridional'
       META(2)%VARNC='abr=sqrt(uabr**2+vabr**2)'
-!      CALL SET_META(7,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=7, IFJ=2
       META => GROUP(7)%FIELD(2)%META
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.ubr'
@@ -2791,9 +2649,7 @@
       META(2)%VARNS='rms_of_bottom_velocity_amplitude_meridional'
       META(2)%VARNG='rms_of_bottom_velocity_amplitude_meridional'
       !META(2)%VARNC='ubr=sqrt(uubr**2+vubr**2)'
-!      CALL SET_META(7,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=7, IFJ=3
       META => GROUP(7)%FIELD(3)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 'm'
@@ -2825,9 +2681,7 @@
       META(3)%VARNS='northward_ripple_wavelength'
       META(3)%VARNG='northward_ripple_wavelength'
       META(3)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
-!      CALL SET_META(7,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=7, IFJ=4
       META => GROUP(7)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'W m-2'
@@ -2839,9 +2693,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 999
       !META(1)%VMAX = 9990
-!      CALL SET_META(7,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=7, IFJ=5
       META => GROUP(7)%FIELD(5)%META
       META(1)%FSC    = 0.000001
       META(1)%UNITS  = 'm2 s-2'
@@ -2866,11 +2718,9 @@
       META(2)%VARNS='northward_wave_to_bottom_boundary_layer_stress'
       META(2)%VARNG='northward_wave_to_bbl_stress'
       META(2)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
-!      CALL SET_META(7,5,META)
 !
 !---------- GROUP 8 ----------------
-! 1
- !CALL CLEAR_META(META)
+! IFI=8, IFJ=1
       META => GROUP(8)%FIELD(1)%META
       META(1)%FSC    = 0.00001
       META(1)%ENAME  = '.mss'
@@ -2894,9 +2744,7 @@
       META(2)%VARNL='crosswave mean square slope'
       META(2)%VARNS='y_mean_square_slope'
       META(2)%VARNG='y_mean_square_slope'
-!      CALL SET_META(8,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=8, IFJ=2
       META => GROUP(8)%FIELD(2)%META
       META(2)%FSC    = 1E-7     
       META(2)%ENAME  = '.msc'
@@ -2920,9 +2768,7 @@
       META(2)%VARNS='northward_phillips_constant'
       META(2)%VARNG='northward_phillips_constant'
       META(2)%VARNC='msc=mscx+mscy'
-!      CALL SET_META(8,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=8, IFJ=3
       META => GROUP(8)%FIELD(3)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'degree'
@@ -2936,9 +2782,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(8,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=8, IFJ=4
       META => GROUP(8)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'degree'
@@ -2951,9 +2795,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 360
       !META(1)%VMAX = 3600
-!      CALL SET_META(8,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=8, IFJ=5
       META => GROUP(8)%FIELD(5)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = '1'
@@ -2966,12 +2808,10 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 32
       !META(1)%VMAX = 32000
-!      CALL SET_META(8,5,META)
 !
 !---------- GROUP 9 ----------------
 !
-! 1
- !CALL CLEAR_META(META)
+! IFI=9, IFJ=1
       META => GROUP(9)%FIELD(1)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'min.'
@@ -2983,9 +2823,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 3200
       !META(1)%VMAX = 32000
-!      CALL SET_META(9,1,META)
-! 2
- !CALL CLEAR_META(META)
+! IFI=9, IFJ=2
       META => GROUP(9)%FIELD(2)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 's-1'
@@ -2997,9 +2835,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 8
       !META(1)%VMAX = 8000
-!      CALL SET_META(9,2,META)
-! 3
- !CALL CLEAR_META(META)
+! IFI=9, IFJ=3
       META => GROUP(9)%FIELD(3)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = '1'
@@ -3011,9 +2847,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 320
       !META(1)%VMAX = 32000
-!      CALL SET_META(9,3,META)
-! 4
- !CALL CLEAR_META(META)
+! IFI=9, IFJ=4
       META => GROUP(9)%FIELD(4)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = '1'
@@ -3025,9 +2859,7 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 320
       !META(1)%VMAX = 32000
-!      CALL SET_META(9,4,META)
-! 5
- !CALL CLEAR_META(META)
+! IFI=9, IFJ=5
       META => GROUP(9)%FIELD(5)%META
       META(1)%FSC    = 0.01
       META(1)%UNITS  = '1'
@@ -3039,11 +2871,10 @@
       META(1)%VMIN = 0 
       META(1)%VMAX = 320
       !META(1)%VMAX = 32000
-!      CALL SET_META(9,5,META)
 !
 ! ------ Group 10 (User defined) -------
 !
- !CALL CLEAR_META(META)
+! IFI=10, IFJ=1
       META => GROUP(10)%FIELD(1)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'm'
@@ -3054,7 +2885,6 @@
       WRITE (META(1)%VARNL,'(A12,I2.2)') 'User_defined'
       WRITE (META(1)%VARNS,'(A12,I2.2)') 'User_defined'
       WRITE (META(1)%VARNG,'(A12,I2.2)') 'user_defined'
-!      CALL SET_META(9,5,META)
 !
       END SUBROUTINE DEFAULT_META
 !/ ------------------------------------------------------------------- /
