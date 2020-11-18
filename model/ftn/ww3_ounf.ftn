@@ -2633,7 +2633,7 @@
             CALL T2D(TIME,CURDATE,IERR)
             OUTJULDAY=TSUB(REFDATE,CURDATE)
             WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
-                    'Writing new record ', META(1)%ENAME(2:) ,'number ',N,             &
+                    'Writing new record ', TRIM(META(1)%ENAME(2:)) ,'number ',N,    &
                     ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
                     ':',CURDATE(6),':',CURDATE(7),' in file ',TRIM(FNAMENC)
 
