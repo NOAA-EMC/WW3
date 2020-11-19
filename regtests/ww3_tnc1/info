@@ -1,0 +1,25 @@
+#############################################################################
+#                                                                           #
+# ww3_tnc1  Test script for WW-III, configurable netCDF metadata in         #
+#           ww3_ounf progeam.                                               #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# Uses the ounfmeta.inp file to override default variable attributes in     #
+# gridded output netCDF file produced by ww3_ounf.                          #
+#                                                                           #
+# The aim of this test is to check the output from WW3_OUNF, so WW3_SHEL    #
+# is run with just source terms and no propagation over a small 11x11 grid  #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test -N -o netcdf  ../model ww3_tnc1                           #
+#                                                                           #
+#                                    Chris Bunney, UK Met Office, Nov 2020  #
+#                                                      Last Mod : Nov 2020  #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

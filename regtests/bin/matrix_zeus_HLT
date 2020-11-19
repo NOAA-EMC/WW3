@@ -102,6 +102,7 @@
   export    assim='y' # Restart spectra update
   export    oasis='y' # Atmosphere, ocean, and ice coupling using oasis
   export calendar='y' # Calendar type
+  export confignc='y' # Configurable netCDF meta data (ww3_ounf)
 
   export  multi01='y' # mww3_test_01 (wetting and drying)
   export  multi02='y' # mww3_test_02 (basic two-way nesting test))
