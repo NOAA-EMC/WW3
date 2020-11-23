@@ -1141,7 +1141,7 @@
               VMAX = 4000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
-              FSC    = 0.01
+              FSC    = 0.001
               UNITS  = 'm'
               ENAME  = '.wlv'
               IF( SMCGRD ) THEN
@@ -1156,8 +1156,8 @@
               VARNG(1)='sea_surface_height_above_sea_level'
               VARNC(1)=''
               VARND(1)=''
-              VMIN = 0 
-              VMAX = 10000
+              VMIN = -20000 
+              VMAX =  20000
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
@@ -1261,7 +1261,7 @@
               VARNC(1)=''
               VARND(1)=''
               VMIN = 0
-              VMAX = 2 
+              VMAX = 20000 
 !
 !/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4              FSC    = 0.001

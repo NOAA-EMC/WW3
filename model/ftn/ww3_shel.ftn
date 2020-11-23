@@ -2370,7 +2370,8 @@
                      (FLLST_ALL(J) .AND. J.EQ.-2) .OR.            &
                      (FLLST_ALL(J) .AND. J.EQ.-1) .OR.            &
                      (FLLST_ALL(J) .AND. J.EQ.0 ) .OR.            &
-                     (FLLSTI .AND. J.EQ.4) ) ) THEN
+                     (FLLSTI .AND. J.EQ.4) .OR.                   &
+                     (FLLSTR .AND. J.EQ.6) ) ) THEN
               TTIME  = TTT
 ! notes: if model has run out beyond field input, then this line should not 
 !    be reached. 
@@ -2436,8 +2437,10 @@
       ! of the files. This feature existed in v3.14.
       ! "1" is for water levels
       ! "4" is for ice concentration: 
+      ! "6" is for air density: 
       IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
       IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+      IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
 
       ! We include something like this for mud and ice parameters also:
       DO J=-7,0
