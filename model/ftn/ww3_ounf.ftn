@@ -984,6 +984,7 @@
             FLDIR = .FALSE.
             IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
 !
+            ! Depth
             IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( DW(1:NSEA), X1 )
@@ -992,6 +993,7 @@
                                                             , MAPSF, X1 )
               ENDIF
 
+            ! Surface current
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               !! Note - CX and CY read in from .ww3 file are X-Y vectors
 !/RTD              ! Rotate x,y vector back to standard pole
@@ -1007,6 +1009,7 @@
               ENDIF
               NFIELD=2
 !
+            ! Wind
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               !! Note - UA and UD read in from .ww3 file are UX,UY
 !/RTD              ! Rotate x,y vector back to standard pole
@@ -1023,6 +1026,7 @@
               ENDIF
               NFIELD=2
 !
+            ! Air-sea temperature difference
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(AS(1:NSEA), X1)
@@ -1031,6 +1035,7 @@
                                                         , MAPSF, X1 )
               ENDIF
 !
+            ! Sea surface height above sea level
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(WLV, X1)
@@ -1038,6 +1043,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLV   , MAPSF, X1 )
               ENDIF
 !
+            ! Sea ice area fraction
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(ICE, X1)
@@ -1045,6 +1051,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE(1:NSEA), MAPSF, X1 )
               ENDIF
 
+            ! Icebergs_damping
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(BERG, X1)
@@ -1053,19 +1060,23 @@
               ENDIF
               WHERE ( X1.NE.UNDEF) X1 = X1*0.1
 !
+!/BT4 ! Krumbein phi scale
 !/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
 !/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
 !
+!/IS2 ! Ice thickness
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 !
+!/IS2 ! Maximum ice floe diameter
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 
+            ! Significant wave height
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               IF( SMCGRD ) THEN
@@ -1074,6 +1085,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HS    , MAPSF, X1 )
               ENDIF
 
+            ! Mean wave length
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC(WLM, X1 )
@@ -1081,6 +1093,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLM, MAPSF, X1 )
               ENDIF
 !
+            ! Mean period T02
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( T02, X1 )
@@ -1088,6 +1101,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T02, MAPSF, X1 )
               ENDIF
 !
+            ! Mean period T0m1
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( T0M1, X1 )
@@ -1095,13 +1109,15 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T0M1, MAPSF, X1 )
               ENDIF
 !
+            ! Mean period T01
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( T01, X1 )
               ELSE
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T01   , MAPSF, X1 )
               ENDIF
-              
+!
+            ! Wave peak frequency
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC(FP0, X1)
@@ -1109,6 +1125,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FP0   , MAPSF, X1 )
               ENDIF
 !
+            ! Wave mean direction
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
 !/RTD              ! Rotate direction back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
@@ -1123,6 +1140,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM, MAPSF, X1 )
               ENDIF
 !
+            ! Directional spread
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( THS, X1 )
@@ -1130,6 +1148,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THS   , MAPSF, X1 )
               ENDIF
 !
+            ! Peak direction
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
 !/RTD              ! Rotate direction back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
@@ -1144,6 +1163,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
               ENDIF
 !
+            ! Infragravity wave height
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( HSIG, X1 )
@@ -1151,6 +1171,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HSIG, MAPSF, X1 )
               ENDIF
 !
+            ! Expected maximum sea surface elevation
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( STMAXE, X1 )
@@ -1158,6 +1179,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXE, MAPSF, X1 )
               ENDIF
 !
+            ! Standard deviation of maximum sea surface elevation
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( STMAXD, X1 )
@@ -1165,6 +1187,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXD, MAPSF, X1 )
               ENDIF
 !
+            ! Expected maximum wave height 
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( HMAXE, X1 )
@@ -1172,6 +1195,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXE, MAPSF, X1 )
               ENDIF
 !
+            ! Expected maximum wave height from crest
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( HCMAXE, X1 )
@@ -1179,6 +1203,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXE, MAPSF, X1 )
               ENDIF
 !
+            ! STD of maximum wave height
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( HMAXD, X1 )
@@ -1186,6 +1211,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
               ENDIF
 !
+            ! STD of maximum wave height from crest
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( HCMAXD, X1 )
@@ -1193,6 +1219,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               ENDIF
 !
+            ! Domiant wave breaking probability
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WBT, X1 )
@@ -1200,6 +1227,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1 )
               END IF
 !
+            ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1215,6 +1243,7 @@
                 XK(:,:,IK)=XX
                 END DO
 !
+            ! Mean wave direction frequency spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1231,6 +1260,7 @@
                 XK(:,:,IK)=XX
                 END DO
 !
+            ! Spreading frequency spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1245,6 +1275,7 @@
                 XK(:,:,IK)=XX
                 END DO
 !
+            ! Second mean wave direction frequency spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1261,6 +1292,7 @@
                 XK(:,:,IK)=XX
                 END DO
 !
+            ! Second spreading frequency spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1275,6 +1307,7 @@
                 XK(:,:,IK)=XX
                 END DO
 !
+            ! Wave numbers
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
               ! Information for spectral
               FLFRQ  = .TRUE.
@@ -1289,6 +1322,7 @@
                 XK(:,:,IK)=XX
               END DO
 !
+            ! Partition wave significant height
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PHS(:,IPART), X1 )
@@ -1296,6 +1330,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition peak period
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PTP(:,IPART), X1 )
@@ -1303,6 +1338,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART), MAPSF, X1 )
               ENDIF
 
+            ! Partition peak wave length
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PLP(:,IPART), X1 )
@@ -1310,6 +1346,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition wave mean direction
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,IPART), AnglD, .FALSE.)
@@ -1324,6 +1361,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PDIR(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition directional spread
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PSI(:,IPART), X1 )
@@ -1331,6 +1369,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART), MAPSF, X1 )
               ENDIF
 
+            ! Partition wind sea fraction
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PWS(:,IPART), X1 )
@@ -1338,6 +1377,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition peak direction
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP0(:,IPART), AnglD, .FALSE.)
@@ -1352,6 +1392,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTHP0(:,IPART), MAPSF, X1 )
               END IF
 !
+            ! Partition peakedness
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PQP(:,IPART), X1 )
@@ -1359,6 +1400,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PQP(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition peak enhancement factor
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PPE(:,IPART), X1 )
@@ -1366,6 +1408,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PPE(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition frequency width
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PGW(:,IPART), X1 )
@@ -1373,6 +1416,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PGW(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition spectral width
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PSW(:,IPART), X1 )
@@ -1380,6 +1424,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSW(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition mean period Tm10
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PTM1(:,IPART), X1 )
@@ -1387,6 +1432,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTM1(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition mean period T01
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PT1(:,IPART), X1 )
@@ -1394,6 +1440,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PT1(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition mean period T02
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PT2(:,IPART), X1 )
@@ -1401,6 +1448,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PT2(:,IPART), MAPSF, X1 )
               ENDIF
 !
+            ! Partition energy at peak frequency
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( PEP(:,IPART), X1 )
@@ -1409,6 +1457,7 @@
               ENDIF
               NFIELD=1
 !
+            ! Partition wind sea fraction
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PWST(:), X1 )
@@ -1416,6 +1465,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWST(:), MAPSF, X1 )
               ENDIF
 !
+            ! Number of wave partitions
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( PNR(:), X1 )
@@ -1423,6 +1473,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PNR(:), MAPSF, X1 )
               ENDIF
 !
+            ! Friction velocity
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
               !! Note - UST and USTDIR read in from .ww3 file are X-Y vectors
               DO ISEA=1, NSEA
@@ -1461,6 +1512,7 @@
               !CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA) , MAPSF, X2 )
               NFIELD=2
 !
+            ! Charnock coefficient
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( CHARN(1:NSEA), X1 )
@@ -1468,6 +1520,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA), MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Wave energy flux
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
               CGE=CGE*0.001  ! from W / m to kW / m 
               IF( SMCGRD ) THEN
@@ -1476,6 +1529,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE(1:NSEA), MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Wind to wave energy flux
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               IF( SMCGRD ) THEN
@@ -1484,6 +1538,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Wave supported wind stress
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWIX(1:NSEA), TAUWIY(1:NSEA), AnglD)
@@ -1513,6 +1568,7 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY, MAPSF, X2 )
               NFIELD=2
 !
+            ! Wave to wind stress
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWNX(1:NSEA), TAUWNY(1:NSEA), AnglD)
@@ -1527,6 +1583,7 @@
               ENDIF ! SMCGRD
               NFIELD=2
 !
+            ! Whitecap coverage
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WHITECAP(1:NSEA,1), X1 )
@@ -1535,6 +1592,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Whitecap foam thickness
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WHITECAP(1:NSEA,2), X1 )
@@ -1543,6 +1601,7 @@
                                                         , MAPSF, X1 )
               ENDIF
 !
+            ! Significant breaking wave height
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WHITECAP(1:NSEA,3), X1 )
@@ -1551,6 +1610,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Whitecap moment
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WHITECAP(1:NSEA,4), X1 )
@@ -1559,6 +1619,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Wind sea mean period T0M1
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( TWS(1:NSEA), X1 )
@@ -1566,6 +1627,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TWS(1:NSEA), MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Radiation stress
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
 !/RTD         ! Radition stress components are always left on rotated pole
 !/RTD         ! at present - need to confirm how to de-rotate
@@ -1584,6 +1646,7 @@
               ENDIF ! SMCGRD
               NFIELD=3
 !
+            ! Wave to ocean stress
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOX(1:NSEA), TAUOY(1:NSEA), AnglD)
@@ -1598,6 +1661,7 @@
               ENDIF ! SMCGRD
               NFIELD=2
 !
+            ! Radiation pressure (Bernouilli Head)
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( BHD(1:NSEA), X1 )
@@ -1606,6 +1670,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Wave to ocean energy flux
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               DO ISEA=1, NSEA
@@ -1618,6 +1683,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 !
+            ! Stokes transport
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TUSX(1:NSEA), TUSY(1:NSEA), AnglD)
@@ -1653,6 +1719,7 @@
               !ENDIF ! SMCGRD
               NFIELD=2
 !
+            ! Surface stokes drift
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
               DO ISEA=1, NSEA
                  USSX(ISEA)=MAX(-0.9998,MIN(0.9998,USSX(ISEA)))
@@ -1686,6 +1753,7 @@
               !CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSY,MAPSF, X2 )
               NFIELD=2
 !
+            ! Power spectral density of equivalent surface pressure
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
               NFIELD=2
               IF( SMCGRD ) THEN
@@ -1698,6 +1766,7 @@
                                                         , MAPSF, XY )
               ENDIF ! SMCGRD
 !
+            ! Spectral variance of surface stokes drift
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
               ! Information for spectral distribution of surface Stokes drift (2nd file)
               FLFRQ=.TRUE.
@@ -1718,6 +1787,7 @@
                 XYK(:,:,IK)=XY
               END DO
 !
+            ! Base10 logarithm of power spectral density of equivalent surface pressure
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                 ! Information for spectral microseismic generation data (2nd file)
                 FLFRQ=.TRUE.
@@ -1738,6 +1808,7 @@
                   XK(:,:,IK)=XX
                 END DO
 !
+            ! Wave to sea ice stress
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICE(1:NSEA,1), TAUICE(1:NSEA,2), AnglD)
@@ -1752,6 +1823,7 @@
               ENDIF ! SMCGRD
               NFIELD=2
 !
+            ! Wave to sea ice energy flux
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               DO ISEA=1, NSEA
@@ -1764,6 +1836,7 @@
                                                         , MAPSF, X1 )
               ENDIF ! SMCGRD
 
+           ! Partitioned surface stokes drift
            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
               ! Information for spectral distribution of surface Stokes drift (2nd file)
               FLFRQ=.TRUE.
@@ -1787,6 +1860,7 @@
                 XYK(:,:,IK)=XY
               END DO
 !
+            ! RMS of bottom displacement amplitude
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
               ! NB: ABA and ABD are the X and Y components of the bottom displacement
 !/RTD              ! Rotate x,y vector back to standard pole
@@ -1802,6 +1876,7 @@
               ENDIF ! SMCGRD
               NFIELD=2
 !
+            ! RMS of bottom velocity amplitude
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
               ! NB: UBA and UBD are the X and Y components of the bottom velocity
 !/RTD              ! Rotate x,y vector back to standard pole
@@ -1812,6 +1887,7 @@
                                                         , MAPSF, XY )
               NFIELD=2
 !
+            ! Bottom roughness
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
@@ -1824,10 +1900,12 @@
                                                         , MAPSF, XY )
               NFIELD=3
 !
+            ! Wave dissipation in bottom boundary layer
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBBL(1:NSEA)    &
                                                         , MAPSF, X1 )
 !
+            ! Wave to bottom boundary layer stress
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
@@ -1838,6 +1916,7 @@
                                                         , MAPSF, XY )
               NFIELD=2
 !
+            ! Mean square slope
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSSX, MSSY, AnglD)
@@ -1845,6 +1924,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
               NFIELD=2
 !
+            ! Phillips constant
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSCX, MSCY, AnglD)
@@ -1852,6 +1932,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCY,MAPSF, XY )
               NFIELD=2
 !
+            ! u direction for mss
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, MSSD, AnglD, .FALSE.)
@@ -1862,6 +1943,7 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSD   , MAPSF, X1 )
 !
+            ! x direction for msc
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, MSCD, AnglD, .FALSE.)
@@ -1872,6 +1954,7 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCD   , MAPSF, X1 )
 !
+             ! Peakedness
              ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( QP, X1 )
@@ -1879,6 +1962,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QP, MAPSF, X1 )
               ENDIF
 !
+            ! Dynamic time step
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               DO ISEA=1, NSEA
                 IF ( DTDYN(ISEA) .NE. UNDEF ) THEN
@@ -1887,18 +1971,23 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DTDYN , MAPSF, X1 )
 !
+            ! Cut off frequency
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FCUT  , MAPSF, X1 )
 !
+            ! Maximum CFL for spatial advection
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX  , MAPSF, X1 )
 !
+            ! Maximum CFL for direction advection
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX  , MAPSF, X1 )
 !
+            ! Maximum CFL for frequency advection
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLKMAX  , MAPSF, X1 )
 !
+            ! User defined...
             ELSE IF ( IFI .EQ. 10 ) THEN
               !CB WRITE (ENAME,'(A2,I2.2)') '.u', IFJ
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
