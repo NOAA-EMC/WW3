@@ -66,6 +66,9 @@
 !         extra_attr = extra_value [type]
 !         extra_attr = extra_value [type]
 !
+!     Note: The "META" keyword and the Field Name ID strings (e.g. HS)
+!     are case insensitive. All netCDF attribute names are case sensitive.
+!
 !
 !     Example file:
 !
@@ -102,7 +105,7 @@
 !/RTD      USE W3GDATMD, ONLY : FLAGUNR
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
                           NDSE, FNMPRE
-      USE W3SERVMD, ONLY: EXTCDE
+      USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
 
       IMPLICIT NONE
 
@@ -462,7 +465,7 @@
       INTEGER ::  IERR, I, NDMI
       CHARACTER(LEN=256) :: BUF
       TYPE(META_T), POINTER :: PMETA
-      CHARACTER(LEN=32) :: TEST
+      CHARACTER(LEN=32) :: TEST, TESTU
 
       INTEGER :: IFI, IFJ, IFC
       INTEGER :: ILINE, MCNT
@@ -491,13 +494,16 @@
         READ(BUF, *) TEST
 
         ! A new meta-data section will start with the keyword "META"
-        IF(TEST == "META") THEN
+        TESTU = TEST
+        CALL STR_TO_UPPER(TESTU)
+        IF(TESTU == "META") THEN
            MCNT = MCNT + 1
         
            IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
 
            ! Get the IFI, IFJ, IFC values from the header:
-           I = INDEX(BUF,'META') + 4
+           !I = INDEX(BUF,'META') + 4
+           I = INDEX(BUF, TRIM(TEST)) + 4 ! Handles lower/mixed-case META keyword
            CALL DECODE_HEADER(BUF(I:), ILINE, IFI, IFJ, IFC)
            IF(IFI .EQ. -1) THEN
               WRITE(NDSE, 5011) TRIM(BUF(I:)), TRIM(FN_META), ILINE
@@ -606,6 +612,8 @@
 !     Both forms can also specify an optional component (IFC) integer
 !     value for multi-component fields (defaults to 1).
 !
+!     Field name ID tags are case-insensitive, HS == hs == Hs.
+!
 !  3. Parameters :
 !
 !     Parameter list
@@ -660,11 +668,13 @@
         CALL EXTCDE(10)
       ENDIf
 
+      CALL STR_TO_UPPER(FLD) ! field names are case insensitive
+
       ! If string value (FLDID), then decode into IFI,IFJ value:
       IF(FLD /= '') THEN
         ! Special case for "global" attributes
-        IF(TRIM(FLD) == "global") THEN
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Global meta sec.]', TRIM(BUF)
+        IF(TRIM(FLD) == "GLOBAL") THEN
+          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
           IFI = 999  ! Marker for global section
         ELSE
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
@@ -746,6 +756,7 @@
         ! Read first token on line:
         READ(BUF, *) TEST
 
+        CALL STR_TO_UPPER(TEST)
         IF(TEST == "META") THEN
           ! Start of new meta data entry
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
@@ -1003,6 +1014,7 @@
         ! Read first token on line:
         READ(BUF, *) TEST
 
+        CALL STR_TO_UPPER(TEST)
         IF(TEST == "META") THEN
           ! Start of new meta data entry
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
