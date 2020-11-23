@@ -36,7 +36,7 @@
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/    07-Oct-2019 : RTD option with standard lat-lon
 !/                  grid when nesting to rotated grid   ( version 7.11 )
-!/    03-Nov-2020 : Moved NetCDF metadata to seperate   ( version 7.XX )
+!/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.XX )
 !/                  module.
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -697,7 +697,7 @@
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
-!/    03-Nov-2020 : NetCDF metadata moved to seperate   ( version 7.11 )
+!/    03-Nov-2020 : NetCDF metadata moved to separate   ( version 7.XX )
 !/                  module.
 !/
 !  1. Purpose :
@@ -3598,6 +3598,7 @@
 
       ! ChrisB: Write user global attributes:
       CALL WRITE_GLOBAL_META(NCID, IRET)
+      CALL CHECK_ERR(IRET)
 
       open(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
       IF (ICODE.EQ.0) THEN

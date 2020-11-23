@@ -237,7 +237,7 @@
       ! 3. Set the default values for the OUNF netCDF meta data.
       CALL DEFAULT_META()
 
-      ! If the ounfmeta.nml exists, read this in to override defaults:
+      ! If the ounfmeta.inp exists, read this in to override defaults:
       INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
       IF(FLGNML) THEN 
          CALL READ_META()
@@ -600,7 +600,7 @@
 !
 !  2. Method:
 !
-!     The internal WW3 field can be speicifed either as an [IFI, IFJ]
+!     The internal WW3 field can be specified either as an [IFI, IFJ]
 !     integer combination, or a field ID tag (such as "HS").
 !
 !     Both forms can also specify an optional component (IFC) integer
@@ -1487,6 +1487,11 @@
 !  1. Purpose :
 !
 !     Populates the default meta data for ww3_ounf.
+!
+!     Note: VMIN and VMAX are now set in the units of the output field.
+!     Previously, they were set with scaled values based on the scaling
+!     factor FSC. The scaling is now performed (if necessary) in the
+!     WRITE_META subroutine.
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
