@@ -108,9 +108,10 @@
 !
       USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
-      USE W3ADATMD,  ONLY: HS, T0M1, T01, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
-                           TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM, &
-                           PHIBBL,TAUBBL, CHARN, TAUOCX, TAUOCY, WNMEAN
+      USE W3ADATMD,  ONLY: HS, T0M1, T01, THM, BHD, TAUOX, TAUOY, PHIOC,&
+                           UBA, UBD, TAUWIX, TAUWIY, TUSX, TUSY, USSX,  &
+                           USSY, WLM, PHIBBL,TAUBBL, CHARN, TAUOCX,     &
+                           TAUOCY, WNMEAN
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
 !
@@ -121,12 +122,12 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                        :: I, ISEA, IX, IY
-      INTEGER, DIMENSION(NSEAL)      :: MASK
+      INTEGER                          :: I, ISEA, IX, IY
+      INTEGER, DIMENSION(NSEAL)        :: MASK
       REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_SND
-      INTEGER                        :: IB_DO
-      LOGICAL                        :: LL_ACTION   
-      REAL(kind=8), DIMENSION(NSEAL) :: TMP
+      INTEGER                          :: IB_DO
+      LOGICAL                          :: LL_ACTION   
+      REAL(kind=8), DIMENSION(NSEAL)   :: TMP
 !
 !----------------------------------------------------------------------
 ! * Executable part
@@ -267,7 +268,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBX') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(TAUOX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,1)
+            WHERE(TAUBBL(1:NSEAL,1) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,1)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -276,7 +277,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBY') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(TAUOY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,2)
+            WHERE(TAUBBL(1:NSEAL,2) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,2)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -285,7 +286,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FBB') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(PHIOC(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIBBL(1:NSEAL)
+            WHERE(PHIBBL(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIBBL(1:NSEAL)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -301,7 +302,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRX') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(UBA(1:NSEAL) /= UNDEF) TMP=UBA(1:NSEAL)*COS(UBD(1:NSEAL))
+            WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*COS(UBD(1:NSEAL))
             RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -310,7 +311,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRY') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(UBA(1:NSEAL) /= UNDEF) TMP=UBA(1:NSEAL)*SIN(UBD(1:NSEAL))
+            WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*SIN(UBD(1:NSEAL))
             RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF

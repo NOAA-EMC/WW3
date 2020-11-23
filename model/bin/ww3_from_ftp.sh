@@ -37,6 +37,7 @@ cp -r data_regtests/ww3_tp2.12/input_be/*  regtests/ww3_tp2.12/input_be/
 cp -r data_regtests/ww3_tp2.12/input_le/*  regtests/ww3_tp2.12/input_le/
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OAS*CM regtests/ww3_tp2.14/input/
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input/r-ww3.nc.OASACM2
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input/
 if [ ! -d regtests/ww3_tp2.14/input/oasis3-mct/doc ]
 then
   mkdir regtests/ww3_tp2.14/input/oasis3-mct/doc

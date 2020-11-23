@@ -16,9 +16,7 @@ $ Include ice and mud parameters only if IC1/2/3/4 used :
    F F     Water levels
    F F     Currents
    C F     Winds
-   F F     Ice concentrations
-   F F     Atmospheric momentum
-   F F     Air density
+   F       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra
@@ -27,8 +25,8 @@ $ Time frame of calculations ----------------------------------------- $
 $ - Starting time in yyyymmdd hhmmss format.
 $ - Ending time in yyyymmdd hhmmss format.
 $
-   20110902 020000
-   20110902 030000
+   20110902 000000
+   20110902 010000
 $
 $ Define output data ------------------------------------------------- $
 $
@@ -65,7 +63,7 @@ $          the total number and order of the logical flags is fixed.
 $                               The raw data file is out_grd.ww3, 
 $                               see w3iogo.ftn for additional doc.
 $
-   20110902 020000  180  20110902 030000
+   20110902 000000  180  20110902 010000
 $----------------------------------------------------------------
 $ Output request flags identifying fields.
 $
@@ -84,7 +82,7 @@ $          requested (i.e., no 'STOPSTRING' needed).
 $                               The raw data file is out_pnt.ww3, 
 $                               see w3iogo.ftn for additional doc.
 $
-   20110902 020000 0   20110902 030000
+   20110902 000000 0   20110902 020000
 $    -4.97 48.29  '62069'
 $    -6.00 48.29  'Boundary'
 $     0.0   0.0   'STOPSTRING'
@@ -95,32 +93,32 @@ $          Flag for formatted input file.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
 $
-   20110902 020000   0  20110902 030000
+   20110902 000000   0  20110902 020000
 $     T
 $
 $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
 $
-   20110902 020000   0  20110902 030000
+   20110902 000000   0  20110902 020000
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
 $                               w3iobcmd.ftn for additional doc.
 $
-   20110902 020000   0  20110902 030000
+   20110902 000000   0  20110902 020000
 $
 $ Type 6 : Separated wave field data (dummy for now).
 $          First, last step IX and IY, flag for formatted file
 $
-   20110902 020000   0  20110902 030000
+   20110902 000000   0  20110902 020000
 $       0 999 1 0 999 1 T
 $
 $ Type 7 : Coupling. (must be fully commented if not used with switch COU)
 $          Namelist type selection is used here.
 $          Diagnostic fields to exchange. (see namcouple for more information)
 $
-   20110902 020000  360  20110902 030000 T
+   20110902 000000  180  20110902 010000 T
  N
 $
 $   - Sent fields by ww3:
