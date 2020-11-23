@@ -1299,17 +1299,25 @@
       ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
       IF(ERR /= NF90_NOERR) RETURN
       
-      ! Note: Valid min/max are scaled by scale_factor 
-      !       and converted to integers.
-      VAL = NINT(META%VMIN / META%FSC)
-      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', VAL)
-      !ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
-      IF(ERR /= NF90_NOERR) RETURN
-      
-      VAL = NINT(META%VMAX / META%FSC)
-      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', VAL)
-      !ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
-      IF(ERR /= NF90_NOERR) RETURN
+      ! For variables with vartype SHORT, the valid min/max
+      ! are scaled by scale_factor and converted to integers.
+      ! If vartype is FLOAT, then no scaling is performed and
+      ! valid min/max are written out directly as floats.
+      IF(NCVARTYPE .EQ. 2) THEN
+        VAL = NINT(META%VMIN / META%FSC)
+        ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', VAL)
+        IF(ERR /= NF90_NOERR) RETURN
+
+        VAL = NINT(META%VMAX / META%FSC)
+        ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', VAL)
+        IF(ERR /= NF90_NOERR) RETURN
+      ELSE
+        ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
+        IF(ERR /= NF90_NOERR) RETURN
+        
+        ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
+        IF(ERR /= NF90_NOERR) RETURN
+      ENDIF
       
       IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
@@ -1488,10 +1496,15 @@
 !
 !     Populates the default meta data for ww3_ounf.
 !
-!     Note: VMIN and VMAX are now set in the units of the output field.
+!  2. Remarks :
+!
+!     VMIN and VMAX are now set in the units of the output field.
 !     Previously, they were set with scaled values based on the scaling
 !     factor FSC. The scaling is now performed (if necessary) in the
 !     WRITE_META subroutine.
+!
+!     FSC (scale factor) is only applied to data and valid_min/max if
+!     the netCDF variable type is NF90_SHORT.
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
