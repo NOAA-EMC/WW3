@@ -79,6 +79,12 @@ no type is supplied, it defaults to a characer type. Valid
 types are one of ["c", "r", "i"] for character/string, 
 real/float or integer values respectively.
 
+\noindent Some default attibutes can be disabled by setting 
+the attribute value to a blank string (""). This will prevent
+the attribute from being written in the netCDF file. This
+applies only to the \texttt{globawave\_name}, \texttt{comment}
+and \texttt{direction\_reference} attributes.
+
 \noindent
 Global meta data can be specified with a special \texttt{META global} line.
 
