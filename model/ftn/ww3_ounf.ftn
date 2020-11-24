@@ -1219,7 +1219,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               ENDIF
 !
-            ! Domiant wave breaking probability
+            ! Dominant wave breaking probability
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
               IF( SMCGRD ) THEN
 !/SMC                CALL W3S2XY_SMC( WBT, X1 )

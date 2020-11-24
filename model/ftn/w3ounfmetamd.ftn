@@ -1874,9 +1874,9 @@
       META(1)%UNITS  = '1'
       META(1)%ENAME  = '.wbt'
       META(1)%VARNM='wbt'
-      META(1)%VARNL='domiant wave breaking probability'
-      META(1)%VARNS='domiant_wave_breaking_probability'
-      META(1)%VARNG='domiant_wave_breaking_probability'
+      META(1)%VARNL='dominant wave breaking probability'
+      META(1)%VARNS='dominant_wave_breaking_probability'
+      META(1)%VARNG='dominant_wave_breaking_probability'
       META(1)%VMIN = 0
       META(1)%VMAX = 1
       !META(1)%VMAX = 1000
