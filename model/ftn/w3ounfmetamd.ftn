@@ -776,43 +776,49 @@
       
         ATTN = ADJUSTL(BUF(1:I-1))
         ATTV = ADJUSTL(BUF(I+1:))
-      
+
+        ! Some compilers won't read an "empty" string unless quoted:
+        IF(TRIM(ATTV) == '') THEN
+           ATTV='""'
+        ENDIF
+
+        IERR = 0 
         SELECT CASE(TRIM(attn))
           ! Character variables
           ! Note: Using internal reads will allow the use of quote marks in strings
           CASE("varnm")
-             READ(attv, *) META%VARNM
+             READ(attv, *, IOSTAT=IERR) META%VARNM
       
           CASE("ename")
-             READ(attv, *) META%ENAME
+             READ(attv, *, IOSTAT=IERR) META%ENAME
         
           CASE("standard_name", "varns")
-             READ(attv, *) META%VARNS
+             READ(attv, *, IOSTAT=IERR) META%VARNS
       
           CASE("long_name", "varnl")
-             READ(attv, *) META%VARNL
+             READ(attv, *, IOSTAT=IERR) META%VARNL
       
           CASE("globwave_name", "varng")
-             READ(attv, *) META%VARNG
+             READ(attv, *, IOSTAT=IERR) META%VARNG
       
           CASE("direction_reference", "dir_ref", "varnd")
-             READ(attv, *) META%VARND
+             READ(attv, *, IOSTAT=IERR) META%VARND
       
           CASE("comment", "varnc")
-             READ(attv, *) META%VARNC
+             READ(attv, *, IOSTAT=IERR) META%VARNC
       
           CASE("units")
-             READ(attv, *) META%UNITS
+             READ(attv, *, IOSTAT=IERR) META%UNITS
       
           ! Real variables
           CASE("valid_min", "vmin")
-             READ(attv, *) META%VMIN
+             READ(attv, *, IOSTAT=IERR) META%VMIN
       
           CASE("valid_max", "vmax")
-             READ(attv, *) META%VMAX
+             READ(attv, *, IOSTAT=IERR) META%VMAX
       
           CASE("scale_factor", "fsc")
-             READ(attv, *) META%FSC
+             READ(attv, *, IOSTAT=IERR) META%FSC
       
           ! Default case will be the "extra" meta data variable
           CASE DEFAULT
@@ -838,6 +844,12 @@
              EXTRA = ATTN
 
         END SELECT
+
+        IF(IERR /= 0) THEN
+          WRITE(NDSE, 7002) FN_META, ILINE, TRIM(BUF)
+          CALL EXTCDE(10)
+        ENDIF
+
       ENDDO
       
       RETURN
@@ -854,6 +866,13 @@
                '     FILENAME = ', A /                                &
                '     LINE NO =', I5 /                                 &
                '  => ', A /)
+!
+ 7002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     IO ERROR READING ATTRIBUTE' /                    &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
       END SUBROUTINE READ_META_PAIRS
 
 !/ ------------------------------------------------------------------- /
@@ -910,6 +929,7 @@
 
       ! Get attribute and type (default to "c" if no type set)
       ATT_TYPE = 'c'
+      ATTV = ''
       READ(BUF, *, IOSTAT=IERR) ATTV, ATT_TYPE
       IF(IERR /= 0) READ(BUF, *, IOSTAT=IERR) ATTV
  

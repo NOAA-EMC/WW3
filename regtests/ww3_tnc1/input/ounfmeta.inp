@@ -36,7 +36,7 @@ META WND 1
    $ First component of wind
    ename=".w10"
    varnm="WU10"
-   standard_name="eastward_wind'
+   standard_name="eastward_wind"
 
 META WND 2
    $ Second component of wind
