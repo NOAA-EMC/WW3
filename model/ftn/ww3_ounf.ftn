@@ -3451,32 +3451,60 @@
       END SUBROUTINE W3CRNC 
 
 
-     SUBROUTINE S2GRID(S, X, FLDIRN)
-     USE W3SERVMD, ONLY : W3S2XY
-     
-     IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE S2GRID(S, X, FLDIRN)
+!/
+!/                  +-----------------------------------+
+!/                  |           C . Bunney              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         03-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!/    03-Nov-2020 : Creation                            ( version 7.XX )
+!/
+!  1. Purpose :
+!
+!     Exapand the seapoint array to full grid with handling of
+!     SMC regridding. The FLDIRN flag should be set to true for
+!     directional fields. In this case, they will be decomposed
+!     into U/V components for SMC grid interpolation and converted
+!     to oceanograhic convention.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       S       Real. I  Sea point array
+!       X       Real. O  Gridded array
+!       FLDIRN  Bool. I  Directional field flag
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      USE W3SERVMD, ONLY : W3S2XY
+ 
+      IMPLICIT NONE
 
-     REAL, INTENT(INOUT)  :: S(:)
-     REAL, INTENT(OUT) :: X(:,:)
-     LOGICAL, OPTIONAL, INTENT(IN) :: FLDIRN
+      REAL, INTENT(INOUT)  :: S(:)
+      REAL, INTENT(OUT) :: X(:,:)
+      LOGICAL, OPTIONAL, INTENT(IN) :: FLDIRN
 
-     LOGICAL :: FLDR
-     INTEGER :: ISEA
+      LOGICAL :: FLDR
+      INTEGER :: ISEA
 
-     FLDR = .FALSE.
-     IF(PRESENT(FLDIRN)) FLDR = FLDIRN
+      FLDR = .FALSE.
+      IF(PRESENT(FLDIRN)) FLDR = FLDIRN
 
 !/SMC     IF( SMCGRD ) THEN
 !/SMC        CALL W3S2XY_SMC( S, X )
 !/SMC     ELSE ! IF(SMCGRD)
-       IF(FLDR) THEN
-         DO ISEA=1, NSEA
-           IF (S(ISEA) .NE. UNDEF )  THEN
-             S(ISEA) = MOD ( 630. - RADE * S(ISEA) , 360. )
-           END IF
-         END DO
-       ENDIF
-       CALL W3S2XY ( NSEA, NSEA, NX+1, NY, S, MAPSF, X )
+      IF(FLDR) THEN
+        DO ISEA=1, NSEA
+          IF (S(ISEA) .NE. UNDEF )  THEN
+            S(ISEA) = MOD ( 630. - RADE * S(ISEA) , 360. )
+          END IF
+        END DO
+      ENDIF
+      CALL W3S2XY ( NSEA, NSEA, NX+1, NY, S, MAPSF, X )
 !/SMC     ENDIF
 
      END SUBROUTINE S2GRID
