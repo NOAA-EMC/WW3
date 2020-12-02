@@ -2595,6 +2595,8 @@
                           MXX(IX,IY) = MFILL
                           MYY(IX,IY) = MFILL
                         ELSE
+                    !PRINT*,XX(IX,IY),XY(IX,IY)
+                    !STOP
                           MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
                           MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
                         END IF
@@ -3508,6 +3510,38 @@
 !/SMC     ENDIF
 
      END SUBROUTINE S2GRID
+
+
+     SUBROUTINE UV_TO_MAG_DIR(U, V, TOLERANCE)
+     ! Converts fields formulated as U/V vectors into
+     ! magnitude and direction fields. Conversion is
+     ! done in-place. U becomes magnitude, V becomes
+     ! direction. Optional TOLERANCE sets minimum
+     ! magnitude.
+     IMPLICIT NONE
+
+     REAL, INTENT(INOUT) :: U(:), V(:)
+     REAL, INTENT(IN), OPTIONAL :: TOLERANCE
+
+     REAL :: TOL = 1.0
+     REAL :: MAG ! Magnitude
+     INTEGER :: ISEA
+
+     IF(PRESENT(TOLERANCE)) TOL = TOLERANCE
+
+     DO ISEA=1, NSEA
+       MAG   = SQRT(U(ISEA)**2 + V(ISEA)**2)
+       IF(MAG .GT. TOL) THEN
+         V(ISEA) = MOD( 630. - RADE * ATAN2(U(ISEA), V(ISEA)), 360. )
+       ELSE
+         V(ISEA) = UNDEF
+         ! TODO - Setting V to undef does not work as later the write
+         ! function only checks the U value. Set both to udef?
+       END IF
+       U(ISEA) = MAG
+     END DO
+
+     END SUBROUTINE UV_TO_MAG_DIR
 
 !==============================================================================
 

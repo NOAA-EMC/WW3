@@ -1572,6 +1572,7 @@
 ! IFI=1, IFJ=2        
       META => GROUP(1)%FIELD(2)%META
       META(1)%ENAME  = '.cur'
+      META(1)%VARND = DIRCOM
       IF(VECTOR) THEN
         META(1)%FSC    = 0.01
         META(1)%UNITS  = 'm s-1'
@@ -1582,8 +1583,7 @@
         META(1)%VARNS='eastward_sea_water_velocity'
         META(1)%VARNG='eastward_sea_water_velocity'
         META(1)%VARNC='cur=sqrt(U**2+V**2)'
-        META(1)%VARND = DIRCOM
-        
+
         ! Second component
         META(2) = META(1)
         META(2)%VARNM='vcur'
@@ -1615,6 +1615,7 @@
 ! IFI=1, IFJ=3         
       META => GROUP(1)%FIELD(3)%META
       META(1)%ENAME  = '.wnd'
+      META(1)%VARND = DIRCOM
       IF(VECTOR) THEN
         META(1)%FSC    = 0.1
         META(1)%UNITS  = 'm s-1'
@@ -1625,8 +1626,7 @@
         META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
         META(1)%VMIN = -99.0
         META(1)%VMAX =  99.0
-        META(1)%VARND = DIRCOM
-  
+
         ! Second component
         META(2) = META(1)
         META(2)%VARNM='vwnd'
