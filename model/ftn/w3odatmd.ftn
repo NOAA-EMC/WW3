@@ -671,6 +671,8 @@
 !
       NOGE(1) = 7
 !/BT4      NOGE(1) = 8
+!/IS2      NOGE(1) = 10    ! CB
+!/SETUP    NOGE(1) = 11    ! CB
 !
       IDOUT( 1, 1)  = 'Water depth         '
       IDOUT( 1, 2)  = 'Current vel.        '
@@ -746,7 +748,7 @@
 !
 ! 5) Atmosphere-waves layer
 !
-      NOGE(5) = 10
+      NOGE(5) = 11
 !
       IDOUT( 5, 1)  = 'Friction velocity   '
       IDOUT( 5, 2)  = 'Charnock parameter  '
@@ -758,7 +760,8 @@
       IDOUT( 5, 8)  = 'Whitecap mean thick.'
       IDOUT( 5, 9)  = 'Mean breaking height'
       IDOUT( 5,10)  = 'Dominant break prob '
-!      IDOUT( 5,11)  = 'Breaker passage rate'
+      IDOUT( 5,11)  = 'Wind sea period' ! C.Bunney - reinstated this as is used in ww3_ounf
+                                        ! Is it suposed to be defunct? It is not in ww3_outf...
 !
 ! 6) Wave-ocean layer
 !
