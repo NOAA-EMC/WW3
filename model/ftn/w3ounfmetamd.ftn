@@ -1325,12 +1325,13 @@
         ENDIF
 
         ! Check we have not exceeded NOSWLL
-        IF(P%NP .GT. NOSWLL + 1) THEN
+        IF(P%NP .GT. NOSWLL) THEN
           WRITE(*,*) "Too many partition entries (NOSWLL=",NOSWLL,"). Ignoring"
           CYCLE
         ENDIF
 
         ! Add string to array of partition text
+        IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]',P%NP,TRIM(BUF)
         P%PART_TEXT(P%NP) = TRIM(ADJUSTL(BUF)) ! Zero indexed
         P%NP = P%NP + 1
          
