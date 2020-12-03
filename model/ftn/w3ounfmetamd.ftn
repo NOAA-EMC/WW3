@@ -106,7 +106,7 @@
       USE W3GDATMD, ONLY: SIG, NK
 !/RTD      USE W3GDATMD, ONLY : FLAGUNR
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
-                          NDSE, FNMPRE
+                          NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
 
       IMPLICIT NONE
@@ -165,6 +165,19 @@
       INTEGER, PARAMETER :: MAX_GBLMETA = 30
       INTEGER            :: N_GBLMETA
 
+
+      ! Type for storing partitioned parameter template strings.
+      ! Defined as a linked-list
+      TYPE PART_TMPL_T
+        CHARACTER(LEN=128)              :: TMPL         ! Placeholder
+        CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) ! Partition description
+        INTEGER(KIND=2)                 :: NP           ! Num parts (max NOSWLL)
+        TYPE(PART_TMPL_T), POINTER      :: NEXT         ! LinkedList pointer
+      END TYPE PART_TMPL_T
+
+      TYPE(PART_TMPL_T), POINTER :: PART_TMPL
+
+
       INTEGER            :: NCVARTYPE   ! netCDF variable type
       CHARACTER(LEN=30)  :: DIRCOM      ! Direction convention comment
       CHARACTER(LEN=128) :: PARTCOM     ! Partitioning method comment
@@ -219,6 +232,10 @@
       ALLOCATE(GLOBAL_META(MAX_GBLMETA))
       N_GBLMETA = 0
 
+      ! 1.1 Make sure partitioned template pointer is null (i.e. empty list)
+      NULLIFY(PART_TMPL)
+      
+
       ! 2. Set direction convention:
       DIRCOM = ""
 !/RTD      IF ( FLAGUNR ) THEN
@@ -256,7 +273,70 @@
          CALL READ_META()
       ENDIF
 
+      CALL ADD_PART_TMPL("string1")
+      CALL ADD_PART_TMPL("string2")
+      CALL ADD_PART_TMPL("chris")
+
+      CALL PRINT_PART_TMPL()
+
       END SUBROUTINE INIT_META
+
+
+      SUBROUTINE ADD_PART_TMPL(TMPL_STR)
+
+      IMPLICIT NONE
+      CHARACTER(*), INTENT(IN) :: TMPL_STR
+
+      TYPE(PART_TMPL_T), POINTER :: P
+
+      IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
+        ! New list
+        ALLOCATE(PART_TMPL)
+        P => PART_TMPL
+      ELSE
+        ! Add to end of list
+        P => PART_TMPL
+        DO WHILE(ASSOCIATED(P%NEXT))
+          P => P%NEXT
+        ENDDO
+        ALLOCATE(P%NEXT)
+        P => P%NEXT
+      ENDIF
+    
+      ! Set data
+      P%TMPL = TMPL_STR
+      ALLOCATE(P%PART_TEXT(0:NOSWLL))
+      NULLIFY(P%NEXT)
+
+      P%PART_TEXT(0) = 'Wind sea'
+      P%PART_TEXT(1) = 'Swell 1'
+      P%PART_TEXT(2) = 'Swell 2'
+      P%NP = 2
+
+      END SUBROUTINE ADD_PART_TMPL
+
+      SUBROUTINE PRINT_PART_TMPL()
+      IMPLICIT NONE
+      TYPE(PART_TMPL_T), POINTER :: P
+      INTEGER :: I
+
+      PRINT*,'=============='
+      IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
+        PRINT*,'Empty partition list'
+        RETURN
+      ENDIF
+
+      P => PART_TMPL
+      DO
+        PRINT*,P%TMPL
+        DO I=0,P%NP
+          PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
+        ENDDO
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
+      PRINT*,'=============='
+      END SUBROUTINE PRINT_PART_TMPL
 !
 !/ ------------------------------------------------------------------- /
       SUBROUTINE TEARDOWN_META()
@@ -528,6 +608,13 @@
              CYCLE
            ENDIF
 
+           ! IFI = 998 is a section for the partitioned parameter template strings
+           IF(IFI .EQ. 998) THEN
+             BACKSPACE(NDMI) ! We will reprocess this line
+             CALL READ_PART_TMPL(NDMI, ILINE)
+             CYCLE
+           ENDIF
+
            ! Error checking on size of IFJ, ICOMP, IPART.
           IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
             WRITE(NDSE,5013) NOGRP, TRIM(FN_META), ILINE
@@ -688,6 +775,9 @@
         IF(TRIM(FLD) == "GLOBAL") THEN
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
           IFI = 999  ! Marker for global section
+        ELSE IF(TRIM(FLD) == "PART") THEN
+          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[PART template sec.]', TRIM(BUF)
+          IFI = 998  ! Marker for partno section
         ELSE
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
           CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
@@ -1174,6 +1264,82 @@
 !               
       END FUNCTION GETMETA
 
+      
+      SUBROUTINE READ_PART_TMPL(NDMI, ILINE)
+
+      IMPLICIT NONE
+      INTEGER, INTENT(IN)               :: NDMI
+      INTEGER, INTENT(INOUT)            :: ILINE
+
+
+      CHARACTER(LEN=256) :: BUF
+      CHARACTER(LEN=16)  :: TEST
+      INTEGER            :: IERR
+      LOGICAL            :: EOF
+      TYPE(PART_TMPL_T), POINTER  :: P
+
+      PRINT*,'READING PART TMPL'
+
+      ! Re-read META line to get template string ID (the 3rd field)
+      READ(NDMI, *, IOSTAT=IERR) BUF, BUF, BUF
+      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(BUF)
+
+      ! Extend list of partition template types:
+      IF(ASSOCIATED(PART_TMPL)) THEN
+        ! Got to end of list
+        P => PART_TMPL
+        DO WHILE(ASSOCIATED(P%NEXT))
+          P => P%NEXT
+        ENDDO
+        ALLOCATE(P%NEXT)
+        P => P%NEXT
+      ELSE
+        ALLOCATE(PART_TMPL)
+        P => PART_TMPL
+      ENDIF
+      PRINT*,'ALLOCATED'
+
+      ! Set template id and read templat strings from file:
+      P%TMPL = TRIM(BUF)
+      ALLOCATE(P%PART_TEXT(0:NOSWLL))
+      NULLIFY(P%NEXT)
+      P%NP = 0
+
+      DO
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        IF(EOF) THEN
+          BACKSPACE(NDMI)
+          RETURN
+        ENDIF
+
+        ! Read first token on line:
+        READ(BUF, *) TEST
+
+        CALL STR_TO_UPPER(TEST)
+        IF(TEST == "META") THEN
+          ! Start of new meta data entry
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          ILINE = ILINE - 1
+          BACKSPACE(NDMI)
+          EXIT
+        ENDIF
+
+        ! Check we have not exceeded NOSWLL
+        IF(P%NP .GT. NOSWLL + 1) THEN
+          WRITE(*,*) "Too many partition entries (NOSWLL=",NOSWLL,"). Ignoring"
+          CYCLE
+        ENDIF
+
+        ! Add string to array of partition text
+        P%PART_TEXT(P%NP) = TRIM(ADJUSTL(BUF)) ! Zero indexed
+        P%NP = P%NP + 1
+         
+      ENDDO
+      
+
+      
+      END SUBROUTINE READ_PART_TMPL
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
 !/
@@ -1265,12 +1431,29 @@
 !/ Local parameters
 !/
       INTEGER :: I, J
+      TYPE(PART_TMPL_T), POINTER :: P
 
       I = INDEX(INSTR, "<IPART>")
       J = I + LEN_TRIM("<IPART>")
       IF(I .GT. 0) THEN
         WRITE(INSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
       ENDIF
+
+      ! Merge in user defined partition templates (if any):
+      IF(.NOT. ASSOCIATED(PART_TMPL)) RETURN
+
+      P => PART_TMPL
+      DO
+        I = INDEX(INSTR, TRIM(P%TMPL))
+        J = I + LEN_TRIM(P%TMPL)
+
+        IF(I .GT. 0) THEN
+          INSTR = INSTR(1:I-1) // TRIM(P%PART_TEXT(IPART)) // INSTR(J:LEN(INSTR))
+        ENDIF
+
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
 
       END SUBROUTINE PARTNO_STRING_SUB
 
