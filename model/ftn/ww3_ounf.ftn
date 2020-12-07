@@ -171,7 +171,9 @@
 !
       USE W3OUNFMETAMD, ONLY: INIT_META, TEARDOWN_META, GETMETA,       &
                               WRITE_META, WRITE_GLOBAL_META,           &
-                              META_T, NCVARTYPE
+                              WRITE_FREEFORM_META,                     &
+                              META_T, NCVARTYPE,                       &
+                              CRS_META, N_CRSMETA, CRS_NAME
 !
       USE NETCDF
 
@@ -3393,7 +3395,16 @@
         IRET=NF90_PUT_ATT(NCID,VARID(20),'valid_max',32)
         CALL CHECK_ERR(IRET)
       END IF
+!
+! Optional (user-defined) coordinate reference system (scalar variable)
+!
+      IF(N_CRSMETA .GT. 0) THEN
+        IRET = NF90_DEF_VAR(NCID, CRS_NAME, NF90_CHAR, varid=IVAR)
+        CALL CHECK_ERR(IRET)
 
+        CALL WRITE_FREEFORM_META(NCID, IVAR, CRS_META, N_CRSMETA, IERR)
+        CALL CHECK_ERR(IRET)
+      ENDIF
 !
 ! Global attributes
 !
