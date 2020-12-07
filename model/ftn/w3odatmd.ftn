@@ -43,7 +43,7 @@
 !/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
-!/    25-Sep-2020 : Flags for coupling restart          ( version 7.xx )
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1399,7 +1399,7 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
-!/    25-Sep-2020 : Flags for coupling restart          ( version 7.xx )
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/
 !  1. Purpose :
 !
