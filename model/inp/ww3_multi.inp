@@ -25,7 +25,7 @@ $ If there are input data grids defined ( NRINP > 0 ), then these
 $ grids are defined first. These grids are defined as if they are wave
 $ model grids using the file mod_def.MODID. Each grid is defined on
 $ a separate input line with MODID, and eight input flags identifying
-$ the presence of 1) water levels 2) currents 3) winds 4) ice and
+$ the presence of 1) water levels 2) currents 3) winds 4) ice
 $ 5) momentum 6) air density and 7-9) assimilation data as in the
 $ file ww3_shel.inp.
 $
