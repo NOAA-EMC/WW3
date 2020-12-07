@@ -12,6 +12,7 @@
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
 !/                  metadata for directional fields.
+!/    04-Dec-2020 : Added user partition templates      ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -311,7 +312,7 @@
       P%PART_TEXT(0) = 'Wind sea'
       P%PART_TEXT(1) = 'Swell 1'
       P%PART_TEXT(2) = 'Swell 2'
-      P%NP = 2
+      P%NP = 3
 
       END SUBROUTINE ADD_PART_TMPL
 
@@ -329,7 +330,7 @@
       P => PART_TMPL
       DO
         PRINT*,P%TMPL
-        DO I=0,P%NP
+        DO I=0,P%NP - 1
           PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
         ENDDO
         IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
@@ -377,7 +378,7 @@
       END SUBROUTINE TEARDOWN_META
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE NEXT_LINE(NDMI, BUF, ILINE, EOF)
+      SUBROUTINE NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -402,6 +403,9 @@
 !     If the end of file is reached before any valid line is read
 !     then EOF is set to true.
 !
+!     If the next valid line is a new section marker (META or TEMPLATE)
+!     then the NEW_SECTION flag is set to true.
+!
 !  3. Parameters :
 !
 !     Parameter list
@@ -410,6 +414,8 @@
 !       BUF    Char.  O  Next input line read from file
 !       ILINE   Int. I/O Line number of file
 !       EOF    Bool.  O  True if end-of-file is reached.
+!       NEW_SECTION
+!              Bool.  O  True if new section marker found
 !     ----------------------------------------------------------------
 !
 !/ ------------------------------------------------------------------- /
@@ -419,6 +425,7 @@
       CHARACTER(*), INTENT(OUT) :: BUF
       INTEGER, INTENT(INOUT)    :: ILINE
       LOGICAL, INTENT(OUT)      :: EOF
+      LOGICAL, INTENT(OUT), OPTIONAL :: NEW_SECTION
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
@@ -452,6 +459,17 @@
         IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
           CYCLE
+        ENDIF
+
+        ! Check if is section header
+        IF(PRESENT(NEW_SECTION)) THEN
+          CALL STR_TO_UPPER(TEST)
+          SELECT CASE(TEST)
+            CASE ("META", "TEMPLATE")
+              NEW_SECTION = .TRUE.
+            CASE DEFAULT
+              NEW_SECTION = .FALSE.
+          END SELECT
         ENDIF
 
         ! Anything else can be considered the "next line"
@@ -580,7 +598,7 @@
       ! a META line.
       DO
         CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
-        IF(EOF) EXIT !GOTO 500
+        IF(EOF) EXIT
 
         ! Read first token on line:
         READ(BUF, *) TEST
@@ -634,6 +652,11 @@
  
            ! Update the metadata with values from file:
            CALL READ_META_PAIRS(NDMI, PMETA, ILINE)
+
+        ELSE IF(TESTU == "TEMPLATE") THEN
+          BACKSPACE(NDMI) ! We will reprocess this line
+          CALL READ_PART_TMPL(NDMI, ILINE)
+          CYCLE
         ELSE
            ! Anything else is a syntax error
            WRITE(NDSE, 5012) TRIM(FN_META), ILINE, TRIM(BUF)
@@ -840,27 +863,22 @@
 !
       CHARACTER(LEN=256) :: BUF
       CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
-      CHARACTER(LEN=16)  :: ATT_TYPE, TEST
+      CHARACTER(LEN=16)  :: ATT_TYPE!, TEST
       INTEGER            :: I, IERR
       REAL               :: R
-      LOGICAL            :: EOF
+      LOGICAL            :: EOF, NEW
 !
       EXTRA = ''
 
       ! Keep reading lines until we hit EOF or anoter META keyword
       DO
-        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
         IF(EOF) THEN
           BACKSPACE(NDMI)
           RETURN
         ENDIF
 
-        ! Read first token on line:
-        READ(BUF, *) TEST
-
-        CALL STR_TO_UPPER(TEST)
-        IF(TEST == "META") THEN
-          ! Start of new meta data entry
+        IF(NEW) THEN
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
           BACKSPACE(NDMI)
@@ -1120,25 +1138,20 @@
 !/
       CHARACTER(LEN=256) :: BUF
       CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
-      CHARACTER(LEN=16)  :: ATT_TYPE, TEST
+      CHARACTER(LEN=16)  :: ATT_TYPE!, TEST
       INTEGER            :: I, IERR
       REAL               :: R
-      LOGICAL            :: EOF
+      LOGICAL            :: EOF, NEW
 !
       ! Keep reading lines until we hit EOF or anoter META keyword
       DO
-        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
         IF(EOF) THEN
           BACKSPACE(NDMI)
           RETURN
         ENDIF
 
-        ! Read first token on line:
-        READ(BUF, *) TEST
-
-        CALL STR_TO_UPPER(TEST)
-        IF(TEST == "META") THEN
-          ! Start of new meta data entry
+        IF(NEW) THEN
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
           BACKSPACE(NDMI)
@@ -1265,23 +1278,61 @@
       END FUNCTION GETMETA
 
       
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_PART_TMPL(NDMI, ILINE)
-
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Dec-2020 |
+!/                  +-----------------------------------+
+!/
+!/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads in a TEMPLATE section from file.
+!     This section defines a list of text strings that will be used
+!     to replace a "placeholder string" when generating metadata for
+!     partitioned parameters.
+!
+!     Format of section is:
+!
+!       TEMPLATE <placeholder_string>
+!         Value for partition IPART=0
+!         Value for partition IPART=1
+!         Value for partition IPART=2
+!         ...
+!         Value for partition IPART=N
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI    Int.  I/O  Unit number
+!       ILINE   Int.  I/O  Line number
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)               :: NDMI
       INTEGER, INTENT(INOUT)            :: ILINE
-
-
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       CHARACTER(LEN=256) :: BUF
-      CHARACTER(LEN=16)  :: TEST
       INTEGER            :: IERR
-      LOGICAL            :: EOF
+      LOGICAL            :: EOF, NEW
       TYPE(PART_TMPL_T), POINTER  :: P
 
       PRINT*,'READING PART TMPL'
 
-      ! Re-read META line to get template string ID (the 3rd field)
-      READ(NDMI, *, IOSTAT=IERR) BUF, BUF, BUF
+      ! Re-read META line to get template string ID (the 2nd field)
+      READ(NDMI, *, IOSTAT=IERR) BUF, BUF
       IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(BUF)
 
       ! Extend list of partition template types:
@@ -1306,17 +1357,13 @@
       P%NP = 0
 
       DO
-        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
         IF(EOF) THEN
           BACKSPACE(NDMI)
           RETURN
         ENDIF
 
-        ! Read first token on line:
-        READ(BUF, *) TEST
-
-        CALL STR_TO_UPPER(TEST)
-        IF(TEST == "META") THEN
+        IF(NEW) THEN
           ! Start of new meta data entry
           IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
@@ -1336,8 +1383,6 @@
         P%NP = P%NP + 1
          
       ENDDO
-      
-
       
       END SUBROUTINE READ_PART_TMPL
 
@@ -1411,8 +1456,14 @@
 !
 !  1. Purpose :
 !
-!     Replaces occurancs of "<IPART>" in a string with the value provided
-!     in IPART.
+!     Performs string substition of placeholder strings with partition
+!     number specfic values.
+!
+!     The placeholder <IPART> is automatically replaced with the 
+!     partition number (0, 1, 2, etc).
+!
+!     Other template placeholders can be defined in the ounfmeta.inp
+!     file by the user.
 !
 !  2. Parameters :
 !
@@ -1449,12 +1500,26 @@
         J = I + LEN_TRIM(P%TMPL)
 
         IF(I .GT. 0) THEN
+          IF(IPART .GE. P%NP) THEN
+             WRITE(NDSE, 1000) TRIM(P%TMPL), P%NP, IPART
+             CALL EXTCDE(10)
+          ENDIF
           INSTR = INSTR(1:I-1) // TRIM(P%PART_TEXT(IPART)) // INSTR(J:LEN(INSTR))
         ENDIF
 
         IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
         P => P%NEXT
       ENDDO
+
+      RETURN
+
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
+               '     NOT ENOUGH USER DEFINED ENTRIES FOR TEMPLATE'    / &
+               '     TEMPLATE ID     : ',A                            / &
+               '     NUM ENTRIES     : ',I2                           / &
+               '     REQESTED IPART* : ',I2                           / &
+               '     (*Note: IPART is zero-refernced)'                / &
+               '     Please update your ounfmeta.inp file.'           /)
 
       END SUBROUTINE PARTNO_STRING_SUB
 
