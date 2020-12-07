@@ -31,7 +31,8 @@
              prop1D prop2D time fetch hur1mg \
              multi01 multi02 multi03 multi04 multi05 \
              hybd shwtr unstr pdlib smcgr rtd mudice infgrv \
-             uost assim calendar oasis multi06 multi07 multi08
+             uost assim calendar confignc oasis \
+             multi06 multi07 multi08
   do
     eval " value=\$$par"
 #   echo "$par = $value"
@@ -2060,6 +2061,13 @@
     echo "$rtst -g STD  -w work_STD  -o netcdf $ww3 ww3_tc1" >> matrix.body
     echo "$rtst -g C360 -w work_C360 -o netcdf $ww3 ww3_tc1" >> matrix.body
     echo "$rtst -g C365 -w work_C365 -o netcdf $ww3 ww3_tc1" >> matrix.body
+  fi
+
+  # Configurable netCDF metadata in ww3_ounf
+  if [ "$confignc" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -o netcdf $ww3 ww3_tnc1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #

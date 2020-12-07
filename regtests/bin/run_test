@@ -1961,6 +1961,11 @@ do
         then # Add time counter if -T
           Tstart=`date +"%s.%2N"`
         fi
+
+        # Link in ounfmeta.inp for ww3_ounf, if exists:
+        if [ $prog == 'ww3_ounf' ] && [ ! -z ${path_i}/ounfmeta.inp ]; then
+           ln -sf ${path_i}/ounfmeta.inp .
+        fi
     
         if $path_e/$prog > $ofile
           then
