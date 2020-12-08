@@ -23,7 +23,7 @@
 !     Default netCDF meta data is provided for each WW3 output variable
 !     and is stored intentally via the META_T type. The meta values are
 !     grouped by component (max 3), field (IFI) and group (IFJ).
-!     
+!
 !     The user can override this meta data via an input text file
 !     with the filename `ounfmeta.inp`.
 !
@@ -37,7 +37,7 @@
 !
 !     An output field is selected using the META keyword followed by
 !     either an [IFI, IFJ] integer pair or a FieldID string. Optionally,
-!     either form may be followed by an integer value to select the 
+!     either form may be followed by an integer value to select the
 !     component in multi-component fields (such as wind).
 !
 !     Blank lines and comments lines (starting with $) are ignored.
@@ -56,11 +56,11 @@
 !         -  "valid_max" or "vmax"
 !         -  "scale_factor" or "fsc"
 !
-!     Any other attribute name is assumed to be an optional "extra" 
+!     Any other attribute name is assumed to be an optional "extra"
 !     attribute. This extra attribute can take an optional "type"
-!     keyworkd to specify the variable tpye of the metadata. If 
+!     keyworkd to specify the variable tpye of the metadata. If
 !     no type is supplied, it defaults to a characer type. Valud
-!     types are one of ["c", "r", "i"] for character/string, 
+!     types are one of ["c", "r", "i"] for character/string,
 !     real/float or integer values respectively.
 !
 !     Global meta data can be specified with a special "META global" line:
@@ -169,7 +169,7 @@
       TYPE FIELD_T
         TYPE(META_T), POINTER :: META(:)
       END TYPE FIELD_T
-       
+
       ! ... field (IFJ) ...
       TYPE GROUP_T
         TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
@@ -209,7 +209,7 @@
 
       LOGICAL, PRIVATE   :: VECTOR      ! Vector or dir/mag for dir fields?
 
-      CONTAINS 
+      CONTAINS
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_META(VEC)
@@ -251,7 +251,7 @@
         DO J = 1,NOGE(I)
           ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
         ENDDO
-      ENDDO 
+      ENDDO
 
       ! Allocate storage for Global meta-data
       ALLOCATE(GLOBAL_META(MAX_GBLMETA))
@@ -262,7 +262,7 @@
 
       ! 1.1 Make sure partitioned template pointer is null (i.e. empty list)
       NULLIFY(PART_TMPL)
-      
+
 
       ! 2. Set direction convention:
       DIRCOM = ""
@@ -297,7 +297,7 @@
 
       ! If the ounfmeta.inp exists, read this in to override defaults:
       INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
-      IF(FLGNML) THEN 
+      IF(FLGNML) THEN
          CALL READ_META()
       ENDIF
 
@@ -330,7 +330,7 @@
         ALLOCATE(P%NEXT)
         P => P%NEXT
       ENDIF
-    
+
       ! Set data
       P%TMPL = TMPL_STR
       ALLOCATE(P%PART_TEXT(0:NOSWLL))
@@ -397,7 +397,7 @@
           DEALLOCATE(GROUP(I)%FIELD(J)%META)
         ENDDO
         DEALLOCATE(GROUP(I)%FIELD)
-      ENDDO 
+      ENDDO
       DEALLOCATE(GROUP)
 
       DEALLOCATE(GLOBAL_META)
@@ -458,7 +458,7 @@
 !/
       INTEGER :: IERR
       CHARACTER(LEN=10) :: TEST
-      
+
       EOF = .FALSE.
 
       ! Keep reading from file until we read a line that is not:
@@ -549,7 +549,7 @@
 !       STR    Char.  I/O  Character string to process
 !     ----------------------------------------------------------------
 !
-!  3. Remarks : 
+!  3. Remarks :
 !
 !     Assumes ASCII encoding! Tab character is ASCII value 9.
 !
@@ -562,7 +562,7 @@
       INTEGER, PARAMETER :: ASCII_TAB = 9
       INTEGER :: SLEN
       INTEGER :: I
-!       
+!
       SLEN = LEN_TRIM(STR)
 
       DO I=1,SLEN
@@ -620,7 +620,7 @@
         WRITE(NDSE, 5010) TRIM(FNMPRE)//TRIM(FN_META), IERR
         CALL EXTCDE(10)
       ENDIF
-    
+
       ! Loop over file, skipping comments or blank lines, until we find
       ! a META line.
       DO
@@ -635,7 +635,7 @@
         CALL STR_TO_UPPER(TESTU)
         IF(TESTU == "META") THEN
            MCNT = MCNT + 1
-        
+
            IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
 
            ! Get the IFI, IFJ, IFC values from the header:
@@ -647,17 +647,10 @@
               CALL EXTCDE(10)
            ENDIF
 
-           ! IFI = 999 is a section for the "global" meta data 
+           ! IFI = 999 is a section for the "global" meta data
            IF(IFI .EQ. 999) THEN
              !CALL READ_GLOBAL_META(NDMI, ILINE)
              CALL READ_FREEFORM_META(NDMI, ILINE, GLOBAL_META, N_GBLMETA, MAX_GBLMETA )
-             CYCLE
-           ENDIF
-
-           ! IFI = 998 is a section for the partitioned parameter template strings
-           IF(IFI .EQ. 998) THEN
-             BACKSPACE(NDMI) ! We will reprocess this line
-             CALL READ_PART_TMPL(NDMI, ILINE)
              CYCLE
            ENDIF
 
@@ -674,10 +667,10 @@
             WRITE(NDSE,5015) TRIM(FN_META), ILINE
             CALL EXTCDE(1)
           ENDIF
- 
+
            ! Select correct variable metadata entry:
            PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC)
- 
+
            ! Update the metadata with values from file:
            CALL READ_META_PAIRS(NDMI, PMETA, ILINE)
 
@@ -697,7 +690,7 @@
            CALL EXTCDE(10)
         ENDIF
       ENDDO
-    
+
       CLOSE(NDMI)
       WRITE(*, 5000) MCNT, N_GBLMETA, N_CRSMETA
       RETURN
@@ -775,7 +768,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       BUF    Char.  I  Input header string (without leading META tag)
-!       ILINE   Int.  I  Line number (for error reporting)            
+!       ILINE   Int.  I  Line number (for error reporting)
 !       IFI     Int.  O  Output group number
 !       IFJ     Int.  O  Output field number
 !       IFC     Int.  O  Component number (defaults to 1)
@@ -783,9 +776,9 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3IOGOMD, ONLY: W3FLDTOIJ
-      
+
       IMPLICIT NONE
- 
+
       CHARACTER(*), INTENT(IN) :: BUF
       INTEGER, INTENT(IN) :: ILINE
       INTEGER, INTENT(OUT) :: IFI, IFJ, IFC
@@ -794,7 +787,7 @@
 !/
       INTEGER :: IERR
       CHARACTER(LEN=10) :: FLD
-      
+
       IFI = 0
       IFJ = 1
       IFC = 1
@@ -812,13 +805,13 @@
       ELSE
         ! Try reading field ID plus component
         READ(BUF, *, IOSTAT=IERR) FLD, IFC
-      
+
         IF(ierr .NE. 0) THEN
           ! Try just fldid
           READ(BUF, *, IOSTAT=IERR) FLD
         ENDIF
       ENDIF
-      
+
       IF(IERR .NE. 0) THEN
         WRITE(NDSE, 6000) TRIM(FN_META), ILINE, TRIM(BUF)
         CALL EXTCDE(10)
@@ -832,9 +825,6 @@
         IF(TRIM(FLD) == "GLOBAL") THEN
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
           IFI = 999  ! Marker for global section
-        ELSE IF(TRIM(FLD) == "PART") THEN
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[PART template sec.]', TRIM(BUF)
-          IFI = 998  ! Marker for partno section
         ELSE
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
           CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
@@ -842,7 +832,7 @@
       ENDIF
 
       IF(DEBUG) WRITE(*,'(6X,A20,1X,3I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
-!    
+!
  6000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     SYNTAX ERROR IN SECTION HEADER. ' /              &
                '     FILENAME = ', A /                                &
@@ -850,7 +840,7 @@
                '  => ', A /)
 !
       END SUBROUTINE DECODE_HEADER
-      
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META_PAIRS(NDMI, META, ILINE)
 !/
@@ -872,7 +862,7 @@
 !
 !  2. Method:
 !
-!     Keeps looping over input lines in file until next META section 
+!     Keeps looping over input lines in file until next META section
 !     or EOF is found. Splits meta pairs on the = character.
 !
 !     Note - the "extra" metadata pair can also provide a variable
@@ -920,14 +910,14 @@
         ENDIF
 
         IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
-      
+
         ! Meta data should be formatted as "attr_name = attr_value"
         I = INDEX(BUF, "=")
         IF( I .LT. 1 ) THEN
           WRITE(NDSE, 7000) FN_META, ILINE, TRIM(BUF)
            CALL EXTCDE(10)
         ENDIF
-      
+
         ATTN = ADJUSTL(BUF(1:I-1))
         ATTV = ADJUSTL(BUF(I+1:))
 
@@ -936,44 +926,44 @@
            ATTV='""'
         ENDIF
 
-        IERR = 0 
+        IERR = 0
         SELECT CASE(TRIM(attn))
           ! Character variables
           ! Note: Using internal reads will allow the use of quote marks in strings
           CASE("varnm")
              READ(attv, *, IOSTAT=IERR) META%VARNM
-      
+
           CASE("ename")
              READ(attv, *, IOSTAT=IERR) META%ENAME
-        
+
           CASE("standard_name", "varns")
              READ(attv, *, IOSTAT=IERR) META%VARNS
-      
+
           CASE("long_name", "varnl")
              READ(attv, *, IOSTAT=IERR) META%VARNL
-      
+
           CASE("globwave_name", "varng")
              READ(attv, *, IOSTAT=IERR) META%VARNG
-      
+
           CASE("direction_reference", "dir_ref", "varnd")
              READ(attv, *, IOSTAT=IERR) META%VARND
-      
+
           CASE("comment", "varnc")
              READ(attv, *, IOSTAT=IERR) META%VARNC
-      
+
           CASE("units")
              READ(attv, *, IOSTAT=IERR) META%UNITS
-      
+
           ! Real variables
           CASE("valid_min", "vmin")
              READ(attv, *, IOSTAT=IERR) META%VMIN
-      
+
           CASE("valid_max", "vmax")
              READ(attv, *, IOSTAT=IERR) META%VMAX
-      
+
           CASE("scale_factor", "fsc")
              READ(attv, *, IOSTAT=IERR) META%FSC
-      
+
           ! Default case will be the "extra" meta data variable
           CASE DEFAULT
              ! Check EXTRA attribute not already set
@@ -989,7 +979,7 @@
                WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
                  TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
              ENDIF
- 
+
              ! Set "extra" data
              META%EXTRA%ATTNAME = TRIM(attn)
              META%EXTRA%ATTVAL = TRIM(attv)
@@ -1005,9 +995,9 @@
         ENDIF
 
       ENDDO
-      
+
       RETURN
-! 
+!
  7000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     SYNTAX ERROR IN METADATA FILE ' /                &
                '     SHOULD BE "attr_name = attr_value" ' /           &
@@ -1057,7 +1047,7 @@
 !     It is important to quote strings if they contain spaces.
 !
 !     Valid types are "c" "r/f", and "i" for character, real/float and
-!     integer values. 
+!     integer values.
 
 !  3. Parameters :
 !
@@ -1086,31 +1076,31 @@
       ATTV = ''
       READ(BUF, *, IOSTAT=IERR) ATTV, ATT_TYPE
       IF(IERR /= 0) READ(BUF, *, IOSTAT=IERR) ATTV
- 
+
       ! Check attr values are valid w.r.t. attr type
       SELECT CASE(TRIM(att_type))
-        
+
         CASE("i")
            READ(attv, *, iostat=ierr) i
            IF(ierr .ne. 0) then
              WRITE(NDSE, 8001) "INTEGER", TRIM(FN_META), ILINE, TRIM(ATTV)
              CALL EXTCDE(10)
            ENDIF
-        
+
         CASE("r", "f")
            READ(attv, *, iostat=ierr) r
            IF(ierr .ne. 0) THEN
              WRITE(NDSE, 8001) "REAL/FLOAT", TRIM(FN_META), ILINE, TRIM(ATTV)
              CALL EXTCDE(10)
            ENDIF
-        
+
         CASE("c")
            ! Always ok.
-        
+
         CASE DEFAULT
           WRITE(NDSE, 8002) TRIM(FN_META), ILINE, TRIM(BUF)
           CALL EXTCDE(10)
-      
+
       END SELECT
 !
  8001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
@@ -1120,13 +1110,13 @@
                '  => ', A /)
 !
  8002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
-               '     ATTRIBUTE TYPE SHOULD BE ONE OF [c,i,r] '/       & 
+               '     ATTRIBUTE TYPE SHOULD BE ONE OF [c,i,r] '/       &
                '     FILENAME = ', A /                                &
                '     LINE NO =', I5 /                                 &
                '  => ', A /)
 !
       END SUBROUTINE GET_ATTVAL_TYPE
-      
+
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_FREEFORM_META(NDMI, ILINE, AMETA, N, MAXN)
@@ -1148,10 +1138,10 @@
 !
 !  2. Method:
 !
-!     Keeps looping over input lines in file until next section 
+!     Keeps looping over input lines in file until next section
 !     or EOF is found. Splits meta pairs on the = character.
 !
-!     Freeform metadata pairs can also provide a variable type 
+!     Freeform metadata pairs can also provide a variable type
 !     ("c", "i", or "r"; for character, int or real respectively).
 !     String values with spaces should be quoted.
 !
@@ -1207,7 +1197,7 @@
           WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
           CALL EXTCDE(10)
         ENDIF
-      
+
         ATTN = ADJUSTL(BUF(1:I-1))
         TMP = ADJUSTL(BUF(I+1:))
 
@@ -1341,7 +1331,7 @@
 !
 !  1. Purpose :
 !
-!     Returns a META_T type containig the netCDF matadata for the 
+!     Returns a META_T type containig the netCDF matadata for the
 !     requested field
 !
 !  2. Method :
@@ -1370,7 +1360,7 @@
 !/
       INTEGER :: IFP, IFC
       TYPE(META_T) :: META ! Not pointer as we might need to modify it
-            
+
       IFC = 1
       IFP = 1
       IF(PRESENT(ICOMP)) IFC = ICOMP
@@ -1404,13 +1394,12 @@
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '           / &
                '     GETMETA: IFJ value should be in range 1,',I2    / )
-!               
+!
  1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '           / &
                '     GETMETA: IFC value should be in range 1,3'      / )
-!               
+!
       END FUNCTION GETMETA
 
-      
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_PART_TMPL(NDMI, ILINE)
 !/
@@ -1457,16 +1446,19 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      CHARACTER(LEN=256) :: BUF
+      CHARACTER(LEN=256) :: BUF, ID
       INTEGER            :: IERR
       LOGICAL            :: EOF, NEW
       TYPE(PART_TMPL_T), POINTER  :: P
 
-      PRINT*,'READING PART TMPL'
-
       ! Re-read META line to get template string ID (the 2nd field)
-      READ(NDMI, *, IOSTAT=IERR) BUF, BUF
-      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(BUF)
+      READ(NDMI, '(A)') BUF
+      READ(BUF, *, IOSTAT=IERR) ID, ID
+      IF(IERR /= 0) THEN
+        WRITE(NDSE, 1000) FN_META, ILINE, BUF
+        CALL EXTCDE(10)
+      ENDIF
+      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(ID)
 
       ! Extend list of partition template types:
       IF(ASSOCIATED(PART_TMPL)) THEN
@@ -1511,12 +1503,23 @@
         ENDIF
 
         ! Add string to array of partition text
-        IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]',P%NP,TRIM(BUF)
+        IF(DEBUG) THEN
+           WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]', &
+                                             P%NP, TRIM(BUF)
+        ENDIF
+
         P%PART_TEXT(P%NP) = TRIM(ADJUSTL(BUF)) ! Zero indexed
         P%NP = P%NP + 1
-         
       ENDDO
-      
+
+      RETURN
+
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     ERROR READING PART HEADER - MISSING TEMPLATE ID?'/ &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+
       END SUBROUTINE READ_PART_TMPL
 
 !/ ------------------------------------------------------------------- /
@@ -1592,7 +1595,7 @@
 !     Performs string substition of placeholder strings with partition
 !     number specfic values.
 !
-!     The placeholder <IPART> is automatically replaced with the 
+!     The placeholder <IPART> is automatically replaced with the
 !     partition number (0, 1, 2, etc).
 !
 !     Other template placeholders can be defined in the ounfmeta.inp
@@ -1699,32 +1702,32 @@
 !/
       ERR = NF90_PUT_ATT(NCID, VARID, 'long_name', META%VARNL)
       IF(ERR /= NF90_NOERR) RETURN
-      
+
       ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
       IF(ERR /= NF90_NOERR) RETURN
-      
+
       IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
-      
+
       ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
       IF(ERR /= NF90_NOERR) RETURN
 
       ! Fill value dependent on variable type
-      IF(NCVARTYPE .EQ. 2) THEN 
+      IF(NCVARTYPE .EQ. 2) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_SHORT)
-      ELSE 
+      ELSE
         ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_FLOAT)
       END IF
       IF(ERR /= NF90_NOERR) RETURN
 
       ERR = NF90_PUT_ATT(NCID, VARID, 'scale_factor', META%FSC)
       IF(ERR /= NF90_NOERR) RETURN
-      
+
       ERR = NF90_PUT_ATT(NCID, VARID, 'add_offset', 0.)
       IF(ERR /= NF90_NOERR) RETURN
-      
+
       ! For variables with vartype SHORT, the valid min/max
       ! are scaled by scale_factor and converted to integers.
       ! If vartype is FLOAT, then no scaling is performed and
@@ -1740,16 +1743,16 @@
       ELSE
         ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
         IF(ERR /= NF90_NOERR) RETURN
-        
+
         ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
-      
+
       IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
-      
+
       IF(META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
         IF(ERR /= NF90_NOERR) RETURN
@@ -1759,27 +1762,27 @@
         ERR = NF90_PUT_ATT(NCID, VARID, 'grid_mapping', CRS_NAME)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
-      
+
       IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
             META%EXTRA%ATTNAME .NE. UNSETC) THEN
 
         SELECT CASE(META%EXTRA%TYPE)
-          
+
           CASE('i')
             READ(META%EXTRA%ATTVAL, *) IVAL
             ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, IVAL)
             IF(ERR /= NF90_NOERR) RETURN
-          
+
           CASE('r', 'f')
             READ(META%EXTRA%ATTVAL, *) RVAL
             ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, RVAL)
             IF(ERR /= NF90_NOERR) RETURN
-          
+
           CASE('c')
             ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
                     META%EXTRA%ATTVAL)
             IF(ERR /= NF90_NOERR) RETURN
-          
+
           CASE DEFAULT
             WRITE(1000,*) META%EXTRA%TYPE
             CALL EXTCDE(10)
@@ -1867,7 +1870,7 @@
 !                '     WRITEMETA: Unknown meta data type: ', A1         / )
 !!
       END SUBROUTINE WRITE_GLOBAL_META
-    
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_FREEFORM_META(NCID, VARID, AMETA, N, ERR)
 !/
@@ -2033,9 +2036,9 @@
       META(1)%VARNG ='depth'
       META(1)%VARNC =''
       META(1)%VARND =''
-      META(1)%VMIN = -45000 
+      META(1)%VMIN = -45000
       META(1)%VMAX = 70000
-! IFI=1, IFJ=2        
+! IFI=1, IFJ=2
       META => GROUP(1)%FIELD(2)%META
       META(1)%ENAME  = '.cur'
       META(1)%VARND = DIRCOM
@@ -2130,7 +2133,7 @@
       META(1)%VARNL='air sea temperature difference'
       META(1)%VARNS='air_sea_temperature_difference'
       META(1)%VARNG='air_sea_temperature_difference'
-      META(1)%VMIN = 0    
+      META(1)%VMIN = 0
       META(1)%VMAX = 400
 ! IFI=1, IFJ=5
       META => GROUP(1)%FIELD(5)%META
@@ -2141,7 +2144,7 @@
       META(1)%VARNL='sea surface height above sea level'
       META(1)%VARNS='sea_surface_height_above_sea_level'
       META(1)%VARNG='sea_surface_height_above_sea_level'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 100
 ! IFI=1, IFJ=6
       META => GROUP(1)%FIELD(6)%META
@@ -2208,9 +2211,9 @@
       META(1)%ENAME  = '.hs'
       META(1)%VARNM='hs'
       META(1)%VARNL='significant height of wind and swell waves'
-      META(1)%VARNS='sea_surface_wave_significant_height' 
+      META(1)%VARNS='sea_surface_wave_significant_height'
       META(1)%VARNG='significant_wave_height'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 64
 ! IFI=2, IFJ=2
       META => GROUP(2)%FIELD(2)%META
@@ -2219,9 +2222,9 @@
       META(1)%ENAME  = '.lm'
       META(1)%VARNM='lm'
       META(1)%VARNL='mean wave length'
-      META(1)%VARNS='mean_wave_length' 
-      META(1)%VARNG='mean_wave_length' 
-      META(1)%VMIN = 0 
+      META(1)%VARNS='mean_wave_length'
+      META(1)%VARNG='mean_wave_length'
+      META(1)%VMIN = 0
       META(1)%VMAX = 3200
 ! IFI=2, IFJ=3
       META => GROUP(2)%FIELD(3)%META
@@ -2245,7 +2248,7 @@
       META(1)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
                  '_spectral_density_inverse_frequency_moment'
       META(1)%VARNG='mean_period_t0m1'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 50
 ! IFI=2, IFJ=5
       META => GROUP(2)%FIELD(5)%META
@@ -2255,7 +2258,7 @@
       META(1)%VARNM='t01'
       META(1)%VARNL='mean period T01'
       META(1)%VARNS='sea_surface_wind_wave_mean_period_from_variance' // &
-                '_spectral_density_first_frequency_moment' 
+                '_spectral_density_first_frequency_moment'
       META(1)%VARNG='mean_period_t01'
       META(1)%VMIN = 0
       META(1)%VMAX = 50
@@ -2268,7 +2271,7 @@
       META(1)%VARNL='wave peak frequency'
       META(1)%VARNS='sea_surface_wave_peak_frequency'
       META(1)%VARNG='dominant_wave_frequency'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 10
 ! IFI=2, IFJ=7
       META => GROUP(2)%FIELD(7)%META
@@ -2303,7 +2306,7 @@
       META(1)%VARNS='sea_surface_wave_peak_direction'
       META(1)%VARNG='dominant_wave_direction'
       META(1)%VARND=DIRCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 360
 ! IFI=2, IFJ=10
       META => GROUP(2)%FIELD(10)%META
@@ -2312,9 +2315,9 @@
       META(1)%ENAME  = '.hig'
       META(1)%VARNM='hig'
       META(1)%VARNL='infragravity_wave_height'
-      META(1)%VARNS='sea_surface_wave_infragravity_significant_height' 
-      META(1)%VARNG='infragravity_significant_wave_height' 
-      META(1)%VMIN = 0 
+      META(1)%VARNS='sea_surface_wave_infragravity_significant_height'
+      META(1)%VARNG='infragravity_significant_wave_height'
+      META(1)%VMIN = 0
       META(1)%VMAX = 1.0
 ! IFI=2, IFJ=11
       META => GROUP(2)%FIELD(11)%META
@@ -2411,7 +2414,7 @@
       META => GROUP(3)%FIELD(1)%META
       META(1)%VARNM='ef'
       META(1)%VARNL='wave_elevation_spectrum'
-      IF (NCVARTYPE.LE.3) THEN 
+      IF (NCVARTYPE.LE.3) THEN
         META(1)%UNITS  = 'log10(m2 s+1E-12)'
         META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
         META(1)%FSC     = 0.0004
@@ -2435,7 +2438,7 @@
       META(1)%VARND=DIRCOM
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.th1m'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 360
 ! IFI=3, IFJ=3
       META => GROUP(3)%FIELD(3)%META
@@ -2447,7 +2450,7 @@
       META(1)%VARNG = META(1)%VARNS
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.sth1m'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 90
 ! IFI=3, IFJ=4
       META => GROUP(3)%FIELD(4)%META
@@ -2459,7 +2462,7 @@
       META(1)%VARND=DIRCOM
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.th2m'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 360
 ! IFI=3, IFJ=5
       META => GROUP(3)%FIELD(5)%META
@@ -2470,7 +2473,7 @@
       META(1)%VARNG = META(1)%VARNS
       META(1)%UNITS  = 'degree'
       META(1)%ENAME  = '.sth2m'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 90
 ! IFI=3, IFJ=6
       META => GROUP(3)%FIELD(6)%META
@@ -2482,7 +2485,7 @@
       META(1)%VARNL='wave numbers'
       META(1)%VARNS='wave_numbers'
       META(1)%VARNG='wave_numbers'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 32
 !
 !---------- GROUP 4 ----------------
@@ -2497,40 +2500,40 @@
       META(1)%VARNS = 'sea_surface_wave_significant_height_partition_<IPART>'
       META(1)%VARNG = 'significant_wave_height_partition_<IPART>'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 64
 ! IFI=4, IFJ=2
       META => GROUP(4)%FIELD(2)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
       META(1)%ENAME = '.ptp<IPART>'
-      META(1)%VARNM = 'ptp<IPART>' 
-      META(1)%VARNL = 'peak period partition <IPART>' 
+      META(1)%VARNM = 'ptp<IPART>'
+      META(1)%VARNL = 'peak period partition <IPART>'
       META(1)%VARNS = 'sea_surface_wave_period_at_variance_spectral' // &
                          '_density_maximum_partition_<IPART>'
       META(1)%VARNG = 'dominant_wave_period_partition_<IPART>'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 100
 ! IFI=4, IFJ=3
       META => GROUP(4)%FIELD(3)%META
       META(1)%FSC = 1.
       META(1)%UNITS = 'm'
       META(1)%ENAME = '.plp<IPART>'
-      META(1)%VARNM = 'plp<IPART>' 
-      META(1)%VARNL = 'peak wave length partition <IPART>' 
+      META(1)%VARNM = 'plp<IPART>'
+      META(1)%VARNL = 'peak wave length partition <IPART>'
       META(1)%VARNS = 'peak_wave_length_partition_<IPART>'
       META(1)%VARNG = 'peak_wave_length_partition_<IPART>'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 10000
 ! IFI=4, IFJ=4
       META => GROUP(4)%FIELD(4)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
       META(1)%ENAME =  '.pdir<IPART>'
-      META(1)%VARNM =  'pdir<IPART>' 
-      META(1)%VARNL = 'wave mean direction partition <IPART>' 
+      META(1)%VARNM =  'pdir<IPART>'
+      META(1)%VARNL = 'wave mean direction partition <IPART>'
       META(1)%VARNS = 'sea_surface_wave_from_direction_partition_<IPART>'
       META(1)%VARNG = 'wave_from_direction_partition_<IPART>'
       META(1)%VARNC = PARTCOM
@@ -2542,12 +2545,12 @@
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
       META(1)%ENAME = '.pspr<IPART>'
-      META(1)%VARNM = 'pspr<IPART>' 
-      META(1)%VARNL = 'directional spread partition <IPART>' 
+      META(1)%VARNM = 'pspr<IPART>'
+      META(1)%VARNL = 'directional spread partition <IPART>'
       META(1)%VARNS = 'sea_surface_wave_directional_spread_partition_<IPART>'
       META(1)%VARNG = 'directional_spread_partition_<IPART>'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 90
 ! IFI=4, IFJ=6
       META => GROUP(4)%FIELD(6)%META
@@ -2555,11 +2558,11 @@
       META(1)%UNITS = '1'
       META(1)%ENAME = '.pws<IPART>'
       META(1)%VARNM = 'pws<IPART>'
-      META(1)%VARNL = 'wind sea fraction in partition <IPART>' 
-      META(1)%VARNS = 'wind_sea_fraction_in_partition_<IPART>' 
+      META(1)%VARNL = 'wind sea fraction in partition <IPART>'
+      META(1)%VARNS = 'wind_sea_fraction_in_partition_<IPART>'
       META(1)%VARNG = 'wind_sea_fraction_in_partition_<IPART>'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 1
 ! IFI=4, IFJ=7
       META => GROUP(4)%FIELD(7)%META
@@ -2682,7 +2685,7 @@
       META(1)%VARNS = 'wind_sea_fraction'
       META(1)%VARNG = 'wind_sea_fraction'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 1
 ! IFI=4, IFJ=17
       META => GROUP(4)%FIELD(17)%META
@@ -2694,7 +2697,7 @@
       META(1)%VARNS = 'number_of_wave_partitions'
       META(1)%VARNG = 'number_of_wave_partitions'
       META(1)%VARNC = PARTCOM
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 100
 !
 !---------- GROUP 5 ----------------
@@ -2713,7 +2716,7 @@
       META(1)%VARND=DIRCOM
       META(1)%VMIN = -99.0
       META(1)%VMAX =  99.0
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vust'
@@ -2735,7 +2738,7 @@
       META => GROUP(5)%FIELD(3)%META
       META(1)%FSC    = 0.1           !0.01
       META(1)%UNITS  = 'kW m-1'
-      META(1)%ENAME  = '.cge' 
+      META(1)%ENAME  = '.cge'
       META(1)%VARNM='cge'
       META(1)%VARNL='wave energy flux'
       META(1)%VARNS='sea_surface_wind_wave_energy_flux'
@@ -2753,7 +2756,7 @@
       META(1)%VARNG='wind_to_wave_energy_flux'
       META(1)%VMIN = 0
       META(1)%VMAX = 999
-! IFI=5, IFJ=5  
+! IFI=5, IFJ=5
       META => GROUP(5)%FIELD(5)%META
       ! First component
       META(1)%FSC    = 0.000001
@@ -2767,7 +2770,7 @@
       META(1)%VARND=DIRCOM
       META(1)%VMIN = -0.032
       META(1)%VMAX =  0.032
-     
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtaw'
@@ -2803,9 +2806,9 @@
       META(1)%UNITS  = '1'
       META(1)%ENAME  = '.wcc'
       META(1)%VARNM='wcc'
-      META(1)%VARNL='whitecap coverage'         
+      META(1)%VARNL='whitecap coverage'
       META(1)%VARNS='whitecap_coverage'
-      META(1)%VARNG='whitecap_coverage'            
+      META(1)%VARNG='whitecap_coverage'
       META(1)%VARNC=''
       META(1)%VARND=''
       META(1)%VMIN = 0
@@ -2816,14 +2819,14 @@
       META(1)%UNITS  = 'm'
       META(1)%ENAME  = '.wcf'
       META(1)%VARNM='wcf'
-      META(1)%VARNL='whitecap foam thickness' 
+      META(1)%VARNL='whitecap foam thickness'
       META(1)%VARNS='whitecap_foam_thickness'
-      META(1)%VARNG='whitecap_foam_thickness' 
+      META(1)%VARNG='whitecap_foam_thickness'
       META(1)%VMIN = 0
       META(1)%VMAX = 10
 ! IFI=5, IFJ=9
       META => GROUP(5)%FIELD(9)%META
-      META(1)%FSC    = 0.002 
+      META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
       META(1)%ENAME  = '.wch'
       META(1)%VARNM='wch'
@@ -2858,8 +2861,8 @@
       META(1)%VMAX = 64
 !
 !---------- GROUP 6 ----------------
-!   
-! IFI=6, IFJ=1 
+!
+! IFI=6, IFJ=1
       META => GROUP(6)%FIELD(1)%META
       META(1)%FSC  = 10.
       META(1)%UNITS = 'N m-1'
@@ -2867,20 +2870,20 @@
       META(1)%VARND = DIRCOM
       META(1)%VMIN = -30000
       META(1)%VMAX = 30000
-      
+
       ! First component
       META(1)%VARNM='sxx'
       META(1)%VARNL='Radiation stress component Sxx'
       META(1)%VARNS='Radiation_stress_component_Sxx'
       META(1)%VARNS='radiation_stress_component_sxx'
-      
+
       ! S6cond component
       META(2) = META(1)
       META(2)%VARNM='syy'
       META(2)%VARNL='Radiation stress component Syy'
       META(2)%VARNS='Radiation_stress_component_Syy'
       META(2)%VARNS='radiation_stress_component_syy'
-      
+
       ! Third component
       META(3) = META(1)
       META(3)%FSC = 1.
@@ -2893,7 +2896,7 @@
       META(1)%FSC    = 0.000001
       META(1)%UNITS  = 'm2 s-2'
       META(1)%ENAME  = '.two'
-      META(1)%VMIN = -0.032 
+      META(1)%VMIN = -0.032
       META(1)%VMAX =  0.032
       META(1)%VARND = DIRCOM
 
@@ -2903,7 +2906,7 @@
       META(1)%VARNS='eastward_wave_to_ocean_stress'
       META(1)%VARNG='eastward_wave_to_ocean_stress'
       META(1)%VARNC='two=sqrt(utwo**2+vtwo**2)'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtwo'
@@ -2920,7 +2923,7 @@
       META(1)%VARNL='radiation pressure (Bernouilli Head)'
       META(1)%VARNS='radiation_pressure'
       META(1)%VARNG='radiation_pressure'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 100
 ! IFI=6, IFJ=4
       META => GROUP(6)%FIELD(4)%META
@@ -2931,7 +2934,7 @@
       META(1)%VARNL='wave to ocean energy flux'
       META(1)%VARNS='wave_to_ocean_energy_flux'
       META(1)%VARNG='wave_to_ocean_energy_flux'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 999
 ! IFI=6, IFJ=5
       META => GROUP(6)%FIELD(5)%META
@@ -2941,7 +2944,7 @@
       META(1)%VARND = DIRCOM
       META(1)%VMIN = -9.9
       !TODO WHERE IS VMAX?
-      
+
       ! First component
       META(1)%VARNM='utus'
       META(1)%VARNL='eastward stokes transport'
@@ -2962,7 +2965,7 @@
       META(1)%FSC    = 0.0005
       META(1)%UNITS  = 'm s-1'
       META(1)%ENAME  = '.uss'
-      
+
       ! First component
       META(1)%VARNM='uuss'
       META(1)%VARNL='eastward surface stokes drift'
@@ -2970,9 +2973,9 @@
       META(1)%VARNG='eastward_surface_stokes_drift'
       META(1)%VARNC='uss=sqrt(uuss**2+vuss**2)'
       META(1)%VARND=DIRCOM
-      META(1)%VMIN = -4.95 
+      META(1)%VMIN = -4.95
       META(1)%VMAX =  4.95
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vuss'
@@ -2987,7 +2990,7 @@
       META(1)%UNITS  = 'm4'
       META(1)%VMIN = -150
       META(1)%VMAX = 320
-      
+
       ! First component
       META(1)%VARNL='power spectral density of equivalent surface pressure'
       META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
@@ -3001,7 +3004,7 @@
       META(2)%VARNL='peak period of power spectral density of equivalent surface pressure'
       META(2)%VARNS='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
       META(2)%VARNG='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
-      
+
 ! IFI=6, IFJ=8
       META => GROUP(6)%FIELD(8)%META
       META(1)%UNITS = 'm s-1 Hz-1'
@@ -3010,7 +3013,7 @@
       META(1)%VMIN = -4.95
       META(1)%VMAX =  4.95
       META(1)%VARND = DIRCOM
-      
+
       ! First component
       META(1)%VARNM='uusf'
       META(1)%VARNL='eastward spectral variance of surface stokes drift'
@@ -3033,9 +3036,9 @@
       META(1)%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
       META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
       META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
-      IF (NCVARTYPE.EQ.2) THEN 
+      IF (NCVARTYPE.EQ.2) THEN
         META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
-      ELSE 
+      ELSE
         META(1)%UNITS='Pa2 m2 s'
       ENDIF
       META(1)%VARNC=''
@@ -3051,7 +3054,7 @@
       META(1)%VMIN = -0.032
       META(1)%VMAX =  0.032
       META(1)%VARND = DIRCOM
- 
+
       ! First component
       META(1)%VARNL='eastward wave to sea ice stress'
       META(1)%VARNM='utic'
@@ -3065,7 +3068,7 @@
       META(2)%VARNS='northward_wave_to_sea_ice_stress'
       META(2)%VARNG='northward_wave_to_sea_ice_stress'
       META(2)%VARNC='two=sqrt(utwo**2+vtwo**2)'
-! IFI=6, IFJ=11        
+! IFI=6, IFJ=11
       META => GROUP(6)%FIELD(11)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'W m-2'
@@ -3074,22 +3077,22 @@
       META(1)%VARNL='wave to sea ice energy flux'
       META(1)%VARNS='wave_to_sea_ice_energy_flux'
       META(1)%VARNG='wave_to_sea_ice_energy_flux'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 999
-! IFI=6, IFJ=12 
+! IFI=6, IFJ=12
       META => GROUP(6)%FIELD(12)%META
       META(1)%UNITS   = 'm s-1'
       META(1)%FSC    = 0.0005
       META(1)%ENAME  = '.usp'
       META(1)%VARND  = DIRCOM
-  
+
       ! First component
       META(1)%VARNM='ussp'
       META(1)%VARNL='eastward partitioned surface stokes drift'
       META(1)%VARNS='eastward_partitioned_surface_stokes_drift'
       META(1)%VARNG='eastward_partitioned_surface_stokes_drift'
       META(1)%VARNC='usp=sqrt(ussp**2+vssp**2)'
-    
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vssp'
@@ -3099,8 +3102,8 @@
       META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
 !
 !---------- GROUP 7 ----------------
-!   
-! IFI=7, IFJ=1 
+!
+! IFI=7, IFJ=1
       META => GROUP(7)%FIELD(1)%META
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.abr'
@@ -3108,14 +3111,14 @@
       META(1)%VMIN = -180
       META(1)%VMAX = 180
       META(1)%VARND = DIRCOM
-      
+
       ! First component
       META(1)%VARNM='uabr'
       META(1)%VARNL='rms of bottom displacement amplitude zonal'
       META(1)%VARNS='rms_of_bottom_displacement_amplitude_zonal'
       META(1)%VARNG='rms_of_bottom_displacement_amplitude_zonal'
       META(1)%VARNC='abr=sqrt(uabr**2+vabr**2)'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vabr'
@@ -3160,7 +3163,7 @@
       META(1)%VARNS='sea bottom roughness length'
       META(1)%VARNG='ripple_wavelength'
       META(1)%VARNC='ripple_length=sqrt(ripplex**2+rippley**2)'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='ripplex'
@@ -3195,14 +3198,14 @@
       META(1)%VMIN = -0.032
       META(1)%VMAX =  0.032
       META(1)%VARND = DIRCOM
-      
+
       ! First component
       META(1)%VARNM='utbb'
       META(1)%VARNL='eastward wave to bbl stress'
       META(1)%VARNS='eastward_wave_to_bottom_boundary_layer_stress'
       META(1)%VARNG='eastward_wave_to_bbl_stress'
       META(1)%VARNC='tbb=sqrt(utbb**2+vtbb**2)'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtbb'
@@ -3217,18 +3220,18 @@
       META(1)%FSC    = 0.00001
       META(1)%ENAME  = '.mss'
       META(1)%UNITS  = '1'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 0.3
       META(1)%VARND = DIRCOM
       WRITE(META(1)%VARNC,'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
-      
+
       ! First component
       META(1)%VARNM='mssu'
       META(1)%VARNL='downwave mean square slope'
       META(1)%VARNS='x_mean_square_slope'
       META(1)%VARNG='x_mean_square_slope'
       META(1)%VARNC='mss=mssu+mssc'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='mssc'
@@ -3237,20 +3240,20 @@
       META(2)%VARNG='y_mean_square_slope'
 ! IFI=8, IFJ=2
       META => GROUP(8)%FIELD(2)%META
-      META(2)%FSC    = 1E-7     
+      META(2)%FSC    = 1E-7
       META(2)%ENAME  = '.msc'
       META(2)%UNITS  = '1'
-      META(2)%VMIN = 0 
+      META(2)%VMIN = 0
       META(2)%VMAX = 0.003
       META(2)%VARND = DIRCOM
-      
+
       ! First component
       META(1)%VARNM='mscx'
       META(1)%VARNL='eastward phillips constant'
       META(1)%VARNS='eastward_phillips_constant'
       META(1)%VARNG='eastward_phillips_constant'
       META(1)%VARNC='msc=mscx+mscy'
-      
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='mscy'
@@ -3307,7 +3310,7 @@
       META(1)%VARNL='dynamic time step'
       META(1)%VARNS='dynamic_time_step'
       META(1)%VARNG='dynamic_time_step'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 3200
 ! IFI=9, IFJ=2
       META => GROUP(9)%FIELD(2)%META
@@ -3318,7 +3321,7 @@
       META(1)%VARNL='cut off frequency'
       META(1)%VARNS='cut_off_frequency'
       META(1)%VARNG='cut_off_frequency'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 8
 ! IFI=9, IFJ=3
       META => GROUP(9)%FIELD(3)%META
@@ -3329,7 +3332,7 @@
       META(1)%VARNL='maximum cfl for spatial advection'
       META(1)%VARNS='maximum_cfl_for_spatial_advection'
       META(1)%VARNG='maximum_cfl_for_spatial_advection'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 320
 ! IFI=9, IFJ=4
       META => GROUP(9)%FIELD(4)%META
@@ -3340,7 +3343,7 @@
       META(1)%VARNL='maximum cfl for direction advection'
       META(1)%VARNS='maximum_cfl_for_direction_advection'
       META(1)%VARNG='maximum_cfl_for_direction_advection'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 320
 ! IFI=9, IFJ=5
       META => GROUP(9)%FIELD(5)%META
@@ -3351,7 +3354,7 @@
       META(1)%VARNL='maximum cfl for frequency advection'
       META(1)%VARNS='maximum_cfl_for_frequency_advection'
       META(1)%VARNG='maximum_cfl_for_frequency_advection'
-      META(1)%VMIN = 0 
+      META(1)%VMIN = 0
       META(1)%VMAX = 320
 !
 ! ------ Group 10 (User defined) -------
