@@ -38,6 +38,7 @@
 !/                  grid when nesting to rotated grid   ( version 7.11 )
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
+!/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -92,6 +93,29 @@
 !     Checks on input, checks in W3IOxx.
 !
 !  7. Remarks :
+!
+!     The VARID array stores netCDF variable IDs for all variables in
+!     file. The first 20 elements are reserved for dimension/auxiliary
+!     variables as defined below:
+!
+!       Index     Variable
+!       =====     ========
+!         1       Lon
+!         2       Lat
+!         3       Time
+!         4       Tri (UGRD)
+!         5       SMC CX (SMC)
+!         6       SMC CY (SMC)
+!         7       Standard longitude (SMC/RTD)
+!         8       Standard latitude (SMC/RTD)
+!         9       Coordinate reference system (upcoming feature / RTD)
+!        10       Freq (extradim)
+!        11       Forecast period (upcoming feature)
+!        12       Forecast reference time (upcoming feature)
+!        13-19    [Reserved for future use]
+!        20       MAPSTA
+!
+!    Indices 21 - 300 are for storage of field output variable IDs.
 !
 !  8. Structure :
 !
@@ -699,6 +723,7 @@
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
 !/    03-Nov-2020 : NetCDF metadata moved to separate   ( version 7.12 )
 !/                  module.
+!/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -792,7 +817,7 @@
       INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
                                  MAPSTAOUT, NDSDAT,                    &
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
-                                 IVAR1, IDVAROUT
+                                 IVAR1
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
                                  COUNT(4), DIMLN(6),START1D(2),        &
                                  COUNT1D(2), DIMFIELD(3),              &
@@ -2083,7 +2108,7 @@
             ENDIF
 
             ! Defines index of first field variable
-            IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
+            IVAR1=21
 
 
 ! 2.4.1 Save the id of the previous file
@@ -2413,9 +2438,9 @@
 !/SMC                  CALL CHECK_ERR(IRET)
 !/SMC                  IF(SMCTYPE .EQ. 1) THEN
 !/SMC                    ! For type 1 SCM file also put lat/lons and cell sizes:
-!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(299),SMCCX)
+!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(5),SMCCX)
 !/SMC                    CALL CHECK_ERR(IRET)
-!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(300),SMCCY)
+!/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(6),SMCCY)
 !/SMC                    CALL CHECK_ERR(IRET)
 !/SMC                  ENDIF
                 ELSE ! SMCGRD
@@ -2425,9 +2450,9 @@
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
 !/RTD                IF ( RTDL ) THEN
-!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(291),LON2D(IX1:IXN,IY1:IYN))
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(5),LON2D(IX1:IXN,IY1:IYN))
 !/RTD                  CALL CHECK_ERR(IRET)
-!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(292),LAT2D(IX1:IXN,IY1:IYN))
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(6),LAT2D(IX1:IXN,IY1:IYN))
 !/RTD                  CALL CHECK_ERR(IRET)
 !/RTD                  END IF
               END IF
@@ -2461,29 +2486,28 @@
                       FREQ(i)=SIG(I1F-1+i)*TPIINV
                    END DO
                 ENDIF
-                IRET=NF90_PUT_VAR(NCID,VARID(3),FREQ)
+                IRET=NF90_PUT_VAR(NCID,VARID(10),FREQ)
                 CALL CHECK_ERR(IRET)
                 DEALLOCATE(FREQ)
               END IF
 
               ! Writes triangles to netcdf file
               IF (GTYPE.EQ.UNGTYPE) THEN
-                IRET=NF90_PUT_VAR(NCID,VARID(4+EXTRADIM),TRIGP2)
+                IRET=NF90_PUT_VAR(NCID,VARID(4),TRIGP2)
                 CALL CHECK_ERR(IRET)
               END IF
 
               ! Writes status map array at variable index 2+1+coordtype+idim-4
               IF (MAPSTAOUT.EQ.1) THEN 
-                IDVAROUT=VARID(3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT) 
                 START(1)=1
                 START(2)=1
                 COUNT(1)=IXN-IX1+1
                 COUNT(2)=IYN-IY1+1
                 IF (GTYPE.NE.UNGTYPE) THEN
-                  IRET=NF90_PUT_VAR(NCID,IDVAROUT,MAPOUT(IX1:IXN,IY1:IYN), &
+                  IRET=NF90_PUT_VAR(NCID,VARID(20),MAPOUT(IX1:IXN,IY1:IYN), &
                                      (/START(1:2)/),(/COUNT(1:2)/))
                 ELSE
-                  IRET=NF90_PUT_VAR(NCID,IDVAROUT,MAPOUT(IX1:IXN,1),(/START(1)/),(/COUNT(1)/))
+                  IRET=NF90_PUT_VAR(NCID,VARID(20),MAPOUT(IX1:IXN,1),(/START(1)/),(/COUNT(1)/))
                 ENDIF
                 CALL CHECK_ERR(IRET)
               END IF
@@ -2579,7 +2603,7 @@
 
               ! If it is an unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
-                IRET=NF90_INQ_VARID (NCID, 'tri', VARID(4+EXTRADIM))
+                IRET=NF90_INQ_VARID (NCID, 'tri', VARID(4))
                 CALL CHECK_ERR(IRET)
               ! If it is a regular grid
               ELSE
@@ -2611,7 +2635,7 @@
               IRET=NF90_INQ_DIMID (NCID, 'time', DIMID(4+EXTRADIM))
               IRET=NF90_INQUIRE_DIMENSION (NCID, DIMID(4+EXTRADIM),len=N)
               CALL CHECK_ERR(IRET)
-              IRET=NF90_INQ_VARID (NCID, 'time', VARID(3+EXTRADIM))
+              IRET=NF90_INQ_VARID (NCID, 'time', VARID(3))
               ! Get the dimension f
               IF (EXTRADIM.EQ.1) IRET=NF90_INQ_DIMID (NCID, 'f', DIMID(4))
 
@@ -2748,8 +2772,9 @@
             ! Puts time in NetCDF file
             IF((IFI.EQ.I1.AND.IFJ.EQ.J1.AND.TOGETHER)  &
                .OR.(.NOT.TOGETHER).OR.FLFRQ) THEN
-              IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
-              IRET=NF90_PUT_VAR(NCID,VARID(3+EXTRADIM),OUTJULDAY,(/N/))
+              !IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
+              IVAR1 = 21
+              IRET=NF90_PUT_VAR(NCID,VARID(3),OUTJULDAY,(/N/))
               CALL CHECK_ERR(IRET)
             END IF
 !
@@ -3437,14 +3462,14 @@
 !/SMC              CALL CHECK_ERR(IRET)
 !/SMC
 !/SMC              ! For seapoint style SMC grid, also define out cell size variables:
-!/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(299))
+!/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(5))
 !/SMC              CALL CHECK_ERR(IRET)
 !/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'long_name',        &
 !/SMC                                  'longitude cell size factor')
 !/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'valid_min', 1)
 !/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'valid_max', 256)
 !/SMC
-!/SMC              IRET = NF90_DEF_VAR(NCID, 'cy', NF90_SHORT, DIMID(2), VARID(300))
+!/SMC              IRET = NF90_DEF_VAR(NCID, 'cy', NF90_SHORT, DIMID(2), VARID(6))
 !/SMC              call CHECK_ERR(IRET)
 !/SMC              IRET = NF90_PUT_ATT(NCID, VARID(300), 'long_name',        &
 !/SMC                                  'latitude cell size factor')
@@ -3499,55 +3524,58 @@
 !/SMC          IF(SMCTYPE .EQ. 1) THEN
 !/RTD            ! For SMC grid type 1, standard lat/lon variables are 1D:
 !/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2) /), VARID(291))
+!/RTD                    (/ DIMID(2) /), VARID(7))
 !/RTD            call CHECK_ERR(IRET)
 !/RTD 
 !/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2) /), VARID(292))
+!/RTD                    (/ DIMID(2) /), VARID(8))
 !/RTD            call CHECK_ERR(IRET)
 !/SMC          ELSE
 !/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(291))
+!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(7))
 !/RTD            call CHECK_ERR(IRET)
 !/RTD
 !/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(292))
+!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(8))
 !/RTD            call CHECK_ERR(IRET)
 !/SMC          ENDIF
         ELSE
 !/RTD      IF ( RTDL ) THEN
 !/RTD        !Add secondary coordinate system linking rotated grid back to standard lat-lon
 !/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
-!/RTD                             VARID(291))
+!/RTD                             VARID(7))
 !/RTD        call CHECK_ERR(IRET)
 !/RTD
 !/RTD        IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
-!/RTD                             VARID(292))
+!/RTD                             VARID(8))
 !/RTD        call CHECK_ERR(IRET)
 !/RTD      END IF
         ENDIF ! SMCGRD
 !/RTD
 !/RTD      IF ( RTDL ) THEN
 !/RTD        ! Attributes for standard_longitude:
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'units','degree_east')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'long_name','longitude')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'standard_name','longitude')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'valid_min',-180.0)
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(291),'valid_max',360.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(7),'units','degree_east')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(7),'long_name','longitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(7),'standard_name','longitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_min',-180.0)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_max',360.)
 !/RTD
 !/RTD        ! Attributes for standard_latitude:
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'units','degree_north')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'long_name','latitude')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'standard_name','latitude')
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'valid_min',-90.0)
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(292),'valid_max',180.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'units','degree_north')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','latitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','latitude')
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_min',-90.0)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_max',180.)
 !/RTD
 !/RTD        ! Add rotated pole grid mapping variable (dummy scalar variable
 !/RTD        ! used to simply store rotated pole information; see CF1.6 conventions).
-!/RTD        IRET=NF90_DEF_VAR(NCID, 'rotated_pole', NF90_CHAR, VARID(293))
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_north_pole_latitude',POLAT)
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_north_pole_longitude',POLON)
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(293), 'grid_mapping_name',              &
+!/RTD        ! TODO: FUTURE WW3_OUNF DEVELOPMENT WILL ALLOW USER TO DEFINE THE 
+!/RTD        ! COORDINATE REFERENCE SYSTEM - THIS WILL REQUIRE THE BELOW TO BE
+!/RTD        ! HANDLED DIFFERENTLY. C. Bunney.
+!/RTD        IRET=NF90_DEF_VAR(NCID, 'rotated_pole', NF90_CHAR, VARID(12))
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_latitude',POLAT)
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_longitude',POLON)
+!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_mapping_name',              &
 !/RTD                                   'rotated_latitude_longitude')
 !/RTD      END IF
 !
@@ -3581,8 +3609,8 @@
 ! frequency
 !
       if (EXTRADIM.EQ.1) THEN
-        IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(3))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
+        IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(10))
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','wave_frequency')
         CALL CHECK_ERR(IRET)
@@ -3598,59 +3626,56 @@
 !
 !  time
 !
-      IRET = NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, DIMID(4+EXTRADIM), VARID(3+EXTRADIM))
-!/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3+EXTRADIM), 1, 1, DEFLATE)
+      IRET = NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, DIMID(4+EXTRADIM), VARID(3))
+!/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
       CALL CHECK_ERR(IRET)
       SELECT CASE (TRIM(CALTYPE))
         CASE ('360_day')
-          IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'long_name','time in 360 day calendar')
+          IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','time in 360 day calendar')
         CASE ('365_day')
-          IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'long_name','time in 365 day calendar')
+          IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','time in 365 day calendar')
         CASE ('standard')
-          IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'long_name','julian day (UT)')
+          IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','julian day (UT)')
       END SELECT
       CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'standard_name','time')
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','time')
       CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'units','days since 1990-01-01 00:00:00')
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'units','days since 1990-01-01 00:00:00')
       CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'conventions', &
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'conventions', &
         'relative julian days with decimal part (as parts of the day )')
-      IRET=NF90_PUT_ATT(NCID,VARID(3+EXTRADIM),'axis','T')
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'axis','T')
       CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,VARID(3+extradim),'calendar',TRIM(CALTYPE))
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'calendar',TRIM(CALTYPE))
       CALL CHECK_ERR(IRET)
 !
 ! triangles for irregular grids
 !
       IF (GTYPE.EQ.UNGTYPE) THEN
-        IVAR=3+EXTRADIM+1
         DIMTRI(1)=DIMID(4+EXTRADIM+1)
         DIMTRI(2)=DIMID(3)
-        IRET = NF90_DEF_VAR(NCID, 'tri', NF90_INT, DIMTRI, VARID(IVAR))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+        IRET = NF90_DEF_VAR(NCID, 'tri', NF90_INT, DIMTRI, VARID(4))
+!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(4), 1, 1, DEFLATE)
       END IF
 !
 !  Status map: useful for grid combination
 !
       IF (MAPSTAOUT.EQ.1) THEN 
         IF (GTYPE.EQ.UNGTYPE) THEN 
-          IVAR=5+EXTRADIM
-          IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(IVAR)) 
+          IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(20))
         ELSE 
-          IVAR=4+EXTRADIM
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) , DIMID(3) /), &
-                                                                       VARID(IVAR)) 
+                                                                       VARID(20))
           ENDIF
-!/NC4          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(20), 1, 1, DEFLATE)
 !
-        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'long_name','status map')
-        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'standard_name','status map')
-        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'units','1')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'long_name','status map')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'standard_name','status map')
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'units','1')
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_min',-32)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'valid_min',-32)
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'valid_max',32)
+        IRET=NF90_PUT_ATT(NCID,VARID(20),'valid_max',32)
         CALL CHECK_ERR(IRET)
       END IF
 
