@@ -89,6 +89,7 @@
   echo "  echo '      Assim Update of the restart file   : $assim'"            >> matrix.head
   echo "  echo '      OASIS coupling                     : $oasis'"            >> matrix.head
   echo "  echo '      Calendar type                      : $calendar'"         >> matrix.head
+  echo "  echo '      Configurable netCDF generation     : $confignc'"         >> matrix.head
   echo "  echo ' '"                                                            >> matrix.head
   if [ -n "$filter" ]
   then

@@ -8,7 +8,7 @@ META HS
   ename=".vhm0"
   varnm="VHM0"
   long_name="Spectral significant wave height (Hm0)"
-  globwave_name=
+  globwave_name=""
   vmin=0.0
   vmax=50.0
   $ an "extra" user attribute (of type "real"):
