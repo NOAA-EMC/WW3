@@ -2450,9 +2450,9 @@
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
 !/RTD                IF ( RTDL ) THEN
-!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(5),LON2D(IX1:IXN,IY1:IYN))
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(7),LON2D(IX1:IXN,IY1:IYN))
 !/RTD                  CALL CHECK_ERR(IRET)
-!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(6),LAT2D(IX1:IXN,IY1:IYN))
+!/RTD                  IRET=NF90_PUT_VAR(NCID,VARID(8),LAT2D(IX1:IXN,IY1:IYN))
 !/RTD                  CALL CHECK_ERR(IRET)
 !/RTD                  END IF
               END IF
