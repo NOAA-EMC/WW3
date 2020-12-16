@@ -128,6 +128,8 @@
                           NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
 
+      USE W3METAMD
+
       IMPLICIT NONE
 
       PUBLIC
@@ -139,16 +141,16 @@
       ! String token used to merge in partition number:
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
 
-      ! Values to represent "unset" data:
-      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
-      REAL, PARAMETER             :: UNSETR = HUGE(1.0)
-
-      ! Type for storing a user defined metadata pair:
-      TYPE META_PAIR_T
-        CHARACTER(LEN=64)  :: ATTNAME = UNSETC
-        CHARACTER(LEN=120) :: ATTVAL = UNSETC
-        CHARACTER          :: TYPE = 'c'    ! c,i,f/r
-      END TYPE META_PAIR_T
+!      ! Values to represent "unset" data:
+!      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
+!      REAL, PARAMETER             :: UNSETR = HUGE(1.0)
+!
+!      ! Type for storing a user defined metadata pair:
+!      TYPE META_PAIR_T
+!        CHARACTER(LEN=64)  :: ATTNAME = UNSETC
+!        CHARACTER(LEN=120) :: ATTVAL = UNSETC
+!        CHARACTER          :: TYPE = 'c'    ! c,i,f/r
+!      END TYPE META_PAIR_T
 
       ! Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
@@ -179,17 +181,11 @@
       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
 
       ! Storage for the Global meta data (free form):
-      ! TODO - maybe implement as a linked list?
-      TYPE(META_PAIR_T), ALLOCATABLE :: GLOBAL_META(:)
-      INTEGER, PARAMETER :: MAX_GBLMETA = 30
-      INTEGER            :: N_GBLMETA
+      TYPE(META_LIST_T) :: GLOBAL_META
 
       ! Storage for coordinate reference system (CRS) metadata:
-      ! TODO: Even more reason to make a linked-list of META_PAIR_T
-      TYPE(META_PAIR_T), ALLOCATABLE :: CRS_META(:)
       CHARACTER(LEN=128) :: CRS_NAME
-      INTEGER, PARAMETER :: MAX_CRSMETA = 30
-      INTEGER            :: N_CRSMETA
+      TYPE(META_LIST_T) :: CRS_META
 
       ! Type for storing partitioned parameter template strings.
       ! Defined as a linked-list
@@ -253,16 +249,8 @@
         ENDDO
       ENDDO
 
-      ! Allocate storage for Global meta-data
-      ALLOCATE(GLOBAL_META(MAX_GBLMETA))
-      N_GBLMETA = 0
-
-      ! Coordinate reference system (CRS) meta will be allocted only if defined
-      N_CRSMETA = 0
-
       ! 1.1 Make sure partitioned template pointer is null (i.e. empty list)
       NULLIFY(PART_TMPL)
-
 
       ! 2. Set direction convention:
       DIRCOM = ""
@@ -294,6 +282,9 @@
 
       ! 3. Set the default values for the OUNF netCDF meta data.
       CALL DEFAULT_META()
+
+      ! Set the default coordiante reference system (if applicable)
+      CALL DEFAULT_CRS_META()
 
       ! If the ounfmeta.inp exists, read this in to override defaults:
       INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
@@ -400,7 +391,8 @@
       ENDDO
       DEALLOCATE(GROUP)
 
-      DEALLOCATE(GLOBAL_META)
+      CALL DEL_META_LIST(GLOBAL_META)
+      CALL DEL_META_LIST(CRS_META)
 
       END SUBROUTINE TEARDOWN_META
 
@@ -606,7 +598,6 @@
 
       INTEGER :: IFI, IFJ, IFC
       INTEGER :: ILINE, MCNT
-      !INTEGER :: MCNT
       LOGICAL :: EOF
 
       NDMI = 60
@@ -639,7 +630,6 @@
            IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
 
            ! Get the IFI, IFJ, IFC values from the header:
-           !I = INDEX(BUF,'META') + 4
            I = INDEX(BUF, TRIM(TEST)) + 4 ! Handles lower/mixed-case META keyword
            CALL DECODE_HEADER(BUF(I:), ILINE, IFI, IFJ, IFC)
            IF(IFI .EQ. -1) THEN
@@ -649,8 +639,7 @@
 
            ! IFI = 999 is a section for the "global" meta data
            IF(IFI .EQ. 999) THEN
-             !CALL READ_GLOBAL_META(NDMI, ILINE)
-             CALL READ_FREEFORM_META(NDMI, ILINE, GLOBAL_META, N_GBLMETA, MAX_GBLMETA )
+             CALL READ_FREEFORM_META_LIST(NDMI, ILINE, GLOBAL_META)
              CYCLE
            ENDIF
 
@@ -692,7 +681,7 @@
       ENDDO
 
       CLOSE(NDMI)
-      WRITE(*, 5000) MCNT, N_GBLMETA, N_CRSMETA
+      !WRITE(*, 5000) MCNT, N_GBLMETA, N_CRSMETA
       RETURN
 !
  5000 FORMAT(/' Read in: ',I3,' variable metadata entries' /          &
@@ -1233,6 +1222,110 @@
       END SUBROUTINE READ_FREEFORM_META
 
 !/ ------------------------------------------------------------------- /
+      SUBROUTINE READ_FREEFORM_META_LIST(NDMI, ILINE, METALIST)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads in freeform attribute name/value pairs.
+!
+!  2. Method:
+!
+!     Keeps looping over input lines in file until next section
+!     or EOF is found. Splits meta pairs on the = character.
+!
+!     Freeform metadata pairs can also provide a variable type
+!     ("c", "i", or "r"; for character, int or real respectively).
+!     String values with spaces should be quoted.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI     Char.   I  Unit number of metadata input file
+!       ILINE     Int. I/O  Current line number in file
+!       METALIST Type. I/O  A META_LIST_T object to append to
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      INTEGER, INTENT(IN)               :: NDMI
+      INTEGER, INTENT(INOUT)            :: ILINE
+      TYPE(META_LIST_T), INTENT(INOUT)  :: METALIST
+
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      CHARACTER(LEN=256) :: BUF
+      CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
+      CHARACTER(LEN=16)  :: ATT_TYPE
+      INTEGER            :: I, IERR
+      REAL               :: R
+      LOGICAL            :: EOF, NEW
+      TYPE(META_PAIR_T)  :: META
+!
+      ! Keep reading lines until we hit EOF or anoter META keyword
+      DO
+        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
+        IF(EOF) THEN
+          BACKSPACE(NDMI)
+          RETURN
+        ENDIF
+
+        IF(NEW) THEN
+          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          ILINE = ILINE - 1
+          BACKSPACE(NDMI)
+          EXIT
+        ENDIF
+
+        ! Split attr name/value pair
+        I = INDEX(BUF, "=")
+        IF( I .LT. 1 ) THEN
+          WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
+          CALL EXTCDE(10)
+        ENDIF
+
+        ATTN = ADJUSTL(BUF(1:I-1))
+        TMP = ADJUSTL(BUF(I+1:))
+
+        ! Get type, if set:
+        CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
+
+        IF(DEBUG) THEN
+          WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[FREEFORM meta]', &
+            TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
+        ENDIF
+
+
+        META%ATTNAME = TRIM(ATTN)
+        META%ATTVAL = TRIM(ATTV)
+        META%TYPE = TRIM(ATT_TYPE)
+
+        CALL META_LIST_APPEND(METALIST, META)
+
+      ENDDO
+!
+ 9000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     SYNTAX ERROR IN METADATA FILE ' /                &
+               '     SHOULD BE "attr_name = attr_value" ' /           &
+               '     FILENAME = ', A /                                &
+               '     LINE NO =', I5 /                                 &
+               '  => ', A /)
+!
+      END SUBROUTINE READ_FREEFORM_META_LIST
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_CRS_META(NDMI, ILINE)
 !/
 !/                  +-----------------------------------+
@@ -1270,11 +1363,12 @@
 !/
       CHARACTER(LEN=128) :: BUF
       INTEGER            :: I, IERR
-      LOGICAL            :: FOUND
-!/
-      IF(ALLOCATED(CRS_META)) THEN
-        WRITE(NDSE,*) "Error: Duplicate CRS section. Line: ", ILINE
-        CALL EXTCDE(10)
+      TYPE(META_PAIR_T), POINTER  :: META
+
+      IF(CRS_META%N .NE. 0) THEN
+        WRITE(NDSE,*) "WARNING : Duplicate CRS section, Line: ", ILINE
+        WRITE(NDSE,*) "WARNING : THE WILL OVERRIDE PREVIOUS CRS DEFINITION"
+        CALL DEL_META_LIST(CRS_META)
       ENDIF
 
       ! Re-read header line (we only want the second field)
@@ -1286,21 +1380,11 @@
       ENDIF
       IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[CRS id]', TRIM(CRS_NAME)
 
-      N_CRSMETA = 0
-      ALLOCATE(CRS_META(MAX_CRSMETA))
+      CALL READ_FREEFORM_META_LIST(NDMI, ILINE, CRS_META)
 
-      CALL READ_FREEFORM_META(NDMI, ILINE, CRS_META, N_CRSMETA, MAX_CRSMETA)
-
-      ! Check "grid_mapping_name" is defined
-      FOUND = .FALSE.
-      DO I=1,N_CRSMETA
-        IF(CRS_META(I)%ATTNAME == "grid_mapping_name") THEN
-          FOUND = .TRUE.
-          EXIT
-        ENDIF
-      ENDDO
-
-      IF(.NOT. FOUND) THEN
+      ! Check that "grid_mapping_name" is defined
+      CALL META_FIND_ATTR(CRS_META, "grid_mapping_name", META, IERR)
+      IF(IERR .NE. 0) THEN
         WRITE(NDSE, *) "ERROR: CRS section does not contain 'grid_mapping_name'"
         CALL EXTCDE(10)
       ENDIF
@@ -1314,6 +1398,29 @@
                '  => ', A /)
 
       END SUBROUTINE READ_CRS_META
+
+      SUBROUTINE DEFAULT_CRS_META()
+      ! Set up a default coordinate reference system for the grid
+      IMPLICIT NONE
+
+      TYPE(META_PAIR_T) :: META
+      
+!      IF(RTD) THEN
+!        ! Rotated pole location
+!      ELSE IF(UNSTR) THEN
+!        ! What do we want for unstructure grids?
+!      ELSE
+!        ! Normal cartesian or lat/lon grid...no default?
+!      ENDIF
+
+
+      CRS_NAME = 'rotated_pole'
+      CALL META_LIST_APPEND(CRS_META, 'grid_mapping_name',             &
+                            'rotated_latitude_longitude')
+      CALL META_LIST_APPEND(CRS_META, 'grid_north_pole_latitude', 37.5)
+      CALL META_LIST_APPEND(CRS_META, 'grid_north_pole_longitude', 177.5)
+
+      END SUBROUTINE DEFAULT_CRS_META
 
 !/ ------------------------------------------------------------------- /
       FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
@@ -1784,7 +1891,7 @@
         IF(ERR /= NF90_NOERR) RETURN
       END IF
 
-      IF(N_CRSMETA .GT. 0) THEN
+      IF(CRS_NAME .NE. '' .AND. CRS_NAME .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'grid_mapping', CRS_NAME)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
@@ -1857,44 +1964,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      CALL WRITE_FREEFORM_META(NCID, NF90_GLOBAL, GLOBAL_META, N_GBLMETA, ERR)
-
-!      INTEGER :: VARID = NF90_GLOBAL
-!      INTEGER :: I, IVAL
-!      REAL    :: RVAL
-!
-!         ! Loop over global metadata pairs:
-!      DO I=1,N_GBLMETA
-!
-!        IF (GLOBAL_META(I)%ATTNAME .EQ. '' .OR.                      &
-!              GLOBAL_META(I)%ATTNAME .EQ. UNSETC) CYCLE
-!
-!        SELECT CASE(GLOBAL_META(I)%TYPE)
-!
-!          CASE('i')
-!            READ(GLOBAL_META(I)%ATTVAL, *) IVAL
-!            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, IVAL)
-!            IF(ERR /= NF90_NOERR) RETURN
-!
-!          CASE('r', 'f')
-!            READ(GLOBAL_META(I)%ATTVAL, *) RVAL
-!            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME, RVAL)
-!            IF(ERR /= NF90_NOERR) RETURN
-!
-!          CASE('c')
-!            ERR = NF90_PUT_ATT(NCID, VARID, GLOBAL_META(I)%ATTNAME,    &
-!                    GLOBAL_META(I)%ATTVAL)
-!            IF(ERR /= NF90_NOERR) RETURN
-!
-!          CASE DEFAULT
-!            WRITE(1000,*) GLOBAL_META(I)%TYPE
-!            CALL EXTCDE(10)
-!        END SELECT
-!      ENDDO
-!!
-!  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
-!                '     WRITEMETA: Unknown meta data type: ', A1         / )
-!!
+      CALL WRITE_FREEFORM_META_LIST(NCID, NF90_GLOBAL, GLOBAL_META, ERR)
       END SUBROUTINE WRITE_GLOBAL_META
 
 !/ ------------------------------------------------------------------- /
@@ -1973,6 +2043,90 @@
                 '     data type: ', A1         / )
 !
       END SUBROUTINE WRITE_FREEFORM_META
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE WRITE_FREEFORM_META_LIST(NCID, VARID, METALIST, ERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Dec-2020 |
+!/                  +-----------------------------------+
+!/
+!/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Writes the freeform user meta-data entries for a NetCDF variable
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID      Int.  I/O  NetCDF file ID
+!       VARID     Int.  I/O  NetCDF file ID
+!       METALIST  Type. I    META_LIST_T object to write
+!       ERR       Int.  O    Error value
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NCID, VARID
+      TYPE(META_LIST_T), INTENT(IN) :: METALIST
+      INTEGER, INTENT(OUT) :: ERR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: I, IVAL
+      REAL    :: RVAL
+      TYPE(META_PAIR_T), POINTER :: P
+
+      IF(METALIST%N .EQ. 0) RETURN
+
+      P => METALIST%HEAD
+
+         ! Loop over global metadata pairs:
+      DO 
+
+        IF (P%ATTNAME .EQ. '' .OR.                      &
+              P%ATTNAME .EQ. UNSETC) CYCLE
+
+        SELECT CASE(P%TYPE)
+
+          CASE('i')
+            READ(P%ATTVAL, *) IVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, IVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+
+          CASE('r', 'f')
+            READ(P%ATTVAL, *) RVAL
+            ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, RVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+
+          CASE('c')
+            ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME,    &
+                    P%ATTVAL)
+            IF(ERR /= NF90_NOERR) RETURN
+
+          CASE DEFAULT
+            WRITE(1000,*) P%TYPE
+            CALL EXTCDE(10)
+        END SELECT
+
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
+!
+  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
+                '     WRITE_FREEFORM_META: Unknown attribute'          / &
+                '     data type: ', A1         / )
+!
+      END SUBROUTINE WRITE_FREEFORM_META_LIST
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_META(META)
