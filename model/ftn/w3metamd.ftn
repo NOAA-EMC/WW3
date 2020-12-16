@@ -1,6 +1,20 @@
 !/ ------------------------------------------------------------------- /
       MODULE W3METAMD
-!     Provides META pair derived type and linked list storage
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         16-Dec-2020 |
+!/                  +-----------------------------------+
+!/
+!/    16-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Provides types for handling "meta data" (attribute/value pairs)
+!     and a linked lisst construct for dynamic storage.
 !/ ------------------------------------------------------------------- /
 
       ! Values to represent "unset" data:
@@ -20,7 +34,7 @@
         INTEGER                     :: N = 0
       END TYPE META_LIST_T
 
-
+      ! Interface to facilitate adding real/int/character values to list
       INTERFACE META_LIST_APPEND
         MODULE PROCEDURE META_LIST_APPEND_M
         MODULE PROCEDURE META_LIST_APPEND_R
@@ -28,16 +42,20 @@
         MODULE PROCEDURE META_LIST_APPEND_C
       END INTERFACE META_LIST_APPEND
 
-      CONTAINS
 
+      CONTAINS
       
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DEL_META_LIST(LIST)
 !     Deletes all entries in list
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      TYPE(META_LIST_T), INTENT(INOUT) :: LIST
 
+      TYPE(META_LIST_T), INTENT(INOUT) :: LIST
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T), POINTER :: P
 
       IF(.NOT. ASSOCIATED(LIST%HEAD)) RETURN
@@ -58,12 +76,44 @@
 
 
 !/ ------------------------------------------------------------------- /
+      FUNCTION COPY_META_LIST(LIST) RESULT(COPY)
+!     Create a deep copy of a meta data list
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+
+      TYPE(META_LIST_T), INTENT(IN) :: LIST
+      TYPE(META_LIST_T)             :: COPY
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(META_PAIR_T), POINTER :: P
+
+      NULLIFY(COPY%HEAD)
+      NULLIFY(COPY%TAIL)
+      COPY%N = 0
+      IF(LIST%N .EQ. 0) RETURN
+
+      ! Deep copy list
+      P => LIST%HEAD
+      DO
+        CALL META_LIST_APPEND_M(COPY, P)
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
+
+      END FUNCTION COPY_META_LIST
+
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_META_LIST(LIST)
 !     Prints meta pairs in list to screen
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      TYPE(META_LIST_T), INTENT(IN) :: LIST
 
+      TYPE(META_LIST_T), INTENT(IN) :: LIST
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T), POINTER :: P
 
       IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
@@ -84,16 +134,17 @@
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE META_LIST_APPEND_M(LIST, META)
-!     Append pair to list
+!     Append META_PAIR_T object to list
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
       TYPE(META_LIST_T), INTENT(INOUT) :: LIST
       TYPE(META_PAIR_T), INTENT(IN) :: META
-
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T), POINTER :: P
 
-      WRITE(0,*) "+++ APPENDING META ", META%ATTNAME
       ALLOCATE(P)
 
       ! Empty list?
@@ -115,12 +166,19 @@
 
       END SUBROUTINE META_LIST_APPEND_M
 
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE META_LIST_APPEND_R(LIST, ATTNAME, RVAL)
+!     Append real value meta pair to list
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       TYPE(META_LIST_T), INTENT(INOUT) :: LIST
       CHARACTER(*), INTENT(IN)         :: ATTNAME
       REAL, INTENT(IN)                 :: RVAL
-
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T) :: META
 
       META%ATTNAME = ATTNAME
@@ -130,12 +188,19 @@
 
       END SUBROUTINE META_LIST_APPEND_R
 
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE META_LIST_APPEND_I(LIST, ATTNAME, IVAL)
+!     Append integer value meta pair to list
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       TYPE(META_LIST_T), INTENT(INOUT) :: LIST
       CHARACTER(*), INTENT(IN)         :: ATTNAME
       INTEGER, INTENT(IN)              :: IVAL
-
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T) :: META
 
       META%ATTNAME = ATTNAME
@@ -145,11 +210,18 @@
 
       END SUBROUTINE META_LIST_APPEND_I
 
+
+!/ ------------------------------------------------------------------- /
       SUBROUTINE META_LIST_APPEND_C(LIST, ATTNAME, SVAL)
+!     Append character value meta pair to list
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       TYPE(META_LIST_T), INTENT(INOUT) :: LIST
       CHARACTER(*), INTENT(IN)         :: ATTNAME, SVAL
-
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
       TYPE(META_PAIR_T) :: META
 
       META%ATTNAME = ATTNAME
@@ -163,10 +235,11 @@
 
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE META_FIND_ATTR(LIST, ATTN, META, ERR)
+      SUBROUTINE META_LIST_FIND_ATTR(LIST, ATTN, META, ERR)
 !     Find (first) entry in list with matching attname
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       TYPE(META_LIST_T), INTENT(IN)           :: LIST
       CHARACTER(*), INTENT(IN)                :: ATTN
       TYPE(META_PAIR_T), POINTER, INTENT(OUT) :: META
@@ -182,7 +255,7 @@
 
       META => LIST%HEAD
 
-      DO !WHILE(ASSOCIATED(META%NEXT))
+      DO 
         IF(TRIM(META%ATTNAME) == TRIM(ATTN)) RETURN
         IF(.NOT. ASSOCIATED(META%NEXT)) EXIT
         META => META%NEXT
@@ -192,7 +265,44 @@
       NULLIFY(META)
       ERR = 2
 
-      END SUBROUTINE META_FIND_ATTR
+      END SUBROUTINE META_LIST_FIND_ATTR
 
 
+!/ ------------------------------------------------------------------- /
+      FUNCTION META_LIST_HAS_ATTR(LIST, ATTN) RESULT(FOUND)
+!     Tests whether list conatins an entry with specified attname 
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+
+      TYPE(META_LIST_T), INTENT(IN)           :: LIST
+      CHARACTER(*), INTENT(IN)                :: ATTN
+      LOGICAL                                 :: FOUND
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(META_PAIR_T), POINTER :: P
+
+      FOUND = .FALSE.
+
+      ! Empty list?
+      IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
+        RETURN
+      ENDIF
+
+      P => LIST%HEAD
+
+      DO
+        IF(TRIM(P%ATTNAME) == TRIM(ATTN)) THEN
+          FOUND = .TRUE.
+          RETURN
+        ENDIF
+
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
+
+      END FUNCTION META_LIST_HAS_ATTR
+
+!/ ------------------------------------------------------------------- /
       END MODULE W3METAMD
+!/ ------------------------------------------------------------------- /

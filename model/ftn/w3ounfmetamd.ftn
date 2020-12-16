@@ -1337,7 +1337,6 @@
 !/
       CHARACTER(LEN=128) :: BUF
       INTEGER            :: I, IERR
-      TYPE(META_PAIR_T), POINTER  :: META
 
       IF(CRS_META%N .NE. 0) THEN
         WRITE(NDSE,*) "WARNING : Duplicate CRS section, Line: ", ILINE
@@ -1357,8 +1356,7 @@
       CALL READ_FREEFORM_META_LIST(NDMI, ILINE, CRS_META)
 
       ! Check that "grid_mapping_name" is defined
-      CALL META_FIND_ATTR(CRS_META, "grid_mapping_name", META, IERR)
-      IF(IERR .NE. 0) THEN
+      IF(.NOT.  META_LIST_HAS_ATTR(CRS_META, "grid_mapping_name")) THEN
         WRITE(NDSE, *) "ERROR: CRS section does not contain 'grid_mapping_name'"
         CALL EXTCDE(10)
       ENDIF
@@ -1461,7 +1459,7 @@
         CALL EXTCDE(1)
       ENDIF
 
-      META = GROUP(IFI)%FIELD(IFJ)%META(IFC)
+      META = META_DEEP_COPY(GROUP(IFI)%FIELD(IFJ)%META(IFC))
 
       ! For partitioned data, expand in the partition number:
       IF(IFI .EQ. 4) THEN
@@ -1554,10 +1552,9 @@
         ALLOCATE(PART_TMPL)
         P => PART_TMPL
       ENDIF
-      PRINT*,'ALLOCATED'
 
       ! Set template id and read templat strings from file:
-      P%TMPL = TRIM(BUF)
+      P%TMPL = TRIM(ID)
       ALLOCATE(P%PART_TEXT(0:NOSWLL))
       NULLIFY(P%NEXT)
       P%NP = 0
@@ -1644,6 +1641,7 @@
 !/
       CHARACTER(LEN=80) :: TMP
       INTEGER :: I, J
+      TYPE(META_PAIR_T), POINTER :: P
 
       CALL PARTNO_STRING_SUB(META%ENAME, IPART)
       CALL PARTNO_STRING_SUB(META%VARNM, IPART)
@@ -1652,10 +1650,17 @@
       CALL PARTNO_STRING_SUB(META%VARNG, IPART)
       CALL PARTNO_STRING_SUB(META%VARNC, IPART)
       CALL PARTNO_STRING_SUB(META%VARND, IPART)
-! TODO - Will likely need to do a deep copy of the EXTRA list otherwise
-!        we will change the original template values...
-!TODO      CALL PARTNO_STRING_SUB(META%EXTRA%ATTNAME, IPART)
-!TODO      CALL PARTNO_STRING_SUB(META%EXTRA%ATTVAL, IPART)
+      IF(META%EXTRA%N .GT. 0) THEN
+        P => META%EXTRA%HEAD
+        DO
+          CALL PARTNO_STRING_SUB(P%ATTNAME, IPART)
+          IF(P%TYPE .EQ. "c") THEN
+            CALL PARTNO_STRING_SUB(P%ATTVAL, IPART)
+          ENDIF
+          IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+          P => P%NEXT
+        ENDDO
+      ENDIF
 
       END SUBROUTINE ADD_PARTNO
 
@@ -2125,6 +2130,19 @@
 !TODO      WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
 
       END SUBROUTINE PRINT_META
+
+      FUNCTION META_DEEP_COPY(META) RESULT(COPY)
+      IMPLICIT NONE
+      TYPE(META_T), INTENT(IN) :: META
+      TYPE(META_T) :: COPY
+
+      ! Shallow copy first:
+      COPY = META
+
+      ! Now deep copy the EXTRA field (is pionter)
+      COPY%EXTRA = COPY_META_LIST(META%EXTRA)
+
+      END FUNCTION META_DEEP_COPY
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DEFAULT_META()
