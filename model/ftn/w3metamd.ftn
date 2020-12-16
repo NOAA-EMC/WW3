@@ -16,8 +16,8 @@
       END TYPE META_PAIR_T
 
       TYPE META_LIST_T
-        TYPE (META_PAIR_T), POINTER :: HEAD, TAIL
-        INTEGER                     :: N
+        TYPE (META_PAIR_T), POINTER :: HEAD => NULL(), TAIL => NULL()
+        INTEGER                     :: N = 0
       END TYPE META_LIST_T
 
 
@@ -29,21 +29,6 @@
       END INTERFACE META_LIST_APPEND
 
       CONTAINS
-
-!/ ------------------------------------------------------------------- /
-      FUNCTION NEW_META_LIST() RESULT(LIST)
-!     Creates a new, empty meta pair list.
-!/ ------------------------------------------------------------------- /
-
-      IMPLICIT NONE
-      TYPE(META_LIST_T) :: LIST
-      TYPE(META_PAIR_T) :: P
-
-      NULLIFY(LIST%HEAD)
-      NULLIFY(LIST%TAIL)
-      LIST%N = 0
-
-      END FUNCTION NEW_META_LIST
 
       
 !/ ------------------------------------------------------------------- /
@@ -108,10 +93,12 @@
 
       TYPE(META_PAIR_T), POINTER :: P
 
+      WRITE(0,*) "+++ APPENDING META ", META%ATTNAME
       ALLOCATE(P)
 
       ! Empty list?
-      IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
+      IF(LIST%N .EQ. 0) THEN
+      !IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
         LIST%HEAD => P
       ELSE
         LIST%TAIL%NEXT => P

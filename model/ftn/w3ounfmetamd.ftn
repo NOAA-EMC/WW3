@@ -141,17 +141,6 @@
       ! String token used to merge in partition number:
       CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
 
-!      ! Values to represent "unset" data:
-!      CHARACTER(LEN=*), PARAMETER :: UNSETC = "unset"
-!      REAL, PARAMETER             :: UNSETR = HUGE(1.0)
-!
-!      ! Type for storing a user defined metadata pair:
-!      TYPE META_PAIR_T
-!        CHARACTER(LEN=64)  :: ATTNAME = UNSETC
-!        CHARACTER(LEN=120) :: ATTVAL = UNSETC
-!        CHARACTER          :: TYPE = 'c'    ! c,i,f/r
-!      END TYPE META_PAIR_T
-
       ! Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
         REAL :: FSC, VMIN, VMAX = UNSETR
@@ -160,7 +149,7 @@
         CHARACTER(LEN=80)  :: VARNM = UNSETC, VARNL = UNSETC
         CHARACTER(LEN=120) :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
         CHARACTER(LEN=512) :: VARNC = UNSETC
-        TYPE(META_PAIR_T) :: EXTRA
+        TYPE(META_LIST_T) :: EXTRA
 
         ! For updating meta only:
         INTEGER :: IFI = 0, IFJ = 0, IFC = 1
@@ -875,13 +864,12 @@
 !/ Local parameters
 !
       CHARACTER(LEN=256) :: BUF
-      CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
+      CHARACTER(LEN=128) :: ATTN, ATTV, TMP
       CHARACTER(LEN=16)  :: ATT_TYPE!, TEST
       INTEGER            :: I, IERR
       REAL               :: R
       LOGICAL            :: EOF, NEW
-!
-      EXTRA = ''
+      TYPE(META_PAIR_T)  :: EXTRA
 
       ! Keep reading lines until we hit EOF or anoter META keyword
       DO
@@ -955,12 +943,6 @@
 
           ! Default case will be the "extra" meta data variable
           CASE DEFAULT
-             ! Check EXTRA attribute not already set
-             IF(EXTRA /= '') THEN
-               WRITE(NDSE, 7001) FN_META, ILINE, TRIM(BUF)
-               CALL EXTCDE(10)
-             ENDIF
-
              TMP = ATTV
              CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
@@ -969,12 +951,10 @@
                  TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
              ENDIF
 
-             ! Set "extra" data
-             META%EXTRA%ATTNAME = TRIM(attn)
-             META%EXTRA%ATTVAL = TRIM(attv)
-             META%EXTRA%TYPE = TRIM(att_type)
-
-             EXTRA = ATTN
+             EXTRA%ATTNAME = TRIM(attn)
+             EXTRA%ATTVAL = TRIM(attv)
+             EXTRA%TYPE = TRIM(att_type)
+             CALL META_LIST_APPEND(META%EXTRA, EXTRA)
 
         END SELECT
 
@@ -990,12 +970,6 @@
  7000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     SYNTAX ERROR IN METADATA FILE ' /                &
                '     SHOULD BE "attr_name = attr_value" ' /           &
-               '     FILENAME = ', A /                                &
-               '     LINE NO =', I5 /                                 &
-               '  => ', A /)
-!
- 7001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
-               '     "EXTRA" ATTRIBUTE ALREADY SET FOR VARIABLE' /    &
                '     FILENAME = ', A /                                &
                '     LINE NO =', I5 /                                 &
                '  => ', A /)
@@ -1157,7 +1131,7 @@
 !/ Local parameters
 !/
       CHARACTER(LEN=256) :: BUF
-      CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
+      CHARACTER(LEN=128) :: ATTN, ATTV, TMP
       CHARACTER(LEN=16)  :: ATT_TYPE
       INTEGER            :: I, IERR
       REAL               :: R
@@ -1267,7 +1241,7 @@
 !/ Local parameters
 !/
       CHARACTER(LEN=256) :: BUF
-      CHARACTER(LEN=128) :: ATTN, ATTV, TMP, EXTRA
+      CHARACTER(LEN=128) :: ATTN, ATTV, TMP
       CHARACTER(LEN=16)  :: ATT_TYPE
       INTEGER            :: I, IERR
       REAL               :: R
@@ -1678,8 +1652,10 @@
       CALL PARTNO_STRING_SUB(META%VARNG, IPART)
       CALL PARTNO_STRING_SUB(META%VARNC, IPART)
       CALL PARTNO_STRING_SUB(META%VARND, IPART)
-      CALL PARTNO_STRING_SUB(META%EXTRA%ATTNAME, IPART)
-      CALL PARTNO_STRING_SUB(META%EXTRA%ATTVAL, IPART)
+! TODO - Will likely need to do a deep copy of the EXTRA list otherwise
+!        we will change the original template values...
+!TODO      CALL PARTNO_STRING_SUB(META%EXTRA%ATTNAME, IPART)
+!TODO      CALL PARTNO_STRING_SUB(META%EXTRA%ATTVAL, IPART)
 
       END SUBROUTINE ADD_PARTNO
 
@@ -1896,30 +1872,9 @@
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
 
-      IF (META%EXTRA%ATTNAME .NE. '' .AND.                           &
-            META%EXTRA%ATTNAME .NE. UNSETC) THEN
-
-        SELECT CASE(META%EXTRA%TYPE)
-
-          CASE('i')
-            READ(META%EXTRA%ATTVAL, *) IVAL
-            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, IVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE('r', 'f')
-            READ(META%EXTRA%ATTVAL, *) RVAL
-            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME, RVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE('c')
-            ERR = NF90_PUT_ATT(NCID, VARID, META%EXTRA%ATTNAME,    &
-                    META%EXTRA%ATTVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE DEFAULT
-            WRITE(1000,*) META%EXTRA%TYPE
-            CALL EXTCDE(10)
-        END SELECT
+      IF (META%EXTRA%N .GT. 0) THEN
+        CALL WRITE_FREEFORM_META_LIST(NCID, VARID, META%EXTRA, ERR)
+        IF(ERR /= NF90_NOERR) RETURN
       ENDIF
 
       RETURN
@@ -2166,8 +2121,8 @@
       WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
       WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
       WRITE(*,"(A20,':')") "Extra metadata"
-      WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
-      WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
+!TODO      WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
+!TODO      WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
 
       END SUBROUTINE PRINT_META
 
