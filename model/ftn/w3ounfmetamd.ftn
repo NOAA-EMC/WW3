@@ -6,13 +6,15 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         16-Dec-2020 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
 !/                  metadata for directional fields.
-!/    04-Dec-2020 : Added user partition templates      ( version 7.12 )
+!/    16-Dec-2020 : Added user partition templates      ( version 7.12 )
+!/                  and coordinate reference system. 
+!/                  Freeform meta data uses linked list.
 !/
 !  1. Purpose :
 !
@@ -187,10 +189,10 @@
 
       TYPE(PART_TMPL_T), POINTER :: PART_TMPL
 
-
       INTEGER            :: NCVARTYPE   ! netCDF variable type
       CHARACTER(LEN=30)  :: DIRCOM      ! Direction convention comment
       CHARACTER(LEN=128) :: PARTCOM     ! Partitioning method comment
+      CHARACTER(LEN=15)  :: SNAMEP(5)   ! Part. standard name templates
 
       LOGICAL, PRIVATE   :: VECTOR      ! Vector or dir/mag for dir fields?
 
@@ -248,25 +250,35 @@
 !/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
 !/RTD        DIRCOM = 'Rotated Pole Grid North'
 !/RTD      ENDIF
-      !  Set partitioning method comment:
-      IF ( PTMETH .EQ. 1 ) THEN
-         PARTCOM = "Wind sea and swells defined using topographic " //  &
-                   "partitions and partition wave-age cut-off "     //  &
-                   "(WWIII default scheme)"
-      ELSE IF ( PTMETH .EQ. 2 ) THEN
-         PARTCOM = "Wind sea and swells defined using topographic " //  &
-                   "partitions and spectral wave-age cut-off"
-      ELSE IF ( PTMETH .EQ. 3 ) THEN
-         PARTCOM = "Wave components defined using topographic "     //  &
-                   "partitions only"
-      ELSE IF ( PTMETH .EQ. 4 ) THEN
-         PARTCOM = "Wind sea and swell defined using spectral "     //  &
-                   "wave-age cut-off"
-      ELSE IF ( PTMETH .EQ. 5 ) THEN
-         WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //  &
-                   '"Hz spectral frequency cutoff")') PTFCUT
+
+      !  Set partitioning method comment and standard name templates:
+      IF( PTMETH .LE. 3 ) THEN
+        SNAMEP(:) = (/ 'wind           ', 'primary_swell  ',            &
+                       'secondary_swell', 'tertiary_swell ',            &
+                       'swell          ' /)
       ELSE
-         WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
+        SNAMEP(1:2) = (/ 'wind           ', 'swell          ' /)
+        SNAMEP(3:5) = ''
+      ENDIF
+
+      IF ( PTMETH .EQ. 1 ) THEN
+        PARTCOM = "Wind sea and swells defined using topographic " //   &
+                  "partitions and partition wave-age cut-off "     //   &
+                  "(WWIII default scheme)"
+      ELSE IF ( PTMETH .EQ. 2 ) THEN
+        PARTCOM = "Wind sea and swells defined using topographic " //   &
+                  "partitions and spectral wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 3 ) THEN
+        PARTCOM = "Wave components defined using topographic "     //   &
+                  "partitions only"
+      ELSE IF ( PTMETH .EQ. 4 ) THEN
+        PARTCOM = "Wind sea and swell defined using spectral "     //   &
+                  "wave-age cut-off"
+      ELSE IF ( PTMETH .EQ. 5 ) THEN
+        WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //   &
+                  '"Hz spectral frequency cutoff")') PTFCUT
+      ELSE
+        WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
       ENDIF
 
       ! 3. Set the default values for the OUNF netCDF meta data.
@@ -281,70 +293,7 @@
          CALL READ_META()
       ENDIF
 
-      CALL ADD_PART_TMPL("string1")
-      CALL ADD_PART_TMPL("string2")
-      CALL ADD_PART_TMPL("chris")
-
-      CALL PRINT_PART_TMPL()
-
       END SUBROUTINE INIT_META
-
-
-      SUBROUTINE ADD_PART_TMPL(TMPL_STR)
-
-      IMPLICIT NONE
-      CHARACTER(*), INTENT(IN) :: TMPL_STR
-
-      TYPE(PART_TMPL_T), POINTER :: P
-
-      IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
-        ! New list
-        ALLOCATE(PART_TMPL)
-        P => PART_TMPL
-      ELSE
-        ! Add to end of list
-        P => PART_TMPL
-        DO WHILE(ASSOCIATED(P%NEXT))
-          P => P%NEXT
-        ENDDO
-        ALLOCATE(P%NEXT)
-        P => P%NEXT
-      ENDIF
-
-      ! Set data
-      P%TMPL = TMPL_STR
-      ALLOCATE(P%PART_TEXT(0:NOSWLL))
-      NULLIFY(P%NEXT)
-
-      P%PART_TEXT(0) = 'Wind sea'
-      P%PART_TEXT(1) = 'Swell 1'
-      P%PART_TEXT(2) = 'Swell 2'
-      P%NP = 3
-
-      END SUBROUTINE ADD_PART_TMPL
-
-      SUBROUTINE PRINT_PART_TMPL()
-      IMPLICIT NONE
-      TYPE(PART_TMPL_T), POINTER :: P
-      INTEGER :: I
-
-      PRINT*,'=============='
-      IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
-        PRINT*,'Empty partition list'
-        RETURN
-      ENDIF
-
-      P => PART_TMPL
-      DO
-        PRINT*,P%TMPL
-        DO I=0,P%NP - 1
-          PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
-        ENDDO
-        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-        P => P%NEXT
-      ENDDO
-      PRINT*,'=============='
-      END SUBROUTINE PRINT_PART_TMPL
 !
 !/ ------------------------------------------------------------------- /
       SUBROUTINE TEARDOWN_META()
@@ -1082,120 +1031,6 @@
 
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE READ_FREEFORM_META(NDMI, ILINE, AMETA, N, MAXN)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           C. Bunney               |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Nov-2020 |
-!/                  +-----------------------------------+
-!/
-!/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Reads in freeform attribute name/value pairs.
-!
-!  2. Method:
-!
-!     Keeps looping over input lines in file until next section
-!     or EOF is found. Splits meta pairs on the = character.
-!
-!     Freeform metadata pairs can also provide a variable type
-!     ("c", "i", or "r"; for character, int or real respectively).
-!     String values with spaces should be quoted.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI     Char.   I  Unit number of metadata input file
-!       ILINE     Int. I/O  Current line number in file
-!       AMETA    IArr. I/O  Array of meta pairs
-!       N         Int.  O   Number of values read
-!       MAXN      Int.  I   Size of AMETA array.
-!     ----------------------------------------------------------------
-!
-!/ ------------------------------------------------------------------- /
-      IMPLICIT NONE
-      INTEGER, INTENT(IN)               :: NDMI
-      INTEGER, INTENT(INOUT)            :: ILINE
-      TYPE(META_PAIR_T), INTENT(INOUT)  :: AMETA(MAXN)
-      INTEGER, INTENT(OUT)              :: N
-      INTEGER, INTENT(IN)               :: MAXN
-
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      CHARACTER(LEN=256) :: BUF
-      CHARACTER(LEN=128) :: ATTN, ATTV, TMP
-      CHARACTER(LEN=16)  :: ATT_TYPE
-      INTEGER            :: I, IERR
-      REAL               :: R
-      LOGICAL            :: EOF, NEW
-!
-      N = 0
-
-      ! Keep reading lines until we hit EOF or anoter META keyword
-      DO
-        CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
-        IF(EOF) THEN
-          BACKSPACE(NDMI)
-          RETURN
-        ENDIF
-
-        IF(NEW) THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
-          ILINE = ILINE - 1
-          BACKSPACE(NDMI)
-          EXIT
-        ENDIF
-
-        ! Split attr name/value pair
-        I = INDEX(BUF, "=")
-        IF( I .LT. 1 ) THEN
-          WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
-          CALL EXTCDE(10)
-        ENDIF
-
-        ATTN = ADJUSTL(BUF(1:I-1))
-        TMP = ADJUSTL(BUF(I+1:))
-
-        ! Get type, if set:
-        CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
-
-        IF(DEBUG) THEN
-          WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[FREEFORM meta]', &
-            TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
-        ENDIF
-
-        N = N + 1
-        IF(N .GT. MAXN) THEN
-           WRITE(NDSE, *) "MAX NUMBER OF ENTRIES EXCEEDED FOR SECTION"
-           WRITE(NDSE, *) "LINE: ", ILINE
-           WRITE(NDSE, *) "MAX: ", MAXN
-           STOP
-        ENDIF
-
-        AMETA(N)%ATTNAME = TRIM(ATTN)
-        AMETA(N)%ATTVAL = TRIM(ATTV)
-        AMETA(N)%TYPE = TRIM(ATT_TYPE)
-
-      ENDDO
-!
- 9000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
-               '     SYNTAX ERROR IN METADATA FILE ' /                &
-               '     SHOULD BE "attr_name = attr_value" ' /           &
-               '     FILENAME = ', A /                                &
-               '     LINE NO =', I5 /                                 &
-               '  => ', A /)
-!
-      END SUBROUTINE READ_FREEFORM_META
-
-!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_FREEFORM_META_LIST(NDMI, ILINE, METALIST)
 !/
 !/                  +-----------------------------------+
@@ -1203,10 +1038,10 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Nov-2020 |
+!/                  | Last update :         16-Dec-2020 |
 !/                  +-----------------------------------+
 !/
-!/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/    16-Dec-2020 : Creation                            ( version 7.12 )
 !/
 !
 !  1. Purpose :
@@ -1591,14 +1426,60 @@
       ENDDO
 
       RETURN
-
+!
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     ERROR READING PART HEADER - MISSING TEMPLATE ID?'/ &
                '     FILENAME = ', A /                                &
                '     LINE NO =', I5 /                                 &
                '  => ', A /)
-
+!
       END SUBROUTINE READ_PART_TMPL
+
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE PRINT_PART_TMPL()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Dec-2020 |
+!/                  +-----------------------------------+
+!/
+!/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Prints the patition templates to screen (for debug use).
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(PART_TMPL_T), POINTER :: P
+      INTEGER :: I
+
+      PRINT*,'=============='
+      IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
+        PRINT*,'Empty partition list'
+        RETURN
+      ENDIF
+
+      P => PART_TMPL
+      DO
+        PRINT*,P%TMPL
+        DO I=0,P%NP - 1
+          PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
+        ENDDO
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
+      PRINT*,'=============='
+      END SUBROUTINE PRINT_PART_TMPL
+
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
@@ -1633,6 +1514,7 @@
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
+
       TYPE(META_T), INTENT(INOUT) :: META
       INTEGER, INTENT(IN) :: IPART
 !/
@@ -1706,16 +1588,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER :: I, J, ISN, IPM
-      CHARACTER(LEN=15) :: SNAMEP(5,5)
+      INTEGER :: I, J, ISN
       TYPE(PART_TMPL_T), POINTER :: P
-
-      !Assign standard name options for the various partition methods
-      SNAMEP(1,:) = (/'wind           ','primary_swell  ','secondary_swell','tertiary_swell ','swell          '/)
-      SNAMEP(2,:) = (/'wind           ','primary_swell  ','secondary_swell','tertiary_swell ','swell          '/)
-      SNAMEP(3,:) = (/'primary_swell  ','secondary_swell','tertiary_swell ','swell          ','swell          '/)
-      SNAMEP(4,:) = (/'wind           ','swell          ','               ','               ','               '/)
-      SNAMEP(5,:) = (/'wind           ','swell          ','               ','               ','               '/)
 
       ! Set partition number (default)
       I = INDEX(INSTR, "<IPART>")
@@ -1729,14 +1603,12 @@
       J = I + LEN_TRIM("<SPART>")
       IF(I .GT. 0) THEN
         ISN = IPART + 1
-        IPM = PTMETH
-        IF(IPM .GT. 5) IPM = 1 !Unknown partition method defaults to standard convention
-        IF(IPM .LE. 3) THEN
+        IF(PTMETH .LE. 3) THEN
           IF (ISN .GT. 5) ISN = 5
         ELSE
           IF (ISN .GT. 2) ISN = 2
         ENDIF
-        INSTR = INSTR(1:I-1) // TRIM(SNAMEP(IPM,ISN)) // INSTR(J:LEN(INSTR))
+        INSTR = INSTR(1:I-1) // TRIM(SNAMEP(ISN)) // INSTR(J:LEN(INSTR))
       ENDIF
 
       ! Merge in user defined partition templates (if any):
@@ -1927,82 +1799,6 @@
       CALL WRITE_FREEFORM_META_LIST(NCID, NF90_GLOBAL, GLOBAL_META, ERR)
       END SUBROUTINE WRITE_GLOBAL_META
 
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE WRITE_FREEFORM_META(NCID, VARID, AMETA, N, ERR)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           C. Bunney               |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Dec-2020 |
-!/                  +-----------------------------------+
-!/
-!/    04-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Writes the freeform user meta-data entries for a NetCDF variable
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NCID    Int.  I/O  NetCDF file ID
-!       VARID   Int.  I/O  NetCDF file ID
-!       AMETA   Arr.  I    Array of attributes to write
-!       N       Int.  I    Size of array
-!       ERR     Int.  O    Error value
-!     ----------------------------------------------------------------
-!
-!/ ------------------------------------------------------------------- /
-      IMPLICIT NONE
-
-      INTEGER, INTENT(IN) :: NCID, VARID, N
-      TYPE(META_PAIR_T), INTENT(IN) :: AMETA(:)
-      INTEGER, INTENT(OUT) :: ERR
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      INTEGER :: I, IVAL
-      REAL    :: RVAL
-
-         ! Loop over global metadata pairs:
-      DO I=1,N
-
-        IF (AMETA(I)%ATTNAME .EQ. '' .OR.                      &
-              AMETA(I)%ATTNAME .EQ. UNSETC) CYCLE
-
-        SELECT CASE(AMETA(I)%TYPE)
-
-          CASE('i')
-            READ(AMETA(I)%ATTVAL, *) IVAL
-            ERR = NF90_PUT_ATT(NCID, VARID, AMETA(I)%ATTNAME, IVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE('r', 'f')
-            READ(AMETA(I)%ATTVAL, *) RVAL
-            ERR = NF90_PUT_ATT(NCID, VARID, AMETA(I)%ATTNAME, RVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE('c')
-            ERR = NF90_PUT_ATT(NCID, VARID, AMETA(I)%ATTNAME,    &
-                    AMETA(I)%ATTVAL)
-            IF(ERR /= NF90_NOERR) RETURN
-
-          CASE DEFAULT
-            WRITE(1000,*) AMETA(I)%TYPE
-            CALL EXTCDE(10)
-        END SELECT
-      ENDDO
-!
-  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
-                '     WRITE_FREEFORM_META: Unknown attribute'          / &
-                '     data type: ', A1         / )
-!
-      END SUBROUTINE WRITE_FREEFORM_META
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_FREEFORM_META_LIST(NCID, VARID, METALIST, ERR)
@@ -2012,10 +1808,10 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Dec-2020 |
+!/                  | Last update :         16-Dec-2020 |
 !/                  +-----------------------------------+
 !/
-!/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/    16-Dec-2020 : Creation                            ( version 7.12 )
 !/
 !
 !  1. Purpose :
