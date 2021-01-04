@@ -13,7 +13,7 @@
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
 !/                  metadata for directional fields.
 !/    16-Dec-2020 : Added user partition templates      ( version 7.12 )
-!/                  and coordinate reference system. 
+!/                  and coordinate reference system.
 !/                  Freeform meta data uses linked list.
 !/
 !  1. Purpose :
@@ -124,8 +124,8 @@
 !/
       USE NETCDF
       USE CONSTANTS, ONLY: TPIINV
-      USE W3GDATMD, ONLY: SIG, NK
-!/RTD      USE W3GDATMD, ONLY : FLAGUNR
+      USE W3GDATMD, ONLY: SIG, NK, GTYPE, UNGTYPE
+!/RTD      USE W3GDATMD, ONLY : FLAGUNR, POLAT, POLON
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
                           NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
@@ -175,7 +175,7 @@
       TYPE(META_LIST_T) :: GLOBAL_META
 
       ! Storage for coordinate reference system (CRS) metadata:
-      CHARACTER(LEN=128) :: CRS_NAME
+      CHARACTER(LEN=128) :: CRS_NAME = ''
       TYPE(META_LIST_T) :: CRS_META
 
       ! Type for storing partitioned parameter template strings.
@@ -195,6 +195,7 @@
       CHARACTER(LEN=15)  :: SNAMEP(5)   ! Part. standard name templates
 
       LOGICAL, PRIVATE   :: VECTOR      ! Vector or dir/mag for dir fields?
+      LOGICAL            :: FLRTD = .FALSE.
 
       CONTAINS
 
@@ -230,6 +231,7 @@
 
       VECTOR = .TRUE.
       IF(PRESENT(VEC)) VECTOR = VEC
+!/RTD      FLRTD = .TRUE.
 
       ! 1. Allocate nested GROUP, FIELD structure:
       ALLOCATE(GROUP(NOGRP))
@@ -253,11 +255,14 @@
 
       !  Set partitioning method comment and standard name templates:
       IF( PTMETH .LE. 3 ) THEN
-        SNAMEP(:) = (/ 'wind           ', 'primary_swell  ',            &
-                       'secondary_swell', 'tertiary_swell ',            &
-                       'swell          ' /)
+        SNAMEP(1) = 'wind'
+        SNAMEP(2) = 'primary_swell'
+        SNAMEP(3) = 'secondary_swell'
+        SNAMEP(4) = 'tertiary_swell'
+        SNAMEP(5) = 'swell'
       ELSE
-        SNAMEP(1:2) = (/ 'wind           ', 'swell          ' /)
+        SNAMEP(1) = 'wind'
+        SNAMEP(2) = 'swell'
         SNAMEP(3:5) = ''
       ENDIF
 
@@ -1211,21 +1216,21 @@
       IMPLICIT NONE
 
       TYPE(META_PAIR_T) :: META
-      
-!      IF(RTD) THEN
-!        ! Rotated pole location
-!      ELSE IF(UNSTR) THEN
+
+      IF(FLRTD) THEN
+!/RTD         ! Rotated pole location
+!/RTD        CRS_NAME = 'rotated_pole'
+!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
+!/RTD            'grid_mapping_name', 'rotated_latitude_longitude')
+!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
+!/RTD            'grid_north_pole_latitude', POLAT)
+!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
+!/RTD            'grid_north_pole_longitude', POLON)
+      ELSE IF(GTYPE .EQ. UNGTYPE) THEN
 !        ! What do we want for unstructure grids?
-!      ELSE
+      ELSE
 !        ! Normal cartesian or lat/lon grid...no default?
-!      ENDIF
-
-
-      CRS_NAME = 'rotated_pole'
-      CALL META_LIST_APPEND(CRS_META, 'grid_mapping_name',             &
-                            'rotated_latitude_longitude')
-      CALL META_LIST_APPEND(CRS_META, 'grid_north_pole_latitude', 37.5)
-      CALL META_LIST_APPEND(CRS_META, 'grid_north_pole_longitude', 177.5)
+      ENDIF
 
       END SUBROUTINE DEFAULT_CRS_META
 
@@ -1591,14 +1596,14 @@
       INTEGER :: I, J, ISN
       TYPE(PART_TMPL_T), POINTER :: P
 
-      ! Set partition number (default)
+      ! Set partition number (built-in IPART template)
       I = INDEX(INSTR, "<IPART>")
       J = I + LEN_TRIM("<IPART>")
       IF(I .GT. 0) THEN
         WRITE(INSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
       ENDIF
 
-      ! Set standard name string (default)
+      ! Set standard name string (built-in SPART template)
       I = INDEX(INSTR, "<SPART>")
       J = I + LEN_TRIM("<SPART>")
       IF(I .GT. 0) THEN
@@ -1847,7 +1852,7 @@
       P => METALIST%HEAD
 
          ! Loop over global metadata pairs:
-      DO 
+      DO
 
         IF (P%ATTNAME .EQ. '' .OR.                      &
               P%ATTNAME .EQ. UNSETC) CYCLE
@@ -3296,7 +3301,7 @@
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 360
-! IFI=8, IFJ=4, MCD 
+! IFI=8, IFJ=4, MCD
       META => GROUP(8)%FIELD(4)%META
       META(1)%FSC    = 0.1
       META(1)%UNITS  = 'degree'

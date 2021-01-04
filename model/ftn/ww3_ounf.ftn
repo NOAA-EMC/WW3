@@ -2291,13 +2291,14 @@
                 CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
                 CALL CHECK_ERR(IRET) ! CB
 !
+             !! CHRISB: Commenting out below - will be handled by w3oundmeta module
 !/RTD
-!/RTD                IF ( RTDL ) THEN
-!/RTD                  ! Add grid mapping attribute for rotated pole grids:
-!/RTD                  IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
-!/RTD                                    'rotated_pole')
-!/RTD                  CALL CHECK_ERR(IRET)
-!/RTD                  END IF
+!/RTD        !        IF ( RTDL ) THEN
+!/RTD        !          ! Add grid mapping attribute for rotated pole grids:
+!/RTD        !          IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',    &
+!/RTD        !                            'rotated_pole')
+!/RTD        !          CALL CHECK_ERR(IRET)
+!/RTD        !          END IF
 !/RTD
               END DO
 !
@@ -2427,13 +2428,14 @@
                   CALL WRITE_META(NCID, VARID(IVAR), META(I), IRET) ! CB
                   CALL CHECK_ERR(IRET) ! CB
 !
+             !! CHRISB: Commenting out below - will be handled by w3oundmeta module
 !/RTD
-!/RTD                  IF ( RTDL ) THEN
-!/RTD                    ! Add grid mapping attribute for rotated pole grids:
-!/RTD                    IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',   &
-!/RTD                                      'rotated_pole')
-!/RTD                    CALL CHECK_ERR(IRET)
-!/RTD                    END IF
+!/RTD        !          IF ( RTDL ) THEN
+!/RTD        !            ! Add grid mapping attribute for rotated pole grids:
+!/RTD        !            IRET=NF90_PUT_ATT(NCID,VARID(IVAR),'grid_mapping',   &
+!/RTD        !                              'rotated_pole')
+!/RTD        !            CALL CHECK_ERR(IRET)
+!/RTD        !            END IF
 !/RTD
                 END DO
                 IRET = NF90_ENDDEF(NCID)
@@ -3289,11 +3291,13 @@
 !/RTD        ! TODO: FUTURE WW3_OUNF DEVELOPMENT WILL ALLOW USER TO DEFINE THE 
 !/RTD        ! COORDINATE REFERENCE SYSTEM - THIS WILL REQUIRE THE BELOW TO BE
 !/RTD        ! HANDLED DIFFERENTLY. C. Bunney.
-!/RTD        IRET=NF90_DEF_VAR(NCID, 'rotated_pole', NF90_CHAR, VARID(12))
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_latitude',POLAT)
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_longitude',POLON)
-!/RTD        IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_mapping_name',              &
-!/RTD                                   'rotated_latitude_longitude')
+
+             !! CHRISB: Commenting out below - will be handled by w3oundmeta module
+!/RTD        !!IRET=NF90_DEF_VAR(NCID, 'rotated_pole', NF90_CHAR, VARID(12))
+!/RTD        !!IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_latitude',POLAT)
+!/RTD        !!IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_north_pole_longitude',POLON)
+!/RTD        !!IRET=NF90_PUT_ATT(NCID, VARID(12), 'grid_mapping_name',              &
+!/RTD        !!                           'rotated_latitude_longitude')
 !/RTD      END IF
 !
       ELSE 
