@@ -176,7 +176,8 @@
 
       ! Storage for coordinate reference system (CRS) metadata:
       CHARACTER(LEN=128) :: CRS_NAME = ''
-      TYPE(META_LIST_T) :: CRS_META
+      TYPE(META_LIST_T)  :: CRS_META
+      LOGICAL            :: CRS_IS_DEFAULT = .FALSE. ! True if CRS set by this module
 
       ! Type for storing partitioned parameter template strings.
       ! Defined as a linked-list
@@ -1178,36 +1179,57 @@
       CHARACTER(LEN=128) :: BUF
       INTEGER            :: I, IERR
 
-      IF(CRS_META%N .NE. 0) THEN
-        WRITE(NDSE,*) "WARNING : Duplicate CRS section, Line: ", ILINE
-        WRITE(NDSE,*) "WARNING : THE WILL OVERRIDE PREVIOUS CRS DEFINITION"
-        CALL DEL_META_LIST(CRS_META)
-      ENDIF
-
       ! Re-read header line (we only want the second field)
       READ(NDMI, '(A)') BUF
       READ(BUF, *, IOSTAT=IERR) CRS_NAME, CRS_NAME
       IF(IERR /= 0 ) THEN
-        WRITE(NDSE,1000) FN_META, ILINE, BUF
+        WRITE(NDSE,1000) 
+        WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
         CALL EXTCDE(10)
       ENDIF
       IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[CRS id]', TRIM(CRS_NAME)
+
+      IF(CRS_META%N .NE. 0) THEN
+        IF(CRS_IS_DEFAULT) THEN
+          WRITE(NDSE,1001) TRIM(CRS_NAME)
+          CRS_IS_DEFAULT = .FALSE.
+        ELSE
+          WRITE(NDSE,1002) TRIM(CRS_NAME)
+        ENDIF
+        WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
+        CALL DEL_META_LIST(CRS_META)
+      ENDIF
 
       CALL READ_FREEFORM_META_LIST(NDMI, ILINE, CRS_META)
 
       ! Check that "grid_mapping_name" is defined
       IF(.NOT.  META_LIST_HAS_ATTR(CRS_META, "grid_mapping_name")) THEN
-        WRITE(NDSE, *) "ERROR: CRS section does not contain 'grid_mapping_name'"
+        WRITE(NDSE, 1003)
+        WRITE(NDSE, 2000) TRIM(FN_META), ILINE, ""
         CALL EXTCDE(10)
       ENDIF
 
       RETURN
 
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
-               '     ERROR READING CRS HEADER - MISSING CRS NAME?' /  &
-               '     FILENAME = ', A /                                &
-               '     LINE NO =', I5 /                                 &
+               '     ERROR READING CRS HEADER - MISSING CRS NAME?' )
+!
+ 1001 FORMAT (/' *** WARNING : USER DEFINED CRS SECTION WILL ' /      &
+               '     OVERIDE DEFAULT CRS DEFINITION FOR GRID' /       &
+               '     PREV CRS = ', A )
+!
+ 1002 FORMAT (/' *** WARNING : DUPLICATE CRS SECTION WILL ' /         &
+               '     OVERRIDE PREVIOUS CRS DEFINITION' /              &
+               '     PREV CRS = ', A )
+!
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
+               '     CRS SECTION DOES NOT CONTAIN MANDATORY '/        &
+               '     ATTRIBUTE "grid_mapping_name"' )
+
+ 2000 FORMAT ( '     FILENAME = ', A /                                &
+               '     LINE NO  = ', I5 /                               &
                '  => ', A /)
+!
 
       END SUBROUTINE READ_CRS_META
 
@@ -1226,6 +1248,7 @@
 !/RTD            'grid_north_pole_latitude', POLAT)
 !/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
 !/RTD            'grid_north_pole_longitude', POLON)
+!/RTD        CRS_IS_DEFAULT = .TRUE.
       ELSE IF(GTYPE .EQ. UNGTYPE) THEN
 !        ! What do we want for unstructure grids?
       ELSE
