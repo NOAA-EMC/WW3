@@ -3445,6 +3445,8 @@
       CALL WRITE_GLOBAL_META(NCID, IRET)
       CALL CHECK_ERR(IRET)
 
+      ! ChrisB: Below is the old way of writing Global attributes, this 
+      ! is now deprecated, but still supported at the moment...
       open(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
       IF (ICODE.EQ.0) THEN
         DO WHILE (ICODE.EQ.0)

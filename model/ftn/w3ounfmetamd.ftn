@@ -141,7 +141,8 @@
       CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
 
       ! String token used to merge in partition number:
-      CHARACTER(LEN=*), PARAMETER :: PART_TOKEN = "<IPART>"
+      CHARACTER(LEN=*), PARAMETER :: IPART_TOKEN = "<IPART>"
+      CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN = "<SPART>"
 
       ! Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
@@ -1620,15 +1621,15 @@
       TYPE(PART_TMPL_T), POINTER :: P
 
       ! Set partition number (built-in IPART template)
-      I = INDEX(INSTR, "<IPART>")
-      J = I + LEN_TRIM("<IPART>")
+      I = INDEX(INSTR, IPART_TOKEN)
+      J = I + LEN_TRIM(IPART_TOKEN)
       IF(I .GT. 0) THEN
         WRITE(INSTR,'(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
       ENDIF
 
       ! Set standard name string (built-in SPART template)
-      I = INDEX(INSTR, "<SPART>")
-      J = I + LEN_TRIM("<SPART>")
+      I = INDEX(INSTR, SPART_TOKEN)
+      J = I + LEN_TRIM(SPART_TOKEN)
       IF(I .GT. 0) THEN
         ISN = IPART + 1
         IF(PTMETH .LE. 3) THEN
@@ -2491,11 +2492,11 @@
       META => GROUP(4)%FIELD(1)%META
       META(1)%FSC    = 0.002
       META(1)%UNITS  = 'm'
-      META(1)%ENAME = '.phs<IPART>'
-      META(1)%VARNM = 'phs<IPART>'
-      META(1)%VARNL = 'wave significant height partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_significant_height'
-      META(1)%VARNG = 'significant_wave_height_partition_<IPART>'
+      META(1)%ENAME = '.phs'// IPART_TOKEN
+      META(1)%VARNM = 'phs'// IPART_TOKEN
+      META(1)%VARNL = 'wave significant height partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_significant_height'
+      META(1)%VARNG = 'significant_wave_height_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 64
@@ -2503,12 +2504,12 @@
       META => GROUP(4)%FIELD(2)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
-      META(1)%ENAME = '.ptp<IPART>'
-      META(1)%VARNM = 'ptp<IPART>'
-      META(1)%VARNL = 'peak period partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_period_at_variance' // &
+      META(1)%ENAME = '.ptp'// IPART_TOKEN
+      META(1)%VARNM = 'ptp'// IPART_TOKEN
+      META(1)%VARNL = 'peak period partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_period_at_variance' // &
                       '_spectral_density_maximum'
-      META(1)%VARNG = 'dominant_wave_period_partition_<IPART>'
+      META(1)%VARNG = 'dominant_wave_period_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 100
@@ -2516,12 +2517,12 @@
       META => GROUP(4)%FIELD(3)%META
       META(1)%FSC = 1.
       META(1)%UNITS = 'm'
-      META(1)%ENAME = '.plp<IPART>'
-      META(1)%VARNM = 'plp<IPART>'
-      META(1)%VARNL = 'peak wave length partition <IPART>'
-      !META(1)%VARNS = 'peak_wave_length_partition_<SPART>'
+      META(1)%ENAME = '.plp'// IPART_TOKEN
+      META(1)%VARNM = 'plp'// IPART_TOKEN
+      META(1)%VARNL = 'peak wave length partition '// IPART_TOKEN
+      !META(1)%VARNS = 'peak_wave_length_partition_'// SPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'peak_wave_length_partition_<IPART>'
+      META(1)%VARNG = 'peak_wave_length_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 10000
@@ -2529,11 +2530,11 @@
       META => GROUP(4)%FIELD(4)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
-      META(1)%ENAME =  '.pdir<IPART>'
-      META(1)%VARNM =  'pdir<IPART>'
-      META(1)%VARNL = 'wave mean direction partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_from_direction'
-      META(1)%VARNG = 'wave_from_direction_partition_<IPART>'
+      META(1)%ENAME =  '.pdir'// IPART_TOKEN
+      META(1)%VARNM =  'pdir'// IPART_TOKEN
+      META(1)%VARNL = 'wave mean direction partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_from_direction'
+      META(1)%VARNG = 'wave_from_direction_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
@@ -2542,11 +2543,11 @@
       META => GROUP(4)%FIELD(5)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
-      META(1)%ENAME = '.pspr<IPART>'
-      META(1)%VARNM = 'pspr<IPART>'
-      META(1)%VARNL = 'directional spread partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_diectional_spread'
-      META(1)%VARNG = 'directional_spread_partition_<IPART>'
+      META(1)%ENAME = '.pspr'// IPART_TOKEN
+      META(1)%VARNM = 'pspr'// IPART_TOKEN
+      META(1)%VARNL = 'directional spread partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_diectional_spread'
+      META(1)%VARNG = 'directional_spread_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 90
@@ -2554,12 +2555,12 @@
       META => GROUP(4)%FIELD(6)%META
       META(1)%FSC = 0.001
       META(1)%UNITS = '1'
-      META(1)%ENAME = '.pws<IPART>'
-      META(1)%VARNM = 'pws<IPART>'
-      META(1)%VARNL = 'wind sea fraction in partition <IPART>'
-      !META(1)%VARNS = 'wind_sea_fraction_in_partition_<IPART>'
+      META(1)%ENAME = '.pws'// IPART_TOKEN
+      META(1)%VARNM = 'pws'// IPART_TOKEN
+      META(1)%VARNL = 'wind sea fraction in partition '// IPART_TOKEN
+      !META(1)%VARNS = 'wind_sea_fraction_in_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'wind_sea_fraction_in_partition_<IPART>'
+      META(1)%VARNG = 'wind_sea_fraction_in_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 1
@@ -2567,12 +2568,12 @@
       META => GROUP(4)%FIELD(7)%META
       META(1)%FSC = 0.1
       META(1)%UNITS = 'degree'
-      META(1)%ENAME = '.pdp<IPART>'
-      META(1)%VARNM = 'pdp<IPART>'
-      META(1)%VARNL = 'peak direction partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_from_direction_at_variance' // &
+      META(1)%ENAME = '.pdp'// IPART_TOKEN
+      META(1)%VARNM = 'pdp'// IPART_TOKEN
+      META(1)%VARNL = 'peak direction partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_from_direction_at_variance' // &
                       '_spectral_density_maximum'
-      META(1)%VARNG = 'dominant_wave_from_direction_partition_<IPART>'
+      META(1)%VARNG = 'dominant_wave_from_direction_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VARND = DIRCOM
       META(1)%VMIN = 0
@@ -2581,12 +2582,12 @@
       META => GROUP(4)%FIELD(8)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = '1'
-      META(1)%ENAME = '.pqp<IPART>'
-      META(1)%VARNM = 'pqp<IPART>'
-      META(1)%VARNL = 'peakedness partition <IPART>'
-      !META(1)%VARNS = 'sea_surface_wave_peakedness_partition_<IPART>'
+      META(1)%ENAME = '.pqp'// IPART_TOKEN
+      META(1)%VARNM = 'pqp'// IPART_TOKEN
+      META(1)%VARNL = 'peakedness partition '// IPART_TOKEN
+      !META(1)%VARNS = 'sea_surface_wave_peakedness_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'wave_peakedness_partition_<IPART>'
+      META(1)%VARNG = 'wave_peakedness_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 320
@@ -2594,12 +2595,12 @@
       META => GROUP(4)%FIELD(9)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = '1'
-      META(1)%ENAME = '.ppe<IPART>'
-      META(1)%VARNM = 'ppe<IPART>'
-      META(1)%VARNL = 'peak enhancement factor partition <IPART>'
-      !META(1)%VARNS = 'wave_peak_enhancement_factor_partition_<IPART>'
+      META(1)%ENAME = '.ppe'// IPART_TOKEN
+      META(1)%VARNM = 'ppe'// IPART_TOKEN
+      META(1)%VARNL = 'peak enhancement factor partition '// IPART_TOKEN
+      !META(1)%VARNS = 'wave_peak_enhancement_factor_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'wave_peak_enhancement_factor_partition_<IPART>'
+      META(1)%VARNG = 'wave_peak_enhancement_factor_partition_'// IPART_TOKEN
       META(1)%VARNC = 'JONSWAP peak enhancement factor; ' // PARTCOM
       META(1)%VARND = ''
       META(1)%VMIN = 0
@@ -2608,12 +2609,12 @@
       META => GROUP(4)%FIELD(10)%META
       META(1)%FSC = 0.0001
       META(1)%UNITS = 's-1'
-      META(1)%ENAME =  '.pgw<IPART>'
-      META(1)%VARNM = 'pgw<IPART>'
-      META(1)%VARNL = 'frequency width partition <IPART>'
-      !META(1)%VARNS = 'Gaussian_frequency_spread_partition_<IPART>'
+      META(1)%ENAME =  '.pgw'// IPART_TOKEN
+      META(1)%VARNM = 'pgw'// IPART_TOKEN
+      META(1)%VARNL = 'frequency width partition '// IPART_TOKEN
+      !META(1)%VARNS = 'Gaussian_frequency_spread_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'Gaussian_frequency_spread_partition_<IPART>'
+      META(1)%VARNG = 'Gaussian_frequency_spread_partition_'// IPART_TOKEN
       META(1)%VARNC = 'Gaussian least-square fit to ' // &
           'omni-directional spectral partition; ' // PARTCOM
       META(1)%VMIN = 0
@@ -2622,12 +2623,12 @@
       META => GROUP(4)%FIELD(11)%META
       META(1)%FSC = 0.0001
       META(1)%UNITS = '1'
-      META(1)%ENAME = '.psw<IPART>'
-      META(1)%VARNM = 'psw<IPART>'
-      META(1)%VARNL = 'spectral width partition <IPART>'
-      !META(1)%VARNS = 'sea_surface_wave_spectral_width_partition_<IPART>'
+      META(1)%ENAME = '.psw'// IPART_TOKEN
+      META(1)%VARNM = 'psw'// IPART_TOKEN
+      META(1)%VARNL = 'spectral width partition '// IPART_TOKEN
+      !META(1)%VARNS = 'sea_surface_wave_spectral_width_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'wave_spectral_width_partition_<IPART>'
+      META(1)%VARNG = 'wave_spectral_width_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
@@ -2635,12 +2636,12 @@
       META => GROUP(4)%FIELD(12)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
-      META(1)%ENAME = '.ptm10c<IPART>'
-      META(1)%VARNM = 'ptm10c<IPART>'
-      META(1)%VARNL = 'mean period Tm10 partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_mean_period_from_variance' // &
+      META(1)%ENAME = '.ptm10c'// IPART_TOKEN
+      META(1)%VARNM = 'ptm10c'// IPART_TOKEN
+      META(1)%VARNL = 'mean period Tm10 partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
                       '_spectral_density_inverse_frequency_moment'
-      META(1)%VARNG = 'mean_wave_period_Tm10_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_Tm10_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 100
@@ -2648,12 +2649,12 @@
       META => GROUP(4)%FIELD(13)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
-      META(1)%ENAME = '.pt01c<IPART>'
-      META(1)%VARNM = 'pt01c<IPART>'
-      META(1)%VARNL = 'mean period T01 partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_mean_period_from_variance' // &
+      META(1)%ENAME = '.pt01c'// IPART_TOKEN
+      META(1)%VARNM = 'pt01c'// IPART_TOKEN
+      META(1)%VARNL = 'mean period T01 partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
                       '_spectral_density_first_frequency_moment'
-      META(1)%VARNG = 'mean_wave_period_T01_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_T01_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 100
@@ -2661,12 +2662,12 @@
       META => GROUP(4)%FIELD(14)%META
       META(1)%FSC = 0.01
       META(1)%UNITS = 's'
-      META(1)%ENAME = '.pt02c<IPART>'
-      META(1)%VARNM = 'pt02c<IPART>'
-      META(1)%VARNL = 'mean period T02 partition <IPART>'
-      META(1)%VARNS = 'sea_surface_<SPART>_wave_mean_period_from_variance' // &
+      META(1)%ENAME = '.pt02c'// IPART_TOKEN
+      META(1)%VARNM = 'pt02c'// IPART_TOKEN
+      META(1)%VARNL = 'mean period T02 partition '// IPART_TOKEN
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
                       '_spectral_density_second_frequency_moment'
-      META(1)%VARNG = 'mean_wave_period_T02_partition_<IPART>'
+      META(1)%VARNG = 'mean_wave_period_T02_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 100
@@ -2674,12 +2675,12 @@
       META => GROUP(4)%FIELD(15)%META
       META(1)%FSC = 0.02
       META(1)%UNITS = 'm2 s rad-1'
-      META(1)%ENAME = '.pep<IPART>'
-      META(1)%VARNM = 'pep<IPART>'
-      META(1)%VARNL = 'energy at peak frequency partition <IPART>'
-      !META(1)%VARNS = 'sea_surface_wave_energy_at_variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%ENAME = '.pep'// IPART_TOKEN
+      META(1)%VARNM = 'pep'// IPART_TOKEN
+      META(1)%VARNL = 'energy at peak frequency partition '// IPART_TOKEN
+      !META(1)%VARNS = 'sea_surface_wave_energy_at_variance_spectral_density_maximum_partition_'// IPART_TOKEN
       META(1)%VARNS = ''
-      META(1)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_<IPART>'
+      META(1)%VARNG = 'wave_energy_at_variance_spectral_density_maximum_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
       META(1)%VMAX = 200
