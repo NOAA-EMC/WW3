@@ -39,7 +39,8 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
-!/    06-Jan-2020 : Added forecast_period variable      ( version 7.12 )
+!/    06-Jan-2020 : Added forecast_period and           ( version 7.12 )
+!/                  forecast_reference_time variables.
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/
@@ -197,8 +198,8 @@
                                  IOUT, S3, IRET, HASNC4,               &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
-      INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8),        &
-                                 REFDATE(8)
+      INTEGER                 :: TOUT(2), TDUM(2), TREF(2),            &
+                                 STOPDATE(8), REFDATE(8)
 !
       INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
 !
@@ -242,9 +243,6 @@
 
 !/SMC      SMCGRD = .TRUE.
 
-
-! TODO: TESTING! FLGFCP will need to be set via input/namlist file
-      FLGFCP = .TRUE.
 !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -286,6 +284,7 @@
         READ(NML_FIELD%TIMESTRIDE, *)  DTREQ
         READ(NML_FIELD%TIMECOUNT, *)   NOUT
         READ(NML_FIELD%TIMESTART, *)   TOUT(1), TOUT(2)
+        READ(NML_FIELD%TIMEREF, *)     TREF(1), TREF(2)
 
 ! 4.2 Output fields
         FLDOUT = NML_FIELD%LIST
@@ -300,6 +299,7 @@
         TOGETHER = NML_FIELD%SAMEFILE
         VECTOR = NML_FIELD%VECTOR
         FILEPREFIX = NML_FILE%PREFIX
+        FLGFCP = NML_FIELD%FCPERIOD
         S3 = NML_FIELD%TIMESPLIT
         IF(SMCGRD) THEN
 !/SMC          SMCTYPE = NML_SMC%TYPE
@@ -330,6 +330,11 @@
 
 ! 4.1 Time setup
         READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+
+! 4.1.1 Forecast period and forecast reference time:
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) FLGFCP
+        IF( FLGFCP ) READ(NDSI,*,END=801,ERR=802) TREF
 
 ! 4.2 Output fields
         CALL W3READFLGRD ( NDSI, NDSO, SCREEN, NDSE, COMSTR, FLG1D,      &
@@ -374,6 +379,9 @@
 
       ! Keep track of original NCVARTYPE, as it may change
       NCVARTYPEI = NCVARTYPE
+
+      ! Get forecast reference time from TREF
+      CALL T2D(TREF, REFDATE, IERR)
 !
 
 ! 4.1 Time setup
@@ -393,7 +401,6 @@
       IDTIME(1:11) = IDDDAY
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
-
 
 ! 4.2 Output fields
       DO IFI=1, NOGRP
@@ -513,10 +520,6 @@
       IOUT = 0
       NCIDS(:,:,:) = 0
       WRITE (NDSO,970)
-
-      ! ChrisB: Set reference time to first time. TODO: This will be
-      ! configurable by the user and default to first time if not set.
-      CALL T2D(TOUT, REFDATE, IERR)
 
 ! 5.1 Loops on out_grd.ww3 to read the time and data
       DO
@@ -2236,6 +2239,13 @@
                 CALL CHECK_ERR(IRET)
               END IF
 
+              ! Write forecast reference time, if requested:
+              IF (FLGFCP) THEN
+                OUTJULDAY = TSUB(EPOCHDATE,REFDATE)
+                IRET = NF90_PUT_VAR(NCID, VARID(12), OUTJULDAY)
+                CALL CHECK_ERR(IRET)
+              ENDIF
+
               WRITE (NDSO,973) FNAMENC
 
 ! 2.5.4  Defines the field(LON,LAT,time) of the variable (i.e. ucur,vcur for current variable)
@@ -3382,6 +3392,7 @@
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','time')
       CALL CHECK_ERR(IRET)
+      ! CHRISB: TODO: Alternative units in seconds
       IRET=NF90_PUT_ATT(NCID,VARID(3),'units','days since 1990-01-01 00:00:00')
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'conventions', &
@@ -3391,7 +3402,7 @@
       IRET=NF90_PUT_ATT(NCID,VARID(3),'calendar',TRIM(CALTYPE))
       CALL CHECK_ERR(IRET)
 !
-! forecast period, if requested
+! forecast period and (forecast reference time), if requested
 !
       IF (FLGFCP) THEN
          IRET = NF90_DEF_VAR(NCID, 'forecast_period', NF90_DOUBLE,      &
@@ -3405,6 +3416,28 @@
          CALL CHECK_ERR(IRET)
          IRET = NF90_PUT_ATT(NCID, VARID(11), 'units', 's')
          CALL CHECK_ERR(IRET)
+
+         ! Forecast reference time is a scalar variable:
+         IRET = NF90_DEF_VAR(NCID, 'forecast_reference_time',           &
+            NF90_DOUBLE, varid=VARID(12))
+         CALL CHECK_ERR(IRET)
+
+         IRET = NF90_PUT_ATT(NCID, VARID(12), 'long_name',              &
+            'forecast reference time')
+         CALL CHECK_ERR(IRET)
+
+         IRET = NF90_PUT_ATT(NCID, VARID(12), 'standard_name',          &
+            'forecast_reference_time')
+         CALL CHECK_ERR(IRET)
+
+         ! CHRISB: TODO: Alternative units in seconds
+         IRET = NF90_PUT_ATT(NCID, VARID(12), 'units',                  &
+            'days since 1990-01-01 00:00:00')
+         CALL CHECK_ERR(IRET)
+
+         IRET = NF90_PUT_ATT(NCID, VARID(12), 'calendar', 'gregorian')
+         CALL CHECK_ERR(IRET)
+
       ENDIF
 !
 ! triangles for irregular grids

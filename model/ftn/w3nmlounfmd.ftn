@@ -34,6 +34,8 @@
     LOGICAL                     :: SAMEFILE
     LOGICAL                     :: VECTOR
     INTEGER                     :: TYPE
+    CHARACTER(15)               :: TIMEREF
+    LOGICAL                     :: FCPERIOD
   END TYPE NML_FIELD_T
 
   ! file structure
@@ -270,6 +272,8 @@
     FIELD%SAMEFILE   = .TRUE.
     FIELD%VECTOR     = .TRUE.
     FIELD%TYPE       = 3
+    FIELD%TIMEREF    = 'unset'
+    FIELD%FCPERIOD   = .FALSE.
 
     ! read field namelist
     REWIND (NDSI)
@@ -280,6 +284,9 @@
         'ERROR: '//TRIM(MSG)
       CALL EXTCDE (1)
     END IF
+
+    ! Default forecast reference time to start time
+    IF(FIELD%TIMEREF == 'unset') FIELD%TIMEREF = FIELD%TIMESTART
 
     ! save namelist
     NML_FIELD = FIELD
@@ -574,6 +581,8 @@
       WRITE (NDSN,10) TRIM(MSG),'PARTITION  = ', TRIM(NML_FIELD%PARTITION)
       WRITE (NDSN,13) TRIM(MSG),'SAMEFILE   = ', NML_FIELD%SAMEFILE
       WRITE (NDSN,11) TRIM(MSG),'TYPE       = ', NML_FIELD%TYPE
+      WRITE (NDSN,13) TRIM(MSG),'FCPERIOD   = ', NML_FIELD%FCPERIOD
+      WRITE (NDSN,13) TRIM(MSG),'TIMEREF    = ', NML_FIELD%TIMEREF
 
 
 10  FORMAT (A,2X,A,A)

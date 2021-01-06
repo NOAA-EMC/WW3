@@ -30,6 +30,9 @@
 !     FIELD%VECTOR               = T                  ! Vector [T] or dir/magnitude [F] for
 !                                                     !   directional fields
 !     FIELD%TYPE                 = 3                  ! [2 = SHORT, 3 = it depends , 4 = REAL]
+!     FIELD%FCPERIOD             = F                  ! Generate "forecast_period" variable
+!     FIELD%TIMEREF              ='unset              ! "Forecast reference time" for calculating
+!                                                     ! forecast_period; defaults to TIMESTART
 ! -------------------------------------------------------------------- !
 &FIELD_NML
   FIELD%TIMESTART        =  '20100101 000000'
@@ -37,6 +40,7 @@
   FIELD%LIST             =  'DPT WND HS FP DIR SPR MSS'
   FIELD%SAMEFILE         =  F
   FIELD%TYPE             =  4
+  FIELD%FCPERIOD         =  F
 /
 
 
