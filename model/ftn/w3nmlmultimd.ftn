@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -622,11 +622,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
+!/    06-Jan-2021 : Update namelist, new input fields   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -769,11 +770,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
+!/    06-Jan-2021 : Update namelist, new input fields   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1496,11 +1498,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
+!/    06-Jan-2021 : Update namelist, new input fields   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1606,11 +1609,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
+!/    06-Jan-2021 : Update namelist, new input fields   ( version 7.xx )
 !/
 !  1. Purpose :
 !

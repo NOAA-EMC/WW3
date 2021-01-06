@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -39,6 +39,7 @@
 !/    11-Nov-2013 : Allows for input binary files to be of WAVEWATCH
 !/                  type (i.e. accounts for the header) ( version 4.13 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    06-Jan-2021 : Add momentum and air density        ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -47,9 +48,9 @@
 !/
 !  1. Purpose :
 !
-!     Pre-processing of the input water level, current, wind and ice
-!     fields as well as assimilation data for the generic shell W3SHEL
-!     (ww3_shel.ftn).
+!     Pre-processing of the input water level, current, wind, ice
+!     fields, momentum and air density, as well as assimilation data
+!     for the generic shell W3SHEL (ww3_shel.ftn).
 !
 !  2. Method :
 !
@@ -170,10 +171,6 @@
 !     !/WNT2  Id. energy (USE ONLY ONE !)
 !     !/CRT1  Like !/WNT1 for currents.
 !     !/CRT2  Like !/WNT2 for currents.
-!     !/ATT0  = !/ATT1
-!     !/ATT1  Correct momentum to (approximately) conserve the
-!             momentum over the interpolation box.
-!     !/ATT2  Id. energy (USE ONLY ONE !)
 !
 !     !/O3    Additional output in fields processing loop.
 !     !/O15   Generate file with the times of the processed fields.
@@ -415,9 +412,9 @@
 !/WNT2          IF (IFLD.EQ.3) WRITE (NDSO,2930)
 !/CRT1          IF (IFLD.EQ.4) WRITE (NDSO,1930)
 !/CRT2          IF (IFLD.EQ.4) WRITE (NDSO,2930)
-!/ATT0          IF (IFLD.EQ.6) WRITE (NDSO,1930)
-!/ATT1          IF (IFLD.EQ.6) WRITE (NDSO,1930)
-!/ATT2          IF (IFLD.EQ.6) WRITE (NDSO,2930)
+!/WNT0          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT1          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT2          IF (IFLD.EQ.6) WRITE (NDSO,2930)
         END IF
       IF ( FLBERG ) WRITE (NDSO,938)
       IF ( FLSTAB ) WRITE (NDSO,939)
@@ -1266,25 +1263,25 @@
 !
 ! ... Momentum, correct for velocity or energy conservation
 !
-!/ATT1                IF (IFLD.EQ.6) THEN
-!/ATT1                    DO IY=1,NY
-!/ATT1                      DO IX=1,NX
-!/ATT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-!/ATT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/ATT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/ATT1                        END DO
-!/ATT1                      END DO
-!/ATT1                  END IF
+!/WNT1                IF (IFLD.EQ.6) THEN
+!/WNT1                    DO IY=1,NY
+!/WNT1                      DO IX=1,NX
+!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT1                        END DO
+!/WNT1                      END DO
+!/WNT1                  END IF
 !
-!/ATT2                IF (IFLD.EQ.6) THEN
-!/ATT2                    DO IY=1,NY
-!/ATT2                      DO IX=1,NX
-!/ATT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-!/ATT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/ATT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/ATT2                        END DO
-!/ATT2                      END DO
-!/ATT2                  END IF
+!/WNT2                IF (IFLD.EQ.6) THEN
+!/WNT2                    DO IY=1,NY
+!/WNT2                      DO IX=1,NX
+!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT2                        END DO
+!/WNT2                      END DO
+!/WNT2                  END IF
               END IF
 !
           END IF

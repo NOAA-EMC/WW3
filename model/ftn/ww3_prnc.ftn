@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Apr-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -26,6 +26,7 @@
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
 !/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
 !/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
+!/    06-Jan-2021 : Add momentum and air density        ( version 7.xx )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -34,8 +35,9 @@
 !/
 !  1. Purpose :
 !
-!     Pre-processing of the input water level, current, wind and ice
-!     fields as well as assimilation data ... from NetCDF input       
+!     Pre-processing of the input water level, current, wind, ice
+!     fields, momentum and air density, as well as assimilation data
+!      ... from NetCDF input       
 !
 !  2. Method :
 !
@@ -154,10 +156,6 @@
 !     !/WNT2  Id. energy (USE ONLY ONE !)
 !     !/CRT1  Like !/WNT1 for currents.
 !     !/CRT2  Like !/WNT2 for currents.
-!     !/ATT0  = !/ATT1
-!     !/ATT1  Correct momentum to (approximately) conserve the 
-!             momentum over the interpolation box.
-!     !/ATT2  Id. energy (USE ONLY ONE !)
 !     !/MPI   Parallel processing is used for tidal analysis.
 !
 !     !/O3    Additional output in fields processing loop.
@@ -669,9 +667,9 @@
 !/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,2930)
 !/CRT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,1930)
 !/CRT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,2930)
-!/ATT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
-!/ATT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
-!/ATT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,2930)
+!/WNT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,2930)
       END IF
       IF (FLGNML) THEN
         IF(TIMESTART(1).NE.19000101 .OR. TIMESTART(2).NE.0) THEN
@@ -1935,25 +1933,25 @@
 !
 ! ... Momentum, correct for velocity or energy conservation
 !
-!/ATT1                IF (IFLD.EQ.6) THEN
-!/ATT1                    DO IY=1,NY
-!/ATT1                      DO IX=1,NX
-!/ATT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-!/ATT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/ATT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/ATT1                        END DO
-!/ATT1                      END DO
-!/ATT1                  END IF
+!/WNT1                IF (IFLD.EQ.6) THEN
+!/WNT1                    DO IY=1,NY
+!/WNT1                      DO IX=1,NX
+!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT1                        END DO
+!/WNT1                      END DO
+!/WNT1                  END IF
 !
-!/ATT2                IF (IFLD.EQ.6) THEN
-!/ATT2                    DO IY=1,NY
-!/ATT2                      DO IX=1,NX
-!/ATT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-!/ATT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/ATT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/ATT2                        END DO
-!/ATT2                      END DO
-!/ATT2                  END IF
+!/WNT2                IF (IFLD.EQ.6) THEN
+!/WNT2                    DO IY=1,NY
+!/WNT2                      DO IX=1,NX
+!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT2                        END DO
+!/WNT2                      END DO
+!/WNT2                  END IF
 !
               END IF
 !

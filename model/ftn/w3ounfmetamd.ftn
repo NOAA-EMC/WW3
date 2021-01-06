@@ -6,10 +6,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.XX )
+!/    06-Jan-2021 : Adds extra coupling fields          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1518,10 +1519,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.XX )
+!/    06-Jan-2021 : Adds extra coupling fields          ( version 7.xx )
 !/
 !
 !  1. Purpose :

@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Jan-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -68,7 +68,7 @@
 !/                  |            A. Roland              | 
 !/                  |            M. Dutour Sikiric      | 
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Jan-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -120,6 +120,7 @@
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    06-Jan-2021 : Add extra fields used in coupling   ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

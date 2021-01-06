@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -34,6 +34,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
+!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -494,7 +495,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Dec-2012 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    26-Sep-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -515,6 +516,7 @@
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
 !/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
+!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !

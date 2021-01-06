@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -23,6 +23,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
+!/    06-Jan-2021 : Add momentum and air density input  ( version 7.xx )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -63,10 +64,6 @@
 !       !/WNX1   Wind speed conservation.
 !       !/WNX2   Wind exenrgy conservation.
 !
-!       !/ATX0   Momentum vector component conservation.
-!       !/ATX1   Momentum module conservation.
-!       !/ATX2   Momentum exenrgy conservation.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !       !/T1    Test output interpolation data.
@@ -86,7 +83,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -94,6 +91,7 @@
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
+!/    06-Jan-2021 : Add momentum and air density input  ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -461,10 +459,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Oct-2006 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    07-Oct-2006 : Origination.                        ( version 3.10 )
+!/    06-Jan-2021 : Add momentum and air density input  ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -766,11 +765,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2006 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
+!/    06-Jan-2021 : Add momentum and air density input  ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -825,10 +825,6 @@
 !       !/WNX1   Wind speed conservation.
 !       !/WNX2   Wind exenrgy conservation.
 !
-!       !/ATX0   Momentum vector component conservation.
-!       !/ATX1   Momentum module conservation.
-!       !/ATX2   Momentum exenrgy conservation.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !
@@ -875,9 +871,9 @@
 !/WNX0      ICONSW = 0
 !/WNX1      ICONSW = 1
 !/WNX2      ICONSW = 2
-!/ATX0      ICONSU = 0
-!/ATX1      ICONSU = 1
-!/ATX2      ICONSU = 2
+!/WNX0      ICONSU = 0
+!/WNX1      ICONSU = 1
+!/WNX2      ICONSU = 2
 !
 ! 1. Shift fields ( currents and winds only ) ------------------------ /
 !
@@ -1082,9 +1078,9 @@
           IF ( INPUTS(IMOD)%TU0(1) .LT. 0 ) THEN
               INPUTS(IMOD)%TU0(:) = INPUTS(JMOD)%TU0(:)
 !/T              WRITE (MDST,9030) J, INPUTS(IMOD)%TU0(:)
-!/ATX0              ICONSU = 0
-!/ATX1              ICONSU = 1
-!/ATX2              ICONSU = 2
+!/WNX0              ICONSU = 0
+!/WNX1              ICONSU = 1
+!/WNX2              ICONSU = 2
               CALL WMUPDV ( IMOD, INPUTS(IMOD)%UX0, INPUTS(IMOD)%UY0, &
                             JMOD, INPUTS(JMOD)%UX0, INPUTS(JMOD)%UY0, &
                             0., ICONSU )

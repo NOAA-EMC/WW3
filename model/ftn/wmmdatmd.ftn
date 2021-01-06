@@ -7,7 +7,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
@@ -31,6 +31,7 @@
 !/                  within allowed bounds.             ( version 5.15 )
 !/    06-Jun-2018 : add subroutine INIT_GET_JSEA_ISPROC_GLOB/add PDLIB 
 !/                                                     ( version 6.04 )
+!/    06-Jan-2021 : Support for air density input      ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -400,7 +401,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         06-Jan-2021 !
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -411,6 +412,7 @@
 !/    12-Jan-2007 : Add FLSTI and FLLSTL.               ( version 3.10 )
 !/    22-Jan-2007 : Add NAVMAX.                         ( version 3.10 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    06-Jan-2021 : Support for air density input      ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -893,10 +895,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jun-2005 !
+!/                  | Last update :         06-Jan-2021 !
 !/                  +-----------------------------------+
 !/
-!/    13-Jun-2005 : Origination.                        ( version 3.07 )
+!/    13-Jun-2005 : Origination.                       ( version 3.07 )
+!/    06-Jan-2021 : Support for air density input      ( version 7.xx )
 !/
 !  1. Purpose :
 !

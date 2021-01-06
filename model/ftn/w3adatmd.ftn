@@ -7,7 +7,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -38,6 +38,7 @@
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    06-Jan-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -87,9 +88,9 @@
 !      AS0-I     R.A.  Public   Stability par. (initial and incr.)
 !                               in W3UWND                      (degr)
 !      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
-!                               and inc.) in W3UTAUA.
+!                               and inc.) in W3UTAU.
 !      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
-!                               increment) in W3UTAUA.
+!                               increment) in W3UTAU.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
 !
 !     Fields of mean wave parameters:
@@ -764,7 +765,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         06-Jan-2021 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -778,6 +779,7 @@
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    06-Jan-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1441,11 +1443,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         06-Jan-2021 !
 !/                  +-----------------------------------+
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    06-Jan-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2497,7 +2500,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28_Mar-2007 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -2508,6 +2511,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28_Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
 !/                  Add aditional undefined arrays.
+!/    06-Jan-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2939,11 +2943,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
+!/    06-Jan-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
 !/
 !  1. Purpose :
 !

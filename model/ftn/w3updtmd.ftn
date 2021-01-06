@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jan-2016 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -56,6 +56,7 @@
 !/    26-Mar-2018 : Sea-point only Wnd/Cur input.  JGLi ( version 6.04 )
 !/    07-Oct-2019 : RTD option with standard lat-lon
 !/                  grid when nesting to rotated grid   ( version 7.11 )
+!/    06-Jan-2021 : Add W3UTAU, W3URHO routines         ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -74,12 +75,12 @@
 !     ----------------------------------------------------------------
 !      W3UCUR    Subr. Public   Update current fields.
 !      W3UWND    Subr. Public   Update wind fields.
-!      W3UTAUA   Subr. Public   Update atmospheric momentum fields.
+!      W3UTAU    Subr. Public   Update atmospheric momentum fields.
 !      W3UINI    Subr. Public   Update initial conditions.
 !      W3UBPT    Subr. Public   Update boundary conditions.
 !      W3UICE    Subr. Public   Update ice concentrations.
 !      W3ULEV    Subr. Public   Update water levels.
-!      W3URHOA   Subr. Public   Update air density.
+!      W3URHO    Subr. Public   Update air density.
 !      W3UTRN    Subr. Public   Update cell boundary transparancies.
 !      W3DZXY    Subr. Public   Calculate derivatives of a field.
 !     ----------------------------------------------------------------
@@ -108,13 +109,9 @@
 !       !/CRT1   Linear current interpolation.
 !       !/CRT2   Quasi-quadratic current interpolation.
 !
-!       !/WNT0   No wind interpolation.
-!       !/WNT1   Linear wind interpolation.
-!       !/WNT2   Energy conservation in wind interpolation.
-!
-!       !/ATT0   No momentum interpolation.
-!       !/ATT1   Linear momentum interpolation.
-!       !/ATT2   Energy conservation in momentum interpolation.
+!       !/WNT0   No wind/momentum interpolation.
+!       !/WNT1   Linear wind/momentum interpolation.
+!       !/WNT2   Energy conservation in wind/momentum interpolation.
 !
 !       !/RWND   Use wind speeds relative to currents.
 !
@@ -663,16 +660,16 @@
 !/
       END SUBROUTINE W3UWND
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3UTAUA ( FLFRST )
+      SUBROUTINE W3UTAU ( FLFRST )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           J. M. Castillo          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
-!/    30-Oct-2020 : First implementation                ( version 7.xx )
+!/    06-Jan-2021 : First implementation                ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -722,9 +719,9 @@
 !
 !     !/OMPG   OpenMP compiler directives.
 !
-!     !/ATT0   No momentum interpolation.
-!     !/ATT1   Linear momentum interpolation.
-!     !/ATT2   Energy conservation in momentum interpolation.
+!     !/WNT0   No momentum interpolation.
+!     !/WNT1   Linear momentum interpolation.
+!     !/WNT2   Energy conservation in momentum interpolation.
 !
 !     !/S      Enable subroutine tracing.
 !     !/T      Test output.
@@ -757,7 +754,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3UTAUA')
+!/S      CALL STRACE (IENT, 'W3UTAU')
 !
 ! 1.  Prepare auxiliary arrays
 !
@@ -802,10 +799,10 @@
       DT0N    = DSEC21 ( TU0, TUN )
       DT0T   = DSEC21 ( TU0, TIME )
 !
-!/ATT0      RD     = 0.
-!/ATT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
-!/ATT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
-!/ATT2      RD2    =  1. - RD
+!/WNT0      RD     = 0.
+!/WNT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/WNT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/WNT2      RD2    =  1. - RD
 !/OASACM     RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
@@ -817,9 +814,9 @@
       DO ISEA=1, NSEA
 !
         TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
-!/ATT2        MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
-!/ATT2                          RD  *(MA0(ISEA)+MAI(ISEA))**2 )
-!/ATT2        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
+!/WNT2        MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
+!/WNT2                          RD  *(MA0(ISEA)+MAI(ISEA))**2 )
+!/WNT2        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
         TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
 !/ARC  !Li   Rotate momentum direction by ANGARC for Arctic part cells.
 !/ARC        IF( ISEA .GT. NGLO ) THEN
@@ -833,11 +830,11 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3UTAUA : DT0N, DT0T, RD :',2F8.1,F6.3)
+!/T 9000 FORMAT (' TEST W3UTAU : DT0N, DT0T, RD :',2F8.1,F6.3)
 !/
-!/ End of W3UTAUA ---------------------------------------------------- /
+!/ End of W3UTAU ----------------------------------------------------- /
 !/
-      END SUBROUTINE W3UTAUA
+      END SUBROUTINE W3UTAU
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3UINI ( A )
 !/
@@ -2155,16 +2152,16 @@
 !/
       END SUBROUTINE W3ULEV
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3URHOA ( )
+      SUBROUTINE W3URHO ( )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           J. M. Castillo          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
-!/    20-Oct-2020 : First implementation                ( version 7.x )
+!/    06-Jan-2021 : First implementation                ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2229,7 +2226,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3URHOA')
+!/S      CALL STRACE (IENT, 'W3URHO')
 !
 ! 1.  Update times --------------------------------------------------- *
 !
@@ -2249,9 +2246,9 @@
 ! Formats
 !
 !/
-!/ End of W3URHOA ---------------------------------------------------- /
+!/ End of W3URHO ----------------------------------------------------- /
 !/
-      END SUBROUTINE W3URHOA
+      END SUBROUTINE W3URHO
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3UTRN ( TRNX, TRNY )
 !/

@@ -6,13 +6,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/      July-2013 : Origination.                         ( version 4.18 )
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
 !/    25-Sep-2020 : Coupling at T+0 support              ( version 7.xx )
+!/    06-Jan-2021 : Adds extra coupling fields           ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -747,13 +748,14 @@
 !/                  |           V. Garnier              |
 !/                  |           A.C. Bennis             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          April-2016 |
+!/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    Jul-2013 : Origination.                               ( version 4.18 )
 !/    Mar-2014 : J. Pianezze (LPO) : Add atmospheric fields ( version 5.07 )
 !/    Apr-2015 : M. Accensi  (LPO) : Add fields selection   ( version 5.07 )
 !/    Apr-2016 : Add comments (J. Pianezze)                 ( version 5.07 )
+!/ 06-Jan-2021 : Adds extra coupling fields                 ( version 7.xx )
 !/
 !  1. Purpose :
 !
