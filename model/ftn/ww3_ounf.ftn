@@ -39,6 +39,7 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
+!/    06-Jan-2020 : Added forecast_period variable      ( version 7.12 )
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/
@@ -196,7 +197,8 @@
                                  IOUT, S3, IRET, HASNC4,               &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
-      INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
+      INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8),        &
+                                 REFDATE(8)
 !
       INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
 !
@@ -209,7 +211,7 @@
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
 !
       LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
-                                 VECTOR, TOGETHER, FLGNML
+                                 VECTOR, TOGETHER, FLGNML, FLGFCP
 
       LOGICAL                 :: SMCGRD = .FALSE.
 !/
@@ -239,6 +241,10 @@
       WRITE (NDSO,900)
 
 !/SMC      SMCGRD = .TRUE.
+
+
+! TODO: TESTING! FLGFCP will need to be set via input/namlist file
+      FLGFCP = .TRUE.
 !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -508,6 +514,9 @@
       NCIDS(:,:,:) = 0
       WRITE (NDSO,970)
 
+      ! ChrisB: Set reference time to first time. TODO: This will be
+      ! configurable by the user and default to first time if not set.
+      CALL T2D(TOUT, REFDATE, IERR)
 
 ! 5.1 Loops on out_grd.ww3 to read the time and data
       DO
@@ -829,7 +838,8 @@
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
                                  COUNT(4), DIMLN(6),START1D(2),        &
                                  COUNT1D(2), DIMFIELD(3),              &
-                                 STARTDATE(8), CURDATE(8), REFDATE(8), &
+                                 STARTDATE(8), CURDATE(8),             &
+                                 EPOCHDATE(8),                         &
                                  MAP(NX+1,NY), MP2(NX+1,NY)
 !
 !/NC4    INTEGER                  :: DEFLATE=1
@@ -927,7 +937,7 @@
       NCID = 0
 !
 !
-      CALL U2D('days since 1990-01-01 00:00:00',REFDATE,IERR)
+      CALL U2D('days since 1990-01-01 00:00:00',EPOCHDATE,IERR)
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT
@@ -2351,6 +2361,10 @@
               IRET=NF90_INQUIRE_DIMENSION (NCID, DIMID(4+EXTRADIM),len=N)
               CALL CHECK_ERR(IRET)
               IRET=NF90_INQ_VARID (NCID, 'time', VARID(3))
+              IF( FLGFCP ) THEN
+                IRET = NF90_INQ_VARID(NCID, 'forecast_period', VARID(11))
+                CALL CHECK_ERR(IRET)
+              ENDIF
               ! Get the dimension f
               IF (EXTRADIM.EQ.1) IRET=NF90_INQ_DIMID (NCID, 'f', DIMID(4))
 
@@ -2460,7 +2474,7 @@
 ! 2.6.4 Defines the current time step and index
      
             CALL T2D(TIME,CURDATE,IERR)
-            OUTJULDAY=TSUB(REFDATE,CURDATE)
+            OUTJULDAY=TSUB(EPOCHDATE,CURDATE)
             WRITE(NDSO,'(A,A9,A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
                     'Writing new record ', META(1)%ENAME(2:) ,'number ',N,    &
                     ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
@@ -2488,10 +2502,17 @@
             ! Puts time in NetCDF file
             IF((IFI.EQ.I1.AND.IFJ.EQ.J1.AND.TOGETHER)  &
                .OR.(.NOT.TOGETHER).OR.FLFRQ) THEN
-              !IVAR1=3+EXTRADIM+(COORDTYPE-1)+MAPSTAOUT
               IVAR1 = 21
               IRET=NF90_PUT_VAR(NCID,VARID(3),OUTJULDAY,(/N/))
               CALL CHECK_ERR(IRET)
+
+              ! ChrisB: Calculate forecast period w.r.t. forecast reference time:
+              IF (FLGFCP) THEN
+                OUTJULDAY = TSUB(REFDATE, CURDATE)
+                IRET = NF90_PUT_VAR(NCID, VARID(11),                    &
+                                    NINT(OUTJULDAY * 86400), (/N/))
+                CALL CHECK_ERR(IRET)
+              ENDIF
             END IF
 !
 ! 2.6.5 Puts field(s) in NetCDF file
@@ -3369,6 +3390,22 @@
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'calendar',TRIM(CALTYPE))
       CALL CHECK_ERR(IRET)
+!
+! forecast period, if requested
+!
+      IF (FLGFCP) THEN
+         IRET = NF90_DEF_VAR(NCID, 'forecast_period', NF90_DOUBLE,      &
+            DIMID(4+EXTRADIM), VARID(11))
+         CALL CHECK_ERR(IRET)
+         IRET = NF90_PUT_ATT(NCID, VARID(11), 'long_name',              &
+            'forecast period')
+         CALL CHECK_ERR(IRET)
+         IRET = NF90_PUT_ATT(NCID, VARID(11), 'standard_name',          &
+            'forecast_period')
+         CALL CHECK_ERR(IRET)
+         IRET = NF90_PUT_ATT(NCID, VARID(11), 'units', 's')
+         CALL CHECK_ERR(IRET)
+      ENDIF
 !
 ! triangles for irregular grids
 !
