@@ -1260,14 +1260,6 @@
               ELSE
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
               END IF
-              VARNM(1)='wnm'
-              VARNL(1)='mean wave number'
-              VARNS(1)='mean wave number'
-              VARNG(1)='mean wave number'
-              VARNC(1)=''
-              VARND(1)=''
-              VMIN = 0
-              VMAX = 32000
 !
             ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
