@@ -945,7 +945,7 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
-!/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.xx )
+!/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
 !/    06-Jan-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :

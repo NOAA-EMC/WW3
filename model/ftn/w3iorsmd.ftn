@@ -103,9 +103,8 @@
 !/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
 !/                  restart files 
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
-!/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.xx )
+!/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
 !/    06-Jan-2021 : Add new coupling fields in restart  ( version 7.xx )
-
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

@@ -251,7 +251,7 @@
 !/                  OASIS/DEBUGINIT/DEBUGSRC/DEBUGRUN/DEBUGCOH
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
-!/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.xx )
+!/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/    06-Jan-2021 : Update TAUA, RHOA                   ( version 7.xx )
 !/
 !  1. Purpose :

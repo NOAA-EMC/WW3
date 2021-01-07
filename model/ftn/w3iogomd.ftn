@@ -55,7 +55,7 @@
 !/                  calculations. (J Dykes, NRL)
 !/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
-!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.XX )
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine. (C. Bunney)
 !/    06-Jan-2021 : Add extra coupling fields as output ( version 7.xx )
 !/
@@ -293,8 +293,8 @@
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
-!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.xx )
-!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.XX )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.10 )
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine (C. Bunney)
 !/
 !  1. Purpose :
@@ -523,8 +523,8 @@
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    17-Feb-2016 : New version for namelist use        ( version 5.11 )
-!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.xx )
-!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.XX )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.10 )
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine (C. Bunney)
 !/
 !  1. Purpose :
@@ -676,7 +676,7 @@
 !/                  | Last update :         06-Jan-2021 |
 !/                  +-----------------------------------+
 !/
-!/    03-Nov-2020 : Origination.                        ( version 7.XX )
+!/    03-Nov-2020 : Origination.                        ( version 7.12 )
 !/    06-Jan-2021 : Add extra coupling fields as output ( version 7.xx )
 !
 !  1. Purpose :
