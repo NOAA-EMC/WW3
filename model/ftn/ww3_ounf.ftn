@@ -38,7 +38,7 @@
 !/                  grid when nesting to rotated grid   ( version 7.11 )
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
-!/    06-Jan-2021 : New coupling fields output          ( version 7.12 )
+!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -724,7 +724,7 @@
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
 !/    03-Nov-2020 : NetCDF metadata moved to separate   ( version 7.12 )
 !/                  module.
-!/    06-Jan-2021 : New coupling fields output          ( version 7.12 )
+!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !
