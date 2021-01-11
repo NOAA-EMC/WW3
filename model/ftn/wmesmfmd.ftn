@@ -861,35 +861,35 @@
       endif
       i = 0
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 1
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'seahgt'
-        impFieldStdName(i)  = 'sea_surface_height_above_sea_level'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 1
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'seahgt'
+      !  impFieldStdName(i)  = 'sea_surface_height_above_sea_level'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 2
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'uucurr'
-        impFieldStdName(i)  = 'surface_eastward_sea_water_velocity'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 2
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'uucurr'
+      !  impFieldStdName(i)  = 'surface_eastward_sea_water_velocity'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 2
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'vvcurr'
-        impFieldStdName(i)  = 'surface_northward_sea_water_velocity'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 2
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'vvcurr'
+      !  impFieldStdName(i)  = 'surface_northward_sea_water_velocity'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
       i = i + 1
       if ( istep.eq.2 ) then
@@ -911,15 +911,15 @@
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 4
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'seaice'
-        impFieldStdName(i)  = 'sea_ice_concentration'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeIbg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 4
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'seaice'
+      !  impFieldStdName(i)  = 'sea_ice_concentration'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeIbg
+      !endif
 
       numImpFields = i
       enddo istep_import
