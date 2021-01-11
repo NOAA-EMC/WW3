@@ -25,6 +25,7 @@
 !/                   with SMC grids (Andy Saulter)       ( version 6.07 )
 !/    01-Nov-2019 :  UPD5 and UPD6 use wind data either from anl.XXX file
 !/                   or from restart under WRST switch (Andy Saulter)
+!/    06-Oct-2020 :  Added namelist input options        ( version 7.11 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -325,6 +326,8 @@
       USE W3ODATMD, ONLY: NDSE, NDSO, NDST, IDOUT, FNMPRE  
 !/WRST      USE W3IDATMD
 !
+      USE W3NMLUPRSTRMD
+!
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -333,9 +336,12 @@
       INTEGER                 :: NDSI, NDSM, NDSTRC, NTRACE, IERR, I, J
       CHARACTER               :: COMSTR*1 
 !
+      TYPE(NML_RESTART_T)     :: NML_RESTART
+      TYPE(NML_UPDATE_T)      :: NML_UPDATE
+!
 !      REAL, ALLOCATABLE       :: BETAW(:)
 !      LOGICAL, ALLOCATABLE    :: MASK(:)
-      LOGICAL                 :: anl_exists, CORWSEA
+      LOGICAL                 :: anl_exists, CORWSEA, FLGNML
       INTEGER                 :: IMOD,  NDSEN, IX, IY, IK, ITH, &
                                  IXW, IYW
       REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),     &
@@ -394,7 +400,6 @@
 !
       WRITE (NDSO,900)
 !
-!
 !/WRST      !Compiling with WRST will allow access to options UPD5/6
 !/WRST      WRSTON = .TRUE.
 !/WRST      WRITE (NDSO,*) '*** UPRSTR will read wind from restart files'
@@ -407,31 +412,53 @@
 !/SMC      WRITE (NDSO,*) '*** UPRSTR set to work with SMC grid model'
 !/
 !/ ------------------------------------------------------------------- /
-!  2. Read the ww3_uprstr.inp
-!/
-      J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
-            ERR=800,IOSTAT=IERR)
-      READ (NDSI,'(A)',END=801,ERR=802) COMSTR
-      IF (COMSTR.EQ.' ') COMSTR = '$'
-      WRITE (NDSO,901) COMSTR
+!  2. Read the ww3_uprstr input data
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) TIME
-      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) UPDPROC
-      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) PRCNTG
-      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
-!/F      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-!/F      READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
-      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-      READ (NDSI,*,END=2001,ERR=2002) FLNMANL
+! process ww3_uprstr namelist
+!
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_uprstr.nml", EXIST=FLGNML) 
+      IF (FLGNML) THEN
+        ! Read namelist
+        CALL W3NMLUPRSTR (NDSI, TRIM(FNMPRE)//'ww3_uprstr.nml', NML_RESTART, &
+                          NML_UPDATE, IERR)
+        READ(NML_RESTART%RESTARTTIME, *) TIME
+        UPDPROC = NML_UPDATE%UPDPROC
+        PRCNTG = NML_UPDATE%PRCNTG
+        PRCNTG_CAP = NML_UPDATE%PRCNTGCAP
+        THRWSEA = NML_UPDATE%THRWSEA
+        FLNMANL = NML_UPDATE%FILE
+      END IF
+!/
+! otherwise read from the .inp file
+      IF (.NOT. FLGNML) THEN
+         J      = LEN_TRIM(FNMPRE)
+         OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
+               ERR=800,IOSTAT=IERR)
+         READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+         IF (COMSTR.EQ.' ') COMSTR = '$'
+         WRITE (NDSO,901) COMSTR
+!
+         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+         READ (NDSI,*,END=2001,ERR=2002) TIME
+         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+         READ (NDSI,*,END=2001,ERR=2002) UPDPROC
+         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+         IF (UPDPROC .EQ. 'UPD0F') THEN
+             READ (NDSI,*,END=2001,ERR=2002) PRCNTG
+         ELSE
+             IF ((UPDPROC .EQ. 'UPD2') .OR. (UPDPROC .EQ. 'UPD3')) THEN
+!         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                 READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
+!/F                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+!/F                 READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
+             ELSE
+                 READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP, THRWSEA
+             END IF
+             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+             READ (NDSI,*,END=2001,ERR=2002) FLNMANL
+         END IF
+      ENDIF
 !/T      WRITE (NDSO,*)' TIME: ',TIME
-!/T      WRITE (NDSO,1004)' FLNMANL: ', trim(FLNMANL), &
-!/T                       ' UPDPROC: ', trim(UPDPROC)
-!/T      WRITE (NDSO,*)' PRCNTG: ', PRCNTG
 !/
 !/ ------------------------------------------------------------------- /
 !  3.  Read model definition file.
@@ -453,7 +480,8 @@
                                'file is not read'
             CALL EXTCDE ( 1 )
          ELSE
-            WRITE (NDSO,1004) 'Updating Restart File'
+            WRITE (NDSO,1004) '  Updating Restart File'
+            WRITE (NDSO,*) ' TIME: ',TIME
          END IF
       END IF
 !/T      WRITE (NDST,*), MYNAME,' : Exporting VA as imported to VA01.txt'
@@ -469,6 +497,7 @@
 !/
       CASE ('UPD0F')
          WRITE (NDSO,902) 'UPD0F'
+         WRITE (NDSO,1005) ' PRCNTG = ',PRCNTG
 !/T         ALLOCATE( VATMP  (SIZE(VA    ,1)                ))
 !/T         ALLOCATE( SWHANL (SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
 !/T         ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
@@ -500,6 +529,8 @@
 !/
       CASE ('UPD2')
          WRITE (NDSO,902) 'UPD2' 
+         WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+         WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
 !
 !        Array allocation
          ALLOCATE ( VATMP(SIZE(VA,1)))
@@ -572,6 +603,8 @@
 !/
       CASE ('UPD3')
          WRITE (NDSO,902) 'UPD3'
+         WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+         WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
 !
 !        Array allocation
          ALLOCATE ( VATMP(SIZE(VA,1)))
@@ -667,9 +700,12 @@
 !/
       CASE ('UPD5')
          WRITE (NDSO,902) 'UPD5'
+         WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+         WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
+         WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
          ! Presently set hardwired THRWSEA energy threshold here 
          ! not user defined in input file
-         THRWSEA = 0.7
+         ! THRWSEA = 0.7
 !
 !        Array allocation
          ALLOCATE ( VATMP(SIZE(VA,1)))
@@ -734,8 +770,11 @@
 !/SMC               IX = 1
 !/SMC               IY = ISEA
 !/SMC               IF( SMCWND ) THEN
-!/SMC                  IXW = IX
-!/SMC                  IYW = IY
+!/SMC                  ! Wind arrays allocated using (X,Y) convention for regular grids
+!/SMC                  ! but overriding here for the SMC grid which are always defined
+!/SMC                  ! as (NSEA,1) by switching the IY and IX dimension values around
+!/SMC                  IXW = IY
+!/SMC                  IYW = IX
 !/SMC               ELSE
 !/SMC                  IXW = MAPSF(ISEA,1)
 !/SMC                  IYW= MAPSF(ISEA,2)
@@ -788,10 +827,13 @@
 !/
       CASE ('UPD6')
          WRITE (NDSO,902) 'UPD6'
+         WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+         WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
+         WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
          ! Presently set hardwired CORWSEA logical and THRWSEA energy 
          ! thresholds here, not user defined in input file
          CORWSEA = .FALSE.
-         THRWSEA = 0.7
+         !THRWSEA = 0.7
 !
 !        Array allocation
          ALLOCATE ( VATMP(SIZE(VA,1)))
@@ -856,8 +898,11 @@
 !/SMC               IX = 1
 !/SMC               IY = ISEA
 !/SMC               IF( SMCWND ) THEN
-!/SMC                  IXW = IX
-!/SMC                  IYW = IY
+!/SMC                  ! Wind arrays allocated using (X,Y) convention for regular grids
+!/SMC                  ! but overriding here for the SMC grid which are always defined
+!/SMC                  ! as (NSEA,1) by switching the IY and IX dimension values around
+!/SMC                  IXW = IY
+!/SMC                  IYW = IX
 !/SMC               ELSE
 !/SMC                  IXW = MAPSF(ISEA,1)
 !/SMC                  IYW = MAPSF(ISEA,2)
@@ -982,7 +1027,7 @@
 !
 999 FORMAT (/'  End of program '/                                   &
              ' ========================================='/          &
-             '         WAVEWATCH III ww3_uprsrt         '/)
+             '         WAVEWATCH III ww3_uprstr         '/)
 !
 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3UPRSTR : '/              &
                '     ERROR IN OPENING INPUT FILE'/                    &
@@ -995,7 +1040,8 @@
                '     ERROR IN READING FROM INPUT FILE'/               &
                '     IOSTAT =',I5/)
 1004 FORMAT (/' '/,A/)
-1005 FORMAT (/' '/,A, I5, I5/)
+1005 FORMAT (' ',A, F6.3/)
+1006 FORMAT (' ',A, A/)
 !     
 !/
    CONTAINS
@@ -1109,6 +1155,11 @@
       CHARACTER(12), PARAMETER :: MYNAME='CHECK_PRCNTG'
 !/T
 !/T      WRITE (NDSO,*) trim(MYNAME)," The original correction is ",PRCNTG 
+!/T      WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
+      IF ( PRCNTG_CAP < 1. ) THEN
+         WRITE (NDSO,*) trim(MYNAME)," WARNING: PRCNTG_CAP set < 1."
+         WRITE (NDSO,*) trim(MYNAME),"          This may introduce spurious corrections"
+      END IF
 !/T      WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
       IF ( PRCNTG > 1. ) THEN
 !/T      WRITE (NDSO,*) trim(MYNAME)," PRCNTG > 1."

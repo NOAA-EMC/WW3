@@ -1961,6 +1961,11 @@ do
         then # Add time counter if -T
           Tstart=`date +"%s.%2N"`
         fi
+
+        # Link in ounfmeta.inp for ww3_ounf, if exists:
+        if [ $prog == 'ww3_ounf' ] && [ ! -z ${path_i}/ounfmeta.inp ]; then
+           ln -sf ${path_i}/ounfmeta.inp .
+        fi
     
         if $path_e/$prog > $ofile
           then
@@ -2547,12 +2552,12 @@ then
 # Check for input file
 
 # select inp/nml files
-#if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-#then
-#  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-#else
-  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-#fi
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+  else
+    ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+  fi
 
   if [ $? = 0 ]
   then

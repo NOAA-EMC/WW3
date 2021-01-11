@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -43,6 +43,7 @@
 !/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -143,8 +144,10 @@
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
 !      FLOGR2    L.A.  Public   FLags for coupling fields.
+!      FLOGRR    L.A.  Public   FLags for optional coupling restart (2D).
 !      FLOGD     L.A.  Public   Flags for output groups
 !      FLOG2     L.A.  Public   Flags for coupling groups
+!      FLOGR     L.A.  Public   FLags for optional coupling restart (1D).
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -330,6 +333,7 @@
 !/MPI        INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
         LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
                                  FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
+                                 FLOGRR(NOGRP,NGRPP), FLOGR(NOGRP),   &
                                  WRITE1
       END TYPE OTYPE1
 !/
@@ -435,8 +439,9 @@
       INTEGER, POINTER        :: IPASS1
 !/MPI      INTEGER, POINTER        :: NRQGO, NRQGO2
 !/MPI      INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
-      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOGD(:), &
-                                 FLOG2(:), WRITE1
+      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:),            &
+                                 FLOGRR(:,:),FLOGD(:), FLOG2(:),      &
+                                 FLOGR(:), WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -666,6 +671,8 @@
 !
       NOGE(1) = 7
 !/BT4      NOGE(1) = 8
+!/IS2      NOGE(1) = 10    ! CB
+!/SETUP    NOGE(1) = 11    ! CB
 !
       IDOUT( 1, 1)  = 'Water depth         '
       IDOUT( 1, 2)  = 'Current vel.        '
@@ -741,7 +748,7 @@
 !
 ! 5) Atmosphere-waves layer
 !
-      NOGE(5) = 10
+      NOGE(5) = 11
 !
       IDOUT( 5, 1)  = 'Friction velocity   '
       IDOUT( 5, 2)  = 'Charnock parameter  '
@@ -753,7 +760,8 @@
       IDOUT( 5, 8)  = 'Whitecap mean thick.'
       IDOUT( 5, 9)  = 'Mean breaking height'
       IDOUT( 5,10)  = 'Dominant break prob '
-!      IDOUT( 5,11)  = 'Breaker passage rate'
+      IDOUT( 5,11)  = 'Wind sea period' ! C.Bunney - reinstated this as is used in ww3_ounf
+                                        ! Is it suposed to be defunct? It is not in ww3_outf...
 !
 ! 6) Wave-ocean layer
 !
@@ -1377,7 +1385,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Dec-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1391,6 +1399,7 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/
 !  1. Purpose :
 !
@@ -1519,8 +1528,10 @@
 !/MPI      IF ( NRQGO2 .NE. 0 ) IRQGO2 => OUTPTS(IMOD)%OUT1%IRQGO2
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
       FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
+      FLOGRR => OUTPTS(IMOD)%OUT1%FLOGRR
       FLOGD   => OUTPTS(IMOD)%OUT1%FLOGD
       FLOG2   => OUTPTS(IMOD)%OUT1%FLOG2
+      FLOGR   => OUTPTS(IMOD)%OUT1%FLOGR
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS

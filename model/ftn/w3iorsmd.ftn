@@ -53,9 +53,12 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
+      ! Add fields needed for OASIS coupling in restart
+      LOGICAL :: OARST
+!/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2019-12-29'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2020-09-25'
       CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
                                IDSTR = 'WAVEWATCH III RESTART FILE'
 !/
@@ -67,7 +70,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -100,6 +103,7 @@
 !/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
 !/                  restart files 
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
+!/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
 
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -242,6 +246,11 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
+      USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
+      USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, FP0, THM, CHARN,     &
+                          TAUWIX, TAUWIY, TWS, TAUOX, TAUOY, BHD,     &
+                          PHIOC, TUSX, TUSY, USSX, USSY, TAUICE,      &
+                          UBA, UBD, PHIBBL, TAUBBL
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
                           GNAME, FILEXT, GTYPE, UNGTYPE
@@ -250,7 +259,8 @@
 !/WRST      USE W3IDATMD, ONLY: WXN, WYN, W3SETI
 !/WRST      USE W3IDATMD, ONLY: WXNwrst, WYNwrst 
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
-                          IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
+                          IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP,    &
+                          FLOGRR 
 !/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
 !/MPI                               VAAUX
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WCMP
@@ -294,7 +304,7 @@
       INTEGER(KIND=8)         :: RPOS
 !/MPI      INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:)
 !/MPI      REAL, ALLOCATABLE       :: VGBUFF(:), VLBUFF(:)
-      REAL(KIND=LRB), ALLOCATABLE :: WRITEBUFF(:)
+      REAL(KIND=LRB), ALLOCATABLE :: WRITEBUFF(:), TMP(:), TMP2(:)
 
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
@@ -375,6 +385,12 @@
 !         fill bytes up to size LRECL). ---
       ALLOCATE(WRITEBUFF(NSIZE))
       WRITEBUFF(:) = 0.
+!
+!     Allocate memory to receive fields needed for coupling
+      IF (OARST) THEN
+        ALLOCATE(TMP(NSEA))
+        ALLOCATE(TMP2(NSEA))
+      ENDIF
 !
 ! open file ---------------------------------------------------------- *
 !
@@ -813,6 +829,66 @@
                           (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,         &
                                           MIN(NSEA,IPART*NSIZE))
                     END DO
+                IF (OARST) THEN
+!/MPI                  CALL W3XETA ( IGRD, NDSE, NDST )
+!
+                  IF ( FLOGRR(1,2) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) CX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) CY(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(1,9) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) ICEF(1:NSEA)
+                  IF ( FLOGRR(2,1) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) HS(1:NSEA)
+                  IF ( FLOGRR(2,2) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) WLM(1:NSEA)
+                  IF ( FLOGRR(2,4) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) T0M1(1:NSEA)
+                  IF ( FLOGRR(2,6) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) FP0(1:NSEA)
+                  IF ( FLOGRR(2,7) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) THM(1:NSEA)
+                  IF ( FLOGRR(5,2) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) CHARN(1:NSEA)
+                  IF ( FLOGRR(5,5) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUWIX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUWIY(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(5,11) )                                 &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TWS(1:NSEA)
+                  IF ( FLOGRR(6,2) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOY(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(6,3) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) BHD(1:NSEA)
+                  IF ( FLOGRR(6,4) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) PHIOC(1:NSEA)
+                  IF ( FLOGRR(6,5) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TUSX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TUSY(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(6,6) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) USSX(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) USSY(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(6,10) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,1)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,2)
+                  ENDIF
+                  IF ( FLOGRR(7,2) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) UBA(1:NSEA)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) UBD(1:NSEA)
+                  ENDIF
+                  IF ( FLOGRR(7,4) )                                  &
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) PHIBBL(1:NSEA)
+                  IF ( FLOGRR(7,5) ) THEN
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBL(1:NSEA,1)
+                    WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBL(1:NSEA,2)
+                  ENDIF
+!
+!/MPI                  CALL W3SETA ( IGRD, NDSE, NDST )
+                ENDIF 
 !/T                  WRITE (NDST,9007)
 !/T                ELSE
 !/T                  DO ISEA=1, NSEA
@@ -820,9 +896,9 @@
 !/T                    ICE(ISEA) = 0.
 !/T                    END DO
 !/T                  WRITE (NDST,9008)
-                END IF
-            END IF
-        ELSE
+              END IF
+          END IF
+      ELSE
           IF (TYPE.EQ.'FULL') THEN
               RPOS = 1_8 + LRECL*(NREC-1_8)
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
@@ -916,8 +992,196 @@
                       (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,             &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
+            IF (OARST) THEN
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading CUR'
+              IF ( FLOGRR(1,2) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    CX(I) = TMP(J)
+                    CY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading ICEF'
+              IF ( FLOGRR(1,9) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) ICEF(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading HS'
+              IF ( FLOGRR(2,1) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) HS(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WLM'
+              IF ( FLOGRR(2,2) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) WLM(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading T0M1'
+              IF ( FLOGRR(2,4) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    T0M1(I) = TMP(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading FP0'
+              IF ( FLOGRR(2,6) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) FP0(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading THM'
+              IF ( FLOGRR(2,7) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THM(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading CHARN'
+              IF ( FLOGRR(5,2) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) CHARN(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TAUWI'
+              IF ( FLOGRR(5,5) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TAUWIX(I) = TMP(J)
+                    TAUWIY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TWS'
+              IF ( FLOGRR(5,11) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) TWS(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TAUO'
+              IF ( FLOGRR(6,2) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TAUOX(I) = TMP(J)
+                    TAUOY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading BHD'
+              IF ( FLOGRR(6,3) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) BHD(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading PHIOC'
+              IF ( FLOGRR(6,4) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) PHIOC(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TUS'
+              IF ( FLOGRR(6,5) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TUSX(I) = TMP(J)
+                    TUSY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading USS'
+              IF ( FLOGRR(6,6) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    USSX(I) = TMP(J)
+                    USSY(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TAUICE'
+              IF ( FLOGRR(6,10) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TAUICE(I,1) = TMP(J)
+                    TAUICE(I,2) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading UB'
+              IF ( FLOGRR(7,2) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    UBA(I) = TMP(J)
+                    UBD(I) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading PHIBBL'
+              IF ( FLOGRR(7,4) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) PHIBBL(I) = TMP(J)
+                ENDDO
+              ENDIF
+!/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading TAUBBL'
+              IF ( FLOGRR(7,5) ) THEN
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+                READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+                DO I=1, NSEALM
+                  J = IAPROC + (I-1)*NAPROC
+                  IF (J .LE. NSEA) THEN
+                    TAUBBL(I,1) = TMP(J)
+                    TAUBBL(I,2) = TMP2(J)
+                  ENDIF
+                ENDDO
+              ENDIF
+            ENDIF
 !/T              WRITE (NDST,9007)
-            ELSE
+          ELSE
               TLEV(1) = -1
               TLEV(2) =  0
               TICE(1) = -1
@@ -932,8 +1196,37 @@
               ICE     =  0.
               ASF     =  1.
               FPIS    =  DUMFPI
+
+            ! Initialize coupled fields if no restart is present
+            IF (OARST) THEN
+              CX      = 0.
+              CY      = 0.
+              ICEF    = 0.
+              HS      = 0.
+              WLM     = 0.
+              T0M1    = 0.
+              FP0     = 1.
+              THM     = 0.
+              CHARN   = 0.0185
+              TAUWIX  = 0.
+              TAUWIY  = 0.
+              TWS     = 0.
+              TAUOX   = 0.
+              TAUOY   = 0.
+              BHD     = 0.
+              PHIOC   = 0.
+              TUSX    = 0.
+              TUSY    = 0.
+              USSX    = 0.
+              USSY    = 0.
+              TAUICE  = 0.
+              UBA     = 0.
+              UBD     = 0.
+              PHIBBL  = 0.
+              TAUBBL  = 0.
+            ENDIF
 !/T              WRITE (NDST,9008)
-            END IF
+          END IF
         END IF
 !
 ! Close file --------------------------------------------------------- *
@@ -946,6 +1239,8 @@
 !/DEBUGIO        FLUSH(740+IAPROC)
 !
       IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
+      IF (ALLOCATED(TMP))  DEALLOCATE(TMP)
+      IF (ALLOCATED(TMP2)) DEALLOCATE(TMP2)
 !
       RETURN
 !

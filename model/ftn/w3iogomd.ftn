@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         03-Nov-2020 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -55,6 +55,8 @@
 !/                  calculations. (J Dykes, NRL)
 !/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
+!/                  seperate subroutine. (C. Bunney)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -284,12 +286,15 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.10 )
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
+!/                  seperate subroutine (C. Bunney)
 !/
 !  1. Purpose :
 !
@@ -423,243 +428,12 @@
 !
 ! 2. Matches names with expected ...
 !
-         TESTSTR=OUT_NAMES(IOUT+1)
-         SELECT CASE(TRIM(TESTSTR(1:6)))
-!
-! Group 1
-!
-           CASE('DPT')
-             FLG2D(1,1)=.TRUE.
-           CASE('CUR')
-             FLG2D(1,2)=.TRUE.
-           CASE('WND')
-             FLG2D(1,3)=.TRUE.
-           CASE('AST')
-             FLG2D(1,4)=.TRUE.
-           CASE('WLV')
-             FLG2D(1,5)=.TRUE.
-           CASE('ICE')
-             FLG2D(1,6)=.TRUE.
-           CASE('IBG')
-             FLG2D(1,7)=.TRUE.
-!/BT4           CASE('D50')
-!/BT4             FLG2D(1,8)=.TRUE.
-!/IS2           CASE('IC1')
-!/IS2             FLG2D(1,9)=.TRUE.
-!/IS2           CASE('IC5')
-!/IS2             FLG2D(1,10)=.TRUE.
-!/SETUP           CASE('STP')
-!/SETUP             FLG2D(1,11)=.TRUE.
-!
-!
-! Group 2
-!
-!/OASACM           CASE('AHS')
-!/OASACM             FLG2D(2,1)=.TRUE.
-!/OASOCM           CASE('OHS')
-!/OASOCM             FLG2D(2,1)=.TRUE.
-           CASE('HS')
-             FLG2D(2,1)=.TRUE.
-           CASE('LM')
-             FLG2D(2,2)=.TRUE.
-           CASE('T02')
-             FLG2D(2,3)=.TRUE.
-           CASE('T0M1')
-             FLG2D(2,4)=.TRUE.
-           CASE('T01')
-             FLG2D(2,5)=.TRUE.
-           CASE('FP')
-             FLG2D(2,6)=.TRUE.
-           CASE('DIR')
-             FLG2D(2,7)=.TRUE.
-           CASE('SPR')
-             FLG2D(2,8)=.TRUE.
-           CASE('DP')
-             FLG2D(2,9)=.TRUE.
-           CASE('HIG')
-             FLG2D(2,10)=.TRUE.
-           CASE('MXE')
-             FLG2D(2,11)=.TRUE.
-           CASE('MXES')
-             FLG2D(2,12)=.TRUE.
-           CASE('MXH')
-             FLG2D(2,13)=.TRUE.
-           CASE('MXHC')
-             FLG2D(2,14)=.TRUE.
-           CASE('SDMH')
-             FLG2D(2,15)=.TRUE.
-           CASE('SDMHC')
-             FLG2D(2,16)=.TRUE.
-           CASE('WBT')
-             FLG2D(2,17)=.TRUE.
-!
-! Group 3
-!
-           CASE('EF')
-             FLG2D(3,1)=.TRUE.
-           CASE('TH1M')
-             FLG2D(3,2)=.TRUE.
-           CASE('STH1M')
-             FLG2D(3,3)=.TRUE.
-           CASE('TH2M')
-             FLG2D(3,4)=.TRUE.
-           CASE('STH2M')
-             FLG2D(3,5)=.TRUE.
-           CASE('WN')
-             FLG2D(3,6)=.TRUE.
-!
-! Group 4
-!
-           CASE('PHS')
-             FLG2D(4,1)=.TRUE.
-           CASE('PTP')
-             FLG2D(4,2)=.TRUE.
-           CASE('PLP')
-             FLG2D(4,3)=.TRUE.
-           CASE('PDIR')
-             FLG2D(4,4)=.TRUE.
-           CASE('PSPR')
-             FLG2D(4,5)=.TRUE.
-           CASE('PWS')
-             FLG2D(4,6)=.TRUE.
-           CASE('PDP')
-             FLG2D(4,7)=.TRUE.
-           CASE('PQP')
-             FLG2D(4,8)=.TRUE.
-           CASE('PPE')
-             FLG2D(4,9)=.TRUE.
-           CASE('PGW')
-             FLG2D(4,10)=.TRUE.
-           CASE('PSW')
-             FLG2D(4,11)=.TRUE.
-           CASE('PTM10')
-             FLG2D(4,12)=.TRUE.
-           CASE('PT01')
-             FLG2D(4,13)=.TRUE.
-           CASE('PT02')
-             FLG2D(4,14)=.TRUE.
-           CASE('PEP')
-             FLG2D(4,15)=.TRUE.
-           CASE('TWS')
-             FLG2D(4,16)=.TRUE.
-           CASE('PNR')
-             FLG2D(4,17)=.TRUE.
-!
-! Group 5
-!
-           CASE('UST')
-             FLG2D(5,1)=.TRUE.
-!/OASACM         CASE('ACHA')
-!/OASACM           FLG2D(5,2)=.TRUE.
-!/OASOCM         CASE('OCHA')
-!/OASOCM           FLG2D(5,2)=.TRUE.
-           CASE('CHA')
-             FLG2D(5,2)=.TRUE.
-           CASE('CGE')
-             FLG2D(5,3)=.TRUE.
-           CASE('FAW')
-             FLG2D(5,4)=.TRUE.
-           CASE('TAW')
-             FLG2D(5,5)=.TRUE.
-           CASE('TWA')
-             FLG2D(5,6)=.TRUE.
-           CASE('WCC')
-             FLG2D(5,7)=.TRUE.
-           CASE('WCF')
-             FLG2D(5,8)=.TRUE.
-           CASE('WCH')
-             FLG2D(5,9)=.TRUE.
-           CASE('WCM')
-             FLG2D(5,10)=.TRUE.
-           CASE('FWS')
-             FLG2D(5,11)=.TRUE.
-!
-! Group 6
-!
-           CASE('SXY')
-             FLG2D(6,1)=.TRUE.
-           CASE('TWO')
-             FLG2D(6,2)=.TRUE.
-           CASE('BHD')
-             FLG2D(6,3)=.TRUE.
-           CASE('FOC')
-             FLG2D(6,4)=.TRUE.
-           CASE('TUS')
-             FLG2D(6,5)=.TRUE.
-           CASE('USS')
-             FLG2D(6,6)=.TRUE.
-           CASE('P2S')
-             FLG2D(6,7)=.TRUE.
-           CASE('USF')
-             IF (US3DF(1).GE.1) THEN
-               FLG2D(6,8)=.TRUE.
-             ELSE
-               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
-               END IF
-           CASE('P2L')
-             FLG2D(6,9)=.TRUE.
-           CASE('TWI')
-             FLG2D(6,10)=.TRUE.
-           CASE('FIC')
-             FLG2D(6,11)=.TRUE.
-           CASE('USP')
-             IF (USSPF(1).GE.1) THEN
-               FLG2D(6,12)=.TRUE.
-             ELSE
-               IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
-               END IF
-!
-! Group 7
-!
-           CASE('ABR')
-             FLG2D(7,1)=.TRUE.
-           CASE('UBR')
-             FLG2D(7,2)=.TRUE.
-           CASE('BED')
-             FLG2D(7,3)=.TRUE.
-           CASE('FBB')
-             FLG2D(7,4)=.TRUE.
-           CASE('TBB')
-             FLG2D(7,5)=.TRUE.
-!
-! Group 8
-!
-           CASE('MSS')
-             FLG2D(8,1)=.TRUE.
-           CASE('MSC')
-             FLG2D(8,2)=.TRUE.
-           CASE('MSD')
-             FLG2D(8,3)=.TRUE.
-           CASE('MCD')
-             FLG2D(8,4)=.TRUE.
-           CASE('QP')
-             FLG2D(8,5)=.TRUE.
-!
-! Group 9
-!
-           CASE('DTD')
-             FLG2D(9,1)=.TRUE.
-           CASE('FC')
-             FLG2D(9,2)=.TRUE.
-           CASE('CFX')
-             FLG2D(9,3)=.TRUE.
-           CASE('CFD')
-             FLG2D(9,4)=.TRUE.
-           CASE('CFK')
-             FLG2D(9,5)=.TRUE.
-!
-! Group 10
-!
-           CASE('U1')
-             FLG2D(10,1)=.TRUE.
-           CASE('U2')
-             FLG2D(10,2)=.TRUE.
-!/COU           CASE('DRY')
-           CASE DEFAULT
-             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
-           END SELECT
-!
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
+          TESTSTR=OUT_NAMES(IOUT+1)
+          CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
+          
+          IF(IFI .NE. -1) THEN
+            FLG2D(IFI, IFJ) = .TRUE.
+          ENDIF
 !
           IOUT=IOUT+1
 !
@@ -667,9 +441,9 @@
 !
       END IF
 !
-      IF ( IAPROC .EQ. NAPOUT ) THEN
-        FLT    = .TRUE.
-        DO IFI=1, NOGRP
+      FLT    = .TRUE.
+      DO IFI=1, NOGRP
+        IF ( IAPROC .EQ. NAPOUT ) THEN
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -680,7 +454,10 @@
               END IF
             END IF
           END DO
-        END DO
+        END IF
+        IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
+      END DO
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       END IF
 !
@@ -717,9 +494,6 @@
                '     ERROR READING OUTPUT FIELD NAMES FROM INPUT FILE'/&
                '     IOSTAT =',I5/)
 !
- 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
-               '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
-!
  1005 FORMAT (/' *** WAVEWATCH III ERROR    : '/                       &
                '     WAS EXPECTING "T" "F" or "N", but found "',A,'".'/)
 !
@@ -731,10 +505,6 @@
                '     NUMBER OF REQUESTED OUTPUT FIELD FLAGS IN GROUP ',&
               I2, /,' LESS THAN AVAILABLE, CHECK DOCS FOR MORE OPTIONS')
 !
- 1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
-               '     PARAMETER ',A,' not allowed: need to set',        &
-               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
-!
       END SUBROUTINE W3READFLGRD
 
 !/ ------------------------------------------------------------------- /
@@ -745,13 +515,16 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 )
 !/    17-Feb-2016 : New version for namelist use        ( version 5.11 )
+!/    25-Sep-2020 : Calculate FLG1D for any processor   ( version 7.10 )
+!/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
+!/                  seperate subroutine (C. Bunney)
 !/
 !  1. Purpose :
 !
@@ -839,254 +612,28 @@
 !
 ! 2. Splits list of output field names
 !
-        OUT_NAMES(:)=''
-        CALL STRSPLIT(FLDOUT,OUT_NAMES)
-        IOUT=0
-        DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
-          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))
+      OUT_NAMES(:)=''
+      CALL STRSPLIT(FLDOUT,OUT_NAMES)
+      IOUT=0
+      DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
+        CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))
 !
 ! 2. Matches names with expected ...
 !
-         TESTSTR=OUT_NAMES(IOUT+1)
-         SELECT CASE(TRIM(TESTSTR(1:6)))
-!
-! Group 1
-!
-         CASE('DPT')
-           FLG2D(1,1)=.TRUE.
-         CASE('CUR')
-           FLG2D(1,2)=.TRUE.
-         CASE('WND')
-           FLG2D(1,3)=.TRUE.
-         CASE('AST')
-           FLG2D(1,4)=.TRUE.
-         CASE('WLV')
-           FLG2D(1,5)=.TRUE.
-         CASE('ICE')
-           FLG2D(1,6)=.TRUE.
-         CASE('IBG')
-           FLG2D(1,7)=.TRUE.
-!/BT4           CASE('D50')
-!/BT4             FLG2D(1,8)=.TRUE.
-!/IS2           CASE('IC1')
-!/IS2             FLG2D(1,9)=.TRUE.
-!/IS2           CASE('IC5')
-!/IS2             FLG2D(1,10)=.TRUE.!
-! Group 2
-!
-!/OASACM         CASE('AHS')
-!/OASACM           FLG2D(2,1)=.TRUE.
-!/OASOCM         CASE('OHS')
-!/OASOCM           FLG2D(2,1)=.TRUE.
-         CASE('HS')
-           FLG2D(2,1)=.TRUE.
-         CASE('LM')
-           FLG2D(2,2)=.TRUE.
-         CASE('T02')
-           FLG2D(2,3)=.TRUE.
-         CASE('T0M1')
-           FLG2D(2,4)=.TRUE.
-         CASE('T01')
-           FLG2D(2,5)=.TRUE.
-         CASE('FP')
-           FLG2D(2,6)=.TRUE.
-         CASE('DIR')
-           FLG2D(2,7)=.TRUE.
-         CASE('SPR')
-           FLG2D(2,8)=.TRUE.
-         CASE('DP')
-           FLG2D(2,9)=.TRUE.
-         CASE('HIG')
-           FLG2D(2,10)=.TRUE.
-         CASE('MXE')
-           FLG2D(2,11)=.TRUE.
-         CASE('MXES')
-           FLG2D(2,12)=.TRUE.
-         CASE('MXH')
-           FLG2D(2,13)=.TRUE.
-         CASE('MXHC')
-           FLG2D(2,14)=.TRUE.
-         CASE('SDMH')
-           FLG2D(2,15)=.TRUE.
-         CASE('SDMHC')
-           FLG2D(2,16)=.TRUE.
-         CASE('WBT')
-           FLG2D(2,17)=.TRUE.
-!
-! Group 3
-!
-         CASE('EF')
-           FLG2D(3,1)=.TRUE.
-         CASE('TH1M')
-           FLG2D(3,2)=.TRUE.
-         CASE('STH1M')
-           FLG2D(3,3)=.TRUE.
-         CASE('TH2M')
-           FLG2D(3,4)=.TRUE.
-         CASE('STH2M')
-           FLG2D(3,5)=.TRUE.
-         CASE('WN')
-           FLG2D(3,6)=.TRUE.
-!
-! Group 4
-!
-         CASE('PHS')
-           FLG2D(4,1)=.TRUE.
-         CASE('PTP')
-           FLG2D(4,2)=.TRUE.
-         CASE('PLP')
-           FLG2D(4,3)=.TRUE.
-         CASE('PDIR')
-           FLG2D(4,4)=.TRUE.
-         CASE('PSPR')
-           FLG2D(4,5)=.TRUE.
-         CASE('PWS')
-           FLG2D(4,6)=.TRUE.
-         CASE('PDP')
-           FLG2D(4,7)=.TRUE.
-         CASE('PQP')
-           FLG2D(4,8)=.TRUE.
-         CASE('PPE')
-           FLG2D(4,9)=.TRUE.
-         CASE('PGW')
-           FLG2D(4,10)=.TRUE.
-         CASE('PSW')
-           FLG2D(4,11)=.TRUE.
-         CASE('PTM10')
-           FLG2D(4,12)=.TRUE.
-         CASE('PT01')
-           FLG2D(4,13)=.TRUE.
-         CASE('PT02')
-           FLG2D(4,14)=.TRUE.
-         CASE('PEP')
-           FLG2D(4,15)=.TRUE.
-         CASE('TWS')
-           FLG2D(4,16)=.TRUE.
-         CASE('PNR')
-           FLG2D(4,17)=.TRUE.
-!
-! Group 5
-!
-         CASE('UST')
-           FLG2D(5,1)=.TRUE.
-!/OASACM         CASE('ACHA')
-!/OASACM           FLG2D(5,2)=.TRUE.
-!/OASOCM         CASE('OCHA')
-!/OASOCM           FLG2D(5,2)=.TRUE.
-         CASE('CHA')
-           FLG2D(5,2)=.TRUE.
-         CASE('CGE')
-           FLG2D(5,3)=.TRUE.
-         CASE('FAW')
-           FLG2D(5,4)=.TRUE.
-         CASE('TAW')
-           FLG2D(5,5)=.TRUE.
-         CASE('TWA')
-           FLG2D(5,6)=.TRUE.
-         CASE('WCC')
-           FLG2D(5,7)=.TRUE.
-         CASE('WCF')
-           FLG2D(5,8)=.TRUE.
-         CASE('WCH')
-           FLG2D(5,9)=.TRUE.
-         CASE('WCM')
-           FLG2D(5,10)=.TRUE.
-         CASE('FWS')
-           FLG2D(5,11)=.TRUE.
-!
-! Group 6
-!
-         CASE('SXY')
-           FLG2D(6,1)=.TRUE.
-         CASE('TWO')
-           FLG2D(6,2)=.TRUE.
-         CASE('BHD')
-           FLG2D(6,3)=.TRUE.
-         CASE('FOC')
-           FLG2D(6,4)=.TRUE.
-         CASE('TUS')
-           FLG2D(6,5)=.TRUE.
-         CASE('USS')
-           FLG2D(6,6)=.TRUE.
-         CASE('P2S')
-           FLG2D(6,7)=.TRUE.
-         CASE('USF')
-           IF (US3DF(1).GE.1) THEN
-             FLG2D(6,8)=.TRUE.
-           ELSE
-             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
-             END IF
-         CASE('P2L')
-           FLG2D(6,9)=.TRUE.
-         CASE('TWI')
-           FLG2D(6,10)=.TRUE.
-         CASE('FIC')
-           FLG2D(6,11)=.TRUE.
-         CASE('USP')
-           IF (USSPF(1).GE.1) THEN
-             FLG2D(6,12)=.TRUE.
-           ELSE
-             IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
-             END IF
-
-!
-! Group 7
-!
-         CASE('ABR')
-           FLG2D(7,1)=.TRUE.
-         CASE('UBR')
-           FLG2D(7,2)=.TRUE.
-         CASE('BED')
-           FLG2D(7,3)=.TRUE.
-         CASE('FBB')
-           FLG2D(7,4)=.TRUE.
-         CASE('TBB')
-           FLG2D(7,5)=.TRUE.
-!
-! Group 8
-!
-         CASE('MSS')
-           FLG2D(8,1)=.TRUE.
-         CASE('MSC')
-           FLG2D(8,2)=.TRUE.
-         CASE('MSD')
-           FLG2D(8,3)=.TRUE.
-         CASE('MCD')
-           FLG2D(8,4)=.TRUE.
-         CASE('QP')
-           FLG2D(8,5)=.TRUE.
-!
-! Group 9
-!
-         CASE('DTD')
-           FLG2D(9,1)=.TRUE.
-         CASE('FC')
-           FLG2D(9,2)=.TRUE.
-         CASE('CFX')
-           FLG2D(9,3)=.TRUE.
-         CASE('CFD')
-           FLG2D(9,4)=.TRUE.
-         CASE('CFK')
-           FLG2D(9,5)=.TRUE.
-!
-! Group 10
-!
-         CASE('U1')
-           FLG2D(10,1)=.TRUE.
-         CASE('U2')
-           FLG2D(10,1)=.TRUE.
-!/COU           CASE('DRY')
-         CASE DEFAULT
-           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
-         END SELECT
+        TESTSTR=OUT_NAMES(IOUT+1)
+        CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
+         
+        IF(IFI .NE. -1) THEN
+          FLG2D(IFI, IFJ) = .TRUE.
+        ENDIF
 !
         IOUT=IOUT+1
 !
       END DO
 !
-      IF ( IAPROC .EQ. NAPOUT ) THEN
-        FLT    = .TRUE.
-        DO IFI=1, NOGRP
+      FLT    = .TRUE.
+      DO IFI=1, NOGRP
+        IF ( IAPROC .EQ. NAPOUT ) THEN 
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -1097,16 +644,399 @@
               END IF
             END IF
           END DO
-          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
-        END DO
+        ENDIF
+        IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
+      END DO
+      IF ( IAPROC .EQ. NAPOUT ) THEN 
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
-      END IF
+      ENDIF
 !
       RETURN
 !
  1945 FORMAT ( '            Fields   : ',A)
  1946 FORMAT ( '                       ',A)
 !
+! 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+!               '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
+!!
+! 1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+!               '     PARAMETER ',A,' not allowed: need to set',        &
+!               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
+!
+      END SUBROUTINE W3FLGRDFLAG
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLDTOIJ(FLD, I, J, IAPROC, NAPOUT, NDSEN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            C. Bunney              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         03-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!/    03-Nov-2020 : Origination.                        ( version 7.12 )
+!
+!  1. Purpose :
+!
+!     Returns the group/field (I/J) indices for a named output field.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       FLD     Cha.   I   Field names
+!       I       Int.   O   Output group number (IFI)
+!       J       Int.   O   Output field number (IFJ)
+!       IAPROC  Int.   I   index of current processor
+!       NAPOUT  Int.   I   index of processor for output (screen)
+!       NDSEN   R.A.   I   Error output file logical unit number
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: US3DF, USSPF
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      CHARACTER(LEN=*), INTENT(IN) :: FLD
+      INTEGER, INTENT(IN) :: IAPROC, NAPOUT, NDSEN
+      INTEGER, INTENT(OUT) :: I, J
+
+      I = -1
+      J = -1
+
+      SELECT CASE(TRIM(FLD(1:6)))
+!
+! Group 1
+!
+      CASE('DPT')
+        I = 1
+        J = 1
+      CASE('CUR')
+        I = 1
+        J = 2
+      CASE('WND')
+        I = 1
+        J = 3
+      CASE('AST')
+        I = 1
+        J = 4
+      CASE('WLV')
+        I = 1
+        J = 5
+      CASE('ICE')
+        I = 1
+        J = 6
+      CASE('IBG')
+        I = 1
+        J = 7
+!/BT4           CASE('D50')
+!/BT4             I = 1
+!/BT4             J = 8
+!/IS2           CASE('IC1')
+!/IS2             I = 1
+!/IS2             J = 9
+!/IS2           CASE('IC5')
+!/IS2             I = 1
+!/IS2             J = 10
+! Group 2
+!
+!/OASACM         CASE('AHS')
+!/OASACM           I = 2
+!/OASACM           J = 1
+!/OASOCM         CASE('OHS')
+!/OASOCM           I = 2
+!/OASACM           J = 1
+      CASE('HS')
+        I = 2
+        J = 1
+      CASE('LM')
+        I = 2
+        J = 2
+      CASE('T02')
+        I = 2
+        J = 3
+      CASE('T0M1')
+        I = 2
+        J = 4
+      CASE('T01')
+        I = 2
+        J = 5
+      CASE('FP')
+        I = 2
+        J = 6
+      CASE('DIR')
+        I = 2
+        J = 7
+      CASE('SPR')
+        I = 2
+        J = 8
+      CASE('DP')
+        I = 2
+        J = 9
+      CASE('HIG')
+        I = 2
+        J = 10
+      CASE('MXE')
+        I = 2
+        J = 11
+      CASE('MXES')
+        I = 2
+        J = 12
+      CASE('MXH')
+        I = 2
+        J = 13
+      CASE('MXHC')
+        I = 2
+        J = 14
+      CASE('SDMH')
+        I = 2
+        J = 15
+      CASE('SDMHC')
+        I = 2
+        J = 16
+      CASE('WBT')
+        I = 2
+        J = 17
+!
+! Group 3
+!
+      CASE('EF')
+        I = 3
+        J = 1
+      CASE('TH1M')
+        I = 3
+        J = 2
+      CASE('STH1M')
+        I = 3
+        J = 3
+      CASE('TH2M')
+        I = 3
+        J = 4
+      CASE('STH2M')
+        I = 3
+        J = 5
+      CASE('WN')
+        I = 3
+        J = 6
+!
+! Group 4
+!
+      CASE('PHS')
+        I = 4
+        J = 1
+      CASE('PTP')
+        I = 4
+        J = 2
+      CASE('PLP')
+        I = 4
+        J = 3
+      CASE('PDIR')
+        I = 4
+        J = 4
+      CASE('PSPR')
+        I = 4
+        J = 5
+      CASE('PWS')
+        I = 4
+        J = 6
+      CASE('PDP')
+        I = 4
+        J = 7
+      CASE('PQP')
+        I = 4
+        J = 8
+      CASE('PPE')
+        I = 4
+        J = 9
+      CASE('PGW')
+        I = 4
+        J = 10
+      CASE('PSW')
+        I = 4
+        J = 11
+      CASE('PTM10')
+        I = 4
+        J = 12
+      CASE('PT01')
+        I = 4
+        J = 13
+      CASE('PT02')
+        I = 4
+        J = 14
+      CASE('PEP')
+        I = 4
+        J = 15
+      CASE('TWS')
+        I = 4
+        J = 16
+      CASE('PNR')
+        I = 4
+        J = 17
+!
+! Group 5
+!
+      CASE('UST')
+        I = 5
+        J = 1
+!/OASACM         CASE('ACHA')
+!/OASACM           I = 5
+!/OASACM           J = 2
+!/OASOCM         CASE('OCHA')
+!/OASOCM           I = 5
+!/OASACM           J = 2
+      CASE('CHA')
+        I = 5
+        J = 2
+      CASE('CGE')
+        I = 5
+        J = 3
+      CASE('FAW')
+        I = 5
+        J = 4
+      CASE('TAW')
+        I = 5
+        J = 5
+      CASE('TWA')
+        I = 5
+        J = 6
+      CASE('WCC')
+        I = 5
+        J = 7
+      CASE('WCF')
+        I = 5
+        J = 8
+      CASE('WCH')
+        I = 5
+        J = 9
+      CASE('WCM')
+        I = 5
+        J = 10
+      CASE('FWS')
+        I = 5
+        J = 11
+!
+! Group 6
+!
+      CASE('SXY')
+        I = 6
+        J = 1
+      CASE('TWO')
+        I = 6
+        J = 2
+      CASE('BHD')
+        I = 6
+        J = 3
+      CASE('FOC')
+        I = 6
+        J = 4
+      CASE('TUS')
+        I = 6
+        J = 5
+      CASE('USS')
+        I = 6
+        J = 6
+      CASE('P2S')
+        I = 6
+        J = 7
+      CASE('USF')
+        IF (US3DF(1).GE.1) THEN
+          I = 6
+          J = 8
+        ELSE
+          IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USF','US3D'
+        END IF
+      CASE('P2L')
+        I = 6
+        J = 9
+      CASE('TWI')
+        I = 6
+        J = 10
+      CASE('FIC')
+        I = 6
+        J = 11
+      CASE('USP')
+        IF (USSPF(1).GE.1) THEN
+          I = 6
+          J = 12
+        ELSE
+          IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
+        END IF
+
+!
+! Group 7
+!
+      CASE('ABR')
+        I = 7
+        J = 1
+      CASE('UBR')
+        I = 7
+        J = 2
+      CASE('BED')
+        I = 7
+        J = 3
+      CASE('FBB')
+        I = 7
+        J = 4
+      CASE('TBB')
+        I = 7
+        J = 5
+!
+! Group 8
+!
+      CASE('MSS')
+        I = 8
+        J = 1
+      CASE('MSC')
+        I = 8
+        J = 2
+      CASE('MSD')
+        I = 8
+        J = 3
+      CASE('MCD')
+        I = 8
+        J = 4
+      CASE('QP')
+        I = 8
+        J = 5
+!
+! Group 9
+!
+      CASE('DTD')
+        I = 9
+        J = 1
+      CASE('FC')
+        I = 9
+        J = 2
+      CASE('CFX')
+        I = 9
+        J = 3
+      CASE('CFD')
+        I = 9
+        J = 4
+      CASE('CFK')
+        I = 9
+        J = 5
+!
+! Group 10
+!
+      CASE('U1')
+        I = 10
+        J = 1
+      CASE('U2')
+        I = 10
+        J = 1
+! Not found:
+!/COU      CASE('DRY')
+      CASE('UNSET')
+      CASE DEFAULT
+        I = -1
+        J = -1
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(FLD)
+      END SELECT
+
  1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
                '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
 !
@@ -1114,7 +1044,7 @@
                '     PARAMETER ',A,' not allowed: need to set',        &
                ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
 !
-      END SUBROUTINE W3FLGRDFLAG
+      END SUBROUTINE W3FLDTOIJ
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3OUTG ( A, FLPART, FLOUTG, FLOUTG2 )

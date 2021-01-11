@@ -919,7 +919,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Apr-2015 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -929,6 +929,7 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
 !/
 !  1. Purpose :
 !
@@ -1020,7 +1021,7 @@
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD
-!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME
+!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
 !/OASACM      USE W3AGCMMD, ONLY: RCV_FIELDS_FROM_ATMOS
 !/OASOCM      USE W3OGCMMD, ONLY: RCV_FIELDS_FROM_OCEAN
 !/OASICM      USE W3IGCMMD, ONLY: RCV_FIELDS_FROM_ICE
@@ -1164,7 +1165,8 @@
 !/OASIS            IF (FLCOUPL) THEN 
 !/OASIS  ! Do not receive coupling fields at the end of the first integration time in case of  
 !/OASIS  ! forcing with a non interpolated field (like lev, ice, ...)
-!/OASIS              IF ((ID_OASIS_TIME.EQ.0 .AND. FLFRST) .OR. (ID_OASIS_TIME.GT.0)) THEN
+!/OASIS              IF ( (ID_OASIS_TIME.EQ.0 .AND. ( FLFRST .OR. CPLT0 )) .OR. &
+!/OASIS                   (ID_OASIS_TIME.GT.0)) THEN
 !
 !/OASACM ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
 !/OASACM                CALL RCV_FIELDS_FROM_ATMOS(COUPL_COMM,          &

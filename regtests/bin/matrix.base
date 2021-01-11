@@ -31,7 +31,8 @@
              prop1D prop2D time fetch hur1mg \
              multi01 multi02 multi03 multi04 multi05 \
              hybd shwtr unstr pdlib smcgr rtd mudice infgrv \
-             uost assim calendar oasis multi06 multi07 multi08
+             uost assim calendar confignc oasis \
+             multi06 multi07 multi08
   do
     eval " value=\$$par"
 #   echo "$par = $value"
@@ -2010,18 +2011,18 @@
  if [ "$assim" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -N -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -N -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -N -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_O     -i input_UPD5_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -N -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_U_cap -i input_UPD5_U_cap $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -N -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U     -i input_UPD6_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U_cap -i input_UPD6_U_cap $ww3 ww3_ta1" >> matrix.body
   fi
@@ -2030,10 +2031,27 @@
  if [ "$oasis" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s OASACM -w work_OASACM -C OASIS -f -p $mpi -n $np -o netcdf $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASACM2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np -o netcdf $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASOCM -w work_OASOCM -C OASIS -f -p $mpi -n $np -o netcdf $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASICM -w work_OASICM -C OASIS -f -p $mpi -n $np -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst             -s OASACM  -w work_OASACM  -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst             -s OASACM2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mkdir -p ww3_tp2.14/work_OASACM3"                                                                    >> matrix.body
+   echo "cp ww3_tp2.14/input/ww3_shel_OASACM3.nml ww3_tp2.14/work_OASACM3/ww3_shel.nml"                       >> matrix.body
+   echo "$rtst             -s OASACM3 -w work_OASACM3          -f -p $mpi -n $np/2 -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mkdir -p ww3_tp2.14/work_OASACM4"                                                                    >> matrix.body
+   echo "ln -sf ../work_OASACM3/restart001.ww3 ww3_tp2.14/work_OASACM4/restart.ww3"                           >> matrix.body
+   echo "$rtst -r ww3_grid -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -r ww3_shel -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -r ww3_ounf -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mkdir -p ww3_tp2.14/work_OASACM5"                                                                    >> matrix.body
+   echo "ln -sf ../work_OASACM4/restart001.ww3 ww3_tp2.14/work_OASACM5/restart.ww3"                           >> matrix.body
+   echo "$rtst -r ww3_grid -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -r ww3_shel -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -r ww3_ounf -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mv ww3_tp2.14/input/ww3_ounf.inp ww3_tp2.14/input/ww3_ounf.inp.bak"                                  >> matrix.body
+   echo "cp ww3_tp2.14/input/ww3_ounf.inp-OASACM6 ww3_tp2.14/input/ww3_ounf.inp"                              >> matrix.body
+   echo "$rtst -g OASACM6  -s OASACM6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "mv ww3_tp2.14/input/ww3_ounf.inp.bak ww3_tp2.14/input/ww3_ounf.inp"                                  >> matrix.body
+   echo "$rtst             -s OASOCM  -w work_OASOCM  -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst             -s OASICM  -w work_OASICM  -C OASIS -f -p $mpi -n $np   -o netcdf $ww3 ww3_tp2.14" >> matrix.body
  fi
  
   # 365_day and 360_day calendars, no switch sharing here
@@ -2043,6 +2061,13 @@
     echo "$rtst -g STD  -w work_STD  -o netcdf $ww3 ww3_tc1" >> matrix.body
     echo "$rtst -g C360 -w work_C360 -o netcdf $ww3 ww3_tc1" >> matrix.body
     echo "$rtst -g C365 -w work_C365 -o netcdf $ww3 ww3_tc1" >> matrix.body
+  fi
+
+  # Configurable netCDF metadata in ww3_ounf
+  if [ "$confignc" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -o netcdf $ww3 ww3_tnc1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #

@@ -230,6 +230,11 @@
 !       - Atmospheric model : WND
 !       - Ice model : ICE IC1 IC5
 !
+! * Coupling at T+0 (extra fields in the restart needed)
+!
+! * extra fields to be written to the restart:
+!   - The list includes all fields sent by coupling exchange only
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     TYPE%FIELD%LIST         =  'unset'
@@ -244,6 +249,8 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  = .FALSE.
+!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
