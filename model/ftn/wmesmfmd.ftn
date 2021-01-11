@@ -948,75 +948,75 @@
       endif
       i = 0
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'charno'
-        expFieldStdName(i) = 'wave_induced_charnock_parameter'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'charno'
+      !  expFieldStdName(i) = 'wave_induced_charnock_parameter'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'z0rlen'
-        expFieldStdName(i) = 'wave_z0_roughness_length'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'z0rlen'
+      !  expFieldStdName(i) = 'wave_z0_roughness_length'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'uscurr'
-        expFieldStdName(i) = 'eastward_stokes_drift_current'
-        expFieldDim(i)     = 3
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'uscurr'
+      !  expFieldStdName(i) = 'eastward_stokes_drift_current'
+      !  expFieldDim(i)     = 3
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'vscurr'
-        expFieldStdName(i) = 'northward_stokes_drift_current'
-        expFieldDim(i)     = 3
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'vscurr'
+      !  expFieldStdName(i) = 'northward_stokes_drift_current'
+      !  expFieldDim(i)     = 3
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcuru'
-        expFieldStdName(i) = 'eastward_wave_bottom_current'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcuru'
+      !  expFieldStdName(i) = 'eastward_wave_bottom_current'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcurv'
-        expFieldStdName(i) = 'northward_wave_bottom_current'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcurv'
+      !  expFieldStdName(i) = 'northward_wave_bottom_current'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcurp'
-        expFieldStdName(i) = 'wave_bottom_current_period'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcurp'
+      !  expFieldStdName(i) = 'wave_bottom_current_period'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsuu'
-        expFieldStdName(i) = 'eastward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsuu'
+      !  expFieldStdName(i) = 'eastward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsuv'
-        expFieldStdName(i) = 'eastward_northward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsuv'
+      !  expFieldStdName(i) = 'eastward_northward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsvv'
-        expFieldStdName(i) = 'northward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsvv'
+      !  expFieldStdName(i) = 'northward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
       numExpFields = i
       enddo istep_export
