@@ -9,7 +9,7 @@ $
 $ Generate forecast_period variable (T/F)
   T
 $
-$ If above is T, then specify forecast_reference_time:
+$ If above is T, then specify forecast_reference_time (yyyymmdd hhmmss):
   19850101 000000
 $
 $
@@ -37,6 +37,12 @@ $
  3 4
  0 1 2
  T
+$
+$--------------------------------------------------------------------- $
+$ Time variable type ['D' = DOUBLE, 'I' = INT64]
+           and units ['D' = days, 'S' = seconds]
+$
+ D D
 $
 $ -------------------------------------------------------------------- $
 $ File prefix

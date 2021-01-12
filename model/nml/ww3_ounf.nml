@@ -31,8 +31,10 @@
 !                                                     !   directional fields
 !     FIELD%TYPE                 = 3                  ! [2 = SHORT, 3 = it depends , 4 = REAL]
 !     FIELD%FCPERIOD             = F                  ! Generate "forecast_period" variable
-!     FIELD%TIMEREF              ='unset              ! "Forecast reference time" for calculating
+!     FIELD%TIMEREF              = 'unset'            ! "Forecast reference time" for calculating
 !                                                     ! forecast_period; defaults to TIMESTART
+!     FIELD%TIMEVAR              = 'D'                ! Time var type ['D' = DOUBLE, 'I' = INT64]
+!     FIELD%TIMEUNIT             = 'D'                ! Time units ['D' = days, 'I' = seconds]
 ! -------------------------------------------------------------------- !
 &FIELD_NML
   FIELD%TIMESTART        =  '20100101 000000'

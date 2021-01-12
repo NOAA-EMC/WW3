@@ -39,8 +39,10 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
-!/    06-Jan-2020 : Added forecast_period and           ( version 7.12 )
+!/    06-Jan-2021 : Added forecast_period and           ( version 7.12 )
 !/                  forecast_reference_time variables.
+!/    12-Jan-2021 : Alternative vartype and units for   ( version 7.12 )
+!/                  time variables.
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/
@@ -138,7 +140,7 @@
       USE W3WDATMD, ONLY: W3NDAT, W3SETW
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
-      USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+      USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STR_TO_UPPER
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD
       USE W3IOGRMD, ONLY: W3IOGR
@@ -209,12 +211,18 @@
 !
       CHARACTER*30            :: STRSTOPDATE, FILEPREFIX, STRINGIPART
       CHARACTER*1024          :: FLDOUT
-      CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
+      CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11, TTYPE*1
 !
       LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
                                  VECTOR, TOGETHER, FLGNML, FLGFCP
 
       LOGICAL                 :: SMCGRD = .FALSE.
+
+      INTEGER                 :: TVARTYPE = NF90_DOUBLE
+      CHARACTER(LEN=32)       :: EPOCH_REF = '1990-01-01 00:00:00'
+      CHARACTER(LEN=64)       :: EPOCH
+      CHARACTER               :: TIMEUNIT*1 ! 'D' = days, or 'S' for seconds
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -301,6 +309,8 @@
         FILEPREFIX = NML_FILE%PREFIX
         FLGFCP = NML_FIELD%FCPERIOD
         S3 = NML_FIELD%TIMESPLIT
+        TTYPE = NML_FIELD%TIMEVAR
+        TIMEUNIT = NML_FIELD%TIMEUNIT
         IF(SMCGRD) THEN
 !/SMC          SMCTYPE = NML_SMC%TYPE
 !/SMC          SXO = NML_SMC%SXO
@@ -351,6 +361,9 @@
 !        CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !        READ (NDSI,*,END=801,ERR=802) VECTOR
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
         READ (NDSI,*,END=801,ERR=802) FILEPREFIX
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -376,6 +389,36 @@
         VECTOR = .TRUE.  ! Only vector output for .inp files.
 
       END IF ! .NOT. FLGNML
+
+
+      CALL STR_TO_UPPER(TTYPE)
+      CALL STR_TO_UPPER(TIMEUNIT)
+
+      IF(TIMEUNIT /= 'S' .AND. TIMEUNIT /= 'D') THEN
+        PRINT*,'ERROR : Timeunits must be "S" or "D"'
+        CALL EXTCDE(10)
+      ENDIF
+
+      SELECT CASE(TTYPE)
+        CASE('D')
+          TVARTYPE = NF90_DOUBLE
+        CASE('I')
+          TVARTYPE = NF90_INT64
+        CASE DEFAULT
+          PRINT*,'ERROR: time var type must be "I" or "D"'
+          CALl EXTCDE(10)
+      END SELECT
+
+      IF(TTYPE .EQ. 'I' .AND. TIMEUNIT .EQ. 'D') THEN
+        PRINT*,'ERROR: Cannot have time units of days with time var of int64'
+        CALL EXTCDE(10)
+      ENDIF
+
+      ! If TVARTPE is INT64 check that we are using netCDF4:
+      IF(TVARTYPE .EQ. NF90_INT64 .AND. NCTYPE .LT. 4) THEN
+        PRINT*,'ERROR: INT64 time encoding requires netCDF4 file format'
+        CALL EXTCDE(10)
+      ENDIF
 
       ! Keep track of original NCVARTYPE, as it may change
       NCVARTYPEI = NCVARTYPE
@@ -866,6 +909,7 @@
                                  MXYR(:,:), AUX1(:)
 !
       DOUBLE PRECISION        :: OUTJULDAY
+      INTEGER(KIND=8)         :: OUTSECS
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
 !      
       CHARACTER*120           :: STR2
@@ -940,7 +984,18 @@
       NCID = 0
 !
 !
-      CALL U2D('days since 1990-01-01 00:00:00',EPOCHDATE,IERR)
+      !CHRISB: Allow alternative time units:
+      SELECT CASE(TIMEUNIT)
+        CASE('D')
+          EPOCH = 'days since ' // EPOCH_REF
+        CASE('S')
+          EPOCH = 'seconds since ' // EPOCH_REF
+        CASE DEFAULT
+          PRINT*,'Unknown time units: ', TIMEUNIT
+          CALL EXTCDE(10)
+      END SELECT
+
+      CALL U2D(EPOCH, EPOCHDATE, IERR)
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT
@@ -2241,8 +2296,13 @@
 
               ! Write forecast reference time, if requested:
               IF (FLGFCP) THEN
-                OUTJULDAY = TSUB(EPOCHDATE,REFDATE)
-                IRET = NF90_PUT_VAR(NCID, VARID(12), OUTJULDAY)
+                IF(TIMEUNIT .EQ. 'S') THEN
+                  OUTSECS = TSUBSEC(EPOCHDATE, REFDATE)
+                  IRET = NF90_PUT_VAR(NCID, VARID(12), OUTSECS)
+                ELSE
+                  OUTJULDAY = TSUB(EPOCHDATE, REFDATE)
+                  IRET = NF90_PUT_VAR(NCID, VARID(12), OUTJULDAY)
+                ENDIF
                 CALL CHECK_ERR(IRET)
               ENDIF
 
@@ -2484,7 +2544,6 @@
 ! 2.6.4 Defines the current time step and index
      
             CALL T2D(TIME,CURDATE,IERR)
-            OUTJULDAY=TSUB(EPOCHDATE,CURDATE)
             WRITE(NDSO,'(A,A9,A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
                     'Writing new record ', META(1)%ENAME(2:) ,'number ',N,    &
                     ' for ',CURDATE(1),':',CURDATE(2),':',CURDATE(3),'T',CURDATE(5),&
@@ -2513,7 +2572,16 @@
             IF((IFI.EQ.I1.AND.IFJ.EQ.J1.AND.TOGETHER)  &
                .OR.(.NOT.TOGETHER).OR.FLFRQ) THEN
               IVAR1 = 21
-              IRET=NF90_PUT_VAR(NCID,VARID(3),OUTJULDAY,(/N/))
+
+              IF(TIMEUNIT .EQ. 'S') THEN
+                ! Time in seconds
+                OUTSECS = TSUBSEC(EPOCHDATE,CURDATE)
+                IRET = NF90_PUT_VAR(NCID, VARID(3), OUTSECS, (/N/))
+              ELSE
+                ! Time in days
+                OUTJULDAY = TSUB(EPOCHDATE,CURDATE)
+                IRET = NF90_PUT_VAR(NCID, VARID(3), OUTJULDAY, (/N/))
+              ENDIF
               CALL CHECK_ERR(IRET)
 
               ! ChrisB: Calculate forecast period w.r.t. forecast reference time:
@@ -3378,7 +3446,9 @@
 !
 !  time
 !
-      IRET = NF90_DEF_VAR(NCID, 'time', NF90_DOUBLE, DIMID(4+EXTRADIM), VARID(3))
+      ! CHRISB: Allow different time variable types:
+      IRET = NF90_DEF_VAR(NCID, 'time', TVARTYPE, DIMID(4+EXTRADIM), VARID(3))
+      CALL CHECK_ERR(IRET)
 !/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
       CALL CHECK_ERR(IRET)
       SELECT CASE (TRIM(CALTYPE))
@@ -3392,8 +3462,9 @@
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','time')
       CALL CHECK_ERR(IRET)
-      ! CHRISB: TODO: Alternative units in seconds
-      IRET=NF90_PUT_ATT(NCID,VARID(3),'units','days since 1990-01-01 00:00:00')
+      ! CHRISB: Allow alternative time units:
+      !IRET=NF90_PUT_ATT(NCID,VARID(3),'units','days since 1990-01-01 00:00:00')
+      IRET=NF90_PUT_ATT(NCID,VARID(3),'units', EPOCH)
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'conventions', &
         'relative julian days with decimal part (as parts of the day )')
@@ -3419,7 +3490,7 @@
 
          ! Forecast reference time is a scalar variable:
          IRET = NF90_DEF_VAR(NCID, 'forecast_reference_time',           &
-            NF90_DOUBLE, varid=VARID(12))
+            TVARTYPE, varid=VARID(12))
          CALL CHECK_ERR(IRET)
 
          IRET = NF90_PUT_ATT(NCID, VARID(12), 'long_name',              &
@@ -3430,9 +3501,8 @@
             'forecast_reference_time')
          CALL CHECK_ERR(IRET)
 
-         ! CHRISB: TODO: Alternative units in seconds
-         IRET = NF90_PUT_ATT(NCID, VARID(12), 'units',                  &
-            'days since 1990-01-01 00:00:00')
+         IRET = NF90_PUT_ATT(NCID, VARID(12), 'units', EPOCH)
+         !   'days since 1990-01-01 00:00:00')
          CALL CHECK_ERR(IRET)
 
          IRET = NF90_PUT_ATT(NCID, VARID(12), 'calendar', 'gregorian')

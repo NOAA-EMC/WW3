@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -36,6 +36,8 @@
     INTEGER                     :: TYPE
     CHARACTER(15)               :: TIMEREF
     LOGICAL                     :: FCPERIOD
+    CHARACTER                   :: TIMEVAR
+    CHARACTER                   :: TIMEUNIT
   END TYPE NML_FIELD_T
 
   ! file structure
@@ -75,7 +77,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !
@@ -196,7 +198,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !  1. Purpose :
@@ -274,6 +276,8 @@
     FIELD%TYPE       = 3
     FIELD%TIMEREF    = 'unset'
     FIELD%FCPERIOD   = .FALSE.
+    FIELD%TIMEVAR    = 'D'
+    FIELD%TIMEUNIT   = 'D'
 
     ! read field namelist
     REWIND (NDSI)
