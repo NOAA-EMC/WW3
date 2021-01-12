@@ -2586,9 +2586,8 @@
 
               ! ChrisB: Calculate forecast period w.r.t. forecast reference time:
               IF (FLGFCP) THEN
-                OUTJULDAY = TSUB(REFDATE, CURDATE)
-                IRET = NF90_PUT_VAR(NCID, VARID(11),                    &
-                                    NINT(OUTJULDAY * 86400), (/N/))
+                OUTSECS = TSUBSEC(REFDATE, CURDATE)
+                IRET = NF90_PUT_VAR(NCID, VARID(11), OUTSECS, (/N/))
                 CALL CHECK_ERR(IRET)
               ENDIF
             END IF
@@ -3476,7 +3475,7 @@
 ! forecast period and (forecast reference time), if requested
 !
       IF (FLGFCP) THEN
-         IRET = NF90_DEF_VAR(NCID, 'forecast_period', NF90_DOUBLE,      &
+         IRET = NF90_DEF_VAR(NCID, 'forecast_period', NF90_INT,         &
             DIMID(4+EXTRADIM), VARID(11))
          CALL CHECK_ERR(IRET)
          IRET = NF90_PUT_ATT(NCID, VARID(11), 'long_name',              &
