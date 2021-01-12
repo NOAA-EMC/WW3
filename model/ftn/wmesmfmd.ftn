@@ -861,35 +861,35 @@
       endif
       i = 0
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 1
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'seahgt'
-        impFieldStdName(i)  = 'sea_surface_height_above_sea_level'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 1
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'seahgt'
+      !  impFieldStdName(i)  = 'sea_surface_height_above_sea_level'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 2
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'uucurr'
-        impFieldStdName(i)  = 'surface_eastward_sea_water_velocity'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 2
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'uucurr'
+      !  impFieldStdName(i)  = 'surface_eastward_sea_water_velocity'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 2
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'vvcurr'
-        impFieldStdName(i)  = 'surface_northward_sea_water_velocity'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 2
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'vvcurr'
+      !  impFieldStdName(i)  = 'surface_northward_sea_water_velocity'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      !endif
 
       i = i + 1
       if ( istep.eq.2 ) then
@@ -911,15 +911,15 @@
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        j = 4
-        impFieldActive(i)   = any(inpmap(:,j).lt.0)
-        impFieldName(i)     = 'seaice'
-        impFieldStdName(i)  = 'sea_ice_concentration'
-        impFieldInitRqrd(i) = .true.
-        mbgFieldActive(i)   = impFieldActive(i).and.includeIbg
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  j = 4
+      !  impFieldActive(i)   = any(inpmap(:,j).lt.0)
+      !  impFieldName(i)     = 'seaice'
+      !  impFieldStdName(i)  = 'sea_ice_concentration'
+      !  impFieldInitRqrd(i) = .true.
+      !  mbgFieldActive(i)   = impFieldActive(i).and.includeIbg
+      !endif
 
       numImpFields = i
       enddo istep_import
@@ -948,75 +948,75 @@
       endif
       i = 0
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'charno'
-        expFieldStdName(i) = 'wave_induced_charnock_parameter'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'charno'
+      !  expFieldStdName(i) = 'wave_induced_charnock_parameter'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'z0rlen'
-        expFieldStdName(i) = 'wave_z0_roughness_length'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'z0rlen'
+      !  expFieldStdName(i) = 'wave_z0_roughness_length'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'uscurr'
-        expFieldStdName(i) = 'eastward_stokes_drift_current'
-        expFieldDim(i)     = 3
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'uscurr'
+      !  expFieldStdName(i) = 'eastward_stokes_drift_current'
+      !  expFieldDim(i)     = 3
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'vscurr'
-        expFieldStdName(i) = 'northward_stokes_drift_current'
-        expFieldDim(i)     = 3
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'vscurr'
+      !  expFieldStdName(i) = 'northward_stokes_drift_current'
+      !  expFieldDim(i)     = 3
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcuru'
-        expFieldStdName(i) = 'eastward_wave_bottom_current'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcuru'
+      !  expFieldStdName(i) = 'eastward_wave_bottom_current'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcurv'
-        expFieldStdName(i) = 'northward_wave_bottom_current'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcurv'
+      !  expFieldStdName(i) = 'northward_wave_bottom_current'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wbcurp'
-        expFieldStdName(i) = 'wave_bottom_current_period'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wbcurp'
+      !  expFieldStdName(i) = 'wave_bottom_current_period'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsuu'
-        expFieldStdName(i) = 'eastward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsuu'
+      !  expFieldStdName(i) = 'eastward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsuv'
-        expFieldStdName(i) = 'eastward_northward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsuv'
+      !  expFieldStdName(i) = 'eastward_northward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
-      i = i + 1
-      if ( istep.eq.2 ) then
-        expFieldName(i)    = 'wavsvv'
-        expFieldStdName(i) = 'northward_wave_radiation_stress'
-        expFieldDim(i)     = 2
-      endif
+      !i = i + 1
+      !if ( istep.eq.2 ) then
+      !  expFieldName(i)    = 'wavsvv'
+      !  expFieldStdName(i) = 'northward_wave_radiation_stress'
+      !  expFieldDim(i)     = 2
+      !endif
 
       numExpFields = i
       enddo istep_export
@@ -1799,18 +1799,18 @@
 !
 ! 2.e Set export fields
 !
-      call SetExport(gcomp, rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      !call SetExport(gcomp, rc)
+      !if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 2.f Set Updated Field Attribute to "true", indicating to the
 !     generic code to set the timestamp for these fields
 !
-      do i = 1,numExpFields
-        if (.not.expFieldActive(i)) cycle
-        call NUOPC_SetAttribute(expField(i), name="Updated", &
-          value="true", rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      enddo
+      !do i = 1,numExpFields
+      !  if (.not.expFieldActive(i)) cycle
+      !  call NUOPC_SetAttribute(expField(i), name="Updated", &
+      !    value="true", rc=rc)
+      !  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      !enddo
 !
 ! 2.g Set InitializeDataComplete Attribute to "true", indicating to the
 !     generic code that all inter-model data dependencies are satisfied
@@ -1983,8 +1983,8 @@
 !
 ! 1.g Set export fields
 !
-      call SetExport(gcomp, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      !call SetExport(gcomp, rc=rc)
+      !if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -2116,92 +2116,93 @@
       tend(1) = 10000*yy + 100*mm + dd
       tend(2) = 10000*h  + 100*m  + s
 
-!
-! -------------------------------------------------------------------- /
-! Water levels
-!
-      j = 1
-      i1 = FieldIndex( impFieldName, 'seahgt', rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      i2 = i1
-      if ( impFieldActive(i1) ) then
-        call w3setg ( impGridID, mdse, mdst )
-        call w3seti ( impGridID, mdse, mdst )
-        if (firstCall) then
-          tln = tcur
-        else
-          tln = tend
-        endif
-        tfn(:,j) = tln
-        if ( mbgFieldActive(i1) ) then
-          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        endif
-        call FieldGather( impField(i1), nx, ny, wlev, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        do imod = 1,nrgrd
-          call w3setg ( imod, mdse, mdst )
-          call w3setw ( imod, mdse, mdst )
-          call w3seti ( imod, mdse, mdst )
-          call w3seto ( imod, mdse, mdst )
-          call wmsetm ( imod, mdse, mdst )
-!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
-          jmod = inpmap(imod,j)
-          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
-            call wmupd2( imod, j, jmod, rc )
-            if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          endif
-        enddo
-      endif
-!
-! -------------------------------------------------------------------- /
-! Currents
-!
-      j = 2
-      i1 = FieldIndex( impFieldName, 'uucurr', rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      i2 = FieldIndex( impFieldName, 'vvcurr', rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( impFieldActive(i1) ) then
-        call w3setg ( impGridID, mdse, mdst )
-        call w3seti ( impGridID, mdse, mdst )
-        if (firstCall) then
-          tcn = tcur
-        else
-          tc0 = tcn
-          cx0 = cxn
-          cy0 = cyn
-          tcn = tend
-        endif
-        tfn(:,j) = tcn
-        if ( mbgFieldActive(i1) ) then
-          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        endif
-        call FieldGather( impField(i1), nx, ny, cxn, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldGather( impField(i2), nx, ny, cyn, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        if (firstCall) then
-          tc0 = tcn
-          cx0 = cxn
-          cy0 = cyn
-        endif
-        do imod = 1,nrgrd
-          call w3setg ( imod, mdse, mdst )
-          call w3setw ( imod, mdse, mdst )
-          call w3seti ( imod, mdse, mdst )
-          call wmsetm ( imod, mdse, mdst )
-!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
-          jmod = inpmap(imod,j)
-          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
-            call wmupd2( imod, j, jmod, rc )
-            if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          endif
-        enddo
-      endif
+!!
+!! -------------------------------------------------------------------- /
+!! Water levels
+!!
+!      j = 1
+!      i1 = FieldIndex( impFieldName, 'seahgt', rc )
+!      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!      i2 = i1
+!      if ( impFieldActive(i1) ) then
+!        call w3setg ( impGridID, mdse, mdst )
+!        call w3seti ( impGridID, mdse, mdst )
+!        if (firstCall) then
+!          tln = tcur
+!        else
+!          tln = tend
+!        endif
+!        tfn(:,j) = tln
+!        if ( mbgFieldActive(i1) ) then
+!          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
+!          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        endif
+!        call FieldGather( impField(i1), nx, ny, wlev, rc=rc )
+!        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        do imod = 1,nrgrd
+!          call w3setg ( imod, mdse, mdst )
+!          call w3setw ( imod, mdse, mdst )
+!          call w3seti ( imod, mdse, mdst )
+!          call w3seto ( imod, mdse, mdst )
+!          call wmsetm ( imod, mdse, mdst )
+!!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+!          jmod = inpmap(imod,j)
+!          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
+!            call wmupd2( imod, j, jmod, rc )
+!            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!          endif
+!        enddo
+!      endif
+!!
+!! -------------------------------------------------------------------- /
+!! Currents
+!!
+!      j = 2
+!      i1 = FieldIndex( impFieldName, 'uucurr', rc )
+!      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!      i2 = FieldIndex( impFieldName, 'vvcurr', rc )
+!      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!      if ( impFieldActive(i1) ) then
+!        call w3setg ( impGridID, mdse, mdst )
+!        call w3seti ( impGridID, mdse, mdst )
+!        if (firstCall) then
+!          tcn = tcur
+!        else
+!          tc0 = tcn
+!          cx0 = cxn
+!          cy0 = cyn
+!          tcn = tend
+!        endif
+!        tfn(:,j) = tcn
+!        if ( mbgFieldActive(i1) ) then
+!          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
+!          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!          call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
+!          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        endif
+!        call FieldGather( impField(i1), nx, ny, cxn, rc=rc )
+!        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        call FieldGather( impField(i2), nx, ny, cyn, rc=rc )
+!        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        if (firstCall) then
+!          tc0 = tcn
+!          cx0 = cxn
+!          cy0 = cyn
+!        endif
+!        do imod = 1,nrgrd
+!          call w3setg ( imod, mdse, mdst )
+!          call w3setw ( imod, mdse, mdst )
+!          call w3seti ( imod, mdse, mdst )
+!          call wmsetm ( imod, mdse, mdst )
+!!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+!          jmod = inpmap(imod,j)
+!          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
+!            call wmupd2( imod, j, jmod, rc )
+!            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!          endif
+!        enddo
+!      endif
+
 !
 ! -------------------------------------------------------------------- /
 ! Winds
@@ -2278,42 +2279,43 @@
         enddo
 !/WRST       endif  !if ( twn-tw0 .le. 0  )
       endif
-!
-! -------------------------------------------------------------------- /
-! Sea ice concentration
-!
-      j = 4
-      i1 = FieldIndex( impFieldName, 'seaice', rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      i2 = i1
-      if ( impFieldActive(i1) ) then
-        call w3setg ( impGridID, mdse, mdst )
-        call w3seti ( impGridID, mdse, mdst )
-        if (firstCall) then
-          tin = tcur
-        else
-          tin = tend
-        endif
-        tfn(:,j) = tin
-        if ( mbgFieldActive(i1) ) then
-          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        endif
-        call FieldGather( impField(i1), nx, ny, icei, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        do imod = 1,nrgrd
-          call w3setg ( imod, mdse, mdst )
-          call w3setw ( imod, mdse, mdst )
-          call w3seti ( imod, mdse, mdst )
-          call wmsetm ( imod, mdse, mdst )
-!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
-          jmod = inpmap(imod,j)
-          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
-            call wmupd2( imod, j, jmod, rc )
-            if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          endif
-        enddo
-      endif
+!!
+!! -------------------------------------------------------------------- /
+!! Sea ice concentration
+!!
+!      j = 4
+!      i1 = FieldIndex( impFieldName, 'seaice', rc )
+!      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!      i2 = i1
+!      if ( impFieldActive(i1) ) then
+!        call w3setg ( impGridID, mdse, mdst )
+!        call w3seti ( impGridID, mdse, mdst )
+!        if (firstCall) then
+!          tin = tcur
+!        else
+!          tin = tend
+!        endif
+!        tfn(:,j) = tin
+!        if ( mbgFieldActive(i1) ) then
+!          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
+!          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        endif
+!        call FieldGather( impField(i1), nx, ny, icei, rc=rc )
+!        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!        do imod = 1,nrgrd
+!          call w3setg ( imod, mdse, mdst )
+!          call w3setw ( imod, mdse, mdst )
+!          call w3seti ( imod, mdse, mdst )
+!          call wmsetm ( imod, mdse, mdst )
+!!/MPI          if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+!          jmod = inpmap(imod,j)
+!          if ( jmod.lt.0 .and. jmod.ne.-999 ) then
+!            call wmupd2( imod, j, jmod, rc )
+!            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!          endif
+!        enddo
+!      endif
+
 !
 ! -------------------------------------------------------------------- /
 ! Post
