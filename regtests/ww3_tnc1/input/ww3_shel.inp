@@ -6,6 +6,8 @@ $ T/F flag for definition as a homogeneous field.
    F F     Currents
    T T     Winds
    F       Ice concentrations
+   F       Atmospheric momentum
+   F       Air density
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra

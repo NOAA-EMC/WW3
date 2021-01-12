@@ -1655,8 +1655,8 @@
       META(1)%VARNS='eastward_atm_momentum'
       META(1)%VARNG='eastward_atm_momentum'
       META(2)%VARNC='taua=sqrt(utaua**2+vtaua**2)'
-      META(1)%VMIN = -32000
-      META(1)%VMAX =  32000
+      META(1)%VMIN = -320
+      META(1)%VMAX =  320
       META(1)%VARND = DIRCOM
 
       ! Second component
@@ -1676,7 +1676,7 @@
       META(1)%VARNS='air_density'
       META(1)%VARNG='air_density'
       META(1)%VMIN = 0
-      META(1)%VMAX = 20000
+      META(1)%VMAX = 2
 ! IFI=1, IFJ=10
 !/BT4      META => GROUP(1)%FIELD(10)%META
 !/BT4      META(1)%FSC    = 0.001
@@ -1911,11 +1911,11 @@
       META(1)%UNITS  = 'm-1'
       META(1)%ENAME  = '.wnm'
       META(1)%VARNM='wnm'
-      META(1)%VARNL='mean wave number'
-      META(1)%VARNS='mean wave number'
-      META(1)%VARNG='mean wave number'
+      META(1)%VARNL=''
+      META(1)%VARNS=''
+      META(1)%VARNG=''
       META(1)%VMIN = 0
-      META(1)%VMAX = 32000
+      META(1)%VMAX = 32
 !
 !---------- GROUP 3 ----------------
 !
@@ -2614,23 +2614,23 @@
       META(1)%UNITS  = 'm2 s-2'
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.toc'
-      META(1)%VMIN   = -32000
-      META(1)%VMAX   =  32000
+      META(1)%VMIN   = -320
+      META(1)%VMAX   =  320
       META(1)%VARND  = DIRCOM
   
       ! First component
       META(1)%VARNM='utoc'
-      META(1)%VARNL='eastward total wave to ocean stress'
-      META(1)%VARNS='eastward total wave to ocean stress'
-      META(1)%VARNG='eastward total wave to ocean stress'
+      META(1)%VARNL=''
+      META(1)%VARNS=''
+      META(1)%VARNG=''
       META(1)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
     
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtoc'
-      META(2)%VARNL='northward total wave to ocean stress'
-      META(2)%VARNS='northward total wave to ocean stress'
-      META(2)%VARNG='northward total wave to ocean stress'
+      META(2)%VARNL=''
+      META(2)%VARNS=''
+      META(2)%VARNG=''
       META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
 !
 !---------- GROUP 7 ----------------
