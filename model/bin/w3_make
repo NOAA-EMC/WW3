@@ -389,7 +389,7 @@ EOF
         then
           netcdf_version="$netcdf_version.0"
         fi
-        if [ `echo $netcdf_version | tr -d .` -lt 411 ]
+        if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
         then
           netcdf_compile_message
           echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
