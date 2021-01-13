@@ -214,7 +214,7 @@
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11, TTYPE*1
 !
       LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
-                                 VECTOR, TOGETHER, FLGNML, FLGFCP
+                                 VECTOR, TOGETHER, FLGNML, FLGFC
 
       LOGICAL                 :: SMCGRD = .FALSE.
 
@@ -307,7 +307,7 @@
         TOGETHER = NML_FIELD%SAMEFILE
         VECTOR = NML_FIELD%VECTOR
         FILEPREFIX = NML_FILE%PREFIX
-        FLGFCP = NML_FIELD%FCPERIOD
+        FLGFC = NML_FIELD%FCVARS
         S3 = NML_FIELD%TIMESPLIT
         TTYPE = NML_FIELD%TIMEVAR
         TIMEUNIT = NML_FIELD%TIMEUNIT
@@ -343,8 +343,8 @@
 
 ! 4.1.1 Forecast period and forecast reference time:
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) FLGFCP
-        IF( FLGFCP ) READ(NDSI,*,END=801,ERR=802) TREF
+        READ (NDSI,*,END=801,ERR=802) FLGFC
+        IF( FLGFC ) READ(NDSI,*,END=801,ERR=802) TREF
 
 ! 4.2 Output fields
         CALL W3READFLGRD ( NDSI, NDSO, SCREEN, NDSE, COMSTR, FLG1D,      &
@@ -395,8 +395,8 @@
       CALL STR_TO_UPPER(TIMEUNIT)
 
       IF(TIMEUNIT /= 'S' .AND. TIMEUNIT /= 'D') THEN
-        PRINT*,'ERROR : Timeunits must be "S" or "D"'
-        CALL EXTCDE(10)
+        WRITE(NDSE, 1013) TIMEUNIT
+        CALL EXTCDE(14)
       ENDIF
 
       SELECT CASE(TTYPE)
@@ -405,19 +405,19 @@
         CASE('I')
           TVARTYPE = NF90_INT64
         CASE DEFAULT
-          PRINT*,'ERROR: time var type must be "I" or "D"'
-          CALl EXTCDE(10)
+          WRITE(NDSE, 1014) TTYPE
+          CALL EXTCDE(14)
       END SELECT
 
       IF(TTYPE .EQ. 'I' .AND. TIMEUNIT .EQ. 'D') THEN
-        PRINT*,'ERROR: Cannot have time units of days with time var of int64'
-        CALL EXTCDE(10)
+        WRITE(NDSE, 1015)
+        CALL EXTCDE(14)
       ENDIF
 
       ! If TVARTPE is INT64 check that we are using netCDF4:
       IF(TVARTYPE .EQ. NF90_INT64 .AND. NCTYPE .LT. 4) THEN
-        PRINT*,'ERROR: INT64 time encoding requires netCDF4 file format'
-        CALL EXTCDE(10)
+        WRITE(NDSE, 1016)
+        CALL EXTCDE(14)
       ENDIF
 
       ! Keep track of original NCVARTYPE, as it may change
@@ -445,6 +445,11 @@
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
 
+      IF(FLGFC) THEN
+        CALL STME21 ( TREF , IDTIME )
+        WRITE(NDSO,942) IDTIME
+      ENDIF
+
 ! 4.2 Output fields
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
@@ -461,27 +466,6 @@
 
 
 ! 4.3 Output type
-!!      NBIPART=0
-!!      DO I=1,29
-!!        IF ((STRINGIPART(I:I+1).EQ.'0').OR.(STRINGIPART(I:I+1).EQ.'1')      &
-!!            .OR.(STRINGIPART(I:I+1).EQ.'2').OR.(STRINGIPART(I:I+1).EQ.'3')  &
-!!            .OR.(STRINGIPART(I:I+1).EQ.'4').OR.(STRINGIPART(I:I+1).EQ.'5')) THEN
-!!          NBIPART=NBIPART+1
-!!        END IF
-!!      END DO
-!!      ALLOCATE(TABIPART(NBIPART))
-!!      CNTIPART=0
-!!      DO I=1,29
-!!        IF ((STRINGIPART(I:I+1).EQ.'0').OR.(STRINGIPART(I:I+1).EQ.'1')      &
-!!            .OR.(STRINGIPART(I:I+1).EQ.'2').OR.(STRINGIPART(I:I+1).EQ.'3')  &
-!!            .OR.(STRINGIPART(I:I+1).EQ.'4').OR.(STRINGIPART(I:I+1).EQ.'5')) THEN
-!!          CNTIPART=CNTIPART+1
-!!          READ(STRINGIPART(I:I+1),'(I1)') TABIPART(CNTIPART)
-!!        END IF
-!!      END DO
-
-      ! Alternative processing of TABIPART to capture requests 
-      ! greater than NOSWLL (C.Bunney):
       ALLOCATE(TABIPART(NOSWLL + 1))
       ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1))
       NBIPART=0
@@ -703,6 +687,7 @@
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
                '      Number of requests : ',I10)
+  942 FORMAT ( '      Reference time     : ',A)
   944 FORMAT (/'      End of file reached '/)
   946 FORMAT ( '      ',A,2X,A)
 !
@@ -735,6 +720,8 @@
                ' ========================================='/          &
                '         WAVEWATCH III Field output '/)
 !
+! Error format strings
+!
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ERROR IN OPENING INPUT FILE'/                    &
                '     IOSTAT =',I5/)
@@ -746,16 +733,35 @@
                '     ERROR IN READING FROM INPUT FILE'/               &
                '     IOSTAT =',I5/)
 !
- 1003 FORMAT (/' *** WAVEWATCH III WERROR IN W3EXNC : '/              &
+ 1003 FORMAT (/' *** WAVEWATCH III WERROR IN W3OUNF : '/              &
                '     OUT OF RANGE REQUEST FOR NBIPART =',I2, /        &
                '     MAX SWELL PARTITIONS (NOSW) =',I2 /)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
+!
  1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     NCTYPE = 4 BUT NOT COMPILED WITH NC4'/)
 !
- 1500 FORMAT (/' *** WAVEWATCH III WARNING IN W3EXNC : '/             &
+ 1013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
+               '     TIMEUNITS MUST BE ONE OF "S" OR "D"' /           &
+               '     GOT: ',A /)
+!
+ 1014 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
+               '     TIMEVAR TYPE MUST BE ONE OF "I" OR "D"' /        &
+               '     GOT: ',A /)
+!
+ 1015 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
+               '     CANNONT HAVE TIME UNITS OF DAYS WITH'/           &
+               '     TIME VARYTPE OF INT64' /)
+!
+ 1016 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
+               '     INT64 TIME ENCODING REQUIRES NETCDF4' /          &
+               '     FILE FORMAT' /)
+!
+! Warning format strings
+!
+ 1500 FORMAT (/' *** WAVEWATCH III WARNING IN W3OUNF : '/             &
                '     IGNORING REQUEST FOR IPART =',I2, /              &
                '     MAX SWELL PARTITIONS (NOSW) =',I2 /)
 !
@@ -2295,7 +2301,7 @@
               END IF
 
               ! Write forecast reference time, if requested:
-              IF (FLGFCP) THEN
+              IF (FLGFC) THEN
                 IF(TIMEUNIT .EQ. 'S') THEN
                   OUTSECS = TSUBSEC(EPOCHDATE, REFDATE)
                   IRET = NF90_PUT_VAR(NCID, VARID(12), OUTSECS)
@@ -2431,7 +2437,7 @@
               IRET=NF90_INQUIRE_DIMENSION (NCID, DIMID(4+EXTRADIM),len=N)
               CALL CHECK_ERR(IRET)
               IRET=NF90_INQ_VARID (NCID, 'time', VARID(3))
-              IF( FLGFCP ) THEN
+              IF( FLGFC ) THEN
                 IRET = NF90_INQ_VARID(NCID, 'forecast_period', VARID(11))
                 CALL CHECK_ERR(IRET)
               ENDIF
@@ -2585,7 +2591,7 @@
               CALL CHECK_ERR(IRET)
 
               ! ChrisB: Calculate forecast period w.r.t. forecast reference time:
-              IF (FLGFCP) THEN
+              IF (FLGFC) THEN
                 OUTSECS = TSUBSEC(REFDATE, CURDATE)
                 IRET = NF90_PUT_VAR(NCID, VARID(11), OUTSECS, (/N/))
                 CALL CHECK_ERR(IRET)
@@ -3474,7 +3480,7 @@
 !
 ! forecast period and (forecast reference time), if requested
 !
-      IF (FLGFCP) THEN
+      IF (FLGFC) THEN
          IRET = NF90_DEF_VAR(NCID, 'forecast_period', NF90_INT,         &
             DIMID(4+EXTRADIM), VARID(11))
          CALL CHECK_ERR(IRET)

@@ -35,7 +35,7 @@
     LOGICAL                     :: VECTOR
     INTEGER                     :: TYPE
     CHARACTER(15)               :: TIMEREF
-    LOGICAL                     :: FCPERIOD
+    LOGICAL                     :: FCVARS
     CHARACTER                   :: TIMEVAR
     CHARACTER                   :: TIMEUNIT
   END TYPE NML_FIELD_T
@@ -275,7 +275,7 @@
     FIELD%VECTOR     = .TRUE.
     FIELD%TYPE       = 3
     FIELD%TIMEREF    = 'unset'
-    FIELD%FCPERIOD   = .FALSE.
+    FIELD%FCVARS     = .FALSE.
     FIELD%TIMEVAR    = 'D'
     FIELD%TIMEUNIT   = 'D'
 
@@ -585,7 +585,7 @@
       WRITE (NDSN,10) TRIM(MSG),'PARTITION  = ', TRIM(NML_FIELD%PARTITION)
       WRITE (NDSN,13) TRIM(MSG),'SAMEFILE   = ', NML_FIELD%SAMEFILE
       WRITE (NDSN,11) TRIM(MSG),'TYPE       = ', NML_FIELD%TYPE
-      WRITE (NDSN,13) TRIM(MSG),'FCPERIOD   = ', NML_FIELD%FCPERIOD
+      WRITE (NDSN,13) TRIM(MSG),'FCVARS     = ', NML_FIELD%FCVARS
       WRITE (NDSN,13) TRIM(MSG),'TIMEREF    = ', NML_FIELD%TIMEREF
 
 
