@@ -1648,12 +1648,12 @@
 ! IFI=1, IFJ=8
       META => GROUP(1)%FIELD(8)%META
       META(1)%FSC    = 0.01
-      META(1)%UNITS  = 'm2 s-2'
+      META(1)%UNITS  = 'Pa'
       META(1)%ENAME  = '.taua'
       META(1)%VARNM='utaua'
-      META(1)%VARNL='eastward_atm_momentum'
-      META(1)%VARNS='eastward_atm_momentum'
-      META(1)%VARNG='eastward_atm_momentum'
+      META(1)%VARNL='surface_downward_eastward_stress'
+      META(1)%VARNS='surface_downward_eastward_stress'
+      META(1)%VARNG='surface_downward_eastward_stress'
       META(2)%VARNC='taua=sqrt(utaua**2+vtaua**2)'
       META(1)%VMIN = -320
       META(1)%VMAX =  320
@@ -1662,9 +1662,9 @@
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtaua'
-      META(2)%VARNL='northward_atm_momentum'
-      META(2)%VARNS='northward_atm_momentum'
-      META(2)%VARNG='northward_atm_momentum'
+      META(2)%VARNL='surface_downward_northward_stress'
+      META(2)%VARNS='surface_downward_northward_stress'
+      META(2)%VARNG='surface_downward_northward_stress'
       META(2)%VARNC='taua=sqrt(utaua**2+vtaua**2)'
 ! IFI=1, IFJ=9
       META => GROUP(1)%FIELD(9)%META
