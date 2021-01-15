@@ -44,6 +44,9 @@
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
 !/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
+!/    15-Jan-2020 : Added TP, WNDDIR and CURDIR outputs ( version 7.12 )
+!/                  based on existing internal fields.
+!/                  (C. Bunney, UKMO)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -669,26 +672,28 @@
 !
 ! 1) Forcing fields
 !
-      NOGE(1) = 7
-!/BT4      NOGE(1) = 8
-!/IS2      NOGE(1) = 10    ! CB
-!/SETUP    NOGE(1) = 11    ! CB
+      NOGE(1) = 9
+!/BT4      NOGE(1) = 10
+!/IS2      NOGE(1) = 12
+!/SETUP    NOGE(1) = 13
 !
       IDOUT( 1, 1)  = 'Water depth         '
-      IDOUT( 1, 2)  = 'Current vel.        '
-      IDOUT( 1, 3)  = 'Wind speed          '
+      IDOUT( 1, 2)  = 'Current vel. (U/V)  '
+      IDOUT( 1, 3)  = 'Wind speed (U/V)    '
       IDOUT( 1, 4)  = 'Air-sea temp. dif.  '
       IDOUT( 1, 5)  = 'Water level         '
       IDOUT( 1, 6)  = 'Ice concentration   '
       IDOUT( 1, 7)  = 'Iceberg damp coeffic'
-!/BT4      IDOUT( 1, 8)  = 'Sediment diam D50   '
-!/IS2      IDOUT( 1, 9)  = 'ice thickness   '
-!/IS2      IDOUT( 1, 10) = 'Avg. ice floe diam. '
-!/SETUP    IDOUT( 1, 11)  = 'wave induced setup'
+      IDOUT( 1, 8)  = 'Current dir/spd     '
+      IDOUT( 1, 9)  = 'Wind dir/spd        '
+!/BT4      IDOUT( 1, 10)  = 'Sediment diam D50   '
+!/IS2      IDOUT( 1, 11)  = 'ice thickness   '
+!/IS2      IDOUT( 1, 12) = 'Avg. ice floe diam. '
+!/SETUP    IDOUT( 1, 13)  = 'wave induced setup'
 !
 ! 2) Standard mean wave parameters
 !
-      NOGE(2) = 17
+      NOGE(2) = 18
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -707,6 +712,7 @@
       IDOUT( 2, 15)  = 'STD Space-Time Hmax'
       IDOUT( 2, 16)  = 'STD ST Hmax^crest  '
       IDOUT( 2, 17)  = 'Dominant wave bT   '
+      IDOUT( 2, 18)  = 'Peak period        '
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
 !      IDOUT( 2,12)  = 'Windsea height(Sin)'

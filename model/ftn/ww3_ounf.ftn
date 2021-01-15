@@ -39,6 +39,7 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
+!/    15-Jan-2021 : Added TP, WNDDIR and CURDIR outputs ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -842,7 +843,7 @@
       REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
                                  XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    & 
                                  MX1R(:,:), MXXR(:,:), MYYR(:,:),      &
-                                 MXYR(:,:)
+                                 MXYR(:,:), AUX1(:), AUX2(:)
 !
       DOUBLE PRECISION        :: OUTJULDAY
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
@@ -858,6 +859,7 @@
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
 !
       LOGICAL                 :: FLFRQ, FLDIR, FEXIST, FREMOVE
+      LOGICAL                 :: FLAGCURN = .FALSE., FLAGWURN=.FALSE.
       LOGICAL                 :: CUSTOMFRQ=.FALSE.
 !/T      LOGICAL                 :: LTEMP(NGRPP)
 !/RTD ! RTDL == False for a standard lat-lon grid. Will be set to True if the
@@ -902,6 +904,7 @@
         ALLOCATE(MX1(NX,NY), MXX(NX,NY), MYY(NX,NY), MXY(NX,NY), MAPOUT(NX,NY))
         ALLOCATE(MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY), MXYR(NX,NY))
       ENDIF ! SMCGRD
+      ALLOCATE(AUX1(1:NSEA), AUX2(1:NSEA))
 
       X1     = UNDEF
       X2     = UNDEF
@@ -1018,11 +1021,14 @@
                                                             , MAPSF, X1 )
               ENDIF
 
-            ! Surface current
+            ! Surface current (U/V)
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               !! Note - CX and CY read in from .ww3 file are X-Y vectors
 !/RTD              ! Rotate x,y vector back to standard pole
-!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
+!/RTD              IF ( FLAGUNR .AND. .NOT. FLAGCURN ) THEN
+!/RTD                CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
+!/RTD                FLAGCURN = .TRUE.
+!/RTD              ENDIF
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( CX(1:NSEA), XX )
 !/SMC                 CALL W3S2XY_SMC( CY(1:NSEA), XY )
@@ -1034,11 +1040,14 @@
               ENDIF
               NFIELD=2
 !
-            ! Wind
+            ! Wind (U/V)
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               !! Note - UA and UD read in from .ww3 file are UX,UY
 !/RTD              ! Rotate x,y vector back to standard pole
-!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
+!/RTD              IF ( FLAGUNR .AND. .NOT. FLAGWURN )  THEN
+!/RTD                CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
+!/RTD                FLAGWURN = .TRUE.
+!/RTD              ENDIF
               
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( UA(1:NSEA), XX )
@@ -1075,7 +1084,7 @@
               ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE(1:NSEA), MAPSF, X1 )
               ENDIF
-
+!
             ! Icebergs_damping
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
               IF( SMCGRD ) THEN
@@ -1085,19 +1094,59 @@
               ENDIF
               WHERE ( X1.NE.UNDEF) X1 = X1*0.1
 !
+            ! Surface current (speed/dir)
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+              !! Note - CX and CY read in from .ww3 file are X-Y vectors
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR .AND. .NOT. FLAGCURN ) THEN
+!/RTD                CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
+!/RTD                FLAGCURN = .TRUE.
+!/RTD              ENDIF
+
+              CALL UV_TO_MAG_DIR(CX(1:NSEA), CY(1:NSEA), AUX1, AUX2,   &
+                                 TOLERANCE=0.05, CONV='O')
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( AUX1, XX, .TRUE. )
+!/SMC                 CALL W3S2XY_SMC( AUX2, XY, .TRUE. )
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, XX )
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX2, MAPSF, XY )
+              ENDIF
+              NFIELD=2
+!
+            ! Wind (speed/dir)
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+              !! Note - UA and UD read in from .ww3 file are UX,UY
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR .AND. .NOT. FLAGWURN )  THEN
+!/RTD                CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
+!/RTD                FLAGWURN = .TRUE.
+!/RTD              ENDIF
+              
+              CALL UV_TO_MAG_DIR(UA(1:NSEA), UD(1:NSEA), AUX1, AUX2,   &
+                                 TOLERANCE=1.0, CONV='N')
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( UA(1:NSEA), AUX1, .TRUE. )
+!/SMC                 CALL W3S2XY_SMC( UD(1:NSEA), AUX2, .TRUE. )
+              ELSE ! IF(SMCGRD)
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, XX )
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX2, MAPSF, XY )
+              ENDIF
+              NFIELD=2
+!
 !/BT4 ! Krumbein phi scale
-!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
 !/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
 !
 !/IS2 ! Ice thickness
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 !
 !/IS2 ! Maximum ice floe diameter
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 
@@ -1251,6 +1300,21 @@
               ELSE
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1 )
               END IF
+
+            ! Wave peak period (derived from peak freq field)
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+              DO I=1,NSEA
+                IF(FP0(I) .NE. UNDEF) THEN
+                  AUX1(I) = 1.0 / FP0(I)
+                ELSE
+                  AUX1(I) = UNDEF
+                ENDIF
+              ENDDO
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC(AUX1, X1)
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, X1 )
+              ENDIF
 !
             ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
@@ -3737,6 +3801,87 @@
 
       END SUBROUTINE W3CRNC 
 
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE UV_TO_MAG_DIR(U, V, MAG, DIR, TOLERANCE, CONV)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Jan-2021 |
+!/                  +-----------------------------------+
+!/
+!/    15-Jan-2021 : Creation                            ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Converts seapoint arrays formulated as U/V vectors into magnitude
+!     and direction arrays.
+!
+!  2. Parameters
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       U/V       R.Arr  I  Array of U/V components
+!       MAG       R.Arr  O  Magnitude array
+!       DIR       R.Arr  O  Direction array (degrees)
+!       TOLERANCE Real   I  Minimum allowed magnitude  (Optional)
+!       CONV      Char   I  Ouput direciton convention (Optional)
+!     ----------------------------------------------------------------
+!
+!  3. Remarks
+!
+!     Optional CONV specifies direction convention. Must be one of:
+!       'N'=Nautical     : North=0, clockwise, direction-from (default)
+!       'O'=Oceangraphic : North=0, clockwise, direction-to
+!       'C'=Cartesian    : North=90, counter-clockwise, direction-to
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+ 
+      REAL, INTENT(IN) :: U(:), V(:)
+      REAL, INTENT(OUT) :: MAG(:), DIR(:)
+      REAL, INTENT(IN), OPTIONAL :: TOLERANCE
+      CHARACTER, INTENT(IN), OPTIONAL :: CONV
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!
+      REAL :: TOL, SGN, OFFSET
+      CHARACTER :: DIRCONV
+      INTEGER :: ISEA
+
+      DIRCONV = 'N'
+      TOL = 1.0
+      IF(PRESENT(TOLERANCE)) TOL = TOLERANCE
+      IF(PRESENT(CONV)) DIRCONV = CONV
+
+      SELECT CASE (CONV)
+        CASE('N')
+          OFFSET = 630.
+          SGN = -1.
+        CASE('O')
+          OFFSET = 450.
+          SGN = -1.
+        CASE('C')
+          OFFSET = 360.
+          SGN = 1.
+        CASE DEFAULT
+          WRITE(NDSE,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
+          CALL EXTCDE(1)
+      END SELECT
+
+      DO ISEA=1, NSEA
+        MAG(ISEA) = SQRT(U(ISEA)**2 + V(ISEA)**2)
+        IF(MAG(ISEA) .GE. TOL) THEN
+          DIR(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
+        ELSE
+          MAG(ISEA) = UNDEF
+          DIR(ISEA) = UNDEF
+        END IF
+      END DO
+
+     END SUBROUTINE UV_TO_MAG_DIR
+
 !==============================================================================
 
       SUBROUTINE CHECK_ERROR(IRET, ILINE)
@@ -3762,13 +3907,7 @@
 
 !==============================================================================
 
-
 !/
 !/ End of W3OUNF ----------------------------------------------------- /
 !/
       END PROGRAM W3OUNF
-
-
-
-
-

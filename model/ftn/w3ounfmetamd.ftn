@@ -10,6 +10,7 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
+!/    15-Jan-2021 : Added TP, WNDDIR and CURDIR outputs ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -1643,8 +1644,52 @@
       META(1)%VARNG='icebergs_damping'
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
-! IFI=1, IFJ=8
-!/BT4      META => GROUP(1)%FIELD(8)%META
+! IFI=, IFJ=8, CURDIR
+      META => GROUP(1)%FIELD(8)%META
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.curdir'
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10.0
+      META(1)%VARNM='cspd'
+      META(1)%VARNL='current speed'
+      META(1)%VARNS='sea_water_speed'
+      META(1)%VARNG='sea_water_speed'
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%FSC = 0.1
+      META(2)%VARNM='cdir'
+      META(2)%UNITS= 'degrees'
+      META(2)%VARNL='current direction (toward)'
+      META(2)%VARNS='direction_of_sea_water_velocity'
+      META(2)%VARNG='direction_of_sea_water_velocity'
+      META(2)%VMIN = 0
+      META(2)%VMAX = 360.0
+! IFI=, IFJ=9, WNDDIR
+      META => GROUP(1)%FIELD(9)%META
+      META(1)%FSC = 0.01
+      META(1)%ENAME  = '.wnddir'
+      META(1)%UNITS= 'm s-1'
+      META(1)%VARNM='wspd'
+      META(1)%VARNL='wind speed'
+      META(1)%VARNS='wind_speed'
+      META(1)%VARNG='wind_speed'
+      META(1)%VMIN = 0.0
+      META(1)%VMAX = 100.0
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%FSC = 0.1
+      META(2)%VARNM='wdir'
+      META(2)%UNITS='degrees'
+      META(2)%VARNL='wind direction (from)'
+      META(2)%VARNS='wind_from_direction'
+      META(2)%VARNG='wind_from_direction'
+      META(2)%VMIN = 0.0
+      META(2)%VMAX = 360.0
+! IFI=1, IFJ=10
+!/BT4      META => GROUP(1)%FIELD(10)%META
 !/BT4      META(1)%FSC    = 0.001
 !/BT4      META(1)%UNITS  = 'Krumbein phi scale'
 !/BT4      META(1)%ENAME  = '.d50'
@@ -1654,8 +1699,8 @@
 !/BT4      META(1)%VARNG='sediment_grain_size'
 !/BT4      META(1)%VMIN = -10.0
 !/BT4      META(1)%VMAX = 32.0
-! IFI=1, IFJ=9
-!/IS2      META => GROUP(1)%FIELD(9)%META
+! IFI=1, IFJ=11
+!/IS2      META => GROUP(1)%FIELD(11)%META
 !/IS2      META(1)%FSC = 0.001
 !/IS2      META(1)%UNITS = 'm'
 !/IS2      META(1)%ENAME = '.ic1'
@@ -1665,8 +1710,8 @@
 !/IS2      META(1)%VARNG='ice_thickness'
 !/IS2      META(1)%VMIN = 0
 !/IS2      META(1)%VMAX = 30
-! IFI=1, IFJ=10
-!/IS2      META => GROUP(1)%FIELD(10)%META
+! IFI=1, IFJ=12
+!/IS2      META => GROUP(1)%FIELD(12)%META
 !/IS2      META(1)%FSC = 0.05
 !/IS2      META(1)%UNITS = 'm'
 !/IS2      META(1)%ENAME = '.ic5'
@@ -1871,6 +1916,17 @@
       META(1)%VARNG='dominant_wave_breaking_probability'
       META(1)%VMIN = 0
       META(1)%VMAX = 1
+! IFI=2, IFJ=18, TP
+      META => GROUP(2)%FIELD(18)%META
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.tp'
+      META(1)%VARNM='tp'
+      META(1)%VARNL='wave peak period'
+      META(1)%VARNS='sea_surface_wave_peak_period'
+      META(1)%VARNG='dominant_wave_period'
+      META(1)%VMIN = 0 
+      META(1)%VMAX = 50
 !
 !---------- GROUP 3 ----------------
 !

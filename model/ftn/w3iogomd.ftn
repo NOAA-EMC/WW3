@@ -57,6 +57,9 @@
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine. (C. Bunney)
+!/    15-Jan-2020 : Added TP, WNDDIR and CURDIR outputs ( version 7.12 )
+!/                  based on existing internal fields.
+!/                  (C. Bunney)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -732,15 +735,21 @@
       CASE('IBG')
         I = 1
         J = 7
+      CASE('CURDIR') ! Uses CX/CY internally, as per CUR
+        I = 1
+        J = 8
+      CASE('WNDDIR') ! Uses UA/UD internally, as per WND
+        I = 1
+        J = 9
 !/BT4           CASE('D50')
 !/BT4             I = 1
-!/BT4             J = 8
+!/BT4             J = 10
 !/IS2           CASE('IC1')
 !/IS2             I = 1
-!/IS2             J = 9
+!/IS2             J = 11
 !/IS2           CASE('IC5')
 !/IS2             I = 1
-!/IS2             J = 10
+!/IS2             J = 12
 ! Group 2
 !
 !/OASACM         CASE('AHS')
@@ -800,6 +809,9 @@
       CASE('WBT')
         I = 2
         J = 17
+      CASE('TP') ! Uses FP0 internally, as per FP
+        I = 2
+        J = 18
 !
 ! Group 3
 !
@@ -2653,7 +2665,8 @@
                 IF ( FLOGRD( 2, 3) ) T02   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 4) ) T0M1  (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 5) ) T01   (ISEA) = UNDEF
-                IF ( FLOGRD( 2, 6) ) FP0   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 6) .OR. FLOGRD( 2,18) )                 &
+                                     FP0   (ISEA) = UNDEF  ! FP or TP
                 IF ( FLOGRD( 2, 7) ) THM   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 8) ) THS   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 9) ) THP0  (ISEA) = UNDEF
@@ -2818,10 +2831,14 @@
 !
                 IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
                     WRITE ( NDSOG ) DW(1:NSEA)
-                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+                  ELSE IF ( (IFI .EQ. 1 .AND. IFJ .EQ. 2) .OR.          &
+                            (IFI .EQ. 1 .AND. IFJ .EQ. 8) ) THEN
+                    ! CUR or CURDIR
                     WRITE ( NDSOG ) CX(1:NSEA)
                     WRITE ( NDSOG ) CY(1:NSEA)
-                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
+                  ELSE IF ( (IFI .EQ. 1 .AND. IFJ .EQ. 3) .OR.          &
+                            (IFI .EQ. 1 .AND. IFJ .EQ. 9) ) THEN
+                    ! WND or WNDDIR
                     DO ISEA=1, NSEA
 !/ARC  !!Li  Rotate map-east wind in Arctic part back to local east.  JGLi02Feb2016
 !/ARC                      IF(ISEA .GT. NGLO) THEN
@@ -2868,7 +2885,9 @@
                     WRITE ( NDSOG ) T0M1(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) T01(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+                  ELSE IF ( (IFI .EQ. 2 .AND. IFJ .EQ. 6) .OR.         &
+                            (IFI .EQ. 2 .AND. IFJ .EQ. 18) ) THEN
+                    ! TP output is derived from FP field.
                     WRITE ( NDSOG ) FP0(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) THM(1:NSEA)
@@ -3105,10 +3124,14 @@
 !
                 IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) DW(1:NSEA)
-                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+                  ELSE IF ( (IFI .EQ. 1 .AND. IFJ .EQ. 2) .OR.         &
+                            (IFI .EQ. 1 .AND. IFJ .EQ. 8) ) THEN
+                    ! CUR or CURDIR
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CY(1:NSEA)
-                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
+                  ELSE IF ( (IFI .EQ. 1 .AND. IFJ .EQ. 3) .OR.         &
+                            (IFI .EQ. 1 .AND. IFJ .EQ. 9) ) THEN
+                    ! WND or WNDDIR
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UD(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
@@ -3140,7 +3163,9 @@
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T0M1(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T01(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+                  ELSE IF ( (IFI .EQ. 2 .AND. IFJ .EQ. 6) .OR.       &
+                            (IFI .EQ. 2 .AND. IFJ .EQ. 18) ) THEN
+                    ! TP output is derived from FP field.
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) FP0(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) THM(1:NSEA)
