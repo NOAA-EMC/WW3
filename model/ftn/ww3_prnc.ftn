@@ -1372,7 +1372,7 @@
         IF (IRET .NE. 0) SCFAC(1) = 1.0
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
         IF (IRET .NE. 0) ADDOFF(1) = 0.0
-        IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+        IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
           IF (IRET .NE. 0) SCFAC(2) = 1.0
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
@@ -1596,7 +1596,7 @@
           IF (IRET.NE.0 ) XCFAC = 1.0
           IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
           IF (IRET.NE.0 ) XCOFF = 0.0
-          IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+          IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
             IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
             IF (IRET.NE.0 ) YCFAC = 1.0
             IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
@@ -1653,7 +1653,7 @@
 !
 ! ... Input
 !
-          IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6) THEN
+          IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
             IF (NDIMSGRID.EQ.1) THEN 
               IRET=NF90_GET_VAR(NCID,VARIDF(1),XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
             ELSE
@@ -1684,7 +1684,7 @@
 !/T2                END IF
 !/T2              END DO
 !
-            IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
+            IF (NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG) THEN
 
 ! This is a quick fix that works if the lon,lat,level,time dimensions are in that order
 ! otherwise, one should check the length of each dimension ... 
@@ -1797,7 +1797,7 @@
               END DO
             END DO
 
-            IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
+            IF (( IFLD.LE.2 .OR. IFLD.EQ.7 ).AND.( .NOT. FLBERG )) THEN
                 DO IY=1, NY
                   DO IX=1, NX
                     FA(IX,IY) = XC(IX,IY)
@@ -1818,7 +1818,7 @@
 ! ... One-component fields
 !
 !/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
-            IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
+            IF (( IFLD.LE.2 .OR. IFLD.EQ.7 ).AND.( .NOT. FLBERG )) THEN
 !
                 DO IY=1,NY
                   DO IX=1,NX
@@ -1978,6 +1978,9 @@
 !/T3            ELSE IF (IFLD.EQ.2) THEN
 !/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
 !/T3                      IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
+!/T3            ELSE IF (IFLD.EQ.7) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'Air density', 'kg/m3')
 !/T3            ELSE
 !/T3              CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
 !/T3                      IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
