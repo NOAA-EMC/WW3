@@ -219,7 +219,7 @@
       LOGICAL                 :: SMCGRD = .FALSE.
 
       INTEGER                 :: TVARTYPE = NF90_DOUBLE
-      CHARACTER(LEN=32)       :: EPOCH_REF = '1990-01-01 00:00:00'
+      CHARACTER(LEN=32)       :: EPOCH_REF = '1990-01-01 00:00:00' ! TODO - configurable only namelist
       CHARACTER(LEN=64)       :: EPOCH
       CHARACTER               :: TIMEUNIT*1 ! 'D' = days, or 'S' for seconds
 

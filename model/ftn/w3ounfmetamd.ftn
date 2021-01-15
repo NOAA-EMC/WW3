@@ -1254,6 +1254,8 @@
 !        ! What do we want for unstructure grids?
       ELSE
 !        ! Normal cartesian or lat/lon grid...no default?
+!        TODO : latitude_longitude CRS see:
+!        https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/apf.html
       ENDIF
 
       END SUBROUTINE DEFAULT_CRS_META
