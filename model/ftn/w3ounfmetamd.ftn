@@ -2611,7 +2611,7 @@
       META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
 ! IFI=6, IFJ=13 
       META => GROUP(6)%FIELD(13)%META
-      META(1)%UNITS  = 'm2 s-2'
+      META(1)%UNITS  = 'Pa'
       META(1)%FSC    = 0.01
       META(1)%ENAME  = '.toc'
       META(1)%VMIN   = -320

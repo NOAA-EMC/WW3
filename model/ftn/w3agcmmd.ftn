@@ -331,7 +331,7 @@
          ENDIF
          IF (IDFLD == 'TAU') THEN
             !
-            ! Atmospheric momentum (m2.s-2) (u-component)
+            ! Atmospheric momentum (Pa) (u-component)
             ! ----------------------------------------------------------------------
             IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UTAU') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
@@ -357,7 +357,7 @@
                ENDIF
             ENDIF
             !
-            ! Atmospheric momentum (m2.s-2) (v-component)
+            ! Atmospheric momentum (Pa) (v-component)
             ! ----------------------------------------------------------------------
             IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_VTAU') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)

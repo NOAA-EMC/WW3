@@ -239,7 +239,7 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
-         ! Wave-ocean total momentum flux (tauocx in m2.s-2)
+         ! Wave-ocean total momentum flux (tauocx in Pa)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCX') THEN
             TMP(1:NSEAL) = 0.0
@@ -248,7 +248,7 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
-         ! Wave-ocean total momentum flux (tauocy in m2.s-2)
+         ! Wave-ocean total momentum flux (tauocy in Pa)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCY') THEN
             TMP(1:NSEAL) = 0.0
