@@ -1112,7 +1112,7 @@
 ! to be able to output integrated variables like cha, ust, taw
 
       FLINTERP = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' &
-                                                    .OR. IDFLD.EQ.'TAU'
+                                .OR. IDFLD.EQ.'TAU' .OR. IDFLD.EQ.'RHO'
 ! if the model is coupled, no interpolation in time must be done
 
       IF (FLCOUPL) FLINTERP = .FALSE.
@@ -1138,7 +1138,7 @@
                 DO IX=1, NX
                   DO IY=1, NY
                     FX0(IX,IY) = FXN(IX,IY)
-                    FY0(IX,IY) = FYN(IX,IY)
+                    IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
                     END DO
                   IF( FLST ) THEN
                       DO IY=1, NY
@@ -1263,7 +1263,7 @@
           DO IX=1, NX
             DO IY=1, NY
               FX0(IX,IY) = FXN(IX,IY)
-              FY0(IX,IY) = FYN(IX,IY)
+              IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
               END DO
             IF( FLST ) THEN
                 DO IY=1, NY
