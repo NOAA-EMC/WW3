@@ -2971,8 +2971,8 @@
       META(1)%UNITS  = 'm2 s-1'
       META(1)%ENAME  = '.tus'
       META(1)%VARND = DIRCOM
-      META(1)%VMIN = -9.9
-      !TODO WHERE IS VMAX?
+      META(1)%VMIN = -32.0 ! C Hansen: The former values of +-9.9 might be
+      META(1)%VMAX = 32.0  ! exceeded more frequently in real storms
 
       ! First component
       META(1)%VARNM='utus'
@@ -3076,6 +3076,9 @@
         META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
       ELSE
         META(1)%UNITS='Pa2 m2 s'
+        META(1)%VARNL='power spectral density of equivalent surface pressure'
+        !META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
+        META(1)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
       ENDIF
       META(1)%VARNC=''
       META(1)%VARND=''
@@ -3124,6 +3127,8 @@
       META(1)%FSC    = 0.0005
       META(1)%ENAME  = '.usp'
       META(1)%VARND  = DIRCOM
+      META(1)%VMIN = -9.99
+      META(1)%VMAX = 9.98
 
       ! First component
       META(1)%VARNM='ussp'
@@ -3291,12 +3296,12 @@
       META(2)%VARNG='y_mean_square_slope'
 ! IFI=8, IFJ=2, MSC
       META => GROUP(8)%FIELD(2)%META
-      META(2)%FSC    = 1E-7
-      META(2)%ENAME  = '.msc'
-      META(2)%UNITS  = '1'
-      META(2)%VMIN = 0
-      META(2)%VMAX = 0.003
-      META(2)%VARND = DIRCOM
+      META(1)%FSC    = 1E-7
+      META(1)%ENAME  = '.msc'
+      META(1)%UNITS  = '1'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 0.003
+      META(1)%VARND = DIRCOM
 
       ! First component
       META(1)%VARNM='mscx'

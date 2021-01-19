@@ -2428,7 +2428,7 @@
                   IRET=NF90_INQ_DIMID (NCID, 'x', DIMID(2))
                   IRET=NF90_INQ_VARID (NCID, 'x', VARID(1))
                   IRET=NF90_INQ_DIMID (NCID, 'y', DIMID(3)) 
-                  IRET=NF90_INQ_VARID (NCID, 'y', VARID(1))
+                  IRET=NF90_INQ_VARID (NCID, 'y', VARID(2))
                 END IF 
                 CALL CHECK_ERR(IRET)
               END IF
@@ -2545,7 +2545,7 @@
                 IRET=NF90_ENDDEF(NCID)
                 CALL CHECK_ERR(IRET)
               END IF !   N.EQ.1
-            END IF  ! IERR.EQ.0
+            END IF  ! FEXIST
               
 ! 2.6.4 Defines the current time step and index
      
@@ -3287,17 +3287,17 @@
 !/SMC              ! For seapoint style SMC grid, also define out cell size variables:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(5))
 !/SMC              CALL CHECK_ERR(IRET)
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'long_name',        &
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(5), 'long_name',        &
 !/SMC                                  'longitude cell size factor')
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'valid_min', 1)
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(299), 'valid_max', 256)
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(5), 'valid_min', 1)
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(5), 'valid_max', 256)
 !/SMC
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'cy', NF90_SHORT, DIMID(2), VARID(6))
 !/SMC              call CHECK_ERR(IRET)
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(300), 'long_name',        &
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(6), 'long_name',        &
 !/SMC                                  'latitude cell size factor')
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(300), 'valid_min', 1)
-!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(300), 'valid_max', 256)
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(6), 'valid_min', 1)
+!/SMC              IRET = NF90_PUT_ATT(NCID, VARID(6), 'valid_max', 256)
 !/SMC            ELSE
 !/SMC              ! Regirdded regular SMC grid - use lon/lat dimensions:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
@@ -3437,13 +3437,13 @@
         IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(10))
 !/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','wave_frequency')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','wave_frequency')
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','wave_frequency')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name','wave_frequency')
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(3),'units','s-1')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'units','s-1')
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCID,VARID(3),'axis','Hz')
+        IRET=NF90_PUT_ATT(NCID,VARID(10),'axis','Hz')
         CALL CHECK_ERR(IRET)
       END IF
 
