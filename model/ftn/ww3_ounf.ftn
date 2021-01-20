@@ -1007,9 +1007,6 @@
       END SELECT
 
       CALL U2D(EPOCH, EPOCHDATE, IERR)
-      PRINT*,EPOCH
-      PRINT*,EPOCHDATE
-      PRINT*,IERR
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT

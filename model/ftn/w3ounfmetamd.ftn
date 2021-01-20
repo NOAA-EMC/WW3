@@ -1177,8 +1177,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      CHARACTER(LEN=128) :: BUF
+      CHARACTER(LEN=128) :: BUF, PREV_NAME
       INTEGER            :: I, IERR
+
+      PREV_NAME = CRS_NAME
 
       ! Re-read header line (we only want the second field)
       READ(NDMI, '(A)') BUF
@@ -1192,10 +1194,10 @@
 
       IF(CRS_META%N .NE. 0) THEN
         IF(CRS_IS_DEFAULT) THEN
-          WRITE(NDSE,1001) TRIM(CRS_NAME)
+          WRITE(NDSE,1001) TRIM(PREV_NAME)
           CRS_IS_DEFAULT = .FALSE.
         ELSE
-          WRITE(NDSE,1002) TRIM(CRS_NAME)
+          WRITE(NDSE,1002) TRIM(PREV_NAME)
         ENDIF
         WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
         CALL DEL_META_LIST(CRS_META)
