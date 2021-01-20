@@ -1251,11 +1251,11 @@
 !/RTD            'grid_north_pole_longitude', POLON)
 !/RTD        CRS_IS_DEFAULT = .TRUE.
       ELSE IF(GTYPE .EQ. UNGTYPE) THEN
-!        ! What do we want for unstructure grids?
+!       ! What do we want for unstructure grids?
       ELSE
-!        ! Normal cartesian or lat/lon grid...no default?
-!        TODO : latitude_longitude CRS see:
-!        https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/apf.html
+        ! Lat/lon grid
+        CALL META_LIST_APPEND(CRS_META,                                &
+            'grid_mapping_name', 'latitude_longitude')
       ENDIF
 
       END SUBROUTINE DEFAULT_CRS_META

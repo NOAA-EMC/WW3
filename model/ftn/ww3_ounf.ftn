@@ -200,7 +200,7 @@
                                  IOUT, S3, IRET, HASNC4,               &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
-      INTEGER                 :: TOUT(2), TDUM(2), TREF(2),            &
+      INTEGER                 :: TOUT(2), TDUM(2), TREF(2), TEPOCH(2), &
                                  STOPDATE(8), REFDATE(8)
 !
       INTEGER, ALLOCATABLE    :: TABIPART(:), NCIDS(:,:,:)
@@ -219,7 +219,7 @@
       LOGICAL                 :: SMCGRD = .FALSE.
 
       INTEGER                 :: TVARTYPE = NF90_DOUBLE
-      CHARACTER(LEN=32)       :: EPOCH_REF = '1990-01-01 00:00:00' ! TODO - configurable only namelist
+      CHARACTER(LEN=32)       :: EPOCH_ISO
       CHARACTER(LEN=64)       :: EPOCH
       CHARACTER               :: TIMEUNIT*1 ! 'D' = days, or 'S' for seconds
 
@@ -250,7 +250,10 @@
       WRITE (NDSO,900)
 
 !/SMC      SMCGRD = .TRUE.
-
+!
+      ! Default epoch time:
+      TEPOCH(1) = 19900101
+      TEPOCH(2) = 0
 !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -293,6 +296,7 @@
         READ(NML_FIELD%TIMECOUNT, *)   NOUT
         READ(NML_FIELD%TIMESTART, *)   TOUT(1), TOUT(2)
         READ(NML_FIELD%TIMEREF, *)     TREF(1), TREF(2)
+        READ(NML_FIELD%TIMEEPOCH, *)   TEPOCH(1), TEPOCH(2)
 
 ! 4.2 Output fields
         FLDOUT = NML_FIELD%LIST
@@ -991,17 +995,21 @@
 !
 !
       !CHRISB: Allow alternative time units:
+      CALL T2ISO(TEPOCH, EPOCH_ISO)
       SELECT CASE(TIMEUNIT)
         CASE('D')
-          EPOCH = 'days since ' // EPOCH_REF
+          EPOCH = 'days since ' // EPOCH_ISO
         CASE('S')
-          EPOCH = 'seconds since ' // EPOCH_REF
+          EPOCH = 'seconds since ' // EPOCH_ISO
         CASE DEFAULT
           PRINT*,'Unknown time units: ', TIMEUNIT
           CALL EXTCDE(10)
       END SELECT
 
       CALL U2D(EPOCH, EPOCHDATE, IERR)
+      PRINT*,EPOCH
+      PRINT*,EPOCHDATE
+      PRINT*,IERR
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT

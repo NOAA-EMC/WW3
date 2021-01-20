@@ -36,6 +36,7 @@
 !                                                     !   forecast_period; defaults to TIMESTART
 !     FIELD%TIMEVAR              = 'D'                ! Time var type ['D' = DOUBLE, 'I' = INT64]
 !     FIELD%TIMEUNIT             = 'D'                ! Time units ['D' = days, 'I' = seconds]
+!     FIELD%TIMEEPOCH            = '19900101 000000'  ! Epoch used for encoding of NC time variables
 ! -------------------------------------------------------------------- !
 &FIELD_NML
   FIELD%TIMESTART        =  '20100101 000000'

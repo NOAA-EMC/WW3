@@ -50,6 +50,7 @@
 !      TSUB      I.D.  Public   Substract two time arrays in days
 !      TSUBSEC   I.D.  Public   Substract two time arrays in seconds
 !      U2D       Subr. Public   Convert time units attribute to date array
+!      T2ISO     Subr. Public   Convert time array to ISO time string
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -1600,7 +1601,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: A1, B1, C1, D1, A2, B2, C2, D2
+      INTEGER(KIND=8)         :: A1, B1, C1, D1, A2, B2, C2, D2
       INTEGER(KIND=8)         :: E1, E2
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
@@ -1890,8 +1891,79 @@ DAT(8) = 0  ! force milliseconds to 0
 
 !/ ------------------------------------------------------------------- /
 
+!/ ------------------------------------------------------------------- /
 
+      SUBROUTINE T2ISO(TIME,ISODT)
 !/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         19-Jan-2020 |
+!/                  +-----------------------------------+
+!/
+!/    19-Jan-2020 : Origination                         ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Convert time array to ISO8601 format string
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       TIME     I.A.     I   Time array like 'YYYYMMDD HHMMSS'
+!       ISODT    Char.    O   ISO8601 datetime string
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: NDSE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER,INTENT(IN)            :: TIME(2)  ! array like 'YYYYMMDD HHMMSS'
+      CHARACTER(LEN=32),INTENT(OUT) :: ISODT    ! ISO date time
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'T2ISO')
+!
+!/
+      WRITE(ISODT,'(I4,"-",I2.2,"-",I2.2,"T",I2.2,":",I2.2,":",I2.2)') &
+         TIME(1) / 10000,                                              &
+         MOD(TIME(1) / 100, 100),                                      &
+         MOD(TIME(1), 100),                                            &
+         TIME(2) / 10000,                                              &
+         MOD(TIME(2) / 100, 100),                                      &
+         MOD(TIME(2), 100)
+!/
+!/ End of T2ISO ------------------------------------------------------ /
+!/
+      END SUBROUTINE T2ISO
+
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/
       END MODULE W3TIMEMD
