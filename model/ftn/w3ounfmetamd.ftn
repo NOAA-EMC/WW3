@@ -10,6 +10,7 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
+!/    15-Jan-2021 : Added TP metadata                   ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -1871,6 +1872,17 @@
       META(1)%VARNG='dominant_wave_breaking_probability'
       META(1)%VMIN = 0
       META(1)%VMAX = 1
+! IFI=2, IFJ=18, TP
+      META => GROUP(2)%FIELD(18)%META
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 's'
+      META(1)%ENAME  = '.tp'
+      META(1)%VARNM='tp'
+      META(1)%VARNL='wave peak period'
+      META(1)%VARNS='sea_surface_wave_peak_period'
+      META(1)%VARNG='dominant_wave_period'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 50
 !
 !---------- GROUP 3 ----------------
 !

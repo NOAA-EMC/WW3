@@ -39,6 +39,7 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
+!/    15-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -842,7 +843,7 @@
       REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
                                  XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    & 
                                  MX1R(:,:), MXXR(:,:), MYYR(:,:),      &
-                                 MXYR(:,:)
+                                 MXYR(:,:), AUX1(:)
 !
       DOUBLE PRECISION        :: OUTJULDAY
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
@@ -902,6 +903,7 @@
         ALLOCATE(MX1(NX,NY), MXX(NX,NY), MYY(NX,NY), MXY(NX,NY), MAPOUT(NX,NY))
         ALLOCATE(MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY), MXYR(NX,NY))
       ENDIF ! SMCGRD
+      ALLOCATE(AUX1(NSEA))
 
       X1     = UNDEF
       X2     = UNDEF
@@ -1251,6 +1253,21 @@
               ELSE
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1 )
               END IF
+!
+            ! Wave peak period (derived from peak freq field)
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+              DO I=1,NSEA
+                IF(FP0(I) .NE. UNDEF) THEN
+                  AUX1(I) = 1.0 / FP0(I)
+                ELSE
+                  AUX1(I) = UNDEF
+                ENDIF
+              ENDDO
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC(AUX1, X1)
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, X1 )
+              ENDIF
 !
             ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
@@ -3311,6 +3328,7 @@
       DEALLOCATE(X1, X2, XX, XY, XK, XXK, XYK)
       DEALLOCATE(MX1, MXX, MYY, MXY, MAPOUT)
       DEALLOCATE(MX1R, MXXR, MYYR, MXYR)
+      DEALLOCATE(AUX1)
       IF (ALLOCATED(LON)) DEALLOCATE(LON, LAT)
       IF (ALLOCATED(LON2D)) DEALLOCATE(LON2D, LAT2D)
 !/RTD      IF (ALLOCATED(LON2DEQ)) DEALLOCATE(LAT2DEQ, LON2DEQ, ANGLD2D)
