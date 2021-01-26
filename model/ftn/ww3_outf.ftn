@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2018 |
+!/                  | Last update :         26-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -34,6 +34,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
+!/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -493,7 +494,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Dec-2012 |
+!/                  | Last update :         26-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    26-Sep-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -514,6 +515,7 @@
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
 !/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
+!/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -600,7 +602,7 @@
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
                                  XX(NX+1,NY), XY(NX+1,NY), DPTMAX(1)
 !!Li  Type 4 sea point only text output variables.  JGLi25Jun2013
-      REAL, Dimension(NSEA)   :: XS1, XS2, XS3, XS4
+      REAL, Dimension(NSEA)   :: XS1, XS2, XS3, XS4, AUX
 !!Li
       DOUBLE PRECISION        :: XDS, XDSQ
       LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI
@@ -1078,6 +1080,25 @@
                    XS1    = WBT
                 ELSE
                   CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1)
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.01
+                UNITS  = 's'
+                ENAME  = '.tp'
+                DO I=1,NSEA
+                  IF(FP0(I) .NE. UNDEF) THEN
+                    AUX(I) = 1.0 / FP0(I)
+                  ELSE
+                    AUX(I) = UNDEF
+                  ENDIF
+                ENDDO
+
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = AUX
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX, MAPSF, X1)
                 ENDIF
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
