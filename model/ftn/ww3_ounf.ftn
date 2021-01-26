@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Oct-2019 |
+!/                  | Last update :         26-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -39,7 +39,8 @@
 !/    03-Nov-2020 : Moved NetCDF metadata to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
-!/    15-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
+!/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
+!/                  and alternative dir/mag output.
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -289,6 +290,7 @@
         NCVARTYPE = NML_FIELD%TYPE
         STRINGIPART = NML_FIELD%PARTITION
         TOGETHER = NML_FIELD%SAMEFILE
+        VECTOR = NML_FIELD%VECTOR
         FILEPREFIX = NML_FILE%PREFIX
         S3 = NML_FIELD%TIMESPLIT
         IF(SMCGRD) THEN
@@ -306,7 +308,6 @@
           IYN = NML_FILE%IYN
         ENDIF ! SMCGRD
       END IF ! FLGNML
-
 !
 ! process old ww3_ounf.inp format
 !
@@ -334,6 +335,8 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) VECTOR
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
         READ (NDSI,*,END=801,ERR=802) FILEPREFIX
@@ -490,11 +493,9 @@
         IYN    = MIN ( IYN , NY )
         WRITE (NDSO,3940) IX1, IXN, IY1, IYN
       ENDIF ! SMCGRD
-
-      VECTOR = .TRUE.
 !
 ! 4.4 Initialise meta-data
-      CALL INIT_META()
+      CALL INIT_META(VECTOR)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Time management.
@@ -712,7 +713,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Oct-2014 |
+!/                  | Last update :         26-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -725,6 +726,8 @@
 !/    03-Nov-2020 : NetCDF metadata moved to separate   ( version 7.12 )
 !/                  module.
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
+!/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
+!/                  and alternative dir/mag output.
 !/
 !  1. Purpose :
 !
@@ -785,7 +788,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3SERVMD, ONLY : W3S2XY
+      USE W3SERVMD, ONLY : W3S2XY, UV_TO_MAG_DIR
 !/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
       USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2
@@ -1025,6 +1028,12 @@
               !! Note - CX and CY read in from .ww3 file are X-Y vectors
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
+!
+              IF( .NOT. VECTOR ) THEN
+                CALL UV_TO_MAG_DIR(CX(1:NSEA), CY(1:NSEA),             &
+                                   TOLERANCE=0.05, CONV='O')
+              ENDIF
+!
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( CX(1:NSEA), XX )
 !/SMC                 CALL W3S2XY_SMC( CY(1:NSEA), XY )
@@ -1041,7 +1050,12 @@
               !! Note - UA and UD read in from .ww3 file are UX,UY
 !/RTD              ! Rotate x,y vector back to standard pole
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
-              
+!             
+              IF( .NOT. VECTOR ) THEN
+                CALL UV_TO_MAG_DIR(UA(1:NSEA), UD(1:NSEA),             &
+                                 TOLERANCE=1.0, CONV='N')
+              ENDIF
+!              
               IF( SMCGRD ) THEN
 !/SMC                 CALL W3S2XY_SMC( UA(1:NSEA), XX )
 !/SMC                 CALL W3S2XY_SMC( UD(1:NSEA), XY )
