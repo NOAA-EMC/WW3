@@ -1961,7 +1961,7 @@ END SUBROUTINE STR_TO_UPPER
    END SUBROUTINE DIAGONALIZE
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE UV_TO_MAG_DIR(U, V, MAG, DIR, TOLERANCE, CONV)
+      SUBROUTINE UV_TO_MAG_DIR(U, V, NSEA, MAG, DIR, TOLERANCE, CONV)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1985,6 +1985,7 @@ END SUBROUTINE STR_TO_UPPER
 !     Parameter list
 !     ----------------------------------------------------------------
 !       U/V       R.Arr  I  Array of U/V components
+!       NSEA      Int    I  Number of sea points
 !       MAG       R.Arr  O  Magnitude array            (Optional)
 !       DIR       R.Arr  O  Direction array (degrees)  (Optional)
 !       TOLERANCE Real   I  Minimum allowed magnitude  (Optional)
@@ -1999,13 +2000,12 @@ END SUBROUTINE STR_TO_UPPER
 !       'C'=Cartesian    : North=90, counter-clockwise, direction-to
 !
 !/ ------------------------------------------------------------------- /
-      USE W3ODATMD, ONLY: NDSE
-      USE W3GDATMD, ONLY: NSEA
       USE CONSTANTS, ONLY: RADE, UNDEF
       IMPLICIT NONE
  
-      REAL, INTENT(INOUT)             :: U(:), V(:)
-      REAL, INTENT(OUT), OPTIONAL     :: MAG(:), DIR(:)
+      REAL, INTENT(INOUT)             :: U(NSEA), V(NSEA)
+      INTEGER, INTENT(IN)             :: NSEA
+      REAL, INTENT(OUT), OPTIONAL     :: MAG(NSEA), DIR(NSEA)
       REAL, INTENT(IN), OPTIONAL      :: TOLERANCE
       CHARACTER, INTENT(IN), OPTIONAL :: CONV
 !/ ------------------------------------------------------------------- /
@@ -2034,7 +2034,7 @@ END SUBROUTINE STR_TO_UPPER
           OFFSET = 360.
           SGN = 1.
         CASE DEFAULT
-          WRITE(NDSE,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
+          WRITE(*,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
           CALL EXTCDE(1)
       END SELECT
 

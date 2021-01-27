@@ -1030,7 +1030,7 @@
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
 !
               IF( .NOT. VECTOR ) THEN
-                CALL UV_TO_MAG_DIR(CX(1:NSEA), CY(1:NSEA),             &
+                CALL UV_TO_MAG_DIR(CX(1:NSEA), CY(1:NSEA), NSEA,       &
                                    TOLERANCE=0.05, CONV='O')
               ENDIF
 !
@@ -1052,7 +1052,7 @@
 !/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
 !             
               IF( .NOT. VECTOR ) THEN
-                CALL UV_TO_MAG_DIR(UA(1:NSEA), UD(1:NSEA),             &
+                CALL UV_TO_MAG_DIR(UA(1:NSEA), UD(1:NSEA), NSEA,       &
                                  TOLERANCE=1.0, CONV='N')
               ENDIF
 !              
