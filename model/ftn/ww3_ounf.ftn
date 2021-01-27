@@ -335,8 +335,8 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) VECTOR
+!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!        READ (NDSI,*,END=801,ERR=802) VECTOR
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
         READ (NDSI,*,END=801,ERR=802) FILEPREFIX
@@ -359,6 +359,8 @@
         ENDIF
 
         CLOSE(NDSI,ERR=800,IOSTAT=IERR)
+
+        VECTOR = .TRUE.  ! Only vector output for .inp files.
 
       END IF ! .NOT. FLGNML
 
