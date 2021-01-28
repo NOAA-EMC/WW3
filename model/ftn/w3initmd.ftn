@@ -2116,7 +2116,8 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 2/05', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
-!/MPI              IF ( FLGRDALL( 2, 6) ) THEN
+!/MPI              IF ( FLGRDALL( 2, 6) .OR. FLGRDALL( 2,18) ) THEN
+!/MPI                  ! TP output shares FP0 internal field with FP
 !/MPI                  IH     = IH + 1
 !/MPI                  IT     = IT + 1
 !/MPI      CALL MPI_SEND_INIT (FP0  (1),NSEALM , MPI_REAL, IROOT,    &
@@ -2920,7 +2921,8 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 2/05', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
-!/MPI                IF ( FLGRDALL( 2, 6) ) THEN
+!/MPI                IF ( FLGRDALL( 2, 6) .OR. FLGRDALL( 2,18) ) THEN
+!/MPI                    ! TP output shares FP0 internal field with FP
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI      CALL MPI_RECV_INIT (FP0  (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
