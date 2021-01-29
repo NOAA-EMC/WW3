@@ -1911,7 +1911,7 @@
       META(1)%UNITS  = 'm-1'
       META(1)%ENAME  = '.wnm'
       META(1)%VARNM='wnm'
-      META(1)%VARNL=''
+      META(1)%VARNL='mean wave number'
       META(1)%VARNS=''
       META(1)%VARNG=''
       META(1)%VMIN = 0
@@ -2620,7 +2620,7 @@
   
       ! First component
       META(1)%VARNM='utoc'
-      META(1)%VARNL=''
+      META(1)%VARNL='eastward total wave to ocean stres'
       META(1)%VARNS=''
       META(1)%VARNG=''
       META(1)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
@@ -2628,7 +2628,7 @@
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtoc'
-      META(2)%VARNL=''
+      META(2)%VARNL='northward total wave to ocean stres'
       META(2)%VARNS=''
       META(2)%VARNG=''
       META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
