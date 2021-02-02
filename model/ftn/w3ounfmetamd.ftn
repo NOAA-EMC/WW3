@@ -214,6 +214,7 @@
 
       ! Storage for the Global meta data (free form):
       TYPE(META_LIST_T) :: GLOBAL_META
+      LOGICAL           :: FL_DEFAULT_GBL_META = .TRUE.
 
       ! Storage for coordinate reference system (CRS) metadata:
       CHARACTER(LEN=128) :: CRS_NAME = ''
@@ -816,8 +817,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER :: IERR
-      CHARACTER(LEN=10) :: FLD
+      INTEGER :: IERR, I
+      CHARACTER(LEN=10) :: FLD, OFLD, OPT
 
       IFI = 0
       IFJ = 1
@@ -848,6 +849,7 @@
         CALL EXTCDE(10)
       ENDIf
 
+      OFLD = FLD
       CALL STR_TO_UPPER(FLD) ! field names are case insensitive
 
       ! If string value (FLDID), then decode into IFI,IFJ value:
@@ -856,13 +858,25 @@
         IF(TRIM(FLD) == "GLOBAL") THEN
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
           IFI = 999  ! Marker for global section
+
+          ! check for any options:
+          I = INDEX(BUF, TRIM(OFLD)) + LEN_TRIM(OFLD)
+          OPT = ADJUSTL(BUF(I:))
+          CALL STR_TO_UPPER(OPT)
+          SELECT CASE(TRIM(OPT))
+            CASE("NODEFAULT")
+              FL_DEFAULT_GBL_META = .FALSE.
+              IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
+            CASE DEFAULT
+              WRITE(NDSE, *) "Unknown GLOBAL extra option: ", OPT
+          END SELECT
         ELSE
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
           CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
         ENDIF
       ENDIF
 
-      IF(DEBUG) WRITE(*,'(6X,A20,1X,3I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
+      IF(DEBUG) WRITE(*,'(6X,A20,1X,I4,2I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
 !
  6000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     SYNTAX ERROR IN SECTION HEADER. ' /              &

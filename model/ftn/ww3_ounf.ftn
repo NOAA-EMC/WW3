@@ -177,7 +177,7 @@
                               WRITE_META, WRITE_GLOBAL_META,           &
                               WRITE_FREEFORM_META_LIST,                &
                               META_T, NCVARTYPE, FL_MAGDIR,            &
-                              CRS_META, CRS_NAME, DEFAULT_CRS_META
+                              CRS_META, CRS_NAME, FL_DEFAULT_GBL_META
 !
       USE NETCDF
 
@@ -596,8 +596,10 @@
       IF (TOGETHER .AND. NCIDS(1,1,1).NE.0) THEN
         IRET = NF90_REDEF(NCIDS(1,1,1))
         CALL CHECK_ERR(IRET)
-        IRET=NF90_PUT_ATT(NCIDS(1,1,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-        CALL CHECK_ERR(IRET)
+        IF(FL_DEFAULT_GBL_META) THEN
+          IRET=NF90_PUT_ATT(NCIDS(1,1,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+          CALL CHECK_ERR(IRET)
+        ENDIF
         IRET=NF90_CLOSE(NCIDS(1,1,1))
         CALL CHECK_ERR(IRET)
       END IF
@@ -610,8 +612,10 @@
                 IF (NCIDS(IFI,IFJ,1).NE.0) THEN
                   IRET = NF90_REDEF(NCIDS(IFI,IFJ,1))
                   CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                  CALL CHECK_ERR(IRET)
+                  IF(FL_DEFAULT_GBL_META) THEN
+                    IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                    CALL CHECK_ERR(IRET)
+                  ENDIF
                   IRET=NF90_CLOSE(NCIDS(IFI,IFJ,1))
                   CALL CHECK_ERR(IRET)
                 END IF ! NCIDS
@@ -621,9 +625,10 @@
                     IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
                       IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
                       CALL CHECK_ERR(IRET)
-                      IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                      CALL CHECK_ERR(IRET)
-
+                      IF(FL_DEFAULT_GBL_META) THEN
+                        IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                        CALL CHECK_ERR(IRET)
+                      ENDIF
                       IRET=NF90_CLOSE(NCIDS(IFI,IFJ,IPART+1))
                       CALL CHECK_ERR(IRET)
                     END IF ! NCIDS
@@ -638,8 +643,10 @@
                   IF (NCIDS(IFI,IFJ,1).NE.0) THEN
                     IRET = NF90_REDEF(NCIDS(IFI,IFJ,1))
                     CALL CHECK_ERR(IRET)
-                    IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                    CALL CHECK_ERR(IRET)
+                    IF(FL_DEFAULT_GBL_META) THEN
+                      IRET=NF90_PUT_ATT(NCIDS(IFI,IFJ,1),NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                      CALL CHECK_ERR(IRET)
+                    ENDIF
                     IRET=NF90_CLOSE(NCIDS(IFI,IFJ,1))
                     CALL CHECK_ERR(IRET)
                   END IF ! NCIDS
@@ -1941,8 +1948,10 @@
               IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
                 IRET = NF90_REDEF(OLDNCID)
                 CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_ATT(OLDNCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
-                CALL CHECK_ERR(IRET)
+                IF(FL_DEFAULT_GBL_META) THEN
+                  IRET=NF90_PUT_ATT(OLDNCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
+                  CALL CHECK_ERR(IRET)
+                ENDIF
                 IRET=NF90_CLOSE(OLDNCID)
                 CALL CHECK_ERR(IRET)
               END IF
@@ -1990,12 +1999,14 @@
                 IF (.NOT.ALLOCATED(LON2D)) ALLOCATE(LON2D(NX,NY),LAT2D(NX,NY))
                 LON2D=TRANSPOSE(XGRD)
                 LAT2D=TRANSPOSE(YGRD)
-                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
-                                     'latitude_resolution','n/a')
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
-                                     'longitude_resolution','n/a')
-                CALL CHECK_ERR(IRET)
+                IF(FL_DEFAULT_GBL_META) THEN
+                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
+                                       'latitude_resolution','n/a')
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
+                                       'longitude_resolution','n/a')
+                  CALL CHECK_ERR(IRET)
+                ENDIF
               ! If NOT curvilinear grid,
               ELSE 
                 IF( SMCGRD ) THEN
@@ -2089,12 +2100,14 @@
 !/SMC                    END DO
 !/SMC                    WRITE(STR2,'(F12.7)') DYO
 !/SMC                    STR2=ADJUSTL(STR2)
-!/SMC                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
-!/SMC                             'latitude_resolution', TRIM(str2))
-!/SMC                    WRITE(STR2,'(F12.7)') DXO
-!/SMC                    STR2=ADJUSTL(STR2)
-!/SMC                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
-!/SMC                             'longitude_resolution',TRIM(str2))
+!/SMC                    IF(FL_DEFAULT_GBL_META) THEN
+!/SMC                      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+!/SMC                               'latitude_resolution', TRIM(str2))
+!/SMC                      WRITE(STR2,'(F12.7)') DXO
+!/SMC                      STR2=ADJUSTL(STR2)
+!/SMC                      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+!/SMC                               'longitude_resolution',TRIM(str2))
+!/SMC                    ENDIF
 !/RTD                    !!CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
 !/RTD                    !!              ANGLD2D, POLAT, POLON, NYO*NXO)
 !/RTD                    !
@@ -2125,16 +2138,18 @@
 !/RTD                    CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
 !/RTD                                  ANGLD2D, POLAT, POLON, NY*NX)
 !/RTD                  END IF ! RTDL
-                  WRITE(STR2,'(F12.0)') SY
-                  STR2=ADJUSTL(STR2)
-                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
-                           'latitude_resolution', TRIM(STR2))
-                  CALL CHECK_ERR(IRET)
-                  WRITE(STR2,'(F12.0)') SX 
-                  STR2=ADJUSTL(STR2)
-                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
-                           'longitude_resolution',TRIM(STR2))
-                  CALL CHECK_ERR(IRET)
+                  IF(FL_DEFAULT_GBL_META) THEN
+                    WRITE(STR2,'(F12.0)') SY
+                    STR2=ADJUSTL(STR2)
+                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+                             'latitude_resolution', TRIM(STR2))
+                    CALL CHECK_ERR(IRET)
+                    WRITE(STR2,'(F12.0)') SX 
+                    STR2=ADJUSTL(STR2)
+                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
+                              'longitude_resolution',TRIM(STR2))
+                    CALL CHECK_ERR(IRET)
+                  ENDIF
                 END IF ! SMCGRD
               END IF
 
@@ -2146,71 +2161,75 @@
                 DIMLN(2)=NX
                 DIMLN(3)=NTRI
                 TRIGP2=TRANSPOSE(TRIGP)
-                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
-                                     'latitude_resolution','n/a')
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
+                IF(FL_DEFAULT_GBL_META) THEN
+                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
+                                       'latitude_resolution','n/a')
+                  CALL CHECK_ERR(IRET)
+                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                      'longitude_resolution','n/a')
-                CALL CHECK_ERR(IRET)
+                  CALL CHECK_ERR(IRET)
+                ENDIF
               END IF
 
               ! Finishes declaration part in file by adding geographical bounds
-              IF(SMCGRD) THEN
-                WRITE(STR2,'(F12.0)') MINVAL(LAT)
-              ELSE
-                WRITE(STR2,'(F12.0)') MINVAL(YGRD)
-              ENDIF
-              STR2=ADJUSTL(STR2)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                   'southernmost_latitude',TRIM(STR2))
-              CALL CHECK_ERR(IRET)
-
-              IF(SMCGRD) THEN
-                WRITE(STR2,'(F12.0)') MAXVAL(LAT)
-              ELSE
-                WRITE(STR2,'(F12.0)') MAXVAL(YGRD)
-              ENDIF
-              STR2=ADJUSTL(STR2)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                   'northernmost_latitude',TRIM(STR2))
-              CALL CHECK_ERR(IRET)
-
-              IF(SMCGRD) THEN
-                WRITE(STR2,'(F12.0)') MINVAL(LON)
-              ELSE
-                WRITE(STR2,'(F12.0)') MINVAL(XGRD)
-              ENDIF
-              STR2=ADJUSTL(STR2)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                  'westernmost_longitude',TRIM(STR2))
-              CALL CHECK_ERR(IRET)
-
-
-              IF(SMCGRD) THEN
-                WRITE(STR2,'(F12.0)') MAXVAL(LON)
-              ELSE
-                WRITE(STR2,'(F12.0)') MAXVAL(XGRD)
-              ENDIF
-              STR2=ADJUSTL(STR2)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                  'easternmost_longitude',TRIM(STR2))
-              CALL CHECK_ERR(IRET)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                  'minimum_altitude','-12000 m')
-              CALL CHECK_ERR(IRET)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                  'maximum_altitude','9000 m')
-              CALL CHECK_ERR(IRET)
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-                  'altitude_resolution','n/a')
-              CALL CHECK_ERR(IRET)
-
-!/RTD              IF ( RTDL ) THEN
-!/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-!/RTD                      'grid_north_pole_latitude',POLAT)
-!/RTD                  IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
-!/RTD                      'grid_north_pole_longitude',POLON)
-!/RTD                END IF
+              IF(FL_DEFAULT_GBL_META) THEN
+                IF(SMCGRD) THEN
+                  WRITE(STR2,'(F12.0)') MINVAL(LAT)
+                ELSE
+                  WRITE(STR2,'(F12.0)') MINVAL(YGRD)
+                ENDIF
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                     'southernmost_latitude',TRIM(STR2))
+                CALL CHECK_ERR(IRET)
+  
+                IF(SMCGRD) THEN
+                  WRITE(STR2,'(F12.0)') MAXVAL(LAT)
+                ELSE
+                  WRITE(STR2,'(F12.0)') MAXVAL(YGRD)
+                ENDIF
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                     'northernmost_latitude',TRIM(STR2))
+                CALL CHECK_ERR(IRET)
+  
+                IF(SMCGRD) THEN
+                  WRITE(STR2,'(F12.0)') MINVAL(LON)
+                ELSE
+                  WRITE(STR2,'(F12.0)') MINVAL(XGRD)
+                ENDIF
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                    'westernmost_longitude',TRIM(STR2))
+                CALL CHECK_ERR(IRET)
+  
+  
+                IF(SMCGRD) THEN
+                  WRITE(STR2,'(F12.0)') MAXVAL(LON)
+                ELSE
+                  WRITE(STR2,'(F12.0)') MAXVAL(XGRD)
+                ENDIF
+                STR2=ADJUSTL(STR2)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                    'easternmost_longitude',TRIM(STR2))
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                    'minimum_altitude','-12000 m')
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                    'maximum_altitude','9000 m')
+                CALL CHECK_ERR(IRET)
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+                    'altitude_resolution','n/a')
+                CALL CHECK_ERR(IRET)
+  
+!/RTD                IF ( RTDL ) THEN
+!/RTD                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+!/RTD                        'grid_north_pole_latitude',POLAT)
+!/RTD                    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
+!/RTD                        'grid_north_pole_longitude',POLON)
+!/RTD                  END IF
+              ENDIF ! FL_DEFAULT_GBL_META
               
               CALL T2D(TIME,STARTDATE,IERR)
               WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
@@ -2394,8 +2413,10 @@
               END DO
 !
               ! put START date in global attribute
-              IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'start_date',STRSTARTDATE)
-              CALL CHECK_ERR(IRET)
+              IF(FL_DEFAULT_GBL_META) THEN
+                IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'start_date',STRSTARTDATE)
+                CALL CHECK_ERR(IRET)
+              ENDIF
 !
               IRET = NF90_ENDDEF(NCID)
               CALL CHECK_ERR(IRET)
@@ -3467,7 +3488,8 @@
         CASE ('365_day')
           IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','time in 365 day calendar')
         CASE ('standard')
-          IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','julian day (UT)')
+          !IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','julian day (UT)') ! CB
+          IRET=NF90_PUT_ATT(NCID,VARID(3),'long_name','time')
       END SELECT
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'standard_name','time')
@@ -3476,8 +3498,9 @@
       !IRET=NF90_PUT_ATT(NCID,VARID(3),'units','days since 1990-01-01 00:00:00')
       IRET=NF90_PUT_ATT(NCID,VARID(3),'units', EPOCH)
       CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,VARID(3),'conventions', &
-        'relative julian days with decimal part (as parts of the day )')
+      ! CHRISB: Not sure this is useful - required information is in "units"
+      !IRET=NF90_PUT_ATT(NCID,VARID(3),'conventions', &
+      !  'relative julian days with decimal part (as parts of the day )')
       IRET=NF90_PUT_ATT(NCID,VARID(3),'axis','T')
       CALL CHECK_ERR(IRET)
       IRET=NF90_PUT_ATT(NCID,VARID(3),'calendar',TRIM(CALTYPE))
@@ -3563,33 +3586,35 @@
 !
 ! Global attributes
 !
-      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
-      CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
-      CALL CHECK_ERR(IRET)
-!/ST4    IF (ZZWND.NE.10)      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
-!/ST4    IF (AALPHA.NE.0.0095) IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
-!/ST4    IF (BBETA.NE.1.43)    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
-!/ST4    IF(SSDSC(7).NE.0.3)   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
+      IF(FL_DEFAULT_GBL_META) THEN
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
+        CALL CHECK_ERR(IRET)
+!/ST4      IF (ZZWND.NE.10)      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
+!/ST4      IF (AALPHA.NE.0.0095) IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
+!/ST4      IF (BBETA.NE.1.43)    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
+!/ST4      IF(SSDSC(7).NE.0.3)   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 ! ... TO BE CONTINUED ... 
 
-      IF(SMCGRD) THEN
-!/SMC         IF(SMCTYPE .EQ. 1) THEN
-!/SMC           IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lat', Y0)
-!/SMC           call CHECK_ERR(IRET)
-!/SMC           IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lon', X0)
-!/SMC           call CHECK_ERR(IRET)
-!/SMC           IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'base_lat_size', dlat)
-!/SMC           call CHECK_ERR(IRET)
-!/SMC           IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'base_lon_size', dlon)
-!/SMC           call CHECK_ERR(IRET)
-!/SMC           IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','seapoint')
-!/SMC           call CHECK_ERR(IRET)
-!/SMC         ELSE IF(SMCTYPE .EQ. 2) THEN
-!/SMC           IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','regular_regridded')
-!/SMC           call CHECK_ERR(IRET)
-!/SMC         ENDIF
-      ENDIF
+        IF(SMCGRD) THEN
+!/SMC           IF(SMCTYPE .EQ. 1) THEN
+!/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lat', Y0)
+!/SMC             call CHECK_ERR(IRET)
+!/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lon', X0)
+!/SMC             call CHECK_ERR(IRET)
+!/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'base_lat_size', dlat)
+!/SMC             call CHECK_ERR(IRET)
+!/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'base_lon_size', dlon)
+!/SMC             call CHECK_ERR(IRET)
+!/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','seapoint')
+!/SMC             call CHECK_ERR(IRET)
+!/SMC           ELSE IF(SMCTYPE .EQ. 2) THEN
+!/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','regular_regridded')
+!/SMC             call CHECK_ERR(IRET)
+!/SMC           ENDIF
+        ENDIF
+      ENDIF ! FL_DEFAULT_GBL_META
 
       ! ChrisB: Write user global attributes:
       CALL WRITE_GLOBAL_META(NCID, IRET)
@@ -3611,10 +3636,12 @@
         END DO
       ENDIF
       CLOSE(994)
-      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'product_name' ,TRIM(NCFILE))   
-      CALL CHECK_ERR(IRET)
-      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'area',TRIM(GNAME))
-      CALL CHECK_ERR(IRET)
+      IF(FL_DEFAULT_GBL_META) THEN
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'product_name' ,TRIM(NCFILE))   
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'area',TRIM(GNAME))
+        CALL CHECK_ERR(IRET)
+      ENDIF
 
       RETURN
 
