@@ -15,6 +15,8 @@
 !/    16-Dec-2020 : Added user partition templates      ( version 7.12 )
 !/                  and coordinate reference system.
 !/                  Freeform meta data uses linked list.
+!/    02-Feb-2021 : Improved partitioned parameter      ( version 7.12 )
+!/                  template string implementation.
 !/
 !  1. Purpose :
 !
@@ -61,7 +63,7 @@
 !     Any other attribute name is assumed to be an optional "extra"
 !     attribute. This extra attribute can take an optional "type"
 !     keyworkd to specify the variable tpye of the metadata. If
-!     no type is supplied, it defaults to a characer type. Valud
+!     no type is supplied, it defaults to a characer type. Valid
 !     types are one of ["c", "r", "i"] for character/string,
 !     real/float or integer values respectively.
 !
@@ -86,8 +88,32 @@
 !     Note: ALL keywords and "Field Name ID" strings (e.g. HS) are
 !     case insensitive. All netCDF attribute names are case sensitive.
 !
+!     Partitioned outputs are handles slightly differently; one meta data
+!     entry is used for all partitions of a field. The metadata is made
+!     specific to a particular partition via template strings. There are
+!     two built-in template strings: SPART and IPART. These provide a
+!     "string" description (e.g. "wind sea", "primary swell", etc) or an
+!     integer partition number. These can be references in the meta data
+!     using the template name surrounded by < .. >, e.g. <SPART>
+!     
+!     It is also possible to supply user defined partitioned parameter
+!     template strings in the ounfmeta.inp file using the TEMPLATE
+!     keyword, as below:
 !
-!     Example file:
+!       TEMPLATE <template-name>
+!         String for partition 0
+!         String for partition 1
+!         String for partition 2
+!         String for partition 3
+!         ... etc
+!
+!     Specifying the <template-name> with a trailing underscore will
+!     provide an underscore seperated (_) string, rather than space
+!     seperated.
+!
+!
+!     Example ounfmeta.inp file:
+!     ==========================
 !
 !        $ Lines starting with dollars are comments.
 !        $ The line starts a meta-data section for the depth field
@@ -108,6 +134,19 @@
 !          standard_name = "v-wind"
 !          height = 10.0 "r"
 !
+!        $ User defined partitioned parameters template strings:
+!        TEMPLATE PARTSTR
+!          wind wave
+!          primary swell
+!          secondary swell
+!
+!        $ Use partition templates in partitioned Hs field:
+!        $ (SPART and IPART are built-in)
+!        META PHS
+!          standard_name = "<SPART_>_sigificant_wave_height"
+!          long_name = "<PARTSTR>"
+!          partition_number = "<IPART>"
+!        
 !        $ Coordinate reference system:
 !        CRS crs
 !          grid_mapping_name = "latitude_longitude"
@@ -141,8 +180,9 @@
       CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
 
       ! String token used to merge in partition number:
-      CHARACTER(LEN=*), PARAMETER :: IPART_TOKEN = "<IPART>"
-      CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN = "<SPART>"
+      CHARACTER(LEN=*), PARAMETER :: IPART_TOKEN  = "<IPART>"
+      CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN  = "<SPART>"
+      CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN_ = "<SPART_>"
 
       ! Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
@@ -258,9 +298,9 @@
       !  Set partitioning method comment and standard name templates:
       IF( PTMETH .LE. 3 ) THEN
         SNAMEP(1) = 'wind'
-        SNAMEP(2) = 'primary_swell'
-        SNAMEP(3) = 'secondary_swell'
-        SNAMEP(4) = 'tertiary_swell'
+        SNAMEP(2) = 'primary swell'
+        SNAMEP(3) = 'secondary swell'
+        SNAMEP(4) = 'tertiary swell'
         SNAMEP(5) = 'swell'
       ELSE
         SNAMEP(1) = 'wind'
@@ -416,6 +456,18 @@
           CYCLE
         ENDIF
 
+        IF(TRIM(BUF) == "$ DEBUG ON") THEN
+          WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG ON]'
+          DEBUG = .TRUE.
+          CYCLE
+        ENDIF
+
+        IF(TRIM(BUF) == "$ DEBUG OFF") THEN
+          WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG OFF]'
+          DEBUG = .FALSE.
+          CYCLE
+        ENDIF
+
         ! Read first token on line:
         READ(BUF, *) TEST
 
@@ -477,7 +529,7 @@
 !
 !  1. Purpose :
 !
-!     Replaces tab characters in a string with spaces.
+!     Replaces tab characters in a string with a space.
 !
 !  2. Parameters :
 !
@@ -509,6 +561,52 @@
       ENDDO
 
       END SUBROUTINE NOTABS
+
+!/ ------------------------------------------------------------------- /
+      FUNCTION REPLACE_CHAR(STR, C, REP) RESULT(OSTR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Nov-2020 |
+!/                  +-----------------------------------+
+!/
+!/    02-Feb-2021 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Replaces single characters in a string. Returns a new string,
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       STR    CharArr  I  Character string to process
+!       C      Char     I  Character to search for
+!       REP    Char     I  Character to substitute
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      CHARACTER(*)        :: STR
+      CHARACTER           :: C, REP
+      CHARACTER(LEN(STR)) :: OSTR
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: I
+
+      OSTR = TRIM(STR)
+      DO
+        I = INDEX(TRIM(OSTR), C)
+        IF(I .LE. 0) EXIT
+        OSTR(I:I) = REP
+      ENDDO
+
+      END FUNCTION REPLACE_CHAR
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META()
@@ -615,7 +713,6 @@
 
         ELSE IF(TESTU == "CRS") THEN
           BACKSPACE(NDMI) ! We will reprocess this line
-          CALL READ_CRS_META(NDMI, ILINE)
           CYCLE
 
         ELSE
@@ -1414,6 +1511,8 @@
         WRITE(NDSE, 1000) FN_META, ILINE, BUF
         CALL EXTCDE(10)
       ENDIF
+      ID = "<" // TRIM(ID) // ">"
+
       IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(ID)
 
       ! Extend list of partition template types:
@@ -1430,7 +1529,7 @@
         P => PART_TMPL
       ENDIF
 
-      ! Set template id and read templat strings from file:
+      ! Set template id and read template strings from file:
       P%TMPL = TRIM(ID)
       ALLOCATE(P%PART_TEXT(0:NOSWLL))
       NULLIFY(P%NEXT)
@@ -1632,6 +1731,14 @@
 !/
       INTEGER :: I, J, ISN
       TYPE(PART_TMPL_T), POINTER :: P
+      CHARACTER(LEN=64) :: TMPL
+
+      ISN = IPART + 1
+      IF(PTMETH .LE. 3) THEN
+        IF (ISN .GT. 5) ISN = 5
+      ELSE
+        IF (ISN .GT. 2) ISN = 2
+      ENDIF
 
       ! Set partition number (built-in IPART template)
       I = INDEX(INSTR, IPART_TOKEN)
@@ -1643,14 +1750,18 @@
       ! Set standard name string (built-in SPART template)
       I = INDEX(INSTR, SPART_TOKEN)
       J = I + LEN_TRIM(SPART_TOKEN)
+
       IF(I .GT. 0) THEN
-        ISN = IPART + 1
-        IF(PTMETH .LE. 3) THEN
-          IF (ISN .GT. 5) ISN = 5
-        ELSE
-          IF (ISN .GT. 2) ISN = 2
-        ENDIF
         INSTR = INSTR(1:I-1) // TRIM(SNAMEP(ISN)) // INSTR(J:LEN(INSTR))
+      ENDIF
+
+      ! Also try underscore separated version: <SPART_>
+      I = INDEX(INSTR, SPART_TOKEN_)
+      J = I + LEN_TRIM(SPART_TOKEN_)
+
+      IF(I .GT. 0) THEN
+        INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(SNAMEP(ISN), " ", "_")) &
+                             // INSTR(J:LEN(INSTR))
       ENDIF
 
       ! Merge in user defined partition templates (if any):
@@ -1667,6 +1778,16 @@
              CALL EXTCDE(10)
           ENDIF
           INSTR = INSTR(1:I-1) // TRIM(P%PART_TEXT(IPART)) // INSTR(J:LEN(INSTR))
+        ENDIF
+
+        ! Try "underscore" version <TMPL_>:
+        I = LEN_TRIM(P%TMPL)
+        TMPL = P%TMPL(1:I-1) // "_>"
+        I = INDEX(INSTR, TRIM(TMPL))
+        J = I + LEN_TRIM(TMPL)
+        IF(I .GT. 0) THEN
+          INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(P%PART_TEXT(IPART), " ", "_")) & 
+                               // INSTR(J:LEN(INSTR))
         ENDIF
 
         IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
@@ -2508,7 +2629,7 @@
       META(1)%ENAME = '.phs'// IPART_TOKEN
       META(1)%VARNM = 'phs'// IPART_TOKEN
       META(1)%VARNL = 'wave significant height partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_significant_height'
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_significant_height'
       META(1)%VARNG = 'significant_wave_height_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
@@ -2520,7 +2641,7 @@
       META(1)%ENAME = '.ptp'// IPART_TOKEN
       META(1)%VARNM = 'ptp'// IPART_TOKEN
       META(1)%VARNL = 'peak period partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_period_at_variance' // &
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_period_at_variance' // &
                       '_spectral_density_maximum'
       META(1)%VARNG = 'dominant_wave_period_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
@@ -2533,7 +2654,7 @@
       META(1)%ENAME = '.plp'// IPART_TOKEN
       META(1)%VARNM = 'plp'// IPART_TOKEN
       META(1)%VARNL = 'peak wave length partition '// IPART_TOKEN
-      !META(1)%VARNS = 'peak_wave_length_partition_'// SPART_TOKEN
+      !META(1)%VARNS = 'peak_wave_length_partition_'// SPART_TOKEN_
       META(1)%VARNS = ''
       META(1)%VARNG = 'peak_wave_length_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
@@ -2546,7 +2667,7 @@
       META(1)%ENAME =  '.pdir'// IPART_TOKEN
       META(1)%VARNM =  'pdir'// IPART_TOKEN
       META(1)%VARNL = 'wave mean direction partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_from_direction'
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction'
       META(1)%VARNG = 'wave_from_direction_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VARND = DIRCOM
@@ -2559,7 +2680,7 @@
       META(1)%ENAME = '.pspr'// IPART_TOKEN
       META(1)%VARNM = 'pspr'// IPART_TOKEN
       META(1)%VARNL = 'directional spread partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_diectional_spread'
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_diectional_spread'
       META(1)%VARNG = 'directional_spread_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
       META(1)%VMIN = 0
@@ -2584,7 +2705,7 @@
       META(1)%ENAME = '.pdp'// IPART_TOKEN
       META(1)%VARNM = 'pdp'// IPART_TOKEN
       META(1)%VARNL = 'peak direction partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_from_direction_at_variance' // &
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction_at_variance' // &
                       '_spectral_density_maximum'
       META(1)%VARNG = 'dominant_wave_from_direction_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
@@ -2652,7 +2773,7 @@
       META(1)%ENAME = '.ptm10c'// IPART_TOKEN
       META(1)%VARNM = 'ptm10c'// IPART_TOKEN
       META(1)%VARNL = 'mean period Tm10 partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
                       '_spectral_density_inverse_frequency_moment'
       META(1)%VARNG = 'mean_wave_period_Tm10_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
@@ -2665,7 +2786,7 @@
       META(1)%ENAME = '.pt01c'// IPART_TOKEN
       META(1)%VARNM = 'pt01c'// IPART_TOKEN
       META(1)%VARNL = 'mean period T01 partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
                       '_spectral_density_first_frequency_moment'
       META(1)%VARNG = 'mean_wave_period_T01_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
@@ -2678,7 +2799,7 @@
       META(1)%ENAME = '.pt02c'// IPART_TOKEN
       META(1)%VARNM = 'pt02c'// IPART_TOKEN
       META(1)%VARNL = 'mean period T02 partition '// IPART_TOKEN
-      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN //'_wave_mean_period_from_variance' // &
+      META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
                       '_spectral_density_second_frequency_moment'
       META(1)%VARNG = 'mean_wave_period_T02_partition_'// IPART_TOKEN
       META(1)%VARNC = PARTCOM
