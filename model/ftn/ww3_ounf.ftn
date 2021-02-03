@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         02-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -45,6 +45,7 @@
 !/                  time variables.
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
+!/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -789,7 +790,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         02-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -804,6 +805,7 @@
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
+!/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
 !/
 !  1. Purpose :
 !

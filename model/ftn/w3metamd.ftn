@@ -14,7 +14,7 @@
 !  1. Purpose :
 !
 !     Provides types for handling "meta data" (attribute/value pairs)
-!     and a linked lisst construct for dynamic storage.
+!     and a linked list construct for dynamic storage.
 !/ ------------------------------------------------------------------- /
 
       ! Values to represent "unset" data:

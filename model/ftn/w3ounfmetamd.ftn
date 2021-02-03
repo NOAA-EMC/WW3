@@ -6,7 +6,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Dec-2020 |
+!/                  | Last update :         02-Feb-2020 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -571,7 +571,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         02-Fev-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Feb-2021 : Creation                            ( version 7.12 )
@@ -775,10 +775,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Nov-2020 |
+!/                  | Last update :         02-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/    02-Feb-2021 : NODEFAULT option for Global meta    ( version 7.12 )
 !/
 !
 !  1. Purpose :
