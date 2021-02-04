@@ -6,14 +6,6 @@ $ and number of output times.
 $
   19850101 000000  3600.  1000
 $
-$ Generate auxiliary forecast variables (T/F), i.e. forecast_period,
-$ and forecast_reference_time.
-  T
-$
-$ If above is T, then specify forecast_reference_time (yyyymmdd hhmmss):
-  19850101 000000
-$
-$
 $ Fields requested --------------------------------------------------- $
 $
 $ Output request flags identifying fields as in ww3_shel.inp. See that
@@ -38,12 +30,6 @@ $
  3 4
  0 1 2
  T
-$
-$--------------------------------------------------------------------- $
-$ Time variable type ['D' = DOUBLE, 'I' = INT64]
-           and units ['D' = days, 'S' = seconds]
-$
- D D
 $
 $ -------------------------------------------------------------------- $
 $ File prefix

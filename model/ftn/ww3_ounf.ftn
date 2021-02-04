@@ -346,10 +346,15 @@
 ! 4.1 Time setup
         READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
 
-! 4.1.1 Forecast period and forecast reference time:
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) FLGFC
-        IF( FLGFC ) READ(NDSI,*,END=801,ERR=802) TREF
+! 4.1.1 Forecast period and forecast reference time
+!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!        READ (NDSI,*,END=801,ERR=802) FLGFC
+!        IF( FLGFC ) READ(NDSI,*,END=801,ERR=802) TREF
+!
+        ! ChrisB: Forecast variables flag and reference time
+        ! only configurable via namelist input. Set forecast
+        ! reference time to first time here:
+        TREF = TOUT
 
 ! 4.2 Output fields
         CALL W3READFLGRD ( NDSI, NDSO, SCREEN, NDSE, COMSTR, FLG1D,      &
@@ -363,10 +368,14 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
+!       ! ChrisB: Vector, Time variable type and time variable units only
+!       ! configurable via namelist input. Default to DOUBLE and "days since" here:
 !        CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !        READ (NDSI,*,END=801,ERR=802) VECTOR
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+        TTYPE = "D"
+        TIMEUNIT = "D"
 
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
