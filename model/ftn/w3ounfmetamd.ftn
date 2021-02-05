@@ -865,11 +865,13 @@
           OPT = ADJUSTL(BUF(I:))
           CALL STR_TO_UPPER(OPT)
           SELECT CASE(TRIM(OPT))
+            CASE("")
+              CONTINUE ! no option
             CASE("NODEFAULT")
               FL_DEFAULT_GBL_META = .FALSE.
               IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
             CASE DEFAULT
-              WRITE(NDSE, *) "Unknown GLOBAL extra option: ", OPT
+              WRITE(NDSE, *) "Unknown GLOBAL extra option: [", TRIM(OPT), "]"
           END SELECT
         ELSE
           IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
@@ -2090,6 +2092,10 @@
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(META_PAIR_T), POINTER :: P
 
       WRITE(*,*) META%VARNM
       WRITE(*,"(A20,':',1X,A)") "Standard name", TRIM(META%VARNS)
@@ -2099,13 +2105,44 @@
       WRITE(*,"(A20,':',1X,A)") "Direction conv", TRIM(META%VARND)
       WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
       WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
-      WRITE(*,"(A20,':')") "Extra metadata"
-!TODO      WRITE(*,"(2X,A20,':',1X,'[',A1,']')") "Type", META%EXTRA%TYPE
-!TODO      WRITE(*,"(2X,A20,':',1X,A)") TRIM(META%EXTRA%ATTNAME), TRIM(META%EXTRA%ATTNAME)
+      IF(META%EXTRA%N .GT. 0) THEN
+        P => META%EXTRA%HEAD
+        DO
+          WRITE(*,"(A20,':',1X,A)") TRIM(P%ATTNAME), TRIM(P%ATTVAL)
+          IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+          P => P%NEXT
+        ENDDO
+      ENDIF
 
       END SUBROUTINE PRINT_META
 
+!/ ------------------------------------------------------------------- /
       FUNCTION META_DEEP_COPY(META) RESULT(COPY)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         16-Dec-2020 |
+!/                  +-----------------------------------+
+!/
+!/    16-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Performs "Deep" copy of a META_T type. This ensures that the
+!     linked list data in the EXTRA field is copied, rather than just
+!     copying the pointer.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       META   META_T.  I   META data structure to copy
+!     ----------------------------------------------------------------
+!
+!/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
       TYPE(META_T) :: COPY
