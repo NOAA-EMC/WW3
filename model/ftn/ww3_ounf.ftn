@@ -177,8 +177,8 @@
       USE W3OUNFMETAMD, ONLY: INIT_META, TEARDOWN_META, GETMETA,       &
                               WRITE_META, WRITE_GLOBAL_META,           &
                               WRITE_FREEFORM_META_LIST,                &
-                              META_T, NCVARTYPE, FL_MAGDIR,            &
-                              CRS_META, CRS_NAME, FL_DEFAULT_GBL_META
+                              META_T, NCVARTYPE, CRS_META, CRS_NAME,   &
+                              FL_DEFAULT_GBL_META
 !
       USE NETCDF
 
