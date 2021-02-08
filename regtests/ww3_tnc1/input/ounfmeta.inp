@@ -33,15 +33,17 @@ META T02
 $ Multi-component fields (like wind) can take an extra integer
 $ parameter to select the component (1 - 3)
 META WND 1
-   $ First component of wind
+   $ First component of wind (speed)
    ename=".w10"
-   varnm="WU10"
-   standard_name="eastward_wind"
+   varnm="WSPD"
+   standard_name="wind_speed"
 
 META WND 2
-   $ Second component of wind
-   varnm="WV10"
-   standard_name="northward_wind"
+   $ Second component of wind (direction)
+   varnm="WDIR"
+   standard_name="wind_from_direction"
+   units="degrees"
+   convention="direction from"
 
 META DIR
   ename=".vmdr"
