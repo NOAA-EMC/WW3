@@ -1515,7 +1515,8 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( OUTFLAGS( 2, 6) ) THEN
+      IF ( OUTFLAGS( 2, 6) .OR. OUTFLAGS( 2,18) ) THEN
+          ! TP output shares FP0 internal field with FP
           ALLOCATE ( WADATS(IMOD)%XFP0(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
