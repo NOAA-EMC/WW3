@@ -1285,11 +1285,8 @@
                   AUX1(I) = UNDEF
                 ENDIF
               ENDDO
-              IF( SMCGRD ) THEN
-!/SMC                CALL W3S2XY_SMC(AUX1, X1)
-              ELSE
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, X1 )
-              ENDIF
+!
+              CALL S2GRID(AUX1, X1)
 !
             ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
