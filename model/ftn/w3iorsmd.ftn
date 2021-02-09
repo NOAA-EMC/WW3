@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                      FORTRAN 2003 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -70,7 +70,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -104,7 +104,7 @@
 !/                  restart files 
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
-!/    06-Jan-2021 : Add new coupling fields in restart  ( version 7.xx )
+!/    08-Feb-2021 : Add new coupling fields in restart  ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -851,7 +851,7 @@
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) FP0(1:NSEA)
                   IF ( FLOGRR(2,7) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) THM(1:NSEA)
-                  IF ( FLOGRR(2,18) )                                 &
+                  IF ( FLOGRR(2,19) )                                 &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) WNMEAN(1:NSEA)
                   IF ( FLOGRR(5,2) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CHARN(1:NSEA)
@@ -1060,7 +1060,7 @@
                 ENDDO
               ENDIF
 !/DEBUGINIT         WRITE(740+IAPROC,*) 'Before reading WNMEAN'
-              IF ( FLOGRR(2,18) ) THEN
+              IF ( FLOGRR(2,19) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
                   J = IAPROC + (I-1)*NAPROC

@@ -732,7 +732,7 @@
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
-!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
+!/    08-Feb-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !

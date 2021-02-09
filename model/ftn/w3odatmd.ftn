@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -513,7 +513,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -526,7 +526,7 @@
 !/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    06-Jan-2021 : Add extra coupling variables        ( version 7.xx )
+!/    08-Feb-2021 : Add extra coupling variables        ( version 7.xx )
 !/
 !  1. Purpose :
 !

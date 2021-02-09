@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -82,7 +82,7 @@
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
 !/                  defunct OMPX switches.
-!/    06-Jan-2021 : Update TAUA, RHOA                   ( version 7.xx )
+!/    08-Feb-2021 : Update TAUA, RHOA                   ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -185,7 +185,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -252,7 +252,7 @@
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
-!/    06-Jan-2021 : Update TAUA, RHOA                   ( version 7.xx )
+!/    08-Feb-2021 : Update TAUA, RHOA                   ( version 7.xx )
 !/
 !  1. Purpose :
 !

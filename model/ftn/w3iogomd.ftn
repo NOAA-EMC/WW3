@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -675,11 +675,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            C. Bunney              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    03-Nov-2020 : Origination.                        ( version 7.12 )
-!/    06-Jan-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    08-Feb-2021 : Add extra coupling fields as output ( version 7.xx )
 !
 !  1. Purpose :
 !
@@ -2306,7 +2306,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -2336,7 +2336,7 @@
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
 !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    06-Jan-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    08-Feb-2021 : Add extra coupling fields as output ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2688,7 +2688,7 @@
                 IF ( FLOGRD( 2,15) ) HMAXD (ISEA) = UNDEF
                 IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
                 IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
-                IF ( FLOGRD( 2,18) ) WNMEAN(ISEA) = UNDEF
+                IF ( FLOGRD( 2,19) ) WNMEAN(ISEA) = UNDEF
 !
                 IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
                 IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
@@ -2939,7 +2939,7 @@
                     WRITE ( NDSOG ) HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     WRITE ( NDSOG ) WBT(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
                     WRITE ( NDSOG ) WNMEAN(1:NSEA)
 !
 !     Section 3)
@@ -3231,7 +3231,7 @@
                                                          HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WBT(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                          WNMEAN(1:NSEA)
 !

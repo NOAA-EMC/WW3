@@ -6,11 +6,11 @@ MODULE PDLIB_FIELD_VEC
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2010 : Origination.                        ( version 6.04 )
-!/    06-Jan-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
+!/    08-Feb-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,7 +164,7 @@ MODULE PDLIB_FIELD_VEC
       IF ( FLGRDALL( 2, 17) ) THEN
         IH = IH + 1
       END IF
-      IF ( FLGRDALL( 2, 18) ) THEN
+      IF ( FLGRDALL( 2, 19) ) THEN
         IH = IH + 1
       END IF
       IF ( FLGRDALL( 3, 1) ) THEN
@@ -845,11 +845,11 @@ MODULE PDLIB_FIELD_VEC
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
-!/    06-Jan-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
+!/    08-Feb-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
 !/
 !  1. Purpose : Do communication for PDLIB output
 !  2. Method :
@@ -1022,7 +1022,7 @@ MODULE PDLIB_FIELD_VEC
               IH = IH + 1
               Arrexch(IH,JSEA)=WBT(JSEA)
             END IF
-            IF ( FLGRDALL( 2, 18) ) THEN
+            IF ( FLGRDALL( 2, 19) ) THEN
               IH = IH + 1
               Arrexch(IH,JSEA)=WNMEAN(JSEA)
             END IF
@@ -1493,7 +1493,7 @@ MODULE PDLIB_FIELD_VEC
                 IH = IH + 1
                 WBT(1:NSEA) = ARRtotal(IH,:)
               END IF
-              IF ( FLGRDALL( 2, 18) ) THEN
+              IF ( FLGRDALL( 2, 19) ) THEN
                 IH = IH + 1
                 WNMEAN(1:NSEA) = ARRtotal(IH,:)
               END IF

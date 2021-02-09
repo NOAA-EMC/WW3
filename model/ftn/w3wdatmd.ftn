@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -19,7 +19,7 @@
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    06-Jun-2018 : Add PDLIB/SETUP/DEBUGINIT           ( version 6.04 )
-!/    06-Jan-2021 : Support for variable air density    ( version 7.xx )
+!/    08-Feb-2021 : Support for variable air density    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -271,7 +271,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 !
+!/                  | Last update :         08-Feb-2021 !
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -281,7 +281,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    06-Jan-2021 : Support for variable air density    ( version 7.xx )
+!/    08-Feb-2021 : Support for variable air density    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -554,13 +554,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 !
+!/                  | Last update :         08-Feb-2021 !
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2004 : Origination.                        ( version 3.06 )
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-!/    06-Jan-2021 : Support for variable air density    ( version 7.xx )
+!/    08-Feb-2021 : Support for variable air density    ( version 7.xx )
 !/
 !  1. Purpose :
 !

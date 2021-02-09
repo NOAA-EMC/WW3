@@ -1531,11 +1531,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
-!/    06-Jan-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    08-Feb-2021 : Adds extra coupling fields          ( version 7.xx )
 !/
 !
 !  1. Purpose :
@@ -1973,7 +1973,7 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 50
 ! IFI=2, IFJ=19
-      META => GROUP(2)%FIELD(18)%META
+      META => GROUP(2)%FIELD(19)%META
       META(1)%FSC    = 0.001
       META(1)%UNITS  = 'm-1'
       META(1)%ENAME  = '.wnm'

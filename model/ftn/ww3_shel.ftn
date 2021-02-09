@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -55,7 +55,7 @@
 !/                  (Roberto Padilla-Hernandez)
 !/    16-Jul-2020 : Variable coupling time step         ( version 7.08 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
-!/    06-Jan-2021 : Add new coupling fields             ( version 7.xx )
+!/    08-Feb-2021 : Add new coupling fields             ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

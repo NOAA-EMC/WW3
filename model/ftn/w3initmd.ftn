@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
@@ -58,7 +58,7 @@
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
-!/    06-Jan-2021 : Extra coupling fields               ( version 7.xx )
+!/    08-Feb-2021 : Extra coupling fields               ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2056,7 +2056,7 @@
 ! NRQMAX is the maximum number of fields, it is the sum of the 
 ! sizes of scalar fields (Hs) + 2-component vectors (CUR) + 3-comp ... 
 !
-!/MPI          NRQMAX = 1+0+0 + 18+0+0 + 0+0+0 +                     &
+!/MPI          NRQMAX = 1+0+0 + 19+0+0 + 0+0+0 +                     &
 !/MPI                   2+(NOGE(4)-2)*(NOSWLL+1) + 11+3+1 +          &
 !/MPI                   10+7+1 + 5+4+1 + 5+2+0 + 5+NOEXTR
 !/MPI          DO IFJ=1,5
@@ -2228,12 +2228,12 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 2/17', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
-!/MPI              IF ( FLGRDALL( 2, 18) ) THEN
+!/MPI              IF ( FLGRDALL( 2, 19) ) THEN
 !/MPI                  IH     = IH + 1
 !/MPI                  IT     = IT + 1
 !/MPI      CALL MPI_SEND_INIT (WNMEAN(1),NSEALM , MPI_REAL, IROOT,   &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
-!/MPIT      WRITE (NDST,9011) IH, ' 2/18', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, ' 2/19', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
 !/MPI              IF ( FLGRDALL( 3, 1) ) THEN 
@@ -3054,12 +3054,12 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 2/17', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
-!/MPI                IF ( FLGRDALL( 2, 18) ) THEN
+!/MPI                IF ( FLGRDALL( 2, 19) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI      CALL MPI_RECV_INIT (WNMEAN(I0),1,WW3_FIELD_VEC, IFROM, IT, &
 !/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, ' 2/18', IFROM, IT, IRQGO2(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, ' 2/19', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
 !/MPI                IF ( FLGRDALL( 3, 1) ) THEN 
@@ -3831,7 +3831,7 @@
 !/MPIT        WRITE (NDST,9021) IH, 'S TH', IROOT, IT, IRQRS(IH), IERR
 !/MPI              END IF
 !
-!/MPI              IF ( FLOGRR( 2, 18) ) THEN
+!/MPI              IF ( FLOGRR( 2, 19) ) THEN
 !/MPI                IH     = IH + 1
 !/MPI                IT     = IT0 + 13
 !/MPI                CALL MPI_SEND_INIT (WNMEAN(1), NSEALM, MPI_REAL,    &
@@ -4083,7 +4083,7 @@
 !/MPIT      WRITE (NDST,9021) IH, 'R TH', IFROM, IT, IRQRS(IH), IERR
 !/MPI                  END IF
 !
-!/MPI                  IF ( FLOGRR( 2, 18) ) THEN
+!/MPI                  IF ( FLOGRR( 2, 19) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT0 + 13
 !/MPI                    CALL MPI_RECV_INIT (WNMEAN(I0),1,WW3_FIELD_VEC, &

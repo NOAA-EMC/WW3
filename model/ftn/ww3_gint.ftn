@@ -904,14 +904,14 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-2021 |
+!/                  | Last update :         08-Feb-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Jul-2009 : Original code                       ( version 3.14 )
 !/    21-Feb-2013 : Modified to new output structure    ( version 4.11 )
 !/    30-Apr-2014 : Add group 3                         ( version 5.00 )
 !/    27-Aug-2015 : ice thick. and floe added as output ( version 5.10 )
-!/    06-Jan-2021 : New coupling fields output          ( version 7.xx )
+!/    08-Feb-2021 : New coupling fields output          ( version 7.xx )
 !/
 !   1. Purpose :
 !
@@ -1726,9 +1726,9 @@
                     END IF
                   END IF
 !
-                  IF ( FLOGRD(2,18) .AND. ACTIVE ) THEN
+                  IF ( FLOGRD(2,19) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%WNMEAN(GSEA) .NE. UNDEF ) THEN
-                      SUMWT2(18) = SUMWT2(18) + WT
+                      SUMWT2(19) = SUMWT2(19) + WT
                       IF ( WNMEANAUX .EQ. UNDEF )   WNMEANAUX = 0.
                       WNMEANAUX = WNMEANAUX + WADATS(IGRID)%WNMEAN(GSEA)*WT
                     END IF
@@ -2651,7 +2651,7 @@
                 IF ( WNMEANAUX .NE. UNDEF ) THEN
                   IF ( WNMEAN(ISEA) .EQ. UNDEF )   WNMEAN(ISEA) = 0.
                   WNMEAN(ISEA) = WNMEAN(ISEA) +                      &
-                               WNMEANAUX / REAL( SUMWT2(18)+SUMGRD )
+                               WNMEANAUX / REAL( SUMWT2(19)+SUMGRD )
                 END IF
 !
 ! Group 3 variables
