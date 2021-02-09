@@ -27,14 +27,17 @@
 !     FIELD%LIST                 = 'unset'            ! List of output fields
 !     FIELD%PARTITION            = '0 1 2 3'          ! List of wave partitions ['0 1 2 3 4 5']
 !     FIELD%SAMEFILE             = T                  ! All the variables in the same file
+!     FIELD%VECTOR               = T                  ! Vector [T] or dir/magnitude [F] for
+!                                                     !   directional fields
 !     FIELD%TYPE                 = 3                  ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &FIELD_NML
   FIELD%TIMESTART        =  '20100101 000000'
   FIELD%TIMESTRIDE       =  '3600'
   FIELD%TIMECOUNT        =  '3'
-  FIELD%LIST             =  'HS DIR WND T01 T02 PHS PTP'
+  FIELD%LIST             =  'HS DIR WND T01 T02 TP PHS PTP'
   FIELD%SAMEFILE         =  F
+  FIELD%VECTOR           =  F
   FIELD%TYPE             =  2
 /
 

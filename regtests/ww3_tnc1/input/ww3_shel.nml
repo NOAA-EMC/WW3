@@ -120,6 +120,7 @@
 !  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 !  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 !  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
+!  F  F  2    18   FP0        TP    Peak period (from peak freq)
 !   -------------------------------------------------
 !        3                          Spectral Parameters (first 5)
 !   -------------------------------------------------
@@ -250,7 +251,7 @@
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST     = 'HS DIR WND T01 T02 PHS PTP'
+  TYPE%FIELD%LIST     = 'HS DIR WND T01 T02 TP PHS PTP'
 /
 
 
