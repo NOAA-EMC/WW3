@@ -514,9 +514,11 @@
       REAL, SAVE              :: TAUNUX, TAUNUY
 !/OMPG/!$omp threadprivate( TAUNUX, TAUNUY)
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
+!/OMPG/!$omp threadprivate( FLTEST, FLAGNN )
       LOGICAL                 :: SHAVE
       LOGICAL                 :: LBREAK
       LOGICAL, SAVE           :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST ) 
       LOGICAL                 :: PrintDeltaSmDA
       REAL                    :: eInc1, eInc2
       REAL                    :: DeltaSRC(NSPEC), MAXDAC(NSPEC)
