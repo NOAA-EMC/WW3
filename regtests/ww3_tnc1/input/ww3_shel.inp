@@ -23,7 +23,7 @@ $
 $ Type 1 : Fields of mean wave parameters
    20100101 000000   3600  20100101 020000
  N
- HS DIR WND T01 T02 PHS PTP
+ HS DIR WND T01 T02 TP PHS PTP
 $
 $ Type 2 : Point output
    20100101 000000   0  20100101 000000
