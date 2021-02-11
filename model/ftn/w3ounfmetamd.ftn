@@ -714,6 +714,7 @@
 
         ELSE IF(TESTU == "CRS") THEN
           BACKSPACE(NDMI) ! We will reprocess this line
+          CALL READ_CRS_META(NDMI, ILINE)
           CYCLE
 
         ELSE
