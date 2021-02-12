@@ -528,6 +528,8 @@
 !/SMC
 !/SMC        ! Allocate space for coverage array and new MAPSTA array
 !/SMC        ALLOCATE(COV(NXO,NYO), MAPSMC(NXO,NYO))
+!/SMC      ELSE IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) THEN  ! Nearest neighbour interpolation
+!/SMC        CALL READ_SMCINT()
 !/SMC      ENDIF
 !/SMC
 !/SMC      ! CB: IXN and IXY are calculated by SMC_INTERP for SMC GRID
