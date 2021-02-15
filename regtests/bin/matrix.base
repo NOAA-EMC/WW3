@@ -2078,7 +2078,7 @@
   if [ "$confignc" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -o netcdf $ww3 ww3_tnc1" >> matrix.body
+    echo "$rtst -o netcdf -N $ww3 ww3_tnc1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #
