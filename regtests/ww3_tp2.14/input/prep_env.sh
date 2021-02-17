@@ -27,20 +27,21 @@ then
   echo ' '
   echo '   Setup cmplr file'
   if [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
-     [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
      [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
      [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
-     [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
+     [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
      [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
      [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-     [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
+     [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+     [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+     [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+     [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
+     [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
      [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
      [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
-     [ "$cmplr" == "zeus_pgi" ] || [ "$cmplr" == "zeus_pgi_debug" ]               || \
      [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
      [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
-     [ "$cmplr" == "hera" ] ; then
+     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
      source $WWATCH3_DIR/bin/cmplr.env
      # shortlist optl
      alloptl=( $optl )
