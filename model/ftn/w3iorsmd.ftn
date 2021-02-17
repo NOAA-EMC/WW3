@@ -58,7 +58,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-01-06'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-02-08'
       CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
                                IDSTR = 'WAVEWATCH III RESTART FILE'
 !/

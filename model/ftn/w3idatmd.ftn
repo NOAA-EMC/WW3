@@ -321,6 +321,10 @@
         INPUTS(I)%INFLAGS1 = .FALSE.
         INPUTS(I)%INFLAGS2 = .FALSE.
         INPUTS(I)%FLAGSC   = .FALSE.
+        INPUTS(I)%GA0      = 0.0
+        INPUTS(I)%GD0      = 0.0
+        INPUTS(I)%GAN      = 0.0
+        INPUTS(I)%GDN      = 0.0
         END DO
 !
 !/T      WRITE (NDST,9000) -NAUXGR, NGRIDS
