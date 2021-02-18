@@ -1439,10 +1439,10 @@
             RHOAIR   = MAX ( 0. , DAIRO(J))
 #endif
             CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
-            ICEDMAX  = MAX ( 0., ICEFO(J))
-            ICEF     = ICEDMAX
-            ICETHICK = MAX (0., ICEHO(J))
-            ICECON   = MAX (0., ICEO(J))
+!/IS2            ICEDMAX  = MAX ( 0., ICEFO(J))
+!/IS2            ICEF     = ICEDMAX
+!/IS2            ICETHICK = MAX (0., ICEHO(J))
+!/IS2            ICECON   = MAX (0., ICEO(J))
 !
 #ifdef W3_STAB2
             STAB0  = ZWIND * GRAV / 273.
