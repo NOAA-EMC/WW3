@@ -42,6 +42,8 @@
 !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/    02-Jun-2021 : Bug fix (*SUMGRD; Q. Liu)           ( version 7.13 )
+!/    18-Feb-2021 : Modify to keep ice points active    ( version 7.12 )
+!/                  unless masked (B. Pouliot, CMC)
 !/
 !   1. Purpose : 
 !
@@ -1221,7 +1223,6 @@
           MAPINT = MOD(MAPST2(IY,IX)/16,2) 
           MAPST2(IY,IX) = MAPST2(IY,IX) - MAPICE - 2*MAPDRY - 4*MAPLND         &
                           - 8*MAPMSK
-          ACTIVE =  (MAPICE .NE. 1 .AND. MAPDRY .NE. 1)
 !
           IF ( MAPINT .EQ. 0 ) THEN
 !
@@ -1271,7 +1272,7 @@
               IF ( NMAPDRY .GT. 50 ) MAPDRYT = 1
               IF ( NMAPLND .GT. 50 ) MAPLNDT = 1
               IF ( NMAPMSK .GT. 50 ) MAPMSKT = 1
-              ACTIVE =  (MAPICET .NE. 1 .AND. MAPDRYT .NE. 1 .AND.             &
+              ACTIVE =  (MAPDRYT .NE. 1 .AND.                          &
                          MAPLNDT .NE. 1 .AND. MAPMSKT .NE. 1)
               IF ( ACTIVE ) THEN
                 USEGRID(IG) = .TRUE.
