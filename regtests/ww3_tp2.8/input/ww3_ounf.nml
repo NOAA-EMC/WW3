@@ -34,7 +34,7 @@
   FIELD%TIMESTRIDE       =  '600'
   FIELD%TIMECOUNT        =  '100'
   FIELD%TIMESPLIT        =  10
-  FIELD%LIST             =  'DPT HS FP DIR SPR'
+  FIELD%LIST             =  'DPT CUR HS FP DIR SPR'
   FIELD%PARTITION        =  '0 1 2'
   FIELD%TYPE             =  4
 /

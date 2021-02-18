@@ -37,6 +37,7 @@
 #define TEST_WMESMFMD_BOTCUR___disabled
 #define TEST_WMESMFMD_RADSTR2D___disabled
 #define TEST_WMESMFMD_STOKES3D___disabled
+#define TEST_WMESMFMD_PSTOKES___disabled
 !/
 !/ ------------------------------------------------------------------- /
       module WMESMFMD
@@ -108,6 +109,7 @@
 !      CalcBotcur       Subr.  Private  Calculate wave-bottom currents for export
 !      CalcRadstr2D     Subr.  Private  Calculate 2D radiation stresses for export
 !      CalcStokes3D     Subr.  Private  Calculate 3D Stokes drift current for export
+!      CalcPStokes      Subr.  Private  Calculate partitioned Stokes drift for export
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -196,7 +198,7 @@
       real(ESMF_KIND_RX) :: missingValue
 !
 ! --- Timing
-      integer, parameter :: numwt=8
+      integer, parameter :: numwt=10
       character(32) :: wtnam(numwt)
       integer       :: wtcnt(numwt)
       real(8)       :: wtime(numwt)
@@ -353,6 +355,8 @@
       wtnam( 6) = 'Finalize'
       wtnam( 7) = 'GetImport'
       wtnam( 8) = 'SetExport'
+      wtnam( 9) = 'FieldGather'
+      wtnam(10) = 'FieldFill'
       wtcnt( :) = 0
       wtime( :) = 0d0
 !
@@ -974,6 +978,48 @@
         expFieldName(i)    = 'vscurr'
         expFieldStdName(i) = 'northward_stokes_drift_current'
         expFieldDim(i)     = 3
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'x1pstk'
+        expFieldStdName(i) = 'eastward_partitioned_stokes_drift_1'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'y1pstk'
+        expFieldStdName(i) = 'northward_partitioned_stokes_drift_1'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'x2pstke'
+        expFieldStdName(i) = 'eastward_partitioned_stokes_drift_2'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'y2pstk'
+        expFieldStdName(i) = 'northward_partitioned_stokes_drift_2'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'x3pstk'
+        expFieldStdName(i) = 'eastward_partitioned_stokes_drift_3'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'y3pstk'
+        expFieldStdName(i) = 'northward_partitioned_stokes_drift_3'
+        expFieldDim(i)     = 2
       endif
 
       i = i + 1
@@ -2261,7 +2307,7 @@
 !/WRST            wy0 = WYNwrst  
 !/WRST            if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/WRST          enddo
-!/WRST        endif
+        endif
     
 !/WRST       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
 !/WRST        !If the time of the field is still initial time, replace
@@ -2404,7 +2450,7 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=8
       real(8) :: wstime, wftime
-      integer :: i1, i2, i3
+      integer :: i1, i2, i3, i4, i5, i6
       logical :: flpart = .false., floutg = .false., floutg2 = .true.
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETEXPORT)
       type(ESMF_State) :: dumpState
@@ -2465,6 +2511,32 @@
       if ( expFieldActive(i1) .and. &
            expFieldActive(i2) ) then
         call CalcStokes3D( va, expField(i1), expField(i2), rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! -------------------------------------------------------------------- /
+! Partitioned Stokes Drift 3 2D fields 
+!
+      i1 = FieldIndex( expFieldName, 'x1pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'y1pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i3 = FieldIndex( expFieldName, 'x2pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i4 = FieldIndex( expFieldName, 'y2pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i5 = FieldIndex( expFieldName, 'x3pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i6 = FieldIndex( expFieldName, 'y3pstk', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) .and. &
+           expFieldActive(i3) .and. &
+           expFieldActive(i4) .and. &
+           expFieldActive(i5) .and. &
+           expFieldActive(i6)  ) then
+        call CalcPStokes( va, expField(i1), expField(i2), expField(i3), &
+                        expField(i4), expField(i5), expField(i6), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
@@ -4622,11 +4694,15 @@
       real(ESMF_KIND_RX), pointer :: dptr1(:)
       real(ESMF_KIND_RX), pointer :: dptr2(:,:)
       real(ESMF_KIND_RX), pointer :: dptr3(:,:,:)
+      integer, parameter :: iwt=10
+      real(8) :: wstime, wftime
 !
 ! -------------------------------------------------------------------- /
 ! Fill Field
 !
       if (present(rc)) rc = ESMF_SUCCESS
+
+      call ESMF_VMWtime(wstime)
 
       call ESMF_FieldGet(field, localDECount=ldecnt, rank=rank, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
@@ -4661,6 +4737,10 @@
         endif
 
       enddo
+
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
 !/
 !/ End of FieldFill ------------------------------------------------- /
 !/
@@ -4735,28 +4815,46 @@
 !/
       character(ESMF_MAXSTR) :: cname
       character(500) :: msg
-      integer :: k, ir, ip, count
+      integer :: i, j, k, ir, ip, count
       real(ESMF_KIND_RX) :: floc(n1,n2)
-      real(ESMF_KIND_RX) :: floc1d(n1)
+      real(ESMF_KIND_RX) :: floc1d(n1), floc1dary(n1*n2)
 !/PDLIB      real(ESMF_KIND_R8), pointer :: fldptr(:)
+      integer, parameter :: iwt=9
+      real(8) :: wstime, wftime
 !
 ! -------------------------------------------------------------------- /
 ! Gather Field
 !
       if (present(rc)) rc = ESMF_SUCCESS
 
+      call ESMF_VMWtime(wstime)
+
 !      call ESMF_FieldWrite(field,fileName="ww3_import_dump.nc",overwrite=.true.,rc=rc)
       if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        count = n1 * n2
+        floc = 0.
+        floc1dary = 0.
+        call ESMF_FieldGather( field,  floc, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            floc1dary(i+(j-1)*n1) = floc(i,j)
+          enddo
         enddo
-        fout(1:n1,1:n2) = floc(1:n1,1:n2)
+        call ESMF_VMbroadcast( vm, bcstData=floc1dary, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do j=1,n2
+          do i=1,n1
+            fout(i,j) = floc1dary(i+(j-1)*n1)
+          enddo
+        enddo
       elseif (GTYPE.eq.UNGTYPE) then
-        do k = 0,npet-1
-          call ESMF_FieldGather( field,  floc1d, rootPet=k, vm=vm, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        enddo
+        count = n1
+        floc1d = 0.
+        call ESMF_FieldGather( field,  floc1d, rootPet=0, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_VMbroadcast( vm, bcstData=floc1d, count=count, rootPet=0, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/PDLIB      if ( LPDLIB == .FALSE. ) then
         do k = 1, n1
           fout(k,1) = floc1d(k)
@@ -4783,6 +4881,11 @@
 !/PDLIB!      enddo
 
       endif
+
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+
 !/
 !/ End of FieldGather ------------------------------------------------ /
 !/
@@ -5347,7 +5450,7 @@
       logical, save :: firstCall = .true.
       integer :: isea, jsea
       real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
-                 tauwx, tauwy, cd, z0, fmeanws
+                 tauwx, tauwy, cd, z0, fmeanws, dlwmean
       logical :: llws(nspec)
       type(ESMF_Field) :: chknField
       real(ESMF_KIND_RX), pointer :: chkn(:)
@@ -5387,7 +5490,8 @@
 !/ST4            call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
 !/ST4                         emean, fmean, fmean1, wnmean, amax,         &
 !/ST4                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-!/ST4                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+!/ST4                         tauwy, cd, z0, charn(jsea), llws, fmeanws,  & 
+!/ST4                         dlwmean )
           endif !firstCall
           chkn(jsea) = charn(jsea)
         enddo jsea_loop
@@ -5473,9 +5577,9 @@
 !/
       real   , parameter :: zero  = 0.0
       logical, save :: firstCall = .true.
-      integer :: isea, jsea
+      integer :: isea, jsea, ix, iy
       real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
-                 tauwx, tauwy, cd, z0, fmeanws
+                 tauwx, tauwy, cd, z0, fmeanws, dlwmean
       logical :: llws(nspec)
       type(ESMF_Field) :: wrlnField
       real(ESMF_KIND_RX), pointer :: wrln(:)
@@ -5500,24 +5604,29 @@
         jsea_loop: do jsea = 1,nseal
 !/DIST          isea = iaproc + (jsea-1)*naproc
 !/SHRD          isea = jsea
-          if ( firstCall ) then
-            charn(jsea) = zero
-!/ST3            llws(:) = .true.
-!/ST3            ustar = zero
-!/ST3            ustdr = zero
-!/ST3            call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-!/ST3                         emean, fmean, fmean1, wnmean, amax,         &
-!/ST3                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-!/ST3                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
-!/ST4            llws(:) = .true.
-!/ST4            ustar = zero
-!/ST4            ustdr = zero
-!/ST4            call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-!/ST4                         emean, fmean, fmean1, wnmean, amax,         &
-!/ST4                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-!/ST4                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
-          endif !firstCall
-          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+          IX = MAPSF(ISEA,1)
+          IY = MAPSF(ISEA,2)
+          IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN 
+            if ( firstCall ) then
+              charn(jsea) = zero
+!/ST3              llws(:) = .true.
+!/ST3              ustar = zero
+!/ST3              ustdr = zero
+!/ST3              call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST3                           emean, fmean, fmean1, wnmean, amax,         &
+!/ST3                           u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST3                           tauwy, cd, z0, charn(jsea), llws, fmeanws )
+!/ST4              llws(:) = .true.
+!/ST4              ustar = zero
+!/ST4              ustdr = zero
+!/ST4              call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST4                           emean, fmean, fmean1, wnmean, amax,         &
+!/ST4                           u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST4                           tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+!/ST4                           dlwmean )
+            endif !firstCall
+            wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+          endif 
         enddo jsea_loop
 
       endif !natGridIsLocal
@@ -6247,6 +6356,200 @@
 !/ End of CalcStokes3D ----------------------------------------------- /
 !/
       end subroutine CalcStokes3D
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcPStokes"
+      subroutine CalcPStokes ( a, p1xField, p1yField, p2xField,   &
+                                 p2yField, p3xField, p3yField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           J. Meixner              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         29-Oct-2019 |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 7.XX )
+!/
+!  1. Purpose :
+!
+!     Calculate partitioned Stokes drift for export
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       a         Real   I   Input spectra (in par list to change shape)
+!       p1Field   Type   I/O 
+!       p2Field   Type   I/O 
+!       p3Field   Type   I/O 
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      USE W3ADATMD, ONLY: USSP
+      USE W3IOGOMD, ONLY: CALC_U3STOKES
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      real             :: a(nth,nk,0:nseal)
+      type(ESMF_Field) :: p1xField,p2xField,p3xField
+      type(ESMF_Field) :: p1yField,p2yField,p3yField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      !real(8) :: sxxs, sxys, syys
+      type(ESMF_Field) :: p1xnField, p2xnField, p3xnField
+      type(ESMF_Field) :: p1ynField, p2ynField, p3ynField
+      real(ESMF_KIND_RX), pointer :: p1xn(:), p2xn(:), p3xn(:)
+      real(ESMF_KIND_RX), pointer :: p1yn(:), p2yn(:), p3yn(:)
+      integer, save :: timeSlice = 1
+      integer :: isea,jsea 
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+
+      p1xnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      p1ynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      p2xnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      p2ynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      p3xnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      p3ynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call FieldFill( p1xnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( p1ynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( p2xnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( p2ynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( p3xnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( p3ynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( p1xnField, farrayPtr=p1xn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( p1ynField, farrayPtr=p1yn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( p2xnField, farrayPtr=p2xn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( p2ynField, farrayPtr=p2yn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( p3xnField, farrayPtr=p3xn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( p3ynField, farrayPtr=p3yn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        call CALC_U3STOKES ( a , 2 )
+
+        jsea_loop: do jsea = 1,nseal
+!/DIST      isea = iaproc + (jsea-1)*naproc
+!/SHRD       isea = jsea
+
+          p1xn(jsea)=ussp(jsea,1)
+          p1yn(jsea)=ussp(jsea,nk+1)
+          p2xn(jsea)=ussp(jsea,2)
+          p2yn(jsea)=ussp(jsea,nk+2)
+          p3xn(jsea)=ussp(jsea,3)
+          p3yn(jsea)=ussp(jsea,nk+3)
+        enddo jsea_loop
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( p1xnField, p1xField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( p1ynField, p1yField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( p2xnField, p2xField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( p2ynField, p2yField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( p3xnField, p3xField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( p3ynField, p3yField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_FieldDestroy( p1xnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( p2xnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( p3xnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( p1ynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( p2ynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( p3ynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+#ifdef TEST_WMESMFMD_PSTOKES
+      call ESMF_FieldWrite( p1xField, "wmesmfmd_pstokes_1x.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( p1yField, "wmesmfmd_pstokes_1y.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( p2xField, "wmesmfmd_pstokes_2x.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( p2yField, "wmesmfmd_pstokes_2y.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( p3xField, "wmesmfmd_pstokes_3x.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( p3yField, "wmesmfmd_pstokes_3y.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return   
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcPStokes ----------------------------------------------- /
+!/
+      end subroutine CalcPStokes
 !/ ------------------------------------------------------------------- /
 !/
 !/ End of module WMESMFMD -------------------------------------------- /

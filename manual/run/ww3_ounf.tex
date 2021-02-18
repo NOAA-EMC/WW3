@@ -7,14 +7,118 @@
 \proddefa{ww3\_ounf.inp}{Tradition configuration file.}{10} (App.~\ref{sec:config131})
 \proddefa{mod\_def.ww3}{Model definition file.}{20}
 \proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
-\proddefa{NC\_globatt.inp}{Additional global attributes.}{994}
+\proddefa{NC\_globatt.inp}{Additional global attributes (deprecated)}{994}
+\proddefa{ounfmeta.inp}{User defined meta data attributes}{60}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{\opt  .nc}{NetCDF file}{}
 
+
 \vspace{\baselineskip} 
+
 \noindent
 When a single field is put in the file, the abbreviated field name (file
 extensions from ww3\_outf) for each data type is given in
 Table~\ref{tab:fields} on page~\pageref{tab:fields}.
+
+\noindent
+If desired, it is possible to override the default metadata (attributes)
+for each variable by providing values in the ounfmeta.inp file.
+
+\noindent
+Entries in the ounfmeta.inp file are formatted as follows:
+\begin{verbatim}
+   META ( [ IFI  IFJ ]  |  FLDID )  [ IFC ]
+     attr_name = attr_value
+     attr_name = attr_value
+     extra_attr = extra_value [type]
+   ... repeated as many times as required.
+\end{verbatim}
+
+\noindent
+An output field is selected using the \texttt{META} keyword followed by
+the `field name` or an [IFI, IFJ] integer pair that relates to the
+group (IFI) and field (IFJ) flags. See ww3\_shel for details of
+field names and flags.
+
+\noindent
+Either form may be followed by an integer value (IFC) to select the 
+component in multi-component fields (such as wind).
+
+\noindent
+Blank lines and comments lines (starting with \$) are ignored.
+
+\noindent
+Each \texttt{`attr\_name`} relates to an existing variable attribute and
+can be one of the following (altnerative internal name shown in parenthesis):
+\begin{itemize}
+ \item  standard\_name (varns) [string] : CF Standard name
+ \item  long\_name (varnl) [string] : Descriptive long name
+ \item  globwave\_name (varng) [string] : Optional GlobaWAVE name
+ \item  direction\_reference or dir\_ref (varnd) [string] : Optional reference
+ frame for directional fields.
+ \item  comment (varnc) [string] : Optional comment.
+ \item  units [string] : Units of field
+ \item  valid\_min (vmin) [float] : Minimum valid value of data
+ \item  valid\_max (vmax) [float] : Maximum valud value of data
+ \item  scale\_factor (fsc) [float] : Scaling factor for data - used only when
+ variable type is SHORT.
+\end{itemize}
+
+\noindent
+Additionaly, the following fields are also configurable:
+\begin{itemize}
+ \item  varnm : the netCDF variable name
+ \item  ename : the identifier for single field per file output
+\end{itemize}
+
+\noindent
+Any other attribute name is assumed to be an optional "extra" 
+attribute. This extra attribute can take an optional "type"
+keyword to specify the variable tpye of the metadata. If 
+no type is supplied, it defaults to a characer type. Valid
+types are one of ["c", "r", "i"] for character/string, 
+real/float or integer values respectively.
+
+\noindent Some default attibutes can be disabled by setting 
+the attribute value to a blank string (""). This will prevent
+the attribute from being written in the netCDF file. This
+applies only to the \texttt{globawave\_name}, \texttt{comment}
+and \texttt{direction\_reference} attributes.
+
+\noindent
+Global meta data can be specified with a special \texttt{META global} line.
+
+\noindent
+Example ounfmeta.inp file:
+
+\begin{verbatim}
+$ Lines starting with dollars are comments.
+$ The folowing line starts a meta-data section for the depth field
+META DPT
+  standard_name = depth
+  long_name = "can be quoted string"
+  comment = or an unquoted string
+  vmax = 999.9
+
+$ Next one is HSig (group 2, field 1)
+META 2 1
+  $ varns is same as standard_name
+  varns = "sig. wave height"
+  $ varnl is same as long_name
+  varnl = "this is long name"
+
+$ Next one is second component of wind. It also sets an
+$ "extra" meta data value (height - a float)
+META WND 2
+  standard_name = "v-wind"
+  height = 10.0 "r"
+
+$ Global metadata:
+META global
+  institution = UKMO
+  comment "space seperated strings should be quoted" c
+  version = 1.0 r
+
+\end{verbatim}
 
 \pb

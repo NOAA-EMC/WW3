@@ -133,6 +133,11 @@
     fi
   fi
 
+  # OMP support
+  if [ "$omp_mod" = 'yes' ] ; then
+    opt="$opt <optomp>"
+  fi
+
   opt="$opt $EXTRA_LINK_OPTIONS"
 
 # 3.b Link - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -62,7 +62,8 @@
 ! -------------------------------------------------------------------- !
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 !
-! * the point file is a space separated values per line : lon lat 'name'
+! * the point file is a space separated values per line :
+!   longitude latitude 'name' (C*40)
 !
 ! * the full list of field names is :
 !  All parameters listed below are available in output file of the types

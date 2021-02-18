@@ -54,7 +54,7 @@
     CHARACTER(15)               :: TIMESTOP
     TYPE(NML_FIELD_T)           :: FIELD
     TYPE(NML_GRID_T)            :: GRID
-    CHARACTER(64)               :: TIDAL
+    CHARACTER(256)              :: TIDAL
   END TYPE NML_FORCING_T
 
   ! file structure
@@ -516,7 +516,7 @@
       WRITE (NDSN,13) TRIM(MSG),'GRID % ASIS   = ', NML_FORCING%GRID%ASIS
       WRITE (NDSN,13) TRIM(MSG),'GRID % LATLON = ', NML_FORCING%GRID%LATLON
 
-      WRITE (NDSN,10) TRIM(MSG),'TIDAL = ', NML_FORCING%TIDAL
+      WRITE (NDSN,10) TRIM(MSG),'TIDAL = ', TRIM(NML_FORCING%TIDAL)
 
 
 10  FORMAT (A,2X,A,A)

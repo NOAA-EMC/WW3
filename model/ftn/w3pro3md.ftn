@@ -730,6 +730,7 @@
       INTEGER                 :: IX, IY, IXC, IYC, IBI
       INTEGER                 :: IIXY1(NSEA), IIXY2(NSEA),            &
                                  IIXY3(NSEA), IIXY4(NSEA)
+      INTEGER                 :: TTEST(2),DTTST
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,   &
                                  CXMIN, CXMAX, CYMIN, CYMAX
@@ -812,7 +813,10 @@
       DTRAD  = DTLOC
       IF ( FLAGLL ) DTRAD=DTRAD/(DERA*RADIUS)
 !
-      YFIRST = MOD(ITIME,2) .EQ. 0
+      TTEST(1) = TIME(1)
+      TTEST(2) = 0
+      DTTST = DSEC21(TTEST,TIME)
+      YFIRST = MOD(NINT(DTTST/DTG),2) .EQ. 0
 !
 !/T      WRITE (NDST,9000) YFIRST
 !/T      WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
@@ -960,7 +964,7 @@
       IF ( FLCUR ) THEN
 !/T          WRITE (NDST,9022)
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA,IXY)
 !
           DO ISEA=1, NSEA
             IXY         = MAPSF(ISEA,3)
@@ -974,7 +978,7 @@
 !
         END IF
 !
-!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY, CP, CQ)
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA,IX, IY, IXY, CP, CQ)
 !
       DO ISEA=1, NSEA
          IX     = MAPSF(ISEA,1)
@@ -1153,7 +1157,7 @@
 !
 !/OMPH/!$OMP END PARALLEL DO
 !
-        IF ( YFIRST ) THEN
+         IF ( YFIRST ) THEN
 !
 !/UQ            IF ( FLCY ) CALL W3QCK3                               &
 !/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &

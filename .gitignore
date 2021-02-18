@@ -84,3 +84,7 @@ model/bin/wwatch3.env
 */*.swp
 */*/*.swp
 */*/*/*.swp
+.*.swp
+*/.*.swp
+*/*/.*.swp
+*/*/*/.*.swp

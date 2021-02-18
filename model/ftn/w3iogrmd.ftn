@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Aug-2016 |
+!/                  | Last update :         15-Apr-2020 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -67,7 +67,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-09-20'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2020-10-19'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -83,7 +83,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         19-Oct-2020 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -145,6 +145,9 @@
 !/                  (C. Bunney, UKMO)
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+!/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
+!/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -233,7 +236,7 @@
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
-      USE W3TIMEMD, ONLY: NOLEAP
+      USE W3TIMEMD, ONLY: CALTYPE
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -594,7 +597,7 @@
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
@@ -639,8 +642,9 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-               ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC, IICEHDISP, &
-               IICEDDISP, IICEFDISP, BTBETA
+               ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
+               IICEDDISP, IICEFDISP, BTBETA,                          &
+               AAIRCMIN, AAIRGB
 
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
@@ -691,7 +695,7 @@
 !/DEBUGIOGR     FLUSH(740+IAPROC)
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-                FSREFRACTION, FSFREQSHIFT, FSSOURCE,                  &
+                FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
                 DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
                 NTRI,COUNTOT, COUNTRI, NNZ,                           &
                 B_JGS_TERMINATE_MAXITER,                              &
@@ -779,8 +783,9 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC,  &
-               IICEDDISP, IICEHDISP, IICEFDISP, BTBETA
+               IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
+               IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,               &
+               AAIRCMIN, AAIRGB
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
 
@@ -1077,12 +1082,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
-!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+!/ST4                SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
@@ -1091,12 +1096,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
-!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+!/ST4                 SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
