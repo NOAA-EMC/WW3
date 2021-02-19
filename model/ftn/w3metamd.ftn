@@ -270,7 +270,7 @@
 
 !/ ------------------------------------------------------------------- /
       FUNCTION META_LIST_HAS_ATTR(LIST, ATTN) RESULT(FOUND)
-!     Tests whether list conatins an entry with specified attname 
+!     Tests whether list contains an entry with specified attname
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
