@@ -414,9 +414,10 @@ then
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "hera" ] || [ "$cmplr" == "orion" ]                            || \
-       [ "$cmplr" == "stampede" ]                                                   || \
-       [ "$cmplr" == "cheyenne" ]                                                   || \
+       [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+       [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+       [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
@@ -441,9 +442,10 @@ then
        [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
        [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
        [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-       [ "$cmplr" == "hera" ] || [ "$cmplr" == "orion" ]                            || \
-       [ "$cmplr" == "stampede" ]                                                   || \
-       [ "$cmplr" == "cheyenne" ]                                                   || \
+       [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+       [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+       [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \

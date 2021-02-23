@@ -44,7 +44,7 @@ isorion=`hostname | grep Orion`
 if [ $ishera ]
 then
 # If no other h, assuming Hera 
-  cmplr=hera
+  cmplr='hera.intel'
   batchq="slurm"
   modcomp='intel/18.0.5.274'
   modmpi='impi/2018.0.4'
@@ -52,7 +52,7 @@ then
   metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/parmetis-4.0.3'
 elif [ $isorion ]
 then
-  cmplr=orion
+  cmplr='orion.intel'
   batchq="slurm"
   modcomp='intel/2018.4'
   modmpi='impi/2018.4'
