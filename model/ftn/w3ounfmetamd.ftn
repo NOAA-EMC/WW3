@@ -2598,15 +2598,17 @@
         META(1)%UNITS  = 'log10(m2 s+1E-12)'
         !META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
         META(1)%VARNC='base_ten_logarithm'
-        META(1)%FSC     = 0.0004
+        META(1)%FSC = 0.0004
+        META(1)%VMIN = -12.
+        META(1)%VMAX = 12.
       ELSE
         META(1)%UNITS  = 'm2 s'
-        META(1)%FSC     = 1.
+        META(1)%FSC = 1.
+        META(1)%VMIN = 0.
+        META(1)%VMAX = 1.e12
       END IF
       META(1)%ENAME  = '.ef'
       META(1)%VARNG = META(1)%VARNS
-      META(1)%VMIN = -12
-      META(1)%VMAX = -12.8
 ! IFI=3, IFJ=2, TH1M
       META => GROUP(3)%FIELD(2)%META
       ! Information for spectral
@@ -3259,17 +3261,19 @@
       META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
       IF (NCVARTYPE.EQ.2) THEN
         META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
+        META(1)%VMIN = -12.
+        META(1)%VMAX = 12.
       ELSE
         META(1)%UNITS='Pa2 m2 s'
         META(1)%VARNL='power spectral density of equivalent surface pressure'
         !META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
         META(1)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
+        META(1)%VMIN = 0.
+        META(1)%VMAX = 1.e12
       ENDIF
       META(1)%VARNC=''
       META(1)%VARND=''
       META(1)%ENAME='.p2l'
-      META(1)%VMIN = -12
-      META(1)%VMAX = 12
 ! IFI=6, IFJ=10, TWI
       META => GROUP(6)%FIELD(10)%META
       META(1)%FSC = 0.000001
