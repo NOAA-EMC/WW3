@@ -206,6 +206,7 @@
       INTEGER :: COUNT
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE           :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST ) 
 !/
 !/ ------------------------------------------------------------------- /
 !/
