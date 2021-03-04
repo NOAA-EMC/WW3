@@ -19,6 +19,7 @@
 !/    26-Jul-2018 : Write weights file WHTGRIDINT.bin
 !/                  (F.Ardhuin, M.Accensi, J.H.Alves)   ( version 6.05 )
 !/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
+!/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
 !/
 !   1. Purpose : 
 !
@@ -1569,7 +1570,8 @@
                     END IF
                   END IF
 !
-                  IF ( FLOGRD(2,6) .AND. ACTIVE ) THEN
+                  IF ( (FLOGRD(2,6) .OR. FLOGRD(2,18)) .AND. ACTIVE ) THEN
+                    ! Note: Output TP [FLOGRD(2,18)] is derived from FP0
                     IF ( WADATS(IGRID)%FP0(GSEA) .NE. UNDEF ) THEN
                       SUMWT2(6) = SUMWT2(6) + WT
                       IF ( FP0AUX .EQ. UNDEF ) THEN

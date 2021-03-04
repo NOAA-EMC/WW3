@@ -554,6 +554,9 @@
 !
 ! 1.c Local parameters
 !
+! Default COMSTR to "$" (for when using nml input files)
+      COMSTR = "$"
+!
 ! inferred from context: these flags (FL) are to indicate that the last (LST) 
 !   field has been read from a file.
       FLLSTL = .FALSE. ! This is associated with J.EQ.1 (wlev)

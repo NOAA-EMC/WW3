@@ -763,6 +763,13 @@
                           (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
                                           MIN(NSEA,IPART*NSIZE))
                   END DO
+
+!/WRST                 ! The WRST switch saves the values of wind in the
+!/WRST                 ! restart file and then uses the wind for the first
+!/WRST                 ! time step here.  This is needed when coupling with
+!/WRST                 ! an atm model that does not have 10m wind speeds at
+!/WRST                 ! initialization.  If there is no restart, wind is zero
+
 !/WRST                  DO IX=1, NX
 !/WRST                    DO IPART=1,NPRTY2
 !/WRST                      NREC  = NREC + 1
