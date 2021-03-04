@@ -584,7 +584,7 @@
 !
 !/MPI                  ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
 !/MPI                  IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
-!/MPI                                      ( NRQ, IRQRSS, IERR_MPI )
+!/MPI                                      ( NRQ*NBLKRS, IRQRSS, IERR_MPI )
 !
 !/MPI                  DO IB=1, NBLKRS
 !/MPI                    ISEA0  = 1 + (IB-1)*RSBLKS*NAPROC
@@ -595,11 +595,6 @@
 !/MPI                        IH     = 1 + NRQ * (IB-1)
 !/MPI                        CALL MPI_WAITALL                         &
 !/MPI                           ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
-!/MPI                        IF ( IB .LT. NBLKRS ) THEN
-!/MPI                            IH     = 1 + NRQ * IB
-!/MPI                            CALL MPI_STARTALL                    &
-!/MPI                               ( NRQ, IRQRSS(IH), IERR_MPI )
-!/MPI                          END IF
 !
 !/MPI                        DO ISEA=ISEA0, ISEAN
 !/MPI                          NREC   = ISEA + 2
@@ -609,7 +604,7 @@
 !/MPI                          IF ( IP .EQ. NAPRST ) THEN
 !/MPI                              WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
 !/MPI                            ELSE
-!/MPI                              JSEA   = JSEA - 2*((IB-1)/2)*RSBLKS
+!/MPI                              JSEA = 1 + MOD(IB-1,2)*RSBLKS
 !/MPI                              WRITEBUFF(1:NSPEC) = VAAUX(1:NSPEC,JSEA,IP)
 !/MPI                            END IF
 !/MPI                            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) &
