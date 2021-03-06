@@ -35,9 +35,11 @@ ifeq ($(WW3_COMP),Portland)
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
 # intel
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera" "orion" "cheyenne" "stampede"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel")) 
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
@@ -46,6 +48,8 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","mpt" "datarmor_mpt" "datarmor_m
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 # gnu
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","gnu" "datarmor_gnu" "datarmor_gnu_debug"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","hera.gnu" "cheyenne.gnu"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
 # error
 else

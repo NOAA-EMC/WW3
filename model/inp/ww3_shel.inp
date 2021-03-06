@@ -134,6 +134,7 @@ $  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
 $  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 $  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 $  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
+$  F  F  2    18   FP0        TP    Peak period (from peak freq)        
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
