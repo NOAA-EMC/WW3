@@ -2745,6 +2745,7 @@ END SUBROUTINE
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        Steven Brus                |
+!/                  |        Ali Abdolali               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         21-May-2020 |
 !/                  +-----------------------------------+
@@ -2755,7 +2756,7 @@ END SUBROUTINE
 !  1. Purpose :
 !
 !     Adjust element longitude coordinates for elements straddling the
-!     dateline (+180/-180)
+!     dateline with distance of ~360 degrees
 !
 !  2. Method :
 !
@@ -2775,7 +2776,7 @@ END SUBROUTINE
 !     Local variables.
 !     ----------------------------------------------------------------
       INTEGER :: I
-      INTEGER :: LEFT_FLAG(3), RIGHT_FLAG(3)
+      INTEGER :: R1GT180, R2GT180, R3GT180
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -2810,39 +2811,22 @@ END SUBROUTINE
       PT(3,1) = XYB(I3,1)
       PT(3,2) = XYB(I3,2)
 
-      ! Determine if element contains node on left side of dateline
-      LEFT_FLAG = 0
-      DO I = 1,3
-        IF ( PT(I,1) > 100.0 ) THEN
-          LEFT_FLAG(I) = 1
-        ENDIF
-      ENDDO
 
-      ! Determine if element contains node on right side of dateline
-      RIGHT_FLAG = 0
-      DO I = 1,3
-        IF ( PT(I,1) < -100.0 ) THEN
-          RIGHT_FLAG(I) = 1
-        ENDIF
-      ENDDO
+       R1GT180 = MERGE(1, 0, ABS(PT(3,1)-PT(2,1)).GT.180)
+       R2GT180 = MERGE(1, 0, ABS(PT(1,1)-PT(3,1)).GT.180)
+       R3GT180 = MERGE(1, 0, ABS(PT(2,1)-PT(1,1)).GT.180)
+ ! if R1GT180+R2GT180+R3GT180 .eq. 0 the element does not cross the dateline
+ ! if R1GT180+R2GT180+R3GT180 .eq. 1 the element contains the pole
+ ! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
 
-      ! Adjust longitude coordinates so all nodes have same sign       
-      ! if element straddles dateline                                     <- +180 | -180 ->
-      IF ( SUM(RIGHT_FLAG) == 2 .AND. SUM(LEFT_FLAG) == 1 ) THEN      !           |    * 
-        DO I = 1,3                                                    !           |
-          IF ( LEFT_FLAG(I) == 1 ) THEN                               !     *     |
-            PT(I,1) = PT(I,1) - 360.0                                 !           |
-          ENDIF                                                       ! (lon-360) |    *
-        ENDDO
-                                                                     
-      ELSE IF ( SUM(LEFT_FLAG) == 2 .AND. SUM(RIGHT_FLAG) == 1 ) THEN !           |
-        DO I = 1,3                                                    !     *     |
-          IF ( RIGHT_FLAG(I) == 1) THEN                               !           | 
-            PT(I,1) = PT(I,1) + 360.0                                 !           |    *  (lon + 360)
-          ENDIF                                                       !           |
-        ENDDO                                                         !     *     |
 
-      ENDIF 
+      IF ( R1GT180 + R2GT180 == 2 ) THEN
+             PT(3,1)=PT(3,1)-SIGN(360.0,(PT(3,1)-PT(2,1)))
+      ELSE IF ( R2GT180 + R3GT180 == 2 ) THEN
+             PT(1,1)=PT(1,1)-SIGN(360.0,(PT(1,1)-PT(2,1)))
+      ELSE IF ( R1GT180 + R3GT180 == 2 ) THEN
+             PT(2,1)=PT(2,1)-SIGN(360.0,(PT(2,1)-PT(3,1)))
+      ENDIF
 
       RETURN
       END SUBROUTINE FIX_PERIODCITY
