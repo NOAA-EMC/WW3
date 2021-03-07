@@ -5367,7 +5367,7 @@
             END IF
         ENDIF ! GTYPE .EQ. UNGTYPE
               
- WRITE (NDSO,9999)  
+     WRITE (NDSO,9999)  
 
 !/SCRIP      GRID1_UNITS='degrees' ! the other option is radians...we don't use this
 !/SCRIP      GRID1_NAME='src' ! this is not used, except for netcdf output
