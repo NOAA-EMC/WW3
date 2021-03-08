@@ -1,0 +1,30 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '360_day SOURCE TERM TEST  '
+$
+   1.10  0.0347  32  36  0.5
+$
+   T F F F F T
+  86400.  600.  600. 15.
+$
+  &MISC  XP = 0.075, CALTYPE = '360_day' /
+END OF NAMELISTS
+$
+  'RECT' T 'NONE'
+   3   3
+   1.  1.  1.E-2
+  -1. -1.  1.E-2
+$
+  -5. 5.75  10  -2500. 3 1 '(....)' 'UNIT' 'input'
+$
+   1  1  1
+   1  1  1
+   1  1  1
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

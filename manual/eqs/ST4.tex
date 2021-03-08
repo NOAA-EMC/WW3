@@ -1,22 +1,25 @@
 \vsssub
-\subsubsection{~$S_{\mathrm{in}} + S_{\mathrm{ds}}$: Ardhuin et al. 2010 ...} \label{sec:ST4}
+\subsubsection{~$S_{\mathrm{in}} + S_{\mathrm{ds}}$: Saturation-based dissipation} \label{sec:ST4}
 \vsssub
 
-\opthead{ST4}{\ws}{F. Ardhuin}
+\opthead{ST4}{\ws}{F. Ardhuin, J.-F. Filipot \& L. Romero}
 
 \noindent 
 This family of parameterizations uses a positive part of the wind input taken
 from WAM cycle 4 with an ad hoc reduction of $u_\star$, implemented in
 order to allow a balance with a saturation-based dissipation that uses different options for 
-a cumulative term.  This correction
-also reduces the drag coefficient at high winds. This is done by reducing the
-wind input for high frequencies and high winds.
-Many different adjustments can be made by changing the namelist parameters. A few successful combinations 
+a cumulative term. There are three main options for defining the saturation and the cumulative term. Chosing one or the other is done with the  {\F SDSBCHOICE} parameter, with  {\F SDSBCHOICE=1} for \cite{art:Aea10},  {\F SDSBCHOICE=2} for \cite{Filipot&Ardhuin2012}, and {\F SDSBCHOICE=3} for \cite{Romero2019}. That last options uses a saturation that is defined from the local spectral density, and thus gives zero dissipation for directions where the threshold is not reached, leading to much broader directional spectra. Also the stronger bimodality is achieved by having a strong modulation effect as a cumulative term. 
+
+Many other adjustments can be made by changing the namelist parameters. A few successful combinations 
 are given by tables \ref{tab:ST4_parSIN} and \ref{tab:ST4_parSDS}, with results described by \citep{art:RA13,art:SAG16}. 
 Further calibration to any particular wind field should be done for best performance. Guidance for this is given by \cite{Stopa2018}. 
 %We also note that the particular 
 %set of parameters T400 corresponds to setting IPHYS=1 in the ECWAM code cycle 45R2, with a few differences 
 %related to the fact that precomputed stress tables have now been removed from ECWAM. 
+
+\vsssub
+\textbf{Wind input and swell dissipation} 
+\vsssub
 
 
 The reduction of $u_\star$ in
@@ -182,17 +185,27 @@ wind opposing swells are more dissipated than following swells. Further, if
 $s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
 swell.
 
-The dissipation term is parameterized from the wave spectrum saturation, following the general ideas of \cite{art:Phi85}, 
-which were initially explored in a numerical modeling framework by \cite{art:AB03}. However, using a saturation parameterization 
-only makes sense when the spectrum is smooth. In general, going from the spectral space to the physical space requires 
+
+\vsssub
+\textbf{Wave breaking and ocean turbulence effects} 
+\vsssub
+
+
+The dissipation term is parameterized from the wave spectrum saturation, following the general ideas of \cite{art:Phi85}.
+%which were initially explored in a numerical modeling framework by \cite{art:AB03}. 
+The saturation spectrum is 
+\begin{equation}
+B\left(k,\theta\right)= \sigma k^3  N(k,\theta) \label{defB},
+\end{equation}
+and corresponds to a dimensionless form of the surface elevation spectrum. In general, going from the spectral space to the physical space requires 
 integrating the saturation over a finite spectral band in wavenumber and direction to compute the breaking probability 
 and then deconvolve this integral to obtain a spectral dissipation rate. Because such operations would be too time consuming we have 
-implemented two approaches. One uses on integration over directions only \citep{art:Aea10}, while the other uses an integration  over frequency 
-bands \citep{Filipot&Ardhuin2012}. These are activated by different namelist parameters, see e.g. T471 for the first approach and T500 for the second.
+implemented three approaches. One uses on integration over directions only \citep{art:Aea10}, while the second uses an integration  over frequency 
+bands \citep{Filipot&Ardhuin2012}, and the last actually uses the local value of $B$ without integration at all. Using one or the other version activated by the namelist parameter {\F  SDSBCHOICE  }.
 
 Because the directional wave spectra were too narrow when using a
 saturation spectrum integrated over the full circle \citep{art:AL06},
-\citep{art:Aea10} restricted over a sector of half-width $\Delta_\theta$,
+\citet{art:Aea10} restricted over a sector of half-width $\Delta_\theta$,
 \begin{equation}
 B'\left(k,\theta\right)=
 \int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta} \sigma k^3 cos^{\mathrm{sB}}\left(\theta-
@@ -203,16 +216,16 @@ As a result, a sea state with two systems of same energy but opposite
 direction will typically produce less dissipation than a sea state with all
 the energy radiated in the same direction.
 
-Based on recent analysis by \cite{Guimaraes2018} and \cite{Peureux&al.2019}, this saturation is enhanced by a factor that represents 
+Based on recent analysis by \cite{Guimaraes2018} and \cite{Peureux&al.2019}, this saturation is enhanced by a factor $M_L$ that represents 
 the effect of long waves on short waves 
 \begin{equation}
-1+M_\theta \sqrt{\mathrm{mss}_\theta} + N_\theta \sqrt{\mathrm{nss}_\theta} \label{defFACSAT}.
+M_l(k,\theta)=1+M_\theta \sqrt{\mathrm{mss}(k,\theta)} + N_\theta \sqrt{\mathrm{nss}(k,\theta)} \label{defFACSAT}.
 \end{equation}
 where $M_\theta$ is twice the modulation transfer function for short wave steepness, with 
 $M_\theta=8$ when following the simplified theory by \cite{art:LHS60} and using the root mean square enhancement of $B$ over a 
 long wave cycle. $N_\theta$ is an additional straining factor due to the instability of the wave action envelope of short waves 
-propagating in the direction close to that of the long wave \citep{Peureux&al.2019}. The squared slopes $\mathrm{mss}_\theta$ is 
-the mean square slope in direction $\theta$, wheras $\mathrm{nss}_\theta$ is a slope of long waves propagating in a narrow window $\pm \delta_\theta$, 
+propagating in the direction close to that of the long wave \citep{Peureux&al.2019}. The squared slopes $\mathrm{mss}(k,\theta)$ is 
+the mean square slope in direction $\theta$, wheras $\mathrm{nss}(k,\theta)$ is a slope of long waves propagating in a narrow window $\pm \delta_\theta$, 
 around the short wave direction $\theta$.
 
 We finally define our dissipation term as the sum of the saturation-based term
@@ -220,10 +233,10 @@ and a cumulative breaking term $S_{\mathrm{bk,cu}}$,
 \begin{eqnarray}
 \cS_{ds}(k,\theta)& =&  \sigma
  \frac{C_{\mathrm{ds}}^{\mathrm{sat}}}{B^2_r} \left[ \delta_d
-\max\left\{ B\left(k\right) -
+\max\left\{ M_l(k,\theta) B\left(k\right) -
 B_r,0\right\}^2 \right.
 \nonumber \\
-  & & +  \left(1-\delta_d \right) \left. \max\left\{B'\left(k,\theta \right)- B_r
+  & & +  \left(1-\delta_d \right) \left. \max\left\{ M_L(k,\theta) B'\left(k,\theta \right)- B_r
  ,0\right\}^2\right]N(k,\theta)  \nonumber \\
  & & + \cS_{\mathrm{bk,cu}}(k,\theta) + \cS_{\mathrm{turb}}(k,\theta) \label{Sds_all}.
 \end{eqnarray}
@@ -264,6 +277,7 @@ of 2 \citep{art:FAB10}, compared to the present approach in which it is
 considered that several waves (of different scales) may be present at the same place and
 time. This effect is corrected simply dividing $P$ by 2.
 
+
 With this approach the spectral density of crest length (breaking or not) per
 unit surface $l(\mathbf{k})$ such that $\int l(\mathbf{k}) \mathrm{d}k_x
 \mathrm{d}k_y$, we take
@@ -271,11 +285,43 @@ unit surface $l(\mathbf{k})$ such that $\int l(\mathbf{k}) \mathrm{d}k_x
 l(\mathbf{k})= 1/(2\pi^2 k),
 \end{equation}
 and the spectral density of breaking crest length per unit surface is
-$\Lambda(\mathbf{k})=l(\mathbf{k})P(\mathbf{k})$.  Assuming that any breaking
+$\Lambda(\mathbf{k})=l(\mathbf{k})P(\mathbf{k})$.  
+
+
+Finally the last option for the ST4 implementation of a saturation-based dissipation is as generalization 
+of the parameterization by \citet{Romero2019}, giving some flexibility in the definition of the modulation 
+term, this is activated by setting  {\F  SDSBCHOICE  = 3}. In this case the  breaking crest density for wavenumber vector  
+$\mathbf{k}$ is a function of the saturation only for the same wavenumber, $B(\mathbf{k})$, with no integration in direction 
+or frequency (which would be problematic if applied ot monochromatic wave spectra), but a strong modulation $M_L$  by long waves
+and a wind-dependent correction $M_W$
+\begin{equation}
+\Lambda (\mathbf{k}) = \frac{1}{k} \exp \left(-\frac{B_{\mathbf{r}}}{M_l(\mathbf{k})  B(\mathbf{k})}\right) M_L(\mathbf{k}) M_W(k).
+\end{equation}
+where the wind factor is, 
+\begin{equation}
+ M_W(k)=\left( 1+ D_W  \max(1,k/k_0) \right) / (1+D_W),
+\end{equation}
+where $k_0=g (3/ 28 u_\star)^2$, and $D_W$ was adjusted to 0.9 when using the DIA, and $D_W=2$ for the exact nonlinear interaction.
+The long wave modulation is either applied to $B$ (if $N_\theta > 0$) and takes the form $ M_l(k,\theta)$ given above, 
+or, as done in \cite{Romero2019} the modulation is applied to  $\Lambda$ and takes the form, 
+\begin{equation}
+ M_L(k,\theta)=\left( 1+ M_\Lambda \sqrt{\mathrm{mss}'(k,\theta)}  \right)^{1.5}.
+\end{equation}
+In that expression, the cumulated slope $\mathrm{mss}'$ is either $\mathrm{mss}(k,\theta)$ or, if $N_\theta=0$, it is forced to have a $\cos^2 (\theta-\theta_w)$ variation, 
+with $\theta_w$ the direction of the mean dominant waves (which is independant of $k$). In \cite{Romero2019} this strong $\cos^2$ directional dependency of $\Lambda$ is key for producing 
+strong bimodal spectra, and it may be a compensation for the isotropic dissipation rate. Indeed, the full source term for {\F  SDSBCHOICE  = 3} reads 
+\begin{eqnarray}
+\cS_{ds}(k,\theta)=  \frac{C_{\mathrm{ds}}^{\mathrm{sat}} (\sqrt{B(k)}-\sqrt{B_T} )^2.5}{g^2} \Lambda (k,\theta) c^5 + \cS_{\mathrm{bk,cu}}(k,\theta) + \cS_{\mathrm{turb}}(k,\theta) \label{Sds_all}. \nonumber \\
+\end{eqnarray}
+where it should be noted that the saturation used in the dissipation rate $b=C_{\mathrm{ds}}^{\mathrm{sat}} (\sqrt{B(k)}-\sqrt{B_T} )^2.5/{g^2}$ is integrated over direcitons. and uses a true threshold $B_T$ that is different from the $B_r$ in the expression of $\Lambda$. 
+Also, the generalization of \cite{Romero2019} allows to use a modulation of $B$ or $\Lambda$ and offers different options for the directional distribution of this modulation. Also, this breaking term can be combined with the cumulative term of \cite{art:Aea10} and the wave-turbulence interaction term of \citet{art:AJ06}. 
+
+For all three choices of {\F SDSBCHOICE}, the additional cumulative and wave-turbulence interaction terms are computed in the same way. 
+Assuming that any breaking
 wave instantly dissipates all the energy of all waves with frequencies higher
 than a factor $r_{\mathrm{cu}}$ or more, the cumulative dissipation rate is
 simply given by the rate at which these shorter waves are taken over by larger
-breaking waves, times the spectral density, namely
+breaking waves, times the spectral density, namely 
 \begin{equation}
 \cS_{\mathrm{bk,cu}}(k,\theta) = -C_{\mathrm{cu}}  N \left(k,\theta\right) \int_{f' < r_{\mathrm{cu}} f } \Delta_C \Lambda(\mathbf{k'}) \mathrm{d\mathbf{k'}},
 \label{Sds_cu1}
@@ -317,57 +363,62 @@ NCEP/NCAR winds.
 
 \begin{landscape}
 \begin{table} \begin{center} 
-%\begin{tabular}{|l|c|c|c|c|c|c|c|} \hline \hline
-%Par.                               &  WWATCH var.  & namelist  & T471        & T400/$I_{\mathrm{phys}}=1$& T405             & T500         & T601   \\
+%\begin{tabular}{|l|c|c|c|c|c|c|c|c|} \hline \hline
+%Par.                               &  WWATCH var.  & namelist  & T471        & T400/$I_{\mathrm{phys}}=1$& T405             & T500         & T601        &  T700      \\
 %\hline
-%%  $p$                               &  WNMEANP        & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5    \\
-%%  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5 & 0.5                   & 0.5 &  0.5 \\
-%  $f_{\mathrm{FM}}$                &  FXFM3        & SDS4      & 2.5         & 2.5                       & 2.5              &\textbf{9.9}  & 5      \\
-%                                   & SDSC1         & SDS4      & 0           & 0                         & 0                &\textbf{1.0}  & 0      \\
-%  $C_{\mathrm{ds}}^{\mathrm{sat}}$ & SDSC2         & SDS4      &$-2.2\X^{-5}$&$-2.2\X^{-5}$              &$-2.2\X^{-5}$     &\textbf{0.0}  &$-2.2\X^{-5}$ \\
-%  $C_{\mathrm{ds}}^{\mathrm{BCK}}$ & SDSBCK        & SDS4      & 0           & 0                         & 0                &\textbf{0.185}& 0      \\
-%  $C_{\mathrm{ds}}^{\mathrm{HCK}}$ & SDSHCK        & SDS4      & 0           & 0                         & 0                &\textbf{1.5}  & 0      \\
-%  $\Delta_\theta$                  & SDSDTH        & SDS4      & 80          & 80                        & 80               & 80           &  80    \\
-%  $\delta_\theta$                  & SDSSTRAINA    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{15}    \\
-%  $M_\theta$                       & SDSSTRAIN     & SDS4      & 0           & 0                         & 0                & 0            & \textbf{10}     \\
-%  $N_\theta$                       & SDSSTRAIN2    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{20}     \\
-%  $B_r$                            & SDSBR         & SDS4      & 0.0009      & 0.0009                    &\textbf{0.00085}  & 0.0009       & 0.0009   \\
-%  $C_{\mathrm{cu}}$                & SDSCUM        & SDS4      & -0.40344    & \textbf{0.0}              & \textbf{0.0}     &-0.40344      &-0.40344   \\
-%  ${\mathrm{s_B}}$                 & SDSCOS        &SDS4       & 2.0         &  2.0                      & \textbf{0.0}     & 2.0          & 2.0 \\
-%  $B_0$                           & SDSC4         & SDS4      & 1.0         & 1.0                       & 1.0              & 1.0          & 1.0    \\
-%  $p^{\mathrm{sat}}$               & SDSP          & SDS4      & 2.0         & 2.0                       & 2.0              & 2.0          & 2.0  \\
-%  $C_{\mathrm{turb}}$              & SDSC5         & SDS4      & 0.0         & 0.0                       &  0.0             & 0.0          & \textbf{1.0} \\
-%  $\delta_d$                       & SDSC6         & SDS4      & 0.3         & 0.3                       &  0.3             & 0.3          &0.3   \\
-%  $C$                              & NLPROP        & SNL1      & $2.5\X^7$   & $\mathbf{2.7\X^7}$        &$\mathbf{2.7\X^7}$& $2.5\X^7$    & $2.5\X^7$  \\
+% 				    & SDSBCHOICE    & SDS4      &  1          &     1                     &   1              & \textbf{2}   & 1           & \textbf{3} \\  
+%%  $p$                             &  WNMEANP      & SDS4      & 0.5         & 0.5                       & 0.5              &  0.5    \\
+%%  $p_{\mathrm{tail}}$             &  WNMEANPTAIL  & SDS4      & 0.5         & 0.5                   & 0.5 &  0.5 \\
+%  $f_{\mathrm{FM}}$                &  FXFM3        & SDS4      & 2.5         & 2.5                       & 2.5              &\textbf{9.9}  & 5           &  \textbf{20} \\
+%                                   & SDSC1         & SDS4      & 0           & 0                         & 0                &\textbf{1.0}  & 0           &              \\
+%  $C_{\mathrm{ds}}^{\mathrm{sat}}$ & SDSC2         & SDS4      &$-2.2\X^{-5}$&$-2.2\X^{-5}$              &$-2.2\X^{-5}$     &\textbf{0.0}  &$-2.2\X^{-5}$& \textbf{-3.8}   \\
+%  $C_{\mathrm{ds}}^{\mathrm{BCK}}$ & SDSBCK        & SDS4      & 0           & 0                         & 0                &\textbf{0.185}& 0           &   \\
+%  $C_{\mathrm{ds}}^{\mathrm{HCK}}$ & SDSHCK        & SDS4      & 0           & 0                         & 0                &\textbf{1.5}  & 0           & \\
+%  $\Delta_\theta$                  & SDSDTH        & SDS4      & 80          & 80                        & 80               & 80           &  80         & \\
+%  $\delta_\theta$                  & SDSSTRAINA    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{15} &    \\
+%  $M_\theta$                       & SDSSTRAIN     & SDS4      & 0           & 0                         & 0                & 0            & \textbf{10} &    \\
+%  $N_\theta$                       & SDSSTRAIN2    & SDS4      & 0           & 0                         & 0                & 0            & \textbf{20} & \textbf{0}    \\
+%  $B_r$                            & SDSBR         & SDS4      & 0.0009      & 0.0009                    &\textbf{0.00085}  & 0.0009       & 0.0009      & \\
+%  $C_{\mathrm{cu}}$                & SDSCUM        & SDS4      & -0.40344    & \textbf{0.0}              & \textbf{0.0}     &-0.40344      &-0.40344     & \\
+%  ${\mathrm{s_B}}$                 & SDSCOS        &SDS4       & 2.0         &  2.0                      & \textbf{0.0}     & 2.0          & 2.0         & \\
+%  $B_0$                           & SDSC4         & SDS4      & 1.0         & 1.0                       & 1.0              & 1.0          & 1.0          & \\
+%  $p^{\mathrm{sat}}$               & SDSP          & SDS4      & 2.0         & 2.0                       & 2.0              & 2.0          & 2.0         & \\
+%  $C_{\mathrm{turb}}$              & SDSC5         & SDS4      & 0.0         & 0.0                       &  0.0             & 0.0          & \textbf{1.0}&  \\
+%  $\delta_d$                       & SDSC6         & SDS4      & 0.3         & 0.3                       &  0.3             & 0.3          &0.3          & \\
+%  $C$                              & NLPROP        & SNL1      & $2.5\X^7$   & $\mathbf{2.7\X^7}$        &$\mathbf{2.7\X^7}$& $2.5\X^7$    & $2.5\X^7$   & \\
 % \hline \hline
 %\end{tabular}  
-\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
-Par.                               &  WWATCH var.  & namelist  & T471        & T405             & T500         & T601   \\
+\begin{tabular}{|l|c|c|c|c|c|c|c|} \hline \hline
+Par.                               &  WWATCH var.  & namelist  & T471        & T405             & T500         & T601        & T700  \\
 \hline
-  $f_{\mathrm{FM}}$                &  FXFM3        & SDS4      & 2.5         & 2.5              &\textbf{9.9}  & 5      \\
-                                   & SDSC1         & SDS4      & 0           & 0                &\textbf{1.0}  & 0      \\
-  $C_{\mathrm{ds}}^{\mathrm{sat}}$ & SDSC2         & SDS4      &$-2.2\X^{-5}$&$-2.2\X^{-5}$     &\textbf{0.0}  &$-2.2\X^{-5}$ \\
-  $C_{\mathrm{ds}}^{\mathrm{BCK}}$ & SDSBCK        & SDS4      & 0           & 0                &\textbf{0.185}& 0      \\
-  $C_{\mathrm{ds}}^{\mathrm{HCK}}$ & SDSHCK        & SDS4      & 0           & 0                &\textbf{1.5}  & 0      \\
-  $\Delta_\theta$                  & SDSDTH        & SDS4      & 80          & 80               & 80           &  80    \\
-  $\delta_\theta$                  & SDSSTRAINA    & SDS4      & 0           & 0                & 0            & \textbf{15}    \\
-  $M_\theta$                       & SDSSTRAIN     & SDS4      & 0           & 0                & 0            & \textbf{10}     \\
-  $N_\theta$                       & SDSSTRAIN2    & SDS4      & 0           & 0                & 0            & \textbf{20}     \\
-  $B_r$                            & SDSBR         & SDS4      & 0.0009      &\textbf{0.00085}  & 0.0009       & 0.0009   \\
-  $C_{\mathrm{cu}}$                & SDSCUM        & SDS4      & -0.40344    & \textbf{0.0}     &-0.40344      &-0.40344   \\
-  ${\mathrm{s_B}}$                 & SDSCOS        &SDS4       & 2.0         & \textbf{0.0}     & 2.0          & 2.0 \\
-   $B_0$                           & SDSC4         & SDS4      & 1.0         & 1.0              & 1.0          & 1.0    \\
-  $p^{\mathrm{sat}}$               & SDSP          & SDS4      & 2.0         & 2.0              & 2.0          & 2.0  \\
-  $C_{\mathrm{turb}}$              & SDSC5         & SDS4      & 0.0         &  0.0             & 0.0          & \textbf{1.0} \\
-  $\delta_d$                       & SDSC6         & SDS4      & 0.3         &  0.3             & 0.3          &0.3   \\
-  $C$                              & NLPROP        & SNL1      & $2.5\X^7$   &$\mathbf{2.7\X^7}$& $2.5\X^7$    & $2.5\X^7$  \\
+ 				   & SDSBCHOICE    & SDS4      &  1          &     1            & \textbf{2}   & 1           & \textbf{3}  \\  
+  $f_{\mathrm{FM}}$                &  FXFM3        & SDS4      & 2.5         & 2.5              &\textbf{9.9}  & 5           & \textbf{20} \\
+%                                   & SDSC1         & SDS4      & 0           & 0                &\textbf{1.0}  & 0           &    \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$ & SDSC2         & SDS4      &$-2.2\X^{-5}$&$-2.2\X^{-5}$     &\textbf{0.0}  &$-2.2\X^{-5}$&  \textbf{-3.8}  \\
+  $C_{\mathrm{ds}}^{\mathrm{BCK}}$ & SDSBCK        & SDS4      &            &                   & 0.185        &             & \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$ & SDSHCK        & SDS4      &            &                   &  1.5         &             & \\
+  $\Delta_\theta$                  & SDSDTH        & SDS4      & 80          & 80               & 80           &  80         & \\
+  $\delta_\theta$                  & SDSSTRAINA    & SDS4      & 0           & 0                & 0            & \textbf{15} &  0  \\
+  $M_\theta$                       & SDSSTRAIN     & SDS4      & 0           & 0                & 0            & \textbf{10} &  0  \\
+  $N_\theta$                       & SDSSTRAIN2    & SDS4      & 0           & 0                & 0            & \textbf{20} &  \textbf{0}   \\
+  $B_r$                            & SDSBR         & SDS4      & 0.0009      &\textbf{0.00085}  & 0.0009       & 0.0009      &  \textbf{0.005}  \\
+  $B_r$                            & SDSBT         & SDS4      &             &                  &              &             &    0.0011     \\
+  $C_{\mathrm{cu}}$                & SDSCUM        & SDS4      & -0.40344    & \textbf{0.0}     &-0.40344      &-0.40344     & \textbf{0.0} \\
+  ${\mathrm{s_B}}$                 & SDSCOS        &SDS4       & 2.0         & \textbf{0.0}     & 2.0          & 2.0         &     \\
+  $p^{\mathrm{sat}}$               & SDSP          & SDS4      & 2.0         & 2.0              & 2.0          & 2.0         &     \\
+  $C_{\mathrm{turb}}$              & SDSC5         & SDS4      & 0.0         &  0.0             & 0.0          & \textbf{1.0}& 0.0 \\
+  $\delta_d$                       & SDSC6         & SDS4      & 0.3         &  0.3             & 0.3          &0.3          & \\
+  $ M_W$			   & SDSMWD	   & SDS4      &            &                   &              &             & 0.9 \\
+  $ M_\Lambda$			   & SDSFACMTF	   & SDS4      &            &                   &              &             & 400 \\
+  $C$                              & NLPROP        & SNL1      & $2.5\X^7$   &$\mathbf{2.7\X^7}$& $2.5\X^7$    & $2.5\X^7$   & $2.5\X^7$ \\
+ % $p_{\mathrm{mss}}$              &  SPMSS         & SDS4      &            &                   &             &             &  0.5 \\
  \hline \hline
 \end{tabular}  
 \end{center}
 
 \caption{Same as Table \ref{tab:ST4_parSIN}, for the {\F SDS4} and {\F SNL1}
 namelists. Bold values are different from the default values set by 
- ww3\_grid.} \label{tab:ST4_parSDS}
+ ww3\_grid. Values are omitted when the SDSBCHOICE makes them not used. Note that \cite{Romero2019} suggests using  $ M_W=2$ when NL2 is used.	 } \label{tab:ST4_parSDS}
 %\botline
 \end{table}
 \end{landscape}

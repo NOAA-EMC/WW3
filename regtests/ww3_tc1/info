@@ -1,0 +1,37 @@
+#############################################################################
+#                                                                           #
+# ww3_tc1   Test script for WW-III, 365_day and 360_day calendar            #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
+#                        Select source term, growth needed, other opt.      #
+#   !/PR0                No propagation.                                    #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
+#                                                                           #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + dry run                                                             #
+#     + one point grid without propagation.                                 #
+#     + Spectral grid: ntheta = 24, nf = 25 f1 = 0.042  , fgamma = 1.1      #
+#   * switch options :                                                      #
+#     + switch          : WAM 3 phyics.                                     #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -g STD  -w work_STD  -o netcdf ../model ww3_tc1           #
+#  ./bin/run_test -g C360 -w work_C360 -o netcdf ../model ww3_tc1           #
+#  ./bin/run_test -g C365 -w work_C365 -o netcdf ../model ww3_tc1           #
+#
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Jun 2020     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+############################################################################# 

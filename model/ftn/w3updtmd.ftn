@@ -54,6 +54,8 @@
 !/                  and add ICEH initialization in W3UICE.
 !/    13-Jan-2016 : Changed initial value of ICEDMAX    ( version 5.08 )
 !/    26-Mar-2018 : Sea-point only Wnd/Cur input.  JGLi ( version 6.04 )
+!/    07-Oct-2019 : RTD option with standard lat-lon
+!/                  grid when nesting to rotated grid   ( version 7.11 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -903,6 +905,7 @@
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    06-Jun-2018 : Add DEBUGIOBC/SETUP/DEBUGW3ULEV     ( version 6.04 )
+!/    13-Jun-2019 : Rotation only if POLAT<90 (C.Hansen)( version 7.11 ) 
 !/
 !  1. Purpose :
 !
@@ -955,7 +958,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2, DDEN
 !/RTD !!   Use rotation angle and action conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD 
+!/RTD      USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD, PoLat
 !/RTD      USE W3SERVMD, ONLY: W3ACTURN
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NBI, ABPI0, ABPIN, ISBPI, IPBPI, RDBPI,     &
@@ -1022,10 +1025,13 @@
           END DO
 !
 !/RTD !!  Rotate the spectra if model is on rotated grid.  JGLi12Jun2012
-!/RTD        Spectr = BBPIN(:,IBI)
-!/RTD        AnglBP = AnglD(ISEA)
-!/RTD        CALL  W3ACTURN( NTH, NK, AnglBP, Spectr )
-!/RTD        BBPIN(:,IBI) = Spectr
+!/RTD !!  PoLat == 90. if the grid is standard lat/lon (C. Hansen 20190613)
+!/RTD        IF ( PoLat < 90. ) THEN
+!/RTD          Spectr = BBPIN(:,IBI)
+!/RTD          AnglBP = AnglD(ISEA)
+!/RTD          CALL  W3ACTURN( NTH, NK, AnglBP, Spectr )
+!/RTD          BBPIN(:,IBI) = Spectr
+!/RTD        END IF
 !/RTD
 !
         END DO

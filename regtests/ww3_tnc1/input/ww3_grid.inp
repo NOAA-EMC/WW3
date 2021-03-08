@@ -1,0 +1,38 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$ Grid name (C*30, in quotes)
+$
+  'NC META TEST'
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+   1.1  0.04118  25  12  0.
+$
+$ Set model flags ---------------------------------------------------- $
+   F F F F F T
+$
+$ Set time steps ----------------------------------------------------- $
+    1800. 0. 0. 15.
+$
+$ Start of namelist input section ------------------------------------ $
+  &MISC FLAGTR = 0 /
+END OF NAMELISTS
+$
+$ Define grid -------------------------------------------------------- $
+     'RECT'  T  'NONE'
+     11     11
+     0.1    0.1     1.
+    -0.5   -0.5     1.
+     -0.1 2.50  20  -100. 2 1 '(....)' 'NAME' '../input/grid.bot'
+$
+$ Input boundary points and excluded points -------------------------- $
+   21 2 1 '(....)' 'NAME' '../input/grid.mask'
+$
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

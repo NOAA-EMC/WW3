@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2018 |
+!/                  | Last update :         15-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For update log see individual subroutines.
@@ -17,6 +17,7 @@
 !/    18-Aug-2016 : Add dist_sphere: angular distance   ( version 5.11 )
 !/    01-Mar-2016 : Added W3THRTN and W3XYRTN for post  ( version 6.02 )
 !/                  processing rotated grid data
+!/    15-Jan-2021 : Added UV_TO_MAG_DIR routine         ( version 7.12 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1959,6 +1960,108 @@ END SUBROUTINE STR_TO_UPPER
    END SUBROUTINE ROTATE
    END SUBROUTINE DIAGONALIZE
 
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE UV_TO_MAG_DIR(U, V, NSEA, MAG, DIR, TOLERANCE, CONV)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Jan-2021 |
+!/                  +-----------------------------------+
+!/
+!/    15-Jan-2021 : Creation                            ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Converts seapoint arrays formulated as U/V vectors into magnitude
+!     and direction arrays.
+!
+!     If MAG and DIR input parameters are not specificed then the 
+!     conversion is performed in-place (U => MAG, v => DIR).
+!
+!  2. Parameters
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       U/V       R.Arr  I  Array of U/V components
+!       NSEA      Int    I  Number of sea points
+!       MAG       R.Arr  O  Magnitude array            (Optional)
+!       DIR       R.Arr  O  Direction array (degrees)  (Optional)
+!       TOLERANCE Real   I  Minimum allowed magnitude  (Optional)
+!       CONV      Char   I  Ouput direciton convention (Optional)
+!     ----------------------------------------------------------------
+!
+!  3. Remarks
+!
+!     Optional CONV specifies direction convention. Must be one of:
+!       'N'=Nautical     : North=0, clockwise, direction-from (default)
+!       'O'=Oceangraphic : North=0, clockwise, direction-to
+!       'C'=Cartesian    : North=90, counter-clockwise, direction-to
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: RADE, UNDEF
+      IMPLICIT NONE
+ 
+      REAL, INTENT(INOUT)             :: U(NSEA), V(NSEA)
+      INTEGER, INTENT(IN)             :: NSEA
+      REAL, INTENT(OUT), OPTIONAL     :: MAG(NSEA), DIR(NSEA)
+      REAL, INTENT(IN), OPTIONAL      :: TOLERANCE
+      CHARACTER, INTENT(IN), OPTIONAL :: CONV
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!
+      REAL :: TOL, SGN, OFFSET, TMP
+      CHARACTER :: DIRCONV
+      INTEGER :: ISEA
+      LOGICAL :: INPLACE
+
+      DIRCONV = 'N'
+      TOL = 1.0
+      INPLACE = .TRUE.
+      IF(PRESENT(TOLERANCE)) TOL = TOLERANCE
+      IF(PRESENT(CONV)) DIRCONV = CONV
+      IF(PRESENT(MAG) .AND. PRESENT(DIR)) INPLACE = .FALSE.
+
+      SELECT CASE (CONV)
+        CASE('N')
+          OFFSET = 630.
+          SGN = -1.
+        CASE('O')
+          OFFSET = 450.
+          SGN = -1.
+        CASE('C')
+          OFFSET = 360.
+          SGN = 1.
+        CASE DEFAULT
+          WRITE(*,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
+          CALL EXTCDE(1)
+      END SELECT
+
+      IF(INPLACE) THEN
+        DO ISEA=1, NSEA
+          TMP = SQRT(U(ISEA)**2 + V(ISEA)**2)
+          IF(TMP .GE. TOL) THEN
+            V(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
+            U(ISEA) = TMP
+          ELSE
+            U(ISEA) = UNDEF
+            V(ISEA) = UNDEF
+          END IF
+        END DO
+      ELSE
+        DO ISEA=1, NSEA
+          MAG(ISEA) = SQRT(U(ISEA)**2 + V(ISEA)**2)
+          IF(MAG(ISEA) .GE. TOL) THEN
+            DIR(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
+          ELSE
+            MAG(ISEA) = UNDEF
+            DIR(ISEA) = UNDEF
+          END IF
+        END DO
+      ENDIF
+
+     END SUBROUTINE UV_TO_MAG_DIR
 !/
 !/ End of module W3SERVMD -------------------------------------------- /
 !/

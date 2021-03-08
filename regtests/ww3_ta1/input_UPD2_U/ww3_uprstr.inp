@@ -1,57 +1,46 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Update Restart input file                              $
 $ -------------------------------------------------------------------- $
-$
+$                                                                      $
 $ Time of Assimilation ----------------------------------------------- $
-$ - Starting time in yyyymmdd hhmmss format.
+$ - Starting time in yyyymmdd hhmmss format.                           $
+$                                                                      $
+$ This is the assimilation starting time and has to be the same with   $
+$ the time at the restart.ww3.                                         $
+$                                                                      $
+   19680607 120000                                                     $
+$                                                                      $
+$ -------------------------------------------------------------------- $
+$  UPDN, with N>1 each gridpoint has its own update factor and uses:   $
+$       PRCNTG_CAP - global input for option UPD2+ and is a cap on     $
+$        the maximum SWH correction factor applied to all the          $
+$        gridpoints, as both a multiple or divisor (e.g. cap at 5.0    $
+$        means SWHANL/SWHBKG<=5.0 and SWHANL/SWHBKG>=0.2). The value   $
+$        given should not be less than 1.0                             $
+$       Name of the file with the SWH analysis from the DA system      $
+$        suffix .grbtxt for text out of grib2 file.                    $
 $
-$ This is the assimilation starting time and has to be the same with
-$ the time at the restart.ww3.
-$
-   19680607 120000 
-$
-$ Choose algorithm to update restart file
-$  UPDN for the Nth approach
-$  The UPDN*, with N<2 the same correction factor is applied at all the grid points
-$   UPD0C:: ELIMINATED
-$   UPDOF:: Option 0F  All the spectra are updated with a constant
-$           fac=HsAnl/HsBckg.
-$           Expected input: PRCNTG, as defined at fac
-$   UPD1 :: ELIMINATED
-$   UPDN, with N>1 each gridpoint has its own update factor.
-$   UPD2 :: Option 2   The fac(x,y,frq,theta), is calculated at each grid point
-$           according to HsBckg and HsAnl
-$           Expected input the Analysis field, grbtxt format
-$   UPD3 :: Option 3   The update factor is a surface with the shape of
-$           the background spectrum.
-$           Expected input the Analysis field, grbtxt format
-$   UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]
-$           Option 4  The generalization of the UPD3. The update factor
-$           is the sum of surfaces which are applied on the background
-$           spectrum. 
-$           The algorithm requires the mapping of each partition on the
-$           individual spectra; the map is used to determine the weighting
-$           surfaces.
-$           Expected input: the Analysis field, grbtxt format and the
-$           functions(frq,theta) of the update to be applied.
+$  UPD2 :: Option 2    The fac(x,y,frq,theta), is calculated at each   $
+$          grid point according to HsBckg and HsAnl                    $
+$          Expected input the Analysis field, grbtxt format            $
+$  UPD3 :: Option 3    The update factor is a surface with the shape   $
+$          of the background spectrum.                                 $
+$          Expected input: the Analysis field, grbtxt format and cap   $
+$          for the last gross check.                                   $
+$  UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]       $
+$          Option 4    The generalization of the UPD3. The update      $
+$          factor is the sum of surfaces which are applied on the      $
+$          background spectrum.                                        $ 
+$          The algorithm requires the mapping of each partition on the $
+$          individual spectra; the map is used to determine the        $
+$          weighting surfaces.                                         $
+$          Expected input: the Analysis field, grbtxt format and the   $
+$          functions(frq,theta) of the update to be applied.           $
+$ -------------------------------------------------------------------- $
    UPD2
-$
-$ PRCNTG is input for option 1 and it is the percentage of correction
-$applied  to all the gridpoints (e.g. 1.)
-$
-   0.6754
-$
-$ PRCNTG_CAP is global input for option UPD2 and UPD3 and it is a cap on the 
-$ maximun correction applied to all the gridpoints (e.g. 0.5)
-$
-  10
-$
-$ Name of the file with the SWH analysis from the DA system            $
-$ suffix .grbtxt for text out of grib2 file.                           $
-$
+   10.0
    anl.grbtxt
 $
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III EoF ww3_uprstr.inp
 $ -------------------------------------------------------------------- $
-

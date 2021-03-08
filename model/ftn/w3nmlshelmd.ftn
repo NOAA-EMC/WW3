@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -86,7 +86,12 @@
 !/COU  TYPE NML_COUPLING_T
 !/COU    CHARACTER(1024)             :: SENT
 !/COU    CHARACTER(1024)             :: RECEIVED
+!/COU    LOGICAL                     :: COUPLET0
 !/COU  END TYPE NML_COUPLING_T
+!
+  TYPE NML_RESTART_T
+    CHARACTER(1024)             :: EXTRA
+  END TYPE NML_RESTART_T
 !
   TYPE NML_OUTPUT_TYPE_T
     TYPE(NML_POINT_T)               :: POINT
@@ -94,6 +99,7 @@
     TYPE(NML_TRACK_T)               :: TRACK
     TYPE(NML_PARTITION_T)           :: PARTITION
 !/COU    TYPE(NML_COUPLING_T)           :: COUPLING
+    TYPE(NML_RESTART_T)             :: RESTART
   END TYPE NML_OUTPUT_TYPE_T
 
 
@@ -547,7 +553,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Apr-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/
@@ -629,6 +635,8 @@
     TYPE%PARTITION%FORMAT = .TRUE.
 !/COU    TYPE%COUPLING%SENT      = 'unset'
 !/COU    TYPE%COUPLING%RECEIVED  = 'unset'
+!/COU    TYPE%COUPLING%COUPLET0  = .FALSE.
+    TYPE%RESTART%EXTRA = 'unset'
 
 
     ! read output type namelist
@@ -1132,7 +1140,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Apr-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/
@@ -1207,6 +1215,8 @@
     WRITE (NDSN,13) TRIM(MSG),'PARTITION % FORMAT   = ', NML_OUTPUT_TYPE%PARTITION%FORMAT
 !/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % SENT         = ', TRIM(NML_OUTPUT_TYPE%COUPLING%SENT)
 !/COU    WRITE (NDSN,10) TRIM(MSG),'COUPLING % RECEIVED     = ', TRIM(NML_OUTPUT_TYPE%COUPLING%RECEIVED)
+!/COU    WRITE (NDSN,13) TRIM(MSG),'COUPLING % COUPLET0     = ', NML_OUTPUT_TYPE%COUPLING%COUPLET0
+    WRITE (NDSN,10) TRIM(MSG),'RESTART % EXTRA      = ', TRIM(NML_OUTPUT_TYPE%RESTART%EXTRA)
 
 10  FORMAT (A,2X,A,A)
 11  FORMAT (A,2X,A,I8)

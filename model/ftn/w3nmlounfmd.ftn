@@ -32,6 +32,7 @@
     CHARACTER(1024)             :: LIST
     CHARACTER(15)               :: PARTITION
     LOGICAL                     :: SAMEFILE
+    LOGICAL                     :: VECTOR
     INTEGER                     :: TYPE
   END TYPE NML_FIELD_T
 
@@ -267,6 +268,7 @@
     FIELD%LIST       = 'unset'
     FIELD%PARTITION  = '0 1 2 3'
     FIELD%SAMEFILE   = .TRUE.
+    FIELD%VECTOR     = .TRUE.
     FIELD%TYPE       = 3
 
     ! read field namelist

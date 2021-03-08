@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -53,6 +53,8 @@
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    04-Oct-2019 : Inline Output implementation        ( version 6.07 )
 !/                  (Roberto Padilla-Hernandez)
+!/    16-Jul-2020 : Variable coupling time step         ( version 7.08 )
+!/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -241,11 +243,11 @@
       USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
 !/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
       USE W3IDATMD
-!/OASIS      USE W3ODATMD, ONLY: DTOUT
+!/OASIS      USE W3ODATMD, ONLY: DTOUT, FLOUT
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
                           NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
-      USE W3ODATMD, ONLY: OFILES
+      USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
 !/
       USE W3FLDSMD
       USE W3INITMD
@@ -254,6 +256,7 @@
 !/
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
+      USE W3IORSMD, ONLY: OARST
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
@@ -265,7 +268,11 @@
 !/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/OASIS USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
 !/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE,      &
-!/OASIS                     ID_OASIS_TIME
+!/OASIS                     ID_OASIS_TIME, CPLT0
+!/OASOCM      USE W3OGCMMD, ONLY: SND_FIELDS_TO_OCEAN
+!/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
+!/OASICM      USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
+
 !/TIDE      USE W3TIDEMD
 !
       USE W3NMLSHELMD
@@ -315,8 +322,8 @@
       CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:8)
       CHARACTER(LEN=3)    :: IDSTR(-7:8), IDTST
       CHARACTER(LEN=6)    :: YESXNO
-      CHARACTER(LEN=10)   :: PN
-      CHARACTER(LEN=10),                                               &
+      CHARACTER(LEN=40)   :: PN
+      CHARACTER(LEN=40),                                               &
               ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=13)   :: IDFLDS(-7:8)
       CHARACTER(LEN=20)   :: STRNG
@@ -325,8 +332,9 @@
       CHARACTER(LEN=80)   :: LINE
       CHARACTER(LEN=256)  :: TMPLINE, TEST
       CHARACTER(LEN=1024) :: FLDIN
+      CHARACTER(LEN=1024) :: FLDRST
       CHARACTER(LEN=80)   :: LINEIN
-      CHARACTER(LEN=8)    :: WORDS(6)=''
+      CHARACTER(LEN=8)    :: WORDS(7)=''
 
 !/COU      CHARACTER(LEN=30)       :: OFILE
 !
@@ -545,6 +553,9 @@
 !/T      WRITE (NDST,9001) (NTRACE(I),I=1,2)
 !
 ! 1.c Local parameters
+!
+! Default COMSTR to "$" (for when using nml input files)
+      COMSTR = "$"
 !
 ! inferred from context: these flags (FL) are to indicate that the last (LST) 
 !   field has been read from a file.
@@ -797,6 +808,17 @@
         ODAT(28) = MAX ( 0 , ODAT(28) )
         ODAT(33) = MAX ( 0 , ODAT(33) )
         ODAT(38) = MAX ( 0 , ODAT(38) )
+!
+!/COU        ! Test the validity of the coupling time step
+!/COU        IF (ODAT(33) == 0) THEN
+!/COU          IF ( IAPROC .EQ. NAPOUT ) THEN
+!/COU            WRITE(NDSO,1010) ODAT(33), INT(DTMAX)
+!/COU          END IF
+!/COU          ODAT(33) = INT(DTMAX)
+!/COU        ELSE IF (MOD(ODAT(33),INT(DTMAX)) .NE. 0) THEN
+!/COU          GOTO 2009
+!/COU        END IF
+!
 ! 2.5 Output types
 
         NPTS   = 0
@@ -918,10 +940,17 @@
 !/COU                                 FLGR2, IAPROC, NAPOUT, IERR )
 !/COU              IF ( IERR .NE. 0 ) GOTO 2222
 !/COU              FLDIN = NML_OUTPUT_TYPE%COUPLING%RECEIVED
+!/COU              CPLT0 = NML_OUTPUT_TYPE%COUPLING%COUPLET0
 
             END IF ! J
           END IF ! ODAT
         END DO ! J
+
+        ! Extra fields to be written in the restart
+        FLDRST = NML_OUTPUT_TYPE%RESTART%EXTRA
+        CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
+                           FLOGRR, IAPROC, NAPOUT, IERR )
+        IF ( IERR .NE. 0 ) GOTO 2222
 
         ! force minimal allocation to avoid memory seg fault
         IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
@@ -1213,7 +1242,7 @@
 ! CHECKPOINT
         IF(J .EQ. 4) THEN
           ODAT(38)=0 
-          WORDS(1:6)=''
+          WORDS(1:7)=''
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           READ(WORDS( 1 ), * ) ODAT(16)
@@ -1222,9 +1251,16 @@
           READ(WORDS( 4 ), * ) ODAT(19)
           READ(WORDS( 5 ), * ) ODAT(20)
           IF (WORDS(6) .EQ. 'T') THEN
-          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
             WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
+          END IF
+          IF (WORDS(7) .EQ. 'T') THEN
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            READ (NDSI,*,END=2001,ERR=2002) FLDRST
+            CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
+                               FLOGRR, IAPROC, NAPOUT, IERR )
+            IF ( IERR .NE. 0 ) GOTO 2222
           END IF
         ELSE
 !
@@ -1258,6 +1294,22 @@
           END IF
 
 
+!/COU        ELSE IF(J .EQ. 7) THEN
+!/COU          WORDS(1:6)=''
+!/COU          READ (NDSI,'(A)') LINEIN
+!/COU          READ(LINEIN,*,iostat=ierr) WORDS
+!/COU 
+!/COU          READ(WORDS( 1 ), * ) ODAT(31)
+!/COU          READ(WORDS( 2 ), * ) ODAT(32)
+!/COU          READ(WORDS( 3 ), * ) ODAT(33)
+!/COU          READ(WORDS( 4 ), * ) ODAT(34)
+!/COU          READ(WORDS( 5 ), * ) ODAT(35)
+!/COU 
+!/COU          IF (WORDS(6) .EQ. 'T') THEN
+!/COU            CPLT0 = .TRUE.
+!/COU          ELSE
+!/COU            CPLT0 = .FALSE.
+!/COU          END IF
         ELSE
           OFILES(J)=0
           READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
@@ -1412,7 +1464,6 @@
 
         ! force minimal allocation to avoid memory seg fault
         IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
-
 
 ! 2.6 Homogeneous field data
 
@@ -1638,14 +1689,6 @@
           TTIME(1) = 0
           TTIME(2) = 0
           DTTST    = REAL ( ODAT(5*(J-1)+3) )
-!/COU          ! Force coupling time step to model time step
-!/COU          IF ( J .EQ. 7 .AND. DTTST.NE.DTMAX ) THEN
-!/COU            IF ( IAPROC .EQ. NAPOUT ) THEN
-!/COU              WRITE (NDSO,1009) DTTST, DTMAX
-!/COU            END IF
-!/COU            ODAT(5*(J-1)+3) = INT(DTMAX)
-!/COU            DTTST = DTMAX
-!/COU          END IF
           CALL TICK21 ( TTIME , DTTST  )
           CALL STME21 ( TTIME , DTME21 )
           IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
@@ -1751,6 +1794,18 @@
 !/TIDE        IF (FLAGSTIDE(2)) CALL W3FLDTIDE1 ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
 !/TIDE      END IF
 ! 
+!/COU      ! Sent coupled fields must be written in the restart when coupling at T+0
+!/COU      IF (CPLT0) THEN
+!/COU        DO J=1, NOGRP
+!/COU          FLOGR(J)  = FLOGR(J)  .OR. FLG2(J)
+!/COU          DO I=1, NGRPP
+!/COU            FLOGRR(J,I) = FLOGRR(J,I) .OR. FLGR2(J,I)
+!/COU          END DO
+!/COU        END DO
+!/COU      ENDIF
+!
+      OARST = ANY(FLOGR)
+!
      CALL W3INIT ( 1, .FALSE., 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
                    FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
@@ -1821,7 +1876,7 @@
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
         CALL W3WAVE ( 1, ODAT, TIMEN                      &
-!/OASIS                     ,.TRUE., .FALSE., MPI_COMM    &
+!/OASIS                     , .TRUE., .FALSE., MPI_COMM, TIMEN     &
                     )
 !
         GOTO 2222
@@ -1849,6 +1904,14 @@
 !/NCC           GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY
 !/NCC         WRITE(9753) GRIDS(1)%MAPSTA
 !/NCC      END IF
+
+!/OASIS      ! Send coupling fields at the initial time step
+!/OASIS      IF ( FLOUT(7) .AND. CPLT0 ) THEN
+!/OASACM       CALL SND_FIELDS_TO_ATMOS()
+!/OASOCM       CALL SND_FIELDS_TO_OCEAN()
+!/OASICM       CALL SND_FIELDS_TO_ICE()
+!/OASIS      END IF
+
   700 CONTINUE
 !
 !/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) WRITE(9753) TIME0
@@ -1906,9 +1969,9 @@
               DTTST  = DSEC21 ( TIME0 , TTT )
             END IF
 !/OASIS          ELSE 
-!/OASIS            ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
+!/OASIS            ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
 !/OASIS            IF ( (DTOUT(7).NE.0) .AND.                               &
-!/OASIS                 (MOD(ID_OASIS_TIME/DTOUT(7),1.0) .LT. 1.E-7 ) .AND. &
+!/OASIS                 (MOD(ID_OASIS_TIME, NINT(DTOUT(7))) .EQ. 0 ) .AND. &
 !/OASIS                 (DSEC21 (TIME, TIMEEND) .GT. 0.0)) DTTST=0.
           END IF
 !
@@ -2301,7 +2364,7 @@
       TIME0  = TTIME
 !
       CALL W3WAVE ( 1, ODAT, TIME0                                    &
-!/OASIS             ,.TRUE., .FALSE., MPI_COMM                        &
+!/OASIS             , .TRUE., .FALSE., MPI_COMM, TIMEN                         &
                   )
 
 !/MEMCHECK      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 9'
@@ -2343,7 +2406,7 @@
         IF ( DTTST .EQ. 0. ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
           CALL W3WAVE ( 1, ODAT, TIME0                                 & 
-!/OASIS                       , .TRUE., .FALSE., MPI_COMM              &
+!/OASIS                       , .TRUE., .FALSE., MPI_COMM, TIMEN              &
                       )
         END IF
       END IF
@@ -2411,6 +2474,10 @@
  2008 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008) IERR
       CALL EXTCDE ( 1008 )
+!
+!/COU 2009 CONTINUE
+!/COU      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1009) ODAT(33), NINT(DTMAX)
+!/COU      CALL EXTCDE ( 1009 )
 !
  2054 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1054)
@@ -2550,10 +2617,16 @@
  1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
                '     ERROR IN OPENING OUTPUT FILE'/                   &
                '     IOSTAT =',I5/)
- 1009 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-               '     COUPLING AND MODEL TIME STEPS NOT CONSISTENT'/   &
-               '     IT WILL OVERWRITE COUPLING TIME STEP'/           &
-               '     FROM ',F4.1, ' TO ',F4.1/)
+!
+!/COU 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+!/COU               '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
+!/COU               '     MODEL TIME STEP: ',I6, I6/)
+!
+!/COU 1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
+!/COU               '     COUPLING TIME STEP NOT DEFINED, '/               &
+!/COU               '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
+!/COU               '     FROM ',I6, ' TO ',I6/)
+!
  1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
                '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 !
