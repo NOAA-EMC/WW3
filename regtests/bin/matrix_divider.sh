@@ -45,7 +45,7 @@ if [[ count -eq 0 ]]
 then 
 cat before >> matrix$matrixno
 fi
-  if [[ count -le maxlist ]] #&& [[ countT -le "$((listn - 1))" ]]
+  if [[ count -le maxlist ]]
      then
      echo $line >> matrix$matrixno
      (( count = count + 1 ))
