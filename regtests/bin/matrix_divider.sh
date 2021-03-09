@@ -21,10 +21,8 @@
 # --------------------------------------------------------------------------- #
 # 1.  clean up and definitions                                                #
 # --------------------------------------------------------------------------- #
-rm before
-rm list
-rm matrix?
 rm -r ../model?
+rm -r ../model??
 #Put the job requirement/spec in "before"
 sed -e "/run_test/,\$d" matrix > before
 #Put the list of tests in "list"
@@ -68,8 +66,10 @@ done < list
   echo "  echo '     *  end of WAVEWATCH III matrix$i of regression tests         *'"   >> matrix$i
   echo "  echo '     **************************************************************'"   >> matrix$i
   echo "  echo ' '"                                                                     >> matrix$i
-sbatch matrix$i
 done
+
+rm before
+rm list
 
   echo "file matrix is divided into $i subsets ...."
 
