@@ -670,7 +670,7 @@
                      ELONNEXT = ELONNEXT -SIGN(360.0,(ELONIP - ELONNEXT))
             ENDIF
             IF ( ABS(ELONIP - ELONPREV) .GT. 180.0 ) THEN
-                     ELONNEXT = ELONPREV -SIGN(360.0,(ELONIP - ELONPREV))
+                     ELONPREV = ELONPREV -SIGN(360.0,(ELONIP - ELONPREV))
             ENDIF
 
             ELONN=(ELONIP+ELONNEXT)/2.0
