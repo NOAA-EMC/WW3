@@ -47,7 +47,7 @@ manual/*.dvi
 manual/*.pdf
 model?
 model??
-regtests/list
+regtests/list*
 regtests/before
 regtests/matrix*
 regtests/*/work*
