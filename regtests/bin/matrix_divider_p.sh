@@ -66,6 +66,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
+  echo "rm ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
  done
 
@@ -84,6 +85,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
+  echo "rm ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
  done
 
@@ -99,6 +101,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
+  echo "rm ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
 
 
