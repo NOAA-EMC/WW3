@@ -27,20 +27,21 @@ then
   echo ' '
   echo '   Setup cmplr file'
   if [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
-     [ "$cmplr" == "zeus_mpt" ] || [ "$cmplr" == "zeus_mpt_debug" ]               || \
      [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
      [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
-     [ "$cmplr" == "zeus_intel" ] || [ "$cmplr" == "zeus_intel_debug" ]           || \
+     [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
      [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
      [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-     [ "$cmplr" == "zeus_gnu" ] || [ "$cmplr" == "zeus_gnu_debug" ]               || \
+     [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+     [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+     [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+     [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
+     [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
      [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
      [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
-     [ "$cmplr" == "zeus_pgi" ] || [ "$cmplr" == "zeus_pgi_debug" ]               || \
      [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
      [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
-     [ "$cmplr" == "hera" ] ; then
+     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
      source $WWATCH3_DIR/bin/cmplr.env
      # shortlist optl
      alloptl=( $optl )
@@ -78,7 +79,11 @@ ln -sf ../input/namcouple.$swtstr namcouple
 
 echo '   copy toy model inputs'
 cd $path_w
-cp ../input/toy/r-toy.nc.$swtstr r-toy.nc
+if [ -f ../input/toy/r-toy.nc.$swtstr ]; then
+  cp ../input/toy/r-toy.nc.$swtstr r-toy.nc
+else
+  echo "WARNING: model input ../input/toy/r-toy.nc.$swtstr does not exist"
+fi
 ln -sf ../input/toy/grid_toy_model.nc .
 ln -sf ../input/toy/toy_coupled_field.nc.$swtstr toy_coupled_field.nc
 ln -sf ../input/TOYNAMELIST.nam.$swtstr TOYNAMELIST.nam
@@ -86,7 +91,11 @@ ln -sf ../input/toy/toy_model .
 
 echo '   copy ww3 model inputs'
 cd $path_w
-cp ../input/r-ww3.nc.$swtstr r-ww3.nc
+if [ -f ../input/r-ww3.nc.$swtstr ]; then
+  cp ../input/r-ww3.nc.$swtstr r-ww3.nc
+else
+  echo "WARNING: model input ../input/toy/r-ww3.nc.$swtstr does not exist"
+fi
 cp ../input/ww3_shel_${swtstr}.inp ../input/ww3_shel.inp
 cp ../input/ww3_shel_${swtstr}.nml ../input/ww3_shel.nml
 echo ''

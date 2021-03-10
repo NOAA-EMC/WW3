@@ -1,0 +1,45 @@
+#############################################################################
+#                                                                           #
+# ww3_tr1: Test script for nest file input/output with rotated pole grids.  #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/PR1    First order propagation                                        #
+#   !/RTD    Rotated pole support                                           #
+#   !/O1     Output boundary locations from WW3_GRID program                #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+#  3 tests are provided in seperate input directories:                      #
+#    - [input] : A rotated pole grid forced with homogeneous wind that      #
+#        outputs boundary conditions on 3 grids with different poles.       #
+#                                                                           #
+#    - [input_std] : As above, but formulated on a standard pole grid.      #
+#                                                                           #
+#    - [input_bndin] : A rotated pole grid with input boundary conditions   #
+#        on the western edge of the domain. Used to check the correct       #
+#        ingestion of nest files (always formulated on a standard pole)     #
+#        in to a rotated pole grid.                                         #
+#                                                                           #
+#  For the first two tests, the rotated and standard pole grids have been   #
+#  setup in such a way that the cells on their eastern (sea point) edges    #
+#  align at 2.5W (grid north points in the same direction for all grids     #
+#  along this longitude). This faciliates the selection of nest output      #
+#  points for each output grid as the longitudes are invariant and the      #
+#  latitudes vary by the same amount (1 deg).                               #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test ../model ww3_tr1                                          #
+#  ./bin/run_test -i input_std -w work_std ../model ww3_tr1                 #
+#  ./bin/run_test -i input_bndin -w work_bndin ../model ww3_tr1             #
+#                                                                           #
+#                                                Chris Bunney, Jul 2020     #
+#                                                   Last Mod : Jul 2020     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

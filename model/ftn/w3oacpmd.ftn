@@ -6,12 +6,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          April-2016 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/      July-2013 : Origination.                         ( version 4.18 )
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
+!/    25-Sep-2020 : Coupling at T+0 support              ( version 7.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -74,6 +75,8 @@
       TYPE(CPL_FIELD), DIMENSION(IP_MAXFLD), PUBLIC :: RCV_FLD, SND_FLD   ! Coupling fields
 !
       INTEGER, PUBLIC       :: ID_OASIS_TIME=0           ! time counter for coupling exchanges
+!
+      LOGICAL, PUBLIC       :: CPLT0                     ! Flag for coupling at T+0
 !
 ! * Accessibility
       PUBLIC CPL_OASIS_INIT
@@ -195,6 +198,7 @@
       USE W3GDATMD,  ONLY: NX, NY, FLAGLL, XGRD, YGRD, MAPSTA, &
                            & HPFAC, HQFAC, GTYPE, &
                            & UNGTYPE, RLGTYPE, CLGTYPE
+!/SMC      USE W3GDATMD,  ONLY: NSEA, X0, Y0, MRFct, SX, SY, IJKCel
 !/MPI      INCLUDE "mpif.h"
 !
 !/ ------------------------------------------------------------------- /
@@ -211,15 +215,13 @@
       REAL, ALLOCATABLE    :: LON(:,:),LAT(:,:),AREA(:,:),      &
                               CORLON(:,:,:),CORLAT(:,:,:)
       REAL                 :: FACTOR
+      LOGICAL              :: RGLGRD = .TRUE.
+!/SMC      REAL                 :: DLON, DLAT
 !/ ------------------------------------------------------------------- /
 !
       IF (LD_MASTER) THEN
 !
-         IF (FLAGLL) THEN
-            FACTOR = 1.
-         ELSE
-            FACTOR = 1. / (RADIUS * DERA)
-         END IF
+!/SMC         RGLGRD = .FALSE.
          !
          ! 0. Create grids file
          ! --------------------------------
@@ -228,61 +230,100 @@
          ! 1. Get the lat/lon/corners,areas and masks
          ! -------------------------------------------
          IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
-            !
-            ! 1.1. regular and curvilinear grids
-            ! ----------------------------------
-            NNODES = NX*NY
-            NXW=1
-            NXE=NX
-            NYS=1
-            NYN=NY
-            ! 
-            ! lat/lon
-            ALLOCATE ( LON(NNODES,1), LAT(NNODES,1) ) 
-            I = 0
-            DO IY = NYS, NYN
+!
+           IF (RGLGRD) THEN
+             IF (FLAGLL) THEN
+               FACTOR = 1.
+             ELSE
+               FACTOR = 1. / (RADIUS * DERA)
+             END IF
+             !
+             ! 1.1. regular and curvilinear grids
+             ! ----------------------------------
+             NNODES = NX*NY
+             NXW=1
+             NXE=NX
+             NYS=1
+             NYN=NY
+             ! 
+             ! lat/lon
+             ALLOCATE ( LON(NNODES,1), LAT(NNODES,1) ) 
+             I = 0
+             DO IY = NYS, NYN
                DO IX = NXW, NXE
-                  I = I+1
-                  LON(I,1)=XGRD(IY,IX)*FACTOR
-                  LAT(I,1)=YGRD(IY,IX)*FACTOR
+                 I = I+1
+                 LON(I,1)=XGRD(IY,IX)*FACTOR
+                 LAT(I,1)=YGRD(IY,IX)*FACTOR
                END DO
-            END DO
-            !
-            ! areas, corners
-            ALLOCATE ( AREA(NNODES,1), CORLON(NNODES,1,4), CORLAT(NNODES,1,4) )
-            I = 0
-            DO IY = NYS, NYN
+             END DO
+             !
+             ! areas, corners
+             ALLOCATE ( AREA(NNODES,1), CORLON(NNODES,1,4), CORLAT(NNODES,1,4) )
+             I = 0
+             DO IY = NYS, NYN
                DO IX = NXW, NXE
-                  I = I+1
-                  CORLON(I,1,1)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
-                  CORLON(I,1,2)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
-                  CORLON(I,1,3)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
-                  CORLON(I,1,4)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
-                  CORLAT(I,1,1)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
-                  CORLAT(I,1,2)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
-                  CORLAT(I,1,3)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
-                  CORLAT(I,1,4)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
-                  AREA(I,1)=HPFAC(IY,IX)*HQFAC(IY,IX)
+                 I = I+1
+                 CORLON(I,1,1)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
+                 CORLON(I,1,2)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
+                 CORLON(I,1,3)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
+                 CORLON(I,1,4)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
+                 CORLAT(I,1,1)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
+                 CORLAT(I,1,2)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
+                 CORLAT(I,1,3)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
+                 CORLAT(I,1,4)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
+                 AREA(I,1)=HPFAC(IY,IX)*HQFAC(IY,IX)
                END DO
-            END DO
-            !
-            ! Model grid mask
-            ALLOCATE ( MASK(NNODES,1) )
-            I = 0
-            DO IY = NYS, NYN
+             END DO
+             !
+             ! Model grid mask
+             ALLOCATE ( MASK(NNODES,1) )
+             I = 0
+             DO IY = NYS, NYN
                DO IX = NXW, NXE
-                  I = I+1
-                  ! Get the mask : 0 - sea  / 1 - open boundary cells (the land is already excluded)
-                  IF ((MAPSTA(IY,IX) .EQ. 1)) THEN
-                    MASK(I,1) = 0
-                  ELSE
-                    MASK(I,1) = 1
-                  END IF
+                 I = I+1
+                 ! Get the mask : 0 - sea  / 1 - open boundary cells (the land is already excluded)
+                 IF ((MAPSTA(IY,IX) .EQ. 1)) THEN
+                   MASK(I,1) = 0
+                 ELSE
+                   MASK(I,1) = 1
+                 END IF
                END DO
-            END DO
+             END DO
+!/SMC           ELSE
+!/SMC             !
+!/SMC             ! 1.2. SMC grids
+!/SMC             ! ----------------------------------
+!/SMC             NNODES = NSEA
+!/SMC             !
+!/SMC             ! Calculate the smallest grid cell increments depending on the number of SMC levels 
+!/SMC             DLON = SX / MRFct 
+!/SMC             DLAT = SY / MRFct 
+!/SMC             ! 
+!/SMC             ALLOCATE ( LON(NNODES,1), LAT(NNODES,1) ) 
+!/SMC             ALLOCATE ( AREA(NNODES,1), CORLON(NNODES,1,4), CORLAT(NNODES,1,4) )
+!/SMC             ALLOCATE ( MASK(NNODES,1) )
+!/SMC             DO I=1, NNODES
+!/SMC               ! lat/lon
+!/SMC               LON(I,1) = X0 + (IJKCel(1,I) + IJKCel(3,I)*0.5)*DLON
+!/SMC               LAT(I,1) = Y0 + (IJKCel(2,I) + IJKCel(4,I)*0.5)*DLAT
+!/SMC               ! corners
+!/SMC               CORLON(I,1,1) = X0 + IJKCel(1,I)*DLON
+!/SMC               CORLON(I,1,2) = X0 + (IJKCel(1,I) + IJKCel(3,I))*DLON
+!/SMC               CORLON(I,1,3) = CORLON(I,1,2)
+!/SMC               CORLON(I,1,4) = CORLON(I,1,1)
+!/SMC               CORLAT(I,1,1) = Y0 + IJKCel(2,I)*DLAT
+!/SMC               CORLAT(I,1,2)=CORLAT(I,1,1)
+!/SMC               CORLAT(I,1,3) = Y0 + (IJKCel(2,I) + IJKCel(4,I))*DLAT
+!/SMC               CORLAT(I,1,4)=CORLAT(I,1,3)
+!/SMC               ! areas
+!/SMC               AREA(I,1) = 0.25 * IJKCEL(3,I)*DLON * IJKCEL(4,I)*DLAT 
+!/SMC               ! Model grid mask
+!/SMC               MASK(I,1) = 1
+!/SMC             ENDDO
+           ENDIF
          ELSE
             !
-            ! 1.2. Unstructured grids
+            ! 1.3. Unstructured grids
             ! ----------------------------------
             WRITE(*,*) 'TO BE IMPLEMENT FOR UNSTRUCTURED GRIDS'
             STOP
@@ -386,42 +427,62 @@
       INTEGER                 :: ISEA, JSEA, IX, IY
       INTEGER                 :: NHXW, NHXE, NHYS, NHYN  ! size of the halo at the western, eastern, southern, northern boundaries
       LOGICAL                 :: LL_MPI_FILE     ! to check if there an mpi.txt file for domain decompasition
+      LOGICAL                 :: RGLGRD = .TRUE.
 !/
 !/ ------------------------------------------------------------------- /
 !/ Executable part
 !/
+!/SMC      RGLGRD = .FALSE.
+!
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN 
-         !
-         ! 1.1. regular and curvilinear grids
-         ! ----------------------------------
-         NHXW = 1 ; NHXE = NX ; NHYS = 1 ; NHYN = NY
-         NHXW = NHXW - 1
-         NHXE = NX - NHXE
-            NHYS = NHYS - 1
-         NHYN = NY - NHYN
-         !
-         ALLOCATE(ILA_PARAL(2+NSEAL*2))
-         !
-         ! * Define the partition : OASIS ORANGE partition
-         ILA_PARAL(1) = 3
-         !
-         ! * total number of segments of the global domain
-         ILA_PARAL(2) = NSEAL
-         !
-         DO JSEA=1, NSEAL
-           CALL INIT_GET_ISEA(ISEA,JSEA)
-
-            IX = MAPSF(ISEA,1)
-            IY = MAPSF(ISEA,2)
-            ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)
-            ILA_PARAL(JSEA*2+2) = 1
-         END DO
-         !
+        IF (RGLGRD) THEN
+          !
+          ! 1.1. regular and curvilinear grids
+          ! ----------------------------------
+          NHXW = 1 ; NHXE = NX ; NHYS = 1 ; NHYN = NY
+          NHXW = NHXW - 1
+          NHXE = NX - NHXE
+          NHYS = NHYS - 1
+          NHYN = NY - NHYN
+          !
+          ALLOCATE(ILA_PARAL(2+NSEAL*2))
+          !
+          ! * Define the partition : OASIS ORANGE partition
+          ILA_PARAL(1) = 3
+          !
+          ! * total number of segments of the global domain
+          ILA_PARAL(2) = NSEAL
+          !
+          DO JSEA=1, NSEAL
+            CALL INIT_GET_ISEA(ISEA,JSEA)
+   
+             IX = MAPSF(ISEA,1)
+             IY = MAPSF(ISEA,2)
+             ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)
+             ILA_PARAL(JSEA*2+2) = 1
+          END DO
+!/SMC        ELSE
+!/SMC          !
+!/SMC          ! 1.2. SMC grids
+!/SMC          ! ----------------------------------
+!/SMC          ALLOCATE(ILA_PARAL(2+NSEAL))
+!/SMC          !
+!/SMC          ! * Define the partition : OASIS POINTS partition
+!/SMC          ILA_PARAL(1) = 4
+!/SMC          !
+!/SMC          ! * total number of segments of the global domain
+!/SMC          ILA_PARAL(2) = NSEAL
+!/SMC          !
+!/SMC          DO JSEA=1, NSEAL
+!/SMC            ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
+!/SMC          ENDDO
+        ENDIF
+        !
       ELSE
          !
-         ! 1.2. Unstructured grids
+         ! 1.3. Unstructured grids
          ! ----------------------------------
-         WRITE(*,*) 'TO BE VERIFY FOR UNSTRUCTURED GRIDS'
+         WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
          STOP
          !
          DO JSEA=1,NSEAL

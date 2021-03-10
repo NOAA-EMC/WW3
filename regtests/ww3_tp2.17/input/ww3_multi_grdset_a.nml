@@ -129,7 +129,8 @@
 !
 ! * need DOMAIN%UNIPTS equal true to use a unified point output file
 !
-! * the point file is a space separated values per line : lon lat 'name'
+! * the point file is a space separated values per line :
+!   longitude latitude 'name' (C*40)
 !
 ! * the detailed list of field names is given in model/nml/ww3_shel.nml :
 !  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5

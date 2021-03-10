@@ -2284,6 +2284,11 @@
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
+!/WRST          ! The WRST switch saves the values of wind in the
+!/WRST          ! restart file and then uses the wind for the first
+!/WRST          ! time step here.  This is needed when coupling with
+!/WRST          ! an atm model that does not have 10m wind speeds at
+!/WRST          ! initialization.  If there is no restart, wind is zero
 !/WRST          wxn = WXNwrst !replace with values from restart
 !/WRST          wyn = WYNwrst 
 !/WRST          wx0 = WXNwrst 
@@ -2302,7 +2307,7 @@
 !/WRST            wy0 = WYNwrst  
 !/WRST            if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/WRST          enddo
-!/WRST        endif
+        endif
     
 !/WRST       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
 !/WRST        !If the time of the field is still initial time, replace
@@ -5621,9 +5626,6 @@
 !/ST4                           dlwmean )
             endif !firstCall
             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-          else  
-            !ice value 
-            wrln(jsea) = 0.00001d0
           endif 
         enddo jsea_loop
 

@@ -74,11 +74,14 @@
       PUBLIC
       ! Tail_Choice: Chose the method to determine the level of the tail
       INTEGER, SAVE :: Tail_Choice
+!/OMPG/!$omp threadprivate(Tail_Choice)
       REAL, SAVE    :: Tail_Level !if Tail_Choice=0, tail is constant
       REAL, SAVE    :: Tail_transition_ratio1! freq/fpi where tail 
                                              !  adjustment begins
       REAL, SAVE    :: Tail_transition_ratio2! freq/fpi where tail 
                                              !  adjustment ends
+!/OMPG/!$omp threadprivate(Tail_Level)
+!/OMPG/!$omp threadprivate(Tail_transition_ratio1,Tail_transition_ratio2)
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -228,6 +231,7 @@
       LOGICAL                 :: FSFL1,FSFL2, CRIT1, CRIT2
       LOGICAL                 :: IT_FLAG1, IT_FLAG2
       LOGICAL, SAVE           :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST)
 !/
 !/ ------------------------------------------------------------------- /
 !/

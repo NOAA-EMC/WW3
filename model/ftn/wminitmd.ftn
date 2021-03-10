@@ -427,9 +427,12 @@
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
-      CHARACTER(LEN=13)       :: STDATE, PN, MN, TNAMES(7)
+      CHARACTER(LEN=13)       :: STDATE, MN, TNAMES(7)
+      CHARACTER(LEN=40)       :: PN
       CHARACTER(LEN=13),                                              &
-                  ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
+                  ALLOCATABLE :: INAMES(:,:), MNAMES(:)
+      CHARACTER(LEN=40),                                              &
+                  ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
@@ -445,7 +448,7 @@
       TYPE OT2TPE
         INTEGER                    :: NPTS
         REAL, POINTER              :: X(:), Y(:)
-        CHARACTER(LEN=10), POINTER :: PNAMES(:)
+        CHARACTER(LEN=40), POINTER :: PNAMES(:)
       END TYPE OT2TPE
 !
       TYPE(OT2TPE), ALLOCATABLE    :: OT2(:)
@@ -3473,7 +3476,7 @@
       TYPE OT2TPE
         INTEGER                    :: NPTS
         REAL, POINTER              :: X(:), Y(:)
-        CHARACTER(LEN=10), POINTER :: PNAMES(:)
+        CHARACTER(LEN=40), POINTER :: PNAMES(:)
       END TYPE OT2TPE
 !
       TYPE(OT2TPE), ALLOCATABLE    :: OT2(:)
@@ -3519,9 +3522,12 @@
                   ALLOCATABLE :: ACTION(:)
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
-      CHARACTER(LEN=13)       :: STDATE, PN, MN, TNAMES(7)
+      CHARACTER(LEN=13)       :: STDATE, MN, TNAMES(7)
+      CHARACTER(LEN=40)       :: PN
       CHARACTER(LEN=13),                                               &
-                  ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
+                  ALLOCATABLE :: INAMES(:,:), MNAMES(:)
+      CHARACTER(LEN=40),                                               &
+                  ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE
 !/MPRF      CHARACTER(LEN=18)       :: PFILE

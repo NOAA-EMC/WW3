@@ -511,12 +511,14 @@
 !/ST4      REAL                    :: BRLAMBDA(NSPEC)
 !/IS2      DOUBLE PRECISION        :: SCATSPEC(NTH) 
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
-!/FLD1     REAL, SAVE              :: TAUNUX, TAUNUY
-!/FLD2     REAL, SAVE              :: TAUNUX, TAUNUY
+      REAL, SAVE              :: TAUNUX, TAUNUY
+!/OMPG/!$omp threadprivate( TAUNUX, TAUNUY)
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
+!/OMPG/!$omp threadprivate( FLTEST, FLAGNN )
       LOGICAL                 :: SHAVE
       LOGICAL                 :: LBREAK
       LOGICAL, SAVE           :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST ) 
       LOGICAL                 :: PrintDeltaSmDA
       REAL                    :: eInc1, eInc2
       REAL                    :: DeltaSRC(NSPEC), MAXDAC(NSPEC)
@@ -643,7 +645,9 @@
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', USTAR
 !/DEBUGSRC     END IF
 
+!/ST4      DLWMEAN= 0.
 !/ST4      BRLAMBDA(:)=0.
+!/ST4      WHITECAP(:)=0.
 !
 ! 1.c Set mean parameters
 !

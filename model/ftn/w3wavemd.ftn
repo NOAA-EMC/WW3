@@ -80,6 +80,8 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.08 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
+!/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
+!/                  defunct OMPX switches.
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -154,7 +156,6 @@
 !       !/DIST  Id.
 !       !/MPI   Id.
 !       !/OMPG  Id.
-!       !/OMPX  Id.
 !
 !       !/PR1   First order propagation schemes.
 !       !/PR2   ULTIMATE QUICKEST scheme.
@@ -176,14 +177,14 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT & 
-!/OASIS                  ,ID_LCOMM                 &
+!/OASIS                  ,ID_LCOMM, TIMEN                 &
                          )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -249,6 +250,7 @@
 !/                  OASIS/DEBUGINIT/DEBUGSRC/DEBUGRUN/DEBUGCOH
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
+!/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/
 !  1. Purpose :
 !
@@ -395,7 +397,7 @@
 !/SETUP      USE W3WAVSET, only : WAVE_SETUP_COMPUTATION
 !/NETCDF_QAD      USE W3NETCDF, only : OUTPUT_NETCDF_QUICK_AND_DIRTY
 
-!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME
+!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
 !/OASOCM      USE W3OGCMMD, ONLY: SND_FIELDS_TO_OCEAN
 !/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
 !/OASICM      USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
@@ -413,6 +415,7 @@
       INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 !/OASIS INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
+!/OASIS INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2) 
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters :
@@ -428,7 +431,7 @@
       INTEGER                 :: TTEST(2),DTTEST
       REAL                    :: ICEDAVE
 !
-!/OASIS     INTEGER                 :: OASISED
+!/MPI      LOGICAL                 :: SBSED
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -456,8 +459,7 @@
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
                                  FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
-                                 FLPART, LOCAL, FLOUTG2,              &
-                                 FLOMP = .FALSE.
+                                 FLPART, LOCAL, FLOUTG2
 !
 !Li   Logical variable to control regular gird lines in conflict with SMC option.
 !AR   SMC option is in conflict with lofical variables for regular grid ... chicken ... egg ... stuff 
@@ -496,8 +498,6 @@
 !/ARC        ARCTIC = .TRUE.
 !
 ! 0.a Set pointers to data structure
-!
-!/OMPX      FLOMP  = .TRUE.
 !
 !/COU      SCREEN   =  333
 !
@@ -576,8 +576,7 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-!!Li  ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
-      IF( RGLGRD .AND. .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+      IF( RGLGRD ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
 !/SMC !!Li   Otherwise use sea point only field
 !/SMC       ALLOCATE ( FIELD(NCel) )
@@ -591,6 +590,8 @@
         END IF
 !
 !/SBS      NDSOFLG = 99
+!/MPI      SBSED = .FALSE.
+!/SBS      SBSED = .TRUE.
 !
       TAUWX  = 0.
       TAUWY  = 0.
@@ -1728,17 +1729,11 @@
 !/MPI         CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
 !/MPI       END IF
 !
-!!/OMPX/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
-!
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.14'
 !/DEBUGRUN        FLUSH(740+IAPROC)
-
-            IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
 ! Initialize FIELD variable 
              FIELD = 0.
-!
-!!/OMPX/!$OMP DO SCHEDULE (DYNAMIC,1)
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
@@ -1785,14 +1780,7 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 17'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-
-
-!!/OMPX/!$OMP END DO
-
-              IF ( FLOMP ) DEALLOCATE ( FIELD )
-
-!!/OMPX/!$OMP END PARALLEL
-
+!
 !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
               IK=1
               IX=1
@@ -2237,9 +2225,9 @@
 !/MPI            FLGMPI = .FALSE.
 !/MPI            NRQMAX = 0
 !
-!/MPI     IF ( ( ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) .OR.     &
-!/MPI            ( DSEC21(TIME,TONEXT(:,7)).EQ.0. ) ).and.   &
-!/MPI          (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+!/MPI     IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
+!/MPI          (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
+!/MPI             SBSED ) ) THEN
 !/MPI       IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
 !/MPI         IF (NRQGO.NE.0 ) THEN
 !/DEBUGRUN      WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
@@ -2373,14 +2361,17 @@
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
                   IF ( DTTST .EQ. 0. ) THEN
-                      IF ( ( J .EQ. 1 ) .OR. ( J .EQ. 7 ) ) THEN
+                      IF ( ( J .EQ. 1 )              &
+!/SBS                           .OR. ( J .EQ. 7 )         &
+                                        ) THEN
                           IF ( IAPROC .EQ. NAPFLD ) THEN
 !/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
 !
-                              IF ( J .EQ. 1 ) CALL W3IOGO             &
-                                 ( 'WRITE', NDS(7), ITEST, IMOD )
+!/SBS                              IF ( J .EQ. 1 ) THEN
+                                CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
+!/SBS                              ENDIF
 !
 !/SBS !
 !/SBS !     Generate output flag file for fields and SBS coupling.
@@ -2394,23 +2385,7 @@
 !/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
 !/SBS                              CLOSE( NDSOFLG )
                             END IF
-
-                          IF ( J .EQ. 7 ) THEN
-!/OASIS !
-!/OASIS ! Send variables to atmospheric or ocean circulation or ice model
-!/OASIS !
-!/OASIS                              IF (DTOUT(7).NE.0) THEN
-!/OASIS                                IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
-!/OASIS                                     (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
-!/OASACM                                  CALL SND_FIELDS_TO_ATMOS()
-!/OASOCM                                  CALL SND_FIELDS_TO_OCEAN()
-!/OASICM                                  CALL SND_FIELDS_TO_ICE()
-!/OASIS                                  ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
-!/OASIS                                ENDIF
-
-!/OASIS                            END IF
-                          END IF
-
+!
                         ELSE IF ( J .EQ. 2 ) THEN
 !
 !   Point output
@@ -2440,6 +2415,24 @@
                             END IF
                         ELSE IF ( J .EQ. 6 ) THEN
                           CALL W3IOSF ( NDS(13), IMOD )
+!/OASIS                      ELSE IF ( J .EQ. 7 ) THEN
+!/OASIS                        !
+!/OASIS                        ! Send variables to atmospheric or ocean circulation or ice model
+!/OASIS                        !
+!/OASIS                        IF (DTOUT(7).NE.0) THEN
+!/OASIS                          IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
+!/OASIS                               (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN 
+!/OASIS                            IF ( (CPLT0 .AND. (DSEC21 (TIME, TIMEN) .GT. 0.0)) .OR. &
+!/OASIS                                  .NOT. CPLT0 ) THEN
+!/OASIS                              IF (CPLT0) ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
+!/OASIS
+!/OASACM                             CALL SND_FIELDS_TO_ATMOS()
+!/OASOCM                             CALL SND_FIELDS_TO_OCEAN()
+!/OASICM                             CALL SND_FIELDS_TO_ICE()
+!/OASIS                              IF (.NOT. CPLT0) ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
+!/OASIS                            ENDIF
+!/OASIS                          ENDIF
+!/OASIS                        ENDIF
                         END IF
 !
                       CALL TICK21 ( TOUT, DTOUT(J) )
@@ -2609,8 +2602,7 @@
 
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
 !
-      IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
-!
+      DEALLOCATE(FIELD)
       DEALLOCATE(TAUWX, TAUWY)
 !
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE END W3WAVE'
