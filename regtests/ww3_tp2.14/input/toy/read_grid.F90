@@ -1,6 +1,6 @@
   !****************************************************************************************
   SUBROUTINE read_grid (nlon,nlat,corners_ij_lus, &
-                                       data_filename, w_unit, &
+                                       data_filename, w_unit, krank, &
                                        gridlon,gridlat, &
                                        gridclo,gridcla, &
                                        gridsrf, &
@@ -10,7 +10,7 @@
   USE netcdf
   IMPLICIT NONE
   !
-  INTEGER                  :: w_unit
+  INTEGER                  :: w_unit, krank
   !
   INTEGER                  :: il_file_id,il_lon_id, &
                               il_lat_id,il_clo_id,il_cla_id,il_srf_id,il_indice_id
@@ -55,37 +55,51 @@
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_lon_id, gridlon, &
      ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid longitudes reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid longitudes reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_lat_id, gridlat, &
      ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid latitudes reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid latitudes reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_GET_VAR(il_file_id, il_clo_id, gridclo, &
      ila_what, ila_corners), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid longitude corners reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid longitude corners reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_cla_id, gridcla, &
      ila_what, ila_corners), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid latitude corners reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid latitude corners reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_srf_id, gridsrf, &
      ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid surfaces reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid surfaces reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_indice_id, indice_mask, &
      ila_what, ila_dim), __LINE__,__FILE__ )
-  WRITE(w_unit,*) 'Global grid mask reading done'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'Global grid mask reading done'
+    CALL flush(w_unit)
+  ENDIF
   !
   CALL hdlerr( NF90_CLOSE(il_file_id), __LINE__,__FILE__ )
   !
-  WRITE(w_unit,*) 'End of routine read_grid'
-  CALL flush(w_unit)
+  IF(krank.EQ.0) THEN
+    WRITE(w_unit,*) 'End of routine read_grid'
+    CALL flush(w_unit)
+  ENDIF
   !
 END SUBROUTINE read_grid

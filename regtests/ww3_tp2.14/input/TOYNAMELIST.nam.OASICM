@@ -10,6 +10,6 @@
                  CRCVFIELDS(1)='TOY_ICEF' /
 
 &NAM_SEND_FIELDS NB_SEND_FIELDS=3, 
-                 CSNDFIELDS(1)='TOY__IC1, 
+                 CSNDFIELDS(1)='TOY__IC1', 
                  CSNDFIELDS(2)='TOY__IC5',
                  CSNDFIELDS(3)='TOY__ICE' /

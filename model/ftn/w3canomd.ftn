@@ -93,12 +93,16 @@
       INTEGER                  :: NDEPTH
       REAL                     :: DEPTHA         ! first depth in table
       REAL, SAVE , PRIVATE, ALLOCATABLE   :: OMEGA(:)
+!/OMPG/!$omp threadprivate( OMEGA )
       INTEGER, SAVE , PRIVATE             :: COUNTER = 0
+!/OMPG/!$omp threadprivate( COUNTER )
 ! Tables for non-linear coefficients ...   
       REAL, SAVE , PRIVATE, ALLOCATABLE   :: TA(:,:,:,:),TB(:,:,:,:),TC_QL(:,:,:,:),&
                                              TT_4M(:,:,:,:),TT_4P(:,:,:,:),TFAKH(:,:),    &
                                              TFAK(:,:)
+!/OMPG/!$omp threadprivate( TA, TB, TC_QL, TT_4M, TT_4P, TFAKH, TFAK )
       INTEGER, SAVE, PRIVATE, ALLOCATABLE :: IM_P(:,:),IM_M(:,:)
+!/OMPG/!$omp threadprivate( IM_P, IM_M )
 
 
 !
@@ -202,10 +206,13 @@
       REAL              :: CO1, ATOE, DPTH
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE     :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST ) 
       REAL, ALLOCATABLE, SAVE  :: FR(:), DFIM(:)
       REAL, ALLOCATABLE, SAVE  :: F1(:,:), F3(:,:)
+!/OMPG/!$omp threadprivate( FR, DFIM, F1, F3 ) 
       INTEGER, SAVE     ::  NFRE, NANG
       INTEGER, SAVE     ::  NFREH, NANGH
+!/OMPG/!$omp threadprivate( NFRE, NANG, NFREH, NANGH )
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -342,11 +349,12 @@
 
       INTEGER MDW,M,K, K0,M0,MP,KP,MM,KM,KL,KLL,ML,JD
       INTEGER, SAVE :: MR, MA,NMAX
-
+!/OMPG/!$omp threadprivate( MR, MA, NMAX )
 
 !      PARAMETER (NFREH=32,NANGH=36)
 
       INTEGER, SAVE            :: INDEP
+!/OMPG/!$omp threadprivate( INDEP )
       REAL,ALLOCATABLE         :: PF1(:,:),PF3(:,:)
 
 
@@ -357,7 +365,7 @@
      C2,XM,XK
       REAL, SAVE :: OMSTART
       REAL, SAVE :: XMR,XMA, DELTHH, CO1
-
+!/OMPG/!$omp threadprivate( OMSTART, XMR,XMA, DELTHH, CO1 )
       REAL :: F13(NFREH,NANGH)
       REAL :: SUM0,AKMEAN
       REAL :: DELOM(NFREH),THH(NANGH),DFDTH(NFREH)

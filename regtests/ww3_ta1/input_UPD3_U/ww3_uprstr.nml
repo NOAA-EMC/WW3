@@ -1,0 +1,113 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_uprstr.nml - Grid output post-processing         !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define the assimilation time for initialising the wave model. This 
+!  has to be the same as the time of the restart.ww3
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     RESTART%RESTARTTIME = '19680607 120000'  ! assimilation time
+! -------------------------------------------------------------------- !
+&RESTART_NML
+  RESTART%RESTARTTIME = '19680607 120000'
+/
+
+
+! -------------------------------------------------------------------- !
+! Define the update approach and associated variables
+!  Note: Only the relevant variables for each update type need to be
+!  set. Setting non-relevant variables should not affect the way the
+!  code works
+!
+! A number of different update approaches are available. UPDN is used 
+!  for the Nth approach
+!
+!  The UPDN*, with N<2 the same correction factor is applied at all
+!             the grid points using:
+!            PRCNTG is input for option UPD0F and is the correction
+!            factor applied  to all the gridpoints (e.g. 1.)
+!  UPD0C:: ELIMINATED
+!  UPDOF:: Option 0F  All the spectra are updated with a constant
+!          fac=HsAnl/HsBckg
+!          Expected input: PRCNTG, as defined at fac
+!  UPD1 :: ELIMINATED
+!
+!  UPDN, with N>1 each gridpoint has its own update factor and uses:
+!       PRCNTG_CAP - global input for option UPD2+ and is a cap on
+!        the maximum SWH correction factor applied to all the
+!        gridpoints, as both a multiple or divisor (e.g. cap at 5.0
+!        means SWHANL/SWHBKG<=5.0 and SWHANL/SWHBKG>=0.2). The value
+!        given should not be less than 1.0 
+!       Name of the file with the SWH analysis from the DA system
+!        suffix .grbtxt for text out of grib2 file.
+!  UPD2 :: Option 2    The fac(x,y,frq,theta), is calculated at each
+!          grid point according to HsBckg and HsAnl 
+!          Expected input the Analysis field, grbtxt format 
+!  UPD3 :: Option 3    The update factor is a surface with the shape
+!          of the background spectrum.
+!          Expected input: the Analysis field, grbtxt format and cap
+!          for the last gross check.
+!  UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]
+!          Option 4    The generalization of the UPD3. The update
+!          factor is the sum of surfaces which are applied on the
+!          background spectrum.
+!          The algorithm requires the mapping of each partition on the
+!          individual spectra; the map is used to determine the
+!          weighting surfaces.
+!          Expected input: the Analysis field, grbtxt format and the 
+!          functions(frq,theta) of the update to be applied.
+! 
+!  UPDN, with N>=5 each gridpoint has its own update factor and uses
+!       wind field data to evaluate wind-sea and swell fields. Also
+!       uses:
+!       PRCNTG_CAP - see above
+!       THRWSEA - energy threshold (SWH_WS**2/SWH**2) above which the
+!        sea-state is considered wind-sea dominated by the DA scheme
+!       Name of the file with the SWH analysis from the DA system
+!        suffix .grbtxt for text out of grib2 file.
+!   UPD5 :: Option 5   Corrections are calculated as per UPD2 but are
+!           applied to wind-sea parts of the spectrum only when
+!           wind-sea is the dominant component, otherwise the whole
+!           spectrum is corrected
+!           Expected input: the Analysis Hs field plus background wind
+!                           speed and direction
+!   UPD6 :: Option 6   Corrections are calculated as per UPD5 but
+!           wind-sea components are also shifted in frequency space
+!           using Toba (1973)
+!           Expected input: the Analysis Hs field plus background wind
+!           speed and direction
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!
+! UPD0F
+!     UPDATE%UPDPROC = 'UPD0F'   ! Update type
+!     UPDATE%PRCNTG  = 1.0       ! Scalar correction factor (1.0=no correction)
+!
+! UPD2/3
+!     UPDATE%UPDPROC    = 'UPD2'       ! Update type
+!     UPDATE%PRCNTGCAP  = 10.0         ! Cap on correction factor
+!     UPDATE%FILE       = 'anl.grbtxt' ! Corrected analysed SWH field file
+!
+! UPD5/6
+!     UPDATE%UPDPROC    = 'UPD5'       ! Update type
+!     UPDATE%PRCNTGCAP  = 10.0         ! Cap on correction factor
+!     UPDATE%THRWSEA    = 0.7          ! Energy threshold for wind-sea dominance
+!     UPDATE%FILE       = 'anl.grbtxt' ! Corrected analysed SWH field file
+!
+
+! -------------------------------------------------------------------- !
+&UPDATE_NML
+  UPDATE%UPDPROC    = 'UPD3'
+  UPDATE%PRCNTGCAP  = 10.0
+  UPDATE%FILE       = 'anl.grbtxt'
+/
+
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
+

@@ -5,6 +5,8 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the input boundaries to preprocess via BOUND_NML namelist
+! Note: When using a rotated pole WW3 grid, the input spectra are
+! always assumed to be formulated on a standard pole.
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:

@@ -1,0 +1,39 @@
+$
+ 'RTD grid input BC test'
+$ Tests ingestion of BCs from nest.ww3 file for a rotated
+$ pole grid. Spectra in nest.ww3 are always formulated on
+$ a standard pole, so this tests correct rotation of 
+$ BC coordinates to model rotated pole grid.
+$
+ 1.1 0.067 13 24 0.
+$
+ F T T F F T
+$
+ 3600 1800 1800 60
+$
+ &ROTD PLAT = 37.5, PLON = 177.5, UNROT = .FALSE. /
+END OF NAMELISTS
+$
+ 'RECT'  T  'NONE'
+  10    10
+   1.0   1.0  1.0
+  -8.0   0.0  1.0
+ -0.1 10.0 10 -100. 4 1 '(...)'  'NAME'  'dummy'
+$
+ 100*2
+$
+ 10 3 1 '(...)' 'NAME' 'dummy'
+$
+ 3 3 3 3 3 3 3 3 3 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 2 1 1 1 1 1 1 1 1 3
+ 3 3 3 3 3 3 3 3 3 3
+$
+  0.   0.   0.   0.   0
+$
