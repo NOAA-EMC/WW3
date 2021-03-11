@@ -23,27 +23,27 @@
 # --------------------------------------------------------------------------- #
 rm -r ../model?
 rm -r ../model??
-
 cp matrix matrix.tmp
 
-maxlist1=50
-maxlist2=100
+maxlist1=47
+maxlist2=91
 
 #Put the job requirement/spec in "before"
 sed -e "/run_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
-command egrep 'ww3_tp2.14' matrix.tmp | cat >> list_2.14
+command egrep 'ww3_tp2.14|ww3_tp2.17' matrix.tmp | cat >> list_heavy
 awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
+awk '!/ww3_tp2.17/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 command egrep 'mpirun|mpiexec|MPI_LAUNCH' matrix.tmp | cat >> list_mpi
 awk '!/mpirun|mpiexec|MPI_LAUNCH/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 split -dl $maxlist1 list_mpi list_mpi_
 rm list_mpi
-matrixno1=$(ls list_mpi* | wc -l)
+matrixno1=$(ls list_mpi_* | wc -l)
 echo "Total nummber of matrix with parallel tests = $(($matrixno1 + 1)); each includes $maxlist1 tests"
 command egrep 'run_test' matrix.tmp | cat >> list_serial
 split -dl $maxlist2 list_serial list_serial_
 rm list_serial
-matrixno2=$(ls list_serial* | wc -l)
+matrixno2=$(ls list_serial_* | wc -l)
 echo "Total nummber of matrix with serial test = $matrixno2; each includes $maxlist2 tests"
 rm matrix.tmp
 
@@ -66,7 +66,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm ../model$count"                                                              >> matrix$count
+  echo "rm -r ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
  done
 
@@ -85,14 +85,15 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm ../model$count"                                                              >> matrix$count
+  echo "rm -r ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
  done
 
 #ww3_tp2.14 is separated, as it has dependency. 
+#ww3_tp2.17 is separated, as it takes a long time to finish
   (( count = count + 1 ))
   cat before >> matrix$count
-  cat list_2.14 >> matrix$count
+  cat list_heavy >> matrix$count
   cp -r ../model ../model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
@@ -101,7 +102,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm ../model$count"                                                              >> matrix$count
+  echo "rm -r ../model$count"                                                              >> matrix$count
   echo " matrix$count prepared"
 
 
