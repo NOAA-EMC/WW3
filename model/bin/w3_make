@@ -56,12 +56,12 @@
 # 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
   source $(dirname $0)/w3_setenv
-  build_dir=$WWATCH3_BUILD
   main_dir=$WWATCH3_DIR
-  #temp_dir=$WWATCH3_TMP
-  temp_dir=$WWATCH3_BUILD/tmp
+  build_dir=${WWATCH3_BUILD:-$WWATCH3_DIR}
+  temp_dir=$build_dir/tmp
   obj_dir=$build_dir/obj
   mod_dir=$build_dir/mod
+  exe_dir=$build_dir/exe
 
 
   source=$WWATCH3_SOURCE
@@ -85,9 +85,9 @@
   fi
 
   # exe dir
-  if [ ! -d $main_dir/exe ]
+  if [ ! -d $exe_dir ]
   then
-    mkdir -p $main_dir/exe
+    mkdir -p $exe_dir
   fi
 
   # switch file
@@ -102,7 +102,7 @@
     echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
     exit 1
   fi
-  cp  $switch_file $main_dir/exe/
+  cp  $switch_file $exe_dir
 
   # comp file
   comp_file=$main_dir/bin/comp
@@ -125,7 +125,9 @@
   fi
 
   # ftn dir
-  makefile=$main_dir/ftn/makefile
+  # ChrisB: Makefile now goes in build directory
+  #makefile=$main_dir/ftn/makefile
+  makefile=${build_dir}/makefile
   if [ ! -d $main_dir/ftn ]
   then
     echo ' '
@@ -262,7 +264,7 @@
   flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
 
   switch_file_old=$main_dir/bin/switch.old
-  exec_type_file=$main_dir/exe/exec_type
+  exec_type_file=$exe_dir/exec_type
 
   here=`pwd`
 
@@ -525,10 +527,12 @@ EOF
 
 # 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  # CB - makefile will now go in build directory
   make_make='y'
   if test -f $switch_file_old
   then
-    if test -f $main_dir/ftn/makefile && \
+    #CB if test -f $main_dir/ftn/makefile && \
+    if test -f $build_dir/makefile && \
        test -z "`diff $switch_file $switch_file_old`"
     then
       make_make='n'
@@ -538,6 +542,7 @@ EOF
   if test "$make_make" = 'y'
   then
     echo 'Making makefile ...'
+    cd $build_dir  # ChrisB: makefile goes in build directory
     if $main_dir/bin/make_makefile.sh
     then
       if [ "$flag_SHRD" -gt '0' ]
@@ -565,6 +570,9 @@ EOF
     fi
   fi
   echo ' '
+  
+  # CB - go back to ftn dir
+  cd $main_dir/ftn
 
 # 1.f Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -573,7 +581,7 @@ EOF
   #aPm="$main_dir/mod"     # path containing .mod files
   aPo="$obj_dir"          # path containing .o files
   aPm="$mod_dir"          # path containing .mod files
-  aPe="$main_dir/exe"     # path containing executables
+  aPe="$exe_dir"         # path containing executables
 
   export aPb aPo aPm aPe
 
@@ -703,7 +711,7 @@ EOF
         exec_type=`grep $prog $exec_type_file | tail -1 | awk '{ print $2}'`
       fi
       if [ "$exec_type" != "$pres_type" ] ; then
-          rm -f $main_dir/exe/$prog  ; fi
+          rm -f $exe_dir/$prog  ; fi
 
       cp $exec_type_file tempfile
       sed -n "/$prog/!p" tempfile > $exec_type_file
@@ -761,8 +769,8 @@ EOF
 
 # 2.d copy comp and link 
 
-  cp  $main_dir/bin/comp $main_dir/exe/
-  cp  $main_dir/bin/link $main_dir/exe/
+  cp  $main_dir/bin/comp $exe_dir/
+  cp  $main_dir/bin/link $exe_dir/
  
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #

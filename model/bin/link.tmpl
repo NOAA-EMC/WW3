@@ -37,20 +37,23 @@
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
+  build_dir=${WWATCH3_BUILD:-${WWATCH3_DIR}}
+  temp_dir=$build_dir/tmp
+  obj_dir=$build_dir/obj
+  exe_dir=$build_dir/exe
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 
 
 # 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  rm -f $main_dir/exe/$prog
+  rm -f ${exe_dir}/$prog
 
 # --------------------------------------------------------------------------- #
 # 2. Check objects                                                            #
 # --------------------------------------------------------------------------- #
 
-  cd $main_dir/obj
+  cd $obj_dir
   objects=$NULL
   error='n'
   set $input
@@ -182,7 +185,7 @@
       rm -f link.???
       exit 1
     else
-      mv $prog $main_dir/exe/.
+      mv $prog ${exe_dir}/
       rm -f link.???
     fi
   fi

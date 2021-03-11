@@ -59,8 +59,8 @@
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
-  #temp_dir=$WWATCH3_TMP
-  temp_dir=$WWATCH3_BUILD/tmp
+  build_dir=${WWATCH3_BUILD:-${WWATCH3_DIR}}
+  temp_dir=$build_dir/tmp
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 

@@ -100,7 +100,9 @@
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
+  build_dir=${WWATCH3_BUILD:-$WWATCH3_DIR}
+  #temp_dir=$WWATCH3_TMP
+  temp_dir=$build_dir/tmp
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 
@@ -110,8 +112,10 @@
   path_b="$main_dir/bin"
   path_w="$( cd $temp_dir && pwd )"
   path_i="$main_dir/ftn"
-  path_o="$main_dir/obj"
-  path_m="$main_dir/mod"
+  #path_o="$main_dir/obj"
+  #path_m="$main_dir/mod"
+  path_o="$build_dir/obj"
+  path_m="$build_dir/mod"
   path_e="$main_dir/exe"
   if [ -n "`echo $name | grep scrip_ 2>/dev/null`" ]
   then

@@ -103,9 +103,14 @@ EOF
   # source again in case of updated wwatch3.env
   source $(dirname $0)/w3_setenv 
   main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
+  build_dir=${WWATCH3_BUILD:-${WWATCH3_DIR}}
+  temp_dir=$build_dir/tmp
+  obj_dir=$build_dir/obj
+  mod_dir=$build_dir/mod
+  exe_dir=$build_dir/exe
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
+
 
 # --------------------------------------------------------------------------- #
 # 2. Scratch directory                                                        #
@@ -282,26 +287,32 @@ EOF
         done
       fi
     done
+  else
+    echo "   Directory does not exist: $main_dir"
+  fi
+
+
+  if [ -d $build_dir ]
+  then
     # clean up work & mod & obj & tmp
     for folder in work mod obj tmp
     do
-      if [ -d $main_dir/$folder ] || [ -L $main_dir/$folder ]
+      if [ -d $build_dir/$folder ] || [ -L $build_dir/$folder ]
       then
-        echo "   Remove $main_dir/$folder"
-        rm -fr $main_dir/$folder
+        echo "   Remove $build_dir/$folder"
+        rm -fr $build_dir/$folder
       fi
       for type in DIST SHRD OMP HYB MPI SEQ
       do
-        if [ -d $main_dir/${folder}_${type} ]
+        if [ -d $build_dir/${folder}_${type} ]
         then
-          echo "   Remove $main_dir/${folder}_${type}"
-          rm -fr $main_dir/${folder}_${type}
+          echo "   Remove $build_dir/${folder}_${type}"
+          rm -fr $build_dir/${folder}_${type}
         fi
       done
    done
-
   else
-    echo "   Directory does not exist: $main_dir"
+    echo "   Directory does not exist: $build_dir"
   fi
 
 # --------------------------------------------------------------------------- #
@@ -319,26 +330,32 @@ EOF
         rm -f w3adc w3list w3prnt w3split
         rm -f comp link switch
       fi
-    # clean up exe
-    for folder in exe
-    do
-      if [ -d $main_dir/$folder ] || [ -L $main_dir/$folder ]
-      then
-        echo "   Remove $main_dir/$folder"
-        rm -fr $main_dir/$folder
-      fi
-      for type in DIST SHRD OMP HYB MPI SEQ
-      do
-        if [ -d $main_dir/${folder}_${type} ]
-        then
-          echo "   Remove $main_dir/${folder}_${type}"
-          rm -fr $main_dir/${folder}_${type}
-        fi
-      done
-   done
-
     else
       echo "   Directory does not exist: $main_dir"
+    fi
+
+
+    if [ -d $build_dir ]
+    then
+      # clean up exe
+      for folder in exe
+      do
+        if [ -d $build_dir/$folder ] || [ -L $build_dir/$folder ]
+        then
+          echo "   Remove $build_dir/$folder"
+          rm -fr $build_dir/$folder
+        fi
+        for type in DIST SHRD OMP HYB MPI SEQ
+        do
+          if [ -d $build_dir/${folder}_${type} ]
+          then
+            echo "   Remove $build_dir/${folder}_${type}"
+            rm -fr $build_dir/${folder}_${type}
+            fi
+        done
+      done
+    else
+      echo "   Directory does not exist: $build_dir"
     fi
   fi
 
