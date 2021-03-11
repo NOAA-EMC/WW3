@@ -584,7 +584,7 @@
 !
 !/MPI                  ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
 !/MPI                  IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
-!/MPI                                      ( NRQ*NBLKRS, IRQRSS, IERR_MPI )
+!/MPI                                      ( NRQ, IRQRSS, IERR_MPI )
 !
 !/MPI                  DO IB=1, NBLKRS
 !/MPI                    ISEA0  = 1 + (IB-1)*RSBLKS*NAPROC
@@ -595,6 +595,11 @@
 !/MPI                        IH     = 1 + NRQ * (IB-1)
 !/MPI                        CALL MPI_WAITALL                         &
 !/MPI                           ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
+!/MPI                        IF ( IB .LT. NBLKRS ) THEN
+!/MPI                            IH     = 1 + NRQ * IB
+!/MPI                            CALL MPI_STARTALL                    &
+!/MPI                               ( NRQ, IRQRSS(IH), IERR_MPI )
+!/MPI                          END IF
 !
 !/MPI                        DO ISEA=ISEA0, ISEAN
 !/MPI                          NREC   = ISEA + 2
