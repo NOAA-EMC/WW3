@@ -56,12 +56,19 @@
 # 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
   source $(dirname $0)/w3_setenv
+  build_dir=$WWATCH3_BUILD
   main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
+  #temp_dir=$WWATCH3_TMP
+  temp_dir=$WWATCH3_BUILD/tmp
+  obj_dir=$build_dir/obj
+  mod_dir=$build_dir/mod
+
+
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 
   echo "Main directory    : $main_dir"
+  echo "Build directory   : $build_dir"
   echo "Scratch directory : $temp_dir"
   echo "Save source codes : $source"
   echo "Save listings     : $list"
@@ -277,8 +284,10 @@
     fi
   fi
 
-  rm -rf $main_dir/obj
-  rm -rf $main_dir/mod
+  #rm -rf $main_dir/obj
+  #rm -rf $main_dir/mod
+  rm -rf $obj_dir $mod_dir
+
   if [ -f ${switch_file_old}_$pres_type ] ; then
      cp ${switch_file_old}_$pres_type $switch_file_old
   fi
@@ -286,9 +295,15 @@
     cp ${makefile}_$pres_type $makefile
   fi
   cd $main_dir
-  mkdir -p obj_$pres_type mod_$pres_type
-  ln -sf obj_$pres_type obj
-  ln -sf mod_$pres_type mod
+
+
+  #mkdir -p obj_$pres_type mod_$pres_type
+  #ln -sf obj_$pres_type obj
+  #ln -sf mod_$pres_type mod
+
+  mkdir -p ${obj_dir}_${pres_type} ${mod_dir}_${pres_type}
+  ln -sf ${obj_dir}_${pres_type} ${obj_dir}
+  ln -sf ${mod_dir}_${pres_type} ${mod_dir}
   cd $here
 
 
@@ -554,8 +569,10 @@ EOF
 # 1.f Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   aPb="$main_dir/bin"     # path containing shell scripts
-  aPo="$main_dir/obj"     # path containing .o files
-  aPm="$main_dir/mod"     # path containing .mod files
+  #aPo="$main_dir/obj"     # path containing .o files
+  #aPm="$main_dir/mod"     # path containing .mod files
+  aPo="$obj_dir"          # path containing .o files
+  aPm="$mod_dir"          # path containing .mod files
   aPe="$main_dir/exe"     # path containing executables
 
   export aPb aPo aPm aPe
@@ -692,7 +709,8 @@ EOF
       sed -n "/$prog/!p" tempfile > $exec_type_file
       rm -f tempfile
 
-      path_m=$main_dir/mod
+      #path_m=$main_dir/mod
+      path_m=$mod_dir
       export path_m
       # WW3_PARCOMPN is an environment variable to set the parallel make tasks
       # it defaults to 4
@@ -711,11 +729,15 @@ EOF
         mkfile=$main_dir/nuopc.mk
         if [ -n "`grep OMP $switch_file`" ]
         then
-          mod_dir=$main_dir/mod_HYB
-          obj_dir=$main_dir/obj_HYB
+          #mod_dir=$main_dir/mod_HYB
+          #obj_dir=$main_dir/obj_HYB
+          mod_dir=${mod_dir}_HYB
+          obj_dir=${obj_dir}_HYB
         else 
-          mod_dir=$main_dir/mod_MPI
-          obj_dir=$main_dir/obj_MPI
+          #mod_dir=$main_dir/mod_MPI
+          #obj_dir=$main_dir/obj_MPI
+          mod_dir=${mod_dir}_MPI
+          obj_dir=${obj_dir}_MPI
         fi 
         rm -f $mkfile
         touch $mkfile
