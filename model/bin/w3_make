@@ -286,8 +286,6 @@
     fi
   fi
 
-  #rm -rf $main_dir/obj
-  #rm -rf $main_dir/mod
   rm -rf $obj_dir $mod_dir
 
   if [ -f ${switch_file_old}_$pres_type ] ; then
@@ -297,11 +295,6 @@
     cp ${makefile}_$pres_type $makefile
   fi
   cd $main_dir
-
-
-  #mkdir -p obj_$pres_type mod_$pres_type
-  #ln -sf obj_$pres_type obj
-  #ln -sf mod_$pres_type mod
 
   mkdir -p ${obj_dir}_${pres_type} ${mod_dir}_${pres_type}
   ln -sf ${obj_dir}_${pres_type} ${obj_dir}
@@ -527,11 +520,10 @@ EOF
 
 # 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  # CB - makefile will now go in build directory
   make_make='y'
   if test -f $switch_file_old
   then
-    #CB if test -f $main_dir/ftn/makefile && \
+    # ChrisB: makefile will now go in build directory
     if test -f $build_dir/makefile && \
        test -z "`diff $switch_file $switch_file_old`"
     then
@@ -577,8 +569,6 @@ EOF
 # 1.f Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   aPb="$main_dir/bin"     # path containing shell scripts
-  #aPo="$main_dir/obj"     # path containing .o files
-  #aPm="$main_dir/mod"     # path containing .mod files
   aPo="$obj_dir"          # path containing .o files
   aPm="$mod_dir"          # path containing .mod files
   aPe="$exe_dir"         # path containing executables
@@ -717,7 +707,6 @@ EOF
       sed -n "/$prog/!p" tempfile > $exec_type_file
       rm -f tempfile
 
-      #path_m=$main_dir/mod
       path_m=$mod_dir
       export path_m
       # WW3_PARCOMPN is an environment variable to set the parallel make tasks
@@ -737,13 +726,9 @@ EOF
         mkfile=$main_dir/nuopc.mk
         if [ -n "`grep OMP $switch_file`" ]
         then
-          #mod_dir=$main_dir/mod_HYB
-          #obj_dir=$main_dir/obj_HYB
           mod_dir=${mod_dir}_HYB
           obj_dir=${obj_dir}_HYB
         else 
-          #mod_dir=$main_dir/mod_MPI
-          #obj_dir=$main_dir/obj_MPI
           mod_dir=${mod_dir}_MPI
           obj_dir=${obj_dir}_MPI
         fi 
