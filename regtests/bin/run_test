@@ -3,11 +3,13 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
-#                    Last update :         04-May-2020                        #
+#                    Last update :         12-Mar-2020                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
 #    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
 #    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.XX ) 
+#    12-Mar-2020 : Added -B flag to use alternative build directory ( version 7.12 )
+#                   
 #
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
@@ -41,7 +43,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:b:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:STw:"  #option string for getopt function
+optstr="a:b:B:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:STw:"  #option string for getopt function
 usage ()
 {
 
@@ -56,6 +58,7 @@ Options:
                    :   *default is <source_dir>/bin/wwatch3.env
                    :   *file will be created if it does not already exist
   -b batchq        : optional setting to determine batch queue type (for slurm now)
+  -B build_dir     : optional build directory (relative to source_dir)
   -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
                    :   OASIS : OASIS3-mct ww3_shel coupled application
@@ -129,6 +132,7 @@ ARGS=$args
 exit_p=none
 exec_p=none
 batchq=none
+blddir=none
 multi=0
 dist=0
 inpdir=input
@@ -141,6 +145,7 @@ do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
   -b) shift; batchq="$1" ;;
+  -B) shift; blddir="$1" ;;
   -c) shift; cmplr="$1" ;;
   -C) shift; coupl="$1" ;;
   -d) use_gdb=1 ;;
@@ -268,7 +273,24 @@ else
 fi
 
 # 2.h Paths to source subdirectories
-path_e="$path_s/exe"
+if [ $blddir != "none" ]; then
+    # If using a separate build directory, ensure that the switch
+    # file goes here instead of the bin directory to avoid it being
+    # clobbered.
+    # Note: `switch_file` is used by w3_make.
+    path_bld="$path_s/$blddir"
+    echo "Using build directory: $path_bld"
+    mkdir -p $path_bld
+    export WWATCH3_BUILD=${path_bld}
+    export switch_file=${path_bld}/switch
+else
+    # Default build path (model directory)
+    path_bld="$path_s"
+    export switch_file=${path_s}/bin/switch
+    unset WWATCH3_BUILD
+fi
+
+path_e="$path_bld/exe"
 path_a="$path_s/aux"
 path_b="$path_s/bin"
 if [ ! -d $path_a ]
@@ -396,7 +418,7 @@ fi
 #  exit 1
 #fi  
 #
-#if [ ! -e $path_b/switch ]
+#if [ ! -e ${switch_file} ]
 #then
 #  $path_b/w3_setup $path_s -s $file_c -q
 #fi
@@ -485,20 +507,22 @@ then
   echo '+--------------------+'
   echo ' '
 
+  echo "BUILD PATH: $path_bld"
+
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                   sed 's/OMPG //'    | sed 's/OMPX //'  | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_b/switch
+                  sed 's/B4B //' > ${switch_file}
   else
-    \cp -f $file_c $path_b/switch
+    \cp -f $file_c ${switch_file}
   fi
   if [ $testST ] 
   then #add S T switches 
-    \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-    rm $path_b/switch_noST
+    \cp -f ${switch_file} ${switch_file}_noST
+    cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+    rm ${switch_file}_noST
   fi
 
   if [ $time_count ]
@@ -543,7 +567,6 @@ then
     else
       ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
     fi
-
 
     if [ ! -f $path_e/$prog ]
     then
@@ -638,16 +661,16 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'  | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_b/switch
+                  sed 's/B4B //' > ${switch_file}
 
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
 
     if [ $time_count ]
@@ -775,15 +798,15 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'  | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_b/switch
+                  sed 's/B4B //' > ${switch_file}
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
   
     if [ $time_count ]
@@ -910,15 +933,15 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                     sed 's/OMPG //'    | sed 's/OMPX //'  | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                    sed 's/B4B //' > $path_b/switch
+                    sed 's/B4B //' > ${switch_file}
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
   
     if [ $time_count ]
@@ -1044,15 +1067,15 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                     sed 's/OMPG //'    | sed 's/OMPX //'  | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                    sed 's/B4B //' > $path_b/switch
+                    sed 's/B4B //' > ${switch_file}
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
 
     if [ $time_count ]
@@ -1186,15 +1209,15 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                     sed 's/OMPG //'    | sed 's/OMPX //'  | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                    sed 's/B4B //' > $path_b/switch
+                    sed 's/B4B //' > ${switch_file}
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
 
     runprog=$runcmd
@@ -1211,7 +1234,7 @@ then
         fi
       fi
     fi
-    if [ -n "$(grep SHRD $path_b/switch)" ] 
+    if [ -n "$(grep SHRD ${switch_file})" ] 
     then
       runprog=''
     fi
@@ -1343,12 +1366,12 @@ then
     echo '+---------------------------------+'
     echo ' '
 
-    \cp -f $file_c $path_b/switch
+    \cp -f $file_c ${switch_file}
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
 
     runprog=$runcmd
@@ -1542,12 +1565,12 @@ then
     echo '+--------------------+'
     echo ' '
   
-    \cp -f $file_c $path_b/switch
+    \cp -f $file_c ${switch_file}
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
   
     if [ $time_count ]
@@ -1735,15 +1758,15 @@ then
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                   sed 's/OMPG //'    | sed 's/OMPX //'  | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_b/switch
+                  sed 's/B4B //' > ${switch_file}
     else
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
     fi
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
   
     if [ $time_count ]
@@ -1878,15 +1901,15 @@ do
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                       sed 's/OMPG //'    | sed 's/OMPX //'  | \
                       sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                      sed 's/B4B //' > $path_b/switch
+                      sed 's/B4B //' > ${switch_file}
       else
-        \cp -f $file_c $path_b/switch
+        \cp -f $file_c ${switch_file}
       fi
       if [ $testST ]
       then #add S T switches 
-        \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-        rm $path_b/switch_noST
+        \cp -f ${switch_file} ${switch_file}_noST
+        cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+        rm ${switch_file}_noST
       fi
     
       if [ $time_count ]
@@ -2098,15 +2121,15 @@ do
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                       sed 's/OMPG //'    | sed 's/OMPX //'  | \
                       sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                      sed 's/B4B //' > $path_b/switch
+                      sed 's/B4B //' > ${switch_file}
       else
-        \cp -f $file_c $path_b/switch
+        \cp -f $file_c ${switch_file}
       fi
       if [ $testST ]
       then #add S T switches 
-        \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-        rm $path_b/switch_noST
+        \cp -f ${switch_file} ${switch_file}_noST
+        cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+        rm ${switch_file}_noST
       fi
 
       if [ $time_count ]
@@ -2259,15 +2282,15 @@ do
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
                     sed 's/OMPG //'    | sed 's/OMPX //'  | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                    sed 's/B4B //' > $path_b/switch
+                    sed 's/B4B //' > ${switch_file}
       else
-        \cp -f $file_c $path_b/switch
+        \cp -f $file_c ${switch_file}
       fi
       if [ $testST ]
       then #add S T switches 
-        \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-        rm $path_b/switch_noST
+        \cp -f ${switch_file} ${switch_file}_noST
+        cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+        rm ${switch_file}_noST
       fi
 
       if [ $time_count ]
@@ -2421,20 +2444,20 @@ then
     echo '+-------------------------+'
     echo ' '
 
-      \cp -f $file_c $path_b/switch
+      \cp -f $file_c ${switch_file}
 #  if [ $force_shrd ]
 #  then # build pre- & post-processing programs with SHRD only
 #    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
 #                  sed 's/OMPG //'    | sed 's/OMPX //'| \
-#                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switchh
+#                  sed 's/OMPH //'    | sed 's/PDLIB //'  > ${switch_file}h
 #  else
-#    \cp -f $file_c $path_b/switch
+#    \cp -f $file_c ${switch_file}
 #  fi  
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file} 
+      rm ${switch_file}_noST
     fi
 
     if [ $time_count ]
@@ -2568,12 +2591,12 @@ then
     echo '+-------------------------+'
     echo ' '
   
-    \cp -f $file_c $path_b/switch
+    \cp -f $file_c ${switch_file}
     if [ $testST ]
     then #add S T switches 
-      \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
-      rm $path_b/switch_noST
+      \cp -f ${switch_file} ${switch_file}_noST
+      cat ${switch_file}_noST | sed 's/F90/F90 S T /' > ${switch_file}
+      rm ${switch_file}_noST
     fi
   
     if [ $time_count ]
