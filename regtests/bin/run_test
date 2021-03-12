@@ -3,11 +3,13 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
-#                    Last update :         04-May-2020                        #
+#                    Last update :         12-Mar-2020                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
 #    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
 #    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.XX ) 
+#    12-Mar-2020 : Added -B flag to use alternative build directory ( version 7.12 )
+#                   
 #
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
