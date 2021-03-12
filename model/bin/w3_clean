@@ -391,4 +391,19 @@ EOF
     fi
   fi
 
+
+# --------------------------------------------------------------------------- #
+# 6. Cleanup files specific to optional build dir
+# --------------------------------------------------------------------------- #
+  if [ -d $WWATCH3_BUILD -a "$(ls -d $WWATCH_BUILD)" != "$(ls -d $main_dir)" ] ; then
+
+    rm -f $WWATCH3_BUILD/makefile*
+    rm -f $WWATCH3_BUILD/switch*
+
+    if [ $(ls -A ${WWATCH3_BUILD} | wc -l) -eq 0 ]; then
+      echo "   Removing build dir $WWATCH3_BUILD"
+      rmdir ${WWATCH3_BUILD}
+    fi
+  fi
+
 # End of w3_clean ----------------------------------------------------------- #
