@@ -134,7 +134,12 @@ fi
 path_bin="`cd $path_bin 1>/dev/null 2>&1 && pwd`"
 
 echo ' '
-if [ -e $path_bin/wwatch3.env ]
+if [ ! -z ${WWATCH3_ENV} ]
+then
+  ww3_env=${WWATCH3_ENV}
+  echo "[INFO] user defined env file wwatch3.env found in $ww3_env"
+elif [ -e $path_bin/wwatch3.env ]
+#if [ -e $path_bin/wwatch3.env ]
 then
   ww3_env=$path_bin/wwatch3.env
   echo "[INFO] local env file wwatch3.env found in $ww3_env"
@@ -143,10 +148,10 @@ then
   cp ${HOME}/.wwatch3.env $path_bin/wwatch3.env
   ww3_env=$path_bin/wwatch3.env
   echo "[INFO] global env file wwatch3.env copied in $ww3_env"
-elif [ ! -z ${WWATCH3_ENV} ]
-then
-  ww3_env=${WWATCH3_ENV}
-  echo "[INFO] user defined env file wwatch3.env found in $ww3_env"
+#elif [ ! -z ${WWATCH3_ENV} ]
+#then
+#  ww3_env=${WWATCH3_ENV}
+#  echo "[INFO] user defined env file wwatch3.env found in $ww3_env"
 else
   ww3_env=$path_bin/wwatch3.env
   echo "[INFO] local env file wwatch3.env created in $ww3_env"
