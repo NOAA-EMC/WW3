@@ -9,9 +9,11 @@ Is a change of answers expected from this PR?
 
 ### Issue(s) addressed
 * Is there an issue associated with this development (bug fix, enhancement, new feature)?    
-Please add a reference to a related issue(s) in WW3 repository.
+Please add a reference to a related issue(s) in WW3 repository (Follow [link](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue)).
 Link the issues to be closed with this PR, whether in this repository, or in another repository.
-(Remember, issues should always be created before starting work on a PR branch!)
+(Remember, issues should always be created before starting work on a PR branch!).  
+Note that properly "linked issues" (either automatic links, or manual ones using the correct keywords) will be automatically closed when the PR is merged.
+
 - fixes #<issue_number>
 - fixes noaa-emc/ww3/issues/<issue_number>
 
