@@ -739,7 +739,7 @@
           LAT_CENT_TRIG(IE)=ELAT
 
         END DO
-        DODEBUG=1
+        DODEBUG=0
         IF (DODEBUG.EQ.1) THEN
           print *, 'nbplus=', nbplus, ' nbminus=', nbminus
         END IF
@@ -1141,7 +1141,7 @@
           END DO
         END DO
 
-        PRINT*, 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus, ' nbZero=', nbZero
+        WRITE(*,*) 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus, ' nbZero=', nbZero
 
       END IF
       END SUBROUTINE GET_SCRIP_INFO

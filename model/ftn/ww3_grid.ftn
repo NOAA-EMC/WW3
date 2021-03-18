@@ -529,10 +529,7 @@
 !/SCRIP                             GRID1_MASK, GRID1_SIZE, GRID1_RANK, &
 !/SCRIP                             GRID1_IMASK, &
 !/SCRIP                             GRID1_CORNERS, GRID1_DIMS
-!!/SCRIP      USE SCRIP_REMAP_VARS
-!!/SCRIP      USE SCRIP_CONSTANTS
 !/SCRIP      USE SCRIP_KINDSMOD
-!!/SCRIP      USE SCRIP_INTERFACE
 !/SCRIP      USE WMSCRPMD
       USE NETCDF
 !
@@ -5377,16 +5374,6 @@
 !/SCRIP     &   GRID1_DIMS, GRID1_SIZE, GRID1_CORNERS, GRID1_RANK)
 !/SCRIP
 !/SCRIP      
-!!/SCRIP       CONV_DX=1.0
-!!/SCRIP       CONV_DY=1.0
-!!/SCRIP       OFFSET=180.0
-!!/SCRIP       PRINT*, GRIDSHIFT
-!!/SCRIP
-!!/SCRIP       CALL SCRIP_INFO_RENORMALIZATION(                                 &
-!!/SCRIP     &   GRID1_CENTER_LON, GRID1_CENTER_LAT,                            &
-!!/SCRIP     &   GRID1_CORNER_LON, GRID1_CORNER_LAT, GRID1_MASK,                &
-!!/SCRIP     &   GRID1_DIMS, GRID1_SIZE, GRID1_CORNERS, GRID1_RANK,             &
-!!/SCRIP     &   CONV_DX, CONV_DY, OFFSET, GRIDSHIFT)
 
 !/SCRIP     IF (GTYPE .EQ. UNGTYPE) THEN
 !/SCRIP       GRID1_RANK=1
