@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for WW3
 title: ''
-labels: ''
+labels: 'enhancement'
 assignees: ''
 
 ---
