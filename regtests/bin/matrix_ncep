@@ -59,19 +59,19 @@
     batchq='slurm'
     hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
     hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/2018.4'
-    modmpi='hpc-impi/2018.4'
+    modcomp='hpc-intel/2019.5'
+    modmpi='hpc-impi/2019.6'
     modnetcdf='netcdf/4.7.4'
-    metispath='/work/noaa/marine/ali.abdolali/Source/parmetis-4.0.3'
+    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
   else
     batchq=
   fi
 
 # 1. Set up
    
-  export  np='24'  #number of mpi tasks
-  export  nr='4'   #number of mpi tasks for hybrid
-  export nth='6'   #number of threads
+  export  np='8'  #number of mpi tasks
+  export  nr='4'  #number of mpi tasks for hybrid
+  export nth='2'  #number of threads
 
 # 1.a Computer/ user dependent set up
 
