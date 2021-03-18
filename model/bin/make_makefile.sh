@@ -890,11 +890,11 @@
                 aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode"
                 if [ "$scrip" = 'SCRIP' ]
                 then
-                aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
-                aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
-                aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd" 
+                  aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
+                  aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd" 
                 fi 
-              if [ "$scripnc" = 'SCRIPNC' ]
+                if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
                 fi ;;
