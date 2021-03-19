@@ -1649,7 +1649,6 @@
             ! forces to 0 values that are undefined
             WHERE(XC.NE.XC) XC = FILLVALUE
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
-            WHERE (XC.EQ.FILLVALUE) XC=0.
 
 !
 !/T2            WRITE (NDST,9060) 1
@@ -1683,7 +1682,6 @@
                     CALL CHECK_ERR(IRET)
                     WHERE(YC.NE.YC) YC = FILLVALUE
                     WHERE (YC.NE.FILLVALUE) YC=YC*YCFAC+YCOFF
-                    WHERE (YC.EQ.FILLVALUE) YC=0.
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
@@ -1802,72 +1800,44 @@
 !/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
             IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
 !
-                DO IY=1,NY
-                  DO IX=1,NX
-                    FA(IX,IY)                                         &
-                          = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
-                          + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
-                          + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
-                          + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
-                    END DO
-                  END DO
+                CALL INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,      &
+                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
 !
                 IF (NFCOMP.EQ.2) THEN
 !/O3             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
-                    DO IY=1,NY
-                      DO IX=1,NX
-                        FA(IX,IY) = FA(IX,IY)                         &
-                          + XD11(IX,IY) * YC(JX21(IX,IY),JY21(IX,IY)) &
-                          + XD21(IX,IY) * YC(JX22(IX,IY),JY21(IX,IY)) &
-                          + XD12(IX,IY) * YC(JX21(IX,IY),JY22(IX,IY)) &
-                          + XD22(IX,IY) * YC(JX22(IX,IY),JY22(IX,IY))
-                        END DO
-                      END DO
-                  END IF
+                    CALL INTERP(YC, JX21, JX22, JY21, JY22, XD11, XD12,&
+                                             XD21, XD22, FILLVALUE, FA)
+                END IF
 !
 ! ... Two-component fields
 !
               ELSE  !so if IFLD.GT.2
 !
+                CALL INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,      &
+                               RD11, RD12, RD21, RD22, FILLVALUE, FX)
+
+                CALL INTERP(MXM, MYM, YC, IX21, IX22, IY21, IY22,      &
+                               RD11, RD12, RD21, RD22, FILLVALUE, FY)
+
+                CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,      &
+                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
+
+                CALL INTERP(MXM, MYM, SQRT(XC**2+YC**2), IX21, IX22,   &
+                               IY21, IY22, RD11, RD12, RD21, RD22,     &
+                               SQRT(2.0)*FILLVALUE, A2)
+
+                CALL INTERP(MXM, MYM, XC**2+YC**2, IX21, IX22,         &
+                               IY21, IY22, RD11, RD12, RD21, RD22,     &
+                               2.0*FILLVALUE*FILLVALUE, A3)
+
                 DO IY=1,NY
                   DO IX=1,NX
-                    FX(IX,IY)                                         &
-                          = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
-                          + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
-                          + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
-                          + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
-                    FY(IX,IY)                                         &
-                          = RD11(IX,IY) * YC(IX21(IX,IY),IY21(IX,IY)) &
-                          + RD21(IX,IY) * YC(IX22(IX,IY),IY21(IX,IY)) &
-                          + RD12(IX,IY) * YC(IX21(IX,IY),IY22(IX,IY)) &
-                          + RD22(IX,IY) * YC(IX22(IX,IY),IY22(IX,IY))
-                    FA(IX,IY)                                         &
-                          = RD11(IX,IY) * AC(IX21(IX,IY),IY21(IX,IY)) &
-                          + RD21(IX,IY) * AC(IX22(IX,IY),IY21(IX,IY)) &
-                          + RD12(IX,IY) * AC(IX21(IX,IY),IY22(IX,IY)) &
-                          + RD22(IX,IY) * AC(IX22(IX,IY),IY22(IX,IY))
                     A1(IX,IY) = MAX ( 1.E-10 ,                        &
                                   SQRT( FX(IX,IY)**2 + FY(IX,IY)**2 ) )
-                    A2(IX,IY)                                         &
-                         = RD11(IX,IY) * SQRT(XC(IX21(IX,IY),IY21(IX,IY))**2  &
-                                             +YC(IX21(IX,IY),IY21(IX,IY))**2) &
-                         + RD21(IX,IY) * SQRT(XC(IX22(IX,IY),IY21(IX,IY))**2  &
-                                             +YC(IX22(IX,IY),IY21(IX,IY))**2) &
-                         + RD12(IX,IY) * SQRT(XC(IX21(IX,IY),IY22(IX,IY))**2  &
-                                             +YC(IX21(IX,IY),IY22(IX,IY))**2) &
-                         + RD22(IX,IY) * SQRT(XC(IX22(IX,IY),IY22(IX,IY))**2  &
-                                             +YC(IX22(IX,IY),IY22(IX,IY))**2)
-                    A3(IX,IY) = SQRT (                                &
-                           RD11(IX,IY) * ( XC(IX21(IX,IY),IY21(IX,IY))**2   &
-                                         + YC(IX21(IX,IY),IY21(IX,IY))**2 ) &
-                         + RD21(IX,IY) * ( XC(IX22(IX,IY),IY21(IX,IY))**2   &
-                                         + YC(IX22(IX,IY),IY21(IX,IY))**2 ) &
-                         + RD12(IX,IY) * ( XC(IX21(IX,IY),IY22(IX,IY))**2   &
-                                         + YC(IX21(IX,IY),IY22(IX,IY))**2 ) &
-                         + RD22(IX,IY) * ( XC(IX22(IX,IY),IY22(IX,IY))**2   &
-                                         + YC(IX22(IX,IY),IY22(IX,IY))**2 ) )
-                    END DO
+
+                    A3(IX,IY) = SQRT( A3(IX,IY) )
                   END DO
+                END DO
 !
 ! ... Winds, correct for velocity or energy conservation
 !
@@ -2237,6 +2207,135 @@
 !/
 
       END PROGRAM W3PRNC
+
+!==============================================================================
+
+      SUBROUTINE INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,       &
+                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           J. M. Castillo          |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         23-Feb-2021 |
+!/                  +-----------------------------------+
+!/
+!/    23-Feb-2021 : First version                       ( version 7.xx )
+!/
+!  1. Purpose :
+!
+!     Interpolate from a field read from file to the wave grid
+!
+!  2. Method :
+!
+!     Invalid points are identified by the fill value read from the
+!     netcdf input, and interpolation does not take into account
+!     these points. The valid interpolation coefficients are scaled
+!     so that the sum is one, otherwise unphysical values can be
+!     generated.
+!
+!     When one point is on the boundary but is not an ocean grid point,
+!     the interpolation coefficients are zero, and in this case we
+!     provide a sensible value - the value as read, not interpolated
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       MxM     I      I   Dimensions of the XC variable
+!       XC      R.A.   I   Field to be interpolated, as read from the
+!                          input netcdf 
+!       IXxx    I.A.   I   List of x-index to convert from the original
+!                          field to the model grid
+!       IYxx    I.A.   I   List of y-index to convert from the original
+!                          field to the model grid
+!       RDxx    R.A.   I   Interpolation factors
+!       FILLVALUE   R  I   Fill value identifying non valid input
+!       FA      F      O   Result of the interpolation
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_PRNC  Prog.   N/A    Input data preprocessor.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: NX, NY
+
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER,                     INTENT(IN)  :: MXM, MYM
+      REAL,    DIMENSION(MXM,MYM), INTENT(IN)  :: XC
+      INTEGER, DIMENSION(NX,NY),   INTENT(IN)  :: IX21, IX22, IY21, IY22
+      REAL,    DIMENSION(NX,NY),   INTENT(IN)  :: RD11, RD12, RD21, RD22
+      REAL,                        INTENT(IN)  :: FILLVALUE
+      REAL,    DIMENSION(NX,NY),   INTENT(OUT) :: FA
+!/
+!/ ------------------------------------------------------------------- /
+!/    Local variables
+!/
+      INTEGER      :: IX, IY
+      REAL         :: FACTOR
+!/ ------------------------------------------------------------------- /
+
+      DO IY=1,NY
+        DO IX=1,NX
+          FACTOR = 0.0
+          FA(IX,IY) = 0.0
+
+          IF(XC(IX21(IX,IY),IY21(IX,IY)).NE.FILLVALUE) THEN
+            FACTOR = FACTOR + RD11(IX,IY)
+            FA(IX,IY) = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY))
+          ENDIF
+          IF(XC(IX22(IX,IY),IY21(IX,IY)).NE.FILLVALUE) THEN
+            FACTOR = FACTOR + RD21(IX,IY)
+            FA(IX,IY) = FA(IX,IY) + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY))
+          ENDIF
+          IF(XC(IX21(IX,IY),IY22(IX,IY)).NE.FILLVALUE) THEN
+            FACTOR = FACTOR + RD12(IX,IY)
+            FA(IX,IY) = FA(IX,IY) + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY))
+          ENDIF
+          IF(XC(IX22(IX,IY),IY22(IX,IY)).NE.FILLVALUE) THEN
+            FACTOR = FACTOR + RD22(IX,IY)
+            FA(IX,IY) = FA(IX,IY) + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
+          ENDIF
+
+          IF(FACTOR.GT.0.0) THEN
+            FA(IX,IY) = FA(IX,IY) / FACTOR
+          ELSE
+            IF(XC(IX,IY).EQ.FILLVALUE) THEN
+              FA(IX,IY) = 0.0
+            ELSE
+              FA(IX,IY) = XC(IX,IY)
+            ENDIF
+          END IF
+        END DO
+      END DO
+
+      END SUBROUTINE INTERP
 
 !==============================================================================
 
