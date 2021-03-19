@@ -21,9 +21,8 @@
 # --------------------------------------------------------------------------- #
 # 1.  clean up and definitions                                                #
 # --------------------------------------------------------------------------- #
-rm -r ../model?
-rm -r ../model??
 cp matrix matrix.tmp
+HOME=${PWD%/*}
 
 maxlist1=47
 maxlist2=91
@@ -56,6 +55,8 @@ count=0
 #echo $i
 #Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
+  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
+  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_mpi_$i >> matrix$count
   cp -r ../model ../model$count
@@ -66,7 +67,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ../model$count"                                                              >> matrix$count
+  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
   echo " matrix$count prepared"
  done
 
@@ -75,6 +76,8 @@ count=0
 #echo $i
 #Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
+  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
+  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_serial_$i >> matrix$count
   cp -r ../model ../model$count
@@ -85,13 +88,15 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ../model$count"                                                              >> matrix$count
+  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
   echo " matrix$count prepared"
  done
 
 #ww3_tp2.14 is separated, as it has dependency. 
 #ww3_tp2.17 is separated, as it takes a long time to finish
   (( count = count + 1 ))
+  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
+  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_heavy >> matrix$count
   cp -r ../model ../model$count
@@ -102,7 +107,7 @@ count=0
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ../model$count"                                                              >> matrix$count
+  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
   echo " matrix$count prepared"
 
 
