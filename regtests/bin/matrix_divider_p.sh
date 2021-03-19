@@ -59,7 +59,7 @@ count=0
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_mpi_$i >> matrix$count
-  cp -r ../model ../model$count
+  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
@@ -80,7 +80,7 @@ count=0
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_serial_$i >> matrix$count
-  cp -r ../model ../model$count
+  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
@@ -99,7 +99,7 @@ count=0
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
   cat list_heavy >> matrix$count
-  cp -r ../model ../model$count
+  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
