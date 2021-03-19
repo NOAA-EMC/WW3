@@ -24,8 +24,8 @@
 cp matrix matrix.tmp
 HOME=${PWD%/*}
 
-maxlist1=47
-maxlist2=91
+maxlist1=48
+maxlist2=92
 
 #Put the job requirement/spec in "before"
 sed -e "/run_test/,\$d" matrix.tmp > before
