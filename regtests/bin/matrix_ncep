@@ -69,9 +69,9 @@
 
 # 1. Set up
    
-  export  np='8'  #number of mpi tasks
-  export  nr='4'  #number of mpi tasks for hybrid
-  export nth='2'  #number of threads
+  export  np='24'  #number of mpi tasks
+  export  nr='4'   #number of mpi tasks for hybrid
+  export nth='6'   #number of threads
 
 # 1.a Computer/ user dependent set up
 
@@ -108,7 +108,7 @@
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
-
+  echo "  module purge"                                     >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
