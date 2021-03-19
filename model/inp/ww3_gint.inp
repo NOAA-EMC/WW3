@@ -29,9 +29,9 @@ $ interpolation of output fields from the various out_grd.grdN
 $ (N varying from 1 to 3) files.
 $
 $ Interpolation scheme
-$   0: Linear
-$   1: Extrapolate unstructured
-$   2: Nearest
+$   0: Linear (all grid types)
+$   1: Linear with extrapolation of wetnodes (unstructured)
+$   2: Nearest (curvilinear and rectangular)
  0
 $
 $ -------------------------------------------------------------------- $
