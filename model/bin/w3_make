@@ -135,8 +135,7 @@
 
 # GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
 #  reg_programs = non-NetCDF programs
-  reg_programs="ww3_grid" 
-  reg_programs="$reg_programs ww3_strt"
+  reg_programs="ww3_strt"
   reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_outf"
   reg_programs="$reg_programs ww3_outp"
@@ -180,6 +179,7 @@
       cdf_programs="$cdf_programs ww3_multi_esmf"
     fi
   else
+    reg_programs="$reg_programs ww3_grid"
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
     reg_programs="$reg_programs libww3"
