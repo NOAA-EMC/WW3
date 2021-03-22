@@ -55,13 +55,13 @@ count=0
 #echo $i
 #Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
-  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
+  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
+  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_mpi_$i >> matrix$count
-  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's/'model'/'model${count}'/gI' matrix$count
+  sed -i 's+../model+../model'${count}'+gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
@@ -76,13 +76,13 @@ count=0
 #echo $i
 #Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
-  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
+  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
+  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_serial_$i >> matrix$count
-  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's/'model'/'model${count}'/gI' matrix$count
+  sed -i 's+../model+../model'${count}'+gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
@@ -95,13 +95,13 @@ count=0
 #ww3_tp2.14 is separated, as it has dependency. 
 #ww3_tp2.17 is separated, as it takes a long time to finish
   (( count = count + 1 ))
-  if [ -d "${HOME}/model${count}" ]; then rm -Rf ${HOME}/model${count}; fi
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
+  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
+  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_heavy >> matrix$count
-  cp -r ${HOME}/model ${HOME}/model$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's/'model'/'model${count}'/gI' matrix$count
+  sed -i 's+../model+../model'${count}'+gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
