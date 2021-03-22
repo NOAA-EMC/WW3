@@ -30,9 +30,10 @@ maxlist2=92
 #Put the job requirement/spec in "before"
 sed -e "/run_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
-command egrep 'ww3_tp2.14|ww3_tp2.17' matrix.tmp | cat >> list_heavy
+command egrep 'ww3_tp2.14|ww3_tp2.17|ww3_tp2.21' matrix.tmp | cat >> list_heavy
 awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.17/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
+awk '!/ww3_tp2.21/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 command egrep 'mpirun|mpiexec|MPI_LAUNCH' matrix.tmp | cat >> list_mpi
 awk '!/mpirun|mpiexec|MPI_LAUNCH/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 split -dl $maxlist1 list_mpi list_mpi_
@@ -46,7 +47,7 @@ matrixno2=$(ls list_serial_* | wc -l)
 echo "Total nummber of matrix with serial test = $matrixno2; each includes $maxlist2 tests"
 rm matrix.tmp
 
-# --------------------------------------------------------------------------- #
+# -------------------------------|ww3_tp2.21|ww3_tp2.21-------------------------------------------- #
 # 2.  Divide and dump in subsets                                              #
 # --------------------------------------------------------------------------- #
 # parallel jobs
@@ -96,7 +97,7 @@ count=0
  done
 
 #ww3_tp2.14 is separated, as it has dependency. 
-#ww3_tp2.17 is separated, as it takes a long time to finish
+#ww3_tp2.17 and ww3_tp2.21 is separated, as it takes a long time to finish
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
