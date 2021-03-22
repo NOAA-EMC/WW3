@@ -523,6 +523,15 @@
                           NOSWLL, PTMETH, PTFCUT
       USE W3TIMEMD, ONLY: CALTYPE
       USE W3NMLGRIDMD
+!/SCRIP      USE SCRIP_GRIDS, ONLY: GRID1_UNITS, GRID1_NAME, &
+!/SCRIP                             GRID1_CENTER_LON, GRID1_CENTER_LAT, &
+!/SCRIP                             GRID1_CORNER_LON, GRID1_CORNER_LAT, &
+!/SCRIP                             GRID1_MASK, GRID1_SIZE, GRID1_RANK, &
+!/SCRIP                             GRID1_IMASK, &
+!/SCRIP                             GRID1_CORNERS, GRID1_DIMS
+!/SCRIP      USE SCRIP_KINDSMOD
+!/SCRIP      USE WMSCRPMD
+!/SCRIPNC    USE NETCDF
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
 !/NLS      USE W3SNLSMD, ONLY: ABMAX
@@ -704,6 +713,15 @@
                                  STATUS*20,FNAME2*60, PNAME2*40
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
+
+!/SCRIP INTEGER :: NCID 
+!/SCRIP INTEGER :: grid_size_dimid, grid_rank_dimid, grid_corners_dimid
+!/SCRIP INTEGER :: grid_center_lat_varid, grid_center_lon_varid
+!/SCRIP INTEGER :: grid_corner_lat_varid, grid_corner_lon_varid
+!/SCRIP INTEGER :: grid_area_varid, grid_imask_varid 
+!/SCRIP INTEGER :: grid_dims_varid
+!/SCRIP REAL (SCRIP_R8) :: CONV_DX,CONV_DY,OFFSET
+
 !/ ------------------------------------------------------------------- /
 !/ Namelists
 !/
@@ -5346,8 +5364,79 @@
             END IF
         ENDIF ! GTYPE .EQ. UNGTYPE
               
-      WRITE (NDSO,9999)  
- 
+     WRITE (NDSO,9999)  
+
+!/SCRIP      GRID1_UNITS='degrees' ! the other option is radians...we don't use this
+!/SCRIP      GRID1_NAME='src' ! this is not used, except for netcdf output
+!/SCRIP      CALL GET_SCRIP_INFO(1,                                            &    
+!/SCRIP     &   GRID1_CENTER_LON, GRID1_CENTER_LAT,                            &    
+!/SCRIP     &   GRID1_CORNER_LON, GRID1_CORNER_LAT, GRID1_MASK,                &    
+!/SCRIP     &   GRID1_DIMS, GRID1_SIZE, GRID1_CORNERS, GRID1_RANK)
+!/SCRIP
+!/SCRIP      
+
+!/SCRIP     IF (GTYPE .EQ. UNGTYPE) THEN
+!/SCRIP       GRID1_RANK=1
+!/SCRIP       DEALLOCATE(GRID1_DIMS)
+!/SCRIP       ALLOCATE(GRID1_DIMS(GRID1_RANK))
+!/SCRIP       GRID1_DIMS(1) = GRID1_SIZE
+!/SCRIP     ENDIF
+
+!/SCRIP     DO I = 1,GRID1_SIZE
+!/SCRIP       IF (GRID1_CENTER_LON(I) < 0.0) THEN
+!/SCRIP         GRID1_CENTER_LON(I) = GRID1_CENTER_LON(I)+360.0
+!/SCRIP       ENDIF
+!/SCRIP       DO J = 1,GRID1_CORNERS
+!/SCRIP         IF (GRID1_CORNER_LON(J,I) < 0.0) THEN
+!/SCRIP           GRID1_CORNER_LON(J,I) = GRID1_CORNER_LON(J,I)+360.0 
+!/SCRIP         ENDIF
+!/SCRIP       ENDDO
+!/SCRIP     ENDDO
+
+!/SCRIPNC     IERR = NF90_CREATE(TRIM('scrip.nc'), NF90_NETCDF4, NCID)
+!/SCRIPNC     IERR = NF90_DEF_DIM(NCID, 'grid_size', GRID1_SIZE, grid_size_dimid)
+!/SCRIPNC     IERR = NF90_DEF_DIM(NCID, 'grid_corners', GRID1_CORNERS, grid_corners_dimid)
+!/SCRIPNC     IERR = NF90_DEF_DIM(NCID, 'grid_rank', GRID1_RANK, grid_rank_dimid)
+
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_center_lat', NF90_DOUBLE, &
+!/SCRIPNC                         (/grid_size_dimid/),grid_center_lat_varid)
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_center_lon', NF90_DOUBLE, &
+!/SCRIPNC                         (/grid_size_dimid/),grid_center_lon_varid)
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_corner_lat', NF90_DOUBLE, &
+!/SCRIPNC                         (/grid_corners_dimid,grid_size_dimid/), &
+!/SCRIPNC                         grid_corner_lat_varid)
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_corner_lon', NF90_DOUBLE, &
+!/SCRIPNC                         (/grid_corners_dimid,grid_size_dimid/), &
+!/SCRIPNC                         grid_corner_lon_varid)
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_imask', NF90_INT, &
+!/SCRIPNC                         (/grid_size_dimid/),grid_imask_varid)
+!/SCRIPNC     IERR = NF90_DEF_VAR(NCID, 'grid_dims', NF90_INT, &
+!/SCRIPNC                         (/grid_rank_dimid/),grid_dims_varid)
+!/SCRIPNC     IERR = NF90_ENDDEF(NCID)
+
+!/SCRIP     ALLOCATE(GRID1_IMASK(GRID1_DIMS(1)))
+!/SCRIP     GRID1_IMASK = 0
+!/SCRIP     DO I = 1,GRID1_DIMS(1)
+!/SCRIP       IF (GRID1_MASK(I)) THEN
+!/SCRIP         GRID1_IMASK(I) = 1
+!/SCRIP       ENDIF
+!/SCRIP     ENDDO
+
+!/SCRIPNC     IERR = NF90_PUT_ATT(NCID,grid_center_lat_varid,'units',GRID1_UNITS)
+!/SCRIPNC     IERR = NF90_PUT_ATT(NCID,grid_center_lon_varid,'units',GRID1_UNITS)
+!/SCRIPNC     IERR = NF90_PUT_ATT(NCID,grid_corner_lat_varid,'units',GRID1_UNITS)
+!/SCRIPNC     IERR = NF90_PUT_ATT(NCID,grid_corner_lon_varid,'units',GRID1_UNITS)
+!/SCRIPNC     IERR = NF90_PUT_ATT(NCID,grid_imask_varid,'units','unitless')
+
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_center_lat_varid,GRID1_CENTER_LAT)
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_center_lon_varid,GRID1_CENTER_LON)
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_corner_lat_varid,GRID1_CORNER_LAT)
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_corner_lon_varid,GRID1_CORNER_LON)
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_imask_varid,GRID1_IMASK)
+!/SCRIPNC     IERR = NF90_PUT_VAR(NCID,grid_dims_varid,GRID1_DIMS)
+!/SCRIPNC     IERR = NF90_CLOSE(NCID)
+      
+
 !
 ! Formats
 !

@@ -1,0 +1,41 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.21 Test script for WW-III, global unstructured mesh.              #
+#                                                                           #
+# The input grid (mesh.msh) is in gmsh format. The unstructured mesh has 2  #
+# degree resolution globally with 1/2 degree resolution around the U.S.     #
+# coastlines. The transition in resolution occurs at 4000m depth with a 10% #
+# resolution grading (Total nodes = 16160).                                 #
+#                                                                           #
+# The OUST option requires:                                                 #
+# Local obstructions file for use with UOST source term switch              #
+#     > obstructions_local.glo_unst.in                                      #
+# Shadow obstructions file for use with UOST source term switch             #
+#     > obstructions_shadow.glo_unst.in                                     #
+#                                                                           #
+# --------------------------------------------------------------------------#
+# For more information, see Brus et al. 2020.                               #
+# [Data set]. Zenodo. http://doi.org/10.5281/zenodo.4088520                 #
+# --------------------------------------------------------------------------#
+# Model should be compiled with the switches :                              #
+#                                                                           #
+# F90 NOGRB TRKNC DIST MPI SCRIP MLIM PR3 UQ NC4 FLX0 LN1 ST4 STAB0 NL1 BT1 #
+# DB1 TR0 BS0 IS0 IC0 REF0 XX0 WNT2 WNX1 RWND CRT1 CRX1 O0 O1 O2 O2a O2b    #
+# O2c O3 O4 O5 O6 O7 UOST                                                   #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test -c intel -S -T -s MPI -s NO_PDLIB -w work_a -g a -f -p    #
+#                            mpirun -n 24  -o netcdf ../model ww3_tp2.21    #
+#                                                                           #
+# if PDLIB is added to the switch, the domain decompostion can be testes    #
+#     ./bin/run_test -c intel -S -T -s MPI -s PDLIB -w work_b -g b -f -p    #
+#                            mpirun -n 24  -o netcdf ../model ww3_tp2.21    #
+#                                                                           #
+#                  Ali Abdolali, Steven Brus, Lorenzo Mentaschi March 2021  #
+#                                                   Last Mod : March 2021   #
+#                                                                           #
+#############################################################################
