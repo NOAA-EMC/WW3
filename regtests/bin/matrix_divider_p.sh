@@ -66,8 +66,10 @@ count=0
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
-  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
-  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
+#make sure ../model$count does not exist and copy a fresh copy
+  awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+  awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+
   echo " matrix$count prepared"
  done
 
@@ -87,8 +89,9 @@ count=0
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
-  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
-  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
+#make sure ../model$count does not exist and copy a fresh copy
+  awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+  awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   echo " matrix$count prepared"
  done
 
@@ -106,8 +109,9 @@ count=0
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
-  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
-  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
+#make sure ../model$count does not exist and copy a fresh copy
+  awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+  awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   echo " matrix$count prepared"
 
 
