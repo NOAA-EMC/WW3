@@ -6,13 +6,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           J. Pianezze             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :            Jan-2021 |
+!/                  | Last update :            Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/        Mar-2014 : Origination.                       ( version 4.18 )
 !/                   For upgrades see subroutines.
 !/        Apr-2016 : Add comments (J. Pianezze)         ( version 5.07 )
-!/        Jan-2021 : Add TAUA and RHOA coupling         ( version 7.xx )
+!/        Mar-2021 : Add TAUA and RHOA coupling         ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -199,13 +199,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           J. Pianezze             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :            Jan-2021 |
+!/                  | Last update :            Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    Mar-2014 : Origination.                ( version 4.18 )
 !/    Apr-2015 : Modification (M. Accensi)   ( version 5.07 )
 !/    Apr-2016 : Add comments (J. Pianezze)  ( version 5.07 )
-!/    Jan-2021 : Add TAUA and RHOA coupling  ( version 7.xx )
+!/    Mar-2021 : Add TAUA and RHOA coupling  ( version 7.xx )
 !/
 !  1. Purpose :
 !
