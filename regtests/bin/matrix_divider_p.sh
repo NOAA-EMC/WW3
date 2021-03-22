@@ -57,17 +57,17 @@ count=0
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
-  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
-  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_mpi_$i >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's+../model+../model'${count}'+gI' matrix$count
+  sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
+  echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
+  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
+  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
   echo " matrix$count prepared"
  done
 
@@ -78,17 +78,17 @@ count=0
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
-  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
-  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_serial_$i >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's+../model+../model'${count}'+gI' matrix$count
+  sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
+  echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
+  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
+  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
   echo " matrix$count prepared"
  done
 
@@ -97,17 +97,17 @@ count=0
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
-  echo "if [ -d "../model${count}" ]; then rm -Rf ../model${count}; fi"                 >> matrix$count
-  echo "cp -r ../model ../model$count"                                                  >> matrix$count
   cat list_heavy >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
-  sed -i 's+../model+../model'${count}'+gI' matrix$count
+  sed -i 's/'model'/'model${count}'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
-  echo "rm -r ${HOME}/model${count}"                                                    >> matrix$count
+  echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
+  sed -i '10i\  if [ -d ../model'${count}' ]; then rm -Rf ../model'${count}'; fi' matrix$count
+  sed -i '11i\  cp -r ../model ../model'$count'' matrix$count
   echo " matrix$count prepared"
 
 
