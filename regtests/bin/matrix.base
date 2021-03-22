@@ -2006,6 +2006,16 @@
      echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
    fi
  fi
+ # Global unstructured grid and Unresolved Obstacles Source Term (UOST) 
+ if [ "$uost" = 'y' ] && [ "$dist" = 'y' ]
+ then
+   echo ' ' >> matrix.body 
+   echo "$rtst -s MPI -s NO_PDLIB -w work_a -g a -f -p $mpi -n $np  -o netcdf $ww3 ww3_tp2.21" >> matrix.body
+ if [ "$pdlib" = 'y' ]
+ then
+   echo "$rtst -s MPI -s PDLIB -w work_b -g b -f -p $mpi -n $np  -o netcdf $ww3 ww3_tp2.21" >> matrix.body
+ fi
+ fi
 
  #Test of updating the restart spectra 
  if [ "$assim" = 'y' ]
