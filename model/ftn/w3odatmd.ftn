@@ -44,7 +44,9 @@
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
 !/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
-!/    06-Jan-2021 : Add extra coupling variables        ( version 7.xx )
+!/    15-Jan-2020 : Added TP based on existing FP       ( version 7.12 )
+!/                  internal fields. (C. Bunney, UKMO)
+!/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -692,7 +694,7 @@
 !
 ! 2) Standard mean wave parameters
 !
-      NOGE(2) = 18
+      NOGE(2) = 19
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -711,7 +713,8 @@
       IDOUT( 2, 15)  = 'STD Space-Time Hmax'
       IDOUT( 2, 16)  = 'STD ST Hmax^crest  '
       IDOUT( 2, 17)  = 'Dominant wave bT   '
-      IDOUT( 2, 18)  = 'Mean wave number   '
+      IDOUT( 2, 18)  = 'Peak prd. (from fp)'
+      IDOUT( 2, 19)  = 'Mean wave number   '
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
 !      IDOUT( 2,12)  = 'Windsea height(Sin)'
@@ -1594,9 +1597,9 @@
 !/MPI      RSBLKS => OUTPTS(IMOD)%OUT4%RSBLKS
 !/MPI      IF ( NRQRS .NE. 0 ) THEN
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
-!/MPI          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-!/MPI          VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
 !/MPI        END IF
+!/MPI      IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+!/MPI      VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
 !
       NBI    => OUTPTS(IMOD)%OUT5%NBI
       NBI2   => OUTPTS(IMOD)%OUT5%NBI2

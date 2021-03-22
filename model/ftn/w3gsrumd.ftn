@@ -3726,10 +3726,14 @@
                   IF ( K .EQ. 1 ) THEN
                       SIGN1 = SIGN(ONE,CROSS)
                     ELSE
-                      IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+                      ! If point lies along a border, the cross product
+                      ! is zero and its sign is not well defined
+                      IF ( ABS(CROSS) .GT. LEPS ) THEN
+                        IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
                           LSBC = .FALSE.
                           CYCLE SUBCELL_LOOP
                         END IF
+                      END IF
                     END IF
                 END DO !K
                 IF ( LSBC ) RETURN

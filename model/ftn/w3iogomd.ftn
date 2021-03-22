@@ -57,7 +57,9 @@
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine. (C. Bunney)
-!/    06-Jan-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    15-Jan-2020 : Added TP output based on exsiting   ( version 7.12 )
+!/                  FP internal field. (C. Bunney)
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -808,9 +810,12 @@
       CASE('WBT')
         I = 2
         J = 17
-      CASE('WNM')
+      CASE('TP') ! Uses FP0 internally, as per FP
         I = 2
         J = 18
+      CASE('WNM')
+        I = 2
+        J = 19
 !
 ! Group 3
 !
@@ -2668,7 +2673,8 @@
                 IF ( FLOGRD( 2, 3) ) T02   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 4) ) T0M1  (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 5) ) T01   (ISEA) = UNDEF
-                IF ( FLOGRD( 2, 6) ) FP0   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 6) .OR. FLOGRD( 2,18) )                 &
+                                     FP0   (ISEA) = UNDEF  ! FP or TP
                 IF ( FLOGRD( 2, 7) ) THM   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 8) ) THS   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 9) ) THP0  (ISEA) = UNDEF
@@ -2907,7 +2913,9 @@
                     WRITE ( NDSOG ) T0M1(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) T01(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+                  ELSE IF ( (IFI .EQ. 2 .AND. IFJ .EQ. 6) .OR.         &
+                            (IFI .EQ. 2 .AND. IFJ .EQ. 18) ) THEN
+                    ! Note: TP output is derived from FP field.
                     WRITE ( NDSOG ) FP0(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) THM(1:NSEA)
@@ -3189,7 +3197,9 @@
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T0M1(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T01(1:NSEA)
-                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+                  ELSE IF ( (IFI .EQ. 2 .AND. IFJ .EQ. 6) .OR.       &
+                            (IFI .EQ. 2 .AND. IFJ .EQ. 18) ) THEN
+                    ! Note: TP output is derived from FP field.
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) FP0(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) THM(1:NSEA)

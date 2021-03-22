@@ -2284,6 +2284,11 @@
           tw0 = twn
           wx0 = wxn
           wy0 = wyn
+!/WRST          ! The WRST switch saves the values of wind in the
+!/WRST          ! restart file and then uses the wind for the first
+!/WRST          ! time step here.  This is needed when coupling with
+!/WRST          ! an atm model that does not have 10m wind speeds at
+!/WRST          ! initialization.  If there is no restart, wind is zero
 !/WRST          wxn = WXNwrst !replace with values from restart
 !/WRST          wyn = WYNwrst 
 !/WRST          wx0 = WXNwrst 
