@@ -55,7 +55,7 @@
   echo '# -------------------------'             >> makefile
 
 
-# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -174,7 +174,7 @@
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 fLX5 FLXX' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'
@@ -377,7 +377,7 @@
                ID='use pdlib'
                TS='PDLIB'
                OK='PDLIB' ;;
-#sort:memck: 
+#sort:memck:
       memck  ) TY='upto1'
                ID='check memory use'
                TS='MEMCHECK'
@@ -567,12 +567,12 @@
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
    SMC) pr='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
-  esac 
+  esac
 
   case $p_switch in
    UQ ) pr="$pr w3uqckmd" ;;
    UNO) pr="$pr w3uno2md" ;;
-  esac 
+  esac
 
   case $uost in
    UOST) uostmd="w3uostmd"
@@ -593,6 +593,9 @@
          flxx=$NULL ;;
    FLX4) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK'
          flx='w3flx4md'
+         flxx=$NULL ;;
+   FLX5) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK'
+         flx='w3flx5md'
          flxx=$NULL ;;
 
    FLXX) str_st1='no' ; str_st2='no' ; str_st3='no'
@@ -686,7 +689,7 @@
   then
       echo ' '
       echo "   *** !/ST6 cannot be used in combination with !/$stress"
-      echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
+      echo "       Choose from FLX1, FLX2, FLX3, FLX4 or FLX5."
       echo ' ' ; exit 11
   fi
 
@@ -767,16 +770,16 @@
    REF1) refcode='w3ref1md'
    esac
 
-  pdlibcode=$NULL 
-  pdlibyow=$NULL 
+  pdlibcode=$NULL
+  pdlibyow=$NULL
   case $pdlib in
    PDLIB) pdlibcode='yowfunction pdlib_field_vec w3profsmd_pdlib'
           pdlibyow='yowsidepool yowdatapool yowerr yownodepool yowelementpool yowexchangeModule yowrankModule yowpdlibmain yowpd' ;;
    esac
 
-  memcode=$NULL 
-  case $memck in 
-    MEMCHECK) memcode='w3meminfo' 
+  memcode=$NULL
+  case $memck in
+    MEMCHECK) memcode='w3meminfo'
     esac
 
   setupcode=$NULL
@@ -831,7 +834,7 @@
    esac
 
   cplcode=$NULL
-  case $mcp in 
+  case $mcp in
    NCC) cplcode='cmp.comm ww.comm'
   esac
 
@@ -872,7 +875,7 @@
   echo '# -------------------------'             >> makefile
 
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
-         ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf 
+         ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
   progs="$progs ww3_multi_esmf  ww3_uprstr"
   progs="$progs libww3"
@@ -957,7 +960,7 @@
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
-                aux="$aux  wmunitmd w3nmlmultimd" 
+                aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
@@ -968,22 +971,22 @@
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
                 fi ;;
-   ww3_sbs1) IDstring='Multi-grid shell sbs version' 
-               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
-               core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
-               data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd" 
-               prop="$pr" 
-               source="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic $uostmd" 
-                 IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
-                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd" 
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
-                aux="$aux  wmunitmd w3nmlmultimd"  
+   ww3_sbs1) IDstring='Multi-grid shell sbs version'
+               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
+               core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
+               data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
+               prop="$pr"
+               source="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic $uostmd"
+                 IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
+                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode"
+                aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
-                fi 
+                fi
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
@@ -1091,15 +1094,15 @@
                prop="$pr"
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;  
-     ww3_uprstr) IDstring='Update Restart File' 
-              core= 
-	          data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
-              prop= 
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
+     ww3_uprstr) IDstring='Update Restart File'
+              core=
+	          data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+              prop=
             source="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $uostmd"
-                IO='w3iogrmd w3iogomd w3iorsmd' 
-               aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" 
-               aux="$aux w3parall w3nmluprstrmd" ;; 
+                IO='w3iogrmd w3iogomd w3iorsmd'
+               aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+               aux="$aux w3parall w3nmluprstrmd" ;;
     esac
 
     # if esmf is included in program name, then
@@ -1168,7 +1171,7 @@
       done
       echo "	@cd \$(aPo); ld -o $lib -shared $objs" >> makefile
       echo ' '                                   >> makefile
-      
+
     else
       echo '	@$(aPb)/link '"$filesl"          >> makefile
       echo ' '                                   >> makefile
@@ -1198,7 +1201,7 @@
 
     suffixes="ftn f F f90 F90 c"
     fexti=none
-    ispdlibi=no 
+    ispdlibi=no
     for s in $suffixes
     do
       if [ -f $main_dir/ftn/$file.$s ]
@@ -1233,9 +1236,9 @@
     string3="$NULL"
 
     if [ "$ispdlibi" = 'yes' ]
-    then 
+    then
       string1='$(aPo)/'$file'.o : PDLIB/'$file.$fexti' '
-    fi 
+    fi
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
 
@@ -1300,6 +1303,7 @@
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
          'W3FLX3MD'     ) modtest=w3flx3md.o ;;
          'W3FLX4MD'     ) modtest=w3flx4md.o ;;
+         'W3FLX5MD'     ) modtest=w3flx5md.o ;;
          'W3FLXXMD'     ) modtest=w3flxxmd.o ;;
          'W3SLN1MD'     ) modtest=w3sln1md.o ;;
          'W3SLNXMD'     ) modtest=w3slnxmd.o ;;
@@ -1390,7 +1394,7 @@
          'W3PARALL'     ) modtest=w3parall.o ;;
          'W3SMCOMD'     ) modtest=w3smcomd.o ;;
          'W3OUNFMETAMD' ) modtest=w3ounfmetamd.o ;;
-         *              ) modfound=no ;; 
+         *              ) modfound=no ;;
       esac
 
       if [ "$modfound" == "yes" ]
@@ -1449,9 +1453,9 @@
     fi
 
     if  [ "$scripnc" = 'SCRIPNC' ]
-    then 
+    then
        scrip_mk=$scrip_dir/SCRIP_NC.mk
-    else 
+    else
        scrip_mk=$scrip_dir/SCRIP.mk
     fi
     if [ ! -e $scrip_mk ]

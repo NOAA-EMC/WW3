@@ -1,0 +1,181 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
+      MODULE W3FLX5MD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           J.M. Castillo           |
+!/                  |           J. Edward               |
+!/                  |           A. Saulter              |
+!/                  |           N.G. Valiente           |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :       XX-March-2021 |
+!/                  +-----------------------------------+
+!/
+!/    22-Mar-2021 : Origination.                        ( version 7.xx )
+!/    22-Mar-2021 : Enable direct use of atmospheric model wind stress
+!/                  by source terms
+!/
+!/    Copyright 2009 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     Unified process to obtain friction velocity and drag when stresses are an
+!     input (from atmospheric model).
+!
+!     References:
+!          XX
+!
+!  2. Variables and types :
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3FLX5    Subr. Public   Stresses closure
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!
+!  6. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+!  7. Source code :
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      PUBLIC
+!/
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUAM, TAUAD, DAIR, UST, USTD, Z0, CD )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         03-Jul-2006 |
+!/                  +-----------------------------------+
+!/
+!/    03-Jul-2006 : Origination.                        ( version 3.09 )
+!/
+!  1. Purpose :
+!
+!     Flux/stress computations according to Hwang (JTECH, 2011)
+!
+!  2. Method :
+!
+!     UST    = SQRT(TAUAM / DAIR)
+!     USTD   = TAUAD
+!     CD     = (UST/U10)**2
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       ZWND    Real   I   Wind height.
+!       U10     Real   I   Wind speed.
+!       U10D    Real   I   Wind direction.
+!       TAUAM   Real   I   Atm. total stress.
+!       TAUAD   Real   I   Atm. total stress direction.
+!       DAIR    Real   I   Air density.
+!       UST     Real   O   Friction velocity.
+!       USTD    Real   0   Direction of friction velocity.
+!       Z0      Real   O   z0 in profile law.
+!       CD      Real   O   Drag coefficient.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SRCE    Subr. W3SRCEMD Source term integration.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
+      USE W3GDATMD, ONLY: FLX5A0
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUAM, TAUAD, DAIR
+      REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3FLX5')
+!
+! 1.  Tests ---------------------------------------------------------- *
+!
+      IF ( ABS(ZWND-10.) .GT. 0.01 ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
+          CALL EXTCDE (1)
+        END IF
+!
+! 2.  Computation ---------------------------------------------------- *
+!
+!
+      UST    = SQRT(TAUAM/DAIR)
+      CD     = (USTAR/U10)**2
+      USTD   = TAUAD
+      Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
+!
+      RETURN
+!
+! Formats
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLX5 : '/               &
+               '     HIGHT OF WIND SHOULD BE 10m IN THIS APPRACH '/   &
+               '     ZWND =',F8.2,'m'/)
+!/
+!/ End of W3FLX5 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3FLX5
+!/
+!/ End of module W3FLX5MD -------------------------------------------- /
+!/
+      END MODULE W3FLX5MD
