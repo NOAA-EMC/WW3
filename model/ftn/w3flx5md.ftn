@@ -4,7 +4,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           J.M. Castillo           |
+!/                  |                                   |
 !/                  |           J. Edward               |
 !/                  |           A. Saulter              |
 !/                  |           N.G. Valiente           |
@@ -72,7 +72,8 @@
 !/
 !  1. Purpose :
 !
-!     Flux/stress computations according to Hwang (JTECH, 2011)
+!     Unified process to obtain friction velocity and drag when stresses are an
+!     input (from atmospheric model).
 !
 !  2. Method :
 !
@@ -128,7 +129,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
-      USE W3GDATMD, ONLY: FLX5A0
+!     USE W3GDATMD, ONLY: FLX5A0
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
