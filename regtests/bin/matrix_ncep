@@ -4,13 +4,14 @@
 #                                                                             #
 # Remarks:                                                                    #
 # - This version is set up for automatic w3_setenv script and for the         #
-#   NOAA RDHPC 'zeus' system. When using this for your own setup and          #
+#   NOAA RDHPC systems. When using this for your own setup and                #
 #   computer, please copy rather than modify.                                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
 #                                                      December 2013          #
 #                                                      April 2018             #
+#                                                      March 2020             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -39,70 +40,83 @@
 
 # Set batchq queue, choose modules and other custom variables to fit system and 
 # to define headers etc (default to original version if empty)
-ishera=`hostname | grep hfe`
-isorion=`hostname | grep Orion`
-if [ $ishera ]
-then
-# If no other h, assuming Hera 
-  cmplr='hera.intel'
-  batchq="slurm"
-  modcomp='intel/18.0.5.274'
-  modmpi='impi/2018.0.4'
-  modnetcdf='netcdf/4.6.1'
-  metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/parmetis-4.0.3'
-elif [ $isorion ]
-then
-  cmplr='orion.intel'
-  batchq="slurm"
-  modcomp='intel/2018.4'
-  modmpi='impi/2018.4'
-  modnetcdf='netcdf/4.7.2'
-  metispath='/work/noaa/marine/ali.abdolali/Source/parmetis-4.0.3'
-else
-  batchq=
-fi
+  ishera=`hostname | grep hfe`
+  isorion=`hostname | grep Orion`
+  if [ $ishera ]
+  then
+    # If no other h, assuming Hera 
+    cmplr='hera.intel'
+    batchq='slurm'
+    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
+    hpcstackversion='hpc/1.1.0'
+    modcomp='hpc-intel/18.0.5.274'
+    modmpi='hpc-impi/2018.0.4'
+    modnetcdf='netcdf/4.7.4'
+    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+  elif [ $isorion ]
+  then
+    cmplr='orion.intel'
+    batchq='slurm'
+    hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
+    hpcstackversion='hpc/1.1.0'
+    modcomp='hpc-intel/2019.5'
+    modmpi='hpc-impi/2019.6'
+    modnetcdf='netcdf/4.7.4'
+    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+  else
+    batchq=
+  fi
 
 # 1. Set up
+   
+  export  np='24'  #number of mpi tasks
+  export  nr='4'   #number of mpi tasks for hybrid
+  export nth='6'   #number of threads
+
 # 1.a Computer/ user dependent set up
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-if [ $batchq = "slurm" ] && [ $isorion ]
-then
-  echo '#SBATCH -n 24'                                      >> matrix.head
-  echo '#SBATCH -q batch'                                   >> matrix.head
-  echo '#SBATCH -t 08:00:00'                                >> matrix.head
-  echo '#SBATCH -A marine-cpu'                              >> matrix.head
-  echo '#SBATCH -J ww3_regtest'                             >> matrix.head
-  echo '#SBATCH -o matrix.out'                              >> matrix.head
-  echo '#SBATCH -p orion'                                   >> matrix.head
-elif [ $batchq = "slurm" ]
-then
-  echo '#SBATCH -n 24'                                      >> matrix.head
-  echo '#SBATCH -q batch'                                   >> matrix.head
-  echo '#SBATCH -t 08:00:00'                                >> matrix.head
-  echo '#SBATCH -A marine-cpu'                              >> matrix.head
-  echo '#SBATCH -J ww3_regtest'                             >> matrix.head
-  echo '#SBATCH -o matrix.out'                              >> matrix.head
-else
-  echo '#PBS -l procs=24'                                   >> matrix.head
-  echo '#PBS -q batch'                                      >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
-  echo '#PBS -A marine-cpu'                                 >> matrix.head
-  echo '#PBS -N ww3_regtest'                                >> matrix.head
-  echo '#PBS -j oe'                                         >> matrix.head
-  echo '#PBS -o matrix.out'                                 >> matrix.head
-  echo ' '                                                  >> matrix.head
-fi
+  if [ $batchq = "slurm" ] && [ $isorion ]
+  then
+    echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo '#SBATCH -q batch'                                 >> matrix.head
+    echo '#SBATCH -t 08:00:00'                              >> matrix.head
+    echo '#SBATCH -A marine-cpu'                            >> matrix.head
+    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
+    echo '#SBATCH -o matrix.out'                            >> matrix.head
+    echo '#SBATCH -p orion'                                 >> matrix.head
+  elif [ $batchq = "slurm" ]
+  then
+    echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo '#SBATCH -q batch'                                 >> matrix.head
+    echo '#SBATCH -t 08:00:00'                              >> matrix.head
+    echo '#SBATCH -A marine-cpu'                            >> matrix.head
+    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
+    echo '#SBATCH -o matrix.out'                            >> matrix.head
+  else
+    echo '#PBS -l procs=24'                                 >> matrix.head
+    echo '#PBS -q batch'                                    >> matrix.head
+    echo '#PBS -l walltime=08:00:00'                        >> matrix.head
+    echo '#PBS -A marine-cpu'                               >> matrix.head
+    echo '#PBS -N ww3_regtest'                              >> matrix.head
+    echo '#PBS -j oe'                                       >> matrix.head
+    echo '#PBS -o matrix.out'                               >> matrix.head
+    echo ' '                                                >> matrix.head
+  fi
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
-
-  echo "  module load $modcomp $modmpi $modnetcdf"                   >> matrix.head
+  echo "  module purge"                                     >> matrix.head
+  echo "  module use $hpcstackpath"                         >> matrix.head
+  echo "  module load $hpcstackversion"                     >> matrix.head
+  echo "  module load $modcomp"                             >> matrix.head
+  echo "  module load $modmpi"                              >> matrix.head
+  echo "  module load $modnetcdf"                           >> matrix.head
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
-  echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
-  echo "  export METIS_PATH=${metispath}"   >> matrix.head
+  echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
+  echo "  export METIS_PATH=${metispath}"                   >> matrix.head
   echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' ' 
 
@@ -112,9 +126,7 @@ fi
   else
     export  mpi='mpirun'
   fi
-    export   np='24'
-    export   nr='4'
-    export  nth='6'
+
 # Compile option
   if [ "$cmplOption" = 'y' ]
   then
@@ -169,7 +181,7 @@ fi
   export  multi08='y' # mww3_test_08 (wind and ice tests)
 
 # export   filter='PR3 ST2 UQ'
-                      # The filter does a set of consecutinve greps on the 
+                      # The filter does a set of consecutive greps on the 
                       # command lines generated by filter.base with the above
                       # selected options.
 
