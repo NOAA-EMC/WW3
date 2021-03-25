@@ -116,7 +116,7 @@
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           libs="$libs `$NETCDF_CONFIG --flibs`" ;;
+           libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`" ;;
     esac
   fi
 
@@ -131,6 +131,11 @@
       echo "link with parmetis" 
       libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
     fi
+  fi
+
+  # OMP support
+  if [ "$omp_mod" = 'yes' ] ; then
+    opt="$opt <optomp>"
   fi
 
   opt="$opt $EXTRA_LINK_OPTIONS"

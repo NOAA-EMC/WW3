@@ -3,32 +3,10 @@ $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
 $ Time, time increment and number of outputs
 $
- 19680606 060000 10800. 24
+ 19680606 010000 3600. 24
 $
-$ (1) Forcing Fields
-  T
-$ DPT CUR WND DT  WLV ICE IBG D50
-  F   F   T   F   F   F   F   F
-$ (2) Standard mean wave Parameters
-  T
-$ HS  LM  TZ  TE  T01  FP  DIR SPR DP
-  T   F   F   F   T   F   F   F   F
-$ (3) Frequency-dependent parameters
-  F
-$ (4) Spectral Partition Parameters
-  F
-$ (5) Atmosphere-waves layer
-  F
-$ (6) Wave-Ocean layer
-  F
-$ (7) Wave-bottom layer
-  F
-$ (8) Spectrum parameters
-  F
-$ (9) Numerical diagnostics
-  F
-$ (10) User defined (NOEXTR flags needed)
-  F
+ N
+ WND HS TP
 $
   3  1
 $

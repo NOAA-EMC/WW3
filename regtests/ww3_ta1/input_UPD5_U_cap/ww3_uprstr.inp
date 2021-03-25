@@ -1,0 +1,43 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Update Restart input file                              $
+$ -------------------------------------------------------------------- $
+$                                                                      $
+$ Time of Assimilation ----------------------------------------------- $
+$ - Starting time in yyyymmdd hhmmss format.                           $
+$                                                                      $
+$ This is the assimilation starting time and has to be the same with   $
+$ the time at the restart.ww3.                                         $
+$                                                                      $
+   19680607 120000                                                     $
+$                                                                      $
+$ Choose algorithm to update restart file                              $
+$  UPDN for the Nth approach                                           $
+$ -------------------------------------------------------------------- $
+$  UPDN, with N>=5 each gridpoint has its own update factor and uses   $
+$       wind field data to evaluate wind-sea and swell fields. Also    $
+$       uses:                                                          $
+$       PRCNTG_CAP - see above                                         $
+$       THRWSEA - energy threshold (SWH_WS**2/SWH**2) above which the  $
+$        sea-state is considered wind-sea dominated by the DA scheme   $
+$       Name of the file with the SWH analysis from the DA system      $
+$        suffix .grbtxt for text out of grib2 file.                    $
+$                                                                      $
+$   UPD5 :: Option 5   Corrections are calculated as per UPD2 but are  $
+$           applied to wind-sea parts of the spectrum only when        $
+$           wind-sea is the dominant component, otherwise the whole    $
+$           spectrum is corrected                                      $
+$           Expected input: the Analysis Hs field plus background wind $
+$                           speed and direction                        $
+$   UPD6 :: Option 6   Corrections are calculated as per UPD5 but      $
+$           wind-sea components are also shifted in frequency space    $
+$           using Toba (1973)                                          $
+$           Expected input: the Analysis Hs field plus background wind $
+$           speed and direction                                        $
+$ -------------------------------------------------------------------- $
+   UPD5
+   1.333 0.7
+   anl.grbtxt
+$                                                                      $
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III EoF ww3_uprstr.inp                                     $
+$ -------------------------------------------------------------------- $

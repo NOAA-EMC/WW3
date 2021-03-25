@@ -39,7 +39,7 @@ $ Propagation schemes - - - - - - - - - - - - - - - - - - - - - - - - -$
    &PRO3 WDTHCG = 1.50, WDTHTH = 1.50 /
 & Unified breaking term by Filipot & Ardhuin (JGR 2012) 
    &SIN4 TAUWSHELTER= 0. / 
-   &SDS4 SDSC1 = 1.0, SDSC2 = 0.0, SDSBCK =0.185, SDSHCK = 1.5 /
+   &SDS4 SDSBCHOICE = 2, SDSC2 = 0.0, SDSBCK =0.185, SDSHCK = 1.5 /
    &DB1  BJALFA = 0. /
 $ Output of Stokes drift spectrum
    &OUTS US3D = 1 , I1US3D = 1 , I2US3D = 30 /

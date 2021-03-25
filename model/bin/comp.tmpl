@@ -82,7 +82,8 @@
     case $WWATCH3_NETCDF in
       NC3) opt="$opt -I$NETCDF_INCDIR" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+           #opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+           opt="$opt `$NETCDF_CONFIG --cflags`" ;;
     esac
   fi
 
@@ -90,6 +91,11 @@
   opt="$opt -I$path_i"
   opt="$opt $ESMF_F90COMPILEPATHS"
   opt="$opt $EXTRA_COMP_OPTIONS"
+
+  # OMP support
+  if [ "$omp_mod" = 'yes' ] ; then
+    opt="$opt <optomp>"
+  fi
 
 # 2.b Compile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -109,8 +115,8 @@
 
   if [ -s $name.err ]
   then
-    nr_err="$(grep -i error $name.err | wc -l | awk '{ print $1 }')"
-    nr_war="$(grep -i warning $name.err | wc -l | awk '{ print $1 }')"
+    nr_err="$(grep -i '<err_pattern>' $name.err | wc -l | awk '{ print $1 }')"
+    nr_war="$(grep -i '<warn_pattern>' $name.err | wc -l | awk '{ print $1 }')"
   else
     if [ "$OK" != '0' ]
     then
@@ -154,6 +160,7 @@
     cat $name.err       >> $name.l 2> /dev/null
     echo '------------' >> $name.l
   fi
+
   # remove empty warning and error files
   # find . -name "*.out" -or -name "*.err" -empty -delete
 

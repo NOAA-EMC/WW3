@@ -135,8 +135,7 @@
 
 # GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
 #  reg_programs = non-NetCDF programs
-  reg_programs="ww3_grid" 
-  reg_programs="$reg_programs ww3_strt"
+  reg_programs="ww3_strt"
   reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_outf"
   reg_programs="$reg_programs ww3_outp"
@@ -171,6 +170,7 @@
   # MULTI MULTI_ESMF SBS1
   if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
+    cdf_programs="$cdf_programs ww3_grid"
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
     cdf_programs="$cdf_programs libww3"
@@ -179,6 +179,7 @@
       cdf_programs="$cdf_programs ww3_multi_esmf"
     fi
   else
+    reg_programs="$reg_programs ww3_grid"
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
     reg_programs="$reg_programs libww3"
@@ -389,7 +390,7 @@ EOF
         then
           netcdf_version="$netcdf_version.0"
         fi
-        if [ `echo $netcdf_version | tr -d .` -lt 411 ]
+        if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
         then
           netcdf_compile_message
           echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
@@ -709,8 +710,14 @@ EOF
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
         mkfile=$main_dir/nuopc.mk
-        mod_dir=$main_dir/mod_MPI
-        obj_dir=$main_dir/obj_MPI
+        if [ -n "`grep OMP $switch_file`" ]
+        then
+          mod_dir=$main_dir/mod_HYB
+          obj_dir=$main_dir/obj_HYB
+        else 
+          mod_dir=$main_dir/mod_MPI
+          obj_dir=$main_dir/obj_MPI
+        fi 
         rm -f $mkfile
         touch $mkfile
         echo "#-----------------------------------------------"      >> $mkfile

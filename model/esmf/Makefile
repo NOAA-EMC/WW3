@@ -3,6 +3,7 @@
 ################################################################################
 
 WW3_DIR  := $(shell cd .. 1>/dev/null 2>&1 && pwd)
+WW3_BASEDIR  := $(shell cd ../.. 1>/dev/null 2>&1 && pwd)
 WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
@@ -34,9 +35,11 @@ ifeq ($(WW3_COMP),Portland)
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
 # intel
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","theia" "Intel"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel")) 
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_phase2" "wcoss_cray" "wcoss_dell_p3"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
@@ -45,6 +48,8 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","mpt" "datarmor_mpt" "datarmor_m
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 # gnu
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","gnu" "datarmor_gnu" "datarmor_gnu_debug"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","hera.gnu" "cheyenne.gnu"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
 # error
 else
@@ -88,6 +93,10 @@ default: env setup gout switch
 ww3_nems: env setup gout switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 	$(WW3_BINDIR)/w3_make ww3_multi
+	\cp -f $(WW3_EXEDIR)/ww3_multi $(WW3_BASEDIR)/exec
+
+ww3_nemslibonly: env setup switch
+	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 
 ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
@@ -157,6 +166,8 @@ switch:
 gout: 
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/OMPG/ /g"\
+	     -e "s/OMPH/ /g"\
 	     -e "s/MPIT/ /g"\
              -e "s/MPI/ /g"\
              -e "s/PDLIB/ /g"\
@@ -172,6 +183,8 @@ gout:
 	$(WW3_BINDIR)/w3_make ww3_ounp
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/OMPG/ /g"\
+	     -e "s/OMPH/ /g"\
              -e "s/MPIT/ /g"\
              -e "s/MPI/ /g"\
              -e "s/PDLIB/ /g"\
@@ -179,5 +192,8 @@ gout:
                   $(WW3_BINDIR)/tempswitch > $(WW3_BINDIR)/switch
 	\rm -f $(WW3_BINDIR)/tempswitch
 	$(WW3_BINDIR)/w3_make ww3_grib
+	\rm -rf $(WW3_BASEDIR)/exec
+	\mkdir -p $(WW3_BASEDIR)/exec
+	\cp -f $(WW3_EXEDIR)/ww3_* $(WW3_BASEDIR)/exec
 
 # ------------------------------------------------------------------------------

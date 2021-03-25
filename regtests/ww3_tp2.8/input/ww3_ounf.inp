@@ -13,7 +13,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- DPT HS FP DIR SPR
+ DPT CUR HS FP DIR SPR
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]

@@ -118,7 +118,7 @@
 !       NPT     Int.   I   Number of output points in input.
 !       XPT     R.A.   I   X (longitude) coordinates of output points.
 !       YPT     R.A.   I   Id. Y.
-!       PNAMES  C*10   I   Names of output points.
+!       PNAMES  C*40   I   Names of output points.
 !     ----------------------------------------------------------------
 !       Note: all are optional, and should be given on the first call
 !             only, will be taken from storage after that.
@@ -210,7 +210,7 @@
 !/
       INTEGER, INTENT(IN)                    :: NPT
       REAL, INTENT(IN), OPTIONAL             :: XPT(NPT), YPT(NPT)
-      CHARACTER(LEN=10),INTENT(IN), OPTIONAL :: PNAMES(NPT)
+      CHARACTER(LEN=40),INTENT(IN), OPTIONAL :: PNAMES(NPT)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -227,7 +227,7 @@
       REAL                    :: FACTOR
       LOGICAL, ALLOCATABLE    :: INGRID(:,:)
       LOGICAL, SAVE           :: SETUP = .FALSE., FLGO7a = .FALSE.
-      CHARACTER(LEN=10), ALLOCATABLE :: PN(:)
+      CHARACTER(LEN=40), ALLOCATABLE :: PN(:)
 !/
 !/S      CALL STRACE (IENT, 'WMIOPP')
 !

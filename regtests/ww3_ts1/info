@@ -22,29 +22,31 @@
 #     + switch_ST1_RWND : WAM 3 physics + wind dorrection.                  #
 #     + switch_ST2      : Tolman and Chalikov (default).                    #
 #     + switch_ST3      : WAM 4 physics.                                    #
-#     + switch_ST4      : Ardhuin et al. (2010).                            #
+#     + switch_ST4      : Ardhuin et al. (2010), Romero (2019)              #
 #     + switch_ST6      : BYDRZ physics (2013).                             #
 #                                                                           #
-#  Example run_test commands:                                               #
-#  (some details will vary by local system and configuration)               #
-#  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                      #
-#  ./bin/run_test -s ST2  -w work_ST2 ../model ww3_ts1                      #
-#  ./bin/run_test -s ST6 -o netcdf -w work_ST6 ../model ww3_ts1             #
-#  ./bin/run_test -c gnu -o netcdf ../model ww3_ts1                         #
-#                                                                           #
-#  ./bin/run_test -i input_icesct_IC0 -o both ../model ww3_ts1              #
-#  ./bin/run_test -i input_icesct_IC1 -w work_IC1 ../model ww3_ts1          #
-#  ./bin/run_test -i input_icesct_IC2 -w work_IC2 ../model ww3_ts1          #
-#  ./bin/run_test -i input_icesct_IC3 -w work_IC3 ../model ww3_ts1          #
-#  ./bin/run_test -i input_icesct_IC4 -w work_IC4 ../model ww3_ts1          #
-#                                                                           #
-#                                                                           #
-#                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2013     #
-#                                                                           #
-#    Copyright 2009-2013 National Weather Service (NWS),                    #
-#       National Oceanic and Atmospheric Administration.  All rights        #
-#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
-#       No unauthorized use without permission.                             #
-#                                                                           #
-############################################################################# 
+#  Example run_test commands:                                                  #
+#  (some details will vary by local system and configuration)                  #
+#  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                         #
+#  ./bin/run_test -s ST2  -w work_ST2 ../model ww3_ts1                         #
+#  ./bin/run_test -s ST4 -o netcdf -N -w work_ST4 ../model ww3_ts1             #
+#  ./bin/run_test -s ST4 -o netcdf -N -w work_ST4_T700 -g ST4_T700 ../model ww3_ts1 #
+#  ./bin/run_test -s ST6 -o netcdf -w work_ST6 ../model ww3_ts1                #
+#  ./bin/run_test -c gnu -o netcdf ../model ww3_ts1                            #
+#                                                                              #
+#  ./bin/run_test -i input_icesct_IC0 -o both ../model ww3_ts1                 #
+#  ./bin/run_test -i input_icesct_IC1 -w work_IC1 ../model ww3_ts1             #
+#  ./bin/run_test -i input_icesct_IC2 -w work_IC2 ../model ww3_ts1             #
+#  ./bin/run_test -i input_icesct_IC3 -w work_IC3 ../model ww3_ts1             #
+#  ./bin/run_test -i input_icesct_IC4 -w work_IC4 ../model ww3_ts1             #
+#                                                                              #
+#                                                                              #
+#                                              Hendrik Tolman, Jun 2002        #
+#                                                   Last Mod : Jun 2020        #
+#                                                                              #
+#    Copyright 2009-2013 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                    #
+#       No unauthorized use without permission.                                #
+#                                                                              #
+################################################################################ 

@@ -128,7 +128,8 @@
 !
 ! * need DOMAIN%UNIPTS equal true to use a unified point output file
 !
-! * the point file is a space separated values per line : lon lat 'name'
+! * the point file is a space separated values per line :
+!   longitude latitude 'name' (C*40)
 !
 ! * the detailed list of field names is given in model/nml/ww3_shel.nml :
 !  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
@@ -162,8 +163,8 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'DPT CUR HS FP DP DIR SPR'
-  ITYPE(2)%POINT%FILE      = 'points_2.list'
-  ITYPE(3)%POINT%FILE      = 'points_3.list'
+  ITYPE(2)%POINT%FILE      = '../input/points_2.list'
+  ITYPE(3)%POINT%FILE      = '../input/points_3.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -234,7 +235,6 @@
 
 &HOMOG_INPUT_NML
 /
-
 
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
