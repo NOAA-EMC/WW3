@@ -2821,11 +2821,11 @@ END SUBROUTINE
 
 
       IF ( R1GT180 + R2GT180 == 2 ) THEN
-             PT(3,1)=PT(3,1)-SIGN(360.0,(PT(3,1)-PT(2,1)))
+             PT(3,1)=PT(3,1)-SIGN(360.0d0,(PT(3,1)-PT(2,1)))
       ELSE IF ( R2GT180 + R3GT180 == 2 ) THEN
-             PT(1,1)=PT(1,1)-SIGN(360.0,(PT(1,1)-PT(2,1)))
+             PT(1,1)=PT(1,1)-SIGN(360.0d0,(PT(1,1)-PT(2,1)))
       ELSE IF ( R1GT180 + R3GT180 == 2 ) THEN
-             PT(2,1)=PT(2,1)-SIGN(360.0,(PT(2,1)-PT(3,1)))
+             PT(2,1)=PT(2,1)-SIGN(360.0d0,(PT(2,1)-PT(3,1)))
       ENDIF
 
       RETURN
