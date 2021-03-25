@@ -174,7 +174,7 @@
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 fLX5 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLX5 FLXX' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'

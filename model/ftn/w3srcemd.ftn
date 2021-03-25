@@ -748,7 +748,7 @@
 !/FLX3                                          USTAR, USTDIR, Z0, CD )
 !/FLX4      CALL W3FLX4 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
 !/FLX5      CALL W3FLX5 ( ZWND, U10ABS, U10DIR, TAUAM, TAUAD, DAIR,   &
-!                                               USTAR, USTDIR, Z0, CD )
+!/FLX5                                          USTAR, USTDIR, Z0, CD )
 !
 ! 1.e Prepare cut-off beyond which the tail is imposed with a power law
 !

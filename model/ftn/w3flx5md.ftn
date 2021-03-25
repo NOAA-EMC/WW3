@@ -161,7 +161,7 @@
 !
 !
       UST    = SQRT(TAUAM/DAIR)
-      CD     = (USTAR/U10)**2
+      CD     = (UST/U10)**2
       USTD   = TAUAD
       Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
 !
