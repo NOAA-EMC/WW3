@@ -82,7 +82,8 @@
     case $WWATCH3_NETCDF in
       NC3) opt="$opt -I$NETCDF_INCDIR" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+           #opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+           opt="$opt `$NETCDF_CONFIG --cflags`" ;;
     esac
   fi
 
