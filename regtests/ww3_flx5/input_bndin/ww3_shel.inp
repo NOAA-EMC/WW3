@@ -1,0 +1,33 @@
+$
+   F F     Water levels
+   F F     Currents
+   F F     Winds
+   F F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra
+$
+   20010101 000000
+   20010102 000000
+$
+   2
+$
+   20010101 000000   3600  20010102 000000
+   N
+   HS WND DIR
+$
+   20010101 000000   3600  20010102 000000
+    -16.4  59.8  'NorthWest '
+    -14.1  52.8  'SouthWest '
+      0.0   0.0  'STOPSTRING'
+$
+   20010101 000000   0  20010101 000000
+$
+   20010101 000000   0  20010101 060000
+$
+   20010101 000000   0  20010101 000000
+$
+   20010101 000000   0  20010101 060000
+$
