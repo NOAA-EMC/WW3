@@ -667,10 +667,10 @@
  
             ! Periodicity fix for corner node
             IF ( ABS(ELONIP - ELONNEXT) .GT. 180.0 ) THEN
-                     ELONNEXT = ELONNEXT -SIGN(360.0,(ELONIP - ELONNEXT))
+                     ELONNEXT = ELONNEXT -SIGN(360.0d0,(ELONIP - ELONNEXT))
             ENDIF
             IF ( ABS(ELONIP - ELONPREV) .GT. 180.0 ) THEN
-                     ELONPREV = ELONPREV -SIGN(360.0,(ELONIP - ELONPREV))
+                     ELONPREV = ELONPREV -SIGN(360.0d0,(ELONIP - ELONPREV))
             ENDIF
 
             ELONN=(ELONIP+ELONNEXT)/2.0
@@ -1564,11 +1564,11 @@
 ! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
 
       IF ( R1GT180 + R2GT180 == 2 ) THEN
-             PT(3,1)=PT(3,1)-SIGN(360.0,(PT(3,1)-PT(2,1)))
+             PT(3,1)=PT(3,1)-SIGN(360.0d0,(PT(3,1)-PT(2,1)))
       ELSE IF ( R2GT180 + R3GT180 == 2 ) THEN
-             PT(1,1)=PT(1,1)-SIGN(360.0,(PT(1,1)-PT(2,1)))
+             PT(1,1)=PT(1,1)-SIGN(360.0d0,(PT(1,1)-PT(2,1)))
       ELSE IF ( R1GT180 + R3GT180 == 2 ) THEN
-             PT(2,1)=PT(2,1)-SIGN(360.0,(PT(2,1)-PT(3,1)))
+             PT(2,1)=PT(2,1)-SIGN(360.0d0,(PT(2,1)-PT(3,1)))
       ENDIF
 
       RETURN
