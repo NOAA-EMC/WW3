@@ -620,6 +620,9 @@
 !       (17) Projection center flag
 !       (18) Scanning mode
 !
+!  Projection for PolarStereo grid was changed from 
+!  KGDS( 1) = 6 to KGDS( 1) = 5 (Earth assumed represented by WGS84)
+!/NCEP2        KGDS( 1) = 5
 !/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
 !/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
 !/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
