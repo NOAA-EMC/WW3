@@ -332,7 +332,7 @@
       CHARACTER(LEN=80)   :: LINE
       CHARACTER(LEN=256)  :: TMPLINE, TEST
       CHARACTER(LEN=1024) :: FLDIN
-      CHARACTER(LEN=1024) :: FLDRST
+      CHARACTER(LEN=1024) :: FLDRST=''
       CHARACTER(LEN=80)   :: LINEIN
       CHARACTER(LEN=8)    :: WORDS(7)=''
 
@@ -1258,10 +1258,10 @@
           IF (WORDS(7) .EQ. 'T') THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,*,END=2001,ERR=2002) FLDRST
-            CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
-                               FLOGRR, IAPROC, NAPOUT, IERR )
-            IF ( IERR .NE. 0 ) GOTO 2222
           END IF
+          CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
+                             FLOGRR, IAPROC, NAPOUT, IERR )
+          IF ( IERR .NE. 0 ) GOTO 2222
         ELSE
 !
 !INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
