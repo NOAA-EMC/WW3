@@ -1,6 +1,6 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-      PROGRAM W3GRID
+      MODULE W3GRIDMD
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -949,6 +949,11 @@
 !/ ------------------------------------------------------------------- /
 !/
       DATA YESXNO / 'YES/--' , '---/NO' /
+
+      CONTAINS
+
+      SUBROUTINE W3GRID()
+
 !/O0      FLNMLO = .TRUE.
 !/STAB2      FLSTB2 = .TRUE.
 !
@@ -6354,10 +6359,11 @@
 !
 !/T0 9095 FORMAT ( ' TEST W3GRID : OUTPUT BOUND. POINT SPEC DATA ')
 !/T0 9096 FORMAT ( '            ',I3,2I8)
+
+      END SUBROUTINE 
 !/
 !/ Internal function READNL ------------------------------------------ /
 !/
-      CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READNL ( NDS, NAME, STATUS )
 !/
@@ -6588,4 +6594,4 @@
 !/
 !/ End of W3GRID ----------------------------------------------------- /
 !/
-      END PROGRAM W3GRID
+      END MODULE W3GRIDMD

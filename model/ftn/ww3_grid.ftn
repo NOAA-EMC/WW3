@@ -1,0 +1,10 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
+      PROGRAM WW3GRID
+!/ ------------------------------------------------------------------- /
+      USE W3GRIDMD
+      IMPLICIT NONE
+
+      CALL W3GRID
+
+      END PROGRAM WW3GRID
