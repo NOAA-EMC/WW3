@@ -34,7 +34,7 @@
 &FIELD_NML
   FIELD%TIMESTART        =  '20010101 000000'
   FIELD%TIMESTRIDE       =  '3600'
-  FIELD%LIST             =  'HS WND T02 DIR UST CHA'
+  FIELD%LIST             =  'HS WND T02 DIR UST CHA TAU'
   FIELD%SAMEFILE         =  F
   FIELD%TYPE             =  4
 /

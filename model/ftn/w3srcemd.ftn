@@ -52,7 +52,7 @@
       SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
                           ALPHA, WN1, CG1,                            &
-                          D_INP, U10ABS, U10DIR, TAUAM, TAUAD,        &
+                          D_INP, U10ABS, U10DIR, TAUA, TAUADIR,        &
                           AS, USTAR, USTDIR,                          &
                           CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
@@ -187,8 +187,8 @@
 !       D_INP   Real.  I   Depth. Compared to DMIN to get DEPTH.
 !       U10ABS  Real.  I   Wind speed at reference height.
 !       U10DIR  Real.  I   Id. wind direction.
-!       TAUAM   Real.  I   Magnitude of total atmospheric stress
-!       TAUAD   Real.  I   Direction of atmospheric stress
+!       TAUA    Real.  I   Magnitude of total atmospheric stress
+!       TAUA    Real.  I   Direction of atmospheric stress
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
 !       USTAR   Real. !/O  Friction velocity.
 !       USTDIR  Real  !/O  Idem, direction.
@@ -440,7 +440,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !  Check if it's possible to leave USTAR as INOUT parameter; write in temp file
-!  and finally compute it using TAUAM after W3SPRn finishes but before latest update of
+!  and finally compute it using TAUA after W3SPRn finishes but before latest update of
 !  TAUWIX, TAUWIY
 !/
       INTEGER, INTENT(IN)     :: srce_call, IT, JSEA, IX, IY, IMOD
@@ -448,7 +448,7 @@
       REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
       LOGICAL, INTENT(OUT)    :: SHAVEIO
       REAL, INTENT(IN)        :: D_INP, U10ABS,                       &
-                                 U10DIR, TAUAM, TAUAD, AS, CX,        &
+                                 U10DIR, TAUA, TAUADIR, AS, CX,        &
                                  CY, DTG, D50,PSIC,                   &
                                  ICE, ICEH
       INTEGER, INTENT(IN)     :: REFLED(6)
@@ -747,7 +747,7 @@
 !/FLX3      CALL W3FLX3 ( ZWND, DEPTH, FP, U10ABS, U10DIR,            &
 !/FLX3                                          USTAR, USTDIR, Z0, CD )
 !/FLX4      CALL W3FLX4 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
-!/FLX5      CALL W3FLX5 ( ZWND, U10ABS, U10DIR, TAUAM, TAUAD, DAIR,   &
+!/FLX5      CALL W3FLX5 ( ZWND, U10ABS, U10DIR, TAUA, TAUADIR, DAIR,  &
 !/FLX5                                          USTAR, USTDIR, Z0, CD )
 !
 ! 1.e Prepare cut-off beyond which the tail is imposed with a power law

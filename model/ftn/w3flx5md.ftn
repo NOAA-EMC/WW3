@@ -59,7 +59,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUAM, TAUAD, DAIR, UST, USTD, Z0, CD )
+      SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR, UST, USTD, Z0, CD )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -77,8 +77,8 @@
 !
 !  2. Method :
 !
-!     UST    = SQRT(TAUAM / DAIR)
-!     USTD   = TAUAD
+!     UST    = SQRT(TAUA / RHOAIR)
+!     USTD   = TAUADIR
 !     CD     = (UST/U10)**2
 !
 !  3. Parameters :
@@ -88,9 +88,9 @@
 !       ZWND    Real   I   Wind height.
 !       U10     Real   I   Wind speed.
 !       U10D    Real   I   Wind direction.
-!       TAUAM   Real   I   Atm. total stress.
-!       TAUAD   Real   I   Atm. total stress direction.
-!       DAIR    Real   I   Air density.
+!       TAUA    Real   I   Atm. total stress.
+!       TAUADIR Real   I   Atm. total stress direction.
+!       RHOAIR  Real   I   Air density.
 !       UST     Real   O   Friction velocity.
 !       USTD    Real   0   Direction of friction velocity.
 !       Z0      Real   O   z0 in profile law.
@@ -138,7 +138,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUAM, TAUAD, DAIR
+      REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR
       REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
 !/
 !/ ------------------------------------------------------------------- /
@@ -160,9 +160,9 @@
 ! 2.  Computation ---------------------------------------------------- *
 !
 !
-      UST    = SQRT(TAUAM/DAIR)
+      UST    = SQRT(TAUA/RHOAIR)
       CD     = (UST/U10)**2
-      USTD   = TAUAD
+      USTD   = TAUADIR
       Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
 !
       RETURN
