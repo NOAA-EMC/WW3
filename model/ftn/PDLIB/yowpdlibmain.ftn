@@ -1145,6 +1145,7 @@ module yowpdlibMain
     implicit none
     integer I1, I2, I3, stat, IE, NI(3)
     real(rkind) :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
+    logical     :: CROSSES_DATELINE
 
     allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_TRIA(ne), stat=stat)
     if(stat/=0) call parallel_abort('SI allocation failure')
@@ -1163,6 +1164,12 @@ module yowpdlibMain
       DYP2=y(I3) - y(I2)
       DXP3=x(I1) - x(I3)
       DYP3=y(I1) - y(I3)
+      CALL ELEMENT_CROSSES_DATELINE(DXP1, DXP2, DXP3, CROSSES_DATELINE)
+      IF (CROSSES_DATELINE) THEN
+        CALL CORRECT_DX_GT180(DXP1)
+        CALL CORRECT_DX_GT180(DXP2)
+        CALL CORRECT_DX_GT180(DXP3)
+      ENDIF
 
       PDLIB_IEN(1,IE) = - DYP2
       PDLIB_IEN(2,IE) =   DXP2
@@ -1182,6 +1189,41 @@ module yowpdlibMain
       PDLIB_SI(I3) = PDLIB_SI(I3) + TRIA03
     ENDDO
     CALL PDLIB_exchange1Dreal(PDLIB_SI)
+  end subroutine
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+  subroutine ELEMENT_CROSSES_DATELINE(RX1, RX2, RX3, CROSSES_DATELINE)
+!   Purpose: understanding if an element crosses the dateline.
+!   An element crossing the dateline has, e.g. a node with lon < 180
+!   and another 2 with lon > -180
+    IMPLICIT NONE
+    REAL(rkind),  INTENT(IN)  :: RX1, RX2, RX3
+    LOGICAL, INTENT(OUT) :: CROSSES_DATELINE
+    INTEGER :: R1GT180, R2GT180, R3GT180
+    R1GT180 = MERGE(1, 0, ABS(RX1).GT.180)
+    R2GT180 = MERGE(1, 0, ABS(RX2).GT.180)
+    R3GT180 = MERGE(1, 0, ABS(RX3).GT.180)
+! if R1GT180+R2GT180+R3GT180 .eq. 0 the element does not cross the dateline
+! if R1GT180+R2GT180+R3GT180 .eq. 1 the element contains the pole
+! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
+    CROSSES_DATELINE = R1GT180+R2GT180+R3GT180 .EQ. 2
+  end subroutine
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+  subroutine CORRECT_DX_GT180(DXP)
+!   Purpose: the absolute zonal distance between 2 points is always <= 180
+!            This subroutine corrects the zonal distance to satifsy
+!            this requirement
+    IMPLICIT NONE
+    REAL(rkind), INTENT(INOUT) :: DXP
+    IF (DXP .le. -180) THEN
+      DXP=DXP + 360
+    END IF
+    IF (DXP .ge. 180) THEN
+      DXP=DXP - 360
+    END IF
   end subroutine
 !**********************************************************************
 !*                                                                    *

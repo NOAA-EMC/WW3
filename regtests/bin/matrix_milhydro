@@ -4,14 +4,13 @@
 #                                                                             #
 # Remarks:                                                                    #
 # - This version is set up for automatic w3_setenv script and for the         #
-#   NOAA RDHPC systems. When using this for your own setup and                #
+#   NOAA RDHPC 'zeus' system. When using this for your own setup and          #
 #   computer, please copy rather than modify.                                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
 #                                                      December 2013          #
 #                                                      April 2018             #
-#                                                      March 2020             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -35,89 +34,23 @@
 # Compiler option. Choose appropriate compiler and set cmplOption to
 # y if using for the first time or using a different compiler
 
-  cmplr=intel
+#  cmplr=Gnu_matrix
+  cmplr=gnu
   export cmplOption='y'
 
 # Set batchq queue, choose modules and other custom variables to fit system and 
 # to define headers etc (default to original version if empty)
-  ishera=`hostname | grep hfe`
-  isorion=`hostname | grep Orion`
-  if [ $ishera ]
-  then
-    # If no other h, assuming Hera 
-    cmplr='hera.intel'
-    batchq='slurm'
-    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
-    hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/18.0.5.274'
-    modmpi='hpc-impi/2018.0.4'
-    modnetcdf='netcdf/4.7.4'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-  elif [ $isorion ]
-  then
-    cmplr='orion.intel'
-    batchq='slurm'
-    hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
-    hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/2019.5'
-    modmpi='hpc-impi/2019.6'
-    modnetcdf='netcdf/4.7.4'
-    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
-  else
-    batchq=
-  fi
-
 # 1. Set up
-   
-  export  np='24'  #number of mpi tasks
-  export  nr='4'   #number of mpi tasks for hybrid
-  export nth='6'   #number of threads
-
 # 1.a Computer/ user dependent set up
 
-  echo '#!/bin/sh --login'                                   > matrix.head
+  echo '#!/bin/sh '                                          > matrix.head
   echo ' '                                                  >> matrix.head
-  if [ $batchq = "slurm" ] && [ $isorion ]
-  then
-    echo "#SBATCH -n ${np}"                                 >> matrix.head
-    echo '#SBATCH -q batch'                                 >> matrix.head
-    echo '#SBATCH -t 08:00:00'                              >> matrix.head
-    echo '#SBATCH -A marine-cpu'                            >> matrix.head
-    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
-    echo '#SBATCH -o matrix.out'                            >> matrix.head
-    echo '#SBATCH -p orion'                                 >> matrix.head
-  elif [ $batchq = "slurm" ]
-  then
-    echo "#SBATCH -n ${np}"                                 >> matrix.head
-    echo '#SBATCH -q batch'                                 >> matrix.head
-    echo '#SBATCH -t 08:00:00'                              >> matrix.head
-    echo '#SBATCH -A marine-cpu'                            >> matrix.head
-    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
-    echo '#SBATCH -o matrix.out'                            >> matrix.head
-  else
-    echo '#PBS -l procs=24'                                 >> matrix.head
-    echo '#PBS -q batch'                                    >> matrix.head
-    echo '#PBS -l walltime=08:00:00'                        >> matrix.head
-    echo '#PBS -A marine-cpu'                               >> matrix.head
-    echo '#PBS -N ww3_regtest'                              >> matrix.head
-    echo '#PBS -j oe'                                       >> matrix.head
-    echo '#PBS -o matrix.out'                               >> matrix.head
-    echo ' '                                                >> matrix.head
-  fi
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
-  echo "  module purge"                                     >> matrix.head
-  echo "  module use $hpcstackpath"                         >> matrix.head
-  echo "  module load $hpcstackversion"                     >> matrix.head
-  echo "  module load $modcomp"                             >> matrix.head
-  echo "  module load $modmpi"                              >> matrix.head
-  echo "  module load $modnetcdf"                           >> matrix.head
-  echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
-  echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
-  echo "  export METIS_PATH=${metispath}"                   >> matrix.head
-  echo "  export WW3_PARCOMPN=4"                            >> matrix.head
+
+  echo "  source $main_dir/bin/setpaths_milhydro3 "    >> matrix.head
   echo ' ' 
 
   if [ "$batchq" = 'slurm' ]
@@ -126,7 +59,9 @@
   else
     export  mpi='mpirun'
   fi
-
+    export   np='24'
+    export   nr='0'
+    export  nth='0'
 # Compile option
   if [ "$cmplOption" = 'y' ]
   then
@@ -161,15 +96,15 @@
   export    shwtr='y' # shallow water tests
   export    unstr='y' # unstructured grid tests
   export    pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
-  export    smcgr='y' # SMC grid test
-  export      rtd='y' # Rotated pole test
+  export    smcgr='y' # SMC/Rotated grid test
   export   mudice='y' # Mud/Ice and wave interaction tests 
   export   infgrv='y' # Second harmonic generation tests
   export     uost='y' # ww3_ts4 Unresolved Obstacles Source Term (UOST)
   export    assim='y' # Restart spectra update
-  export    oasis='y' # Atmosphere, ocean, and ice coupling using OASIS
-  export calendar='y' # Calendar type
-  export confignc='y' # Configurable netCDF meta data (ww3_ounf)
+  export calendar='y'
+  export    oasis='n'
+  export      rtd='y'
+  export confignc='y'
 
   export  multi01='y' # mww3_test_01 (wetting and drying)
   export  multi02='y' # mww3_test_02 (basic two-way nesting test))
@@ -181,7 +116,7 @@
   export  multi08='y' # mww3_test_08 (wind and ice tests)
 
 # export   filter='PR3 ST2 UQ'
-                      # The filter does a set of consecutive greps on the 
+                      # The filter does a set of consecutinve greps on the 
                       # command lines generated by filter.base with the above
                       # selected options.
 

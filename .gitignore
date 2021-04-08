@@ -45,6 +45,10 @@ manual/*.toc
 manual/*.out
 manual/*.dvi
 manual/*.pdf
+model?
+model??
+regtests/list*
+regtests/before
 regtests/matrix*
 regtests/*/work*
 regtests/*/input*/*.nc
