@@ -186,7 +186,7 @@ then
   exit_p=$exec_p
 fi
 case $outopt in
-  native|netcdf|both) ;;
+  native|netcdf|both|grib) ;;
   *) errmsg "outopt = $outopt not supported" ; usage ; exit 1 ;;
 esac
 case $coupl in
@@ -1825,6 +1825,7 @@ case $outopt in
   native) out_progs="ww3_outf" ;;
   netcdf) out_progs="ww3_ounf" ;;
   both)   out_progs="ww3_outf ww3_ounf" ;;
+  grib)   out_progs="ww3_grib" ;;
   *)      out_progs="" ;;
 esac
 
@@ -1881,6 +1882,14 @@ do
                       sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
+      fi
+      if [ $prog = ww3_grib ]
+      then 
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/MPIT //'    | sed 's/NOGRB/NCEP2 NCO/' | \
+                      sed 's/B4B //' > $path_b/switch
       fi
       if [ $testST ]
       then #add S T switches 
