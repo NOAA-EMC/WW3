@@ -1,0 +1,614 @@
+$
+$ Global output point data file for multi-grid wave model
+$
+$ Key to data in file:
+$
+$   LON      Longitude, east positive
+$   LAT      Latitude
+$   NAME     Output point name C*10, no blanks in name allowed
+$   AH       Anemometer height, dummy value for none-data points
+$   TYPE     Buoy type indicator, used for plotting and postprocessing
+$             DAT      Data point
+$             NBY      'Non-NWS Virtual buoy'
+$   SOURCE   Source of data point
+$             ENCAN    Environment Canada
+$             GOMOOS   Gulf of Maine OOS
+$             IDT      Irish Department of Transportation
+$             METFR    Meteo France
+$             NCEP     Boundary and other data points
+$             NDBC     National Data Buoy Center
+$             PRIV     Private and incidental data sources
+$             SCRIPPS  Scripps
+$             UKMO     UK Met Office
+$             PDES     Puertos del Estados
+$             SHOM     Service Hydrographique et Oceanographique de la Marine
+$             OCNOR    Fugro Oceanor
+$             WHOI     Woods Hole Oceanographic Institute
+$             SKOREA   South Korea
+$             MVEW     Ministerie van Verkeer en Waterstaat
+$             CORMP    Coastal Ocean Research and Monitoring Program
+$             DIMAR    Direccion General Maritima (Columbia)
+$             BP       British Petroleum
+$   SCALE    Scale indicator for plotting of locations on map
+$            Point will only be plotted if SCALE =< DX in our
+$            GrADS scripts, DX is width of plot in logitude
+$
+$ Notes:
+$
+$  - The '$' at the first position identifies comments for WAVEWATCH III
+$    input.
+$  - The first three data columns are used by the forecats code, the other
+$    are used by postprocessing scripts.
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+$
+$ AWIPS Data section (most actual observational sites)
+$ AWIPS code indicated prior and after each AWIPS section
+$
+$AGGA48
+$ Gulf of Alaska (AG) Spectral data (4) near S/SW Alaska Anchorage (8) 
+  -148.02   56.31  '46001     '   5.0   DAT  NDBC     360
+  -154.98   52.70  '46066     '   5.0   DAT  NDBC     360
+  -146.83   60.22  '46061     '   5.0   DAT  NDBC      90
+  -160.81   53.93  '46075     '   5.0   DAT  NDBC     360
+  -148.00   59.50  '46076     '   5.0   DAT  NDBC     360
+  -152.45   56.05  '46078     '   5.0   DAT  NDBC     360
+  -152.09   59.76  '46106     '   999   DAT  NDBC     75
+  -150.00   58.00  '46080     '   5.0   DAT  NDBC     360
+  -151.829  59.597 '46108     '   5.0   DAT  NDBC      45
+  -160.000  57.700 '46021     ' 999.0   DAT  NDBC      45
+  -146.805  60.584 '46060     '   5.0   DAT  NDBC      45
+  -154.175  57.910 '46077     '   5.0   DAT  NDBC      45
+  -152.230  59.050 '46079     '   4.9   DAT  NDBC      45
+  -152.233  59.049 '46105     '   2.0   DAT  NDBC      45
+  -147.992  59.925 '46107     '   2.0   DAT  NDBC      45
+  -165.446  64.489 '46265     '   2.0   DAT  NDBC      45
+$AGGA48
+$
+$AGGA47
+$ Gulf of Alaska (AG) Spectral data (4) near Alaska Panhandle and NBC (7)
+  -136.10   50.93  '46004     '   5.0   DAT  ENCAN    360
+  -138.85   53.91  '46184     '   5.0   DAT  ENCAN    360
+  -143.42   59.69  '46082     '   5.0   DAT  NDBC     360
+  -138.00   58.25  '46083     '   5.0   DAT  NDBC     360
+  -136.16   56.59  '46084     '   5.0   DAT  NDBC     360
+  -142.56   56.85  '46085     '   5.0   DAT  NDBC     360
+  -134.28   54.16  '46205     '   5.0   DAT  ENCAN     45
+  -132.45   54.38  '46145     '   5.0   DAT  ENCAN     45
+  -131.22   51.83  '46147     '   5.0   DAT  ENCAN     90
+  -131.10   53.62  '46183     '   5.0   DAT  ENCAN     45
+  -129.81   52.42  '46185     '   5.0   DAT  ENCAN     45
+  -128.75   51.37  '46204     '   5.0   DAT  ENCAN     45
+  -129.92   50.87  '46207     '   5.0   DAT  ENCAN     45
+  -132.68   52.52  '46208     '   5.0   DAT  ENCAN     45
+  -129.795  52.437 '46138     ' 999.0   DAT  NDBC      45
+$AGGA47
+$
+$AGPZ46
+$ Eastern Pacific (PZ) spectral data (4) near Pacific states and SBC (6)
+  -130.27   42.60  '46002     '   5.0   DAT  NDBC     360
+  -137.48   40.80  '46006     '   5.0   DAT  NDBC     360
+  -130.00   37.98  '46059     '   5.0   DAT  NDBC     360
+  -120.87   34.88  '46011     '   5.0   DAT  NDBC      15
+  -122.88   37.36  '46012     '   5.0   DAT  NDBC      45
+  -123.32   38.23  '46013     '   5.0   DAT  NDBC      25
+  -123.97   39.22  '46014     '   5.0   DAT  NDBC      45
+  -124.54   40.78  '46022     '   5.0   DAT  NDBC      25
+  -120.97   34.71  '46023     '  10.0   DAT  NDBC      45
+  -122.82   37.75  '46026     '   5.0   DAT  NDBC      25
+  -124.38   41.85  '46027     '   5.0   DAT  NDBC      45
+  -124.85   42.75  '46015     '   5.0   DAT  NDBC      45
+  -119.08   33.75  '46025     '   5.0   DAT  NDBC      45
+  -121.89   35.74  '46028     '   5.0   DAT  NDBC      45
+  -124.53   40.42  '46030     '   5.0   DAT  NDBC      15
+  -122.42   36.75  '46042     '   5.0   DAT  NDBC      45
+  -119.53   32.43  '46047     '   5.0   DAT  NDBC      45
+  -124.53   44.62  '46050     '   5.0   DAT  NDBC      45
+  -119.85   34.24  '46053     '   5.0   DAT  NDBC      45
+  -120.45   34.27  '46054     '  10.0   DAT  NDBC      25
+  -121.01   35.10  '46062     '   5.0   DAT  NDBC      45
+  -120.70   34.27  '46063     '   5.0   DAT  NDBC      45
+  -120.20   33.65  '46069     '   5.0   DAT  NDBC      45
+  -118.00   32.50  '46086     '   5.0   DAT  NDBC      45
+  -125.77   45.88  '46089     '   5.0   DAT  NDBC      45
+  -124.74   40.29  '46213     '  999.   DAT  SCRIPPS   25
+  -123.47   37.95  '46214     '  999.   DAT  SCRIPPS   45
+  -119.80   34.33  '46216     '  999.   DAT  SCRIPPS   15
+  -119.43   34.17  '46217     '  999.   DAT  SCRIPPS   15
+  -120.78   34.45  '46218     '  999.   DAT  SCRIPPS   25
+  -119.88   33.22  '46219     '  999.   DAT  SCRIPPS   45
+  -118.63   33.85  '46221     '  999.   DAT  SCRIPPS   15
+  -118.32   33.62  '46222     '  999.   DAT  SCRIPPS   15
+  -117.77   33.46  '46223     '  999.   DAT  SCRIPPS   15
+  -117.47   33.18  '46224     '  999.   DAT  SCRIPPS   15
+  -117.39   32.93  '46225     '  999.   DAT  SCRIPPS   15
+  -117.44   32.63  '46227     '  999.   DAT  SCRIPPS   15
+  -124.55   43.77  '46229     '  999.   DAT  SCRIPPS   25
+  -117.37   32.75  '46231     '  999.   DAT  SCRIPPS   15
+  -117.421  32.530 '46232     '  999.   DAT  SCRIPPS   15
+  -120.86   35.20  '46215     '  999.   DAT  SCRIPPS   45
+  -121.95   36.76  '46236     '  999.   DAT  SCRIPPS   15
+  -122.634  37.787 '46237     '  999.   DAT  SCRIPPS   15
+  -119.47   33.40  '46238     '  999.   DAT  SCRIPPS   15
+  -122.10   36.34  '46239     '  999.   DAT  SCRIPPS   15
+  -121.91   36.62  '46240     '  999.   DAT  SCRIPPS   15
+  -124.13   46.22  '46243     '  999.   DAT  SCRIPPS   45
+  -124.36   40.89  '46244     '  999.   DAT  SCRIPPS   45
+  -145.20   50.033 '46246     '  999.   DAT  SCRIPPS   45
+  -124.67   46.13  '46248     '  999.   DAT  SCRIPPS   45
+  -119.200  33.000 '46024     '  10.0   DAT  NDBC      45
+  -121.899  36.835 '46091     '   4.0   DAT  NDBC      45
+  -122.030  36.750 '46092     '   4.0   DAT  NDBC      45
+  -122.410  36.690 '46093     '   4.0   DAT  NDBC      45
+  -124.300  44.642 '46094     '   3.0   DAT  NDBC      45
+  -124.304  44.639 '46097     '   4.5   DAT  NDBC      45
+  -124.956  44.381 '46098     '   4.5   DAT  NDBC      45
+  -122.351  36.723 '46114     ' 999.0   DAT  NDBC      45
+  -124.313  40.753 '46212     ' 999.0   DAT  NDBC      45
+  -117.353  32.848 '46226     ' 999.0   DAT  NDBC      45
+  -117.320  32.936 '46233     '   3.0   DAT  NDBC      45
+  -117.167  32.572 '46235     ' 999.0   DAT  NDBC      45
+  -117.439  33.220 '46242     ' 999.0   DAT  NDBC      45
+  -122.833  37.753 '46247     ' 999.0   DAT  NDBC      45
+  -119.708  33.821 '46249     ' 999.0   DAT  NDBC      45
+  -119.090  34.034 '46250     ' 999.0   DAT  NDBC      45
+  -119.550  33.760 '46251     ' 999.0   DAT  NDBC      45
+  -119.257  33.953 '46252     ' 999.0   DAT  NDBC      45
+  -118.181  33.576 '46253     ' 999.0   DAT  NDBC      45
+  -117.267  32.868 '46254     ' 999.0   DAT  NDBC      45
+  -119.651  33.400 '46255     ' 999.0   DAT  NDBC      45
+  -118.201  33.700 '46256     ' 999.0   DAT  NDBC      45
+  -120.766  34.439 '46257     ' 999.0   DAT  NDBC      45
+  -117.500  32.750 '46258     ' 999.0   DAT  NDBC      45
+  -121.497  34.767 '46259     ' 999.0   DAT  NDBC      45
+  -119.004  33.704 '46262     ' 999.0   DAT  NDBC      45
+$AGPZ46
+$
+$AGPZ47
+$ Eastern Pacific (PZ) spectral data (4) near Alaska Panhandle and NBC (7)
+  -131.02   46.05  '46005     '   5.0   DAT  NDBC     360
+  -133.94   48.35  '46036     '   5.0   DAT  ENCAN    360
+  -127.93   49.74  '46132     '   5.0   DAT  ENCAN     90
+  -126.00   48.84  '46206     '   5.0   DAT  ENCAN     45
+  -124.51   46.12  '46029     '   5.0   DAT  NDBC      45
+  -124.75   47.34  '46041     '   5.0   DAT  NDBC      45
+  -124.73   48.49  '46087     '   5.0   DAT  NDBC      45
+  -124.24   46.86  '46211     '  999.   DAT  SCRIPPS   25
+  -123.165  48.334 '46088     '   5.0   DAT  NDBC      45
+  -124.127  46.173 '46096     '   3.0   DAT  NDBC      45
+  -124.566  46.986 '46099     '   4.5   DAT  NDBC      45
+  -124.972  46.851 '46100     '   4.5   DAT  NDBC      45
+  -124.950  47.967 '46119     '   3.7   DAT  NDBC      45
+  -124.063  46.215 '46127     '   3.0   DAT  NDBC      45
+  -126.010  48.844 '46139     ' 999.0   DAT  NDBC      45
+  -151.700  57.480 '46264     ' 999.0   DAT  NDBC      45
+$AGPZ47
+$
+$AGPN48
+$ North Pacific and Behring Sea (PN) spectra (4) near S/SW Alaska Anchorage (8)
+  -177.58   57.05  '46035     '  10.0   DAT  NDBC     360
+   175.28   55.00  '46070     '   5.0   DAT  NDBC     360
+  -172.03   54.94  '46073     '  10.0   DAT  NDBC     360
+   179.05   51.16  '46071     '   5.0   DAT  NDBC     360
+  -171.73   52.25  '46072     '   5.0   DAT  NDBC     360
+  -168.000  55.883 '46020     ' 999.0   DAT  NDBC     360
+$AGPN48
+$
+$AGHW40
+$ Hawaiian waters (HW) spectra (4) in Pacific Ocean and Pacific Isles (0)
+  -162.21   23.43  '51001     '   5.0   DAT  NDBC     360
+  -157.78   17.19  '51002     '   5.0   DAT  NDBC     360
+  -160.82   19.22  '51003     '   5.0   DAT  NDBC     360
+  -152.48   17.52  '51004     '   5.0   DAT  NDBC     360
+  -158.12   21.67  '51201     '  999.   DAT  SCRIPPS   11
+  -157.68   21.42  '51202     '  999.   DAT  SCRIPPS   11
+  -154.06   23.55  '51000     '   5.0   DAT  NDBC      11
+  -153.90   23.56  '51100     '   5.0   DAT  NDBC      11
+  -162.06   24.32  '51101     '   5.0   DAT  NDBC      11
+  -157.00   20.79  '51203     '  999.   DAT  SCRIPPS   11
+  -158.12   21.28  '51204     '  999.   DAT  SCRIPPS   11
+  -156.42   21.02  '51205     '  999.   DAT  SCRIPPS   11
+  -154.97   19.78  '51206     '  999.   DAT  SCRIPPS   11
+  -157.75   21.48  '51207     '  999.   DAT  SCRIPPS   11
+  -153.87    0.02  '51028     '   5.0   DAT  NDBC      11
+  -158.303  21.096 '51200     ' 999.0   DAT  NDBC      11
+  -159.574  22.285 '51208     '  999.   DAT  SCRIPPS   11
+  -170.493 -14.264 '51209     ' 999.0   DAT  NDBC     360
+  -157.756  21.477 '51210     ' 999.0   DAT  NDBC      11
+  -134.667   7.630 '52212     ' 999.0   DAT  NDBC     360
+  -157.959  21.297 '51211     ' 999.0   DAT  NDBC     360
+  -158.150  21.323 '51212     ' 999.0   DAT  NDBC     360
+  -157.003  20.750 '51213     ' 999.0   DAT  NDBC     360
+$AGHW40
+$
+$AGPW40
+$ Western Pacific (PW) spectra (4) in Pacific Ocean and Pacific Isles (0) 
+   144.79   13.35  '52200     '  999.   DAT  SCRIPPS  360
+   126.02   37.23  '22101     '   999.  DAT  SKOREA    100
+   125.77   34.80  '22102     '   999.  DAT  SKOREA    100
+   127.50   34.00  '22103     '   999.  DAT  SKOREA    100
+   128.90   34.77  '22104     '   999.  DAT  SKOREA    100
+   130.00   37.53  '22105     '   999.  DAT  SKOREA    100
+   171.40    7.09  '52201     '  999.   DAT  SCRIPPS  360
+   144.80   13.68  '52202     '  999.   DAT  SCRIPPS  360
+   145.66   15.27  '52211     '  999.   DAT  SCRIPPS  360
+   133.62   33.19  '21178     '  999.   DAT  WMO      360
+   131.11   37.46  '21229     '  999.   DAT  WMO      360
+   125.75   36.25  '22108     '  999.   DAT  WMO      360
+   126.14   33.79  '22184     '  999.   DAT  WMO      360
+   125.43   37.09  '22185     '  999.   DAT  WMO      360
+   125.81   35.66  '22186     '  999.   DAT  WMO      360
+   127.02   33.13  '22187     '  999.   DAT  WMO      360
+   128.23   34.39  '22188     '  999.   DAT  WMO      360
+   129.84   35.35  '22189     '  999.   DAT  WMO      360
+   129.87   36.91  '22190     '  999.   DAT  WMO      360
+$AGPW40
+$
+$AGPS40
+$ South Pacific (PS) in Pacific Ocean and Pacific Isles (0)
+   150.18  -37.29  '55020     '  999.   DAT  UNKNOWN   50
+   151.07  -23.31  '55033     '  999.   DAT  UNKNOWN   50
+   153.63  -27.49  '55035     '  999.   DAT  UNKNOWN   50
+   148.19  -38.60  '55039     '  999.   DAT  UNKNOWN   50
+$AGPS40
+$
+$AGGX42
+$ Gulf of Mexico (GX) spectra (4) south from NC and Puerto Rico (2)
+   -89.67   25.90  '42001     '  10.0   DAT  NDBC     360
+   -94.42   25.17  '42002     '  10.0   DAT  NDBC     360
+   -85.94   26.07  '42003     '  10.0   DAT  NDBC     360
+   -88.77   30.09  '42007     '   5.0   DAT  NDBC      90
+   -95.36   27.91  '42019     '   5.0   DAT  NDBC      90
+   -96.70   26.94  '42020     '   5.0   DAT  NDBC      90
+   -94.40   29.22  '42035     '   5.0   DAT  NDBC      90
+   -84.52   28.50  '42036     '   5.0   DAT  NDBC      90
+   -86.02   28.79  '42039     '   5.0   DAT  NDBC      90
+   -88.21   29.18  '42040     '   5.0   DAT  NDBC      90
+   -90.46   27.50  '42041     '   5.0   DAT  NDBC      90
+   -92.55   27.42  '42038     '   5.0   DAT  NDBC      90
+   -94.05   22.01  '42055     '  10.0   DAT  NDBC     360
+   -84.274  27.345 '42099     ' 999.    DAT  SCRIPPS  100 
+   -87.55   30.06  '42012     '   5.0   DAT  NDBC      90
+   -88.49   28.19  '42887     '  48.2   DAT  BP        90
+   -82.924  27.173 '42013     '   3.1   DAT  NDBC      90
+   -82.220  25.254 '42014     '   2.8   DAT  NDBC      90
+   -83.306  28.311 '42021     '   2.8   DAT  NDBC      90
+   -83.741  27.504 '42022     '   3.1   DAT  NDBC      90
+   -83.086  26.010 '42023     '   3.1   DAT  NDBC      90
+   -94.899  28.982 '42043     '   3.4   DAT  NDBC      90
+   -97.051  26.191 '42044     '   3.4   DAT  NDBC      90
+   -96.500  26.217 '42045     '   3.4   DAT  NDBC      90
+   -94.037  27.890 '42046     '   3.4   DAT  NDBC      90
+   -93.597  27.896 '42047     '   3.4   DAT  NDBC      90
+   -88.647  30.042 '42067     '   5.0   DAT  NDBC      90
+   -83.650  25.700 '42097     ' 999.0   DAT  NDBC      90
+   -82.931  27.589 '42098     ' 999.0   DAT  NDBC      90
+   -90.471  26.672 '42360     '   3.0   DAT  NDBC      90
+   -92.490  27.550 '42361     ' 122.0   DAT  NDBC      90
+   -90.648  27.795 '42362     ' 122.0   DAT  NDBC      90
+   -89.220  28.160 '42363     ' 122.0   DAT  NDBC      90
+   -88.090  29.060 '42364     ' 122.0   DAT  NDBC      90
+   -89.120  28.200 '42365     ' 122.0   DAT  NDBC      90
+   -90.283  27.207 '42369     '  60.4   DAT  NDBC      90
+   -90.536  27.322 '42370     '  78.7   DAT  NDBC      90
+   -88.056  28.866 '42374     '  61.0   DAT  NDBC      90
+   -88.289  28.521 '42375     '  61.0   DAT  NDBC      90
+   -87.944  29.108 '42376     '  61.0   DAT  NDBC      90
+   -94.898  26.129 '42390     '  61.0   DAT  NDBC      90
+   -90.027  27.196 '42392     ' 100.0   DAT  NDBC      90
+   -89.240  28.157 '42394     ' 100.0   DAT  NDBC      90
+   -90.792  26.404 '42395     '   3.0   DAT  NDBC      90
+$AGGX42
+$
+$AGCA42
+$ Caribbean Sea (CA) spectra (4) south from NC and Puerto Rico (2)
+   -85.06   19.87  '42056     '  10.0   DAT  NDBC     360
+   -81.50   16.83  '42057     '  10.0   DAT  NDBC     360
+   -75.06   15.09  '42058     '  10.0   DAT  NDBC     360
+   -81.95   24.39  '42080     ' 999.    DAT  NDBC      45
+   -67.50   15.01  '42059     '   5.0   DAT  NDBC     360
+   -85.38  -19.62  '32012'       999.   DAT  WHOI     360
+   -63.50   16.50  '42060     '   5.0   DAT  NDBC     360
+   -74.681  11.161 '41194     ' 999.0   DAT  NDBC      90
+   -66.524  17.860 '42085     '   4.0   DAT  NDBC      90
+   -80.061  19.699 '42089     '   3.4   DAT  NDBC      90
+   -64.763  18.251 '41052     '   4.0   DAT  NDBC      90
+   -65.004  18.257 '41051     '   4.0   DAT  NDBC      90
+   -65.457  18.260 '41056     '   4.0   DAT  NDBC      90
+   -67.280  18.379 '41115     ' 999.0   DAT  NDBC      90
+   -81.080  30.000 '41117     ' 999.0   DAT  NDBC      90
+   -81.244  24.535 '42079     ' 999.0   DAT  NDBC      90
+   -75.042  36.000 '42086     ' 999.0   DAT  NDBC      90
+   -81.967  24.407 '42095     ' 999.0   DAT  NDBC      90
+$AGCA42
+$
+$AGNT42
+$ Western Atlantic (NT) spectra (4) south from NC and Puerto Rico (2)
+   -72.66   34.68  '41001     '   5.0   DAT  NDBC     360
+   -75.36   32.32  '41002     '   5.0   DAT  NDBC     360
+   -79.09   32.50  '41004     '   5.0   DAT  NDBC     360
+   -80.87   31.40  '41008     '   5.0   DAT  NDBC     360
+   -80.17   28.50  '41009     '   5.0   DAT  NDBC      80
+   -78.47   28.95  '41010     '   5.0   DAT  NDBC      80
+   -80.60   30.00  '41012     '   5.0   DAT  NDBC      80
+   -77.74   33.44  '41013     '   5.0   DAT  NDBC      80
+   -75.40   35.01  '41025     '   5.0   DAT  NDBC      80
+   -77.28   34.48  '41035     '   5.0   DAT  NDBC      80
+   -76.95   34.21  '41036     '   5.0   DAT  NDBC      80
+   -65.01   20.99  '41043     '   5.0   DAT  NDBC      90
+   -70.99   24.00  '41046     '   5.0   DAT  NDBC      90
+   -71.49   27.47  '41047     '  10.0   DAT  NDBC      90
+   -69.65   31.98  '41048     '  10.0   DAT  NDBC      90
+   -81.29   30.72  '41112     '  999.   DAT  SCRIPPS   30
+   -80.53   28.40  '41113     '  999.   DAT  SCRIPPS   30
+   -80.22   27.55  '41114     '  999.   DAT  SCRIPPS   30
+   -74.84   36.61  '44014     '   5.0   DAT  NDBC      90
+   -77.36   33.99  '41037     '   3.0   DAT  CORMP     80
+   -77.72   34.14  '41038     '   3.0   DAT  CORMP     80
+   -63.00   27.50  '41049     '   5.0   DAT  NDBC      90
+   -58.69   21.65  '41044     '   5.0   DAT  NDBC      90
+   -77.30   34.48  '41109     '   3.0   DAT  CORMP     80
+   -77.71   34.14  '41110     '   3.0   DAT  CORMP     80
+   -67.28   18.38  '41111     '   3.0   DAT  CORMP     80
+   -66.099  18.474 '41053     '   5.0   DAT  NDBC      80
+   -65.157  18.476 '41058     '   5.0   DAT  NDBC      80
+   -78.484  33.837 '41024     '   3.0   DAT  NDBC      80
+   -78.137  33.302 '41027     '   3.0   DAT  NDBC      80
+   -79.624  32.803 '41029     '   3.0   DAT  NDBC      80
+   -79.340  32.520 '41030     '   3.0   DAT  NDBC      80
+   -80.410  32.279 '41033     '   3.0   DAT  NDBC      80
+   -38.000  24.581 '41061     '   2.7   DAT  NDBC      80
+   -75.095  35.778 '41062     '   3.5   DAT  NDBC      80
+   -75.941  34.782 '41063     '   3.5   DAT  NDBC      80
+   -76.949  34.207 '41064     '   3.0   DAT  NDBC      80
+   -78.015  33.721 '41108     ' 999.0   DAT  NDBC      80
+   -76.948  34.210 '41159     ' 999.0   DAT  NDBC      80
+   -75.714  36.200 '44056     ' 999.0   DAT  NDBC      80
+$AGNT42
+$
+$AGNT41
+$  Western Atlantic (NT) spectra (4) NE states north of VA (1)  
+   -53.62   44.26  '44138     '   5.0   DAT  ENCAN    360
+   -66.58   41.11  '44011     '   5.0   DAT  NDBC     360
+   -58.00   43.00  '44141     '   5.0   DAT  ENCAN    360
+   -64.02   42.50  '44142     '   5.0   DAT  ENCAN    360
+   -48.01   46.77  'WRB07     '  10.0   DAT  PRIV     360
+   -62.00   42.26  '44137     '   5.0   DAT  ENCAN    360
+   -57.08   44.26  '44139     '   5.0   DAT  ENCAN    360
+   -51.74   43.75  '44140     '   5.0   DAT  ENCAN    360
+   -64.01   42.50  '44150     '   5.0   DAT  ENCAN    360
+   -70.43   38.48  '44004     '   5.0   DAT  NDBC      90
+   -69.16   43.19  '44005     '   5.0   DAT  NDBC      90
+   -69.43   40.50  '44008     '   5.0   DAT  NDBC      90
+   -74.70   38.46  '44009     '   5.0   DAT  NDBC      90
+   -72.10   40.70  '44017     '   5.0   DAT  NDBC      80
+   -69.29   41.26  '44018     '   5.0   DAT  NDBC      80
+   -73.17   40.25  '44025     '   5.0   DAT  NDBC      80
+   -71.01   41.38  '44070     '  999.   DAT  NDBC      60
+   -65.93   42.31  '44024     '   4.0   DAT  GOMOOS    80
+   -67.31   44.27  '44027     '   5.0   DAT  NDBC      80
+   -67.88   43.49  '44037     '   4.0   DAT  GOMOOS    80
+   -66.55   43.62  '44038     '   4.0   DAT  GOMOOS    80
+   -53.39   46.44  '44251     '   5.0   DAT  ENCAN     80
+   -57.35   47.28  '44255     '   5.0   DAT  ENCAN     80
+   -75.720  36.915 '44099     '  999.   DAT  SCRIPPS   90
+   -75.59   36.26  '44100     '  999.   DAT  SCRIPPS   90
+   -72.60   39.58  '44066     '   5.0   DAT  NDBC      80
+   -75.492  36.872 '44093     '  999.   DAT  SCRIPPS   80
+   -75.33   35.75  '44095     '  999.   DAT  SCRIPPS   80
+   -75.809  37.023 '44096     '  999.   DAT  SCRIPPS   80
+   -71.12   40.98  '44097     '  999.   DAT  SCRIPPS   80
+   -70.17   42.80  '44098     '  999.   DAT  SCRIPPS   80
+   -70.141  43.525 '44007     '   5.0   DAT  NDBC      80
+   -70.651  42.346 '44013     '   5.0   DAT  NDBC      80
+   -70.186  41.439 '44020     '   5.0   DAT  NDBC      80
+   -70.566  42.523 '44029     '   4.0   DAT  NDBC      80
+   -70.428  43.181 '44030     '   4.0   DAT  NDBC      80
+   -70.060  43.570 '44031     '   4.0   DAT  NDBC      80
+   -69.355  43.716 '44032     '   4.0   DAT  NDBC      80
+   -68.998  44.055 '44033     '   4.0   DAT  NDBC      80
+   -68.109  44.106 '44034     '   4.0   DAT  NDBC      80
+   -72.655  41.138 '44039     '   3.5   DAT  NDBC      80
+   -73.580  40.956 '44040     '   3.5   DAT  NDBC      80
+   -76.391  39.152 '44043     '   3.0   DAT  NDBC      80
+   -75.183  38.883 '44054     ' 999.0   DAT  NDBC      80
+   -75.256  39.122 '44055     ' 999.0   DAT  NDBC      80
+   -76.257  37.567 '44058     '   3.0   DAT  NDBC      80
+   -72.067  41.263 '44060     '   3.5   DAT  NDBC      80
+   -77.036  38.788 '44061     '   2.0   DAT  NDBC      80
+   -76.415  38.556 '44062     '   3.0   DAT  NDBC      80
+   -76.448  38.963 '44063     '   3.0   DAT  NDBC      80
+   -76.087  36.998 '44064     '   3.0   DAT  NDBC      80
+   -73.703  40.369 '44065     '   5.0   DAT  NDBC      80
+   -76.266  37.201 '44072     '   3.0   DAT  NDBC      80
+   -75.334  37.757 '44089     ' 999.0   DAT  NDBC      80
+   -70.329  41.840 '44090     ' 999.0   DAT  NDBC      80
+   -73.769  39.778 '44091     ' 999.0   DAT  NDBC      80
+   -70.632  42.942 '44092     ' 999.0   DAT  NDBC      80
+   -73.106  40.585 '44094     ' 999.0   DAT  NDBC      80
+   -63.408  44.500 '44172     ' 999.0   DAT  NDBC     360
+   -57.341  47.263 '44235     ' 999.0   DAT  NDBC     360
+   -76.149  37.024 '44087     ' 999.0   DAT  NDBC     360
+$AGNT41
+$
+$AGNT43
+$ Western Atlantic (NT) spectra (4) near South America (3) 
+   -48.13  -27.70  '31201     '  999.   DAT  SCRIPPS  180
+   -34.567  -8.15  '31052     '  999.   DAT  PNBOIA   180
+   -43.088 -23.031 '31260     '  999.   DAT  PNBOIA   180
+   -47.367 -28.5   '31374     '  999.   DAT  PNBOIA   180
+   -44.933 -25.283 '31051     '  999.   DAT  PNBOIA   180
+   -51.353 -32.595 '31053     '  999.   DAT  PNBOIA   180
+   -49.81  -31.52  '31375     '  999.   DAT  WMO      360
+$AGNT43
+$
+$AGXT43
+$ Tropical Belt (XT) spectra (4) near South America (3) 
+   -53.08   14.55  '41040     '   5.0   DAT  NDBC     360
+   -46.00   14.53  '41041     '   5.0   DAT  NDBC     360
+   -57.90   15.90  '41100     '   5.0   DAT  METFR    360
+   -56.20   14.60  '41101     '   5.0   DAT  METFR    360
+   -50.949  14.754 '41060     '   2.7   DAT  NDBC     360
+   -60.848  11.185 '42087     '   3.4   DAT  NDBC     360
+   -60.521  11.301 '42088     '   3.4   DAT  NDBC     360
+$AGXT43
+$
+$AGXT40
+$ Tropical Belt (XT) spectra (4) in Pacific Ocean and Pacific Isles (0)
+  -125.032  10.051 '43010     '   3.5   DAT  NDBC     360
+  -144.668  13.729 '52009     '   5.0   DAT  NDBC     360
+$AGXT40
+$
+$AGET43
+$ Eastern Atlantic (ET) spectra (3) near Europe (3)
+    -5.00   45.20  '62001     '   3.0   DAT  UKMO     360
+   -20.00   41.60  '62002     '  999.   DAT  UNKNOWN  360
+   -12.40   48.70  '62029     '   3.0   DAT  UKMO     360
+    -7.90   51.40  '62023     '  999.   DAT  UNKNOWN  360
+    -5.60   48.50  '62052     '  999.   DAT  METFR    100
+   -13.30   51.00  '62081     '   3.0   DAT  UKMO     360
+   -11.20   53.13  '62090     '   4.5   DAT  IDT      100
+    -5.42   53.47  '62091     '   4.5   DAT  IDT       60
+   -10.55   51.22  '62092     '   4.5   DAT  IDT      100
+    -9.07   54.67  '62093     '   4.5   DAT  IDT       60
+    -6.70   51.69  '62094     '   4.5   DAT  IDT       60
+   -15.92   53.06  '62095     '   4.5   DAT  IDT      100
+    -2.90   49.90  '62103     '  14.0   DAT  UKMO     360
+   -12.36   54.54  '62105     '   3.0   DAT  UKMO     360
+    -9.90   57.00  '62106     '   4.5   DAT  UKMO     360
+    -6.10   50.10  '62107     '  14.0   DAT  UKMO     360
+   -19.50   53.50  '62108     '   3.0   DAT  UKMO     360
+    -8.50   47.50  '62163     '   3.0   DAT  UKMO     360
+    -4.70   52.30  '62301     '   3.0   DAT  UKMO      25
+    -5.10   51.60  '62303     '   3.0   DAT  UKMO      25
+     0.00   50.40  '62305     '  14.0   DAT  UKMO      25
+     2.00   51.40  '62170     ' 999.0   DAT  UKMO      25
+   -11.40   59.10  '64045     '   3.0   DAT  UKMO     360
+    -4.50   60.70  '64046     '   3.0   DAT  UKMO     360
+   -23.10   64.05  'TFGSK     '  999.   DAT  UNKNOWN   60
+   -15.20   64.00  'TFHFN     '  999.   DAT  UNKNOWN   60
+   -20.35   63.00  'TFSRT     '  999.   DAT  UNKNOWN   60
+     7.80   64.30  'LF3F      '  999.   DAT  UNKNOWN  360
+     1.10   55.30  '62026     '  999.   DAT  UNKNOWN  360
+     0.00   57.00  '62109     '  999.   DAT  UNKNOWN   25
+     0.40   58.10  '62111     '  999.   DAT  UNKNOWN   25
+     1.30   58.70  '62112     '  999.   DAT  UNKNOWN   25
+     1.40   57.70  '62116     '  999.   DAT  UNKNOWN  360
+     0.00   57.90  '62117     '  999.   DAT  UNKNOWN   15
+     2.00   57.00  '62119     '  999.   DAT  UNKNOWN   25
+     1.40   58.70  '62128     '  999.   DAT  UNKNOWN   25
+     2.00   56.40  '62132     '  999.   DAT  UNKNOWN   25
+     1.00   57.10  '62133     '  999.   DAT  UNKNOWN   15
+     2.10   53.00  '62142     '  999.   DAT  PRIV      30
+     1.80   57.70  '62143     '  999.   DAT  UNKNOWN   25
+     1.70   53.40  '62144     '  999.   DAT  PRIV      45
+     2.80   53.10  '62145     '  999.   DAT  PRIV     360
+     1.80   57.00  '62152     '  999.   DAT  UNKNOWN   25
+     0.50   57.40  '62162     '  999.   DAT  UNKNOWN   25
+     0.50   57.20  '62164     '  999.   DAT  PRIV      15
+     1.90   51.10  '62304     '  14.0   DAT  UKMO      25
+     1.70   60.60  '63055     '  999.   DAT  UNKNOWN   25
+     1.60   59.50  '63056     '  999.   DAT  UNKNOWN   25
+     1.50   59.20  '63057     '  999.   DAT  UNKNOWN  360
+     1.10   61.20  '63103     '  999.   DAT  UNKNOWN   15
+     1.70   60.80  '63108     '  999.   DAT  UNKNOWN   15
+     1.50   59.50  '63110     '  999.   DAT  PRIV      15
+     1.00   61.10  '63112     '  999.   DAT  PRIV     360
+     1.70   61.00  '63113     '  999.   DAT  PRIV     100
+     1.30   61.60  '63115     '  999.   DAT  PRIV      25
+     2.30   61.20  'LF3J      '  999.   DAT  UNKNOWN   25
+     3.70   60.60  'LF4B      '  999.   DAT  UNKNOWN  360
+     2.20   59.60  'LF4H      '  999.   DAT  UNKNOWN   25
+     1.90   58.40  'LF4C      '  999.   DAT  UNKNOWN   25
+     3.20   56.50  'LF5U      '  999.   DAT  UNKNOWN   60
+     3.28   51.99  'EURO      '  999.   DAT  MVEW      60
+     3.22   53.22  'K13       '  999.   DAT  MVEW      25
+    -3.03   43.63  '62024     '  999.   DAT  PDES      25
+    -7.62   44.07  '62082     '  999.   DAT  PDES      25
+    -9.40   42.12  '62084     '  999.   DAT  PDES      25
+    -6.97   36.48  '62085     '  999.   DAT  PDES      25
+   -15.82   28.18  '13130     '  999.   DAT  PDES      25
+   -16.58   28.00  '13131     '  999.   DAT  PDES      25
+     0.90   57.70  '62118     '  999.   DAT  UNKNOWN   15
+     2.10   57.10  '62146     '  999.   DAT  UNKNOWN   25
+     6.33   55.00  'BSH01     '  999.   DAT  UNKNOWN   60
+     7.89   54.16  'BSH02     '  999.   DAT  UNKNOWN   60
+     8.12   54.00  'BSH03     '  999.   DAT  UNKNOWN   60
+     6.58   54.00  'BSH04     '  999.   DAT  UNKNOWN   60
+     8.22   54.92  'BSH05     '  999.   DAT  UNKNOWN   60
+$AGET43
+$
+$AGAC43
+$ Arctic Ocean (AC) spectra (4) non-descript (3)
+   -25.00   65.69  'TFBLK     '  999.   DAT  UNKNOWN   60
+   -18.20   66.50  'TFGRS     '  999.   DAT  UNKNOWN   60
+   -13.50   65.65  'TFKGR     '  999.   DAT  UNKNOWN   60
+     7.30   65.30  'LF3N      '  999.   DAT  UNKNOWN   60
+     8.10   66.00  'LF5T      '  999.   DAT  UNKNOWN  360
+     2.00   66.00  'LDWR      '  999.   DAT  UNKNOWN  360
+    21.10   71.60  '3FYT      '  999.   DAT  UNKNOWN  360
+    15.50   73.50  'LFB1      '  999.   DAT  OCNOR    360
+    30.00   74.00  'LFB2      '  999.   DAT  OCNOR    360
+    -9.26   68.48  '64071     '  999.   DAT  UNKNOWN   60
+  -166.071  70.025 '48012     '   3.0   DAT  NDBC     360
+  -169.454  65.011 '48114     ' 999.0   DAT  NDBC     360
+  -146.040  70.370 '48211     ' 999.0   DAT  NDBC     360
+  -150.279  70.874 '48212     ' 999.0   DAT  NDBC     360
+  -164.133  71.502 '48213     ' 999.0   DAT  NDBC     360
+  -165.248  70.872 '48214     ' 999.0   DAT  NDBC     360
+  -167.952  71.758 '48216     ' 999.0   DAT  NDBC     360
+$AGAC43
+$
+$AGIO45
+$ Indian Ocean (I) spectra (4) non-descript (5)
+    72.49   17.02  '23092     '  999.   DAT  UNKNOWN   20
+    73.75   15.40  '23093     '  999.   DAT  UNKNOWN  120
+    74.50   12.94  '23094     '  999.   DAT  UNKNOWN  120
+    80.39   13.19  '23096     '  999.   DAT  UNKNOWN  120
+    69.24   15.47  '23097     '  999.   DAT  UNKNOWN  360
+    72.51   10.65  '23098     '  999.   DAT  UNKNOWN  360
+    90.74   12.14  '23099     '  999.   DAT  UNKNOWN  360
+    87.56   18.35  '23100     '  999.   DAT  UNKNOWN  120
+    83.27   13.97  '23101     '  999.   DAT  UNKNOWN  360
+    87.50   15.00  '23168     '  999.   DAT  UNKNOWN  360
+    90.14   18.13  '23169     '  999.   DAT  UNKNOWN  360
+    72.66    8.33  '23170     '  999.   DAT  UNKNOWN  360
+    72.00   12.50  '23172     '  999.   DAT  UNKNOWN  360
+    78.57    8.21  '23173     '  999.   DAT  UNKNOWN  120
+    81.53   11.57  '23174     '  999.   DAT  UNKNOWN  360
+   116.14  -19.59  '56002     '  999.   DAT  UNKNOWN  120
+   115.40  -32.11  '56005     '  999.   DAT  UNKNOWN   50
+   114.78  -33.36  '56006     '  999.   DAT  UNKNOWN  120
+   114.94  -21.41  '56007     '  999.   DAT  UNKNOWN   50
+    22.17  -34.97  'AGULHAS_FA'  10.0   DAT  PRIV     360
+   121.90  -34.00  '56010     '  999.   DAT  UNKNOWN   50
+   114.10  -21.70  '56012     '  999.   DAT  UNKNOWN   50
+    85.00   12.60  '23167     '  999.   DAT  UNKNOWN  360
+    70.00   11.02  '23171     '  999.   DAT  UNKNOWN  360
+    91.66   10.52  '23451     '  999.   DAT  UNKNOWN  120
+    89.04   10.97  '23455     '  999.   DAT  UNKNOWN  120
+    86.98    9.99  '23456     '  999.   DAT  UNKNOWN  120
+    70.10    5.16  '23491     '  999.   DAT  UNKNOWN  120
+    68.08   13.89  '23492     '  999.   DAT  UNKNOWN  120
+    66.98   11.12  '23493     '  999.   DAT  UNKNOWN  120
+    75.00    6.46  '23494     '  999.   DAT  UNKNOWN  120
+    68.97    7.13  '23495     '  999.   DAT  UNKNOWN  120
+$AGIO45
+$
+$ END of AWIPS Section
+$ 
+$ South America DAT
+   -77.50    6.26  '32488     '  999.   DAT  DIMAR     45
+   -77.74    3.52  '32487     '  999.   DAT  DIMAR     45
+   -72.22   12.35  '41193     '  999.   DAT  DIMAR    120
+$ Japanese buoys DAT
+$ South Korean buoys DAT
+   129.78   36.35  '22106     '   999.  DAT  SKOREA    100
+   126.33   33.00  '22107     '   999.  DAT  SKOREA    100
+$ Africa DAT
+    57.70  -20.45  'MAUR01    '  999.   DAT  WMO      360
+    57.75  -20.10  'MAUR02    '  999.   DAT  WMO      360
+$ End of multi_1 buoy file
+$
+     0.00    0.00  'STOPSTRING'  999.   XXX  NCEP       0

@@ -1,0 +1,61 @@
+#############################################
+####  NEMS Run-Time Configuration File  #####
+#############################################
+
+# EARTH #
+EARTH_component_list: ATM OCN WAV NWM
+EARTH_attributes::
+  Verbosity = max
+::
+
+# ATM #
+ATM_model:                      atmesh
+ATM_petlist_bounds:             11 11
+ATM_attributes::
+  Verbosity = max
+::
+
+# OCN #
+OCN_model:                      adcirc
+OCN_petlist_bounds:             0 10
+OCN_attributes::
+  Verbosity = max
+::
+
+# WAV #
+WAV_model:                      ww3data
+WAV_petlist_bounds:             12 12
+WAV_attributes::
+  Verbosity = max
+::
+
+# HYD n 24 N 32 #
+NWM_model:			nwm
+NWM_petlist_bounds:		13 781 
+NWM_attributes::
+  Verbosity = max
+::
+   
+# HYD n 64 #
+DFLOW_model:			dflow	
+NWM_petlist_bounds:		13 781 
+NWM_attributes::
+  Verbosity = max
+::
+  
+# Run Sequence #
+runSeq::
+  @3600
+    ATM -> OCN   :remapMethod=redist
+    WAV -> OCN   :remapMethod=redist
+    ATM -> NWM   :remapMethod=redist
+    WAV -> NWM   :remapMethod=redist
+    OCN -> NWM   : TO DO ........
+    
+    ATM -> DFLOW :
+    WAV -> DFLOW
+    OCN -> DFLOW
+    NWM -> DFLOW :remapMethod=bilinear:SrcTermProcessing=1:DUMPWEIGHTS=true:TermOrder=SrcSeq
+    DFLOW -> OCN 
+  @
+::
