@@ -624,7 +624,7 @@
                           SP => SPPNT
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
                           DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
-                          ICEFO, SPCO, NAPROC
+                          ICEFO, SPCO, NAPROC, TAUAO, TAUDO, DAIRO
 !/SETUP      USE W3WDATMD, ONLY: ZETA_SETUP
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/MPI      USE W3ODATMD, ONLY: IRQPO2
@@ -650,8 +650,8 @@
 !/MPI      INTEGER                 :: STAT(MPI_STATUS_SIZE,4*NOPTS)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: RD(4), RDS, RDI, FACRD,              &
-                                 WNDX, WNDY, CURX, CURY, FAC1(NK),    &
-                                 FAC2(NK), FAC3(NK), FAC4(NK)
+                                 WNDX, WNDY, TAUX, TAUY, CURX, CURY,  &
+                                 FAC1(NK), FAC2(NK), FAC3(NK), FAC4(NK)
       INTEGER                 :: JSEA, ISEA
 !/T      REAL                    :: SPTEST(NK,NTH)
 !/RTD      REAL :: Spectr(NSPEC), AnglDIS
@@ -960,7 +960,7 @@
       USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
-                          GRDID, ICEO, ICEHO, ICEFO
+                          GRDID, ICEO, ICEHO, ICEFO, TAUAO, TAUDO, DAIRO
       USE W3ODATMD, ONLY :  OFILES
 !/
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO

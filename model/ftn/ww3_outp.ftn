@@ -178,7 +178,8 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
+                          DPO, WAO, WDO, TAUAO, TAUDO, DAIRO,        &
+                          ASO, CAO, CDO, SPCO, FNMPRE,               &
                           ICEO, ICEHO, ICEFO, DIMP
       USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
@@ -1107,7 +1108,8 @@
       INTEGER, SAVE           :: IPASS  = 0
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DEPTH, SQRTH, CDIR, SIX, R1, R2,     &
-                                 UDIR, UDIRR, UABS, XL, XH, XL2, XH2, &
+                                 UDIR, UDIRR, UABS, TAUA, TAUADIR,    &
+                                 RHOAIR, XL, XH, XL2, XH2,            &
                                  ET, EWN, ETR, ETX, ETY, EBND, EBX,   &
                                  EBY, HSIG, WLEN, TMEAN, THMEAN,      &
                                  THSPRD, EMAX, EL, EH, DENOM, FP, THP,&
@@ -1118,7 +1120,6 @@
                                  FMEAN, WNMEAN, UDIRCA, X, Y, CHARN,  &
                                  M2KM, ICEF, ICEDMAX, ICETHICK,       &
                                  ICECON
-!FLX5      REAL                    :: TAUA, TAUADIR, RHOAIR
 !/IS2      REAL                    :: WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
@@ -1278,6 +1279,10 @@
             UDIRCA   = WDO(J)*RADE
             UDIRR    = WDO(J)
             UABS     = MAX ( 0.001 , WAO(J) )
+! Need to add TAUA, TAUADIR and RHOAIR.
+            TAUA     = MAX ( 0.001 , TAUAO(J))
+            TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+            RHOAIR   = MAX ( 0. , DAIRO(J))
             CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
             ICEDMAX  = MAX ( 0., ICEFO(J))
             ICEF     = ICEDMAX

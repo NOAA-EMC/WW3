@@ -166,7 +166,8 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDSO, NOPTS, PTLOC, PTNME,     &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
+                          DPO, WAO, WDO, TAUAO, TAUDO, DAIRO,  &
+                          ASO, CAO, CDO, SPCO, FNMPRE,         &
                           IPASS => IPASS2, ICEFO, ICEO, ICEHO
 !/T      USE W3ODATMD, ONLY: NDST
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
@@ -1440,8 +1441,8 @@
 !/S      INTEGER, SAVE           :: IENT   = 0
 !
       REAL                    :: DEPTH, SQRTH, CDIR, SIX, R1, R2,      &
-                                 UDIR, UDIRR, UABS, XL,                &
-                                 XH, XL2, XH2,                         &
+                                 UDIR, UDIRR, UABS, TAUA, TAUADIR,     &
+                                 RHOAIR, XL, XH, XL2, XH2,             &
                                  ET, EWN, ETR, ETX, ETY, EBND, EBX,    &
                                  EBY, HSIG, WLEN, TMEAN, THMEAN,       &
                                  THSPRD, EMAX, EL, EH, DENOM, FP, THP, &
@@ -1464,7 +1465,8 @@
                                  XLN(NTH,NK), XWL(NTH,NK), XIS(NTH,NK),&
                                  SIN1(NK), SNL1(NK), SDS1(NK),         &
                                  SBT1(NK), SIS1(NK), STT1(NK),         &
-                                 E1ALL(NK,6), UDIR1(NREQ), CDIR1(NREQ)
+                                 E1ALL(NK,6), UDIR1(NREQ), CDIR1(NREQ),&
+                                 TAUDIR1(NREQ)
       REAL, SAVE              :: HSMIN  = 0.05
 !/IS2       REAL                     :: ICEF, ICEDMAX, DIA2(NTH,NK)
 !/ST1      REAL                    :: AMAX, FH1, FH2
@@ -1478,7 +1480,6 @@
 !/BS1      REAL                    :: TAUSCX, TAUSCY
 !/BT4      REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
            REAL                    :: ICE
-!FLX5      REAL                    :: TAUA, TAUADIR, RHOAIR
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
 !
@@ -1625,6 +1626,7 @@
         DO J1=1,NREQ
           UDIR1(J1)  = MOD ( 270. - WDO(INDREQ(J1))*RADE , 360. )
           CDIR1(J1)   = MOD ( 270. - CDO(INDREQ(J1))*RADE , 360. )
+          TAUDIR1(J1) =  MOD ( 270. - TAUDO(INDREQ(J1))*RADE , 360. )
         END DO
 !
         IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/1,IOUT/))
@@ -1675,6 +1677,9 @@
           UDIRR    = WDO(J)
           UABS     = MAX ( 0.001 , WAO(J) )
           CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
+          TAUA     = MAX ( 0.001 , TAUAO(J))
+          TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+          RHOAIR   = MAX ( 0. , DAIRO(J))
 !/IS2           ICEDMAX  = MAX ( 0., ICEFO(J))
 !/IS2           ICEF     = ICEDMAX
           ICETHICK = MAX (0., ICEHO(J))
