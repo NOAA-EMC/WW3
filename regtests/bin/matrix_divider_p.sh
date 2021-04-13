@@ -30,6 +30,8 @@ maxlist2=92
 #Put the job requirement/spec in "before"
 sed -e "/run_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
+command egrep 'ww3_ufs' matrix.tmp | cat >> list_ufs
+awk '!/ww3_ufs/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 command egrep 'ww3_tp2.14|ww3_tp2.17|ww3_tp2.21' matrix.tmp | cat >> list_heavy
 awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.17/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
@@ -47,7 +49,7 @@ matrixno2=$(ls list_serial_* | wc -l)
 echo "Total nummber of matrix with serial test = $matrixno2; each includes $maxlist2 tests"
 rm matrix.tmp
 
-# -------------------------------|ww3_tp2.21|ww3_tp2.21-------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # 2.  Divide and dump in subsets                                              #
 # --------------------------------------------------------------------------- #
 # parallel jobs
@@ -115,6 +117,24 @@ count=0
   awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   echo " matrix$count prepared"
 
+#ncep operational tests including ww3_ufs and gfsv16 which require a large number of processor/esmf coupler and the ones for grib test are separated
+  (( count = count + 1 ))
+  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
+  cat before >> matrix$count
+  sed -i 's/'24'/'720'/gI' matrix$count
+  cat list_ufs >> matrix$count
+  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
+  sed -i 's/'model'/'model${count}'/gI' matrix$count
+  echo "  echo ' '"                                                                     >> matrix$count
+  echo "  echo '     **************************************************************'"   >> matrix$count
+  echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
+  echo "  echo '     **************************************************************'"   >> matrix$count
+  echo "  echo ' '"                                                                     >> matrix$count
+  echo "rm -rf ${HOME}/model${count}"                                                   >> matrix$count
+#make sure ../model$count does not exist and copy a fresh copy
+  awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+  awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+  echo " matrix$count prepared"
 
 
 rm before
