@@ -4,7 +4,8 @@ $ The start and end dates for running will be over written by the NEMS driver
 $ The start/end for output are chosen to capture hopefully any time period run
 $ ----------------------------------------------------------------------------
 $
-3 1 T 1 T T
+$3 1 T 1 T T
+  3 1 T 3 T F
 $
 $
   'glo_30m' F T T T F F F
@@ -19,13 +20,13 @@ $ 5-7) assimilation data as in the file ww3_shel.inp.
 $
    20130401 000000   20130402 000000
 $
-   F  F
+   T T
 $
-   20130401 030000   10800 20130402 000000 
+   20130401 030000   10800 20130402 000000 1
    N
    WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA USP
 $
-   20130401 030000   10800 20130402 000000
+   20130401 030000   10800 20130402 000000 1
 $
 $ Global output point data file for global wave ensembles
 $

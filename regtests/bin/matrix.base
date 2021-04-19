@@ -2073,12 +2073,12 @@
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.1"                           >> matrix.body
+    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl   -o grib $ww3 ww3_ufs1.1"                           >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
        echo "mkdir -p ww3_ufs1.1/work_b"                                                                      >> matrix.body
        echo "cp ww3_ufs1.1/work_a/20130401.030000.restart.glo_1deg ww3_ufs1.1/work_b/restart.glo_1deg"        >> matrix.body
-       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.1"                        >> matrix.body
+       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $npl   -o grib $ww3 ww3_ufs1.1"                        >> matrix.body
        echo "cmp --silent ww3_ufs1.1/work_a/20130401.030000.restart.glo_1deg ww3_ufs1.1/work_b/20130401.030000.restart.glo_1deg || echo "'"Error: restart files at initial time are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.1/work_a/20130401.060000.restart.glo_1deg ww3_ufs1.1/work_b/20130401.060000.restart.glo_1deg || echo "'"Error: restart files at 3hr forecast are different"'""  >> matrix.body
     fi
@@ -2088,12 +2088,12 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.1"              >> matrix.body
+    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl   -o grib $ww3 ww3_ufs1.1"              >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
        echo "mkdir -p ww3_ufs1.1/work_b_esmf"                                                                 >> matrix.body
        echo "cp ww3_ufs1.1/work_a_esmf/20130401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/restart.glo_1deg">> matrix.body
-       echo "$rtst -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.1"           >> matrix.body
+       echo "$rtst -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $npl   -o grib $ww3 ww3_ufs1.1"           >> matrix.body
        echo "cmp --silent ww3_ufs1.1/work_a_esmf/20130401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/20130401.030000.restart.glo_1deg || echo "'"Error: restart files at initial time are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.1/work_a_esmf/20130401.060000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/20130401.060000.restart.glo_1deg || echo "'"Error: restart files at 3hr forecast are different"'""  >> matrix.body
     fi
@@ -2103,14 +2103,17 @@
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.2"                           >> matrix.body
+    echo "mkdir -p ww3_ufs1.2/work_a"                                                                         >> matrix.body
+    echo "cp ww3_ufs1.2/input/rmp_src* ww3_ufs1.2/work_a/"                                                    >> matrix.body
+    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth  -o grib $ww3 ww3_ufs1.2"                   >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
        echo "mkdir -p ww3_ufs1.2/work_b"                                                                      >> matrix.body
+       echo "cp ww3_ufs1.2/input/rmp_src* ww3_ufs1.2/work_b/"                                                 >> matrix.body
        echo "cp ww3_ufs1.2/work_a/20130401.030000.restart.gnh_10m ww3_ufs1.2/work_b/restart.gnh_10m"          >> matrix.body
        echo "cp ww3_ufs1.2/work_a/20130401.030000.restart.gsh_15m ww3_ufs1.2/work_b/restart.gsh_15m"          >> matrix.body
        echo "cp ww3_ufs1.2/work_a/20130401.030000.restart.aoc_9km ww3_ufs1.2/work_b/restart.aoc_9km"          >> matrix.body
-       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.2"                        >> matrix.body
+       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $npl  -t $nth -o grib $ww3 ww3_ufs1.2"                 >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a/20130401.030000.restart.gnh_10m ww3_ufs1.2/work_b/20130401.030000.restart.gnh_10m || echo "'"Error: restart files at initial time (gnh) are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a/20130401.060000.restart.gnh_10m ww3_ufs1.2/work_b/20130401.060000.restart.gnh_10m || echo "'"Error: restart files at 3hr forecast (gnh) are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a/20130401.030000.restart.gsh_15m ww3_ufs1.2/work_b/20130401.030000.restart.gsh_15m || echo "'"Error: restart files at initial time (gsh) are different"'""  >> matrix.body
@@ -2124,14 +2127,17 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.2"              >> matrix.body
+    echo "mkdir -p ww3_ufs1.2/work_a_esmf"                                                                    >> matrix.body
+    echo "cp ww3_ufs1.2/input/rmp_src* ww3_ufs1.2/work_a_esmf/"                                               >> matrix.body
+    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl  -t $nth -o grib $ww3 ww3_ufs1.2"       >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
        echo "mkdir -p ww3_ufs1.2/work_b_esmf"                                                                 >> matrix.body
+    echo "cp ww3_ufs1.2/input/rmp_src* ww3_ufs1.2/work_b_esmf/"                                               >> matrix.body
        echo "cp ww3_ufs1.2/work_a_esmf/20130401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/restart.gnh_10m">> matrix.body
        echo "cp ww3_ufs1.2/work_a_esmf/20130401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/restart.gsh_15m">> matrix.body
        echo "cp ww3_ufs1.2/work_a_esmf/20130401.030000.restart.aoc_9km ww3_ufs1.2/work_b_esmf/restart.aoc_9km">> matrix.body
-       echo "$rtst -w work_b_esmf -m grdset_b  -C ESMF -f -p $mpi -n $np*30 -o grib $ww3 ww3_ufs1.2"          >> matrix.body
+       echo "$rtst -w work_b_esmf -m grdset_b  -C ESMF -f -p $mpi -n $npl  -t $nth  -o grib $ww3 ww3_ufs1.2"  >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a_esmf/20130401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/20130401.030000.restart.gnh_10m || echo "'"Error: restart files at initial time (gnh-esmf) are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a_esmf/20130401.060000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/20130401.060000.restart.gnh_10m || echo "'"Error: restart files at 3hr forecast (gnh-esmf) are different"'""  >> matrix.body
        echo "cmp --silent ww3_ufs1.2/work_a_esmf/20130401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/20130401.030000.restart.gsh_15m || echo "'"Error: restart files at initial time (gsh-esmf) are different"'""  >> matrix.body

@@ -86,6 +86,7 @@
 # 1. Set up
    
   export  np='24'  #number of mpi tasks
+  export  npl='440'  #number of mpi tasks for ufs applications and large setups
   export  nr='4'   #number of mpi tasks for hybrid
   export nth='6'   #number of threads
 
@@ -96,6 +97,7 @@
   if [ $batchq = "slurm" ] && [ $isorion ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo "#SBATCH --cpus-per-task=6"                        >> matrix.head
     echo '#SBATCH -q batch'                                 >> matrix.head
     echo '#SBATCH -t 08:00:00'                              >> matrix.head
     echo '#SBATCH -A marine-cpu'                            >> matrix.head
@@ -105,6 +107,7 @@
   elif [ $batchq = "slurm" ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo "#SBATCH --cpus-per-task=6"                        >> matrix.head
     echo '#SBATCH -q batch'                                 >> matrix.head
     echo '#SBATCH -t 08:00:00'                              >> matrix.head
     echo '#SBATCH -A marine-cpu'                            >> matrix.head
