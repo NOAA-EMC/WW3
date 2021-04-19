@@ -4,7 +4,6 @@ $ ----------------------------------------
 N
 WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA USP
 $
-20130401 000000  7 11 255 0 15
+20130401 00000 7 11 255 0 0
 $
- 70 0 9.0 9.0 64
 $ end of input file
