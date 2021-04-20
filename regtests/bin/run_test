@@ -81,8 +81,9 @@ Options:
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
-                   :   grib   : post-process only GRIB2 output
                    :   both   : post-process both native and NetCDF output
+                   :   grib   : post-process only GRIB2 output
+                   :   all    : post-process both native and NetCDF and GRIB2 output
                    :   * default is native
                    :   * note that required input files must be present for
                    :     selected output post-processing to occur
@@ -187,7 +188,7 @@ then
   exit_p=$exec_p
 fi
 case $outopt in
-  native|netcdf|both|grib) ;;
+  native|netcdf|both|grib|all) ;;
   *) errmsg "outopt = $outopt not supported" ; usage ; exit 1 ;;
 esac
 case $coupl in
@@ -1827,6 +1828,7 @@ case $outopt in
   netcdf) out_progs="ww3_ounf" ;;
   both)   out_progs="ww3_outf ww3_ounf" ;;
   grib)   out_progs="ww3_grib" ;;
+  all)    out_progs="ww3_outf ww3_ounf ww3_grib" ;;
   *)      out_progs="" ;;
 esac
 
@@ -2065,6 +2067,7 @@ case $outopt in
   native) out_progs="ww3_outp" ;;
   netcdf) out_progs="ww3_ounp" ;;
   both)   out_progs="ww3_outp ww3_ounp" ;;
+  all)   out_progs="ww3_outp ww3_ounp" ;;
   *)      out_progs="" ;;
 esac
 

@@ -4,7 +4,7 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
 $
-  19850101 000000  3600.  1000
+  20130401 000000  10800.  10
 $
 $ Fields requested --------------------------------------------------- $
 $
@@ -19,7 +19,7 @@ $ WCF WCH WCM SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC ABR UBR BED
 $ FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
 $
  N
-ICE WND CUR LEV DPT DPT HS FP T01
+WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
@@ -27,7 +27,7 @@ $        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
 $ swell partitions [0 1 2 3 4 5]
 $ variables in same file [T] or not [F] 
 $
- 3 4
+ 4 4
  0 1 2
  T
 $

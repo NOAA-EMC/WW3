@@ -90,7 +90,7 @@
   echo "  echo '      Assim Update of the restart file   : $assim'"            >> matrix.head
   echo "  echo '      OASIS coupling                     : $oasis'"            >> matrix.head
   echo "  echo '      Calendar type                      : $calendar'"         >> matrix.head
-  echo "  echo '      Earth System Modeling Framework    : $esmf'"             >> matrix.head
+  echo "  echo '      ESMF Coupling                      : $esmf'"             >> matrix.head
   echo "  echo '      The Unified Forecast System        : $ufs'"              >> matrix.head
   echo "  echo '      Restart Reproducibility            : $rstrt_b4b'"        >> matrix.head
   echo "  echo '      grib file field output             : $grib'"             >> matrix.head
