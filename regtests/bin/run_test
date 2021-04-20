@@ -81,6 +81,7 @@ Options:
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
+                   :   grib   : post-process only GRIB2 output
                    :   both   : post-process both native and NetCDF output
                    :   * default is native
                    :   * note that required input files must be present for

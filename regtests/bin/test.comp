@@ -13,10 +13,11 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# This script takes in three arguments: the name of the test and two work directories
-#
-# 1. Set up
-# 1.a Computer/ user dependent set up
+# This script takes in three arguments: the name of the test and two work     #
+# directories                                                                 #
+# --------------------------------------------------------------------------- #
+# 1. Check input command                                                      #
+# --------------------------------------------------------------------------- #
 
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
   then     
@@ -33,7 +34,7 @@
   comp_dir=$3
   home_dir=`pwd`
 
-
+# Check if the base and comp directories exist.
   if [ ! -d $ctest/$base_dir ] ; then
     echo "       directory $ctest/$base_dir not found." ; exit 2 ; fi
 
@@ -42,23 +43,23 @@
 
 
 # --------------------------------------------------------------------------- #
-# 3.  Check for files, generate lists of files                                #
+# 2.  Check for files, generate lists of files and compare                    #
 # --------------------------------------------------------------------------- #
 
   cd $home_dir/$ctest
-file_list=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++'`
-( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' > file_list
-awk '!/log|mod_def|time|ST4|rmp|scrip|.out|wind|current|ice|level/' file_list > tmpfile && mv tmpfile file_list
-
-   while read -r line
-   do
-   cmp --silent $base_dir/$line $comp_dir/$line || echo "Error: $ctest/$base_dir/$line and $ctest/$comp_dir/$line are different"
-   done < file_list
-
+# list the common files in two directories 
+file_list=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
 cd $home_dir
+# check if the files are identical or different
+  for file in $file_list
+  do
+    if cmp --silent $ctest/$base_dir/$file $ctest/$comp_dir/$file; then
+      echo "$ctest/$base_dir/$file and $ctest/$comp_dir/$file are identical"
+    else
+     echo "Error: $ctest/$base_dir/$file and $ctest/$comp_dir/$file are different"
+    fi
+ done
 
-
-#awk '!/log/mod_def/time/ST4/rmp/scrip/.out' matrix.tmp > tmpfile && mv tmpfile file
 # --------------------------------------------------------------------------- #
-# End to matrix.comp                                                          #
+# End to test.comp                                                            #
 # --------------------------------------------------------------------------- #
