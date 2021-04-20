@@ -1849,6 +1849,10 @@ do
   then
     rline='| NC Gridded output  |'
   fi
+  if [ $prog = ww3_grib ]
+  then
+    rline='| GRIB Gridded output  |'
+  fi
   if [ $prog = gx_outf ]
   then
     rline='|GrADS Gridded output|'
@@ -1864,7 +1868,6 @@ do
     else
       inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
     fi
-
 
     if [ $? = 0 ]
     then
@@ -1937,24 +1940,23 @@ do
           gu="_$g"
         fi
 
-        for ifile in $inputs
-        do
+         ifile=`( ls ${path_i}/${prog}${gu}.??? )`
 
 # link conf file
           if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
-            \ln -s $ifile $prog.nml
-            otype="`basename $ifile .nml | sed s/^${prog}_//`"
-            ofile="$path_w/`basename $ifile .nml`${gu}.out"
+            \ln -s $path_i/$prog${gu}.nml $prog.nml
+            otype="`basename $prog${gu}.nml | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $prog.nml`${gu}.out"
           else
             \rm -f $prog.inp
-            \ln -s $ifile $prog.inp
-            otype="`basename $ifile .inp | sed s/^${prog}_//`"
-            ofile="$path_w/`basename $ifile .inp`${gu}.out"
+            \ln -s $path_i/$prog${gu}.inp $prog.inp
+            otype="`basename $prog${gu}.inp | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $prog.inp`${gu}.out"
           fi
 
-          echo "   Processing $ifile"
+          echo "   Processing $path_i/$prog${gu}.inp"
           echo "   Screen output routed to $ofile"
     
           if [ $multi -eq 2 ]
@@ -2003,6 +2005,12 @@ do
                 mv -f $ofiles ${otype}_$g/.
                 echo "   NetCDF output files moved to ${otype}_$g"
               fi
+              ofiles="`ls gribfile 2>/dev/null`"
+              if [ $? = 0 ]
+              then
+                mv -f $ofiles $g.grb2
+                echo "   GRIB output files moved to $g.grb2"
+              fi
 #
               if [ "$prog" = 'gx_outf' ]
               then
@@ -2039,7 +2047,6 @@ do
 
         done
 
-      done
 
     fi
 
