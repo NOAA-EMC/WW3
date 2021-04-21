@@ -48,7 +48,7 @@
 
   cd $home_dir/$ctest
 # list the common files in two directories 
-file_list=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+file_list=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
 cd $home_dir
 # check if the files are identical or different
   for file in $file_list
@@ -56,7 +56,7 @@ cd $home_dir
     if cmp --silent $ctest/$base_dir/$file $ctest/$comp_dir/$file; then
       echo "$ctest/$base_dir/$file and $ctest/$comp_dir/$file are identical"
     else
-     echo "Error: $ctest/$base_dir/$file and $ctest/$comp_dir/$file are different"
+     echo "Warning: $ctest/$base_dir/$file and $ctest/$comp_dir/$file are different"
     fi
  done
 
