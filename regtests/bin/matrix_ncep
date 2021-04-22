@@ -99,7 +99,7 @@
   if [ $batchq = "slurm" ] && [ $isorion ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
-    echo "#SBATCH --cpus-per-task=${nth}"                   >> matrix.head
+    echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
     echo '#SBATCH -q batch'                                 >> matrix.head
     echo '#SBATCH -t 08:00:00'                              >> matrix.head
     echo '#SBATCH -A marine-cpu'                            >> matrix.head
@@ -109,7 +109,7 @@
   elif [ $batchq = "slurm" ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
-    echo "#SBATCH --cpus-per-task=${nth}"                   >> matrix.head
+    echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
     echo '#SBATCH -q batch'                                 >> matrix.head
     echo '#SBATCH -t 08:00:00'                              >> matrix.head
     echo '#SBATCH -A marine-cpu'                            >> matrix.head

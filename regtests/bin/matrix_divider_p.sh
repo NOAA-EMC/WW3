@@ -125,6 +125,7 @@ count=0
   cat list_ufs >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
+  sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix$count
   echo "  echo ' '"                                                                     >> matrix$count
   echo "  echo '     **************************************************************'"   >> matrix$count
   echo "  echo '     *  end of WAVEWATCH III matrix$count of regression tests     *'"   >> matrix$count
