@@ -45,6 +45,11 @@
 # --------------------------------------------------------------------------- #
 # 2.  Check for files, generate lists of files and compare                    #
 # --------------------------------------------------------------------------- #
+  echo ' '                                                                 
+  echo '       *****************************************************************'     
+  echo "     ***  compare WAVEWATCH III $ctest/$base_dir and $ctest/$comp_dir  ***"   
+  echo '       *****************************************************************'    
+  echo ' '                                                                
 
   cd $home_dir/$ctest
 # list the common files in two directories 
@@ -54,11 +59,17 @@ cd $home_dir
   for file in $file_list
   do
     if cmp --silent $ctest/$base_dir/$file $ctest/$comp_dir/$file; then
-      echo "$ctest/$base_dir/$file and $ctest/$comp_dir/$file are identical"
+      echo "$file is identical"
     else
-     echo "Warning: $ctest/$base_dir/$file and $ctest/$comp_dir/$file are different"
+     echo "Warning: $file is different"
     fi
  done
+
+  echo ' '
+  echo '   ****************************************************************************'
+  echo ' ***  end of WAVEWATCH III compare tests with the same version of the code   ***'
+  echo '   ****************************************************************************'
+  echo ' '
 
 # --------------------------------------------------------------------------- #
 # End to test.comp                                                            #
