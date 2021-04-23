@@ -121,7 +121,7 @@ count=0
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
-  sed -i 's/'24'/'440'/gI' matrix$count
+  sed -i 's/'n\ 24'/'n\ 440'/gI' matrix$count
   cat list_ufs >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
