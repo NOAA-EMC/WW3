@@ -54,7 +54,7 @@ cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 cp -r data_regtests/ww3_tp2.21/input/*     regtests/ww3_tp2.21/input/
 cp -r data_regtests/ww3_ufs1.1/input/wind_cur_ice.nc     regtests/ww3_ufs1.1/input/
 cp -r data_regtests/ww3_ufs1.1/input/wind_cur_ice.nc     regtests/ww3_ufs1.2/input/
-cp -r data_regtests/ww3_ufs1.2/input/rmp_src_to_dst*     regtests/ww3_ufs1.2/input/
+cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
 echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "

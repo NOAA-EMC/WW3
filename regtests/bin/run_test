@@ -1942,7 +1942,9 @@ do
           fi
           gu="_$g"
         fi
-
+# for ww3_grib only
+        if [ $prog == 'ww3_grib' ]
+        then
          ifile=`( ls ${path_i}/${prog}${gu}.??? )`
 
 # link conf file
@@ -1961,7 +1963,66 @@ do
 
           echo "   Processing $path_i/$prog${gu}.inp"
           echo "   Screen output routed to $ofile"
-    
+
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            \rm -f out_grd.ww3
+            \ln -s mod_def.$g mod_def.ww3
+            \ln -s out_grd.$g out_grd.ww3
+            \rm -fr ${otype}_$g
+          fi
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $path_e/$prog > $ofile
+          then
+            \rm -f $prog.inp
+            \rm -f $prog.nml
+            if [ $multi -eq 2 ]
+            then
+              \rm -f mod_def.ww3
+              \rm -f out_grd.ww3
+              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              then
+                mv $prog.nml.log ${prog}_$g.nml.log
+              fi
+              ofiles="`ls gribfile 2>/dev/null`"
+              if [ $? = 0 ]
+              then
+                mv -f $ofiles $g.grb2
+                echo "   GRIB output files moved to $g.grb2"
+              fi
+            fi
+       
+        else
+            errmsg "Error occured during $path_e/$prog execution"
+        fi
+#for ww3_ounf, ww3_outp and ww3_gx_outf
+        else
+        for ifile in $inputs
+        do
+
+# link conf file
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            \rm -f $prog.nml
+            \ln -s $ifile $prog.nml
+            otype="`basename $ifile .nml | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .nml`${gu}.out"
+          else
+            \rm -f $prog.inp
+            \ln -s $ifile $prog.inp
+            otype="`basename $ifile .inp | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $ifile .inp`${gu}.out"
+          fi
+
+          echo "   Processing $ifile"
+          echo "   Screen output routed to $ofile"
+
+ 
           if [ $multi -eq 2 ]
           then
             \rm -f mod_def.ww3
@@ -2008,12 +2069,6 @@ do
                 mv -f $ofiles ${otype}_$g/.
                 echo "   NetCDF output files moved to ${otype}_$g"
               fi
-              ofiles="`ls gribfile 2>/dev/null`"
-              if [ $? = 0 ]
-              then
-                mv -f $ofiles $g.grb2
-                echo "   GRIB output files moved to $g.grb2"
-              fi
 #
               if [ "$prog" = 'gx_outf' ]
               then
@@ -2048,7 +2103,11 @@ do
             printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
           fi
 
+       
         done
+        fi
+
+      done
 
 
     fi
