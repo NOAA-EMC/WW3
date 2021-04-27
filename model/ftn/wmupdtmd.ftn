@@ -1409,7 +1409,7 @@
             DO J=IXS0, IXSN
               JJ=J
               IF ( FLAGLL ) THEN
-                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
+                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
                 IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
                 IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
                 IF ( IXC .NE. 0 ) THEN
@@ -2020,7 +2020,7 @@
             END IF
             DO J=IXS0, IXSN
               IF ( FLAGLL ) THEN
-                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
+                IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
                 IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
                 IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
                 IF ( IXC .NE. 0 ) THEN
