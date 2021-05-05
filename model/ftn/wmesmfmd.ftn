@@ -271,6 +271,13 @@
       integer               :: natGridID
       logical               :: natGridIsLocal
       type(ESMF_RouteHandle):: n2eRH
+!
+! --- Mediator
+      logical        :: med_present = .false.
+      character(256) :: flds_scalar_name = ''
+      integer        :: flds_scalar_num = 0
+      integer        :: flds_scalar_index_nx = 0
+      integer        :: flds_scalar_index_ny = 0
 !/
 !/ ------------------------------------------------------------------- /
       contains
@@ -502,6 +509,7 @@
       character(ESMF_MAXSTR) :: valueString
       integer, parameter :: iwt=1
       real(8) :: wstime, wftime
+      logical :: isPresent, isSet
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -532,6 +540,20 @@
       call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
         acceptStringList=(/"IPDv03p"/), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Check if coupled with CMEPS mediator or not
+!
+      call NUOPC_CompAttributeGet(gcomp, name="mediator_present", &
+        value=valueString, isPresent=isPresent, isSet=isSet, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if (isPresent .and. isSet) then
+        read(valueString,*) med_present 
+        call ESMF_LogWrite(trim(cname)//' mediator_present = '// &
+          trim(valueString), ESMF_LOGMSG_INFO, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      end if
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -644,6 +666,8 @@
       integer :: i, j, n, istep, imod, jmod
       integer, allocatable :: cplmap(:,:)
       logical :: includeObg, includeAbg, includeIbg
+      character(256) :: cvalue, logmsg
+      logical :: isPresent, isSet
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -654,6 +678,54 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (verbosity.gt.0) call ESMF_LogWrite(trim(cname)// &
         ': entered InitializeP1', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Query mediator specific attributes 
+!
+      if (med_present) then
+        call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldName", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          flds_scalar_name = trim(cvalue)
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_name ='// &
+            trim(flds_scalar_name), ESMF_LOGMSG_INFO, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldCount", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          read(cvalue, *) flds_scalar_num
+          write(logmsg,*) flds_scalar_num
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_num ='// &
+            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNX", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          read(cvalue, *) flds_scalar_index_nx 
+          write(logmsg,*) flds_scalar_index_nx
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_nx ='// &
+            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNY", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          read(cvalue, *) flds_scalar_index_ny
+          write(logmsg,*) flds_scalar_index_ny
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_ny ='// &
+            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        end if
+      end if
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Initialization necessary for driver
@@ -900,7 +972,11 @@
         j = 3
         impFieldActive(i)   = any(inpmap(:,j).lt.0)
         impFieldName(i)     = 'uutrue'
-        impFieldStdName(i)  = 'eastward_wind_at_10m_height'
+        if (med_present) then
+          impFieldStdName(i)= 'inst_zonal_wind_height_lowest'
+        else
+          impFieldStdName(i)= 'eastward_wind_at_10m_height'
+        end if
         impFieldInitRqrd(i) = .true.
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
@@ -910,7 +986,11 @@
         j = 3
         impFieldActive(i)   = any(inpmap(:,j).lt.0)
         impFieldName(i)     = 'vvtrue'
-        impFieldStdName(i)  = 'northward_wind_at_10m_height'
+        if (med_present) then
+          impFieldStdName(i)= 'inst_merid_wind_height_lowest'
+        else
+          impFieldStdName(i)= 'northward_wind_at_10m_height'
+        end if
         impFieldInitRqrd(i) = .true.
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
@@ -1062,6 +1142,15 @@
         expFieldName(i)    = 'wavsvv'
         expFieldStdName(i) = 'northward_wave_radiation_stress'
         expFieldDim(i)     = 2
+      endif
+
+      if (med_present) then 
+        i = i + 1
+        if ( istep.eq.2 ) then
+          expFieldName(i)    = trim(flds_scalar_name) 
+          expFieldStdName(i) = trim(flds_scalar_name)
+          expFieldDim(i)     = 1
+        endif
       endif
 
       numExpFields = i
@@ -1229,6 +1318,8 @@
       real(8) :: wstime, wftime
       integer :: i1, i2, i3, i, n
       logical :: isConnected
+      type(ESMF_DistGrid) :: distgrid
+      type(ESMF_Grid) :: grid_scalar
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1364,20 +1455,31 @@
         if (.not.expFieldActive(i)) cycle
         n = n + 1
         if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
-          if ( expFieldDim(i).eq.3 ) then
-            expField(i) = ESMF_FieldCreate( expGrid, expArraySpec3D, &
-              totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
-              gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
-              staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
+          if (trim(expFieldName(i)) == trim(flds_scalar_name)) then
+            distgrid = ESMF_DistGridCreate(minIndex=(/1/), maxIndex=(/1/), rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+            grid_scalar = ESMF_GridCreate(distgrid, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+            expField(i) = ESMF_FieldCreate(grid_scalar, typekind=ESMF_TYPEKIND_R8, &
+              name=trim(expFieldName(i)), ungriddedLBound=(/1/), &
+              ungriddedUBound=(/flds_scalar_num/), gridToFieldMap=(/2/), rc=rc)
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           else
-            expField(i) = ESMF_FieldCreate( expGrid, expArraySpec2D, &
-              totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
-              staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
+            if ( expFieldDim(i).eq.3 ) then
+              expField(i) = ESMF_FieldCreate( expGrid, expArraySpec3D, &
+                totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
+                gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+                staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
+              if (ESMF_LogFoundError(rc, PASSTHRU)) return
+            else
+              expField(i) = ESMF_FieldCreate( expGrid, expArraySpec2D, &
+                totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
+                staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
+              if (ESMF_LogFoundError(rc, PASSTHRU)) return
+            endif
+            call FieldFill( expField(i), zeroValue, rc=rc )
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           endif
-          call FieldFill( expField(i), zeroValue, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
         elseif (GTYPE.eq.UNGTYPE) then
           expField(i) = ESMF_FieldCreate( expMesh, &
             typekind=ESMF_TYPEKIND_RX, name=trim(expFieldName(i)), rc=rc)
@@ -1864,6 +1966,18 @@
       call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
         value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Set global grid size scalars in export state 
+!
+!    ! Set global grid size scalars in export state
+!    call State_SetScalar(dble(NX), flds_scalar_index_nx, exportState, &
+!         flds_scalar_name, flds_scalar_num, rc)
+!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+!
+!    call State_SetScalar(dble(NY), flds_scalar_index_ny, exportState, &
+!         flds_scalar_name, flds_scalar_num, rc)
+!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -2653,10 +2767,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+      type(ESMF_VM) :: vm
       character(ESMF_MAXSTR) :: cname
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
-      integer :: ldecnt
+      integer :: lpet, ldecnt
       integer :: ix, iy, isea, jsea
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
@@ -2670,7 +2785,9 @@
 !
       rc = ESMF_SUCCESS
       if ( noActiveImpFields ) return
-      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      call ESMF_GridCompGet(gcomp, name=cname, vm=vm, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_VMGet(vm, localPet=lpet, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (verbosity.gt.0) call ESMF_LogWrite(trim(cname)// &
         ': entered CreateImpGrid', ESMF_LOGMSG_INFO)
@@ -2755,6 +2872,8 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_GridAddItem( impGrid, ESMF_GRIDITEM_MASK, &
         staggerLoc=impStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_GridAddCoord( impGrid, staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 2.c Set flag to indicate that this processor has local import grid storage
