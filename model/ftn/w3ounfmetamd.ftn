@@ -274,7 +274,9 @@
 
       VECTOR = .TRUE.
       IF(PRESENT(VEC)) VECTOR = VEC
-!/RTD      FLRTD = .TRUE.
+!/RTD ! Is the grid really rotated?
+!/RTD      IF ( POLAT < 90. ) FLRTD = .True.
+!/RTD !
 
       ! 1. Allocate nested GROUP, FIELD structure:
       ALLOCATE(GROUP(NOGRP))

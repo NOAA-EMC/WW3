@@ -3381,22 +3381,26 @@
 !
         IF(SMCGRD) THEN
 !/SMC          IF(SMCTYPE .EQ. 1) THEN
-!/RTD            ! For SMC grid type 1, standard lat/lon variables are 1D:
-!/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2) /), VARID(7))
-!/RTD            call CHECK_ERR(IRET)
+!/RTD            IF ( RTDL ) THEN
+!/RTD              ! For SMC grid type 1, standard lat/lon variables are 1D:
+!/RTD              IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
+!/RTD                      (/ DIMID(2) /), VARID(7))
+!/RTD              call CHECK_ERR(IRET)
 !/RTD 
-!/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2) /), VARID(8))
-!/RTD            call CHECK_ERR(IRET)
+!/RTD              IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
+!/RTD                      (/ DIMID(2) /), VARID(8))
+!/RTD              call CHECK_ERR(IRET)
+!/RTD            ENDIF ! RTDL
 !/SMC          ELSE
-!/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(7))
-!/RTD            call CHECK_ERR(IRET)
+!/RTD            IF ( RTDL ) THEN
+!/RTD              IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
+!/RTD                      (/ DIMID(2), DIMID(3)/), VARID(7))
+!/RTD              call CHECK_ERR(IRET)
 !/RTD
-!/RTD            IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
-!/RTD                    (/ DIMID(2), DIMID(3)/), VARID(8))
-!/RTD            call CHECK_ERR(IRET)
+!/RTD              IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
+!/RTD                      (/ DIMID(2), DIMID(3)/), VARID(8))
+!/RTD              call CHECK_ERR(IRET)
+!/RTD            ENDIF ! RTDL
 !/SMC          ENDIF
         ELSE
 !/RTD      IF ( RTDL ) THEN
