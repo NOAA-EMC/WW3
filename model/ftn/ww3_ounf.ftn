@@ -947,7 +947,7 @@
       !CHARACTER*30            :: UNITVAR(3),FORMAT1
       CHARACTER*30            :: FORMAT1
       CHARACTER*30            :: STRSTARTDATE
-      CHARACTER               :: FNAMENC*50,                           &
+      CHARACTER               :: FNAMENC*128,                           &
                                  FORMF*11
       CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
@@ -1870,7 +1870,7 @@
 
             S2=LEN_TRIM(META(1)%ENAME)
             S1=LEN_TRIM(FILEPREFIX)+S4
-            FNAMENC(S1+1:50)='       '
+            FNAMENC(S1+1:128)='       '
             FNAMENC(S1+1:S1+1) = '_'
 
             ! If flag TOGETHER and not variable with freq dim &
