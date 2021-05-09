@@ -1,0 +1,10 @@
+###################################################################################################################################################################################
+# ATM-WAV tests                                                                                                                                                                   #
+###################################################################################################################################################################################
+
+# WW3 not working on Cheyenne in the past, need to check if it works now
+COMPILE | APP=ATMW SUITES=FV3_GFS_2017,FV3_GFS_2017_gfdlmp                                                                        | + wcoss_dell_p3 hera.intel orion.intel  | fv3 |
+RUN     | fv3_gfdlmprad                                                                                                           | + wcoss_dell_p3 hera.intel orion.intel  | fv3 |
+RUN     | fv3_gfdlmprad_atmwav                                                                                                    | + wcoss_dell_p3 hera.intel orion.intel  | fv3 |
+RUN     | fv3_wrtGauss_nemsio_c768                                                                                                | +               hera.intel orion.intel  | fv3 |
+

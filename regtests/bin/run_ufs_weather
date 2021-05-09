@@ -1,0 +1,183 @@
+#!/bin/bash
+# --------------------------------------------------------------------------- #
+# run_ufs_weather: Run ufs_weather model tests with wave on target machine.   #
+#                                                                             #
+#  example:  ./bin/run_ufs_weather > & ufs.out &                              #   
+#                                                                             #
+# Remarks:                                                                    #
+# - This script get the latest ufs-weather model (develop) from its github    #
+# repo and replace the WW3 model in it, creates the mod_def* files with the   #
+# new WW3 and runs the regression tests from ufs-weather model and compare    #
+# with the base.                                                              #
+#                                                                             #
+#                                                      Ali Abdolali           #
+#                                                      May 2021               #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 0. Environment file
+# --------------------------------------------------------------------------- #
+  HOME=${PWD}
+# Compiler option. 
+  cmplr=intel
+# Set batchq queue, choose modules and other custom variables to fit system and 
+# to define headers etc (default to original version if empty)
+  ishera=`hostname | grep hfe`
+  isorion=`hostname | grep Orion`
+  if [ $ishera ]
+  then
+    # If no other h, assuming Hera 
+    cmplr='hera.intel'
+    batchq='slurm'
+    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
+    hpcstackversion='hpc/1.1.0'
+    modcomp='hpc-intel/18.0.5.274'
+    modmpi='hpc-impi/2018.0.4'
+    modnetcdf='netcdf/4.7.4'
+  elif [ $isorion ]
+  then
+    cmplr='orion.intel'
+    batchq='slurm'
+    hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
+    hpcstackversion='hpc/1.1.0'
+    modcomp='hpc-intel/2019.5'
+    modmpi='hpc-impi/2019.6'
+    modnetcdf='netcdf/4.7.4'
+  else
+    batchq=
+  fi
+# Variables
+
+  module purge
+  module use $hpcstackpath
+  module load $hpcstackversion
+  module load $modcomp
+  module load $modmpi
+  module load $modnetcdf
+  export WWATCH3_NETCDF=NC4   
+  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config
+
+  module list
+# --------------------------------------------------------------------------- #
+# 1. ufs_weather model/develop retreival
+# --------------------------------------------------------------------------- #
+# clear the ufs-weather model
+  if [ -r "ufs-weather-model" ]; then rm -rf ufs-weather-model; fi
+# clone the develop branch from ufs-weather-model github repo
+  git clone git@github.com:aliabdolali/ufs-weather-model.git
+  cd ufs-weather-model
+# Add submodules
+  git submodule update --init --recursive
+
+  if [ $ishera ]
+   then
+     DISKNM=/scratch1/NCEPDEV/nems/emc.nemspara/RT
+  elif [ $isorion ]
+   then
+     DISKNM=/work/noaa/nems/emc.nemspara/RT
+  else
+     DISKNM=
+  fi
+
+# locate the input data for ufs-weather-model
+INPUTDATA=`( command egrep 'input-data' tests/rt.sh ) | sed -e 's#.*DISKNM\(\)#\1#' | sed 's/}//'`
+INPUTDATA_ROOT=$DISKNM$INPUTDATA
+echo INPUTDATA_ROOT_Base=$INPUTDATA_ROOT
+INPUTDATA_WW3=`( command egrep 'WW3_input_data' tests/rt.sh ) | sed -e 's#.*}\(\)#\1#'`
+INPUTDATA_ROOT_WW3=$INPUTDATA_ROOT$INPUTDATA_WW3
+echo INPUTDATA_ROOT_WW3_Base=$INPUTDATA_ROOT_WW3
+
+# copy thr inputs to ww3_ufs_weather/input
+cd ${HOME}
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.ant_9km ww3_ufs_weather/input/ww3_grid_ant_9km.inp 
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.glo_10m ww3_ufs_weather/input/ww3_grid_glo_10m.inp 
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.glo_1deg ww3_ufs_weather/input/ww3_grid_glo_1deg.inp
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.glo_30m ww3_ufs_weather/input/ww3_grid_glo_30m.inp
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.points ww3_ufs_weather/input/ww3_grid_points.inp
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.aoc_9km ww3_ufs_weather/input/ww3_grid_aoc_9km.inp
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.glo_15mxt ww3_ufs_weather/input/ww3_grid_glo_15mxt.inp
+cp $INPUTDATA_ROOT_WW3/createmoddefs/ww3_grid.inp.gwes_30m  ww3_ufs_weather/input/ww3_grid_gwes_30m.inp
+
+# clean mod_defs
+if [ -r "ww3_ufs_weather/WW3_input_data" ]; then rm -rf ww3_ufs_weather/WW3_input_data; fi
+mkdir ww3_ufs_weather/WW3_input_data
+cp -r $INPUTDATA_ROOT_WW3/* ww3_ufs_weather/WW3_input_data
+rm ww3_ufs_weather/WW3_input_data/*mod_def*
+
+# make a fresh copy of the new version of WW3 in ufs-weather-model
+if [ -r "ufs-weather-model/WW3" ]; then rm -rf ufs-weather-model/WW3; fi
+mkdir ufs-weather-model/WW3
+cp -r ../model ufs-weather-model/WW3/
+
+export WW3_DIR=${HOME}/ufs-weather-model/WW3/model
+export WW3_BINDIR="${WW3_DIR}/bin"
+export WW3_TMPDIR=${WW3_DIR}/tmp
+export WW3_EXEDIR=${WW3_DIR}/exe
+export WW3_CC=icc
+export WW3_F90=ifort
+WWATCH3_ENV=${HOME}/ufs-weather-model/WW3/model/bin/wwatch3.env
+
+if [ -f "$WWATCH3_ENV" ]; then rm -f $WWATCH3_ENV; fi
+echo '#'                                              > $WWATCH3_ENV
+echo '# ---------------------------------------'      >> $WWATCH3_ENV
+echo '# Environment variables for wavewatch III'      >> $WWATCH3_ENV
+echo '# ---------------------------------------'      >> $WWATCH3_ENV
+echo '#'                                              >> $WWATCH3_ENV
+echo "WWATCH3_LPR      $PRINTER"                      >> $WWATCH3_ENV
+echo "WWATCH3_F90      $WW3_F90"                      >> $WWATCH3_ENV
+echo "WWATCH3_CC       $WW3_CC"                       >> $WWATCH3_ENV
+echo "WWATCH3_DIR      $WW3_DIR"                      >> $WWATCH3_ENV
+echo "WWATCH3_TMP      $WW3_TMPDIR"                   >> $WWATCH3_ENV
+echo 'WWATCH3_SOURCE   no'                            >> $WWATCH3_ENV
+echo 'WWATCH3_LIST     no'                            >> $WWATCH3_ENV
+echo ''                                               >> $WWATCH3_ENV
+
+  ufs-weather-model/WW3/model/bin/w3_clean
+  source ufs-weather-model/WW3/model/bin/w3_setenv
+  echo "Main directory    : $WW3_DIR"
+  echo "Scratch directory : $WW3_TMPDIR"
+
+# --------------------------------------------------------------------------- #
+# 2. prepare the mod_def from the new version of WW3
+# --------------------------------------------------------------------------- #
+./bin/run_test -c hera.intel -S -T -w WW3_input_data -m grdset_a ufs-weather-model/WW3/model -q ww3_grid ww3_ufs_weather
+# --------------------------------------------------------------------------- #
+# 3. check if the mod_def files from new WW3 code and thr base are identical or different
+# --------------------------------------------------------------------------- #
+  echo ' '                                                                 
+  echo '       *****************************************************************'     
+  echo "       ***        compare WAVEWATCH III base and comp                ***"   
+  echo '       *****************************************************************'    
+  echo ' ' 
+  echo "base_directory=$INPUTDATA_ROOT_WW3"
+  echo "comp_directory=ww3_ufs_weather/WW3_input_data"
+# list the common files in two directories 
+file_list=`( ls $INPUTDATA_ROOT_WW3 ; ls ww3_ufs_weather/WW3_input_data ) | awk 'A[$0]++' | awk '!/20|create|finished|log|time|ST4|scrip|.inp|.out/'`
+# check if the files are identical or different
+  for file in $file_list
+  do
+    if cmp --silent $INPUTDATA_ROOT_WW3/$file ww3_ufs_weather/WW3_input_data/$file; then
+      echo "$file is identical"
+    else
+     echo "Warning: $file is different"
+    fi
+ done
+  echo ' '
+  echo '   ****************************************************************************'
+  echo ' ***  end of WAVEWATCH III compare mod_defs for base and comp directories   ***'
+  echo '   ****************************************************************************'
+  echo ' '
+# copy the tests for ufs-weather-model that have wave model to ufs-weather-model/tests
+cp ww3_ufs_weather/input/rt.conf.wave ufs-weather-model/tests
+cd ufs-weather-model/tests
+# change the ACCNR to marine-cpu and the path to the new input files (mod_defs)
+sed -i 's/'#ACCNR=fv3-cpu'/'ACCNR=marine-cpu'/gI' rt.sh
+sed -i '/INPUTDATA_ROOT_WW3=${INPUTDATA_ROOT}/s/INPUTDATA_ROOT_WW3=${HOME}/ww3_ufs_weather\/WW3_input_data\//' rt.sh
+# --------------------------------------------------------------------------- #
+# 4. execute ufs-weather-model using ecflow
+# --------------------------------------------------------------------------- #
+./rt.sh -l rt.conf.wave -e 
