@@ -158,6 +158,7 @@
 !/ST3      use W3SRC3MD, only: W3SPR3
 !/ST4      use W3SRC4MD, only: W3SPR4
       use W3IOGOMD, only: W3OUTG
+      use WMSCRPMD, only: get_scrip_info_structured 
 !/
 !/ Specify default data typing
 !/
@@ -217,7 +218,7 @@
       type(ESMF_Field)              :: impMask
       logical                       :: noActiveImpFields
       integer                       :: numImpFields
-      character(6), allocatable     :: impFieldName(:)
+      character(64), allocatable    :: impFieldName(:)
       character(128), allocatable   :: impFieldStdName(:)
       logical, allocatable          :: impFieldInitRqrd(:)
       logical, allocatable          :: impFieldActive(:)
@@ -250,7 +251,7 @@
       type(ESMF_Field)              :: expMask
       logical                       :: noActiveExpFields
       integer                       :: numExpFields
-      character(6), allocatable     :: expFieldName(:)
+      character(64), allocatable    :: expFieldName(:)
       character(128), allocatable   :: expFieldStdName(:)
       integer, allocatable          :: expFieldDim(:)
       logical, allocatable          :: expFieldActive(:)
@@ -688,7 +689,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (isPresent .and. isSet) then
           flds_scalar_name = trim(cvalue)
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_name ='// &
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_name = '// &
             trim(flds_scalar_name), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -699,7 +700,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_num
           write(logmsg,*) flds_scalar_num
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_num ='// &
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_num = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -710,7 +711,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_index_nx 
           write(logmsg,*) flds_scalar_index_nx
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_nx ='// &
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_nx = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -721,7 +722,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_index_ny
           write(logmsg,*) flds_scalar_index_ny
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_ny ='// &
+          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_ny = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -1076,7 +1077,7 @@
 
       i = i + 1
       if ( istep.eq.2 ) then
-        expFieldName(i)    = 'x2pstke'
+        expFieldName(i)    = 'x2pstk'
         expFieldStdName(i) = 'eastward_partitioned_stokes_drift_2'
         expFieldDim(i)     = 2
       endif
@@ -1430,6 +1431,8 @@
         if (.not.expFieldActive(i)) then
           call ESMF_StateRemove(expState, (/expFieldName(i)/), rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          write(msg,fmt="(a,l)") trim(cname)//': '//trim(expFieldName(i)), expFieldActive(i)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
         endif
       enddo
 !
@@ -1852,6 +1855,9 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Check that required import fields show correct time stamp
 !
+      if (med_present) then
+      allUpdated = .true.
+      else
       call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
@@ -1903,6 +1909,7 @@
         if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
         if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
       enddo
+      endif
 !
 ! If not all import dependencies are satisfied, then return
 !
@@ -1966,18 +1973,6 @@
       call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
         value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!
-! -------------------------------------------------------------------- /
-! Set global grid size scalars in export state 
-!
-!    ! Set global grid size scalars in export state
-!    call State_SetScalar(dble(NX), flds_scalar_index_nx, exportState, &
-!         flds_scalar_name, flds_scalar_num, rc)
-!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-!
-!    call State_SetScalar(dble(NY), flds_scalar_index_ny, exportState, &
-!         flds_scalar_name, flds_scalar_num, rc)
-!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -2570,6 +2565,7 @@
       type(ESMF_State) :: dumpState
       integer, save :: timeSlice = 1
 #endif
+      real(ESMF_KIND_R8), pointer :: farrayptr(:,:)
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -2687,6 +2683,28 @@
       endif
 !
 ! -------------------------------------------------------------------- /
+! cpl_scalars - grid sizes
+!
+      if (med_present) then
+        i1 = FieldIndex( expFieldName, trim(flds_scalar_name), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if ( expFieldActive(i1) ) then
+          call ESMF_FieldGet(expField(i1), farrayPtr=farrayptr, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (flds_scalar_index_nx > 0 .and. flds_scalar_index_nx < flds_scalar_num) then
+            farrayptr(flds_scalar_index_nx,1) = dble(nx) 
+            write(msg,'(a,i8)') 'flds_scalar_index_nx: ',nx
+            call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+          endif
+          if (flds_scalar_index_ny > 0 .and. flds_scalar_index_ny < flds_scalar_num) then
+            farrayptr(flds_scalar_index_ny,1) = dble(ny)
+            write(msg,'(a,i8)') 'flds_scalar_index_ny: ',ny
+            call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+          endif
+        endif
+      endif 
+!
+! -------------------------------------------------------------------- /
 ! Post
 !
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETEXPORT)
@@ -2773,11 +2791,19 @@
       integer, parameter :: lde = 0
       integer :: lpet, ldecnt
       integer :: ix, iy, isea, jsea
+      integer :: ixl, ixu, iyl, iyu, irec
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
       real(ESMF_KIND_RX), pointer :: rptr(:,:)
+      real(ESMF_KIND_R8), allocatable :: xgrd_center(:)
+      real(ESMF_KIND_R8), allocatable :: ygrd_center(:)
+      real(ESMF_KIND_R8), allocatable :: xgrd_corner(:,:)
+      real(ESMF_KIND_R8), allocatable :: ygrd_corner(:,:)
+      logical, allocatable :: land_sea(:)
+      integer, allocatable :: grid_dims(:)
+      integer :: grid_size, grid_corners, grid_rank
       type(ESMF_Field) :: tmpField
 !
 ! -------------------------------------------------------------------- /
@@ -2873,8 +2899,6 @@
       call ESMF_GridAddItem( impGrid, ESMF_GRIDITEM_MASK, &
         staggerLoc=impStaggerLoc, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      call ESMF_GridAddCoord( impGrid, staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 2.c Set flag to indicate that this processor has local import grid storage
 !
@@ -2925,6 +2949,8 @@
             rptry(ix,iy) = ygrd(iy,ix)
           enddo
         enddo
+        nullify(rptrx)
+        nullify(rptry)
       endif
 !
 ! 2.g Set ESMF import grid land/sea mask values.
@@ -2944,6 +2970,44 @@
           enddo
         enddo
       endif
+!
+! 2.h Set ESMF import grid corner coordinates, only for coupled with mediator
+!
+      if (med_present) then 
+        call ESMF_GridAddCoord( impGrid, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Calculate grid coordinates with help of SCRIP module
+        call get_scrip_info_structured(impGridID, &
+          xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
+          land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+
+        ! Add corner coordinates 
+        if ( impGridIsLocal ) then
+          ! Retrieve pointers
+          call ESMF_GridGetCoord( impGrid, 1, localDE=lde, &
+            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call ESMF_GridGetCoord( impGrid, 2, localDE=lde, &
+            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+          ! Fill coordinates
+          iyl = lbound(rptrx,dim=2)
+          iyu = ubound(rptrx,dim=2)
+          ixl = lbound(rptrx,dim=1)
+          ixu = ubound(rptrx,dim=1)
+
+          do iy = iyl, iyu
+            do ix = ixl, ixu
+              irec = (iy-1)*grid_dims(1)+ix
+              rptrx(ix,iy) = xgrd_corner(1,irec)
+              rptry(ix,iy) = ygrd_corner(1,irec)
+            enddo
+          enddo
+        endif      
+      end if
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create import field mask and routeHandle halo update
@@ -3145,11 +3209,19 @@
       integer, parameter :: lde = 0
       integer :: ldecnt
       integer :: ix, iy, isea, jsea, k
+      integer :: ixl, ixu, iyl, iyu, irec
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
       real(ESMF_KIND_RX), pointer :: rptr(:,:)
+      real(ESMF_KIND_R8), allocatable :: xgrd_center(:)
+      real(ESMF_KIND_R8), allocatable :: ygrd_center(:)
+      real(ESMF_KIND_R8), allocatable :: xgrd_corner(:,:)
+      real(ESMF_KIND_R8), allocatable :: ygrd_corner(:,:)
+      logical, allocatable :: land_sea(:)
+      integer, allocatable :: grid_dims(:)
+      integer :: grid_size, grid_corners, grid_rank
       integer :: arbIndexCount
       integer, allocatable :: arbIndexList(:,:)
       type(ESMF_Field) :: nField, eField
@@ -3343,6 +3415,44 @@
           enddo
         enddo
       endif
+!
+! 2.h Set ESMF import grid corner coordinates, only for coupled with mediator
+!
+      if (med_present) then
+        call ESMF_GridAddCoord( expGrid, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Calculate grid coordinates with help of SCRIP module
+        call get_scrip_info_structured(expGridID, &
+          xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
+          land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+
+        ! Add corner coordinates 
+        if ( impGridIsLocal ) then
+          ! Retrieve pointers
+          call ESMF_GridGetCoord( expGrid, 1, localDE=lde, &
+            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call ESMF_GridGetCoord( expGrid, 2, localDE=lde, &
+            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+          ! Fill coordinates
+          iyl = lbound(rptrx,dim=2)
+          iyu = ubound(rptrx,dim=2)
+          ixl = lbound(rptrx,dim=1)
+          ixu = ubound(rptrx,dim=1)
+
+          do iy = iyl, iyu
+            do ix = ixl, ixu
+              irec = (iy-1)*grid_dims(1)+ix
+              rptrx(ix,iy) = xgrd_corner(1,irec)
+              rptry(ix,iy) = ygrd_corner(1,irec)
+            enddo
+          enddo
+        end if
+      end if
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create export field mask and routeHandle halo update
@@ -5064,10 +5174,10 @@
 !/ Parameter list
 !/
       implicit none
-      character (6) :: fnameList(:)
-      character (6) :: fname
-      integer       :: rc
-      integer       :: indx
+      character (len=*) :: fnameList(:)
+      character (len=*) :: fname
+      integer           :: rc
+      integer           :: indx
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -5080,7 +5190,7 @@
       check = lbound(fnameList,1) - 1
       indx = check
       do i = lbound(fnameList,1),ubound(fnameList,1)
-        if ( fnameList(i).eq.fname ) then
+        if ( trim(fnameList(i)).eq.trim(fname) ) then
           indx = i
           exit
         endif
