@@ -1,0 +1,25 @@
+#############################################################################
+#                                                                           #
+# ww3_ufs_weather Test script for WW-III                     .              #
+#                                                                           #
+# This test includes the model/esmf/switch file and a list of grids,        #
+# requied by ufs-weather-model (new grids should be added to grdset_a):     #
+# ant_9km                                                                   #
+# glo_10m                                                                   #
+# glo_1deg                                                                  #
+# glo_30m                                                                   #
+# aoc_9km                                                                   #
+# gwes_30m                                                                  #
+# glo_15mxt                                                                 #
+# points                                                                    #
+#                                                                           #
+# A list of regression tests (rt.conf.wave), with wave component, are taken # 
+# from ufs-weather-model/tests/rt.conf (new tests should be added).         #
+#                                                                           #
+# The inputs are required by model/regtests/bin/run_ufs_weather.sh          #
+#                                                                           #
+#                                                                           #
+#                                                   Ali Abdolali, May 2021  #
+#                                                     Last Mod : May 2021   #
+#                                                                           #
+#############################################################################

@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------- #
 # run_ufs_weather: Run ufs_weather model tests with wave on target machine.   #
 #                                                                             #
-#  example:  ./bin/run_ufs_weather > & ufs.out &                              #   
+#  example:  ./bin/run_ufs_weather > & ufs_weather.log &                      #   
 #                                                                             #
 # Remarks:                                                                    #
 # - This script get the latest ufs-weather model (develop) from its github    #
