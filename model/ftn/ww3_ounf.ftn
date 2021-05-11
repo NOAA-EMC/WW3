@@ -344,6 +344,7 @@
         READ (NDSI,*,END=801,ERR=802) S3
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
+        IF( SMCGRD) THEN
 !/SMC        ! SMC output type (1 or 2)
 !/SMC        READ (NDSI,*,END=801,ERR=802) SMCTOUT
 !/SMC        IF(SMCTOUT .EQ. 1) THEN  ! Flat sea point output
@@ -354,7 +355,7 @@
 !/SMC           READ (NDSI,*,END=801,ERR=802) SXO, SYO, EXO, EYO, CELFAC
 !/SMC        ENDIF
 !/SMC        NOVAL = UNDEF
-        IF( .NOT. SMCGRD) THEN
+        ELSE 
            READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
         ENDIF
 
@@ -453,6 +454,7 @@
         CALL EXTCDE ( 1 )
       END IF
 
+      IF(SMCGRD) THEN
 !/SMC      WRITE(NDSO, 4100)
 !/SMC      IF(SMCTOUT .EQ. 1) THEN  ! Flat sea point output
 !/SMC        ALLOCATE(SMCMASK(NSEA))
@@ -487,8 +489,7 @@
 !/SMC      RTDNX = NXO
 !/SMC      RTDNY = NYO
 !/SMC
-
-      IF(.NOT. SMCGRD) THEN
+      ELSE 
         IX1    = MAX ( IX1 , 1 )
         IXN    = MIN ( IXN , NX )
         IY1    = MAX ( IY1 , 1 )
@@ -974,13 +975,12 @@
       FNAMENC(S1+1:S1+S4) = TIMEID(1:S4)
 
       !
-
 !/SMC!
 !/SMC!---  Update MAPSMC for SMC type 2 output. This needs to be
 !/SMC!     done at each timestep as MAPSTA could change if there
 !/SMC!     are water level or ice input chagnes.
 !/SMC!
-!/SMC      IF(SMCTOUT .EQ. 2) CALL MAPSTA_SMC()
+!/SMC      IF( SMCGRD .AND. (SMCTOUT .EQ. 2) ) CALL MAPSTA_SMC()
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
