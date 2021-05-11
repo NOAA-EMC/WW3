@@ -27,6 +27,7 @@
 !/                  degrees (nautical convention) on output.
 !/                  (Chris Bunney, UK Met Office)
 !/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05) 
+!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.xx) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -75,7 +76,7 @@
       INTEGER                 :: NXO, NYO                ! ... and number grid cells.
 
       ! Variables for SMC regridding (type 2 output):
-      INTEGER                 :: SMCTYPE                 ! Type of SMC output
+      INTEGER                 :: SMCTOUT                 ! Type of SMC output
       INTEGER                 :: CELFAC                  ! Requested output cell scaling factor
       INTEGER, ALLOCATABLE    :: XIDX(:), YIDX(:)        ! Indices of SMC cells into regular grid
       INTEGER, ALLOCATABLE    :: XSPAN(:), YSPAN(:)      ! How many regualr grid cells SMC grid spans
@@ -188,7 +189,7 @@
       NXO = INT((EXO - SXO) / DXO)
       NYO = INT((EYO - SYO) / DYO)
 
-      IF(SMCTYPE .EQ. 2) THEN
+      IF(SMCTOUT .EQ. 2) THEN
          ! Initialise all indices to "missing":
          XIDX(:) = -1
          YIDX(:) = -1
@@ -196,12 +197,14 @@
 
       ! Loop over cell array and calculate regidding factors:
       DO ISEA=1, NSEA
-!/ARC          ! For grids with Arctic region: make sure we don't double count
-!/ARC          ! the overlapping boundary cells. Also, don't process the arctic
-!/ARC          ! cell (which is always the last cell).
-!/ARC          ! Note: NARC contains ALL the boundary cells (global + arctic).
-!/ARC          ! whereas NGLO contains only the global boundary cells.
-!/ARC          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+!          ! For grids with Arctic region: make sure we don't double count
+!          ! the overlapping boundary cells. Also, don't process the arctic
+!          ! cell (which is always the last cell).
+!          ! Note: NARC contains ALL the boundary cells (global + arctic).
+!          ! whereas NGLO contains only the global boundary cells.
+!          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+          IF( ARCTC .AND. & 
+              ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
 
           ! Get grid cell size:
           mx = IJKCel(3,ISEA)
@@ -214,7 +217,7 @@
           ! For output type 1 (seapoint array), just check whether
           ! cell centre is within specified domain range, and update
           ! output mask accordingly:
-          IF( SMCTYPE .EQ. 1 ) THEN
+          IF( SMCTOUT .EQ. 1 ) THEN
              ! Ensure longitude ranges are aligned
              lon = lon + 0.5 * mx * dlon
              lat = lat + 0.5 * my * dlat
@@ -229,7 +232,7 @@
                 J = J + 1
              ENDIF
              CYCLE
-          ENDIF ! SMCTYPE == 1
+          ENDIF ! SMCTOUT == 1
 
           ! For output type 2 (area averaged regular grid), determine
           ! SMC grid cell location and coverage in output grid:
@@ -696,7 +699,7 @@
 !--------------------------------------------------------------------------
       SUBROUTINE W3S2XY_SMC(S, XY, DIR)
 !     Entry point for SMC version of W3S2XY.
-!     Dispatches to regridding subroutine based on SMCTYPE.
+!     Dispatches to regridding subroutine based on SMCTOUT.
 !     Optional DIR logical specifies whether field is a directional
 !     value; in which case it will be decomposed into u/v components
 !     prior to any interpolation.
@@ -716,7 +719,7 @@
          DIRN = .false.
       ENDIF
 
-      IF(SMCTYPE .EQ. 1) THEN
+      IF(SMCTOUT .EQ. 1) THEN
          ! Flat sea point array
          XY(:,1) = PACK(S, SMCMASK)
          IF(DIRN) THEN
@@ -727,21 +730,21 @@
                ENDIF
             ENDDO
          ENDIF
-      ELSEIF(SMCTYPE .EQ. 2) THEN
+      ELSEIF(SMCTOUT .EQ. 2) THEN
          ! Regular gridded SMC cells
          IF(DIRN) THEN
             CALL W3S2XY_SMCRG_DIR(S, XY)
          ELSE
             CALL W3S2XY_SMCRG(S, XY)
          ENDIF
-      ELSEIF(SMCTYPE .EQ. 3) THEN
+      ELSEIF(SMCTOUT .EQ. 3) THEN
          ! Regridded to arbitrary regular grid with interpolation
          CALL W3S2XY_SMCNN_INT(S, XY, DIRN)
-      ELSEIF(SMCTYPE .EQ. 4) THEN
+      ELSEIF(SMCTOUT .EQ. 4) THEN
          ! Regridded to arbitrary regular grid - no interpolation
          CALL W3S2XY_SMCNN(S, XY, DIRN)
       ELSE
-         WRITE(*,*) "Uknonwn SMC type!", SMCTYPE
+         WRITE(*,*) "Uknonwn SMC type!", SMCTOUT
          ! Unknown SMC type!
          STOP
       ENDIF

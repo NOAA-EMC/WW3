@@ -93,6 +93,7 @@
 !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
 !/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+!/    06-May-2021 : Add SMCTYPE, ARCTC options.   JGLi  ( version 7.xx )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -119,6 +120,8 @@
 !      IPARS     Int.  Public   Selected num. and ph. pars, init. at -1.
 !      RLGTYPE   I.P.  Public   Named constant for rectilinear grid type
 !      CLGTYPE   I.P.  Public   Named constant for curvilinear grid type
+!      UNGTYPE   I.P.  Public   Named constant for Unstructured triangular grid
+!      SMCTYPE   I.P.  Public   Named constant for unstructured SMC grid type
 !      FLAGLL    Log.  Public   Flag to indicate coordinate system for all grids
 !                               .TRUE.: Spherical (lon/lat in degrees)
 !                               .FALSE.: Cartesian (meters)
@@ -140,6 +143,7 @@
 !                               RLGTYPE: Rectilinear grid
 !                               CLGTYPE: Curvilinear grid
 !                               UNGTYPE: Unstructured triangular grid                       
+!                               SMCTYPE: Unstructured SMC grid
 !      RSTYPE    Int.  Public   Integer identifyng restart type
 !      ICLOSE    Int.  Public   Parameter indicating type of index closure of grid.
 !                               ICLOSE_NONE: No grid closure
@@ -160,6 +164,7 @@
 !      NARC      Int.  Public   Number of cells in Arctic part for SMC grid. 
 !      NBAC      Int.  Public   Number of boundary cells in Arctic part.
 !      NBGL      Int.  Public   Number of boundary cells in global part.
+!      NBSMC     Int.  Public   Number of boundary cells for regional SMC grid.
 !      TRFLAG    Int.  Public   Flag for use of transparencies
 !                                0: No sub-grid obstacles.
 !                                1: Obstructions at cell boundaries.
@@ -173,6 +178,7 @@
 !      IJKU/VFc  I.A.  Public   U/V-Face arrays for SMC grid.
 !      NLv*      I.A.  Public   Cell, U/V-Face numbers of refine levels.
 !      ICLBAC    I.A.  Public   Mapping index for Arctic boundary cells.
+!      ISMCBP    I.A.  Public   List of SMC grid input boundary cell indexes.
 !      SX,SY     Real  Public   Spatial (rectilinear) grid increments.
 !      X0,Y0     Real  Public   Lower left corner of spatial (rectilinear) grid.
 !      DTCFL     Real  Public   Maximum CFL time step X-Y propagation.
@@ -224,6 +230,7 @@
 !      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FSWND     Log.  Public   Flag for sea-point only wind input on SMC grid.
+!      ARCTC     Log.  Public   Flag to include Arctic polar part on SMC grid.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
 !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
@@ -323,6 +330,7 @@
 !     ----------------------------------------------------------------
 !      DTME      Real  Public   Swell age in disp. corr.      (!/PR2)
 !      CLATMN    Real  Public   Id. minimum cosine of lat.    (!/PR2)
+!      DTMS      Real  Public   Swell age in disp. corr.      (!/SMC)
 !
 !      WDCG      Real  Public   Factors in width of av. Cg.   (!/PR3)
 !      WDTH      Real  Public   Factors in width of av. Th.   (!/PR3)
@@ -598,6 +606,7 @@
       INTEGER, PARAMETER      :: RLGTYPE = 1
       INTEGER, PARAMETER      :: CLGTYPE = 2
       INTEGER, PARAMETER      :: UNGTYPE = 3      
+      INTEGER, PARAMETER      :: SMCTYPE = 4
 
       INTEGER, PARAMETER      :: ICLOSE_NONE = ICLO_NONE
       INTEGER, PARAMETER      :: ICLOSE_SMPL = ICLO_SMPL
@@ -621,12 +630,11 @@
                             MAPFS(:,:), MAPSF(:,:)
 !
 !/SMC !!Li     Cell and face arrays for SMC grid.  
-!/SMC        INTEGER               :: NCel, NUFc, NVFc, NRLv, MRFct
-!/SMC        INTEGER, POINTER      :: NLvCel(:), NLvUFc(:), NLvVFc(:)
-!/SMC        INTEGER, POINTER      :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
-!
-!/ARC        INTEGER               :: NGLO, NARC, NBGL, NBAC
-!/ARC        INTEGER, POINTER      :: ICLBAC(:)
+!/SMC        INTEGER          :: NCel, NUFc, NVFc, NRLv, MRFct 
+!/SMC        INTEGER          :: NGLO, NARC, NBGL, NBAC, NBSMC
+!/SMC        INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:) 
+!/SMC        INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
+!/SMC        INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
 !
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
@@ -647,7 +655,7 @@
 
         REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
 !/SMC        REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
-        REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
+        REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
         REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
         REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
@@ -743,8 +751,8 @@
 !/PR1        REAL                  :: DUMMY
 !/PR2        REAL                  :: DTME, CLATMN
 !/PR3        REAL                  :: WDCG, WDTH
-!/SMC        REAL                  :: DTME, CLATMN, Refran
-!/SMC        LOGICAL               :: FUNO3, FVERG, FSWND 
+!/SMC        REAL                  :: DTMS, Refran
+!/SMC        LOGICAL               :: FUNO3, FVERG, FSWND, ARCTC  
       END TYPE PROP
 !
       TYPE FLDP
@@ -987,12 +995,11 @@
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
-!/SMC        INTEGER, POINTER      :: NCel, NUFc, NVFc, NRLv, MRFct
-!/SMC        INTEGER, POINTER      :: NLvCel(:), NLvUFc(:), NLvVFc(:)
-!/SMC        INTEGER, POINTER      :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
-!
-!/ARC        INTEGER, POINTER      :: NGLO, NARC, NBGL, NBAC
-!/ARC        INTEGER, POINTER      :: ICLBAC(:)
+!/SMC        INTEGER, POINTER :: NCel, NUFc, NVFc, NRLv, MRFct 
+!/SMC        INTEGER, POINTER :: NGLO, NARC, NBGL, NBAC, NBSMC
+!/SMC        INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:)
+!/SMC        INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
+!/SMC        INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
 !
 !/SEC1      INTEGER, POINTER        :: NITERSEC1
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX, &
@@ -1005,13 +1012,13 @@
 !/RTD        REAL, POINTER         :: PoLat, PoLon
 !/RTD        REAL, POINTER         :: AnglD(:)
 !/RTD        LOGICAL, POINTER      :: FLAGUNR
-      REAL, POINTER           :: ZB(:), CLATS(:)
+      REAL   , POINTER :: ZB(:), CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
 
       REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
-!/SMC        REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
-      REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
+!/SMC        REAL, POINTER :: CTRNX(:), CTRNY(:), CLATF(:)
+      REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
       REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
       REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
@@ -1059,8 +1066,8 @@
 !/
 !/PR2      REAL, POINTER           :: DTME, CLATMN
 !/PR3      REAL, POINTER           :: WDCG, WDTH
-!/SMC      REAL, POINTER           :: DTME, CLATMN, Refran
-!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG, FSWND 
+!/SMC      REAL, POINTER           :: DTMS, Refran
+!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG, FSWND, ARCTC  
 !/
 !/ Data aliasses for structure FLDP(S)
 !/
@@ -1318,8 +1325,8 @@
       END SUBROUTINE W3NMOD
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   & 
-!/SMC                    , MCel, MUFc, MVFc, MRLv           &
-!/ARC                    , MARC, MBAC, MSPEC                &
+!/SMC                    , MCel, MUFc, MVFc, MRLv, MBSMC    &
+!/SMC                    , MARC, MBAC, MSPEC                &
                          )
 !/SMC  !!Li    A few dimensional numbers for SMC grid.  
 !/
@@ -1407,12 +1414,13 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: IMOD, MX, MY, MSEA, NDSE, NDST
-!/SMC       INTEGER, INTENT(IN)     :: MCel, MUFc, MVFc, MRLv 
-!/ARC       INTEGER, INTENT(IN)     :: MARC, MBAC, MSPEC 
+!/SMC       INTEGER, INTENT(IN)     :: MCel, MUFc, MVFc, MRLv, MBSMC 
+!/SMC       INTEGER, INTENT(IN)     :: MARC, MBAC, MSPEC 
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+!/SMC       INTEGER                 :: IARC, IBAC, IBSMC
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3DIMX')
@@ -1494,11 +1502,34 @@
 !/SMC                 STAT=ISTAT                      )
 !/SMC      CHECK_ALLOC_STATUS ( ISTAT )
 !
-!/ARC      ALLOCATE ( GRIDS(IMOD)%ICLBAC(MBAC),       &
-!/ARC                 GRIDS(IMOD)%ANGARC(MARC),       &
-!/ARC                 GRIDS(IMOD)%SPCBAC(MSPEC,MBAC), &
-!/ARC                 STAT=ISTAT                      )
-!/ARC      CHECK_ALLOC_STATUS ( ISTAT )
+!/SMC !! Arctic part related variables, declare minimum 1 element.
+!/SMC      IARC = MARC
+!/SMC      IF( MARC .LE. 1 ) IARC = 1
+!/SMC      IBAC = MBAC
+!/SMC      IF( MBAC .LE. 1 ) IBAC = 1
+!/SMC      IBSMC = MBSMC
+!/SMC      IF( MBSMC .LE. 1 ) IBSMC = 1
+!/SMC      ALLOCATE ( GRIDS(IMOD)%ICLBAC(IBAC),       &
+!/SMC                 GRIDS(IMOD)%ANGARC(IARC),       &
+!/SMC                 GRIDS(IMOD)%SPCBAC(MSPEC,IBAC), &
+!/SMC                 GRIDS(IMOD)%ISMCBP(IBSMC),      &
+!/SMC                 STAT=ISTAT                      )
+!/SMC      CHECK_ALLOC_STATUS ( ISTAT )
+!
+!/SMC !! All SMC grid related varialbes are initialised in case SMC  
+!/SMC !! switch is selected but SMCTYPE is not used.  JGLi08Mar2021 
+!/SMC      GRIDS(IMOD)%NLvCel(:) = 0 
+!/SMC      GRIDS(IMOD)%NLvUFc(:) = 0
+!/SMC      GRIDS(IMOD)%NLvVFc(:) = 0 
+!/SMC      GRIDS(IMOD)%ISMCBP(:) = 0
+!/SMC      GRIDS(IMOD)%ICLBAC(:) = 0
+!/SMC      GRIDS(IMOD)%IJKCel(:,:) = 0 
+!/SMC      GRIDS(IMOD)%IJKUFc(:,:) = 0 
+!/SMC      GRIDS(IMOD)%IJKVFc(:,:) = 0 
+!/SMC      GRIDS(IMOD)%CTRNX(:)  = 0.0 
+!/SMC      GRIDS(IMOD)%CTRNY(:)  = 0.0
+!/SMC      GRIDS(IMOD)%CLATF(:)  = 0.0 
+!/SMC      GRIDS(IMOD)%ANGARC(:) = 0.0
 !
       GRIDS(IMOD)%FLAGST = .TRUE.
       GRIDS(IMOD)%GINIT  = .TRUE.
@@ -1945,10 +1976,11 @@
 !/SMC      NRLv   => GRIDS(IMOD)%NRLv 
 !/SMC      MRFct  => GRIDS(IMOD)%MRFct 
 !
-!/ARC      NGLO   => GRIDS(IMOD)%NGLO 
-!/ARC      NARC   => GRIDS(IMOD)%NARC 
-!/ARC      NBGL   => GRIDS(IMOD)%NBGL 
-!/ARC      NBAC   => GRIDS(IMOD)%NBAC 
+!/SMC      NGLO   => GRIDS(IMOD)%NGLO 
+!/SMC      NARC   => GRIDS(IMOD)%NARC 
+!/SMC      NBGL   => GRIDS(IMOD)%NBGL 
+!/SMC      NBAC   => GRIDS(IMOD)%NBAC 
+!/SMC      NBSMC  => GRIDS(IMOD)%NBSMC
 !
       E3DF   => GRIDS(IMOD)%E3DF
       P2MSF  => GRIDS(IMOD)%P2MSF
@@ -2095,13 +2127,14 @@
 !/SMC          IJKCel => GRIDS(IMOD)%IJKCel
 !/SMC          IJKUFc => GRIDS(IMOD)%IJKUFc
 !/SMC          IJKVFc => GRIDS(IMOD)%IJKVFc
+!/SMC          ISMCBP => GRIDS(IMOD)%ISMCBP
 !/SMC          CTRNX  => GRIDS(IMOD)%CTRNX
 !/SMC          CTRNY  => GRIDS(IMOD)%CTRNY
 !/SMC          CLATF  => GRIDS(IMOD)%CLATF
 !
-!/ARC          ICLBAC => GRIDS(IMOD)%ICLBAC
-!/ARC          ANGARC => GRIDS(IMOD)%ANGARC
-!/ARC          SPCBAC => GRIDS(IMOD)%SPCBAC
+!/SMC          ICLBAC => GRIDS(IMOD)%ICLBAC
+!/SMC          ANGARC => GRIDS(IMOD)%ANGARC
+!/SMC          SPCBAC => GRIDS(IMOD)%SPCBAC
 !
           GSU  => GRIDS(IMOD)%GSU
 !
@@ -2175,12 +2208,12 @@
 !/PR2      CLATMN => MPARS(IMOD)%PROPS%CLATMN
 !/PR3      WDCG   => MPARS(IMOD)%PROPS%WDCG
 !/PR3      WDTH   => MPARS(IMOD)%PROPS%WDTH
-!/SMC      DTME   => MPARS(IMOD)%PROPS%DTME
-!/SMC      CLATMN => MPARS(IMOD)%PROPS%CLATMN
+!/SMC      DTMS   => MPARS(IMOD)%PROPS%DTMS
 !/SMC      Refran => MPARS(IMOD)%PROPS%Refran
 !/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3 
 !/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG 
 !/SMC      FSWND  => MPARS(IMOD)%PROPS%FSWND
+!/SMC      ARCTC  => MPARS(IMOD)%PROPS%ARCTC
 !
 !     Structure FLDP
 !
@@ -2530,6 +2563,7 @@
       SELECT CASE ( GRIDS(IMOD)%GTYPE )
         CASE ( RLGTYPE )
         CASE ( CLGTYPE )
+        CASE ( SMCTYPE )
         CASE DEFAULT
           WRITE (NDSE,1003) GRIDS(IMOD)%GTYPE
           CALL EXTCDE (3)
@@ -2572,7 +2606,8 @@
       LBO = (/ 1, 1/)
       UBO = (/NY,NX/)
       SELECT CASE ( GTYPE )
-        CASE ( RLGTYPE )
+!!Li  SMC grid shares the settings with rectilinear grid. JGLi12Oct2020
+        CASE ( RLGTYPE, SMCTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
                        PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
                        NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &

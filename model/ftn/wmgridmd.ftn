@@ -42,6 +42,8 @@
 !/                  write/read capabilities (K. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.xx )
+!/    26-Jan-2021 : Add WMSMCEQL for SMC sub-grid. JGLi ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -64,6 +66,7 @@
 !      WMGEQL    Subr. Public   Dependencies to same ranked grids.
 !      WMRSPC    Subr. Public   Make map of flags for spectral 
 !                               conversion between grids.
+!      WMSMCEQL  Subr. Public   Dependencies on same ranked SMC grids.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -91,6 +94,7 @@
 !     !/PRn  propagation scheme.
 !     !/UQ   propagation scheme.
 !     !/UNO  propagation scheme.
+!     !/SMC  Enable SMC sub-grids.
 !
 !     !/SHRD Distributed memory approach
 !     !/DIST
@@ -141,7 +145,7 @@
 !  1. Purpose :
 !
 !     Determine relations to lower ranked grids for each grid.
-!     On the fly, the oposite relations are also saved.
+!     On the fly, the opposite relations are also saved.
 !
 !  2. Method :
 !
@@ -297,6 +301,10 @@
 !
 !/T      WRITE (MDST,9010)
 !
+!/SMC !!  Check GTYPE for all grids.
+!/SMC       IF( IMPROC.EQ.NMPERR )  WRITE(MDSE,*) " GTYPES in WMGLOW:", &
+!/SMC           ( GRIDS(I)%GTYPE, I=1, NRGRD )
+!
 ! -------------------------------------------------------------------- /
 ! 2.  Process grids
 !
@@ -336,6 +344,12 @@
             CYCLE
           END IF
 !
+!/SMC !!  SMC grid only appears in same ranked group.  JGLi23Mar2021
+!/SMC       IF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) THEN
+!/SMC         IF( IMPROC.EQ.NMPERR ) WRITE(MDSE,*) ' WMGLOW skip SMC grid', I 
+!/SMC         CYCLE
+!/SMC       END IF
+!
 ! 2.c Search for input boundary points
 !
 
@@ -369,8 +383,15 @@
 !
                   IF ( GRANK(J) .GE. GRANK(I) ) CYCLE
 !
+!/SMC !!  SMC grid only suppots same ranked group so far.  JGLi12Apr2021
+!/SMC             IF( GRIDS(J)%GTYPE .EQ. SMCTYPE ) THEN
+!/SMC                 IF( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)   &
+!/SMC                   ' WMGLOW skip SMC grid', J 
+!/SMC                 CYCLE
+!/SMC             END IF
+!
 ! ... Check if in grid
-
+!
 ! notes: 
 ! old version (v4.00):
 !        if in grid, return location in grid: a) JX, JY
@@ -380,7 +401,7 @@
 !        in not in grid, cycle (search next grid)
 ! new version (v4.01):
 !        Check if point within grid and compute interpolation weights using GSU
-!        in not in grid, cycle (search next grid)
+!        if not in grid, cycle (search next grid)
 !
         IF (GRIDS(J)%GTYPE .EQ. UNGTYPE) THEN
           CALL IS_IN_UNGRID(J, XA, YA, ITOUT, IVER, JVER, RW)
@@ -726,7 +747,10 @@
                DY_MIN_GRIDI=MINVAL(GRIDS(I)%HQFAC)
                DX_MAX_GRIDI=MAXVAL(GRIDS(I)%HPFAC)
                DY_MAX_GRIDI=MAXVAL(GRIDS(I)%HQFAC)
-            ELSEIF ( GRIDS(I)%GTYPE .EQ. RLGTYPE ) THEN
+!!Li        ELSEIF ( GRIDS(I)%GTYPE .EQ. RLGTYPE ) THEN
+            ELSEIF ( GRIDS(I)%GTYPE .EQ. RLGTYPE .OR.      &
+                     GRIDS(I)%GTYPE .EQ. SMCTYPE ) THEN
+!!Li  SMC grid shares mesh with regular grid.  22Mar2021
                DX_MIN_GRIDI=GRIDS(I)%SX
                DY_MIN_GRIDI=GRIDS(I)%SY
                DX_MAX_GRIDI=GRIDS(I)%SX
@@ -774,7 +798,10 @@
                DY_MIN_GRIDJ=MINVAL(GRIDS(J)%HQFAC)
                DX_MAX_GRIDJ=MAXVAL(GRIDS(J)%HPFAC)
                DY_MAX_GRIDJ=MAXVAL(GRIDS(J)%HQFAC)
-            ELSEIF ( GRIDS(J)%GTYPE .EQ. RLGTYPE ) THEN
+!!Li        ELSEIF ( GRIDS(J)%GTYPE .EQ. RLGTYPE ) THEN
+            ELSEIF ( GRIDS(J)%GTYPE .EQ. RLGTYPE .OR.      &
+                     GRIDS(J)%GTYPE .EQ. SMCTYPE ) THEN
+!!Li  SMC grid shares mesh with regular grid.  22Mar2021
                DX_MIN_GRIDJ=GRIDS(J)%SX
                DY_MIN_GRIDJ=GRIDS(J)%SY
                DX_MAX_GRIDJ=GRIDS(J)%SX
@@ -1307,7 +1334,10 @@
 !/T38   T38=.TRUE.
 
       DO GDST=1, NRGRD
-         IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE ) THEN
+!!Li     IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE ) THEN
+         IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE .AND.        &
+              GRIDS(GDST)%GTYPE .NE. SMCTYPE ) THEN  
+!!Li  Add SMCTYPE option into ALL_REGULAR case.  JGLi20Nov2020
             ALL_REGULAR=.FALSE.
          END IF
       END DO
@@ -3311,6 +3341,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 6.xx )
 !/
 !  1. Purpose :
 !
@@ -3450,6 +3481,10 @@
         END IF
       ITAG   = 0
 !
+!/SMC !!  Check GTYPE for all grids.
+!/SMC       IF( IMPROC.EQ.NMPERR )  WRITE (MDSE,*) " WMGEQL GTYPE:",   &
+!/SMC           ( GRIDS(I)%GTYPE, I=1, NRGRD )
+!
 ! -------------------------------------------------------------------- /
 ! 1.  Grid point relations and temp data storage
 ! 1.a Outer loop over all grids
@@ -3464,9 +3499,15 @@
 !
         NR     = 0
 !
+!/SMC !!  SMC grids use WMSMCEQL for equal ranked grids.  JGLi23Mar2021
+!/SMC        IF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) CYCLE
+!
         DO J=1, NRGRD
 
           IF ( GRANK(I).NE.GRANK(J) .OR. I.EQ.J ) CYCLE
+!
+!/SMC        IF( GRIDS(J)%GTYPE .EQ. SMCTYPE ) CYCLE
+!
 !/T          WRITE (MDST,9012) J
           SHRANK(I,J) = .TRUE.
           NR          = NR + 1
@@ -4721,6 +4762,693 @@
 !/
       END SUBROUTINE WMRSPC
 !/
+!!
+      SUBROUTINE WMSMCEQL
+!!
+!!    Adapted from multi-grid sub WMGEQL for set up equal ranked SMC
+!!    grid boundary points.       JGLi10Aug2020
+!!    Move boundary point matching to sub-grid root PEs and broadcast to
+!!    all other PEs.              JGLi02Dec2020
+!!    Clear bugs for 3 sub-grids case and finalise output messages. 
+!!                                JGLi26Jan2021
+!!    Add regular grid to SMC grid same ranked group. 
+!!                                JGLi12Apr2021
+!!
+!  1. Purpose :
+!
+!     Determine relations to same ranked SMC grids for each grid.
+!     Set boundary points update for regular grid in same ranked group.
+!
+!  2. Method :
+!
+!     Cross mapping of grid points, use nearest sea points and no
+!     interpolation is required so far.
+!
+!  3. Parameters :
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SETG, W3SETO, WMSETM
+!                Subr. W3GDATMD Manage data structures.
+!      W3SMCGMP, Subr. W3PSMCMD Mapping Lon-Lat points to SMC grid cells.
+!      W3SMCELL, Subr. W3PSMCMD Find Lon-Lat for SMC grid cell centre.
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      EXTCDE    Subr.   Id.    Program abort.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!       SMC J sub-grid has own boundary cell number W3GDATMD's NBSMC and 
+!       their ID list are stored in W3GDATMD's GRIDS(J)%ISMCBP(NBSMC), 
+!       which are the global ISEA values of the NBSMC boundary cells.  
+!       So there is no need to look for boundary points, but just 
+!       fetching the boundary cell list from each SMC sub-grid. 
+!       No interpolation is required as one to one correspondance is 
+!       assumed among SMC sub-grid boundary points.  JGLi06Nov2020
+!       Sub WMIOEG and WMIOES are modified to use the new EQSTGE array
+!       for same ranked SMC sub-grids only.          JGLi26Jan2021
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/PRn  Propagation scheme.
+!     !/SMC  For SMC grid. 
+!
+!     !/S    Enable subroutine tracing.
+!     !/T    Enable test output.
+!
+!     !/MPI  Distribbuted memory management.
+!     !/SHRD Shared memory case.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      USE CONSTANTS
+      USE W3GDATMD
+      USE W3ODATMD
+      USE W3ADATMD
+      USE WMMDATMD
+!
+      USE W3SERVMD, ONLY: EXTCDE
+!/SMC      USE W3PSMCMD, ONLY: W3SMCGMP, W3SMCELL
+
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!
+!/MPI      INCLUDE "mpif.h"
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                :: I, J, IX, IY, IXY, JX, JY, NPJ,      &
+                                NR, NT, NA, NTL, JJ, NIT, NG, NOUT,  &
+                                ISEA, JSEA, IPRC, ITAG, TGRP, NPMX,  &
+                                IP, NP, ICROOT, JCROOT, IEER
+
+      INTEGER, Dimension(MPI_STATUS_SIZE):: MPIState
+
+!/S      INTEGER, SAVE            :: IENT = 0
+      INTEGER, ALLOCATABLE   :: NREC(:),  NSND(:),  NTPP(:),  &
+                                IBPTS(:), JBPTS(:), IPBPT(:)
+      REAL, PARAMETER        :: ODIMAX = 25.
+      REAL, ALLOCATABLE      :: XLon(:), YLat(:)
+      LOGICAL                :: CHANGE 
+      LOGICAL, ALLOCATABLE   :: SHRANK(:,:), DOGRID(:) 
+!/T5      CHARACTER(LEN=18), ALLOCATABLE :: TSTR(:)
+!/T5      CHARACTER(LEN=18)              :: DSTR
+!
+      TYPE STORE
+        INTEGER              :: NTOT, NFIN
+        INTEGER, POINTER     :: ICVBP(:), MSDBP(:), ISS(:), JSS(:),   &
+                                JCVBP(:), IPCVB(:), IPS(:), ITG(:)
+        LOGICAL, POINTER     :: FLA(:)
+        LOGICAL              :: INIT
+      END TYPE STORE
+!
+      TYPE(STORE), ALLOCATABLE :: STORES(:,:)
+!/
+!/S      CALL STRACE (IENT, 'WMSMCEQL ')
+!
+! -------------------------------------------------------------------- /
+! 0.  Initializations
+!
+      ALLOCATE ( SHRANK(NRGRD,NRGRD), STORES(NRGRD,NRGRD),            &
+                 DOGRID(NRGRD), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+!
+      SHRANK = .FALSE.
+!
+      DO I=1, NRGRD
+
+        DO J=1, NRGRD
+          STORES(I,J)%INIT = .FALSE.
+          STORES(I,J)%NTOT = 0
+          STORES(I,J)%NFIN = 0
+          END DO
+        END DO
+!
+      ITAG   = 0
+!
+! -------------------------------------------------------------------- /
+! 1.  Grid point relations and temp data storage
+! 1.a Outer loop over all grids
+!
+!/T      WRITE (MDST,9010)
+!
+      DO I=1, NRGRD
+
+!/T        WRITE (MDST,9011) I, GRANK(I)
+!
+! 1.b Find sub grids with same rank
+!
+        NR = 0
+!
+        DO J=1, NRGRD
+          IF( (GRANK(I).NE.GRANK(J)) .OR. (I.EQ.J) ) CYCLE
+          SHRANK(I,J) = .TRUE.
+          NR = NR + 1
+        END DO
+!
+        DOGRID(I) = NR .GT. 0
+!
+        IF( NR .EQ. 0 ) CYCLE
+!
+        CALL W3SETG( I, MDSE, MDST )
+!
+! Find local root PE and NAPROC for I grid.
+        ICROOT = MDATAS(I)%CROOT
+        NP     = OUTPTS(I)%NAPROC
+!
+! 1.c Fetch Grid I boundary points. 
+!
+        NT = 0
+        IF( GRIDS(I)%GTYPE .EQ. RLGTYPE ) THEN
+! 1.c.1 Regular grid I boundary points are stored in NBI. 
+            NT = OUTPTS(I)%OUT5%NBI
+!/MPI          IF( IMPROC .EQ. ICROOT )  THEN
+            WRITE(MDSE,*) "ICROOT, NT are", ICROOT, NT
+!/MPI          ENDIF
+!
+! 1.c.2 SMC grid I boundary cell ids are saved in NBSMC.
+!/SMC       ELSEIF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) THEN
+!/MPI/!/SMC          IF( IMPROC .EQ. ICROOT )  THEN
+!/SMC                  NT = GRIDS(I)%NBSMC    
+!/SMC                  WRITE(MDSE,*) "ICROOT, NT are", ICROOT, NT
+!/MPI/!/SMC          ENDIF
+
+!/MPI/!/SMC          CALL MPI_BCAST( NT, 1, MPI_INTEGER, &
+!/MPI/!/SMC                   ICROOT-1, MPI_COMM_MWAVE, IEER) 
+
+!  Need to wait for all PEs get these values.
+!/MPI/!/SMC          CALL MPI_BARRIER (MPI_COMM_MWAVE,IEER)
+!
+        ENDIF  !! GTYPE .EQ. RLGTYPE
+!
+        IF( NT .EQ. 0 ) CYCLE
+
+        IF( NT > 0 ) THEN
+            ALLOCATE( IBPTS(NT), JBPTS(NT), IPBPT(NT),   &
+                      XLon(NT), YLat(NT), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
+
+!  Use saved I-grid boundary cell list.
+!/MPI          IF( IMPROC .EQ. ICROOT )  THEN
+            IF( GRIDS(I)%GTYPE .EQ. RLGTYPE ) THEN
+!! Loop over regular grid mesh to find boundary points.
+              IXY = 0
+              DO ISEA=1, NSEA
+                 IX = MAPSF(ISEA, 1)
+                 IY = MAPSF(ISEA, 2)
+                 IF( ABS(MAPSTA(IY,IX)) .EQ. 2 ) THEN
+                     IXY = IXY + 1
+                     XLon (IXY) = XGRD(IY,IX) 
+                     YLat (IXY) = YGRD(IY,IX) 
+                     IBPTS(IXY) = ISEA 
+                     JBPTS(IXY) = 1 + (ISEA - 1)/NP
+                     IPBPT(IXY) = ICROOT-1 + ISEA-(JBPTS(IXY)-1)*NP
+                 ENDIF
+              ENDDO
+!
+!/SMC       ELSEIF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) THEN
+!/SMC
+!/SMC              IBPTS = GRIDS(I)%ISMCBP(1:NT)
+!/SMC              CALL W3SMCELL( I, NT, IBPTS, XLon, YLat )
+!/SMC              DO IX = 1, NT
+!  Global processor IPBPT and local JSEA, for ISEA spectrum in I grid.
+!/SMC                 ISEA = IBPTS(IX)
+!/SMC                 JSEA = 1 + (ISEA - 1)/NP
+!/SMC                 IPBPT(IX) = ICROOT - 1 + ISEA - (JSEA - 1)*NP
+!/SMC                 JBPTS(IX) = JSEA 
+!/SMC              ENDDO
+!
+            ENDIF     !!  RLGTYPE
+!/MPI          ENDIF  !!  ICROOT
+!
+!  All have to wait for ICROOT finishes conversion of cell ids to XLon-YLat 
+!/MPI          CALL MPI_BARRIER (MPI_COMM_MWAVE,IEER)
+!
+! Then broadcast IBPTS, IPBPT, XLon, and YLat to all PEs
+!/MPI          CALL MPI_BCAST( IBPTS(1), NT, MPI_INTEGER,  &
+!/MPI                          ICROOT-1, MPI_COMM_MWAVE, IEER) 
+!/MPI          CALL MPI_BCAST( JBPTS(1), NT, MPI_INTEGER,  &
+!/MPI                          ICROOT-1, MPI_COMM_MWAVE, IEER) 
+!/MPI          CALL MPI_BCAST( IPBPT(1), NT, MPI_INTEGER,  &
+!/MPI                          ICROOT-1, MPI_COMM_MWAVE, IEER) 
+!/MPI          CALL MPI_BCAST( XLon(1), NT, MPI_REAL,  &
+!/MPI                          ICROOT-1, MPI_COMM_MWAVE, IEER) 
+!/MPI          CALL MPI_BCAST( YLat(1), NT, MPI_REAL,  &
+!/MPI                          ICROOT-1, MPI_COMM_MWAVE, IEER) 
+
+! 1.d  Loop over J grids, select same rank
+!
+            DO J=1, NRGRD
+
+              IF( .NOT. SHRANK(I,J) ) CYCLE
+!! Only SMC J-grid provides boundary spectra for I-Grid.
+              IF( GRIDS(J)%GTYPE .NE. SMCTYPE ) CYCLE
+!
+! Find local root PE and NAPROC for J grid.
+              JCROOT = MDATAS(J)%CROOT
+              NPJ    = OUTPTS(J)%NAPROC
+!
+! Find out whether any I-grid boundary points matched in J-Grid.
+!
+              STORES(I,J)%INIT = .TRUE.
+              ALLOCATE( STORES(I,J)%ICVBP(NT), STORES(I,J)%MSDBP(NT), &
+                        STORES(I,J)%JCVBP(NT), STORES(I,J)%IPCVB(NT), &
+                        STORES(I,J)%ISS(NT),   STORES(I,J)%JSS(NT),   &
+                        STORES(I,J)%IPS(NT),   STORES(I,J)%ITG(NT),   &
+                        STORES(I,J)%FLA(NT),   STAT=ISTAT ) 
+              CHECK_ALLOC_STATUS ( ISTAT )
+              STORES(I,J)%ICVBP = 0
+              STORES(I,J)%JCVBP = 0
+              STORES(I,J)%IPCVB = 0
+              STORES(I,J)%MSDBP = 0
+              STORES(I,J)%ISS   = 0
+              STORES(I,J)%JSS   = 0
+              STORES(I,J)%IPS   = 0
+              STORES(I,J)%ITG   = 0
+              STORES(I,J)%FLA   = .FALSE.
+!
+!  Work out which I-grid bounary points are matched in J-grid on JCROOT. 
+!/MPI/!/SMC          IF( IMPROC .EQ. JCROOT ) THEN
+!/SMC              CALL W3SMCGMP( J, NT, XLon, YLat, STORES(I,J)%MSDBP )
+!/MPI/!/SMC          ENDIF
+!
+! Then broadcast the results to all PEs
+!/MPI/!/SMC          CALL MPI_BCAST( STORES(I,J)%MSDBP(1), NT, MPI_INTEGER,  &
+!/MPI/!/SMC                          JCROOT-1, MPI_COMM_MWAVE, IEER) 
+!
+!  Need to wait for all PEs get these values.
+!/MPI/!/SMC          CALL MPI_BARRIER( MPI_COMM_MWAVE, IEER)
+!
+!/SMC              STORES(I,J)%ICVBP = IBPTS 
+!/SMC              STORES(I,J)%JCVBP = JBPTS 
+!/SMC              STORES(I,J)%IPCVB = IPBPT 
+!
+!  Check which I-grid boundary points matched inside J-Grid
+              NTL= 0
+              DO JX=1, NT 
+                 IF( STORES(I,J)%MSDBP(JX) .EQ. 0 )  CYCLE 
+
+!  Process J-grid send point if it matches I-grid boundary point.
+                 NTL    = NTL + 1
+                 ITAG   = ITAG + 1
+                 ISEA   = STORES(I,J)%MSDBP(JX)
+!  Find global processor IPRC and local JSEA on J-grid, holding ISEA spectrum.
+                 JSEA = 1 + (ISEA - 1)/NPJ
+                 IPRC = JCROOT - 1 + ISEA - (JSEA - 1)*NPJ
+!  Store these spectral location info in STORES.
+                 STORES(I,J)%ISS(JX) = ISEA
+                 STORES(I,J)%JSS(JX) = JSEA
+                 STORES(I,J)%IPS(JX) = IPRC
+                 STORES(I,J)%ITG(JX) = ITAG
+                 STORES(I,J)%FLA(JX) = .TRUE.
+              END DO
+!
+!  SMC grid boundary points are supposed to be 1 to 1 correspondant
+!  so there is no need for interpolation.   JGLi03Nov2020
+!
+              STORES(I,J)%NTOT = NT
+              STORES(I,J)%NFIN = NTL 
+!
+!/MPI/!/SMC          IF( IMPROC .EQ. NMPERR )              &
+!/SMC              WRITE(MDSE,1060) I, NT, J, NTL 
+!
+! ... End of loops J in 1.c
+            END DO
+!
+!!  Free temporary space for I-grid. 
+            DEALLOCATE( IBPTS, JBPTS, IPBPT, XLon, YLat, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+
+        END IF   ! NT > 0
+!
+! ... End of 1.a loop I grid. 
+      END DO
+!
+! -------------------------------------------------------------------- /
+! 3.  Final data base (full data base, scratched at end of routine)
+! 3.a Loop over grids
+!
+      ALLOCATE( NREC(NRGRD), NSND(NRGRD), NTPP(NMPROC), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+!
+      DO I=1, NRGRD
+        IF ( .NOT. DOGRID(I) ) CYCLE
+!/T        WRITE (MDST,9030) I
+!
+        CALL W3SETG ( I, MDSE, MDST )
+        CALL W3SETO ( I, MDSE, MDST )
+        CALL WMSETM ( I, MDSE, MDST )
+!
+        NREC   = 0 
+        NSND   = 0 
+!
+! Find local root PE and maximum PE for I grid.
+        ICROOT = MDATAS(I)%CROOT
+        NPMX   = OUTPTS(I)%NAPROC + ICROOT - 1
+!
+! 3.b Filling NREC and NSND for grid I
+!
+!!  Work out how many I-grid boundary points to be updated by other grids.
+!!  Use matched J-grid points to selected I-grid points. JGLi26Jan2021 
+        DO J=1, NRGRD
+           IF( .NOT. SHRANK(I,J) ) CYCLE
+           IF( STORES(I,J)%NFIN > 0 ) THEN
+             DO IX = 1, STORES(I,J)%NTOT
+                IF( STORES(I,J)%MSDBP(IX) > 0  .AND.  &
+                    STORES(I,J)%IPCVB(IX) .EQ. IMPROC ) THEN
+                    NREC(I) = NREC(I) + 1
+                    NREC(J) = NREC(J) + 1
+                END IF
+             END DO
+           END IF
+        END DO
+  
+!  Accumulate all related I-Grid points to be send to other sub-grids. 
+!  Add IPRC range check to ensure sending from I-grid.  JGLi22Jan2021 
+        DO J=1, NRGRD
+          IF( .NOT. SHRANK(J,I) ) CYCLE
+          IF( STORES(J,I)%NFIN > 0 ) THEN
+              DO IY=1, STORES(J,I)%NTOT
+                 IF( STORES(J,I)%MSDBP(IY) > 0  .AND.  &
+                     STORES(J,I)%IPS(  IY) .EQ. IMPROC ) THEN
+                     NSND(J) = NSND(J) + 1
+                 ENDIF
+              END DO
+          END IF
+        END DO
+!
+! -------------------------------------------------------------------- /
+! 4.  Save data base as needed in EQSTGE
+!
+! 4.a   ALLOCATE storage
+! 4.a.1 Local counters, weights and sea counters (grid 'I')
+!
+        IF( EQSTGE(I,I)%NREC .NE. 0 ) THEN
+            DEALLOCATE (EQSTGE(I,I)%ISEA, EQSTGE(I,I)%JSEA ,         &
+                        EQSTGE(I,I)%WGHT, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+            EQSTGE(I,I)%NREC = 0
+!/T            WRITE (MDST,9040) I, I
+        END IF
+!
+        IF( NREC(I) .GT. 0 ) THEN
+            ALLOCATE( EQSTGE(I,I)%ISEA(NREC(I)),                   &
+                      EQSTGE(I,I)%JSEA(NREC(I)),                   &
+                      EQSTGE(I,I)%WGHT(NREC(I)), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
+            EQSTGE(I,I)%NREC = NREC(I)
+!/T            WRITE (MDST,9041) I, I, NREC(I)
+        END IF
+!
+!! Initial NTOT for grid I before summing over other grids.  JGLi18Jan2021
+        EQSTGE(I,I)%NTOT = 0 
+!
+! 4.a.1 Local counters, arrays weights etc.  (grid 'J' receive)
+!
+        DO J=1, NRGRD
+          IF( I .EQ. J ) CYCLE
+!
+!!   Looks strange to store in EQSTGE(I,I) as other J-grid may
+!!   overwrite the value. Should be suspended?  JGLi30Dec2020 
+!         EQSTGE(I,I)%NTOT = STORES(I,J)%NFIN
+!!   Changed to summation ove all other J-grids NFIN.  Not sure where
+!!   NTOT is used but keep it anyway.   JGLi18Jan2021
+          EQSTGE(I,I)%NTOT = EQSTGE(I,I)%NTOT + STORES(I,J)%NFIN
+!
+          IF( EQSTGE(I,J)%NREC .NE. 0 ) THEN
+              DEALLOCATE( EQSTGE(I,J)%ISEA , EQSTGE(I,J)%JSEA ,      &
+                          EQSTGE(I,J)%WGHT , EQSTGE(I,J)%SEQL ,      &
+                          EQSTGE(I,J)%NAVG , EQSTGE(I,J)%WAVG ,      &
+                          EQSTGE(I,J)%RIP  , EQSTGE(I,J)%RTG,        &
+                          STAT=ISTAT )
+              CHECK_DEALLOC_STATUS ( ISTAT )
+              EQSTGE(I,J)%NREC   = 0
+              EQSTGE(I,J)%NAVMAX = 1
+          END IF
+!
+          IF( NREC(J) .GT. 0 ) THEN
+              NA = 1
+              EQSTGE(I,J)%NAVMAX = NA
+              ALLOCATE( EQSTGE(I,J)%ISEA(NREC(J)),                   &
+                        EQSTGE(I,J)%JSEA(NREC(J)),                   &
+                        EQSTGE(I,J)%WGHT(NREC(J)),                   &
+                        EQSTGE(I,J)%SEQL(SGRDS(J)%NSPEC,NREC(J),NA), &
+                        EQSTGE(I,J)%NAVG(NREC(J)),                   &
+                        EQSTGE(I,J)%WAVG(NREC(J),NA),                &
+                        EQSTGE(I,J)%RIP( NREC(J),NA),                &
+                        EQSTGE(I,J)%RTG( NREC(J),NA), STAT=ISTAT )
+              CHECK_ALLOC_STATUS( ISTAT )
+              EQSTGE(I,J)%NREC = NREC(J)
+          END IF
+!
+          IF( EQSTGE(J,I)%NSND .NE. 0 ) THEN
+              DEALLOCATE( EQSTGE(J,I)%SIS, EQSTGE(J,I)%SJS ,        &
+                          EQSTGE(J,I)%SI1, EQSTGE(J,I)%SI2 ,        &
+                          EQSTGE(J,I)%SIP, EQSTGE(J,I)%STG, STAT=ISTAT)
+              CHECK_DEALLOC_STATUS( ISTAT )
+              EQSTGE(J,I)%NSND = 0
+          END IF
+!
+          IF( NSND(J) .GT. 0 ) THEN
+              ALLOCATE( EQSTGE(J,I)%SIS(NSND(J)),                   &
+                        EQSTGE(J,I)%SJS(NSND(J)),                   &
+                        EQSTGE(J,I)%SI1(NSND(J)),                   &
+                        EQSTGE(J,I)%SI2(NSND(J)),                   &
+                        EQSTGE(J,I)%SIP(NSND(J)),                   &
+                        EQSTGE(J,I)%STG(NSND(J)), STAT=ISTAT )
+              CHECK_ALLOC_STATUS( ISTAT )
+              EQSTGE(J,I)%NSND = NSND(J)
+          END IF
+!
+        END DO
+!
+! 4.b   Store data in EQSTGE
+! 4.b.1 Grid I (JSEA and weight only) also filled in J-Grid loop
+!       but it accumulates all points received by I-grid.
+        NT = 0
+!
+! 4.b.2 Info for I-grid receiving from all other grids
+        DO J=1, NRGRD 
+           IF( .NOT. SHRANK(I,J) ) CYCLE
+           IF( EQSTGE(I,J)%NREC .EQ. 0 ) CYCLE
+           NTL = 0
+           DO IX=1, STORES(I,J)%NTOT
+              IF(   STORES(I,J)%MSDBP(IX) > 0  .AND.  &
+                    STORES(I,J)%IPCVB(IX) .EQ. IMPROC ) THEN
+! All points received by I-grid accumulated from each J-grid.
+                 NT = NT + 1
+                 EQSTGE(I,I)%ISEA(NT) = STORES(I,J)%ICVBP(IX)
+                 EQSTGE(I,I)%JSEA(NT) = STORES(I,J)%JCVBP(IX)
+! No need to alter local spectra for SMC grid.  JGLi08Dec2020 
+                 EQSTGE(I,I)%WGHT(NT) = 1.0 
+
+! Boundary points received by I-grid from J-grid.
+                 NTL = NTL + 1
+                 EQSTGE(I,J)%ISEA(NTL) = STORES(I,J)%ICVBP(IX)
+                 EQSTGE(I,J)%JSEA(NTL) = STORES(I,J)%JCVBP(IX)
+!! Boundary spectra will be substituted fully.  JGLi08Dec2020 
+                 EQSTGE(I,J)%WGHT(NTL) = 1.0
+                 EQSTGE(I,J)%NAVG(NTL) = 1
+                 EQSTGE(I,J)%WAVG(NTL,1) = 1.0 
+                 EQSTGE(I,J)%RIP (NTL,1) = STORES(I,J)%IPS(IX)
+                 EQSTGE(I,J)%RTG (NTL,1) = STORES(I,J)%ITG(IX)
+              END IF
+           END DO
+
+        END DO
+!
+! 4.b.3 All other grids, info for sending
+!
+        DO J=1, NRGRD 
+           IF ( .NOT. SHRANK(J,I) ) CYCLE
+           IF ( EQSTGE(J,I)%NSND .EQ. 0 ) CYCLE
+           NTPP   = 0
+           NTL    = 0
+           DO IY =1, STORES(J,I)%NTOT
+              IF(    STORES(J,I)%MSDBP(IY) > 0 ) THEN 
+                IPRC=STORES(J,I)%IPS(  IY)
+                NTPP(IPRC) = NTPP(IPRC) + 1
+                IF( IPRC .EQ. IMPROC ) THEN
+                    NTL    = NTL + 1
+                    EQSTGE(J,I)%SIS(NTL) = STORES(J,I)%ISS(IY)
+                    EQSTGE(J,I)%SJS(NTL) = STORES(J,I)%JSS(IY)
+                    EQSTGE(J,I)%SI1(NTL) = NTPP(IPRC)
+                    EQSTGE(J,I)%SI2(NTL) = 1
+                    EQSTGE(J,I)%SIP(NTL) = STORES(J,I)%IPCVB(IY)
+                    EQSTGE(J,I)%STG(NTL) = STORES(J,I)%ITG(IY)
+                END IF
+              END IF
+           END DO
+!
+        END DO
+!
+!  End of 3.a loop for I grid.
+      END DO
+!
+! -------------------------------------------------------------------- /
+! 5.  Generate GRDEQL
+! 5.a Size of array
+!
+      NREC   = 0
+!
+      DO I=1, NRGRD
+         DO J=1, NRGRD
+            IF ( I.EQ.J .OR. STORES(I,J)%NFIN.EQ.0 ) CYCLE
+            NREC(I) = NREC(I) + 1
+         END DO
+      END DO
+!
+      NA = MAXVAL(NREC)
+      ALLOCATE( GRDEQL(NRGRD,0:NA), STAT=ISTAT )
+      CHECK_ALLOC_STATUS( ISTAT )
+      GRDEQL = 0
+!
+!/T      WRITE (MDST,9050) NA
+!
+! 5.b Fill array
+!
+      DO I=1, NRGRD
+         GRDEQL(I,0) = NREC(I)
+         JJ          = 0
+         DO J=1, NRGRD
+            IF ( I.EQ.J .OR. STORES(I,J)%NFIN.EQ.0 ) CYCLE
+            JJ           = JJ + 1
+            GRDEQL(I,JJ) = J
+         END DO
+      END DO
+!
+!/T      WRITE (MDST,9051)
+!/T      DO I=1, NRGRD
+!/T        WRITE (MDST,9052) I, GRDEQL(I,0:GRDEQL(I,0))
+!/T        END DO
+!
+! 5.d Group number test
+!
+      DO I=1, NRGRD
+         IF( GRDEQL(I,0) .GE. 2 ) THEN
+             TGRP = GRGRP(GRDEQL(I,1))
+             DO J=2, GRDEQL(I,0)
+                IF( GRGRP(GRDEQL(I,J)) .NE. TGRP ) THEN
+                    IF( IMPROC .EQ. NMPERR ) WRITE(MDSE,1051)          &
+                                    GRDEQL(I,1), GRGRP(GRDEQL(I,1)),   &
+                                    GRDEQL(I,J), GRGRP(GRDEQL(I,J))
+                  CALL EXTCDE ( 1051 )
+                END IF
+             END DO
+         END IF
+      END DO
+!
+!  Wait all PEs finishing EQSTGE setup before clean up.  JGLi20Jan2021 
+!/MPI/!/SMC          CALL MPI_BARRIER (MPI_COMM_MWAVE,IEER)
+! -------------------------------------------------------------------- /
+! 6.  Final clean up
+!
+      DO I=1, NRGRD
+         DO J=1, NRGRD
+            IF( STORES(I,J)%INIT ) THEN
+               DEALLOCATE( STORES(I,J)%ICVBP, STORES(I,J)%MSDBP,   &
+                           STORES(I,J)%JCVBP, STORES(I,J)%IPCVB,   &
+                           STORES(I,J)%ISS  , STORES(I,J)%JSS  ,   &
+                           STORES(I,J)%IPS  , STORES(I,J)%ITG  ,   &
+                           STORES(I,J)%FLA  , STAT=ISTAT )
+               CHECK_DEALLOC_STATUS( ISTAT )
+            END IF
+         END DO
+      END DO
+!
+      DEALLOCATE( SHRANK, STORES, NREC, NSND, NTPP, STAT=ISTAT )
+      CHECK_DEALLOC_STATUS( ISTAT )
+!
+!!  Output EQSTGE values for checking.  JGLi23Dec2020
+!!Li   IF( IMPROC .EQ. 1 ) WRITE(MDSE,*) " I  J  EQSTGE(I,J)%NREC/NSND  IP" 
+!!Li   DO I=1, NRGRD
+!!Li     DO J=1, NRGRD
+!!Li       IF( EQSTGE(I,J)%NREC > 0 .OR. EQSTGE(I,J)%NSND > 0 )    &
+!!Li         WRITE(MDSE,'(5I6)') I, J, EQSTGE(I,J)%NREC, EQSTGE(I,J)%NSND, IMPROC
+!!Li     END DO
+!!Li   END DO
+!
+!/MPI/!/SMC        IF( IMPROC .EQ. NMPERR )              &
+!/SMC        WRITE(MDSE,*) " *** WMSMCEQL completed from PE ", IMPROC
+
+      RETURN
+!
+! Formats
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN WMSMCEQL : *** '/         &
+               '     UNCOVERED EDGE POINTS FOR GRID',I4,'  (',I6,')'/)
+ 1001 FORMAT ( '     GRID',I4,'  POINT',2I5,' NOT COVERED (WMGEQL)')
+ 1002 FORMAT ( '     DIAGNOSTICS IX AND IY RANGE:',4I6)
+ 1003 FORMAT (/'     SHOWING ',A/)
+ 1004 FORMAT (2X,65I2)
+ 1005 FORMAT (/'     SHOWING IX RANGE ',2I6)
+ 1006 FORMAT ( '        (WILL NOT PRINT ANY MORE UNCOVERED POINTS)')
+!
+ 1020 FORMAT (/' *** WAVEWATCH III WARNING WMSMCEQL : *** '/          &
+       '     REMOVED BOUNDARY POINT FROM OPEN EDGE DISTANCE MAP'/     &
+       '     GRID, IX, IY :',3I6)
+!
+ 1050 FORMAT (/' *** WAVEWATCH III ERROR IN WMSMCEQL : *** '/         &
+               '     GRID INCREMENTS TOO DIFFERENT '/                 &
+               '     GRID',I4,'   INCREMENTS ',2F8.2/                 &
+               '     GRID',I4,'   INCREMENTS ',2F8.2/)
+ 1051 FORMAT (/' *** WAVEWATCH III ERROR IN WMSMCEQL : *** '/         &
+               '     OVERLAPPING GRIDS NEED TO BE IN SAME GROUP '/    &
+               '         GRID',I4,' IN GROUP',I4/                     &
+               '         GRID',I4,' IN GROUP',I4/)
+ 1060 FORMAT (' Grid NBPI from',2I6,' found in',2I6) 
+
+!
+!/T 9010 FORMAT ( ' TEST WMSMCEQL : STARTING LOOP OVER GRIDS')
+!/T 9011 FORMAT ( ' TEST WMSMCEQL : I, RANK :',2I4)
+!/T 9012 FORMAT ( '               GRID ',I3,' HAS SAME RANK')
+!/T 9013 FORMAT ( '               ',A)
+!
+!/T 9020 FORMAT ( ' TEST WMSMCEQL : GENERATING DISTANCE MAP GRID ',I3)
+!/T 9024 FORMAT ( ' TEST WMSMCEQL : FINAL MAP FOR X RANGE ',2I6)
+!/T 9025 FORMAT (2X,65I2)
+!
+!/T 9030 FORMAT ( ' TEST WMSMCEQL : DEPENDENCE INFORMATION GRID ',I3)
+!/T 9031 FORMAT ( '               CHECKING GRID ',I3)
+!/T 9032 FORMAT ( '               POINTS USED/AVAIL :',2I6)
+!/T 9033 FORMAT ( '               TOTAL/GRIDS/OUT   :',3I6)
+!/T 9034 FORMAT ( '               LOCAL PER GRID    :',15I6)
+!/T 9035 FORMAT ( '               SENDING PER GRID  :',15I6)
+!/T 9036 FORMAT ( ' TEST WMSMCEQL : NUMBER OF CONTRIBUTING GRIDS MAP')
+!/T 9037 FORMAT (2X,65I2)
+!
+!/T 9040 FORMAT ( ' TEST WMSMCEQL : GRID ',I2,'-',I2,' CLEAR STORAGE')
+!/T 9041 FORMAT ( ' TEST WMSMCEQL : GRID ',I2,'-',I2,' STORAGE SIZE',I6)
+!/T 9042 FORMAT ( '               RECV ',I2,'-',I2,' CLEAR STORAGE')
+!/T 9043 FORMAT ( '               RECV ',I2,'-',I2,' STORAGE SIZE',2I6)
+!/T 9044 FORMAT ( '               SEND ',I2,'-',I2,' CLEAR STORAGE')
+!/T 9045 FORMAT ( '               SEND ',I2,'-',I2,' STORAGE SIZE',I6)
+!
+!/T 9050 FORMAT ( ' TEST WMSMCEQL : GRDEQL DIMENSIONED AT ',I2)
+!/T 9051 FORMAT ( ' TEST WMSMCEQL : GRDEQL :')
+!/T 9052 FORMAT ( '                 ',2i4,' : ',20I3)
+!
+!/
+!/ End of WMSMCEQL  -------------------------------------------------- /
+!/
+      END SUBROUTINE WMSMCEQL 
+!!
+
 !/ End of module WMGRIDMD -------------------------------------------- /
 !/
       END MODULE WMGRIDMD

@@ -197,7 +197,7 @@
       USE CONSTANTS, ONLY: RADIUS, DERA
       USE W3GDATMD,  ONLY: NX, NY, FLAGLL, XGRD, YGRD, MAPSTA, &
                            & HPFAC, HQFAC, GTYPE, &
-                           & UNGTYPE, RLGTYPE, CLGTYPE
+                           & UNGTYPE, RLGTYPE, CLGTYPE, SMCTYPE
 !/SMC      USE W3GDATMD,  ONLY: NSEA, X0, Y0, MRFct, SX, SY, IJKCel
 !/MPI      INCLUDE "mpif.h"
 !
@@ -215,13 +215,11 @@
       REAL, ALLOCATABLE    :: LON(:,:),LAT(:,:),AREA(:,:),      &
                               CORLON(:,:,:),CORLAT(:,:,:)
       REAL                 :: FACTOR
-      LOGICAL              :: RGLGRD = .TRUE.
 !/SMC      REAL                 :: DLON, DLAT
 !/ ------------------------------------------------------------------- /
 !
       IF (LD_MASTER) THEN
 !
-!/SMC         RGLGRD = .FALSE.
          !
          ! 0. Create grids file
          ! --------------------------------
@@ -231,7 +229,6 @@
          ! -------------------------------------------
          IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
 !
-           IF (RGLGRD) THEN
              IF (FLAGLL) THEN
                FACTOR = 1.
              ELSE
@@ -289,7 +286,7 @@
                  END IF
                END DO
              END DO
-!/SMC           ELSE
+!/SMC        ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
 !/SMC             !
 !/SMC             ! 1.2. SMC grids
 !/SMC             ! ----------------------------------
@@ -320,7 +317,7 @@
 !/SMC               ! Model grid mask
 !/SMC               MASK(I,1) = 1
 !/SMC             ENDDO
-           ENDIF
+!
          ELSE
             !
             ! 1.3. Unstructured grids
@@ -406,7 +403,7 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3GDATMD, ONLY: NSEAL,NSEA, NX, NY, MAPSTA, MAPSF, GTYPE, &
-                        & UNGTYPE, RLGTYPE, CLGTYPE
+                        & UNGTYPE, RLGTYPE, CLGTYPE, SMCTYPE
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3PARALL, ONLY : INIT_GET_ISEA
 !
@@ -427,15 +424,12 @@
       INTEGER                 :: ISEA, JSEA, IX, IY
       INTEGER                 :: NHXW, NHXE, NHYS, NHYN  ! size of the halo at the western, eastern, southern, northern boundaries
       LOGICAL                 :: LL_MPI_FILE     ! to check if there an mpi.txt file for domain decompasition
-      LOGICAL                 :: RGLGRD = .TRUE.
 !/
 !/ ------------------------------------------------------------------- /
 !/ Executable part
 !/
-!/SMC      RGLGRD = .FALSE.
 !
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN 
-        IF (RGLGRD) THEN
           !
           ! 1.1. regular and curvilinear grids
           ! ----------------------------------
@@ -461,7 +455,7 @@
              ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)
              ILA_PARAL(JSEA*2+2) = 1
           END DO
-!/SMC        ELSE
+!/SMC        ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
 !/SMC          !
 !/SMC          ! 1.2. SMC grids
 !/SMC          ! ----------------------------------
@@ -476,8 +470,7 @@
 !/SMC          DO JSEA=1, NSEAL
 !/SMC            ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
 !/SMC          ENDDO
-        ENDIF
-        !
+!
       ELSE
          !
          ! 1.3. Unstructured grids

@@ -401,7 +401,7 @@
               GOTO 809
             ELSE
               NX     = NXT
-              IF (GTYPE.LE.3) GTYPE  = GTYPET
+              IF (GTYPE.LE.4) GTYPE  = GTYPET
               END IF
             END IF
         END IF

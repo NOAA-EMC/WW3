@@ -94,11 +94,11 @@
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
   for type in mach nco grib mcp c90 nec netcdf scrip scripnc \
-              shared mpp mpiexp thread GSE prop \
+              shared mpp mpiexp thread GSE prop smcg \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
               wind windx wcor rwind curr currx mgwind mgprop mggse \
-              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
+              subsec tdyn dss0 pdif tide refrx ig rotag nnt mprf \
               cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
   do
     case $type in
@@ -166,11 +166,16 @@
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+               OK='PR0 PR1 PR2 PR3 PRX' ;;
 #sort:prop:
       prop   ) TY='one'
                ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO SMC' ;;
+               OK='PR0 PR1 UQ UNO' ;;
+#sort:smcg:
+      smcg   ) TY='upto1'
+               ID='SMC grid'
+               TS='SMC'
+               OK='SMC' ;;
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
@@ -327,11 +332,6 @@
                ID='rotated grid'
                TS='RTD'
                OK='RTD' ;;
-#sort:arctic:
-      arctic ) TY='upto1'
-               ID='Arctic grid'
-               TS='ARC'
-               OK='ARC' ;;
 #sort:nnt:
       nnt    ) TY='upto1'
                ID='NN training/test data generation'
@@ -479,6 +479,7 @@
       thread ) thread1=$sw1 ; thread2=$sw2 ;;
       GSE    ) g_switch=$sw ;;
       prop   ) p_switch=$sw ;;
+      smcg   ) smcg=$sw ;;
       s_ln   ) s_ln=$sw ;;
       source ) s_inds=$sw ;;
       stab   ) stab=$sw ;;
@@ -501,7 +502,6 @@
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
-      arctic ) arctic=$sw ;;
       mprf   ) mprf=$sw ;;
       cou    ) cou=$sw ;;
       oasis  ) oasis=$sw ;;
@@ -546,13 +546,6 @@
       echo ' ' ; exit 8
   fi
 
-  if [ "$arctic" = 'ARC' ] && [ "$p_switch" != 'SMC' ]
-  then
-      echo ' '
-      echo "   *** !/ARC has to be used in combination with !/SMC"
-      echo ' ' ; exit 9
-  fi
-
   if [ -n "$b4b" ] && [ -z "$thread2" ]
   then
       echo ' '
@@ -560,19 +553,23 @@
       echo ' ' ; exit 9
   fi
 
-  smco=$NULL
   case $g_switch in
    PR0) pr=$NULL ;;
    PR1) pr='w3profsmd w3pro1md' ;;
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
-   SMC) pr='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
   esac 
 
   case $p_switch in
    UQ ) pr="$pr w3uqckmd" ;;
    UNO) pr="$pr w3uno2md" ;;
   esac 
+
+  smcm=$NULL
+  smco=$NULL
+  case $smcg in
+   SMC) smcm='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
+  esac
 
   case $uost in
    UOST) uostmd="w3uostmd"
@@ -936,14 +933,14 @@
     ww3_prtide) IDstring='Tide prediction'
                core='w3fldsmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
+               prop="$pr $smcm"
              source="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
+               prop="$pr $smcm"
              source="$pdlibcode $setupcode w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic"
              source="$source $is $db $tr $bs $xx $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
@@ -962,7 +959,7 @@
                core="$core wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd"
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
+               prop="$pr $smcm"
              source="$pdlibcode $pdlibyow $setupcode w3parall w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
@@ -982,7 +979,7 @@
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd" 
-               prop="$pr" 
+               prop="$pr $smcm" 
                source="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic $uostmd" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd" 
@@ -1091,14 +1088,14 @@
      libww3) IDstring='Object file archive'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop="$pr"
+               prop="$pr $smcm"
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
      libww3.so) IDstring='Object file archive'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop="$pr"
+               prop="$pr $smcm"
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;  

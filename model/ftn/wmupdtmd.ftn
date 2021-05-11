@@ -23,6 +23,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
+!/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.xx )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -511,6 +512,7 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY
+!/SMC      USE W3GDATMD, ONLY: FSWND, NSEA
       USE W3WDATMD, ONLY: TIME
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
                           TW0, TWN, WX0, WXN, WY0, WYN, DT0, DTN,     &
@@ -623,16 +625,30 @@
 ! 2.  Currents ------------------------------------------------------- /
 !
         CASE (2)
+!/SMC !!Li  For sea point current option FSWND.   JGLi08Feb2021
+!/SMC       IF( FSWND ) THEN
+!/SMC          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+!/SMC                       NSEA, 1, NSEA, 1, TIME, ETIME, TC0,            &
+!/SMC                       CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/SMC       ELSE
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                        NX, NY, NX, NY, TIME, ETIME, TC0,              &
                        CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/SMC       END IF
 !
 ! 3.  Winds ---------------------------------------------------------- /
 !
         CASE (3)
+!/SMC !!Li  For sea point wind option FSWND.   JGLi08Feb2021 
+!/SMC       IF( FSWND ) THEN
+!/SMC          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+!/SMC                       NSEA, 1, NSEA, 1, TIME, ETIME, TW0,            &
+!/SMC                       WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/SMC       ELSE
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                        NX, NY, NX, NY, TIME, ETIME, TW0,              &
                        WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/SMC       END IF
 !
 ! 4.  Ice ------------------------------------------------------------ /
 !

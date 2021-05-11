@@ -82,6 +82,7 @@
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
 !/                  defunct OMPX switches.
+!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -251,6 +252,7 @@
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
+!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -461,10 +463,6 @@
                                  FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
                                  FLPART, LOCAL, FLOUTG2
 !
-!Li   Logical variable to control regular gird lines in conflict with SMC option.
-!AR   SMC option is in conflict with lofical variables for regular grid ... chicken ... egg ... stuff 
-      LOGICAL                 :: RGLGRD = .TRUE., ARCTIC = .FALSE.
-!!Li
 !/MPI      LOGICAL                 :: FLGMPI(0:8)
 !/IC3      REAL                    :: FIXEDVISC,FIXEDDENS,FIXEDELAS
 !/IC3      REAL                    :: USE_CHENG, USE_CGICE, HICE
@@ -483,19 +481,13 @@
 !
 !/T     REAL             :: INDSORT(NSEA), DTCFL1(NSEA)
 !/
-!/ARC  !Li   Temperature spectra for Arctic boundary update.
-!/ARC      REAL, ALLOCATABLE       :: BACSPEC(:)
-!/ARC      REAL                    :: BACANGL
-!/ARC
+!/SMC  !Li   Temperature spectra for Arctic boundary update.
+!/SMC      REAL, ALLOCATABLE       :: BACSPEC(:)
+!/SMC      REAL                    :: BACANGL
+!/SMC
 
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
-
-!/SMC !!Li  Switch off lat-lon grid lines in conflict with SMC option.
-!/SMC        RGLGRD = .FALSE.
-!
-!/ARC !!Li  Switch on lines related to Arctic part on SMC grid.
-!/ARC        ARCTIC = .TRUE.
 !
 ! 0.a Set pointers to data structure
 !
@@ -576,10 +568,13 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-      IF( RGLGRD ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
-!
-!/SMC !!Li   Otherwise use sea point only field
-!/SMC       ALLOCATE ( FIELD(NCel) )
+      IF( GTYPE .EQ. SMCTYPE ) THEN
+             J = 1
+!/SMC !!Li   Use sea point only field for SMC grid.
+!/SMC        ALLOCATE ( FIELD(NCel) )
+      ELSE
+             ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+      ENDIF
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
@@ -989,22 +984,22 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 3b '
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-            IF (GTYPE .NE. UNGTYPE) THEN       
-              IF( RGLGRD ) THEN
-              CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
-              CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
-              ENDIF
+            IF (GTYPE .EQ. SMCTYPE) THEN
+              IX = 1
 !/SMC !!Li  Use new sub for DCXDX/Y and DCYDX/Y assignment.  
 !/SMC         CALL SMCDCXY 
-            ELSE
+            ELSE IF (GTYPE .EQ. UNGTYPE) THEN
 !/DEBUGDCXDX       WRITE(740+IAPROC,*) 'Before call to UG_GRADIENT for assigning DCXDX/DCXDY array'
               CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
               CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
-              CALL GET_INTERFACE 
+              CALL GET_INTERFACE
               UGDTUPDATE=.TRUE.
               CFLXYMAX = 0.
-            END IF
-
+            ELSE
+              CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
+              CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
+            ENDIF  !! End GTYPE 
+!
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 4'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
@@ -1267,42 +1262,37 @@
 !
 ! 3.5 Update maps and derivatives.
 !
-          IF ( FLMAP .AND. RGLGRD ) THEN
+          IF ( FLMAP ) THEN
+            IF ( GTYPE .NE. SMCTYPE ) THEN
 !/PR1              CALL W3MAP1 ( MAPSTA )
 !/PR2              CALL W3MAP2
 !/PR3              CALL W3MAP3
 !/PRX              CALL W3MAPX
               CALL W3UTRN ( TRNX, TRNY )
 !/PR3              CALL W3MAPT
+            END IF  !! GTYPE 
               CALL W3NMIN ( MAPSTA, FLAG0 )
               IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
               FLMAP  = .FALSE.
           END IF
+!
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.8.1 DTG=', DTG
 !/DEBUGRUN        FLUSH(740+IAPROC)
-!
-!/SMC  !!Li   The sea point nubmer per pe is also checked for SMC grid.
-!/SMC          IF ( FLMAP ) THEN
-!/SMC              CALL W3NMIN ( MAPSTA, FLAG0 )
-!/SMC              IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
-!/SMC              FLMAP  = .FALSE.
-!/SMC            END IF
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.8.2 DTG=', DTG
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'FLDDIR=', FLDDIR
 !/DEBUGRUN        FLUSH(740+IAPROC)
           IF ( FLDDIR ) THEN
-            IF (GTYPE .NE. UNGTYPE) THEN  
-!!Li          CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
-              IF( RGLGRD ) CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) 
+            IF (GTYPE .EQ. SMCTYPE) THEN
+              IX = 1
 !/SMC !!Li  Use new sub for DDDX and DDDY assignment.  
 !/SMC         CALL SMCDHXY 
-!/SMCT        WRITE (NDST,*) " * SMCDHXY completed IT DTG =", IT, DTG
-!
-            ELSE
+            ELSE IF (GTYPE .EQ. UNGTYPE) THEN
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
-              END IF 
-              FLDDIR = .FALSE.
+            ELSE
+              CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY)
+            END IF
+            FLDDIR = .FALSE.
           END IF
 
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 12'
@@ -1611,6 +1601,20 @@
                            ELSE
                              IXrel = IX
                            END IF
+!
+                      IF( GTYPE .EQ. SMCTYPE ) THEN
+                          J = 1
+!/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
+!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
+!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
+!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
+!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+!
+                      ELSE
+                          J = 1
+!
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR1                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
@@ -1632,13 +1636,7 @@
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
 !/PRX                      CALL W3KTPX
 !
-!/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
-!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
-!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
-!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+                      END IF  !!  GTYPE  
 !
                     END IF
                   END DO
@@ -1737,19 +1735,22 @@
 !
             DO ISPEC=1, NSPEC
               IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
-                IF (.NOT.LPDLIB .AND. RGLGRD) CALL W3GATH ( ISPEC, FIELD )
-!/SMC !!Li   Otherwise use SMC sub to gether field
-!/SMC                CALL W3GATHSMC ( ISPEC, FIELD )
 !
-                IF (GTYPE .NE. UNGTYPE) THEN
-!/PR1             CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
-!/PR2             CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PR3             CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PRX             CALL W3XYPX
+                IF( GTYPE .EQ. SMCTYPE ) THEN
+                    IX = 1
+!/SMC !!Li   Use SMC sub to gether field
+!/SMC                   CALL W3GATHSMC ( ISPEC, FIELD )
+                ELSE IF (.NOT.LPDLIB ) THEN
+                  CALL W3GATH ( ISPEC, FIELD )
+                END IF   !! GTYPE
+!
+                IF (GTYPE .EQ. SMCTYPE) THEN
+                  IX = 1
 !/SMC   !!Li   Propagation on SMC grid uses UNO2 scheme.
 !/SMC             CALL W3PSMC ( ISPEC, DTG, FIELD )
 !
                 ELSE IF (GTYPE .EQ. UNGTYPE) THEN
+                  IX = 1
 !/MPI             IF (.NOT. LPDLIB) THEN
 !/PR1               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR1                              FIELD, VGX, VGY, UGDTUPDATE )
@@ -1760,11 +1761,24 @@
 !/PRX               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PRX                              FIELD, VGX, VGY, UGDTUPDATE )
 !/MPI             END IF
-                END IF
-                IF (.NOT.LPDLIB .AND. RGLGRD) CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
-!/SMC !!Li   Otherwise use SMC sub to scatter field
-!/SMC           CALL W3SCATSMC ( ISPEC, MAPSTA, FIELD )
 !
+                ELSE
+                  IX = 1
+!/PR1             CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
+!/PR2             CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PR3             CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PRX             CALL W3XYPX
+!
+                END IF   !! GTYPE
+!
+                IF( GTYPE .EQ. SMCTYPE ) THEN
+                  IX = 1
+!/SMC !!Li   Use SMC sub to scatter field
+!/SMC             CALL W3SCATSMC ( ISPEC, MAPSTA, FIELD )
+                ELSE IF (.NOT.LPDLIB ) THEN
+                  CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
+                END IF   !! GTYPE
+
               END IF
             END DO
 !
@@ -1785,74 +1799,67 @@
               IK=1
               IX=1
               IY=1
-!/ARC  !Li    Find source boundary spectra and assign to SPCBAC
-!/ARC  !Li    Have to use mpi options so will be empty if ARC not selected.
-!/ARC        DO IK = 1, NBAC
-!/ARC           IF( IK .LE. (NBAC-NBGL) ) THEN
-!/ARC                   IY = ICLBAC(IK)
-!/ARC           ELSE
-!/ARC                   IY = NGLO + IK 
-!/ARC           ENDIF 
-!/ARC
-!/ARC  !Li    Work out root PE (ISPEC) and JSEA numbers for IY 
+!/SMC  !Li    Find source boundary spectra and assign to SPCBAC
+!/SMC        IF( ARCTC ) THEN
+!/SMC 
+!/SMC        DO IK = 1, NBAC
+!/SMC           IF( IK .LE. (NBAC-NBGL) ) THEN
+!/SMC                   IY = ICLBAC(IK)
+!/SMC           ELSE
+!/SMC                   IY = NGLO + IK 
+!/SMC           ENDIF 
+!/SMC 
+!/SMC  !Li    Work out root PE (ISPEC) and JSEA numbers for IY 
+!/SMC/!/DIST            ISPEC = MOD( IY-1, NAPROC ) 
+!/SMC/!/DIST             JSEA = 1 + (IY - ISPEC - 1)/NAPROC
+!/SMC/!/SHRD            ISPEC = 0 
+!/SMC/!/SHRD             JSEA = IY 
 !
-          IF( ARCTIC ) THEN
-!/DIST            ISPEC = MOD( IY-1, NAPROC ) 
-!/DIST             JSEA = 1 + (IY - ISPEC - 1)/NAPROC
-!/SHRD            ISPEC = 0 
-!/SHRD             JSEA = IY 
-          ENDIF
+!/SMC !!Li   Assign boundary cell spectra. 
+!/SMC              IF( IAPROC .EQ. ISPEC+1 ) THEN
+!/SMC                   SPCBAC(:,IK)=VA(:,JSEA)
+!/SMC              ENDIF
 !
-!/ARC !!Li   Assign boundary cell spectra. 
-!/ARC              IF( IAPROC .EQ. ISPEC+1 ) THEN
-!/ARC                   SPCBAC(:,IK)=VA(:,JSEA)
-!/ARC              ENDIF
+!/SMC !!Li   Broadcast local SPCBAC(:,IK) to all other PEs.
+!/SMC/!/MPI         CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WAVE,IERR_MPI)
+!/SMC/!/MPI         CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
 !
-!/MPI  !!Li   Broadcast local SPCBAC(:,IK) to all other PEs.
-!/MPI         IF( ARCTIC ) THEN
-!/MPI         CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WAVE,IERR_MPI)
-!/MPI         CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
-!/MPI         ENDIF
+!/SMC        END DO   !! Loop IK ends.
 !
-!/ARC  !!Li   Boundary cell loop IK ends.
-!/ARC         END DO
+!/SMC !!Li    Update Arctic boundary cell spectra if within local range
+!/SMC           ALLOCATE ( BACSPEC(NSPEC) )
+!/SMC        DO IK = 1, NBAC
+!/SMC           IF( IK .LE. (NBAC-NBGL) ) THEN
+!/SMC                   IX = NGLO + IK 
+!/SMC                   BACANGL = ANGARC(IK)
+!/SMC           ELSE
+!/SMC                   IX = ICLBAC(IK)
+!/SMC                   BACANGL = - ANGARC(IK)
+!/SMC           ENDIF 
+!/SMC
+!/SMC !!Li    Work out boundary PE (ISPEC) and JSEA numbers for IX 
+!/SMC/!/DIST            ISPEC = MOD( IX-1, NAPROC ) 
+!/SMC/!/DIST             JSEA = 1 + (IX - ISPEC - 1)/NAPROC
+!/SMC/!/SHRD            ISPEC = 0 
+!/SMC/!/SHRD             JSEA = IX 
 !
-!/ARC  !Li    Update Arctic boundary cell spectra if within local range
-!/ARC           ALLOCATE ( BACSPEC(NSPEC) )
-!/ARC        DO IK = 1, NBAC
-!/ARC           IF( IK .LE. (NBAC-NBGL) ) THEN
-!/ARC                   IX = NGLO + IK 
-!/ARC                   BACANGL = ANGARC(IK)
-!/ARC           ELSE
-!/ARC                   IX = ICLBAC(IK)
-!/ARC                   BACANGL = - ANGARC(IK)
-!/ARC           ENDIF 
-!/ARC
-!/ARC  !Li    Work out boundary PE (ISPEC) and JSEA numbers for IX 
-
-          IF( ARCTIC ) THEN
-!/DIST            ISPEC = MOD( IX-1, NAPROC ) 
-!/DIST             JSEA = 1 + (IX - ISPEC - 1)/NAPROC
-!/SHRD            ISPEC = 0 
-!/SHRD             JSEA = IX 
-          ENDIF
-!
-!/ARC              IF( IAPROC .EQ. ISPEC+1 ) THEN
-!/ARC                   BACSPEC = SPCBAC(:,IK)
-!/ARC                  
-!/ARC                   CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
-!/ARC
-!/ARC                   VA(:,JSEA) = BACSPEC 
-!/ARC  !Li              WRITE(NDSE,*) "IAPROC, IX, JSEAx, IK=", IAPROC, IX, JSEA, IK 
-!/ARC              ENDIF
-!/ARC
-!/ARC  !!Li   Boundary cell loop IK ends.
-!/ARC         END DO
-!/ARC         DEALLOCATE ( BACSPEC )
+!/SMC              IF( IAPROC .EQ. ISPEC+1 ) THEN
+!/SMC                   BACSPEC = SPCBAC(:,IK)
+!/SMC                  
+!/SMC                   CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
+!/SMC
+!/SMC                   VA(:,JSEA) = BACSPEC 
+!/SMC !!Li              WRITE(NDSE,*) "IAPROC, IX, JSEAx, IK=", IAPROC, IX, JSEA, IK 
+!/SMC              ENDIF
+!/SMC
+!/SMC        END DO  !! Loop IK ends.
+!/SMC        DEALLOCATE ( BACSPEC )
+!/SMC
+!/SMC        ENDIF  !! ARCTC
 !
 ! End of test FLCX.OR.FLCY
-!
           END IF
+!
         END IF
 
 !/PDLIB!/DEBUGCOH        CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After spatial advection")
@@ -1890,6 +1897,19 @@
                            ELSE
                              IXrel = IX
                            END IF
+!
+                      IF( GTYPE .EQ. SMCTYPE ) THEN
+                          J = 1
+!/SMC !!Li    Refraction and GCT in theta direction is done by rotation.
+!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
+!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
+!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
+!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+!
+                      ELSE
+                          J = 1
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
 !/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
 !/PR1                           DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
@@ -1911,13 +1931,7 @@
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 !/PRX                      CALL W3KTPX
 !
-!/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
-!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
-!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
-!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+                      END IF  !! GTYPE 
 !
                     END IF
                   END DO
