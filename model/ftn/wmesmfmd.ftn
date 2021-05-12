@@ -973,11 +973,7 @@
         j = 3
         impFieldActive(i)   = any(inpmap(:,j).lt.0)
         impFieldName(i)     = 'uutrue'
-        if (med_present) then
-          impFieldStdName(i)= 'inst_zonal_wind_height_lowest'
-        else
-          impFieldStdName(i)= 'eastward_wind_at_10m_height'
-        end if
+        impFieldStdName(i)  = 'eastward_wind_at_10m_height'
         impFieldInitRqrd(i) = .true.
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
@@ -987,11 +983,7 @@
         j = 3
         impFieldActive(i)   = any(inpmap(:,j).lt.0)
         impFieldName(i)     = 'vvtrue'
-        if (med_present) then
-          impFieldStdName(i)= 'inst_merid_wind_height_lowest'
-        else
-          impFieldStdName(i)= 'northward_wind_at_10m_height'
-        end if
+        impFieldStdName(i)  = 'northward_wind_at_10m_height'
         impFieldInitRqrd(i) = .true.
         mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
       endif
@@ -2693,13 +2685,9 @@
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (flds_scalar_index_nx > 0 .and. flds_scalar_index_nx < flds_scalar_num) then
             farrayptr(flds_scalar_index_nx,1) = dble(nx) 
-            write(msg,'(a,i8)') 'flds_scalar_index_nx: ',nx
-            call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
           endif
           if (flds_scalar_index_ny > 0 .and. flds_scalar_index_ny < flds_scalar_num) then
             farrayptr(flds_scalar_index_ny,1) = dble(ny)
-            write(msg,'(a,i8)') 'flds_scalar_index_ny: ',ny
-            call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
           endif
         endif
       endif 
