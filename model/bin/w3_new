@@ -120,14 +120,27 @@
      'mpp'    );;
      'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
      'thread' ) cd $main_dir/ftn ; touch w3wavemd.ftn
+                                   touch w3canomd.ftn
+                                   touch w3fld1md.ftn
+                                   touch w3fld2md.ftn
+                                   touch w3flxxmd.ftn
                                    touch w3iogomd.ftn
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn
+                                   touch w3psmcmd.ftn
+                                   touch w3srcemd.ftn
+                                   touch w3pro1md.ftn
+                                   touch w3pro2md.ftn
+                                   touch w3pro3md.ftn
+                                   touch w3updtmd.ftn
+                                   touch wmgridmd.ftn
                                    touch w3uno2md.ftn
                                    touch w3updtmd.ftn
                                    touch w3uqckmd.ftn
-                                   touch w3iogomd.ftn ;;
+                                   touch w3iogomd.ftn 
+                                   touch ww3_multi.ftn
+                                   touch ww3_shel.ftn ;;
      'GSE'    ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
                                    touch w3idatmd.ftn
