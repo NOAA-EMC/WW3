@@ -9,7 +9,8 @@
 # repo and replace the WW3 model in it, creates the mod_def* files with the   #
 # new WW3 and runs the regression tests from ufs-weather model and compare    #
 # with the base.                                                              #
-# The input section requires a URL and BRANCH name for the PR                 #
+# The input section requires a URL to WW3 repo and BRANCH name for the PR,    #
+# if not defined, it takes it from ../.git/config                             #
 #                                                                             #
 #                                                      Ali Abdolali           #
 #                                                      May 2021               #
@@ -24,8 +25,17 @@
 # --------------------------------------------------------------------------- #
   HOME=${PWD}
 # the url and branch to the PR are required here
-  url=https://github.com/<username>/WW3 
-  branch=<branch name>
+  url=''
+  branch=''
+# url=https://github.com/<username>/WW3 
+# branch=<branch name>
+  if [ -z "$url" ]
+  then
+  url=`( command egrep 'url' ../.git/config ) | sed -e 's#.*url = \(\)#\1#' | sed 's/}//'`
+  branch=`( command egrep 'branch' ../.git/config ) | sed -e 's/\[branch "//g'  | sed -e 's/"\]//g'`
+  fi
+  echo WW3 repo: $url
+  echo branch: $branch
 # --------------------------------------------------------------------------- #
 # Compiler option. 
   cmplr=intel
