@@ -1,0 +1,89 @@
+$ WAVEWATCH III multi-scale input file
+$ ------------------------------------
+$   1) Number of wave model grids.                          ( NRGRD )
+$   2) Number of grids defining input fields.               ( NRINP )
+$   3) Flag for using unified point output file.           ( UNIPTS )
+$   4) Output server type as in ww3_shel.inp
+$   5) Flag for dedicated process for unified point output.( UPPROC )  
+$   6) Flag for grids sharing dedicated output processes.  ( PSHARE )
+  3 0 F 1 F F
+$
+$ For each of NRINP(>0) grids its input is defined on a separate line 
+$ with MODID and eight input flags identifying the presence of 
+$ 1) water levels 2) currents 3) winds 4) ice and 5-7) assimilation 
+$ data as in the file ww3_shel.inp.
+$ 'Michi'  F F T T F F F
+$ 'Huron'  F F T T F F F
+$ 'Super'  F F T T F F F 
+$
+$ point outpu is defined in Pacf sub-grid only.
+$'Pacf'
+$
+$ Now each actual wave model grid is defined using 13 parameters to be
+$ read from a single line in the file. Each line contains the following
+$ parameters
+$     1)   Name of the grid as the extension of the mod_def file.
+$    2-8)  Define the inputs used by the grids with 7 keywords 
+$          corresponding to the 7 flags defining the input in the
+$          input files. Valid keywords are:
+$            'no'      : This input is not used.
+$            'native'  : This grid has its own input files, e.g. grid
+$                        grdX (mod_def.grdX) uses ice.grdX.
+$            'MODID'   : Take input from the grid identified by 
+$                        MODID. In the example below, all grids get
+$                        their wind from wind.input (mod_def.input).
+$     9)   Rank number of grid (internally sorted and reassigned).
+$    10)   Group number (internally reassigned so that different
+$          ranks result in different group numbers.
+$   11-12) Define fraction of communicator (processes) used for this
+$          grid. '0.00 1.00' is appropriate in many cases. Partial 
+$          fractions, i.e. settings other than '0.00 1.00', are 
+$          intended for equal rank grids, to improve scaling. Partial 
+$          fractions with non-equal rank is not generally recommended.
+$    13)   Flag identifying dumping of boundary data used by this
+$          grid. If true, the file nest.MODID is generated.
+$
+ 'Michi'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00   0.30   F
+ 'Huron'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.30   0.65   F 
+ 'Super'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.65   1.00   F
+$
+$ Starting and ending times for the entire model run
+   20160809 000000   20160810 000000
+$
+  F F
+$
+$ Output time and variables for all grids.
+   20160809 000000    900  20160810 000000
+     N
+     DPT HS FP DP 
+$
+$ Point output time and point list
+   20160809 000000    900  20160810 000000
+$ Michi sub-grid 2D points, total 2.
+   -86.409    45.344    'B45002' 
+   -87.026    42.674    'B45007'
+$ Huron sub-grid 2D points, total 2.
+   -82.840    45.351    'B45003'
+   -82.416    44.283    'B45008'
+$ Super sub-grid 2D points, total 2.
+   -87.777    48.064    'B45001' 
+   -86.585    47.585    'B45004'
+$ Erie and Ontario (Eario), total 2.
+$  -82.398    41.677    'B45005'
+$  -77.405    43.619    'B45012'
+       0.0    0.0   'STOPSTRING'
+$
+$  track output
+   20160809 000000      0  20160810 000000
+$  restart files
+   20160809 000000      1  20160810 000000
+$  boundary output
+   20160809 000000      0  20160810 000000
+$  separated wave field data
+   20160809 000000      0  20160810 000000
+$
+  'the_end'  0
+$
+  'STP'
+$ 
+$ End of input file. 
