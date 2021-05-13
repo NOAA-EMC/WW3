@@ -9,6 +9,7 @@
 # repo and replace the WW3 model in it, creates the mod_def* files with the   #
 # new WW3 and runs the regression tests from ufs-weather model and compare    #
 # with the base.                                                              #
+# The input section requires a URL and BRANCH name for the PR                 #
 #                                                                             #
 #                                                      Ali Abdolali           #
 #                                                      May 2021               #
@@ -19,9 +20,13 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# 0. Environment file
+# 0. Environment file & inputs
 # --------------------------------------------------------------------------- #
   HOME=${PWD}
+# the url and branch to the PR are required here
+  url=https://github.com/<username>/WW3 
+  branch=<branch name>
+# --------------------------------------------------------------------------- #
 # Compiler option. 
   cmplr=intel
 # Set batchq queue, choose modules and other custom variables to fit system and 
@@ -69,6 +74,9 @@
   if [ -r "ufs-weather-model" ]; then rm -rf ufs-weather-model; fi
 # clone the develop branch from ufs-weather-model github repo
   git clone git@github.com:aliabdolali/ufs-weather-model.git
+# replace the git repo and branch with the PR information
+  sed -i '\/https:\/\/github.com\/NOAA-EMC\/WW3/{n;s/.*/branch = '${branch}'/}' ufs-weather-model/.gitmodules
+  sed -i '\/https:\/\/github.com\/NOAA-EMC\/WW3/c\url = '${url}'' ufs-weather-model/.gitmodules
   cd ufs-weather-model
 # Add submodules
   git submodule update --init --recursive
@@ -109,9 +117,9 @@ cp -r $INPUTDATA_ROOT_WW3/* ww3_ufs_weather/WW3_input_data
 rm ww3_ufs_weather/WW3_input_data/*mod_def*
 
 # make a fresh copy of the new version of WW3 in ufs-weather-model
-if [ -r "ufs-weather-model/WW3" ]; then rm -rf ufs-weather-model/WW3; fi
-mkdir ufs-weather-model/WW3
-cp -r ../model ufs-weather-model/WW3/
+#if [ -r "ufs-weather-model/WW3" ]; then rm -rf ufs-weather-model/WW3; fi
+#mkdir ufs-weather-model/WW3
+#cp -r ../model ufs-weather-model/WW3/
 
 export WW3_DIR=${HOME}/ufs-weather-model/WW3/model
 export WW3_BINDIR="${WW3_DIR}/bin"
