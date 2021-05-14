@@ -20,6 +20,12 @@ saving substantial time in cases using large number of input grids and/or
 high-resolution target grids.
 
 \vspace{\baselineskip}
+\noindent
+The grid integration program can use linear or nearest interpolation. The latter 
+is recommended when partitioned output is used for spectral reconstruction. Linear 
+interpolation will result in lines of spurious energy as partitions will bleed and 
+artificially increase the total energy.
+\vspace{\baselineskip}
 \vspace{\baselineskip}
 \noindent
 Note that this program can be used in concert with the grid splitting program
