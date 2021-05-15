@@ -32,6 +32,7 @@
 #define TEST_WMESMFMD_CREATEIMPGRID___disabled
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
 #define TEST_WMESMFMD_SETUPIMPBMSK___disabled
+#define TEST_WMESMFMD_SETUPIMPMMSK___disabled
 #define TEST_WMESMFMD_CHARNK___disabled
 #define TEST_WMESMFMD_ROUGHL___disabled
 #define TEST_WMESMFMD_BOTCUR___disabled
@@ -97,6 +98,7 @@
 !      CreateExpMesh    Subr.  Private  Create ESMF mesh for export
 !      SetupImpBmsk     Subr.  Private  Setup background blending mask
 !      BlendImpField    Subr.  Private  Blend import field with background
+!      SetupImpMmsk     Subr.  Private  Setup merging mask
 !      FieldFill        Subr.  Private  Fill ESMF field
 !      FieldGather      Subr.  Private  Gather ESMF field
 !      FieldIndex       Func.  Private  Return field index
@@ -196,7 +198,9 @@
       character(256)       :: zlfile = 'none' ! File containing z-levels for SDC
       character(ESMF_MAXSTR) :: msg
       real(ESMF_KIND_RX) :: zeroValue
+      real(ESMF_KIND_RX) :: oneValue
       real(ESMF_KIND_RX) :: missingValue
+      real(ESMF_KIND_RX) :: fillValue
 !
 ! --- Timing
       integer, parameter :: numwt=10
@@ -279,6 +283,10 @@
       integer        :: flds_scalar_num = 0
       integer        :: flds_scalar_index_nx = 0
       integer        :: flds_scalar_index_ny = 0
+!
+! --- Coupling stuff for non completely overlapped domains
+      logical          :: merge_import = .false.
+      type(ESMF_Field), allocatable :: mmskField(:)
 !/
 !/ ------------------------------------------------------------------- /
       contains
@@ -735,7 +743,9 @@
 !
       is_esmf_component = .true.
       zeroValue = real(0,ESMF_KIND_RX)
+      oneValue = real(1,ESMF_KIND_RX)
       missingValue = real(0,ESMF_KIND_RX)
+      fillValue = real(9.99e20,ESMF_KIND_RX)
 !
 !
 ! 1.b Get MPI environment from ESMF VM and set WW3 MPI related variables
@@ -862,6 +872,27 @@
       call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch');
       close(idsi); close(idso); close(idss); close(idst); close(idse);
 !
+! 1.g Get merging option for regional coupling that domians does not
+! overlap complately. This will blend the data coming from forcing with
+! the data coming from coupling.
+!
+      if (med_present) then
+        call NUOPC_CompAttributeGet(gcomp, name="merge_import", &
+          value=attstr, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        if (isPresent .and. isSet) then
+          if (trim(attstr) .eq. '.true.') then
+            merge_import = .true.
+          end if
+        end if
+
+        write(logmsg,'(l)') merge_import
+        call ESMF_LogWrite(trim(cname)//' merge_import = '// &
+          trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      end if
+!
 ! -------------------------------------------------------------------- /
 ! 2.  Initialization of all wave models / grids
 !
@@ -934,6 +965,9 @@
                    bmskField(numImpFields), &
                    stat=rc )
         if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        if (merge_import) then
+          allocate (mmskField(numImpFields))
+        end if
         impFieldActive(:) = .false.
       endif
       i = 0
@@ -1367,6 +1401,15 @@
         call NUOPC_Realize( impState, impField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
+           if (merge_import) then
+              mmskField(i) = ESMF_FieldCreate( impGrid, impArraySpec2D, &
+                totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
+                staggerLoc=impStaggerLoc, indexFlag=impIndexFlag, &
+                name='mmsk_'//trim(impFieldName(i)), rc=rc )
+              if (ESMF_LogFoundError(rc, PASSTHRU)) return
+              call FieldFill( mmskField(i), oneValue, rc=rc )
+              if (ESMF_LogFoundError(rc, PASSTHRU)) return
+           end if
            if (.not.mbgFieldActive(i)) cycle
            n = n + 1
            mbgField(i) = ESMF_FieldCreate( impGrid, impArraySpec2D, &
@@ -1654,6 +1697,10 @@
           if (.not.impFieldActive(i)) cycle
           call ESMF_FieldDestroy(impField(i), rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (merge_import) then
+            call ESMF_FieldDestroy(mmskField(i), rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
           if (.not.mbgFieldActive(i)) cycle
           call ESMF_FieldDestroy(mbgField(i), rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1690,6 +1737,11 @@
                   bmskField, &
                   stat=rc)
       if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
+
+      if (merge_import) then
+         deallocate(mmskField)
+         if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
+      end if
 !
 ! 2.b Export field and grid stuff
 !
@@ -2043,7 +2095,7 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=5
       real(8) :: wstime, wftime
-      integer :: stat, imod, tcur(2)
+      integer :: i, stat, imod, tcur(2)
       integer, allocatable :: tend(:,:)
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Clock) :: clock
@@ -2124,11 +2176,21 @@
       call GetImport(gcomp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
-! 1.f Advance model
+! 1.f Setup merge mask for each import field
+!
+      if (merge_import) then
+        do i = 1,numImpFields
+          if (.not.impFieldActive(i)) cycle
+          call SetupImpMmsk(mmskField(i), impField(i), fillValue, rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        enddo
+      end if
+!
+! 1.g Advance model
 !
       call wmwave ( tend )
 !
-! 1.g Set export fields
+! 1.h Set export fields
 !
       call SetExport(gcomp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2225,6 +2287,9 @@
       type(ESMF_State) :: dumpState
       integer, save :: timeSlice = 1
 #endif
+      real(ESMF_KIND_RX), pointer :: rptr(:,:)
+      integer :: iy, ix
+      integer :: elb(2), eub(2)
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -2377,10 +2442,21 @@
           call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
-        call FieldGather( impField(i1), nx, ny, wxn, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldGather( impField(i2), nx, ny, wyn, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (merge_import) then
+          call FieldGather( impField(i1), nx, ny, wxn, &
+            fdata=INPUTS(impGridID)%WXN, &
+            mergeMask=mmskField(i1), rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call FieldGather( impField(i2), nx, ny, wyn, &
+            fdata=INPUTS(impGridID)%WYN, &
+            mergeMask=mmskField(i2), rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        else
+          call FieldGather( impField(i1), nx, ny, wxn, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call FieldGather( impField(i2), nx, ny, wyn, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        end if
         if (firstCall) then
           tw0 = twn
           wx0 = wxn
@@ -4843,6 +4919,123 @@
       end subroutine BlendImpField
 !/ ------------------------------------------------------------------- /
 #undef METHOD
+#define METHOD "SetupImpMmsk"
+      subroutine SetupImpMmsk( mmskField, impField, fillVal, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Aug-2017 |
+!/                  +-----------------------------------+
+!/
+!/    09-Aug-2017 : Origination.                        ( version 6.03 )
+!/
+!  1. Purpose :
+!
+!     Setup merging mask field for an import field for the cases that
+!     model domains does not overlap completely
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       mmskField  Type   I/O merging mask field
+!       impField   Type   I   import field
+!       fillVal    Real   I   fill value
+!       rc         Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      implicit none
+      type(ESMF_Field)      :: mmskField
+      type(ESMF_Field)      :: impField
+      real(ESMF_KIND_RX)    :: fillVal
+      integer, optional     :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      integer, parameter :: lde = 0
+      integer :: i, j
+      integer :: elb(2), eub(2)
+      integer :: tlb(2), tub(2)
+      real(ESMF_KIND_RX), pointer :: mptr(:,:), dptr(:,:)
+      real(ESMF_KIND_RX), pointer :: mmsk(:,:)
+      character(ESMF_MAXSTR) :: fnm
+#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPMMSK)
+      integer :: timeSlice
+#endif
+!
+! -------------------------------------------------------------------- /
+! Set up fields and pointers
+!
+      call ESMF_FieldGet( impField, name=fnm, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( impGridIsLocal ) then
+        call ESMF_FieldGet( impMask, localDE=lde, farrayPtr=mptr, &
+          exclusiveLBound=elb, exclusiveUBound=eub, &
+          totalLBound=tlb, totalUBound=tub, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( impField,  localDE=lde, farrayPtr=dptr, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( mmskField, localDE=lde, farrayPtr=mmsk, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! -------------------------------------------------------------------- /
+! Create merging mask
+!
+      if ( impGridIsLocal ) then
+        do j = elb(2),eub(2)
+          do i = elb(1),eub(1)
+            mmsk(i,j) = 0.0
+            if ( (dptr(i,j).eq.fillVal) .and. &
+                 (nint(mptr(i,j)).eq.maskValueWater) ) then
+              mmsk(i,j) = 1.0 
+            end if
+          enddo
+        enddo
+      endif
+#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPMMSK)
+      timeSlice = 1
+      call ESMF_FieldWrite( mmskField, &
+        "wmesmfmd_setupimpmmsk_"//trim(fnm)//".nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#endif
+!/
+!/ End of SetupImpMmsk ----------------------------------------------- /
+!/
+      end subroutine SetupImpMmsk
+!/ ------------------------------------------------------------------- /
+#undef METHOD
 #define METHOD "FieldFill"
       subroutine FieldFill(field, fillVal, rc)
 !/
@@ -4965,7 +5158,7 @@
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "FieldGather"
-      subroutine FieldGather(field, n1, n2, fout, rc)
+      subroutine FieldGather(field, n1, n2, fout, fdata, mergeMask, rc)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -4991,6 +5184,7 @@
 !       field      Type   I/O ESMF field
 !       n1,n2      Int    I   Dimensions of output array
 !       fout       R.A.   O   global output array
+!       merge
 !       rc         Int    O   Return code
 !     ----------------------------------------------------------------
 !
@@ -5025,6 +5219,8 @@
       type(ESMF_Field)                 :: field
       integer                          :: n1, n2
       real                             :: fout(n1,n2)
+      real,                  optional  :: fdata(n1,n2)
+      type(ESMF_Field),      optional  :: mergeMask 
       integer,               optional  :: rc
 !/
 !/ ------------------------------------------------------------------- /
@@ -5035,6 +5231,8 @@
       integer :: i, j, k, ir, ip, count
       real(ESMF_KIND_RX) :: floc(n1,n2)
       real(ESMF_KIND_RX) :: floc1d(n1), floc1dary(n1*n2)
+      real(ESMF_KIND_RX), allocatable :: fmsk(:,:)
+      real(ESMF_KIND_RX), allocatable :: fmsk1d(:), fmsk1dary(:)
 !/PDLIB      real(ESMF_KIND_R8), pointer :: fldptr(:)
       integer, parameter :: iwt=9
       real(8) :: wstime, wftime
@@ -5046,7 +5244,6 @@
 
       call ESMF_VMWtime(wstime)
 
-!      call ESMF_FieldWrite(field,fileName="ww3_import_dump.nc",overwrite=.true.,rc=rc)
       if ( (GTYPE.eq.RLGTYPE).or.(GTYPE.eq.CLGTYPE) ) then
         count = n1 * n2
         floc = 0.
@@ -5060,11 +5257,49 @@
         enddo
         call ESMF_VMbroadcast( vm, bcstData=floc1dary, count=count, rootPet=0, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        do j=1,n2
-          do i=1,n1
-            fout(i,j) = floc1dary(i+(j-1)*n1)
+        ! if merge mask available, then retrive it
+        if (present(mergeMask)) then
+          if (.not. allocated(fmsk)) then
+            allocate(fmsk(n1,n2))
+            fmsk = 0.
+          end if
+          if (.not. allocated(fmsk1d)) then
+            allocate(fmsk1dary(n1*n2))
+            fmsk1dary = 0.
+          end if
+          call ESMF_FieldGather( mergeMask, fmsk, rootPet=0, vm=vm, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          do j=1,n2
+            do i=1,n1
+              fmsk1dary(i+(j-1)*n1) = fmsk(i,j)
+            enddo
           enddo
-        enddo
+          call ESMF_VMbroadcast( vm, bcstData=fmsk1dary, count=count, rootPet=0, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          write(msg,*) "before min,max", minval(fout), maxval(fout)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+          do j=1,n2
+            do i=1,n1
+              ! update field only over active coupling region and use
+              ! fdata to fill rest of the domain
+              if (fmsk1dary(i+(j-1)*n1) < 1.) then
+                fout(i,j) = floc1dary(i+(j-1)*n1)
+              else
+                fout(i,j) = fdata(i,j)
+              end if
+            enddo
+          enddo
+          write(msg,*) "after  min,max", minval(fout), maxval(fout)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+          if (allocated(fmsk)) deallocate(fmsk)
+          if (allocated(fmsk1dary)) deallocate(fmsk1dary)
+        else
+          do j=1,n2
+            do i=1,n1
+              fout(i,j) = floc1dary(i+(j-1)*n1)
+            enddo
+          enddo
+        end if
       elseif (GTYPE.eq.UNGTYPE) then
         count = n1
         floc1d = 0.
