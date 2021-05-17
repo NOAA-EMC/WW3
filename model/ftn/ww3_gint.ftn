@@ -129,7 +129,7 @@
         INTEGER                 :: I, J, IERR, NG, IG, JG, ISEA, IX, IY, IXT
         INTEGER                 :: IYT, NS, COUNTF, COUNTG, NOSWLL_MIN, ITOUT
         INTEGER                 :: NDSM, NDSI, NDSE, NDSO, NDSTRC, NTRACE, IOTST
-        INTEGER                 :: EXTRA, NSEA_FILE
+        INTEGER                 :: INTMETHOD, NSEA_FILE
         INTEGER, ALLOCATABLE    :: FIDOUT(:), MAP(:,:), TMP_INDX(:)
         REAL                    :: SXT, SYT, XT, YT, XTT
         DOUBLE PRECISION        :: DAREA, SAREA
@@ -234,7 +234,8 @@
         END IF
 
         CALL NEXTLN ( COMSTR, NDSI, NDSE )
-        READ (NDSI,'(I1)',END=2001,ERR=2002) EXTRA
+        READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
+        WRITE (NDSO,917) INTMETHOD
 
 !
 ! 3.e Allocate memory for integration map and initialize with grid status map
@@ -271,7 +272,7 @@
         FNAMEWHT='WHTGRIDINT.bin'
         OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
         NSEA_FILE = 0
-        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic security check ... 
+        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic consistency check ... 
         IF (NSEA_FILE.EQ.NSEA) THEN 
           DO ISEA = 1, NSEA
             READ(994) COUNTG
@@ -324,11 +325,11 @@
               IF (ITOUT.GT.0) INGRID=.TRUE.
 !              ! If extrapolation activated, force to find if a triangles is inside 
 !              ! the coarse grid cell even if there is no triangle in the cell center
-              IF (EXTRA.GT.0) THEN
+              IF (INTMETHOD.EQ.1) THEN
                 WRITE(991,'(2I6,2F9.4,I8,3I8,3F5.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 IF (ITOUT.EQ.0)  WRITE(992,*) IX,IY,ISEA,XGRD(IY,IX), YGRD(IY,IX)
                 IF (ITOUT.EQ.0) THEN 
-                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), EXTRA,  &
+                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), INTMETHOD,  &
                                                  ITOUT, IS, JS, RW)
                    WRITE(993,'(2I6,2F9.4,I8,3I8,3F6.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 ENDIF  
@@ -387,6 +388,8 @@
                 DO I = 1,4 
 ! The following two IF tests are separated because for triangles, JS(4)=IS(4)=0
                   IF ( RW(I) .GT. 0.0 ) THEN 
+                    ! MAPSTA == 0 indicated excluded point (either land
+                    ! or truly excluded) 
                     IF ( GRIDS(IG)%MAPSTA(JS(I),IS(I)) .NE. 0) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
@@ -817,7 +820,7 @@
           CALL W3SETA(NG, 6, 6)
           CALL W3SETW(NG, 6, 6)
 !
-          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN )
+          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD )
 !
           CALL TICK21 ( TOUT , DTREQ )
           IF ( IOUT .GE. NOUT ) EXIT
@@ -861,7 +864,7 @@
  905    FORMAT ( '    Grid Particulars are : '/                                &
                  '      Dimensions =  ',2(I9,2X)/                              &
                  '       Grid Type = ',I3,'  ==> 1 Rect, 2 Curv, 3 Unstr'/     &
-                 '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar')
+                 '    Grid Closure = ',I3,'  ==> -1 None, 2 Simple, 8 Tripolar')
  907    FORMAT ( /' NOTE :  The no. of swell partitions from input and',       &
                     ' target grids do not match',/                             &
                   '  The Min. no. of partitions from input grids =',I5/        &
@@ -870,7 +873,7 @@
                   ' number of the partitions,',/                               &
                   '  rest will be marked undefined.'                           )
  908    FORMAT (/'  Preparing interpolation weights for output grid ' /        &
-                 '  Total number of wet points for interpolation ',I6/)
+                 '  Total number of wet points for interpolation ',I7/)
  909    FORMAT (/'  *** WARNING !! No interpolation points at ',2(I5)/)
  910    FORMAT (/'  Interpolating fields .... '/)
  911    FORMAT ('     Output group   ', I5)
@@ -879,6 +882,8 @@
  914    FORMAT ( '        OUTPUT TIME : ',A)
  915    FORMAT ( '   ------------------------------------------------')
  916    FORMAT ( I5,A,2X,A)
+ 917    FORMAT (/'   Interpolation scheme = ',I1,'  ==> 0 linear, ',           &
+                '1 extrapolate unstructured, 2 nearest'/)
  950    FORMAT (/'  End of file reached'/)
  999    FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
                  15X,'==============================================='/)
@@ -899,7 +904,7 @@
 !/
         CONTAINS
 !/ -----------------------------------------------------------------------/
-        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN )
+        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN, INTMETHOD )
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
@@ -953,12 +958,12 @@
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
-        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN
+        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN, INTMETHOD
 !/
 !/ Local Parameters
 !/
         INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
-                         IY, ISWLL, ICAP, IBED, IFREQ, IK
+                         IY, ISWLL, ICAP, IBED, IFREQ, IK, INRST
         INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
                          NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
                          LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
@@ -1199,6 +1204,12 @@
               MAPDRYT = 0
               MAPLNDT = 0
               MAPMSKT = 0
+              IF ( INTMETHOD == 2 ) THEN
+                ! Nearest neighbour is the one with the most weight
+                INRST = MAXLOC(GR_INTS(ISEA)%IND_WTS(IG)%WT, DIM=1)
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(:) = -1.
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(INRST) = 1.
+              END IF
               DO IPTS = 1,GR_INTS(ISEA)%IND_WTS(IG)%NP
                 IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                 IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
@@ -1412,6 +1423,10 @@
                   IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                   IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
                   WT = GR_INTS(ISEA)%IND_WTS(IG)%WT(IPTS)
+                  IF (  WT < 0. ) THEN
+                     ! Point is not nearest
+                     CYCLE
+                  END IF
                   GSEA = GRIDS(IGRID)%MAPFS(IGY,IGX)
 !
 ! Group 1 variables
