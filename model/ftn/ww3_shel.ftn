@@ -231,8 +231,6 @@
 !
 !       !/F90   Timer function included for F90.
 !
-!       !/NCC   Ncep Coupler
-!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -265,7 +263,6 @@
 !/NETCDF_QAD      USE W3NETCDF, only : TIMEN_NETCDF_QAD
 
 
-!/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/OASIS USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
 !/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE,      &
 !/OASIS                     ID_OASIS_TIME, CPLT0
@@ -344,8 +341,6 @@
                              FLGR2(NOGRP,NGRPP), FLG2(NOGRP),          &
                              FLAGSTIDE(4), FLH(-7:8), FLGDAS(3),       &
                              FLLST_ALL(-7:8)
-      LOGICAL             :: DEBUG_NCC = .FALSE.
-!/NCC      LOGICAL             :: CFLAG(10) 
 !/MPI      LOGICAL             :: FLHYBR = .FALSE.
 !/OMPH      INTEGER             :: THRLEV
 !/OASIS      LOGICAL             :: L_MASTER    
@@ -379,7 +374,6 @@
       FLH(:)       = .FALSE.
 !
 !/T      PRTFRM = .TRUE.
-!/T      DEBUG_NCC = .TRUE. 
 !
 !/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
@@ -424,8 +418,6 @@
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/OASIS END IF
 !
-!/NCC      CALL WW_CMP_START
-!/NCC      MPI_COMM = MPI_COMM_WW
 !
 !/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
 !/DEBUGINIT      write(740+IAPROC,*) 'After MPI_COMM_SIZE, NAPROC=', NAPROC
@@ -1887,23 +1879,6 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
 !
-!/NCC      CFLAG = .FALSE. 
-!/NCC      CALL WW_INIT(1,GRIDS(1)%NX,GRIDS(1)%NY,            &
-!/NCC      GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY)
-!/NCC      CALL WW_RECVDTC
-!/NCC      CALL WW_SENDGRIDS
-!/NCC      CALL WW_SENDSLM(GRIDS(1)%MAPSTA)
-!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) THEN
-!/NCC         OPEN(9751,FILE='debug_writeout_wind',           &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         OPEN(9752,FILE='debug_writeout_ice',            &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         OPEN(9753,FILE='data_forDC',                    &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         WRITE(9753) GRIDS(1)%NX,GRIDS(1)%NY,            &
-!/NCC           GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY
-!/NCC         WRITE(9753) GRIDS(1)%MAPSTA
-!/NCC      END IF
 
 !/OASIS      ! Send coupling fields at the initial time step
 !/OASIS      IF ( FLOUT(7) .AND. CPLT0 ) THEN
@@ -1914,10 +1889,6 @@
 
   700 CONTINUE
 !
-!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) WRITE(9753) TIME0
-!/NCC      CALL WW_TSTEP_INIT(TIME0)
-!/NCC      CALL WW_RECV_SBC
-!/NCC      CALL WW_RECV_PSEUDOICE
 !
 ! 7.a Determine next time interval and input fields
 ! 7.a.1 Preparation
@@ -2188,20 +2159,12 @@
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
-!/NCC                IF (.NOT.CFLAG(J)) THEN
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                              TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                              IERR, FLAGSC(J)                            &
 !/OASACM                             , COUPL_COMM                       &
                              )
-!/NCC                END IF
-!/NCC                CALL WW_CDETECT(CFLAG(J))
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
-!/NCC                     WRITE(9753) TW0, TWN
-!/NCC                CALL WW_UPDATE_WIND(TW0,TWN,WX0,WY0,WXN,WYN)
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
-!/NCC                     WRITE(9751) TW0, TWN, WX0, WY0, WXN, WYN
               END IF
 
 ! ICE : ice conc.
@@ -2214,7 +2177,6 @@
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
 !/OASICM                IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
-!/NCC                IF (.NOT.CFLAG(J)) THEN
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,    &
                              TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
@@ -2223,13 +2185,6 @@
                             )
                 IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !could be:      IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
-!/NCC                END IF
-!/NCC                CALL WW_CDETECT(CFLAG(J))
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )    &
-!/NCC                     WRITE(9753) TIN
-!/NCC                CALL WW_UPDATE_PSEUDOICE(TIN,ICEI)
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )    &
-!/NCC                     WRITE(9752) TIN, ICEI
               END IF
 
 ! Assim data
