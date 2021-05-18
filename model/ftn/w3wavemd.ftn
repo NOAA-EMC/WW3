@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -82,6 +82,7 @@
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
 !/                  defunct OMPX switches.
+!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -184,7 +185,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -251,6 +252,7 @@
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
+!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -438,7 +440,7 @@
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       INTEGER                 :: IXrel
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
-                                 DTL0, DTI0, DTI10, DTI50,            &
+                                 DTL0, DTI0, DTR0, DTI10, DTI50,      &
                                  DTGA, DTG, DTGpre, DTRES,            &
                                  FAC, VGX, VGY, FACK, FACTH,          &
                                  FACX, XXX, REFLEC(4),                &
@@ -470,7 +472,7 @@
 !/IC3      REAL                    :: USE_CHENG, USE_CGICE, HICE
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
-      CHARACTER(LEN=17)       :: IDACT 
+      CHARACTER(LEN=21)       :: IDACT 
       CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
       INTEGER eIOBP
@@ -689,6 +691,40 @@
 !/DEBUGINIT      WRITE(740+IAPROC,*) 'W3WAVE, step 6'
 !/DEBUGINIT      FLUSH(740+IAPROC)
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6")
+!
+! 1.f Momentum interval
+!
+      IF ( FLTAUA ) THEN
+          DTTST1 = DSEC21 ( TU0 , TUN )
+          DTTST2 = DSEC21 ( TU0 , TIME )
+          DTTST3 = DSEC21 ( TEND , TUN )
+!/T          WRITE (NDST,9012) DTTST1, DTTST2, DTTST3
+          IF ( DTTST1.LT.0. .OR. DTTST2.LT.0. .OR. DTTST3.LT.0. ) THEN
+              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
+              CALL EXTCDE ( 3 )
+            END IF
+          IF ( DTTST2.EQ.0..AND. ITIME.EQ.0 ) THEN
+              IDACT(9:9) = 'F'
+              TOFRST = TIME
+            END IF
+        END IF
+!
+! 1.g Air density time
+!
+      IF ( FLRHOA ) THEN
+          IF ( TRHO(1) .GE. 0. ) THEN
+              DTR0   = DSEC21 ( TRHO , TRN )
+            ELSE
+              DTR0   = 1.
+            END IF
+!/T          WRITE (NDST,9011) DTR0
+          IF ( DTR0 .LT. 0. ) THEN
+              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008)
+              CALL EXTCDE ( 2 )
+            END IF
+        ELSE
+          DTR0   = 0.
+        END IF
 !
 ! 1.e Ice thickness interval
 !
@@ -945,7 +981,7 @@
 !
           VGX = 0.
           VGY = 0. 
-          IF(INFLAGS1(8)) THEN
+          IF(INFLAGS1(10)) THEN
               DTTST1 = DSEC21 ( TIME, TGN ) 
               DTTST2 = DSEC21 ( TG0, TGN )
               FAC    = DTTST1 / MAX ( 1. , DTTST2 )
@@ -962,7 +998,7 @@
 !/DEBUGSRC      WRITE(740+IAPROC,*) 'max(UST)=', maxval(UST)
 !/DEBUGSRC      FLUSH(740+IAPROC)
 !
-! 3.1 Interpolate winds and currents.
+! 3.1 Interpolate winds, currents, and momentum.
 !     (Initialize wave fields with winds)
 !
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'FLCUR=', FLCUR
@@ -1059,6 +1095,13 @@
 !/DEBUGRUN        WRITE(740+IAPROC,*) 'W3WAVE, step 6.5.1 DTG=', DTG
 !/DEBUGRUN        FLUSH(740+IAPROC)
 !
+          IF ( FLTAUA ) THEN
+            CALL W3UTAU ( FLFRST )
+          ELSE IF ( FLFRST ) THEN
+            TAUA    = 0.01
+            TAUADIR = 0.
+          END IF
+!
 ! 3.2 Update boundary conditions if boundary flag is true (FLBPI)
 !
 !/PDLIB!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before boundary update")
@@ -1115,7 +1158,28 @@
 !/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 8'
 !/MEMCHECK       call getMallocInfo(mallinfos)
 !/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-
+!
+! 3.3.0 Update air density 
+!
+          IF ( FLRHOA .AND. DTR0.NE.0. ) THEN
+!
+              IF ( TRHO(1).GE.0 ) THEN
+                  IF ( DTR0 .LT. 0. ) THEN
+                      IDACT(11:11) = 'B'
+                    ELSE
+                      DTTST  = DSEC21 ( TIME, TRN )
+                      IF ( DTTST .LE. 0.5*DTR0 ) IDACT(11:11) = 'U'
+                    END IF
+                ELSE
+                  IDACT(11:11) = 'I'
+                END IF
+  
+!
+              IF ( IDACT(11:11).NE.' ' ) THEN
+                  CALL W3URHO ( )
+              END IF
+!
+            END IF
 !
 ! 3.3.1 Update ice coverage (if new ice map).
 !     Need to be run on output nodes too, to update MAPSTx
@@ -1127,16 +1191,16 @@
 !
               IF ( TICE(1).GE.0 ) THEN
                   IF ( DTI0 .LT. 0. ) THEN
-                      IDACT(9:9) = 'B'
+                      IDACT(13:13) = 'B'
                     ELSE
                       DTTST  = DSEC21 ( TIME, TIN )
-                      IF ( DTTST .LE. 0.5*DTI0 ) IDACT(9:9) = 'U'
+                      IF ( DTTST .LE. 0.5*DTI0 ) IDACT(13:13) = 'U'
                     END IF
                 ELSE
-                  IDACT(9:9) = 'I'
+                  IDACT(13:13) = 'I'
                 END IF
 !
-              IF ( IDACT(9:9).NE.' ' ) THEN
+              IF ( IDACT(13:13).NE.' ' ) THEN
                   CALL W3UICE ( VA, VA )
                   DTI0   = 0.
                   FLACT  = .TRUE.
@@ -1159,17 +1223,17 @@
 !
               IF ( TIC1(1).GE.0 ) THEN
                   IF ( DTI10 .LT. 0. ) THEN
-                      IDACT(11:11) = 'B'
+                      IDACT(15:15) = 'B'
                     ELSE
                       DTTST  = DSEC21 ( TIME, TI1 )
-                      IF ( DTTST .LE. 0.5*DTI10 ) IDACT(11:11) = 'U'
+                      IF ( DTTST .LE. 0.5*DTI10 ) IDACT(15:15) = 'U'
                     END IF
                 ELSE
-                  IDACT(11:11) = 'I'
+                  IDACT(15:15) = 'I'
                 END IF
   
 !
-              IF ( IDACT(11:11).NE.' ' ) THEN
+              IF ( IDACT(15:15).NE.' ' ) THEN
                   CALL W3UIC1 ( FLFRST )
                   DTI10   = 0.
                   FLACT  = .TRUE.
@@ -1189,16 +1253,16 @@
 !
 !/IS2              IF ( TIC5(1).GE.0 ) THEN
 !/IS2                  IF ( DTI50 .LT. 0. ) THEN
-!/IS2                      IDACT(14:14) = 'B'
+!/IS2                      IDACT(18:18) = 'B'
 !/IS2                    ELSE
 !/IS2                      DTTST  = DSEC21 ( TIME, TI5 )
-!/IS2                      IF ( DTTST .LE. 0.5*DTI50 ) IDACT(14:14) = 'U'
+!/IS2                      IF ( DTTST .LE. 0.5*DTI50 ) IDACT(18:18) = 'U'
 !/IS2                    END IF
 !/IS2                ELSE
-!/IS2                  IDACT(14:14) = 'I'
+!/IS2                  IDACT(18:18) = 'I'
 !/IS2                END IF
 !
-!/IS2              IF ( IDACT(14:14).NE.' ' ) THEN
+!/IS2              IF ( IDACT(18:18).NE.' ' ) THEN
 !/IS2               CALL W3UIC5( FLFRST )
 !/IS2                  DTI50   = 0.
 !/IS2                  FLACT  = .TRUE.
@@ -1428,7 +1492,8 @@
 !/PDLIB                   TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),       &
 !/PDLIB                   TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2, &
 !/PDLIB                   PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),         &
-!/PDLIB                   ASF(ISEA))
+!/PDLIB                   TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),      &
+!/PDLIB                   RHOAIR(ISEA), ASF(ISEA))
 !/PDLIB!/DEBUGSRC      WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
 !/PDLIB!/DEBUGSRC      WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
 !/PDLIB!/DEBUGSRC      WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
@@ -2012,7 +2077,8 @@
 !/PDLIB                      TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
 !/PDLIB                      TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,&
 !/PDLIB                      PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),      &
-!/PDLIB                      ASF(ISEA))
+!/PDLIB                      TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
+!/PDLIB                      RHOAIR(ISEA), ASF(ISEA))
 !/PDLIB              ELSE
                        CALL W3SRCE(srce_direct, IT, JSEA, IX, IY, IMOD, &
                             VAoldDummy, VA(:,JSEA),                     &
@@ -2032,7 +2098,8 @@
                             TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
                             TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,&
                             PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),     &
-                            ASF(ISEA))
+                            TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
+                            RHOAIR(ISEA), ASF(ISEA))
 !/PDLIB              END IF
                      WHITECAP(JSEA,1:4) = TMP1
                      BEDFORMS(JSEA,1:3) = TMP2
@@ -2563,9 +2630,13 @@
                 DTTST  = DSEC21 ( TIME , TWN )
                 IF ( DTTST .EQ. 0. ) IDACT(3:3) = 'X'
               END IF
+            IF ( FLTAUA ) THEN
+                DTTST  = DSEC21 ( TIME , TUN )
+                IF ( DTTST .EQ. 0. ) IDACT(9:9) = 'X'
+              END IF
             IF ( TDN(1) .GT. 0  ) THEN
                 DTTST  = DSEC21 ( TIME , TDN )
-                IF ( DTTST .EQ. 0. ) IDACT(17:17) = 'X'
+                IF ( DTTST .EQ. 0. ) IDACT(21:21) = 'X'
               END IF
 !
             IF ( IDLAST.NE.TIME(1) ) THEN
@@ -2634,6 +2705,10 @@
                '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+               '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
+ 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+               '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
 !/IS2 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
 !/IS2               '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
  1030 FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/               &

@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -41,6 +41,7 @@
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -146,24 +147,25 @@
 !/DEBUG      USE W3ODATMD, only : IAPROC
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG,            &
+                          UST, USTDIR, RHOAIR
 !/SETUP     USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
                           THS, FP0, THP0, DTDYN, FCUT,                 &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
-                          PTM1, PT1, PT2, PEP,                         &
+                          PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,         &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
-                          MSCD, CHARN, TWS,                            &
+                          MSCD, CHARN, TWS, TAUA, TAUADIR,             &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-                          WN, USSP, WBT
+                          WN, USSP, WBT, WNMEAN
       USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -715,7 +717,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -730,6 +732,7 @@
 !/    09-Dec-2020 : Set fixed values for VARID indices  ( version 7.12 )
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1024,7 +1027,7 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DW(1:NSEA)     &
                                                             , MAPSF, X1 )
               ENDIF
-
+!
             ! Surface current
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               !! Note - CX and CY read in from .ww3 file are X-Y vectors
@@ -1093,7 +1096,7 @@
               ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE(1:NSEA), MAPSF, X1 )
               ENDIF
-
+!
             ! Icebergs_damping
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
               IF( SMCGRD ) THEN
@@ -1103,19 +1106,44 @@
               ENDIF
               WHERE ( X1.NE.UNDEF) X1 = X1*0.1
 !
+            ! Atmospheric momentum
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+              !! Note - TAUA and TAUADIR read in from .ww3 file are TAUAX,TAUAY
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA(1:NSEA), TAUADIR(1:NSEA), AnglD)
+              
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC( TAUA   (1:NSEA), XX )
+!/SMC                 CALL W3S2XY_SMC( TAUADIR(1:NSEA), XY )
+              ELSE ! IF(SMCGRD)
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUA(1:NSEA)      &
+                                                        , MAPSF, XX )
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUADIR(1:NSEA)   &
+                                                        , MAPSF, XY )
+              ENDIF
+              NFIELD=2
+!
+            ! Air density
+            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+              IF( SMCGRD ) THEN
+!/SMC                 CALL W3S2XY_SMC(RHOAIR, X1)
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, RHOAIR, MAPSF, X1 )
+              ENDIF
+!
 !/BT4 ! Krumbein phi scale
-!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
 !/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
 !
 !/IS2 ! Ice thickness
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 !
 !/IS2 ! Maximum ice floe diameter
-!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF(1:NSEA), MAPSF, X1 )
 !/IS2              NFIELD=1
 
@@ -1284,6 +1312,14 @@
               ELSE
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX1, MAPSF, X1 )
               ENDIF
+!
+            ! Mean wave number
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( WNMEAN, X1 )
+              ELSE
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
+              END IF
 !
             ! Wave elevation spectrum
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
@@ -1917,6 +1953,21 @@
                 XXK(:,:,IK)=XX
                 XYK(:,:,IK)=XY
               END DO
+!
+            ! Total momentum to the ocean
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOCX(1:NSEA), TAUOCY(1:NSEA), AnglD)
+              IF( SMCGRD ) THEN
+!/SMC                CALL W3S2XY_SMC( TAUOCX(1:NSEA), XX )
+!/SMC                CALL W3S2XY_SMC( TAUOCY(1:NSEA), XY )
+              ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCX(1:NSEA)     &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)     &
+                                                        , MAPSF, XY )
+              ENDIF ! SMCGRD
+              NFIELD=2
 !
             ! RMS of bottom displacement amplitude
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
