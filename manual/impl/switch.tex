@@ -15,19 +15,7 @@ included in the source code files is described in \para\ref{sec:w3adc}.
 \subsubsection{~Mandatory switches} \label{sub:man_switch}
 \vsssub
 
-Of each of the below groups of switches exactly one has to be selected. The
-first group of switches controls the selection of machine-dependent code. With
-the introduction of \fortran-90 this set of switches should have become
-obsolete. Problems with some compilers have prompted the retention of the
-second switch.
-\begin{slist}
-\sit{f90} {\fortran-90 style date and time capturing and program
-           abort.}
-\sit{dum} {Dummy to be used if \ws\ is to be installed on
-           previously untried hardware.}
-\end{slist}
-
-\noindent
+Of each of the below groups of switches exactly one has to be selected. 
 Hardware model (first group) and message passing protocol (second group). Note
 that these two groups share a switch. This implies that the {\sc mpi} switch
 can only be used in combination with the {\sc dist} switch.

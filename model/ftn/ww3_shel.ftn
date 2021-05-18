@@ -229,8 +229,6 @@
 !
 !       !/NCO   NCEP NCO modifications for operational implementation.
 !
-!       !/F90   Timer function included for F90.
-!
 !       !/NCC   Ncep Coupler
 !
 ! 10. Source code :
@@ -307,13 +305,13 @@
 !
 !/OASIS      INTEGER             :: OASISED
 !/COU      INTEGER             :: OFL
-!/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
+      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
 !
       REAL                :: FACTOR, DTTST, XX, YY,                    &
                              HA(NHMAX,-7:8), HD(NHMAX,-7:8),           &
                              HS(NHMAX,-7:8)
-!/F90      REAL                :: CLKFIN, CLKFEL
+      REAL                :: CLKFIN, CLKFEL
       REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),         &
                              DATA1(:,:), DATA2(:,:)
 !
@@ -381,7 +379,7 @@
 !/T      PRTFRM = .TRUE.
 !/T      DEBUG_NCC = .TRUE. 
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 0.  Set up data structures
@@ -1837,7 +1835,7 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90        CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+        CALL DATE_AND_TIME ( VALUES=CLKDT2 )
       END IF
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
@@ -2487,15 +2485,15 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90          CALL DATE_AND_TIME ( VALUES=CLKDT3 )
-!/F90          CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
-!/F90          CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
-!/F90          WRITE (NDSO,997) CLKFIN
-!/F90          WRITE (NDSO,998) CLKFEL
-!/F90          IF ( NDSO .NE. NDS(1) ) THEN
-!/F90            WRITE (NDS(1),997) CLKFIN
-!/F90            WRITE (NDS(1),998) CLKFEL
-!/F90          END IF
+          CALL DATE_AND_TIME ( VALUES=CLKDT3 )
+          CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
+          CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
+          WRITE (NDSO,997) CLKFIN
+          WRITE (NDSO,998) CLKFEL
+          IF ( NDSO .NE. NDS(1) ) THEN
+            WRITE (NDS(1),997) CLKFIN
+            WRITE (NDS(1),998) CLKFEL
+          END IF
         WRITE (NDSO,999)
       END IF
 !
@@ -2569,8 +2567,8 @@
 !/TIDE  974 FORMAT ( '     Updating ',A,'using tidal constituents')
   975 FORMAT (/'  Data assimmilation at ',A)
 !
-!/F90  997 FORMAT (/'  Initialization time :',F10.2,' s')
-!/F90  998 FORMAT ( '  Elapsed time        :',F10.2,' s')
+  997 FORMAT (/'  Initialization time :',F10.2,' s')
+  998 FORMAT ( '  Elapsed time        :',F10.2,' s')
 !
   999 FORMAT(/'  End of program '/                                    &
                ' ===================================='/               &

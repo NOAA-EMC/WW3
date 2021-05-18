@@ -928,7 +928,7 @@
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      SYSTEM_CLOCK
-!                Sur.    n/a    Get system time ( !/F90 )
+!                Sur.    n/a    Get system time
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -941,8 +941,6 @@
 !
 !  9. Switches :
 !
-!     !/F90  FORTRAN 90 specific calls.
-!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -950,7 +948,7 @@
 !/
 ! -------------------------------------------------------------------- /
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTB )
+      CALL DATE_AND_TIME ( VALUES=PRFTB )
 !
       FLPROF = .TRUE.
 !
@@ -991,7 +989,7 @@
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      SYSTEM_CLOCK
-!                Sur.    n/a    Get system time ( !/F90 )
+!                Sur.    n/a    Get system time
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -1008,8 +1006,6 @@
 !  8. Structure :
 !
 !  9. Switches :
-!
-!     !/F90  FORTRAN 90 specific calls.
 !
 ! 10. Source code :
 !
@@ -1033,8 +1029,8 @@
 !
       IF ( .NOT. FLPROF ) RETURN
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTA )
-!/F90      PTIME  = TDIFF ( PRFTB,PRFTA )
+      CALL DATE_AND_TIME ( VALUES=PRFTA )
+      PTIME  = TDIFF ( PRFTB,PRFTA )
 !
       RETURN
 !/
