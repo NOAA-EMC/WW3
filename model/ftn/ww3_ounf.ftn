@@ -218,6 +218,7 @@
                                  VECTOR, TOGETHER, FLGNML, FLGFC
 
       LOGICAL                 :: SMCGRD = .FALSE.
+!/RTD      LOGICAL                 :: RTDL = .FALSE.
 
       INTEGER                 :: TVARTYPE = NF90_DOUBLE
       CHARACTER(LEN=32)       :: EPOCH_ISO
@@ -251,6 +252,10 @@
       WRITE (NDSO,900)
 
 !/SMC      SMCGRD = .TRUE.
+!
+!/RTD ! Is the grid really rotated
+!/RTD      IF ( Polat < 90. ) RTDL = .True.
+!/RTD !
 !
       ! Default epoch time:
       TEPOCH(1) = 19900101
@@ -545,6 +550,8 @@
 !/SMC      RTDNX = NXO
 !/SMC      RTDNY = NYO
 !/SMC
+!/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
+!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) RTDL = .FALSE.
 
       IF(.NOT. SMCGRD) THEN
         IX1    = MAX ( IX1 , 1 )
@@ -955,9 +962,6 @@
       LOGICAL                 :: FLFRQ, FLDIR, FEXIST, FREMOVE
       LOGICAL                 :: CUSTOMFRQ=.FALSE.
 !/T      LOGICAL                 :: LTEMP(NGRPP)
-!/RTD ! RTDL == False for a standard lat-lon grid. Will be set to True if the
-!/RTD ! grid is rotated
-!/RTD      LOGICAL                 :: RTDL = .FALSE.
 
       TYPE(META_T)            :: META(3)
       !TYPE(META_T)            :: META
@@ -967,9 +971,6 @@
 !
 !/S      CALL STRACE (IENT, 'W3EXNC')
 !
-!/RTD ! Is the grid really rotated
-!/RTD      IF ( Polat < 90. ) RTDL = .True.
-!/RTD !
 !/T      DO IFI=1, NOGRP 
 !/T        LTEMP  = FLG2D(IFI,:)
 !/T        WRITE (NDST,9000) IFI, LTEMP
@@ -3239,13 +3240,6 @@
 !/NC4    INTEGER                           :: DEFLATE=1
 !
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
-
-!/RTD ! RTDL == False for a standard lat-lon grid. Will be set to True if the
-!/RTD ! grid is rotated
-!/RTD      LOGICAL                           :: RTDL = .FALSE.
-
-!/RTD ! Is the grid really rotated
-!/RTD        IF ( Polat < 90. ) RTDL = .True.
 !      
 ! Creation in netCDF3 or netCDF4
 !

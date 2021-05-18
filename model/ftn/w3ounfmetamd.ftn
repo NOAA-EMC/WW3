@@ -165,6 +165,7 @@
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: SIG, NK, GTYPE, UNGTYPE
 !/RTD      USE W3GDATMD, ONLY : FLAGUNR, POLAT, POLON
+!/SMC      USE W3SMCOMD, ONLY : SMCTYPE
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
                           NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
@@ -276,6 +277,8 @@
       IF(PRESENT(VEC)) VECTOR = VEC
 !/RTD ! Is the grid really rotated?
 !/RTD      IF ( POLAT < 90. ) FLRTD = .True.
+!/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
+!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
 !/RTD !
 
       ! 1. Allocate nested GROUP, FIELD structure:
