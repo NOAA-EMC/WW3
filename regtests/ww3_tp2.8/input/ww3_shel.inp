@@ -6,12 +6,16 @@ $ as a homogeneous field; four input lines.
 $ 1) Water levels
 $ 2) Currents
 $ 3) Winds
-$ 4) Ice concentrations (cannot be homogeneous).
+$ 4) Ice concentrations
+$ 5) Atmospheric momentum
+$ 6) Air density
 $
    F F
    T F
    T T
-   F
+   F F
+   F F
+   F F
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra.

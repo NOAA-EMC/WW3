@@ -42,12 +42,12 @@ $ spectral output grid, and the point output will be written to the
 $ file out_pnt.points
 $
 $ -------------------------------------------------------------------- $
-$ Now each actual wave model grid is defined using 13 parameters to be
+$ Now each actual wave model grid is defined using 15 parameters to be
 $ read fom a single line in the file. Each line contains the following
 $ parameters
 $     1)   Define the grid with the extension of the mod_def file.
-$    2-8)  Define the inputs used by the grids with 8 keywords 
-$          corresponding to the 8 flags defining the input in the
+$   2-10)  Define the inputs used by the grids with 10 keywords 
+$          corresponding to the 10 flags defining the input in the
 $          input files. Valid keywords are:
 $            'no'      : This input is not used.
 $            'native'  : This grid has its own input files, e.g. grid
@@ -55,21 +55,21 @@ $                        grdX (mod_def.grdX) uses ice.grdX.
 $            'MODID'   : Take input from the grid identified by 
 $                        MODID. In the example below, all grids get
 $                        their wind from wind.input (mod_def.input).
-$     9)   Rank number of grid (internally sorted and reassigned).
-$    10)   Group number (internally reassigned so that different
+$    10)   Rank number of grid (internally sorted and reassigned).
+$    12)   Group number (internally reassigned so that different
 $          ranks result in different group numbers.
-$   11-12) Define fraction of communicator (processes) used for this
+$   13-14) Define fraction of communicator (processes) used for this
 $          grid.
-$    13)   Flag identifying dumping of boundary data used by this
+$    15)   Flag identifying dumping of boundary data used by this
 $          grid. If true, the file nest.MODID is generated.
 $
-$  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F {example}
-$  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F {example}
-$  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   3  1  0.00 1.00  F {example}
-$  'gband' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
-$  'arcticreg' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
-  'gbandd360' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
-  'arcticsub' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
+$  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F {example}
+$  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F {example}
+$  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   3  1  0.00 1.00  F {example}
+$  'gband' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
+$  'arcticreg' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
+  'gbandd360' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
+  'arcticsub' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
 $
 $
 $ In this example three grids are used requiring the files

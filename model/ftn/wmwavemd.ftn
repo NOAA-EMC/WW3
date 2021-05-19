@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jan-2014 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -24,6 +24,7 @@
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
+!/    22-Mar-2021 : Support for air density input       ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -74,7 +75,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jan-2014 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -91,6 +92,7 @@
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
+!/    22-Mar-2021 : Support for air density input       ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -215,8 +217,8 @@
                           STIME, ETIME, NMV, TMV, AMV, DMV,           &
                           NRGRD, NRGRP, GRANK, INGRP, GRDHGH, GRDEQL, &
                           GRDLOW, TSYNC, TMAX, TOUTP, TDATA, GRSTAT,  &
-                          FLLSTL, FLLSTI, DTRES, FLGHG1, FLGHG2,      &
-                          MAPMSK
+                          FLLSTL, FLLSTI, FLLSTR, DTRES, FLGHG1,      &
+                          FLGHG2, MAPMSK
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -757,6 +759,7 @@
                 CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE., .TRUE. )
                 IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
                 IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+                IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
 !
 ! 5.b Stage data for grids with equal rank
 !
@@ -1032,6 +1035,7 @@
 !
                     IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
                     IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+                    IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
 !
 ! 9.c Update TOUPT
 !

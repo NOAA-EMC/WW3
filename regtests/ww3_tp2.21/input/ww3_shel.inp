@@ -4,13 +4,15 @@ $ -------------------------------------------------------------------- $
 $
 $ Define input to be used ---------------------------------------------$
 $
-   F F
-   F F
-   T F
-   F
-   F
-   F
-   F
+   F F     Water levels
+   F F     Currents
+   T F     Winds
+   F F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
 $
 $ Time frame of calculations ------------------------------------------$
 $
@@ -437,7 +439,8 @@ $ Homogenous field data ----------------------------------------------$
 $
 $   'WND' 20051001 000000   20.    145.    2.0
 $   'WND' 20051002 000000   20.    245.    2.0
-   'STP'
+ 'the_end'  0
+ 'STP'
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $

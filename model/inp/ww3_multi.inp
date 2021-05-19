@@ -25,10 +25,11 @@ $ If there are input data grids defined ( NRINP > 0 ), then these
 $ grids are defined first. These grids are defined as if they are wave
 $ model grids using the file mod_def.MODID. Each grid is defined on
 $ a separate input line with MODID, and eight input flags identifying
-$ the presence of 1) water levels 2) currents 3) winds 4) ice and
-$ 5-7) assimilation data as in the file ww3_shel.inp.
+$ the presence of 1) water levels 2) currents 3) winds 4) ice
+$ 5) momentum 6) air density and 7-9) assimilation data as in the
+$ file ww3_shel.inp.
 $
-  'input' F F T F F F F
+  'input' F F T F F F F F F
 $
 $ In this example, we need the file mod_def.input to define the grid
 $ and the file wind.input to provide the corresponding wind data.
@@ -51,8 +52,8 @@ $ Now each actual wave model grid is defined using 13 parameters to be
 $ read from a single line in the file. Each line contains the following
 $ parameters
 $     1)   Define the grid with the extension of the mod_def file.
-$    2-8)  Define the inputs used by the grids with 8 keywords 
-$          corresponding to the 8 flags defining the input in the
+$    2-10) Define the inputs used by the grids with 10 keywords 
+$          corresponding to the 10 flags defining the input in the
 $          input files. Valid keywords are:
 $            'no'      : This input is not used.
 $            'native'  : This grid has its own input files, e.g. grid
@@ -60,24 +61,24 @@ $                        grdX (mod_def.grdX) uses ice.grdX.
 $            'MODID'   : Take input from the grid identified by 
 $                        MODID. In the example below, all grids get
 $                        their wind from wind.input (mod_def.input).
-$     9)   Rank number of grid (internally sorted and reassigned).
-$    10)   Group number (internally reassigned so that different
+$    11)   Rank number of grid (internally sorted and reassigned).
+$    12)   Group number (internally reassigned so that different
 $          ranks result in different group numbers.
-$   11-12) Define fraction of communicator (processes) used for this
+$   13-14) Define fraction of communicator (processes) used for this
 $          grid. '0.00 1.00' is appropriate in many cases. Partial 
 $          fractions, i.e. settings other than '0.00 1.00', are 
 $          intended for equal rank grids, to improve scaling. The 
 $          commented example provided here (partial fractions with
 $          non-equal rank) is not generally recommended.
-$    13)   Flag identifying dumping of boundary data used by this
+$    15)   Flag identifying dumping of boundary data used by this
 $          grid. If true, the file nest.MODID is generated.
 $
-  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
-  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
-  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   3  1  0.00 1.00  F
-$ 'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   1  1  0.00 0.50  F
-$ 'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   2  1  0.25 0.75  F
-$ 'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   3  1  0.50 1.00  F
+  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  3  1  0.00 1.00  F
+$ 'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 0.50  F
+$ 'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.25 0.75  F
+$ 'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'  3  1  0.50 1.00  F
 $
 $ In this example three grids are used requiring the files
 $ mod_def.grdN. All files get their winds from the grid 'input'
