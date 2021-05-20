@@ -7061,10 +7061,11 @@
       real(ESMF_KIND_RX), pointer :: dptr(:,:)
       integer :: mdse = 6
       integer :: mdst = 10
-      integer :: mdsf
+      integer, save :: mdsf
       character(256) :: logmsg
       logical :: flagsc = .false.
       integer, parameter :: lde = 0
+      logical, save :: firstCall = .true.
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_READFROMFILE)
       integer, save :: timeSlice = 1
 #endif
@@ -7073,19 +7074,25 @@
 !
       rc = ESMF_SUCCESS
 
-      ! assign unit number for input file 
-      call wmuget(mdse, mdst, mdsf, 'INP')
-      call wmuset(mdse, mdst, mdsf, .true., desc='Input data file')
+      if (firstCall) then 
+        ! assign unit number for input file 
+        call wmuget(mdse, mdst, mdsf, 'INP')
+        call wmuset(mdse, mdst, mdsf, .true., desc='Input data file')
+        write(logmsg,*) "mdsf in = ", mdsf 
+        call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-      ! open file      
-      call w3fldo('READ', idfld, mdsf, mdst, mdse, &
-             nx, ny, gtype, ierr)
-      if (ierr.ne.0) then
-        write(logmsg,*) "failed opening wind input"
-        call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
-        rc = ESMF_FAILURE
-        return
-      endif
+        ! open file      
+        call w3fldo('READ', idfld, mdsf, mdst, mdse, nx, ny, gtype, ierr)
+        if (ierr.ne.0) then
+          write(logmsg,*) "Error in opening "//idfld//", iostat = ", ierr
+          call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+        endif
+
+        firstCall = .false.
+      end if
 
       ! init variables
       wx0l = 0.0
@@ -7116,28 +7123,28 @@
 
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_READFROMFILE)
       write(logmsg,*) 'time0 = ', time0(1), time0(2)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'timen = ', timen(1), timen(2)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'tw0 = ', tw0l(1), tw0l(2)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'twn = ', twnl(1), twnl(2)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'wx0 min, max = ', minval(wx0l), maxval(wx0l)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'wy0 min, max = ', minval(wy0l), maxval(wy0l)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'wxn min, max = ', minval(wxnl), maxval(wxnl)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       write(logmsg,*) 'wyn min, max = ', minval(wynl), maxval(wynl)
-      call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_FieldWrite( fldwx, &
         "wmesmfmd_read_wx0.nc", &
