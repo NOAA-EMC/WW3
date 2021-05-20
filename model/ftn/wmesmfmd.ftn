@@ -7078,9 +7078,6 @@
         ! assign unit number for input file 
         call wmuget(mdse, mdst, mdsf, 'INP')
         call wmuset(mdse, mdst, mdsf, .true., desc='Input data file')
-        write(logmsg,*) "mdsf in = ", mdsf 
-        call ESMF_LogWrite(logmsg, ESMF_LOGMSG_INFO, rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
         ! open file      
         call w3fldo('READ', idfld, mdsf, mdst, mdse, nx, ny, gtype, ierr)
