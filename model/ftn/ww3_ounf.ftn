@@ -191,7 +191,7 @@
                                  NDSTRC, NTRACE, IERR, I, I1F, I2F,    &
                                  IOTEST, NOUT,                         &
                                  IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
-                                 IOUT, S3, IRET, HASNC4,               &
+                                 IOUT, S3, IRET,                       &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
       INTEGER                 :: TOUT(2), TDUM(2), STOPDATE(8)
@@ -445,13 +445,6 @@
         WRITE (NDSE,1010) NCTYPE
         CALL EXTCDE ( 1 )
       END IF
-      ! if NCTYPE = 4 checking that it is compiled with NC4
-      HASNC4=0
-!/NC4      HASNC4=1
-      IF ((HASNC4 .EQ. 0).AND.(NCTYPE.EQ.4)) THEN
-        WRITE (NDSE,1012)
-        CALL EXTCDE ( 1 )
-      END IF
 
 !/SMC      WRITE(NDSO, 4100)
 !/SMC      IF(SMCTYPE .EQ. 1) THEN  ! Flat sea point output
@@ -695,8 +688,6 @@
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
- 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
-               '     NCTYPE = 4 BUT NOT COMPILED WITH NC4'/)
 !
  1500 FORMAT (/' *** WAVEWATCH III WARNING IN W3EXNC : '/             &
                '     IGNORING REQUEST FOR IPART =',I2, /              &
