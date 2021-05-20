@@ -518,12 +518,6 @@
     esac
   done
 
-  if [ -n "$thread1" ] && [ -z "$thread2" ]
-  then
-      echo ' '
-      echo "   *** !/OMPH has to be used in combination with !/OMPG"
-      echo ' ' ; exit 6
-  fi
 
   if [ -n "$thread2" ] && [ "$thread1" != 'OMPG' ]
   then
