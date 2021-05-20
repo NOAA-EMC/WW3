@@ -592,7 +592,7 @@
         TWO=1
       END IF
 !
-      IF ((NCTYPE.EQ.3)) GOTO 803 
+      IF ((NCTYPE.EQ.3) .AND. (.NOT.ORDER)) GOTO 803 
       IF ((NCTYPE.EQ.4) .AND. INDEX(NF90_INQ_LIBVERS(),'"3.').NE.0) GOTO 804
 
 
@@ -1255,7 +1255,8 @@
                '     IOSTAT =',I5/)
 !
  1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-               '     NCTYPE=3 IS NO LONGER SUPPORTED'/)                &
+               '     NCTYPE=3 IS INCOMPATIBLE WITH'/                  &
+               '     THE OPTIMIZED DIMENSION ORDER'/)
 !
  1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
                '     NCTYPE=4 IS INCOMPATIBLE WITH'/                  &
