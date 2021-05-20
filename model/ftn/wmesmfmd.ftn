@@ -39,7 +39,7 @@
 #define TEST_WMESMFMD_RADSTR2D___disabled
 #define TEST_WMESMFMD_STOKES3D___disabled
 #define TEST_WMESMFMD_PSTOKES___disabled
-#define TEST_WMESMFMD_READDATAFROMFILE
+#define TEST_WMESMFMD_READFROMFILE___disabled
 !/
 !/ ------------------------------------------------------------------- /
       module WMESMFMD
@@ -2462,10 +2462,8 @@
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           end if
           ! blend data, mask is all zero initially (use all data)
-          !call BlendImpField( impField(i1), mdtField(i1), mmskField(i1), checkMask=.false., rc=rc )
           call BlendImpField( impField(i1), mdtField(i1), mmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          !call BlendImpField( impField(i2), mdtField(i2), mmskField(i2), checkMask=.false., rc=rc )
           call BlendImpField( impField(i2), mdtField(i2), mmskField(i2), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -4834,7 +4832,7 @@
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "BlendImpField"
-      subroutine BlendImpField( impField, mbgField, bmskField, checkMask, rc )
+      subroutine BlendImpField( impField, mbgField, bmskField, rc )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -4858,7 +4856,6 @@
 !       impField   Type   I/O import field
 !       mbgField   Type   I   import background field
 !       bmskField  Type   I   blending mask field
-!       checkMask  Log.   I   check mask to allow belending over land
 !       rc         Int    I/O Return code
 !     ----------------------------------------------------------------
 !
@@ -4890,7 +4887,6 @@
       type(ESMF_Field), intent(inout)  :: impField
       type(ESMF_Field), intent(in)     :: mbgField
       type(ESMF_Field), intent(in)     :: bmskField
-      logical, optional, intent(in)    :: checkMask
       integer, optional, intent(inout) :: rc
 !/
 !/ ------------------------------------------------------------------- /
@@ -4902,14 +4898,6 @@
       integer :: elb(2), eub(2)
       real(ESMF_KIND_RX), pointer :: mptr(:,:), dptr(:,:), sptr(:,:)
       real(ESMF_KIND_RX), pointer :: bmsk(:,:)
-      character(ESMF_MAXSTR) :: fnm
-      logical :: cflag = .true.
-!
-! -------------------------------------------------------------------- /
-! Get field name
-!
-      call ESMF_FieldGet( impField, name=fnm, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! Get array pointers and bounds
@@ -4931,11 +4919,10 @@
 ! -------------------------------------------------------------------- /
 ! Blend Fields
 !
-      if (present(checkMask)) cflag = checkMask
       if ( impGridIsLocal ) then
         do j = elb(2),eub(2)
           do i = elb(1),eub(1)
-            if ( nint(mptr(i,j)).eq.maskValueLand .and. cflag ) cycle
+            if ( nint(mptr(i,j)).eq.maskValueLand ) cycle
             dptr(i,j) = bmsk(i,j)*dptr(i,j) + (one-bmsk(i,j))*sptr(i,j)
           enddo
         enddo
