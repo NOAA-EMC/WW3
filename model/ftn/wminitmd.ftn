@@ -439,8 +439,6 @@
       CHARACTER(LEN=40),                                              &
                   ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=12)       :: FORMAT
-      CHARACTER(LEN=13), ALLOCATABLE :: INAMES(:,:), MNAMES(:)
-      CHARACTER(LEN=40), ALLOCATABLE :: PNAMES(:)
 !/DIST      CHARACTER(LEN=18)       :: TFILE
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
 
