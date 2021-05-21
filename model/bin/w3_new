@@ -314,13 +314,6 @@
                                    touch w3updtmd.ftn
                                    touch w3wavemd.ftn
                                    touch ww3_grid.ftn ;; 
-     's_xx'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
-                                   touch w3srcemd.ftn
-                                   touch w3iogrmd.ftn
-                                   touch ww3_grid.ftn
-                                   touch ww3_outp.ftn
-                                   touch ww3_ounp.ftn
-                                   touch gx_outp.ftn ;;
      'wind'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 
