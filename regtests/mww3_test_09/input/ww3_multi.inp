@@ -43,19 +43,19 @@ $          fractions with non-equal rank is not generally recommended.
 $    13)   Flag identifying dumping of boundary data used by this
 $          grid. If true, the file nest.MODID is generated.
 $
- 'Michi'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00   0.30   F
- 'Huron'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.30   0.65   F 
- 'Super'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.65   1.00   F
+ 'Michi'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 1  1  0.00   0.30   F
+ 'Huron'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 1  1  0.30   0.65   F 
+ 'Super'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 1  1  0.65   1.00   F
 $
 $ Starting and ending times for the entire model run
-   20160809 000000   20160810 000000
+   20160809 000000   20160809 060000
 $
   F F
 $
 $ Output time and variables for all grids.
-   20160809 000000    900  20160810 000000
+   20160809 000000   3600  20160809 060000
      N
-     DPT HS FP DP 
+     HS FP DP 
 $
 $ Point output time and point list
    20160809 000000    900  20160810 000000
@@ -74,13 +74,13 @@ $  -77.405    43.619    'B45012'
        0.0    0.0   'STOPSTRING'
 $
 $  track output
-   20160809 000000      0  20160810 000000
+   20160809 000000      0  20160809 000000
 $  restart files
-   20160809 000000      1  20160810 000000
+   20160809 000000      0  20160809 000000
 $  boundary output
-   20160809 000000      0  20160810 000000
+   20160809 000000      0  20160809 000000
 $  separated wave field data
-   20160809 000000      0  20160810 000000
+   20160809 000000      0  20160809 000000
 $
   'the_end'  0
 $

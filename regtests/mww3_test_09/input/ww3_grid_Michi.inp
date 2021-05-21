@@ -19,8 +19,8 @@ $ In versions 1.18 and 2.22 of the model this value was by definiton 0,
 $ it is added to mitigate the GSE for a first order scheme. Note that
 $ this factor is IGNORED in the print plots in ww3_outp.
 $
-   1.1  0.04118  30  36  0.
-$  1.1  0.04118  25  24  0.
+$  1.1  0.04118  30  36  0.
+   1.1  0.04118  25  24  0.
 $  1.1  0.04118  28  36  0.
 $
 $ Set model flags ---------------------------------------------------- $
