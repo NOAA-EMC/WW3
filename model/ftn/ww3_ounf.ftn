@@ -3422,7 +3422,7 @@
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','grid_latitude')
 !/RTD        END IF        
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_min',-90.0)
-        IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',180.)
+        IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',90.)
 !
         IF(SMCGRD) THEN
 !/SMC          IF(SMCTYPE .EQ. 1) THEN
@@ -3473,7 +3473,7 @@
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','latitude')
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','latitude')
 !/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_min',-90.0)
-!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_max',180.)
+!/RTD        IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_max',90.)
 !/RTD
 !/RTD        ! Add rotated pole grid mapping variable (dummy scalar variable
 !/RTD        ! used to simply store rotated pole information; see CF1.6 conventions).
