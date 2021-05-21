@@ -29,7 +29,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T T T T
+   F T T T T F
 $  F T T T T F
 $
 $ Set time steps ----------------------------------------------------- $
@@ -407,7 +407,7 @@ $     1.     1.     4.
 $    -1.    -1.     4.
 $
 $  -0.1  2.50  10  -10. 3 1 '(....)' 'NAME' 'bottom.inp'
-   -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'S36125Depth.dat'
+   -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' '../input/S36125Depth.dat'
 $
 $ 6 6 6 6 6 6 6 6 6 6 6 6
 $ 6 6 6 5 4 2 0 2 4 5 6 6
@@ -530,15 +530,15 @@ $    The first line of each file will have the array dimension parameters.
 $    So the first line are read first to determine the array sizes for the
 $    following array read calls.      JGLi18Dec2012
 $
-  32  1  1  '(....)'  'GtLkSuperCels.dat'
-  33  1  1  '(....)'  'GtLkSuperISid.dat'
-  34  1  1  '(....)'  'GtLkSuperJSid.dat'
-  31  1  1  '(....)'  'GtLkSuperObst.dat'
+  32  1  1  '(....)'  '../input/GtLkSuperCels.dat'
+  33  1  1  '(....)'  '../input/GtLkSuperISid.dat'
+  34  1  1  '(....)'  '../input/GtLkSuperJSid.dat'
+  31  1  1  '(....)'  '../input/GtLkSuperObst.dat'
 $    Boundary cell id number list file is required if NBISMC is non-zero.
 $    The cell id number should be the sequential number in S625MCels.dat.
 $    Boundary cell spectral input data should be produced from a regular
 $    lat-lon grid model for the listed boundary cells.  JGLi18Dec2012
-  35  1  1  '(....)'  'GtLkSuperBlst.dat'
+  35  1  1  '(....)'  '../input/GtLkSuperBlst.dat'
 $
 $    Extra cell and face arrays for Arctic part.  JGLi16Jan2014
 $ 36  1  1  '(....)'  'S36125MBArc.dat'
@@ -551,7 +551,7 @@ $    if FROM = 'PART', then segmented data is read from below, else
 $    the data is read from file as with the other inputs (as INTEGER)
 $
 $  10 3 1 '(....)' 'PART' 'mapsta.inp'
-  39  1  1  '(....)'  'NAME'  'S36125Masks.dat'
+  39  1  1  '(....)'  'NAME'  '../input/S36125Masks.dat'
 $
 $ Read the status map from file ( FROM != PART ) --------------------- $
 $
