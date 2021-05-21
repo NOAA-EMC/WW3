@@ -562,7 +562,7 @@
 
       if (isPresent .and. isSet) then
         read(valueString,*) med_present 
-        call ESMF_LogWrite(trim(cname)//' mediator_present = '// &
+        call ESMF_LogWrite(trim(cname)//': mediator_present = '// &
           trim(valueString), ESMF_LOGMSG_INFO, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       end if
@@ -700,7 +700,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (isPresent .and. isSet) then
           flds_scalar_name = trim(cvalue)
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_name = '// &
+          call ESMF_LogWrite(trim(cname)//': flds_scalar_name = '// &
             trim(flds_scalar_name), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -711,7 +711,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_num
           write(logmsg,*) flds_scalar_num
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_num = '// &
+          call ESMF_LogWrite(trim(cname)//': flds_scalar_num = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -722,7 +722,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_index_nx 
           write(logmsg,*) flds_scalar_index_nx
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_nx = '// &
+          call ESMF_LogWrite(trim(cname)//': flds_scalar_index_nx = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -733,7 +733,7 @@
         if (isPresent .and. isSet) then
           read(cvalue, *) flds_scalar_index_ny
           write(logmsg,*) flds_scalar_index_ny
-          call ESMF_LogWrite(trim(cname)//' flds_scalar_index_ny = '// &
+          call ESMF_LogWrite(trim(cname)//': flds_scalar_index_ny = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         end if
@@ -890,7 +890,7 @@
         end if
 
         write(logmsg,'(l)') merge_import
-        call ESMF_LogWrite(trim(cname)//' merge_import = '// &
+        call ESMF_LogWrite(trim(cname)//': merge_import = '// &
           trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       end if
@@ -7066,6 +7066,9 @@
       logical :: flagsc = .false.
       integer, parameter :: lde = 0
       logical, save :: firstCall = .true.
+      character(len=13) :: tsstr
+      character(len=3) :: tsfld
+      integer :: nxt, nyt, gtypet, filler(3), tideflag
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_READFROMFILE)
       integer, save :: timeSlice = 1
 #endif
@@ -7098,6 +7101,16 @@
       wxnl = 0.0
       wynl = 0.0
       dtnl = 0.0
+
+      ! need to rewind to the begining of the file to access
+      ! data of requested date correctly 
+      rewind(mdsf)
+
+      ! read header information
+      ! this was inside of w3fldo call but since we are opening file
+      ! once and rewinding, the header need to be read
+      read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, &
+        gtypet, filler(1:2), tideflag
 
       ! read input
       call w3fldg('READ', idfld, mdsf, mdst, mdse, nx, ny, &
