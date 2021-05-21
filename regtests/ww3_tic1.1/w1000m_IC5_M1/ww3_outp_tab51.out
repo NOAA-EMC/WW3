@@ -1,0 +1,53 @@
+
+                   *** WAVEWATCH III Point output post.***    
+               ===============================================
+
+  Comment character is '$'
+
+  Grid name : 1-D parameterized ice test    
+
+  Points in file : 
+ ------------------------------------
+      Point1                                       0.0E3     0.0E3
+      Point2                                      10.0E3     0.0E3
+      Point3                                      20.0E3     0.0E3
+      Point4                                      30.0E3     0.0E3
+      Point5                                      40.0E3     0.0E3
+      Point6                                      50.0E3     0.0E3
+      Point7                                      60.0E3     0.0E3
+      Point8                                      70.0E3     0.0E3
+      Point9                                      80.0E3     0.0E3
+      Point10                                     90.0E3     0.0E3
+      Point11                                    100.0E3     0.0E3
+      Point12                                    110.0E3     0.0E3
+      Point13                                    120.0E3     0.0E3
+      Point14                                    130.0E3     0.0E3
+      Point15                                    140.0E3     0.0E3
+      Point16                                    150.0E3     0.0E3
+
+  Output time data : 
+ --------------------------------------------------
+      First time         : 1968/06/06 00:00:00 UTC
+      Interval           :            00:15:00    
+      Number of requests :     49
+
+  Output type  2 :
+ --------------------------------------------------
+      Table of mean wave parameters
+
+      Table output : Mean wave parameters
+      File name    : tab51.ww3
+
+  Requested output for  1 points : 
+ --------------------------------------------------
+      Point1                                       0.0E3     0.0E3
+
+ *** WAVEWATCH-III WARNING IN W3OUTP :
+     Ice source terms !/IC5 skipped
+     in dissipation term.
+
+
+  End of program 
+ =========================================
+         WAVEWATCH III Point output 
+

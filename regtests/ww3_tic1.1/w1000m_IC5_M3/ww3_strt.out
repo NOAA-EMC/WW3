@@ -1,0 +1,94 @@
+
+                  *** WAVEWATCH III  Initial conditions ***   
+               ===============================================
+
+  Comment character is '$'
+
+  Grid name : 1-D parameterized ice test    
+
+
+  Initial field ITYPE = 1
+ --------------------------------------------------
+  Negative SIX was provided by user.         
+  WW3 will create a gaussian distribution    
+  that is circular in real space. 
+       Gaussian / cosine power spectrum 
+
+       Peak frequency and spread (Hz)    :    0.1000  0.0001
+       Mean direction (Naut., degr.)     :  270.0
+       Cosine power of dir. distribution :   12
+       Mean X and spread (km)            :    0.00    0.01
+       Mean Y and spread (km)            :    0.00    5.00
+       Maximum wave height               :    1.00
+
+
+  Location : TEST E(f)
+  Spectrum : Unscaled 1-D  Extreme value :  0.100E+01  
+
+           +-------+
+ 0.990E+00 +   *   |
+           |       |
+ 0.770E+00 +       |
+           |       |
+ 0.550E+00 +       |
+           |       |
+ 0.330E+00 +       |
+           |       |
+ 0.110E+00 +       |
+           +-*-|-*-+
+             0.100
+ 
+
+  Location : TEST 2-D
+  Spectrum : Energy (Normalized)   Maximum value : .430E+00 m2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0   |
+           |   1   |
+           |   6   |
+         W |   *   |
+           |   6   |
+           |   1   |
+        NW |   0   |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+       Converting energy to action ... 
+
+ Variable: Hs Max.:  0.100E+01 m
+ 
+             1      11      21      31      41      51      61      71      81      91     101     111     121     131     141     151
+       +-----------------------------------------------------------------+
+     3 |                                                                 |
+       |   8 4 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   |
+       |                                                                 |
+       +-----------------------------------------------------------------+
+             1      11      21      31      41      51      61      71      81      91     101     111     121     131     141     151
+ 
+
+       Writing restart file  ... 
+
+
+  End of program 
+ =========================================
+         WAVEWATCH III Initial conditions 
+

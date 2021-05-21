@@ -1,0 +1,855 @@
+
+                     *** WAVEWATCH III Program shell ***      
+               ===============================================
+
+  Comment character is '$'
+
+
+  Input fields : 
+ --------------------------------------------------
+       ice param. 1   YES/--  (homogeneous field) 
+       ice param. 2   ---/NO                      
+       ice param. 3   ---/NO                      
+       ice param. 4   ---/NO                      
+       ice param. 5   ---/NO                      
+       mud density    ---/NO                      
+       mud thkness    ---/NO                      
+       mud viscos.    ---/NO                      
+       water levels   YES/--  (homogeneous field) 
+       currents       ---/NO                      
+       winds          ---/NO                      
+       ice fields     YES/--                      
+       momentum       ---/NO                      
+       air density    ---/NO                      
+       mean param.    ---/NO                      
+       1D spectra     ---/NO                      
+       2D spectra     ---/NO                      
+ 
+            Fields   : Water depth         
+                       Water level         
+                       Ice concentration   
+                       Wave height         
+                       Mean wave dir. a1b1 
+            Point  1 :      0.0E3     0.0E3  Point1                                  
+                   2 :      1.0E3     0.0E3  Point2                                  
+                   3 :      2.0E3     0.0E3  Point3                                  
+                   4 :      3.0E3     0.0E3  Point4                                  
+                   5 :      4.0E3     0.0E3  Point5                                  
+                   6 :      5.0E3     0.0E3  Point6                                  
+                   7 :      6.0E3     0.0E3  Point7                                  
+                   8 :      7.0E3     0.0E3  Point8                                  
+                   9 :      8.0E3     0.0E3  Point9                                  
+                  10 :      9.0E3     0.0E3  Point10                                 
+                  11 :     10.0E3     0.0E3  Point11                                 
+                  12 :     11.0E3     0.0E3  Point12                                 
+                  13 :     12.0E3     0.0E3  Point13                                 
+                  14 :     13.0E3     0.0E3  Point14                                 
+                  15 :     14.0E3     0.0E3  Point15                                 
+                  16 :     15.0E3     0.0E3  Point16                                 
+            Fields   : no fields defined
+       Homogeneous field data (and moving grid) ...
+            1  ice param. 1 
+               1   19680606 000000  0.2000E-04
+            1  water levels 
+               1   19680606 000000  0.1100E+01
+
+  Initializations :
+ --------------------------------------------------
+       Preparing input files ...
+            ice param. 1 : file not needed
+            ice param. 2 : file not needed
+            ice param. 3 : file not needed
+            ice param. 4 : file not needed
+            ice param. 5 : file not needed
+            mud density  : file not needed
+            mud thkness  : file not needed
+            mud viscos.  : file not needed
+            water levels : file not needed
+            currents     : file not needed
+            winds        : file not needed
+            ice fields   : file OK
+            momentum     : file not needed
+            air density  : file not needed
+            mean param.  : file not needed
+            1D spectra   : file not needed
+            2D spectra   : file not needed
+
+  Time interval : 
+ --------------------------------------------------
+       Starting time : 1968/06/06 00:00:00 UTC
+       Ending time   : 1968/06/06 12:00:00 UTC
+
+
+  Output requests : 
+ --------------------------------------------------
+       No dedicated output process, any file system.
+
+       Type 1 : Fields of mean wave parameters
+      -----------------------------------------
+            From     : 1968/06/06 00:00:00 UTC
+            To       : 1968/06/06 12:00:00 UTC
+            Interval :            00:15:00
+
+
+       Type 2 : Point output                  
+      -----------------------------------------
+            From     : 1968/06/06 00:00:00 UTC
+            To       : 1968/06/06 12:00:00 UTC
+            Interval :            00:15:00
+
+            output dates out of run dates : Restart files second request deactivated
+       Wave model ...
+
+  Running model with input fields
+ --------------------------------------------------
+
+  Updating input at 1968/06/06 00:00:00 UTC
+     Updating ice param. 1 
+     Updating water levels 
+     Updating ice fields   
+  
+  WAVEWATCH III calculating for 1968/06/06 00:00:00 UTC at 14:46:15
+
+ *** WAVEWATCH III WARNING IN W3IOBC : 
+     INPUT FILE WITH BOUNDARY CONDITIONS NOT FOUND
+     BOUNDARY CONDITIONS WILL NOT BE UPDATED     1
+
+  WAVEWATCH III reached the end of a computation loop at 14:46:15
+
+  Updating input at 1968/06/06 00:00:00 UTC
+     Updating ice param. 1 
+        Past last ice param. 1 
+     Updating water levels 
+        Past last water levels 
+     Updating ice fields   
+        Past last ice fields   
+  
+  WAVEWATCH III calculating for 1968/06/06 00:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 00:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 01:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 02:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 03:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 04:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:24:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:25:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:26:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:27:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:28:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:29:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:30:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:31:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:32:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:33:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:34:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:35:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:36:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:37:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:38:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:39:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:40:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:41:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:42:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:43:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:44:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:45:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:46:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:47:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:48:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:49:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:50:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:51:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:52:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:53:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:54:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:55:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:56:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:57:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:58:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 05:59:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:00:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:01:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:02:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:03:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:04:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:05:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:06:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:07:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:08:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:09:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:10:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:11:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:12:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:13:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:14:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:15:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:16:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:17:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:18:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:19:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:20:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:21:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:22:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:23:00 UTC at 14:46:15
+  WAVEWATCH III calculating for 1968/06/06 06:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 06:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:00:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:01:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:02:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:03:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:04:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:05:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:06:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:07:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:08:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:09:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:10:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:11:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:12:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:13:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:14:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:15:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:16:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:17:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:18:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:19:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:20:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:21:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:22:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:23:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 07:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:00:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:01:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:02:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:03:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:04:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:05:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:06:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:07:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:08:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:09:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:10:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:11:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:12:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:13:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:14:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:15:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:16:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:17:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:18:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:19:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:20:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:21:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:22:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:23:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 08:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:00:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:01:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:02:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:03:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:04:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:05:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:06:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:07:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:08:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:09:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:10:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:11:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:12:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:13:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:14:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:15:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:16:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:17:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:18:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:19:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:20:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:21:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:22:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:23:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 09:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:00:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:01:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:02:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:03:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:04:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:05:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:06:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:07:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:08:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:09:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:10:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:11:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:12:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:13:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:14:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:15:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:16:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:17:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:18:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:19:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:20:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:21:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:22:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:23:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 10:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:00:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:01:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:02:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:03:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:04:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:05:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:06:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:07:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:08:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:09:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:10:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:11:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:12:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:13:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:14:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:15:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:16:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:17:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:18:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:19:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:20:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:21:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:22:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:23:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:24:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:25:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:26:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:27:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:28:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:29:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:30:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:31:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:32:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:33:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:34:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:35:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:36:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:37:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:38:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:39:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:40:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:41:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:42:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:43:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:44:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:45:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:46:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:47:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:48:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:49:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:50:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:51:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:52:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:53:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:54:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:55:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:56:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:57:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:58:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 11:59:00 UTC at 14:46:16
+  WAVEWATCH III calculating for 1968/06/06 12:00:00 UTC at 14:46:16
+  WAVEWATCH III reached the end of a computation loop at 14:46:16
+
+  Initialization time :      0.00 s
+  Elapsed time        :      1.59 s
+
+  End of program 
+ ====================================
+         WAVEWATCH III Program shell 
+

@@ -1,0 +1,327 @@
+
+                   *** WAVEWATCH III Point output post.***    
+               ===============================================
+
+  Comment character is '$'
+
+  Grid name : 1-D parameterized ice test    
+
+  Points in file : 
+ ------------------------------------
+      Point1                                       0.0E3     0.0E3
+      Point2                                      10.0E3     0.0E3
+      Point3                                      20.0E3     0.0E3
+      Point4                                      30.0E3     0.0E3
+      Point5                                      40.0E3     0.0E3
+      Point6                                      50.0E3     0.0E3
+      Point7                                      60.0E3     0.0E3
+      Point8                                      70.0E3     0.0E3
+      Point9                                      80.0E3     0.0E3
+      Point10                                     90.0E3     0.0E3
+      Point11                                    100.0E3     0.0E3
+      Point12                                    110.0E3     0.0E3
+      Point13                                    120.0E3     0.0E3
+      Point14                                    130.0E3     0.0E3
+      Point15                                    140.0E3     0.0E3
+      Point16                                    150.0E3     0.0E3
+
+  Output time data : 
+ --------------------------------------------------
+      First time         : 1968/06/06 12:00:00 UTC
+      Interval           :            01:00:00    
+      Number of requests :      1
+
+  Output type  1 :
+ --------------------------------------------------
+      1-D and/or 2-D spectra
+
+      Subtype   : print plots
+      1-D print plots not requested.
+      2-D print plots normalized.
+
+  Requested output for  6 points : 
+ --------------------------------------------------
+      Point1                                       0.0E3     0.0E3
+      Point2                                      10.0E3     0.0E3
+      Point3                                      20.0E3     0.0E3
+      Point4                                      30.0E3     0.0E3
+      Point5                                      40.0E3     0.0E3
+      Point6                                      50.0E3     0.0E3
+
+ *** WAVEWATCH-III WARNING IN W3OUTP :
+     Ice source terms !/IC5 skipped
+     in dissipation term.
+
+
+
+  Output for 1968/06/06 12:00:00 UTC
+ --------------------------------------------------
+
+  Location : Point1                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .392E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0   |
+           |   1   |
+           |   6   |
+         W |   *   |
+           |   6   |
+           |   1   |
+        NW |   0   |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    1.00 (m)
+                Mean wave length  :  156.   (m)
+                Mean wave period  :   10.0  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.7  (degr)
+
+
+  Location : Point2                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .353E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0 0 |
+           |   1 0 |
+           |   6 2 |
+         W |   * 3 |
+           |   6 2 |
+           |   1 0 |
+        NW |   0 0 |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    1.21 (m)
+                Mean wave length  :  125.   (m)
+                Mean wave period  :    8.8  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.7  (degr)
+
+
+  Location : Point3                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .318E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0 0 |
+           |   1 0 |
+           |   6 2 |
+         W |   * 3 |
+           |   6 2 |
+           |   1 0 |
+        NW |   0 0 |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    1.15 (m)
+                Mean wave length  :  125.   (m)
+                Mean wave period  :    8.8  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.6  (degr)
+
+
+  Location : Point4                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .286E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0 0 |
+           |   1 0 |
+           |   6 2 |
+         W |   * 3 |
+           |   6 2 |
+           |   1 0 |
+        NW |   0 0 |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    1.09 (m)
+                Mean wave length  :  125.   (m)
+                Mean wave period  :    8.8  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.5  (degr)
+
+
+  Location : Point5                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .257E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0 0 |
+           |   1 0 |
+           |   6 2 |
+         W |   * 3 |
+           |   6 2 |
+           |   1 0 |
+        NW |   0 0 |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    1.03 (m)
+                Mean wave length  :  125.   (m)
+                Mean wave period  :    8.8  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.5  (degr)
+
+
+  Location : Point6                                  
+  Spectrum : E(f,th) (Normalized)   Maximum value : .231E+01 m^2s
+
+       ang.|  frequencies (Hz) 
+       deg.| 0.100
+       ----+---|---+
+         N |       |
+           |       |
+           |       |
+        NE |       |
+           |       |
+           |       |
+         E |       |
+           |       |
+           |       |
+        SE |       |
+           |       |
+           |       |
+         S |       |
+           |       |
+           |       |
+        SW |   0 0 |
+           |   1 0 |
+           |   6 2 |
+         W |   * 3 |
+           |   6 2 |
+           |   1 0 |
+        NW |   0 0 |
+           |       |
+           |       |
+       ----+-------+
+ 
+
+                Water depth       : 1000.0  (m)
+                Wind speed        :    0.00 (m/s)
+                Air-sea temp. dif.: -999.9  (degr)
+                Current speed     :    0.00 (m/s)
+                Wave height       :    0.97 (m)
+                Mean wave length  :  125.   (m)
+                Mean wave period  :    8.8  (s)
+                Mean wave direct. :  270.0  (degr)
+                Direct. spread    :   15.4  (degr)
+
+
+  End of program 
+ =========================================
+         WAVEWATCH III Point output 
+

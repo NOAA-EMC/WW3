@@ -1,0 +1,116 @@
+ WAVEWATCH III log file                                 version 7.12      
+ =====================================================================
+                                                  date : 2021/05/21
+                                                  time :  14:07:33
+
+ Model definition file read.
+ Restart file read; cold start (idealized).
+
+ Grid name : 1-D parameterized ice test    
+
+ No water levels.
+ No curents.
+ No winds.
+ Prescribed ice fields.
+ No momentum
+ No air density
+ No mud density.
+ No mud thickness.
+ No mud viscosity.
+ Prescribed ice parameter 1
+ Prescribed ice parameter 2
+ Prescribed ice parameter 3
+ Prescribed ice parameter 4
+ No ice parameter 5
+
+ Gridded output fields : 
+--------------------------------------------------
+     Water depth         
+     Ice concentration   
+     Wave height         
+     Mean wave dir. a1b1 
+
+ Point output requested for    16 points : 
+------------------------------------------
+
+      point  |      X      |      Y      |  name  
+     --------|-------------|-------------|----------------
+         1   |     0.0E3   |     0.0E3   |  Point1                                  
+         2   |    10.0E3   |     0.0E3   |  Point2                                  
+         3   |    20.0E3   |     0.0E3   |  Point3                                  
+         4   |    30.0E3   |     0.0E3   |  Point4                                  
+         5   |    40.0E3   |     0.0E3   |  Point5                                  
+         6   |    50.0E3   |     0.0E3   |  Point6                                  
+         7   |    60.0E3   |     0.0E3   |  Point7                                  
+         8   |    70.0E3   |     0.0E3   |  Point8                                  
+         9   |    80.0E3   |     0.0E3   |  Point9                                  
+        10   |    90.0E3   |     0.0E3   |  Point10                                 
+        11   |   100.0E3   |     0.0E3   |  Point11                                 
+        12   |   110.0E3   |     0.0E3   |  Point12                                 
+        13   |   120.0E3   |     0.0E3   |  Point13                                 
+        14   |   130.0E3   |     0.0E3   |  Point14                                 
+        15   |   140.0E3   |     0.0E3   |  Point15                                 
+        16   |   150.0E3   |     0.0E3   |  Point16                                 
+
+ Initial time     : 1968/06/06 00:00:00 UTC
+ Ice field time   :  date and time not set.
+
+
+                                       |         input         |     output    |
+                                       |-----------------------|---------------|
+     step | pass |    date      time   | b w l c t r i i1 i5 d | g p t r b f c |
+  --------|------|---------------------|-------------------|---------------|
+         1|     1| 1968/06/06 00:00:00 |             I I       | X X           |
+        16|     2|            00:15:00 |                       | X X           |
+        31|     2|            00:30:00 |                       | X X           |
+        46|     2|            00:45:00 |                       | X X           |
+        61|     2|            01:00:00 |                       | X X           |
+        76|     2|            01:15:00 |                       | X X           |
+        91|     2|            01:30:00 |                       | X X           |
+       106|     2|            01:45:00 |                       | X X           |
+       121|     2|            02:00:00 |                       | X X           |
+       136|     2|            02:15:00 |                       | X X           |
+       151|     2|            02:30:00 |                       | X X           |
+       166|     2|            02:45:00 |                       | X X           |
+       181|     2|            03:00:00 |                       | X X           |
+       196|     2|            03:15:00 |                       | X X           |
+       211|     2|            03:30:00 |                       | X X           |
+       226|     2|            03:45:00 |                       | X X           |
+       241|     2|            04:00:00 |                       | X X           |
+       256|     2|            04:15:00 |                       | X X           |
+       271|     2|            04:30:00 |                       | X X           |
+       286|     2|            04:45:00 |                       | X X           |
+       301|     2|            05:00:00 |                       | X X           |
+       316|     2|            05:15:00 |                       | X X           |
+       331|     2|            05:30:00 |                       | X X           |
+       346|     2|            05:45:00 |                       | X X           |
+       361|     2|            06:00:00 |                       | X X           |
+       362|     2|            06:01:00 |               U       |               |
+       376|     2|            06:15:00 |                       | X X           |
+       391|     2|            06:30:00 |                       | X X           |
+       406|     2|            06:45:00 |                       | X X           |
+       421|     2|            07:00:00 |                       | X X           |
+       436|     2|            07:15:00 |                       | X X           |
+       451|     2|            07:30:00 |                       | X X           |
+       466|     2|            07:45:00 |                       | X X           |
+       481|     2|            08:00:00 |                       | X X           |
+       496|     2|            08:15:00 |                       | X X           |
+       511|     2|            08:30:00 |                       | X X           |
+       526|     2|            08:45:00 |                       | X X           |
+       541|     2|            09:00:00 |                       | X X           |
+       556|     2|            09:15:00 |                       | X X           |
+       571|     2|            09:30:00 |                       | X X           |
+       586|     2|            09:45:00 |                       | X X           |
+       601|     2|            10:00:00 |                       | X X           |
+       616|     2|            10:15:00 |                       | X X           |
+       631|     2|            10:30:00 |                       | X X           |
+       646|     2|            10:45:00 |                       | X X           |
+       661|     2|            11:00:00 |                       | X X           |
+       676|     2|            11:15:00 |                       | X X           |
+       691|     2|            11:30:00 |                       | X X           |
+       706|     2|            11:45:00 |                       | X X           |
+       721|     2|            12:00:00 |                       | L L           |
+  --------+------+---------------------+-------------------+---------------+
+
+  Initialization time :      0.00 s
+  Elapsed time        :      3.61 s
