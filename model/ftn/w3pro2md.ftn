@@ -85,9 +85,6 @@
 !
 !       !/OMPH  Hybrid OpenMP directives.
 !
-!       !/C90   Cray FORTRAN 90 compiler directives.
-!       !/NEC   NEC SXF90 compiler directives.
-!
 !       !/TDYN, !/DSS0, !/XW0, !/XW1
 !               Diffusion options in W3XYP2
 !
@@ -1062,9 +1059,6 @@
 ! 4.  Store results in VQ in proper format --------------------------- *
 !
 !/T      WRITE (NDST,9040) NSEA
-!
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !
 !/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY )
 !

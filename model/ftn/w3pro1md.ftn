@@ -68,9 +68,6 @@
 !
 !  6. Switches :
 !
-!       !/C90   Cray FORTRAN 90 compiler directives.
-!       !/NEC   NEC SXF90 compiler directives.
-!
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
 !
@@ -558,8 +555,6 @@
 !   in FIELD/FLD2D, VCX
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T1            WRITE (NDST,9024)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
             DO IY=1, NY
               FLD2D(IY,NX+1)=FLD2D(IY,1)
               VCX2D(IY,NX+1)=VCX2D(IY,1)
@@ -643,8 +638,6 @@
 ! 4.  Propagate ------------------------------------------------------ *
 !
 !/T3        WRITE (NDST,9040)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !
 !/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, JXN, JXP, JYN, JYP, IX, IY)
 !

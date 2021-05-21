@@ -758,8 +758,6 @@
 
 ! 6.  Store results in VQ in proper format --------------------------- *
 !
-!/C90/!DIR$ IVDEP
-!
       DO JSEA=1, NSEAL
         IP      = JSEA
         IP_glob = iplg(IP)
