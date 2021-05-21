@@ -6,12 +6,13 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jan-2021 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
 !/                  metadata for directional fields.
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -181,11 +182,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Jan-2021 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/    26-Jan-2021 : Added vector flag                   ( version 7.12 )
+!/    22-Mar-2021 : Added vector flag                   ( version 7.12 )
 !/
 !
 !  1. Purpose :
@@ -1530,10 +1531,11 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
 !/
 !
 !  1. Purpose :
@@ -1700,7 +1702,39 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 3.2
 ! IFI=1, IFJ=8
-!/BT4      META => GROUP(1)%FIELD(8)%META
+      META => GROUP(1)%FIELD(8)%META
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 'Pa'
+      META(1)%ENAME  = '.taua'
+      META(1)%VARNM='utaua'
+      META(1)%VARNL='surface_downward_eastward_stress'
+      META(1)%VARNS='surface_downward_eastward_stress'
+      META(1)%VARNG='surface_downward_eastward_stress'
+      META(2)%VARNC='taua=sqrt(utaua**2+vtaua**2)'
+      META(1)%VMIN = -320
+      META(1)%VMAX =  320
+      META(1)%VARND = DIRCOM
+
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtaua'
+      META(2)%VARNL='surface_downward_northward_stress'
+      META(2)%VARNS='surface_downward_northward_stress'
+      META(2)%VARNG='surface_downward_northward_stress'
+      META(2)%VARNC='taua=sqrt(utaua**2+vtaua**2)'
+! IFI=1, IFJ=9
+      META => GROUP(1)%FIELD(9)%META
+      META(1)%FSC    = 0.0001
+      META(1)%UNITS  = 'kg m-3'
+      META(1)%ENAME  = '.rhoa'
+      META(1)%VARNM='rhoa'
+      META(1)%VARNL='air_density'
+      META(1)%VARNS='air_density'
+      META(1)%VARNG='air_density'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 2
+! IFI=1, IFJ=10
+!/BT4      META => GROUP(1)%FIELD(10)%META
 !/BT4      META(1)%FSC    = 0.001
 !/BT4      META(1)%UNITS  = 'Krumbein phi scale'
 !/BT4      META(1)%ENAME  = '.d50'
@@ -1710,8 +1744,8 @@
 !/BT4      META(1)%VARNG='sediment_grain_size'
 !/BT4      META(1)%VMIN = -10.0
 !/BT4      META(1)%VMAX = 32.0
-! IFI=1, IFJ=9
-!/IS2      META => GROUP(1)%FIELD(9)%META
+! IFI=1, IFJ=11
+!/IS2      META => GROUP(1)%FIELD(11)%META
 !/IS2      META(1)%FSC = 0.001
 !/IS2      META(1)%UNITS = 'm'
 !/IS2      META(1)%ENAME = '.ic1'
@@ -1721,8 +1755,8 @@
 !/IS2      META(1)%VARNG='ice_thickness'
 !/IS2      META(1)%VMIN = 0
 !/IS2      META(1)%VMAX = 30
-! IFI=1, IFJ=10
-!/IS2      META => GROUP(1)%FIELD(10)%META
+! IFI=1, IFJ=12
+!/IS2      META => GROUP(1)%FIELD(12)%META
 !/IS2      META(1)%FSC = 0.05
 !/IS2      META(1)%UNITS = 'm'
 !/IS2      META(1)%ENAME = '.ic5'
@@ -1938,6 +1972,17 @@
       META(1)%VARNG='dominant_wave_period'
       META(1)%VMIN = 0
       META(1)%VMAX = 50
+! IFI=2, IFJ=19
+      META => GROUP(2)%FIELD(19)%META
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'm-1'
+      META(1)%ENAME  = '.wnm'
+      META(1)%VARNM='wnm'
+      META(1)%VARNL='mean wave number'
+      META(1)%VARNS=''
+      META(1)%VARNG=''
+      META(1)%VMIN = 0
+      META(1)%VMAX = 32
 !
 !---------- GROUP 3 ----------------
 !
@@ -2631,6 +2676,29 @@
       META(2)%VARNS='northward_partitioned_surface_stokes_drift'
       META(2)%VARNG='northward_partitioned_surface_stokes_drift'
       META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
+! IFI=6, IFJ=13 
+      META => GROUP(6)%FIELD(13)%META
+      META(1)%UNITS  = 'Pa'
+      META(1)%FSC    = 0.01
+      META(1)%ENAME  = '.toc'
+      META(1)%VMIN   = -320
+      META(1)%VMAX   =  320
+      META(1)%VARND  = DIRCOM
+  
+      ! First component
+      META(1)%VARNM='utoc'
+      META(1)%VARNL='eastward total wave to ocean stres'
+      META(1)%VARNS=''
+      META(1)%VARNG=''
+      META(1)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
+    
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vtoc'
+      META(2)%VARNL='northward total wave to ocean stres'
+      META(2)%VARNS=''
+      META(2)%VARNG=''
+      META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
 !
 !---------- GROUP 7 ----------------
 !   

@@ -7,7 +7,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -38,6 +38,7 @@
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.xx )
 !
 !/
@@ -87,6 +88,10 @@
 !                               in W3UWND                       (rad)
 !      AS0-I     R.A.  Public   Stability par. (initial and incr.)
 !                               in W3UWND                      (degr)
+!      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
+!                               and inc.) in W3UTAU.
+!      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
+!                               increment) in W3UTAU.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
 !
 !     Fields of mean wave parameters:
@@ -98,6 +103,8 @@
 !      U10D      R.A.  Public   Wind direction used.
 !      AS        R.A.  Public   Stability parameter.
 !      CX/Y      R.A.  Public   Current components.
+!      TAUA      R.A.  Public   Absolute atmospheric momentum.
+!      TAUADIR   R.A.  Public   Absolute atmospheric momentum direction.
 !
 !      HS        R.A.  Public   Wave Height.
 !      WLM       R.A.  Public   Mean wave length.
@@ -117,6 +124,7 @@
 !      HCMAXD    R.A.  Public   STD of HCMAXE
 !      WBT       R.A.  Public   Dominant wave breaking probability
 !                               (b_T in Babanin et al. (2001, JGR))
+!      WNMEAN    R.A.  Public   Mean wave number
 !
 !      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
 !      TWS       R.A.  Public   Wind sea period (used for flux parameterizations)
@@ -135,6 +143,7 @@
 !      PHIOC     R.A.  Public   Waves to ocean energy flux.
 !      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
 !      USSX/Y    R.A.  Public   Surface Stokes drift.
+!      TAUOCX/Y  R.A.  Public   Total ocean momentum flux
 !      TAUICE    R.A.  Public   Wave-ice momentum flux.
 !      PHICE     R.A.  Public   Waves to ice energy flux.
 !
@@ -351,12 +360,13 @@
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
+                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
 ! Output fields group 1)
 !
         REAL, POINTER         :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:)
+                                 AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
 !
 ! Output fields group 2)
 !
@@ -365,13 +375,14 @@
                                  THS(:),  THP0(:),  FP1(:), THP1(:), &
                                  HSIG(:), STMAXE(:), STMAXD(:),      &
                                  HMAXE(:), HCMAXE(:), HMAXD(:),      &
-                                 HCMAXD(:), QP(:), WBT(:)
+                                 HCMAXD(:), QP(:), WBT(:), WNMEAN(:)
         REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
                                  XT01 (:), XFP0(:), XTHM(:),          &
                                  XTHS(:), XTHP0(:), XFP1(:), XTHP1(:),&
                                  XHSIG(:), XSTMAXE(:), XSTMAXD(:),    &
                                  XHMAXE(:), XHCMAXE(:), XHMAXD(:),    &
-                                 XHCMAXD(:), XQP(:), XWBT(:)
+                                 XHCMAXD(:), XQP(:), XWBT(:),         &
+                                 XWNMEAN(:)
 !
 ! Output fields group 3)
 !
@@ -409,14 +420,16 @@
         REAL, POINTER         ::  SXX(:),  SYY(:),  SXY(:),  TAUOX(:),&
                                   TAUOY(:),  BHD(:),  PHIOC(:),       &
                                   TUSX(:),  TUSY(:),  USSX(:),        &
-                                  USSY(:),  PRMS(:),  TPMS(:),        &
-                                  PHICE(:), TAUICE(:,:)
+                                  USSY(:), TAUOCX(:), TAUOCY(:),      &
+                                  PRMS(:),  TPMS(:), PHICE(:),        &
+                                  TAUICE(:,:)
         REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:), USSP(:,:)
         REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
                                  XTAUOY(:), XBHD(:), XPHIOC(:),       &
                                  XTUSX(:), XTUSY(:), XUSSX(:),        &
-                                 XUSSY(:), XPRMS(:), XTPMS(:),        &
-                                 XPHICE(:), XTAUICE(:,:)
+                                 XUSSY(:), XTAUOCX(:), XTAUOCY(:),    &
+                                 XPRMS(:), XTPMS(:), XPHICE(:),       &
+                                 XTAUICE(:,:)
         REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
 !
 ! Output fields group 7)
@@ -520,17 +533,18 @@
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
+                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:)
+                                 AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
 !
       REAL, POINTER           :: HS(:), WLM(:),  T02(:), T0M1(:),     &
                                  T01 (:), FP0(:), THM(:), THS(:),     &
                                  THP0(:), FP1(:), THP1(:), HSIG(:),   &
                                  STMAXE(:), STMAXD(:), HMAXE(:),      &
-                                 HCMAXE(:), HMAXD(:), HCMAXD(:), QP(:),&
-                                 WBT(:)
+                                 HCMAXE(:), HMAXD(:), HCMAXD(:),      &
+                                 QP(:), WBT(:), WNMEAN(:)
 !
       REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
                                  TH2M(:,:), STH2M(:,:)
@@ -548,8 +562,8 @@
       REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
                                  TAUOY(:), BHD(:), PHIOC(:),          &
                                  TUSX(:), TUSY(:), USSX(:), USSY(:),  &
-                                 PRMS(:), TPMS(:), PHICE(:),          &
-                                 TAUICE(:,:)
+                                 TAUOCX(:), TAUOCY(:), PRMS(:),       &
+                                 TPMS(:), PHICE(:), TAUICE(:,:)
       REAL, POINTER           :: P2SMS(:,:), US3D(:,:), USSP(:,:)
 !
       REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
@@ -752,7 +766,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         22-Mar-2021 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -766,6 +780,7 @@
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -831,7 +846,7 @@
                           USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
-      USE W3IDATMD, ONLY: FLCUR, FLWIND
+      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -890,7 +905,7 @@
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
-!     Call W3SETA to assure of pointes FLCUR an FLWND
+!     Call W3SETA to assure of pointes FLCUR, FLWND, and FLTAUA
 !
       CALL W3SETA ( IMOD, NDSE, NDST )
 
@@ -916,6 +931,12 @@
                  WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
                  WADATS(IMOD)%AS(0:NSEA) , STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
+!
+      ALLOCATE ( WADATS(IMOD)%TAUA(0:NSEA) ,                         &
+                 WADATS(IMOD)%TAUADIR(0:NSEA), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      WADATS(IMOD)%TAUA(:)   =0.
+      WADATS(IMOD)%TAUADIR(:)=0.     
 
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -947,6 +968,7 @@
                  WADATS(IMOD)%HCMAXE(NSEALM),                           &
                  WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
                  WADATS(IMOD)%WBT(NSEALM),                              &
+                 WADATS(IMOD)%WNMEAN(NSEALM),                           &
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !
@@ -963,13 +985,14 @@
       WADATS(IMOD)%THP1   = UNDEF
       WADATS(IMOD)%HSIG   = UNDEF
       WADATS(IMOD)%STMAXE = UNDEF
-      WADATS(IMOD)%STMAXD= UNDEF
-      WADATS(IMOD)%HMAXE = UNDEF
-      WADATS(IMOD)%HMAXD = UNDEF
-      WADATS(IMOD)%HCMAXE= UNDEF
-      WADATS(IMOD)%HCMAXD= UNDEF
+      WADATS(IMOD)%STMAXD = UNDEF
+      WADATS(IMOD)%HMAXE  = UNDEF
+      WADATS(IMOD)%HMAXD  = UNDEF
+      WADATS(IMOD)%HCMAXE = UNDEF
+      WADATS(IMOD)%HCMAXD = UNDEF
       WADATS(IMOD)%QP     = UNDEF
       WADATS(IMOD)%WBT    = UNDEF
+      WADATS(IMOD)%WNMEAN = UNDEF
 
 !/MEMCHECK       WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
 !/MEMCHECK       call getMallocInfo(mallinfos)
@@ -1105,6 +1128,8 @@
                  WADATS(IMOD)%TUSY  (NSEALM) ,                        &
                  WADATS(IMOD)%USSX  (NSEALM) ,                        &
                  WADATS(IMOD)%USSY  (NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOCX(NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOCY(NSEALM) ,                        &
                  WADATS(IMOD)%PRMS  (NSEALM) ,                        &
                  WADATS(IMOD)%TPMS  (NSEALM) ,                        &
                  WADATS(IMOD)%PHICE (NSEALM) ,                        &
@@ -1142,6 +1167,8 @@
       WADATS(IMOD)%TUSY   = UNDEF
       WADATS(IMOD)%USSX   = UNDEF
       WADATS(IMOD)%USSY   = UNDEF
+      WADATS(IMOD)%TAUOCX = UNDEF
+      WADATS(IMOD)%TAUOCY = UNDEF
       WADATS(IMOD)%PRMS   = UNDEF
       WADATS(IMOD)%TPMS   = UNDEF
       WADATS(IMOD)%PHICE  = UNDEF
@@ -1257,6 +1284,15 @@
                          WADATS(IMOD)%UDI(NSEA) ,           &
                          WADATS(IMOD)%AS0(NSEA) ,           &
                          WADATS(IMOD)%ASI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
+!
+          IF ( FLTAUA  ) THEN
+              ALLOCATE ( WADATS(IMOD)%MA0(NSEA) ,           &
+                         WADATS(IMOD)%MAI(NSEA) ,           &
+                         WADATS(IMOD)%MD0(NSEA) ,           &
+                         WADATS(IMOD)%MDI(NSEA) ,           &
                          STAT=ISTAT )
               CHECK_ALLOC_STATUS ( ISTAT )
             END IF
@@ -1408,11 +1444,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         22-Mar-2021 !
 !/                  +-----------------------------------+
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1428,7 +1465,6 @@
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2,      &
                           NOGRP, NGRPP
-      USE W3IDATMD, ONLY: FLCUR, FLWIND
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -1602,6 +1638,14 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
+      IF ( OUTFLAGS( 2, 19) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XWNMEAN(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XWNMEAN(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+!
 !     IF ( OUTFLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
 !         CHECK_ALLOC_STATUS ( ISTAT )
@@ -1635,6 +1679,7 @@
       WADATS(IMOD)%XHCMAXE= UNDEF
       WADATS(IMOD)%XHCMAXD= UNDEF
       WADATS(IMOD)%XWBT   = UNDEF
+      WADATS(IMOD)%XWNMEAN= UNDEF
 !     WADATS(IMOD)%XFP1   = UNDEF
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
@@ -2032,6 +2077,18 @@
           ALLOCATE ( WADATS(IMOD)%XUSSP(1,1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+!
+      IF ( OUTFLAGS( 6, 13) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUOCX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOCY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUOCX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOCY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 
 !
       WADATS(IMOD)%XSXX    = UNDEF
@@ -2052,6 +2109,8 @@
       WADATS(IMOD)%XPHICE  = UNDEF
       WADATS(IMOD)%XTAUICE = UNDEF
       WADATS(IMOD)%XUSSP   = UNDEF
+      WADATS(IMOD)%XTAUOCX = UNDEF
+      WADATS(IMOD)%XTAUOCY = UNDEF
 !
       IF ( OUTFLAGS( 7, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
@@ -2323,7 +2382,6 @@
       USE W3GDATMD, ONLY: NGRIDS, IGRID, NK, NX, NY, NSEA, NSEAL,     &
                          NSPEC, NTH, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: NAPROC
-      USE W3IDATMD, ONLY: FLCUR, FLWIND
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -2444,7 +2502,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28_Mar-2007 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -2455,6 +2513,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28_Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
 !/                  Add aditional undefined arrays.
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2631,6 +2690,8 @@
           AS     => WADATS(IMOD)%AS
           CX     => WADATS(IMOD)%CX
           CY     => WADATS(IMOD)%CY
+          TAUA   => WADATS(IMOD)%TAUA
+          TAUADIR=> WADATS(IMOD)%TAUADIR
 !
           HS     => WADATS(IMOD)%HS
           WLM    => WADATS(IMOD)%WLM
@@ -2652,6 +2713,7 @@
           HCMAXD => WADATS(IMOD)%HCMAXD
           QP     => WADATS(IMOD)%QP
           WBT    => WADATS(IMOD)%WBT
+          WNMEAN => WADATS(IMOD)%WNMEAN
 !
           EF     => WADATS(IMOD)%EF
           TH1M   => WADATS(IMOD)%TH1M
@@ -2705,6 +2767,8 @@
           PHICE  => WADATS(IMOD)%PHICE
           TAUICE => WADATS(IMOD)%TAUICE
           USSP   => WADATS(IMOD)%USSP
+          TAUOCX => WADATS(IMOD)%TAUOCX
+          TAUOCY => WADATS(IMOD)%TAUOCY
 !
           ABA    => WADATS(IMOD)%ABA
           ABD    => WADATS(IMOD)%ABD
@@ -2770,6 +2834,13 @@
                   UDI    => WADATS(IMOD)%UDI
                   AS0    => WADATS(IMOD)%AS0
                   ASI    => WADATS(IMOD)%ASI
+                END IF
+!
+              IF ( INPUTS(IMOD)%INFLAGS1(5) ) THEN
+                  MA0    => WADATS(IMOD)%MA0
+                  MAI    => WADATS(IMOD)%MAI
+                  MD0    => WADATS(IMOD)%MD0
+                  MDI    => WADATS(IMOD)%MDI
                 END IF
 !
 !/PR1              IS0    => WADATS(IMOD)%IS0
@@ -2874,11 +2945,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2014 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2951,6 +3023,7 @@
           HCMAXD => WADATS(IMOD)%XHCMAXD
           QP     => WADATS(IMOD)%XQP
           WBT    => WADATS(IMOD)%XWBT
+          WNMEAN => WADATS(IMOD)%XWNMEAN
 !         FP1    => WADATS(IMOD)%XFP1
 !         THP1   => WADATS(IMOD)%XTHP1
 !
@@ -3006,6 +3079,8 @@
           PHICE  => WADATS(IMOD)%XPHICE
           TAUICE => WADATS(IMOD)%XTAUICE
           USSP   => WADATS(IMOD)%XUSSP
+          TAUOCX => WADATS(IMOD)%XTAUOCX
+          TAUOCY => WADATS(IMOD)%XTAUOCY
           ABA    => WADATS(IMOD)%XABA
           ABD    => WADATS(IMOD)%XABD
           UBA    => WADATS(IMOD)%XUBA

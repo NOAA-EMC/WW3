@@ -8,7 +8,7 @@
 !/                  |            A. Chawla              |
 !/                  |           J.-H. Alves             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jul-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Nov-1999 : Final FORTRAN 77        ( version 1.18 + error fix )
@@ -35,6 +35,7 @@
 !/                  (J.H. Alves)
 !/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 ) 
 !/                  (J.H. Alves)
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -123,7 +124,7 @@
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR, RHOAIR
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE, FLOGD
@@ -891,7 +892,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Jul-2007 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    10-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -902,6 +903,7 @@
 !/    18-May-2007 : Update GRIB1 for partitioning.      ( version 3.11 )
 !/    16-Jul-2007 : Adding GRIB2 capability             ( version 3.11 )
 !/                  (A. Chawla)
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1129,6 +1131,49 @@
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
 !
+!     Atmospheric momentum
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  8 ) THEN
+                FLTWO = .TRUE.
+!/NCEP1                KPDS(5) = 032
+!/NCEP2                KPDS(2) = 1
+!/NCEP2                KPDS(1) = 2
+!/NCEP2                LISTSEC0(1) = 0
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA, TAUADIR, AnglD)
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  IF (TAUA(ISEA) .NE. UNDEF) THEN
+                     UABS   = SQRT(TAUA(ISEA)**2+TAUADIR(ISEA)**2)
+                     IF ( UABS .GT. 0.001 ) THEN
+                         TAUADIR(ISEA) = MOD ( 630. -                 &
+                               RADE*ATAN2(TAUADIR(ISEA),TAUA(ISEA)) , 360. )
+                       ELSE
+                         TAUADIR(ISEA) = 0.
+                       END IF
+                    ELSE
+                       UABS = UNDEF
+                       TAUADIR(ISEA) = UNDEF
+                     END IF
+                  TAUA(ISEA) = UABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, X2 )
+!
+!     Air density
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                FLONE = .TRUE.
+!/NCEP1                KPDS(5) = 091
+!/NCEP2                KPDS(2) = 0
+!/NCEP2                KPDS(1) = 2
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
+!
 !     Significant wave height
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  1 ) THEN
@@ -1232,6 +1277,14 @@
                     END IF
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THP0  , MAPSF, X1 )
+!
+!     Mean wave number
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
+                FLONE = .TRUE.
+!/NCEP1                KPDS(5) = -1
+!/NCEP2                KPDS(2) = 255
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, WNMEAN, MAPSF, X1 )
 !
 !     Partitioned wave height
 !

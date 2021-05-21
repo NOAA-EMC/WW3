@@ -6,13 +6,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/      July-2013 : Origination.                         ( version 4.18 )
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
 !/    25-Sep-2020 : Coupling at T+0 support              ( version 7.10 )
+!/    22-Mar-2021 : Adds extra coupling fields           ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -740,13 +741,14 @@
 !/                  |           V. Garnier              |
 !/                  |           A.C. Bennis             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          April-2016 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    Jul-2013 : Origination.                               ( version 4.18 )
 !/    Mar-2014 : J. Pianezze (LPO) : Add atmospheric fields ( version 5.07 )
 !/    Apr-2015 : M. Accensi  (LPO) : Add fields selection   ( version 5.07 )
 !/    Apr-2016 : Add comments (J. Pianezze)                 ( version 5.07 )
+!/ 22-Mar-2021 : Adds extra coupling fields                 ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -862,6 +864,20 @@
 !/OASACM         ID_NB_RCV=ID_NB_RCV+1
 !/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__V10'
 !
+!/OASACM      CASE('TAU')
+!/OASACM         ! UTAUA : u-momentum (m2.s-2)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_UTAU'
+!
+!/OASACM         ! V10 : v-momentum speed (m2.s-2)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_VTAU'
+!
+!/OASACM      CASE('RHO')
+!/OASACM         ! rhoa : air density (kg.m-3)
+!/OASACM         ID_NB_RCV=ID_NB_RCV+1
+!/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_RHOA'
+!
 
 !
 ! ICE MODEL VARIABLES
@@ -917,6 +933,11 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_T0M1'
 !
+!/OASOCM         CASE('T01')
+!/OASOCM            ! T01 / wave_t01 : mean period (s)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__T01'
+!
 !/OASOCM         CASE('DIR')
 !/OASOCM            ! THM / wave_thm : cosinus of mean direction (n/a)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
@@ -939,6 +960,15 @@
 !/OASOCM            ! tauoy / wave_tauoy : y-component of the wave-ocean momentum flux (tauox in m2.s-2)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWOY'
+!
+!/OASOCM         CASE('TOC')
+!/OASOCM            ! tauocx / wave_tauocx : x-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCX'
+!
+!/OASOCM            ! tauocy / wave_tauocy : y-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCY'
 !
 !/OASOCM         CASE('FOC')
 !/OASOCM            ! phioc / wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
@@ -981,6 +1011,11 @@
 !/OASOCM            ! wlm / wave_wlm : mean length wave (m)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___LM'
+!
+!/OASOCM         CASE('WNM')
+!/OASOCM            ! wnmean / wave_wnmean : mean wave number (m-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__WNM'
 !
 !/OASOCM         CASE('TUS')
 !/OASOCM            ! Volume transport associated to Stokes drift, u component (m2.s-1)
