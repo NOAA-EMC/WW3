@@ -93,7 +93,7 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in mach nco grib mcp c90 nec netcdf scrip scripnc \
+  for type in mach nco grib mcp netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
@@ -120,16 +120,6 @@
                ID='model coupling protocol'
                TS='NCC'
                OK='NCC' ;;
-#sort:c90:
-      c90    ) TY='upto1'
-               ID='Cray C90 compiler directives'
-               TS='C90'
-               OK='C90' ;;
-#sort:nec:
-      nec    ) TY='upto1'
-               ID='NEC compiler directives'
-               TS='NEC'
-               OK='NEC' ;;
 #sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
