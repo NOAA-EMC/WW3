@@ -42,7 +42,7 @@
 #          IC3 = Wang and Shen (JGR 2010), dissipation is caused by         #
 #                interaction between waves and ice, where ice layer is      #
 #                represented as a continuous viscoelastic layer             #
-#          IC4 = Choose from several empirical parameterizations            # 
+#          IC4 = Choose from several empirical parameterizations            #
 #            IC4METHOD = 1 - Wadhams et al. (1988)                          #
 #            IC4METHOD = 2 - Meylan et al. (2014)                           #
 #            IC4METHOD = 3 - Kohout & Meylan (2008) in                      #
@@ -117,7 +117,7 @@
 # ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../model ww3_tic1.1    #
 # ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../model ww3_tic1.1    #
 #                                                                           #
-# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr -i input_IC2_ifr -c gnu_debug  ../model ww3_tic1.1                  
+# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr -i input_IC2_ifr -c gnu_debug  ../model ww3_tic1.1
 # bin/run_test -g 1000m_nondisp -c gnu_debug                                #
 #      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../model ww3_tic1.1 #
 # ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../model ww3_tic1.1    #
@@ -155,9 +155,9 @@
 #        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
 #                                                                           #
 #  IC5:                                                                     #
-# ./bin/run_test -g 1000m -w w1000m_IC5 -i input_IC5_M1 -o both             #
+# ./bin/run_test -g 1000m -w w1000m_IC5_M1 -i input_IC5_M1 -o both          #
 #       ../model ww3_tic1.1                                                 #
-# ./bin/run_test -g 1000m -w w1000m_IC5 -i input_IC5_M1 -o netcdf           #
+# ./bin/run_test -g 1000m -w w1000m_IC5_M1 -i input_IC5_M1 -o netcdf        #
 #       ../model ww3_tic1.1                                                 #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
