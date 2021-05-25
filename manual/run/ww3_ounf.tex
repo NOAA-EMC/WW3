@@ -13,7 +13,7 @@
 \proddefa{\opt  .nc}{NetCDF file}{}
 
 
-\vspace{\baselineskip} 
+\vspace{\baselineskip}
 
 \noindent
 When a single field is put in the file, the abbreviated field name (file
@@ -21,104 +21,227 @@ extensions from ww3\_outf) for each data type is given in
 Table~\ref{tab:fields} on page~\pageref{tab:fields}.
 
 \noindent
-If desired, it is possible to override the default metadata (attributes)
-for each variable by providing values in the ounfmeta.inp file.
+\paragraph{User configuration of meta-data:}
 
 \noindent
-Entries in the ounfmeta.inp file are formatted as follows:
+Default meta data (attributes) are generated in the output netCDF file
+for each WW3 output variable. If desired, the user can override existing or
+configure extra metadata via an input text file with the filename `ounfmeta.inp'.
+
+
+\noindent
+The `ounfmeta.inp' file can be used to override/configure the following:
+\begin{itemize}
+  \item Modify/extend netCDF attributes for gridded output variables
+  \item Modify/extend "global" netCDF attributes
+  \item Define/redefine a coordinate reference system
+  \item Define template strings for generating attributes for
+        partitioned parameter output variables.
+\end{itemize}
+
+\noindent
+Entries are made in the ounfmeta.inp file via \emph{sections} marked with a keyword.
+Blank lines and comments lines (starting with \texttt{\$}) are ignored.
+Note: All keywords and `Field Name ID' strings (e.g. \texttt{HS}) are
+case insensitive. All netCDF attribute names are case sensitive.
+
+\noindent
+\paragraph{Modify/add attributes for a WW3 gridded output field:}
+
+\noindent
+An output field is selected using the META keyword followed by
+either an integer pair \texttt{GroupNum} and \texttt{ParamNum}
+or via a \texttt{FldTag} string; these values which relate to the
+`Output field parameter definitions table' in ww3\_shel.nml
+or ww3\_shel.inp.
+Either form may be followed by an optional integer value \texttt{IFC}
+to select the component in multi-component fields (such as the U and
+V components in the WND and CUR output fields).
+
 \begin{verbatim}
-   META ( [ IFI  IFJ ]  |  FLDID )  [ IFC ]
-     attr_name = attr_value
-     attr_name = attr_value
-     extra_attr = extra_value [type]
-   ... repeated as many times as required.
+  META  <GroupNum ParamNum>  |  <FldTag>  [IFC]
+    attr_name  = attr_value
+    attr_name  = attr_value
+    extra_attr = extra_value [type]
+    extra_attr = extra_value [type]
+  ... repeated as many times as required.
 \end{verbatim}
 
-\noindent
-An output field is selected using the \texttt{META} keyword followed by
-the `field name` or an [IFI, IFJ] integer pair that relates to the
-group (IFI) and field (IFJ) flags. See ww3\_shel for details of
-field names and flags.
 
 \noindent
-Either form may be followed by an integer value (IFC) to select the 
-component in multi-component fields (such as wind).
-
-\noindent
-Blank lines and comments lines (starting with \$) are ignored.
-
-\noindent
-Each \texttt{`attr\_name`} relates to an existing variable attribute and
-can be one of the following (altnerative internal name shown in parenthesis):
+Each \texttt{attr\_name} relates to an existing variable attribute and
+can be one of the following (alternative internal name shown in parenthesis):
 \begin{itemize}
- \item  standard\_name (varns) [string] : CF Standard name
- \item  long\_name (varnl) [string] : Descriptive long name
- \item  globwave\_name (varng) [string] : Optional GlobaWAVE name
- \item  direction\_reference or dir\_ref (varnd) [string] : Optional reference
+ \item  \texttt{standard\_name (varns)} [string] : CF Standard name
+ \item  \texttt{long\_name (varnl)} [string] : Descriptive long name
+ \item  \texttt{globwave\_name (varng)} [string] : Optional GlobWAVE name
+ \item  \texttt{direction\_reference} or \texttt{dir\_ref (varnd)} [string] : Optional reference
  frame for directional fields.
- \item  comment (varnc) [string] : Optional comment.
- \item  units [string] : Units of field
- \item  valid\_min (vmin) [float] : Minimum valid value of data
- \item  valid\_max (vmax) [float] : Maximum valud value of data
- \item  scale\_factor (fsc) [float] : Scaling factor for data - used only when
+ \item  \texttt{comment (varnc)} [string] : Optional comment.
+ \item  \texttt{units} [string] : Units of field
+ \item  \texttt{valid\_min (vmin)} [float] : Minimum valid value of data
+ \item  \texttt{valid\_max (vmax)} [float] : Maximum valid value of data
+ \item  \texttt{scale\_factor (fsc)} [float] : Scaling factor for data - used only when
  variable type is SHORT.
 \end{itemize}
 
 \noindent
-Additionaly, the following fields are also configurable:
+Any other attribute name is assumed to be an optional `extra'
+attribute. This extra attribute can take an optional `type'
+keyword to specify the variable type of the metadata. If
+no type is supplied, it defaults to a character type. Valid
+types are one of \texttt{[c, r, i]} for character/string,
+real/float or integer values respectively. Note: space
+separated string an extra field should be quoted.
+
+\noindent
+\paragraph{Modifying `global' meta data:}
+
+\noindent
+Global metadata (i.e. associated with the file, not any particular variable)
+can be specified with a special \texttt{META global} keyword combination:
+
+\begin{verbatim}
+  META global [nodefault]
+    extra_attr = extra_value [type]
+    extra_attr = extra_value [type]
+\end{verbatim}
+
+\noindent
+The optional \texttt{nodefault} keyword will surpress the output of the
+default WW3 global metadata.
+
+\noindent
+\paragraph{Modifying/defining a coordinate reference system:}
+
+
+\noindent
+A `coordinate reference system' (CRS) can be specified for all gridded
+output fields using the \texttt{CRS} keyword. As a minimum, the
+\texttt{grid\_mapping\_name} attribute must be specified. If the CRS
+section is defined, all output fields will have a \texttt{grid\_mapping}
+attribute added referencing the CRS variable. \texttt{crs\_vaname} will
+be created as a scalar NF90\_CHAR variable in the output file.
+
+\begin{verbatim}
+  CRS <crs_varname>
+    grid_mapping_name = <mapping name>
+    attr = value
+    attr = value
+\end{verbatim}
+
+\noindent
+For normal latitude/longitude grids and rotated pole grids, ww3\_ounf will
+generate an appropriate coordinate reference system, but this may be
+overridden using the CRS keyword.
+
+
+\noindent
+\paragraph{Partitioned parameter template strings}
+
+\noindent
+Specifying metadata for partitioned outputs is handled slightly differently;
+one meta data entry is used for all partitions of a field. The metadata
+is made specific to a particular partition number via \emph{template strings}.
+There are two built-in template strings: \texttt{SPART} and \texttt{IPART}.
+These provide a `string' description (e.g. `wind sea', `primary swell', etc) or
+an integer partition number (1, 2, 3, etc.) These can be referenced in the meta data
+attribute values using the template name surrounded by \texttt{< ... >},
+e.g. \texttt{<SPART>}.
+
+\noindent
+It is also possible to supply user defined partitioned parameter
+template strings in the ounfmeta.inp file using the \texttt{TEMPLATE}
+keyword, as below:
+
+\begin{verbatim}
+  TEMPLATE <template-name>
+    String for partition 0
+    String for partition 1
+    String for partition 2
+    String for partition 3
+    ... etc
+\end{verbatim}
+
+\noindent
+Specifying the \texttt{<template-name>} with a trailing underscore will
+provide an underscore separated (\texttt{\_}) string, rather than space
+separated (this is useful for netCDF `standard name' values).
+
+
+\noindent
+\paragraph{Example ounfmeta.inp file:}
+\begin{verbatim}
+   $ Lines starting with dollars are comments.
+   $ The line starts a meta-data section for the depth field
+   META DPT
+     standard_name = depth
+     long_name = "can be quoted string"
+     comment = or an unquoted string
+     vmax = 999.9
+
+   $ Next one is HSig (group 2, field 1)
+   META 2 1
+     varns = "sig. wave height"
+     varnl = "this is long name"
+
+   $ Next one is second component of wind. It also sets an
+   $ "extra" meta data value (height - a float)
+   META WND 2
+     standard_name = "v-wind"
+     height = 10.0 "r"
+
+   $ User defined partitioned parameters template strings:
+   TEMPLATE PARTSTR
+     wind wave
+     primary swell
+     secondary swell
+
+   $ Use partition templates in partitioned Hs field:
+   $ (SPART and IPART are built-in)
+   META PHS
+     standard_name = "<SPART_>_sigificant_wave_height"
+     long_name = "<PARTSTR>"
+     partition_number = "<IPART>"
+
+   $ Coordinate reference system:
+   CRS crs
+     grid_mapping_name = "latitude_longitude"
+     semi_major_axis = 6371000.0 f
+     inverse_flattening = 0 f
+
+   $ Global metadata:
+   META global
+     institution = UKMO
+     comment "space seperated strings should be quoted" c
+     version = 1.0 r
+
+\end{verbatim}
+
+
+\noindent
+\paragraph{Addition of `forecast variables':}
+When using the ww3\_ounf.nml input file, it is possible to add optional
+auxiliary `forecast variables' to the output netCDF file (see ww3\_ounf.nml).
+When \texttt{FCVARS = T}, the following variables will be generated:
 \begin{itemize}
- \item  varnm : the netCDF variable name
- \item  ename : the identifier for single field per file output
+ \item \texttt{forecast\_reference\_time}: The time associated with the
+ "analysis" of the current forecast. Useful for files that are split over
+ several days as it allows the forecast at a particular time to be referenced
+ back to it's analysis or start time.
+ 
+ \item \texttt{forecast\_period}: the time period elapsed (in seconds)
+ since the associated "forecast\_reference\_time".
 \end{itemize}
 
 \noindent
-Any other attribute name is assumed to be an optional "extra" 
-attribute. This extra attribute can take an optional "type"
-keyword to specify the variable tpye of the metadata. If 
-no type is supplied, it defaults to a characer type. Valid
-types are one of ["c", "r", "i"] for character/string, 
-real/float or integer values respectively.
-
-\noindent Some default attibutes can be disabled by setting 
-the attribute value to a blank string (""). This will prevent
-the attribute from being written in the netCDF file. This
-applies only to the \texttt{globawave\_name}, \texttt{comment}
-and \texttt{direction\_reference} attributes.
-
-\noindent
-Global meta data can be specified with a special \texttt{META global} line.
-
-\noindent
-Example ounfmeta.inp file:
-
-\begin{verbatim}
-$ Lines starting with dollars are comments.
-$ The folowing line starts a meta-data section for the depth field
-META DPT
-  standard_name = depth
-  long_name = "can be quoted string"
-  comment = or an unquoted string
-  vmax = 999.9
-
-$ Next one is HSig (group 2, field 1)
-META 2 1
-  $ varns is same as standard_name
-  varns = "sig. wave height"
-  $ varnl is same as long_name
-  varnl = "this is long name"
-
-$ Next one is second component of wind. It also sets an
-$ "extra" meta data value (height - a float)
-META WND 2
-  standard_name = "v-wind"
-  height = 10.0 "r"
-
-$ Global metadata:
-META global
-  institution = UKMO
-  comment "space seperated strings should be quoted" c
-  version = 1.0 r
-
-\end{verbatim}
+The \texttt{forecast\_reference\_time} defaults to \texttt{TIMESTART} specified in
+ww3\_ounf.nml. However, it might be the case that the model run includes some
+sort of hindcast period in which case the \texttt{forecast\_reference\_time}
+should be set to the appropriate analysis time. Also, if ww3\_ounf is invoked
+with a \texttt{TIMESTART} that is not the same as the model start time, it will
+be required in this case to explicitly specify the correct
+\texttt{forecast\_reference\_time} to ensure the \texttt{forecast\_period} is
+correctly calculated.
 
 \pb
