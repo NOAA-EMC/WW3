@@ -16,7 +16,9 @@ $ Include ice and mud parameters only if IC1/2/3/4 used :
    F F     Water levels
    F F     Currents
    T T     Winds
-   T       Ice concentrations
+   T F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra
@@ -134,6 +136,7 @@ $  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
 $  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 $  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 $  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
+$  F  F  2    18   FP0        TP    Peak period (from peak freq)        
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
@@ -309,8 +312,10 @@ $
 $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
+$          Flag for second restart (data server mode)
+$          Flag for extra fields in the restart file (coupling restart)
 $
-   19680606 030000  3600  19680607 030000
+   19680606 030000  3600  19680607 030000 F F
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
@@ -325,10 +330,11 @@ $
       0 999 1 0 999 1 T
 $
 $ Type 7 : Coupling. (must be fully commented if not used with switch COU)
+$          Couple at T+0 flag
 $          Namelist type selection is used here.
 $          Diagnostic fields to exchange. (see namcouple for more information)
 $
-$  19680606 000000   3600  20010102 000000
+$  19680606 000000   3600  20010102 000000 F
 $  N
 $
 $   - Sent fields by ww3:

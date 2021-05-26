@@ -71,7 +71,7 @@
 
 
   if [ "$ctest" = 'all' ] ; then
-    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? ww3_tr? mww3_test_0?` ; fi
+    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? ww3_tr? ww3_tnc? mww3_test_0?` ; fi
   echo "base directory : $base_dir" >> $home_dir/header.tmp
   echo "comp directory : $comp_dir" >> $home_dir/header.tmp
   echo "test(s)        : "          >> $home_dir/header.tmp
@@ -279,6 +279,9 @@
                             ncdump $file > $output/${basename}_base.txt
                             ncdump $return_comp/$run/$file > $output/${basename}_comp.txt
                             diff $output/${basename}_base.txt $output/${basename}_comp.txt > $output/${basename}_diff.txt
+                            if [[ $basename == rmp_* ]]; then
+                              grep -v "history" $output/${basename}_diff.txt > $output/${basename}_diff.txt
+                            fi
                             size_1=`wc -l $output/${basename}_diff.txt | awk '{ print $1}'` 
                             if [ "$size_1" = '0' ]
                             then

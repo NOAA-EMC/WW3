@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |SX
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Aug-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
@@ -19,6 +19,8 @@
 !/    26-Jul-2018 : Write weights file WHTGRIDINT.bin
 !/                  (F.Ardhuin, M.Accensi, J.H.Alves)   ( version 6.05 )
 !/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
+!/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !   1. Purpose : 
 !
@@ -94,7 +96,8 @@
         USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
         USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
-        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF, UST, USTDIR, ASF
+        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
+                             UST, USTDIR, ASF, RHOAIR
         USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
         USE W3ARRYMD, ONLY : PRTBLK
@@ -126,7 +129,7 @@
         INTEGER                 :: I, J, IERR, NG, IG, JG, ISEA, IX, IY, IXT
         INTEGER                 :: IYT, NS, COUNTF, COUNTG, NOSWLL_MIN, ITOUT
         INTEGER                 :: NDSM, NDSI, NDSE, NDSO, NDSTRC, NTRACE, IOTST
-        INTEGER                 :: EXTRA, NSEA_FILE
+        INTEGER                 :: INTMETHOD, NSEA_FILE
         INTEGER, ALLOCATABLE    :: FIDOUT(:), MAP(:,:), TMP_INDX(:)
         REAL                    :: SXT, SYT, XT, YT, XTT
         DOUBLE PRECISION        :: DAREA, SAREA
@@ -231,7 +234,8 @@
         END IF
 
         CALL NEXTLN ( COMSTR, NDSI, NDSE )
-        READ (NDSI,'(I1)',END=2001,ERR=2002) EXTRA
+        READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
+        WRITE (NDSO,917) INTMETHOD
 
 !
 ! 3.e Allocate memory for integration map and initialize with grid status map
@@ -268,7 +272,7 @@
         FNAMEWHT='WHTGRIDINT.bin'
         OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
         NSEA_FILE = 0
-        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic security check ... 
+        IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic consistency check ... 
         IF (NSEA_FILE.EQ.NSEA) THEN 
           DO ISEA = 1, NSEA
             READ(994) COUNTG
@@ -321,11 +325,11 @@
               IF (ITOUT.GT.0) INGRID=.TRUE.
 !              ! If extrapolation activated, force to find if a triangles is inside 
 !              ! the coarse grid cell even if there is no triangle in the cell center
-              IF (EXTRA.GT.0) THEN
+              IF (INTMETHOD.EQ.1) THEN
                 WRITE(991,'(2I6,2F9.4,I8,3I8,3F5.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 IF (ITOUT.EQ.0)  WRITE(992,*) IX,IY,ISEA,XGRD(IY,IX), YGRD(IY,IX)
                 IF (ITOUT.EQ.0) THEN 
-                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), EXTRA,  &
+                   CALL IS_IN_UNGRID2(IG, XGRD(IY,IX), YGRD(IY,IX), INTMETHOD,  &
                                                  ITOUT, IS, JS, RW)
                    WRITE(993,'(2I6,2F9.4,I8,3I8,3F6.3)') IX,IY,XGRD(IY,IX), YGRD(IY,IX), ITOUT, IS(1:3), RW(1:3)
                 ENDIF  
@@ -384,6 +388,8 @@
                 DO I = 1,4 
 ! The following two IF tests are separated because for triangles, JS(4)=IS(4)=0
                   IF ( RW(I) .GT. 0.0 ) THEN 
+                    ! MAPSTA == 0 indicated excluded point (either land
+                    ! or truly excluded) 
                     IF ( GRIDS(IG)%MAPSTA(JS(I),IS(I)) .NE. 0) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
@@ -814,7 +820,7 @@
           CALL W3SETA(NG, 6, 6)
           CALL W3SETW(NG, 6, 6)
 !
-          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN )
+          CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD )
 !
           CALL TICK21 ( TOUT , DTREQ )
           IF ( IOUT .GE. NOUT ) EXIT
@@ -858,7 +864,7 @@
  905    FORMAT ( '    Grid Particulars are : '/                                &
                  '      Dimensions =  ',2(I9,2X)/                              &
                  '       Grid Type = ',I3,'  ==> 1 Rect, 2 Curv, 3 Unstr'/     &
-                 '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar')
+                 '    Grid Closure = ',I3,'  ==> -1 None, 2 Simple, 8 Tripolar')
  907    FORMAT ( /' NOTE :  The no. of swell partitions from input and',       &
                     ' target grids do not match',/                             &
                   '  The Min. no. of partitions from input grids =',I5/        &
@@ -867,7 +873,7 @@
                   ' number of the partitions,',/                               &
                   '  rest will be marked undefined.'                           )
  908    FORMAT (/'  Preparing interpolation weights for output grid ' /        &
-                 '  Total number of wet points for interpolation ',I6/)
+                 '  Total number of wet points for interpolation ',I7/)
  909    FORMAT (/'  *** WARNING !! No interpolation points at ',2(I5)/)
  910    FORMAT (/'  Interpolating fields .... '/)
  911    FORMAT ('     Output group   ', I5)
@@ -876,6 +882,8 @@
  914    FORMAT ( '        OUTPUT TIME : ',A)
  915    FORMAT ( '   ------------------------------------------------')
  916    FORMAT ( I5,A,2X,A)
+ 917    FORMAT (/'   Interpolation scheme = ',I1,'  ==> 0 linear, ',           &
+                '1 extrapolate unstructured, 2 nearest'/)
  950    FORMAT (/'  End of file reached'/)
  999    FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
                  15X,'==============================================='/)
@@ -896,18 +904,19 @@
 !/
         CONTAINS
 !/ -----------------------------------------------------------------------/
-        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN )
+        SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN, INTMETHOD )
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    09-Jul-2009 : Original code                       ( version 3.14 )
 !/    21-Feb-2013 : Modified to new output structure    ( version 4.11 )
 !/    30-Apr-2014 : Add group 3                         ( version 5.00 )
 !/    27-Aug-2015 : ice thick. and floe added as output ( version 5.10 )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !   1. Purpose :
 !
@@ -949,12 +958,12 @@
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
-        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN
+        INTEGER, INTENT(IN) :: NGRD, NSEA, NOSWLL_MIN, INTMETHOD
 !/
 !/ Local Parameters
 !/
         INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
-                         IY, ISWLL, ICAP, IBED, IFREQ, IK
+                         IY, ISWLL, ICAP, IBED, IFREQ, IK, INRST
         INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
                          NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
                          LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
@@ -964,13 +973,14 @@
 ! Local group 1 variables
         REAL          :: DWAUX, CXAUX, CYAUX, UAAUX, UDAUX, ASAUX,     &
                          WLVAUX, ICEAUX, ICEHAUX, ICEFAUX, BERGAUX,    &
-                         SED_D50AUX, SUMWT1(NOGE(1))
+                         SED_D50AUX, RHOAIRAUX, TAUAAUX, TAUADIRAUX,   &
+                         SUMWT1(NOGE(1))
 ! Local group 2 variables
         REAL          :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,       &
                          FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1,   &
                          THP0AUX2, HSIGAUX, STMAXEAUX,STMAXDAUX,       &
                          HMAXEAUX, HCMAXEAUX, HMAXDAUX, HCMAXDAUX,     &
-                         WBTAUX, SUMWT2(NOGE(2))
+                         WBTAUX, WNMEANAUX, SUMWT2(NOGE(2))
 ! Local group 3 variables
         REAL          :: EFAUX(E3DF(2,1):E3DF(3,1)),                   &
                          TH1MAUX(E3DF(2,2):E3DF(3,2)),                 &
@@ -1005,6 +1015,7 @@
                          BHDAUX, PHIOCAUX, TUSXAUX, TUSYAUX, USSXAUX,  &
                          USSYAUX, PRMSAUX, TPMSAUX, SUMWT6(NOGE(6)),   &
                          TAUICEAUX(2), PHICEAUX,                       &
+                         TAUOCXAUX, TAUOCYAUX,                         &
                          US3DAUX(2*NK), SUMWT68(2*NK),                 &
                          P2SMSAUX(P2MSF(2):P2MSF(3)),                  &
                          SUMWT69(P2MSF(2):P2MSF(3)),                   &
@@ -1036,6 +1047,9 @@
         WLV      = UNDEF
         ICE      = UNDEF
         BERG     = UNDEF
+        RHOAIR   = UNDEF
+        TAUA     = UNDEF
+        TAUADIR  = UNDEF
 !/BT4        SED_D50  = UNDEF
 !/IS2        ICEH     = UNDEF
 !/IS2        ICEF     = UNDEF
@@ -1059,6 +1073,7 @@
         HMAXD    = UNDEF
         HCMAXD   = UNDEF
         WBT      = UNDEF
+        WNMEAN   = UNDEF
 !
 ! Group 3 variables
 !
@@ -1115,6 +1130,8 @@
         TUSY     = UNDEF
         USSX     = UNDEF
         USSY     = UNDEF
+        TAUOCX   = UNDEF
+        TAUOCY   = UNDEF
         PRMS     = UNDEF
         TPMS     = UNDEF
         IF ( US3DF(1).GT.0 ) THEN
@@ -1187,6 +1204,12 @@
               MAPDRYT = 0
               MAPLNDT = 0
               MAPMSKT = 0
+              IF ( INTMETHOD == 2 ) THEN
+                ! Nearest neighbour is the one with the most weight
+                INRST = MAXLOC(GR_INTS(ISEA)%IND_WTS(IG)%WT, DIM=1)
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(:) = -1.
+                GR_INTS(ISEA)%IND_WTS(IG)%WT(INRST) = 1.
+              END IF
               DO IPTS = 1,GR_INTS(ISEA)%IND_WTS(IG)%NP
                 IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                 IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
@@ -1261,6 +1284,9 @@
                 SED_D50AUX  = UNDEF
                 ICEHAUX     = UNDEF
                 ICEFAUX     = UNDEF
+                RHOAIRAUX   = UNDEF
+                TAUAAUX     = UNDEF
+                TAUADIRAUX  = UNDEF
                 SUMWT1      = 0
 !
 ! Group 2 variables
@@ -1284,6 +1310,7 @@
                 HMAXDAUX    = UNDEF
                 HCMAXDAUX   = UNDEF
                 WBTAUX      = UNDEF
+                WNMEANAUX   = UNDEF
                 SUMWT2      = 0
 !
 ! Group 3 variables
@@ -1351,6 +1378,8 @@
                 TUSYAUX     = UNDEF
                 USSXAUX     = UNDEF
                 USSYAUX     = UNDEF
+                TAUOCXAUX   = UNDEF
+                TAUOCYAUX   = UNDEF
                 PRMSAUX     = UNDEF
                 TPMSAUX     = UNDEF
                 P2SMSAUX    = UNDEF
@@ -1394,6 +1423,10 @@
                   IGX = GR_INTS(ISEA)%IND_WTS(IG)%IP(IPTS)
                   IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
                   WT = GR_INTS(ISEA)%IND_WTS(IG)%WT(IPTS)
+                  IF (  WT < 0. ) THEN
+                     ! Point is not nearest
+                     CYCLE
+                  END IF
                   GSEA = GRIDS(IGRID)%MAPFS(IGY,IGX)
 !
 ! Group 1 variables
@@ -1479,9 +1512,33 @@
                     END IF
                   END IF
 !
-!/BT4                  IF ( FLOGRD(1,8) ) THEN
+                  IF ( FLOGRD(1,8) ) THEN
+                    IF ( WADATS(IGRID)%TAUA(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(8) = SUMWT1(8) + WT
+                      IF ( TAUAAUX .EQ. UNDEF ) THEN
+                        TAUAAUX = WADATS(IGRID)%TAUA(GSEA)*WT
+                        TAUADIRAUX = WADATS(IGRID)%TAUADIR(GSEA)*WT
+                      ELSE
+                        TAUAAUX = TAUAAUX + WADATS(IGRID)%TAUA(GSEA)*WT
+                        TAUADIRAUX = TAUADIRAUX + WADATS(IGRID)%TAUADIR(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(1,9) .AND. ACTIVE ) THEN
+                    IF ( WDATAS(IGRID)%RHOAIR(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(9) = SUMWT1(9) + WT
+                      IF ( RHOAIRAUX .EQ. UNDEF ) THEN
+                        RHOAIRAUX = WDATAS(IGRID)%RHOAIR(GSEA)*WT
+                      ELSE
+                        RHOAIRAUX = RHOAIRAUX + WDATAS(IGRID)%RHOAIR(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
+!/BT4                  IF ( FLOGRD(1,10) ) THEN
 !/BT4                    IF ( GRIDS(IGRID)%SED_D50(GSEA) .NE. UNDEF ) THEN
-!/BT4                      SUMWT1(8) = SUMWT1(8) + WT
+!/BT4                      SUMWT1(10) = SUMWT1(10) + WT
 !/BT4                      IF ( SED_D50AUX .EQ. UNDEF ) THEN
 !/BT4                        SED_D50AUX = GRIDS(IGRID)%SED_D50(GSEA)*WT
 !/BT4                      ELSE
@@ -1490,9 +1547,9 @@
 !/BT4                    END IF
 !/BT4                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,9) ) THEN
+!/IS2                  IF ( FLOGRD(1,11) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(9) = SUMWT1(9) + WT
+!/IS2                      SUMWT1(11) = SUMWT1(11) + WT
 !/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
 !/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
 !/IS2                      ELSE 
@@ -1501,9 +1558,9 @@
 !/IS2                    END IF
 !/IS2                  END IF
 !
-!/IS2                  IF ( FLOGRD(1,10) ) THEN
+!/IS2                  IF ( FLOGRD(1,12) ) THEN
 !/IS2                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(10) = SUMWT1(10) + WT
+!/IS2                      SUMWT1(12) = SUMWT1(12) + WT
 !/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
 !/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
 !/IS2                      ELSE 
@@ -1569,7 +1626,8 @@
                     END IF
                   END IF
 !
-                  IF ( FLOGRD(2,6) .AND. ACTIVE ) THEN
+                  IF ( (FLOGRD(2,6) .OR. FLOGRD(2,18)) .AND. ACTIVE ) THEN
+                    ! Note: Output TP [FLOGRD(2,18)] is derived from FP0
                     IF ( WADATS(IGRID)%FP0(GSEA) .NE. UNDEF ) THEN
                       SUMWT2(6) = SUMWT2(6) + WT
                       IF ( FP0AUX .EQ. UNDEF ) THEN
@@ -1680,6 +1738,14 @@
                       SUMWT2(17) = SUMWT2(17) + WT
                       IF ( WBTAUX .EQ. UNDEF )   WBTAUX = 0.
                       WBTAUX = WBTAUX + WADATS(IGRID)%WBT(GSEA)*WT
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(2,19) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%WNMEAN(GSEA) .NE. UNDEF ) THEN
+                      SUMWT2(19) = SUMWT2(19) + WT
+                      IF ( WNMEANAUX .EQ. UNDEF )   WNMEANAUX = 0.
+                      WNMEANAUX = WNMEANAUX + WADATS(IGRID)%WNMEAN(GSEA)*WT
                     END IF
                   END IF
 !
@@ -2194,6 +2260,19 @@
                     END DO
                   END IF
 !
+                  IF ( FLOGRD(6,13) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%TAUOCX(GSEA) .NE. UNDEF ) THEN
+                      SUMWT6(13) = SUMWT6(13) + WT
+                      IF ( TAUOCXAUX .EQ. UNDEF ) THEN
+                        TAUOCXAUX = WADATS(IGRID)%TAUOCX(GSEA)*WT
+                        TAUOCYAUX = WADATS(IGRID)%TAUOCY(GSEA)*WT
+                      ELSE
+                        TAUOCXAUX = TAUOCXAUX + WADATS(IGRID)%TAUOCX(GSEA)*WT
+                        TAUOCYAUX = TAUOCYAUX + WADATS(IGRID)%TAUOCY(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
 ! Group 7 variables
 !
                   IF ( FLOGRD(7,1) .AND. ACTIVE ) THEN
@@ -2395,8 +2474,29 @@
                   END IF
                 END IF
 !
+                IF ( TAUAAUX .NE. UNDEF ) THEN
+                  TAUAAUX = TAUAAUX / SUMWT1(8)
+                  TAUADIRAUX = TAUADIRAUX / SUMWT1(8)
+                  IF ( TAUA(ISEA) .EQ. UNDEF )  THEN
+                    TAUA(ISEA) = TAUAAUX / REAL( SUMGRD ) 
+                    TAUADIR(ISEA) = TAUADIRAUX / REAL( SUMGRD )
+                  ELSE
+                    TAUA(ISEA) = TAUA(ISEA) + TAUAAUX / REAL( SUMGRD ) 
+                    TAUADIR(ISEA) = TAUADIR(ISEA) + TAUADIRAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+!
+                IF ( RHOAIRAUX .NE. UNDEF ) THEN
+                  RHOAIRAUX = RHOAIRAUX / SUMWT1(9)
+                  IF ( RHOAIR(ISEA) .EQ. UNDEF )  THEN
+                    RHOAIR(ISEA) = RHOAIRAUX / REAL( SUMGRD )
+                  ELSE
+                    RHOAIR(ISEA) = RHOAIR(ISEA) + RHOAIRAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+!
 !/BT4                IF ( SED_D50AUX .NE. UNDEF ) THEN
-!/BT4                  SED_D50AUX = SED_D50AUX / SUMWT1(8)
+!/BT4                  SED_D50AUX = SED_D50AUX / SUMWT1(10)
 !/BT4                  IF ( SED_D50(ISEA) .EQ. UNDEF )  THEN
 !/BT4                    SED_D50(ISEA) = SED_D50AUX / REAL( SUMGRD )
 !/BT4                  ELSE
@@ -2405,7 +2505,7 @@
 !/BT4                END IF
 !
 !/IS2                IF ( ICEHAUX .NE. UNDEF ) THEN
-!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(9)
+!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(11)
 !/IS2                  IF ( ICEH(ISEA) .EQ. UNDEF )  THEN
 !/IS2                    ICEH(ISEA) = ICEHAUX / REAL( SUMGRD )
 !/IS2                  ELSE
@@ -2414,7 +2514,7 @@
 !/IS2                END IF
 !
 !/IS2                IF ( ICEFAUX .NE. UNDEF ) THEN
-!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(10)
+!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(12)
 !/IS2                  IF ( ICEF(ISEA) .EQ. UNDEF )  THEN
 !/IS2                    ICEF(ISEA) = ICEFAUX / REAL( SUMGRD )
 !/IS2                  ELSE
@@ -2561,6 +2661,12 @@
                   IF ( WBT(ISEA) .EQ. UNDEF )   WBT(ISEA) = 0.
                   WBT(ISEA) = WBT(ISEA) +                            &
                                WBTAUX / REAL( SUMWT2(17)+SUMGRD )
+                END IF
+!
+                IF ( WNMEANAUX .NE. UNDEF ) THEN
+                  IF ( WNMEAN(ISEA) .EQ. UNDEF )   WNMEAN(ISEA) = 0.
+                  WNMEAN(ISEA) = WNMEAN(ISEA) +                      &
+                               WNMEANAUX / REAL( SUMWT2(19)+SUMGRD )
                 END IF
 !
 ! Group 3 variables
@@ -3015,6 +3121,18 @@
                        USSPAUX(NK+IK) / REAL( SUMWT612(NK+IK) + SUMGRD )
                     END IF
                   END DO
+                END IF
+!
+                IF ( TAUOCXAUX .NE. UNDEF ) THEN
+                  TAUOCXAUX = TAUOCXAUX / SUMWT6(13)
+                  TAUOCYAUX = TAUOCYAUX / SUMWT6(13)
+                  IF ( TAUOCX(ISEA) .EQ. UNDEF )  THEN
+                    TAUOCX(ISEA) = TAUOCXAUX / REAL( SUMGRD )
+                    TAUOCY(ISEA) = TAUOCYAUX / REAL( SUMGRD )
+                  ELSE
+                    TAUOCX(ISEA) = TAUOCX(ISEA) + TAUOCXAUX / REAL( SUMGRD )
+                    TAUOCY(ISEA) = TAUOCY(ISEA) + TAUOCYAUX / REAL( SUMGRD )
+                  END IF
                 END IF
 !
 ! Group 7 variables

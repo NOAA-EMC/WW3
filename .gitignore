@@ -45,6 +45,10 @@ manual/*.toc
 manual/*.out
 manual/*.dvi
 manual/*.pdf
+model?
+model??
+regtests/list*
+regtests/before
 regtests/matrix*
 regtests/*/work*
 regtests/*/input*/*.nc
@@ -52,9 +56,12 @@ regtests/*/input*/*/*.nc
 regtests/*/input*/partition.ww3
 regtests/*/*.png
 regtests/ww3_tp2.14/input/oasis3-mct/doc
-regtests/ww3_tp2.14/input*/*.nc.OAS*CM
-regtests/ww3_tp2.14/input*/*/*.nc.OAS*CM
+regtests/ww3_tp2.14/input*/*.nc.OAS*CM*
+regtests/ww3_tp2.14/input*/*/*.nc.OAS*CM*
 regtests/ww3_tp2.17/input/inlet.msh
+regtests/ww3_tp2.21/input/mesh.msh
+regtests/ww3_tp2.21/input/obstructions_local.glo_unst.in
+regtests/ww3_tp2.21/input/obstructions_shadow.glo_unst.in
 *.nc
 */*.nc
 */*/*.nc
@@ -84,3 +91,7 @@ model/bin/wwatch3.env
 */*.swp
 */*/*.swp
 */*/*/*.swp
+.*.swp
+*/.*.swp
+*/*/.*.swp
+*/*/*/.*.swp

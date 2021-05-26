@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
 !/                  |           B. G. Reichl            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Mar-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination.                        ( version 4.xx )
@@ -16,6 +16,7 @@
 !/    22-Jun-2018 : updated SIG2WN subroutine (X.Chen)  ( version 6.06 )
 !/                  modified the range of wind profile computation; 
 !/                  corrected direction of the shortest waves
+!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.xx )
 !/                  
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -74,26 +75,31 @@
       PUBLIC
       ! Tail_Choice: Chose the method to determine the level of the tail
       INTEGER, SAVE :: Tail_Choice
+!/OMPG/!$omp threadprivate(Tail_Choice)
       REAL, SAVE    :: Tail_Level !if Tail_Choice=0, tail is constant
       REAL, SAVE    :: Tail_transition_ratio1! freq/fpi where tail 
                                              !  adjustment begins
       REAL, SAVE    :: Tail_transition_ratio2! freq/fpi where tail 
                                              !  adjustment ends
+!/OMPG/!$omp threadprivate(Tail_Level)
+!/OMPG/!$omp threadprivate(Tail_transition_ratio1,Tail_transition_ratio2)
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLD1( ASPC, FPI, WNDX,WNDY, ZWND,               & 
-                    DEPTH, RIB, UST, USTD, Z0, TAUNUX,TAUNUY, CHARN)
+                    DEPTH, RIB, DAIR, UST, USTD, Z0,               &
+                    TAUNUX, TAUNUY, CHARN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
 !/                  |           B. G. Reichl            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Mar-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination.                        ( version 4.xx )
 !/    18-Mar-2015 : Prepare for submission              ( version 5.12 )
+!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -120,6 +126,7 @@
 !       RIB     REAL   I   Bulk Richardson in lower atmosphere
 !                          (for determining stability in ABL to get
 !                          10 m neutral wind)
+!       DAIR    REAL   I   Air density
 !       TAUNUX  Real   0   X-dir viscous stress (guessed from prev.)
 !       TAUNUY  Real   0   Y-dir viscous stress (guessed from prev.)
 !       UST     Real   O   Friction velocity.
@@ -161,7 +168,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: GRAV, DWAT, DAIR, TPI, PI, KAPPA
+      USE CONSTANTS, ONLY: GRAV, DWAT, TPI, PI, KAPPA
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
@@ -173,7 +180,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: ASPC(NSPEC), WNDX, WNDY,  & 
-                                 ZWND, DEPTH, RIB, FPI
+                                 ZWND, DEPTH, RIB, DAIR, FPI
       REAL, INTENT(OUT)       :: UST, USTD, Z0 
       REAL, INTENT(OUT), OPTIONAL :: CHARN
       REAL, INTENT(INOUT)     :: TAUNUX, TAUNUY
@@ -228,6 +235,7 @@
       LOGICAL                 :: FSFL1,FSFL2, CRIT1, CRIT2
       LOGICAL                 :: IT_FLAG1, IT_FLAG2
       LOGICAL, SAVE           :: FIRST = .TRUE.
+!/OMPG/!$omp threadprivate( FIRST)
 !/
 !/ ------------------------------------------------------------------- /
 !/

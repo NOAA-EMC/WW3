@@ -164,7 +164,7 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'DPT CUR HS FP DP DIR SPR'
+  ALLTYPE%FIELD%LIST       = 'DPT CUR HS FP DP DIR SPR WND UST LM'
   ALLTYPE%POINT%NAME       = 'points'
   ALLTYPE%POINT%FILE       = '../input/points.list'
 /
@@ -208,6 +208,7 @@
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '19680606 000000' '1200' '19680608 000000'
   ALLDATE%POINT          = '19680606 000000' '3600' '19680608 000000'
+  ALLDATE%RESTART        = '19680606 020000' '3600' '19680606 020000'
 /
 
 ! -------------------------------------------------------------------- !

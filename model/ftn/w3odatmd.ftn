@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -43,6 +43,10 @@
 !/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
 !/                  for alternative partition methods.
 !/                  (C. Bunney, UKMO)
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
+!/    15-Jan-2020 : Added TP based on existing FP       ( version 7.12 )
+!/                  internal fields. (C. Bunney, UKMO)
+!/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -143,8 +147,10 @@
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
 !      FLOGR2    L.A.  Public   FLags for coupling fields.
+!      FLOGRR    L.A.  Public   FLags for optional coupling restart (2D).
 !      FLOGD     L.A.  Public   Flags for output groups
 !      FLOG2     L.A.  Public   Flags for coupling groups
+!      FLOGR     L.A.  Public   FLags for optional coupling restart (1D).
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -330,6 +336,7 @@
 !/MPI        INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
         LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
                                  FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
+                                 FLOGRR(NOGRP,NGRPP), FLOGR(NOGRP),   &
                                  WRITE1
       END TYPE OTYPE1
 !/
@@ -435,8 +442,9 @@
       INTEGER, POINTER        :: IPASS1
 !/MPI      INTEGER, POINTER        :: NRQGO, NRQGO2
 !/MPI      INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
-      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOGD(:), &
-                                 FLOG2(:), WRITE1
+      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:),            &
+                                 FLOGRR(:,:),FLOGD(:), FLOG2(:),      &
+                                 FLOGR(:), WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -505,7 +513,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -518,6 +526,7 @@
 !/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -664,8 +673,10 @@
 !
 ! 1) Forcing fields
 !
-      NOGE(1) = 7
-!/BT4      NOGE(1) = 8
+      NOGE(1) = 9 
+!/BT4      NOGE(1) = 10 
+!/IS2      NOGE(1) = 12    ! CB
+!/SETUP    NOGE(1) = 13    ! CB
 !
       IDOUT( 1, 1)  = 'Water depth         '
       IDOUT( 1, 2)  = 'Current vel.        '
@@ -674,14 +685,16 @@
       IDOUT( 1, 5)  = 'Water level         '
       IDOUT( 1, 6)  = 'Ice concentration   '
       IDOUT( 1, 7)  = 'Iceberg damp coeffic'
-!/BT4      IDOUT( 1, 8)  = 'Sediment diam D50   '
-!/IS2      IDOUT( 1, 9)  = 'ice thickness   '
-!/IS2      IDOUT( 1, 10) = 'Avg. ice floe diam. '
-!/SETUP    IDOUT( 1, 11)  = 'wave induced setup'
+      IDOUT( 1, 8)  = 'Atmospheric momentum'
+      IDOUT( 1, 9)  = 'Air density         '
+!/BT4      IDOUT( 1, 10)  = 'Sediment diam D50   '
+!/IS2      IDOUT( 1, 11)  = 'ice thickness   '
+!/IS2      IDOUT( 1, 12) = 'Avg. ice floe diam. '
+!/SETUP    IDOUT( 1, 13)  = 'wave induced setup'
 !
 ! 2) Standard mean wave parameters
 !
-      NOGE(2) = 17
+      NOGE(2) = 19
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -700,6 +713,8 @@
       IDOUT( 2, 15)  = 'STD Space-Time Hmax'
       IDOUT( 2, 16)  = 'STD ST Hmax^crest  '
       IDOUT( 2, 17)  = 'Dominant wave bT   '
+      IDOUT( 2, 18)  = 'Peak prd. (from fp)'
+      IDOUT( 2, 19)  = 'Mean wave number   '
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
 !      IDOUT( 2,12)  = 'Windsea height(Sin)'
@@ -741,7 +756,7 @@
 !
 ! 5) Atmosphere-waves layer
 !
-      NOGE(5) = 10
+      NOGE(5) = 11
 !
       IDOUT( 5, 1)  = 'Friction velocity   '
       IDOUT( 5, 2)  = 'Charnock parameter  '
@@ -753,11 +768,12 @@
       IDOUT( 5, 8)  = 'Whitecap mean thick.'
       IDOUT( 5, 9)  = 'Mean breaking height'
       IDOUT( 5,10)  = 'Dominant break prob '
-!      IDOUT( 5,11)  = 'Breaker passage rate'
+      IDOUT( 5,11)  = 'Wind sea period' ! C.Bunney - reinstated this as is used in ww3_ounf
+                                        ! Is it suposed to be defunct? It is not in ww3_outf...
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 12 
+      NOGE(6) = 13 
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -771,6 +787,7 @@
       IDOUT( 6,10)  = 'Wave-ice mom. flux  '
       IDOUT( 6,11)  = 'Wave-ice energy flux'
       IDOUT( 6,12)  = 'Split Surface Stokes'
+      IDOUT( 6,13)  = 'Tot wav-ocn mom flux'
 !
 ! 7) Wave-bottom layer
 !
@@ -1377,7 +1394,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Dec-2014 |
+!/                  | Last update :         25-Sep-2020 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1391,6 +1408,7 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
+!/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/
 !  1. Purpose :
 !
@@ -1519,8 +1537,10 @@
 !/MPI      IF ( NRQGO2 .NE. 0 ) IRQGO2 => OUTPTS(IMOD)%OUT1%IRQGO2
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
       FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
+      FLOGRR => OUTPTS(IMOD)%OUT1%FLOGRR
       FLOGD   => OUTPTS(IMOD)%OUT1%FLOGD
       FLOG2   => OUTPTS(IMOD)%OUT1%FLOG2
+      FLOGR   => OUTPTS(IMOD)%OUT1%FLOGR
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS
@@ -1577,9 +1597,9 @@
 !/MPI      RSBLKS => OUTPTS(IMOD)%OUT4%RSBLKS
 !/MPI      IF ( NRQRS .NE. 0 ) THEN
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
-!/MPI          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-!/MPI          VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
 !/MPI        END IF
+!/MPI      IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+!/MPI      VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
 !
       NBI    => OUTPTS(IMOD)%OUT5%NBI
       NBI2   => OUTPTS(IMOD)%OUT5%NBI2

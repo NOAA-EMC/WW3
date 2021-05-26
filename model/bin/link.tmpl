@@ -116,7 +116,7 @@
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           libs="$libs `$NETCDF_CONFIG --flibs`" ;;
+           libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`" ;;
     esac
   fi
 

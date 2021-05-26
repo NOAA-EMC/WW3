@@ -2189,7 +2189,6 @@
 ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
 !
       DO IK=1,MIN(FLOOR(AAIRCMIN),NK)
-! Need to extrapolate above NK if necessary ... to be added later. 
         C=SIG(IK)/K(IK)
         IS0=(IK-1)*NTH
         COEF4(IK) = C*C*SUM(BRLAMBDA(IS0+1:IS0+NTH))                          &
@@ -2201,6 +2200,12 @@
 !                    SSDSC(7) * DDEN(IK)/(DTH*SIG(IK)*CG(IK))
 !                   NB: SSDSC(7) is WHITECAPWIDTH
         END DO
+! Need to extrapolate above NK if necessary ... to be added later. 
+      DO IK=MIN(FLOOR(AAIRCMIN),NK),NK
+        COEF4(IK)=0.
+        COEF5(IK)=0.
+        END DO
+
 !/
       IF ( FLOGRD(5,7) ) THEN
 !

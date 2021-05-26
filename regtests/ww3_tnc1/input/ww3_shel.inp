@@ -1,0 +1,52 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III shel input file                                        $
+$ -------------------------------------------------------------------- $
+$ T/F flag for definition as a homogeneous field.
+   F F     Water levels
+   F F     Currents
+   T T     Winds
+   F F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra
+$
+$ Time frame of calculations ----------------------------------------- $
+$ - Starting time in yyyymmdd hhmmss format.
+$ - Ending time in yyyymmdd hhmmss format.
+$
+   20100101 000000
+   20100101 020000
+$
+$ Define output data ------------------------------------------------- $
+   1
+$
+$ Type 1 : Fields of mean wave parameters
+   20100101 000000   3600  20100101 020000
+ N
+ HS DIR WND T01 T02 TP PHS PTP
+$
+$ Type 2 : Point output
+   20100101 000000   0  20100101 000000
+$
+$ Type 3 : Output along track.
+   20100101 000000   0  20100101 000000
+$
+$ Type 4 : Restart files (no additional data required).
+   20100101 000000   0  20100101 000000  F F
+$
+$ Type 5 : Boundary data (no additional data required).
+   20100101 000000   0  20100101 000000
+$
+$ Type 6 : Separated wave field data (dummy for now).
+   20100101 000000   0  20100101 000000
+$
+$
+$ Homogeneous field data --------------------------------------------- $
+   'WND' 20100101 000000   10.    90.    0.0
+   'STP'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

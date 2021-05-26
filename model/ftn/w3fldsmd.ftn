@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jun-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
@@ -33,6 +33,7 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    05-Jun-2018 : adds DEBUGFLS                       ( version 6.04 )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -42,7 +43,8 @@
 !  1. Purpose :
 !
 !     Gathers a set of routines to manage input fields of depth,
-!     current, wind and ice concentration.
+!     current, wind, ice concentration, atmospheric momentum, and
+!     air density
 !
 !  2. Variables and types :
 !
@@ -91,7 +93,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -106,6 +108,7 @@
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
 !/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -127,7 +130,7 @@
 !       IDFLD   C*3  I/O ID string for field type, valid are: 'IC1',
 !                        'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',
 !                        'MVS', 'LEV', 'CUR', 'WND', 'WNS', 'ICE',
-!                        'ISI', and 'DTn'.
+!                        'TAU', 'RHO', 'ISI', and 'DTn'.
 !       NDS     Int.  I  Dataset number for fields file.
 !       NDST    Int.  I  Dataset number for test output.
 !       NDSE    Int.  I  Dataset number for error output.
@@ -253,7 +256,8 @@
            IDFLD.NE.'MTH' .AND. IDFLD.NE.'MVS' .AND.                  &
            IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
-           IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'TAU' .AND.                  &
+           IDFLD.NE.'RHO' .AND. IDFLD.NE.'DT0' .AND.                  &
            IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
            IDFLD.NE.'ISI' )    GOTO 802
 !
@@ -283,6 +287,12 @@
         ELSE IF ( IDFLD.EQ.'ICE' .OR. IDFLD.EQ.'ISI' ) THEN
           FNAME = 'ice.' // TEMPXT(:I)
           I     = I + 4
+        ELSE IF ( IDFLD.EQ.'TAU' ) THEN
+          FNAME = 'momentum.' // TEMPXT(:I)
+          I     = I + 9
+        ELSE IF ( IDFLD.EQ.'RHO' ) THEN
+          FNAME = 'density.' // TEMPXT(:I)
+          I     = I + 8
         ELSE IF ( IDFLD.EQ.'DT0' ) THEN
           FNAME = 'data0.' // TEMPXT(:I)
           I     = I + 6
@@ -524,11 +534,12 @@
 !/                  |           F. Ardhuin              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Jun-2013 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    24-Sep-2012 : Creation                            ( version 4.09 ) 
 !/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -544,7 +555,8 @@
 !       INXOUT  C*(*) I  Test string for read/write, valid are:
 !                        'READ' and 'WRITE'.
 !       IDFLD   C*3  I/O ID string for field type, valid are:
-!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
+!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', 
+!                        'TAU', 'RHO', and 'DTn'.
 !       NDS     Int.  I  Dataset number for fields file.
 !       NDST    Int.  I  Dataset number for test output.
 !       NDSE    Int.  I  Dataset number for error output.
@@ -628,7 +640,8 @@
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
       IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
-           IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'TAU' .AND.                  &
+           IDFLD.NE.'RHO' .AND. IDFLD.NE.'DT0' .AND.                  &
            IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
            IDFLD.NE.'ISI' )    GOTO 802
       WRITE  = INXOUT .EQ. 'WRITE'
@@ -702,11 +715,12 @@
 !/                  |           F. Ardhuin              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Jun-2013 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    24-Sep-2012 : Creation                            ( version 4.09 ) 
 !/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -722,7 +736,8 @@
 !       INXOUT  C*(*) I  Test string for read/write, valid are:
 !                        'READ' and 'WRITE'.
 !       IDFLD   C*3  I/O ID string for field type, valid are:
-!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
+!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI',
+!                        'TAU', 'RHO',  and 'DTn'.
 !       NDS     Int.  I  Dataset number for fields file.
 !       NDST    Int.  I  Dataset number for test output.
 !       NDSE    Int.  I  Dataset number for error output.
@@ -807,7 +822,8 @@
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
       IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
-           IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'TAU' .AND.                  &
+           IDFLD.NE.'RHO' .AND. IDFLD.NE.'DT0' .AND.                  &
            IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
            IDFLD.NE.'ISI' )    GOTO 802
       WRITE  = INXOUT .EQ. 'WRITE'
@@ -919,7 +935,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Apr-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -929,6 +945,8 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -947,7 +965,8 @@
 !                          'READ' and 'WRITE'.
 !       IDFLD   C*3    I   ID string for field type, valid are: 'IC1',
 !                          'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH', 'MVS', 
-!                          'LEV', 'CUR', 'WND', 'WNS', 'ICE' and 'ISI'.
+!                          'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI',
+!                          'TAU', and 'RHO'.
 !       NDS     Int.   I   Dataset number for fields file.
 !       NDST    Int.   I   Dataset number for test output.
 !       NDSE    Int.   I   Dataset number for error output.
@@ -1020,7 +1039,7 @@
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD
-!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME
+!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
 !/OASACM      USE W3AGCMMD, ONLY: RCV_FIELDS_FROM_ATMOS
 !/OASOCM      USE W3OGCMMD, ONLY: RCV_FIELDS_FROM_OCEAN
 !/OASICM      USE W3IGCMMD, ONLY: RCV_FIELDS_FROM_ICE
@@ -1071,13 +1090,14 @@
            IDFLD.NE.'MTH' .AND. IDFLD.NE.'MVS' .AND.                  &
            IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
-           IDFLD.NE.'ICE' .AND. IDFLD.NE.'ISI'  )    GOTO 802
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'ISI' .AND.                  &
+           IDFLD.NE.'TAU' .AND. IDFLD.NE.'RHO' )    GOTO 802
 !
 ! Set internal variables --------------------------------------------- *
 !
       WRITE  = INXOUT .EQ. 'WRITE'
       FL2D   = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' &
-                              .OR. IDFLD.EQ.'ISI'
+                              .OR. IDFLD.EQ.'ISI' .OR. IDFLD.EQ.'TAU'
       FLBE   = IDFLD.EQ.'ISI'       
       FLST   = IDFLD.EQ.'WNS' 
 
@@ -1091,8 +1111,8 @@
 ! of integration for the first time step which is integrated on 0
 ! to be able to output integrated variables like cha, ust, taw
 
-      FLINTERP = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS'
-
+      FLINTERP = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' &
+                                .OR. IDFLD.EQ.'TAU' .OR. IDFLD.EQ.'RHO'
 ! if the model is coupled, no interpolation in time must be done
 
       IF (FLCOUPL) FLINTERP = .FALSE.
@@ -1118,7 +1138,7 @@
                 DO IX=1, NX
                   DO IY=1, NY
                     FX0(IX,IY) = FXN(IX,IY)
-                    FY0(IX,IY) = FYN(IX,IY)
+                    IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
                     END DO
                   IF( FLST ) THEN
                       DO IY=1, NY
@@ -1164,7 +1184,8 @@
 !/OASIS            IF (FLCOUPL) THEN 
 !/OASIS  ! Do not receive coupling fields at the end of the first integration time in case of  
 !/OASIS  ! forcing with a non interpolated field (like lev, ice, ...)
-!/OASIS              IF ((ID_OASIS_TIME.EQ.0 .AND. FLFRST) .OR. (ID_OASIS_TIME.GT.0)) THEN
+!/OASIS              IF ( (ID_OASIS_TIME.EQ.0 .AND. ( FLFRST .OR. CPLT0 )) .OR. &
+!/OASIS                   (ID_OASIS_TIME.GT.0)) THEN
 !
 !/OASACM ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
 !/OASACM                CALL RCV_FIELDS_FROM_ATMOS(COUPL_COMM,          &
@@ -1242,7 +1263,7 @@
           DO IX=1, NX
             DO IY=1, NY
               FX0(IX,IY) = FXN(IX,IY)
-              FY0(IX,IY) = FYN(IX,IY)
+              IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
               END DO
             IF( FLST ) THEN
                 DO IY=1, NY
@@ -2002,7 +2023,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jul-2005 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -2010,6 +2031,7 @@
 !/    04-Sep-2003 : Bug fix par. list declaration.      ( version 3.04 )
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
 !/    15-May-2018 : Allow homog ice.                    ( version 6.05 )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2038,7 +2060,9 @@
 !                           2 : currents
 !                           3 : winds
 !                           4 : ice
-!                           8 : moving grid
+!                           5 : atmospheric momentum
+!                           6 : air density
+!                          10 : moving grid
 !       NDST    Int.   I   Unit number test output.
 !       NDSE    Int.   I   Unit number error messages.
 !                          (No output if NDSE < 0).
@@ -2108,9 +2132,9 @@
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, MX, MY, NX, NY,       &
                                  T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:8,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:10,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,-7:8), HD(NHM,-7:8), HS(NHM,-7:8),  &
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:10), HD(NHM,-7:10), HS(NHM,-7:10), &
                                  FX0(MX,MY), FY0(MX,MY), FS0(MX,MY),  &
                                  FXN(MX,MY), FYN(MX,MY), FSN(MX,MY)
 !/
@@ -2136,7 +2160,7 @@
 !
 ! Test field ID number for validity
 !
-      IF ( J.LT.-7 .OR. J .GT.8 ) GOTO 801
+      IF ( J.LT.-7 .OR. J .GT.10 ) GOTO 801
       FLFRST = TFN(1) .EQ. -1
 !
 !/T      WRITE (NDST,9001) FLFRST
@@ -2150,7 +2174,7 @@
         TF0(1) = TFN(1)
         TF0(2) = TFN(2)
         IF ( TFN(1) .NE. -1 ) THEN
-            IF ( J .EQ. 2 ) THEN
+            IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
                 DO IX=1, NX
                   DO IY=1, NY
                     FX0(IX,IY) = FXN(IX,IY)
@@ -2178,7 +2202,7 @@
             TFN(1) = THO(1,J,1)
             TFN(2) = THO(2,J,1)
 ! ic* md* lev ice
-            IF ( ( J.LE.1 ) .OR. ( J.EQ.4) ) THEN
+            IF ( (J.LE.1) .OR. (J.EQ.4) .OR. (J.EQ.6) ) THEN
                 DO IX=1, NX
                   DO IY=1, NY
                     FSN(IX,IY) = HA(1,J)
@@ -2187,7 +2211,7 @@
 !/T                WRITE (NDST,9050) HA(1,J)
               END IF
 ! cur
-            IF ( J .EQ. 2 ) THEN
+            IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
                 DIR    = ( 270. - HD(1,J) ) * DERA
                 X      = HA(1,J) * COS(DIR)
                 Y      = HA(1,J) * SIN(DIR)
@@ -2246,7 +2270,7 @@
           ! exit if field is ic* or md* or lev or ice
           ! and first forcing field has been stored 
           ! at start run time
-          IF ( J.LE.(1).OR.(J.EQ.4) ) THEN
+          IF ( J.LE.(1).OR.(J.EQ.4).OR.(J.EQ.6) ) THEN
             IF (FLFRST .AND. DTTST.EQ.0. ) EXIT
           END IF
         END DO
@@ -2401,9 +2425,9 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:8,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:10,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,-7:8), HD(NHM,-7:8), A0, AN, D0, DN
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:10), HD(NHM,-7:10), A0, AN, D0, DN
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters

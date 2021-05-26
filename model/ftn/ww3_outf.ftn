@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -34,6 +34,8 @@
 !/                  trunk                               ( version 4.13 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
+!/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -121,7 +123,7 @@
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
-                          PTM1, PT1, PT2, PEP,                        &
+                          PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
                           PTHP0, PQP, PSW, PPE, PGW, QP,              &
                           TAUOX, TAUOY, TAUWIX,BHD,                   &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -129,7 +131,8 @@
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
-                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT
+                          HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
+                          WNMEAN
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -493,7 +496,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Dec-2012 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    26-Sep-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -514,6 +517,8 @@
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
 !/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
+!/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -600,7 +605,7 @@
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
                                  XX(NX+1,NY), XY(NX+1,NY), DPTMAX(1)
 !!Li  Type 4 sea point only text output variables.  JGLi25Jun2013
-      REAL, Dimension(NSEA)   :: XS1, XS2, XS3, XS4
+      REAL, Dimension(NSEA)   :: XS1, XS2, XS3, XS4, AUX
 !!Li
       DOUBLE PRECISION        :: XDS, XDSQ
       LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI
@@ -1078,6 +1083,36 @@
                    XS1    = WBT
                 ELSE
                   CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WBT, MAPSF, X1)
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 18 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.01
+                UNITS  = 's'
+                ENAME  = '.tp'
+                DO I=1,NSEA
+                  IF(FP0(I) .NE. UNDEF) THEN
+                    AUX(I) = 1.0 / FP0(I)
+                  ELSE
+                    AUX(I) = UNDEF
+                  ENDIF
+                ENDDO
+
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = AUX
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AUX, MAPSF, X1)
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = 'm-1'
+                ENAME  = '.wnm'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = WNMEAN
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1)
                 ENDIF
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
@@ -1703,6 +1738,49 @@
                 ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,PRMS,MAPSF, X1 )
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TPMS,MAPSF, X2 )
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 1.E-6
+                UNITS  = 'm2 s-2'
+                ENAME  = '.toc'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOCX, TAUOCY, AnglD)
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = TAUOCX(1:NSEA)
+                   XS2    = TAUOCY(1:NSEA)
+                ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCX(1:NSEA)    &
+                                                          , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)    &
+                                                          , MAPSF, XY )
+                ENDIF
+                DO ISEA=1, NSEA
+                  UABS   = SQRT(TAUOCX(ISEA)**2+TAUOCY(ISEA)**2)
+                  IF ( TAUOCX(ISEA) .EQ. UNDEF ) THEN
+                      TAUOCY(ISEA) = UNDEF
+                      UABS         = UNDEF
+                    ELSE IF ( UABS .GT. 1.E-8 ) THEN
+                      TAUOCY(ISEA) = MOD ( 630. -                    &
+                        RADE*ATAN2(TAUOCY(ISEA),TAUOCX(ISEA)) , 360. )
+                    ELSE
+                      TAUOCY(ISEA) = UNDEF
+                    END IF
+                  TAUOCX(ISEA) = UABS
+                  END DO
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS3    = TAUOCX(1:NSEA)
+                   XS4    = TAUOCY(1:NSEA)
+                ELSE
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOCX(1:NSEA)        &
+                                                      , MAPSF, X1 )
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOCY(1:NSEA)        &
+                                                      , MAPSF, X2 )
                 ENDIF
 !
               ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN

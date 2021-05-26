@@ -887,7 +887,17 @@
                prop=
              source="w3parall w3triamd $stx $nlx $btx $is $uostmd"
                  IO='w3iogrmd'
-                aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode" ;;
+                aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode"
+                if [ "$scrip" = 'SCRIP' ]
+                then
+                  aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
+                  aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd" 
+                fi 
+                if [ "$scripnc" = 'SCRIPNC' ]
+                then
+                  aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
+                fi ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -1003,7 +1013,7 @@
              source="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $nlx $btx  $is $uostmd"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
-                aux="$aux w3nmlounfmd $smco" ;;
+                aux="$aux w3nmlounfmd $smco w3ounfmetamd w3metamd" ;;
      ww3_outp) IDstring='Point output'
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
@@ -1099,7 +1109,7 @@
             source="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $uostmd"
                 IO='w3iogrmd w3iogomd w3iorsmd' 
                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" 
-               aux="$aux w3parall" ;; 
+               aux="$aux w3parall w3nmluprstrmd" ;; 
     esac
 
     # if esmf is included in program name, then
@@ -1374,6 +1384,7 @@
          'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
          'W3NMLSHELMD'  ) modtest=w3nmlshelmd.o ;;
          'W3NMLGRIDMD'  ) modtest=w3nmlgridmd.o ;;
+         'W3NMLUPRSTRMD' ) modtest=w3nmluprstrmd.o ;;
          'W3NETCDF'     ) modtest=w3netcdf.o ;;
          'YOWFUNCTION'  ) modtest=yowfunction.o ;;
          'YOWDATAPOOL'  ) modtest=yowdatapool.o ;;
@@ -1388,6 +1399,8 @@
          'PDLIB_W3PROFSMD'   ) modtest=w3profsmd_pdlib.o ;;
          'W3PARALL'     ) modtest=w3parall.o ;;
          'W3SMCOMD'     ) modtest=w3smcomd.o ;;
+         'W3OUNFMETAMD' ) modtest=w3ounfmetamd.o ;;
+         'W3METAMD'     ) modtest=w3metamd.o ;;
          *              ) modfound=no ;; 
       esac
 
