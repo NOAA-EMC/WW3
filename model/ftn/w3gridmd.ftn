@@ -566,7 +566,7 @@
       INTEGER                 :: NDSI, NDSI2, NDSS, NDSM, NDSG, NDSTR,&
                                  IERR, NDSTRC, NTRACE, ITH, IK, ITH0, &
                                  ISP, IYN(NFL), NRLIN, NRSRCE, NRNL,  &
-                                 NRBT, NRDB, NRTR, NRBS, NRXX, NRPROP,&
+                                 NRBT, NRDB, NRTR, NRBS, NRPROP,      &
                                  IDLA, IDFM, IX0, IXN, IX, IY, ISEA,  &
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
@@ -656,7 +656,7 @@
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
 !
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
-                                 FLTR, FLBS, FLXX, FLPROP, FLREF,     &
+                                 FLTR, FLBS, FLPROP, FLREF,     &
                                  FIRST, CONNCT, FLNEW, INGRID,FLIC,   &
                                  FLIS, FLGNML
       LOGICAL                 :: FLTC96 = .FALSE.
@@ -1190,7 +1190,6 @@
       NRDB   = 0
       NRTR   = 0
       NRBS   = 0
-      NRXX   = 0
 !
       FLLIN  = .TRUE.
       FLINDS = .TRUE.
@@ -1202,7 +1201,6 @@
       FLTR   = .TRUE.
       FLBS   = .TRUE.
       FLREF  = .FALSE.
-      FLXX   = .TRUE.
 !
 !/LN0      NRLIN  = NRLIN + 1
 !/LN0      FLLIN  = .FALSE.
@@ -1271,20 +1269,16 @@
 !
 !/REF1      FLREF   = .TRUE.
 !
-!/XX0      NRXX   = NRXX + 1
-!/XX0      FLXX   = .FALSE.
-!/XXX      NRXX   = NRXX + 1
-!
       IF ( .NOT.FLLIN .AND.  .NOT.FLINDS .AND.  .NOT.FLNL .AND.        &
            .NOT.FLBT  .AND.  .NOT.FLIC   .AND.  .NOT.FLIS .AND.        &
            .NOT.FLDB  .AND.  .NOT.FLTR   .AND.  .NOT.FLBS .AND.        &
-           .NOT.FLXX  .AND.  .NOT.FLREF  .AND.  FLSOU ) THEN
+           .AND.  .NOT.FLREF  .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
 !
       IF ( ( FLLIN .OR. FLINDS .OR. FLNL .OR. FLBT .OR. FLDB .OR.     &
-             FLTR .OR. FLBS .OR. FLREF .OR. FLXX .OR. FLIC )          &
+             FLTR .OR. FLBS .OR. FLREF .OR. FLIC )          &
              .AND. .NOT.FLSOU ) THEN
           WRITE (NDSE,1021)
         END IF
@@ -1322,11 +1316,6 @@
       IF ( NRBS .NE. 1 ) THEN
           WRITE (NDSE,1028) NRBS
           CALL EXTCDE ( 17 )
-        END IF
-!
-      IF ( NRXX .NE. 1 ) THEN
-          WRITE (NDSE,1029) NRXX
-          CALL EXTCDE ( 18 )
         END IF
 !
       IF ( NRIC .GT. 1 ) THEN
@@ -6274,8 +6263,6 @@
                '     ILLEGAL NUMBER OF !/TRn SWITCHES :',I3)
  1028 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/BSn SWITCHES :',I3)
- 1029 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBER OF !/XXn SWITCHES :',I3)
 !
  1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     PROPAGATION REQUESTED BUT NO SCHEME SELECTED '/)
