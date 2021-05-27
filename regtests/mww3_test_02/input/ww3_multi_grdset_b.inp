@@ -2,8 +2,8 @@ $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
   2 0 F 1 F F
 $
-  'outer' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
-  'fine' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
+  'outer' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
+  'fine' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
 $
    19680606 000000   19680608 000000
 $

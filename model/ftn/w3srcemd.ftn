@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Jan-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -59,7 +59,7 @@
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
                           TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
                           D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
-                          PHICE, COEF) 
+                          PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -68,7 +68,7 @@
 !/                  |            A. Roland              | 
 !/                  |            M. Dutour Sikiric      | 
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Jan-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -120,6 +120,7 @@
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+!/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -212,6 +213,9 @@
 !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
 !       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
 !       PHICE   Real   O   Energy flux to sea ice         ( !/ICx ) 
+!       TAUOCX-YReal   O   Total ocean momentum components
+!       WNMEAN  Real   O   Mean wave number
+!       DAIR    Real   I   Air density
 !     ----------------------------------------------------------------
 !       Note: several pars are set to I/O to avoid compiler warnings.
 !
@@ -351,7 +355,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
+                           srce_direct, GRAV, TPI, TPIINV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
@@ -362,7 +367,7 @@
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, IOBDP, GTYPE, UNGTYPE, REFPARS
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, ICEP2
+      USE W3IDATMD, ONLY: INFLAGS2, ICEP2
       USE W3DISPMD      
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLD1      USE W3FLD1MD, ONLY: W3FLD1
@@ -437,7 +442,7 @@
                                  ICE, ICEH
       INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
-                                 TRNX, TRNY, BERG, ICEDMAX
+                                 TRNX, TRNY, BERG, ICEDMAX, DAIR
       REAL, INTENT(INOUT)     :: WN1(NK), CG1(NK), &
                                  SPEC(NSPEC), ALPHA(NK), USTAR,       &
                                  USTDIR, FPI, TAUOX, TAUOY,           &
@@ -445,7 +450,7 @@
                                  CHARN, TWS, BEDFORM(3), PHIBBL,      &
                                  TAUBBL(2), TAUICE(2), WHITECAP(4),   &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
-                                 ICEF
+                                 ICEF, TAUOCX, TAUOCY, WNMEAN
       REAL, INTENT(OUT)       :: DTDYN, FCUT
       REAL, INTENT(IN)        :: COEF
 !/
@@ -460,7 +465,7 @@
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
 ! Scaling factor for SIN, SDS, SNL
       REAL                    :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS  
-      REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT,    &
+      REAL                    :: EMEAN, FMEAN, AMAX, CD, Z0, SCAT,    &
                                  SMOOTH_ICEDISP
       REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2,&
                                  R(NK)
@@ -632,6 +637,9 @@
       TAUBBL = 0.
       TAUICE = 0.
       PHICE  = 0.
+      TAUOCX = 0.
+      TAUOCY = 0.
+      WNMEAN = 0.
 
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
@@ -1322,6 +1330,8 @@
       TAUWNX=TAUWNX/DTG
       TAUWNY=TAUWNY/DTG
       TAUBBL(:)=TAUBBL(:)/DTG
+      TAUOCX=DAIR*COEF*COEF*USTAR*USTAR*COS(USTDIR) + DWAT*(TAUOX-TAUWIX)
+      TAUOCY=DAIR*COEF*COEF*USTAR*USTAR*SIN(USTDIR) + DWAT*(TAUOY-TAUWIY)
 !
 ! Transformation in wave energy flux in W/m^2=kg / s^3 
 !
@@ -1460,14 +1470,14 @@
 !/FLD1      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD1          CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD1                    DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD1      ELSE 
 !/FLD1          CHARN = AALPHA 
 !/FLD1      ENDIF
 !/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD2          CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD2                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD2                    DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD2      ELSE 
 !/FLD2          CHARN = AALPHA 
 !/FLD2      ENDIF
