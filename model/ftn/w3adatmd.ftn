@@ -481,11 +481,6 @@
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3        LOGICAL, POINTER      :: MAPTRN(:)
 !
-!! !/SMC        INTEGER               :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!! !/SMC                                 NACT, NMXY
-!! !/SMC        INTEGER, POINTER      :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!! !/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
-!
 ! Warning Defined but not set if UGTYPE .EQ. .T. 
             INTEGER, POINTER      :: ITER(:,:)
 !
@@ -597,11 +592,6 @@
 !/PR3      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3      LOGICAL, POINTER        :: MAPTRN(:)
-!
-!! !/SMC      INTEGER, POINTER        :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!! !/SMC                                 NACT, NMXY
-!! !/SMC      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!! !/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
 !
           INTEGER, POINTER        :: ITER(:,:)
 !
@@ -1367,15 +1357,6 @@
 !/PR3                     WADATS(IMOD)%MAPTRN(NY*NX) , STAT=ISTAT     )
 !/PR3          CHECK_ALLOC_STATUS ( ISTAT )
 !/PR3          WADATS(IMOD)%MAPTH2 = 0
-!
-!! !/SMC          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)     ,             &
-!! !/SMC                     WADATS(IMOD)%MAPY2(NY*NX)     ,             &
-!! !/SMC                     WADATS(IMOD)%MAPAXY(NY*NX)    ,             &
-!! !/SMC                     WADATS(IMOD)%MAPXY(NSEA)      ,             &
-!! !/SMC                     WADATS(IMOD)%MAPTH2(NSPEC)    ,             &
-!! !/SMC                     WADATS(IMOD)%MAPWN2(NSPEC+NTH), STAT=ISTAT  )
-!! !/SMC          CHECK_ALLOC_STATUS ( ISTAT )
-!! !/SMC          WADATS(IMOD)%MAPTH2 = 0
 !
           ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,                     &
                      WADATS(IMOD)%SPPNT(NTH,NK,4), STAT=ISTAT         )
@@ -2633,15 +2614,6 @@
 !/PR3      NACT   => WADATS(IMOD)%NACT
 !/PR3      NCENT  => WADATS(IMOD)%NCENT
 !
-!! !/SMC      NMX0   => WADATS(IMOD)%NMX0
-!! !/SMC      NMX1   => WADATS(IMOD)%NMX1
-!! !/SMC      NMX2   => WADATS(IMOD)%NMX2
-!! !/SMC      NMY0   => WADATS(IMOD)%NMY0
-!! !/SMC      NMY1   => WADATS(IMOD)%NMY1
-!! !/SMC      NMY2   => WADATS(IMOD)%NMY2
-!! !/SMC      NACT   => WADATS(IMOD)%NACT
-!! !/SMC      NMXY   => WADATS(IMOD)%NMXY
-!
 !/NL1      NFR    => WADATS(IMOD)%NFR
 !/NL1      NFRHGH => WADATS(IMOD)%NFRHGH
 !/NL1      NFRCHG => WADATS(IMOD)%NFRCHG
@@ -2862,13 +2834,6 @@
 !/PR3              MAPTH2 => WADATS(IMOD)%MAPTH2
 !/PR3              MAPWN2 => WADATS(IMOD)%MAPWN2
 !/PR3              MAPTRN => WADATS(IMOD)%MAPTRN
-!
-!! !/SMC              MAPX2  => WADATS(IMOD)%MAPX2
-!! !/SMC              MAPY2  => WADATS(IMOD)%MAPY2
-!! !/SMC              MAPAXY => WADATS(IMOD)%MAPAXY
-!! !/SMC              MAPXY  => WADATS(IMOD)%MAPXY
-!! !/SMC              MAPTH2 => WADATS(IMOD)%MAPTH2
-!! !/SMC              MAPWN2 => WADATS(IMOD)%MAPWN2
 !
                IF (GTYPE .EQ. UNGTYPE) ITER   => WADATS(IMOD)%ITER
 !
