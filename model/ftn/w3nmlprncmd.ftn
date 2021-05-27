@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jan-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -37,6 +37,8 @@
     LOGICAL                     :: CURRENTS
     LOGICAL                     :: WINDS
     LOGICAL                     :: WINDS_AST
+    LOGICAL                     :: ATM_MOMENTUM
+    LOGICAL                     :: AIR_DENSITY
     LOGICAL                     :: ICE_CONC
     LOGICAL                     :: ICE_BERG
     LOGICAL                     :: DATA_ASSIM
@@ -198,7 +200,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jan-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !  1. Purpose :
@@ -280,6 +282,8 @@
     FORCING%FIELD%CURRENTS       = .FALSE.
     FORCING%FIELD%WINDS          = .FALSE.
     FORCING%FIELD%WINDS_AST      = .FALSE.
+    FORCING%FIELD%ATM_MOMENTUM   = .FALSE.
+    FORCING%FIELD%AIR_DENSITY    = .FALSE.
     FORCING%FIELD%ICE_CONC       = .FALSE.
     FORCING%FIELD%ICE_BERG       = .FALSE.
     FORCING%FIELD%DATA_ASSIM     = .FALSE.
@@ -435,7 +439,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jan-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/
@@ -509,6 +513,8 @@
       WRITE (NDSN,13) TRIM(MSG),'FIELD % CURRENTS       = ', NML_FORCING%FIELD%CURRENTS
       WRITE (NDSN,13) TRIM(MSG),'FIELD % WINDS          = ', NML_FORCING%FIELD%WINDS
       WRITE (NDSN,13) TRIM(MSG),'FIELD % WINDS_AST      = ', NML_FORCING%FIELD%WINDS_AST
+      WRITE (NDSN,13) TRIM(MSG),'FIELD % ATM_MOMENTUM   = ', NML_FORCING%FIELD%ATM_MOMENTUM
+      WRITE (NDSN,13) TRIM(MSG),'FIELD % AIR_DENSITY    = ', NML_FORCING%FIELD%AIR_DENSITY
       WRITE (NDSN,13) TRIM(MSG),'FIELD % ICE_CONC       = ', NML_FORCING%FIELD%ICE_CONC
       WRITE (NDSN,13) TRIM(MSG),'FIELD % ICE_BERG       = ', NML_FORCING%FIELD%ICE_BERG
       WRITE (NDSN,13) TRIM(MSG),'FIELD % DATA_ASSIM     = ', NML_FORCING%FIELD%DATA_ASSIM
