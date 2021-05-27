@@ -57,7 +57,7 @@ $ -------------------------------------------------------------------- $
 $ ITYPE = 4, Full sea point only text output
 $            IX, IY range, IDLA and IDFM as in ww3_grid.inp.
 $            These values are read but not used so far.  JGLi12Dec2012
-  2 11 2 11 1 2
+  1 999 1 1 999 1
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

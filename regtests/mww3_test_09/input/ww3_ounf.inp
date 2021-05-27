@@ -44,7 +44,7 @@ $ SMC output type:
 $    1 = Flat points file (1D sea point array)
 $    2 = Regular gridded (2D lat/lon array over region)
 $
-  1
+  2
 $
 $ For SMC output, the IX/IY range line is replaced with a domain
 $ lat/lon range and `cellfac` parameter for SMC type 2 output.
@@ -54,7 +54,7 @@ $ For SMC type 1 output, only those points within the specified
 $ lat/lon ranges will be extracted:
 $
 $   first_lon, first_lat, last_lon, last_lat
-  -999.9  -999.9  -999.9  -999.9  
+  -999.9  -999.9  -999.9  -999.9  2
 $
 $ For type 2 output, the range is used in conjunction with a fifth
 $ integer `cellfac` parameter to specify the regular output grid

@@ -1463,7 +1463,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         IF(J .LE. 2) THEN
           OUTFF(J,I)=0
-          WORDS(6) =''
+          WORDS(1:6) =''
           READ (MDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           IF(J .EQ. 1) THEN
