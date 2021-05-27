@@ -378,14 +378,13 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
-!       ! ChrisB: Vector, Time variable type and time variable units only
-!       ! configurable via namelist input. Default to DOUBLE and "days since" here:
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801,ERR=802) VECTOR
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+
+!       The following are only configurable via the namelist input
+!       and are hardcoded for .inp files:
         TTYPE = "D"
         TIMEUNIT = "D"
+        NOVAL = UNDEF 
+        VECTOR = .TRUE.
 
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
@@ -403,16 +402,12 @@
 !/SMC           CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC           READ (NDSI,*,END=801,ERR=802) SXO, SYO, EXO, EYO, CELFAC
 !/SMC        ENDIF
-!/SMC        NOVAL = UNDEF
 !/SMC        SMCNOVAL = NOVAL
         IF( .NOT. SMCGRD) THEN
            READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
         ENDIF
 
         CLOSE(NDSI,ERR=800,IOSTAT=IERR)
-
-        VECTOR = .TRUE.  ! Only vector output for .inp files.
-
       END IF ! .NOT. FLGNML
 
 
