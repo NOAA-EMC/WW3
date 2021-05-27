@@ -69,13 +69,6 @@
                                    rm -f exe/ww3_*
                                    rm -f exe/gx_*
                                    rm -f exe/exec_type ;;
-     'mach'   ) cd $main_dir/ftn ; touch w3servmd.ftn
-                                   touch wmmdatmd.ftn
-                                   touch wminitmd.ftn
-                                   touch wmfinlmd.ftn
-                                   touch ww3_systrk.ftn
-                                   touch ww3_shel.ftn
-                                   touch ww3_sbs1.ftn ;; 
      'nco'    ) cd $main_dir/ftn ; touch w3bullmd.ftn 
                                    touch ww3_prep.ftn
                                    touch ww3_shel.ftn

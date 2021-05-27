@@ -74,8 +74,6 @@
 !
 !       !/S    Enable subroutine tracing using STRACE in this module.
 !
-!       !/F90  FORTRAN 90 specific switches.
-!
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -628,9 +626,6 @@
 !
 !  9. Switches :
 !
-!     !/DUM  Dummy.
-!     !/F90  FORTRAN 90 standard.
-!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -644,24 +639,19 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER(LEN=8)        :: DATE
-!/F90      CHARACTER(LEN=10)       :: TIME
-!/F90      CHARACTER(LEN=5)        :: ZONE
-!/F90      INTEGER                 :: VALUES(8)
+      CHARACTER(LEN=8)        :: DATE
+      CHARACTER(LEN=10)       :: TIME
+      CHARACTER(LEN=5)        :: ZONE
+      INTEGER                 :: VALUES(8)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-! This is supposed to be standard F90
+      STRNG = '----/--/--'
+      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
+      STRNG(1:4) = DATE(1:4)
+      STRNG(6:7) = DATE(5:6)
+      STRNG(9:10) = DATE(7:8)
 !
-!/F90      STRNG = '----/--/--'
-!/F90      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
-!/F90      STRNG(1:4) = DATE(1:4)
-!/F90      STRNG(6:7) = DATE(5:6)
-!/F90      STRNG(9:10) = DATE(7:8)
-!
-! Dummy alternative
-!
-!/DUM      STRNG = '----/--/--'
 !
       RETURN
 !/
@@ -709,9 +699,6 @@
 !
 !  9. Switches :
 !
-!     !/DUM  Dummy.
-!     !/F90  FORTRAN 90 standard.
-!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -725,24 +712,19 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER(LEN=8)        :: DATE
-!/F90      CHARACTER(LEN=10)       :: TIME
-!/F90      CHARACTER(LEN=5)        :: ZONE
-!/F90      INTEGER                 :: VALUES(8)
+      CHARACTER(LEN=8)        :: DATE
+      CHARACTER(LEN=10)       :: TIME
+      CHARACTER(LEN=5)        :: ZONE
+      INTEGER                 :: VALUES(8)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-! This is supposed to be standard F90
 !
-!/F90      STRNG = '--:--:--'
-!/F90      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
-!/F90      STRNG(1:2) = TIME(1:2)
-!/F90      STRNG(4:5) = TIME(3:4)
-!/F90      STRNG(7:8) = TIME(5:6)
-!
-! Dummy alternative
-!
-!/DUM      STRNG = '--:--:--'
+      STRNG = '--:--:--'
+      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
+      STRNG(1:2) = TIME(1:2)
+      STRNG(4:5) = TIME(3:4)
+      STRNG(7:8) = TIME(5:6)
 !
       RETURN
 !/
@@ -894,8 +876,7 @@
 !/
 !/ Handle non-MPI exit
 !/
-!/F90      CALL EXIT ( IEXIT )
-!/DUM      STOP
+      CALL EXIT ( IEXIT )
 !/
 !/ End of EXTCDE ----------------------------------------------------- /
 !/

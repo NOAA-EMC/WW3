@@ -124,8 +124,6 @@
 !
 !  9. Switches :
 !
-!       !/F90   F90 extensions.
-!
 !       !/MPI   Including MPI routines / environment.
 !
 ! 10. Source code :
