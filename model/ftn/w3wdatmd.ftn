@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2018 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -19,6 +19,7 @@
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    06-Jun-2018 : Add PDLIB/SETUP/DEBUGINIT           ( version 6.04 )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -50,11 +51,13 @@
 !      TIMEEND   I.A.  Public   Final time 
 !      TLEV      I.A.  Public   Valid time for water levels.
 !      TICE      I.A.  Public   Valid time for ice concentration
+!      TRHO      I.A.  Public   Valid time for air density 
 !      TIC1      I.A.  Public   Valid time for ice thickness
 !      TIC5      I.A.  Public   Valid time for ice floe
 !      VA        R.A.  Public   Storage array for spectra.
 !      WLV       R.A.  Public   Water levels.  
 !      ICE       R.A.  Public   Ice coverage.  
+!      RHOAIR    R.A.  Public   Air density
 !      ICEH      R.A.  Public   Ice thickness.
 !      ICEF      R.A.  Public   Ice flow maximum diameter. 
 !      ICEDMAX   R.A.  Public   Ice flow maximum diameter for updates. 
@@ -112,12 +115,13 @@
 !/ Data structures
 !/
       TYPE WDATA
-        INTEGER               :: TIME(2), TLEV(2), TICE(2), TIC1(2), TIC5(2)
+        INTEGER               :: TIME(2), TLEV(2), TICE(2), TRHO(2),  &
+                                 TIC1(2), TIC5(2)
 !/OASIS        INTEGER               :: TIME00(2)
 !/OASIS        INTEGER               :: TIMEEND(2)
-        REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), UST(:),     &
-                                 USTDIR(:), ASF(:), FPIS(:), BERG(:), &
-                                 ICEH(:), ICEF(:), ICEDMAX(:)
+        REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),   &
+                                 UST(:), USTDIR(:), ASF(:), FPIS(:),  &
+                                 BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
 !/SETUP  REAL, POINTER :: ZETA_SETUP(:), FX_zs(:), FY_zs(:)
 !/SETUP  REAL, POINTER :: SXX_zs(:), SXY_zs(:), SYY_zs(:)
 !/PDLIB  REAL, POINTER     :: VSTOT(:,:), VDTOT(:,:)
@@ -134,12 +138,13 @@
 !/
 !/ Data aliasses for structure WDATA(S)
 !/
-      INTEGER, POINTER        :: TIME(:), TLEV(:), TICE(:), TIC1(:), TIC5(:)
+      INTEGER, POINTER        :: TIME(:), TLEV(:), TICE(:), TRHO(:),  &
+                                 TIC1(:), TIC5(:)
 !/OASIS      INTEGER, POINTER        :: TIME00(:)
 !/OASIS      INTEGER, POINTER        :: TIMEEND(:)
-      REAL, POINTER           :: VA(:,:), WLV(:), ICE(:), UST(:),     &
-                                 USTDIR(:), ASF(:), FPIS(:), BERG(:), &
-                                 ICEH(:), ICEF(:), ICEDMAX(:)
+      REAL, POINTER           :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),  &
+                                 UST(:), USTDIR(:), ASF(:), FPIS(:),  &
+                                 BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
 !/SETUP        REAL, POINTER :: ZETA_SETUP(:), FX_zs(:), FY_zs(:)
 !/SETUP        REAL, POINTER :: SXX_zs(:), SXY_zs(:), SYY_zs(:)
 !/PDLIB      REAL, POINTER           :: VSTOT(:,:), VDTOT(:,:)
@@ -266,7 +271,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
+!/                  | Last update :         22-Mar-2021 !
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -276,6 +281,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -335,7 +341,7 @@
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NSPEC, NSEA, NSEAL, GRIDS
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: EXTCDE
-      USE CONSTANTS, ONLY : LPDLIB
+      USE CONSTANTS, ONLY : LPDLIB, DAIR
       USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
 !/PDLIB      use yowNodepool, only: npa, np
 !/PDLIB      use yowRankModule, only : rank
@@ -470,6 +476,7 @@
       ! ICE, ICEH, ICEF must be defined from 0:NSEA
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
                  WDATAS(IMOD)%ICE(0:NSEA),                            &
+                 WDATAS(IMOD)%RHOAIR(NSEA),                           &
 !/SETUP          WDATAS(IMOD)%ZETA_SETUP(NSEA),                       &
                  WDATAS(IMOD)%BERG(NSEA),                             &
                  WDATAS(IMOD)%ICEH(0:NSEA),                           &
@@ -485,6 +492,7 @@
 
       WDATAS(IMOD)%WLV   (:) = 0.
       WDATAS(IMOD)%ICE   (0:NSEA) = 0.
+      WDATAS(IMOD)%RHOAIR(:) = DAIR
 !/SETUP     WDATAS(IMOD)%ZETA_SETUP(:) = 0.
       WDATAS(IMOD)%BERG  (:) = 0.
       WDATAS(IMOD)%ICEH  (0:NSEA) = GRIDS(IMOD)%IICEHINIT
@@ -546,12 +554,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         22-Mar-2021 !
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2004 : Origination.                        ( version 3.06 )
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -640,6 +649,7 @@
 !/OASIS      TIMEEND => WDATAS(IMOD)%TIMEEND
       TLEV   => WDATAS(IMOD)%TLEV
       TICE   => WDATAS(IMOD)%TICE
+      TRHO   => WDATAS(IMOD)%TRHO
       TIC1   => WDATAS(IMOD)%TIC1
       TIC5   => WDATAS(IMOD)%TIC5
       DINIT  => WDATAS(IMOD)%DINIT
@@ -656,6 +666,7 @@
           END IF
           WLV    => WDATAS(IMOD)%WLV
           ICE    => WDATAS(IMOD)%ICE
+          RHOAIR => WDATAS(IMOD)%RHOAIR
 !/SETUP          ZETA_SETUP => WDATAS(IMOD)%ZETA_SETUP
 !/SETUP          FX_zs => WDATAS(IMOD)%FX_zs
 !/SETUP          FY_zs => WDATAS(IMOD)%FY_zs

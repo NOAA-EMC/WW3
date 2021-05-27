@@ -6,8 +6,8 @@ $
 $
 $ (1) Forcing Fields
   T
-$ DPT CUR WND DT  WLV ICE IBG D50
-  F   F   T   F   F   F   F   F
+$ DPT CUR WND DT  WLV ICE TAU RHO IBG D50
+  F   F   T   F   F   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  TZ  TE  T01  FP  DIR SPR DP
