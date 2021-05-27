@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
@@ -34,6 +34,11 @@
     LOGICAL                     :: SAMEFILE
     LOGICAL                     :: VECTOR
     INTEGER                     :: TYPE
+    CHARACTER(15)               :: TIMEREF
+    LOGICAL                     :: FCVARS
+    CHARACTER                   :: TIMEVAR
+    CHARACTER                   :: TIMEUNIT
+    CHARACTER(15)               :: TIMEEPOCH
   END TYPE NML_FIELD_T
 
   ! file structure
@@ -73,7 +78,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !
@@ -194,7 +199,7 @@
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !  1. Purpose :
@@ -270,6 +275,11 @@
     FIELD%SAMEFILE   = .TRUE.
     FIELD%VECTOR     = .TRUE.
     FIELD%TYPE       = 3
+    FIELD%TIMEREF    = 'unset'
+    FIELD%FCVARS     = .FALSE.
+    FIELD%TIMEVAR    = 'D'
+    FIELD%TIMEUNIT   = 'D'
+    FIELD%TIMEEPOCH  = '19900101 000000'
 
     ! read field namelist
     REWIND (NDSI)
@@ -280,6 +290,9 @@
         'ERROR: '//TRIM(MSG)
       CALL EXTCDE (1)
     END IF
+
+    ! Default forecast reference time to start time
+    IF(FIELD%TIMEREF == 'unset') FIELD%TIMEREF = FIELD%TIMESTART
 
     ! save namelist
     NML_FIELD = FIELD
@@ -574,6 +587,8 @@
       WRITE (NDSN,10) TRIM(MSG),'PARTITION  = ', TRIM(NML_FIELD%PARTITION)
       WRITE (NDSN,13) TRIM(MSG),'SAMEFILE   = ', NML_FIELD%SAMEFILE
       WRITE (NDSN,11) TRIM(MSG),'TYPE       = ', NML_FIELD%TYPE
+      WRITE (NDSN,10) TRIM(MSG),'FCVARS     = ', NML_FIELD%FCVARS
+      WRITE (NDSN,10) TRIM(MSG),'TIMEREF    = ', NML_FIELD%TIMEREF
 
 
 10  FORMAT (A,2X,A,A)

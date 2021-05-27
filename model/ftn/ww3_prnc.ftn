@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Apr-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -26,6 +26,7 @@
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
 !/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
 !/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
+!/    22-Mar-2021 : Add momentum and air density        ( version 7.xx )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -34,8 +35,9 @@
 !/
 !  1. Purpose :
 !
-!     Pre-processing of the input water level, current, wind and ice
-!     fields as well as assimilation data ... from NetCDF input       
+!     Pre-processing of the input water level, current, wind, ice
+!     fields, momentum and air density, as well as assimilation data
+!      ... from NetCDF input       
 !
 !  2. Method :
 !
@@ -265,7 +267,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*80, NAMEF*80, IDTIME2*23
-      CHARACTER*14            :: IDSTR1(-7:5)
+      CHARACTER*14            :: IDSTR1(-7:7)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(6)
@@ -312,10 +314,11 @@
       DATA IDSTR1 / 'ice thickness ' , 'ice viscosity' ,              &
                     'ice density   ' , 'ice modulus  ' ,              &
                     'ice flow diam.' , 'mud density  ' ,              &
-                    'mud thickness ', 'mud viscosity ' ,              &
+                    'mud thickness ' , 'mud viscosity ',              &
                     'ice conc.     ' , 'water levels ' ,              &
                     'winds         ' , 'currents     ' ,              &
-                    'data          ' /
+                    'data          ' , 'momentum     ' ,              &
+                    'air density   ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
                     'data (assimilation) ' , 'pre-pro. file + tide'  /
@@ -472,6 +475,14 @@
            IFLD = 5
            ITYPE = 5
            NFIELDS = 1
+         ELSE IF (NML_FORCING%FIELD%ATM_MOMENTUM) THEN
+           IDFLD = 'TAU'
+           IFLD = 6 
+           NFIELDS = 2
+         ELSE IF (NML_FORCING%FIELD%AIR_DENSITY) THEN
+           IDFLD = 'RHO'
+           IFLD = 7
+           NFIELDS = 1
          ELSE
             GOTO 810
          END IF ! NML_FORCING
@@ -568,6 +579,10 @@
             IFLD    = 4
           ELSE IF ( IDFLD.EQ.'DAT' ) THEN
             IFLD    = 5
+          ELSE IF ( IDFLD.EQ.'TAU' ) THEN
+            IFLD    = 6
+          ELSE IF ( IDFLD.EQ.'RHO' ) THEN
+            IFLD    = 7
           ELSE
             WRITE (NDSE,1030) IDFLD
             CALL EXTCDE ( 30 )
@@ -652,6 +667,9 @@
 !/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,2930)
 !/CRT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,1930)
 !/CRT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,2930)
+!/WNT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,2930)
       END IF
       IF (FLGNML) THEN
         IF(TIMESTART(1).NE.19000101 .OR. TIMESTART(2).NE.0) THEN
@@ -1354,7 +1372,7 @@
         IF (IRET .NE. 0) SCFAC(1) = 1.0
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
         IF (IRET .NE. 0) ADDOFF(1) = 0.0
-        IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+        IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
           IF (IRET .NE. 0) SCFAC(2) = 1.0
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
@@ -1578,7 +1596,7 @@
           IF (IRET.NE.0 ) XCFAC = 1.0
           IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
           IF (IRET.NE.0 ) XCOFF = 0.0
-          IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+          IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
             IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
             IF (IRET.NE.0 ) YCFAC = 1.0
             IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
@@ -1635,7 +1653,7 @@
 !
 ! ... Input
 !
-          IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6) THEN
+          IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
             IF (NDIMSGRID.EQ.1) THEN 
               IRET=NF90_GET_VAR(NCID,VARIDF(1),XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
             ELSE
@@ -1665,7 +1683,7 @@
 !/T2                END IF
 !/T2              END DO
 !
-            IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
+            IF (NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG) THEN
 
 ! This is a quick fix that works if the lon,lat,level,time dimensions are in that order
 ! otherwise, one should check the length of each dimension ... 
@@ -1777,7 +1795,7 @@
               END DO
             END DO
 
-            IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
+            IF (( IFLD.LE.2 .OR. IFLD.EQ.7 ).AND.( .NOT. FLBERG )) THEN
                 DO IY=1, NY
                   DO IX=1, NX
                     FA(IX,IY) = XC(IX,IY)
@@ -1798,7 +1816,7 @@
 ! ... One-component fields
 !
 !/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
-            IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
+            IF (( IFLD.LE.2 .OR. IFLD.EQ.7 ).AND.( .NOT. FLBERG )) THEN
 !
                 CALL INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,      &
                                RD11, RD12, RD21, RD22, FILLVALUE, FA)
@@ -1883,6 +1901,28 @@
 !/CRT2                      END DO
 !/CRT2                 END IF
 !
+! ... Momentum, correct for velocity or energy conservation
+!
+!/WNT1                IF (IFLD.EQ.6) THEN
+!/WNT1                    DO IY=1,NY
+!/WNT1                      DO IX=1,NX
+!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT1                        END DO
+!/WNT1                      END DO
+!/WNT1                  END IF
+!
+!/WNT2                IF (IFLD.EQ.6) THEN
+!/WNT2                    DO IY=1,NY
+!/WNT2                      DO IX=1,NX
+!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT2                        END DO
+!/WNT2                      END DO
+!/WNT2                  END IF
+!
               END IF
 !
           END IF
@@ -1908,6 +1948,9 @@
 !/T3            ELSE IF (IFLD.EQ.2) THEN
 !/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
 !/T3                      IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
+!/T3            ELSE IF (IFLD.EQ.7) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'Air density', 'kg/m3')
 !/T3            ELSE
 !/T3              CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
 !/T3                      IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
@@ -2220,7 +2263,7 @@
 !/                  | Last update :         23-Feb-2021 |
 !/                  +-----------------------------------+
 !/
-!/    23-Feb-2021 : First version                       ( version 7.xx )
+!/    23-Feb-2021 : First version                       ( version 7.12 )
 !/
 !  1. Purpose :
 !

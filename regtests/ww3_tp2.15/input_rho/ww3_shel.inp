@@ -1,0 +1,48 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III shell input file                                       $
+$ -------------------------------------------------------------------- $
+$
+   F F     Water levels
+   F F     Currents
+   T F     Winds
+   F F     Ice concentrations
+   T F     Atmospheric momentum
+   T F     Air density
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+   20140310 000000
+   20140310 060000
+$
+   1
+$
+   20140310 000000  900  20140310 060000
+$ ---------------------------------------------------------------
+$ D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C
+$ P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H
+$ T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A
+$ ---------------------------------------------------------------
+$  T F T F T  F T T T T  T T T T T  T T T T T  T T T T T  F F F F F
+$  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$ ---------------------------------------------------------------
+$ F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$ A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$ W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$ ---------------------------------------------------------------
+  N
+  HS WND RHO TAU T02 DP DIR FP MXE MXES MXH MXHC SDMH SDMHC
+   20140310 000000  3600  20140310 060000
+   12.5088  45.3138 'AA        '
+     0.0   0.0  'STOPSTRING'
+   20140310 000000     0  20140310 120000
+   20140310 000000     0  20140310 120000
+   20140310 000000     0  20140310 120000
+   20140310 000000     0  20140310 120000
+   
+$
+   'STP'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
