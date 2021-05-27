@@ -27,6 +27,8 @@
 !     FORCING%FIELD%CURRENTS       = f           ! Current                            (2-components)
 !     FORCING%FIELD%WINDS          = f           ! Wind                               (2-components)
 !     FORCING%FIELD%WIND_AST       = f           ! Wind and air-sea temp. dif.        (3-components)
+!     INPUT%FORCING%ATM_MOMENTUM   = f           ! Atmospheric momentum               (2-components)
+!     INPUT%FORCING%AIR_DENSITY    = f           ! Air density                        (1-component)
 !     FORCING%FIELD%ICE_CONC       = f           ! Ice concentration                  (1-component)
 !     FORCING%FIELD%ICE_BERG       = f           ! Icebergs and sea ice concentration (2-components)
 !     FORCING%FIELD%DATA_ASSIM     = f           ! Data for assimilation              (1-component)
