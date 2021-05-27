@@ -242,7 +242,7 @@
       INTEGER                 :: IX1, IY1, IXS, IYS
 !/S      INTEGER, SAVE           :: IENT = 0
 !/O7a      INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
-!/O7a                                 KX, KY, JX, IIX
+!/O7a                                 KX, KY, JX, IIX, IX2, IY2, IS1
       INTEGER                 :: IX(4), IY(4)   ! Indices of points used in interp.
       REAL                    :: RD(4)          ! Interpolation coefficient 
 !/O7a      REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
@@ -392,7 +392,7 @@
 !/O7a                         RD(4)*ZBOX(4) ) / RDTOT
 !/O7a            WRITE (SCREEN,943) DEPTH
 !
-!/O7a       *** implementation of O7a option with curvilinear grids is incomplete ***
+!/O7a      ! *** implementation of O7a option with curvilinear grids is incomplete ***
 !
 !/O7a            IF ( RD1 .LT. 0.05 ) IX2 = IX1
 !/O7a            IF ( RD1 .GT. 0.95 ) IX1 = IX2

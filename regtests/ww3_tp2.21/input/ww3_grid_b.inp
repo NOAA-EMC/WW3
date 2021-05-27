@@ -1,0 +1,60 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'glo_unst'
+$
+   1.07  0.035  50  36  0.5
+$
+   F T T T F T
+$
+   900  900  900  900
+$
+&UNST UGOBCAUTO = F,
+  UGOBCDEPTH= -10.,
+  EXPFSN = F,
+  EXPFSPSI = F,
+  EXPFSFCT = F,
+  IMPFSN = F,
+  EXPTOTAL = F,
+  IMPTOTAL = T,
+  IMPREFRACTION = T,
+  IMPFREQSHIFT = T,
+  IMPSOURCE = T,
+  SETUP_APPLY_WLV = F,
+  SOLVERTHR_SETUP=1E-14,
+  CRIT_DEP_SETUP=0.1,
+  JGS_USE_JACOBI = T,
+  JGS_BLOCK_GAUSS_SEIDEL = T,
+  JGS_TERMINATE_MAXITER = T,
+  JGS_MAXITER = 1000,
+  JGS_TERMINATE_NORM = F,
+  JGS_TERMINATE_DIFFERENCE = T,
+  JGS_DIFF_THR = 1.E-8,
+  JGS_PMIN = 3.0,
+  JGS_LIMITER = F,
+  JGS_NORM_THR = 1.E-6 /
+$
+&UOST
+   UOSTFILELOCAL = '../input/obstructions_local.glo_unst.in',
+   UOSTFILESHADOW = '../input/obstructions_shadow.glo_unst.in',
+   UOSTFACTORLOCAL = .9, UOSTFACTORSHADOW = .9 /
+END OF NAMELISTS
+$
+   'UNST' T T
+$ Bathymetry
+   -0.1  2.5  20 -1.0  4  1  '(....)'  'NAME'  '../input/mesh.msh'
+$ Sub-grid information
+$   21  0.01  1  1  '(....)'  'NAME'  'glo_30m.obst'
+$ Mask information
+$   22  1  1  '(....)'  'NAME'  'glo_30m.mask'
+$ Input boundary points
+    10 3 1 '(...)' 'PART' 'mapsta.inp'
+    0   0   F
+    0   0   F
+    0   0
+$
+   0.   0.   0.   0.   0 
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

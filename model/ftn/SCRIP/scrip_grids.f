@@ -96,6 +96,10 @@
      &     special_polar_cell1,       ! cell with only 1 corner at pole
      &     special_polar_cell2        !
 
+      integer (SCRIP_i4), dimension(:), allocatable, target,save ::
+     &             grid1_imask,        ! flag which cells participate
+     &             grid2_imask         ! flag which cells participate
+
       real (SCRIP_r8), dimension(:), allocatable, target, save ::
      &             grid1_center_lat,  ! lat/lon coordinates for
      &             grid1_center_lon,  ! each grid center in radians
