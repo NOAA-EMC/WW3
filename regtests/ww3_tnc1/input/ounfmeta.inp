@@ -4,17 +4,20 @@ $
 $ This example overrides the default values with
 $ attributes based on the CMEMS specification.
 
+$ Fields are specified by the "Tag" name:
 META HS
   ename=".vhm0"
   varnm="VHM0"
   long_name="Spectral significant wave height (Hm0)"
-  globwave_name=
+  globwave_name=""
   vmin=0.0
   vmax=50.0
   $ an "extra" user attribute (of type "real"):
   pointless_number = 99.9 r
+  cell_methods = "time:point"
   
-$ Fields can aslo be specified by their Group(IFI) and Field(IFJ) indices:
+$ Fields can also be specified by their Group(IFI) and Param(IFJ) indices:
+$ IFI=2, IFJ=5 is T0m1 field 
 META 2 5
   ename=".vt0m1"
   varnm="VT0M1"
@@ -22,6 +25,7 @@ META 2 5
   varns="sea_surface_wave_mean_period_from_variance_spectral_density_inverse_frequency_moment"
   varnl="Wave period at spectral peak / peak period (T0M1)"
   varng=""
+  cell_methods = "time:point"
 		
 META T02
   ename=".vtm02"
@@ -29,6 +33,7 @@ META T02
   standard_name="sea_surface_wave_mean_period_from_variance_spectral_density_second_frequency_moment"
   long_name="Spectral moments (0,2) wave period (Tm02)"
   globwave_name=""
+  cell_methods = "time:point"
 
 $ Multi-component fields (like wind) can take an extra integer
 $ parameter to select the component (1 - 3)
@@ -37,6 +42,7 @@ META WND 1
    ename=".w10"
    varnm="WSPD"
    standard_name="wind_speed"
+  cell_methods = "time:point"
 
 META WND 2
    $ Second component of wind (direction)
@@ -44,47 +50,57 @@ META WND 2
    standard_name="wind_from_direction"
    units="degrees"
    convention="direction from"
+  cell_methods = "time:point"
 
 META DIR
   ename=".vmdr"
   varnm="VMDR"
   long_name="Mean wave direction from (Mdir)"
   globwave_name=""
+  cell_methods = "time:point"
 
 META DP
   ename=".vpdr"
   varnm="VPDR"
   long_name="Peak wave direction"
   globwave_name=""
+  cell_methods = "time:point"
  
-$ Partitioned parameters can use the <IPART> placeholder:
+$ Partitioned parameters use "template" strings to add
+$ partition specific meta data. The the <IPART> and <SPART>
+$ templates are pre-defined. Use defined templates can be
+$ set with a "TEMPLATE" section.
+TEMPLATE VARNM_PART
+  WW
+  SW1
+  SW2
+  SW3
+
 META PHS
   ename=".vhm0_<IPART>"
-  varnm="VHM0_<IPART>"
-  long_name="Spectral significant wind wave height"
+  varnm = VHM0_<VARNM_PART>
+  long_name = "Spectral significant <SPART> wave height"
+  cell_methods = "time:point"
   globwave_name=""
- 
+
 META PTP
   ename=".vtpk_<IPART>"
-  varnm="VTPK_<IPART>"
-  long_name="Wind wave peak period"
+  varnm="VTPK_<VARNM_PART>"
+  long_name="Wave peak <SPART> period"
+  cell_methods = "time:point"
   globwave_name=""
  
-META PDIR
-  ename=".vmdr_<IPART>"
-  varnm="VMDR_<IPART>"
-  long_name="Mean wind wave direction from"
-  globwave_name=""
- 
-META PT01
-  ename=".vtm01_<IPART>"
-  varnm="VTM01_<IPART>"
-  long_name="sea_surface_wind_wave_mean_period_from_variance_spectral_density_first_frequency_moment"
-  long_name="Wind wave spectral moments (0,1) wave period (Tm01)"
-  globwave_name=""
- 
-$ Special section for "global" netCDF parameters
+$ Special section for "global" netCDF attributes
 META global
   institution="Met Office"
-  grid_version=1.0 "r"
-  suite_version=44 "i"
+  grid_version=1.0 r
+  suite_version=44 i
+
+$ A "coordinate reference system" can be set/overriden
+$ for all output field variables using the CRS keyword:
+CRS crs
+  grid_mapping_name = latitude_longitude
+  longitude_of_prime_meridian = 0 f
+  semi_major_axis = 6378137 f
+  inverse_flattening = 298.2572 f
+
