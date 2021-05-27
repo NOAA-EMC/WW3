@@ -53,7 +53,7 @@
     modmpi='hpc-impi/2018.0.4'
     modnetcdf='netcdf/4.7.4'
     metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-    modjasper='jasper/2.0.22'
+    modjasper='jasper/2.0.25'
     modzlib='zlib/1.2.11'
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
@@ -71,7 +71,7 @@
     modmpi='hpc-impi/2019.6'
     modnetcdf='netcdf/4.7.4'
     metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
-    modjasper='jasper/2.0.22'
+    modjasper='jasper/2.0.25'
     modzlib='zlib/1.2.11'
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
@@ -86,11 +86,11 @@
 # 1. Set up
    
   export  np='24'     #number of mpi tasks
-  export  npl='440'   #number of mpi tasks for ufs applications and large setups
-  export  npl1='200'  #number of mpi tasks for ufs/large setups (b4b check)
+  export  npl='140'   #number of mpi tasks for ufs applications and large setups
+  export  npl1='100'  #number of mpi tasks for ufs/large setups (b4b check)
   export  nr='4'      #number of mpi tasks for hybrid
-  export nth='8'      #number of threads
-  export nth1='6'     #number of threads (b4b check)
+  export nth='6'      #number of threads
+  export nth1='4'     #number of threads (b4b check)
 
 # 1.a Computer/ user dependent set up
 

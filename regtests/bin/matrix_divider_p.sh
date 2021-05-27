@@ -72,7 +72,7 @@ count=0
 #make sure ../model$count does not exist and copy a fresh copy
   awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
-
+#sbatch matrix$count
   echo " matrix$count prepared"
  done
 
@@ -95,6 +95,7 @@ count=0
 #make sure ../model$count does not exist and copy a fresh copy
   awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+#sbatch matrix$count
   echo " matrix$count prepared"
  done
 
@@ -115,13 +116,14 @@ count=0
 #make sure ../model$count does not exist and copy a fresh copy
   awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
+#sbatch matrix$count
   echo " matrix$count prepared"
 
 #ncep operational tests including ww3_ufs and gfsv16 which require a large number of processor/esmf coupler and the ones for grib test are separated
   (( count = count + 1 ))
   if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
   cat before >> matrix$count
-  sed -i 's/'n\ 24'/'n\ 440'/gI' matrix$count
+  sed -i 's/'n\ 24'/'n\ 140'/gI' matrix$count
   cat list_ufs >> matrix$count
   sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix$count
   sed -i 's/'model'/'model${count}'/gI' matrix$count
@@ -135,7 +137,8 @@ count=0
 #make sure ../model$count does not exist and copy a fresh copy
   awk '1;/cd/ && !x {print "  cp -r ../model ../model'$count'"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
   awk '1;/cd/ && !x {print "  if [ -d ../model'${count}' ]; then rm -rf ../model'${count}'; fi"; x=1;}' matrix$count > tmpfile && mv tmpfile matrix$count
-  echo " matrix$count prepared"
+sbatch matrix$count 
+ echo " matrix$count prepared"
 
 
 rm before

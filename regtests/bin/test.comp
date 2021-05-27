@@ -53,7 +53,23 @@
 
   cd $home_dir/$ctest
 # list the common files in two directories 
-file_list=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+file_list0=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+# check the suvdirectories
+for file in $file_list0
+  do
+    if [[ -d $base_dir/$file ]]; then
+    file_list1=`( ls $base_dir/$file ; ls $comp_dir/$file ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+    file_list0="$file_list0 $file/$file_list1"
+    fi
+done
+# remove directories from the list
+for file in $file_list0
+ do
+    if [[ -f $base_dir/$file ]]; then
+    file_list="$file_list $file"
+    fi
+done
+
 cd $home_dir
 # check if the files are identical or different
   for file in $file_list
