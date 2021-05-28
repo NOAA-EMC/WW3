@@ -1481,6 +1481,16 @@ then
   cp $path_i/bottomspectrum.inp .
 fi
 
+# copy rmp_src* files from input to work directory
+  rmpfile=`\ls $path_i/rmp_src*.nc 2>/dev/null`
+  if [ ! -z "$rmpfile" ]; then
+    for rmpnc in $rmpfile
+    do
+      cp $rmpnc .
+      echo "copying $rmpnc to $path_w"
+    done
+  fi
+
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
