@@ -42,7 +42,7 @@
 !
 !     Local parameters.
 !     ----------------------------------------------------------------
-!       NDSI    Int.  Input unit number ("ww3_assm.inp").
+!       NDSI    Int.  Input unit number ("ww3_bounc.inp").
 !       ITYPE   Int.  Type of data
 !     ----------------------------------------------------------------
 !
@@ -256,7 +256,7 @@
 ! process old ww3_bounc.inp format
 !
       IF (.NOT. FLGNML) THEN
-        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bounc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
+        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bounc.inp',STATUS='OLD',ERR=806,IOSTAT=IERR)
         REWIND (NDSI)
 
         READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
@@ -729,6 +729,10 @@
       WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
       CALL EXTCDE ( 65 )
 !
+ 806 CONTINUE
+      WRITE (NDSE,1006)
+      CALL EXTCDE ( 66 )
+!
  809 CONTINUE
       WRITE (NDSE,1009) FILE, IERR
       CALL EXTCDE ( 69 )
@@ -782,6 +786,10 @@
                '     NKI =',I3,' DIFFERS FROM NK1 =',I3/      &
                '     OR NTHI =',I3,' DIFFERS FROM NTH1 =',I3/ &
                '     OR NTI =',I5,' DIFFERS FROM NT1 =',I5 /)
+!
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
+               '     ERROR IN OPENING INPUT FILE: ', A/               &
+               '     IOSTAT =',I5/)
 !
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
                '     ERROR IN OPENING SPEC FILE: ', A/                &

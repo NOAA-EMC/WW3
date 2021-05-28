@@ -911,7 +911,7 @@
                prop=
              source="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux="constants w3servmd w3timemd w3arrymd w3cspcmd" ;;
+                aux="constants w3servmd w3timemd w3arrymd w3cspcmd w3nmlboundmd" ;;
      ww3_bounc) IDstring='NetCDF boundary conditions program'
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"
@@ -1382,6 +1382,7 @@
          'W3NMLOUNPMD'  ) modtest=w3nmlounpmd.o ;;
          'W3NMLTRNCMD'  ) modtest=w3nmltrncmd.o ;;
          'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
+         'W3NMLBOUNDMD' ) modtest=w3nmlboundmd.o ;;
          'W3NMLSHELMD'  ) modtest=w3nmlshelmd.o ;;
          'W3NMLGRIDMD'  ) modtest=w3nmlgridmd.o ;;
          'W3NMLUPRSTRMD' ) modtest=w3nmluprstrmd.o ;;
