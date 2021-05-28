@@ -243,6 +243,7 @@
   TYPE%COUPLING%SENT       = 'ACHA'
   TYPE%COUPLING%RECEIVED   = 'WND'
   TYPE%COUPLING%COUPLET0   = .TRUE.
+  TYPE%RESTART%EXTRA       = 'CHA RHO'
 /
 
 ! -------------------------------------------------------------------- !

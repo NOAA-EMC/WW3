@@ -102,7 +102,8 @@ $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
 $
-   20110902 020000   3600  20110902 030000
+   20110902 020000   3600  20110902 030000 F T
+CHA RHO
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
