@@ -10,8 +10,8 @@ $ Request flags identifying fields as in ww3_shel input and section 2.4 of the m
 $-------------------------------------------------------------------------------------------------------------------
 $ (1) Forcing Fields
   T   
-$ DPT CUR WND DT  WLV ICE IBG D50
-  T   F   F   F   F   F   F   F
+$ DPT CUR WND DT  WLV ICE TAU RHO IBG D50
+  T   F   F   F   F   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   F
 $ (3) Frequency-dependent parameters

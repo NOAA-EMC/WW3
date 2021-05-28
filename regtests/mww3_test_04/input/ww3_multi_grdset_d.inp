@@ -4,9 +4,9 @@ $ ------------------------------------
 $
   'points'
 $
-  'bound'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
-  'outer'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
-  'inner'  'no' 'native' 'no' 'no' 'no' 'no' 'no'  3  1  0.00 1.00  F
+  'bound'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+  'outer'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  2  1  0.00 1.00  F
+  'inner'  'no' 'native' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  3  1  0.00 1.00  F
 $
    19680606 000000   19680607 120000
 $

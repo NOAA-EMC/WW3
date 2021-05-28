@@ -39,7 +39,7 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.inte
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel" "wcoss2"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian

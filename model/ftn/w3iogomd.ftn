@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Nov-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -59,6 +59,7 @@
 !/                  seperate subroutine. (C. Bunney)
 !/    15-Jan-2020 : Added TP output based on exsiting   ( version 7.12 )
 !/                  FP internal field. (C. Bunney)
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -674,10 +675,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            C. Bunney              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Nov-2020 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    03-Nov-2020 : Origination.                        ( version 7.12 )
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
 !
 !  1. Purpose :
 !
@@ -734,15 +736,21 @@
       CASE('IBG')
         I = 1
         J = 7
+      CASE('TAU')
+        I = 1
+        J = 8
+      CASE('RHO')
+        I = 1
+        J = 9
 !/BT4           CASE('D50')
 !/BT4             I = 1
-!/BT4             J = 8
+!/BT4             J = 10
 !/IS2           CASE('IC1')
 !/IS2             I = 1
-!/IS2             J = 9
+!/IS2             J = 11
 !/IS2           CASE('IC5')
 !/IS2             I = 1
-!/IS2             J = 10
+!/IS2             J = 12
 ! Group 2
 !
 !/OASACM         CASE('AHS')
@@ -805,6 +813,9 @@
       CASE('TP') ! Uses FP0 internally, as per FP
         I = 2
         J = 18
+      CASE('WNM')
+        I = 2
+        J = 19
 !
 ! Group 3
 !
@@ -969,7 +980,9 @@
         ELSE
           IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSEN,1008) 'USP','USSP'
         END IF
-
+      CASE('TOC')
+        I = 6
+        J = 13
 !
 ! Group 7
 !
@@ -2293,7 +2306,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Nov-2013 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -2323,6 +2336,7 @@
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
 !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -2403,10 +2417,11 @@
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, ICEF, ICEH, BERG,    &
-                          UST,  USTDIR, ASF
-      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
+                          UST,  USTDIR, ASF, RHOAIR
+      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN,          &
+                          TAUA, TAUADIR
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
-                          WBT
+                          WBT, WNMEAN
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,     &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
@@ -2419,7 +2434,7 @@
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
                           TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-                          USSP
+                          USSP, TAUOCX, TAUOCY
 !/
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2673,6 +2688,7 @@
                 IF ( FLOGRD( 2,15) ) HMAXD (ISEA) = UNDEF
                 IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
                 IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
+                IF ( FLOGRD( 2,19) ) WNMEAN(ISEA) = UNDEF
 !
                 IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
                 IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
@@ -2742,6 +2758,10 @@
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
                 IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 13) ) THEN
+                                     TAUOCX(ISEA) = UNDEF
+                                     TAUOCY(ISEA) = UNDEF
+                  END IF
 !
                 IF ( FLOGRD( 7, 1) ) THEN
                                      ABA   (ISEA) = UNDEF
@@ -2852,13 +2872,32 @@
                     WRITE ( NDSOG ) ICE(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) BERG(1:NSEA)
-!/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                    DO ISEA=1, NSEA
+!/ARC  !!Li  Rotate map-east momentum in Arctic part back to local east.  JGLi02Feb2016
+!/ARC                      IF(ISEA .GT. NGLO) THEN
+!/ARC                        UDARC = TAUADIR(ISEA) - ANGARC(ISEA - NGLO)*DERA
+!/ARC                        TAUADIR(ISEA) = MOD(TPI + UDARC, TPI)
+!/ARC                      ENDIF
+                      IF (TAUA(ISEA) .NE.UNDEF) THEN
+                          AUX1(ISEA) = TAUA(ISEA)*COS(TAUADIR(ISEA))
+                          AUX2(ISEA) = TAUA(ISEA)*SIN(TAUADIR(ISEA))
+                       ELSE
+                        AUX1(ISEA) = UNDEF
+                        AUX2(ISEA) = UNDEF
+                       END IF
+                      END DO
+                    WRITE ( NDSOG ) AUX1
+                    WRITE ( NDSOG ) AUX2
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                    WRITE ( NDSOG ) RHOAIR(1:NSEA)
+!/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4                    WRITE ( NDSOG ) SED_D50(1:NSEA)
-!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2                    WRITE (NDSOG ) ICEH(1:NSEA)
-!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2                    WRITE (NDSOG ) ICEF(1:NSEA)
-!/SETUP                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 13 ) THEN
 !/SETUP                   WRITE ( NDSOG ) ZETA_SETUP(1:NSEA)
 
 !
@@ -2900,6 +2939,8 @@
                     WRITE ( NDSOG ) HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     WRITE ( NDSOG ) WBT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
+                    WRITE ( NDSOG ) WNMEAN(1:NSEA)
 !
 !     Section 3)
 !
@@ -3029,6 +3070,9 @@
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
                     WRITE ( NDSOG ) USSP(1:NSEA,   1:USSPF(2))
                     WRITE ( NDSOG ) USSP(1:NSEA,NK+1:NK+USSPF(2))
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                    WRITE ( NDSOG ) TAUOCX(1:NSEA)
+                    WRITE ( NDSOG ) TAUOCY(1:NSEA)
 !
 !     Section 7)
 !
@@ -3127,13 +3171,18 @@
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICE(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) BERG(1:NSEA)
-!/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TAUA(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TAUADIR(1:NSEA)
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) RHOAIR(1:NSEA)
+!/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SED_D50(1:NSEA)
-!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9) THEN
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEH(1:NSEA)
-!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10) THEN
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
 !/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
-!/SETUP                 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
+!/SETUP                 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 13 ) THEN
 !/SETUP                   READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ZETA_SETUP(1:NSEA)
 !
 !     Section 2)
@@ -3182,6 +3231,9 @@
                                                          HCMAXD(1:NSEA)
                   ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WBT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                         WNMEAN(1:NSEA)
 !
 !     Section 3)
 !
@@ -3351,6 +3403,11 @@
                                    USSP(1:NSEA,1:USSPF(2))
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
                                    USSP(1:NSEA,NK+1:NK+USSPF(2))
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOCX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOCY(1:NSEA)
 
 !
 !     Section 7)

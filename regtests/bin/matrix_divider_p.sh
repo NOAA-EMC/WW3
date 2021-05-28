@@ -33,8 +33,9 @@ sed -e "/run_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
 command egrep 'ww3_ufs' matrix.tmp | cat >> list_ufs
 awk '!/ww3_ufs/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
-command egrep 'ww3_tp2.14|ww3_tp2.17|ww3_tp2.21' matrix.tmp | cat >> list_heavy
+command egrep 'ww3_tp2.14|ww3_tp2.15|ww3_tp2.17|ww3_tp2.21' matrix.tmp | cat >> list_heavy
 awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
+awk '!/ww3_tp2.15/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.17/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.21/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 command egrep 'mpirun|mpiexec|MPI_LAUNCH|\-O' matrix.tmp | cat >> list_mpi
