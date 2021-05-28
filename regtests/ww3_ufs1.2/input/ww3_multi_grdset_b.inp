@@ -4,19 +4,19 @@ $ The start and end dates for running will be over written by the NEMS driver
 $ The start/end for output are chosen to capture hopefully any time period run
 $ ----------------------------------------------------------------------------
 $
-$3 1 T 1 T T
+$
   3 1 T 3 T F
 $
 $
-  'glo_30m' F T T T F F F
+  'glo_30m' F T T T F F F F F
 $
  'points'
 $
 $$ the presence of 1) water levels 2) currents 3) winds 4) ice and
 $ 5-7) assimilation data as in the file ww3_shel.inp.
-  'gnh_10m'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no'   1  10  0.00 1.00  F
-  'gsh_15m'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no'   2  20  0.00 1.00  F
-  'aoc_9km'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no'   3  30  0.00 1.00  F
+  'gnh_10m'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no' 'no' 'no'   1  10  0.00 1.00  F
+  'gsh_15m'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no' 'no' 'no'   2  20  0.00 1.00  F
+  'aoc_9km'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no' 'no' 'no'   3  30  0.00 1.00  F
 $
    20130401 030000   20130402 000000
 $
