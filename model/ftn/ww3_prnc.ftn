@@ -285,7 +285,6 @@
 !
       INTEGER                 :: K, L, TIDEFLAG,                      &
                                  TIDE_NDEF, TIDE_ITREND
-!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
 !/T      INTEGER, PARAMETER      :: LRB = 4
 !/T      INTEGER(KIND=8)         :: RPOS
 !/T      INTEGER                 ::   LRECL, NREC
@@ -306,7 +305,7 @@
       CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
 !
-      LOGICAL                 :: FTIDAL
+      LOGICAL, ALLOCATABLE    :: TIDALCOMP(:,:)
 !
 !/T      CHARACTER*21            :: FNAMETXT
 !
@@ -1414,9 +1413,11 @@
 !/MPI          NELEM(I) = NX / NAPROC
 !/MPI          IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
 !/MPI        END DO
-      
+
+     
 !/MPIT        WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
 !/MPIT        WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+!/MPIT        WRITE(100+IAPROC,*) "Slice of values per processor ", SLICE
 
         ALLOCATE(TIDE_DATA_ALL(NELEM(IAPROC),NTI,NFIELDS))
 
@@ -1426,6 +1427,9 @@
 
 !
 ! Loops on Y dimension
+!
+        ALLOCATE(TIDALCOMP(NX,NY))
+        TIDALCOMP=.TRUE.
 !
         DO IY=1,NY
 !/MPI            IND=0
@@ -1503,7 +1507,7 @@
 !/T    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
 
             ELSE
-              WRITE(NDSE,'(A,I8,A,I8,A)') 'WARNING NO TIDAL COMPUTATION AT POINT [',IX,',',IY,']'
+              TIDALCOMP(IX,IY)=.FALSE.
               TIDE_AMPC(1:TIDE_MF,1:NFIELDS)=0.
               TIDE_PHG(1:TIDE_MF,1:NFIELDS)=0.
             END IF ! end of test on TIDE_NTI
@@ -1537,6 +1541,10 @@
 !/MPI            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
 !/MPI                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
 !/MPI                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+!/MPI            CALL MPI_GATHERV(TIDALCOMP(CUMUL(IAPROC)+1:CUMUL(IAPROC)+NELEM(IAPROC),IY),NELEM(IAPROC), &
+!/MPI                             MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
+!/MPI                             MPI_COMM_WORLD, IERR_MPI)
+
 !/MPI          ELSE
 !/MPI            TIDE1D = TIDE1DL
 !/MPI          END IF
@@ -1569,8 +1577,22 @@
 !/MPI        IF (IAPROC .NE. NAPOUT )  THEN 
 !/MPI          GOTO 888
 !/MPIT        ELSE
-!/MPIT          WRITE(NDSO,*) "parallelization done"
+!/MPIT          WRITE(NDSO,'(A)') "parallelization done"
 !/MPI        END IF
+
+
+!
+! Warn about not computed nodes for tidal constituents
+!
+        IF ( IAPROC .EQ. NAPOUT) THEN
+          DO IX=1,NX
+            DO IY=1,NY
+              IF(TIDALCOMP(IX,IY).EQV..FALSE.) THEN
+                WRITE(NDSO,1047) IX, IY
+              END IF
+            END DO
+          END DO
+        END IF
 
 !
 ! After loop on points, write tidal constituents to file.
@@ -1579,7 +1601,7 @@
           CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
         CALL W3FLDTIDE2 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
 !
-   GOTO 880
+        GOTO 880
 
       END IF ! end of test   IF (ITYPE.GE.6.AND.TIDEFLAG.GT.0)
 
@@ -1825,8 +1847,8 @@
 !
                 IF (NFCOMP.EQ.2) THEN
 !/O3             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
-                    CALL INTERP(YC, JX21, JX22, JY21, JY22, XD11, XD12,&
-                                             XD21, XD22, FILLVALUE, FA)
+                    CALL INTERP(MXM, MYM, YC, JX21, JX22, JY21, JY22,  &
+                                 XD11, XD12, XD21, XD22, FILLVALUE, FA)
                 END IF
 !
 ! ... Two-component fields
@@ -2212,6 +2234,9 @@
  1046 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ERROR IN OPENING MASK FILE'/                     &
                '     IOSTAT =',I5/)
+!
+ 1047 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
+               '     NO TIDAL COMPUTATION AT NODE [',I8,',',I8,']'/)
 !
  1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN READING NDAT FROM FILE'/                &
