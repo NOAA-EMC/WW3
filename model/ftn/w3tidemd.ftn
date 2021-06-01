@@ -531,10 +531,20 @@
       REAL(KIND=4), PARAMETER   :: PI=3.1415926536
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
 
-      REAL                      :: SLAT, VDBL, RR, SUMC, SUMS, UUDBL, UU
+      REAL                      :: SLAT, VDBL, RR, SUMC, SUMS, UUDBL, UU, CXLAT
       INTEGER                   :: IUU, IV
- 
-      SLAT=SIN(PI*XLAT/180.)
+      ! This comment was taken from t_tide, a matlab tidal prediction suite
+      !
+      ! Apparently the second-order terms in the tidal potential go to zero
+      ! at the equator, but the third-order terms do not. Hence when trying
+      ! to infer the third-order terms from the second-order terms, the
+      ! nodal correction factors blow up. In order to prevent this, it is
+      ! assumed that the equatorial forcing is due to second-order forcing
+      ! OFF the equator, from about the 5 degree location. Latitudes are
+      ! hence (somewhat arbitrarily) forced to be no closer than 5 deg to
+      ! the equator, as per note in Foreman.
+      CXLAT = MAX(ABS(XLAT), 5.)
+      SLAT=SIN(PI*CXLAT/180.)
 
       JBASE=0
 ! All 
@@ -1869,12 +1879,13 @@
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
 !
       REAL                      :: SLAT, VDBL, VV, SUMC, SUMS, RR, &
-                                   UUDBL, UU
+                                   UUDBL, UU, CXLAT
       REAL(KIND=8)              :: d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp,hh,tau
 
       INTEGER                   :: indx(170)
 
-      SLAT=SIN(PI*XLAT/180.)
+      CXLAT = MAX(ABS(XLAT), 5.)
+      SLAT=SIN(PI*CXLAT/180.)
 !
 !***********************************************************************
 !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION

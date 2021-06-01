@@ -614,7 +614,6 @@ CONTAINS
 !
 !  1. purpose: defines open boundary points based on depth
 !  2. Method : a boundary node has more node around it than triangles
-!      
 !    
 !
 !  3. Parameters :
@@ -739,6 +738,8 @@ CONTAINS
          REAL              :: TL1, TL2, TL3, TMPTRIGP
          INTEGER           :: I1, I2, I3
          INTEGER           :: K
+         REAL*8            :: PT(3,2)
+
 !/S        INTEGER                      ::  IENT = 0          
 !/ ------------------------------------------------------------------- /   
 !/S      CALL STRACE (IENT, 'SPATIAL_GRID')   
@@ -748,13 +749,16 @@ CONTAINS
                    I1 = TRIGP(K,1)
                    I2 = TRIGP(K,2)
                    I3 = TRIGP(K,3)
+
+                   CALL FIX_PERIODCITY(I1,I2,I3,XYB,PT) 
 !
 ! cross product of edge-vector  (orientated anticlockwise)
 !                                   
-                   TRIA(K) = REAL( (XYB(I2,2)-XYB(I1,2))      &     !  (Y2-Y1)
-                                  *(XYB(I1,1)-XYB(I3,1))      &     ! *(X1-X3)
-                                  +(XYB(I3,2)-XYB(I1,2))      &     !  (Y3-Y1)*(X2-X1)
-                                  *(XYB(I2,1)-XYB(I1,1))      )*0.5
+
+                   TRIA(K) = REAL( (PT(2,2)-PT(1,2))      &     !  (Y2-Y1)
+                                  *(PT(1,1)-PT(3,1))      &     ! *(X1-X3)
+                                  +(PT(3,2)-PT(1,2))      &     !  (Y3-Y1)*(X2-X1)
+                                  *(PT(2,1)-PT(1,1))      )*0.5
 !
 ! test on negative triangle area, which means that the orientiation is not as assumed to be anticw. 
 ! therefore we swap the nodes !!! 
@@ -832,6 +836,7 @@ CONTAINS
          REAL*8    :: N1(2), N2(2), N3(2)
 	 REAL*8    :: TMP(3)
 	 REAL*8    :: TMPINV(3)
+         REAL*8    :: PT(3,2)
 !/S        INTEGER                      ::  IENT = 0 	 
 !/ ------------------------------------------------------------------- /   
 !/S      CALL STRACE (IENT, 'NVECTRI')   
@@ -845,12 +850,14 @@ CONTAINS
             I2 = TRIGP(IE,2)
             I3 = TRIGP(IE,3)
                            
-            P1(1) = XYB(I1,1)
-            P1(2) = XYB(I1,2)
-            P2(1) = XYB(I2,1)
-            P2(2) = XYB(I2,2)
-            P3(1) = XYB(I3,1)
-            P3(2) = XYB(I3,2)
+            CALL FIX_PERIODCITY(I1,I2,I3,XYB,PT) 
+
+            P1(1) = PT(1,1)
+            P1(2) = PT(1,2)
+            P2(1) = PT(2,1)
+            P2(2) = PT(2,2)
+            P3(1) = PT(3,1)
+            P3(2) = PT(3,2)
 !
 ! I1 -> I2, I2 -> I3, I3 -> I1 (anticlockwise orientation is preserved)
 !                    
@@ -1418,6 +1425,7 @@ END SUBROUTINE
      DOUBLE PRECISION             :: x1, x2, x3
      DOUBLE PRECISION             :: y1, y2, y3
      DOUBLE PRECISION             :: s1, s2, s3, sg1, sg2, sg3
+     REAL*8                       :: PT(3,2)
      INTEGER                      :: ITRI
      INTEGER                      :: I1, I2, I3
      INTEGER                      :: nbFound
@@ -1433,15 +1441,17 @@ END SUBROUTINE
        I1=GRIDS(IMOD)%TRIGP(ITRI,1)
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
+
+       CALL FIX_PERIODCITY(I1,I2,I3,GRIDS(IMOD)%XYB,PT)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XYB(I1,1)
-       y1=GRIDS(IMOD)%XYB(I1,2)
+       x1 = PT(1,1)
+       y1 = PT(1,2)
 ! coordinates of the 2nd vertex B
-       x2=GRIDS(IMOD)%XYB(I2,1)
-       y2=GRIDS(IMOD)%XYB(I2,2)
+       x2 = PT(2,1)
+       y2 = PT(2,2)
 !coordinates of the 3rd vertex C
-       x3=GRIDS(IMOD)%XYB(I3,1)
-       y3=GRIDS(IMOD)%XYB(I3,2)
+       x3 = PT(3,1)
+       y3 = PT(3,2)
 !with M = (XTIN,YTIN) the target point ... 
 !vector product of AB and AC
        sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
@@ -2729,4 +2739,95 @@ END SUBROUTINE
       RETURN    
       END SUBROUTINE SETUGIOBP
 !/ ------------------------------------------------------------------- /
+
+      SUBROUTINE FIX_PERIODCITY(I1,I2,I3,XYB,PT)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        Steven Brus                |
+!/                  |        Ali Abdolali               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-May-2020 |
+!/                  +-----------------------------------+
+!/
+!/    21-May-2020 : Origination.                        ( version 6.07 )
+!/    
+!/
+!  1. Purpose :
+!
+!     Adjust element longitude coordinates for elements straddling the
+!     dateline with distance of ~360 degrees
+!
+!  2. Method :
+!
+!     Detect if element has nodes on both sides of dateline and adjust
+!     coordinates so that all nodes have the same sign
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: I1, I2, I3
+      DOUBLE PRECISION, INTENT(IN) :: XYB(:,:)
+      REAL*8, INTENT(OUT) :: PT(3,2)
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+      INTEGER :: I
+      INTEGER :: R1GT180, R2GT180, R3GT180
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+
+!  5. Called by :
+!
+!      Name         Type  Module   Description
+!     ----------------------------------------------------------------
+!      SPATIAL_GRID Subr. W3TRIAM  Triangle area calculation
+!      NVECTRI      Subr. W3TRIAM  Edge length, angle, normal calcuation
+!      IS_IN_UNGRID Subr. W3TRIAM  Point in element calculation
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :     
+!/ ------------------------------------------------------------------- /
+
+      PT(1,1) = XYB(I1,1)
+      PT(1,2) = XYB(I1,2)
+      PT(2,1) = XYB(I2,1)
+      PT(2,2) = XYB(I2,2)
+      PT(3,1) = XYB(I3,1)
+      PT(3,2) = XYB(I3,2)
+
+
+       R1GT180 = MERGE(1, 0, ABS(PT(3,1)-PT(2,1)).GT.180)
+       R2GT180 = MERGE(1, 0, ABS(PT(1,1)-PT(3,1)).GT.180)
+       R3GT180 = MERGE(1, 0, ABS(PT(2,1)-PT(1,1)).GT.180)
+ ! if R1GT180+R2GT180+R3GT180 .eq. 0 the element does not cross the dateline
+ ! if R1GT180+R2GT180+R3GT180 .eq. 1 the element contains the pole
+ ! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
+
+
+      IF ( R1GT180 + R2GT180 == 2 ) THEN
+             PT(3,1)=PT(3,1)-SIGN(360.0d0,(PT(3,1)-PT(2,1)))
+      ELSE IF ( R2GT180 + R3GT180 == 2 ) THEN
+             PT(1,1)=PT(1,1)-SIGN(360.0d0,(PT(1,1)-PT(2,1)))
+      ELSE IF ( R1GT180 + R3GT180 == 2 ) THEN
+             PT(2,1)=PT(2,1)-SIGN(360.0d0,(PT(2,1)-PT(3,1)))
+      ENDIF
+
+      RETURN
+      END SUBROUTINE FIX_PERIODCITY
 END MODULE W3TRIAMD

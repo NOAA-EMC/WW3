@@ -30,8 +30,8 @@ COUPLE          = $(WWATCH3_DIR)/../regtests/ww3_tp2.14/input/oasis3-mct
 ARCHDIR         = $(WWATCH3_DIR)/../regtests/ww3_tp2.14/work_oasis3-mct
 #
 # NetCDF library
-NETCDF_INCLUDE  = $(shell $(NETCDF_CONFIG) --includedir) 
-NETCDF_LIBRARY  = $(shell $(NETCDF_CONFIG) --flibs) 
+NETCDF_INCLUDE  = $(shell $(NETCDF_CONFIG) --cflags) 
+NETCDF_LIBRARY  = $(shell $(NETCDF_CONFIG) --flibs) $(shell $(NETCDF_CONFIG) --libs) 
 #
 # Compilers and options
 MAKE        = gmake

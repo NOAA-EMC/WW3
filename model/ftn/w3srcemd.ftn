@@ -1494,7 +1494,7 @@
 !/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
 !/FLD1                    DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD1      ELSE
-!/FLD1          CHARN = AALPHA
+!/FLD1          CHARN = AALPHA 
 !/FLD1      ENDIF
 !/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD2          CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &

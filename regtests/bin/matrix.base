@@ -89,6 +89,7 @@
   echo "  echo '      Assim Update of the restart file   : $assim'"            >> matrix.head
   echo "  echo '      OASIS coupling                     : $oasis'"            >> matrix.head
   echo "  echo '      Calendar type                      : $calendar'"         >> matrix.head
+  echo "  echo '      Configurable netCDF generation     : $confignc'"         >> matrix.head
   echo "  echo ' '"                                                            >> matrix.head
   if [ -n "$filter" ]
   then
@@ -2034,6 +2035,16 @@
      echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
    fi
  fi
+ # Global unstructured grid and Unresolved Obstacles Source Term (UOST) 
+ if [ "$uost" = 'y' ] && [ "$dist" = 'y' ]
+ then
+   echo ' ' >> matrix.body 
+   echo "$rtst -s MPI -s NO_PDLIB -w work_a -g a -f -p $mpi -n $np  -o netcdf $ww3 ww3_tp2.21" >> matrix.body
+ if [ "$pdlib" = 'y' ]
+ then
+   echo "$rtst -s MPI -s PDLIB -w work_b -g b -f -p $mpi -n $np  -o netcdf $ww3 ww3_tp2.21" >> matrix.body
+ fi
+ fi
 
  #Test of updating the restart spectra 
  if [ "$assim" = 'y' ]
@@ -2095,7 +2106,7 @@
   if [ "$confignc" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -o netcdf $ww3 ww3_tnc1" >> matrix.body
+    echo "$rtst -o netcdf -N $ww3 ww3_tnc1" >> matrix.body
   fi
 
 # --------------------------------------------------------------------------- #
