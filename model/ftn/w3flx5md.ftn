@@ -68,7 +68,7 @@
 !/                  | Last update :         03-Jul-2006 |
 !/                  +-----------------------------------+
 !/
-!/    03-Jul-2006 : Origination.                        ( version 3.09 )
+!/    22-Mar-2021 : Origination.                        ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -80,6 +80,7 @@
 !     UST    = SQRT(TAUA / RHOAIR)
 !     USTD   = TAUADIR
 !     CD     = (UST/U10)**2
+!     Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
 !
 !  3. Parameters :
 !
