@@ -1541,9 +1541,16 @@
 !/MPI            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
 !/MPI                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
 !/MPI                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI            CALL MPI_GATHERV(TIDALCOMP(CUMUL(IAPROC)+1:CUMUL(IAPROC)+NELEM(IAPROC),IY),NELEM(IAPROC), &
-!/MPI                             MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
-!/MPI                             MPI_COMM_WORLD, IERR_MPI)
+
+!/MPI            IF (IAPROC.EQ.NAPOUT) THEN
+!/MPI              CALL MPI_GATHERV(MPI_IN_PLACE,NELEM(IAPROC), &
+!/MPI                               MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
+!/MPI                               MPI_COMM_WORLD, IERR_MPI)
+!/MPI            ELSE
+!/MPI              CALL MPI_GATHERV(TIDALCOMP(CUMUL(IAPROC)+1:CUMUL(IAPROC)+NELEM(IAPROC),IY),NELEM(IAPROC), &
+!/MPI                               MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
+!/MPI                               MPI_COMM_WORLD, IERR_MPI)
+!/MPI            END IF
 
 !/MPI          ELSE
 !/MPI            TIDE1D = TIDE1DL
