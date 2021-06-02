@@ -1172,6 +1172,12 @@
 !/ Data aliasing for structure SICP(S)
 !/IS1      REAL, POINTER           :: IS1C1, IS1C2
 !/
+!/ Data duplicated for better performance 
+!/SMC        INTEGER, POINTER      :: IJKCel3(:), IJKCel4(:), &
+!/SMC                                 IJKVFc5(:), IJKVFc6(:), &
+!/SMC                                 IJKUFc5(:), IJKUFc6(:)
+!/
+
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
@@ -1493,6 +1499,10 @@
 !/SMC                 GRIDS(IMOD)%CLATF(MVFc),        &
 !/SMC                 STAT=ISTAT                      )
 !/SMC      CHECK_ALLOC_STATUS ( ISTAT )
+!/SMC      ALLOCATE ( IJKCel3(-9:MCel), IJKCel4(-9:MCel), &
+!/SMC                 IJKVFc5(MVFc), IJKVFc6(MVFc),  &
+!/SMC                 IJKUFc5(MUFc), IJKUFc6(MUFc),  &
+!/SMC                 STAT=ISTAT)
 !
 !/ARC      ALLOCATE ( GRIDS(IMOD)%ICLBAC(MBAC),       &
 !/ARC                 GRIDS(IMOD)%ANGARC(MARC),       &

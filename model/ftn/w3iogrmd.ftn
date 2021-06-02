@@ -754,6 +754,18 @@
 !/SMC                     NLvCel, NLvUFc, NLvVFc
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     IJKCel, IJKUFc, IJKVFc
+!/SMC          DO J=lbound(IJKCel,2), ubound(IJKCel,2)
+!/SMC            IJKCel3(J) = IJKCel(3,J)
+!/SMC            IJKCel4(J) = IJKCel(4,J)
+!/SMC          END DO
+!/SMC          DO J=lbound(IJKVFc,2), ubound(IJKVFc,2)
+!/SMC            IJKVFc5(J) = IJKVFc(5,J)
+!/SMC            IJKVFc6(J) = IJKVFc(6,J)
+!/SMC          END DO
+!/SMC          DO J=lbound(IJKUFc,2), ubound(IJKUFc,2)
+!/SMC            IJKUFc5(J) = IJKUFc(5,J)
+!/SMC            IJKUFc6(J) = IJKUFc(6,J)
+!/SMC          END DO
 !/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ARC                     ICLBAC 
 !/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
