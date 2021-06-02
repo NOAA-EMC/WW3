@@ -513,7 +513,7 @@
 
               IF (BADPOINTS(IX,IY).GT.0) THEN 
                 NBAD = NBAD +1
-                WRITE(NDSE,'(A,I8,I8,F10.2,A,F10.2)') 'BAD POINT:',IX,IY,NBAD, &
+                WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
                    TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 END IF
             END DO
@@ -598,7 +598,7 @@
                 END IF         
               END DO
               IF (ABS(WCURTIDEX).GT.10..OR.ABS(WCURTIDEY).GT.10.)  THEN
-                WRITE(NDSE,'(A,I8,F10.2,F10.2,F10.2,A,F10.2)') &
+                WRITE(NDSE,*) &
                      'WARNING: VERY STRONG CURRENT... BAD CONSTITUENTS?', &
                      IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 STOP
@@ -668,7 +668,7 @@
                     TIDEOK = 0
                 END DO
                 IF (TIDEOK.EQ.0) THEN   
-                  WRITE(NDSE,'(A,I8,I8,F10.2)') 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
+                  WRITE(NDSE,*) 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
                   TIDAL_CONST(IX,IY,:,1,1)=0
                 END IF
               END IF   
