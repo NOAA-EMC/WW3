@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |SX
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Jun-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
@@ -21,6 +21,7 @@
 !/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
 !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    02-Jun-2021 : Big fixs (*SUMGRD; Q. Liu)          ( version 7.xx )
 !/
 !   1. Purpose : 
 !
@@ -2359,8 +2360,8 @@
                       SUMWT8(2) = SUMWT8(2) + WT
                       IF ( MSCXAUX .EQ. UNDEF )   MSCXAUX = 0.
                       IF ( MSCYAUX .EQ. UNDEF )   MSCYAUX = 0.
-                      MSCXAUX = MSCXAUX + WADATS(IGRID)%MSSX(GSEA)*WT
-                      MSCYAUX = MSCYAUX + WADATS(IGRID)%MSSY(GSEA)*WT
+                      MSCXAUX = MSCXAUX + WADATS(IGRID)%MSCX(GSEA)*WT
+                      MSCYAUX = MSCYAUX + WADATS(IGRID)%MSCY(GSEA)*WT
                     END IF
                   END IF
 !
@@ -2618,55 +2619,55 @@
                 IF ( HSIGAUX .NE. UNDEF ) THEN
                   IF ( HSIG(ISEA) .EQ. UNDEF )   HSIG(ISEA) = 0.
                   HSIG(ISEA) = HSIG(ISEA) +                            &
-                               HSIGAUX / REAL( SUMWT2(10)+SUMGRD )
+                               HSIGAUX / REAL( SUMWT2(10)*SUMGRD )
                 END IF
 !
                 IF ( STMAXEAUX .NE. UNDEF ) THEN
                   IF ( STMAXE(ISEA) .EQ. UNDEF )   STMAXE(ISEA) = 0.
                   STMAXE(ISEA) = STMAXE(ISEA) +                        &
-                               STMAXEAUX / REAL( SUMWT2(11) + SUMGRD )
+                               STMAXEAUX / REAL( SUMWT2(11) * SUMGRD )
                 END IF
 !
                 IF ( STMAXDAUX .NE. UNDEF ) THEN
                   IF ( STMAXD(ISEA) .EQ. UNDEF )   STMAXD(ISEA) = 0.
                   STMAXD(ISEA) = STMAXD(ISEA) +                        &
-                                 STMAXDAUX / REAL( SUMWT2(12) + SUMGRD )
+                                 STMAXDAUX / REAL( SUMWT2(12) * SUMGRD )
                 END IF
 !
                 IF ( HMAXEAUX .NE. UNDEF ) THEN
                   IF ( HMAXE(ISEA) .EQ. UNDEF )   HMAXE(ISEA) = 0.
                   HMAXE(ISEA) = HMAXE(ISEA) +                          &
-                                HMAXEAUX / REAL( SUMWT2(13) + SUMGRD )
+                                HMAXEAUX / REAL( SUMWT2(13) * SUMGRD )
                 END IF
 !
                 IF ( HCMAXEAUX .NE. UNDEF ) THEN
                   IF ( HCMAXE(ISEA) .EQ. UNDEF )   HCMAXE(ISEA) = 0.
                   HCMAXE(ISEA) = HCMAXE(ISEA) +                        &
-                                 HCMAXEAUX / REAL( SUMWT2(14) + SUMGRD )
+                                 HCMAXEAUX / REAL( SUMWT2(14) * SUMGRD )
                 END IF
 !
                 IF ( HMAXDAUX .NE. UNDEF ) THEN
                   IF ( HMAXD(ISEA) .EQ. UNDEF )   HMAXD(ISEA) = 0.
                   HMAXD(ISEA) = HMAXD(ISEA)  +                         &
-                                HMAXDAUX / REAL( SUMWT2(15) + SUMGRD )
+                                HMAXDAUX / REAL( SUMWT2(15) * SUMGRD )
                 END IF
 !
                 IF ( HCMAXDAUX .NE. UNDEF ) THEN
                   IF ( HCMAXD(ISEA) .EQ. UNDEF )   HCMAXD(ISEA) = 0.
                   HCMAXD(ISEA) = HCMAXD(ISEA) +                        &
-                                 HCMAXDAUX / REAL( SUMWT2(16) + SUMGRD )
+                                 HCMAXDAUX / REAL( SUMWT2(16) * SUMGRD )
                 END IF
 !
                 IF ( WBTAUX .NE. UNDEF ) THEN
                   IF ( WBT(ISEA) .EQ. UNDEF )   WBT(ISEA) = 0.
                   WBT(ISEA) = WBT(ISEA) +                            &
-                               WBTAUX / REAL( SUMWT2(17)+SUMGRD )
+                               WBTAUX / REAL( SUMWT2(17)*SUMGRD )
                 END IF
 !
                 IF ( WNMEANAUX .NE. UNDEF ) THEN
                   IF ( WNMEAN(ISEA) .EQ. UNDEF )   WNMEAN(ISEA) = 0.
                   WNMEAN(ISEA) = WNMEAN(ISEA) +                      &
-                               WNMEANAUX / REAL( SUMWT2(19)+SUMGRD )
+                               WNMEANAUX / REAL( SUMWT2(19)*SUMGRD )
                 END IF
 !
 ! Group 3 variables
@@ -2825,9 +2826,9 @@
 !
                   IF ( PTHP0AUX1(ISWLL) .NE. UNDEF ) THEN
                     PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL)                &
-                                        / REAL( SUMWT4(7,ISWLL)+SUMGRD )
+                                        / REAL( SUMWT4(7,ISWLL)*SUMGRD )
                     PTHP0AUX2(ISWLL) = PTHP0AUX2(ISWLL)                &
-                                        / REAL( SUMWT4(7,ISWLL)+SUMGRD )
+                                        / REAL( SUMWT4(7,ISWLL)*SUMGRD )
                     IF ( PTHP0(ISEA,ISWLL) .NE. UNDEF ) THEN
                       PTHP0AUX1(ISWLL) = PTHP0AUX1(ISWLL) +            &
                                                COS ( PTHP0(ISEA,ISWLL) )
@@ -2842,14 +2843,14 @@
                     IF ( PQP(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PQP(ISEA,ISWLL) = 0.
                     PQP(ISEA,ISWLL) = PQP(ISEA,ISWLL) +                &
-                         PQPAUX(ISWLL) / REAL( SUMWT4(8,ISWLL)+SUMGRD )
+                         PQPAUX(ISWLL) / REAL( SUMWT4(8,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PPEAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PPE(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PPE(ISEA,ISWLL) = 0.
                     PPE(ISEA,ISWLL) = PPE(ISEA,ISWLL) +                &
-                         PPEAUX(ISWLL) / REAL( SUMWT4(9,ISWLL)+SUMGRD )
+                         PPEAUX(ISWLL) / REAL( SUMWT4(9,ISWLL)*SUMGRD )
 
                   END IF
 !
@@ -2857,42 +2858,42 @@
                     IF ( PGW(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PGW(ISEA,ISWLL) = 0.
                     PGW(ISEA,ISWLL) = PGW(ISEA,ISWLL) +                &
-                         PGWAUX(ISWLL) / REAL( SUMWT4(10,ISWLL)+SUMGRD )
+                         PGWAUX(ISWLL) / REAL( SUMWT4(10,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PSWAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PSW(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PSW(ISEA,ISWLL) = 0.
                     PSW(ISEA,ISWLL) = PSW(ISEA,ISWLL) +                &
-                         PSWAUX(ISWLL) / REAL( SUMWT4(11,ISWLL)+SUMGRD )
+                         PSWAUX(ISWLL) / REAL( SUMWT4(11,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PTM1AUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PTM1(ISEA,ISWLL) .EQ. UNDEF )                &
                                                   PTM1(ISEA,ISWLL) = 0.
                     PTM1(ISEA,ISWLL) = PTM1(ISEA,ISWLL) +            &
-                       PTM1AUX(ISWLL) / REAL( SUMWT4(12,ISWLL)+SUMGRD )
+                       PTM1AUX(ISWLL) / REAL( SUMWT4(12,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PT1AUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PT1(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PT1(ISEA,ISWLL) = 0.
                     PT1(ISEA,ISWLL) = PT1(ISEA,ISWLL) +                &
-                         PT1AUX(ISWLL) / REAL( SUMWT4(13,ISWLL)+SUMGRD )
+                         PT1AUX(ISWLL) / REAL( SUMWT4(13,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PT2AUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PT2(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PT2(ISEA,ISWLL) = 0.
                     PT2(ISEA,ISWLL) = PT2(ISEA,ISWLL) +                &
-                         PT2AUX(ISWLL) / REAL( SUMWT4(14,ISWLL)+SUMGRD )
+                         PT2AUX(ISWLL) / REAL( SUMWT4(14,ISWLL)*SUMGRD )
                   END IF
 !
                   IF ( PEPAUX(ISWLL) .NE. UNDEF ) THEN
                     IF ( PEP(ISEA,ISWLL) .EQ. UNDEF )                  &
                                                     PEP(ISEA,ISWLL) = 0.
                     PEP(ISEA,ISWLL) = PEP(ISEA,ISWLL) +                &
-                         PEPAUX(ISWLL) / REAL( SUMWT4(15,ISWLL)+SUMGRD )
+                         PEPAUX(ISWLL) / REAL( SUMWT4(15,ISWLL)*SUMGRD )
                   END IF
 !
                 END DO  !/ ISWLL = 0, NOSWLL_MIN
@@ -3071,13 +3072,13 @@
                     IF ( US3DAUX(IK) .NE. UNDEF ) THEN
                       IF ( US3D(ISEA,IK) .EQ. UNDEF ) US3D(ISEA,IK) = 0.
                       US3D(ISEA,IK) = US3D(ISEA,IK) +                  &
-                              US3DAUX(IK) / REAL( SUMWT68(IK) + SUMGRD )
+                              US3DAUX(IK) / REAL( SUMWT68(IK) * SUMGRD )
                     END IF
                     IF ( US3DAUX(NK+IK) .NE. UNDEF ) THEN
                       IF ( US3D(ISEA,NK+IK) .EQ. UNDEF )               &
                                                    US3D(ISEA,NK+IK) = 0.
                       US3D(ISEA,NK+IK) = US3D(ISEA,NK+IK) +            &
-                        US3DAUX(NK+IK) / REAL( SUMWT68(NK+IK) + SUMGRD )
+                        US3DAUX(NK+IK) / REAL( SUMWT68(NK+IK) * SUMGRD )
                     END IF
                   END DO
                 END IF
@@ -3087,7 +3088,7 @@
                     IF ( P2SMSAUX(IK) .NE. UNDEF ) THEN
                       IF ( P2SMS(ISEA,IK).EQ.UNDEF ) P2SMS(ISEA,IK) = 0.
                       P2SMS(ISEA,IK) = P2SMS(ISEA,IK) +                &
-                             P2SMSAUX(IK) / REAL( SUMWT69(IK) + SUMGRD )
+                             P2SMSAUX(IK) / REAL( SUMWT69(IK) * SUMGRD )
                     END IF
                   END DO
                 END IF
@@ -3096,15 +3097,15 @@
                   IF ( TAUICE(ISEA,1) .EQ. UNDEF )   TAUICE(ISEA,1) = 0.
                   IF ( TAUICE(ISEA,2) .EQ. UNDEF )   TAUICE(ISEA,2) = 0.
                   TAUICE(ISEA,1) = TAUICE(ISEA,1) +                    &
-                              TAUICEAUX(1) / REAL( SUMWT6(10) + SUMGRD )
+                              TAUICEAUX(1) / REAL( SUMWT6(10) * SUMGRD )
                   TAUICE(ISEA,2) = TAUICE(ISEA,2) +                    &
-                              TAUICEAUX(2) / REAL( SUMWT6(10) + SUMGRD )
+                              TAUICEAUX(2) / REAL( SUMWT6(10) * SUMGRD )
                 END IF
 !
                 IF ( PHICEAUX .NE. UNDEF ) THEN
                   IF ( PHICE(ISEA) .EQ. UNDEF )   PHICE(ISEA) = 0.
                   PHICE(ISEA) = PHICE(ISEA) +                          &
-                                  PHICEAUX / REAL( SUMWT6(11) + SUMGRD )
+                                  PHICEAUX / REAL( SUMWT6(11) * SUMGRD )
                 END IF
 !
                 IF ( USSPF(1).GT.0 ) THEN
@@ -3112,13 +3113,13 @@
                     IF ( USSPAUX(IK) .NE. UNDEF ) THEN
                       IF ( USSP(ISEA,IK) .EQ. UNDEF ) USSP(ISEA,IK) = 0.
                       USSP(ISEA,IK) = USSP(ISEA,IK) +                  &
-                             USSPAUX(IK) / REAL( SUMWT612(IK) + SUMGRD )
+                             USSPAUX(IK) / REAL( SUMWT612(IK) * SUMGRD )
                     END IF
                     IF ( USSPAUX(NK+IK) .NE. UNDEF ) THEN
                       IF ( USSP(ISEA,NK+IK) .EQ. UNDEF )               &
                                                    USSP(ISEA,NK+IK) = 0.
                       USSP(ISEA,NK+IK) = USSP(ISEA,NK+IK) +            &
-                       USSPAUX(NK+IK) / REAL( SUMWT612(NK+IK) + SUMGRD )
+                       USSPAUX(NK+IK) / REAL( SUMWT612(NK+IK) * SUMGRD )
                     END IF
                   END DO
                 END IF
@@ -3201,30 +3202,30 @@
                 IF ( MSSXAUX .NE. UNDEF ) THEN
                   IF ( MSSX(ISEA) .EQ. UNDEF )   MSSX(ISEA) = 0.
                   MSSX(ISEA) = MSSX(ISEA) +                            &
-                               MSSXAUX / REAL( SUMWT8(1)+SUMGRD )
+                               MSSXAUX / REAL( SUMWT8(1)*SUMGRD )
                 END IF
 !
                 IF ( MSSYAUX .NE. UNDEF ) THEN
                   IF ( MSSY(ISEA) .EQ. UNDEF )   MSSY(ISEA) = 0.
                   MSSY(ISEA) = MSSY(ISEA) +                            &
-                               MSSYAUX / REAL( SUMWT8(1)+SUMGRD )
+                               MSSYAUX / REAL( SUMWT8(1)*SUMGRD )
                 END IF
 !
                 IF ( MSCXAUX .NE. UNDEF ) THEN
                   IF ( MSCX(ISEA) .EQ. UNDEF )   MSCX(ISEA) = 0.
                   MSCX(ISEA) = MSCX(ISEA) +                            &
-                               MSCXAUX / REAL( SUMWT8(2)+SUMGRD )
+                               MSCXAUX / REAL( SUMWT8(2)*SUMGRD )
                 END IF
 !
                 IF ( MSCYAUX .NE. UNDEF ) THEN
                   IF ( MSCY(ISEA) .EQ. UNDEF )   MSCY(ISEA) = 0.
                   MSCY(ISEA) = MSCY(ISEA) +                            &
-                               MSCYAUX / REAL( SUMWT8(2)+SUMGRD )
+                               MSCYAUX / REAL( SUMWT8(2)*SUMGRD )
                 END IF
 !
                 IF ( MSSDAUX1 .NE. UNDEF .AND. MSSDAUX2 .NE. UNDEF ) THEN
-                  MSSDAUX1 = MSSDAUX1 / REAL( SUMWT8(3)+SUMGRD )
-                  MSSDAUX2 = MSSDAUX2 / REAL( SUMWT8(3)+SUMGRD )
+                  MSSDAUX1 = MSSDAUX1 / REAL( SUMWT8(3)*SUMGRD )
+                  MSSDAUX2 = MSSDAUX2 / REAL( SUMWT8(3)*SUMGRD )
                   IF ( MSSD(ISEA) .NE. UNDEF ) THEN
                     MSSDAUX1 = MSSDAUX1 + COS ( MSSD(ISEA) )
                     MSSDAUX2 = MSSDAUX2 + SIN ( MSSD(ISEA) )
@@ -3233,8 +3234,8 @@
                 END IF
 !
                 IF ( MSCDAUX1 .NE. UNDEF .AND. MSCDAUX2 .NE. UNDEF ) THEN
-                  MSCDAUX1 = MSCDAUX1 / REAL( SUMWT8(4)+SUMGRD )
-                  MSCDAUX2 = MSCDAUX2 / REAL( SUMWT8(4)+SUMGRD )
+                  MSCDAUX1 = MSCDAUX1 / REAL( SUMWT8(4)*SUMGRD )
+                  MSCDAUX2 = MSCDAUX2 / REAL( SUMWT8(4)*SUMGRD )
                   IF ( MSCD(ISEA) .NE. UNDEF ) THEN
                     MSCDAUX1 = MSCDAUX1 + COS ( MSCD(ISEA) )
                     MSCDAUX2 = MSCDAUX2 + SIN ( MSCD(ISEA) )
@@ -3244,7 +3245,7 @@
 !
                 IF ( QPAUX .NE. UNDEF ) THEN
                   IF ( QP(ISEA) .EQ. UNDEF )   QP(ISEA) = 0.
-                  QP(ISEA) = QP(ISEA) + QPAUX / REAL( SUMWT8(5)+SUMGRD )
+                  QP(ISEA) = QP(ISEA) + QPAUX / REAL( SUMWT8(5)*SUMGRD )
                 END IF
 !
               END IF !/ ( USEGRID(IG) )
