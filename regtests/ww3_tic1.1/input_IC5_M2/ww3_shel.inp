@@ -64,15 +64,15 @@ $  19680606 014500
 $    T T T T T  T T T T T  T T T T T  T
 $
 $ Homogeneous field data --------------------------------------------- $
-$      ICE1  ice thickness, e.g. 1 m
-$      ICE2  effective viscosity of ice cover, e.g. 5.0e+7 m2/sec
+$      ICE1  ice thickness, e.g. 1.0 m
+$      ICE2  effective viscosity of ice cover, e.g. 2.2 kg m^{-2} s^{-1}
 $      ICE3  density of ice, e.g. 917.0 kg/m3
-$      ICE4  effective shear modulus of ice, e.g. 0.0 Pa or 4.9e+12 Pa
-$ constant case:
+$      ICE4  effective shear modulus of ice, e.g. 1.0 Pa
+$ constant case (for the EFS model):
    'IC1' 19680606 000000   1.0
-   'IC2' 19680606 000000   5.0e+7
+   'IC2' 19680606 000000   2.2
    'IC3' 19680606 000000 917.0
-   'IC4' 19680606 000000   4.9e+12
+   'IC4' 19680606 000000   1.0
    'STP'
 $
 $ -------------------------------------------------------------------- $
