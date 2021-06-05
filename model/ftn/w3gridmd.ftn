@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Apr-2020 |
+!/                  | Last update :         27-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -109,6 +109,7 @@
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    24-Jun-2020 : RTD output b. c. to rotated grid.   ( version 7.11 )
 !/    27-May-2021 : Updates for IC5 (Q. Liu)            ( version 7.12 )
+!/    27-May-2021 : Moved to a subroutine               ( version 7.XX )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -117,13 +118,13 @@
 !/
 !  1. Purpose :
 !
-!     "Grid" preprocessing program, which writes a model definition
+!     "Grid" preprocessing subroutine, which writes a model definition
 !     file containing the model parameter settigs and grid data.
 !
 !  2. Method :
 !
 !     Information is read from the file ww3_grid.inp (NDSI), or
-!     preset in this program. A model definition file mod_def.ww3 is
+!     preset in this subroutine. A model definition file mod_def.ww3 is
 !     then produced by W3IOGR. Note that the name of the model
 !     definition file is set in W3IOGR.
 !
@@ -171,7 +172,7 @@
 !
 !  5. Called by :
 !
-!     None, stand-alone program.
+!     ww3_grid program
 !
 !  6. Error messages :
 !
