@@ -243,7 +243,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'DPT HS DIR ICE'
-  TYPE%POINT%FILE          = '../input_IC5/points.list'
+  TYPE%POINT%FILE          = '../input_IC5_M3/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -341,13 +341,13 @@
   HOMOG_INPUT(1)%VALUE1      = 1.0
 
   HOMOG_INPUT(2)%NAME        = 'IC2'
-  HOMOG_INPUT(2)%VALUE1      = 5.0e+7
+  HOMOG_INPUT(2)%VALUE1      = 3.0
 
   HOMOG_INPUT(3)%NAME        = 'IC3'
   HOMOG_INPUT(3)%VALUE1      = 917.0
 
   HOMOG_INPUT(4)%NAME        = 'IC4'
-  HOMOG_INPUT(4)%VALUE1      = 4.9e+12
+  HOMOG_INPUT(4)%VALUE1      = 1.0
 /
 
 ! -------------------------------------------------------------------- !
