@@ -28,7 +28,7 @@ module gke_mod
 !/                                                      ( Q. Liu       )
 !/    08-Jul-2019 : Use kind=8 for qi_nnz               ( Q. Liu       )
 !/    01-Apr-2020 : Boundary conditions                 ( Q. Liu       )
-!/    03-Jun-2021 : Merge into the WW3 Github           ( version 7.xx )
+!/    03-Jun-2021 : Merge into the WW3 Github           ( version 7.12 )
 !/                                                      ( Q. Liu       )
 !/
 !  1. Purpose:
@@ -1616,6 +1616,8 @@ module gke_mod
 !/    09-Dec-2018 : Extracted from Odin's subr. `calcQRSNL`
 !/                                                      ( Q. Liu      )
 !/    10-Jun-2019 : Include Janssen's KE properly       ( Q. Liu      )
+!/    07-Jun-2021 : Switch off the cal. of kurtosis (!|KT|)
+!/                                                      ( Q. Liu      )
 !/
 ! 1. Purpose:
 !    Calculate the nonlinear transfer rates for a given frequency
@@ -1796,8 +1798,8 @@ module gke_mod
                      Dvk1(qi_QQ) + Dvk1(qi_RR) )
 !
         end if
-! Calc m2 for Kurtosis estimation ((2.6) of Annekov & Shrira (2013))
-        SecM2 = sum(Cvk1 * qr_om * qr_dk) ** 2.
+!|KT|! Calc m2 for Kurtosis estimation ((2.6) of Annekov & Shrira (2013))
+!|KT|        SecM2 = sum(Cvk1 * qr_om * qr_dk) ** 2.
 !
 !       write(*, *) '.... Input args: t0, t1 :', t0, t1
         if (abs(t1) < qr_eps) then
@@ -1867,22 +1869,23 @@ module gke_mod
 !   i) it is easy to calculate Dnl for Janssen's KE (but we may
 !      have to abandon the sparse array approach)
 !  ii) it is challenging to get Dnl for GKE.
-            Dnl = 0.0
+            Dnl  = 0.0
+            Kurt = 0.0
 !
-! ◆ Kurtosis
-            if (qi_kev .eq. 0) then
-! GKE from GS13, GB16
-                Mnpqr  = -3.0 / SecM2 * qr_TKurt * aimag(ETau * Inpqr1)
-            else if (qi_kev .eq. 1) then
-! KE from J03 (here the imaginary part becomes [1 - cos(Δωt)] / Δω
-!               Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(ETau * Inpqr1)
-                Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(Inpqr1)
-            end if
-! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
-! symmetric array operation Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
-            call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, 1.0)
-            Mnp2D  = reshape(Mnp1D, (/ns, ns/))
-            Kurt   = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP)
+!|KT|! ◆ Kurtosis
+!|KT|            if (qi_kev .eq. 0) then
+!|KT|! GKE from GS13, GB16
+!|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * aimag(ETau * Inpqr1)
+!|KT|            else if (qi_kev .eq. 1) then
+!|KT|! KE from J03 (here the imaginary part becomes [1 - cos(Δωt)] / Δω
+!|KT|!               Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(ETau * Inpqr1)
+!|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(Inpqr1)
+!|KT|            end if
+!|KT|! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
+!|KT|! symmetric array operation Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
+!|KT|            call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, 1.0)
+!|KT|            Mnp2D  = reshape(Mnp1D, (/ns, ns/))
+!|KT|            Kurt   = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP)
 !
 ! I₁ → I₀ for next computation (time step)
             t0     = t1
