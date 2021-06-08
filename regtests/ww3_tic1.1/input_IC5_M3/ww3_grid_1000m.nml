@@ -69,10 +69,10 @@
 !     TIMESTEPS%DTMIN      = 0.         ! minimum source term time step (s)
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  240.
-  TIMESTEPS%DTXY         =  240.
-  TIMESTEPS%DTKTH        =  240.
-  TIMESTEPS%DTMIN        =  240.
+  TIMESTEPS%DTMAX        =  60.
+  TIMESTEPS%DTXY         =  60.
+  TIMESTEPS%DTKTH        =  60.
+  TIMESTEPS%DTMIN        =  60.
 /
 
 ! -------------------------------------------------------------------- !
@@ -134,7 +134,7 @@
 ! -------------------------------------------------------------------- !
 &GRID_NML
   GRID%NAME         =  '1-D parameterized ice test'
-  GRID%NML          =  '../input_IC5/namelists_2500m.nml'
+  GRID%NML          =  '../input_IC5_M3/namelists_1000m.nml'
   GRID%TYPE         =  'RECT'
   GRID%COORD        =  'CART'
   GRID%CLOS         =  'NONE'
@@ -171,10 +171,10 @@
 &RECT_NML
   RECT%NX           =  156
   RECT%NY           =  3
-  RECT%SX           =  2.5E3
-  RECT%SY           =  2.5E3
-  RECT%X0           =  -2.5E3
-  RECT%Y0           =  -2.5E3
+  RECT%SX           =  1.0E3
+  RECT%SY           =  1.0E3
+  RECT%X0           =  -1.0E3
+  RECT%Y0           =  -1.0E3
 /
 
 ! -------------------------------------------------------------------- !

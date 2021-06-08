@@ -341,7 +341,7 @@
 !/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
 !/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '
 !/IC4      TNAMEI = 'Ice sink term (empirical)     '
-!/IC5      TNAMEI = 'Ice sink term (Mosig et al.)  '
+!/IC5      TNAMEI = 'Ice sink term (eff. medium)   '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
 !/DBX      TNAME4 = 'Experimental                  '
