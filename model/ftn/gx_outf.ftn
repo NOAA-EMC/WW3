@@ -8,7 +8,7 @@
 !/                  |           A. Chawla               |
 !/                  |           J.H.G.M. Alves          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -37,6 +37,7 @@
 !/    25-Feb-2013 : Adding double-index output fields   ( version 4.11 ) 
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+!/    22-Mar-2021 : RHOA and TAUA added as output       ( version 7.xx )
 !/
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -124,12 +125,13 @@
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG,            &
+                          UST, USTDIR, RHOAIR
       USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
-                          PTM1, PT1, PT2, PEP,                         &
+                          PTM1, PT1, PT2, PEP, TAUA, TAUADIR,          &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,      &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
@@ -734,7 +736,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Mar-2007 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -748,6 +750,7 @@
 !/    18-Jan-2007 : Update MSOUT/MBOUT treatment.       ( version 3.10 )
 !/    28-Mar-2007 : Adding partitioned output.          ( version 3.11 )
 !/                  Adding user slots for outputs.
+!/    22-Mar-2021 : Add output fields RHOA and TAUA     ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -971,15 +974,30 @@
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
 !
+!     Atmospheric momentum 
+!
+              ELSE IF ( J.EQ.1 .AND. K.EQ.8 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
+                                                        , MAPSF, XY )
+!
+!     Air density
+!
+              ELSE IF ( J.EQ.1 .AND. K.EQ.9 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
+!
 !     Ice thickness
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.9 ) THEN
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.11 ) THEN
 !/IS2          FLONE = .TRUE.
 !/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
 !
 !     Average sea ice floe diameter
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.10) THEN
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.12) THEN
 !/IS2          FLONE = .TRUE.
 !/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )
 !

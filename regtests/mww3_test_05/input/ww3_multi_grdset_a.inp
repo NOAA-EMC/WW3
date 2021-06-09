@@ -2,13 +2,13 @@ $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
   3 1 T 1 T T
 $
-  'input' F F T F F F F
+  'input' F F T F F F F F F
 $
   'points'
 $
-  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
-  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
-  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   3  1  0.00 1.00  F
+  'grd1'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
+  'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   2  1  0.00 1.00  F
+  'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no' 'no' 'no'   3  1  0.00 1.00  F
 $
    19680606 000000   19680606 060000
 $

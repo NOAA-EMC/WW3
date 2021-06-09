@@ -11,6 +11,8 @@ $                   WND   Winds.
 $                   WNS   Winds (including air-sea temp. dif.)
 $                   CUR   Currents.
 $                   DAT   Data for assimilation.
+$                   TAU   Atmospheric momentum
+$                   RHO   Air density
 $
 $   Format types :  AI    Transfer field 'as is'. (ITYPE 1)
 $                   LL    Field defined on regular longitude-latitude

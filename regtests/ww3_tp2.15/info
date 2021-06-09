@@ -25,7 +25,14 @@
 # Wind data for this test case was produced by the COSMO-ME model, and have #
 # been provided by CNMCA (National Meteorological Service, Rome, Italy).    #
 #                                                                           #
-# Model results are presented here for the purpose of testingi              #
+# Additionally, a wind stress-driven test with variable air density field   #
+# is included. At the moment the test is still wind-driven as the stress-   #
+# driven case is not fully implemented, but it is included to check that    #
+# the stress is properly read, interpolated, and written to the output.     #
+# Wind stress and density data were provided by the Met Office by modifying #
+# the wind data used to run the wind-driven test.                           #
+#                                                                           #
+# Model results are presented here for the purpose of testing               #
 # the formulations of space-time extreme parameters. This regression test   #
 # oversimplifies real-case bathymetry and wind fields, thus comparison with #
 # measurements are merely qualitative.                                      #  
@@ -50,7 +57,7 @@
 #   the script output.                                                      #
 #                                                                           #
 #                       Francesco Barbariol, Jose-Henrique Alves, Sep 2016  #
-#                                                   Last Mod : Jan 2018     #
+#                                                   Last Mod : May 2021     #
 #                                                                           #
 #    Copyright 2009-2016 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
