@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -39,6 +39,7 @@
 !/    11-Nov-2013 : Allows for input binary files to be of WAVEWATCH
 !/                  type (i.e. accounts for the header) ( version 4.13 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    22-Mar-2021 : Add momentum and air density        ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -47,9 +48,9 @@
 !/
 !  1. Purpose :
 !
-!     Pre-processing of the input water level, current, wind and ice
-!     fields as well as assimilation data for the generic shell W3SHEL
-!     (ww3_shel.ftn).
+!     Pre-processing of the input water level, current, wind, ice
+!     fields, momentum and air density, as well as assimilation data
+!     for the generic shell W3SHEL (ww3_shel.ftn).
 !
 !  2. Method :
 !
@@ -247,7 +248,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*65, FROMF*4, NAMEF*65
-      CHARACTER(LEN=12)       :: IDSTR1(-7:5)
+      CHARACTER(LEN=12)       :: IDSTR1(-7:7)
       CHARACTER(LEN=15)       :: IDSTR3(3)
       CHARACTER(LEN=32)       :: FORMT(2), FORMF(2)
       CHARACTER(LEN=20)       :: IDSTR2(5)
@@ -267,7 +268,8 @@
                     'mud thkness ' , 'mud viscos. ' ,                 &
                     'ice         ' , 'water levels' ,                 &
                     'winds       ' , 'currents    ' ,                 &
-                    'data        ' /
+                    'data        ' , 'momentum    ' ,                 &
+                    'air density ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
                     'data (assimilation) ' /
@@ -375,6 +377,10 @@
           IFLD    = 4
         ELSE IF ( IDFLD.EQ.'DAT' ) THEN
           IFLD    = 5
+        ELSE IF ( IDFLD.EQ.'TAU' ) THEN
+          IFLD    = 6
+        ELSE IF ( IDFLD.EQ.'RHO' ) THEN
+          IFLD    = 7
         ELSE
           WRITE (NDSE,1030) IDFLD
           CALL EXTCDE ( 1 )
@@ -406,6 +412,9 @@
 !/WNT2          IF (IFLD.EQ.3) WRITE (NDSO,2930)
 !/CRT1          IF (IFLD.EQ.4) WRITE (NDSO,1930)
 !/CRT2          IF (IFLD.EQ.4) WRITE (NDSO,2930)
+!/WNT0          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT1          IF (IFLD.EQ.6) WRITE (NDSO,1930)
+!/WNT2          IF (IFLD.EQ.6) WRITE (NDSO,2930)
         END IF
       IF ( FLBERG ) WRITE (NDSO,938)
       IF ( FLSTAB ) WRITE (NDSO,939)
@@ -1252,6 +1261,27 @@
 !/CRT2                      END DO
 !/CRT2                 END IF
 !
+! ... Momentum, correct for velocity or energy conservation
+!
+!/WNT1                IF (IFLD.EQ.6) THEN
+!/WNT1                    DO IY=1,NY
+!/WNT1                      DO IX=1,NX
+!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT1                        END DO
+!/WNT1                      END DO
+!/WNT1                  END IF
+!
+!/WNT2                IF (IFLD.EQ.6) THEN
+!/WNT2                    DO IY=1,NY
+!/WNT2                      DO IX=1,NX
+!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
+!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
+!/WNT2                        END DO
+!/WNT2                      END DO
+!/WNT2                  END IF
               END IF
 !
           END IF
