@@ -197,8 +197,8 @@
       FP    = 0.0
 !
       IF (4.0*SQRT(EMEAN) .GT. HSMIN) THEN
-         EB = SUM(A,1) * SIG /CG * DTH
-         FP = SUM(SIG * EB**4 * DSII) / SUM(EB**4 * DSII)
+         EB = SUM(A,1) * SIG(1:NK) /CG * DTH
+         FP = SUM(SIG(1:NK) * EB**4 * DSII) / MAX(1E-10, SUM(EB**4 * DSII))
          FP = FP * TPIINV
       END IF
 !

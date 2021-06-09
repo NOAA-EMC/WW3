@@ -80,8 +80,7 @@
   if [ "$netcdf_compile" = 'yes' ]
   then
     if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-    #opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
-    opt="$opt `$NETCDF_CONFIG --cflags`" ;;
+    opt="$opt `$NETCDF_CONFIG --cflags`"
   fi
 
   # ftn include dir
