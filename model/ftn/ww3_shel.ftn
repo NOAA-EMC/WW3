@@ -1250,7 +1250,7 @@
           END IF
           IF (WORDS(7) .EQ. 'T') THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-            READ (NDSI,*,END=2001,ERR=2002) FLDRST
+            READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
           END IF
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
                              FLOGRR, IAPROC, NAPOUT, IERR )
