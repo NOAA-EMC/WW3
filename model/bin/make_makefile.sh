@@ -114,7 +114,7 @@
 #sort:grib:
       grib   ) TY='one'
                ID='GRIB package'
-               OK='NOGRB NCEP1 NCEP2' ;;
+               OK='NOGRB NCEP2' ;;
 #sort:mcp:
       mcp    ) TY='upto1'
                ID='model coupling protocol'
