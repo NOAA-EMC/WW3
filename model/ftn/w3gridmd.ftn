@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Apr-2020 |
+!/                  | Last update :         27-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -109,6 +109,8 @@
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    24-Jun-2020 : RTD output b. c. to rotated grid.   ( version 7.11 )
 !/    05-Jan-2021 : Update SMC grid for multi-grid. JGLi( version 7.xx )
+!/    27-May-2021 : Updates for IC5 (Q. Liu)            ( version 7.12 )
+!/    27-May-2021 : Moved to a subroutine               ( version 7.XX )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -117,13 +119,13 @@
 !/
 !  1. Purpose :
 !
-!     "Grid" preprocessing program, which writes a model definition
+!     "Grid" preprocessing subroutine, which writes a model definition
 !     file containing the model parameter settigs and grid data.
 !
 !  2. Method :
 !
 !     Information is read from the file ww3_grid.inp (NDSI), or
-!     preset in this program. A model definition file mod_def.ww3 is
+!     preset in this subroutine. A model definition file mod_def.ww3 is
 !     then produced by W3IOGR. Note that the name of the model
 !     definition file is set in W3IOGR.
 !
@@ -171,7 +173,7 @@
 !
 !  5. Called by :
 !
-!     None, stand-alone program.
+!     ww3_grid program
 !
 !  6. Error messages :
 !
@@ -457,8 +459,9 @@
 !                  (Wang and Shen JGR 2010)
 !     !/IC4   Sink term for empirical, frequency-dependent attenuation
 !                   in ice (Wadhams et al. 1988: JGR 93 (C6) 6799-6818)
-!     !/IC5   Sink term for interaction with ice (Mosig et al. method)
-!                  (Mosig et al. 2015: JGR)
+!     !/IC5   Sink term for interaction with ice (effective medium mod.)
+!                  (Mosig et al. 2015, Meylan et al. 2018, Liu et al.
+!                   2020)
 !
 !     !/UOST  Unresolved Obstacles Source Term (UOST), Mentaschi et al. 2015
 !
@@ -702,7 +705,9 @@
 !
 !/IC5  REAL                    :: IC5MINIG, IC5MINWT,                  &
 !/IC5                             IC5MAXKRATIO, IC5MAXKI, IC5MINHW,    &
-!/IC5                             IC5MAXITER, IC5RKICK, IC5KFILTER
+!/IC5                             IC5MAXITER, IC5RKICK, IC5KFILTER,    &
+!/IC5                             IC5VEMOD
+!/IC5  CHARACTER(LEN=4)        :: IC5MSTR(3) = (/' EFS', ' RP ', ' M2 '/)
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -842,7 +847,7 @@
 !/IC4      NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
 !/IC5      NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
 !/IC5                       IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK,&
-!/IC5                       IC5KFILTER
+!/IC5                       IC5KFILTER, IC5VEMOD
 !/IG1      NAMELIST /SIG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -1995,7 +2000,7 @@
 !
 !/IC5      WRITE (NDSO,935)
 !/IC5      WRITE(NDSO,'(A/A/)')'    Sice will be calculated using '&
-!/IC5            //'Mosig et al. method.','        '&
+!/IC5            //'effective medium models.','        '&
 !/IC5            //'Required field input: ice parameters 1, 2, 3 and 4.'
 !
 ! 6.l Read unstructured data 
@@ -2433,10 +2438,11 @@
 !/IC5       IC5MINWT      = 0.
 !/IC5       IC5MAXKRATIO  = 1E9
 !/IC5       IC5MAXKI      = 100.
-!/IC5       IC5MINHW      = 300.
+!/IC5       IC5MINHW      = 0.
 !/IC5       IC5MAXITER    = 100.
 !/IC5       IC5RKICK      = 0.
 !/IC5       IC5KFILTER    = 0.0025
+!/IC5       IC5VEMOD      = 3. ! 1: EFS, 2: RP, 3: M2 (default)
 !
 !/IC2      CALL READNL ( NDSS, 'SIC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
@@ -2448,10 +2454,11 @@
 !/IC4      WRITE (NDSO,971) STATUS
 !
 !/IC5      CALL READNL ( NDSS, 'SIC5 ', STATUS )
+!/IC5      IC5VEMOD = MIN(MAX(1., IC5VEMOD), 3.)
 !/IC5      WRITE (NDSO,971) STATUS
 !/IC5      WRITE (NDSO,2971) IC5MINIG, IC5MINWT, IC5MAXKRATIO,         &
 !/IC5                        IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK, &
-!/IC5                        IC5KFILTER
+!/IC5                        IC5KFILTER, IC5MSTR(NINT(IC5VEMOD))
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -2804,7 +2811,7 @@
 !
 !/IC5         WRITE(NDSO,2981) IC5MINIG, IC5MINWT, IC5MAXKRATIO,       &
 !/IC5                          IC5MAXKI, IC5MINHW, IC5MAXITER,         &
-!/IC5                          IC5RKICK, IC5KFILTER
+!/IC5                          IC5RKICK, IC5KFILTER, IC5VEMOD
 !
 !/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
 !
@@ -4747,6 +4754,7 @@
 !/IC5       IC5PARS(6)=IC5MAXITER
 !/IC5       IC5PARS(7)=IC5RKICK
 !/IC5       IC5PARS(8)=IC5KFILTER
+!/IC5       IC5PARS(9)=IC5VEMOD
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = IS2BACKSCAT
@@ -5945,7 +5953,7 @@
 !/IC3               ' --------------------------------------------------')
 !/IC4  971 FORMAT (/'  Empirical wave-ice physics   ',A/      &
 !/IC4               ' --------------------------------------------------')
-!/IC5  971 FORMAT (/'  Visco-elastic ice layer (SIC5) ',A/      &
+!/IC5  971 FORMAT (/'  Effective medium ice model (SIC5) ',A/      &
 !/IC5               ' --------------------------------------------------')
 !/IC5 2971 FORMAT ( '       Min. Ice shear modulus G     : ', E10.1/, &
 !/IC5               '       Min. Wave period T           : ', F7.2/,  &
@@ -5954,7 +5962,8 @@
 !/IC5               '       Min. Water depth (d)         : ', F5.0/,  &
 !/IC5               '       Max. # of Newton Iter.       : ', F5.0/,  &
 !/IC5               '       Use Rand. Kick               : ', F5.0/,  &
-!/IC5               '       Excluded Imag. Corridor      : ', F9.4/ )
+!/IC5               '       Excluded Imag. Corridor      : ', F9.4/,  &
+!/IC5               '       Selected ice model           : ', A/)
 !
  8972 FORMAT ( '       Wind input reduction factor in presence of ', &
                /'         ice :',F6.2, &
@@ -6002,7 +6011,8 @@
                ', IC5MAXKRATIO = ', E9.2, ','/                        &
                '        IC5MAXKI = ', E9.2, ', IC5MINHW = ', F4.0,    &
                ', IC5MAXITER = ', F4.0, ','/                          &
-               '        IC5RKICK = ', F2.0, ', IC5KFILTER = ', F7.4,' /')
+               '        IC5RKICK = ', F2.0, ', IC5KFILTER = ', F7.4,  &
+               ', IC5VEMOD   = ', F4.0, ' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1,', PMOVE =',F6.3,','/           &
