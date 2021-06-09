@@ -1272,7 +1272,7 @@
       IF ( .NOT.FLLIN .AND.  .NOT.FLINDS .AND.  .NOT.FLNL .AND.        &
            .NOT.FLBT  .AND.  .NOT.FLIC   .AND.  .NOT.FLIS .AND.        &
            .NOT.FLDB  .AND.  .NOT.FLTR   .AND.  .NOT.FLBS .AND.        &
-           .AND.  .NOT.FLREF  .AND.  FLSOU ) THEN
+           .NOT.FLREF .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
