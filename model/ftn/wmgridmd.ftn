@@ -747,7 +747,6 @@
                DY_MIN_GRIDI=MINVAL(GRIDS(I)%HQFAC)
                DX_MAX_GRIDI=MAXVAL(GRIDS(I)%HPFAC)
                DY_MAX_GRIDI=MAXVAL(GRIDS(I)%HQFAC)
-!!Li        ELSEIF ( GRIDS(I)%GTYPE .EQ. RLGTYPE ) THEN
             ELSEIF ( GRIDS(I)%GTYPE .EQ. RLGTYPE .OR.      &
                      GRIDS(I)%GTYPE .EQ. SMCTYPE ) THEN
 !!Li  SMC grid shares mesh with regular grid.  22Mar2021
@@ -798,7 +797,6 @@
                DY_MIN_GRIDJ=MINVAL(GRIDS(J)%HQFAC)
                DX_MAX_GRIDJ=MAXVAL(GRIDS(J)%HPFAC)
                DY_MAX_GRIDJ=MAXVAL(GRIDS(J)%HQFAC)
-!!Li        ELSEIF ( GRIDS(J)%GTYPE .EQ. RLGTYPE ) THEN
             ELSEIF ( GRIDS(J)%GTYPE .EQ. RLGTYPE .OR.      &
                      GRIDS(J)%GTYPE .EQ. SMCTYPE ) THEN
 !!Li  SMC grid shares mesh with regular grid.  22Mar2021
@@ -1334,7 +1332,6 @@
 !/T38   T38=.TRUE.
 
       DO GDST=1, NRGRD
-!!Li     IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE ) THEN
          IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE .AND.        &
               GRIDS(GDST)%GTYPE .NE. SMCTYPE ) THEN  
 !!Li  Add SMCTYPE option into ALL_REGULAR case.  JGLi20Nov2020
@@ -5373,15 +5370,6 @@
 !
       DEALLOCATE( SHRANK, STORES, NREC, NSND, NTPP, STAT=ISTAT )
       CHECK_DEALLOC_STATUS( ISTAT )
-!
-!!  Output EQSTGE values for checking.  JGLi23Dec2020
-!!Li   IF( IMPROC .EQ. 1 ) WRITE(MDSE,*) " I  J  EQSTGE(I,J)%NREC/NSND  IP" 
-!!Li   DO I=1, NRGRD
-!!Li     DO J=1, NRGRD
-!!Li       IF( EQSTGE(I,J)%NREC > 0 .OR. EQSTGE(I,J)%NSND > 0 )    &
-!!Li         WRITE(MDSE,'(5I6)') I, J, EQSTGE(I,J)%NREC, EQSTGE(I,J)%NSND, IMPROC
-!!Li     END DO
-!!Li   END DO
 !
 !/MPI/!/SMC        IF( IMPROC .EQ. NMPERR )              &
 !/SMC        WRITE(MDSE,*) " *** WMSMCEQL completed from PE ", IMPROC
