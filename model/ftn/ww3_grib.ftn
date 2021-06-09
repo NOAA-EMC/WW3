@@ -1041,7 +1041,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  8 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = 032
 !/NCEP2                KPDS(2) = 1
 !/NCEP2                KPDS(1) = 2
 !/NCEP2                LISTSEC0(1) = 0
@@ -1075,7 +1074,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 091
 !/NCEP2                KPDS(2) = 0
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
@@ -1179,7 +1177,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WNMEAN, MAPSF, X1 )
 !
