@@ -355,7 +355,6 @@
 !/PR1      TNAMEP = 'First order upstream          '
 !/UQ      TNAMEP = '3rd order UQ scheme           '
 !/UNO      TNAMEP = '2nd order UNO scheme          '
-!/SMC      TNAMEP = 'UNO2 on SMC grid propagation  '
 !/PRX      TNAMEP = 'Experimental                  '
 !/PR0      TNAMEG = 'No GSE aleviation             '
 !/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
