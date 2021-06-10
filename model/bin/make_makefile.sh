@@ -93,7 +93,7 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in mach nco grib mcp netcdf scrip scripnc \
+  for type in mach nco grib netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
@@ -115,11 +115,6 @@
       grib   ) TY='one'
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
-#sort:mcp:
-      mcp    ) TY='upto1'
-               ID='model coupling protocol'
-               TS='NCC'
-               OK='NCC' ;;
 #sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
@@ -488,7 +483,6 @@
       reflection    ) reflection=$sw ;;
       refrx  ) refrx=$sw ;;
       ig     ) ig=$sw ;;
-      mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
@@ -820,11 +814,6 @@
    OASICM) igcmmd='w3igcmmd'
    esac
 
-  cplcode=$NULL
-  case $mcp in 
-   NCC) cplcode='cmp.comm ww.comm'
-  esac
-
   if [ -n "$thread1" ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '
@@ -938,7 +927,7 @@
              source="$source $is $db $tr $bs $xx $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
                  IO="$IO w3iosfmd w3partmd"
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode"
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
                 aux="$aux w3nmlshelmd $pdlibyow" ;;
     ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]

@@ -85,9 +85,6 @@
                                    touch ww3_prtide.ftn
                                    touch ww3_grib.ftn ;; 
      'grib'   ) cd $main_dir/ftn ; touch ww3_grib.ftn ;; 
-     'mcp'    ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch ww3_shel.ftn 
-                                   touch w3gridmd.ftn ;;
      'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
                                    touch ww3_ounp.ftn
                                    touch ww3_bounc.ftn
