@@ -2294,7 +2294,7 @@
               IF ( IERR .NE. 0 ) GOTO 2080
 !
 !!Li   Print a warning message when GTYPE not matching forcing field one. 
-              IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. CROOT) )       &
+              IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
                  WRITE (MDSE, *) ' *** Warning: grid', I, ' GTYPE=',  & 
                  GTYPE, ' not matching field', J, ' grid type', JJJ
 !

@@ -4854,7 +4854,7 @@
                                 ISEA, JSEA, IPRC, ITAG, TGRP, NPMX,  &
                                 IP, NP, ICROOT, JCROOT, IEER
 
-      INTEGER, Dimension(MPI_STATUS_SIZE):: MPIState
+!/MPI      INTEGER, Dimension(MPI_STATUS_SIZE):: MPIState
 
 !/S      INTEGER, SAVE            :: IENT = 0
       INTEGER, ALLOCATABLE   :: NREC(:),  NSND(:),  NTPP(:),  &
