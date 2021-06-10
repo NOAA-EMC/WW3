@@ -85,9 +85,6 @@
                                    touch ww3_prtide.ftn
                                    touch ww3_grib.ftn ;; 
      'grib'   ) cd $main_dir/ftn ; touch ww3_grib.ftn ;; 
-     'mcp'    ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch ww3_shel.ftn 
-                                   touch w3gridmd.ftn ;;
      'c90'    ) cd $main_dir/ftn ; touch w3iogomd.ftn
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
