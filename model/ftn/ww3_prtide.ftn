@@ -505,8 +505,10 @@
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
                     ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN
                   TIDEOK = 0
-                  WRITE(NDSO,'(A,I8,F10.2,A,F10.2)') 'BAD: ', INDMAX(I), MAXVALCON(I), &
-                        '/', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
+                  WRITE(NDSO,'(A,I8,F10.2,A,2F10.2)') &
+                       '[BAD POINT] GREATER THAN THRESHOLD ', MAXVALCON(I), &
+                       ' AT INDEX ', INDMAX(I),                             &
+                       ' WITH X-Y COMPONENTS : ', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
                 END IF
                 BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
               END DO

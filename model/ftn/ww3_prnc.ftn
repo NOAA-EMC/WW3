@@ -1,4 +1,5 @@
 #include "w3macros.h"
+#define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
 !/ ------------------------------------------------------------------- /
       PROGRAM W3PRNC
 !/
@@ -719,6 +720,7 @@
         WRITE(NDSE,1029)
       END IF
       IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
+      CALL CHECK_ERR(IRET)
       CALL U2D(TIMEUNITS,REFDATE,IERR)
       CALL D2J(REFDATE,REFJULDAY,IERR)
 
@@ -1367,9 +1369,10 @@
         TIDAL_CONST(:,:,:,:,:)=0.
         DO I=1,NFIELDS
           IRET=NF90_INQ_VARID(NCID,FIELDSNAME(I),VARIDF(I))
+          CALL CHECK_ERR(IRET)
         END DO
-        IRET=NF90_GET_ATT(NCID,VARIDTMP,"_FillValue", FILLVALUE)
-
+        IRET=NF90_GET_ATT(NCID,VARIDF(1),"_FillValue", FILLVALUE)
+        CALL CHECK_ERR(IRET)
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',SCFAC(1))
         IF (IRET .NE. 0) SCFAC(1) = 1.0
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
@@ -1377,8 +1380,8 @@
         IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
           IF (IRET .NE. 0) SCFAC(2) = 1.0
-          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
-          IF (IRET .NE. 0) ADDOFF(1) = 0.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(2))
+          IF (IRET .NE. 0) ADDOFF(2) = 0.0
         END IF
 
 
@@ -2416,7 +2419,7 @@
 
 !==============================================================================
 
-      SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERROR(IRET, ILINE)
 
       USE NETCDF
       USE W3ODATMD, ONLY: NDSE
@@ -2424,17 +2427,18 @@
 
       IMPLICIT NONE
 
-      INTEGER IRET
+      INTEGER IRET, ILINE
 
       IF (IRET .NE. NF90_NOERR) THEN
-        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN PRNC :'
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN OUNF :'
+        WRITE(NDSE,*) ' LINE NUMBER ', ILINE
         WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
         WRITE(NDSE,*) NF90_STRERROR(IRET)
         CALL EXTCDE ( 59 )
       END IF
       RETURN
 
-      END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERROR
 
 !==============================================================================
 
