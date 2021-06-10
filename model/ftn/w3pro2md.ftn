@@ -578,8 +578,6 @@
 !
 !       !/OMPH  Hybrid OpenMP directives.
 !
-!       !/NEC   Enable NEC SXF90 compiler directives.
-!
 !       !/S     Enable subroutine tracing.
 !
 !       !/T     Enable general test output.

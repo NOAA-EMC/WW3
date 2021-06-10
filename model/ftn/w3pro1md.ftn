@@ -365,8 +365,6 @@
 !
 !  9. Switches :
 !
-!     !/NEC Enable NEC SXF90 compiler directives.
-!
 !     !/S   Enable subroutine tracing.
 !
 !     !/OMPH  Hybrid OpenMP directives.
