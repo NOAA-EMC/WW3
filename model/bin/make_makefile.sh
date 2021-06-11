@@ -93,7 +93,7 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in mach nco grib mcp c90 nec scrip scripnc \
+  for type in mach nco grib scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
@@ -115,21 +115,6 @@
       grib   ) TY='one'
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
-#sort:mcp:
-      mcp    ) TY='upto1'
-               ID='model coupling protocol'
-               TS='NCC'
-               OK='NCC' ;;
-#sort:c90:
-      c90    ) TY='upto1'
-               ID='Cray C90 compiler directives'
-               TS='C90'
-               OK='C90' ;;
-#sort:nec:
-      nec    ) TY='upto1'
-               ID='NEC compiler directives'
-               TS='NEC'
-               OK='NEC' ;;
 #sort:scrip:
       scrip  ) TY='upto1'
                ID='grid to grid interpolation'
@@ -493,7 +478,6 @@
       reflection    ) reflection=$sw ;;
       refrx  ) refrx=$sw ;;
       ig     ) ig=$sw ;;
-      mcp    ) mcp=$sw ;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
       mprf   ) mprf=$sw ;;
@@ -824,11 +808,6 @@
    OASICM) igcmmd='w3igcmmd'
    esac
 
-  cplcode=$NULL
-  case $mcp in 
-   NCC) cplcode='cmp.comm ww.comm'
-  esac
-
   if [ -n "$thread1" ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '
@@ -942,7 +921,7 @@
              source="$source $is $db $tr $bs $xx $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
                  IO="$IO w3iosfmd w3partmd"
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode"
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
                 aux="$aux w3nmlshelmd $pdlibyow" ;;
     ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]
