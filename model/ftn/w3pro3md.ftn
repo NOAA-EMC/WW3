@@ -88,9 +88,6 @@
 !       !/UQ    3rd order UQ propagation scheme.
 !       !/UNO   2nd order UNO propagation scheme.
 !
-!       !/C90   Cray FORTRAN 90 compiler directives.
-!       !/NEC   NEC SXF90 compiler directives.
-!
 !       !/MGP   Moving grid corrections.
 !       !/MGG   Moving grid corrections.
 !
@@ -675,8 +672,6 @@
 !
 !  9. Switches :
 !
-!       !/NEC   Enable NEC SXF90 compiler directives.
-!
 !       !/S     Enable subroutine tracing.
 !
 !       !/OMPH  Hybrid OpenMP directives.
@@ -1249,8 +1244,6 @@
 !
 !/T      WRITE (NDST,9040) NSEA
 !
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY)
 !
       DO ISEA=1, NSEA
