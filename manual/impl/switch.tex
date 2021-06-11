@@ -277,8 +277,6 @@ compatible with switches used in previous model versions.
 \begin{slist}
 \sit{ompg}{General loop parallelization directives used for both exclusive
     OpenMP parallelization and hybrid MPI-OpenMP parallelization.}
-\sit{ompx}{Idem, but for directives used only for exclusive OpenMP
-    parallelization.}  
 \sit{omph}{Idem, but for directives used only for hybrid MPI-OpenMP
     parallelization.}
 \sit{pdlib}{Domain Decomposition for Explicit and Implicit Solver on triangular unstructured grids. ({\code ParMetis} is required for this option)}
@@ -293,7 +291,7 @@ Currently only affects code compiled with the {\F smc} switch.}
 Note that these switches can only be used in certain combinations, as enforced
 in the model installation scripts (particularly {\file make\_makefile.sh}. A
 pure MPI approach requires the {\F dist} and {\F mpi} switches. A pure OpenMP
-approach requires the {\F shrd}, {\F ompg} and {\F ompx} switches, and the
+approach requires the {\F shrd},  and {\F ompg} switches, and the
 hybrid approach requires the {\F dist}, {\F mpi}, {\F ompg}, and {\F omph}
 switches.
 
@@ -308,14 +306,6 @@ additions.
 \sit{mgw }{Apply wind correction in moving grid approach.}
 \sit{mgg }{Activate GSE alleviation correction in
            Eq.~(\ref{eq:move_GSE_avg2}).}
-\end{slist}
-
-\noindent
-The following compiler dependent switches are available. They may not have
-been maintained for recent compiler versions.
-\begin{slist}
-\sit{c90} {Compiler directives for Cray C90 (vectorization).}
-\sit{nec} {Compiler directives for NEC SX6/SX8 (vectorization).}
 \end{slist}
 
 \noindent
@@ -334,7 +324,6 @@ Furthermore the following miscellaneous switches are available:
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
 \sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
            programs.}
-\sit{ncc} {NCEP coupler.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
