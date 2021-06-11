@@ -759,9 +759,6 @@
         READ(NML_DOMAIN%STOP,*) TIMEN
         CALL T2D(TIMEN,STOPDATE,IERR)
         CALL D2J(STOPDATE,STOPJULDAY,IERR)
-!<TODO> - seems not necessary
-!/NL5        QI5TBEG = TIME0
-!/NL5        WRITE(*, *) '|1st| NL5 TBEG: ', QI5TBEG
 
 ! 2.3 Domain setup
 
@@ -1671,7 +1668,6 @@
 !/OASIS      TIME00 = TIME0
 !/OASIS      TIMEEND = TIMEN
 !/NL5      QI5TBEG = TIME0
-!/NL5        WRITE(*, *) '|2nd| NL5 TBEG: ', QI5TBEG
 !
       DTTST  = DSEC21 ( TIME0 , TIMEN )
       IF ( DTTST .LE. 0. ) GOTO 2003

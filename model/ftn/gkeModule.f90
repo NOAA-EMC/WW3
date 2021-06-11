@@ -720,8 +720,7 @@ module gke_mod
                     end if
                 end do
             end do
-! TODO: debug
-            write(*, *) '→ nnz = ', nnz
+!/TS        write(*, *) '→ nnz = ', nnz
         end do
 !/
     end subroutine FindQuartetNumber
@@ -1863,7 +1862,7 @@ module gke_mod
             Mnp2D  = reshape(Mnp1D, (/ns, ns/))
             Snl    = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP, 2) / qr_dk
 ! ◆ Conservation Check
-            write(*, '(A, E15.3)') '   ← {WW3 GKE } ΣSnl(k) * dk: ', sum(Snl * qr_dk)
+!/TS        write(*, '(A, E15.3)') '   ← {WW3 GKE } ΣSnl(k) * dk: ', sum(Snl * qr_dk)
 !
 ! ◆ Dnl [Diagonal term]  <TODO>
 !   i) it is easy to calculate Dnl for Janssen's KE (but we may

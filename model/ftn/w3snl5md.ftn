@@ -208,15 +208,15 @@
 ! Three options for phase mixing
       IF (QI5PMX .EQ. 0) THEN
 ! 1) 0: no phase mixing
-          IF (IAPROC .EQ. NAPOUT)                                    &
-          WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)')                &
-              " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL:",              &
-              QI5TBEG, T1ABS, T1REL
+!/TS      IF (IAPROC .EQ. NAPOUT)                                    &
+!/TS      WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)')                &
+!/TS          " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL:",              &
+!/TS          QI5TBEG, T1ABS, T1REL
       ELSE
-          IF (IAPROC .EQ. NAPOUT)                                    &
-          WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)', ADVANCE='no')  &
-              " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL, T1REL[P]:",    &
-              QI5TBEG, T1ABS, T1REL
+!/TS      IF (IAPROC .EQ. NAPOUT)                                    &
+!/TS      WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)', ADVANCE='no')  &
+!/TS          " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL, T1REL[P]:",    &
+!/TS          QI5TBEG, T1ABS, T1REL
 !
 ! Calc. Phase mixing interval
           IF (QI5PMX .GT. 0) THEN
@@ -252,10 +252,10 @@
           ELSE
               T1REL         = PM_DELT
           END IF
-          IF (IAPROC .EQ. NAPOUT) THEN
-              WRITE(SCREEN, '(F9.1)') T1REL
-              IF (QI5PMX .LT. 0 ) WRITE(SCREEN, '(A, F6.3)') '↔ bT: ', WBT
-          ENDIF
+!/TS      IF (IAPROC .EQ. NAPOUT) THEN
+!/TS          WRITE(SCREEN, '(F9.1)') T1REL
+!/TS          IF (QI5PMX .LT. 0 ) WRITE(SCREEN, '(A, F6.3)') '↔ bT: ', WBT
+!/TS      ENDIF
       END IF
 !
 ! Calc. Cvk1 from A (C(\bm{k}) = g N(k, θ) / k)
@@ -296,9 +296,10 @@
           IF (IAPROC .EQ. NAPOUT) THEN
               WRITE(SCREEN, *)
               WRITE(SCREEN, '(A)')                          &
-                  '⊚ → [WW3 SNL₅] Point ouptut initialization'
+                  ' ⊚ → [WW3 SNL₅] Point ouptut initialization'
               WRITE(SCREEN, '(A, I4)')                      &
-                  '⊚ → [WW3 SNL₅] # of valid points: ', NSEL
+                  ' ⊚ → [WW3 SNL₅] # of valid points: ', NSEL
+              WRITE(SCREEN, *)
           END IF
       END IF
 !
@@ -321,9 +322,9 @@
               PDIFF = ABS(PSEA(1:NSEL) - ISEA)
               IF (ANY(PDIFF .EQ. 0)) THEN
                   JLOC = MINLOC(PDIFF, 1)
-                  IF (IAPROC .EQ. NAPOUT)                               &
-                  WRITE(SCREEN, '(3A, I10.8, I7.6)')                    &
-                      '✓ Point output for |', PNMS(JLOC), '| @', T1ABS
+!/TS              IF (IAPROC .EQ. NAPOUT)                               &
+!/TS              WRITE(SCREEN, '(3A, I10.8, I7.6)')                    &
+!/TS                  '✓ Point output for |', PNMS(JLOC), '| @', T1ABS
 
 ! N(θ, k) →  F(f, θ) & S(θ, k) →  S(f, θ)
                   DO ITH = 1, NTH
@@ -459,13 +460,13 @@
 !
 ! Q. Liu (TODO)
       IF (IAPROC .EQ. NAPOUT) THEN
-          write(SCREEN, '(A, F6.1)') " ⊚ → [WW3 SNL₅]: water depth   : ", qr_depth
-          write(SCREEN, '(A, F7.2)') " ⊚ → [WW3 SNL₅]: ω λc cut off  : ", qr_oml
-          write(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: Discretiza.   : ", qi_disc
-          write(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: GKE version   : ", qi_kev
-          write(SCREEN, '(A, I12)' ) " ⊚ → [WW3 SNL₅]: # of quartets : ", qi_nnz
-          write(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: interpol.     : ", qi_interp
-          write(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: phase mixing  : ", QI5PMX
+          WRITE(SCREEN, '(A, F6.1)') " ⊚ → [WW3 SNL₅]: water depth   : ", qr_depth
+          WRITE(SCREEN, '(A, F7.2)') " ⊚ → [WW3 SNL₅]: ω λc cut off  : ", qr_oml
+          WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: Discretiza.   : ", qi_disc
+          WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: GKE version   : ", qi_kev
+          WRITE(SCREEN, '(A, I12)' ) " ⊚ → [WW3 SNL₅]: # of quartets : ", qi_nnz
+          WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: interpol.     : ", qi_interp
+          WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: phase mixing  : ", QI5PMX
       END IF
 !/
 !/ End of INSNL5 ----------------------------------------------------- /
@@ -724,17 +725,17 @@
           JY   = IYS(JLOC)
           ISEA = MAPFS(JY, JX)
 ! Basic check
-          IF (FLAGLL) THEN
-              IF (IAPROC .EQ. NAPOUT)                                    &
-              WRITE(SCREEN, "(A, 2F10.3, A, 2F10.3, A)")                 &
-                  '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
-                  XGRD(JY, JX), YGRD(JY, JX), ')'
-          ELSE
-              IF (IAPROC .EQ. NAPOUT)                                    &
-              WRITE(SCREEN, "(A, 2E10.3, A, 2E10.3, A)")                 &
-                  '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
-                  XGRD(JY, JX), YGRD(JY, JX), ')'
-          END IF
+!/TS      IF (FLAGLL) THEN
+!/TS          IF (IAPROC .EQ. NAPOUT)                                    &
+!/TS          WRITE(SCREEN, "(A, 2F10.3, A, 2F10.3, A)")                 &
+!/TS              '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
+!/TS              XGRD(JY, JX), YGRD(JY, JX), ')'
+!/TS      ELSE
+!/TS          IF (IAPROC .EQ. NAPOUT)                                    &
+!/TS          WRITE(SCREEN, "(A, 2E10.3, A, 2E10.3, A)")                 &
+!/TS              '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
+!/TS              XGRD(JY, JX), YGRD(JY, JX), ')'
+!/TS      END IF
 ! Store ISEA
           NSEL = NSEL + 1
           PSEA(NSEL) = ISEA

@@ -96,6 +96,8 @@ eqs/NL1.tex \
 eqs/NL2.tex \
 eqs/NL1.tex \
 eqs/NL3.tex \
+eqs/NL4.tex \
+eqs/NL5.tex \
 eqs/NLS.tex \
 eqs/ST1.tex \
 eqs/ST2.tex \
