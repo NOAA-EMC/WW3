@@ -190,25 +190,35 @@
                           DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
                           MAPFS, TH, DTH, SIG, DSIP, XFR, FILEXT
       USE W3GSRUMD, ONLY: W3GFCL
-!/T      USE W3GSRUMD, ONLY: W3GSUP      
+#ifdef W3_T
+      USE W3GSRUMD, ONLY: W3GSUP      
+#endif // W3_T
       USE W3GDATMD, ONLY: XYB, MAXX, MAXY, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME, UST
       USE W3ADATMD, ONLY: CG, DW, CX, CY, UA, UD, AS
-!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+#ifdef W3_MPI
+      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+#endif // W3_MPI
       USE W3ODATMD, ONLY: NDST, NDSE, IAPROC, NAPROC, NAPTRK, NAPERR, &
                           IPASS => IPASS3, ATOLAST => TOLAST,         &
                           ADTOUT => DTOUT, O3INIT, STOP, MASK1,       &
                           MASK2, TRCKID, FNMPRE
-!/MPI      USE W3ODATMD, ONLY: IT0TRK, NRQTR, IRQTR
+#ifdef W3_MPI
+      USE W3ODATMD, ONLY: IT0TRK, NRQTR, IRQTR
+#endif // W3_MPI
 !/
       USE W3TIMEMD
       USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
       USE w3SERVMD, ONLY : STRSPLIT
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -225,11 +235,19 @@
                                  TTIME(2), IX1, IX2, IY1, IY2,        &
                                  IXX(4), IYY(4), I, J, ISEA, JSEA,    &
                                  TOLAST(2)
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T      INTEGER                 :: NREAD, NTRACK, NSPECO, NLOCO
-!/T3      INTEGER                 :: ISPT
-!/MPI      INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
-!/MPI      INTEGER, ALLOCATABLE    :: STATUS(:,:)
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T
+      INTEGER                 :: NREAD, NTRACK, NSPECO, NLOCO
+#endif // W3_T
+#ifdef W3_T3
+      INTEGER                 :: ISPT
+#endif // W3_T3
+#ifdef W3_MPI
+      INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
+      INTEGER, ALLOCATABLE    :: STATUS(:,:)
+#endif // W3_MPI
       REAL                    :: XN, YN, XT, YT, RD, X, Y, WX, WY,    &
                                  SPEC(NK,NTH), FACTOR, ASPTRK(NTH,NK),&
                                  DTOUT, XX(4), YY(4)
@@ -237,15 +255,21 @@
       LOGICAL                 :: FORMI, FLAG1, FLAG2, INGRID
       CHARACTER               :: TRCKT*32, LINE*1024, TSTSTR*3, IDTST*34
       CHARACTER(LEN=100)      :: LIST(5)
-!/T1      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
-!/T2      CHARACTER(LEN=1)        :: MAPSTR(NX)
+#ifdef W3_T1
+      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
+#endif // W3_T1
+#ifdef W3_T2
+      CHARACTER(LEN=1)        :: MAPSTR(NX)
+#endif // W3_T2
 !
       EQUIVALENCE                (IXX(1),IX1) , (IXX(2),IX2) ,        &
                                  (IYY(1),IY1) , (IYY(3),IY2)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3IOTR')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3IOTR')
+#endif // W3_S
 !
       CALL W3SETO ( IMOD, NDSE, NDST )
       CALL W3SETG ( IMOD, NDSE, NDST )
@@ -277,20 +301,26 @@
 !
       ASPTRK = 0.
 !
-!/T      WRITE (NDST,9000) TIME
+#ifdef W3_T
+      WRITE (NDST,9000) TIME
+#endif // W3_T
 !
-!/MPI      IF ( NRQTR .NE. 0 ) THEN
-!/MPI          CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
-!/MPI          ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
-!/MPI          CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
-!/MPI          DEALLOCATE ( STATUS )
-!/MPI        END IF
+#ifdef W3_MPI
+      IF ( NRQTR .NE. 0 ) THEN
+          CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
+          ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
+          CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
+          DEALLOCATE ( STATUS )
+        END IF
+#endif // W3_MPI
 !
 ! 1.  First pass through routine ------------------------------------- *
 !
       IF ( IPASS .EQ. 1 ) THEN
 !
-!/T          WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
+#ifdef W3_T
+          WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
+#endif // W3_T
 !   Removed by F.A. 2010/12/24  /T          CALL W3GSUP ( GSU, NDST )
 !
           I      = LEN_TRIM(FILEXT)
@@ -299,14 +329,18 @@
 ! 1.a Open input file
 !
           IF ( FORMI ) THEN
-!/T              WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
-!/T                                'FORMATTED'
+#ifdef W3_T
+              WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
+                                'FORMATTED'
+#endif // W3_T
               OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
                     STATUS='OLD',ERR=800,FORM='FORMATTED',IOSTAT=IERR)
               READ (NDSTI,'(A)',ERR=801,END=802,IOSTAT=IERR) IDTST
             ELSE
-!/T              WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
-!/T                                'UNFORMATTED'
+#ifdef W3_T
+              WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
+                                'UNFORMATTED'
+#endif // W3_T
               OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
                     STATUS='OLD',ERR=800,FORM='UNFORMATTED',IOSTAT=IERR)
               READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
@@ -317,8 +351,10 @@
 ! 1.b Open output file
 !
           IF ( IAPROC .EQ. NAPTRK ) THEN
-!/T              WRITE (NDST,9012) FNMPRE(:J)//'track_o.'//FILEXT(:I), &
-!/T                                'UNFORMATTED'
+#ifdef W3_T
+              WRITE (NDST,9012) FNMPRE(:J)//'track_o.'//FILEXT(:I), &
+                                'UNFORMATTED'
+#endif // W3_T
               OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
                     FORM='UNFORMATTED',ERR=810,IOSTAT=IERR)
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
@@ -330,7 +366,9 @@
 !
 ! 1.c Initialize maps
 !
-!/T          WRITE (NDST,9015)
+#ifdef W3_T
+          WRITE (NDST,9015)
+#endif // W3_T
 !
           MASK2  = .FALSE.
           TRCKID = ''
@@ -340,7 +378,9 @@
 ! 2.  Preparations --------------------------------------------------- *
 ! 2.a Shift mask arrays
 !
-!/T      WRITE (NDST,9020)
+#ifdef W3_T
+      WRITE (NDST,9020)
+#endif // W3_T
 !
       MASK1  = MASK2
       MASK2  = .FALSE.
@@ -353,25 +393,35 @@
 !
       IF ( DSEC21(TIMEE,TOLAST) .LT. 0. ) THEN
           TIMEE  = TOLAST
-!/T          WRITE (NDST,9022)
+#ifdef W3_T
+          WRITE (NDST,9022)
+#endif // W3_T
         END IF
 !
-!/T      WRITE (NDST,9021) TIMEB, TIMEE
+#ifdef W3_T
+      WRITE (NDST,9021) TIMEB, TIMEE
+#endif // W3_T
 !
 ! 3.  Loop over input points ----------------------------------------- *
 !
-!/T      NREAD  = 0
-!/T      NTRACK = 0
+#ifdef W3_T
+      NREAD  = 0
+      NTRACK = 0
+#endif // W3_T
 !
 ! 3.a Read new track point (infinite loop)
 !
       IF ( STOP ) THEN
           TOLAST = TIME
-!/T          WRITE (NDST,9034)
+#ifdef W3_T
+          WRITE (NDST,9034)
+#endif // W3_T
           GOTO 399
         END IF
 !
-!/T1      WRITE (NDST,9030)
+#ifdef W3_T1
+      WRITE (NDST,9030)
+#endif // W3_T1
 !
       DO
 !
@@ -387,12 +437,16 @@
           ELSE
             READ (NDSTI, ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT, TRCKT
           END IF
-!/T        NREAD  = NREAD + 1
+#ifdef W3_T
+        NREAD  = NREAD + 1
+#endif // W3_T
 !
 ! 3.b Point before time interval
 !
         IF ( DSEC21(TIMEB,TTIME) .LT. 0. ) THEN
-!/T1            WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
+#ifdef W3_T1
+            WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
+#endif // W3_T1
             CYCLE
           END IF
 !
@@ -400,8 +454,12 @@
 !
         IF ( DSEC21(TIMEE,TTIME) .GT. 0. ) THEN
             BACKSPACE (NDSTI)
-!/T            NREAD  = NREAD - 1
-!/T1            WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
+#ifdef W3_T
+            NREAD  = NREAD - 1
+#endif // W3_T
+#ifdef W3_T1
+            WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
+#endif // W3_T1
             GOTO 399
           END IF
 !
@@ -420,8 +478,10 @@
 !       coordinates are adjusted to avoid branch cut crossings)
         INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
         IF ( .NOT. INGRID ) THEN
-!/T1            WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
-!/T1                              'OUT OF GRID'
+#ifdef W3_T1
+            WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
+                              'OUT OF GRID'
+#endif // W3_T1
             CYCLE
           END IF
 !
@@ -477,37 +537,45 @@
           MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
           TRCKID(IY,IX) = TRCKT
 !
-!/T1          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-!/T1              IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-!/T1                  TSTLOC(4*J-3:4*J-1) = 'LND'
-!/T1                ELSE
-!/T1                  TSTLOC(4*J-3:4*J-1) = 'XCL'
-!/T1                END IF
-!/T1            ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
-!/T1              IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
-!/T1                  TSTLOC(4*J-3:4*J-1) = 'ICE'
-!/T1                ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
-!/T1                  TSTLOC(4*J-3:4*J-1) = 'DRY'
-!/T1                ELSE
-!/T1                  TSTLOC(4*J-3:4*J-1) = 'DIS'
-!/T1                END IF
-!/T1            ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
-!/T1              TSTLOC(4*J-3:4*J-1) = 'SEA'
-!/T1            END IF
+#ifdef W3_T1
+          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+              IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+                  TSTLOC(4*J-3:4*J-1) = 'LND'
+                ELSE
+                  TSTLOC(4*J-3:4*J-1) = 'XCL'
+                END IF
+            ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
+              IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
+                  TSTLOC(4*J-3:4*J-1) = 'ICE'
+                ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
+                  TSTLOC(4*J-3:4*J-1) = 'DRY'
+                ELSE
+                  TSTLOC(4*J-3:4*J-1) = 'DIS'
+                END IF
+            ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
+              TSTLOC(4*J-3:4*J-1) = 'SEA'
+            END IF
+#endif // W3_T1
 !
           END DO
 !
-!/T1        WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
-!/T1               IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
+#ifdef W3_T1
+        WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
+               IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
+#endif // W3_T1
 !
-!/T        NTRACK = NTRACK + 1
+#ifdef W3_T
+        NTRACK = NTRACK + 1
+#endif // W3_T
 !
         END DO
 !
 ! 3.g End of input file escape location
 !
   390 CONTINUE
-!/T          WRITE (NDST,9033)
+#ifdef W3_T
+          WRITE (NDST,9033)
+#endif // W3_T
       STOP   = .TRUE.
 !
 ! 3.h Read end escape location
@@ -516,27 +584,33 @@
 !
 ! 3.h Mask test output
 !
-!/T2      WRITE (NDST,9035)
-!/T2      DO IY=NY,1,-1
-!/T2        DO IX=1, NX
-!/T2          IF ( MASK1(IY,IX) ) THEN
-!/T2              MAPSTR(IX) = 'X'
-!/T2            ELSE IF ( MASK2(IY,IX) ) THEN
-!/T2              MAPSTR(IX) = 'x'
-!/T2            ELSE
-!/T2              MAPSTR(IX) = '.'
-!/T2            END IF
-!/T2          END DO
-!/T2          WRITE (NDST,9036) MAPSTR
-!/T2        END DO
+#ifdef W3_T2
+      WRITE (NDST,9035)
+      DO IY=NY,1,-1
+        DO IX=1, NX
+          IF ( MASK1(IY,IX) ) THEN
+              MAPSTR(IX) = 'X'
+            ELSE IF ( MASK2(IY,IX) ) THEN
+              MAPSTR(IX) = 'x'
+            ELSE
+              MAPSTR(IX) = '.'
+            END IF
+          END DO
+          WRITE (NDST,9036) MAPSTR
+        END DO
+#endif // W3_T2
 !
 ! 4.  Write data for flagged locations ------------------------------- *
 !
-!/T      NLOCO  = 0
-!/T      NSPECO = 0
-!/MPI      IT     = IT0TRK
-!/MPI      IROOT  = NAPTRK - 1
-!/MPI      ALLOCATE ( STATUS(MPI_STATUS_SIZE,1) )
+#ifdef W3_T
+      NLOCO  = 0
+      NSPECO = 0
+#endif // W3_T
+#ifdef W3_MPI
+      IT     = IT0TRK
+      IROOT  = NAPTRK - 1
+      ALLOCATE ( STATUS(MPI_STATUS_SIZE,1) )
+#endif // W3_MPI
 !
       DO IY=1, NY
         DO IX=1, NX
@@ -549,8 +623,12 @@
                 X = XGRD(IY,IX)
                 Y = YGRD(IY,IX)
               ENDIF
-!/MPI              IT     = IT + 1
-!/T              NLOCO  = NLOCO + 1
+#ifdef W3_MPI
+              IT     = IT + 1
+#endif // W3_MPI
+#ifdef W3_T
+              NLOCO  = NLOCO + 1
+#endif // W3_T
 !
 ! 4.a Status of point
 !
@@ -572,7 +650,9 @@
                   TSTSTR = 'SEA'
                 END IF
 !
-!/T              IF ( TSTSTR .EQ. 'SEA' ) NSPECO = NSPECO + 1
+#ifdef W3_T
+              IF ( TSTSTR .EQ. 'SEA' ) NSPECO = NSPECO + 1
+#endif // W3_T
 !
 ! 4.b Determine where point is stored
 !     ( land point assumed stored on IAPROC = NAPTRK
@@ -581,19 +661,29 @@
               ISEA   = MAPFS(IY,IX)
               IF ( ISEA .EQ. 0 ) THEN
                   ISPROC = NAPTRK
-!/T3                  ISPT    = -99
+#ifdef W3_T3
+                  ISPT    = -99
+#endif // W3_T3
                 ELSE
                   CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-!/T3                  ISPT    = ISPROC
+#ifdef W3_T3
+                  ISPT    = ISPROC
+#endif // W3_T3
                 END IF
-!/MPI              IFROM  = ISPROC - 1
+#ifdef W3_MPI
+              IFROM  = ISPROC - 1
+#endif // W3_MPI
 ! 4.c Spectrum is at local processor, but this is not the NAPTRK
 !     Send the spectrum to NAPTRK
 
               IF ( ISPROC.EQ.IAPROC .AND. IAPROC.NE.NAPTRK ) THEN
-!/T3                  WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'SENDING'
-!/MPI                  CALL MPI_SEND ( A(1,1,JSEA), NSPEC, MPI_REAL,  &
-!/MPI                           IROOT, IT, MPI_COMM_WAVE, IERR_MPI )
+#ifdef W3_T3
+                  WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'SENDING'
+#endif // W3_T3
+#ifdef W3_MPI
+                  CALL MPI_SEND ( A(1,1,JSEA), NSPEC, MPI_REAL,  &
+                           IROOT, IT, MPI_COMM_WAVE, IERR_MPI )
+#endif // W3_MPI
                 END IF
 !
 ! 4.d This is NAPTRK, perform all output
@@ -620,11 +710,15 @@
 ! ..... Non-local spectra
 !
                         ELSE
-!/T3                          WRITE (NDST,9040) IX, IY, ISEA, ISPT,   &
-!/T3                                            'RECEIVING'
-!/MPI                          CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
-!/MPI                                     IFROM, IT, MPI_COMM_WAVE,   &
-!/MPI                                     STATUS, IERR_MPI )
+#ifdef W3_T3
+                          WRITE (NDST,9040) IX, IY, ISEA, ISPT,   &
+                                            'RECEIVING'
+#endif // W3_T3
+#ifdef W3_MPI
+                          CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
+                                     IFROM, IT, MPI_COMM_WAVE,   &
+                                     STATUS, IERR_MPI )
+#endif // W3_MPI
 !
                           DO IK=1, NK
                             DO ITH=1, NTH
@@ -654,7 +748,9 @@
 !
 ! ..... End of action at NAPTRK
 !
-!/T3                  WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'WRITTEN', time
+#ifdef W3_T3
+                  WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'WRITTEN', time
+#endif // W3_T3
                 END IF
 !
 ! ..... Close IF for mask flag (top section 4)
@@ -666,9 +762,13 @@
           END DO
         END DO
 !
-!/MPI      DEALLOCATE ( STATUS )
+#ifdef W3_MPI
+      DEALLOCATE ( STATUS )
+#endif // W3_MPI
 !
-!/T      WRITE (NDST,9090) NTRACK, NREAD, NSPECO, NLOCO
+#ifdef W3_T
+      WRITE (NDST,9090) NTRACK, NREAD, NSPECO, NLOCO
+#endif // W3_T
 !
       GOTO 888
 !
@@ -701,7 +801,9 @@
 !
   880 CONTINUE
       ATOLAST(:,3) = TIME
-!/T      WRITE (NDST,9080)
+#ifdef W3_T
+      WRITE (NDST,9080)
+#endif // W3_T
 !
   888 CONTINUE
 !
@@ -732,35 +834,51 @@
                '     ERROR IN WRITING TO FILE track_o.',A,' IOSTAT =',I6/ &
                '     (ADITIONAL) TRACK OUTPUT DISABLED '/)
 !
-!/T 9000 FORMAT (' TEST W3IOTR : MODEL TIME       : ',I8.8,I7.6)
-!/T 9010 FORMAT ('               LAST OUTPUT TIME : ',I8.8,I7.6/      &
-!/T              '               OUTPUT TIME INC, : ',F6.0/           &
-!/T              '               UNIT NUMBERS     : ',2I4/            &
-!/T              '               FORMAT FLAGS     : ',L4)
-!/T 9011 FORMAT (' TEST W3IOTR : OPENING INPUT    : ',A,' [',A,']')
-!/T 9012 FORMAT (' TEST W3IOTR : OPENING OUTPUT   : ',A,' [',A,']')
-!/T 9015 FORMAT (' TEST W3IOTR : PREPARING MASKS')
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3IOTR : MODEL TIME       : ',I8.8,I7.6)
+ 9010 FORMAT ('               LAST OUTPUT TIME : ',I8.8,I7.6/      &
+              '               OUTPUT TIME INC, : ',F6.0/           &
+              '               UNIT NUMBERS     : ',2I4/            &
+              '               FORMAT FLAGS     : ',L4)
+ 9011 FORMAT (' TEST W3IOTR : OPENING INPUT    : ',A,' [',A,']')
+ 9012 FORMAT (' TEST W3IOTR : OPENING OUTPUT   : ',A,' [',A,']')
+ 9015 FORMAT (' TEST W3IOTR : PREPARING MASKS')
+#endif // W3_T
 !
-!/T 9020 FORMAT (' TEST W3IOTR : SHIFTING MASKS')
-!/T 9021 FORMAT (' TEST W3IOTR : OUTPUT TIME FRAME: ',I8.8,I7.6/      &
-!/T              '                                  ',I8.8,I7.6)
-!/T 9022 FORMAT (' TEST W3IOTR : ENDING TIME REACHED')
+#ifdef W3_T
+ 9020 FORMAT (' TEST W3IOTR : SHIFTING MASKS')
+ 9021 FORMAT (' TEST W3IOTR : OUTPUT TIME FRAME: ',I8.8,I7.6/      &
+              '                                  ',I8.8,I7.6)
+ 9022 FORMAT (' TEST W3IOTR : ENDING TIME REACHED')
+#endif // W3_T
 !
-!/T1 9030 FORMAT (' TEST W3IOTR : POINT-BY-POINT STATUS')
-!/T1 9031 FORMAT ('      ',I8.8,I7.6,2F9.2,1X,A,1X,4I4,2L3)
-!/T 9033 FORMAT (' TEST W3IOTR : END OF INPUT FILE')
-!/T 9034 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED')
-!/T2 9035 FORMAT (' TEST W3IOTR : DUMP OF MAPS : ')
-!/T2 9036 FORMAT (132A1)
+#ifdef W3_T1
+ 9030 FORMAT (' TEST W3IOTR : POINT-BY-POINT STATUS')
+ 9031 FORMAT ('      ',I8.8,I7.6,2F9.2,1X,A,1X,4I4,2L3)
+#endif // W3_T1
+#ifdef W3_T
+ 9033 FORMAT (' TEST W3IOTR : END OF INPUT FILE')
+ 9034 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED')
+#endif // W3_T
+#ifdef W3_T2
+ 9035 FORMAT (' TEST W3IOTR : DUMP OF MAPS : ')
+ 9036 FORMAT (132A1)
+#endif // W3_T2
 !
-!/T3 9040 FORMAT (' TEST W3IOTR : POINT',2I4,' (',I6,')',             &
-!/T3              ' ON PROCESS',I4,2X,A,I10.8,I7.6)
-!/T 9090 FORMAT (' TEST W3IOTR : NUMBER OF TRACK P: ',I10,            &
-!/T              '  (OUT OF',I10,')'/                                 &
-!/T              '               NUMBER OF SPECTRA: ',I10,            &
-!/T              '  (OUT OF',I10,')')
+#ifdef W3_T3
+ 9040 FORMAT (' TEST W3IOTR : POINT',2I4,' (',I6,')',             &
+              ' ON PROCESS',I4,2X,A,I10.8,I7.6)
+#endif // W3_T3
+#ifdef W3_T
+ 9090 FORMAT (' TEST W3IOTR : NUMBER OF TRACK P: ',I10,            &
+              '  (OUT OF',I10,')'/                                 &
+              '               NUMBER OF SPECTRA: ',I10,            &
+              '  (OUT OF',I10,')')
+#endif // W3_T
 !
-!/T 9080 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED.')
+#ifdef W3_T
+ 9080 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED.')
+#endif // W3_T
 !/
 !/ End of W3IOTR ----------------------------------------------------- /
 !/

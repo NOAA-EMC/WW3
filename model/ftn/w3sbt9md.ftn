@@ -151,7 +151,9 @@
       USE CONSTANTS, ONLY: PI,GRAV,DWAT,NU_WATER
       USE W3SERVMD, ONLY: EXTCDE
       USE W3ODATMD, ONLY: NDSE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -166,7 +168,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
   
    !  LOCAL VARIABLES
       REAL :: DMW(NK)
@@ -209,7 +213,9 @@
      
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SBT9')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SBT9')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !

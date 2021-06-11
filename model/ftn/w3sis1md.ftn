@@ -111,9 +111,15 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN2
       USE W3GDATMD, ONLY: DTMIN, TH, DTH, ECOS, DTMIN
       USE W3GDATMD, ONLY: IS1C1, IS1C2
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T      USE W3ARRYMD, ONLY: PRT2DS
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T
 !
       IMPLICIT NONE
 !/
@@ -125,23 +131,33 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER                 :: IK, ITH, ITH2, IS, IS2
       REAL                    :: ALPHA
-!/T      REAL                    :: SOUT(NK,NTH)
+#ifdef W3_T
+      REAL                    :: SOUT(NK,NTH)
+#endif // W3_T
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIS1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIS1')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
       S     = 0.
-!/T      SOUT  = 0.
+#ifdef W3_T
+      SOUT  = 0.
+#endif // W3_T
 !
 !     Calculate scattering coefficient (linear transfer function) ---- *
       ALPHA = MAX(0., IS1C1 * ICE + IS1C2)
-!/T   WRITE(NDST,8000) ALPHA
+#ifdef W3_T
+   WRITE(NDST,8000) ALPHA
+#endif // W3_T
 !
       IF (ALPHA.GT.0. .AND. ICE.GT.0.) THEN
 ! 1. Calculate the derivative ---------------------------------------- *
@@ -162,15 +178,19 @@
 !
          S = S / DTMIN
 !
-!/T         DO IK = 1, NK
-!/T           DO ITH = 1, NTH
-!/T              IS  = ITH+(IK-1)*NTH
-!/T              SOUT(IK,ITH) = S(IS)
-!/T           END DO
-!/T         END DO
+#ifdef W3_T
+         DO IK = 1, NK
+           DO ITH = 1, NTH
+              IS  = ITH+(IK-1)*NTH
+              SOUT(IK,ITH) = S(IS)
+           END DO
+         END DO
+#endif // W3_T
 !
-!/T            CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,    &
-!/T                               0.0, 0.001, 'Diag Sir1', ' ', 'NONAME')
+#ifdef W3_T
+            CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,    &
+                               0.0, 0.001, 'Diag Sir1', ' ', 'NONAME')
+#endif // W3_T
 !
       END IF
 ! Formats

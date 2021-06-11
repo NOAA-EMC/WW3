@@ -168,9 +168,13 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, DTH, SIG, DDEN, FTE, FTF, FTWN,    &
                           NITTIN, ZWIND, CINXSI
-!/T      USE W3ODATMD, ONLY: NDST
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
 
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
 !/
       IMPLICIT NONE
@@ -187,12 +191,16 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, I1, ITT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: EBAND, FPISTR, EB(NK), UST
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SPR2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SPR2')
+#endif // W3_S
 !
       UST    = MAX ( 0.0001 , USTAR )
 !
@@ -327,10 +335,18 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2,       &
                           ESIN, ECOS, FTE, FTTR, FPIMIN, ZWIND,       &
                           FACTI1, FACTI2, FSWELL
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !/
       IMPLICIT NONE
 !/
@@ -345,21 +361,31 @@
 !/ Local parameters
 !/
       INTEGER                 :: IS, IK, IOMA, ICL, NKFILT, NKFIL2
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER       ITH
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T0
+      INTEGER       ITH
+#endif // W3_T0
       REAL                    :: COSU, SINU, COSFAC, LAMBDA, ULAM,    &
                                  CLAM, OMA, M0, M1, RD1, RD2, BETA,   &
                                  FACLN1, FACLN2, USTAR, TRANS, FPISTR,&
                                  FP1STR, FP1, SIN1A(NK)
       REAL, PARAMETER         :: TRANSF = 0.75
       REAL, PARAMETER         :: PEAKFC = 0.8
-!/T0      REAL                    :: DOUT(NK,NTH)
+#ifdef W3_T0
+      REAL                    :: DOUT(NK,NTH)
+#endif // W3_T0
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIN2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIN2')
+#endif // W3_S
 !
-!/T      WRITE (NDST,9000) DSIGA, DDRAG, U, UDIR*RADE, CD, Z0
+#ifdef W3_T
+      WRITE (NDST,9000) DSIGA, DDRAG, U, UDIR*RADE, CD, Z0
+#endif // W3_T
 !
 ! 1.  Preparations
 !
@@ -368,7 +394,9 @@
 !
 ! 2.  Loop over spectrum
 !
-!/T2      WRITE (NDST,9020)
+#ifdef W3_T2
+      WRITE (NDST,9020)
+#endif // W3_T2
 !
       FACLN1 = U / LOG(ZWIND/Z0)
       FACLN2 = LOG(Z0)
@@ -393,8 +421,10 @@
                +    RD1   *    RD2   * BETATB(IOMA+1,ICL+1)
         D(IS)  = BETA * SIG2(IS)
         S(IS)  = A(IS) * D(IS)
-!/T2        WRITE (NDST,9021) IS, COSFAC, LAMBDA, ULAM, CLAM*1.E3,    &
-!/T2                          OMA, BETA*1.E4
+#ifdef W3_T2
+        WRITE (NDST,9021) IS, COSFAC, LAMBDA, ULAM, CLAM*1.E3,    &
+                          OMA, BETA*1.E4
+#endif // W3_T2
         END DO
 !
 ! 3.  Calculate FPI
@@ -449,27 +479,37 @@
 !
 ! ... Test output of arrays
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
-!/T0                         0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
+                         0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sin')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sin')
+#endif // W3_T1
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3SIN2 : DSIGA,DDRAG,U,UDIR,CD,Z0(IN) : '/    &
-!/T              '              ',F8.4,F9.6,F7.2,F6.1,F8.5,F8.5)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SIN2 : DSIGA,DDRAG,U,UDIR,CD,Z0(IN) : '/    &
+              '              ',F8.4,F9.6,F7.2,F6.1,F8.5,F8.5)
+#endif // W3_T
 !
-!/T2 9020 FORMAT (' TEST W3SIN2 : IS, COS, LAMBDA, ULAM, CLAM*1E3, ', &
-!/T2              'OMA, BETA*1E4')
-!/T2 9021 FORMAT (6X,I6,F7.2,1X,F6.1,2(1X,F5.2),2(1X,F6.2))
+#ifdef W3_T2
+ 9020 FORMAT (' TEST W3SIN2 : IS, COS, LAMBDA, ULAM, CLAM*1E3, ', &
+              'OMA, BETA*1E4')
+ 9021 FORMAT (6X,I6,F7.2,1X,F6.1,2(1X,F5.2),2(1X,F6.2))
+#endif // W3_T2
 !/
 !/ End of W3SIN2 ----------------------------------------------------- /
 !/
@@ -552,10 +592,18 @@
                           FACTI1, FACTI2, XF1, XF2, XFH, SDSALN,      &
                           CDSA0, CDSA1, CDSA2, CDSB0, CDSB1, CDSB2,   &
                           CDSB3
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !
       IMPLICIT NONE
 !/
@@ -570,18 +618,28 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, IKHW
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: FHW, XHW, FPIT, PHI, AF1, AF2,       &
                                  AFILT, BFILT, CDIST, FILT, POW,      &
                                  CDISH, CDISP, HW, EHIGH, EBD(NK)
-!/T      REAL          POWMAX
-!/T0      REAL             DOUT(NK,NTH)
+#ifdef W3_T
+      REAL          POWMAX
+#endif // W3_T
+#ifdef W3_T0
+      REAL             DOUT(NK,NTH)
+#endif // W3_T0
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SDS2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SDS2')
+#endif // W3_S
 !
-!/T      WRITE (NDST,9000) FPI, USTAR
+#ifdef W3_T
+      WRITE (NDST,9000) FPI, USTAR
+#endif // W3_T
 !
 ! 1.  Preparations
 ! 1.a HW
@@ -629,8 +687,12 @@
 !
 ! 2.  Combined diagonal factor
 !
-!/T2      WRITE (NDST,9020)
-!/T      POWMAX = 0.
+#ifdef W3_T2
+      WRITE (NDST,9020)
+#endif // W3_T2
+#ifdef W3_T
+      POWMAX = 0.
+#endif // W3_T
       DO IK=1, NK
         FILT    = MIN ( 1., MAX ( 0. , AFILT + BFILT*SIG(IK) ))
         POW     = MIN ( 25. , CDSA1 / ( CDISP*SIG(IK) )**CDSA2 )
@@ -641,13 +703,19 @@
           ELSE
             D(1,IK) = (1.-FILT)  * CDIST * K(IK)**2
           END IF
-!/T        POWMAX = MAX(POW*FILT,POWMAX)
-!/T2        WRITE (NDST,9021) IK, FILT, ALFA(IK)/SDSALN,              &
-!/T2               CDIST*PHI*K(IK)**2, CDSA0*CDISH*SIG(IK)**3         &
-!/T2                  * (ALFA(IK)/SDSALN)**POW, D(1,IK)
+#ifdef W3_T
+        POWMAX = MAX(POW*FILT,POWMAX)
+#endif // W3_T
+#ifdef W3_T2
+        WRITE (NDST,9021) IK, FILT, ALFA(IK)/SDSALN,              &
+               CDIST*PHI*K(IK)**2, CDSA0*CDISH*SIG(IK)**3         &
+                  * (ALFA(IK)/SDSALN)**POW, D(1,IK)
+#endif // W3_T2
        END DO
 !
-!/T      WRITE (NDST,9010) AF1, AF2, AFILT, BFILT, POWMAX
+#ifdef W3_T
+      WRITE (NDST,9010) AF1, AF2, AFILT, BFILT, POWMAX
+#endif // W3_T
 !
 ! 3.  2-D diagonal array
 !
@@ -661,25 +729,35 @@
 !
 ! ... Test output of arrays
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          DOUT(IK,ITH) = D(ITH,IK)
-!/T0         END DO
-!/T0       END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH,IK)
+         END DO
+       END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
-!/T0                         0.0, 0.001, 'Diag Sds', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
+                         0.0, 0.001, 'Diag Sds', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sds')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sds')
+#endif // W3_T1
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3SDS2 : FPI, USTAR           : ',2F8.3)
-!/T 9010 FORMAT (' TEST W3SDS2 : AF1-2, A-BFILT, PMAX : ',4F7.3,E10.3)
-!/T2 9020 FORMAT (' TEST W3SDS2 : IK, FILT, ALFA, DDST, DDSH, DDS')
-!/T2 9021 FORMAT ('           ',I6,2F7.3,3E11.3)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SDS2 : FPI, USTAR           : ',2F8.3)
+ 9010 FORMAT (' TEST W3SDS2 : AF1-2, A-BFILT, PMAX : ',4F7.3,E10.3)
+#endif // W3_T
+#ifdef W3_T2
+ 9020 FORMAT (' TEST W3SDS2 : IK, FILT, ALFA, DDST, DDSH, DDS')
+ 9021 FORMAT ('           ',I6,2F7.3,3E11.3)
+#endif // W3_T2
 !/
 !/ End of W3SDS2 ----------------------------------------------------- /
 !/
@@ -757,7 +835,9 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -768,16 +848,28 @@
 !/ Local parameters
 !/
       INTEGER                 :: ISIGA, IDRAG
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER                 :: I1
-!/T1      INTEGER                 :: IE1
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T0
+      INTEGER                 :: I1
+#endif // W3_T0
+#ifdef W3_T1
+      INTEGER                 :: IE1
+#endif // W3_T1
       REAL                    :: SIGA, DRAG
-!/T0      REAL                    :: BMIN, BMAX
-!/T1      REAL                    :: ENORM, ERR(NRDRAG)
+#ifdef W3_T0
+      REAL                    :: BMIN, BMAX
+#endif // W3_T0
+#ifdef W3_T1
+      REAL                    :: ENORM, ERR(NRDRAG)
+#endif // W3_T1
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INPTAB')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INPTAB')
+#endif // W3_S
 !
 ! 1.  Determine range and increments of table ------------------------ *
 
@@ -785,7 +877,9 @@
       DSIGA  = SIGAMX / REAL(NRSIGA)
       DDRAG  = DRAGMX / REAL(NRDRAG)
 !
-!/T      WRITE (NDST,9000) SIGAMX, DSIGA, DRAGMX, DDRAG
+#ifdef W3_T
+      WRITE (NDST,9000) SIGAMX, DSIGA, DRAGMX, DDRAG
+#endif // W3_T
 !
 ! 2.  Fill table ----------------------------------------------------- *
 !
@@ -799,83 +893,97 @@
 !
 ! 3.  Test output ---------------------------------------------------- *
 !
-!/T0      WRITE (NDST,9010)
-!/T0      I1     = MIN (35,NRDRAG)
-!/T0      DO ISIGA=-NRSIGA,NRSIGA
-!/T0        SIGA   = REAL(ISIGA) * DSIGA
-!/T0        BMIN   = 0.
-!/T0        BMAX   = 0.
-!/T0        DO IDRAG=1, NRDRAG
-!/T0          BMIN   = MIN ( BMIN , BETATB(ISIGA,IDRAG) )
-!/T0          BMAX   = MAX ( BMAX , BETATB(ISIGA,IDRAG) )
-!/T0          END DO
-!/T0        BMAX   = MAX ( BMAX , -BMIN )
-!/T0        WRITE (NDST,9011) ISIGA, SIGA, BMAX,                      &
-!/T0            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=1,I1)
-!/T0        IF (I1.LT.NRDRAG) WRITE (NDST,9012)                       &
-!/T0            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=I1+1,NRDRAG)
-!/T0        END DO
+#ifdef W3_T0
+      WRITE (NDST,9010)
+      I1     = MIN (35,NRDRAG)
+      DO ISIGA=-NRSIGA,NRSIGA
+        SIGA   = REAL(ISIGA) * DSIGA
+        BMIN   = 0.
+        BMAX   = 0.
+        DO IDRAG=1, NRDRAG
+          BMIN   = MIN ( BMIN , BETATB(ISIGA,IDRAG) )
+          BMAX   = MAX ( BMAX , BETATB(ISIGA,IDRAG) )
+          END DO
+        BMAX   = MAX ( BMAX , -BMIN )
+        WRITE (NDST,9011) ISIGA, SIGA, BMAX,                      &
+            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=1,I1)
+        IF (I1.LT.NRDRAG) WRITE (NDST,9012)                       &
+            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=I1+1,NRDRAG)
+        END DO
+#endif // W3_T0
 !
-!/T1      WRITE (NDST,9020)
-!/T1      IE1    = MIN (30,NRDRAG-1)
-!/T1      ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
-!/T1      DO ISIGA=-NRSIGA,NRSIGA
-!/T1        SIGA   = REAL(ISIGA) * DSIGA
-!/T1        IF ( ABS(SIGA) .LT. 5.01 ) THEN
-!/T1            DO IDRAG=1, NRDRAG-1
-!/T1              DRAG   = ( REAL(IDRAG) + 0.5 ) * DDRAG
-!/T1              ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
-!/T1                 ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA,IDRAG+1) )
-!/T1              END DO
-!/T1            WRITE (NDST,9021) ISIGA, SIGA,                        &
-!/T1                (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
-!/T1            IF (IE1.LT.NRDRAG-1) WRITE (NDST,9022)                &
-!/T1                (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG-1)
-!/T1          ENDIF
-!/T1        END DO
+#ifdef W3_T1
+      WRITE (NDST,9020)
+      IE1    = MIN (30,NRDRAG-1)
+      ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
+      DO ISIGA=-NRSIGA,NRSIGA
+        SIGA   = REAL(ISIGA) * DSIGA
+        IF ( ABS(SIGA) .LT. 5.01 ) THEN
+            DO IDRAG=1, NRDRAG-1
+              DRAG   = ( REAL(IDRAG) + 0.5 ) * DDRAG
+              ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
+                 ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA,IDRAG+1) )
+              END DO
+            WRITE (NDST,9021) ISIGA, SIGA,                        &
+                (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
+            IF (IE1.LT.NRDRAG-1) WRITE (NDST,9022)                &
+                (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG-1)
+          ENDIF
+        END DO
+#endif // W3_T1
 !
-!/T1      WRITE (NDST,9030)
-!/T1      IE1    = MIN (30,NRDRAG)
-!/T1      ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
-!/T1      DO ISIGA=-NRSIGA,NRSIGA-1
-!/T1        SIGA   = ( REAL(ISIGA) + 0.5 ) * DSIGA
-!/T1        IF ( ABS(SIGA) .LT. 5.01 ) THEN
-!/T1            DO IDRAG=1, NRDRAG
-!/T1              DRAG   = REAL(IDRAG) * DDRAG
-!/T1              ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
-!/T1                 ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA+1,IDRAG) )
-!/T1              END DO
-!/T1            WRITE (NDST,9031) ISIGA, SIGA,                        &
-!/T1                (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
-!/T1            IF (IE1.LT.NRDRAG) WRITE (NDST,9032)                  &
-!/T1                (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG)
-!/T1          ENDIF
-!/T1        END DO
+#ifdef W3_T1
+      WRITE (NDST,9030)
+      IE1    = MIN (30,NRDRAG)
+      ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
+      DO ISIGA=-NRSIGA,NRSIGA-1
+        SIGA   = ( REAL(ISIGA) + 0.5 ) * DSIGA
+        IF ( ABS(SIGA) .LT. 5.01 ) THEN
+            DO IDRAG=1, NRDRAG
+              DRAG   = REAL(IDRAG) * DDRAG
+              ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
+                 ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA+1,IDRAG) )
+              END DO
+            WRITE (NDST,9031) ISIGA, SIGA,                        &
+                (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
+            IF (IE1.LT.NRDRAG) WRITE (NDST,9032)                  &
+                (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG)
+          ENDIF
+        END DO
+#endif // W3_T1
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT ( ' TEST INPTAB : SIGAMX, DSIGA : ',F6.2,F8.2/        &
-!/T               '               DRAGMX, DDRAG : ',F8.4,F9.5)
+#ifdef W3_T
+ 9000 FORMAT ( ' TEST INPTAB : SIGAMX, DSIGA : ',F6.2,F8.2/        &
+               '               DRAGMX, DDRAG : ',F8.4,F9.5)
+#endif // W3_T
 !
-!/T0 9010 FORMAT (/' TEST INPTAB : TABLE, NORMALIZED WITH ',          &
-!/T0               'BETATB(ISIGA,NRDRAG)'/                            &
-!/T0               '               ISIGA, SIGA, BETA_MAX, TABLE (x100)')
-!/T0 9011 FORMAT (1X,I4,F7.2,F6.4,1X,35I3)
-!/T0 9012 FORMAT (19X,35I3)
+#ifdef W3_T0
+ 9010 FORMAT (/' TEST INPTAB : TABLE, NORMALIZED WITH ',          &
+               'BETATB(ISIGA,NRDRAG)'/                            &
+               '               ISIGA, SIGA, BETA_MAX, TABLE (x100)')
+ 9011 FORMAT (1X,I4,F7.2,F6.4,1X,35I3)
+ 9012 FORMAT (19X,35I3)
+#endif // W3_T0
 !
-!/T1 9020 FORMAT (/' TEST INPTAB : ERROR DUE TO DRAG, NORMALIZED ',   &
-!/T1               'WITH BETATB(ISIGA,NRDRAG)'/                       &
-!/T1               '               ISIGA, SIGA, TABLE (x1000)')
-!/T1 9021 FORMAT (1X,I4,F7.2,35I3)
-!/T1 9022 FORMAT (12X,35I3)
+#ifdef W3_T1
+ 9020 FORMAT (/' TEST INPTAB : ERROR DUE TO DRAG, NORMALIZED ',   &
+               'WITH BETATB(ISIGA,NRDRAG)'/                       &
+               '               ISIGA, SIGA, TABLE (x1000)')
+ 9021 FORMAT (1X,I4,F7.2,35I3)
+ 9022 FORMAT (12X,35I3)
+#endif // W3_T1
 !
-!/T1 9030 FORMAT (/' TEST INPTAB : ERROR DUE TO SIGA, NORMALIZED WITH ',  &
-!/T1               'BETATB(ISIGA,NRDRAG)'/                            &
-!/T1               '               ISIGA, SIGA, TABLE (x1000)')
-!/T1 9031 FORMAT (1X,I4,F7.2,35I3)
-!/T1 9032 FORMAT (12X,35I3)
+#ifdef W3_T1
+ 9030 FORMAT (/' TEST INPTAB : ERROR DUE TO SIGA, NORMALIZED WITH ',  &
+               'BETATB(ISIGA,NRDRAG)'/                            &
+               '               ISIGA, SIGA, TABLE (x1000)')
+ 9031 FORMAT (1X,I4,F7.2,35I3)
+ 9032 FORMAT (12X,35I3)
+#endif // W3_T1
 !/
 !/    Internal function W3BETA
 !/
@@ -948,15 +1056,21 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: OM1, OM2, A0, A1, A2, A3, A4, A5,    &
                                  A6, A7, A8, A9, A10
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3BETA')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3BETA')
+#endif // W3_S
 !
-!/T0      WRITE (NDST,9000) OMA, CL
+#ifdef W3_T0
+      WRITE (NDST,9000) OMA, CL
+#endif // W3_T0
 !
 ! calculate Omegas
 !
@@ -978,8 +1092,10 @@
       A7     = (A9*(OM2-1)**2+A10) / (OM2-OM1)
       A8     =  A7 * OM1
 !
-!/T0      WRITE (NDST,9001) OM1, OM2
-!/T0      WRITE (NDST,9002) A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
+#ifdef W3_T0
+      WRITE (NDST,9001) OM1, OM2
+      WRITE (NDST,9002) A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
+#endif // W3_T0
 !
 ! calculate beta * 1.e4
 !
@@ -998,17 +1114,21 @@
 ! beta * dwat / dair
 !
       W3BETA = W3BETA * 1.E-4
-!/T0      WRITE (NDST,9003) W3BETA
+#ifdef W3_T0
+      WRITE (NDST,9003) W3BETA
+#endif // W3_T0
 !
       RETURN
 !
 ! Formats
 !
-!/T0 9000 FORMAT ( ' TEST W3BETA : INPUT : ',2E10.3)
-!/T0 9001 FORMAT ( ' TEST W3BETA : OM1-2 : ',2E10.3)
-!/T0 9002 FORMAT ( ' TEST W3BETA : A0-10 : ',5E10.3/                   &
-!/T0               '             ',6E10.3)
-!/T0 9003 FORMAT ( ' TEST W3BETA : BETA  : ',E10.3)
+#ifdef W3_T0
+ 9000 FORMAT ( ' TEST W3BETA : INPUT : ',2E10.3)
+ 9001 FORMAT ( ' TEST W3BETA : OM1-2 : ',2E10.3)
+ 9002 FORMAT ( ' TEST W3BETA : A0-10 : ',5E10.3/                   &
+               '             ',6E10.3)
+ 9003 FORMAT ( ' TEST W3BETA : BETA  : ',E10.3)
+#endif // W3_T0
 !/
 !/ End of W3BETA ----------------------------------------------------- /
 !/

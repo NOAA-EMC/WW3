@@ -43,7 +43,9 @@ module MallocInfo_m
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
   use :: iso_c_binding
   implicit none
@@ -54,11 +56,15 @@ module MallocInfo_m
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3XXXX')
+#endif // W3_S
   
     !> This structure type is used to return information about the dynamic memory allocator.
     type, bind(c) :: MallInfo_t
@@ -152,7 +158,9 @@ module MallocInfo_m
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
     implicit none
 !/
@@ -162,11 +170,15 @@ module MallocInfo_m
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3XXXX')
+#endif // W3_S
     type(MallInfo_t), intent(out) :: malinfo
     malinfo = mallinfo()
   end subroutine
@@ -216,7 +228,9 @@ module MallocInfo_m
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
     implicit none
 !/
@@ -226,11 +240,15 @@ module MallocInfo_m
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3XXXX')
+#endif // W3_S
     real :: ib2m
     integer(8) :: vmsize, vmRSS
     integer, intent(in)          :: ihdnl 
@@ -307,7 +325,9 @@ module MallocInfo_m
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
     implicit none
 !/
@@ -317,11 +337,15 @@ module MallocInfo_m
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3XXXX')
+#endif // W3_S
     integer(8) :: vmsize
     character(len=80) :: stat_key, stat_value
     !
@@ -387,7 +411,9 @@ module MallocInfo_m
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
     implicit none
 !/
@@ -397,11 +423,15 @@ module MallocInfo_m
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3XXXX')
+#endif // W3_S
     integer(8) :: vmRSS
     character(len=80) :: stat_key, stat_value
     !

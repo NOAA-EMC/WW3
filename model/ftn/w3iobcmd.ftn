@@ -191,10 +191,14 @@
                           XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE,    &
                           GTYPE, UNGTYPE
       USE W3GDATMD, ONLY: DXYMAX  
-!/T1      USE W3GDATMD, ONLY: SIG
-!/RTD !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, AnglD
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ, W3EQTOLL, W3ACTURN
+#ifdef W3_T1
+      USE W3GDATMD, ONLY: SIG
+#endif // W3_T1
+#ifdef W3_RTD
+ !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
+      USE W3GDATMD, ONLY: PoLat, PoLon, AnglD
+      USE W3SERVMD, ONLY: W3LLTOEQ, W3EQTOLL, W3ACTURN
+#endif // W3_RTD
       USE W3WDATMD, ONLY: VA
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPBPT, &
@@ -207,7 +211,9 @@
       USE W3GSRUMD
 !
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -226,14 +232,22 @@
 !/
       INTEGER                 :: IFILE, IERR, I, J, IX, IY, ISEA,     &
                                  IP, ISP, NPTS, ISOUT, IS, IGRD
-!/T1      INTEGER               :: IK, ITH
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T1      REAL                  :: HS, HS0
-!/RTD  !!    Declare rotation angle and rotated lat/lon variables for
-!/RTD  !!    boundary points.   JGLi12Jun2012
-!/RTD      REAL, ALLOCATABLE      :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
-!/RTD      REAL                   :: Spectr(NK*NTH)
-!/RTD      REAL                   :: XRLIM, YRLIM
+#ifdef W3_T1
+      INTEGER               :: IK, ITH
+#endif // W3_T1
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T1
+      REAL                  :: HS, HS0
+#endif // W3_T1
+#ifdef W3_RTD
+  !!    Declare rotation angle and rotated lat/lon variables for
+  !!    boundary points.   JGLi12Jun2012
+      REAL, ALLOCATABLE      :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
+      REAL                   :: Spectr(NK*NTH)
+      REAL                   :: XRLIM, YRLIM
+#endif // W3_RTD
       REAL, ALLOCATABLE       :: TMPSPC(:,:)
       LOGICAL                 :: FLOK
       CHARACTER(LEN=18)       :: FILEN
@@ -242,7 +256,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3IOBC')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3IOBC')
+#endif // W3_S
 !
       IOTST  = 0
 !
@@ -265,7 +281,9 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-!/T      WRITE (NDST,9000) INXOUT, FILER, FILEW, FILED, NDSB
+#ifdef W3_T
+      WRITE (NDST,9000) INXOUT, FILER, FILEW, FILED, NDSB
+#endif // W3_T
 !
 ! open file ---------------------------------------------------------- *
 !
@@ -274,7 +292,9 @@
 !
       IF ( INXOUT.EQ.'READ'  .AND. FILER ) THEN
           WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
-!/T          WRITE (NDST,9001) FILEN(:5+I), NDSB
+#ifdef W3_T
+          WRITE (NDST,9001) FILEN(:5+I), NDSB
+#endif // W3_T
           OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),FORM='UNFORMATTED', &
                 ERR=801,IOSTAT=IERR,STATUS='OLD')
         END IF
@@ -284,7 +304,9 @@
             NDSL(IFILE) = NDSB + IFILE - 1
             WRITE (FILEN,'(A4,I1,A1,A)') 'nest', IFILE, '.',          &
                                          FILEXT(:I)
-!/T            WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
+#ifdef W3_T
+            WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
+#endif // W3_T
             OPEN (NDSL(IFILE),FILE=FNMPRE(:J)//FILEN(:6+I),           &
                   FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
             END DO
@@ -292,7 +314,9 @@
 !
       IF ( INXOUT.EQ.'DUMP'  .AND. FILED ) THEN
           WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
-!/T          WRITE (NDST,9001) FILEN(:5+I), NDSB
+#ifdef W3_T
+          WRITE (NDST,9001) FILEN(:5+I), NDSB
+#endif // W3_T
           OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),FORM='UNFORMATTED', &
                 ERR=800,IOSTAT=IERR)
         END IF
@@ -308,24 +332,30 @@
                       IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1),    &
                       NBO(IFILE)-NBO(IFILE-1)
 !
-!/T                WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
-!/T                       VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
+#ifdef W3_T
+                WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
+                       VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
+#endif // W3_T
 !
-!/RTD ! By running the ww3_grid program the arrays XBPO, YBPO have been
-!/RTD ! remapped to standard lat-lon and stored in mod_def.*
-!/RTD !
+#ifdef W3_RTD
+ ! By running the ww3_grid program the arrays XBPO, YBPO have been
+ ! remapped to standard lat-lon and stored in mod_def.*
+ !
+#endif // W3_RTD
                 WRITE (NDSL(IFILE))                                   &
                        (XBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
                        (YBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
                      ((IPBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4),&
                      ((RDBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4)
 !
-!/T0                WRITE (NDST,9003)
-!/T0                DO I=NBO(IFILE-1)+1, NBO(IFILE)
-!/T0                  WRITE (NDST,9004) I-NBO(IFILE-1), XBPO(I),      &
-!/T0                         YBPO(I), (IPBPO(I,J),J=1,4),             &
-!/T0                         (RDBPO(I,J),J=1,4)
-!/T0                  END DO
+#ifdef W3_T0
+                WRITE (NDST,9003)
+                DO I=NBO(IFILE-1)+1, NBO(IFILE)
+                  WRITE (NDST,9004) I-NBO(IFILE-1), XBPO(I),      &
+                         YBPO(I), (IPBPO(I,J),J=1,4),             &
+                         (RDBPO(I,J),J=1,4)
+                  END DO
+#endif // W3_T0
 !
                 END DO
             END IF
@@ -337,17 +367,21 @@
           IF ( IAPROC .EQ. NAPBPT ) THEN
               WRITE (NDSB) IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1), NBI
 !
-!/T              WRITE (NDST,9002) 1, NDSB, IDSTRBC, VERBPTBC, NBI
+#ifdef W3_T
+              WRITE (NDST,9002) 1, NDSB, IDSTRBC, VERBPTBC, NBI
+#endif // W3_T
 !
               WRITE (NDSB) (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),      &
                            ((IPBPI(I,J),I=1,NBI),J=1,4),              &
                            ((RDBPI(I,J),I=1,NBI),J=1,4)
 !
-!/T0          WRITE (NDST,9003)
-!/T0          DO I=1, NBI
-!/T0            WRITE (NDST,9004) I, XBPI(I), YBPI(I),                &
-!/T0                   (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
-!/T0            END DO
+#ifdef W3_T0
+          WRITE (NDST,9003)
+          DO I=1, NBI
+            WRITE (NDST,9004) I, XBPI(I), YBPI(I),                &
+                   (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
+            END DO
+#endif // W3_T0
 !
             END IF
         END IF
@@ -359,7 +393,9 @@
           READ (NDSB,ERR=803,IOSTAT=IERR)                             &
                 IDTST, VERTST, NKI, NTHI, XFRI, FR1I, TH1I, NBI
 !
-!/T          WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
+#ifdef W3_T
+          WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
+#endif // W3_T
 !
           IF ( IDTST .NE. IDSTRBC ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
@@ -386,42 +422,44 @@
               ((IPBPI(I,J),I=1,NBI),J=1,4),                           &
               ((RDBPI(I,J),I=1,NBI),J=1,4)
 !
-!/RTD ! All boundary conditions position arrays XBPI, YBPI are defined
-!/RTD ! in standard lat/lon coordinates. If Polat = 90. (and Polon = -180.),
-!/RTD ! the b.c. positions don't need to be remapped 
-!/RTD        IF ( Polat < 90. ) THEN
-!/RTD !!   Convert standard into rotated lat/lon. JGLi12Jun2012
-!/RTD          ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
-!/RTD
-!/RTD          CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
-!/RTD       &                 Anglbdy, PoLat, PoLon, NBI )
-!/RTD
-!/RTD          XBPI = ELonbdy
-!/RTD          YBPI = ELatbdy
-!/RTD !!    W3LLTOEQ outputs longitudes on 0->360 degree grid
-!/RTD !!    Next section will revise to -180->180 convention if required
-!/RTD !!    by nested model rotated grid; determined by X0 lon value
-!/RTD          IF ( X0 .LT. 0.0 ) THEN
-!/RTD            DO I=1, NBI
-!/RTD              IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
-!/RTD            ENDDO
-!/RTD          END IF
-!/RTD !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD 
-!/RTD !!    values to within a tolerance of the boundary - possibly this is
-!/RTD !!    no longer required after the 20-Jan-2017 change?
-!/RTD          XRLIM = X0 + (NX-1) * SX
-!/RTD          YRLIM = Y0 + (NY-1) * SY
-!/RTD          DO I=1, NBI
-!/RTD            IF ( ABS(XBPI(I) - X0) .LT. SX/4.0 ) XBPI(I) = X0
-!/RTD            IF ( ABS(YBPI(I) - Y0) .LT. SY/4.0 ) YBPI(I) = Y0
-!/RTD            IF ( ABS(XBPI(I) - XRLIM) .LT. SX/4.0 ) XBPI(I) = XRLIM
-!/RTD            IF ( ABS(YBPI(I) - YRLIM) .LT. SY/4.0 ) YBPI(I) = YRLIM
-!/RTD          ENDDO
-!/RTD
-!/RTD          DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
-!/RTD
-!/RTD        END IF ! ( Polat < 90. )
-!/RTD
+#ifdef W3_RTD
+ ! All boundary conditions position arrays XBPI, YBPI are defined
+ ! in standard lat/lon coordinates. If Polat = 90. (and Polon = -180.),
+ ! the b.c. positions don't need to be remapped 
+        IF ( Polat < 90. ) THEN
+ !!   Convert standard into rotated lat/lon. JGLi12Jun2012
+          ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
+
+          CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
+       &                 Anglbdy, PoLat, PoLon, NBI )
+
+          XBPI = ELonbdy
+          YBPI = ELatbdy
+ !!    W3LLTOEQ outputs longitudes on 0->360 degree grid
+ !!    Next section will revise to -180->180 convention if required
+ !!    by nested model rotated grid; determined by X0 lon value
+          IF ( X0 .LT. 0.0 ) THEN
+            DO I=1, NBI
+              IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
+            ENDDO
+          END IF
+ !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD 
+ !!    values to within a tolerance of the boundary - possibly this is
+ !!    no longer required after the 20-Jan-2017 change?
+          XRLIM = X0 + (NX-1) * SX
+          YRLIM = Y0 + (NY-1) * SY
+          DO I=1, NBI
+            IF ( ABS(XBPI(I) - X0) .LT. SX/4.0 ) XBPI(I) = X0
+            IF ( ABS(YBPI(I) - Y0) .LT. SY/4.0 ) YBPI(I) = Y0
+            IF ( ABS(XBPI(I) - XRLIM) .LT. SX/4.0 ) XBPI(I) = XRLIM
+            IF ( ABS(YBPI(I) - YRLIM) .LT. SY/4.0 ) YBPI(I) = YRLIM
+          ENDDO
+
+          DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
+
+        END IF ! ( Polat < 90. )
+
+#endif // W3_RTD
           FLOK   = .TRUE.
           IF (GTYPE .EQ. UNGTYPE) THEN
             CALL W3NESTUG(DXYMAX,FLOK) 
@@ -445,11 +483,13 @@
             END DO
           END IF    
 !
-!/T0          WRITE (NDST,9003)
-!/T0          DO I=1, NBI
-!/T0            WRITE (NDST,9005) I, ISBPI(I), XBPI(I), YBPI(I),      &
-!/T0                   (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
-!/T0            END DO
+#ifdef W3_T0
+          WRITE (NDST,9003)
+          DO I=1, NBI
+            WRITE (NDST,9005) I, ISBPI(I), XBPI(I), YBPI(I),      &
+                   (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
+            END DO
+#endif // W3_T0
 !
           IF ( .NOT.FLOK ) CALL EXTCDE ( 20 )
 !
@@ -470,7 +510,9 @@
 !
           READ (NDSB,END=810,ERR=810) TIME2, NBI2
           BACKSPACE (NDSB)
-!/T          WRITE (NDST,9012) NDSB, TIME2, NBI2
+#ifdef W3_T
+          WRITE (NDST,9012) NDSB, TIME2, NBI2
+#endif // W3_T
           CALL W3DMO5 ( IGRD, NDSE, NDST, 3 )
 !
         END IF
@@ -478,7 +520,9 @@
 ! Save previous spectra on read -------------------------------------- *
 !
       IF ( INXOUT.EQ.'READ' .AND. .NOT.FILER ) THEN
-!/T          WRITE (NDST,9020)
+#ifdef W3_T
+          WRITE (NDST,9020)
+#endif // W3_T
           TIME1  = TIME2
           ABPI0(:,1:NBI2) = ABPIN(:,1:NBI2)
         END IF
@@ -489,25 +533,33 @@
           DO IFILE=1, NFBPO
             NPTS   = NBO2(IFILE) - NBO2(IFILE-1)
             WRITE (NDSL(IFILE)) TIME1, NPTS
-!/T            WRITE (NDST,9010) IFILE, NDSL(IFILE), TIME1, NPTS
+#ifdef W3_T
+            WRITE (NDST,9010) IFILE, NDSL(IFILE), TIME1, NPTS
+#endif // W3_T
             END DO
         END IF
 !
       IF ( INXOUT .EQ. 'DUMP'  ) THEN
           WRITE (NDSB) TIME1, NBI2
-!/T          WRITE (NDST,9011) NDSB, TIME1, NBI2
+#ifdef W3_T
+          WRITE (NDST,9011) NDSB, TIME1, NBI2
+#endif // W3_T
         END IF
 !
       IF ( INXOUT .EQ. 'READ'  ) THEN
           READ (NDSB,ERR=810,END=810) TIME2, NBI2
-!/T          WRITE (NDST,9011) NDSB, TIME2, NBI2
+#ifdef W3_T
+          WRITE (NDST,9011) NDSB, TIME2, NBI2
+#endif // W3_T
         END IF
 !
 ! Spectra ------------------------------------------------------------ *
 !
       IF ( INXOUT .EQ. 'WRITE' ) THEN
 !
-!/T1          WRITE (NDST,9040)
+#ifdef W3_T1
+          WRITE (NDST,9040)
+#endif // W3_T1
 !
           DO IFILE=1, NFBPO
             DO ISOUT=NBO2(IFILE-1)+1, NBO2(IFILE)
@@ -516,40 +568,48 @@
 !
 ! ... Shared memory version data gather
 !
-!/SHRD              DO IS=1, NSPEC
-!/SHRD                ABPOS(IS,ISOUT) = VA(IS,ISEA) * SIG2(IS) /      &
-!/SHRD                                    CG(1+(IS-1)/NTH,ISEA)
-!/SHRD                END DO
+#ifdef W3_SHRD
+              DO IS=1, NSPEC
+                ABPOS(IS,ISOUT) = VA(IS,ISEA) * SIG2(IS) /      &
+                                    CG(1+(IS-1)/NTH,ISEA)
+                END DO
+#endif // W3_SHRD
 !
 ! ... Distributed memory version data gather
 !   ( Array pre-filled in W3WAVE )
 !
-!/DIST              DO IS=1, NSPEC
-!/DIST                ABPOS(IS,ISOUT) = ABPOS(IS,ISOUT) * SIG2(IS) /  &
-!/DIST                                    CG(1+(IS-1)/NTH,ISEA)
-!/DIST                END DO
+#ifdef W3_DIST
+              DO IS=1, NSPEC
+                ABPOS(IS,ISOUT) = ABPOS(IS,ISOUT) * SIG2(IS) /  &
+                                    CG(1+(IS-1)/NTH,ISEA)
+                END DO
+#endif // W3_DIST
 !
-!/RTD ! Polat == 90. means the grid is standard lat-lon, and the spectra
-!/RTD ! need not be rotated back 
-!/RTD              IF ( Polat < 90. ) THEN
-!/RTD                ! Added spectral turning for rotated grid
-!/RTD                ! (rotate back to standard pole)
-!/RTD                Spectr = ABPOS(:,ISOUT)
-!/RTD                CALL W3ACTURN( NTH, NK, -AnglD(ISEA), Spectr )
-!/RTD                ABPOS(:,ISOUT) = Spectr
-!/RTD                END IF
+#ifdef W3_RTD
+ ! Polat == 90. means the grid is standard lat-lon, and the spectra
+ ! need not be rotated back 
+              IF ( Polat < 90. ) THEN
+                ! Added spectral turning for rotated grid
+                ! (rotate back to standard pole)
+                Spectr = ABPOS(:,ISOUT)
+                CALL W3ACTURN( NTH, NK, -AnglD(ISEA), Spectr )
+                ABPOS(:,ISOUT) = Spectr
+                END IF
+#endif // W3_RTD
 !
               WRITE (NDSL(IFILE)) (ABPOS(IS,ISOUT),IS=1,NSPEC)
 !
-!/T1              HS     = 0.
-!/T1              DO IK=1, NK
-!/T1                DO ITH=1, NTH
-!/T1                  IS = ITH + (IK-1)*NTH
-!/T1                  HS = HS + ABPOS(IS,ISOUT)*SIG(IK)
-!/T1                  END DO
-!/T1                END DO
-!/T1              HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
-!/T1              WRITE (NDST,9041) NDSL(IFILE), ISOUT, ISEA, HS
+#ifdef W3_T1
+              HS     = 0.
+              DO IK=1, NK
+                DO ITH=1, NTH
+                  IS = ITH + (IK-1)*NTH
+                  HS = HS + ABPOS(IS,ISOUT)*SIG(IK)
+                  END DO
+                END DO
+              HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
+              WRITE (NDST,9041) NDSL(IFILE), ISOUT, ISEA, HS
+#endif // W3_T1
 !
               END DO
             END DO
@@ -584,25 +644,29 @@
               DEALLOCATE ( TMPSPC )
             END IF
 !
-!/T1          WRITE (NDST,9042)
-!/T1          DO IP=1, NBI2
-!/T1            HS     = 0.
-!/T1            HS0    = 0.
-!/T1            DO ISP=1, NSPEC
-!/T1              HS     = HS + ABPIN(ISP,IP)*SIG2(ISP)
-!/T1              IF ( .NOT.FILER ) HS0 = HS0 + ABPI0(ISP,IP)*SIG2(ISP)
-!/T1              END DO
-!/T1            HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
-!/T1            HS0    = 4. * SQRT ( HS0 * DTH * 0.5 * (XFR-1./XFR) )
-!/T1            WRITE (NDST,9043) IP, HS0, HS
-!/T1            END DO
+#ifdef W3_T1
+          WRITE (NDST,9042)
+          DO IP=1, NBI2
+            HS     = 0.
+            HS0    = 0.
+            DO ISP=1, NSPEC
+              HS     = HS + ABPIN(ISP,IP)*SIG2(ISP)
+              IF ( .NOT.FILER ) HS0 = HS0 + ABPI0(ISP,IP)*SIG2(ISP)
+              END DO
+            HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
+            HS0    = 4. * SQRT ( HS0 * DTH * 0.5 * (XFR-1./XFR) )
+            WRITE (NDST,9043) IP, HS0, HS
+            END DO
+#endif // W3_T1
 !
         END IF
 !
 ! Set first spectra on first read ------------------------------------ *
 !
       IF ( INXOUT.EQ.'READ' .AND. FILER ) THEN
-!/T          WRITE (NDST,9021)
+#ifdef W3_T
+          WRITE (NDST,9021)
+#endif // W3_T
           TIME1 = TIME2
           DO IP=1, NBI2
             ABPI0(:,IP) = ABPIN(:,IP)
@@ -645,7 +709,9 @@
           CALL EXTCDE ( 43 )
         END IF
 !
-!/T      WRITE (NDST,9022)
+#ifdef W3_T
+      WRITE (NDST,9022)
+#endif // W3_T
       TIME1(1) = TIME2(1)
       TIME1(2) = TIME2(2)
       DO 812, IP=0, NBI2
@@ -694,35 +760,45 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
                '     NO DATA IN INPUT FILE'/)
 !
-!/T 9000 FORMAT (' TEST W3IOBC : INXOUT  : ',A5/                      &
-!/T              '               FLAGS   : ',3L2/                     &
-!/T              '               UNIT    : ',I4)
-!/T 9001 FORMAT (' TEST W3IOBC : OPENING FILE ',A,'  (',I2,')')
-!/T 9002 FORMAT (' TEST W3IOBC : FILE #  : ',I4/                      &
-!/T              '               UNIT    : ',I4/                      &
-!/T              '               ID      : ',A/                       &
-!/T              '               VERSION : ',A/                       &
-!/T              '               POINTS  : ',I4)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3IOBC : INXOUT  : ',A5/                      &
+              '               FLAGS   : ',3L2/                     &
+              '               UNIT    : ',I4)
+ 9001 FORMAT (' TEST W3IOBC : OPENING FILE ',A,'  (',I2,')')
+ 9002 FORMAT (' TEST W3IOBC : FILE #  : ',I4/                      &
+              '               UNIT    : ',I4/                      &
+              '               ID      : ',A/                       &
+              '               VERSION : ',A/                       &
+              '               POINTS  : ',I4)
+#endif // W3_T
 !
-!/T0 9003 FORMAT (' TEST W3IOBC : POINT DATA ')
-!/T0 9004 FORMAT ('             ',I3,2E10.3,2X,4I4,2X,4F5.2)
-!/T0 9005 FORMAT ('             ',I3,I4,2E10.3,2X,4I4,2X,4F5.2)
+#ifdef W3_T0
+ 9003 FORMAT (' TEST W3IOBC : POINT DATA ')
+ 9004 FORMAT ('             ',I3,2E10.3,2X,4I4,2X,4F5.2)
+ 9005 FORMAT ('             ',I3,I4,2E10.3,2X,4I4,2X,4F5.2)
+#endif // W3_T0
 !
-!/T 9010 FORMAT (' TEST W3IOBC : OUTPUT FILE ',I1,' UNIT',I3,' TIME', &
-!/T                 I9.8,I7.6,',',I5,' SPECTRA')
-!/T 9011 FORMAT (' TEST W3IOBC : INPUT FILE UNIT',I3,' TIME',         &
-!/T                 I9.8,I7.6,',',I5,' SPECTRA')
-!/T 9012 FORMAT (' TEST W3IOBC : INPUT FILE UNIT',I3,' TIME',         &
-!/T                 I9.8,I7.6,',',I5,' SPECTRA (TEST READ)')
+#ifdef W3_T
+ 9010 FORMAT (' TEST W3IOBC : OUTPUT FILE ',I1,' UNIT',I3,' TIME', &
+                 I9.8,I7.6,',',I5,' SPECTRA')
+ 9011 FORMAT (' TEST W3IOBC : INPUT FILE UNIT',I3,' TIME',         &
+                 I9.8,I7.6,',',I5,' SPECTRA')
+ 9012 FORMAT (' TEST W3IOBC : INPUT FILE UNIT',I3,' TIME',         &
+                 I9.8,I7.6,',',I5,' SPECTRA (TEST READ)')
+#endif // W3_T
 !
-!/T 9020 FORMAT (' TEST W3IOBC : SAVING OLD DATA')
-!/T 9021 FORMAT (' TEST W3IOBC : SAVING FIRST DATA')
-!/T 9022 FORMAT (' TEST W3IOBC : EOF REACHED')
+#ifdef W3_T
+ 9020 FORMAT (' TEST W3IOBC : SAVING OLD DATA')
+ 9021 FORMAT (' TEST W3IOBC : SAVING FIRST DATA')
+ 9022 FORMAT (' TEST W3IOBC : EOF REACHED')
+#endif // W3_T
 !
-!/T1 9040 FORMAT (' TEST W3IOBC : UNIT, ISOUT, ISEA, HS(NO TAIL) ')
-!/T1 9041 FORMAT ( '            ',I3,2I6,F8.2)
-!/T1 9042 FORMAT (' TEST W3IOBC : IP, HS(NO TAIL) ')
-!/T1 9043 FORMAT ( '         ',I6,2F8.2)
+#ifdef W3_T1
+ 9040 FORMAT (' TEST W3IOBC : UNIT, ISOUT, ISEA, HS(NO TAIL) ')
+ 9041 FORMAT ( '            ',I3,2I6,F8.2)
+ 9042 FORMAT (' TEST W3IOBC : IP, HS(NO TAIL) ')
+ 9043 FORMAT ( '         ',I6,2F8.2)
+#endif // W3_T1
 !/
 !/ End of W3IOBC ----------------------------------------------------- /
 !/

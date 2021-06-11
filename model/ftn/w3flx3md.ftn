@@ -126,7 +126,9 @@
       USE W3GDATMD, ONLY: NITTIN, CINXSI, CD_MAX, CAP_ID
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3DISPMD, ONLY: DSIE, N1MAX, EWN1
 !/
       IMPLICIT NONE
@@ -142,13 +144,17 @@
 !/ Local parameters
 !/
       INTEGER                 :: I1, ITT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: SQRTH, SIX, R1, WNP, CP, UNZ, ALPHA, &
                                  RDCH, AFP
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3FLX3')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3FLX3')
+#endif // W3_S
 !
 ! 1.  Peak phase velocity -------------------------------------------- *
 !

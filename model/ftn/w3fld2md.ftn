@@ -149,7 +149,9 @@
       USE W3FLD1MD,  ONLY: APPENDTAIL,sig2wn,wnd2z0m,infld,tail_choice,&
                            tail_level, tail_transition_ratio1,         &
                            tail_transition_ratio2
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -207,13 +209,19 @@
       LOGICAL :: ITERFLAG
       INTEGER :: ITTOT
       INTEGER :: COUNT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL, SAVE           :: FIRST = .TRUE.
-!/OMPG/!$omp threadprivate( FIRST ) 
+#ifdef W3_OMPG
+!$omp threadprivate( FIRST ) 
+#endif // W3_OMPG
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'C3FLD2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'C3FLD2')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -640,14 +648,20 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
         IMPLICIT NONE
         REAL, INTENT(IN) :: WND10
         REAL, INTENT(OUT) :: SAT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !
-!/S      CALL STRACE (IENT, 'WND2SAT')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WND2SAT')
+#endif // W3_S
 !
 ! ST2, previous HWRF relationship: 
 !        SAT =0.000000000000349* WND10**6 +&

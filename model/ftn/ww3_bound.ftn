@@ -103,18 +103,26 @@
       USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, GNAME, W3NMOD, W3SETG, &
                           NSEA, MAPSTA, XYB, GTYPE, XGRD, YGRD, X0, Y0, &
                           SX, SY, MAPSF, UNGTYPE, CLGTYPE, RLGTYPE 
-!/RTD      USE W3GDATMD, ONLY : POLAT, POLON
+#ifdef W3_RTD
+      USE W3GDATMD, ONLY : POLAT, POLON
+#endif // W3_RTD
       USE W3ODATMD, ONLY: NDSO, NDSE
       USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3TIMEMD
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
-!/RTD     USE W3SERVMD, ONLY: W3EQTOLL
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_RTD
+     USE W3SERVMD, ONLY: W3EQTOLL
+#endif // W3_RTD
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -132,7 +140,9 @@
                 NK1,NTH1,NSPEC1, NBI, NBI2,           &
                 NKI, NTHI, NBO, NBO2, IERR, INTERP, ILOOP, &
                IFMIN, IFMIN2, IFMAX, VERBOSE
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER     IBO
       !REAL   , DIMENSION(:),     ALLOCATABLE :: SPEC
       REAL   , DIMENSION(:),     ALLOCATABLE :: LATS, LONS
@@ -142,8 +152,10 @@
       REAL, ALLOCATABLE     :: XBPI(:), YBPI(:), RDBPI(:,:),        &
                                XBPO(:), YBPO(:), RDBPO(:,:),        &
                                ABPIN(:,:) 
-!/RTD      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
-!/RTD      LOGICAL               :: ISRTD
+#ifdef W3_RTD
+      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
+      LOGICAL               :: ISRTD
+#endif // W3_RTD
              
       INTEGER,  ALLOCATABLE :: IPBPI(:,:),   IPBPO(:,:)
 
@@ -175,7 +187,9 @@
       NTRACE = 10
       CALL ITRACE ( NDSTRC, NTRACE )
 !
-!/S      CALL STRACE (IENT, 'W3BOUND')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3BOUND')
+#endif // W3_S
 !
 
 !
@@ -184,9 +198,11 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
-!/RTD!
-!/RTD      ISRTD = POLAT .LT. 90.0
-!/RTD!
+#ifdef W3_RTD
+!
+      ISRTD = POLAT .LT. 90.0
+!
+#endif // W3_RTD
 !
 ! 3. Read input file
 !
@@ -301,7 +317,9 @@
             END IF
           END DO
         ALLOCATE(XBPO(NBO),YBPO(NBO))
-!/RTD       IF (ISRTD) ALLOCATE(XTMP(NBO), YTMP(NBO), ANGTMP(NBO))
+#ifdef W3_RTD
+       IF (ISRTD) ALLOCATE(XTMP(NBO), YTMP(NBO), ANGTMP(NBO))
+#endif // W3_RTD
         ALLOCATE (IPBPO(NBO,4),RDBPO(NBO,4))
         IBO=0
         DO ISEA=1,NSEA
@@ -322,15 +340,17 @@
               END SELECT !GTYPE
             END IF
           END DO
-!/RTD!
-!/RTD        ! Convert grid boundary cell locations to standard pole
-!/RTD        IF( ISRTD ) THEN
-!/RTD          XTMP = XBPO
-!/RTD          YTMP = YBPO
-!/RTD          CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
-!/RTD          DEALLOCATE(XTMP, YTMP, ANGTMP)
-!/RTD        ENDIF
-!/RTD!
+#ifdef W3_RTD
+!
+        ! Convert grid boundary cell locations to standard pole
+        IF( ISRTD ) THEN
+          XTMP = XBPO
+          YTMP = YBPO
+          CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
+          DEALLOCATE(XTMP, YTMP, ANGTMP)
+        ENDIF
+!
+#endif // W3_RTD
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
@@ -433,13 +453,15 @@
 !
             READ(200+IP,'(A1,A10,A1,2F7.2,F10.1,F7.2,F6.1,F7.2,F6.1)') &
               space,buoyname,space,LATS(IP),LONS(IP),depth,U10,Udir,Curr,Currdir
-!/RTD!
-!/RTD            IF (ISRTD) THEN
-!/RTD              ! Rotated coordinates are scaled in range 0 - 360
-!/RTD              IF(LONS(IP) .LT. 0) LONS(IP) = LONS(IP) + 360.0
-!/RTD              IF(LONS(IP) .GT. 360) LONS(IP) = LONS(IP) - 360.0
-!/RTD            ENDIF
-!/RTD!
+#ifdef W3_RTD
+!
+            IF (ISRTD) THEN
+              ! Rotated coordinates are scaled in range 0 - 360
+              IF(LONS(IP) .LT. 0) LONS(IP) = LONS(IP) + 360.0
+              IF(LONS(IP) .GT. 360) LONS(IP) = LONS(IP) - 360.0
+            ENDIF
+!
+#endif // W3_RTD
             READ(200+IP,*,IOSTAT=IERR) SPEC2D 
               IF (IFMIN2.GT.1) THEN 
 !

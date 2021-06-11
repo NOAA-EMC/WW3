@@ -5619,7 +5619,9 @@
           WRITE (NDSO,1105) NMAPB
 #endif // W3_REF1
 #ifdef W3_T
-!/REF1               WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
+#ifdef W3_REF1
+               WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
+#endif // W3_REF1
 #endif // W3_T
 !
 #ifdef W3_REF1
@@ -5628,9 +5630,11 @@
             IXN    = MIN ( NX , IMAPB*NCOL )
 #endif // W3_REF1
 #ifdef W3_T
-!/REF1            DO IY=NY,1,-1
-!/REF1              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
-!/REF1              END DO
+#ifdef W3_REF1
+            DO IY=NY,1,-1
+              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
+              END DO
+#endif // W3_REF1
 #endif // W3_T
 #ifdef W3_REF1
             WRITE (NDSO,*) ' '

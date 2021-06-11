@@ -168,7 +168,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -179,12 +181,16 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL, SAVE           :: FIRST = .TRUE.
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SPRX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SPRX')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -260,7 +266,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -271,12 +279,16 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL, SAVE           :: FIRST = .TRUE.
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SINX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SINX')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -357,7 +369,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -368,11 +382,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSINX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSINX')
+#endif // W3_S
 !
 ! 1.  .... ----------------------------------------------------------- *
 !
@@ -442,7 +460,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -453,12 +473,16 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL, SAVE           :: FIRST = .TRUE.
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SDSX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SDSX')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -539,7 +563,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -550,11 +576,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSDSX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSDSX')
+#endif // W3_S
 !
 ! 1.  .... ----------------------------------------------------------- *
 !

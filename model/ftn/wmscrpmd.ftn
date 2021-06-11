@@ -159,15 +159,19 @@
       REAL   (SCRIP_R8)                 :: LAT_CONVERSION,OFFSET
       REAL   (SCRIP_R8)                 :: CONV_DX,CONV_DY,WEIGHT
       REAL   (SCRIP_R8)                 :: WTSUM
-!/T38      CHARACTER (LEN=10)      :: CDATE_TIME(3)
-!/T38      INTEGER                 :: DATE_TIME(8)
-!/T38      INTEGER                 :: ELAPSED_TIME, BEG_TIME, &
-!/T38                                 END_TIME
+#ifdef W3_T38
+      CHARACTER (LEN=10)      :: CDATE_TIME(3)
+      INTEGER                 :: DATE_TIME(8)
+      INTEGER                 :: ELAPSED_TIME, BEG_TIME, &
+                                 END_TIME
+#endif // W3_T38
 
 ! test output for input variables
 
-!/T38      if(l_master)write(*,*)'flagll = ',flagll
-!/T38      if(l_master)write(*,*)'gridshift = ',gridshift
+#ifdef W3_T38
+      if(l_master)write(*,*)'flagll = ',flagll
+      if(l_master)write(*,*)'gridshift = ',gridshift
+#endif // W3_T38
 
 ! 
 ! START: universal settings
@@ -227,23 +231,25 @@
       ENDIF
 
 !.....test output
-!/T38      write(*,*)'l_master = ',l_master
-!/T38      if(l_master)then
-!/T38      write(*,*)'conv_dx=', conv_dx
-!/T38      write(*,*)'conv_dy=', conv_dy
-!/T38      write(*,*)'offset = ',offset
-!/T38      write(*,*)'grid1_size=', grid1_size
-!/T38      write(*,*)'grid2_size=', grid2_size
-!/T38      write(*,*)'l_read = ',l_read
-!/T38      write(*,*)'minval(grid1_center_lon) = ',minval(grid1_center_lon)
-!/T38      write(*,*)'maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
-!/T38      write(*,*)'minval(grid1_center_lat) = ',minval(grid1_center_lat)
-!/T38      write(*,*)'maxval(grid1_center_lat) = ',maxval(grid1_center_lat)
-!/T38      write(*,*)'minval(grid2_center_lon) = ',minval(grid2_center_lon)
-!/T38      write(*,*)'maxval(grid2_center_lon) = ',maxval(grid2_center_lon)
-!/T38      write(*,*)'minval(grid2_center_lat) = ',minval(grid2_center_lat)
-!/T38      write(*,*)'maxval(grid2_center_lat) = ',maxval(grid2_center_lat)
-!/T38      endif
+#ifdef W3_T38
+      write(*,*)'l_master = ',l_master
+      if(l_master)then
+      write(*,*)'conv_dx=', conv_dx
+      write(*,*)'conv_dy=', conv_dy
+      write(*,*)'offset = ',offset
+      write(*,*)'grid1_size=', grid1_size
+      write(*,*)'grid2_size=', grid2_size
+      write(*,*)'l_read = ',l_read
+      write(*,*)'minval(grid1_center_lon) = ',minval(grid1_center_lon)
+      write(*,*)'maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
+      write(*,*)'minval(grid1_center_lat) = ',minval(grid1_center_lat)
+      write(*,*)'maxval(grid1_center_lat) = ',maxval(grid1_center_lat)
+      write(*,*)'minval(grid2_center_lon) = ',minval(grid2_center_lon)
+      write(*,*)'maxval(grid2_center_lon) = ',maxval(grid2_center_lon)
+      write(*,*)'minval(grid2_center_lat) = ',minval(grid2_center_lat)
+      write(*,*)'maxval(grid2_center_lat) = ',maxval(grid2_center_lat)
+      endif
+#endif // W3_T38
 
       CALL SCRIP_INFO_RENORMALIZATION(                                  &
      &   GRID1_CENTER_LON, GRID1_CENTER_LAT,                            &
@@ -262,16 +268,22 @@
       WT_LOWEST   =ZERO
       WT_HIGHEST  =ONE+1.E-7_SCRIP_R8
 
-!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#ifdef W3_T38
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#endif // W3_T38
       CALL SCRIP(ID_SRC, ID_DST, L_MASTER, L_READ, L_TEST)
-!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/T38      elapsed_time = end_time - beg_time
-!/T38      write(0,*) "SCRIP: ", elapsed_time, " MSEC"
+#ifdef W3_T38
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      elapsed_time = end_time - beg_time
+      write(0,*) "SCRIP: ", elapsed_time, " MSEC"
+#endif // W3_T38
 
-!/T38      if(l_master)write(*,*)'new minval(grid1_center_lon) = ',minval(grid1_center_lon)
-!/T38      if(l_master)write(*,*)'new maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
+#ifdef W3_T38
+      if(l_master)write(*,*)'new minval(grid1_center_lon) = ',minval(grid1_center_lon)
+      if(l_master)write(*,*)'new maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
+#endif // W3_T38
 
 !.....notes: at this point we have the following useful variables:
 !       num_wts, e.g. num_wts=3....for first order conservative remapping, 
@@ -290,20 +302,22 @@
 !.....note re: notation: I use k for the combined i/j array, similar to isea, 
 !            but not necessarily the same as isea since some points may
 !            be land etc.
-!/T38     if(l_master)then
-!/T38     do k=1,grid2_size
-!/T38        write(403,*)grid2_frac(k)
-!/T38     end do
-!/T38     do ilink=1,max_links_map1
-!/T38        write(405,'(999(1x,f20.7))')(wts_map1(iw,ilink),iw=1,num_wts)
-!/T38     end do
-!/T38     do ilink=1,max_links_map1
-!/T38        write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
-!/T38                                                ! my "src_address"
-!/T38        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to 
-!/T38                                                ! my "dst_address"
-!/T38     end do
-!/T38     endif
+#ifdef W3_T38
+     if(l_master)then
+     do k=1,grid2_size
+        write(403,*)grid2_frac(k)
+     end do
+     do ilink=1,max_links_map1
+        write(405,'(999(1x,f20.7))')(wts_map1(iw,ilink),iw=1,num_wts)
+     end do
+     do ilink=1,max_links_map1
+        write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
+                                                ! my "src_address"
+        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to 
+                                                ! my "dst_address"
+     end do
+     endif
+#endif // W3_T38
 
 !.....organize results and return to wmghgh.
 

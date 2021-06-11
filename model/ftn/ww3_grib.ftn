@@ -120,7 +120,9 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !
       USE W3GDATMD
@@ -141,20 +143,28 @@
                                  GDTN
       INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
 ! GRIB1 specific variables
-!/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
-!/NCEP1      INTEGER                 :: KPDS(25), KGDS(22)
+#ifdef W3_NOGRB
+      INTEGER                 :: KPDS(1), KGDS(1)
+#endif // W3_NOGRB
+#ifdef W3_NCEP1
+      INTEGER                 :: KPDS(25), KGDS(22)
+#endif // W3_NCEP1
 ! GRIB2 specific variables
-!/NCEP2      INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
-!/NCEP2      INTEGER                 :: LISTSEC0(3), LISTSEC1(13),IGDS(5)
-!/NCEP2      INTEGER                 :: IDEFLIST, IDEFNUM, KPDSNUM, NUMCOORD
-!/NCEP2      INTEGER                 :: IBMP, LCGRIB, LENGRIB, IDRSNUM
-!/NCEP2      REAL                    :: COORDLIST, XN
-!/NCEP2      CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
-!/NCEP2      INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, & 
-!/NCEP2                                 LATIN2, LATSP, LONSP  
-!/NCEP2      REAL                    :: DSX, DSY 
-!/NCEP2      REAL                    :: YN, X0N, Y0N 
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_NCEP2
+      INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
+      INTEGER                 :: LISTSEC0(3), LISTSEC1(13),IGDS(5)
+      INTEGER                 :: IDEFLIST, IDEFNUM, KPDSNUM, NUMCOORD
+      INTEGER                 :: IBMP, LCGRIB, LENGRIB, IDRSNUM
+      REAL                    :: COORDLIST, XN
+      CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
+      INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, & 
+                                 LATIN2, LATSP, LONSP  
+      REAL                    :: DSX, DSY 
+      REAL                    :: YN, X0N, Y0N 
+#endif // W3_NCEP2
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: DTREQ, DTEST, RFTIME
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
@@ -165,7 +175,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/NCO/!     CALL W3TAGB('WAVEGRIB',1998,0007,0050,'NP21   ')
+#ifdef W3_NCO
+!     CALL W3TAGB('WAVEGRIB',1998,0007,0050,'NP21   ')
+#endif // W3_NCO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  IO set-up.
@@ -187,31 +199,41 @@
       NDSTRC =  6
       NTRACE = 10
 !
-!/NCO/!
-!/NCO/! Redo according to NCO
-!/NCO/!
-!/NCO      NDSI   = 11
-!/NCO      NDSO   =  6
-!/NCO      NDSE   = NDSO
-!/NCO      NDST   = NDSO
-!/NCO      NDSM   = 12
-!/NCO      NDSOG  = 13
-!/NCO      NDSDAT = 51
-!/NCO      NDSTRC = NDSO
+#ifdef W3_NCO
+!
+! Redo according to NCO
+!
+      NDSI   = 11
+      NDSO   =  6
+      NDSE   = NDSO
+      NDST   = NDSO
+      NDSM   = 12
+      NDSOG  = 13
+      NDSDAT = 51
+      NDSTRC = NDSO
+#endif // W3_NCO
 !
       WRITE (NDSO,900)
 !
       CALL ITRACE ( NDSTRC, NTRACE )
-!/S      CALL STRACE (IENT, 'W3GRIB')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3GRIB')
+#endif // W3_S
 !
       OPEN (NDSI,FILE='ww3_grib.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
       READ (NDSI,'(A)',END=801,ERR=802) COMSTR
       IF (COMSTR.EQ.' ') COMSTR = '$'
       WRITE (NDSO,901) COMSTR
 !
-!/NOGRB      WRITE (NDSE,902)
-!/NCEP1      CALL BAOPEN (NDSDAT,'gribfile',IERR)
-!/NCEP2      CALL BAOPENW (NDSDAT,'gribfile',IERR)
+#ifdef W3_NOGRB
+      WRITE (NDSE,902)
+#endif // W3_NOGRB
+#ifdef W3_NCEP1
+      CALL BAOPEN (NDSDAT,'gribfile',IERR)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+      CALL BAOPENW (NDSDAT,'gribfile',IERR)
+#endif // W3_NCEP2
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Read model definition file.
@@ -356,29 +378,37 @@
 ! or PolarStereo
 ! 
       IF ( GTYPE .EQ. CLGTYPE ) THEN 
-!/NCEP2! Allowing code to work with Lambert conformal grids 
-!/NCEP2      IF ( GDTN .NE. 30 .AND. GDTN .NE. 20 ) THEN 
+#ifdef W3_NCEP2
+! Allowing code to work with Lambert conformal grids 
+      IF ( GDTN .NE. 30 .AND. GDTN .NE. 20 ) THEN 
+#endif // W3_NCEP2
         WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
         'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING' 
         CALL EXTCDE ( 1 ) 
-!/NCEP2      ENDIF 
+#ifdef W3_NCEP2
+      ENDIF 
+#endif // W3_NCEP2
       END IF 
 ! 
 ! 
 ! Coded up to now only for Lamber conformal grids (GDTN=30) or 
 ! PolarStereo (GDTN=20). For regular grids use GDTN=0 
 ! 
-!/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
-!/NCEP2! This is a Lambert conformal grid, read projection parameters 
-!/NCEP2        CALL NEXTLN ( COMSTR , NDSI , NDSE ) 
-!/NCEP2        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          & 
-!/NCEP2                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP 
-!/NCEP2             ELSEIF ( GDTN .EQ. 20 ) THEN
-!/NCEP2               CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/NCEP2               READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,   &
-!/NCEP2                                             SCNMOD
+#ifdef W3_NCEP2
+      IF ( GDTN .EQ. 30 ) THEN 
+! This is a Lambert conformal grid, read projection parameters 
+        CALL NEXTLN ( COMSTR , NDSI , NDSE ) 
+        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          & 
+                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP 
+             ELSEIF ( GDTN .EQ. 20 ) THEN
+               CALL NEXTLN ( COMSTR , NDSI , NDSE )
+               READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,   &
+                                             SCNMOD
+#endif // W3_NCEP2
 
-!/NCEP2      ENDIF 
+#ifdef W3_NCEP2
+      ENDIF 
+#endif // W3_NCEP2
 !
       CALL STME21 ( FTIME , IDTIME )
       WRITE (NDSO,948) IDTIME, CID, PID, GID, GDS
@@ -400,9 +430,11 @@
         END DO 
         END DO 
 ! 
-!/NCEP2! 
-!/NCEP2      IF ( GDTN .EQ. 0 ) THEN 
-!/NCEP2! 
+#ifdef W3_NCEP2
+! 
+      IF ( GDTN .EQ. 0 ) THEN 
+! 
+#endif // W3_NCEP2
 ! 4.c Flip MAPSF for REGULAR/RECTILINEAR grids 
 ! 
       DO ISEA=1, NSEA 
@@ -411,8 +443,10 @@
         MAPSF(ISEA,2) = NY + 1 - IY 
         MAPSF(ISEA,3) = IY +( IX-1)*NY 
         END DO 
-!/NCEP2! 
-!/NCEP2      ENDIF 
+#ifdef W3_NCEP2
+! 
+      ENDIF 
+#endif // W3_NCEP2
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - -  
 ! 5. Set grib encoding parameter Sections 
@@ -453,15 +487,17 @@
 !  * : Changing on the fly in main program
 ! ** : Changing on the fly in W3EXGB
 !
-!/NCEP1      KPDS( 1) = CID
-!/NCEP1      KPDS( 2) = PID
-!/NCEP1      KPDS( 3) = GID
-!/NCEP1      KPDS( 4) = GDS
-!/NCEP1      KPDS( 6) =   1
-!/NCEP1      KPDS( 7) =   1
-!/NCEP1      KPDS(13) =   1
-!/NCEP1      KPDS(18) =   1
-!/NCEP1      KPDS(22) =   2
+#ifdef W3_NCEP1
+      KPDS( 1) = CID
+      KPDS( 2) = PID
+      KPDS( 3) = GID
+      KPDS( 4) = GDS
+      KPDS( 6) =   1
+      KPDS( 7) =   1
+      KPDS(13) =   1
+      KPDS(18) =   1
+      KPDS(22) =   2
+#endif // W3_NCEP1
 !
 ! ... Set GDS GRIB1 elements
 !
@@ -483,30 +519,36 @@
 !     (21)  FOR GRIDS WITH PL, NUMBER OF POINTS IN GRID
 !     (22)  NUMBER OF WORDS IN EACH ROW
 !
-!/NCEP1      KGDS( 2) = NX
-!/NCEP1      KGDS( 3) = NY
-!/NCEP1      KGDS( 4) = NINT(1000.*(Y0+(REAL(NY-1)*SY)))
-!/NCEP1      KGDS( 5) = NINT(1000.*X0)
-!/NCEP1      KGDS( 6) = 128
-!/NCEP1      KGDS( 7) = NINT(1000.*Y0)
-!/NCEP1      KGDS( 8) = NINT(1000.*(X0+REAL(NX-1)*SX))
-!/NCEP1      KGDS( 9) = NINT(1000.*SX)
-!/NCEP1      KGDS(10) = NINT(1000.*SY)
-!/NCEP1      KGDS(20) = 255
+#ifdef W3_NCEP1
+      KGDS( 2) = NX
+      KGDS( 3) = NY
+      KGDS( 4) = NINT(1000.*(Y0+(REAL(NY-1)*SY)))
+      KGDS( 5) = NINT(1000.*X0)
+      KGDS( 6) = 128
+      KGDS( 7) = NINT(1000.*Y0)
+      KGDS( 8) = NINT(1000.*(X0+REAL(NX-1)*SX))
+      KGDS( 9) = NINT(1000.*SX)
+      KGDS(10) = NINT(1000.*SY)
+      KGDS(20) = 255
+#endif // W3_NCEP1
 !
 ! ... Set GRIB2 packing arrays
 !
-!/NCEP2      LCGRIB = 4*NX*NY
-!/NCEP2      ALLOCATE(CGRIB(LCGRIB))
+#ifdef W3_NCEP2
+      LCGRIB = 4*NX*NY
+      ALLOCATE(CGRIB(LCGRIB))
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 Indicator Section
 !      ( 1)  Discipline-GRIB Master Table Number (see Code Table 0.0)
 !            0 = Metereological; 10 = Oceanographic
 !      ( 2)  GRIB Edition Number
 !      ( 3)
-!/NCEP2       LISTSEC0      =   0
-!/NCEP2       LISTSEC0(1)   =   10      
-!/NCEP2       LISTSEC0(2)   =   2       
+#ifdef W3_NCEP2
+       LISTSEC0      =   0
+       LISTSEC0(1)   =   10      
+       LISTSEC0(2)   =   2       
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 Identification Section
 !       ( 1) ID OF CENTER
@@ -523,12 +565,14 @@
 !       (12) Production status of data (Code Table 1.3)
 !       (13) Type of processed data (Code Table 1.4)
 !
-!/NCEP2       LISTSEC1     =  0
-!/NCEP2       LISTSEC1(1)  = CID
-!/NCEP2       LISTSEC1(3)  = 2
-!/NCEP2       LISTSEC1(4)  = 1
-!/NCEP2       LISTSEC1(5)  = 1
-!/NCEP2       LISTSEC1(13) = 1
+#ifdef W3_NCEP2
+       LISTSEC1     =  0
+       LISTSEC1(1)  = CID
+       LISTSEC1(3)  = 2
+       LISTSEC1(4)  = 1
+       LISTSEC1(5)  = 1
+       LISTSEC1(13) = 1
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 IGDS elements
 !       ( 1) Source of grid definition (Code Table 3.0)
@@ -537,23 +581,25 @@
 !       ( 4) Interpretation of list for optional points definition (Code Table 3.11)
 !       ( 5) Grid definition template number (Code Table 3.1)
 !
-!/NCEP2         IGDS     = 0 ! Defined in code
-!/NCEP2         IGDS(2)  = NX*NY
-!/NCEP2         IDEFNUM  = 0
-!/NCEP2         IDEFLIST = 0
-!/NCEP2         IGDS(5)=GDTN
-!/NCEP2       IF ( GDTN .EQ. 30 .AND. GTYPE .EQ. CLGTYPE ) THEN
-!/NCEP2         IDEFNUM  = 1
-!/NCEP2         WRITE (NDSO,1011) 'LAMBERTCONF'
-!/NCEP2       ELSEIF ( GDTN .EQ. 20 .AND. GTYPE .EQ. CLGTYPE ) THEN
-!/NCEP2         WRITE (NDSO,1011) 'POLARSTEREO'
-!/NCEP2       ELSEIF ( GDTN .EQ. 0 ) THEN
-!/NCEP2         WRITE (NDSO,1011) 'LLRECTILINEAR'
-!/NCEP2       ELSE
-!/NCEP2         WRITE(NDSE,*)'PROGRAM WAVEGRIB2: SUPPORT FOR CHOSEN '// &
-!/NCEP2         'GRIB2 GRID DEFINITION TEMPLATE NOT YET IMPLEMENTED'
-!/NCEP2         CALL EXTCDE ( 2 )
-!/NCEP2       ENDIF
+#ifdef W3_NCEP2
+         IGDS     = 0 ! Defined in code
+         IGDS(2)  = NX*NY
+         IDEFNUM  = 0
+         IDEFLIST = 0
+         IGDS(5)=GDTN
+       IF ( GDTN .EQ. 30 .AND. GTYPE .EQ. CLGTYPE ) THEN
+         IDEFNUM  = 1
+         WRITE (NDSO,1011) 'LAMBERTCONF'
+       ELSEIF ( GDTN .EQ. 20 .AND. GTYPE .EQ. CLGTYPE ) THEN
+         WRITE (NDSO,1011) 'POLARSTEREO'
+       ELSEIF ( GDTN .EQ. 0 ) THEN
+         WRITE (NDSO,1011) 'LLRECTILINEAR'
+       ELSE
+         WRITE(NDSE,*)'PROGRAM WAVEGRIB2: SUPPORT FOR CHOSEN '// &
+         'GRIB2 GRID DEFINITION TEMPLATE NOT YET IMPLEMENTED'
+         CALL EXTCDE ( 2 )
+       ENDIF
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 KGDS elements
 !
@@ -567,11 +613,15 @@
 !       ( 7)
 !       ( 8) Number of points along parallel
 !       ( 9) Number of points along meridian
-!/NCEP2      KGDS( 1) = 6
-!/NCEP2      KGDS( 8) = NX
-!/NCEP2      KGDS( 9) = NY
+#ifdef W3_NCEP2
+      KGDS( 1) = 6
+      KGDS( 8) = NX
+      KGDS( 9) = NY
+#endif // W3_NCEP2
 !
-!/NCEP2      IF ( GDTN .EQ. 30 ) THEN
+#ifdef W3_NCEP2
+      IF ( GDTN .EQ. 30 ) THEN
+#endif // W3_NCEP2
 !
 ! Lambert Conformal grid
 !       (10) Latitude of first grid point
@@ -588,27 +638,31 @@
 !       (21) Latitude of southern pole
 !       (22) Longitude of southern pole
 !
-!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
-!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
-!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
-!/NCEP2        KGDS(11)=KNINT(1000000.*X0)
-!/NCEP2        Y0 = YGRD(1,1)
-!/NCEP2        YN = YGRD(NY,NX)
-!/NCEP2        Y0N = YGRD(NY,1)
-!/NCEP2        KGDS(10)=KNINT(1000000.*Y0)
-!/NCEP2        KGDS(12)=0
-!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1)
-!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
-!/NCEP2        KGDS(15)=KNINT(1000000*DSX)
-!/NCEP2        KGDS(16)=KNINT(1000000*DSY)
-!/NCEP2        KGDS(17)=0
-!/NCEP2        KGDS(18)=SCNMOD
-!/NCEP2        KGDS(19)=DBLE(1000000.*LATIN1)
-!/NCEP2        KGDS(20)=DBLE(1000000.*LATIN2)
-!/NCEP2        KGDS(21)=DBLE(1000000.*LATSP)
-!/NCEP2        KGDS(22)=DBLE(1000000.*LONSP)
+#ifdef W3_NCEP2
+        X0 = MOD(XGRD(1,1) + 360.,360.)
+        XN = MOD(XGRD(NY,NX) + 360., 360.)
+        X0N = MOD(XGRD(NY,1) + 360., 360.)
+        KGDS(11)=KNINT(1000000.*X0)
+        Y0 = YGRD(1,1)
+        YN = YGRD(NY,NX)
+        Y0N = YGRD(NY,1)
+        KGDS(10)=KNINT(1000000.*Y0)
+        KGDS(12)=0
+        KGDS(13)=DBLE(1000000.*LATAN1)
+        KGDS(14)=DBLE(1000000.*LONV)
+        KGDS(15)=KNINT(1000000*DSX)
+        KGDS(16)=KNINT(1000000*DSY)
+        KGDS(17)=0
+        KGDS(18)=SCNMOD
+        KGDS(19)=DBLE(1000000.*LATIN1)
+        KGDS(20)=DBLE(1000000.*LATIN2)
+        KGDS(21)=DBLE(1000000.*LATSP)
+        KGDS(22)=DBLE(1000000.*LONSP)
+#endif // W3_NCEP2
 !
-!/NCEP2      ELSEIF (GDTN .EQ. 20 ) THEN
+#ifdef W3_NCEP2
+      ELSEIF (GDTN .EQ. 20 ) THEN
+#endif // W3_NCEP2
 !
 ! PolarStereo grid
 !       (10) Latitude of first grid point
@@ -621,23 +675,27 @@
 !       (17) Projection center flag
 !       (18) Scanning mode
 !
-!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
-!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
-!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
-!/NCEP2        KGDS(11)=KNINT(1000000.*X0)
-!/NCEP2        Y0 = YGRD(1,1)
-!/NCEP2        YN = YGRD(NY,NX)
-!/NCEP2        Y0N = YGRD(NY,1)
-!/NCEP2        KGDS(10)=KNINT(1000000.*Y0)
-!/NCEP2        KGDS(12)=0
-!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1)
-!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
-!/NCEP2        KGDS(15)=KNINT(1000000*DSX)
-!/NCEP2        KGDS(16)=KNINT(1000000*DSY)
-!/NCEP2        KGDS(17)=0
-!/NCEP2        KGDS(18)=SCNMOD
+#ifdef W3_NCEP2
+        X0 = MOD(XGRD(1,1) + 360.,360.)
+        XN = MOD(XGRD(NY,NX) + 360., 360.)
+        X0N = MOD(XGRD(NY,1) + 360., 360.)
+        KGDS(11)=KNINT(1000000.*X0)
+        Y0 = YGRD(1,1)
+        YN = YGRD(NY,NX)
+        Y0N = YGRD(NY,1)
+        KGDS(10)=KNINT(1000000.*Y0)
+        KGDS(12)=0
+        KGDS(13)=DBLE(1000000.*LATAN1)
+        KGDS(14)=DBLE(1000000.*LONV)
+        KGDS(15)=KNINT(1000000*DSX)
+        KGDS(16)=KNINT(1000000*DSY)
+        KGDS(17)=0
+        KGDS(18)=SCNMOD
+#endif // W3_NCEP2
 !
-!/NCEP2      ELSEIF (GDTN .EQ. 0 ) THEN
+#ifdef W3_NCEP2
+      ELSEIF (GDTN .EQ. 0 ) THEN
+#endif // W3_NCEP2
 !
 ! Lat Lon rectilinear grid
 !       (10)
@@ -651,16 +709,18 @@
 !       (18) Increment of latitude
 !       (19) Scanning mode
 !
-!/NCEP2        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY)))
-!/NCEP2        X0 = MOD(X0 + 360.,360.)
-!/NCEP2        KGDS(13) = KNINT(1000000.*X0)
-!/NCEP2        KGDS(14) = 48
-!/NCEP2        KGDS(15) = KNINT(1000000.*Y0)
-!/NCEP2        XN = MOD(X0+REAL(NX-1)*SX + 360., 360.)
-!/NCEP2        KGDS(16) = KNINT(1000000.*XN)
-!/NCEP2        KGDS(17) = KNINT(1000000.*SX)
-!/NCEP2        KGDS(18) = KNINT(1000000.*SY)
-!/NCEP2      ENDIF
+#ifdef W3_NCEP2
+        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY)))
+        X0 = MOD(X0 + 360.,360.)
+        KGDS(13) = KNINT(1000000.*X0)
+        KGDS(14) = 48
+        KGDS(15) = KNINT(1000000.*Y0)
+        XN = MOD(X0+REAL(NX-1)*SX + 360., 360.)
+        KGDS(16) = KNINT(1000000.*XN)
+        KGDS(17) = KNINT(1000000.*SX)
+        KGDS(18) = KNINT(1000000.*SY)
+      ENDIF
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 PDS elements
 !     KPDSNUM   (0 indicates forecast at a horizontal level)
@@ -687,36 +747,46 @@
 !             =2 deterministic forecast: ww3_grib.inp gen_pro set to 0
 !             =2 legacy :with no gen_pro set in ww3_grib.inp
 !              (in the case of legacy the params revert back to old names)
-!/NCEP2       KPDSNUM = 0
-!/NCEP2      if ( gen_pro.eq.1 ) then
-!/NCEP2       KPDS( 3) = 4
-!/NCEP2      else
-!/NCEP2       KPDS(3)=2
-!/NCEP2      endif
-!/NCEP2       KPDS( 4) = 0
-!/NCEP2       KPDS( 5) = PID
-!/NCEP2       KPDS( 8) = 1
-!/NCEP2       KPDS(10) = 1
-!/NCEP2       KPDS(12) = 1
-!/NCEP2       KPDS(13) = 255
+#ifdef W3_NCEP2
+       KPDSNUM = 0
+      if ( gen_pro.eq.1 ) then
+       KPDS( 3) = 4
+      else
+       KPDS(3)=2
+      endif
+       KPDS( 4) = 0
+       KPDS( 5) = PID
+       KPDS( 8) = 1
+       KPDS(10) = 1
+       KPDS(12) = 1
+       KPDS(13) = 255
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 vertical layer information 
 !
-!/NCEP2       NUMCOORD  = 0
-!/NCEP2       COORDLIST = 0.0
+#ifdef W3_NCEP2
+       NUMCOORD  = 0
+       COORDLIST = 0.0
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 bitmap information
 !      0 Bitmap is provided
 !
-!/NCEP2       IBMP = GDS
+#ifdef W3_NCEP2
+       IBMP = GDS
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 Data Representation Template Number (Code Table 5.0)
 !
-!/NCEP2       IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
+#ifdef W3_NCEP2
+       IDRSNUM = 40 !jpeg2000 *** SEGFAULTS in some linux
+#endif // W3_NCEP2
 !                            clusters with Intel compiler ***
-!/NCEP2       !IDRSNUM = 0 !simple packing
-!/NCEP2       !IDRSNUM = 41 !png packing
-!/NCEP2       !IDRSNUM = 2 !Complex Packing (Grid Point Data)
+#ifdef W3_NCEP2
+       !IDRSNUM = 0 !simple packing
+       !IDRSNUM = 41 !png packing
+       !IDRSNUM = 2 !Complex Packing (Grid Point Data)
+#endif // W3_NCEP2
 !
 ! ... Set GRIB2 IDRS elements
 !     ( 1) Reference value (R) (IEEE 32-bit floating-point value)
@@ -725,11 +795,15 @@
 !     ( 4) Number of bits used for each packed value
 !     ( 5) Type of original field values (Code Table 5.1)
 !
-!/NCEP2      IDRS    = 0
-!/NCEP2      IDRS(3) = 2
+#ifdef W3_NCEP2
+      IDRS    = 0
+      IDRS(3) = 2
+#endif // W3_NCEP2
 !
-!/T      WRITE (NDST,9050) KPDS
-!/T      WRITE (NDST,9051) KGDS
+#ifdef W3_T
+      WRITE (NDST,9050) KPDS
+      WRITE (NDST,9051) KGDS
+#endif // W3_T
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Time management.
@@ -757,30 +831,38 @@
 !
         RFTIME = DSEC21 ( FTIME , TIME ) / 3600.
         IF ( RFTIME .LT. 0. ) THEN
-!/NCEP1            KPDS( 8) = 1 + MOD(TIME(1)/10000-1,100)
-!/NCEP1            KPDS( 9) = MOD(TIME(1),10000) / 100
-!/NCEP1            KPDS(10) = MOD(TIME(1),100)
-!/NCEP1            KPDS(11) = TIME(2) / 10000
-!/NCEP1            KPDS(14) = 0
-!/NCEP1            KPDS(21) = 1 + (TIME(1)/10000-1)/100
-!/NCEP2            LISTSEC1( 6) = TIME(1)/10000
-!/NCEP2            LISTSEC1( 7) = MOD(TIME(1),10000) / 100
-!/NCEP2            LISTSEC1( 8) = MOD(TIME(1),100)
-!/NCEP2            LISTSEC1( 9) = TIME(2) / 10000
-!/NCEP2            KPDS( 9)     = 0
+#ifdef W3_NCEP1
+            KPDS( 8) = 1 + MOD(TIME(1)/10000-1,100)
+            KPDS( 9) = MOD(TIME(1),10000) / 100
+            KPDS(10) = MOD(TIME(1),100)
+            KPDS(11) = TIME(2) / 10000
+            KPDS(14) = 0
+            KPDS(21) = 1 + (TIME(1)/10000-1)/100
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+            LISTSEC1( 6) = TIME(1)/10000
+            LISTSEC1( 7) = MOD(TIME(1),10000) / 100
+            LISTSEC1( 8) = MOD(TIME(1),100)
+            LISTSEC1( 9) = TIME(2) / 10000
+            KPDS( 9)     = 0
+#endif // W3_NCEP2
             WRITE (NDSO,972) IDTIME
           ELSE
-!/NCEP1            KPDS( 8) = 1 + MOD(FTIME(1)/10000-1,100)
-!/NCEP1            KPDS( 9) = MOD(FTIME(1),10000) / 100
-!/NCEP1            KPDS(10) = MOD(FTIME(1),100)
-!/NCEP1            KPDS(11) = FTIME(2) / 10000
-!/NCEP1            KPDS(14) = NINT(RFTIME)
-!/NCEP1            KPDS(21) = 1 + (FTIME(1)/10000-1)/100
-!/NCEP2            LISTSEC1( 6) = FTIME(1)/10000
-!/NCEP2            LISTSEC1( 7) = MOD(FTIME(1),10000) / 100
-!/NCEP2            LISTSEC1( 8) = MOD(FTIME(1),100)
-!/NCEP2            LISTSEC1( 9) = FTIME(2) / 10000
-!/NCEP2            KPDS( 9)     = NINT(RFTIME)
+#ifdef W3_NCEP1
+            KPDS( 8) = 1 + MOD(FTIME(1)/10000-1,100)
+            KPDS( 9) = MOD(FTIME(1),10000) / 100
+            KPDS(10) = MOD(FTIME(1),100)
+            KPDS(11) = FTIME(2) / 10000
+            KPDS(14) = NINT(RFTIME)
+            KPDS(21) = 1 + (FTIME(1)/10000-1)/100
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+            LISTSEC1( 6) = FTIME(1)/10000
+            LISTSEC1( 7) = MOD(FTIME(1),10000) / 100
+            LISTSEC1( 8) = MOD(FTIME(1),100)
+            LISTSEC1( 9) = FTIME(2) / 10000
+            KPDS( 9)     = NINT(RFTIME)
+#endif // W3_NCEP2
             WRITE (NDSO,971) IDTIME, NINT(RFTIME)
           END IF
 !
@@ -814,7 +896,9 @@
   888 CONTINUE
       WRITE (NDSO,999)
 !
-!/NCO/!     CALL W3TAGE('WAVEGRIB')
+#ifdef W3_NCO
+!     CALL W3TAGE('WAVEGRIB')
+#endif // W3_NCO
 !
 ! Formats
 !
@@ -860,11 +944,13 @@
                ' ========================================='/          &
                '         WAVEWATCH III GRIB output '/)
 !
-!/T 9050 FORMAT ( ' TEST W3GRIB : KPDS : ',13I4/                      &
-!/T               '                      ',12I4)
-!/T 9051 FORMAT ( ' TEST W3GRIB : KGDS : ',8I6/                       &
-!/T               '                      ',8I6/                       &
-!/T               '                      ',6I6)
+#ifdef W3_T
+ 9050 FORMAT ( ' TEST W3GRIB : KPDS : ',13I4/                      &
+               '                      ',12I4)
+ 9051 FORMAT ( ' TEST W3GRIB : KGDS : ',8I6/                       &
+               '                      ',8I6/                       &
+               '                      ',6I6)
+#endif // W3_T
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRIB : '/               &
                '     ERROR IN OPENING INPUT FILE'/                    &
@@ -879,7 +965,9 @@
 !
  1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRIB : '/          &
                '     GRIB REQUIRES SPHERICAL GRID'/)
-!/NCEP2 1011 FORMAT (/' CHOSEN GRID TYPE: : ',A/)
+#ifdef W3_NCEP2
+ 1011 FORMAT (/' CHOSEN GRID TYPE: : ',A/)
+#endif // W3_NCEP2
 !/
 !/ Internal subroutine W3EXGB ---------------------------------------- /
 !/
@@ -968,7 +1056,9 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3SERVMD, ONLY : W3S2XY
-!/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN
+#ifdef W3_RTD
+      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN
+#endif // W3_RTD
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -980,7 +1070,9 @@
 !/
       INTEGER                 :: J, IXY, NDATA
       INTEGER                 :: IO
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    ::  X1(NX*NY), X2(NX*NY), XX(NX*NY),    &
                                   XY(NX*NY), CABS, UABS,              &
                                   YY(NX*NY,0:NOSWLL), KPDS5A, KPDS5B, &
@@ -990,10 +1082,14 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3EXGB')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3EXGB')
+#endif // W3_S
 !
-!/T      WRITE (NDST,9000) ((FLREQ(IFI,IFJ),IFJ=1,NGRPP), IFI=1,NOGRP)
-!/T      WRITE (NDST,9001) NDSDAT, KPDS, KGDS
+#ifdef W3_T
+      WRITE (NDST,9000) ((FLREQ(IFI,IFJ),IFJ=1,NGRPP), IFI=1,NOGRP)
+      WRITE (NDST,9001) NDSDAT, KPDS, KGDS
+#endif // W3_T
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -1022,7 +1118,9 @@
         FLTRI = .FALSE.
         FLPRT = .FALSE.
 !
-!/T            WRITE (NDST,9020) IDOUT(IFI,IFJ)
+#ifdef W3_T
+            WRITE (NDST,9020) IDOUT(IFI,IFJ)
+#endif // W3_T
 !
 ! 2.a Set output arrays and parameters
 !
@@ -1030,9 +1128,13 @@
 !
             IF ( IFI .EQ. 1 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 14 
-!/NCEP2                KPDS(1) = 4  
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 14 
+                KPDS(1) = 4  
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, DW(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1040,11 +1142,17 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  2 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 1 
-!/NCEP2                KPDS(1) = 1 
-!/RTD                ! Rotate x,y vector back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX, CY, AnglD)
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 1 
+                KPDS(1) = 1 
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate x,y vector back to standard pole
+                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX, CY, AnglD)
+#endif // W3_RTD
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CX(1:NSEA)          &
                                                         , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CY(1:NSEA)          &
@@ -1073,12 +1181,18 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  3 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = 032
-!/NCEP2                KPDS(2) = 1
-!/NCEP2                KPDS(1) = 2
-!/NCEP2                LISTSEC0(1) = 0
-!/RTD                ! Rotate x,y vector back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA, UD, AnglD)
+#ifdef W3_NCEP1
+                KPDS(5) = 032
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 1
+                KPDS(1) = 2
+                LISTSEC0(1) = 0
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate x,y vector back to standard pole
+                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA, UD, AnglD)
+#endif // W3_RTD
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UA(1:NSEA)          &
                                                         , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UD(1:NSEA)          &
@@ -1107,9 +1221,13 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255 
-!/NCEP2                KPDS(1) = 3   
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255 
+                KPDS(1) = 3   
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, AS(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
@@ -1117,30 +1235,44 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 1 
-!/NCEP2                KPDS(1) = 3 
+#ifdef W3_NCEP1
+                KPDS(5) = -1 
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 1 
+                KPDS(1) = 3 
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
 !
 !     Ice concentration
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 091
-!/NCEP2                KPDS(2) = 0
-!/NCEP2                KPDS(1) = 2
+#ifdef W3_NCEP1
+                KPDS(5) = 091
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 0
+                KPDS(1) = 2
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
 !
 !     Atmospheric momentum
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  8 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = 032
-!/NCEP2                KPDS(2) = 1
-!/NCEP2                KPDS(1) = 2
-!/NCEP2                LISTSEC0(1) = 0
-!/RTD                ! Rotate x,y vector back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA, TAUADIR, AnglD)
+#ifdef W3_NCEP1
+                KPDS(5) = 032
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 1
+                KPDS(1) = 2
+                LISTSEC0(1) = 0
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate x,y vector back to standard pole
+                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA, TAUADIR, AnglD)
+#endif // W3_RTD
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUA(1:NSEA)        &
                                                         , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUADIR(1:NSEA)     &
@@ -1169,37 +1301,53 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 091
-!/NCEP2                KPDS(2) = 0
-!/NCEP2                KPDS(1) = 2
+#ifdef W3_NCEP1
+                KPDS(5) = 091
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 0
+                KPDS(1) = 2
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
 !
 !     Significant wave height
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 100
-!/NCEP2                KPDS(2) = 3
+#ifdef W3_NCEP1
+                KPDS(5) = 100
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 3
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, HS    , MAPSF, X1 )
 !
 !     Mean wave length
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  2 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 193
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 193
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLM   , MAPSF, X1 )
 !
 !     Mean wave period (based on second moment)
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS(2) = 28
-!/NCEP2         else
-!/NCEP2                KPDS(2) = 25
-!/NCEP2         endif
+#ifdef W3_NCEP1
+                KPDS(5) = -1 
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS(2) = 28
+         else
+                KPDS(2) = 25
+         endif
+#endif // W3_NCEP2
 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
@@ -1207,28 +1355,40 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 103
-!/NCEP2                KPDS(2) = 15
+#ifdef W3_NCEP1
+                KPDS(5) = 103
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 15
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
 !
 !     Mean wave period (based on first inverse moment)
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS(2) = 34
-!/NCEP2         else
-!/NCEP2                KPDS(2) = 15
-!/NCEP2         endif 
+#ifdef W3_NCEP1
+                KPDS(5) = -1 
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS(2) = 34
+         else
+                KPDS(2) = 15
+         endif 
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Peak frequency
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 108
-!/NCEP2                KPDS(2) = 11
+#ifdef W3_NCEP1
+                KPDS(5) = 108
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 11
+#endif // W3_NCEP2
                 DO ISEA=1, NSEA
                   IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
                       FP0(ISEA) = 1. / MAX(FR1,FP0(ISEA)) ! Limit FP to lowest discrete frequency
@@ -1241,10 +1401,16 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  7 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 101
-!/NCEP2                KPDS(2) = 14
-!/RTD                ! Rotate direction back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
+#ifdef W3_NCEP1
+                KPDS(5) = 101
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 14
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate direction back to standard pole
+                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
+#endif // W3_RTD
                 DO ISEA=1, NSEA
                   IF ( THM(ISEA) .NE. UNDEF )                         &
                        THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
@@ -1255,22 +1421,32 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 31
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 31
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THS   , MAPSF, X1 )
 !
 !     Peak direction
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 107
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS(2) = 46
-!/NCEP2         else
-!/NCEP2                KPDS(2) = 10
-!/NCEP2                endif    
-!/RTD                ! Rotate direction back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
+#ifdef W3_NCEP1
+                KPDS(5) = 107
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS(2) = 46
+         else
+                KPDS(2) = 10
+                endif    
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate direction back to standard pole
+                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
+#endif // W3_RTD
                 DO ISEA=1, NSEA
                   IF ( THP0(ISEA) .NE. UNDEF ) THEN
                       THP0(ISEA) = MOD ( 630-RADE*THP0(ISEA) , 360. )
@@ -1282,25 +1458,33 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WNMEAN, MAPSF, X1 )
 !
 !     Partitioned wave height
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 102
-!/NCEP1                KPDS5B  = 105
-!/NCEP2                KPDS5A  = 5
-!/NCEP2                KPDS5B  = 8
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS5A1(1)  =47
-!/NCEP2                KPDS5A1(2)  =48
-!/NCEP2                KPDS5A1(3)  =49
-!/NCEP2         else
-!/NCEP2                KPDS5B  = 8
-!/NCEP2         endif
+#ifdef W3_NCEP1
+                KPDS5A  = 102
+                KPDS5B  = 105
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  = 5
+                KPDS5B  = 8
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS5A1(1)  =47
+                KPDS5A1(2)  =48
+                KPDS5A1(3)  =49
+         else
+                KPDS5B  = 8
+         endif
+#endif // W3_NCEP2
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PHS(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1312,17 +1496,21 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 110
-!/NCEP1                KPDS5B  = 106
-!/NCEP2                KPDS5A  = 6
-!/NCEP2                KPDS5B = 9
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS5A1(1)  = 50
-!/NCEP2                KPDS5A1(2)  = 51
-!/NCEP2                KPDS5A1(3)  = 52
-!/NCEP2         else
-!/NCEP2                KPDS5B = 9
-!/NCEP2         endif
+#ifdef W3_NCEP1
+                KPDS5A  = 110
+                KPDS5B  = 106
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  = 6
+                KPDS5B = 9
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS5A1(1)  = 50
+                KPDS5A1(2)  = 51
+                KPDS5A1(3)  = 52
+         else
+                KPDS5B = 9
+         endif
+#endif // W3_NCEP2
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PTP(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1334,10 +1522,14 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  193
-!/NCEP2                KPDS5B  =  193
+#ifdef W3_NCEP1
+                KPDS5A  =  -1
+                KPDS5B  =  -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  =  193
+                KPDS5B  =  193
+#endif // W3_NCEP2
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PLP(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1349,21 +1541,27 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 109
-!/NCEP1                KPDS5B  = 104
-!/NCEP2                KPDS5A  = 4
-!/NCEP2                KPDS5B = 7
-!/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
-!/NCEP2                KPDS5A1(1)  = 53
-!/NCEP2                KPDS5A1(2)  = 54
-!/NCEP2                KPDS5A1(3)  = 55
-!/NCEP2         else
-!/NCEP2                KPDS5B = 7
-!/NCEP2         endif
-!/RTD                DO I = 0,NOSWLL
-!/RTD                  ! Rotate direction back to standard pole
-!/RTD                  IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,I), AnglD, .FALSE.)
-!/RTD                END DO
+#ifdef W3_NCEP1
+                KPDS5A  = 109
+                KPDS5B  = 104
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  = 4
+                KPDS5B = 7
+         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
+                KPDS5A1(1)  = 53
+                KPDS5A1(2)  = 54
+                KPDS5A1(3)  = 55
+         else
+                KPDS5B = 7
+         endif
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                DO I = 0,NOSWLL
+                  ! Rotate direction back to standard pole
+                  IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,I), AnglD, .FALSE.)
+                END DO
+#endif // W3_RTD
                 DO ISEA = 1,NSEA
                   DO I = 0,NOSWLL
                      IF ( PDIR(ISEA,I) .NE. UNDEF ) THEN
@@ -1382,10 +1580,14 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  32 
-!/NCEP2                KPDS5B  =  33 
+#ifdef W3_NCEP1
+                KPDS5A  =  -1
+                KPDS5B  =  -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  =  32 
+                KPDS5B  =  33 
+#endif // W3_NCEP2
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PSI(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1397,10 +1599,14 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
-!/NCEP2                KPDS5A  =  255
-!/NCEP2                KPDS5B  =  255
+#ifdef W3_NCEP1
+                KPDS5A  =  -1
+                KPDS5B  =  -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS5A  =  255
+                KPDS5B  =  255
+#endif // W3_NCEP2
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PWS(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
@@ -1412,27 +1618,41 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST  , MAPSF, X1 )
 !
 !     Number of fields in partition
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR   , MAPSF, X1 )
 !
 !     Friction velocity
 !
               ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ.  1 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 17 
-!/NCEP2                KPDS(1) = 1
-!/RTD                ! Rotate x,y vector back to standard pole
-!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST, USTDIR, AnglD)
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 17 
+                KPDS(1) = 1
+#endif // W3_NCEP2
+#ifdef W3_RTD
+                ! Rotate x,y vector back to standard pole
+                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST, USTDIR, AnglD)
+#endif // W3_RTD
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UST(1:NSEA)         &
                                                         , MAPSF, X1 )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, USTDIR(1:NSEA)      &
@@ -1442,8 +1662,12 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 DO ISEA=1, NSEA
                   IF ( DTDYN(ISEA) .NE. UNDEF )                       &
                        DTDYN(ISEA) = DTDYN(ISEA) / 60.
@@ -1454,24 +1678,36 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FCUT  , MAPSF, X1 )
 !
 !     CFL Maximum (in spatial space)
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLXYMAX  , MAPSF, X1 )
 !
 !     CFL Maximum (in spectral space)
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+#ifdef W3_NCEP1
+                KPDS(5) = -1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = 255
+#endif // W3_NCEP2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLTHMAX  , MAPSF, X1 )
 !
               ELSE
@@ -1488,80 +1724,122 @@
 !
             IF ( FLPRT ) THEN
 !
-!/NCEP1                KPDS(5) = KPDS5A
-!/NCEP2                KPDS(2) = KPDS5A
+#ifdef W3_NCEP1
+                KPDS(5) = KPDS5A
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = KPDS5A
+#endif // W3_NCEP2
                 DO IXY=1, NX*NY
                   BITMAP(IXY) = YY(IXY,0) .NE. UNDEF
                   END DO
-!/NCEP1                CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,0),IO)
-!/NCEP2                CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                IF (IO .NE. 0) GOTO 810
-!/NCEP2                CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
-!/NCEP2                             IDEFNUM, IO)
-!/NCEP2                IF (IO .NE. 0) GOTO 820
-!/NCEP2                CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
-!/NCEP2                               COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
-!/NCEP2                               200,YY(:,0), NDATA, IBMP, BITMAP, IO)
-!/NCEP2                IF (IO .NE. 0) GOTO 820
-!/NCEP2                CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                IF (IO .NE. 0) GOTO 830
-!/NCEP2                CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+                CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,0),IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                IF (IO .NE. 0) GOTO 810
+                CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
+                             IDEFNUM, IO)
+                IF (IO .NE. 0) GOTO 820
+                CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
+                               COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
+                               200,YY(:,0), NDATA, IBMP, BITMAP, IO)
+                IF (IO .NE. 0) GOTO 820
+                CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                IF (IO .NE. 0) GOTO 830
+                CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
 !
-!/NCEP2               if ((gen_pro.eq.0) .or. (gen_pro.eq.1)) then
-!/NCEP1                KPDS(5) = KPDS5B
-!/NCEP1                KPDS(6) = 241
-!/NCEP2                KPDS(10) = 241
+#ifdef W3_NCEP2
+               if ((gen_pro.eq.0) .or. (gen_pro.eq.1)) then
+#endif // W3_NCEP2
+#ifdef W3_NCEP1
+                KPDS(5) = KPDS5B
+                KPDS(6) = 241
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(10) = 241
+#endif // W3_NCEP2
                 DO I=1, NOSWLL
-!/NCEP1                  KPDS(7) = I
-!/NCEP2                KPDS(2) = KPDS5A1(I)
-!/NCEP2                  KPDS(12) = I
+#ifdef W3_NCEP1
+                  KPDS(7) = I
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = KPDS5A1(I)
+                  KPDS(12) = I
+#endif // W3_NCEP2
                   DO IXY=1, NX*NY
                     BITMAP(IXY) = YY(IXY,I) .NE. UNDEF
                     END DO
-!/NCEP1                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
-!/NCEP2                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 810
-!/NCEP2                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
-!/NCEP2                               IDEFNUM, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 820
-!/NCEP2                  CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
-!/NCEP2                                 COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
-!/NCEP2                                 200,YY(:,I), NDATA, IBMP, BITMAP, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 820
-!/NCEP2                  CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 830
-!/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                  IF (IO .NE. 0) GOTO 810
+                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
+                               IDEFNUM, IO)
+                  IF (IO .NE. 0) GOTO 820
+                  CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
+                                 COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
+                                 200,YY(:,I), NDATA, IBMP, BITMAP, IO)
+                  IF (IO .NE. 0) GOTO 820
+                  CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                  IF (IO .NE. 0) GOTO 830
+                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
                   END DO
-!/NCEP2           ELSE
-!/NCEP1                KPDS(5) = KPDS5B
-!/NCEP1                KPDS(6) = 241
-!/NCEP2                KPDS(2) = KPDS5B
-!/NCEP2                KPDS(10) = 241
+#ifdef W3_NCEP2
+           ELSE
+#endif // W3_NCEP2
+#ifdef W3_NCEP1
+                KPDS(5) = KPDS5B
+                KPDS(6) = 241
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(2) = KPDS5B
+                KPDS(10) = 241
+#endif // W3_NCEP2
                 DO I=1, NOSWLL
-!/NCEP1                  KPDS(7) = I
-!/NCEP2                  KPDS(12) = I
+#ifdef W3_NCEP1
+                  KPDS(7) = I
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                  KPDS(12) = I
+#endif // W3_NCEP2
                   DO IXY=1, NX*NY
                     BITMAP(IXY) = YY(IXY,I) .NE. UNDEF
                     END DO
-!/NCEP1                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
-!/NCEP2                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 810
-!/NCEP2                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
-!/NCEP2                               IDEFNUM, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 820
-!/NCEP2                  CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
-!/NCEP2                                 COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
-!/NCEP2                                 200,YY(:,I), NDATA, IBMP, BITMAP, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 820
-!/NCEP2                  CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                  IF (IO .NE. 0) GOTO 830
-!/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                  IF (IO .NE. 0) GOTO 810
+                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
+                               IDEFNUM, IO)
+                  IF (IO .NE. 0) GOTO 820
+                  CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
+                                 COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
+                                 200,YY(:,I), NDATA, IBMP, BITMAP, IO)
+                  IF (IO .NE. 0) GOTO 820
+                  CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                  IF (IO .NE. 0) GOTO 830
+                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
                   END DO
-!/NCEP2           ENDIF
-!/NCEP1                KPDS(6) = 1
-!/NCEP1                KPDS(7) = 1
-!/NCEP2                KPDS(10) = 1
-!/NCEP2                KPDS(12) = 1
+#ifdef W3_NCEP2
+           ENDIF
+#endif // W3_NCEP2
+#ifdef W3_NCEP1
+                KPDS(6) = 1
+                KPDS(7) = 1
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                KPDS(10) = 1
+                KPDS(12) = 1
+#endif // W3_NCEP2
 !
 ! 3.b Other data
 !
@@ -1571,88 +1849,110 @@
                   BITMAP(IXY) = X1(IXY) .NE. UNDEF
                   END DO
 !
-!/NCEP1            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
-!/NCEP2            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 810
-!/NCEP2            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
-!/NCEP2                         IDEFNUM, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 820
-!/NCEP2            CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
-!/NCEP2                           COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
-!/NCEP2                           200,X1, NDATA, IBMP, BITMAP, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 820
-!/NCEP2            CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 830
-!/NCEP2            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+            IF (IO .NE. 0) GOTO 810
+            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
+                         IDEFNUM, IO)
+            IF (IO .NE. 0) GOTO 820
+            CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,        &
+                           COORDLIST, NUMCOORD, IDRSNUM, IDRS,   &
+                           200,X1, NDATA, IBMP, BITMAP, IO)
+            IF (IO .NE. 0) GOTO 820
+            CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+            IF (IO .NE. 0) GOTO 830
+            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
 !
               ELSE IF ( FLTWO ) THEN
 !
                 DO IXY=1, NX*NY
                   BITMAP(IXY) = X1(IXY) .NE. UNDEF
                   END DO
-!/NCEP1            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
-!/NCEP2            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 810
-!/NCEP2            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
-!/NCEP2                         IDEFNUM, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 820
-!/NCEP2            CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200, &
-!/NCEP2                           COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
-!/NCEP2                           200,X1, NDATA, IBMP, BITMAP, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 820
-!/NCEP2            CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2            IF (IO .NE. 0) GOTO 830
-!/NCEP2            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+            IF (IO .NE. 0) GOTO 810
+            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
+                         IDEFNUM, IO)
+            IF (IO .NE. 0) GOTO 820
+            CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200, &
+                           COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
+                           200,X1, NDATA, IBMP, BITMAP, IO)
+            IF (IO .NE. 0) GOTO 820
+            CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+            IF (IO .NE. 0) GOTO 830
+            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
 
-!/NCEP1                    KPDS(5) = 031
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X2,IO)
-!/NCEP2                    KPDS(2) = 0
-!/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 810
-!/NCEP2                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
-!/NCEP2                                 IDEFNUM, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
-!/NCEP2                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
-!/NCEP2                                   200,X2, NDATA, IBMP, BITMAP, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 830
-!/NCEP2                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
-!/NCEP1                    KPDS(5) = 033
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XX,IO)
-!/NCEP2                    KPDS(2) = 2
-!/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 810
-!/NCEP2                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
-!/NCEP2                                 IDEFNUM, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
-!/NCEP2                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
-!/NCEP2                                   200,XX, NDATA, IBMP, BITMAP, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 830
-!/NCEP2                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
-!/NCEP1                    KPDS(5) = 034
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XY,IO)
-!/NCEP2                    KPDS(2) = 3
-!/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 810
-!/NCEP2                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
-!/NCEP2                                 IDEFNUM, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
-!/NCEP2                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
-!/NCEP2                                   200,XY, NDATA, IBMP, BITMAP, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 820
-!/NCEP2                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
-!/NCEP2                    IF (IO .NE. 0) GOTO 830
-!/NCEP2                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#ifdef W3_NCEP1
+                    KPDS(5) = 031
+                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X2,IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                    KPDS(2) = 0
+                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                    IF (IO .NE. 0) GOTO 810
+                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
+                                 IDEFNUM, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
+                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
+                                   200,X2, NDATA, IBMP, BITMAP, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                    IF (IO .NE. 0) GOTO 830
+                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
+#ifdef W3_NCEP1
+                    KPDS(5) = 033
+                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XX,IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                    KPDS(2) = 2
+                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                    IF (IO .NE. 0) GOTO 810
+                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
+                                 IDEFNUM, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
+                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
+                                   200,XX, NDATA, IBMP, BITMAP, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                    IF (IO .NE. 0) GOTO 830
+                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
+#ifdef W3_NCEP1
+                    KPDS(5) = 034
+                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XY,IO)
+#endif // W3_NCEP1
+#ifdef W3_NCEP2
+                    KPDS(2) = 3
+                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
+                    IF (IO .NE. 0) GOTO 810
+                    CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
+                                 IDEFNUM, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL ADDFIELD (CGRIB,LCGRIB,KPDSNUM,KPDS,200,      &
+                                   COORDLIST, NUMCOORD, IDRSNUM, IDRS, &
+                                   200,XY, NDATA, IBMP, BITMAP, IO)
+                    IF (IO .NE. 0) GOTO 820
+                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
+                    IF (IO .NE. 0) GOTO 830
+                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
+#endif // W3_NCEP2
 !
               END IF
-!/NCEP2              LISTSEC0(1) = 10
-!/NCEP2              KPDS(1)     = 0
+#ifdef W3_NCEP2
+              LISTSEC0(1) = 10
+              KPDS(1)     = 0
+#endif // W3_NCEP2
 !
 ! ... End of fields loop
 !
@@ -1664,49 +1964,65 @@
 !
 ! Error escape locations
 !
-!/NCEP2  810 CONTINUE
-!/NCEP2      WRITE (NDSE,1010) IO
-!/NCEP2      CALL EXTCDE ( 20 )
-!/NCEP2  820 CONTINUE
-!/NCEP2      WRITE (NDSE,1020) IO
-!/NCEP2      CALL EXTCDE ( 30 )
-!/NCEP2  830 CONTINUE
-!/NCEP2      WRITE (NDSE,1030) IO
-!/NCEP2      CALL EXTCDE ( 40 )
+#ifdef W3_NCEP2
+  810 CONTINUE
+      WRITE (NDSE,1010) IO
+      CALL EXTCDE ( 20 )
+  820 CONTINUE
+      WRITE (NDSE,1020) IO
+      CALL EXTCDE ( 30 )
+  830 CONTINUE
+      WRITE (NDSE,1030) IO
+      CALL EXTCDE ( 40 )
+#endif // W3_NCEP2
 !
 ! Formats
 !
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB :'/                &
                '     PLEASE UPDATE FIELDS !!! '/)
 !
-!/NCEP2 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
-!/NCEP2               '     ERROR IN OPENING OUTPUT FILE'/                   &
-!/NCEP2               '     IOSTAT =',I5/)
+#ifdef W3_NCEP2
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
+               '     ERROR IN OPENING OUTPUT FILE'/                   &
+               '     IOSTAT =',I5/)
+#endif // W3_NCEP2
 !
-!/NCEP2 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
-!/NCEP2               '     ERROR CREATING NEW GRIB2 FIELD'/                 &
-!/NCEP2               '     IOSTAT =',I5/)
+#ifdef W3_NCEP2
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
+               '     ERROR CREATING NEW GRIB2 FIELD'/                 &
+               '     IOSTAT =',I5/)
+#endif // W3_NCEP2
 !
-!/NCEP2 1020 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
-!/NCEP2               '     ERROR ADDING GRIB2 FIELD'/                       &
-!/NCEP2               '     IOSTAT =',I5/)
+#ifdef W3_NCEP2
+ 1020 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
+               '     ERROR ADDING GRIB2 FIELD'/                       &
+               '     IOSTAT =',I5/)
+#endif // W3_NCEP2
 !
-!/NCEP2 1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
-!/NCEP2               '     ERROR ENDING GRIB2 MESSAGE'/                     &
-!/NCEP2               '     IOSTAT =',I5/)
+#ifdef W3_NCEP2
+ 1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGB : '/               &
+               '     ERROR ENDING GRIB2 MESSAGE'/                     &
+               '     IOSTAT =',I5/)
+#endif // W3_NCEP2
 !
-!/T 9000 FORMAT (' TEST W3EXGB : FLAGS  :',40L2)
-!/T 9001 FORMAT (' TEST W3EXGB : NDSDAT :',I4/                        &
-!/T              '               KPDS   :',13I4/                      &
-!/T              '                       ',12I4/                      &
-!/T              '               KGDS   :',8I6/                       &
-!/T              '                       ',8I6/                       &
-!/T              '                       ',6I6)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3EXGB : FLAGS  :',40L2)
+ 9001 FORMAT (' TEST W3EXGB : NDSDAT :',I4/                        &
+              '               KPDS   :',13I4/                      &
+              '                       ',12I4/                      &
+              '               KGDS   :',8I6/                       &
+              '                       ',8I6/                       &
+              '                       ',6I6)
+#endif // W3_T
 !
-!/T 9012 FORMAT (' TEST W3EXGB : BLOK PARS    : ',3I4)
-!/T 9014 FORMAT ('           BASE NAME : ',A)
+#ifdef W3_T
+ 9012 FORMAT (' TEST W3EXGB : BLOK PARS    : ',3I4)
+ 9014 FORMAT ('           BASE NAME : ',A)
+#endif // W3_T
 !
-!/T 9020 FORMAT (' TEST W3EXGB : OUTPUT FIELD : ',A)
+#ifdef W3_T
+ 9020 FORMAT (' TEST W3EXGB : OUTPUT FIELD : ',A)
+#endif // W3_T
 !/
 !/ End of W3EXGB ----------------------------------------------------- /
 !/

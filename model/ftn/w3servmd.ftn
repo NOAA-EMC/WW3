@@ -277,14 +277,18 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER                 :: IERR
       CHARACTER(128)          :: MSG
       CHARACTER(256)          :: LINE, TEST
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'NEXTLN')
+#ifdef W3_S
+      CALL STRACE (IENT, 'NEXTLN')
+#endif // W3_S
 !
   100 CONTINUE
       ! read line
@@ -644,24 +648,30 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER(LEN=8)        :: DATE
-!/F90      CHARACTER(LEN=10)       :: TIME
-!/F90      CHARACTER(LEN=5)        :: ZONE
-!/F90      INTEGER                 :: VALUES(8)
+#ifdef W3_F90
+      CHARACTER(LEN=8)        :: DATE
+      CHARACTER(LEN=10)       :: TIME
+      CHARACTER(LEN=5)        :: ZONE
+      INTEGER                 :: VALUES(8)
+#endif // W3_F90
 !/
 !/ ------------------------------------------------------------------- /
 !/
 ! This is supposed to be standard F90
 !
-!/F90      STRNG = '----/--/--'
-!/F90      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
-!/F90      STRNG(1:4) = DATE(1:4)
-!/F90      STRNG(6:7) = DATE(5:6)
-!/F90      STRNG(9:10) = DATE(7:8)
+#ifdef W3_F90
+      STRNG = '----/--/--'
+      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
+      STRNG(1:4) = DATE(1:4)
+      STRNG(6:7) = DATE(5:6)
+      STRNG(9:10) = DATE(7:8)
+#endif // W3_F90
 !
 ! Dummy alternative
 !
-!/DUM      STRNG = '----/--/--'
+#ifdef W3_DUM
+      STRNG = '----/--/--'
+#endif // W3_DUM
 !
       RETURN
 !/
@@ -725,24 +735,30 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER(LEN=8)        :: DATE
-!/F90      CHARACTER(LEN=10)       :: TIME
-!/F90      CHARACTER(LEN=5)        :: ZONE
-!/F90      INTEGER                 :: VALUES(8)
+#ifdef W3_F90
+      CHARACTER(LEN=8)        :: DATE
+      CHARACTER(LEN=10)       :: TIME
+      CHARACTER(LEN=5)        :: ZONE
+      INTEGER                 :: VALUES(8)
+#endif // W3_F90
 !/
 !/ ------------------------------------------------------------------- /
 !/
 ! This is supposed to be standard F90
 !
-!/F90      STRNG = '--:--:--'
-!/F90      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
-!/F90      STRNG(1:2) = TIME(1:2)
-!/F90      STRNG(4:5) = TIME(3:4)
-!/F90      STRNG(7:8) = TIME(5:6)
+#ifdef W3_F90
+      STRNG = '--:--:--'
+      CALL DATE_AND_TIME ( DATE, TIME, ZONE, VALUES )
+      STRNG(1:2) = TIME(1:2)
+      STRNG(4:5) = TIME(3:4)
+      STRNG(7:8) = TIME(5:6)
+#endif // W3_F90
 !
 ! Dummy alternative
 !
-!/DUM      STRNG = '--:--:--'
+#ifdef W3_DUM
+      STRNG = '--:--:--'
+#endif // W3_DUM
 !
       RETURN
 !/
@@ -809,7 +825,9 @@
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -823,8 +841,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/MPI      INTEGER                 :: IERR_MPI
-!/MPI      LOGICAL                 :: RUN
+#ifdef W3_MPI
+      INTEGER                 :: IERR_MPI
+      LOGICAL                 :: RUN
+#endif // W3_MPI
       INTEGER                 :: IUN
       CHARACTER(256)          :: LMSG = ""
       CHARACTER(6)            :: LSTR
@@ -856,46 +876,62 @@
 !/
 !/ Handle MPI exit
 !/
-!/MPI      CALL MPI_INITIALIZED ( RUN, IERR_MPI )
-!/MPI      IF ( RUN ) THEN
-!/MPI        IF ( IEXIT.EQ.0 ) THEN ! non-error state
-!/MPI          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
-!/MPI          CALL MPI_FINALIZE (IERR_MPI )
-!/MPI        ELSE ! error state
-!/MPI          WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
-!/MPI          IF (PRESENT(UNIT)) THEN
-!/MPI            WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
+#ifdef W3_MPI
+      CALL MPI_INITIALIZED ( RUN, IERR_MPI )
+      IF ( RUN ) THEN
+        IF ( IEXIT.EQ.0 ) THEN ! non-error state
+          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
+          CALL MPI_FINALIZE (IERR_MPI )
+        ELSE ! error state
+          WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
+          IF (PRESENT(UNIT)) THEN
+            WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
+#endif // W3_MPI
 !!/MPI          ELSE
 !!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
-!/MPI          END IF
-!/MPI          IF (PRESENT(MSG)) THEN
-!/MPI            WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+#ifdef W3_MPI
+          END IF
+          IF (PRESENT(MSG)) THEN
+            WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+#endif // W3_MPI
 !!/MPI          ELSE
 !!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
-!/MPI          END IF
-!/MPI          IF (PRESENT(FILE)) THEN
-!/MPI            WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+#ifdef W3_MPI
+          END IF
+          IF (PRESENT(FILE)) THEN
+            WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+#endif // W3_MPI
 !!/MPI          ELSE
 !!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
-!/MPI          END IF
-!/MPI          IF (PRESENT(LINE)) THEN
-!/MPI            WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+#ifdef W3_MPI
+          END IF
+          IF (PRESENT(LINE)) THEN
+            WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+#endif // W3_MPI
 !!/MPI          ELSE
 !!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
-!/MPI          END IF
-!/MPI          IF (PRESENT(COMM)) THEN
-!/MPI            WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+#ifdef W3_MPI
+          END IF
+          IF (PRESENT(COMM)) THEN
+            WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+#endif // W3_MPI
 !!/MPI          ELSE
 !!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
-!/MPI          END IF
-!/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
-!/MPI        END IF
-!/MPI      END IF
+#ifdef W3_MPI
+          END IF
+          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
+        END IF
+      END IF
+#endif // W3_MPI
 !/
 !/ Handle non-MPI exit
 !/
-!/F90      CALL EXIT ( IEXIT )
-!/DUM      STOP
+#ifdef W3_F90
+      CALL EXIT ( IEXIT )
+#endif // W3_F90
+#ifdef W3_DUM
+      STOP
+#endif // W3_DUM
 !/
 !/ End of EXTCDE ----------------------------------------------------- /
 !/
@@ -1556,326 +1592,328 @@ END SUBROUTINE STR_TO_UPPER
 
 !**********************************************************************
 !*                                                                    *
-!/T!**********************************************************************
-!/T      SUBROUTINE SSORT1 (X, Y, N, KFLAG)
-!/T!***BEGIN PROLOGUE  SSORT
-!/T!***PURPOSE  Sort an array and optionally make the same interchanges in
-!/T!            an auxiliary array.  The array may be sorted in increasing
-!/T!            or decreasing order.  A slightly modified QUICKSORT
-!/T!            algorithm is used.
-!/T!***LIBRARY   SLATEC
-!/T!***CATEGORY  N6A2B
-!/T!***TYPE      SINGLE PRECISION (SSORT-S, DSORT-D, ISORT-I)
-!/T!***KEYWORDS  SINGLETON QUICKSORT, SORT, SORTING
-!/T!***AUTHOR  Jones, R. E., (SNLA)
-!/T!           Wisniewski, J. A., (SNLA)
-!/T!***DESCRIPTION
-!/T!
-!/T!   SSORT sorts array X and optionally makes the same interchanges in
-!/T!   array Y.  The array X may be sorted in increasing order or
-!/T!   decreasing order.  A slightly modified quicksort algorithm is used.
-!/T!
-!/T!   Description of Parameters
-!/T!      X - array of values to be sorted   (usually abscissas)
-!/T!      Y - array to be (optionally) carried along
-!/T!      N - number of values in array X to be sorted
-!/T!      KFLAG - control parameter
-!/T!            =  2  means sort X in increasing order and carry Y along.
-!/T!            =  1  means sort X in increasing order (ignoring Y)
-!/T!            = -1  means sort X in decreasing order (ignoring Y)
-!/T!            = -2  means sort X in decreasing order and carry Y along.
-!/T!
-!/T!***REFERENCES  R. C. Singleton, Algorithm 347, An efficient algorithm
-!/T!                 for sorting with minimal storage, Communications of
-!/T!                 the ACM, 12, 3 (1969), pp. 185-187.
-!/T!***REVISION HISTORY  (YYMMDD)
-!/T!   761101  DATE WRITTEN
-!/T!   761118  Modified to use the Singleton quicksort algorithm.  (JAW)
-!/T!   890531  Changed all specific intrinsics to generic.  (WRB)
-!/T!   890831  Modified array declarations.  (WRB)
-!/T!   891009  Removed unreferenced statement labels.  (WRB)
-!/T!   891024  Changed category.  (WRB)
-!/T!   891024  REVISION DATE from Version 3.2
-!/T!   891214  Prologue converted to Version 4.0 format.  (BAB)
-!/T!   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
-!/T!   901012  Declared all variables; changed X,Y to SX,SY. (M. McClain)
-!/T!   920501  Reformatted the REFERENCES section.  (DWL, WRB)
-!/T!   920519  Clarified error messages.  (DWL)
-!/T!   920801  Declarations section rebuilt and code restructured to use
-!/T!           IF-THEN-ELSE-ENDIF.  (RWC, WRB)
-!/T!***END PROLOGUE  SSORT
-!/T!     .. Scalar Arguments ..
-!/T      INTEGER KFLAG, N
-!/T!     .. Array Arguments ..
-!/T      REAL*4 X(*), Y(*)
-!/T!     .. Local Scalars ..
-!/T      REAL*4 R, T, TT, TTY, TY
-!/T      INTEGER I, IJ, J, K, KK, L, M, NN
-!/T!     .. Local Arrays ..
-!/T      INTEGER IL(21), IU(21)
-!/T!     .. External Subroutines ..
-!/T!     None
-!/T!     .. Intrinsic Functions ..
-!/T      INTRINSIC ABS, INT
-!/T!***FIRST EXECUTABLE STATEMENT  SSORT
-!/T      NN = N
-!/T      IF (NN .LT. 1) THEN
-!/T        WRITE (*,*) 'The number of values to be sorted is not positive.'
-!/T         RETURN
-!/T      ENDIF
-!/T!
-!/T      KK = ABS(KFLAG)
-!/T      IF (KK.NE.1 .AND. KK.NE.2) THEN
-!/T         WRITE (*,*) 'The sort control parameter, K, is not 2, 1, -1, or -2.'
-!/T         RETURN
-!/T      ENDIF
-!/T!
-!/T!     Alter array X to get decreasing order if needed
-!/T!
-!/T      IF (KFLAG .LE. -1) THEN
-!/T         DO 10 I=1,NN
-!/T            X(I) = -X(I)
-!/T   10    CONTINUE
-!/T      ENDIF
-!/T!
-!/T      IF (KK .EQ. 2) GO TO 100
-!/T!
-!/T!     Sort X only
-!/T!
-!/T      M = 1
-!/T      I = 1
-!/T      J = NN
-!/T      R = 0.375E0
-!/T!
-!/T   20 IF (I .EQ. J) GO TO 60
-!/T      IF (R .LE. 0.5898437E0) THEN
-!/T         R = R+3.90625E-2
-!/T      ELSE
-!/T         R = R-0.21875E0
-!/T      ENDIF
-!/T!
-!/T   30 K = I
-!/T!
-!/T!     Select a central element of the array and save it in location T
-!/T!
-!/T      IJ = I + INT((J-I)*R)
-!/T      T = X(IJ)
-!/T!
-!/T!     If first element of array is greater than T, interchange with T
-!/T!
-!/T      IF (X(I) .GT. T) THEN
-!/T         X(IJ) = X(I)
-!/T         X(I) = T
-!/T         T = X(IJ)
-!/T      ENDIF
-!/T      L = J
-!/T!
-!/T!     If last element of array is less than than T, interchange with T
-!/T!
-!/T      IF (X(J) .LT. T) THEN
-!/T         X(IJ) = X(J)
-!/T         X(J) = T
-!/T         T = X(IJ)
-!/T!
-!/T!        If first element of array is greater than T, interchange with T
-!/T!
-!/T         IF (X(I) .GT. T) THEN
-!/T            X(IJ) = X(I)
-!/T            X(I) = T
-!/T            T = X(IJ)
-!/T         ENDIF
-!/T      ENDIF
-!/T!
-!/T!     Find an element in the second half of the array which is smaller
-!/T!     than T
-!/T!
-!/T   40 L = L-1
-!/T      IF (X(L) .GT. T) GO TO 40
-!/T!
-!/T!     Find an element in the first half of the array which is greater
-!/T!     than T
-!/T!
-!/T   50 K = K+1
-!/T      IF (X(K) .LT. T) GO TO 50
-!/T!
-!/T!     Interchange these elements
-!/T!
-!/T      IF (K .LE. L) THEN
-!/T         TT = X(L)
-!/T         X(L) = X(K)
-!/T         X(K) = TT
-!/T         GO TO 40
-!/T      ENDIF
-!/T!
-!/T!     Save upper and lower subscripts of the array yet to be sorted
-!/T!
-!/T      IF (L-I .GT. J-K) THEN
-!/T         IL(M) = I
-!/T         IU(M) = L
-!/T         I = K
-!/T         M = M+1
-!/T      ELSE
-!/T         IL(M) = K
-!/T         IU(M) = J
-!/T         J = L
-!/T         M = M+1
-!/T      ENDIF
-!/T      GO TO 70
-!/T!
-!/T!     Begin again on another portion of the unsorted array
-!/T!
-!/T   60 M = M-1
-!/T      IF (M .EQ. 0) GO TO 190
-!/T      I = IL(M)
-!/T      J = IU(M)
-!/T!
-!/T   70 IF (J-I .GE. 1) GO TO 30
-!/T      IF (I .EQ. 1) GO TO 20
-!/T      I = I-1
-!/T!
-!/T   80 I = I+1
-!/T      IF (I .EQ. J) GO TO 60
-!/T      T = X(I+1)
-!/T      IF (X(I) .LE. T) GO TO 80
-!/T      K = I
-!/T!
-!/T   90 X(K+1) = X(K)
-!/T      K = K-1
-!/T      IF (T .LT. X(K)) GO TO 90
-!/T      X(K+1) = T
-!/T      GO TO 80
-!/T!
-!/T!     Sort X and carry Y along
-!/T!
-!/T  100 M = 1
-!/T      I = 1
-!/T      J = NN
-!/T      R = 0.375E0
-!/T!
-!/T  110 IF (I .EQ. J) GO TO 150
-!/T      IF (R .LE. 0.5898437E0) THEN
-!/T         R = R+3.90625E-2
-!/T      ELSE
-!/T         R = R-0.21875E0
-!/T      ENDIF
-!/T!
-!/T  120 K = I
-!/T!
-!/T!     Select a central element of the array and save it in location T
-!/T!
-!/T      IJ = I + INT((J-I)*R)
-!/T      T = X(IJ)
-!/T      TY = Y(IJ)
-!/T!
-!/T!     If first element of array is greater than T, interchange with T
-!/T!
-!/T      IF (X(I) .GT. T) THEN
-!/T         X(IJ) = X(I)
-!/T         X(I) = T
-!/T         T = X(IJ)
-!/T         Y(IJ) = Y(I)
-!/T         Y(I) = TY
-!/T         TY = Y(IJ)
-!/T      ENDIF
-!/T      L = J
-!/T!
-!/T!     If last element of array is less than T, interchange with T
-!/T!
-!/T      IF (X(J) .LT. T) THEN
-!/T         X(IJ) = X(J)
-!/T         X(J) = T
-!/T         T = X(IJ)
-!/T         Y(IJ) = Y(J)
-!/T         Y(J) = TY
-!/T         TY = Y(IJ)
-!/T!
-!/T!        If first element of array is greater than T, interchange with T
-!/T!
-!/T         IF (X(I) .GT. T) THEN
-!/T            X(IJ) = X(I)
-!/T            X(I) = T
-!/T            T = X(IJ)
-!/T            Y(IJ) = Y(I)
-!/T            Y(I) = TY
-!/T            TY = Y(IJ)
-!/T         ENDIF
-!/T      ENDIF
-!/T!
-!/T!     Find an element in the second half of the array which is smaller
-!/T!     than T
-!/T!
-!/T  130 L = L-1
-!/T      IF (X(L) .GT. T) GO TO 130
-!/T!
-!/T!     Find an element in the first half of the array which is greater
-!/T!     than T
-!/T!
-!/T  140 K = K+1
-!/T      IF (X(K) .LT. T) GO TO 140
-!/T!
-!/T!     Interchange these elements
-!/T!
-!/T      IF (K .LE. L) THEN
-!/T         TT = X(L)
-!/T         X(L) = X(K)
-!/T         X(K) = TT
-!/T         TTY = Y(L)
-!/T         Y(L) = Y(K)
-!/T         Y(K) = TTY
-!/T         GO TO 130
-!/T      ENDIF
-!/T!
-!/T!     Save upper and lower subscripts of the array yet to be sorted
-!/T!
-!/T      IF (L-I .GT. J-K) THEN
-!/T         IL(M) = I
-!/T         IU(M) = L
-!/T         I = K
-!/T         M = M+1
-!/T      ELSE
-!/T         IL(M) = K
-!/T         IU(M) = J
-!/T         J = L
-!/T         M = M+1
-!/T      ENDIF
-!/T      GO TO 160
-!/T!
-!/T!     Begin again on another portion of the unsorted array
-!/T!
-!/T  150 M = M-1
-!/T      IF (M .EQ. 0) GO TO 190
-!/T      I = IL(M)
-!/T      J = IU(M)
-!/T!
-!/T  160 IF (J-I .GE. 1) GO TO 120
-!/T      IF (I .EQ. 1) GO TO 110
-!/T      I = I-1
-!/T!
-!/T  170 I = I+1
-!/T      IF (I .EQ. J) GO TO 150
-!/T      T = X(I+1)
-!/T      TY = Y(I+1)
-!/T      IF (X(I) .LE. T) GO TO 170
-!/T      K = I
-!/T!
-!/T  180 X(K+1) = X(K)
-!/T      Y(K+1) = Y(K)
-!/T      K = K-1
-!/T      IF (T .LT. X(K)) GO TO 180
-!/T      X(K+1) = T
-!/T      Y(K+1) = TY
-!/T      GO TO 170
-!/T!
-!/T!     Clean up
-!/T!
-!/T  190 IF (KFLAG .LE. -1) THEN
-!/T         DO 200 I=1,NN
-!/T            X(I) = -X(I)
-!/T  200    CONTINUE
-!/T      ENDIF
-!/T      RETURN
-!/T      END SUBROUTINE SSORT1
-!/T
+#ifdef W3_T
+!**********************************************************************
+      SUBROUTINE SSORT1 (X, Y, N, KFLAG)
+!***BEGIN PROLOGUE  SSORT
+!***PURPOSE  Sort an array and optionally make the same interchanges in
+!            an auxiliary array.  The array may be sorted in increasing
+!            or decreasing order.  A slightly modified QUICKSORT
+!            algorithm is used.
+!***LIBRARY   SLATEC
+!***CATEGORY  N6A2B
+!***TYPE      SINGLE PRECISION (SSORT-S, DSORT-D, ISORT-I)
+!***KEYWORDS  SINGLETON QUICKSORT, SORT, SORTING
+!***AUTHOR  Jones, R. E., (SNLA)
+!           Wisniewski, J. A., (SNLA)
+!***DESCRIPTION
+!
+!   SSORT sorts array X and optionally makes the same interchanges in
+!   array Y.  The array X may be sorted in increasing order or
+!   decreasing order.  A slightly modified quicksort algorithm is used.
+!
+!   Description of Parameters
+!      X - array of values to be sorted   (usually abscissas)
+!      Y - array to be (optionally) carried along
+!      N - number of values in array X to be sorted
+!      KFLAG - control parameter
+!            =  2  means sort X in increasing order and carry Y along.
+!            =  1  means sort X in increasing order (ignoring Y)
+!            = -1  means sort X in decreasing order (ignoring Y)
+!            = -2  means sort X in decreasing order and carry Y along.
+!
+!***REFERENCES  R. C. Singleton, Algorithm 347, An efficient algorithm
+!                 for sorting with minimal storage, Communications of
+!                 the ACM, 12, 3 (1969), pp. 185-187.
+!***REVISION HISTORY  (YYMMDD)
+!   761101  DATE WRITTEN
+!   761118  Modified to use the Singleton quicksort algorithm.  (JAW)
+!   890531  Changed all specific intrinsics to generic.  (WRB)
+!   890831  Modified array declarations.  (WRB)
+!   891009  Removed unreferenced statement labels.  (WRB)
+!   891024  Changed category.  (WRB)
+!   891024  REVISION DATE from Version 3.2
+!   891214  Prologue converted to Version 4.0 format.  (BAB)
+!   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
+!   901012  Declared all variables; changed X,Y to SX,SY. (M. McClain)
+!   920501  Reformatted the REFERENCES section.  (DWL, WRB)
+!   920519  Clarified error messages.  (DWL)
+!   920801  Declarations section rebuilt and code restructured to use
+!           IF-THEN-ELSE-ENDIF.  (RWC, WRB)
+!***END PROLOGUE  SSORT
+!     .. Scalar Arguments ..
+      INTEGER KFLAG, N
+!     .. Array Arguments ..
+      REAL*4 X(*), Y(*)
+!     .. Local Scalars ..
+      REAL*4 R, T, TT, TTY, TY
+      INTEGER I, IJ, J, K, KK, L, M, NN
+!     .. Local Arrays ..
+      INTEGER IL(21), IU(21)
+!     .. External Subroutines ..
+!     None
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS, INT
+!***FIRST EXECUTABLE STATEMENT  SSORT
+      NN = N
+      IF (NN .LT. 1) THEN
+        WRITE (*,*) 'The number of values to be sorted is not positive.'
+         RETURN
+      ENDIF
+!
+      KK = ABS(KFLAG)
+      IF (KK.NE.1 .AND. KK.NE.2) THEN
+         WRITE (*,*) 'The sort control parameter, K, is not 2, 1, -1, or -2.'
+         RETURN
+      ENDIF
+!
+!     Alter array X to get decreasing order if needed
+!
+      IF (KFLAG .LE. -1) THEN
+         DO 10 I=1,NN
+            X(I) = -X(I)
+   10    CONTINUE
+      ENDIF
+!
+      IF (KK .EQ. 2) GO TO 100
+!
+!     Sort X only
+!
+      M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
+!
+   20 IF (I .EQ. J) GO TO 60
+      IF (R .LE. 0.5898437E0) THEN
+         R = R+3.90625E-2
+      ELSE
+         R = R-0.21875E0
+      ENDIF
+!
+   30 K = I
+!
+!     Select a central element of the array and save it in location T
+!
+      IJ = I + INT((J-I)*R)
+      T = X(IJ)
+!
+!     If first element of array is greater than T, interchange with T
+!
+      IF (X(I) .GT. T) THEN
+         X(IJ) = X(I)
+         X(I) = T
+         T = X(IJ)
+      ENDIF
+      L = J
+!
+!     If last element of array is less than than T, interchange with T
+!
+      IF (X(J) .LT. T) THEN
+         X(IJ) = X(J)
+         X(J) = T
+         T = X(IJ)
+!
+!        If first element of array is greater than T, interchange with T
+!
+         IF (X(I) .GT. T) THEN
+            X(IJ) = X(I)
+            X(I) = T
+            T = X(IJ)
+         ENDIF
+      ENDIF
+!
+!     Find an element in the second half of the array which is smaller
+!     than T
+!
+   40 L = L-1
+      IF (X(L) .GT. T) GO TO 40
+!
+!     Find an element in the first half of the array which is greater
+!     than T
+!
+   50 K = K+1
+      IF (X(K) .LT. T) GO TO 50
+!
+!     Interchange these elements
+!
+      IF (K .LE. L) THEN
+         TT = X(L)
+         X(L) = X(K)
+         X(K) = TT
+         GO TO 40
+      ENDIF
+!
+!     Save upper and lower subscripts of the array yet to be sorted
+!
+      IF (L-I .GT. J-K) THEN
+         IL(M) = I
+         IU(M) = L
+         I = K
+         M = M+1
+      ELSE
+         IL(M) = K
+         IU(M) = J
+         J = L
+         M = M+1
+      ENDIF
+      GO TO 70
+!
+!     Begin again on another portion of the unsorted array
+!
+   60 M = M-1
+      IF (M .EQ. 0) GO TO 190
+      I = IL(M)
+      J = IU(M)
+!
+   70 IF (J-I .GE. 1) GO TO 30
+      IF (I .EQ. 1) GO TO 20
+      I = I-1
+!
+   80 I = I+1
+      IF (I .EQ. J) GO TO 60
+      T = X(I+1)
+      IF (X(I) .LE. T) GO TO 80
+      K = I
+!
+   90 X(K+1) = X(K)
+      K = K-1
+      IF (T .LT. X(K)) GO TO 90
+      X(K+1) = T
+      GO TO 80
+!
+!     Sort X and carry Y along
+!
+  100 M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
+!
+  110 IF (I .EQ. J) GO TO 150
+      IF (R .LE. 0.5898437E0) THEN
+         R = R+3.90625E-2
+      ELSE
+         R = R-0.21875E0
+      ENDIF
+!
+  120 K = I
+!
+!     Select a central element of the array and save it in location T
+!
+      IJ = I + INT((J-I)*R)
+      T = X(IJ)
+      TY = Y(IJ)
+!
+!     If first element of array is greater than T, interchange with T
+!
+      IF (X(I) .GT. T) THEN
+         X(IJ) = X(I)
+         X(I) = T
+         T = X(IJ)
+         Y(IJ) = Y(I)
+         Y(I) = TY
+         TY = Y(IJ)
+      ENDIF
+      L = J
+!
+!     If last element of array is less than T, interchange with T
+!
+      IF (X(J) .LT. T) THEN
+         X(IJ) = X(J)
+         X(J) = T
+         T = X(IJ)
+         Y(IJ) = Y(J)
+         Y(J) = TY
+         TY = Y(IJ)
+!
+!        If first element of array is greater than T, interchange with T
+!
+         IF (X(I) .GT. T) THEN
+            X(IJ) = X(I)
+            X(I) = T
+            T = X(IJ)
+            Y(IJ) = Y(I)
+            Y(I) = TY
+            TY = Y(IJ)
+         ENDIF
+      ENDIF
+!
+!     Find an element in the second half of the array which is smaller
+!     than T
+!
+  130 L = L-1
+      IF (X(L) .GT. T) GO TO 130
+!
+!     Find an element in the first half of the array which is greater
+!     than T
+!
+  140 K = K+1
+      IF (X(K) .LT. T) GO TO 140
+!
+!     Interchange these elements
+!
+      IF (K .LE. L) THEN
+         TT = X(L)
+         X(L) = X(K)
+         X(K) = TT
+         TTY = Y(L)
+         Y(L) = Y(K)
+         Y(K) = TTY
+         GO TO 130
+      ENDIF
+!
+!     Save upper and lower subscripts of the array yet to be sorted
+!
+      IF (L-I .GT. J-K) THEN
+         IL(M) = I
+         IU(M) = L
+         I = K
+         M = M+1
+      ELSE
+         IL(M) = K
+         IU(M) = J
+         J = L
+         M = M+1
+      ENDIF
+      GO TO 160
+!
+!     Begin again on another portion of the unsorted array
+!
+  150 M = M-1
+      IF (M .EQ. 0) GO TO 190
+      I = IL(M)
+      J = IU(M)
+!
+  160 IF (J-I .GE. 1) GO TO 120
+      IF (I .EQ. 1) GO TO 110
+      I = I-1
+!
+  170 I = I+1
+      IF (I .EQ. J) GO TO 150
+      T = X(I+1)
+      TY = Y(I+1)
+      IF (X(I) .LE. T) GO TO 170
+      K = I
+!
+  180 X(K+1) = X(K)
+      Y(K+1) = Y(K)
+      K = K-1
+      IF (T .LT. X(K)) GO TO 180
+      X(K+1) = T
+      Y(K+1) = TY
+      GO TO 170
+!
+!     Clean up
+!
+  190 IF (KFLAG .LE. -1) THEN
+         DO 200 I=1,NN
+            X(I) = -X(I)
+  200    CONTINUE
+      ENDIF
+      RETURN
+      END SUBROUTINE SSORT1
+
+#endif // W3_T
 
 !*********************************************************************
    SUBROUTINE DIAGONALIZE(a1,d,v,nrot)

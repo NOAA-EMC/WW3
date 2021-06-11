@@ -203,8 +203,10 @@ CONTAINS
       INTEGER(KIND=4),ALLOCATABLE        :: IFOUND(:), VERTEX(:), BOUNDTMP(:)
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
       REAL                               :: z
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Beginning of READMSH routine'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Beginning of READMSH routine'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
 
       OPEN(NDS,FILE = FNAME,STATUS='old')
       READ (NDS,'(A)') COMSTR
@@ -213,7 +215,9 @@ CONTAINS
       READ(NDS,*) i,j,k
       CALL NEXTLN(COMSTR, NDS, NDSE)
       LPDLIB = .FALSE.
-!/PDLIB LPDLIB = .TRUE.
+#ifdef W3_PDLIB
+ LPDLIB = .TRUE.
+#endif // W3_PDLIB
 !
 ! read number of nodes and nodes from Gmsh files
 !
@@ -311,9 +315,11 @@ CONTAINS
 !count points connections to allocate array in W3DIMUG 
 !
       CALL COUNT(TRIGPTMP2)
-!/DEBUGINIT     WRITE(*,*) 'Call W3DIMUG from READMSH'
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Call W3DIMUG from READMSH'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(*,*) 'Call W3DIMUG from READMSH'
+     WRITE(740+IAPROC,*) 'Call W3DIMUG from READMSH'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
 !
 ! fills arrays
@@ -324,11 +330,13 @@ CONTAINS
         XYB(I,3) = XYBTMP2(I,3)
         END DO
 !
-!/DEBUGSTP    WRITE(740,*) 'Writing XYB(:,3)'
-!/DEBUGSTP    DO I=1,NX
-!/DEBUGSTP      WRITE(740,*) 'I,XYB(I,3)=', I, XYB(I,3)
-!/DEBUGSTP    END DO
-!/DEBUGSTP    FLUSH(740)
+#ifdef W3_DEBUGSTP
+    WRITE(740,*) 'Writing XYB(:,3)'
+    DO I=1,NX
+      WRITE(740,*) 'I,XYB(I,3)=', I, XYB(I,3)
+    END DO
+    FLUSH(740)
+#endif // W3_DEBUGSTP
 !
       DO I=1, NTRI
         ITMP = TRIGPTMP2(I,:)
@@ -395,11 +403,15 @@ CONTAINS
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
-!/PDLIB      use yowElementpool, only: ne_global, INE_global
-!/PDLIB      use yowNodepool, only: np_global
+#ifdef W3_PDLIB
+      use yowElementpool, only: ne_global, INE_global
+      use yowNodepool, only: np_global
+#endif // W3_PDLIB
       USE W3GDATMD, ONLY : TRIGP, NTRI, NX
       IMPLICIT NONE
 !/
@@ -409,7 +421,9 @@ CONTAINS
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -418,7 +432,9 @@ CONTAINS
       INTEGER :: COLLECTED(NX), NEXTVERT(NX), PREVVERT(NX)
       INTEGER :: ISFINISHED, INEXT, IPREV
       INTEGER :: IPNEXT, IPPREV, ZNEXT, IP, I, IE
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
       STATUS(:) = 0
       DO IE=1,NTRI
         DO I=1,3
@@ -540,7 +556,9 @@ CONTAINS
       USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -641,14 +659,18 @@ CONTAINS
 ! 10. Source code :
       USE W3GDATMD, ONLY: NX, NY, CCON, COUNTCON, IOBP
 
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
       INTEGER, INTENT(INOUT)  :: TMPSTA(NY,NX)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL   , INTENT(IN)     :: ZBIN(NY,NX)
       REAL   , INTENT(IN)     :: ZLIM
 !/
@@ -661,7 +683,9 @@ CONTAINS
       MASK(:)=1
       CALL SET_IOBP (MASK, STATUS)
 !        
-!/S      CALL STRACE (IENT, 'UG_GETOPENBOUNDARY')      
+#ifdef W3_S
+      CALL STRACE (IENT, 'UG_GETOPENBOUNDARY')      
+#endif // W3_S
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
            !write(*,*) 'TEST1', IX, TMPSTA(1,IX), CCON(IX), COUNTCON(IX), ZBIN(1,IX), ZLIM
@@ -728,7 +752,9 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /   
          USE W3GDATMD  
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
          USE W3ODATMD, ONLY: NDSE
 
          IMPLICIT NONE
@@ -740,9 +766,13 @@ CONTAINS
          INTEGER           :: K
          REAL*8            :: PT(3,2)
 
-!/S        INTEGER                      ::  IENT = 0          
+#ifdef W3_S
+        INTEGER                      ::  IENT = 0          
+#endif // W3_S
 !/ ------------------------------------------------------------------- /   
-!/S      CALL STRACE (IENT, 'SPATIAL_GRID')   
+#ifdef W3_S
+      CALL STRACE (IENT, 'SPATIAL_GRID')   
+#endif // W3_S
 
                 DO K = 1, NTRI
                
@@ -822,7 +852,9 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /       
     USE W3GDATMD
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
     USE CONSTANTS
 
          IMPLICIT NONE
@@ -837,9 +869,13 @@ CONTAINS
 	 REAL*8    :: TMP(3)
 	 REAL*8    :: TMPINV(3)
          REAL*8    :: PT(3,2)
-!/S        INTEGER                      ::  IENT = 0 	 
+#ifdef W3_S
+        INTEGER                      ::  IENT = 0 	 
+#endif // W3_S
 !/ ------------------------------------------------------------------- /   
-!/S      CALL STRACE (IENT, 'NVECTRI')   
+#ifdef W3_S
+      CALL STRACE (IENT, 'NVECTRI')   
+#endif // W3_S
 
     
          DO IE = 1, NTRI
@@ -945,7 +981,9 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /  
         USE W3GDATMD
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
         IMPLICIT NONE
 
      
@@ -957,10 +995,14 @@ CONTAINS
 
    INTEGER               :: CONN(NX)
    INTEGER               :: COUNTER, IP, IE, I, J, N(3)
-!/S        INTEGER                      ::  IENT = 0    
+#ifdef W3_S
+        INTEGER                      ::  IENT = 0    
+#endif // W3_S
 !/------------------------------------------------------------------------
 
-!/S      CALL STRACE (IENT, 'COUNT')
+#ifdef W3_S
+      CALL STRACE (IENT, 'COUNT')
+#endif // W3_S
 
 COUNTRI=0
 COUNTOT=0
@@ -1035,12 +1077,18 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- / 
           USE W3GDATMD
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
           IMPLICIT NONE
-!/S        INTEGER                      ::  IENT = 0  
+#ifdef W3_S
+        INTEGER                      ::  IENT = 0  
+#endif // W3_S
             
   
-!/S      CALL STRACE (IENT, 'COORDMAX') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'COORDMAX') 
+#endif // W3_S
 !     
 ! maximum of coordinates s
 !
@@ -1110,7 +1158,9 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /      
 
         USE W3GDATMD
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
          IMPLICIT NONE
 !/ input 
 
@@ -1127,10 +1177,14 @@ END SUBROUTINE
          DOUBLE PRECISION   :: TRIA03
          INTEGER, ALLOCATABLE :: PTABLE(:,:)
 
-!/S        INTEGER                      ::  IENT = 0    
+#ifdef W3_S
+        INTEGER                      ::  IENT = 0    
+#endif // W3_S
 !/ ------------------------------------------------------------------- /      
 
-!/S      CALL STRACE (IENT, 'AREA_SI')
+#ifdef W3_S
+      CALL STRACE (IENT, 'AREA_SI')
+#endif // W3_S
 
          WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
 
@@ -1407,7 +1461,9 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3ODATMD, ONLY: NDSE
       IMPLICIT NONE
 
@@ -1429,8 +1485,10 @@ END SUBROUTINE
      INTEGER                      :: ITRI
      INTEGER                      :: I1, I2, I3
      INTEGER                      :: nbFound
-!/S     INTEGER                      ::  IENT = 0
-!/S     CALL STRACE (IENT, 'IS_IN_UNGRID')
+#ifdef W3_S
+     INTEGER                      ::  IENT = 0
+     CALL STRACE (IENT, 'IS_IN_UNGRID')
+#endif // W3_S
 
 !
      itout = 0
@@ -1581,7 +1639,9 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3ODATMD, ONLY: NDSE
       IMPLICIT NONE
 
@@ -1603,8 +1663,10 @@ END SUBROUTINE
      INTEGER                      :: I1, I2, I3
      INTEGER                      :: nbFound
      LOGICAL                      :: MAPSTAOK
-!/S     INTEGER                      ::  IENT = 0
-!/S     CALL STRACE (IENT, 'IS_IN_UNGRID2')
+#ifdef W3_S
+     INTEGER                      ::  IENT = 0
+     CALL STRACE (IENT, 'IS_IN_UNGRID2')
+#endif // W3_S
 
 !
      itout = 0
@@ -1743,9 +1805,11 @@ END SUBROUTINE
       USE W3GDATMD, ONLY : TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
                            MAPSTA, ANGLE, FLAGLL,  IOBP, IEN, TRIA, NSEAL, NTRI 
       USE W3ADATMD, ONLY : NSEALM
-!/PDLIB     USE yowElementpool
-!/PDLIB     use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
-!/PDLIB      USE yowExchangeModule, only : PDLIB_exchange1Dreal
+#ifdef W3_PDLIB
+     USE yowElementpool
+     use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
+      USE yowExchangeModule, only : PDLIB_exchange1Dreal
+#endif // W3_PDLIB
 
       IMPLICIT NONE     
       
@@ -1773,7 +1837,9 @@ END SUBROUTINE
        FACT=1.
      END IF
 
-!/PDLIB     IF (.NOT. LPDLIB) THEN
+#ifdef W3_PDLIB
+     IF (.NOT. LPDLIB) THEN
+#endif // W3_PDLIB
        WEI = 0.
        DO IE = 1, NTRI
          NI = TRIGP(IE,:)
@@ -1797,35 +1863,37 @@ END SUBROUTINE
        END DO
        DIFFX(1,:) = DIFFX(1,:)/WEI
        DIFFY(1,:) = DIFFY(1,:)/WEI
-!/PDLIB     ELSE
-!/PDLIB       WEI_LOCAL = 0.
-!/PDLIB       DO IE = 1, NE 
-!/PDLIB         NI      = INE(:,IE)
-!/PDLIB         IE_GL   = IELG(IE)
-!/PDLIB         NI_GL   = INE_GLOBAL(:,IE_GL)
-!/PDLIB         LATMEAN = 1./3. * SUM(CLATIS(MAPFS(1,NI_GL)))
-!/PDLIB         WEI_LOCAL(NI) = WEI_LOCAL(NI) + 2.*PDLIB_TRIA(IE)
-!/PDLIB         IF (PDLIB_TRIA(IE) .LT. TINY(1.)) THEN
-!/PDLIB           WRITE(*,*) 'AREA SMALLER ZERO', IE, NTRI, PDLIB_TRIA(IE)
-!/PDLIB           STOP
-!/PDLIB         ENDIF
-!/PDLIB         DEDX(1)     = PDLIB_IEN(1,IE)
-!/PDLIB         DEDX(2)     = PDLIB_IEN(3,IE)
-!/PDLIB         DEDX(3)     = PDLIB_IEN(5,IE)
-!/PDLIB         DEDY(1)     = PDLIB_IEN(2,IE)
-!/PDLIB         DEDY(2)     = PDLIB_IEN(4,IE)
-!/PDLIB         DEDY(3)     = PDLIB_IEN(6,IE)
-!/PDLIB         VAR         = PARAM(MAPFS(1,NI_GL)) * FACT
-!/PDLIB         DVDXIE      = DOT_PRODUCT(VAR,DEDX)
-!/PDLIB         DVDYIE      = DOT_PRODUCT(VAR,DEDY)
-!/PDLIB         DIFFX(1,NI) = DIFFX(1,NI) + DVDXIE * LATMEAN ! AR: This must be correctly computer later ... 
-!/PDLIB         DIFFY(1,NI) = DIFFY(1,NI) + DVDYIE
-!/PDLIB       END DO
-!/PDLIB       DIFFX(1,:) = DIFFX(1,:)/WEI_LOCAL
-!/PDLIB       DIFFY(1,:) = DIFFY(1,:)/WEI_LOCAL
-!/PDLIB     ENDIF
-!/PDLIB  CALL PDLIB_exchange1Dreal(DIFFX(1,1:NPA))
-!/PDLIB  CALL PDLIB_exchange1Dreal(DIFFY(1,1:NPA))
+#ifdef W3_PDLIB
+     ELSE
+       WEI_LOCAL = 0.
+       DO IE = 1, NE 
+         NI      = INE(:,IE)
+         IE_GL   = IELG(IE)
+         NI_GL   = INE_GLOBAL(:,IE_GL)
+         LATMEAN = 1./3. * SUM(CLATIS(MAPFS(1,NI_GL)))
+         WEI_LOCAL(NI) = WEI_LOCAL(NI) + 2.*PDLIB_TRIA(IE)
+         IF (PDLIB_TRIA(IE) .LT. TINY(1.)) THEN
+           WRITE(*,*) 'AREA SMALLER ZERO', IE, NTRI, PDLIB_TRIA(IE)
+           STOP
+         ENDIF
+         DEDX(1)     = PDLIB_IEN(1,IE)
+         DEDX(2)     = PDLIB_IEN(3,IE)
+         DEDX(3)     = PDLIB_IEN(5,IE)
+         DEDY(1)     = PDLIB_IEN(2,IE)
+         DEDY(2)     = PDLIB_IEN(4,IE)
+         DEDY(3)     = PDLIB_IEN(6,IE)
+         VAR         = PARAM(MAPFS(1,NI_GL)) * FACT
+         DVDXIE      = DOT_PRODUCT(VAR,DEDX)
+         DVDYIE      = DOT_PRODUCT(VAR,DEDY)
+         DIFFX(1,NI) = DIFFX(1,NI) + DVDXIE * LATMEAN ! AR: This must be correctly computer later ... 
+         DIFFY(1,NI) = DIFFY(1,NI) + DVDYIE
+       END DO
+       DIFFX(1,:) = DIFFX(1,:)/WEI_LOCAL
+       DIFFY(1,:) = DIFFY(1,:)/WEI_LOCAL
+     ENDIF
+  CALL PDLIB_exchange1Dreal(DIFFX(1,1:NPA))
+  CALL PDLIB_exchange1Dreal(DIFFY(1,1:NPA))
+#endif // W3_PDLIB
      
 !
     END SUBROUTINE UG_GRADIENTS
@@ -1875,7 +1943,9 @@ END SUBROUTINE
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
     USE W3ODATMD, ONLY: NBI, NDSE, ISBPI, XBPI, YBPI
     USE W3GDATMD, ONLY: NX, XYB, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
@@ -1903,7 +1973,9 @@ END SUBROUTINE
           STOP
         ENDIF
         IX1(N) = IX
-!/T        WRITE(NDSE ,*)'ADDING BOUNDARY POINT:',N,IX
+#ifdef W3_T
+        WRITE(NDSE ,*)'ADDING BOUNDARY POINT:',N,IX
+#endif // W3_T
         END IF
       END DO
 !
@@ -1925,8 +1997,10 @@ END SUBROUTINE
       DIST0=SQRT(DIST0)
       IF (DIST0.LE.DISTMIN) THEN          
         ISBPI(I)=IS
-!/T        WRITE(NDSE ,'(A,I6,A,I7,A,I6)') 'MATCHED BOUNDARY POINT:',I,'GRID POINT:', &
-!/T                                         MAPSF(IS,1),'INDEX IN nest.ww3:', JMEMO
+#ifdef W3_T
+        WRITE(NDSE ,'(A,I6,A,I7,A,I6)') 'MATCHED BOUNDARY POINT:',I,'GRID POINT:', &
+                                         MAPSF(IS,1),'INDEX IN nest.ww3:', JMEMO
+#endif // W3_T
      ELSE
         FLOK=.TRUE.
         END IF
@@ -1991,7 +2065,9 @@ END SUBROUTINE
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 !/
 !
@@ -2016,13 +2092,17 @@ END SUBROUTINE
       INTEGER :: INEXT(3), IPREV(3)
       INTEGER          :: ZNEXT, IP, I, IE, IPNEXT, IPPREV, COUNT
       integer nb0, nb1, nbM1
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 1'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 1'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
       STATUS = -1
       INEXT=(/ 2, 3, 1 /) !IPREV=1+MOD(I+1,3)
       IPREV=(/ 3, 1, 2 /) !INEXT=1+MOD(I,3)
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 2'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 2'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
       DO IE=1,NTRI 
 ! If one of the points of the triangle is masked out (land) then do as if triangle does not exist... 
 !        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
@@ -2085,24 +2165,32 @@ END SUBROUTINE
           EXIT
         END IF
       END DO
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 3'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 3'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
 
       STATUS = 1 
       CALL GET_BOUNDARY(NX, NTRI, TRIGP, STATUS, PREVVERT, NEXTVERT)
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 4'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 4'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
 !      DO IP= 1, NX
 !        WRITE(12000,*) IP, STATUS(IP)
 !      ENDDO
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 5'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 5'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
 
 !#ifdef MPI_PARALL_GRID
 !      CALL exchange_p2di(STATUS)
 !#endif
-!/DEBUGSETIOBP      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 6'
-!/DEBUGSETIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETIOBP
+      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 6'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETIOBP
       END SUBROUTINE SET_IOBP
 !/ ------------------------------------------------------------------- /
 
@@ -2152,7 +2240,9 @@ END SUBROUTINE
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
         USE W3SERVMD, ONLY: EXTCDE
         IMPLICIT NONE
@@ -2163,7 +2253,9 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 
         INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
         INTEGER, INTENT(INOUT)          :: IOBP(MNP)
@@ -2178,7 +2270,9 @@ END SUBROUTINE
         INTEGER :: IE, I, IP, IP2, IP3
         INTEGER :: ISFINISHED, INEXT, IPREV, ISTAT
         INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
-!/S      CALL STRACE (IENT, 'GET_BOUNDARY')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GET_BOUNDARY')
+#endif // W3_S
         ALLOCATE(STATUS(MNP), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
         ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
@@ -2374,7 +2468,9 @@ END SUBROUTINE
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
          IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
@@ -2383,13 +2479,17 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
         INTEGER, INTENT(IN)  :: I
         INTEGER, INTENT(OUT) :: INEXT, IPREV
-!/S      CALL STRACE (IENT, 'TRIANG_INDEXES')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TRIANG_INDEXES')
+#endif // W3_S
         IF (I.EQ.1) THEN
           INEXT=3
         ELSE
@@ -2449,12 +2549,16 @@ END SUBROUTINE
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
         USE CONSTANTS, ONLY : LPDLIB
         USE W3GDATMD, ONLY : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
-!/PDLIB     USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
-!/PDLIB     USE yowElementpool, only: INE
+#ifdef W3_PDLIB
+     USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
+     USE yowElementpool, only: INE
+#endif // W3_PDLIB
         IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -2463,25 +2567,31 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
         INTEGER :: I, J, IP, IE
-!/S      CALL STRACE (IENT, 'GET_INTERFACE')
-!/PDLIB      IF (LPDLIB) THEN
-!/PDLIB      DO IP = 1, NSEAL
-!/PDLIB        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
-!/PDLIB        DO I = 1, PDLIB_CCON(IP)
-!/PDLIB          IE = PDLIB_IE_CELL2(IP,I)
-!/PDLIB          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
-!/PDLIB             IOBDP(IP) = -1
-!/PDLIB            CYCLE
-!/PDLIB          ENDIF
-!/PDLIB        ENDDO
-!/PDLIB      ENDDO
-!/PDLIB      !CALL EXCHANGE_....
-!/PDLIB      ELSE
+#ifdef W3_S
+      CALL STRACE (IENT, 'GET_INTERFACE')
+#endif // W3_S
+#ifdef W3_PDLIB
+      IF (LPDLIB) THEN
+      DO IP = 1, NSEAL
+        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
+        DO I = 1, PDLIB_CCON(IP)
+          IE = PDLIB_IE_CELL2(IP,I)
+          IF (ANY(IOBDP(TRIGP(IE,:)) .EQ. 0)) THEN
+             IOBDP(IP) = -1
+            CYCLE
+          ENDIF
+        ENDDO
+      ENDDO
+      !CALL EXCHANGE_....
+      ELSE
+#endif // W3_PDLIB
       J = 0
       DO IP = 1, NSEAL
         IF (IOBP(IP) .NE. 1 .OR. IOBDP(IP) .EQ. 0) CYCLE
@@ -2494,7 +2604,9 @@ END SUBROUTINE
           ENDIF
         ENDDO
       ENDDO
-!/PDLIB ENDIF
+#ifdef W3_PDLIB
+ ENDIF
+#endif // W3_PDLIB
    
    END SUBROUTINE
 !/ ------------------------------------------------------------------- /
@@ -2566,14 +2678,18 @@ END SUBROUTINE
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, IEN, NTRI, TRIGP,               &
                           IOBP,IOBPD, IOBPA,                          &
-!/REF1                    REFPARS, REFLC, REFLD,                      &
+#ifdef W3_REF1
+                    REFPARS, REFLC, REFLD,                      &
+#endif // W3_REF1
                           ANGLE0, ANGLE
 
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, only : IAPROC
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -2591,26 +2707,36 @@ END SUBROUTINE
       REAL(KIND=8), PARAMETER :: THR    = TINY(1.)
       INTEGER                 :: I1, I2, I3
       INTEGER                 :: ITMP(NX), NEXTVERT(NX), PREVVERT(NX)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/ ------------------------------------------------------------------- /                                     
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
 !      
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 1'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 1'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
       
-!/S      CALL STRACE (IENT, 'SETUGIOBP')
+#ifdef W3_S
+      CALL STRACE (IENT, 'SETUGIOBP')
+#endif // W3_S
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Searches for boundary points
 ! 
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 2'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 2'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
       ITMP = MAPSTA(1,:)
       CALL SET_IOBP(ITMP, IOBP) 
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 3'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 3'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Defines directions pointing into land or sea 
@@ -2622,8 +2748,10 @@ END SUBROUTINE
         IF ((MAPSTA(1,IP).EQ.2).AND.(IOBP(IP).EQ.0)) IOBPA(IP)=1
 !WRITE(600,*) IP,ITMP(IP),IOBP(IP),IOBPA(IP)
       END DO
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 4'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 4'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
 
       DO IE=1,NTRI
         I1   =   TRIGP(IE,1)
@@ -2673,8 +2801,10 @@ END SUBROUTINE
           END DO
         END DO
       END DO
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
       DO IP = 1, NX 
         IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
       END DO
@@ -2692,34 +2822,40 @@ END SUBROUTINE
 !        IOBPD(ID,:) = iwild
 !      ENDDO
 !#endif
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 7'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 7'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Updates the reflection direction and sharp / flat shoreline angle
 
-!/REF1 ! 
-!/REF1 ! Finds the shoreline direction from IOBPD
-!/REF1 !
-!/REF1          REFLC(1,:)= 0.
-!/REF1          REFLD(:,:)= 1
-!/REF1          DO IP=1,NX
-!/REF1            IF (IOBP(IP).EQ.0.AND.MAPSTA(1,IP).EQ.1) THEN 
-!/REF1              COSSUM=0.
-!/REF1              SINSUM=0.
-!/REF1              NDIRSUM=0.
-!/REF1              DO ITH=1,NTH
-!/REF1                COSSUM=COSSUM+IOBPD(ITH,IP)*ECOS(ITH)
-!/REF1                SINSUM=SINSUM+IOBPD(ITH,IP)*ESIN(ITH)
-!/REF1                NDIRSUM=NDIRSUM+IOBPD(ITH,IP)
-!/REF1                END DO
-!/REF1              DIRCOAST=ATAN2(SINSUM, COSSUM)
-!/REF1              REFLD(1,MAPFS(1,IP)) = 1+MOD(NTH+NINT(DIRCOAST/DTH),NTH)
-!/REF1              REFLD(2,MAPFS(1,IP)) = 4-MAX(2,NINT(4.*REAL(NDIRSUM)/REAL(NTH)))
-!/REF1              REFLC(1,MAPFS(1,IP))= REFPARS(1)
-!/REF1              END IF
-!/REF1            END DO
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 8'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_REF1
+ ! 
+ ! Finds the shoreline direction from IOBPD
+ !
+          REFLC(1,:)= 0.
+          REFLD(:,:)= 1
+          DO IP=1,NX
+            IF (IOBP(IP).EQ.0.AND.MAPSTA(1,IP).EQ.1) THEN 
+              COSSUM=0.
+              SINSUM=0.
+              NDIRSUM=0.
+              DO ITH=1,NTH
+                COSSUM=COSSUM+IOBPD(ITH,IP)*ECOS(ITH)
+                SINSUM=SINSUM+IOBPD(ITH,IP)*ESIN(ITH)
+                NDIRSUM=NDIRSUM+IOBPD(ITH,IP)
+                END DO
+              DIRCOAST=ATAN2(SINSUM, COSSUM)
+              REFLD(1,MAPFS(1,IP)) = 1+MOD(NTH+NINT(DIRCOAST/DTH),NTH)
+              REFLD(2,MAPFS(1,IP)) = 4-MAX(2,NINT(4.*REAL(NDIRSUM)/REAL(NTH)))
+              REFLC(1,MAPFS(1,IP))= REFPARS(1)
+              END IF
+            END DO
+#endif // W3_REF1
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 8'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
           
 
 !DO IX=1,NX
@@ -2728,13 +2864,17 @@ END SUBROUTINE
 !ENDDO 
 !ENDDO
 
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
 !
 ! Recomputes the angles used in the gradients estimation 
 ! 
-!/DEBUGSETUGIOBP      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 10'
-!/DEBUGSETUGIOBP      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSETUGIOBP
+      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 10'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSETUGIOBP
 !
       RETURN    
       END SUBROUTINE SETUGIOBP

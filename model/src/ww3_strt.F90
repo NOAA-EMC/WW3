@@ -873,11 +873,15 @@
 #ifdef W3_O6
           NSX    = 1 + NX/35
           NSY    = 1 + NY/35
-!/DEBUGINIT         Print *, 'Before call to PRTBLK'
+#ifdef W3_DEBUGINIT
+         Print *, 'Before call to PRTBLK'
+#endif // W3_DEBUGINIT
           IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
                       (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
                        1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
-!/DEBUGINIT         Print *, 'After call to PRTBLK'
+#ifdef W3_DEBUGINIT
+         Print *, 'After call to PRTBLK'
+#endif // W3_DEBUGINIT
 #endif // W3_O6
 #ifdef W3_MPI
         END IF

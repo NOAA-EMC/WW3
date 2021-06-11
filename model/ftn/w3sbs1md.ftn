@@ -145,7 +145,9 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, &
                           ECOS, ESIN, EC2, MAPTH, MAPWN, &
                           SIG2, DSII
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
 !
       IMPLICIT NONE
@@ -163,7 +165,9 @@
 !/ Local parameters
 !/ 
       INTEGER         :: ISPEC, IK, NSCUT, ITH, ITH2, i, j,iajust,iajust2
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL, SAVE   :: FIRST = .TRUE.
       INTEGER         :: MATRICES = 0
        
@@ -190,7 +194,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SBS1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SBS1')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -400,11 +406,15 @@
             integral3=integral3+ABS(S(ISPEC))*DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
             END DO
           END IF
-!/T    print*,'BOTTOM SCAT CHECKSUM:',integral2,integral3,integral1,integral1b
+#ifdef W3_T
+    print*,'BOTTOM SCAT CHECKSUM:',integral2,integral3,integral1,integral1b
+#endif // W3_T
     
-!/T    DO ITH=1,120 
-!/T      WRITE(6,'(120G15.7)') SMATRIX(ITH,:)
-!/T      END DO
+#ifdef W3_T
+    DO ITH=1,120 
+      WRITE(6,'(120G15.7)') SMATRIX(ITH,:)
+      END DO
+#endif // W3_T
         END IF
 
 !/
@@ -468,7 +478,9 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, ECOS, ESIN
       USE W3SERVMD, ONLY: DIAGONALIZE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -480,7 +492,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER         :: I, J, K1, K2, IK, JK, NROT
       REAL            :: kbotx, kboty, kcurr, kcutoff, variance
       REAL            :: kbotxi, kbotyi, xk, yk
@@ -489,7 +503,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSBS1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSBS1')
+#endif // W3_S
 !
        IF (inistep.EQ.1) THEN 
 !

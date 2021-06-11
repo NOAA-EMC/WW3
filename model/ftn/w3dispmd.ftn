@@ -152,7 +152,9 @@
 !/ ------------------------------------------------------------------- /
 !/
       USE CONSTANTS, ONLY : GRAV
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -166,12 +168,16 @@
 !/ Local parameters
 !/
       INTEGER                 :: I1, I2
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: SQRTH, SIX, R1, R2
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'WAVNU1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WAVNU1')
+#endif // W3_S
 !
       SQRTH  = SQRT(H)
       SIX    = SI * SQRTH
@@ -242,7 +248,9 @@
 !/ ------------------------------------------------------------------- /
 !/
       USE CONSTANTS, ONLY : GRAV
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -258,13 +266,17 @@
 !/ Local parameters
 !/
       INTEGER                 :: I
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: F, W0, FD, DIF, RDIF, KOLD
       !REAL                    :: KTEST1, CGTEST1, KTEST2, CGTEST2
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'WAVNU2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WAVNU2')
+#endif // W3_S
 !
 !     Initialisations :
 !
@@ -517,7 +529,9 @@
 !/ ------------------------------------------------------------------- /
 !/
       USE CONSTANTS, ONLY : GRAV
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -525,12 +539,16 @@
 !/ Local parameters
 !/
       INTEGER                 :: I, ICON
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: DEPTH, CG, SIMAX, SI, K
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'DISTAB')
+#ifdef W3_S
+      CALL STRACE (IENT, 'DISTAB')
+#endif // W3_S
 !
 ! Calculate parameters ----------------------------------------------- *
 !
@@ -670,7 +688,9 @@
       USE W3SERVMD,  ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, IICEHDISP, IICEDDISP, IICEFDISP, IICEHMIN
       ! USE W3DISPMD,  ONLY: WAVNU1
-!/S      USE W3SERVMD,  ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD,  ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -684,7 +704,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
-!/S      INTEGER, SAVE     :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE     :: IENT = 0
+#endif // W3_S
       INTEGER            :: IK
       REAL, PARAMETER    :: FERRORMAX=1.0E-5  ! maximum acceptable error
       INTEGER, PARAMETER :: N_ITER=20  ! number of iterations prior to
@@ -708,7 +730,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'LIU_FORWARD_DISPERSION')
+#ifdef W3_S
+      CALL STRACE (IENT, 'LIU_FORWARD_DISPERSION')
+#endif // W3_S
 !
 !/ 0) --- Initialize/allocate variables ------------------------------ /
         
@@ -780,11 +804,13 @@
            GET_CG,FDUMMY,CG(IK),ALPHA(IK))
       END DO 
 !
-!/T38      WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
-!/T38                          K_SOLUTION,CG,ALPHA
-!/T38      IF (H_ICE==1.0)THEN
-!/T38         WRITE(*,*)FWANTED,ALPHA
-!/T38      ENDIF
+#ifdef W3_T38
+      WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
+                          K_SOLUTION,CG,ALPHA
+      IF (H_ICE==1.0)THEN
+         WRITE(*,*)FWANTED,ALPHA
+      ENDIF
+#endif // W3_T38
 !
   800 FORMAT (/' *** WAVEWATCH III ERROR IN '           &
                'W3SIC2_LIU_FORWARD_DISPERSION : ' /     &
@@ -926,7 +952,9 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: DWAT, TPI, GRAV
       USE W3GDATMD, ONLY: NK
-!/S      USE W3SERVMD,  ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD,  ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -939,7 +967,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
-!/S      INTEGER, SAVE     :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE     :: IENT = 0
+#endif // W3_S
       REAL, PARAMETER   :: E = 6.0E+9 ! Young's modulus of elasticity
       REAL, PARAMETER   :: S = 0.3    ! "s", Poisson's ratio
       REAL              :: DICE       ! "dice", density of ice
@@ -953,7 +983,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'LIU_REVERSE_DISPERSION')
+#ifdef W3_S
+      CALL STRACE (IENT, 'LIU_REVERSE_DISPERSION')
+#endif // W3_S
 !
 !/ 0) --- Initialize essential parameters ---------------------------- /
       CG    = 0.
@@ -961,8 +993,10 @@
       FREQ  = 0.
       DICE = DWAT * 0.9 ! from Liu 1991 pg 4606
 
-!/T38      WRITE(*,*)'REVERSE IN: H_ICE,VISC,H_WDEPTH,KWN,GET_CG = ', &
-!/T38                          H_ICE,VISC,H_WDEPTH,KWN,GET_CG
+#ifdef W3_T38
+      WRITE(*,*)'REVERSE IN: H_ICE,VISC,H_WDEPTH,KWN,GET_CG = ', &
+                          H_ICE,VISC,H_WDEPTH,KWN,GET_CG
+#endif // W3_T38
 
 !
 !/ 1) --- Calculate frequency ---------------------------------------- /
@@ -992,7 +1026,9 @@
                / (CG * SQRT(2.0) * (1 + KWN * M))
       ENDIF
 
-!/T38      WRITE(*,*)'REVERSE OUT: FREQ,CG,ALPHA = ',FREQ,CG,ALPHA
+#ifdef W3_T38
+      WRITE(*,*)'REVERSE OUT: FREQ,CG,ALPHA = ',FREQ,CG,ALPHA
+#endif // W3_T38
 
 !/
 !/ End of LIU_REVERSE_DISPERSION ------------------------------------- /

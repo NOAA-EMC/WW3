@@ -285,8 +285,10 @@
       IF ( POLAT < 90. ) FLRTD = .True.
 #endif // W3_RTD
 #ifdef W3_SMC
-!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
+#ifdef W3_RTD
+      ! SMC type 3/4 outputs are currently on standard pole grid only
+      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
+#endif // W3_RTD
 #endif // W3_SMC
 #ifdef W3_RTD
  !

@@ -99,7 +99,9 @@
         USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
                              UST, USTDIR, ASF, RHOAIR
         USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
         USE W3ARRYMD, ONLY : PRTBLK
         USE W3GSRUMD
         USE W3TRIAMD
@@ -139,7 +141,9 @@
         INTEGER                 :: IS(4), JS(4)
         INTEGER                 :: MAPINT
         REAL                    :: RW(4), SUMWT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
         REAL, ALLOCATABLE       :: INT_MAP(:,:)
         LOGICAL                 :: L360=.FALSE., LPLC, INGRD, BRNCHCL, BRNCHCR, INGRID
         CHARACTER               :: COMSTR*1, IDTIME*23, FNAMEWHT*32
@@ -166,7 +170,9 @@
         WRITE (NDSO,900)
 !
         CALL ITRACE ( NDSTRC, NTRACE )
-!/S        CALL STRACE (IENT, 'W3GRIDINT')
+#ifdef W3_S
+        CALL STRACE (IENT, 'W3GRIDINT')
+#endif // W3_S
 !---------------------------------------------------------------------------
 ! 3.  Read and process input file upto number of grids
 ! 3.a Get comment character
@@ -694,7 +700,9 @@
 !        using the next available bit
 !
           IF ( GR_INTS(ISEA)%NGRDS .EQ. 0 ) THEN
-!/T            WRITE (NDSO,909)IX, IY
+#ifdef W3_T
+            WRITE (NDSO,909)IX, IY
+#endif // W3_T
             MAPINT = 1
             MAPST2(IY,IX) = MAPST2(IY,IX) + MAPINT*16 
             MAPSTA(IY,IX) = -ABS ( MAPSTA(IY,IX) )
@@ -1050,9 +1058,13 @@
         RHOAIR   = UNDEF
         TAUA     = UNDEF
         TAUADIR  = UNDEF
-!/BT4        SED_D50  = UNDEF
-!/IS2        ICEH     = UNDEF
-!/IS2        ICEF     = UNDEF
+#ifdef W3_BT4
+        SED_D50  = UNDEF
+#endif // W3_BT4
+#ifdef W3_IS2
+        ICEH     = UNDEF
+        ICEF     = UNDEF
+#endif // W3_IS2
 !
 ! Group 2 variables
 !
@@ -1536,38 +1548,44 @@
                     END IF
                   END IF
 !
-!/BT4                  IF ( FLOGRD(1,10) ) THEN
-!/BT4                    IF ( GRIDS(IGRID)%SED_D50(GSEA) .NE. UNDEF ) THEN
-!/BT4                      SUMWT1(10) = SUMWT1(10) + WT
-!/BT4                      IF ( SED_D50AUX .EQ. UNDEF ) THEN
-!/BT4                        SED_D50AUX = GRIDS(IGRID)%SED_D50(GSEA)*WT
-!/BT4                      ELSE
-!/BT4                        SED_D50AUX = SED_D50AUX + GRIDS(IGRID)%SED_D50(GSEA)*WT
-!/BT4                      END IF
-!/BT4                    END IF
-!/BT4                  END IF
+#ifdef W3_BT4
+                  IF ( FLOGRD(1,10) ) THEN
+                    IF ( GRIDS(IGRID)%SED_D50(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(10) = SUMWT1(10) + WT
+                      IF ( SED_D50AUX .EQ. UNDEF ) THEN
+                        SED_D50AUX = GRIDS(IGRID)%SED_D50(GSEA)*WT
+                      ELSE
+                        SED_D50AUX = SED_D50AUX + GRIDS(IGRID)%SED_D50(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+#endif // W3_BT4
 !
-!/IS2                  IF ( FLOGRD(1,11) ) THEN
-!/IS2                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(11) = SUMWT1(11) + WT
-!/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
-!/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
-!/IS2                      ELSE 
-!/IS2                        ICEHAUX = ICEHAUX + WDATAS(IGRID)%ICEH(GSEA)*WT
-!/IS2                      END IF
-!/IS2                    END IF
-!/IS2                  END IF
+#ifdef W3_IS2
+                  IF ( FLOGRD(1,11) ) THEN
+                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(11) = SUMWT1(11) + WT
+                      IF (ICEHAUX .EQ. UNDEF) THEN
+                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
+                      ELSE 
+                        ICEHAUX = ICEHAUX + WDATAS(IGRID)%ICEH(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+#endif // W3_IS2
 !
-!/IS2                  IF ( FLOGRD(1,12) ) THEN
-!/IS2                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
-!/IS2                      SUMWT1(12) = SUMWT1(12) + WT
-!/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
-!/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
-!/IS2                      ELSE 
-!/IS2                        ICEFAUX = ICEFAUX + WDATAS(IGRID)%ICEF(GSEA)*WT
-!/IS2                      END IF
-!/IS2                    END IF
-!/IS2                  END IF
+#ifdef W3_IS2
+                  IF ( FLOGRD(1,12) ) THEN
+                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
+                      SUMWT1(12) = SUMWT1(12) + WT
+                      IF (ICEFAUX .EQ. UNDEF) THEN
+                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
+                      ELSE 
+                        ICEFAUX = ICEFAUX + WDATAS(IGRID)%ICEF(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+#endif // W3_IS2
 !
 ! Group 2 variables
 !
@@ -2495,32 +2513,38 @@
                   END IF
                 END IF
 !
-!/BT4                IF ( SED_D50AUX .NE. UNDEF ) THEN
-!/BT4                  SED_D50AUX = SED_D50AUX / SUMWT1(10)
-!/BT4                  IF ( SED_D50(ISEA) .EQ. UNDEF )  THEN
-!/BT4                    SED_D50(ISEA) = SED_D50AUX / REAL( SUMGRD )
-!/BT4                  ELSE
-!/BT4                    SED_D50(ISEA) = SED_D50(ISEA) + SED_D50AUX / REAL( SUMGRD )
-!/BT4                  END IF
-!/BT4                END IF
+#ifdef W3_BT4
+                IF ( SED_D50AUX .NE. UNDEF ) THEN
+                  SED_D50AUX = SED_D50AUX / SUMWT1(10)
+                  IF ( SED_D50(ISEA) .EQ. UNDEF )  THEN
+                    SED_D50(ISEA) = SED_D50AUX / REAL( SUMGRD )
+                  ELSE
+                    SED_D50(ISEA) = SED_D50(ISEA) + SED_D50AUX / REAL( SUMGRD )
+                  END IF
+                END IF
+#endif // W3_BT4
 !
-!/IS2                IF ( ICEHAUX .NE. UNDEF ) THEN
-!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(11)
-!/IS2                  IF ( ICEH(ISEA) .EQ. UNDEF )  THEN
-!/IS2                    ICEH(ISEA) = ICEHAUX / REAL( SUMGRD )
-!/IS2                  ELSE
-!/IS2                    ICEH(ISEA) = ICEH(ISEA) + ICEHAUX / REAL( SUMGRD )
-!/IS2                  END IF
-!/IS2                END IF
+#ifdef W3_IS2
+                IF ( ICEHAUX .NE. UNDEF ) THEN
+                  ICEHAUX = ICEHAUX / SUMWT1(11)
+                  IF ( ICEH(ISEA) .EQ. UNDEF )  THEN
+                    ICEH(ISEA) = ICEHAUX / REAL( SUMGRD )
+                  ELSE
+                    ICEH(ISEA) = ICEH(ISEA) + ICEHAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+#endif // W3_IS2
 !
-!/IS2                IF ( ICEFAUX .NE. UNDEF ) THEN
-!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(12)
-!/IS2                  IF ( ICEF(ISEA) .EQ. UNDEF )  THEN
-!/IS2                    ICEF(ISEA) = ICEFAUX / REAL( SUMGRD )
-!/IS2                  ELSE
-!/IS2                    ICEF(ISEA) = ICEF(ISEA) + ICEFAUX / REAL( SUMGRD )
-!/IS2                  END IF
-!/IS2                END IF
+#ifdef W3_IS2
+                IF ( ICEFAUX .NE. UNDEF ) THEN
+                  ICEFAUX = ICEFAUX / SUMWT1(12)
+                  IF ( ICEF(ISEA) .EQ. UNDEF )  THEN
+                    ICEF(ISEA) = ICEFAUX / REAL( SUMGRD )
+                  ELSE
+                    ICEF(ISEA) = ICEF(ISEA) + ICEFAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+#endif // W3_IS2
 !
 ! Group 2 variables
 !

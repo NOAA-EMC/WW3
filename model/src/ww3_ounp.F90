@@ -3995,7 +3995,9 @@
 !zeta_setup
 #ifdef W3_SETUP
          IRET=NF90_DEF_VAR(NCID, 'wave_setup', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(11))
-!/NC4        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(11), 1, 1, DEFLATE)
+#ifdef W3_NC4
+        IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(11), 1, 1, DEFLATE)
+#endif // W3_NC4
         IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','wave setup')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','wave_induced_setup')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','wave_induced_setup')

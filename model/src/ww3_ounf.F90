@@ -579,8 +579,10 @@
       RTDNX = NXO
       RTDNY = NYO
 
-!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) RTDL = .FALSE.
+#ifdef W3_RTD
+      ! SMC type 3/4 outputs are currently on standard pole grid only
+      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) RTDL = .FALSE.
+#endif // W3_RTD
 #endif // W3_SMC
 
       IF(.NOT. SMCGRD) THEN

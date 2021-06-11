@@ -211,7 +211,9 @@ END FUNCTION Df1f2theta
                           ECOS, ESIN, EC2, MAPTH, MAPWN, &
                           DSIP, IOBPD, GTYPE, UNGTYPE, IGPARS
 
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
 !
       IMPLICIT NONE

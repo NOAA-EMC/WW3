@@ -144,9 +144,15 @@
       USE W3GDATMD, ONLY: NK, NTH, SIG, TH, IQTPE
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
       USE m_xnldata, ONLY: xnl_main
 !/
       IMPLICIT NONE
@@ -161,14 +167,22 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, IERR = 0
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: A2(NK,NTH), S2(NK,NTH), D2(NK,NTH)
-!/T0      REAL                    :: SOUT(NK,NK), DOUT(NK,NK)
+#ifdef W3_T0
+      REAL                    :: SOUT(NK,NK), DOUT(NK,NK)
+#endif // W3_T0
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SNL2')
-!/T      WRITE (NDST,9000) IQTPE
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SNL2')
+#endif // W3_S
+#ifdef W3_T
+      WRITE (NDST,9000) IQTPE
+#endif // W3_T
 !
 ! 1.  Convert input spectrum ----------------------------------------- *
 !     (Action sigma spectrum, reversed indices)
@@ -197,20 +211,26 @@
 !
 ! ... Test output :
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
-!/T0          DOUT(IK,ITH) = D(IK,ITH)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
+          DOUT(IK,ITH) = D(IK,ITH)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,  &
-!/T0                         0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,  &
-!/T0                         0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,  &
+                         0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,  &
+                         0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
+#endif // W3_T1
 !
       RETURN
 !
@@ -225,7 +245,9 @@
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3SNL2 :'/                &
                '     xnl_main RETURN CODE NON ZERO : ',I4,' ***'/)
 !
-!/T 9000 FORMAT (' TEST W3SNL2 : IQTPE :',I4)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SNL2 : IQTPE :',I4)
+#endif // W3_T
 !/
 !/ End of W3SNL2 ----------------------------------------------------- /
 !/
@@ -292,7 +314,9 @@
                           NLTAIL, DPTHNL, NDPTHS, IQTPE
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE m_xnldata
       USE m_constants, ONLY: init_constants
 !/
@@ -301,22 +325,28 @@
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: XGRAV
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSNL2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSNL2')
+#endif // W3_S
 !
 ! 1.  Set necessary values : ----------------------------------------- *
 !
       XGRAV  = GRAV
       IGRD   = 3
 !
-!/T      WRITE (NDST,9000) NLTAIL, XGRAV, IQTPE, IGRD, NDPTHS
-!/T      WRITE (NDST,9001) DPTHNL
-!/T      WRITE (NDST,9002) SIG(1)*TPIINV, SIG(NK)*TPIINV,             &
-!/T                        TH(1)*RADE, TH(NTH)*RADE
+#ifdef W3_T
+      WRITE (NDST,9000) NLTAIL, XGRAV, IQTPE, IGRD, NDPTHS
+      WRITE (NDST,9001) DPTHNL
+      WRITE (NDST,9002) SIG(1)*TPIINV, SIG(NK)*TPIINV,             &
+                        TH(1)*RADE, TH(NTH)*RADE
+#endif // W3_T
 !
 ! 2.  Call initialization routines : --------------------------------- *
 !
@@ -340,14 +370,16 @@
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN INSNL2 :'/                &
                '     xnl_init RETURN CODE NON ZERO : ',I8/) 
 !
-!/T 9000 FORMAT (' TEST INSNL2 : NLTAIL :',F6.1/                      &
-!/T              '               XGRAV  :',F8.3/                      &
-!/T              '               IQTPE  :',I4/                        &
-!/T              '               IGRD   :',I4/                        &
-!/T              '               NDPTHS :',I4,'   (depths follow)')
-!/T 9001 FORMAT ('             ',5E10.3)
-!/T 9002 FORMAT ('               FREQS  :',2F8.3/                     &
-!/T              '               DIRS   :',2F6.1)
+#ifdef W3_T
+ 9000 FORMAT (' TEST INSNL2 : NLTAIL :',F6.1/                      &
+              '               XGRAV  :',F8.3/                      &
+              '               IQTPE  :',I4/                        &
+              '               IGRD   :',I4/                        &
+              '               NDPTHS :',I4,'   (depths follow)')
+ 9001 FORMAT ('             ',5E10.3)
+ 9002 FORMAT ('               FREQS  :',2F8.3/                     &
+              '               DIRS   :',2F6.1)
+#endif // W3_T
 !/
 !/ End of INSNL2 ----------------------------------------------------- /
 !/

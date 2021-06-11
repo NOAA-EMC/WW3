@@ -276,7 +276,9 @@
 !
       USE W3SERVMD, ONLY: EXTCDE
       USE W3DISPMD, ONLY: WAVNU1
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -292,7 +294,9 @@
       INTEGER            :: IFR, IERR, IKD, JKD(NFRCUT), IQA, IF1MIN, &
                             IF1MAX, IF2MIN, IF2MAX, ISP0, ISPX0, ITH, &
                             ISP, ISPX
-!/S      INTEGER, SAVE      :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE      :: IENT = 0
+#endif // W3_S
       INTEGER            :: LQST1(16), LQST4(16)
       REAL               :: XSITLN, SIT, FPROP, FQ1, FQ2, FQ3, FQ4,   &
                             AUX1, AUX2
@@ -305,7 +309,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SNL3')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SNL3')
+#endif // W3_S
 !
 ! 1.  Initialization ------------------------------------------------- *
 ! 1.a Constants and arrays
@@ -771,7 +777,9 @@
 !
       USE W3DISPMD, ONLY: WAVNU2
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -785,7 +793,9 @@
                                  NQS, J, IFR, IQA, JJ, JF, NTHMX2,    &
                                  JIQ, JOF, JQR, IST
       INTEGER                 :: JFR(4), JFR1(4), JTH(4), JTH1(4)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER, ALLOCATABLE    :: AST1(:,:,:), AST2(:,:,:)
       REAL                    :: SITMAX, XFRLN
       REAL                    :: OFF12, OFF34, TH12, DEPTH,           &
@@ -806,7 +816,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSNL3')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSNL3')
+#endif // W3_S
 !
 ! 1.  Initialization ------------------------------------------------- *
 ! 1.a Checks
@@ -824,7 +836,9 @@
       SITMAX = SQRT ( KDMAX * TANH(KDMAX) )
       XSIT   = (SITMAX/SITMIN)**(1./REAL(NKD-1))
 !
-!/T      WRITE (NDST,9010) NKD, KDMIN, KDMAX, XSIT
+#ifdef W3_T
+      WRITE (NDST,9010) NKD, KDMIN, KDMAX, XSIT
+#endif // W3_T
 !
 ! 2.  Building quadruplet data base ---------------------------------- *
 !     For quadruplet and interaction strength evaluation
@@ -850,7 +864,9 @@
 !
         DO IQ=1, SNLNQ
 !
-!/T1          WRITE (NDST,9020) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+#ifdef W3_T1
+          WRITE (NDST,9020) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+#endif // W3_T1
 !
           OFF12  = SNLM(IQ)
           OFF34  = SNLL(IQ)
@@ -868,8 +884,10 @@
                          OFF34.GT.MAXLAM(OFF12,SNLT(IQ)) ) GOTO 802
             END IF
 !
-!/T1          WRITE (NDST,9021) SNLT(IQ), OFF12, OFF34,               &
-!/T1                            SNLCD(IQ), SNLCS(IQ)
+#ifdef W3_T1
+          WRITE (NDST,9021) SNLT(IQ), OFF12, OFF34,               &
+                            SNLCD(IQ), SNLCS(IQ)
+#endif // W3_T1
 !
 ! 2.c Offset angles
 !
@@ -912,7 +930,9 @@
           DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
           DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
 !
-!/T1          WRITE (NDST,9022) DELTH(:) * RADE
+#ifdef W3_T1
+          WRITE (NDST,9022) DELTH(:) * RADE
+#endif // W3_T1
 !
 ! 2.d Frequency indices
 ! 
@@ -926,10 +946,12 @@
           IFRMIN = MIN ( IFRMIN , MINVAL(JFR1) )
           IFRMAX = MAX ( IFRMAX , MAXVAL(JFR1) )
 !
-!/T1            WRITE (NDST,9023) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
-!/T1            DO, J=2, 4
-!/T1              WRITE (NDST,9024) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
-!/T1              END DO
+#ifdef W3_T1
+            WRITE (NDST,9023) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
+            DO, J=2, 4
+              WRITE (NDST,9024) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
+              END DO
+#endif // W3_T1
 !
 ! 2.e Directional indices
 !
@@ -943,10 +965,12 @@
 !
           NTHMAX = MAX ( NTHMAX , MAXVAL(ABS(JTH1)) )
 !
-!/T1            WRITE (NDST,9025) 1, JTH(1), JTH1(1), WTH(1), WTH1(1)
-!/T1            DO, J=2, 4
-!/T1              WRITE (NDST,9024) J, JTH(J), JTH1(J), WTH(J), WTH1(J)
-!/T1              END DO
+#ifdef W3_T1
+            WRITE (NDST,9025) 1, JTH(1), JTH1(1), WTH(1), WTH1(1)
+            DO, J=2, 4
+              WRITE (NDST,9024) J, JTH(J), JTH1(J), WTH(J), WTH1(J)
+              END DO
+#endif // W3_T1
 !
 ! 2.f Temp storage of data
 !
@@ -1006,8 +1030,12 @@
 !
         END DO
 !
-!/T1      WRITE (NDST,*)
-!/T      WRITE (NDST,9026) NQA, SNLNQ*4, NQD, NQS
+#ifdef W3_T1
+      WRITE (NDST,*)
+#endif // W3_T1
+#ifdef W3_T
+      WRITE (NDST,9026) NQA, SNLNQ*4, NQD, NQS
+#endif // W3_T
 !
 ! 2.g Expanded spectral range
 !
@@ -1022,8 +1050,10 @@
       NSPMAX = NFRMAX * NTHEXP - NTHMAX
       NSPMX2 = NFRCUT * NTHEXP - NTHMAX
 !
-!/T      WRITE (NDST,9027) NFR, NFRMIN, NFRMAX, NFRCUT, NTH,          &
-!/T             1-NTHMAX, NTH+NTHMAX, NTHEXP
+#ifdef W3_T
+      WRITE (NDST,9027) NFR, NFRMIN, NFRMAX, NFRCUT, NTH,          &
+             1-NTHMAX, NTH+NTHMAX, NTHEXP
+#endif // W3_T
 !
       ALLOCATE ( MPARS(IGRID)%SNLPS%FRQ(NFRMAX),                      &
                  MPARS(IGRID)%SNLPS%XSI(NFRMAX) )
@@ -1114,13 +1144,17 @@
 !
         DO IQ=1, SNLNQ
 !
-!/T2          WRITE (NDST,9030) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+#ifdef W3_T2
+          WRITE (NDST,9030) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+#endif // W3_T2
 !
           OFF12  = SNLM(IQ)
           OFF34  = SNLL(IQ)
           TH12   = SNLT(IQ) * DERA
 !
-!/T2          WRITE (NDST,9031) SNLT(IQ), OFF12, OFF34
+#ifdef W3_T2
+          WRITE (NDST,9031) SNLT(IQ), OFF12, OFF34
+#endif // W3_T2
 !
 ! 3.c Frequency indices
 !
@@ -1136,10 +1170,12 @@
             WFR1(J) = 1. - WFR(J)
             END DO
 !
-!/T2            WRITE (NDST,9032) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
-!/T2            DO, J=2, 4
-!/T2              WRITE (NDST,9033) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
-!/T2              END DO
+#ifdef W3_T2
+            WRITE (NDST,9032) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
+            DO, J=2, 4
+              WRITE (NDST,9033) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
+              END DO
+#endif // W3_T2
 !
 ! 3.d Loop over quadruplet components
 !
@@ -1174,7 +1210,9 @@
               S4     = SIOFF * ( 1. - OFF34 )
               CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
 !
-!/T2              WRITE (NDST,9034) JIQ, JOF, IFR, WFROFF, SIOFF/S0
+#ifdef W3_T2
+              WRITE (NDST,9034) JIQ, JOF, IFR, WFROFF, SIOFF/S0
+#endif // W3_T2
 !
               IF ( TH12 .LT. 0. ) THEN
                   BB = 2. * WN0
@@ -1201,7 +1239,9 @@
               DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
               DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
 !
-!/T2              WRITE (NDST,9035) DELTH(:) * RADE
+#ifdef W3_T2
+              WRITE (NDST,9035) DELTH(:) * RADE
+#endif // W3_T2
 !
               AUX1    = DELTH(JIQ) / DTH
               JTH (JIQ) = INT(AUX1)
@@ -1211,8 +1251,10 @@
 !
               NTHMX2 = MAX ( NTHMX2 , ABS(JTH1(JIQ)) )
 !
-!/T2              WRITE (NDST,9036) JIQ, JTH(JIQ), JTH1(JIQ),         &
-!/T2                                     WTH(JIQ), WTH1(JIQ)
+#ifdef W3_T2
+              WRITE (NDST,9036) JIQ, JTH(JIQ), JTH1(JIQ),         &
+                                     WTH(JIQ), WTH1(JIQ)
+#endif // W3_T2
 !
 ! 3.f Loop over quadruplet realizations
 !
@@ -1266,15 +1308,17 @@
 !
             END DO
 !
-!/T3          DO JQR=1, JJ
-!/T3            WRITE (NDST,9037) IKD, NQA+JQR
-!/T3            DO IST=1, 16
-!/T3              WRITE (NDST,9038) IST, AST1(IST,NQA+JQR,IKD),       &
-!/T3                                     AST2(IST,NQA+JQR,IKD),       &
-!/T3                                     QST5(IST,NQA+JQR,IKD),       &
-!/T3                                     QST6(IST,NQA+JQR,IKD)
-!/T3              END DO
-!/T3            END DO
+#ifdef W3_T3
+          DO JQR=1, JJ
+            WRITE (NDST,9037) IKD, NQA+JQR
+            DO IST=1, 16
+              WRITE (NDST,9038) IST, AST1(IST,NQA+JQR,IKD),       &
+                                     AST2(IST,NQA+JQR,IKD),       &
+                                     QST5(IST,NQA+JQR,IKD),       &
+                                     QST6(IST,NQA+JQR,IKD)
+              END DO
+            END DO
+#endif // W3_T3
 !
 ! ... End loop 3.b
 !
@@ -1339,32 +1383,42 @@
  1011 FORMAT (/' *** WAVEWATCH-III ERROR IN INSNL3 :'/                &
                '     NQA INCONSISTENT :', 2I8/)
 !
-!/T 9010 FORMAT (/' TEST INSNL3: NKD, KDMIN/MAX/X : ',I8,3F10.4)
+#ifdef W3_T
+ 9010 FORMAT (/' TEST INSNL3: NKD, KDMIN/MAX/X : ',I8,3F10.4)
+#endif // W3_T
 !
-!/T1 9020 FORMAT (/' TEST INSNL3: IKD, IQ, KD, F, D: ',2I8,2F10.4,F10.2)
-!/T1 9021 FORMAT (/' TEST INSNL3: TH12             : ',3X,F8.2/       &
-!/T1               '              OFF12, OFF34     : ',3X,2F8.2/      &
-!/T1               '              CD, CS           : ',3X,2E10.2)
-!/T1 9022 FORMAT ( '              ANGLES (DEGR)    : ',1X,4F8.2)
-!/T1 9023 FORMAT ( '              FREQUENCY IND.   : ',1X,3I4,2F6.2)
-!/T1 9024 FORMAT ( '                               : ',1X,3I4,2F6.2)
-!/T1 9025 FORMAT ( '              DIRECTIONAL IND. : ',1X,3I4,2F6.2)
-!/T 9026 FORMAT ( ' TEST INSNL3: FILLING FIRST DATA TABLES :'/        &
-!/T               '              NQA AND MAXIMUM  : ',2I8/            &
-!/T               '              NQD AND NQS      : ',2I8)
-!/T 9027 FORMAT ( '              NFR, MIN/MAX/CUT : ',4I8/            &
-!/T               '              NTH, MIN/MAX/EXP : ',4I8)
+#ifdef W3_T1
+ 9020 FORMAT (/' TEST INSNL3: IKD, IQ, KD, F, D: ',2I8,2F10.4,F10.2)
+ 9021 FORMAT (/' TEST INSNL3: TH12             : ',3X,F8.2/       &
+               '              OFF12, OFF34     : ',3X,2F8.2/      &
+               '              CD, CS           : ',3X,2E10.2)
+ 9022 FORMAT ( '              ANGLES (DEGR)    : ',1X,4F8.2)
+ 9023 FORMAT ( '              FREQUENCY IND.   : ',1X,3I4,2F6.2)
+ 9024 FORMAT ( '                               : ',1X,3I4,2F6.2)
+ 9025 FORMAT ( '              DIRECTIONAL IND. : ',1X,3I4,2F6.2)
+#endif // W3_T1
+#ifdef W3_T
+ 9026 FORMAT ( ' TEST INSNL3: FILLING FIRST DATA TABLES :'/        &
+               '              NQA AND MAXIMUM  : ',2I8/            &
+               '              NQD AND NQS      : ',2I8)
+ 9027 FORMAT ( '              NFR, MIN/MAX/CUT : ',4I8/            &
+               '              NTH, MIN/MAX/EXP : ',4I8)
+#endif // W3_T
 !
-!/T2 9030 FORMAT (/' TEST INSNL3: IKD, IQ, KD, F, D: ',2I8,2F10.4,F10.2)
-!/T2 9031 FORMAT (/' TEST INSNL3: TH12             : ',3X,F8.2/       &
-!/T2               '              OFF12, OFF34     : ',3X,2F8.2)
-!/T2 9032 FORMAT ( '              FREQUENCY IND.   : ',1X,3I4,2F6.2)
-!/T2 9033 FORMAT ( '                               : ',1X,3I4,2F6.2)
-!/T2 9034 FORMAT ( '              J,J,J, W, SIn    : ',1X,3I4,2F6.2)
-!/T2 9035 FORMAT ( '              ANGLES (DEGR)    : ',3X,4F8.2)
-!/T2 9036 FORMAT ( '              DIRECTIONAL IND. : ',1X,3I4,2F6.2)
-!/T3 9037 FORMAT (/' TEST INSNL3: STORAGE ARRAYS FOR IKD, IQA =',2I6)
-!/T3 9038 FORMAT (23X,3I4,3F8.3)
+#ifdef W3_T2
+ 9030 FORMAT (/' TEST INSNL3: IKD, IQ, KD, F, D: ',2I8,2F10.4,F10.2)
+ 9031 FORMAT (/' TEST INSNL3: TH12             : ',3X,F8.2/       &
+               '              OFF12, OFF34     : ',3X,2F8.2)
+ 9032 FORMAT ( '              FREQUENCY IND.   : ',1X,3I4,2F6.2)
+ 9033 FORMAT ( '                               : ',1X,3I4,2F6.2)
+ 9034 FORMAT ( '              J,J,J, W, SIn    : ',1X,3I4,2F6.2)
+ 9035 FORMAT ( '              ANGLES (DEGR)    : ',3X,4F8.2)
+ 9036 FORMAT ( '              DIRECTIONAL IND. : ',1X,3I4,2F6.2)
+#endif // W3_T2
+#ifdef W3_T3
+ 9037 FORMAT (/' TEST INSNL3: STORAGE ARRAYS FOR IKD, IQA =',2I6)
+ 9038 FORMAT (23X,3I4,3F8.3)
+#endif // W3_T3
 !/
 !/ Embedded subroutines
 !/ 

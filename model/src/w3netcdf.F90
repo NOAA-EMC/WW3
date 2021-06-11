@@ -1997,8 +1997,10 @@
         END IF
       END DO
 #ifdef W3_MPI
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
       IF (GTYPE .eq. UNGTYPE) THEN
         allocate(iVect(1), stat=istat)
         ListFirst=0
@@ -2010,11 +2012,15 @@
             CALL MPI_RECV(iVect,1,MPI_INT, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
             IF (iVect(1) .gt. 0) THEN
               allocate(WBACexch(NK,NTH,iVect(1)), stat=istat)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Before MPI_RECV, tag 21'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Before MPI_RECV, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
               CALL MPI_RECV(WBACexch,NK*NTH*iVect(1),MPI_REAL, iProc-1, 21, MPI_COMM_WCMP, istatus, ierr)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'After MPI_RECV, tag 21'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'After MPI_RECV, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
               NPloc=ListNP(IPROC)
               idx=0
               DO IP=1,NPloc
@@ -2048,11 +2054,15 @@
                 END DO
               END IF
             END DO
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Before MPI_SEND, tag 21'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Before MPI_SEND, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
             CALL MPI_SEND(WBACexch,NSPEC*nbexport,MPI_REAL, 0, 21, MPI_COMM_WCMP, ierr)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'After MPI_SEND, tag 21'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'After MPI_SEND, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
             deallocate(WBACexch)
           END IF
         END IF

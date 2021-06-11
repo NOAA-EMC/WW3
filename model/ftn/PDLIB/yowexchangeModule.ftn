@@ -261,12 +261,16 @@ module yowExchangeModule
     integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
 
 
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 3'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
 
     ! post receives
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 4'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
     do i=1, nConnDomains
       tag = 30000 + myrank
       call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType1, &
@@ -276,8 +280,10 @@ module yowExchangeModule
         CALL PARALLEL_ABORT("MPI_IRecv", ierr)
       endif
     enddo
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 5'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 5'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
 
     ! post sends
     do i=1, nConnDomains
@@ -289,18 +295,24 @@ module yowExchangeModule
         CALL PARALLEL_ABORT("MPI_ISend", ierr)
       endif
     end do
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 6'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 6'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
 
     ! Wait for completion
     call mpi_waitall(nConnDomains, recvRqst, recvStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 11'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 11'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
     call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-!/DEBUGEXCH     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 12'
-!/DEBUGEXCH     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGEXCH
+     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 12'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGEXCH
   end subroutine
 
 

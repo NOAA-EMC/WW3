@@ -139,7 +139,9 @@
       USE W3GDATMD, ONLY: NTH, NK, ECOS, ESIN, SIG, SLNC1, FSPM, FSHF
       USE W3ODATMD, ONLY: NDSE, NDST
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -153,17 +155,23 @@
 !/ Local parameters
 !/
       INTEGER                 :: ITH, IK
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: COSU, SINU, DIRF(NTH), FAC, FF1, FF2, &
                                  FFILT, RFR, WNF(NK)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SLN1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SLN1')
+#endif // W3_S
 !
 ! 1.  Set up factors ------------------------------------------------- *
 !
-!/T      WRITE (NDST,900) USTAR, USDIR*RADE
+#ifdef W3_T
+      WRITE (NDST,900) USTAR, USDIR*RADE
+#endif // W3_T
 !
       COSU   = COS(USDIR)
       SINU   = SIN(USDIR)
@@ -195,7 +203,9 @@
 !
 ! Formats
 !
-!/T  900 FORMAT ( ' TEST W3SLN1 : USTAR, DIR :',F6.3, F6.1)
+#ifdef W3_T
+  900 FORMAT ( ' TEST W3SLN1 : USTAR, DIR :',F6.3, F6.1)
+#endif // W3_T
 !/
 !/ End of W3SLN1 ----------------------------------------------------- /
 !/

@@ -39,7 +39,9 @@
       USE W3GDATMD, ONLY: GRID, SGRD, GRIDS, SGRDS
       USE W3ODATMD, ONLY: NDSO, NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
       IMPLICIT NONE
   
@@ -127,9 +129,13 @@
       TYPE(GRID), POINTER :: GRD
       TYPE(SGRD), POINTER :: SGD
       REAL :: CGMAX, MINSIZE
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_INITGRID') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_INITGRID') 
+#endif // W3_S
 
       IF ( (IGRID .LE. 0) .OR. (.NOT. ALLOCATED(GRIDS)) ) THEN
         RETURN
@@ -211,9 +217,13 @@
       IMPLICIT NONE
   
       INTEGER, INTENT(IN) :: IGRID
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SETGRID') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SETGRID') 
+#endif // W3_S
 
       IF ( .NOT. ALLOCATED(SRCTRM) ) THEN
         ALLOCATE(SRCTRM)
@@ -261,9 +271,13 @@
       REAL, INTENT(IN) :: SPEC(SRCTRM%SGD%NSPEC), CG(SRCTRM%SGD%NK)
       REAL, INTENT(IN) :: U10ABS, U10DIR
       REAL, INTENT(OUT) :: S(SRCTRM%SGD%NSPEC), D(SRCTRM%SGD%NSPEC)
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SRCTRMCOMPUTE') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SRCTRMCOMPUTE') 
+#endif // W3_S
 
       CALL SRCTRM%COMPUTE(IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
       END SUBROUTINE UOST_SRCTRMCOMPUTE  
@@ -309,9 +323,13 @@
       CHARACTER(256) :: FILENAME
       LOGICAL :: FILEEXISTS
       INTEGER :: JG, J, L, I, IX, IY
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'LOAD_ALPHABETA') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'LOAD_ALPHABETA') 
+#endif // W3_S
     
 
       ! LOADING LOCAL ALPHA/BETA
@@ -406,9 +424,13 @@
       LOGICAL :: HEADER, FILESTART, READINGCELLSIZE, READINGALPHA
       INTEGER :: IX, IY, SPGRDS_SIZE, IK
       REAL, ALLOCATABLE :: TRANS(:)
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'LOAD_ALPHABETA_FROMFILE') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'LOAD_ALPHABETA_FROMFILE') 
+#endif // W3_S
     
       !  INITIALIZING LOGICALS REPRESENTING THE DIFFERENT PHASES OF THE LOAD
       FILESTART = .TRUE.
@@ -517,9 +539,13 @@
       TYPE(GRID), TARGET, INTENT(IN) :: GRD
       TYPE(SGRD), TARGET, INTENT(IN) :: SGD
       INTEGER :: ITH, NTH
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SOURCETERM_SETGRID') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SOURCETERM_SETGRID') 
+#endif // W3_S
     
       THIS%GRD => GRD
       THIS%SGD => SGD
@@ -589,9 +615,13 @@
       REAL, INTENT(IN) :: U10ABS, U10DIR, CGABS, CGDIR, DT
       REAL, INTENT(OUT) :: PSI
       REAL :: THDELTA, CP, WA
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'COMPUTE_REDUCTION_PSI') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'COMPUTE_REDUCTION_PSI') 
+#endif // W3_S
 
       ! computing the wave age
       THDELTA = ABS(U10DIR - CGDIR)
@@ -675,9 +705,13 @@
       REAL :: ALPHA, BETA, CGI, CELLSIZE, SPECI, SFC
       LOGICAL :: CELLOBSTRUCTED
       REAL :: TH, PSI
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE_LD') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE_LD') 
+#endif // W3_S
 
       S = 0
       D = 0
@@ -782,9 +816,13 @@
       INTEGER :: N = 8, ITHDIAG, ISP, NK, NTH, NX, NY
       LOGICAL :: CELLOBSTRUCTED
       REAL :: TH, PSI
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE_SE') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE_SE') 
+#endif // W3_S
  
       S = 0
       D = 0
@@ -891,9 +929,13 @@
   
       REAL :: S_LD(THIS%SGD%NSPEC), S_SE(THIS%SGD%NSPEC)
       REAL :: D_LD(THIS%SGD%NSPEC), D_SE(THIS%SGD%NSPEC)
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE') 
+#ifdef W3_S
+      CALL STRACE (IENT, 'UOST_SOURCETERM_COMPUTE') 
+#endif // W3_S
       
       IF (.NOT. THIS%GRD%UOSTENABLED) THEN
         S = 0

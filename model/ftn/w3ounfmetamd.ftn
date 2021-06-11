@@ -165,8 +165,12 @@
       USE NETCDF
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: SIG, NK, GTYPE, UNGTYPE
-!/RTD      USE W3GDATMD, ONLY : FLAGUNR, POLAT, POLON
-!/SMC      USE W3SMCOMD, ONLY : SMCTYPE
+#ifdef W3_RTD
+      USE W3GDATMD, ONLY : FLAGUNR, POLAT, POLON
+#endif // W3_RTD
+#ifdef W3_SMC
+      USE W3SMCOMD, ONLY : SMCTYPE
+#endif // W3_SMC
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
                           NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
@@ -276,11 +280,19 @@
 
       VECTOR = .TRUE.
       IF(PRESENT(VEC)) VECTOR = VEC
-!/RTD ! Is the grid really rotated?
-!/RTD      IF ( POLAT < 90. ) FLRTD = .True.
-!/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
-!/RTD !
+#ifdef W3_RTD
+ ! Is the grid really rotated?
+      IF ( POLAT < 90. ) FLRTD = .True.
+#endif // W3_RTD
+#ifdef W3_SMC
+#ifdef W3_RTD
+      ! SMC type 3/4 outputs are currently on standard pole grid only
+      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
+#endif // W3_RTD
+#endif // W3_SMC
+#ifdef W3_RTD
+ !
+#endif // W3_RTD
 
       ! 1. Allocate nested GROUP, FIELD structure:
       ALLOCATE(GROUP(NOGRP))
@@ -296,11 +308,13 @@
 
       ! 2. Set direction convention:
       DIRCOM = ""
-!/RTD      IF ( FLAGUNR ) THEN
-!/RTD        DIRCOM = 'True North'
-!/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD        DIRCOM = 'Rotated Pole Grid North'
-!/RTD      ENDIF
+#ifdef W3_RTD
+      IF ( FLAGUNR ) THEN
+        DIRCOM = 'True North'
+      ELSE IF ( .NOT. FLAGUNR ) THEN
+        DIRCOM = 'Rotated Pole Grid North'
+      ENDIF
+#endif // W3_RTD
 
       !  Set partitioning method comment and standard name templates:
       IF( PTMETH .LE. 3 ) THEN
@@ -1367,15 +1381,17 @@
       TYPE(META_PAIR_T) :: META
 
       IF(FLRTD) THEN
-!/RTD         ! Rotated pole location
-!/RTD        CRS_NAME = 'rotated_pole'
-!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
-!/RTD            'grid_mapping_name', 'rotated_latitude_longitude')
-!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
-!/RTD            'grid_north_pole_latitude', POLAT)
-!/RTD        CALL META_LIST_APPEND(CRS_META,                                 &
-!/RTD            'grid_north_pole_longitude', POLON)
-!/RTD        CRS_IS_DEFAULT = .TRUE.
+#ifdef W3_RTD
+         ! Rotated pole location
+        CRS_NAME = 'rotated_pole'
+        CALL META_LIST_APPEND(CRS_META,                                 &
+            'grid_mapping_name', 'rotated_latitude_longitude')
+        CALL META_LIST_APPEND(CRS_META,                                 &
+            'grid_north_pole_latitude', POLAT)
+        CALL META_LIST_APPEND(CRS_META,                                 &
+            'grid_north_pole_longitude', POLON)
+        CRS_IS_DEFAULT = .TRUE.
+#endif // W3_RTD
       ELSE IF(GTYPE .EQ. UNGTYPE) THEN
 !       ! What do we want for unstructure grids?
       ELSE
@@ -2375,40 +2391,46 @@
       META(1)%VMIN = 0
       META(1)%VMAX = 2
 ! IFI=1, IFJ=10, D50
-!/BT4      META => GROUP(1)%FIELD(10)%META
-!/BT4      META(1)%FSC    = 0.001
-!/BT4      META(1)%UNITS  = 'Krumbein phi scale'
-!/BT4      META(1)%ENAME  = '.d50'
-!/BT4      META(1)%VARNM='d50'
-!/BT4      META(1)%VARNL='grain_size'
-!/BT4      !META(1)%VARNS='sediment_grain_size'
-!/BT4      META(1)%VARNS=''
-!/BT4      META(1)%VARNG='sediment_grain_size'
-!/BT4      META(1)%VMIN = -10.0
-!/BT4      META(1)%VMAX = 32.0
+#ifdef W3_BT4
+      META => GROUP(1)%FIELD(10)%META
+      META(1)%FSC    = 0.001
+      META(1)%UNITS  = 'Krumbein phi scale'
+      META(1)%ENAME  = '.d50'
+      META(1)%VARNM='d50'
+      META(1)%VARNL='grain_size'
+      !META(1)%VARNS='sediment_grain_size'
+      META(1)%VARNS=''
+      META(1)%VARNG='sediment_grain_size'
+      META(1)%VMIN = -10.0
+      META(1)%VMAX = 32.0
+#endif // W3_BT4
 ! IFI=1, IFJ=11, IC1
-!/IS2      META => GROUP(1)%FIELD(11)%META
-!/IS2      META(1)%FSC = 0.001
-!/IS2      META(1)%UNITS = 'm'
-!/IS2      META(1)%ENAME = '.ic1'
-!/IS2      META(1)%VARNM='ic1'
-!/IS2      META(1)%VARNL='ice thickness'
-!/IS2      META(1)%VARNS='sea_ice_thickness'
-!/IS2      META(1)%VARNG='ice_thickness'
-!/IS2      META(1)%VMIN = 0
-!/IS2      META(1)%VMAX = 30
+#ifdef W3_IS2
+      META => GROUP(1)%FIELD(11)%META
+      META(1)%FSC = 0.001
+      META(1)%UNITS = 'm'
+      META(1)%ENAME = '.ic1'
+      META(1)%VARNM='ic1'
+      META(1)%VARNL='ice thickness'
+      META(1)%VARNS='sea_ice_thickness'
+      META(1)%VARNG='ice_thickness'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 30
+#endif // W3_IS2
 ! IFI=1, IFJ=12, IC5
-!/IS2      META => GROUP(1)%FIELD(12)%META
-!/IS2      META(1)%FSC = 0.05
-!/IS2      META(1)%UNITS = 'm'
-!/IS2      META(1)%ENAME = '.ic5'
-!/IS2      META(1)%VARNM='ic5'
-!/IS2      META(1)%VARNL='maximum floe diameter'
-!/IS2      !META(1)%VARNS='maximum_ice_floe_diameter'
-!/IS2      META(1)%VARNS=''
-!/IS2      META(1)%VARNG='maximum_ice_floe_diameter'
-!/IS2      META(1)%VMIN = 0
-!/IS2      META(1)%VMAX = 1500
+#ifdef W3_IS2
+      META => GROUP(1)%FIELD(12)%META
+      META(1)%FSC = 0.05
+      META(1)%UNITS = 'm'
+      META(1)%ENAME = '.ic5'
+      META(1)%VARNM='ic5'
+      META(1)%VARNL='maximum floe diameter'
+      !META(1)%VARNS='maximum_ice_floe_diameter'
+      META(1)%VARNS=''
+      META(1)%VARNG='maximum_ice_floe_diameter'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 1500
+#endif // W3_IS2
 !
 !----------GROUP 2 ----------------
 !

@@ -749,8 +749,10 @@
           ELSE
             IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
 #ifdef W3_PDLIB
-!/DEBUGINIT        WRITE(740+IAPROC,*)  'Before call to UNST_PDLIB_READ_FROM_FILE'
-!/DEBUGINIT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+        WRITE(740+IAPROC,*)  'Before call to UNST_PDLIB_READ_FROM_FILE'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
                CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
@@ -762,12 +764,14 @@
                CALL PRINT_MY_TIME("After UNST_PDLIB_READ_FROM_FILE")
 #endif // W3_TIMINGS
 #ifdef W3_PDLIB
-!/DEBUGINIT        WRITE(740+IAPROC,*)  ' After call to UNST_PDLIB_READ_FROM_FILE'
-!/DEBUGINIT        WRITE(740+IAPROC,*)  ' min/max(VA)=', minval(VA), maxval(VA)
-!/DEBUGINIT        DO JSEA=1,NSEAL
-!/DEBUGINIT          WRITE(740+IAPROC,*) ' JSEA=', JSEA, ' sum(VA)=', sum(VA(:,JSEA))
-!/DEBUGINIT        END DO
-!/DEBUGINIT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+        WRITE(740+IAPROC,*)  ' After call to UNST_PDLIB_READ_FROM_FILE'
+        WRITE(740+IAPROC,*)  ' min/max(VA)=', minval(VA), maxval(VA)
+        DO JSEA=1,NSEAL
+          WRITE(740+IAPROC,*) ' JSEA=', JSEA, ' sum(VA)=', sum(VA(:,JSEA))
+        END DO
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
 #endif // W3_PDLIB
             ELSE
 #ifdef W3_MPI

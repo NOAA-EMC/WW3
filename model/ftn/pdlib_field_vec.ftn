@@ -95,7 +95,9 @@ MODULE PDLIB_FIELD_VEC
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3ODATMD, ONLY: FLOGRD, FLOGR2, NOSWLL, NOEXTR,              &
                           NOGRP, NGRPP
@@ -430,7 +432,9 @@ MODULE PDLIB_FIELD_VEC
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       use yowDatapool, only: istatus
@@ -442,7 +446,9 @@ MODULE PDLIB_FIELD_VEC
       USE W3GDATMD, ONLY: NSEAL
       USE W3ADATMD, ONLY: NSEALM
       USE W3SERVMD, ONLY : EXTCDE
-!/TIMINGS      USE W3PARALL, ONLY: PRINT_MY_TIME
+#ifdef W3_TIMINGS
+      USE W3PARALL, ONLY: PRINT_MY_TIME
+#endif // W3_TIMINGS
       use yowNodepool, only: ListNP, ListNPA, ListIPLG
       IMPLICIT NONE
       INCLUDE "mpif.h"
@@ -453,7 +459,9 @@ MODULE PDLIB_FIELD_VEC
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -474,17 +482,25 @@ MODULE PDLIB_FIELD_VEC
       integer IPloc, IPglob, pos
       integer NbMatch, idx
       integer ListFirst(NAPROC)
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
       !
-!/DEBUGIO     WRITE(740+IAPROC,*) 'UNST_PDLIB_READ, Beginning of function'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'UNST_PDLIB_READ, Beginning of function'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       LRECL  = MAX ( LRB*NSPEC ,                                      &
                      LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
-!/DEBUGIO     WRITE(740+IAPROC,*) 'UNST_PDLIB_READ, LRB=', LRB, ' LRECL=', LRECL
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'UNST_PDLIB_READ, LRB=', LRB, ' LRECL=', LRECL
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       IF (IAPROC .gt. NAPROC) THEN
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Leaving bc rank IAPROC > NAPROC=', NAPROC
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'Leaving bc rank IAPROC > NAPROC=', NAPROC
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
         RETURN
       END IF
       ListFirst(1)=0
@@ -508,10 +524,14 @@ MODULE PDLIB_FIELD_VEC
       DO iBlock=1,nbBlock
         iFirst = 1 + (iBlock - 1)*BlockSize
         iEnd   = MIN(iBlock * BlockSize, NSEA)
-!/TIMINGS       CALL PRINT_MY_TIME("Beginning of iBlock value treatment")
+#ifdef W3_TIMINGS
+       CALL PRINT_MY_TIME("Beginning of iBlock value treatment")
+#endif // W3_TIMINGS
 
-!/DEBUGIO     WRITE(740+IAPROC,*) 'R : iBlock=', iBlock, '/', nbBlock, 'iFirst=', iFirst, 'iEnd=', iEnd
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'R : iBlock=', iBlock, '/', nbBlock, 'iFirst=', iFirst, 'iEnd=', iEnd
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
 !    Let's try to get the indexes right.
 !    We have 1 <= IB <= len = iEnd + 1 - iFirst
 !    We have iFirst - 1 = (iBlock - 1)*BlockSize
@@ -519,7 +539,9 @@ MODULE PDLIB_FIELD_VEC
 !    and thus iFirst <= ISEA <= iEnd
         len=iEnd + 1 - iFirst
         IF (IAPROC .eq. 1) THEN
-!/TIMINGS       CALL PRINT_MY_TIME("Before data reading")
+#ifdef W3_TIMINGS
+       CALL PRINT_MY_TIME("Before data reading")
+#endif // W3_TIMINGS
           DO IB=1,len
             ISEA = (iBlock - 1)*BlockSize + IB
             NREC = ISEA + 2
@@ -528,10 +550,14 @@ MODULE PDLIB_FIELD_VEC
 !!/DEBUGIO     FLUSH(740+IAPROC)
             READ (NDREAD, POS=RPOS, IOSTAT=IERR) (DATAread(I,IB), I=1,NSPEC)
           END DO
-!/TIMINGS       CALL PRINT_MY_TIME("After data reading")
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After the block of reads'
-!/DEBUGIO     WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, ' sum(DATAread)=', sum(DATAread)
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_TIMINGS
+       CALL PRINT_MY_TIME("After data reading")
+#endif // W3_TIMINGS
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After the block of reads'
+     WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, ' sum(DATAread)=', sum(DATAread)
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           DO iProc=2,NAPROC
             NbMatch=0
             DO IPloc=1,ListNPA(iProc)
@@ -540,8 +566,10 @@ MODULE PDLIB_FIELD_VEC
                 NbMatch = NbMatch+1
               END IF
             END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Sending to iProc=', iProc, ' NbMatch=', NbMatch
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'Sending to iProc=', iProc, ' NbMatch=', NbMatch
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             IF (NbMatch .gt. 0) THEN
               allocate(ArrSend(NSPEC,NbMatch), stat=istat)
               ArrSend = 0.
@@ -565,7 +593,9 @@ MODULE PDLIB_FIELD_VEC
               VA(:,IPloc) = DATAread(:,pos)
             END IF
           END DO
-!/TIMINGS       CALL PRINT_MY_TIME("After the sending")
+#ifdef W3_TIMINGS
+       CALL PRINT_MY_TIME("After the sending")
+#endif // W3_TIMINGS
         ELSE
           NbMatch=0
           DO IPloc=1,ListNPA(IAPROC)
@@ -574,8 +604,10 @@ MODULE PDLIB_FIELD_VEC
               NbMatch = NbMatch+1
             END IF
           END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Receiving NbMatch=', NbMatch
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'Receiving NbMatch=', NbMatch
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           IF (NbMatch .gt. 0) THEN
             allocate(ArrSend(NSPEC,NbMatch), stat=istat)
             CALL MPI_RECV(ArrSend,NSPEC*NbMatch,MPI_REAL, 0, 37, MPI_COMM_WAVE, istatus, ierr)
@@ -590,17 +622,21 @@ MODULE PDLIB_FIELD_VEC
             deallocate(ArrSend)
           END IF
         END IF
-!/TIMINGS       CALL PRINT_MY_TIME("Beginning of iBlock value treatment")
+#ifdef W3_TIMINGS
+       CALL PRINT_MY_TIME("Beginning of iBlock value treatment")
+#endif // W3_TIMINGS
       END DO
       IF (IAPROC .eq. 1) THEN
         deallocate(DATAread)
       END IF
-!/DEBUGIO     IF (IAPROC .le. NAPROC) THEN
-!/DEBUGIO       WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, ' sum(VA)=', sum(VA)
-!/DEBUGIO       FLUSH(740+IAPROC)
-!/DEBUGIO     END IF
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Exiting READ_FROM_FILE'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     IF (IAPROC .le. NAPROC) THEN
+       WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, ' sum(VA)=', sum(VA)
+       FLUSH(740+IAPROC)
+     END IF
+     WRITE(740+IAPROC,*) 'Exiting READ_FROM_FILE'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE UNST_PDLIB_WRITE_TO_FILE(NDWRITE)
@@ -648,7 +684,9 @@ MODULE PDLIB_FIELD_VEC
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       use yowDatapool, only: istatus
       USE yowNodepool, only: ListNP, ListNPA, ListIPLG
@@ -668,7 +706,9 @@ MODULE PDLIB_FIELD_VEC
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -690,37 +730,53 @@ MODULE PDLIB_FIELD_VEC
       INTEGER IERR_MPI
       REAL(KIND=LRB) WRITEBUFF(NSPEC)
       REAL, allocatable :: DATAsend(:,:)
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
-!/DEBUGIO      WRITE(740+IAPROC,*) 'Beginning of UNST_PDLIB_WRITE_TO_FILE IAPROC=', IAPROC, 'NAPRST=', NAPRST
-!/DEBUGIO      FLUSH(740+IAPROC)
-!/DEBUGIO      WRITE(740+IAPROC,*) 'sum(VA)=', sum(VA)
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'Beginning of UNST_PDLIB_WRITE_TO_FILE IAPROC=', IAPROC, 'NAPRST=', NAPRST
+      FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'sum(VA)=', sum(VA)
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       ListFirst(1) = 0
       DO IPROC=2,NAPROC
         ListFirst(iProc)=ListFirst(iProc-1) + ListNPA(iProc-1)
       END DO
       !
-!/DEBUGIO      WRITE(740+IAPROC,*) 'NX=', NX, ' NY=', NY, ' NSEA=', NSEA
-!/DEBUGIO      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC, ' NTPROC=', NTPROC
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'NX=', NX, ' NY=', NY, ' NSEA=', NSEA
+      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC, ' NTPROC=', NTPROC
+#endif // W3_DEBUGIO
       LRECL  = MAX ( LRB*NSPEC ,                                      &
                      LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
-!/DEBUGIO      WRITE(740+IAPROC,*) 'UNST_PDLIB_WRITE, LRB=', LRB, ' LRECL=', LRECL
-!/DEBUGIO      WRITE(740+IAPROC,*) 'NDWRITE=', NDWRITE, 'NAPROC=', NAPROC, 'NTPROC=', NTPROC
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'UNST_PDLIB_WRITE, LRB=', LRB, ' LRECL=', LRECL
+      WRITE(740+IAPROC,*) 'NDWRITE=', NDWRITE, 'NAPROC=', NAPROC, 'NTPROC=', NTPROC
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       nbBlock=NSEA / BlockSize + 1
-!/DEBUGIO      WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' BlockSize=', BlockSize
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' BlockSize=', BlockSize
+#endif // W3_DEBUGIO
       DO iBlock=1,nbBlock
         iFirst= 1 + (iBlock - 1)*BlockSize
         iEnd= MIN(iBlock * BlockSize, NSEA)
         len=iEnd + 1 - iFirst
-!/DEBUGIO      WRITE(740+IAPROC,*) 'W : iBlock=', iBlock, '/', nbBlock, 'iFirst=', iFirst, 'iEnd=', iEnd, ' len=', len
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'W : iBlock=', iBlock, '/', nbBlock, 'iFirst=', iFirst, 'iEnd=', iEnd, ' len=', len
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
         IF (IAPROC .eq. NAPRST) THEN
-!/DEBUGIO      WRITE(740+IAPROC,*) 'The Node is a restart writing node'
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'The Node is a restart writing node'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           IF (IAPROC .le. NAPROC) THEN
-!/DEBUGIO      WRITE(740+IAPROC,*) 'It is also a running node'
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'It is also a running node'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             DO JSEA=1,NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
               IF ((iFirst .le. ISEA).and.(ISEA .le. iEnd)) THEN
@@ -729,15 +785,21 @@ MODULE PDLIB_FIELD_VEC
               END IF
             END DO
           END IF
-!/DEBUGIO      WRITE(740+IAPROC,*) 'Now iterating over all the nodes for RECV'
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'Now iterating over all the nodes for RECV'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           DO iProc=1,NAPROC
-!/DEBUGIO      WRITE(740+IAPROC,*) 'iProc=', iProc, ' / ', NAPROC
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'iProc=', iProc, ' / ', NAPROC
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             IF (iProc .ne. IAPROC) THEN
               NPAloc=ListNPA(iProc)
-!/DEBUGIO     WRITE(740+IAPROC,*) 'We found NPAloc=', NPAloc
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'We found NPAloc=', NPAloc
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               NbMatch=0
               DO IPloc=1,NPAloc
                 IPglob = ListIPLG(ListFirst(iProc) + IPloc)
@@ -747,11 +809,15 @@ MODULE PDLIB_FIELD_VEC
               END DO
               IF (NbMatch .gt. 0) THEN
                 allocate(DATArecv(NSPEC, NbMatch), stat=istat)
-!/DEBUGIO       WRITE(740+IAPROC,*) 'After allocation and before reception, istat=', istat
-!/DEBUGIO       FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+       WRITE(740+IAPROC,*) 'After allocation and before reception, istat=', istat
+       FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
                 CALL MPI_RECV(DATArecv,NSPEC*NbMatch,MPI_REAL, iProc-1, 101, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGIO       WRITE(740+IAPROC,*) 'After reception, ierr=', ierr
-!/DEBUGIO       FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+       WRITE(740+IAPROC,*) 'After reception, ierr=', ierr
+       FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
                 idx=0
                 DO IPloc=1,NPAloc
                   IPglob = ListIPLG(IPloc + ListFirst(iProc))
@@ -762,17 +828,23 @@ MODULE PDLIB_FIELD_VEC
                     DATAwrite(:, pos) = DATArecv(:, idx)
                   END IF
                 END DO
-!/DEBUGIO       WRITE(740+IAPROC,*) 'After assignation'
-!/DEBUGIO       FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+       WRITE(740+IAPROC,*) 'After assignation'
+       FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
                 deallocate(DATArecv, stat=istat)
-!/DEBUGIO       WRITE(740+IAPROC,*) 'After assignation istat=', istat
-!/DEBUGIO       FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+       WRITE(740+IAPROC,*) 'After assignation istat=', istat
+       FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               END IF
             END IF
           END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Before the actual write down'
-!/DEBUGIO     WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, 'Sum DATAwrite=', sum(DATAwrite)
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'Before the actual write down'
+     WRITE(740+IAPROC,*) 'iBlock=', iBlock, '/', nbBlock, 'Sum DATAwrite=', sum(DATAwrite)
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           DO ISEA=iFirst,iEnd
             idx  = ISEA - iFirst + 1
             NREC = ISEA + 2
@@ -783,14 +855,20 @@ MODULE PDLIB_FIELD_VEC
             WRITEBUFF(1:NSPEC) = DATAwrite(1:NSPEC, idx)
             WRITE(NDWRITE, POS=RPOS) WRITEBUFF
           END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After the write down'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After the write down'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
         ELSE
-!/DEBUGIO     WRITE(740+IAPROC,*) 'We are a node different from NAPRST'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'We are a node different from NAPRST'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
           IF (IAPROC .le. NAPROC) THEN
-!/DEBUGIO     WRITE(740+IAPROC,*) 'We are a computing node'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'We are a computing node'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             NbMatch=0
             DO IPloc=1,ListNPA(IAPROC)
               IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
@@ -798,15 +876,21 @@ MODULE PDLIB_FIELD_VEC
                 NbMatch=NbMatch+1
               END IF
             END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'NbMatch=', NbMatch
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'NbMatch=', NbMatch
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             IF (NbMatch .gt. 0) THEN
-!/DEBUGIO     WRITE(740+IAPROC,*) 'We are actually a computing node so we have something to send'
-!/DEBUGIO     WRITE(740+IAPROC,*) 'Sending message of length NSEAL=', NSEAL
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'We are actually a computing node so we have something to send'
+     WRITE(740+IAPROC,*) 'Sending message of length NSEAL=', NSEAL
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               allocate(DATAsend(NSPEC,NbMatch), stat=istat)
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After allocation of DATAsend, istat=', istat
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After allocation of DATAsend, istat=', istat
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               idx=0
               DO IPloc=1,ListNPA(IAPROC)
                 IPglob = ListIPLG(ListFirst(IAPROC) + IPloc)
@@ -815,25 +899,35 @@ MODULE PDLIB_FIELD_VEC
                   DATAsend(:,idx)=VA(:,IPloc)
                 END IF
               END DO
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After assignation of DATAsend'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After assignation of DATAsend'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               CALL MPI_SEND(DATAsend,NSPEC*NbMatch,MPI_REAL, NAPRST-1, 101, MPI_COMM_WAVE, ierr)
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After sending of DATAsend, ierr=', ierr
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After sending of DATAsend, ierr=', ierr
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
               deallocate(DATAsend, stat=istat)
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After deallocation of DATAsend, istat=', istat
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After deallocation of DATAsend, istat=', istat
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
             END IF
           END IF
-!/DEBUGIO     WRITE(740+IAPROC,*) 'After the IAPROC test'
-!/DEBUGIO     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+     WRITE(740+IAPROC,*) 'After the IAPROC test'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
         END IF
       END DO
 !!/DEBUGIO     WRITE(740+IAPROC,*) 'Before the MPI_BARRIER'
 !!/DEBUGIO     FLUSH(740+IAPROC)
 !      CALL MPI_BARRIER(MPI_COMM_WAVE, IERR_MPI)
-!/DEBUGIO      WRITE(740+IAPROC,*) 'Exiting the UNST_PDLIB_WRITE_TO_FILE'
-!/DEBUGIO      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIO
+      WRITE(740+IAPROC,*) 'Exiting the UNST_PDLIB_WRITE_TO_FILE'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGIO
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DO_OUTPUT_EXCHANGES(IMOD)
@@ -919,7 +1013,9 @@ MODULE PDLIB_FIELD_VEC
                                  IP(4), I, J, JSEA, ITARG, IB,   &
                                  JSEA0, JSEAN, NSEAB, IBOFF,     &
                                  ISEA, ISPROC, K, NRQMAX
-!/S      INTEGER, SAVE           :: IENT
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT
+#endif // W3_S
       LOGICAL                 :: FLGRDALL(NOGRP,NGRPP)
       REAL, allocatable       :: ARRexch(:,:), ARRexch_loc(:,:)
       REAL, allocatable       :: ARRtotal(:,:)
@@ -927,9 +1023,11 @@ MODULE PDLIB_FIELD_VEC
       INTEGER                 :: eEnt(1), IPROC
       INTEGER                 :: TheSize, NSEAL_loc
       INTEGER, SAVE           :: indexOutput
-!/DEBUGOUTPUT      WRITE(740+IAPROC,*) 'Beginning of output, indexOutput=', indexOutput
-!/DEBUGOUTPUT      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC, ' NAPFLD=', NAPFLD
-!/DEBUGOUTPUT      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+      WRITE(740+IAPROC,*) 'Beginning of output, indexOutput=', indexOutput
+      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC, ' NAPFLD=', NAPFLD
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -942,13 +1040,17 @@ MODULE PDLIB_FIELD_VEC
       NRQGO2 = 0
       IT0    = NSPEC
       IROOT  = NAPFLD - 1
-!/DEBUGOUTPUT      WRITE(740+IAPROC,*) 'Entering DO_OUTPUT_EXCHANGES'
-!/DEBUGOUTPUT      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+      WRITE(740+IAPROC,*) 'Entering DO_OUTPUT_EXCHANGES'
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
       IF ( FLOUT(1) .OR. FLOUT(7) ) THEN
         CALL GET_ARRAY_SIZE(TheSize)
         IF ( IAPROC .LE. NAPROC ) THEN
-!/DEBUGOUTPUT          WRITE(740+IAPROC,*) 'Allocating and filling'
-!/DEBUGOUTPUT          FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+          WRITE(740+IAPROC,*) 'Allocating and filling'
+          FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
           allocate(ARRexch(TheSize, NSEAL), ARRpos(NSEAL))
           DO JSEA=1,NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -1352,8 +1454,10 @@ MODULE PDLIB_FIELD_VEC
             END DO
           END DO
         END IF
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'Before assigning field values'
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'Before assigning field values'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
 !
 !  Now synchronizing the data
 !  It must be possible to ensure that the output
@@ -1367,47 +1471,71 @@ MODULE PDLIB_FIELD_VEC
             END DO
           END IF
         END IF
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'Before ARRexch operations'
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'Before ARRexch operations'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
         IF ((IAPROC .le. NAPROC).and.(IAPROC.ne.NAPFLD)) THEN
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'Case 1'
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'IAPROC=', IAPROC, ' NAPFLD=', NAPFLD
-!/DEBUGOUTPUT            FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+            WRITE(740+IAPROC,*) 'Case 1'
+            WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
+            WRITE(740+IAPROC,*) 'IAPROC=', IAPROC, ' NAPFLD=', NAPFLD
+            FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
           eEnt(1)=NSEAL
           CALL MPI_SEND(eEnt,1,MPI_INTEGER, NAPFLD-1, 23, MPI_COMM_WAVE, ierr)
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'After MPI_SEND 1'
-!/DEBUGOUTPUT            FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+            WRITE(740+IAPROC,*) 'After MPI_SEND 1'
+            FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
           CALL MPI_SEND(ARRpos,NSEAL,MPI_INTEGER, NAPFLD-1, 29, MPI_COMM_WAVE, ierr)
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'After MPI_SEND 2'
-!/DEBUGOUTPUT            FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+            WRITE(740+IAPROC,*) 'After MPI_SEND 2'
+            FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
           CALL MPI_SEND(ARRexch,NSEAL*TheSize,MPI_REAL, NAPFLD-1, 37, MPI_COMM_WAVE, ierr)
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'After MPI_SEND 3'
-!/DEBUGOUTPUT            FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+            WRITE(740+IAPROC,*) 'After MPI_SEND 3'
+            FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
           deallocate(ARRpos, ARRexch)
         END IF
-!/DEBUGOUTPUT            WRITE(740+IAPROC,*) 'Case 2'
-!/DEBUGOUTPUT            FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+            WRITE(740+IAPROC,*) 'Case 2'
+            FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
         IF (IAPROC .eq. NAPFLD) THEN
-!/DEBUGOUTPUT              WRITE(740+IAPROC,*) 'Case 2a'
-!/DEBUGOUTPUT              FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+              WRITE(740+IAPROC,*) 'Case 2a'
+              FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
             DO IPROC=1,NAPROC
               IF (IPROC .ne. IAPROC) THEN
-!/DEBUGOUTPUT                WRITE(740+IAPROC,*) 'IPROC=', IPROC
-!/DEBUGOUTPUT                FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+                WRITE(740+IAPROC,*) 'IPROC=', IPROC
+                FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
                 CALL MPI_RECV(eEnt,1,MPI_INTEGER, IPROC-1, 23, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGOUTPUT                WRITE(740+IAPROC,*) 'After MPI_RECV 1'
-!/DEBUGOUTPUT                FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+                WRITE(740+IAPROC,*) 'After MPI_RECV 1'
+                FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
                 NSEAL_loc=eEnt(1)
-!/DEBUGOUTPUT                WRITE(740+IAPROC,*) 'NSEAL_loc=', NSEAL_loc
-!/DEBUGOUTPUT                FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+                WRITE(740+IAPROC,*) 'NSEAL_loc=', NSEAL_loc
+                FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
                 allocate(ARRpos_loc(NSEAL_loc), ARRexch_loc(TheSize, NSEAL_loc))
                 CALL MPI_RECV(ARRpos_loc,NSEAL_loc,MPI_INTEGER, IPROC-1, 29, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGOUTPUT                WRITE(740+IAPROC,*) 'After MPI_RECV 2'
-!/DEBUGOUTPUT                FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+                WRITE(740+IAPROC,*) 'After MPI_RECV 2'
+                FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
                 CALL MPI_RECV(ARRexch_loc,NSEAL_loc*TheSize,MPI_INTEGER, IPROC-1, 37, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGOUTPUT                WRITE(740+IAPROC,*) 'After MPI_RECV 3'
-!/DEBUGOUTPUT                FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+                WRITE(740+IAPROC,*) 'After MPI_RECV 3'
+                FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
                 DO I=1,NSEAL_loc
                   ARRtotal(:,ARRpos_loc(I)) = ARRexch_loc(:,I)
                 END DO
@@ -1415,14 +1543,18 @@ MODULE PDLIB_FIELD_VEC
               END IF
             END DO
         END IF
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'After ARRexch operations'
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'NAPFLD=', NAPFLD
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'After ARRexch operations'
+        FLUSH(740+IAPROC)
+        WRITE(740+IAPROC,*) 'NAPFLD=', NAPFLD
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
         IF ( IAPROC .EQ. NAPFLD ) THEN
 !              CALL W3XDMA ( IMOD, NDSE, NDST, FLGRDALL )
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'Call W3XETA from DO_OUTPUT_EXCHANGES'
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'Call W3XETA from DO_OUTPUT_EXCHANGES'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
               CALL W3XETA ( IMOD, NDSE, NDST )
               IH     = 0
               IF ( FLGRDALL( 2, 1) ) THEN
@@ -1823,11 +1955,15 @@ MODULE PDLIB_FIELD_VEC
               END DO
               CALL W3SETA ( IMOD, NDSE, NDST )
         END IF
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'After IAPROC = NAPFLD test'
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'After IAPROC = NAPFLD test'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
       END IF
-!/DEBUGOUTPUT        WRITE(740+IAPROC,*) 'Ending of output, indexOutput=', indexOutput
-!/DEBUGOUTPUT        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGOUTPUT
+        WRITE(740+IAPROC,*) 'Ending of output, indexOutput=', indexOutput
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGOUTPUT
       indexOutput=indexOutput+1
       END SUBROUTINE DO_OUTPUT_EXCHANGES
 !/ ------------------------------------------------------------------- /

@@ -161,7 +161,9 @@
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
       USE W3ARRYMD, ONLY : OUTA2I, OUTA2R
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
       USE W3IOGRMD, ONLY: W3IOGR
 !/
       USE W3GDATMD
@@ -181,8 +183,12 @@
                                  NSTDLG, MSTDLG = 5, NSEAT, J1, J2,   &
                                  J3, J4, J5, IDFM1, IDFM2, IDFM3,     &
                                  IDLA1, IDLA2, IDLA3, VSC3, NHEXT
-!/S      INTEGER, SAVE           :: IENT = 0
-!/O16      INTEGER                 :: NDSG = 35, NTGRDS = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_O16
+      INTEGER                 :: NDSG = 35, NTGRDS = 0
+#endif // W3_O16
       INTEGER, ALLOCATABLE    :: MSPLIT(:,:), MTEMP(:,:), INGRD(:)
       REAL                    :: RATIO1, XMEAN, STARG, STDMIN,        &
                                  ZBDUM, ZBMIN, VSC1, VSC2, FRACL, FRACH
@@ -241,12 +247,16 @@
       NTRACE = 100
       CALL ITRACE ( NDSTRC, NTRACE )
 !
-!/O16      OPEN ( NDSG, FILE='./ww3.ww3_gspl', FORM='UNFORMATTED')
+#ifdef W3_O16
+      OPEN ( NDSG, FILE='./ww3.ww3_gspl', FORM='UNFORMATTED')
+#endif // W3_O16
 !
 ! 1.c Print header
 !
       WRITE (NDSO,900)
-!/S      CALL STRACE (IENT, 'W3GSPL')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3GSPL')
+#endif // W3_S
 !
       J      = LEN_TRIM(FNMPRE)
       OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_gspl.inp',STATUS='OLD',        &
@@ -397,7 +407,9 @@
           IF ( (NGX-1)*NGY .GE. NG ) NGX = NGX - 1
         END IF
 !
-!/T      WRITE (NDST,9040) NGX, NGY
+#ifdef W3_T
+      WRITE (NDST,9040) NGX, NGY
+#endif // W3_T
 !
 ! 4.b.2 Fill checkerboard
 !
@@ -411,7 +423,9 @@
         ALLOCATE ( INGRD(NGX*NGY) )
         INGRD  = 0
 !
-!/T        WRITE (NDST,9041) J
+#ifdef W3_T
+        WRITE (NDST,9041) J
+#endif // W3_T
 !
         DO IGY=1, NGY
 !
@@ -442,12 +456,16 @@
               END DO
 !
             IF ( INGRD(IG) .GT. 0 ) THEN
-!/T                WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
-!/T                                  INGRD(IG), 'OK'
+#ifdef W3_T
+                WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
+                                  INGRD(IG), 'OK'
+#endif // W3_T
                 IG     = IG + 1
-!/T              ELSE
-!/T                WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
-!/T                                  INGRD(IG), 'EMPTY (SKIPPED)'
+#ifdef W3_T
+              ELSE
+                WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
+                                  INGRD(IG), 'EMPTY (SKIPPED)'
+#endif // W3_T
               END IF
 !
             END DO
@@ -462,7 +480,9 @@
                 NGX     = NGX + 1
               END IF
             DEALLOCATE ( INGRD )
-!/T            WRITE (NDST,9040) NGX, NGY
+#ifdef W3_T
+            WRITE (NDST,9040) NGX, NGY
+#endif // W3_T
           ELSE
             EXIT
           END IF
@@ -475,7 +495,9 @@
         END DO
       IF ( MINGRD .NE. NSEA ) GOTO 825
 !
-!/T      WRITE (NDST,9043) IG, NG
+#ifdef W3_T
+      WRITE (NDST,9043) IG, NG
+#endif // W3_T
 !
 ! 4.b.3 Merge smallest grids as necessary
 !
@@ -495,7 +517,9 @@
           END DO
         INGRD(MINNR) = NSEA + 1
 !
-!/T        WRITE (NDST,9044) MINGRD, MINNR
+#ifdef W3_T
+        WRITE (NDST,9044) MINGRD, MINNR
+#endif // W3_T
 !
         ALLOCATE ( ISNEXT(0:IG) )
         ISNEXT = .FALSE.
@@ -537,7 +561,9 @@
             END IF
           END DO
 !
-!/T        WRITE (NDST,9045) MINNXT, MINNNR
+#ifdef W3_T
+        WRITE (NDST,9045) MINNXT, MINNNR
+#endif // W3_T
 !
         IF ( MINNNR .GT. 0 ) THEN
             DO IY=1, NY
@@ -549,24 +575,32 @@
                 END DO
               END DO
             IGG    = IGG - 1
-!/T            WRITE (NDST,9046) MINNR, MINNNR
-!/T            DO J=1, IG
-!/T              WRITE (NDST,9047) J, INGRD(J)
-!/T              END DO
-!/T          ELSE
-!/T            WRITE (NDST,9048) MINNR
+#ifdef W3_T
+            WRITE (NDST,9046) MINNR, MINNNR
+            DO J=1, IG
+              WRITE (NDST,9047) J, INGRD(J)
+              END DO
+          ELSE
+            WRITE (NDST,9048) MINNR
+#endif // W3_T
           END IF
 !
         DEALLOCATE ( ISNEXT)
-!/T        WRITE (NDST,9043) IGG, NG
+#ifdef W3_T
+        WRITE (NDST,9043) IGG, NG
+#endif // W3_T
 !
         END DO
 !
-!/T      WRITE (NDST,9049) NG
+#ifdef W3_T
+      WRITE (NDST,9049) NG
+#endif // W3_T
 !
       DO J=1, IG
         IF ( INGRD(J) .GT. NSEA ) INGRD(J) = 0
-!/T        WRITE (NDSO,9047) J, INGRD(J)
+#ifdef W3_T
+        WRITE (NDSO,9047) J, INGRD(J)
+#endif // W3_T
         END DO
 !
 ! 4.b.4 Store first guess in MSPLT
@@ -585,8 +619,10 @@
 !
 ! 5.b.5 Optional GrADS output
 !
-!/O16      WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
-!/O16      NTGRDS = NTGRDS + 1
+#ifdef W3_O16
+      WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
+      NTGRDS = NTGRDS + 1
+#endif // W3_O16
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Refine grids
@@ -617,7 +653,9 @@
         MSTOLD = MSTATS
         GSTOLD = GSTATS
 !
-!/T        WRITE (NDST,9050) 'a', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#ifdef W3_T
+        WRITE (NDST,9050) 'a', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#endif // W3_T
 !
 ! 5.b Small grid attempt to merge
 !
@@ -631,8 +669,10 @@
                 WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,       &
                               100.*MSTATS%RSTD/XMEAN
                 IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
-!/O16                WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
-!/O16                NTGRDS = NTGRDS + 1
+#ifdef W3_O16
+                WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
+                NTGRDS = NTGRDS + 1
+#endif // W3_O16
 
                 CYCLE
               ELSE
@@ -651,7 +691,9 @@
 ! 5.d Attempt to quare-up grid
 !
         CALL GRINFO   ! call needed as GRSQRG uses grid ranges
-!/T        WRITE (NDST,9051) 'd', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#ifdef W3_T
+        WRITE (NDST,9051) 'd', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#endif // W3_T
         CALL GRSQRG
         CALL GRFILL ( 1 )
 !
@@ -678,15 +720,19 @@
         CALL GRINFO
         WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,               &
                               100.*MSTATS%RSTD/XMEAN
-!/T        WRITE (NDST,9051) 'g', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#ifdef W3_T
+        WRITE (NDST,9051) 'g', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#endif // W3_T
 !
         G0ID   = '5.g'
         IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
 !
 ! 5.h Optional GrADS output
 !
-!/O16      WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
-!/O16      NTGRDS = NTGRDS + 1
+#ifdef W3_O16
+      WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
+      NTGRDS = NTGRDS + 1
+#endif // W3_O16
 !
 ! 5.i Convergence tests
 ! ... The quick one
@@ -731,11 +777,15 @@
 !
         IF ( INGMNC .GE. INGLAG ) THEN
 !
-!/T            WRITE (NDST,9052) 'MINIMUM'
+#ifdef W3_T
+            WRITE (NDST,9052) 'MINIMUM'
+#endif // W3_T
 !
             IF ( REAL(INGMIN) .LT. 0.85*XMEAN ) THEN
 !
-!/T                WRITE (NDST,9053) 0.85*XMEAN / REAL(INGMIN)
+#ifdef W3_T
+                WRITE (NDST,9053) 0.85*XMEAN / REAL(INGMIN)
+#endif // W3_T
                 CALL GRFSML
                 CALL GRINFO
                 WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
@@ -746,9 +796,11 @@
                 INGMXC = 0
                 IF ( DONE ) EXIT
 !
-!/T              ELSE
-!/T                WRITE (NDST,9054)
-!/T
+#ifdef W3_T
+              ELSE
+                WRITE (NDST,9054)
+
+#endif // W3_T
               END IF
 !
           END IF
@@ -757,11 +809,15 @@
 !
         IF ( INGMXC .GE. INGLAG ) THEN
 !
-!/T            WRITE (NDST,9052) 'MAXIMUM'
+#ifdef W3_T
+            WRITE (NDST,9052) 'MAXIMUM'
+#endif // W3_T
 !
             IF ( REAL(INGMAX) .GT. 1.075*XMEAN ) THEN
 !
-!/T                WRITE (NDST,9053) REAL(INGMAX) / ( 1.075*XMEAN )
+#ifdef W3_T
+                WRITE (NDST,9053) REAL(INGMAX) / ( 1.075*XMEAN )
+#endif // W3_T
                 CALL GRINFO
                 WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
                                  100.*MSTATS%RSTD/XMEAN
@@ -771,9 +827,11 @@
                 INGMXC = 0
                 IF ( DONE ) EXIT
 !
-!/T              ELSE
-!/T                WRITE (NDST,9054)
-!/T
+#ifdef W3_T
+              ELSE
+                WRITE (NDST,9054)
+
+#endif // W3_T
               END IF
 !
           END IF
@@ -979,11 +1037,15 @@
         WRITE (NDSM,980) MSPLIT(IY,:)
         END DO
 !
-!/O16      CLOSE ( NDSG ) 
+#ifdef W3_O16
+      CLOSE ( NDSG ) 
+#endif // W3_O16
 !
-!/O16      OPEN ( NDSG,FILE='ww3.ctl')
-!/O16      WRITE (NDSG,985)  NX, X0, SX, NY, Y0, SY, NTGRDS
-!/O16      CLOSE ( NDSG ) 
+#ifdef W3_O16
+      OPEN ( NDSG,FILE='ww3.ctl')
+      WRITE (NDSG,985)  NX, X0, SX, NY, Y0, SY, NTGRDS
+      CLOSE ( NDSG ) 
+#endif // W3_O16
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9.  End of program
@@ -1092,17 +1154,19 @@
 !
   980 FORMAT (1X,360I2)
 !
-!/O16  985 FORMAT ( 'DSET      ww3.ww3_gspl'/                         &
-!/O16               'TITLE     WAVEWATCH III grid splitting data'/    &
-!/O16               'OPTIONS   sequential'/                           &
-!/O16               'UNDEF      -999.9'/                              &
-!/O16               'XDEF   ',I6,'  LINEAR ',2F12.5/                  &
-!/O16               'YDEF   ',I6,'  LINEAR ',2F12.5/                  &
-!/O16               'ZDEF        1  LINEAR   1000.00000     1.00000'/ &
-!/O16               'TDEF   ',I6,'  LINEAR   00:00 06JUN1968   1HR'/  &
-!/O16               'VARS        1'/                                  &
-!/O16               'MAP     0  99  grid use map   '/                 &
-!/O16               'ENDVARS')
+#ifdef W3_O16
+  985 FORMAT ( 'DSET      ww3.ww3_gspl'/                         &
+               'TITLE     WAVEWATCH III grid splitting data'/    &
+               'OPTIONS   sequential'/                           &
+               'UNDEF      -999.9'/                              &
+               'XDEF   ',I6,'  LINEAR ',2F12.5/                  &
+               'YDEF   ',I6,'  LINEAR ',2F12.5/                  &
+               'ZDEF        1  LINEAR   1000.00000     1.00000'/ &
+               'TDEF   ',I6,'  LINEAR   00:00 06JUN1968   1HR'/  &
+               'VARS        1'/                                  &
+               'MAP     0  99  grid use map   '/                 &
+               'ENDVARS')
+#endif // W3_O16
 !
   965 FORMAT ( '$ -------------------------------------',             &
                '------------------------------- $'/                   &
@@ -1181,20 +1245,24 @@
                '     ERROR IN OPENING FILE ',A/                       &
                '     IOSTAT =',I5/)
 !
-!/T 9040 FORMAT ( 'TEST W3GSPL: CHECKERBOARD X-Y:',2I8)
-!/T 9041 FORMAT ( 'TEST W3GSPL: FILLING CHECKERBOARD TRY:',I3/           &
-!/T               '           GRID, IGX0, IGXN, IGY0, IGYN, POINTS ')
-!/T 9042 FORMAT ( '         ',I6,2(2I8), I8,2X,A)
-!/T 9043 FORMAT ( 'TEST W3GSPL: CHECKERBOARD GRIDS:',I4,'  (',I4,')')
-!/T 9044 FORMAT ( '             SMALLEST SIZE/GRID:',I8,I4)
-!/T 9045 FORMAT ( '             SMALLEST NEIGHBOR :',I8,I4)
-!/T 9046 FORMAT ( '             GRID',I4', MERGED WITH GRID',I4)
-!/T 9047 FORMAT ( '         ',I6,I8)
-!/T 9048 FORMAT ( '             GRID',I4', IS ISOLATED, LEFT UNCHANGED')
-!/T 9049 FORMAT ( 'TEST W3GSPL: CHECKERBOARD CONSOLIDATED ON',I4,' GRIDS')
+#ifdef W3_T
+ 9040 FORMAT ( 'TEST W3GSPL: CHECKERBOARD X-Y:',2I8)
+ 9041 FORMAT ( 'TEST W3GSPL: FILLING CHECKERBOARD TRY:',I3/           &
+               '           GRID, IGX0, IGXN, IGY0, IGYN, POINTS ')
+ 9042 FORMAT ( '         ',I6,2(2I8), I8,2X,A)
+ 9043 FORMAT ( 'TEST W3GSPL: CHECKERBOARD GRIDS:',I4,'  (',I4,')')
+ 9044 FORMAT ( '             SMALLEST SIZE/GRID:',I8,I4)
+ 9045 FORMAT ( '             SMALLEST NEIGHBOR :',I8,I4)
+ 9046 FORMAT ( '             GRID',I4', MERGED WITH GRID',I4)
+ 9047 FORMAT ( '         ',I6,I8)
+ 9048 FORMAT ( '             GRID',I4', IS ISOLATED, LEFT UNCHANGED')
+ 9049 FORMAT ( 'TEST W3GSPL: CHECKERBOARD CONSOLIDATED ON',I4,' GRIDS')
+#endif // W3_T
 !
-!/T 9050 FORMAT ( 'TEST W3GSPL',A,': MIN, MAX, STD:',2I8,F10.2)
-!/T 9051 FORMAT ( '           ',A,': MIN, MAX, STD:',2I8,F10.2)
+#ifdef W3_T
+ 9050 FORMAT ( 'TEST W3GSPL',A,': MIN, MAX, STD:',2I8,F10.2)
+ 9051 FORMAT ( '           ',A,': MIN, MAX, STD:',2I8,F10.2)
+#endif // W3_T
  9052 FORMAT ( 'TEST W3GSPL: STUCK ON ',A,' GRID SIZE')
  9053 FORMAT ( '             OUT OF RANGE, PROCESSING (',F6.3,')')
  9054 FORMAT ( '             IN RANGE, NO ACTION')
@@ -1232,13 +1300,17 @@
 !/ Local parameters
 !/
       INTEGER                 :: NOCNT, NOCNTM, NOCNTL, NGC, NSEAC
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: SUMSQR
       LOGICAL                 :: LEFT, RIGHT, THERE
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRINFO')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRINFO')
+#endif // W3_S
 !
 ! 1.  Initialization ------------------------------------------------- *
 !
@@ -1345,21 +1417,25 @@
 !
 ! 5.  Test output ---------------------------------------------------- *
 !
-!/T1      WRITE (NDST,9000)
-!/T1      DO IG=1, NG
-!/T1        WRITE (NDST,9001) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS, &
-!/T1                              GSTATS(IG)%NXL, GSTATS(IG)%NXH,      &
-!/T1                              GSTATS(IG)%NYL, GSTATS(IG)%NYH
-!/T1        END DO
-!/T1      WRITE (NDST,9010) MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#ifdef W3_T1
+      WRITE (NDST,9000)
+      DO IG=1, NG
+        WRITE (NDST,9001) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS, &
+                              GSTATS(IG)%NXL, GSTATS(IG)%NXH,      &
+                              GSTATS(IG)%NYL, GSTATS(IG)%NYH
+        END DO
+      WRITE (NDST,9010) MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+#endif // W3_T1
 !
       RETURN
 !
 ! Formats
 !
-!/T1 9000 FORMAT ( 'TEST GRINFO: J, STRADLE, NPTS,NXL-H, NYL-H')
-!/T1 9001 FORMAT ( '           ',I4,2X,L1,2X,I7,4I5)
-!/T1 9010 FORMAT ( 'TEST GRINFO: MIN, MAX, STD:',2I8,F10.2)
+#ifdef W3_T1
+ 9000 FORMAT ( 'TEST GRINFO: J, STRADLE, NPTS,NXL-H, NYL-H')
+ 9001 FORMAT ( '           ',I4,2X,L1,2X,I7,4I5)
+ 9010 FORMAT ( 'TEST GRINFO: MIN, MAX, STD:',2I8,F10.2)
+#endif // W3_T1
 !
 !/ End of GRINFO ----------------------------------------------------- /
 !/
@@ -1397,12 +1473,16 @@
 !/ Local parameters
 !/
       INTEGER                 :: ITARG, ITL, IPTS, MX, MY, ICIRC, NWDTH
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL                 :: MASK(NY,NX)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRTRIM')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRTRIM')
+#endif // W3_S
 !
       ITARG  = NSEA / NG
 !
@@ -1573,13 +1653,17 @@
                                  NLEFT, NRIGHT, NXL, NXH, NYL, NYH
       INTEGER                 :: NXYOFF = 3
       INTEGER                 :: IIX(NSEA), IIY(NSEA), ISEA, NSEAL
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL                 :: DONE(NG), MASK(NY,NX), FLOST(NG),     &
                                  XFL(NX), YFL(NY)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRFILL')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRFILL')
+#endif // W3_S
 !
 ! 1.  Loop to assure all reassigned ---------------------------------- *
 !
@@ -1622,7 +1706,9 @@
 !
           DONE(IG) = .TRUE.
 !
-!/T2          WRITE (NDST,9030) IG, J, NMIN
+#ifdef W3_T2
+          WRITE (NDST,9030) IG, J, NMIN
+#endif // W3_T2
 !
 ! 4.  Loop for halos per grid ---------------------------------------- *
 !
@@ -1681,7 +1767,9 @@
           IF ( MSPLIT(IY,IX) .EQ. -1 ) NLEFT = NLEFT + 1
           END DO
 !
-!/T2        WRITE (NDST,9070) NITT, NLEFT
+#ifdef W3_T2
+        WRITE (NDST,9070) NITT, NLEFT
+#endif // W3_T2
 !
 ! 7.b No point left, exit loop
 !
@@ -1764,9 +1852,11 @@
  1001 FORMAT ( ' MAP OUTPUT FOR GRID',I3,' AND X AND Y RANGE :',4I6/)
  1002 FORMAT ( ' ',60I2)
 !
-!/T2 9030 FORMAT ( 'TEST GRFILL: PROCESSING GRID',I5,'   (',I5,')',I8)
-!/T2 9060 FORMAT ( 'TEST GRFILL: GRID, HALO, NADD :',I5,I2,I8)
-!/T2 9070 FORMAT ( 'TEST GRFILL: NITT, NLEFT :',2I6)
+#ifdef W3_T2
+ 9030 FORMAT ( 'TEST GRFILL: PROCESSING GRID',I5,'   (',I5,')',I8)
+ 9060 FORMAT ( 'TEST GRFILL: GRID, HALO, NADD :',I5,I2,I8)
+ 9070 FORMAT ( 'TEST GRFILL: NITT, NLEFT :',2I6)
+#endif // W3_T2
 !
 !/ End of GRFILL ----------------------------------------------------- /
 !/
@@ -1798,12 +1888,16 @@
 !/ Local parameters
 !/
       INTEGER                 :: IX, IY, IOFF, JJX, JX, JY, IG, I
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER                 :: IFOUND(-1:NG)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRLOST')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRLOST')
+#endif // W3_S
 !
 ! 1.  Loop over all grid points -------------------------------------- *
 !
@@ -1894,11 +1988,15 @@
 !/ Local parameters
 !/
       INTEGER                 :: MX, MY
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRSQRG')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRSQRG')
+#endif // W3_S
 !
 ! 1.  Loop over grids ------------------------------------------------ *
 !
@@ -1998,11 +2096,15 @@
 !/
       INTEGER                 :: NX0, NXN, IXL, IXH, COUNT(-1:NG),    &
                                  INEW1, INEW2, INEW
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRSNGL')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRSNGL')
+#endif // W3_S
 !
 ! 1.  Set up looping ------------------------------------------------- *
 !
@@ -2043,14 +2145,18 @@
 !
               IF ( COUNT(IG) .LE. 2 ) THEN
 !
-!/T3                  WRITE (NDST,9040) IX, IY, IG
+#ifdef W3_T3
+                  WRITE (NDST,9040) IX, IY, IG
+#endif // W3_T3
 !
                   INEW1  = -1
                   INEW2  = -1
 !
                   DO J=1, NG
                     IF ( COUNT(J) .GE. 2 ) THEN
-!/T3                       WRITE (NDST,9041) J
+#ifdef W3_T3
+                       WRITE (NDST,9041) J
+#endif // W3_T3
                         IF ( INEW1 .EQ. -1 ) THEN
                             INEW1  = J
                           ELSE
@@ -2063,10 +2169,14 @@
                  IF ( INEW1 .EQ. -1 ) THEN
                      INEW   = -1
                      OK     = .FALSE.
-!/T3                     WRITE (NDST,9043)
+#ifdef W3_T3
+                     WRITE (NDST,9043)
+#endif // W3_T3
                    ELSE IF ( INEW2 .EQ. -1 ) THEN
                      INEW   = INEW1
-!/T3                     WRITE (NDST,9042) INEW
+#ifdef W3_T3
+                     WRITE (NDST,9042) INEW
+#endif // W3_T3
                    ELSE
                      IF ( GSTATS(INEW1)%NPTS .GT.                     &
                           GSTATS(INEW2)%NPTS ) THEN
@@ -2074,7 +2184,9 @@
                        ELSE
                          INEW   = INEW1
                        END IF
-!/T3                     WRITE (NDST,9042) INEW
+#ifdef W3_T3
+                     WRITE (NDST,9042) INEW
+#endif // W3_T3
                    END IF
 !
                 MSPLIT(IY,IX) = INEW
@@ -2093,10 +2205,12 @@
 !
 ! Formats
 !
-!/T3 9040 FORMAT ( 'TEST GRSNGL: POINT FOUND, IX, IY, IG:',2I5,I4)
-!/T3 9041 FORMAT ( '                     CANDIDATE GRID :',10X,I4)
-!/T3 9042 FORMAT ( '                     GRID USED      :',10X,I4)
-!/T3 9043 FORMAT ( '                     GRID LEFT UNDIFINED')
+#ifdef W3_T3
+ 9040 FORMAT ( 'TEST GRSNGL: POINT FOUND, IX, IY, IG:',2I5,I4)
+ 9041 FORMAT ( '                     CANDIDATE GRID :',10X,I4)
+ 9042 FORMAT ( '                     GRID USED      :',10X,I4)
+ 9043 FORMAT ( '                     GRID LEFT UNDIFINED')
+#endif // W3_T3
 !
 !/ End of GRSNGL ----------------------------------------------------- /
 !/
@@ -2148,7 +2262,9 @@
       INTEGER                 :: IPAVG, IPCHCK, ID, IPTOT, IX, IY,    &
                                  IXL, IYL, IDL, JX, JY, KY, IPT,      &
                                  IXH, IYH, I, J, K, L, IMIN, LMIN
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER                 :: GMASK(NY,NX), IIX(NSEA), IIY(NSEA)
       INTEGER, ALLOCATABLE    :: PMAP(:), INGRD(:)
       LOGICAL                 :: PREV
@@ -2156,12 +2272,16 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRSEPA')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRSEPA')
+#endif // W3_S
 !
       IPAVG  = NINT ( REAL(NSEA) / REAL(NG) )
       IPCHCK = NINT ( FRAC * REAL(NSEA) / REAL(NG) )
 !
-!/T4      WRITE (NDST,9000) IPAVG, IPCHCK
+#ifdef W3_T4
+      WRITE (NDST,9000) IPAVG, IPCHCK
+#endif // W3_T4
 !
 ! 1.  Loop over grids ------------------------------------------------ *
 !
@@ -2170,7 +2290,9 @@
         GMASK  = 0
         ID     = 0
 !
-!/T4        WRITE (NDST,9010) IG
+#ifdef W3_T4
+        WRITE (NDST,9010) IG
+#endif // W3_T4
 !
 ! 2.  Find all parts ------------------------------------------------- *
 ! 2.a First loop, partial parts
@@ -2214,7 +2336,9 @@
 ! 2.b Grid too small, do not cut
 !
         IF ( IPTOT .LE. IPAVG ) THEN
-!/T4            WRITE (NDST,9020) IPTOT, IPAVG
+#ifdef W3_T4
+            WRITE (NDST,9020) IPTOT, IPAVG
+#endif // W3_T4
             CYCLE
           END IF
 !
@@ -2287,14 +2411,18 @@
 ! 3.  Grid is contiguous --------------------------------------------- *
 !
         IF ( ID .EQ. 1 ) THEN
-!/T4            WRITE (NDST,9030) IG
+#ifdef W3_T4
+            WRITE (NDST,9030) IG
+#endif // W3_T4
             DEALLOCATE ( PMAP )
             CYCLE
           END IF
 !
 ! 4.  Grid is split, get stats --------------------------------------- *
 !
-!/T4        WRITE (NDST,9040) IG
+#ifdef W3_T4
+        WRITE (NDST,9040) IG
+#endif // W3_T4
 !
 ! 4.a Construct final map for grid
 !
@@ -2352,9 +2480,11 @@
             END IF
           END DO
 !
-!/T4        DO J=1, ID
-!/T4          WRITE (NDST,9041) J, INGRD(J), FLNEXT(J)
-!/T4          END DO
+#ifdef W3_T4
+        DO J=1, ID
+          WRITE (NDST,9041) J, INGRD(J), FLNEXT(J)
+          END DO
+#endif // W3_T4
 !
 ! 5.  Grid large enough, find smallest part -------------------------- *
 !
@@ -2369,20 +2499,26 @@
           END DO
 !
         IF ( LMIN .EQ. 0 ) THEN
-!/T4            WRITE (NDST,9050)
+#ifdef W3_T4
+            WRITE (NDST,9050)
+#endif // W3_T4
             DEALLOCATE ( INGRD, FLNEXT )
             CYCLE
           END IF
 !
         IF ( IMIN .GT. IPCHCK ) THEN
-!/T4            WRITE (NDST,9051)
+#ifdef W3_T4
+            WRITE (NDST,9051)
+#endif // W3_T4
             DEALLOCATE ( INGRD, FLNEXT )
             CYCLE
           END IF
 !
 ! 6.  Part to cut has been identified -------------------------------- *
 !
-!/T4        WRITE (NDST,9060) LMIN
+#ifdef W3_T4
+        WRITE (NDST,9060) LMIN
+#endif // W3_T4
 !
         DO JX=1, NX
           DO JY=1, NY
@@ -2401,15 +2537,17 @@
 !
 ! Formats
 !
-!/T4 9000 FORMAT ( 'TEST GRSEPA: IPAVG/CHCK:',2I8)
-!/T4 9010 FORMAT ( 'TEST GRSEPA: WORKING ON GRID'I4)
-!/T4 9020 FORMAT ( '             GRID TOO SMALL TO CUT',2I8)
-!/T4 9030 FORMAT ( 'TEST GRSEPA: GRID',I4,' IS CONTIGUOUS')
-!/T4 9040 FORMAT ( 'TEST GRSEPA: GRID',I4,' CONTAINS PARTS')
-!/T4 9041 FORMAT ( '             PART, SIZE, NEIGHBOUR:',I4,I8,L4)
-!/T4 9050 FORMAT ( '             NO PART NEXT TO OTHER')
-!/T4 9051 FORMAT ( '             NO PART SMALL ENOUGH')
-!/T4 9060 FORMAT ( '             CUTTING PART',I4)
+#ifdef W3_T4
+ 9000 FORMAT ( 'TEST GRSEPA: IPAVG/CHCK:',2I8)
+ 9010 FORMAT ( 'TEST GRSEPA: WORKING ON GRID'I4)
+ 9020 FORMAT ( '             GRID TOO SMALL TO CUT',2I8)
+ 9030 FORMAT ( 'TEST GRSEPA: GRID',I4,' IS CONTIGUOUS')
+ 9040 FORMAT ( 'TEST GRSEPA: GRID',I4,' CONTAINS PARTS')
+ 9041 FORMAT ( '             PART, SIZE, NEIGHBOUR:',I4,I8,L4)
+ 9050 FORMAT ( '             NO PART NEXT TO OTHER')
+ 9051 FORMAT ( '             NO PART SMALL ENOUGH')
+ 9060 FORMAT ( '             CUTTING PART',I4)
+#endif // W3_T4
 !
 !/ End of GRSEPA ----------------------------------------------------- /
 !/
@@ -2451,13 +2589,19 @@
       INTEGER                 :: NSMALL, IGMIN(NG), NNEXT, JG, IGADD, &
                                  IGTEST, FREE(NG), NFREE, NBIG, IGB,  &
                                  MX, MY, NX0, NXN, NY0, NYN, JX
-!/T5      INTEGER                 :: NXNT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_T5
+      INTEGER                 :: NXNT
+#endif // W3_T5
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       CHARACTER(LEN=1)        :: NEXTTO(0:NG,0:NG), TEMP(NG)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRFSML')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRFSML')
+#endif // W3_S
 !
 ! 1.  Find small(s) -------------------------------------------------- *
 !
@@ -2472,7 +2616,9 @@
           END IF
         END DO
 !
-!/T5      WRITE (NDST,9010) NSMALL, IGMIN(:NSMALL)
+#ifdef W3_T5
+      WRITE (NDST,9010) NSMALL, IGMIN(:NSMALL)
+#endif // W3_T5
 !
 ! 2.  Find neighbours ------------------------------------------------ *
 !
@@ -2500,11 +2646,13 @@
         NEXTTO(IG,IG) = '-'
         END DO
 !
-!/T5      WRITE (NDST,9020)
-!/T5      DO IG=1, NG
-!/T5        TEMP   = NEXTTO(IG,1:)
-!/T5        WRITE (NDST,9021) IG, TEMP
-!/T5        END DO
+#ifdef W3_T5
+      WRITE (NDST,9020)
+      DO IG=1, NG
+        TEMP   = NEXTTO(IG,1:)
+        WRITE (NDST,9021) IG, TEMP
+        END DO
+#endif // W3_T5
 !
 ! 3.  Loop over small grids ------------------------------------------ *
 !
@@ -2513,7 +2661,9 @@
 !
       DO J=1, NSMALL
 !
-!/T5        WRITE (NDST,9030) IGMIN(J)
+#ifdef W3_T5
+        WRITE (NDST,9030) IGMIN(J)
+#endif // W3_T5
 !
 ! 3.a Find neighbours
 !
@@ -2531,18 +2681,24 @@
             END IF
           END DO
 !
-!/T5        WRITE (NDST,9031) NNEXT
+#ifdef W3_T5
+        WRITE (NDST,9031) NNEXT
+#endif // W3_T5
 !
 ! 3.b No neighbours found, mark as 'not to be processed further'
 !
         IF ( NNEXT .EQ. 0 ) THEN
             GSTATS(IG)%INSTAT = .FALSE.
-!/T5            WRITE (NDST,9032) IG
+#ifdef W3_T5
+            WRITE (NDST,9032) IG
+#endif // W3_T5
           ELSE
 !
 ! 3.c Check smallest neighbor
 !
-!/T5            WRITE (NDST,9033) IGADD, IGTEST, IGTEST+INGMIN, NINT(XMEAN)
+#ifdef W3_T5
+            WRITE (NDST,9033) IGADD, IGTEST, IGTEST+INGMIN, NINT(XMEAN)
+#endif // W3_T5
 !
             IF ( IGTEST + INGMIN .LT. NINT(XMEAN) ) THEN
 !
@@ -2561,17 +2717,23 @@
 !
 ! ... Remove grid(s) from stats
 !
-!/T5                WRITE (NDST,9034)
+#ifdef W3_T5
+                WRITE (NDST,9034)
+#endif // W3_T5
 !
                 GSTATS(IG)%INSTAT = .FALSE.
-!/T5                WRITE (NDST,9032) IG
+#ifdef W3_T5
+                WRITE (NDST,9032) IG
+#endif // W3_T5
                 NNEXT  = 0
                 DO JG=1, NG
                   IF ( NEXTTO(IGADD,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
                   END DO
                 IF ( NNEXT .EQ. 1 ) THEN
                     GSTATS(IGADD)%INSTAT = .FALSE.
-!/T5                    WRITE (NDST,9032) IGADD
+#ifdef W3_T5
+                    WRITE (NDST,9032) IGADD
+#endif // W3_T5
                   END IF
 !
               END IF
@@ -2582,11 +2744,15 @@
 !
 ! 4.  Make new grids as needed --------------------------------------- *
 !
-!/T5      WRITE (NDST,9040) NFREE
+#ifdef W3_T5
+      WRITE (NDST,9040) NFREE
+#endif // W3_T5
 !
       DO J=1, NFREE
 !
-!/T5        WRITE (NDST,9041) FREE(J)
+#ifdef W3_T5
+        WRITE (NDST,9041) FREE(J)
+#endif // W3_T5
 !
 ! 4.a Find biggest grid
 !
@@ -2612,16 +2778,24 @@
         IF ( GSTATS(IGB)%STRADLE ) MX     = MX + NX
 !
         IF ( MY .GE. MX ) THEN
-!/T5            WRITE (NDST,9042) IGB, 'VERTICAL', MX, MY
+#ifdef W3_T5
+            WRITE (NDST,9042) IGB, 'VERTICAL', MX, MY
+#endif // W3_T5
             NYN    = NY0 + MY/2
           ELSE
-!/T5            WRITE (NDST,9042) IGB, 'HORIZONTAL', MX, MY
+#ifdef W3_T5
+            WRITE (NDST,9042) IGB, 'HORIZONTAL', MX, MY
+#endif // W3_T5
             NXN    = NX0 + MX/2
-!/T5            NXNT   = 1 + MOD(NXN-1,NX)
+#ifdef W3_T5
+            NXNT   = 1 + MOD(NXN-1,NX)
+#endif // W3_T5
           END IF
-!/T5        WRITE (NDST,9043) GSTATS(IGB)%NXL, GSTATS(IGB)%NXH,       &
-!/T5                          GSTATS(IGB)%NYL, GSTATS(IGB)%NYH,       &
-!/T5                          GSTATS(IGB)%STRADLE, NX0, NXN, NY0, NYN
+#ifdef W3_T5
+        WRITE (NDST,9043) GSTATS(IGB)%NXL, GSTATS(IGB)%NXH,       &
+                          GSTATS(IGB)%NYL, GSTATS(IGB)%NYH,       &
+                          GSTATS(IGB)%STRADLE, NX0, NXN, NY0, NYN
+#endif // W3_T5
 !
         DO IX=NX0, NXN
           JX     = 1 + MOD(IX-1,NX)
@@ -2639,20 +2813,22 @@
 !
 ! Formats
 !
-!/T5 9010 FORMAT ( 'TEST GRFSML:',I2,' SMALL GRIDS:',10I4)
-!/T5 9020 FORMAT ( 'TEST GRFSML: NEIGHBOUR MAP PER GRID')
-!/T5 9021 FORMAT (2X,I3,2X,120A1)
-!/T5 9030 FORMAT ( 'TEST GRFSML: PROCESSING SMALL GRID',I4)
-!/T5 9031 FORMAT ( '             GRID HAS',I3,' NEIGHBOURS')
-!/T5 9032 FORMAT ( '             REMOVED GRID',I4,' FROM STATS')
-!/T5 9033 FORMAT ( '             SMALLEST NEIGHBOUR AND SIZE',I4,I6/      &
-!/T5               '             SIZE OF COMBINED GRIDS',I8,'  (',I8,')')
-!/T5 9034 FORMAT ( '             GRIDS TOO LARGE TO MERGE')
-!/T5 9040 FORMAT ( 'TEST GRFSML: GENERATING',I3,' NEW GRIDS')
-!/T5 9041 FORMAT ( '             MAKING GRID NR.:',I4)
-!/T5 9042 FORMAT ( '             SPLITTING GRID',I3,' ',A,', MX,MY:',2I6)
-!/T5 9043 FORMAT ( '             OLD RANGE :',4I6,L4/                     &
-!/T5               '             NEW RANGE :',4I6)
+#ifdef W3_T5
+ 9010 FORMAT ( 'TEST GRFSML:',I2,' SMALL GRIDS:',10I4)
+ 9020 FORMAT ( 'TEST GRFSML: NEIGHBOUR MAP PER GRID')
+ 9021 FORMAT (2X,I3,2X,120A1)
+ 9030 FORMAT ( 'TEST GRFSML: PROCESSING SMALL GRID',I4)
+ 9031 FORMAT ( '             GRID HAS',I3,' NEIGHBOURS')
+ 9032 FORMAT ( '             REMOVED GRID',I4,' FROM STATS')
+ 9033 FORMAT ( '             SMALLEST NEIGHBOUR AND SIZE',I4,I6/      &
+               '             SIZE OF COMBINED GRIDS',I8,'  (',I8,')')
+ 9034 FORMAT ( '             GRIDS TOO LARGE TO MERGE')
+ 9040 FORMAT ( 'TEST GRFSML: GENERATING',I3,' NEW GRIDS')
+ 9041 FORMAT ( '             MAKING GRID NR.:',I4)
+ 9042 FORMAT ( '             SPLITTING GRID',I3,' ',A,', MX,MY:',2I6)
+ 9043 FORMAT ( '             OLD RANGE :',4I6,L4/                     &
+               '             NEW RANGE :',4I6)
+#endif // W3_T5
 !
 !/ End of GRFSML ----------------------------------------------------- /
 !/
@@ -2695,7 +2871,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GRFLRG')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GRFLRG')
+#endif // W3_S
 !
 ! 1.  Find big(s) ---------------------------------------------------- *
 !
@@ -2710,7 +2888,9 @@
           END IF
         END DO
 !
-!/T6      WRITE (NDST,9010) NBIG, IGMAX(:NBIG)
+#ifdef W3_T6
+      WRITE (NDST,9010) NBIG, IGMAX(:NBIG)
+#endif // W3_T6
 !
 ! 2.  Find neighbours ------------------------------------------------ *
 !
@@ -2738,17 +2918,21 @@
         NEXTTO(IG,IG) = '-'
         END DO
 !
-!/T6      WRITE (NDST,9020)
-!/T6      DO IG=1, NG
-!/T6        TEMP   = NEXTTO(IG,1:)
-!/T6        WRITE (NDST,9021) IG, TEMP
-!/T6        END DO
+#ifdef W3_T6
+      WRITE (NDST,9020)
+      DO IG=1, NG
+        TEMP   = NEXTTO(IG,1:)
+        WRITE (NDST,9021) IG, TEMP
+        END DO
+#endif // W3_T6
 !
 ! 3.  Loop over big grids -------------------------------------------- *
 !
       DO J=1, NBIG
 !
-!/T6        WRITE (NDST,9030) IGMAX(J)
+#ifdef W3_T6
+        WRITE (NDST,9030) IGMAX(J)
+#endif // W3_T6
 !
 ! 3.a Find neighbours
 !
@@ -2758,13 +2942,17 @@
           IF ( NEXTTO(IG,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
           END DO
 !
-!/T6        WRITE (NDST,9031) NNEXT
+#ifdef W3_T6
+        WRITE (NDST,9031) NNEXT
+#endif // W3_T6
 !
 ! 3.b Enough neighbours found, mark as 'not to be processed further'
 !
         IF ( NNEXT .GE. 1 ) THEN
             GSTATS(IG)%INSTAT = .FALSE.
-!/T6            WRITE (NDST,9032) 
+#ifdef W3_T6
+            WRITE (NDST,9032) 
+#endif // W3_T6
           ELSE
 !
 ! 3.c Biggest grid is isolated, should split
@@ -2783,12 +2971,14 @@
   930 FORMAT ( ' *** ERROR GRFLRG: LARGEST GRID IS ISOLATED ***'      &
                '     SPLITTING NOT YET IMPLEMENTED '/)
 !
-!/T6 9010 FORMAT ( 'TEST GRFLRG:',I2,' BIG GRIDS:',10I4)
-!/T6 9020 FORMAT ( 'TEST GRFLRG: NEIGHBOUR MAP PER GRID')
-!/T6 9021 FORMAT (2X,I3,2X,120A1)
-!/T6 9030 FORMAT ( 'TEST GRFLRG: PROCESSING BIG GRID',I4)
-!/T6 9031 FORMAT ( '             GRID HAS',I3,' NEIGHBOURS')
-!/T6 9032 FORMAT ( '             NO ACTION')
+#ifdef W3_T6
+ 9010 FORMAT ( 'TEST GRFLRG:',I2,' BIG GRIDS:',10I4)
+ 9020 FORMAT ( 'TEST GRFLRG: NEIGHBOUR MAP PER GRID')
+ 9021 FORMAT (2X,I3,2X,120A1)
+ 9030 FORMAT ( 'TEST GRFLRG: PROCESSING BIG GRID',I4)
+ 9031 FORMAT ( '             GRID HAS',I3,' NEIGHBOURS')
+ 9032 FORMAT ( '             NO ACTION')
+#endif // W3_T6
 !
 !/ End of GRFLRG ----------------------------------------------------- /
 !/
@@ -2828,15 +3018,21 @@
       INTEGER                 :: NIT, IIT,  IXL, IXH, IYL, IYH, NOCNT,&
                                  NOCNTM, NOCNTL, JX, JY, ISEA, MX, MY
       INTEGER                 :: MTMP2(NY,NX)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: XOFF
       LOGICAL                 :: MASK(NY,NX), LEFT, RIGHT, THERE
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GR1GRD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GR1GRD')
+#endif // W3_S
 !
-!/T7      WRITE (NDST,9000) IG
+#ifdef W3_T7
+      WRITE (NDST,9000) IG
+#endif // W3_T7
 !
 ! 1.  Set up MTEMP with MAPSTA 0,1,3 for grid ------------------------ *
 !
@@ -2867,10 +3063,18 @@
 !     NEEDED TO SET UP A LITTLE WIDER. NOT SURE WHY. NEED TO CHECK WITH
 !     WMEQL SUBROUTINE.
 !
-!/PR0      NIT    = 0
-!/PR1      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/UQ      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/UNO      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#ifdef W3_PR0
+      NIT    = 0
+#endif // W3_PR0
+#ifdef W3_PR1
+      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
+#endif // W3_PR1
+#ifdef W3_UQ
+      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UQ
+#ifdef W3_UNO
+      NIT    = 1 + NHEXT + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UNO
 !
 ! 3.b Exand halo
 !
@@ -2991,14 +3195,18 @@
 !
         END DO
 !
-!/T7      WRITE (NDST,9040)
+#ifdef W3_T7
+      WRITE (NDST,9040)
+#endif // W3_T7
 !
 ! 5.  Recompute grid range ------------------------------------------- *
 !     Using GSTOLD to store info for modified grid
 !
-!/T7      WRITE (NDST,9050) GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS,          &
-!/T7                        GSTATS(IG)%NXL, GSTATS(IG)%NXH,               &
-!/T7                        GSTATS(IG)%NYL, GSTATS(IG)%NYH
+#ifdef W3_T7
+      WRITE (NDST,9050) GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS,          &
+                        GSTATS(IG)%NXL, GSTATS(IG)%NXH,               &
+                        GSTATS(IG)%NYL, GSTATS(IG)%NYH
+#endif // W3_T7
 !
       GSTOLD(IG)%STRADLE = .FALSE.
       GSTOLD(IG)%NPTS    = 0
@@ -3060,9 +3268,11 @@
 !
 ! ... Make sure outside of grid is 2 or 3
 !
-!/T7      WRITE (NDST,9051) GSTOLD(IG)%STRADLE, GSTOLD(IG)%NPTS,          &
-!/T7                        GSTOLD(IG)%NXL, GSTOLD(IG)%NXH,               &
-!/T7                        GSTOLD(IG)%NYL, GSTOLD(IG)%NYH
+#ifdef W3_T7
+      WRITE (NDST,9051) GSTOLD(IG)%STRADLE, GSTOLD(IG)%NPTS,          &
+                        GSTOLD(IG)%NXL, GSTOLD(IG)%NXH,               &
+                        GSTOLD(IG)%NYL, GSTOLD(IG)%NYH
+#endif // W3_T7
       LEFT   = .FALSE.
       RIGHT  = .FALSE.
 !
@@ -3092,9 +3302,11 @@
           GSTOLD(IG)%STRADLE = .TRUE.
         END IF
 !
-!/T7      WRITE (NDST,9052) GSTOLD(IG)%STRADLE, GSTOLD(IG)%NPTS,          &
-!/T7                        GSTOLD(IG)%NXL, GSTOLD(IG)%NXH,               &
-!/T7                        GSTOLD(IG)%NYL, GSTOLD(IG)%NYH
+#ifdef W3_T7
+      WRITE (NDST,9052) GSTOLD(IG)%STRADLE, GSTOLD(IG)%NPTS,          &
+                        GSTOLD(IG)%NXL, GSTOLD(IG)%NXH,               &
+                        GSTOLD(IG)%NYL, GSTOLD(IG)%NYH
+#endif // W3_T7
 !
 ! 6.  Extract reduced grid data -------------------------------------- *
 !
@@ -3112,8 +3324,10 @@
       XOFF   = 360. * REAL ( NINT((PGRID(IG)%X0+0.5*REAL(MX-1)*SX)/360.) )
       PGRID(IG)%X0   = PGRID(IG)%X0 - XOFF
 !
-!/T7      WRITE (NDST,9060) PGRID(IG)%NX, PGRID(IG)%NY, PGRID(IG)%NSEA,   &
-!/T7             PGRID(IG)%X0, PGRID(IG)%Y0, PGRID(IG)%SX, PGRID(IG)%SY
+#ifdef W3_T7
+      WRITE (NDST,9060) PGRID(IG)%NX, PGRID(IG)%NY, PGRID(IG)%NSEA,   &
+             PGRID(IG)%X0, PGRID(IG)%Y0, PGRID(IG)%SX, PGRID(IG)%SY
+#endif // W3_T7
 !
       ALLOCATE ( PGRID(IG)%ZBIN(MX,MY) ,          &
                  PGRID(IG)%OBSX(MX,MY) ,          &
@@ -3145,14 +3359,16 @@
 !
 ! Formats
 !
-!/T7 9000 FORMAT ( 'TEST GR1GRD: EXTRACTING GRID:',I4)
-!/T7 9040 FORMAT ( '             MASK ON FULL GRID COMPUTED')
-!/T7 9050 FORMAT ( 'TEST GR1GRD: GRID STATS :'/                           &
-!/T7               '             GRID MAP     :',L2,2X,I8,4I5)
-!/T7 9051 FORMAT ( '             HALO ADDED   :',L2,2X,I8,4I5)
-!/T7 9052 FORMAT ( '             BORDER ADDED :',L2,2X,I8,4I5)
-!/T7 9060 FORMAT ( 'TEST GR1GRD: EXTRACTED GRID :',2I5,I8/                &
-!/T7               '                             ',4E12.5)
+#ifdef W3_T7
+ 9000 FORMAT ( 'TEST GR1GRD: EXTRACTING GRID:',I4)
+ 9040 FORMAT ( '             MASK ON FULL GRID COMPUTED')
+ 9050 FORMAT ( 'TEST GR1GRD: GRID STATS :'/                           &
+               '             GRID MAP     :',L2,2X,I8,4I5)
+ 9051 FORMAT ( '             HALO ADDED   :',L2,2X,I8,4I5)
+ 9052 FORMAT ( '             BORDER ADDED :',L2,2X,I8,4I5)
+ 9060 FORMAT ( 'TEST GR1GRD: EXTRACTED GRID :',2I5,I8/                &
+               '                             ',4E12.5)
+#endif // W3_T7
 !
 !/ End of GR1GRD ----------------------------------------------------- /
 !/

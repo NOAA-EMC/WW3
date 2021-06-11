@@ -148,7 +148,9 @@
       USE CONSTANTS
 !
       USE W3PARTMD, ONLY: W3PART
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3GDATMD, ONLY: NSEA, NSEAL, MAPSF, MAPSTA, NK, NTH, SIG
       USE W3ADATMD, ONLY: WN, CG, U10, U10D, DW
@@ -157,7 +159,9 @@
       USE W3WDATMD, ONLY: VA, ASF
       USE W3ADATMD, ONLY: NSEALM
       USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
-!/T     USE W3ODATMD, ONLY: NDST
+#ifdef W3_T
+     USE W3ODATMD, ONLY: NDST
+#endif // W3_T
 !
       IMPLICIT NONE
 !/
@@ -172,11 +176,15 @@
       INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
                                  IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
       INTEGER, SAVE           :: TSFAC = 7
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: UABS, UDIR, DEPTH, FACT, E2(NK,NTH)
       REAL, ALLOCATABLE       :: XP(:,:), TMP(:,:), TMP2(:,:)
 !/
-!/S      CALL STRACE (IENT, 'W3CPRT')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3CPRT')
+#endif // W3_S
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -204,7 +212,9 @@
       TMPSIZ = TSFAC * NSEAL
       ALLOCATE ( TMP(DIMP,TMPSIZ) )
 !
-!/T      WRITE (NDST,9000) DIMP, DIMXP, TMPSIZ
+#ifdef W3_T
+      WRITE (NDST,9000) DIMP, DIMXP, TMPSIZ
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Loop over sea points
@@ -264,7 +274,9 @@
                 TMP(:,1:OLDSIZ) = TMP2(:,1:OLDSIZ)
                 TMP(:,OLDSIZ+1:) = 0.
                 DEALLOCATE ( TMP2 ) 
-!/T            WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
+#ifdef W3_T
+            WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
+#endif // W3_T
               END IF
 !
            TMP(:,ICPRT(JSEA,2):ICPRT(JSEA,2)+NP) = XP(:,0:NP)
@@ -278,9 +290,11 @@
 !
       FINSIZ = ICPRT(NSEAL+1,2) - 1
 !
-!/T      WRITE (NDST,9060)
-!/T      WRITE (NDST,9061) (CMPLX(JSEA,ICPRT(JSEA,:)),JSEA=1,MIN(100,NSEAL))
-!/T      WRITE (NDST,9062) FINSIZ
+#ifdef W3_T
+      WRITE (NDST,9060)
+      WRITE (NDST,9061) (CMPLX(JSEA,ICPRT(JSEA,:)),JSEA=1,MIN(100,NSEAL))
+      WRITE (NDST,9062) FINSIZ
+#endif // W3_T
 !
       ALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT(DIMP,MAX(1,FINSIZ)) )
       DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
@@ -296,11 +310,13 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3CPRT : DIMP, DIMXP, TMPSIZ    :',I2,2I6)
-!/T 9050 FORMAT (' TEST W3CPRT : POINT',I4,', STORAGE',2I6)
-!/T 9060 FORMAT (' TEST W3CPRT : COUNTERS FOR STORAGE (JSEA,NP,ST):')
-!/T 9061 FORMAT (100('             ',5(2F9.0)/))
-!/T 9062 FORMAT (' TEST W3CPRT : FINAL STORAGE SIZE :',I6)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3CPRT : DIMP, DIMXP, TMPSIZ    :',I2,2I6)
+ 9050 FORMAT (' TEST W3CPRT : POINT',I4,', STORAGE',2I6)
+ 9060 FORMAT (' TEST W3CPRT : COUNTERS FOR STORAGE (JSEA,NP,ST):')
+ 9061 FORMAT (100('             ',5(2F9.0)/))
+ 9062 FORMAT (' TEST W3CPRT : FINAL STORAGE SIZE :',I6)
+#endif // W3_T
 !/
 !/ End of W3CPRT ----------------------------------------------------- /
 !/
@@ -378,10 +394,14 @@
 !/
       USE CONSTANTS
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3GDATMD, ONLY: FILEXT, NSEA, XGRD, YGRD, MAPSF, FLAGLL
-!/MPI      USE W3GDATMD, ONLY: NSEAL
+#ifdef W3_MPI
+      USE W3GDATMD, ONLY: NSEAL
+#endif // W3_MPI
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPROC, NAPPRT, NAPERR, &
                           IPASS => IPASS6, FLFORM, FNMPRE, OUTPTS,    &
@@ -389,13 +409,19 @@
       USE W3ADATMD, ONLY: DW, U10, U10D, CX, CY
       USE W3ADATMD, ONLY: NSEALM
       USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
-!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
-!/MPI      USE W3ODATMD, ONLY: ICPRT, DTPRT, IT0PRT
-!/T      USE W3ODATMD, ONLY: NDST
+#ifdef W3_MPI
+      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+      USE W3ODATMD, ONLY: ICPRT, DTPRT, IT0PRT
+#endif // W3_MPI
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -407,9 +433,13 @@
 !/
       INTEGER                 :: I, J, IERR, ISEA, JSEA, JAPROC,      &
                                  IX, IY, IP, IOFF, DTSIZ=0
-!/MPI      INTEGER                 :: ICSIZ, IERR_MPI, IT,            &
-!/MPI                                 STATUS(MPI_STATUS_SIZE,1), JSLM
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_MPI
+      INTEGER                 :: ICSIZ, IERR_MPI, IT,            &
+                                 STATUS(MPI_STATUS_SIZE,1), JSLM
+#endif // W3_MPI
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER, POINTER        :: ICP(:,:)
       REAL                    :: X, Y, DEPTH, UABS, UDIR, CABS, CDIR
       REAL, POINTER           :: DTP(:,:)
@@ -424,12 +454,18 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
 !
-!/S      CALL STRACE (IENT, 'W3IOSF')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3IOSF')
+#endif // W3_S
 !
       IPASS  = IPASS + 1
-!/MPI      ICSIZ  = 2 * ( NSEALM + 1 )
+#ifdef W3_MPI
+      ICSIZ  = 2 * ( NSEALM + 1 )
+#endif // W3_MPI
 !
-!/T      WRITE (NDST,9000) IPASS, FLFORM, NDSPT, IMOD, IAPROC, NAPPRT
+#ifdef W3_T
+      WRITE (NDST,9000) IPASS, FLFORM, NDSPT, IMOD, IAPROC, NAPPRT
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Set up file ( IPASS = 1 and proper processor )
@@ -441,7 +477,9 @@
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
 !
-!/T          WRITE (NDST,9010) FNMPRE(:J)//'partition.'//FILEXT(:I)
+#ifdef W3_T
+          WRITE (NDST,9010) FNMPRE(:J)//'partition.'//FILEXT(:I)
+#endif // W3_T
 !
           IF ( FLFORM ) THEN
               OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
@@ -491,19 +529,27 @@
 !
       IF ( IAPROC.NE.NAPPRT .AND. IAPROC.LE.NAPROC ) THEN
 !
-!/T          WRITE (NDST,9020)  IAPROC, NAPPRT, NSEALM+1
+#ifdef W3_T
+          WRITE (NDST,9020)  IAPROC, NAPPRT, NSEALM+1
+#endif // W3_T
 !
-!/MPI          IT     = IT0PRT + IAPROC - 1
-!/MPI          CALL MPI_SEND ( ICPRT, ICSIZ, MPI_REAL, NAPPRT-1, IT,  &
-!/MPI                          MPI_COMM_WAVE, IERR_MPI )
-!/MPI          DTSIZ  = ICPRT(NSEAL+1,2) - 1
+#ifdef W3_MPI
+          IT     = IT0PRT + IAPROC - 1
+          CALL MPI_SEND ( ICPRT, ICSIZ, MPI_REAL, NAPPRT-1, IT,  &
+                          MPI_COMM_WAVE, IERR_MPI )
+          DTSIZ  = ICPRT(NSEAL+1,2) - 1
+#endif // W3_MPI
 !
-!/T             WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
+#ifdef W3_T
+             WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
+#endif // W3_T
 !
-!/MPI          IT     = IT0PRT + NAPROC + IAPROC - 1
-!/MPI          IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
-!/MPI                        ( DTPRT, 6*DTSIZ, MPI_REAL, NAPPRT-1,    &
-!/MPI                          IT, MPI_COMM_WAVE, IERR_MPI )
+#ifdef W3_MPI
+          IT     = IT0PRT + NAPROC + IAPROC - 1
+          IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
+                        ( DTPRT, 6*DTSIZ, MPI_REAL, NAPPRT-1,    &
+                          IT, MPI_COMM_WAVE, IERR_MPI )
+#endif // W3_MPI
 !
         END IF
 !
@@ -527,24 +573,32 @@
       DO JAPROC=1, NAPROC
         IF ( IAPROC .EQ. JAPROC ) CYCLE
 !
-!/T            WRITE (NDST,9030)  JAPROC, NSEALM+1
+#ifdef W3_T
+            WRITE (NDST,9030)  JAPROC, NSEALM+1
+#endif // W3_T
 !
-!/MPI            ALLOCATE ( PROC(JAPROC)%ICPRT(NSEALM+1,2) )
-!/MPI            ICP   => PROC(JAPROC)%ICPRT
-!/MPI            IT     = IT0PRT + JAPROC - 1
-!/MPI            CALL MPI_RECV ( ICP, ICSIZ, MPI_REAL, JAPROC-1, IT,  &
-!/MPI                            MPI_COMM_WAVE, STATUS, IERR_MPI )
-!/MPI            JSLM   = 1 + (NSEA-JAPROC)/NAPROC
-!/MPI            DTSIZ  = ICP(JSLM+1,2) - 1
+#ifdef W3_MPI
+            ALLOCATE ( PROC(JAPROC)%ICPRT(NSEALM+1,2) )
+            ICP   => PROC(JAPROC)%ICPRT
+            IT     = IT0PRT + JAPROC - 1
+            CALL MPI_RECV ( ICP, ICSIZ, MPI_REAL, JAPROC-1, IT,  &
+                            MPI_COMM_WAVE, STATUS, IERR_MPI )
+            JSLM   = 1 + (NSEA-JAPROC)/NAPROC
+            DTSIZ  = ICP(JSLM+1,2) - 1
+#endif // W3_MPI
 !
-!/T               WRITE (NDST,9031)  JAPROC, DTSIZ
+#ifdef W3_T
+               WRITE (NDST,9031)  JAPROC, DTSIZ
+#endif // W3_T
 !
-!/MPI            ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
-!/MPI            DTP   => PROC(JAPROC)%DTPRT
-!/MPI            IT     = IT0PRT + NAPROC + JAPROC - 1
-!/MPI            IF ( DTSIZ .GT. 0 ) CALL MPI_RECV                    &
-!/MPI                          ( DTP, DIMP*DTSIZ, MPI_REAL, JAPROC-1, &
-!/MPI                            IT, MPI_COMM_WAVE, STATUS, IERR_MPI )
+#ifdef W3_MPI
+            ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
+            DTP   => PROC(JAPROC)%DTPRT
+            IT     = IT0PRT + NAPROC + JAPROC - 1
+            IF ( DTSIZ .GT. 0 ) CALL MPI_RECV                    &
+                          ( DTP, DIMP*DTSIZ, MPI_REAL, JAPROC-1, &
+                            IT, MPI_COMM_WAVE, STATUS, IERR_MPI )
+#endif // W3_MPI
 !
         END DO
 !
@@ -623,10 +677,12 @@
 ! -------------------------------------------------------------------- /
 ! 5.  Clean up data structure
 !
-!/MPI      DO JAPROC=1, NAPROC
-!/MPI        IF ( IAPROC .EQ. JAPROC ) CYCLE
-!/MPI        DEALLOCATE ( PROC(JAPROC)%ICPRT, PROC(JAPROC)%DTPRT )
-!/MPI        END DO
+#ifdef W3_MPI
+      DO JAPROC=1, NAPROC
+        IF ( IAPROC .EQ. JAPROC ) CYCLE
+        DEALLOCATE ( PROC(JAPROC)%ICPRT, PROC(JAPROC)%DTPRT )
+        END DO
+#endif // W3_MPI
 !
       DEALLOCATE ( PROC )
 !
@@ -653,18 +709,26 @@
                '     ERROR IN OPENING FILE'/                          &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST W3IOSF : IPASS =',I4,',  FLFROM = ',L1,        &
-!/T              ',  NDSPT =',I3,',  IMOD =',I3,','/                   &
-!/T              '               IAPROC, NAPPRT =',2I4)
-!/T 9010 FORMAT (' TEST W3IOSF : OPENING NEW FILE [',A,']')
-!/T 9020 FORMAT (' TEST W3IOSF : SENDING ICPRT FROM',I3,' TO',I3,     &
-!/T              ' WITH SIZE :',I6)
-!/MPIT 9021 FORMAT (' TEST W3IOSF : SENDING DTPRT FROM',I3,' TO',I3,     &
-!/MPIT              ' WITH SIZE :',I6)
-!/T 9030 FORMAT (' TEST W3IOSF : RECEIVING ICPRT FROM',I3,            &
-!/T              ' WITH SIZE :',I6)
-!/MPIT 9031 FORMAT (' TEST W3IOSF : RECEIVING DTPRT FROM',I3,            &
-!/MPIT              ' WITH SIZE :',I6)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3IOSF : IPASS =',I4,',  FLFROM = ',L1,        &
+              ',  NDSPT =',I3,',  IMOD =',I3,','/                   &
+              '               IAPROC, NAPPRT =',2I4)
+ 9010 FORMAT (' TEST W3IOSF : OPENING NEW FILE [',A,']')
+ 9020 FORMAT (' TEST W3IOSF : SENDING ICPRT FROM',I3,' TO',I3,     &
+              ' WITH SIZE :',I6)
+#endif // W3_T
+#ifdef W3_MPIT
+ 9021 FORMAT (' TEST W3IOSF : SENDING DTPRT FROM',I3,' TO',I3,     &
+              ' WITH SIZE :',I6)
+#endif // W3_MPIT
+#ifdef W3_T
+ 9030 FORMAT (' TEST W3IOSF : RECEIVING ICPRT FROM',I3,            &
+              ' WITH SIZE :',I6)
+#endif // W3_T
+#ifdef W3_MPIT
+ 9031 FORMAT (' TEST W3IOSF : RECEIVING DTPRT FROM',I3,            &
+              ' WITH SIZE :',I6)
+#endif // W3_MPIT
 !/
 !/ End of W3IOSF ----------------------------------------------------- /
 !/

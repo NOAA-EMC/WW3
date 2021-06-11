@@ -301,9 +301,13 @@
 !!    ==================================================================
 !!
 !!
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-!/MPI      USE WMMDATMD, ONLY: NMPSCR, IMPROC
+#ifdef W3_MPI
+      USE WMMDATMD, ONLY: NMPSCR, IMPROC
+#endif // W3_MPI
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -313,7 +317,9 @@
 !!
 !!    Local variables & Parameters
 !!    ----------------------------
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !!
       integer              :: irng               !* dummy integer
       integer              :: nd                 !* dummy integer
@@ -338,7 +344,9 @@
 !!==============================================================================
 !!
 !!
-!/S      CALL STRACE (IENT, 'W3SNL4')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SNL4')
+#endif // W3_S
 !!
 !!    ==================================================================
 !!
@@ -378,9 +386,13 @@
 !!
 !!-3    File exists open it and read it
 !!
-!/MPI        if ( improc .eq. nmpscr ) then
+#ifdef W3_MPI
+        if ( improc .eq. nmpscr ) then
+#endif // W3_MPI
         write ( ndso, 900 ) grdfname
-!/MPI        end if
+#ifdef W3_MPI
+        end if
+#endif // W3_MPI
 !!
         open (UNIT=io_unit, FILE=grdfname, STATUS='old',              &
               ACCESS='sequential', ACTION='read', FORM='unformatted')
@@ -396,9 +408,13 @@
 !!
 !!-4    File does not exist, create it here
 !!
-!/MPI        if ( improc .eq. nmpscr ) then
+#ifdef W3_MPI
+        if ( improc .eq. nmpscr ) then
+#endif // W3_MPI
         write ( ndso, 901 ) grdfname
-!/MPI        end if
+#ifdef W3_MPI
+        end if
+#endif // W3_MPI
 !!      ----------------------------------------------------------------
 !!
 !!-4a   Define Look-up tables depth array 'dep_tbl(ndep)' for ndep=37
@@ -499,7 +515,9 @@
 !!
 !!-5    Ounce the Look-up tables arrays are full write it out to 'io_unit'
 !!
-!/MPI        if ( improc .eq. nmpscr ) then
+#ifdef W3_MPI
+        if ( improc .eq. nmpscr ) then
+#endif // W3_MPI
         write( ndso,902 )
         open (UNIT=io_unit, FILE=grdfname, STATUS='new',              &
              ACCESS='sequential', ACTION='write', FORM='unformatted')
@@ -509,7 +527,9 @@
                         pha_tbl,   dep_tbl
         close (io_unit)
         write( ndso,903 ) grdfname
-!/MPI        end if
+#ifdef W3_MPI
+        end if
+#endif // W3_MPI
 !!      ----------------------------------------------------------------
 !!      ================================================================
 !!
@@ -711,7 +731,9 @@
 !!
       USE W3SERVMD, ONLY: EXTCDE
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !!    ==================================================================
 !!
       IMPLICIT NONE
@@ -727,7 +749,9 @@
 !!
 !!    Local Parameters & variables
 !!    -----------------------------
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       integer              :: irng, iang
       integer              :: nd3         !* bin # corresp. to ww3 dep  
       real                 :: dep         !* depth (m), get it from WW3 DEPTH
@@ -765,7 +789,9 @@
 !!==============================================================================
 !!
 !!
-!/S      CALL STRACE (IENT, 'W3SNL4')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SNL4')
+#endif // W3_S
 !!
 !!ini
 !!    Initialization of the output arrays

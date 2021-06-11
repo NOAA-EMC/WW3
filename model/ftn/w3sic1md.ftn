@@ -206,10 +206,18 @@
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
       USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, INFLAGS2
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !
       IMPLICIT NONE
 !/
@@ -222,9 +230,13 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER                 :: ITH
-!/T0      REAL                    :: DOUT(NK,NTH)
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T0
+      INTEGER                 :: ITH
+      REAL                    :: DOUT(NK,NTH)
+#endif // W3_T0
       INTEGER                 :: IKTH, IK
       REAL                    :: D1D(NK) !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
@@ -233,7 +245,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIC1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIC1')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -267,7 +281,9 @@
 !
 !         (none)
 !
-!/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+#ifdef W3_T38
+        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+#endif // W3_T38
 !
 ! 2.b Make calculations ---------------------------------------------- /
          WN_I = ICECOEF1 ! uniform in k
@@ -290,23 +306,31 @@
 !
 ! ... Test output of arrays
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
-!/T0                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
+                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#endif // W3_T1
 !
 ! Formats
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC1 : '/               &
                '     ',A,' REQUIRED BUT NOT SELECTED'/)
 !
-!/T 9000 FORMAT (' TEST W3SIC1 : DEPTH,ICECOEF1  : ',2E10.3)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SIC1 : DEPTH,ICECOEF1  : ',2E10.3)
+#endif // W3_T
 !/
 !/ End of W3SIC1 ----------------------------------------------------- /
 !/

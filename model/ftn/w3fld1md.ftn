@@ -75,14 +75,18 @@
       PUBLIC
       ! Tail_Choice: Chose the method to determine the level of the tail
       INTEGER, SAVE :: Tail_Choice
-!/OMPG/!$omp threadprivate(Tail_Choice)
+#ifdef W3_OMPG
+!$omp threadprivate(Tail_Choice)
+#endif // W3_OMPG
       REAL, SAVE    :: Tail_Level !if Tail_Choice=0, tail is constant
       REAL, SAVE    :: Tail_transition_ratio1! freq/fpi where tail 
                                              !  adjustment begins
       REAL, SAVE    :: Tail_transition_ratio2! freq/fpi where tail 
                                              !  adjustment ends
-!/OMPG/!$omp threadprivate(Tail_Level)
-!/OMPG/!$omp threadprivate(Tail_transition_ratio1,Tail_transition_ratio2)
+#ifdef W3_OMPG
+!$omp threadprivate(Tail_Level)
+!$omp threadprivate(Tail_transition_ratio1,Tail_transition_ratio2)
+#endif // W3_OMPG
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -172,7 +176,9 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -231,15 +237,21 @@
                                            TLTED, ZOFK, UPROF, VPROF, &
                                            FTILDE, UP1, VP1, UP, VP, &
                                            TLTNA, TLTEA
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL                 :: FSFL1,FSFL2, CRIT1, CRIT2
       LOGICAL                 :: IT_FLAG1, IT_FLAG2
       LOGICAL, SAVE           :: FIRST = .TRUE.
-!/OMPG/!$omp threadprivate( FIRST)
+#ifdef W3_OMPG
+!$omp threadprivate( FIRST)
+#endif // W3_OMPG
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3FLD1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3FLD1')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -824,7 +836,9 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3GDATMD, ONLY: TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -835,11 +849,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INFLD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'INFLD')
+#endif // W3_S
 !
 ! 1.  .... ----------------------------------------------------------- *
 !
@@ -918,7 +936,9 @@
       USE W3GDATMD, ONLY: NTH, TH, DTH
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -932,7 +952,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                :: BT(NKT), IC, ANGLE2, ANG(NKT),&
                              NORMSPC(NTH), AVG, ANGDIF, M, MAXANG, &
                              MAXAN, MINAN
@@ -941,7 +963,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'APPENDTAIL')
+#ifdef W3_S
+      CALL STRACE (IENT, 'APPENDTAIL')
+#endif // W3_S
 !
 ! 1.  .... ----------------------------------------------------------- *
 !
@@ -1278,7 +1302,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
       REAL, INTENT(IN) :: W10M
@@ -1304,8 +1330,10 @@
       !Variables from znot_wind10m
       REAL            :: Z10, U10,AAA,TMP
 
-!/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'WND2Z0M')
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+      CALL STRACE (IENT, 'WND2Z0M')
+#endif // W3_S
 
       !Values as set in znot_wind10m
       Z10=10.0
@@ -1396,15 +1424,21 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
         IMPLICIT NONE
 !/
         REAL, INTENT(IN) :: WND10
         REAL, INTENT(OUT) :: SAT
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !
-!/S      CALL STRACE (IENT, 'WND2SAT')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WND2SAT')
+#endif // W3_S
 !/ Old HWRF 2015 and ST2 
 !        SAT =0.000000000001237 * WND10**6 +&
 !             -0.000000000364155 * WND10**5 +&

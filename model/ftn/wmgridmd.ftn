@@ -202,7 +202,9 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3GDATMD
       USE W3ODATMD
@@ -212,7 +214,9 @@
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -224,10 +228,16 @@
 !/
       INTEGER                 :: I, IBI, IX, IY, JS, J,       &
                                  JTOT, I1, J1, I2, J2
-!/MPI      INTEGER                 :: NXYG, IERR_MPI
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_MPI
+      INTEGER                 :: NXYG, IERR_MPI
+#endif // W3_MPI
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       INTEGER, ALLOCATABLE    :: TSTORE(:,:)
-!/MPI      LOGICAL                 :: FLBARR
+#ifdef W3_MPI
+      LOGICAL                 :: FLBARR
+#endif // W3_MPI
       REAL                    :: XA, YA
       REAL                    :: FACTOR
       LOGICAL                 :: GRIDD(NRGRD,NRGRD) ! indicates grid-to-grid
@@ -249,14 +259,20 @@
       REAL :: DIST_MIN, DIST_MAX, EDIST
       LOGICAL RESOL_CHECK
 !
-!/T9      CHARACTER(LEN=1), ALLOCATABLE :: TMAP(:,:)
+#ifdef W3_T9
+      CHARACTER(LEN=1), ALLOCATABLE :: TMAP(:,:)
+#endif // W3_T9
 !/
-!/S      CALL STRACE (IENT, 'WMGLOW')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WMGLOW')
+#endif // W3_S
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Test grid, Initialize and synchronize grids as needed ( !/MPI )
 !
-!/MPI      FLBARR = .FALSE.
+#ifdef W3_MPI
+      FLBARR = .FALSE.
+#endif // W3_MPI
 !
       DO I=1, NRGRD
 !
@@ -268,34 +284,40 @@
         CALL W3SETO ( I, MDSE, MDST )
         CALL W3SETG ( I, MDSE, MDST )
 !
-!/MPI        FLBARR = FLBARR .OR. MDATAS(I)%FBCAST
-!/MPI        IF ( MDATAS(I)%FBCAST .AND.                              &
-!/MPI             MDATAS(I)%MPI_COMM_BCT.NE.MPI_COMM_NULL ) THEN
-!/MPI             NXYG   = GRIDS(I)%NX * GRIDS(I)%NY
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPSTA(1,1), NXYG,        &
-!/MPI                              MPI_INTEGER, 0,                    &
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPST2(1,1), NXYG,        &
-!/MPI                              MPI_INTEGER, 0,                    &
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPFS (1,1), NXYG,        &
-!/MPI                              MPI_INTEGER, 0,                    &
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             NXYG   = 3*GRIDS(I)%NSEA
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPSF (1,1), NXYG,        &
-!/MPI                              MPI_INTEGER, 0,                    &
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%CLATIS(1), NSEA, MPI_REAL, 0,&
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             CALL MPI_BCAST ( SGRDS(I)%SIG(0), NK+2, MPI_REAL, 0,&
-!/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI           END IF
+#ifdef W3_MPI
+        FLBARR = FLBARR .OR. MDATAS(I)%FBCAST
+        IF ( MDATAS(I)%FBCAST .AND.                              &
+             MDATAS(I)%MPI_COMM_BCT.NE.MPI_COMM_NULL ) THEN
+             NXYG   = GRIDS(I)%NX * GRIDS(I)%NY
+             CALL MPI_BCAST ( GRIDS(I)%MAPSTA(1,1), NXYG,        &
+                              MPI_INTEGER, 0,                    &
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+             CALL MPI_BCAST ( GRIDS(I)%MAPST2(1,1), NXYG,        &
+                              MPI_INTEGER, 0,                    &
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+             CALL MPI_BCAST ( GRIDS(I)%MAPFS (1,1), NXYG,        &
+                              MPI_INTEGER, 0,                    &
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+             NXYG   = 3*GRIDS(I)%NSEA
+             CALL MPI_BCAST ( GRIDS(I)%MAPSF (1,1), NXYG,        &
+                              MPI_INTEGER, 0,                    &
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+             CALL MPI_BCAST ( GRIDS(I)%CLATIS(1), NSEA, MPI_REAL, 0,&
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+             CALL MPI_BCAST ( SGRDS(I)%SIG(0), NK+2, MPI_REAL, 0,&
+                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
+           END IF
+#endif // W3_MPI
 !
         END DO
 !
-!/MPI      IF (FLBARR) CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
+#ifdef W3_MPI
+      IF (FLBARR) CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
+#endif // W3_MPI
 !
-!/T      WRITE (MDST,9010)
+#ifdef W3_T
+      WRITE (MDST,9010)
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Process grids
@@ -315,16 +337,22 @@
         END IF
       NBI2G  = 0 
 !
-!/T      WRITE (MDST,9020)
+#ifdef W3_T
+      WRITE (MDST,9020)
+#endif // W3_T
 !
       DO I=1, NRGRD
 !
-!/T        WRITE (MDST,9021) I, GRANK(I), OUTPTS(I)%OUT5%NBI
+#ifdef W3_T
+        WRITE (MDST,9021) I, GRANK(I), OUTPTS(I)%OUT5%NBI
+#endif // W3_T
 !
 ! 2.a Test for input boundary points
 !
         IF ( OUTPTS(I)%OUT5%NBI .EQ. 0 ) THEN
-!/T            WRITE (MDST,9022) 'NO INPUT BOUNDARY POINTS, SKIPPING'
+#ifdef W3_T
+            WRITE (MDST,9022) 'NO INPUT BOUNDARY POINTS, SKIPPING'
+#endif // W3_T
             CYCLE
           END IF
 !
@@ -332,14 +360,18 @@
 !
         IF ( GRANK(I) .EQ. 1 ) THEN
             RFILE(I) = .TRUE.
-!/T            WRITE (MDST,9022) 'RANK = 1, DATA FROM FILE'
+#ifdef W3_T
+            WRITE (MDST,9022) 'RANK = 1, DATA FROM FILE'
+#endif // W3_T
             CYCLE
           END IF
 !
 ! 2.c Search for input boundary points
 !
 
-!/T        WRITE (MDST,9022) 'SEARCHING FOR ACTIVE BOUNDARY POINTS'
+#ifdef W3_T
+        WRITE (MDST,9022) 'SEARCHING FOR ACTIVE BOUNDARY POINTS'
+#endif // W3_T
         IBI    = 0
 !
 ! ... Set up data structure for grid
@@ -431,13 +463,15 @@
 !
 !  ... if not in grid, warning message and cycle (search next grid)
         IF ( .NOT.INGRID ) THEN
-!/T        IF ( IAPROC .EQ. NAPERR ) THEN
-!/T           IF ( FLAGLL ) THEN
-!/T              WRITE (NDSE,2000) XA, YA
-!/T           ELSE
-!/T              WRITE (NDSE,2001) XA, YA
-!/T           END IF
-!/T        END IF
+#ifdef W3_T
+        IF ( IAPROC .EQ. NAPERR ) THEN
+           IF ( FLAGLL ) THEN
+              WRITE (NDSE,2000) XA, YA
+           ELSE
+              WRITE (NDSE,2001) XA, YA
+           END IF
+        END IF
+#endif // W3_T
            CYCLE
         END IF
 
@@ -596,60 +630,76 @@
 !
 ! 2.g Test output
 !
-!/T1        WRITE (MDST,9023)
-!/T1        DO J=1, NBI
-!/T1          WRITE (MDST,9024) J, ISBPI(J), FACTOR*XBPI(J),          &
-!/T1             FACTOR*YBPI(J), IPBPI(J,:), RDBPI(J,:), TSTORE(J,:)
-!/T1          END DO
+#ifdef W3_T1
+        WRITE (MDST,9023)
+        DO J=1, NBI
+          WRITE (MDST,9024) J, ISBPI(J), FACTOR*XBPI(J),          &
+             FACTOR*YBPI(J), IPBPI(J,:), RDBPI(J,:), TSTORE(J,:)
+          END DO
+#endif // W3_T1
 !
-!/T2        WRITE (MDST,9025)
-!/T2        DO J=1, NBI2
-!/T2          WRITE (MDST,9026) J, NBI2S(J,:)
-!/T2          END DO
+#ifdef W3_T2
+        WRITE (MDST,9025)
+        DO J=1, NBI2
+          WRITE (MDST,9026) J, NBI2S(J,:)
+          END DO
+#endif // W3_T2
 !
-!/T9        ALLOCATE ( TMAP(NX,NY), STAT=ISTAT )
-!/T9        CHECK_ALLOC_STATUS ( ISTAT )
+#ifdef W3_T9
+        ALLOCATE ( TMAP(NX,NY), STAT=ISTAT )
+        CHECK_ALLOC_STATUS ( ISTAT )
+#endif // W3_T9
 !
-!/T9        DO IX=1, NX
-!/T9          DO IY=1, NY
-!/T9            IF ( ABS(MAPSTA(IY,IX)) .EQ. 0 ) then
-!/T9                TMAP(IX,IY) = '/'
-!/T9              ELSE IF ( ABS(MAPSTA(IY,IX)) .EQ. 1 ) then
-!/T9                TMAP(IX,IY) = '-'
-!/T9              ELSE IF ( ABS(MAPSTA(IY,IX)) .EQ. 2 ) then
-!/T9                TMAP(IX,IY) = 'X'
-!/T9              END IF
-!/T9            END DO
-!/T9          END DO
+#ifdef W3_T9
+        DO IX=1, NX
+          DO IY=1, NY
+            IF ( ABS(MAPSTA(IY,IX)) .EQ. 0 ) then
+                TMAP(IX,IY) = '/'
+              ELSE IF ( ABS(MAPSTA(IY,IX)) .EQ. 1 ) then
+                TMAP(IX,IY) = '-'
+              ELSE IF ( ABS(MAPSTA(IY,IX)) .EQ. 2 ) then
+                TMAP(IX,IY) = 'X'
+              END IF
+            END DO
+          END DO
+#endif // W3_T9
 !
-!/T9        DO J=1, NBI
-!/T9          IX = MAPSF(ISBPI(J),1)
-!/T9          IY = MAPSF(ISBPI(J),2)
-!/T9          WRITE (TMAP(IX,IY),'(I1)') TSTORE(J,0)
-!/T9          END DO
+#ifdef W3_T9
+        DO J=1, NBI
+          IX = MAPSF(ISBPI(J),1)
+          IY = MAPSF(ISBPI(J),2)
+          WRITE (TMAP(IX,IY),'(I1)') TSTORE(J,0)
+          END DO
+#endif // W3_T9
 !
-!/T9        DO J=1, 1+(NX-1)/130
-!/T9          WRITE (MDST,9029) I, J
-!/T9          DO IY=NY, 1, -1
-!/T9            I1 = J*130-129
-!/T9            I2 = MIN ( NX , J*130 )
-!/T9            WRITE (MDST,'(1X,130A1)') TMAP(I1:I2,IY)
-!/T9            END DO
-!/T9          END DO
+#ifdef W3_T9
+        DO J=1, 1+(NX-1)/130
+          WRITE (MDST,9029) I, J
+          DO IY=NY, 1, -1
+            I1 = J*130-129
+            I2 = MIN ( NX , J*130 )
+            WRITE (MDST,'(1X,130A1)') TMAP(I1:I2,IY)
+            END DO
+          END DO
+#endif // W3_T9
 !
-!/T9        DEALLOCATE ( TMAP, STAT=ISTAT )
-!/T9        CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_T9
+        DEALLOCATE ( TMAP, STAT=ISTAT )
+        CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_T9
 !
         DEALLOCATE ( TSTORE, STAT=ISTAT )
         CHECK_DEALLOC_STATUS ( ISTAT )
 !
         END DO
 !
-!/T      WRITE (MDST,9027)
-!/T      DO I=1, NRGRD
-!/T        WRITE (MDST,9028) OUTPTS(I)%OUT5%NBI, OUTPTS(I)%OUT5%NBI2, &
-!/T                          RFILE(I), NBI2G(I,:)
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9027)
+      DO I=1, NRGRD
+        WRITE (MDST,9028) OUTPTS(I)%OUT5%NBI, OUTPTS(I)%OUT5%NBI2, &
+                          RFILE(I), NBI2G(I,:)
+        END DO
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Finalyze grid dependencies in GRDLOW
@@ -678,7 +728,9 @@
       CHECK_ALLOC_STATUS ( ISTAT )
       GRDLOW = 0
 !
-!/T      WRITE (MDST,9030) JTOT
+#ifdef W3_T
+      WRITE (MDST,9030) JTOT
+#endif // W3_T
 !
 ! 3.b Fill array
 !
@@ -818,7 +870,9 @@
            END IF
 
            RESOL_CHECK=.FALSE.
-!/T38      RESOL_CHECK=.TRUE.
+#ifdef W3_T38
+      RESOL_CHECK=.TRUE.
+#endif // W3_T38
            IF (RESOL_CHECK) THEN
               IF ( DX_MIN_GRIDJ .LT. 0.99*DX_MIN_GRIDI .OR.    &
                    DY_MIN_GRIDJ .LT. 0.99*DY_MIN_GRIDI .OR.    &
@@ -841,10 +895,12 @@
         GRDLOW(I,0) = JTOT
       END DO ! DO I=...
 !
-!/T      WRITE (MDST,9031)
-!/T      DO I=1, NRGRD
-!/T        WRITE (MDST,9032) I, GRDLOW(I,0:GRDLOW(I,0))
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9031)
+      DO I=1, NRGRD
+        WRITE (MDST,9032) I, GRDLOW(I,0:GRDLOW(I,0))
+        END DO
+#endif // W3_T
 !
       IF ( .NOT. FLAGOK ) CALL EXTCDE ( 1030 )
 !
@@ -869,7 +925,9 @@
       CHECK_ALLOC_STATUS ( ISTAT )
       GRDHGH = 0
 !
-!/T      WRITE (MDST,9040) JTOT
+#ifdef W3_T
+      WRITE (MDST,9040) JTOT
+#endif // W3_T
 !
 ! 4.b Fill array
 !
@@ -886,10 +944,12 @@
         GRDHGH(I,0) = JTOT ! save the count of higher ranked grids
         END DO
 !
-!/T      WRITE (MDST,9041)
-!/T      DO I=1, NRGRD
-!/T        WRITE (MDST,9042) I, GRDHGH(I,0:GRDHGH(I,0))
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9041)
+      DO I=1, NRGRD
+        WRITE (MDST,9042) I, GRDHGH(I,0:GRDHGH(I,0))
+        END DO
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 5.  Export file flags
@@ -924,26 +984,42 @@
                  '     NOT FOUND IN LOWER RANK GRID : ',2E10.3/  &
                  '     POINT SKIPPED '/)
 !
-!/T 9010 FORMAT ( ' TEST WMGLOW : ALL GRIDS INITIALIZED')
+#ifdef W3_T
+ 9010 FORMAT ( ' TEST WMGLOW : ALL GRIDS INITIALIZED')
+#endif // W3_T
 !
-!/T 9020 FORMAT ( ' TEST WMGLOW : STARTING LOOP OVER GRIDS')
-!/T 9021 FORMAT ( ' TEST WMGLOW : I, RANK, NBI :',2I4,I6)
-!/T 9022 FORMAT ( '               ',A)
-!/T1 9023 FORMAT (' TEST WMGLOW : POINT DATA ')
-!/T1 9024 FORMAT (I5,I8,2F6.1,4I5,4F5.2,I3,4I8)
-!/T2 9025 FORMAT (' TEST WMGLOW : NBI2S ')
-!/T2 9026 FORMAT ('           ',2I4,2X,I8)
-!/T 9027 FORMAT (' TEST WMGLOW : NBI, NBI2, RFILE, NBI2G ')
-!/T 9028 FORMAT ('               ',2I5,L2,' : ',20I5)
-!/T9 9029 FORMAT (' TEST WMGLOW : SOURCE MAP GRID',I3,'   PART',I3)
+#ifdef W3_T
+ 9020 FORMAT ( ' TEST WMGLOW : STARTING LOOP OVER GRIDS')
+ 9021 FORMAT ( ' TEST WMGLOW : I, RANK, NBI :',2I4,I6)
+ 9022 FORMAT ( '               ',A)
+#endif // W3_T
+#ifdef W3_T1
+ 9023 FORMAT (' TEST WMGLOW : POINT DATA ')
+ 9024 FORMAT (I5,I8,2F6.1,4I5,4F5.2,I3,4I8)
+#endif // W3_T1
+#ifdef W3_T2
+ 9025 FORMAT (' TEST WMGLOW : NBI2S ')
+ 9026 FORMAT ('           ',2I4,2X,I8)
+#endif // W3_T2
+#ifdef W3_T
+ 9027 FORMAT (' TEST WMGLOW : NBI, NBI2, RFILE, NBI2G ')
+ 9028 FORMAT ('               ',2I5,L2,' : ',20I5)
+#endif // W3_T
+#ifdef W3_T9
+ 9029 FORMAT (' TEST WMGLOW : SOURCE MAP GRID',I3,'   PART',I3)
+#endif // W3_T9
 !
-!/T 9030 FORMAT ( ' TEST WMGLOW : GRDLOW DIMENSIONED AT ',I2)
-!/T 9031 FORMAT ( ' TEST WMGLOW : GRDLOW :')
-!/T 9032 FORMAT ( '                 ',2i4,' : ',20I3)
+#ifdef W3_T
+ 9030 FORMAT ( ' TEST WMGLOW : GRDLOW DIMENSIONED AT ',I2)
+ 9031 FORMAT ( ' TEST WMGLOW : GRDLOW :')
+ 9032 FORMAT ( '                 ',2i4,' : ',20I3)
+#endif // W3_T
 !
-!/T 9040 FORMAT ( ' TEST WMGLOW : GRDHGH DIMENSIONED AT ',I2)
-!/T 9041 FORMAT ( ' TEST WMGLOW : GRDHGH :')
-!/T 9042 FORMAT ( '                 ',2i4,' : ',20I3)
+#ifdef W3_T
+ 9040 FORMAT ( ' TEST WMGLOW : GRDHGH DIMENSIONED AT ',I2)
+ 9041 FORMAT ( ' TEST WMGLOW : GRDHGH :')
+ 9042 FORMAT ( '                 ',2i4,' : ',20I3)
+#endif // W3_T
 !/
 !/ End of WMGLOW ----------------------------------------------------- /
 !/
@@ -1084,19 +1160,25 @@
       USE CONSTANTS
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GSRUMD, ONLY: W3DIST
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3GDATMD
       USE W3ODATMD
       USE WMMDATMD
       USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
 !      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC_GLOB
-!/SCRIP      USE WMSCRPMD
-!/SCRIP      USE SCRIP_INTERFACE
+#ifdef W3_SCRIP
+      USE WMSCRPMD
+      USE SCRIP_INTERFACE
+#endif // W3_SCRIP
 !/
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -1120,19 +1202,31 @@
                                  ISRC, JSRC, ISRCL, ISRCH, JSRCL, JSRCH, NIT, &
                                  NRTOT, NROK, JF, JR, NLMAX, ISPROC, ISPRO2,  &
                                  IREC, ISND, ITMP,ILOC
-!/SCRIP    INTEGER                 ::  NLMAX_SCRIP
+#ifdef W3_SCRIP
+    INTEGER                 ::  NLMAX_SCRIP
+#endif // W3_SCRIP
 
-!/DIST      INTEGER                 :: LTAG0
-!/MPI       INTEGER                 :: IERR_MPI
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_DIST
+      INTEGER                 :: LTAG0
+#endif // W3_DIST
+#ifdef W3_MPI
+       INTEGER                 :: IERR_MPI
+#endif // W3_MPI
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 
       INTEGER, ALLOCATABLE    :: IDSTL(:), IDSTH(:), JDSTL(:), JDSTH(:),      &
                                  MAPTST(:,:),                                 &
                                  I1(:,:), I2(:,:), I3(:), I4(:),              &
                                  INFLND(:,:)
       INTEGER, ALLOCATABLE    :: NX_BEG(:), NX_END(:)
-!/MPIBDI INTEGER, ALLOCATABLE    :: NX_SIZE(:), IRQ(:), MSTAT(:,:)
-!/MPI INTEGER                 :: IM, NX_REM, TAG, NRQ
+#ifdef W3_MPIBDI
+ INTEGER, ALLOCATABLE    :: NX_SIZE(:), IRQ(:), MSTAT(:,:)
+#endif // W3_MPIBDI
+#ifdef W3_MPI
+ INTEGER                 :: IM, NX_REM, TAG, NRQ
+#endif // W3_MPI
 
       INTEGER, ALLOCATABLE    :: TMPINT_OM(:,:),TMPINT(:,:)
       REAL, ALLOCATABLE       :: TMPRL_OM(:,:) ,TMPRL(:,:)
@@ -1140,7 +1234,9 @@
       INTEGER                 :: NR0   , NR1   , NR2   , NRL   , NLOC   
       INTEGER                 :: NR0_OM, NR1_OM, NR2_OM, NRL_OM, NLOC_OM
 
-!/DIST      INTEGER, ALLOCATABLE    :: LTAG(:)
+#ifdef W3_DIST
+      INTEGER, ALLOCATABLE    :: LTAG(:)
+#endif // W3_DIST
 
       REAL                    :: FACTOR, STX, STY, STXY, NEWVAL,      &
                                  XL, XH, YL, YH, XA, YA, DXC, JD,     &
@@ -1165,19 +1261,23 @@
       REAL                    :: DX_MAX_GDST,DY_MAX_GDST
       REAL                    :: DX_MIN_GSRC,DY_MIN_GSRC
 
-!/SCRIP      TYPE ALLWGT
-!/SCRIP        TYPE(WEIGHT_DATA), POINTER :: WGTDATA(:)
-!/SCRIP      END TYPE ALLWGT      
-!/SCRIP      TYPE(ALLWGT), ALLOCATABLE :: ALLWGTS(:)
-!/SCRIP      LOGICAL              :: L_MASTER = .TRUE.
-!/SCRIP      LOGICAL              :: L_READ   = .FALSE.
-!/SCRIP      LOGICAL              :: L_WRITE = .FALSE.
-!/SCRIPNC      INTEGER              :: IMPROC_ASSIGN
-!/SCRIPNC      CHARACTER(LEN=80)    :: interp_file1, interp_file_test
-!/SCRIPNC      CHARACTER(LEN=3)     :: cdst, csrc
-!/SCRIPNC      LOGICAL, ALLOCATABLE :: LGRDREAD(:,:)
-!/SCRIPNC      LOGICAL, ALLOCATABLE :: LGRDWRITE(:,:)
-!/SCRIPNC      INTEGER              :: NGRDRANK(2)
+#ifdef W3_SCRIP
+      TYPE ALLWGT
+        TYPE(WEIGHT_DATA), POINTER :: WGTDATA(:)
+      END TYPE ALLWGT      
+      TYPE(ALLWGT), ALLOCATABLE :: ALLWGTS(:)
+      LOGICAL              :: L_MASTER = .TRUE.
+      LOGICAL              :: L_READ   = .FALSE.
+      LOGICAL              :: L_WRITE = .FALSE.
+#endif // W3_SCRIP
+#ifdef W3_SCRIPNC
+      INTEGER              :: IMPROC_ASSIGN
+      CHARACTER(LEN=80)    :: interp_file1, interp_file_test
+      CHARACTER(LEN=3)     :: cdst, csrc
+      LOGICAL, ALLOCATABLE :: LGRDREAD(:,:)
+      LOGICAL, ALLOCATABLE :: LGRDWRITE(:,:)
+      INTEGER              :: NGRDRANK(2)
+#endif // W3_SCRIPNC
 
       LOGICAL                 :: LSCRIP=.FALSE.      ! true if SCRIP switch is set,
                                                      ! indicates that SCRIP code has
@@ -1213,24 +1313,36 @@
       INTEGER  :: ITRI, IM1, IM2, IT, JT, IsFirst
       REAL :: DIST_MIN, DIST_MAX, eDist
 
-!/T      CHARACTER(LEN=1), ALLOCATABLE :: MAPST(:,:)
+#ifdef W3_T
+      CHARACTER(LEN=1), ALLOCATABLE :: MAPST(:,:)
+#endif // W3_T
 !/
-!/T38      CHARACTER (LEN=10) :: CDATE_TIME(3)
-!/T38      INTEGER            :: DATE_TIME(8)
-!/T38      INTEGER            :: ELAPSED_TIME, BEG_TIME(10), END_TIME
-!/T38      INTEGER            :: NMYOUT=42
-!/T38      CHARACTER (LEN=14) :: CMYOUT="myout00000.lis"
-!/T38      CHARACTER (LEN=5)  :: CRANK
+#ifdef W3_T38
+      CHARACTER (LEN=10) :: CDATE_TIME(3)
+      INTEGER            :: DATE_TIME(8)
+      INTEGER            :: ELAPSED_TIME, BEG_TIME(10), END_TIME
+      INTEGER            :: NMYOUT=42
+      CHARACTER (LEN=14) :: CMYOUT="myout00000.lis"
+      CHARACTER (LEN=5)  :: CRANK
+#endif // W3_T38
 
-!/T38      WRITE(CRANK, "(I5.5)") IMPROC-1
-!/T38      CMYOUT(6:10) = CRANK(1:5)
-!/T38      OPEN (NMYOUT, FILE=CMYOUT, STATUS="REPLACE")
-!/S      CALL STRACE (IENT, 'WMGHGH')
+#ifdef W3_T38
+      WRITE(CRANK, "(I5.5)") IMPROC-1
+      CMYOUT(6:10) = CRANK(1:5)
+      OPEN (NMYOUT, FILE=CMYOUT, STATUS="REPLACE")
+#endif // W3_T38
+#ifdef W3_S
+      CALL STRACE (IENT, 'WMGHGH')
+#endif // W3_S
 !
-!/MPI    CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
-!/T38         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         BEG_TIME(1) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38         WRITE(NMYOUT,*) "WMGHGH: START: 0 MSEC"
+#ifdef W3_MPI
+    CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
+#endif // W3_MPI
+#ifdef W3_T38
+         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         BEG_TIME(1) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+         WRITE(NMYOUT,*) "WMGHGH: START: 0 MSEC"
+#endif // W3_T38
 
 
 ! -------------------------------------------------------------------- /
@@ -1241,29 +1353,39 @@
          CALL EXTCDE (1000)
       END IF
 
-!/MPIBDI     LMPIBDI=.TRUE.
-!/SCRIP      IF (IMPROC .EQ. 1) THEN
-!/SCRIP         L_MASTER = .TRUE.
-!/SCRIP         L_WRITE  = .TRUE.
-!/SCRIP      ELSE
-!/SCRIP         L_MASTER = .FALSE.
-!/SCRIP         L_WRITE  = .FALSE.
-!/SCRIP      ENDIF
-!/SCRIPNC      INQUIRE(FILE="SCRIP_STOP", EXIST=L_STOP)
-!/SCRIPNC      IMPROC_ASSIGN = 1
+#ifdef W3_MPIBDI
+     LMPIBDI=.TRUE.
+#endif // W3_MPIBDI
+#ifdef W3_SCRIP
+      IF (IMPROC .EQ. 1) THEN
+         L_MASTER = .TRUE.
+         L_WRITE  = .TRUE.
+      ELSE
+         L_MASTER = .FALSE.
+         L_WRITE  = .FALSE.
+      ENDIF
+#endif // W3_SCRIP
+#ifdef W3_SCRIPNC
+      INQUIRE(FILE="SCRIP_STOP", EXIST=L_STOP)
+      IMPROC_ASSIGN = 1
+#endif // W3_SCRIPNC
 !
 !KRL  Allocate helper arrays to enable bottleneck loop parallelization
       ALLOCATE ( NX_BEG(NMPROC), NX_END(NMPROC), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
-!/MPIBDI      ALLOCATE ( NX_SIZE(NMPROC), IRQ(2*NMPROC), &
-!/MPIBDI                 MSTAT(MPI_STATUS_SIZE,2*NMPROC), STAT=ISTAT )
-!/MPIBDI      CHECK_ALLOC_STATUS ( ISTAT )
+#ifdef W3_MPIBDI
+      ALLOCATE ( NX_SIZE(NMPROC), IRQ(2*NMPROC), &
+                 MSTAT(MPI_STATUS_SIZE,2*NMPROC), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+#endif // W3_MPIBDI
 !
 !!HT:
 !!HT: Set up and initialize storage data structures ....
 !!HT:
-!/T38      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38      BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+#ifdef W3_T38
+      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+#endif // W3_T38
       DO GDST=1, NRGRD
          DO GSRC=1, NRGRD
             IF ( HGSTGE(GDST,GSRC)%INIT ) THEN
@@ -1294,17 +1416,25 @@
       GDST=-999 ! unset grid
       GSRC=-999 ! unset grid
 
-!/T38      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38      ELAPSED_TIME = END_TIME - BEG_TIME(2)
-!/T38      WRITE(NMYOUT,*) "WMGHGH, LOOP 1 TOOK ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+      ELAPSED_TIME = END_TIME - BEG_TIME(2)
+      WRITE(NMYOUT,*) "WMGHGH, LOOP 1 TOOK ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
 ! -------------------------------------------------------------------- /
 ! 0.a Plan future behavior by setting logical variables.
 
-!/SCRIP LSCRIP=.TRUE. 
-!/SCRIPNC LSCRIPNC=.TRUE. 
-!/T38   T38=.TRUE.
+#ifdef W3_SCRIP
+ LSCRIP=.TRUE. 
+#endif // W3_SCRIP
+#ifdef W3_SCRIPNC
+ LSCRIPNC=.TRUE. 
+#endif // W3_SCRIPNC
+#ifdef W3_T38
+   T38=.TRUE.
+#endif // W3_T38
 
       DO GDST=1, NRGRD
          IF ( GRIDS(GDST)%GTYPE .NE. RLGTYPE ) THEN
@@ -1352,7 +1482,9 @@
 !!HT: could provide data to a low-res grid. The high-res grid with data
 !!HT: furthest away from its own open boundary will be used.
 
-!/SCRIPNC      IF (.NOT. L_STOP) THEN   ! Do not need MAPBDI if going to stop after generating mappings
+#ifdef W3_SCRIPNC
+      IF (.NOT. L_STOP) THEN   ! Do not need MAPBDI if going to stop after generating mappings
+#endif // W3_SCRIPNC
       IF ( .NOT. FLGBDI ) THEN
 !
          IF ( FLAGLL ) THEN
@@ -1362,17 +1494,23 @@
             FACTOR = 1.
          END IF
 !
-!/T          WRITE (MDST,9010)
+#ifdef W3_T
+          WRITE (MDST,9010)
+#endif // W3_T
 !
 ! 1.b Loop over grids
 !
-!/T38         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         BEG_TIME(3) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38         ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
-!/T38         WRITE(NMYOUT,*) "WMGHGH, BEGINNING BOTTLENECK LOOP AT ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         BEG_TIME(3) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+         ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
+         WRITE(NMYOUT,*) "WMGHGH, BEGINNING BOTTLENECK LOOP AT ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
          DO GDST=1, NRGRD
 
-!/T38       IF(IMPROC.EQ.NMPERR)WRITE(MDSE,*)'GDST = ',GDST,' OUT OF ',NRGRD
+#ifdef W3_T38
+       IF(IMPROC.EQ.NMPERR)WRITE(MDSE,*)'GDST = ',GDST,' OUT OF ',NRGRD
+#endif // W3_T38
 
             CALL W3SETO ( GDST, MDSE, MDST )
             CALL W3SETG ( GDST, MDSE, MDST )
@@ -1386,7 +1524,9 @@
 !            END IF
 
 !
-!/T            WRITE (MDST,9011) GDST, GRANK(GDST), NBI
+#ifdef W3_T
+            WRITE (MDST,9011) GDST, GRANK(GDST), NBI
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! Inconsistent RANK vs NBI (warning message)
@@ -1402,7 +1542,9 @@
 !
             IF ( (NBI.EQ.0) .OR. (GRANK(GDST).EQ.1) ) THEN
 ! (then do nothing except test output)
-!/T                WRITE (MDST,9012)
+#ifdef W3_T
+                WRITE (MDST,9012)
+#endif // W3_T
 
 ! -------------------------------------------------------------------- /
 ! 1.d NBI>0, Generate map with distances to boundary.
@@ -1425,24 +1567,26 @@
 !KRL           Set up ranges for X. If not MPIBDI, just 1 to NX
                NX_BEG(IMPROC) = 1
                NX_END(IMPROC) = NX
-!/MPIBDI               NX_BEG(1) = 1
-!/MPIBDI               IF ( NMPROC .EQ. 1 ) THEN
-!/MPIBDI                  NX_END(1) = NX
-!/MPIBDI                  NX_SIZE(1) = NX
-!/MPIBDI               ELSE
-!/MPIBDI                  NX_REM = MOD( NX, NMPROC )
-!/MPIBDI                  NX_SIZE(1) = NX / NMPROC
-!/MPIBDI                  IF (NX_REM .GT. 0) NX_SIZE(1) = NX_SIZE(1) + 1
-!/MPIBDI                  NX_END(1) = NX_BEG(1) + NX_SIZE(1) - 1
-!/MPIBDI                  DO IM = 2, NMPROC
-!/MPIBDI                     NX_BEG(IM) = NX_END(IM-1) + 1
-!/MPIBDI                     NX_SIZE(IM) = NX / NMPROC
-!/MPIBDI                     IF (IM .LE. NX_REM) NX_SIZE(IM) = NX_SIZE(IM) + 1
-!/MPIBDI                     NX_END(IM) = NX_BEG(IM) + NX_SIZE(IM) - 1
-!/MPIBDI                     NX_SIZE(IM-1) = NX_SIZE(IM-1) * NY
-!/MPIBDI                  END DO
-!/MPIBDI                  NX_SIZE(NMPROC) = NX_SIZE(NMPROC) * NY
-!/MPIBDI               END IF
+#ifdef W3_MPIBDI
+               NX_BEG(1) = 1
+               IF ( NMPROC .EQ. 1 ) THEN
+                  NX_END(1) = NX
+                  NX_SIZE(1) = NX
+               ELSE
+                  NX_REM = MOD( NX, NMPROC )
+                  NX_SIZE(1) = NX / NMPROC
+                  IF (NX_REM .GT. 0) NX_SIZE(1) = NX_SIZE(1) + 1
+                  NX_END(1) = NX_BEG(1) + NX_SIZE(1) - 1
+                  DO IM = 2, NMPROC
+                     NX_BEG(IM) = NX_END(IM-1) + 1
+                     NX_SIZE(IM) = NX / NMPROC
+                     IF (IM .LE. NX_REM) NX_SIZE(IM) = NX_SIZE(IM) + 1
+                     NX_END(IM) = NX_BEG(IM) + NX_SIZE(IM) - 1
+                     NX_SIZE(IM-1) = NX_SIZE(IM-1) * NY
+                  END DO
+                  NX_SIZE(NMPROC) = NX_SIZE(NMPROC) * NY
+               END IF
+#endif // W3_MPIBDI
 !KRL           Setup complete
 !
 ! -------------------------------------------------------------------- /
@@ -1489,7 +1633,9 @@
                   DO JBND=1,NY
                      IF ( ABS(MAPSTA(JBND,IBND)) .EQ. 2 ) THEN
                         ! (boundary point)
-!/OMPH/!$OMP PARALLEL DO PRIVATE(IDST,JDST,DD),SCHEDULE(DYNAMIC)
+#ifdef W3_OMPH
+!$OMP PARALLEL DO PRIVATE(IDST,JDST,DD),SCHEDULE(DYNAMIC)
+#endif // W3_OMPH
                         DO IDST=NX_BEG(IMPROC), NX_END(IMPROC)
                            DO JDST=1, NY
                               IF (ABS(MAPSTA(JDST,IDST)) .EQ. 1) THEN
@@ -1509,7 +1655,9 @@
                               ENDIF
                            END DO ! DO JDST
                         END DO ! DO IDST
-!/OMPH/!$OMP END PARALLEL DO
+#ifdef W3_OMPH
+!$OMP END PARALLEL DO
+#endif // W3_OMPH
                      ENDIF ! (if BND point)
 
                   END DO ! DO JBND
@@ -1520,28 +1668,30 @@
 
 ! -------------------------------------------------------------------- /
 
-!/MPIBDI !KRL          Exchange (Note: for efficiency, post receives first)
-!/MPIBDI !KRL          MPI_ALLGATHERV would do this, but freezes for PGI and open_mpi
-!/MPIBDI !KRL          This suggests they use blocking SEND/RECV, so this is faster anyway and less implementation-dependent
-!/MPIBDI               NRQ = 0
-!/MPIBDI               DO IM = 1, NMPROC
-!/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
-!/MPIBDI                     NRQ = NRQ + 1
-!/MPIBDI                     TAG = NMPROC * IM + IMPROC
-!/MPIBDI                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
-!/MPIBDI                                      IRQ(NRQ), IERR_MPI )
-!/MPIBDI                  END IF
-!/MPIBDI               END DO
-!/MPIBDI               DO IM = 1, NMPROC
-!/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
-!/MPIBDI                     NRQ = NRQ + 1
-!/MPIBDI                     TAG = NMPROC * IMPROC + IM
-!/MPIBDI                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
-!/MPIBDI                                     IRQ(NRQ), IERR_MPI )
-!/MPIBDI                  END IF
-!/MPIBDI               END DO
-!/MPIBDI               CALL MPI_WAITALL( NRQ, IRQ, MPI_STATUS_IGNORE, IERR_MPI )
-!/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
+#ifdef W3_MPIBDI
+ !KRL          Exchange (Note: for efficiency, post receives first)
+ !KRL          MPI_ALLGATHERV would do this, but freezes for PGI and open_mpi
+ !KRL          This suggests they use blocking SEND/RECV, so this is faster anyway and less implementation-dependent
+               NRQ = 0
+               DO IM = 1, NMPROC
+                  IF ( IM .NE. IMPROC ) THEN
+                     NRQ = NRQ + 1
+                     TAG = NMPROC * IM + IMPROC
+                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
+                                      IRQ(NRQ), IERR_MPI )
+                  END IF
+               END DO
+               DO IM = 1, NMPROC
+                  IF ( IM .NE. IMPROC ) THEN
+                     NRQ = NRQ + 1
+                     TAG = NMPROC * IMPROC + IM
+                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
+                                     IRQ(NRQ), IERR_MPI )
+                  END IF
+               END DO
+               CALL MPI_WAITALL( NRQ, IRQ, MPI_STATUS_IGNORE, IERR_MPI )
+               CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
+#endif // W3_MPIBDI
 
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A/)') &
                '  Finished generating map with distances to boundary.'
@@ -1577,16 +1727,20 @@
 !!HT: Note that SIG(1) and DTMAX are included here so that the map defines
 !!HT: how many time steps DTMAX it takes to reach this place.
 
-!/T                WRITE (MDST,9013)
-!/T                DO JDST=NY,1 , -1
-!/T                  WRITE (MDST,9014) NINT(MAPBDI(JDST,:)*SIG(1)/DTMAX)
-!/T                END DO
+#ifdef W3_T
+                WRITE (MDST,9013)
+                DO JDST=NY,1 , -1
+                  WRITE (MDST,9014) NINT(MAPBDI(JDST,:)*SIG(1)/DTMAX)
+                END DO
+#endif // W3_T
 !
             END IF
          END DO
          FLGBDI = .TRUE.
       END IF
-!/SCRIPNC      END IF
+#ifdef W3_SCRIPNC
+      END IF
+#endif // W3_SCRIPNC
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Data sources for reconcilliation
@@ -1600,52 +1754,66 @@
                  I3(NRGRD), I4(NRGRD), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 
-!/DIST      LTAG0  = 0
+#ifdef W3_DIST
+      LTAG0  = 0
+#endif // W3_DIST
 
-!/SCRIPNC !    If reading/writing SCRIP files, need to determine in advance which it is to avoid race condition:
-!/SCRIPNC !       Processor writing file before other processor can check for it
-!/SCRIPNC      NGRDRANK = SHAPE(GRDHGH)
-!/SCRIPNC      ALLOCATE( LGRDREAD(NGRDRANK(1)-1, NGRDRANK(2)), STAT=ISTAT )
-!/SCRIPNC      CHECK_ALLOC_STATUS ( ISTAT )
-!/SCRIPNC      ALLOCATE(LGRDWRITE(NGRDRANK(1)-1, NGRDRANK(2)), STAT=ISTAT )
-!/SCRIPNC      CHECK_ALLOC_STATUS ( ISTAT )
-!/SCRIPNC      DO GDST=1, NRGRD
-!/SCRIPNC         DO JJ = 1, GRDHGH(GDST,0) 
-!/SCRIPNC            IF ( GRDHGH(GDST,0) .EQ. 0 ) THEN
-!/SCRIPNC !             If no remap, then no file
-!/SCRIPNC               LGRDREAD(GDST,JJ)  = .FALSE.
-!/SCRIPNC               LGRDWRITE(GDST,JJ) = .FALSE.
-!/SCRIPNC            ELSE
-!/SCRIPNC               GSRC   = GRDHGH(GDST,JJ)
-!/SCRIPNC               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
-!/SCRIPNC               WRITE(CDST, "(I3.3)") GDST
-!/SCRIPNC               WRITE(CSRC, "(I3.3)") GSRC
-!/SCRIPNC               INTERP_FILE1(24:26) = CSRC
-!/SCRIPNC               INTERP_FILE1(28:30) = CDST
-!/SCRIPNC               INQUIRE(FILE=INTERP_FILE1, EXIST=L_READ)
-!/SCRIPNC !             At this point, file either exists already (L_READ = .TRUE.) or needs to be written
-!/SCRIPNC               LGRDREAD(GDST,JJ)  = L_READ
-!/SCRIPNC               LGRDWRITE(GDST,JJ) = .NOT. L_READ
-!/SCRIPNC            END IF
-!/SCRIPNC         END DO
-!/SCRIPNC      END DO
-!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
+#ifdef W3_SCRIPNC
+ !    If reading/writing SCRIP files, need to determine in advance which it is to avoid race condition:
+ !       Processor writing file before other processor can check for it
+      NGRDRANK = SHAPE(GRDHGH)
+      ALLOCATE( LGRDREAD(NGRDRANK(1)-1, NGRDRANK(2)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(LGRDWRITE(NGRDRANK(1)-1, NGRDRANK(2)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      DO GDST=1, NRGRD
+         DO JJ = 1, GRDHGH(GDST,0) 
+            IF ( GRDHGH(GDST,0) .EQ. 0 ) THEN
+ !             If no remap, then no file
+               LGRDREAD(GDST,JJ)  = .FALSE.
+               LGRDWRITE(GDST,JJ) = .FALSE.
+            ELSE
+               GSRC   = GRDHGH(GDST,JJ)
+               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
+               WRITE(CDST, "(I3.3)") GDST
+               WRITE(CSRC, "(I3.3)") GSRC
+               INTERP_FILE1(24:26) = CSRC
+               INTERP_FILE1(28:30) = CDST
+               INQUIRE(FILE=INTERP_FILE1, EXIST=L_READ)
+ !             At this point, file either exists already (L_READ = .TRUE.) or needs to be written
+               LGRDREAD(GDST,JJ)  = L_READ
+               LGRDWRITE(GDST,JJ) = .NOT. L_READ
+            END IF
+         END DO
+      END DO
+#endif // W3_SCRIPNC
+#ifdef W3_MPI
+              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
+#endif // W3_MPI
 
       LOWRANK_GRID : DO GDST=1, NRGRD
 
-!/T38         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38         ELAPSED_TIME = BEG_TIME(2) - BEG_TIME(1)
-!/T38         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " START: ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+         ELAPSED_TIME = BEG_TIME(2) - BEG_TIME(1)
+         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " START: ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
 ! Test output
-!/T        WRITE (MDST,9020) GDST, GRDHGH(GDST,0)
-!/SCRIP    IF ( IMPROC.EQ.NMPERR.AND.T38 )WRITE(MDST,*)'GDST = ',GDST,' OUT OF ',NRGRD
+#ifdef W3_T
+        WRITE (MDST,9020) GDST, GRDHGH(GDST,0)
+#endif // W3_T
+#ifdef W3_SCRIP
+    IF ( IMPROC.EQ.NMPERR.AND.T38 )WRITE(MDST,*)'GDST = ',GDST,' OUT OF ',NRGRD
+#endif // W3_SCRIP
 
 !
          IF ( GRDHGH(GDST,0) .EQ. 0 ) THEN ! no grids of higher rank than this
                                            ! one.
-!/T            WRITE (MDST,9021)
+#ifdef W3_T
+            WRITE (MDST,9021)
+#endif // W3_T
          ELSE ! processing required
 
 !
@@ -1708,21 +1876,29 @@
 !     ALLOCATE ( WGTDATA(grid2_size), STAT=ISTAT ) ! grid2=destination grid
 !     CHECK_ALLOC_STATUS ( ISTAT )
 
-!/SCRIP            NJDST=NY
-!/SCRIP            NIDST=NX
-!/SCRIP            ALLOCATE ( ALLWGTS(MAXVAL(GRDHGH)), STAT=ISTAT ) 
-!/SCRIP            CHECK_ALLOC_STATUS ( ISTAT )
+#ifdef W3_SCRIP
+            NJDST=NY
+            NIDST=NX
+            ALLOCATE ( ALLWGTS(MAXVAL(GRDHGH)), STAT=ISTAT ) 
+            CHECK_ALLOC_STATUS ( ISTAT )
+#endif // W3_SCRIP
 
 ! Next, we loop through the src grids for the dst grid that we are working on.
-!/SCRIP            DO JJ=1, GRDHGH(GDST,0) 
-!/T38                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38                      BEG_TIME(3) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
-!/T38                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ= ", JJ, " START: ", ELAPSED_TIME, " MSEC"
+#ifdef W3_SCRIP
+            DO JJ=1, GRDHGH(GDST,0) 
+#endif // W3_SCRIP
+#ifdef W3_T38
+                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+                      BEG_TIME(3) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
+                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ= ", JJ, " START: ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
-!/SCRIP               GSRC   = GRDHGH(GDST,JJ)
-!/SCRIP               NISRC=GRIDS(GSRC)%NX
-!/SCRIP               NJSRC=GRIDS(GSRC)%NY ! only needed for diagnostics
+#ifdef W3_SCRIP
+               GSRC   = GRDHGH(GDST,JJ)
+               NISRC=GRIDS(GSRC)%NX
+               NJSRC=GRIDS(GSRC)%NY ! only needed for diagnostics
+#endif // W3_SCRIP
 
 ! Next, we call SCRIP for this src grid.
 ! Conditions for calling SCRIP are:
@@ -1735,71 +1911,95 @@
 !    processors, since it is simply based on whether the file already
 !    exists.
 
-!/SCRIPNC               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
-!/SCRIPNC               WRITE(CDST, "(I3.3)") GDST
-!/SCRIPNC               WRITE(CSRC, "(I3.3)") GSRC
-!/SCRIPNC               INTERP_FILE1(24:26) = CSRC
-!/SCRIPNC               INTERP_FILE1(28:30) = CDST
-!/SCRIPNC               L_READ = LGRDREAD(GDST, JJ)
-!/T38                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38                      BEG_TIME(4) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
-!/T38                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER START: ", ELAPSED_TIME, " MSEC"
-!/SCRIPNC               IF (L_STOP) L_WRITE = (IMPROC .EQ. IMPROC_ASSIGN)
+#ifdef W3_SCRIPNC
+               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
+               WRITE(CDST, "(I3.3)") GDST
+               WRITE(CSRC, "(I3.3)") GSRC
+               INTERP_FILE1(24:26) = CSRC
+               INTERP_FILE1(28:30) = CDST
+               L_READ = LGRDREAD(GDST, JJ)
+#endif // W3_SCRIPNC
+#ifdef W3_T38
+                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+                      BEG_TIME(4) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
+                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER START: ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
+#ifdef W3_SCRIPNC
+               IF (L_STOP) L_WRITE = (IMPROC .EQ. IMPROC_ASSIGN)
+#endif // W3_SCRIPNC
 
-!/SCRIPNC    IF(L_STOP.AND.L_READ)THEN
-!/SCRIPNC    IF ( IMPROC.EQ.NMPERR ) &
-!/SCRIPNC    WRITE(MDSE,'(A)')'ERROR: You should either have SCRIP_STOP '// &
-!/SCRIPNC                    'or remapping (.nc) files. Not both. We will exit now.'
-!/SCRIPNC    CALL EXTCDE (505)
-!/SCRIPNC    ENDIF
+#ifdef W3_SCRIPNC
+    IF(L_STOP.AND.L_READ)THEN
+    IF ( IMPROC.EQ.NMPERR ) &
+    WRITE(MDSE,'(A)')'ERROR: You should either have SCRIP_STOP '// &
+                    'or remapping (.nc) files. Not both. We will exit now.'
+    CALL EXTCDE (505)
+    ENDIF
+#endif // W3_SCRIPNC
 
-!/SCRIP      CALLED_SCRIP=.FALSE. ! initialize
+#ifdef W3_SCRIP
+      CALLED_SCRIP=.FALSE. ! initialize
+#endif // W3_SCRIP
 
-!/SCRIPNC               IF ((.NOT. L_STOP) .OR. ((.NOT. L_READ) .AND. L_WRITE)) THEN 
-!/SCRIP                   IF (L_STOP) THEN ! we are sending different grids to different processors
-!/SCRIP                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
-!/SCRIP                          GSRC,GDST,' on processor ',IMPROC
-!/SCRIP                   ELSEIF(IMPROC.EQ.NMPERR)THEN
-!/SCRIP                     WRITE(MDSE,'(A,2(I5))')'Calling SCRIP interface for GSRC,GDST = ', &
-!/SCRIP                          GSRC,GDST
-!/SCRIP                   ENDIF
-!/SCRIP                   CALL scrip_wrapper (GSRC, GDST,         &
-!/SCRIP                     GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
-!/SCRIP                     GRIDS(GSRC)%GRIDSHIFT,L_WRITE,L_READ,T38)
-!/SCRIP                   CALLED_SCRIP=.TRUE.
-!/SCRIPNC               END IF
-!/SCRIP                 CALL FLUSH(MDSE)
-!/SCRIPNC               IF (L_STOP) THEN
-!/SCRIPNC                  IF (.NOT. L_READ) THEN
-!/SCRIPNC                     IMPROC_ASSIGN = IMPROC_ASSIGN + 1
-!/SCRIPNC                     IF (IMPROC_ASSIGN .GT. NMPROC) IMPROC_ASSIGN = 1
-!/SCRIPNC                     IF(CALLED_SCRIP)THEN ! we called scrip_wrapper, so we need  
-!/SCRIPNC                                          ! to deallocate before leaving               
-!/SCRIPNC                       DST_GRID_SIZE=NIDST*NJDST
-!/SCRIPNC                       DO KDST=1,DST_GRID_SIZE
-!/SCRIPNC                         DEALLOCATE(WGTDATA(KDST)%W, STAT=ISTAT )
-!/SCRIPNC                         CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                         DEALLOCATE(WGTDATA(KDST)%K, STAT=ISTAT )
-!/SCRIPNC                         CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                       END DO
-!/SCRIPNC                       DEALLOCATE(WGTDATA, STAT=ISTAT )
-!/SCRIPNC                       CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                     END IF
-!/SCRIPNC                     CYCLE ! cycle out of this loop :  DO JJ=1, GRDHGH(GDST,0) 
-!/SCRIPNC                  END IF
-!/SCRIPNC               END IF
-!/T38                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38                      ELAPSED_TIME = END_TIME - BEG_TIME(4)
-!/T38                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
+#ifdef W3_SCRIPNC
+               IF ((.NOT. L_STOP) .OR. ((.NOT. L_READ) .AND. L_WRITE)) THEN 
+#endif // W3_SCRIPNC
+#ifdef W3_SCRIP
+                   IF (L_STOP) THEN ! we are sending different grids to different processors
+                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
+                          GSRC,GDST,' on processor ',IMPROC
+                   ELSEIF(IMPROC.EQ.NMPERR)THEN
+                     WRITE(MDSE,'(A,2(I5))')'Calling SCRIP interface for GSRC,GDST = ', &
+                          GSRC,GDST
+                   ENDIF
+                   CALL scrip_wrapper (GSRC, GDST,         &
+                     GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
+                     GRIDS(GSRC)%GRIDSHIFT,L_WRITE,L_READ,T38)
+                   CALLED_SCRIP=.TRUE.
+#endif // W3_SCRIP
+#ifdef W3_SCRIPNC
+               END IF
+#endif // W3_SCRIPNC
+#ifdef W3_SCRIP
+                 CALL FLUSH(MDSE)
+#endif // W3_SCRIP
+#ifdef W3_SCRIPNC
+               IF (L_STOP) THEN
+                  IF (.NOT. L_READ) THEN
+                     IMPROC_ASSIGN = IMPROC_ASSIGN + 1
+                     IF (IMPROC_ASSIGN .GT. NMPROC) IMPROC_ASSIGN = 1
+                     IF(CALLED_SCRIP)THEN ! we called scrip_wrapper, so we need  
+                                          ! to deallocate before leaving               
+                       DST_GRID_SIZE=NIDST*NJDST
+                       DO KDST=1,DST_GRID_SIZE
+                         DEALLOCATE(WGTDATA(KDST)%W, STAT=ISTAT )
+                         CHECK_DEALLOC_STATUS ( ISTAT )
+                         DEALLOCATE(WGTDATA(KDST)%K, STAT=ISTAT )
+                         CHECK_DEALLOC_STATUS ( ISTAT )
+                       END DO
+                       DEALLOCATE(WGTDATA, STAT=ISTAT )
+                       CHECK_DEALLOC_STATUS ( ISTAT )
+                     END IF
+                     CYCLE ! cycle out of this loop :  DO JJ=1, GRDHGH(GDST,0) 
+                  END IF
+               END IF
+#endif // W3_SCRIPNC
+#ifdef W3_T38
+                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+                      ELAPSED_TIME = END_TIME - BEG_TIME(4)
+                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
-!/SCRIP    IF(.NOT.CALLED_SCRIP)THEN ! we should not be here, since we need
-!/SCRIP                              ! WGTDATA(KDST)%N which is created by SCRIP
-!/SCRIP    IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,'(A)')'ERROR: we '// &
-!/SCRIP                    'should have cycled out by now. We will exit now.'
-!/SCRIP    CALL EXTCDE (506)
-!/SCRIP    ENDIF
+#ifdef W3_SCRIP
+    IF(.NOT.CALLED_SCRIP)THEN ! we should not be here, since we need
+                              ! WGTDATA(KDST)%N which is created by SCRIP
+    IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,'(A)')'ERROR: we '// &
+                    'should have cycled out by now. We will exit now.'
+    CALL EXTCDE (506)
+    ENDIF
+#endif // W3_SCRIP
 
 ! SCRIP has now created the data strucure "WGTDATA" and stored the weights 
 ! in it. However, this is only for the present src grid. We want to store the
@@ -1807,17 +2007,19 @@
 ! "ALLWGT" to store this data. First though, we need to ALLOCATE it:
 ! (note: "k" is equivalent to isea, but includes *all* points)
 
-!/SCRIP               DST_GRID_SIZE=NIDST*NJDST
-!/SCRIP               ALLOCATE(ALLWGTS(GSRC)%WGTDATA(DST_GRID_SIZE),STAT=ISTAT)
-!/SCRIP               CHECK_ALLOC_STATUS ( ISTAT )
-!/SCRIP               DO KDST=1,DST_GRID_SIZE
-!/SCRIP                  ALLOCATE(ALLWGTS(GSRC)%WGTDATA(KDST) &
-!/SCRIP                           %W(WGTDATA(KDST)%N),STAT=ISTAT)
-!/SCRIP                  CHECK_ALLOC_STATUS ( ISTAT )
-!/SCRIP                  ALLOCATE(ALLWGTS(GSRC)%WGTDATA(KDST) &
-!/SCRIP                           %K(WGTDATA(KDST)%N),STAT=ISTAT)
-!/SCRIP                  CHECK_ALLOC_STATUS ( ISTAT )
-!/SCRIP               END DO
+#ifdef W3_SCRIP
+               DST_GRID_SIZE=NIDST*NJDST
+               ALLOCATE(ALLWGTS(GSRC)%WGTDATA(DST_GRID_SIZE),STAT=ISTAT)
+               CHECK_ALLOC_STATUS ( ISTAT )
+               DO KDST=1,DST_GRID_SIZE
+                  ALLOCATE(ALLWGTS(GSRC)%WGTDATA(KDST) &
+                           %W(WGTDATA(KDST)%N),STAT=ISTAT)
+                  CHECK_ALLOC_STATUS ( ISTAT )
+                  ALLOCATE(ALLWGTS(GSRC)%WGTDATA(KDST) &
+                           %K(WGTDATA(KDST)%N),STAT=ISTAT)
+                  CHECK_ALLOC_STATUS ( ISTAT )
+               END DO
+#endif // W3_SCRIP
 
 ! Now that we have it allocated, we can just copy WGTDATA into ALLWGTS
 
@@ -1829,107 +2031,119 @@
 
 ! BEGIN long method for filling derived data type "ALLWGTS"
 
-!/SCRIP               DO KDST=1,DST_GRID_SIZE
-!/SCRIP                  ALLWGTS(GSRC)%WGTDATA(KDST)%N=WGTDATA(KDST)%N
-!/SCRIP                  ALLWGTS(GSRC)%WGTDATA(KDST)%NR0=WGTDATA(KDST)%NR0
-!/SCRIP                  ALLWGTS(GSRC)%WGTDATA(KDST)%NR2=WGTDATA(KDST)%NR2
-!/SCRIP                  ALLWGTS(GSRC)%WGTDATA(KDST)%NRL=WGTDATA(KDST)%NRL
-!/SCRIP                  DO IPNT=1,WGTDATA(KDST)%N
-!/SCRIP                     ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT) &
-!/SCRIP                      =WGTDATA(KDST)%W(IPNT)
-!/SCRIP                     ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT) &
-!/SCRIP                      =WGTDATA(KDST)%K(IPNT)
-!/SCRIP                  END DO
-!/SCRIP               END DO
+#ifdef W3_SCRIP
+               DO KDST=1,DST_GRID_SIZE
+                  ALLWGTS(GSRC)%WGTDATA(KDST)%N=WGTDATA(KDST)%N
+                  ALLWGTS(GSRC)%WGTDATA(KDST)%NR0=WGTDATA(KDST)%NR0
+                  ALLWGTS(GSRC)%WGTDATA(KDST)%NR2=WGTDATA(KDST)%NR2
+                  ALLWGTS(GSRC)%WGTDATA(KDST)%NRL=WGTDATA(KDST)%NRL
+                  DO IPNT=1,WGTDATA(KDST)%N
+                     ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT) &
+                      =WGTDATA(KDST)%W(IPNT)
+                     ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT) &
+                      =WGTDATA(KDST)%K(IPNT)
+                  END DO
+               END DO
+#endif // W3_SCRIP
 
 ! END long method for filling derived data type "ALLWGTS"
 
 ! We're done with WGTDATA, so we can DEALLOCATE it. This is important,
 ! since it will be allocated again the next time SCRIP is called.
 
-!/SCRIP               DO KDST=1,DST_GRID_SIZE
-!/SCRIP                  DEALLOCATE(WGTDATA(KDST)%W, STAT=ISTAT )
-!/SCRIP                  CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIP                  DEALLOCATE(WGTDATA(KDST)%K, STAT=ISTAT )
-!/SCRIP                  CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIP               END DO
-!/SCRIP               DEALLOCATE(WGTDATA, STAT=ISTAT )
-!/SCRIP               CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_SCRIP
+               DO KDST=1,DST_GRID_SIZE
+                  DEALLOCATE(WGTDATA(KDST)%W, STAT=ISTAT )
+                  CHECK_DEALLOC_STATUS ( ISTAT )
+                  DEALLOCATE(WGTDATA(KDST)%K, STAT=ISTAT )
+                  CHECK_DEALLOC_STATUS ( ISTAT )
+               END DO
+               DEALLOCATE(WGTDATA, STAT=ISTAT )
+               CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_SCRIP
 
 ! Here's a "test output" block of code to demonstrate how the weights can
 ! be called up from ALLWGTS...and to verify that the data is stored properly.
 ! (again note that "k" is equivalent to isea, but includes *all* points)
 
-!/SCRIP               IF(T38)THEN
-!/SCRIP                  WRITE(MDST,'(/2A)')'      XDST       YDST     ', & 
-!/SCRIP                  '     XSRC          YSRC          WXWY'
-!/SCRIP                  DO JDST=1,NJDST
-!/SCRIP                     DO IDST=1,NIDST
-!/SCRIP                        KDST=(JDST-1)*NIDST+IDST
-!/SCRIP                        XDST=GRIDS(GDST)%XGRD(JDST,IDST)
-!/SCRIP                        YDST=GRIDS(GDST)%YGRD(JDST,IDST)
-!/SCRIP                        DO IPNT=1,ALLWGTS(GSRC)%WGTDATA(KDST)%N
-!/SCRIP                           KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
-!/SCRIP                           JSRC=INT((KSRC-1)/NISRC)+1
-!/SCRIP                           ISRC=KSRC-(JSRC-1)*NISRC
-!/SCRIP                           XSRC=GRIDS(GSRC)%XGRD(JSRC,ISRC)
-!/SCRIP                           YSRC=GRIDS(GSRC)%YGRD(JSRC,ISRC)
-!/SCRIP                           WXWY=ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT)
-!/SCRIP                           WRITE(MDST,'(5(1X,F12.5))')XDST,YDST,XSRC, &
-!/SCRIP                           YSRC,WXWY
-!/SCRIP                        END DO
-!/SCRIP                     END DO
-!/SCRIP                  END DO !  DO JDST=1,NJDST
-!/SCRIP               ENDIF ! IF(T38)THEN
+#ifdef W3_SCRIP
+               IF(T38)THEN
+                  WRITE(MDST,'(/2A)')'      XDST       YDST     ', & 
+                  '     XSRC          YSRC          WXWY'
+                  DO JDST=1,NJDST
+                     DO IDST=1,NIDST
+                        KDST=(JDST-1)*NIDST+IDST
+                        XDST=GRIDS(GDST)%XGRD(JDST,IDST)
+                        YDST=GRIDS(GDST)%YGRD(JDST,IDST)
+                        DO IPNT=1,ALLWGTS(GSRC)%WGTDATA(KDST)%N
+                           KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
+                           JSRC=INT((KSRC-1)/NISRC)+1
+                           ISRC=KSRC-(JSRC-1)*NISRC
+                           XSRC=GRIDS(GSRC)%XGRD(JSRC,ISRC)
+                           YSRC=GRIDS(GSRC)%YGRD(JSRC,ISRC)
+                           WXWY=ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT)
+                           WRITE(MDST,'(5(1X,F12.5))')XDST,YDST,XSRC, &
+                           YSRC,WXWY
+                        END DO
+                     END DO
+                  END DO !  DO JDST=1,NJDST
+               ENDIF ! IF(T38)THEN
+#endif // W3_SCRIP
 
-!/T38                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38                      ELAPSED_TIME = END_TIME - BEG_TIME(3)
-!/T38                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+                      ELAPSED_TIME = END_TIME - BEG_TIME(3)
+                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
-!/SCRIP            END DO ! DO JJ=1, GRDHGH(GDST,0) 
-!/SCRIP            GSRC = -999 ! unset grid
+#ifdef W3_SCRIP
+            END DO ! DO JJ=1, GRDHGH(GDST,0) 
+            GSRC = -999 ! unset grid
+#endif // W3_SCRIP
 
 ! If SCRIPNC and L_STOP, then cycle LOWRANK_GRID loop and deallocate
 ! storage associated with dst grid.
 
-!/SCRIPNC            IF (L_STOP) THEN
-!/SCRIPNC                IF ( ALLOCATED(MAPTST) ) THEN
-!/SCRIPNC                    DEALLOCATE ( MAPTST, STAT=ISTAT )
-!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                  END IF
-!/SCRIPNC                IF ( ALLOCATED(INFLND) ) THEN
-!/SCRIPNC                    DEALLOCATE ( INFLND, STAT=ISTAT )
-!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                  END IF
-!/SCRIPNC                IF ( ALLOCATED(ALLWGTS) ) THEN
-!/SCRIPNC                    DO JJ=1, GRDHGH(GDST,0) 
-!/SCRIPNC                        GSRC = GRDHGH(GDST,JJ)
-!/SCRIPNC                        IF ( ASSOCIATED(ALLWGTS(GSRC)%WGTDATA) ) THEN
-!/SCRIPNC                            DO KDST=1, DST_GRID_SIZE
-!/SCRIPNC
-!/SCRIPNC  !#########################################################################################
-!/SCRIPNC  !menta: for some reason gfortran complains that these lines are too long. Unindenting them
-!/SCRIPNC                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%W) ) THEN
-!/SCRIPNC                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
-!/SCRIPNC                        CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                      END IF
-!/SCRIPNC                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%K) ) THEN
-!/SCRIPNC                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
-!/SCRIPNC                        CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                    END IF
-!/SCRIPNC  !#########################################################################################
-!/SCRIPNC                            END DO
-!/SCRIPNC                            DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
-!/SCRIPNC                            CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                            NULLIFY ( ALLWGTS(GSRC)%WGTDATA )
-!/SCRIPNC                          END IF
-!/SCRIPNC                      END DO
-!/SCRIPNC                    DEALLOCATE ( ALLWGTS, STAT=ISTAT )
-!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIPNC                  END IF
-!/SCRIPNC                CYCLE LOWRANK_GRID
-!/SCRIPNC              END IF
+#ifdef W3_SCRIPNC
+            IF (L_STOP) THEN
+                IF ( ALLOCATED(MAPTST) ) THEN
+                    DEALLOCATE ( MAPTST, STAT=ISTAT )
+                    CHECK_DEALLOC_STATUS ( ISTAT )
+                  END IF
+                IF ( ALLOCATED(INFLND) ) THEN
+                    DEALLOCATE ( INFLND, STAT=ISTAT )
+                    CHECK_DEALLOC_STATUS ( ISTAT )
+                  END IF
+                IF ( ALLOCATED(ALLWGTS) ) THEN
+                    DO JJ=1, GRDHGH(GDST,0) 
+                        GSRC = GRDHGH(GDST,JJ)
+                        IF ( ASSOCIATED(ALLWGTS(GSRC)%WGTDATA) ) THEN
+                            DO KDST=1, DST_GRID_SIZE
+
+  !#########################################################################################
+  !menta: for some reason gfortran complains that these lines are too long. Unindenting them
+                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%W) ) THEN
+                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
+                        CHECK_DEALLOC_STATUS ( ISTAT )
+                      END IF
+                    IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%K) ) THEN
+                        DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
+                        CHECK_DEALLOC_STATUS ( ISTAT )
+                    END IF
+  !#########################################################################################
+                            END DO
+                            DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
+                            CHECK_DEALLOC_STATUS ( ISTAT )
+                            NULLIFY ( ALLWGTS(GSRC)%WGTDATA )
+                          END IF
+                      END DO
+                    DEALLOCATE ( ALLWGTS, STAT=ISTAT )
+                    CHECK_DEALLOC_STATUS ( ISTAT )
+                  END IF
+                CYCLE LOWRANK_GRID
+              END IF
+#endif // W3_SCRIPNC
 
 !################################################################
 ! End new block of code: Calculate weights by calling SCRIP interface
@@ -2078,8 +2292,10 @@
                   JDSTL(JJ) = MAX (  1 , JDSTL(JJ) )
                   JDSTH(JJ) = MIN ( NY , JDSTH(JJ) )
 !
-!/T               WRITE (MDST,9022) GSRC, IDSTL(JJ),IDSTH(JJ), &
-!/T               JDSTL(JJ),JDSTH(JJ)
+#ifdef W3_T
+               WRITE (MDST,9022) GSRC, IDSTL(JJ),IDSTH(JJ), &
+               JDSTL(JJ),JDSTH(JJ)
+#endif // W3_T
 !
                END DO  ! end loop through higher ranked grids
                GSRC   = -999 ! unset grid
@@ -2106,7 +2322,9 @@
 !        Obviously, we cannot use this calculation for irregular grids.
 
             NLMAX  = 0
-!/SCRIP     NLMAX_SCRIP=0
+#ifdef W3_SCRIP
+     NLMAX_SCRIP=0
+#endif // W3_SCRIP
             DO JJ=1, GRDHGH(GDST,0)
                GSRC   = GRDHGH(GDST,JJ)
 
@@ -2205,19 +2423,23 @@
                        (2+INT(DX_MAX_GDST/DX_MIN_GSRC+0.001)) *  &
                        (2+INT(DY_MAX_GDST/DY_MIN_GSRC+0.001)) )
 
-!/T38          WRITE(MDST,*)'ratio 1 = ',(DX_MAX_GDST/DX_MIN_GSRC), &
-!/T38          DX_MAX_GDST,DX_MIN_GSRC
-!/T38          WRITE(MDST,*)'ratio 2 = ',(DY_MAX_GDST/DY_MIN_GSRC), & 
-!/T38          DY_MAX_GDST,DY_MIN_GSRC
-!/T38          WRITE(MDSE,*)'GSRC, NLMAX = ',GSRC,NLMAX
+#ifdef W3_T38
+          WRITE(MDST,*)'ratio 1 = ',(DX_MAX_GDST/DX_MIN_GSRC), &
+          DX_MAX_GDST,DX_MIN_GSRC
+          WRITE(MDST,*)'ratio 2 = ',(DY_MAX_GDST/DY_MIN_GSRC), & 
+          DY_MAX_GDST,DY_MIN_GSRC
+          WRITE(MDSE,*)'GSRC, NLMAX = ',GSRC,NLMAX
+#endif // W3_T38
 
-!/SCRIP        DO JDST=1, NY
-!/SCRIP          DO IDST=1, NX
-!/SCRIP             KDST=(JDST-1)*NIDST+IDST
-!/SCRIP             NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
-!/SCRIP             NLMAX_SCRIP=MAX(NLMAX_SCRIP,NLOC)
-!/SCRIP           END DO
-!/SCRIP        END DO
+#ifdef W3_SCRIP
+        DO JDST=1, NY
+          DO IDST=1, NX
+             KDST=(JDST-1)*NIDST+IDST
+             NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
+             NLMAX_SCRIP=MAX(NLMAX_SCRIP,NLOC)
+           END DO
+        END DO
+#endif // W3_SCRIP
 
             END DO !  DO JJ=1, GRDHGH(GDST,0)
             GSRC=-999 ! unset grid
@@ -2240,15 +2462,17 @@
 !               checked against each other
 !            * the SCRIP version of weights (TMPRL) will be the ones used.
 
-!/SCRIP     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
-!/SCRIP          WRITE(MDSE,*) 'NLMAX,NLMAX_SCRIP=',NLMAX,NLMAX_SCRIP
-!/SCRIP     IF(DO_CHECKING)THEN
-!/SCRIP          NLMAX = MAX (NLMAX, NLMAX_SCRIP)
-!/SCRIP       ELSE
-!/SCRIP          NLMAX = NLMAX_SCRIP
-!/SCRIP     ENDIF
-!/SCRIP     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
-!/SCRIP          WRITE(MDSE,*) 'NEW NLMAX:',NLMAX
+#ifdef W3_SCRIP
+     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
+          WRITE(MDSE,*) 'NLMAX,NLMAX_SCRIP=',NLMAX,NLMAX_SCRIP
+     IF(DO_CHECKING)THEN
+          NLMAX = MAX (NLMAX, NLMAX_SCRIP)
+       ELSE
+          NLMAX = NLMAX_SCRIP
+     ENDIF
+     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
+          WRITE(MDSE,*) 'NEW NLMAX:',NLMAX
+#endif // W3_SCRIP
 
             IF(NLMAX.GT.100)THEN
                WRITE(MDSE,'(/A,I8)') &
@@ -2269,11 +2493,13 @@
             ALLOCATE ( TMPLOG(NX*NY),                STAT=ISTAT )
             CHECK_ALLOC_STATUS ( ISTAT )
 !
-!/DIST            ALLOCATE ( LTAG(NLMAX), STAT=ISTAT )
-!/DIST            CHECK_ALLOC_STATUS ( ISTAT )
-!/DIST            DO JJ=1, NLMAX
-!/DIST              LTAG(JJ) = JJ + LTAG0
-!/DIST              END DO
+#ifdef W3_DIST
+            ALLOCATE ( LTAG(NLMAX), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
+            DO JJ=1, NLMAX
+              LTAG(JJ) = JJ + LTAG0
+              END DO
+#endif // W3_DIST
 !
 !!HT:
 !!HT: After the search range is set, we are actually searching in the
@@ -2422,39 +2648,55 @@
 
 ! Initialize
 
-!/SCRIP                     BDIST(JJ) = 9.99E33
+#ifdef W3_SCRIP
+                     BDIST(JJ) = 9.99E33
+#endif // W3_SCRIP
 
 ! Notes on variables used here:  
 ! IDST, JDST given by loop, NIDST set above, the rest we need to set here
 
-!/SCRIP                     NISRC=GRIDS(GSRC)%NX
-!/SCRIP                     KDST=(JDST-1)*NIDST+IDST
+#ifdef W3_SCRIP
+                     NISRC=GRIDS(GSRC)%NX
+                     KDST=(JDST-1)*NIDST+IDST
+#endif // W3_SCRIP
 
-!/SCRIP                     DO IPNT=1,ALLWGTS(GSRC)%WGTDATA(KDST)%N
-!/SCRIP                        KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
-!/SCRIP                        JSRC=INT((KSRC-1)/NISRC)+1
-!/SCRIP                        ISRC=KSRC-(JSRC-1)*NISRC
-!/SCRIP                        IF (ABS(GRIDS(GSRC)%MAPSTA(JSRC,ISRC)).EQ.1) THEN
+#ifdef W3_SCRIP
+                     DO IPNT=1,ALLWGTS(GSRC)%WGTDATA(KDST)%N
+                        KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
+                        JSRC=INT((KSRC-1)/NISRC)+1
+                        ISRC=KSRC-(JSRC-1)*NISRC
+                        IF (ABS(GRIDS(GSRC)%MAPSTA(JSRC,ISRC)).EQ.1) THEN
+#endif // W3_SCRIP
                                ! sea point
-!/SCRIP                           BDIST(JJ) = MIN ( BDIST(JJ) ,               &
-!/SCRIP                                MDATAS(GSRC)%MAPBDI(JSRC,ISRC) )
-!/SCRIP                        ELSE
-!/SCRIP                           IF ( IMPROC.EQ.NMPERR ) &
-!/SCRIP                                WRITE(MDSE,*) &
-!/SCRIP                               'we masked non-sea points. (coding error)'
-!/SCRIP                           CALL EXTCDE ( 999 )
-!/SCRIP                        END IF
-!/SCRIP                     END DO
+#ifdef W3_SCRIP
+                           BDIST(JJ) = MIN ( BDIST(JJ) ,               &
+                                MDATAS(GSRC)%MAPBDI(JSRC,ISRC) )
+                        ELSE
+                           IF ( IMPROC.EQ.NMPERR ) &
+                                WRITE(MDSE,*) &
+                               'we masked non-sea points. (coding error)'
+                           CALL EXTCDE ( 999 )
+                        END IF
+                     END DO
+#endif // W3_SCRIP
 
 ! Pull NR0, etc. from storage...
-!/SCRIP                     NR0 = ALLWGTS(GSRC)%WGTDATA(KDST)%NR0 
+#ifdef W3_SCRIP
+                     NR0 = ALLWGTS(GSRC)%WGTDATA(KDST)%NR0 
+#endif // W3_SCRIP
 !                             counter of MAPSTA=0 (indicates excluded point)
-!/SCRIP                     NRL = ALLWGTS(GSRC)%WGTDATA(KDST)%NRL
+#ifdef W3_SCRIP
+                     NRL = ALLWGTS(GSRC)%WGTDATA(KDST)%NRL
+#endif // W3_SCRIP
 !                             counter of MAPSTA=0 (indicates excluded point) 
 !                             and MAPST2=0 (indicates land)
-!/SCRIP                     NR1 = ALLWGTS(GSRC)%WGTDATA(KDST)%N
+#ifdef W3_SCRIP
+                     NR1 = ALLWGTS(GSRC)%WGTDATA(KDST)%N
+#endif // W3_SCRIP
 !                             counter of |MAPSTA|=1 (indicates sea point)
-!/SCRIP                     NR2 = ALLWGTS(GSRC)%WGTDATA(KDST)%NR2
+#ifdef W3_SCRIP
+                     NR2 = ALLWGTS(GSRC)%WGTDATA(KDST)%NR2
+#endif // W3_SCRIP
 !                             counter of |MAPSTA|=2 (indicates boundary point)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2464,7 +2706,9 @@
 ! Compare results
                      IF(DO_CHECKING)THEN
 ! then it is OK to compare with the values that we got using the old method
-!/T38                   WRITE(MDST,*)'STARTING TEST 1'
+#ifdef W3_T38
+                   WRITE(MDST,*)'STARTING TEST 1'
+#endif // W3_T38
                         IF(NR0_OM.NE.NR0)THEN
                            IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/1A,2(I8))') &
                                 ' *** ERROR WMGHGH: NR0_OM,NR0 = ',NR0_OM,NR0
@@ -2493,7 +2737,9 @@
                                 BDIST_OM(JJ),BDIST(JJ)
                            CALL EXTCDE ( 999 )
                         ENDIF
-!/T38                   WRITE(MDST,*)'PASSED TEST 1'
+#ifdef W3_T38
+                   WRITE(MDST,*)'PASSED TEST 1'
+#endif // W3_T38
                      END IF ! (if DO_CHECKING)
 
 ! Notes: We are done with the counting. If we didn't use SCRIP to get NR0,
@@ -2617,7 +2863,9 @@
                      END IF
                   END DO
                   GSRC=JF
-!/T38             WRITE(MDST,'(A,2(I8),A,I8)')'For grid point IDST,JDST = ',IDST,JDST,', we selected GSRC = ',GSRC
+#ifdef W3_T38
+             WRITE(MDST,'(A,2(I8),A,I8)')'For grid point IDST,JDST = ',IDST,JDST,', we selected GSRC = ',GSRC
+#endif // W3_T38
 
 !!HT: Data for grid point IDST,JDST in the low-res grid will be taken from
 !!HT: high-res grid GSRC.
@@ -2711,36 +2959,42 @@
 ! Notes: Weights have already been computed by SCRIP. 
 !        We just need to transfer them to TMPINT and TMPRL
 
-!/SCRIP                  KDST=(JDST-1)*NIDST+IDST
-!/SCRIP                  NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
-!/SCRIP                  TMPINT(NRTOT,0) = NLOC
-!/SCRIP                  NISRC=GRIDS(GSRC)%NX
+#ifdef W3_SCRIP
+                  KDST=(JDST-1)*NIDST+IDST
+                  NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
+                  TMPINT(NRTOT,0) = NLOC
+                  NISRC=GRIDS(GSRC)%NX
+#endif // W3_SCRIP
 
 ! Test output
-!/SCRIP                  IF ( IMPROC.EQ.NMPERR.AND.T38 ) THEN
-!/SCRIP                    WRITE(MDST,*)'GSRC,KDST,NLOC = ',GSRC,KDST,NLOC
-!/SCRIP                  ENDIF
+#ifdef W3_SCRIP
+                  IF ( IMPROC.EQ.NMPERR.AND.T38 ) THEN
+                    WRITE(MDST,*)'GSRC,KDST,NLOC = ',GSRC,KDST,NLOC
+                  ENDIF
+#endif // W3_SCRIP
 
 ! Notes: check here that we are sufficiently dimensioned.
 
-!/SCRIP                  IF ( NLOC .GT. NLMAX ) THEN
-!/SCRIP                     IF ( IMPROC.EQ.NMPERR ) THEN
-!/SCRIP                        WRITE (MDSE,'(/2A,4(1x,I8))') &
-!/SCRIP                        ' *** ERROR WMGHGH: ', & 
-!/SCRIP                        ' IDST,JDST,NLOC,NLMAX = ', &
-!/SCRIP                        IDST,JDST,NLOC,NLMAX
-!/SCRIP                        WRITE(MDSE,1021)
-!/SCRIP                     ENDIF
-!/SCRIP                     CALL EXTCDE(1021)
-!/SCRIP                  END IF
-!/SCRIP                  DO IPNT=1,NLOC
-!/SCRIP                     KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
-!/SCRIP                     JSRC=INT((KSRC-1)/NISRC)+1
-!/SCRIP                     ISRC=KSRC-(JSRC-1)*NISRC
-!/SCRIP                     TMPINT(NRTOT,IPNT) = GRIDS(GSRC)%MAPFS(JSRC,ISRC)
-!/SCRIP                     TMPRL(NRTOT,IPNT)= &
-!/SCRIP                     ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT) ! WX*WY / WTOT
-!/SCRIP                  END DO !  DO IPNT=1,NLOC
+#ifdef W3_SCRIP
+                  IF ( NLOC .GT. NLMAX ) THEN
+                     IF ( IMPROC.EQ.NMPERR ) THEN
+                        WRITE (MDSE,'(/2A,4(1x,I8))') &
+                        ' *** ERROR WMGHGH: ', & 
+                        ' IDST,JDST,NLOC,NLMAX = ', &
+                        IDST,JDST,NLOC,NLMAX
+                        WRITE(MDSE,1021)
+                     ENDIF
+                     CALL EXTCDE(1021)
+                  END IF
+                  DO IPNT=1,NLOC
+                     KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
+                     JSRC=INT((KSRC-1)/NISRC)+1
+                     ISRC=KSRC-(JSRC-1)*NISRC
+                     TMPINT(NRTOT,IPNT) = GRIDS(GSRC)%MAPFS(JSRC,ISRC)
+                     TMPRL(NRTOT,IPNT)= &
+                     ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT) ! WX*WY / WTOT
+                  END DO !  DO IPNT=1,NLOC
+#endif // W3_SCRIP
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !...End block of code for "computing" weights using new method
@@ -2752,7 +3006,9 @@
 
                   IF (DO_CHECKING)THEN
 ! compare with the values that we got using the old method
-!/T38                WRITE(MDST,*)'STARTING TEST 2'
+#ifdef W3_T38
+                WRITE(MDST,*)'STARTING TEST 2'
+#endif // W3_T38
                      if (NLOC.NE.NLOC_OM) THEN
                            IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/1A,2(I8))') &
                            ' *** ERROR WMGHGH: NLOC,NLOC_OM  = ',NLOC,NLOC_OM
@@ -2785,7 +3041,9 @@
                      IF(ISTOP.EQ.1)THEN
                        CALL EXTCDE ( 999 )
                      END IF
-!/T38                WRITE(MDST,*)'PASSED TEST 2'
+#ifdef W3_T38
+                WRITE(MDST,*)'PASSED TEST 2'
+#endif // W3_T38
 
                   END IF ! (if both grids are regular grids)
                   
@@ -2798,7 +3056,9 @@
                END DO LOWRANK_I !  DO IDST=1, NX
             END DO LOWRANK_J ! DO JDST=1, NY
 
-!/T38       WRITE(MDST,*)'WMGHGH Section 2.b.6 completed.'
+#ifdef W3_T38
+       WRITE(MDST,*)'WMGHGH Section 2.b.6 completed.'
+#endif // W3_T38
 
 ! Notes: We are done with the counting. If we didn't use SCRIP to get 
 !     TMPINT, TMPRL, then we need to set them using the _OM variables.
@@ -2808,7 +3068,9 @@
                TMPRL=TMPRL_OM
             END IF
 
-!/T         WRITE (MDST,9023) GDST, NRTOT
+#ifdef W3_T
+         WRITE (MDST,9023) GDST, NRTOT
+#endif // W3_T
 !
 ! 2.c Set up masks based on stencil width of scheme and inferred land
 ! 2.c.1 Inferred land
@@ -2858,10 +3120,18 @@
             STMASK(:,0) = STMASK(:,NX)
             STMASK(:,NX+1) = STMASK(:,1)
 
-!/PR0            NIT    = 0
-!/PR1            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/UQ            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/UNO            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#ifdef W3_PR0
+            NIT    = 0
+#endif // W3_PR0
+#ifdef W3_PR1
+            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
+#endif // W3_PR1
+#ifdef W3_UQ
+            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UQ
+#ifdef W3_UNO
+            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UNO
 
             IDSTLA=2
             IDSTHA=NX-1
@@ -2929,8 +3199,10 @@
 ! 2.d Set up mapping for staging data
 ! 2.d.1 Set counters / required array sizes
 !
-!/SHRD            ISPROC = 1
-!/SHRD            ISPRO2 = 1
+#ifdef W3_SHRD
+            ISPROC = 1
+            ISPRO2 = 1
+#endif // W3_SHRD
             I1     = 0
             I2     = 0
             I3     = 0
@@ -2942,7 +3214,9 @@
                HGSTGE(GDST,JJ)%NTOT = HGSTGE(GDST,JJ)%NTOT + 1
                ISEA   = TMPINT(ILOC,-2)
                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-!/DIST             ISPROC = ISPROC + CROOT - 1
+#ifdef W3_DIST
+             ISPROC = ISPROC + CROOT - 1
+#endif // W3_DIST
 !
                I1(JJ,ISPROC) = I1(JJ,ISPROC) + 1
                IF ( TMPLOG(ILOC) ) I2(JJ,ISPROC) = I2(JJ,ISPROC) + 1
@@ -2982,17 +3256,21 @@
                      HGSTGE(GDST,GSRC)%NSMX,                           &
                      HGSTGE(GDST,GSRC)%NREC), STAT=ISTAT               )
                    CHECK_ALLOC_STATUS ( ISTAT )
-!/T3                  HGSTGE(GDST,GSRC)%LJSEA  = -1
-!/T3                  HGSTGE(GDST,GSRC)%NRAVG  = -1
-!/T3                  HGSTGE(GDST,GSRC)%IMPSRC = -1
-!/T3                  HGSTGE(GDST,GSRC)%ITAG   = -1
-!/T3                  HGSTGE(GDST,GSRC)%WGTH   = -1.
+#ifdef W3_T3
+                  HGSTGE(GDST,GSRC)%LJSEA  = -1
+                  HGSTGE(GDST,GSRC)%NRAVG  = -1
+                  HGSTGE(GDST,GSRC)%IMPSRC = -1
+                  HGSTGE(GDST,GSRC)%ITAG   = -1
+                  HGSTGE(GDST,GSRC)%WGTH   = -1.
+#endif // W3_T3
                END IF
                IF ( HGSTGE(GDST,GSRC)%NSND .GT. 0 ) THEN
                    ALLOCATE ( HGSTGE(GDST,GSRC)%ISEND (HGSTGE(GDST,GSRC)%NSND,5), &
                               STAT=ISTAT )
                    CHECK_ALLOC_STATUS ( ISTAT )
-!/T4                  HGSTGE(GDST,GSRC)%ISEND = -1
+#ifdef W3_T4
+                  HGSTGE(GDST,GSRC)%ISEND = -1
+#endif // W3_T4
                END IF
                HGSTGE(GDST,GSRC)%INIT = .TRUE.
             END DO
@@ -3011,8 +3289,10 @@
                JJ     = TMPINT(ILOC,-1)
                NR0    = TMPINT(ILOC, 0)
                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-!/DIST              ISPROC = ISPROC + CROOT - 1
-!/DIST              FLGREC = ISPROC .EQ. IMPROC
+#ifdef W3_DIST
+              ISPROC = ISPROC + CROOT - 1
+              FLGREC = ISPROC .EQ. IMPROC
+#endif // W3_DIST
 !
                IF ( TMPLOG(ILOC) ) THEN
                   I1(JJ,ISPROC) = I1(JJ,ISPROC) + 1
@@ -3026,7 +3306,9 @@
                   HGSTGE(GDST,JJ)%LJSEA(IREC) = JSEA
                   HGSTGE(GDST,JJ)%NRAVG(IREC) = NR0
                   HGSTGE(GDST,JJ)%WGTH(IREC,:NR0) = TMPRL(ILOC,1:NR0)
-!/DIST                  HGSTGE(GDST,JJ)%ITAG(IREC,:NR0) = LTAG(:NR0)
+#ifdef W3_DIST
+                  HGSTGE(GDST,JJ)%ITAG(IREC,:NR0) = LTAG(:NR0)
+#endif // W3_DIST
                END IF
 
                DO IJ=1, NR0
@@ -3044,104 +3326,128 @@
                         ISND   = I4(JJ)
                      END IF
                      HGSTGE(GDST,JJ)%ISEND(ISND,1) = JSEA
-!/DIST                  HGSTGE(GDST,JJ)%ISEND(ISND,2) = ISPROC
+#ifdef W3_DIST
+                  HGSTGE(GDST,JJ)%ISEND(ISND,2) = ISPROC
+#endif // W3_DIST
                      HGSTGE(GDST,JJ)%ISEND(ISND,3) = IREC
                      HGSTGE(GDST,JJ)%ISEND(ISND,4) = IJ
-!/DIST                  HGSTGE(GDST,JJ)%ISEND(ISND,5) = LTAG(IJ)
+#ifdef W3_DIST
+                  HGSTGE(GDST,JJ)%ISEND(ISND,5) = LTAG(IJ)
+#endif // W3_DIST
                   END IF
 
                END DO
 !
-!/DIST              LTAG   = LTAG + NR0
-!/DIST              LTAG0  = LTAG0 + NR0
+#ifdef W3_DIST
+              LTAG   = LTAG + NR0
+              LTAG0  = LTAG0 + NR0
+#endif // W3_DIST
 !
             END DO
 !
 ! 2.e Adjust FLAGST using MAPTST
 !
-!/T            ALLOCATE ( MAPST(NY,NX), STAT=ISTAT )
-!/T            CHECK_ALLOC_STATUS ( ISTAT )
-!/T            MAPST  = '-'
+#ifdef W3_T
+            ALLOCATE ( MAPST(NY,NX), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
+            MAPST  = '-'
+#endif // W3_T
 !
             DO ISEA=1, NSEA
                IDST     = MAPSF(ISEA,1)
                JDST     = MAPSF(ISEA,2)
                IF ( MAPTST(JDST,IDST) .GT. 0 ) FLAGST(ISEA) = .NOT. FLGHG1
-!/T              IF ( FLAGST(ISEA) ) THEN
-!/T                  MAPST(JDST,IDST)  = 'O'
-!/T                ELSE
-!/T                  MAPST(JDST,IDST)  = 'X'
-!/T                END IF
+#ifdef W3_T
+              IF ( FLAGST(ISEA) ) THEN
+                  MAPST(JDST,IDST)  = 'O'
+                ELSE
+                  MAPST(JDST,IDST)  = 'X'
+                END IF
+#endif // W3_T
             END DO
 !
 ! 2.f Test output map
 !
-!/T            WRITE (MDST,9025) 'MAPTST'
-!/T            DO JDST=NY,1 , -1
-!/T              WRITE (MDST,9026) MAPTST(JDST,:) + 88*INFLND(JDST,:)
-!/T              END DO
+#ifdef W3_T
+            WRITE (MDST,9025) 'MAPTST'
+            DO JDST=NY,1 , -1
+              WRITE (MDST,9026) MAPTST(JDST,:) + 88*INFLND(JDST,:)
+              END DO
+#endif // W3_T
 !
-!/T            WRITE (MDST,9025) 'MAPSTA'
-!/T            DO JDST=NY,1 , -1
-!/T              WRITE (MDST,9026) MAPSTA(JDST,:)
-!/T              END DO
+#ifdef W3_T
+            WRITE (MDST,9025) 'MAPSTA'
+            DO JDST=NY,1 , -1
+              WRITE (MDST,9026) MAPSTA(JDST,:)
+              END DO
+#endif // W3_T
 !
-!/T            WRITE (MDST,9025) 'MAPST2'
-!/T            DO JDST=NY,1 , -1
-!/T              WRITE (MDST,9026) MAPST2(JDST,:)
-!/T              END DO
+#ifdef W3_T
+            WRITE (MDST,9025) 'MAPST2'
+            DO JDST=NY,1 , -1
+              WRITE (MDST,9026) MAPST2(JDST,:)
+              END DO
+#endif // W3_T
 !
-!/T            WRITE (MDST,9025) 'FLAGST'
-!/T            DO JDST=NY,1 , -1
-!/T              WRITE (MDST,9027) MAPST(JDST,:)
-!/T              END DO
+#ifdef W3_T
+            WRITE (MDST,9025) 'FLAGST'
+            DO JDST=NY,1 , -1
+              WRITE (MDST,9027) MAPST(JDST,:)
+              END DO
+#endif // W3_T
 !
             DEALLOCATE ( MAPTST, INFLND, STAT=ISTAT )
             CHECK_DEALLOC_STATUS ( ISTAT )
-!/T            DEALLOCATE ( MAPST, STAT=ISTAT )
-!/T            CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_T
+            DEALLOCATE ( MAPST, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_T
 !
 ! 2.g Test output receiving
 !
-!/T3            DO GSRC=1, NRGRD
-!/T3              NR0    = HGSTGE(GDST,GSRC)%NREC
-!/T3              IF ( NR0 .EQ. 0 ) THEN
-!/T3                  WRITE (MDST,9030) GSRC
-!/T3                ELSE
-!/T3                  WRITE (MDST,9031) GSRC, NR0
-!/T3                  DO IREC=1, NR0
-!/T3                    JSEA   = HGSTGE(GDST,GSRC)%LJSEA(IREC)
-!/T3                    NRTOT  = HGSTGE(GDST,GSRC)%NRAVG(IREC)
-!/T3                    IF ( NRTOT .LE. 15 ) THEN
-!/T3                        WRITE (MDST,9032) JSEA, NRTOT,           &
-!/T3                               HGSTGE(GDST,GSRC)%WGTH(IREC,:NRTOT)
-!/T3                      ELSE
-!/T3                        WRITE (MDST,9032) JSEA, NRTOT,           &
-!/T3                               HGSTGE(GDST,GSRC)%WGTH(IREC,1:15)
-!/T3                        WRITE (MDST,9033)                        &
-!/T3                               HGSTGE(GDST,GSRC)%WGTH(IREC,16:NRTOT)
-!/T3                      END IF
-!/T3                    WRITE (MDST,9034)                            &
-!/T3                               HGSTGE(GDST,GSRC)%IMPSRC(IREC,1:NRTOT)
-!/T3                    WRITE (MDST,9034)                            &
-!/T3                               HGSTGE(GDST,GSRC)%ITAG(IREC,1:NRTOT)
-!/T3                    END DO
-!/T3                END IF
-!/T3              END DO
+#ifdef W3_T3
+            DO GSRC=1, NRGRD
+              NR0    = HGSTGE(GDST,GSRC)%NREC
+              IF ( NR0 .EQ. 0 ) THEN
+                  WRITE (MDST,9030) GSRC
+                ELSE
+                  WRITE (MDST,9031) GSRC, NR0
+                  DO IREC=1, NR0
+                    JSEA   = HGSTGE(GDST,GSRC)%LJSEA(IREC)
+                    NRTOT  = HGSTGE(GDST,GSRC)%NRAVG(IREC)
+                    IF ( NRTOT .LE. 15 ) THEN
+                        WRITE (MDST,9032) JSEA, NRTOT,           &
+                               HGSTGE(GDST,GSRC)%WGTH(IREC,:NRTOT)
+                      ELSE
+                        WRITE (MDST,9032) JSEA, NRTOT,           &
+                               HGSTGE(GDST,GSRC)%WGTH(IREC,1:15)
+                        WRITE (MDST,9033)                        &
+                               HGSTGE(GDST,GSRC)%WGTH(IREC,16:NRTOT)
+                      END IF
+                    WRITE (MDST,9034)                            &
+                               HGSTGE(GDST,GSRC)%IMPSRC(IREC,1:NRTOT)
+                    WRITE (MDST,9034)                            &
+                               HGSTGE(GDST,GSRC)%ITAG(IREC,1:NRTOT)
+                    END DO
+                END IF
+              END DO
+#endif // W3_T3
 !
 ! 2.h Test output sending
 !
-!/T4            DO GSRC=1, NRGRD
-!/T4              NR0    = HGSTGE(GDST,GSRC)%NSND
-!/T4              IF ( NR0 .EQ. 0 ) THEN
-!/T4                  WRITE (MDST,9040) GSRC
-!/T4                ELSE
-!/T4                  WRITE (MDST,9041) GSRC, NR0
-!/T4                  DO ISND=1, NR0
-!/T4                    WRITE (MDST,9042) HGSTGE(GDST,GSRC)%ISEND(ISND,:)
-!/T4                    END DO
-!/T4                END IF
-!/T4              END DO
+#ifdef W3_T4
+            DO GSRC=1, NRGRD
+              NR0    = HGSTGE(GDST,GSRC)%NSND
+              IF ( NR0 .EQ. 0 ) THEN
+                  WRITE (MDST,9040) GSRC
+                ELSE
+                  WRITE (MDST,9041) GSRC, NR0
+                  DO ISND=1, NR0
+                    WRITE (MDST,9042) HGSTGE(GDST,GSRC)%ISEND(ISND,:)
+                    END DO
+                END IF
+              END DO
+#endif // W3_T4
 !
 ! 2.i Final clean up
 !
@@ -3154,39 +3460,47 @@
                 CHECK_DEALLOC_STATUS ( ISTAT )
               END IF
 
-!/DIST            DEALLOCATE ( LTAG, STAT=ISTAT )
-!/DIST            CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_DIST
+            DEALLOCATE ( LTAG, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_DIST
 !
 
 ! Notes: We are done with this dst (low rank) grid, so we deallocate ALLWGTS .
 !        This is important because ALLWGTS will be allocated again for the next
 !        dst grid.
 
-!/SCRIP            DO JJ=1, GRDHGH(GDST,0) 
-!/SCRIP               GSRC   = GRDHGH(GDST,JJ)
-!/SCRIP               DO KDST=1,DST_GRID_SIZE
-!/SCRIP                  DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
-!/SCRIP                  CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIP                  DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
-!/SCRIP                  CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIP               END DO
-!/SCRIP               DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
-!/SCRIP               CHECK_DEALLOC_STATUS ( ISTAT )
-!/SCRIP            END DO
-!/SCRIP            DEALLOCATE ( ALLWGTS, STAT=ISTAT )
-!/SCRIP            CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_SCRIP
+            DO JJ=1, GRDHGH(GDST,0) 
+               GSRC   = GRDHGH(GDST,JJ)
+               DO KDST=1,DST_GRID_SIZE
+                  DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
+                  CHECK_DEALLOC_STATUS ( ISTAT )
+                  DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
+                  CHECK_DEALLOC_STATUS ( ISTAT )
+               END DO
+               DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
+               CHECK_DEALLOC_STATUS ( ISTAT )
+            END DO
+            DEALLOCATE ( ALLWGTS, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_SCRIP
 
          END IF !  IF ( GRDHGH(GDST,0) ...
-!/T38         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38         ELAPSED_TIME = END_TIME - BEG_TIME(2)
-!/T38         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " TOOK ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+         ELAPSED_TIME = END_TIME - BEG_TIME(2)
+         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " TOOK ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
       END DO LOWRANK_GRID
 
 ! If SCRIPNC and L_STOP, then we are done
       IF ( LSCRIPNC .AND. L_STOP ) THEN
           ! WW3 processes wait here till all have finished
-!/MPI          CALL MPI_BARRIER( MPI_COMM_MWAVE, IERR_MPI )
+#ifdef W3_MPI
+          CALL MPI_BARRIER( MPI_COMM_MWAVE, IERR_MPI )
+#endif // W3_MPI
           ! This is not a true error, so exit code is zero
           WRITE( MDSE, '(A,I4.4,A)' ) 'IMPROC=',IMPROC, &
             ': STOP_SCRIP option invoked: '// &
@@ -3196,48 +3510,64 @@
 
       DEALLOCATE ( I1, I2, I3, I4, STAT=ISTAT )
       CHECK_DEALLOC_STATUS ( ISTAT )
-!/MPIBDI      DEALLOCATE ( NX_SIZE, IRQ, MSTAT, STAT=ISTAT )
-!/MPIBDI      CHECK_DEALLOC_STATUS ( ISTAT )
+#ifdef W3_MPIBDI
+      DEALLOCATE ( NX_SIZE, IRQ, MSTAT, STAT=ISTAT )
+      CHECK_DEALLOC_STATUS ( ISTAT )
+#endif // W3_MPIBDI
       DEALLOCATE ( NX_BEG, NX_END, STAT=ISTAT )
       CHECK_DEALLOC_STATUS ( ISTAT )
 
 !
 ! 2.j Test output counters
 !
-!/T      WRITE (MDST,9028) 'NTOT'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NTOT
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NTOT'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NTOT
+        END DO
+#endif // W3_T
 !
-!/T      WRITE (MDST,9028) 'NREC'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NREC
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NREC'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NREC
+        END DO
+#endif // W3_T
 !
-!/T      WRITE (MDST,9028) 'NRC1'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NRC1
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NRC1'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NRC1
+        END DO
+#endif // W3_T
 !
-!/T      WRITE (MDST,9028) 'NSND'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NSND
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NSND'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NSND
+        END DO
+#endif // W3_T
 !
-!/T      WRITE (MDST,9028) 'NSN1'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NSN1
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NSN1'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NSN1
+        END DO
+#endif // W3_T
 !
-!/T      WRITE (MDST,9028) 'NSMX'
-!/T      DO JJ=1, NRGRD
-!/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NSMX
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9028) 'NSMX'
+      DO JJ=1, NRGRD
+        WRITE (MDST,9029) HGSTGE(JJ,:)%NSMX
+        END DO
+#endif // W3_T
 !
-!/T38         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
-!/T38         ELAPSED_TIME = END_TIME - BEG_TIME(1)
-!/T38         WRITE(NMYOUT,*) "WMGHGH, ALL TOOK ", ELAPSED_TIME, " MSEC"
+#ifdef W3_T38
+         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+         ELAPSED_TIME = END_TIME - BEG_TIME(1)
+         WRITE(NMYOUT,*) "WMGHGH, ALL TOOK ", ELAPSED_TIME, " MSEC"
+#endif // W3_T38
 
       RETURN
 !
@@ -3247,37 +3577,49 @@
                '     GRDHGH NOT YET ALLOCATED, CALL WMGLOW FIRST'/)
  1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     TMPINT AND TMPRL TOO SMALL (w/out SCRIP)'/)
-!/SCRIP 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
-!/SCRIP               '     TMPINT AND TMPRL TOO SMALL (w/SCRIP) '/)
+#ifdef W3_SCRIP
+ 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
+               '     TMPINT AND TMPRL TOO SMALL (w/SCRIP) '/)
+#endif // W3_SCRIP
 !
-!/T 9010 FORMAT ( ' TEST WMGHGH : INITIALIZE BOUNDARY DISTANCE MAPS')
-!/T 9011 FORMAT ( '               GRID = ',I3,'  RANK = ',I3,         &
-!/T               '  NBI = ',I6)
-!/T 9012 FORMAT ( '                  *** MAP NOT NEEDED ***')
-!/T 9013 FORMAT ( ' TEST WMGHGH : FINAL MAP ')
-!/T 9014 FORMAT (2x,65I2)
+#ifdef W3_T
+ 9010 FORMAT ( ' TEST WMGHGH : INITIALIZE BOUNDARY DISTANCE MAPS')
+ 9011 FORMAT ( '               GRID = ',I3,'  RANK = ',I3,         &
+               '  NBI = ',I6)
+ 9012 FORMAT ( '                  *** MAP NOT NEEDED ***')
+ 9013 FORMAT ( ' TEST WMGHGH : FINAL MAP ')
+ 9014 FORMAT (2x,65I2)
+#endif // W3_T
 !/
-!/T 9020 FORMAT ( ' TEST WMGHGH : GRID',I3,' HAS',I3,' DATA SOURCES')
-!/T 9021 FORMAT ( '               NO PROCESSING REQUIRED')
-!/T 9022 FORMAT ( ' TEST WMGHGH : GRID',I3,' COVERS ',4I8)
-!/T 9023 FORMAT ( ' TEST WMGHGH : GRID',I3,                           &
-!/T                                ', NR OF POINTS TO PROCESS:',I5)
-!/T 9025 FORMAT ( ' TEST WMGHGH : FINAL ',A)
-!/T 9026 FORMAT (2X,65I2)
-!/T 9027 FORMAT (2X,65A2)
+#ifdef W3_T
+ 9020 FORMAT ( ' TEST WMGHGH : GRID',I3,' HAS',I3,' DATA SOURCES')
+ 9021 FORMAT ( '               NO PROCESSING REQUIRED')
+ 9022 FORMAT ( ' TEST WMGHGH : GRID',I3,' COVERS ',4I8)
+ 9023 FORMAT ( ' TEST WMGHGH : GRID',I3,                           &
+                                ', NR OF POINTS TO PROCESS:',I5)
+ 9025 FORMAT ( ' TEST WMGHGH : FINAL ',A)
+ 9026 FORMAT (2X,65I2)
+ 9027 FORMAT (2X,65A2)
+#endif // W3_T
 !
-!/T 9028 FORMAT ( ' TEST WMGHGH : COUNTERS ',A)
-!/T 9029 FORMAT (2x,20I6)
+#ifdef W3_T
+ 9028 FORMAT ( ' TEST WMGHGH : COUNTERS ',A)
+ 9029 FORMAT (2x,20I6)
+#endif // W3_T
 !
-!/T3 9030 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', NO DATA TO RECEIVE')
-!/T3 9031 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', RECEIVING ',I6)
-!/T3 9032 FORMAT ( 2X,I10,I6,15F6.2)
-!/T3 9033 FORMAT ( 18X,15F6.2)
-!/T3 9034 FORMAT ( 18X,15I6)
+#ifdef W3_T3
+ 9030 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', NO DATA TO RECEIVE')
+ 9031 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', RECEIVING ',I6)
+ 9032 FORMAT ( 2X,I10,I6,15F6.2)
+ 9033 FORMAT ( 18X,15F6.2)
+ 9034 FORMAT ( 18X,15I6)
+#endif // W3_T3
 !
-!/T4 9040 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', NO DATA TO SEND')
-!/T4 9041 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', SENDING ',I6)
-!/T4 9042 FORMAT ( 12X,I10,4I6)
+#ifdef W3_T4
+ 9040 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', NO DATA TO SEND')
+ 9041 FORMAT ( ' TEST WMGHG : FROM GRID',I3,', SENDING ',I6)
+ 9042 FORMAT ( 12X,I10,4I6)
+#endif // W3_T4
 !/
 !/ End of WMGHGH ----------------------------------------------------- /
 !/
@@ -3376,7 +3718,9 @@
 !
       USE W3SERVMD, ONLY: EXTCDE
 !      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC_GLOB
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -3392,8 +3736,12 @@
                                   NR, NT, NA, NTL, JJ, NIT, NG, NOUT, &
                                   ISEA, JSEA, ISPROC, ITAG, TGRP,     &
                                   EXTRA, IP, NP
-!/T7      INTEGER                  :: IA
-!/S      INTEGER, SAVE            :: IENT = 0
+#ifdef W3_T7
+      INTEGER                  :: IA
+#endif // W3_T7
+#ifdef W3_S
+      INTEGER, SAVE            :: IENT = 0
+#endif // W3_S
       INTEGER, ALLOCATABLE     :: MAP3D(:,:,:), NREC(:), NSND(:),     &
                                   NTPP(:), MAPOUT(:,:)
       REAL                     :: FACTOR, XSL, XSH, YSL, YSH, XA, YA, &
@@ -3406,8 +3754,10 @@
       LOGICAL                  :: CHANGE, XEXPND, YEXPND
       LOGICAL, ALLOCATABLE     :: SHRANK(:,:), DOGRID(:),             &
                                   MASKA(:,:), MASKI(:,:)
-!/T5      CHARACTER(LEN=18), ALLOCATABLE :: TSTR(:)
-!/T5      CHARACTER(LEN=18)              :: DSTR
+#ifdef W3_T5
+      CHARACTER(LEN=18), ALLOCATABLE :: TSTR(:)
+      CHARACTER(LEN=18)              :: DSTR
+#endif // W3_T5
 !
       TYPE STORE
         INTEGER                :: NTOT, NFIN
@@ -3420,7 +3770,9 @@
 !
       TYPE(STORE), ALLOCATABLE :: STORES(:,:)
 !/
-!/S      CALL STRACE (IENT, 'WMGEQL')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WMGEQL')
+#endif // W3_S
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -3454,11 +3806,15 @@
 ! 1.  Grid point relations and temp data storage
 ! 1.a Outer loop over all grids
 !
-!/T      WRITE (MDST,9010)
+#ifdef W3_T
+      WRITE (MDST,9010)
+#endif // W3_T
 !
       DO I=1, NRGRD
 
-!/T        WRITE (MDST,9011) I, GRANK(I)
+#ifdef W3_T
+        WRITE (MDST,9011) I, GRANK(I)
+#endif // W3_T
 !
 ! 1.b Find grids with same rank
 !
@@ -3467,7 +3823,9 @@
         DO J=1, NRGRD
 
           IF ( GRANK(I).NE.GRANK(J) .OR. I.EQ.J ) CYCLE
-!/T          WRITE (MDST,9012) J
+#ifdef W3_T
+          WRITE (MDST,9012) J
+#endif // W3_T
           SHRANK(I,J) = .TRUE.
           NR          = NR + 1
           END DO
@@ -3478,7 +3836,9 @@
 
 !..notes: we will reach this point even if there are no equal rank grids
 
-!/T        IF ( NR .EQ. 0 ) WRITE (MDST,9013) 'NO GRIDS WITH SAME RANK'
+#ifdef W3_T
+        IF ( NR .EQ. 0 ) WRITE (MDST,9013) 'NO GRIDS WITH SAME RANK'
+#endif // W3_T
         IF ( NR .EQ. 0 ) CYCLE
 
 !..notes: we will not reach this point if are no equal rank grids. that makes it a good place to check against grid type
@@ -3629,7 +3989,9 @@
 !
               NT     = NT + 1
               NA     = 0
-!/SHRD              ISPROC = 1
+#ifdef W3_SHRD
+              ISPROC = 1
+#endif // W3_SHRD
               STORES(I,J)%IX(NT)  = IX
               STORES(I,J)%IY(NT)  = IY
 !
@@ -3642,7 +4004,9 @@
                       ISEA   = GRIDS(J)%MAPFS(JY,JX)
                       IF ( ISEA .EQ. 0 ) THEN
                           JSEA   = 0
-!/MPI                          ISPROC = 1
+#ifdef W3_MPI
+                          ISPROC = 1
+#endif // W3_MPI
                         ELSE
                         CALL INIT_GET_JSEA_ISPROC_GLOB(ISEA, J, JSEA, ISPROC)
                         END IF
@@ -3684,7 +4048,9 @@
 ! 2.  Generate open edge distance maps
 ! 2.a Base map based on MAPSTA only, time step not included.
 !
-!/T        WRITE (MDST,9020) I
+#ifdef W3_T
+        WRITE (MDST,9020) I
+#endif // W3_T
 !
         ALLOCATE ( MDATAS(I)%MAPODI(NY,NX), STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
@@ -3721,8 +4087,10 @@
                      .NOT.STORES(I,J)%FLA(JJ) .AND.                   &
                      STORES(I,J)%NAV(JJ).GT.0 ) THEN
                      MAPODI(IY,IX) = 0.
-!/O13                    IF ( IMPROC.EQ.NMPERR )                      &
-!/O13                         WRITE (MDSE,1020) I, IX, 1
+#ifdef W3_O13
+                    IF ( IMPROC.EQ.NMPERR )                      &
+                         WRITE (MDSE,1020) I, IX, 1
+#endif // W3_O13
                   END IF
               ELSE
                 MASKA(IY,IX) = STORES(I,J)%FLA(JJ)
@@ -3747,7 +4115,9 @@
                           MAPODI(IY  ,IX-1) .GE. 0. .OR.              &
                           MAPODI(IY  ,IX+1) .GE. 0. ) ) THEN
                 MASKI(IY,IX) = .TRUE.
-!/O12                IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,1020) I, IX, IY
+#ifdef W3_O12
+                IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,1020) I, IX, IY
+#endif // W3_O12
               END IF
             END DO
           END DO
@@ -3763,10 +4133,18 @@
 !
 ! 2.d Mask out influenced edge
 !
-!/PR0        NIT    = 0
-!/PR1        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/UQ        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/UNO        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#ifdef W3_PR0
+        NIT    = 0
+#endif // W3_PR0
+#ifdef W3_PR1
+        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
+#endif // W3_PR1
+#ifdef W3_UQ
+        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UQ
+#ifdef W3_UNO
+        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+#endif // W3_UNO
 !
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
             IXL    =  1
@@ -3938,15 +4316,17 @@
 !
 ! 2.g Test output
 !
-!/T        NP     = 1 + (NX-1)/65
-!/T        DO IP=1, NP
-!/T          IXL    = 1 + (IP-1)*65
-!/T          IXH    = MIN( NX, IP*65 )
-!/T          WRITE (MDST,9024) IXL, IXH
-!/T          DO IY=NY,1 , -1
-!/T            WRITE (MDST,9025) NINT(MAPODI(IY,IXL:IXH)*SIG(1)/DTMAX)
-!/T            END DO
-!/T          END DO
+#ifdef W3_T
+        NP     = 1 + (NX-1)/65
+        DO IP=1, NP
+          IXL    = 1 + (IP-1)*65
+          IXH    = MIN( NX, IP*65 )
+          WRITE (MDST,9024) IXL, IXH
+          DO IY=NY,1 , -1
+            WRITE (MDST,9025) NINT(MAPODI(IY,IXL:IXH)*SIG(1)/DTMAX)
+            END DO
+          END DO
+#endif // W3_T
 !
 ! ... End of loop in 1.a
 !
@@ -3961,7 +4341,9 @@
 !
       DO I=1, NRGRD
         IF ( .NOT. DOGRID(I) ) CYCLE
-!/T        WRITE (MDST,9030) I
+#ifdef W3_T
+        WRITE (MDST,9030) I
+#endif // W3_T
 !
         CALL W3SETG ( I, MDSE, MDST )
         CALL W3SETO ( I, MDSE, MDST )
@@ -3978,7 +4360,9 @@
 !
         DO J=1, NRGRD
           IF ( .NOT. SHRANK(I,J) ) CYCLE
-!/T          WRITE (MDST,9031) J
+#ifdef W3_T
+          WRITE (MDST,9031) J
+#endif // W3_T
           MAPODI => MDATAS(J)%MAPODI
 !
           DO JJ=1, STORES(I,J)%NTOT
@@ -3988,9 +4372,13 @@
             MAP3D(IY,IX,-2) = MAPFS(IY,IX)
             IF ( MAP3D(IY,IX,-2) .NE. 0 ) THEN
                 MAP3D(IY,IX,-3) = 1 + (MAP3D(IY,IX,-2)-1)/NAPROC
-!/SHRD                MAP3D(IY,IX,-4) = 1
-!/MPI                MAP3D(IY,IX,-4) = MAP3D(IY,IX,-2) -              &
-!/MPI                     (MAP3D(IY,IX,-3)-1)*NAPROC + CROOT - 1
+#ifdef W3_SHRD
+                MAP3D(IY,IX,-4) = 1
+#endif // W3_SHRD
+#ifdef W3_MPI
+                MAP3D(IY,IX,-4) = MAP3D(IY,IX,-2) -              &
+                     (MAP3D(IY,IX,-3)-1)*NAPROC + CROOT - 1
+#endif // W3_MPI
               END IF
             IF ( WGT3D(IY,IX,0).GE.0. .AND. MAPSTA(IY,IX).NE.0. .AND. &
                  STORES(I,J)%NAV(JJ).GT.0 ) THEN
@@ -4006,7 +4394,9 @@
             END DO
 !
           STORES(I,J)%NFIN = SUM(MAP3D(:,:,J))
-!/T          WRITE (MDST,9032) STORES(I,J)%NFIN, STORES(I,J)%NTOT
+#ifdef W3_T
+          WRITE (MDST,9032) STORES(I,J)%NFIN, STORES(I,J)%NTOT
+#endif // W3_T
 !
           END DO
 !
@@ -4092,13 +4482,15 @@
 !
 ! 3.d Test and error output
 !
-!/T        WRITE (MDST,9033) NTL, NG, NOUT
-!/T        WRITE (MDST,9034) NREC
-!/T        WRITE (MDST,9035) NSND
-!/T        WRITE (MDST,9036)
-!/T        DO IY=NY,1 , -1
-!/T          WRITE (MDST,9037) MAP3D(IY,:,-1)
-!/T          END DO
+#ifdef W3_T
+        WRITE (MDST,9033) NTL, NG, NOUT
+        WRITE (MDST,9034) NREC
+        WRITE (MDST,9035) NSND
+        WRITE (MDST,9036)
+        DO IY=NY,1 , -1
+          WRITE (MDST,9037) MAP3D(IY,:,-1)
+          END DO
+#endif // W3_T
 !
         IF ( NOUT .GT. 0 ) THEN
             IF ( IMPROC.EQ.NMPERR ) THEN
@@ -4140,38 +4532,40 @@
         DEALLOCATE ( MAPOUT, STAT=ISTAT )
         CHECK_DEALLOC_STATUS ( ISTAT )
 !
-!/T7        WRITE (MDST,9330) I
-!/T7        DO J=1, NRGRD
-!/T7          IF ( .NOT. SHRANK(I,J) ) THEN
-!/T7              IF ( I .NE. J ) WRITE (MDST,9331) J
-!/T7              CYCLE
-!/T7            END IF
-!/T7          WRITE (MDST,9332) J, STORES(I,J)%NFIN, I, J
-!/T7          IF ( STORES(I,J)%NFIN .EQ. 0 ) CYCLE
-!/T7          NTL    = 0
-!/T7          DO JJ=1, STORES(I,J)%NTOT
-!/T7            IX     = STORES(I,J)%IX(JJ)
-!/T7            IY     = STORES(I,J)%IY(JJ)
-!/T7            IF ( MAP3D(IY,IX,J) .EQ. 0 ) CYCLE
-!/T7            NTL    = NTL + 1
-!/T7            NA     = STORES(I,J)%NAV(JJ)
-!/T7            WRITE (MDST,9333) NTL, IX, IY, MAP3D(IY,IX,-2),       &
-!/T7                              MAP3D(IY,IX,-3), MAP3D(IY,IX,-4),   &
-!/T7                              WGT3D(IY,IX,0), WGT3D(IY,IX,J), NA, &
-!/T7                              STORES(I,J)%ISS(JJ,1),              &
-!/T7                              STORES(I,J)%JSS(JJ,1),              &
-!/T7                              STORES(I,J)%IPS(JJ,1),              &
-!/T7                              STORES(I,J)%AWG(JJ,1),              &
-!/T7                              STORES(I,J)%ITG(JJ,1)
-!/T7            DO IA=2, NA
-!/T7              WRITE (MDST,9334) STORES(I,J)%ISS(JJ,IA),           &
-!/T7                                STORES(I,J)%JSS(JJ,IA),           &
-!/T7                                STORES(I,J)%IPS(JJ,IA),           &
-!/T7                                STORES(I,J)%AWG(JJ,IA),           &
-!/T7                                STORES(I,J)%ITG(JJ,IA)
-!/T7              END DO
-!/T7            END DO
-!/T7          END DO
+#ifdef W3_T7
+        WRITE (MDST,9330) I
+        DO J=1, NRGRD
+          IF ( .NOT. SHRANK(I,J) ) THEN
+              IF ( I .NE. J ) WRITE (MDST,9331) J
+              CYCLE
+            END IF
+          WRITE (MDST,9332) J, STORES(I,J)%NFIN, I, J
+          IF ( STORES(I,J)%NFIN .EQ. 0 ) CYCLE
+          NTL    = 0
+          DO JJ=1, STORES(I,J)%NTOT
+            IX     = STORES(I,J)%IX(JJ)
+            IY     = STORES(I,J)%IY(JJ)
+            IF ( MAP3D(IY,IX,J) .EQ. 0 ) CYCLE
+            NTL    = NTL + 1
+            NA     = STORES(I,J)%NAV(JJ)
+            WRITE (MDST,9333) NTL, IX, IY, MAP3D(IY,IX,-2),       &
+                              MAP3D(IY,IX,-3), MAP3D(IY,IX,-4),   &
+                              WGT3D(IY,IX,0), WGT3D(IY,IX,J), NA, &
+                              STORES(I,J)%ISS(JJ,1),              &
+                              STORES(I,J)%JSS(JJ,1),              &
+                              STORES(I,J)%IPS(JJ,1),              &
+                              STORES(I,J)%AWG(JJ,1),              &
+                              STORES(I,J)%ITG(JJ,1)
+            DO IA=2, NA
+              WRITE (MDST,9334) STORES(I,J)%ISS(JJ,IA),           &
+                                STORES(I,J)%JSS(JJ,IA),           &
+                                STORES(I,J)%IPS(JJ,IA),           &
+                                STORES(I,J)%AWG(JJ,IA),           &
+                                STORES(I,J)%ITG(JJ,IA)
+              END DO
+            END DO
+          END DO
+#endif // W3_T7
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Save data base as needed in EQSTGE
@@ -4184,7 +4578,9 @@
                         EQSTGE(I,I)%WGHT, STAT=ISTAT )
             CHECK_DEALLOC_STATUS ( ISTAT )
             EQSTGE(I,I)%NREC = 0
-!/T            WRITE (MDST,9040) I, I
+#ifdef W3_T
+            WRITE (MDST,9040) I, I
+#endif // W3_T
           END IF
 !
         IF ( NREC(I) .GT. 0 ) THEN
@@ -4193,7 +4589,9 @@
                        EQSTGE(I,I)%WGHT(NREC(I)), STAT=ISTAT )
             CHECK_ALLOC_STATUS ( ISTAT )
             EQSTGE(I,I)%NREC = NREC(I)
-!/T            WRITE (MDST,9041) I, I, NREC(I)
+#ifdef W3_T
+            WRITE (MDST,9041) I, I, NREC(I)
+#endif // W3_T
           END IF
 !
 ! 4.a.1 Local counters, arrays weights etc.  (grid 'J' receive)
@@ -4210,7 +4608,9 @@
               CHECK_DEALLOC_STATUS ( ISTAT )
               EQSTGE(I,J)%NREC   = 0
               EQSTGE(I,J)%NAVMAX = 1
-!/T              WRITE (MDST,9042) I, J
+#ifdef W3_T
+              WRITE (MDST,9042) I, J
+#endif // W3_T
             END IF
 !
           IF ( NREC(J) .GT. 0 ) THEN
@@ -4226,7 +4626,9 @@
                          EQSTGE(I,J)%RTG(NREC(J),NA), STAT=ISTAT )
               CHECK_ALLOC_STATUS ( ISTAT )
               EQSTGE(I,J)%NREC = NREC(J)
-!/T              WRITE (MDST,9043) I, J, NREC(J), NA
+#ifdef W3_T
+              WRITE (MDST,9043) I, J, NREC(J), NA
+#endif // W3_T
             END IF
 !
           IF ( EQSTGE(I,J)%NSND .NE. 0 ) THEN
@@ -4235,7 +4637,9 @@
                            EQSTGE(I,J)%SIP , EQSTGE(I,J)%STG, STAT=ISTAT )
               CHECK_DEALLOC_STATUS ( ISTAT )
               EQSTGE(I,J)%NSND = 0
-!/T              WRITE (MDST,9044) I, J
+#ifdef W3_T
+              WRITE (MDST,9044) I, J
+#endif // W3_T
             END IF
 !
           IF ( NSND(J) .GT. 0 ) THEN
@@ -4247,7 +4651,9 @@
                          EQSTGE(I,J)%STG(NSND(J)), STAT=ISTAT )
               CHECK_ALLOC_STATUS ( ISTAT )
               EQSTGE(I,J)%NSND = NSND(J)
-!/T              WRITE (MDST,9045) I, J, NSND(J)
+#ifdef W3_T
+              WRITE (MDST,9045) I, J, NSND(J)
+#endif // W3_T
             END IF
 !
           END DO
@@ -4325,73 +4731,81 @@
 !
 ! 4.c Detailed test output
 !
-!/T5        DSTR   = '                  '
+#ifdef W3_T5
+        DSTR   = '                  '
+#endif // W3_T5
 !
-!/T5        IF ( EQSTGE(I,I)%NREC .EQ. 0 ) THEN
-!/T5            WRITE (MDST,9140) I
-!/T5          ELSE
-!/T5            WRITE (MDST,9141) I
-!/T5            NA     = 0
-!/T5            DO J=1, NRGRD
-!/T5              IF ( I.EQ.J .OR. EQSTGE(I,J)%NREC.EQ.0 ) CYCLE
-!/T5              NA     = NA + 1
-!/T5              NSND(NA) = J
-!/T5              END DO
-!/T5            WRITE (MDST,9142) NSND(1:NA)
-!/T5            WRITE (MDST,9143)
-!/T5            ALLOCATE ( TSTR(NA), STAT=ISTAT )
-!/T5            CHECK_ALLOC_STATUS ( ISTAT )
-!/T5            DO JJ=1, EQSTGE(I,I)%NREC
-!/T5              DO NG=1, NA
-!/T5                J      = NSND(NG)
-!/T5                TSTR(NG) = DSTR
-!/T5                DO NTL=1, EQSTGE(I,J)%NREC
-!/T5                    IF ( EQSTGE(I,I)%ISEA(JJ) .EQ.                &
-!/T5                         EQSTGE(I,J)%ISEA(NTL) ) THEN
-!/T5                        WRITE (TSTR(NG),9144) NTL,                &
-!/T5                                    EQSTGE(I,J)%WGHT(NTL),        &
-!/T5                                    EQSTGE(I,J)%NAVG(NTL)
-!/T5                        EXIT
-!/T5                      END IF
-!/T5                  END DO
-!/T5                END DO
-!/T5              WRITE (MDST,9145) JJ, EQSTGE(I,I)%ISEA(JJ),         &
-!/T5                                    EQSTGE(I,I)%JSEA(JJ),         &
-!/T5                                    EQSTGE(I,I)%WGHT(JJ),         &
-!/T5                                    TSTR
-!/T5              END DO
-!/T5            DEALLOCATE ( TSTR, STAT=ISTAT )
-!/T5            CHECK_DEALLOC_STATUS ( ISTAT )
-!/T5          END IF
+#ifdef W3_T5
+        IF ( EQSTGE(I,I)%NREC .EQ. 0 ) THEN
+            WRITE (MDST,9140) I
+          ELSE
+            WRITE (MDST,9141) I
+            NA     = 0
+            DO J=1, NRGRD
+              IF ( I.EQ.J .OR. EQSTGE(I,J)%NREC.EQ.0 ) CYCLE
+              NA     = NA + 1
+              NSND(NA) = J
+              END DO
+            WRITE (MDST,9142) NSND(1:NA)
+            WRITE (MDST,9143)
+            ALLOCATE ( TSTR(NA), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
+            DO JJ=1, EQSTGE(I,I)%NREC
+              DO NG=1, NA
+                J      = NSND(NG)
+                TSTR(NG) = DSTR
+                DO NTL=1, EQSTGE(I,J)%NREC
+                    IF ( EQSTGE(I,I)%ISEA(JJ) .EQ.                &
+                         EQSTGE(I,J)%ISEA(NTL) ) THEN
+                        WRITE (TSTR(NG),9144) NTL,                &
+                                    EQSTGE(I,J)%WGHT(NTL),        &
+                                    EQSTGE(I,J)%NAVG(NTL)
+                        EXIT
+                      END IF
+                  END DO
+                END DO
+              WRITE (MDST,9145) JJ, EQSTGE(I,I)%ISEA(JJ),         &
+                                    EQSTGE(I,I)%JSEA(JJ),         &
+                                    EQSTGE(I,I)%WGHT(JJ),         &
+                                    TSTR
+              END DO
+            DEALLOCATE ( TSTR, STAT=ISTAT )
+            CHECK_DEALLOC_STATUS ( ISTAT )
+          END IF
+#endif // W3_T5
 !
-!/T5        DO J=1, NRGRD
-!/T5          IF ( I.EQ.J .OR. EQSTGE(I,J)%NREC.EQ.0 ) CYCLE
-!/T5          WRITE (MDST,9146) J
-!/T5          DO JJ=1, EQSTGE(I,J)%NREC
-!/T5            WRITE (MDST,9147) JJ, EQSTGE(I,J)%NAVG(JJ),           &
-!/T5                            ( EQSTGE(I,J)%WAVG(JJ,NA),            &
-!/T5                              EQSTGE(I,J)%RIP (JJ,NA),            &
-!/T5                              EQSTGE(I,J)%RTG (JJ,NA),            &
-!/T5                                  NA=1, EQSTGE(I,J)%NAVG(JJ) )
-!/T5            END DO
-!/T5          END DO
+#ifdef W3_T5
+        DO J=1, NRGRD
+          IF ( I.EQ.J .OR. EQSTGE(I,J)%NREC.EQ.0 ) CYCLE
+          WRITE (MDST,9146) J
+          DO JJ=1, EQSTGE(I,J)%NREC
+            WRITE (MDST,9147) JJ, EQSTGE(I,J)%NAVG(JJ),           &
+                            ( EQSTGE(I,J)%WAVG(JJ,NA),            &
+                              EQSTGE(I,J)%RIP (JJ,NA),            &
+                              EQSTGE(I,J)%RTG (JJ,NA),            &
+                                  NA=1, EQSTGE(I,J)%NAVG(JJ) )
+            END DO
+          END DO
+#endif // W3_T5
 !
-!/T6        DO J=1, NRGRD
-!/T6          IF ( I .EQ. J ) CYCLE
-!/T6          IF ( EQSTGE(I,J)%NSND .EQ. 0 ) THEN
-!/T6              WRITE (MDST,9240) J
-!/T6            ELSE
-!/T6              WRITE (MDST,9241) J
-!/T6              DO JJ=1, EQSTGE(I,J)%NSND
-!/T6                WRITE (MDST,9242) JJ, EQSTGE(I,J)%SIS(JJ),        &
-!/T6                                      EQSTGE(I,J)%SJS(JJ),        &
-!/T6                                      EQSTGE(I,J)%SI1(JJ),        &
-!/T6                                      EQSTGE(I,J)%SI2(JJ),        &
-!/T6                                      EQSTGE(I,J)%SIP(JJ),        &
-!/T6                                      EQSTGE(I,J)%STG(JJ)
-!/T6                END DO
-!/T6            END IF
-!/T6          END DO
+#ifdef W3_T6
+        DO J=1, NRGRD
+          IF ( I .EQ. J ) CYCLE
+          IF ( EQSTGE(I,J)%NSND .EQ. 0 ) THEN
+              WRITE (MDST,9240) J
+            ELSE
+              WRITE (MDST,9241) J
+              DO JJ=1, EQSTGE(I,J)%NSND
+                WRITE (MDST,9242) JJ, EQSTGE(I,J)%SIS(JJ),        &
+                                      EQSTGE(I,J)%SJS(JJ),        &
+                                      EQSTGE(I,J)%SI1(JJ),        &
+                                      EQSTGE(I,J)%SI2(JJ),        &
+                                      EQSTGE(I,J)%SIP(JJ),        &
+                                      EQSTGE(I,J)%STG(JJ)
+                END DO
+            END IF
+          END DO
+#endif // W3_T6
 !
 ! ... End of loop started in 3.a
 !
@@ -4417,7 +4831,9 @@
       CHECK_ALLOC_STATUS ( ISTAT )
       GRDEQL = 0
 !
-!/T      WRITE (MDST,9050) NA
+#ifdef W3_T
+      WRITE (MDST,9050) NA
+#endif // W3_T
 !
 ! 5.b Fill array
 !
@@ -4431,10 +4847,12 @@
           END DO
         END DO
 !
-!/T      WRITE (MDST,9051)
-!/T      DO I=1, NRGRD
-!/T        WRITE (MDST,9052) I, GRDEQL(I,0:GRDEQL(I,0))
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9051)
+      DO I=1, NRGRD
+        WRITE (MDST,9052) I, GRDEQL(I,0:GRDEQL(I,0))
+        END DO
+#endif // W3_T
 !
 ! 5.c Resolution test
 !
@@ -4532,65 +4950,81 @@
                '         GRID',I4,' IN GROUP',I4/                     &
                '         GRID',I4,' IN GROUP',I4/)
 !
-!/T 9010 FORMAT ( ' TEST WMGEQL : STARTING LOOP OVER GRIDS')
-!/T 9011 FORMAT ( ' TEST WMGEQL : I, RANK :',2I4)
-!/T 9012 FORMAT ( '               GRID ',I3,' HAS SAME RANK')
-!/T 9013 FORMAT ( '               ',A)
+#ifdef W3_T
+ 9010 FORMAT ( ' TEST WMGEQL : STARTING LOOP OVER GRIDS')
+ 9011 FORMAT ( ' TEST WMGEQL : I, RANK :',2I4)
+ 9012 FORMAT ( '               GRID ',I3,' HAS SAME RANK')
+ 9013 FORMAT ( '               ',A)
+#endif // W3_T
 !
-!/T 9020 FORMAT ( ' TEST WMGEQL : GENERATING DISTANCE MAP GRID ',I3)
-!/T 9024 FORMAT ( ' TEST WMGEQL : FINAL MAP FOR X RANGE ',2I6)
-!/T 9025 FORMAT (2X,65I2)
+#ifdef W3_T
+ 9020 FORMAT ( ' TEST WMGEQL : GENERATING DISTANCE MAP GRID ',I3)
+ 9024 FORMAT ( ' TEST WMGEQL : FINAL MAP FOR X RANGE ',2I6)
+ 9025 FORMAT (2X,65I2)
+#endif // W3_T
 !
-!/T 9030 FORMAT ( ' TEST WMGEQL : DEPENDENCE INFORMATION GRID ',I3)
-!/T 9031 FORMAT ( '               CHECKING GRID ',I3)
-!/T 9032 FORMAT ( '               POINTS USED/AVAIL :',2I6)
-!/T 9033 FORMAT ( '               TOTAL/GRIDS/OUT   :',3I6)
-!/T 9034 FORMAT ( '               LOCAL PER GRID    :',15I6)
-!/T 9035 FORMAT ( '               SENDING PER GRID  :',15I6)
-!/T 9036 FORMAT ( ' TEST WMGEQL : NUMBER OF CONTRIBUTING GRIDS MAP')
-!/T 9037 FORMAT (2X,65I2)
+#ifdef W3_T
+ 9030 FORMAT ( ' TEST WMGEQL : DEPENDENCE INFORMATION GRID ',I3)
+ 9031 FORMAT ( '               CHECKING GRID ',I3)
+ 9032 FORMAT ( '               POINTS USED/AVAIL :',2I6)
+ 9033 FORMAT ( '               TOTAL/GRIDS/OUT   :',3I6)
+ 9034 FORMAT ( '               LOCAL PER GRID    :',15I6)
+ 9035 FORMAT ( '               SENDING PER GRID  :',15I6)
+ 9036 FORMAT ( ' TEST WMGEQL : NUMBER OF CONTRIBUTING GRIDS MAP')
+ 9037 FORMAT (2X,65I2)
+#endif // W3_T
 !
-!/T 9040 FORMAT ( ' TEST WMGEQL : GRID ',I2,'-',I2,' CLEAR STORAGE')
-!/T 9041 FORMAT ( ' TEST WMGEQL : GRID ',I2,'-',I2,' STORAGE SIZE',I6)
-!/T 9042 FORMAT ( '               RECV ',I2,'-',I2,' CLEAR STORAGE')
-!/T 9043 FORMAT ( '               RECV ',I2,'-',I2,' STORAGE SIZE',2I6)
-!/T 9044 FORMAT ( '               SEND ',I2,'-',I2,' CLEAR STORAGE')
-!/T 9045 FORMAT ( '               SEND ',I2,'-',I2,' STORAGE SIZE',I6)
+#ifdef W3_T
+ 9040 FORMAT ( ' TEST WMGEQL : GRID ',I2,'-',I2,' CLEAR STORAGE')
+ 9041 FORMAT ( ' TEST WMGEQL : GRID ',I2,'-',I2,' STORAGE SIZE',I6)
+ 9042 FORMAT ( '               RECV ',I2,'-',I2,' CLEAR STORAGE')
+ 9043 FORMAT ( '               RECV ',I2,'-',I2,' STORAGE SIZE',2I6)
+ 9044 FORMAT ( '               SEND ',I2,'-',I2,' CLEAR STORAGE')
+ 9045 FORMAT ( '               SEND ',I2,'-',I2,' STORAGE SIZE',I6)
+#endif // W3_T
 !
-!/T 9050 FORMAT ( ' TEST WMGEQL : GRDEQL DIMENSIONED AT ',I2)
-!/T 9051 FORMAT ( ' TEST WMGEQL : GRDEQL :')
-!/T 9052 FORMAT ( '                 ',2i4,' : ',20I3)
+#ifdef W3_T
+ 9050 FORMAT ( ' TEST WMGEQL : GRDEQL DIMENSIONED AT ',I2)
+ 9051 FORMAT ( ' TEST WMGEQL : GRDEQL :')
+ 9052 FORMAT ( '                 ',2i4,' : ',20I3)
+#endif // W3_T
 !
-!/T5 9140 FORMAT ( ' TEST WMGEQL : NO RECEIVING DATA FOR GRID ',I3,   &
-!/T5               ' <=====================================')
-!/T5 9141 FORMAT ( ' TEST WMGEQL : RECEIVING DATA GRID ',I3,          &
-!/T5               ' <=====================================')
-!/T5 9142 FORMAT ( '               RECEIVING FROM GRID(S) ',10I3)
-!/T5 9143 FORMAT (16X,'COUNT, ISEA, JSEA, WEIGHT / ',                 &
-!/T5               'COUNT WEIGHT NR PER GRID')
-!/T5 9144 FORMAT (I6,F6.2,I6)
-!/T5 9145 FORMAT (12X,3I6,F6.2,10(' - ',A))
-!/T5 9146 FORMAT ( ' TEST WMGEQL : RECEIVING DATA AVG. GRID ',I3)
-!/T5 9147 FORMAT (12X,I6,I2,4(F8.2,I4,I6))
+#ifdef W3_T5
+ 9140 FORMAT ( ' TEST WMGEQL : NO RECEIVING DATA FOR GRID ',I3,   &
+               ' <=====================================')
+ 9141 FORMAT ( ' TEST WMGEQL : RECEIVING DATA GRID ',I3,          &
+               ' <=====================================')
+ 9142 FORMAT ( '               RECEIVING FROM GRID(S) ',10I3)
+ 9143 FORMAT (16X,'COUNT, ISEA, JSEA, WEIGHT / ',                 &
+               'COUNT WEIGHT NR PER GRID')
+ 9144 FORMAT (I6,F6.2,I6)
+ 9145 FORMAT (12X,3I6,F6.2,10(' - ',A))
+ 9146 FORMAT ( ' TEST WMGEQL : RECEIVING DATA AVG. GRID ',I3)
+ 9147 FORMAT (12X,I6,I2,4(F8.2,I4,I6))
+#endif // W3_T5
 !
-!/T6 9240 FORMAT ( ' TEST WMGEQL : NO SENDING DATA FOR GRID ',I3,     &
-!/T6               ' <=====================================')
-!/T6 9241 FORMAT ( ' TEST WMGEQL : SENDING DATA GRID ',I3,            &
-!/T6               ' <====================================='/         &
-!/T6               11X,'COUNT, ISEA, JSEA, ARRAY IND., PROC, TAG')
-!/T6 9242 FORMAT ( '              ',4I8,I4,2I8)
+#ifdef W3_T6
+ 9240 FORMAT ( ' TEST WMGEQL : NO SENDING DATA FOR GRID ',I3,     &
+               ' <=====================================')
+ 9241 FORMAT ( ' TEST WMGEQL : SENDING DATA GRID ',I3,            &
+               ' <====================================='/         &
+               11X,'COUNT, ISEA, JSEA, ARRAY IND., PROC, TAG')
+ 9242 FORMAT ( '              ',4I8,I4,2I8)
+#endif // W3_T6
 !
-!/T7 9330 FORMAT ( ' TEST WMGEQL : FULL SOURCE INFO GRID ',I3,        &
-!/T7               ' <=====================================')
-!/T7 9331 FORMAT ( '               GRID ',I3,' IS NOT OF SAME RANK')
-!/T7 9332 FORMAT ( '               GRID ',I3,' CONTRIBUTES TO',I6,    &
-!/T7               ' GRID POINTS'/                                    &
-!/T7               18X,'<---------- GRID',I6,' ---------->',          &
-!/T7                4X,'<----------- GRID',I6,' ----------->'/        &
-!/T7               18X,'NR   IX   IY  ISEA  JSEA  IP  WGTH',          &
-!/T7                2X,'  WGTH  NA  ISEA  JSEA  IP  WGTH   TAG' )
-!/T7 9333 FORMAT (15X,3I5,2I6,I4,F6.2,2X,F6.2,I4,2I6,I4,F6.2,I6)
-!/T7 9334 FORMAT (64X,2I6,I4,F6.2,I6)
+#ifdef W3_T7
+ 9330 FORMAT ( ' TEST WMGEQL : FULL SOURCE INFO GRID ',I3,        &
+               ' <=====================================')
+ 9331 FORMAT ( '               GRID ',I3,' IS NOT OF SAME RANK')
+ 9332 FORMAT ( '               GRID ',I3,' CONTRIBUTES TO',I6,    &
+               ' GRID POINTS'/                                    &
+               18X,'<---------- GRID',I6,' ---------->',          &
+                4X,'<----------- GRID',I6,' ----------->'/        &
+               18X,'NR   IX   IY  ISEA  JSEA  IP  WGTH',          &
+                2X,'  WGTH  NA  ISEA  JSEA  IP  WGTH   TAG' )
+ 9333 FORMAT (15X,3I5,2I6,I4,F6.2,2X,F6.2,I4,2I6,I4,F6.2,I6)
+ 9334 FORMAT (64X,2I6,I4,F6.2,I6)
+#endif // W3_T7
 !/
 !/ End of WMGEQL ----------------------------------------------------- /
 !/
@@ -4655,7 +5089,9 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE W3GDATMD
       USE W3ODATMD, ONLY: UNIPTS
@@ -4670,9 +5106,13 @@
 !/ Local parameters
 !/
       INTEGER                 :: I, J, LOW
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
-!/S      CALL STRACE (IENT, 'WMRSPC')
+#ifdef W3_S
+      CALL STRACE (IENT, 'WMRSPC')
+#endif // W3_S
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -4705,17 +5145,21 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Test output
 !
-!/T      WRITE (MDST,9000)
-!/T      DO I=LOW, NRGRD
-!/T        WRITE (MDST,9001) I, RESPEC(I,:)
-!/T        END DO
+#ifdef W3_T
+      WRITE (MDST,9000)
+      DO I=LOW, NRGRD
+        WRITE (MDST,9001) I, RESPEC(I,:)
+        END DO
+#endif // W3_T
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT ( 'TEST WMRSPC : MAP RESPEC FILLED ')
-!/T 9001 FORMAT ( '              ',I4,' : ',20L2)
+#ifdef W3_T
+ 9000 FORMAT ( 'TEST WMRSPC : MAP RESPEC FILLED ')
+ 9001 FORMAT ( '              ',I4,' : ',20L2)
+#endif // W3_T
 !/
 !/ End of WMRSPC ----------------------------------------------------- /
 !/

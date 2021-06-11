@@ -2301,7 +2301,9 @@
 !    Face size factor is also included for average.
            CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 #ifdef W3_B4B
-!/OMPG           CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
+#ifdef W3_OMPG
+           CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
+#endif // W3_OMPG
 #endif // W3_B4B
 
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2330,9 +2332,11 @@
 #endif // W3_OMPG
 
 #ifdef W3_B4B
-!/OMPG/!$OMP SINGLE 
-!/OMPG        AUN = AUN / 1.0e6  ! CB B4B
-!/OMPG/!$OMP END SINGLE 
+#ifdef W3_OMPG
+!$OMP SINGLE 
+        AUN = AUN / 1.0e6  ! CB B4B
+!$OMP END SINGLE 
+#endif // W3_OMPG
 #endif // W3_B4B
 
 !  Assign averaged side-gradient to GrdX, plus latitude factor
@@ -2380,7 +2384,9 @@
 !    Face size factor is also included for average.
            CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 #ifdef W3_B4B
-!/OMPG           CNST6 = int(CNST6 * 1.0e6) ! CB B4B
+#ifdef W3_OMPG
+           CNST6 = int(CNST6 * 1.0e6) ! CB B4B
+#endif // W3_OMPG
 #endif // W3_B4B
 
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2409,9 +2415,11 @@
 #endif // W3_OMPG
 
 #ifdef W3_B4B
-!/OMPG/!$OMP SINGLE 
-!/OMPG        AVN = AVN / 1.0e6  !CB B4B
-!/OMPG/!$OMP END SINGLE 
+#ifdef W3_OMPG
+!$OMP SINGLE 
+        AVN = AVN / 1.0e6  !CB B4B
+!$OMP END SINGLE 
+#endif // W3_OMPG
 #endif // W3_B4B
 
 #ifdef W3_OMPG
@@ -2527,9 +2535,11 @@
 #endif // W3_OMPG
 
 #ifdef W3_B4B
-!/OMPG/!$OMP SINGLE 
-!/OMPG        AUN = AUN / 1.0e6  !CB B4B
-!/OMPG/!$OMP END SINGLE 
+#ifdef W3_OMPG
+!$OMP SINGLE 
+        AUN = AUN / 1.0e6  !CB B4B
+!$OMP END SINGLE 
+#endif // W3_OMPG
 #endif // W3_B4B
 
 #ifdef W3_OMPG
@@ -2546,7 +2556,9 @@
 !    Face size is required for multi-resolution grid.
            CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
 #ifdef W3_B4B
-!/OMPG           CNST6=INT(CNST6 * 1e6)
+#ifdef W3_OMPG
+           CNST6=INT(CNST6 * 1e6)
+#endif // W3_OMPG
 #endif // W3_B4B
 
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2574,9 +2586,11 @@
 #endif // W3_OMPG
 
 #ifdef W3_B4B
-!/OMPG/!$OMP SINGLE 
-!/OMPG        AVN = AVN / 1.0e6  !CB B4B
-!/OMPG/!$OMP END SINGLE 
+#ifdef W3_OMPG
+!$OMP SINGLE 
+        AVN = AVN / 1.0e6  !CB B4B
+!$OMP END SINGLE 
+#endif // W3_OMPG
 #endif // W3_B4B
 
 #ifdef W3_OMPG
@@ -2888,9 +2902,13 @@
           IF ( CNST4 .GT. 1.0E-5 ) THEN
 
 #ifdef W3_T
-!/OMPG/!$OMP ATOMIC Update   !CB - added T switch
+#ifdef W3_OMPG
+!$OMP ATOMIC Update   !CB - added T switch
+#endif // W3_OMPG
              L = L + 1       !CB - added T switch
-!/OMPG/!$OMP END ATOMIC      !CB - added T switch
+#ifdef W3_OMPG
+!$OMP END ATOMIC      !CB - added T switch
+#endif // W3_OMPG
 #endif // W3_T
 
              DO i=1, NTH

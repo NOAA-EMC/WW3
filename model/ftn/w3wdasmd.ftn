@@ -150,11 +150,15 @@
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,   &
                           NAPLOG, NAPOUT, NAPERR
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -169,45 +173,57 @@
 !/ Local parameters :
 !/
       INTEGER                 :: J
-!/T      INTEGER                 :: MREC, MDAT, IREC, IDAT
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T      REAL, ALLOCATABLE       :: TDATA(:,:)
+#ifdef W3_T
+      INTEGER                 :: MREC, MDAT, IREC, IDAT
+#endif // W3_T
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T
+      REAL, ALLOCATABLE       :: TDATA(:,:)
+#endif // W3_T
 !/
 !/ ------------------------------------------------------------------- /
 ! 1.  Initializations and test output
 ! 1.a Subroutine tracing
 !
-!/S      CALL STRACE (IENT, 'W3WDAS')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3WDAS')
+#endif // W3_S
 !
 ! 1.b Echo part of parameter list (test output only).
 !
-!/T      WRITE (NDST,9000) NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,  &
-!/T                        NAPOUT, NAPERR, TIME
-!/T      DO J=1, 3
-!/T        IF ( DASFLAG(J) ) THEN
-!/T            WRITE (NDST,9001) J, DASFLAG(J), RECL(J), NDAT(J)
-!/T            MREC    = MIN(RECL(J),6)
-!/T            MDAT    = MIN(NDAT(J),10)
-!/T            IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
-!/T            ALLOCATE ( TDATA(RECL(J),MDAT) )
-!/T            IF ( J .EQ. 1 ) TDATA = DATA0(:,1:MDAT)
-!/T            IF ( J .EQ. 2 ) TDATA = DATA1(:,1:MDAT)
-!/T            IF ( J .EQ. 3 ) TDATA = DATA2(:,1:MDAT)
-!/T            DO IDAT=1, MDAT
-!/T                WRITE (NDST,9002) IDAT, TDATA(1:MREC,IDAT)
-!/T                IF ( MREC .LT. RECL(J) ) WRITE (NDST,9003)         &
-!/T                       TDATA(MREC+1:RECL(J),IDAT)
-!/T              END DO
-!/T          ELSE
-!/T            WRITE (NDST,9001) J, DASFLAG(J)
-!/T          END IF
-!/T        END DO
-!/T      IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
+#ifdef W3_T
+      WRITE (NDST,9000) NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,  &
+                        NAPOUT, NAPERR, TIME
+      DO J=1, 3
+        IF ( DASFLAG(J) ) THEN
+            WRITE (NDST,9001) J, DASFLAG(J), RECL(J), NDAT(J)
+            MREC    = MIN(RECL(J),6)
+            MDAT    = MIN(NDAT(J),10)
+            IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
+            ALLOCATE ( TDATA(RECL(J),MDAT) )
+            IF ( J .EQ. 1 ) TDATA = DATA0(:,1:MDAT)
+            IF ( J .EQ. 2 ) TDATA = DATA1(:,1:MDAT)
+            IF ( J .EQ. 3 ) TDATA = DATA2(:,1:MDAT)
+            DO IDAT=1, MDAT
+                WRITE (NDST,9002) IDAT, TDATA(1:MREC,IDAT)
+                IF ( MREC .LT. RECL(J) ) WRITE (NDST,9003)         &
+                       TDATA(MREC+1:RECL(J),IDAT)
+              END DO
+          ELSE
+            WRITE (NDST,9001) J, DASFLAG(J)
+          END IF
+        END DO
+      IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
+#endif // W3_T
 !
 ! 1.c Test grid info from W3GDATMD
 !
-!/T      WRITE (NDST,9010) NX, NY, NSEA, NSEAL, NK, NTH,              &
-!/T                        ICLOSE, FLAGLL, SX, SY, X0, Y0
+#ifdef W3_T
+      WRITE (NDST,9010) NX, NY, NSEA, NSEAL, NK, NTH,              &
+                        ICLOSE, FLAGLL, SX, SY, X0, Y0
+#endif // W3_T
 !
 ! 2.  Actual data assimilation routine ------------------------------- /
 !
@@ -233,15 +249,19 @@
 !1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3WDAS :'/                &
 !              '     ILLIGAL GRID SIZES INPUT : ',4I8/                &
 !              '                         GRID : ',4I8/)
-!/T 9000 FORMAT ( ' TEST W3WDAS : UNIT NUMBERS : ',4I4/               &
-!/T               '               MPI SETTINGS : ',4I4/               &
-!/T               '               TIME         : ',I8.8,I7.6)
-!/T 9001 FORMAT ( '               DATASET INFO : ',I1,L2,2I8)
-!/T 9002 FORMAT (17X,I2,6E10.3)
-!/T 9003 FORMAT (19X,   6E10.3)
+#ifdef W3_T
+ 9000 FORMAT ( ' TEST W3WDAS : UNIT NUMBERS : ',4I4/               &
+               '               MPI SETTINGS : ',4I4/               &
+               '               TIME         : ',I8.8,I7.6)
+ 9001 FORMAT ( '               DATASET INFO : ',I1,L2,2I8)
+ 9002 FORMAT (17X,I2,6E10.3)
+ 9003 FORMAT (19X,   6E10.3)
+#endif // W3_T
 !
-!/T 9010 FORMAT ( ' TEST W3WDAS : ARRAY DIMS.  : ',6I8/               &
-!/T               '               GRID         : ',1I2,1L2,4E11.4)
+#ifdef W3_T
+ 9010 FORMAT ( ' TEST W3WDAS : ARRAY DIMS.  : ',6I8/               &
+               '               GRID         : ',1I2,1L2,4E11.4)
+#endif // W3_T
 !/
 !/ End of W3WDAS ----------------------------------------------------- /
 !/

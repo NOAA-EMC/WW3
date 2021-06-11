@@ -121,7 +121,9 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !/
       USE W3GDATMD
@@ -154,7 +156,9 @@
                                  IX0, IXN, IY0, IYN, TIME0(2), IH0,   &
                                  IM0, ID0, IID, IJ0, IOTEST, IINC, IU,&
                                  TIMEN(2), JLEN
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: DTREQ, DTEST
       REAL                    :: FAC, XYMAX
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
@@ -195,7 +199,9 @@
       WRITE (NDSO,900)
 !
       CALL ITRACE ( NDSTRC, NTRACE )
-!/S      CALL STRACE (IENT, 'GXOUTF')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GXOUTF')
+#endif // W3_S
 !
       JLEN   = LEN_TRIM(FNMPRE)
       OPEN (NDSI,FILE=FNMPRE(:JLEN)//'gx_outf.inp',STATUS='OLD',       &
@@ -494,10 +500,12 @@
            WRITE (NDSCTL,991) 'wlv  ', 0, IU, 'Water Level (m)'
       IF ( FLREQ(01,06) )                                              &
            WRITE (NDSCTL,991) 'ice  ', 0, IU, 'Ice Conc. (-)  '
-!/IS2  IF (FLREQ(01,09) )                                              &
-!/IS2      WRITE (NDSCTL,991) 'ic1 ', 0, IU, 'Ice thick. (m) '
-!/IS2  IF (FLREQ(01,10) )                                              &
-!/IS2      WRITE (NDSCTL,991) 'ic5 ', 0, IU, 'Floe diam. (m)  '
+#ifdef W3_IS2
+  IF (FLREQ(01,09) )                                              &
+      WRITE (NDSCTL,991) 'ic1 ', 0, IU, 'Ice thick. (m) '
+  IF (FLREQ(01,10) )                                              &
+      WRITE (NDSCTL,991) 'ic5 ', 0, IU, 'Floe diam. (m)  '
+#endif // W3_IS2
       IF ( FLREQ(02,01) )                                              &
            WRITE (NDSCTL,991) 'hs   ', 0, IU, 'Wave height (m)'
       IF ( FLREQ(02,02) )                                              &
@@ -692,11 +700,13 @@
                ' ========================================='/          &
                '         WAVEWATCH III GrADS field output '/)
 !
-!/T 9050 FORMAT ( ' TEST GXOUTF : KPDS : ',13I4/                      &
-!/T               '                      ',12I4)
-!/T 9051 FORMAT ( ' TEST GXOUTF : KGDS : ',8I6/                       &
-!/T               '                      ',8I6/                       &
-!/T               '                      ',6I6)
+#ifdef W3_T
+ 9050 FORMAT ( ' TEST GXOUTF : KPDS : ',13I4/                      &
+               '                      ',12I4)
+ 9051 FORMAT ( ' TEST GXOUTF : KGDS : ',8I6/                       &
+               '                      ',8I6/                       &
+               '                      ',6I6)
+#endif // W3_T
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
                '     ERROR IN OPENING INPUT FILE'/                    &
@@ -820,16 +830,22 @@
       INTEGER                 :: MAPXCL(NY,NX), MAPDRY(NY,NX),        &
                                  MAPICE(NY,NX), MAPLND(NY,NX),        &
                                  MAPMSK(NY,NX)
-!/S      INTEGER, SAVE           :: IENT   = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   = 0
+#endif // W3_S
       REAL                    :: X1(NX,NY), XX(NX,NY), XY(NX,NY),     &
                                  XA(NX,NY,0:NOSWLL)
       REAL                    :: VALLND = 0.001
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'GXEXGO')
+#ifdef W3_S
+      CALL STRACE (IENT, 'GXEXGO')
+#endif // W3_S
 !
-!/T      WRITE (NDST,9000) ((FLREQ(J,K),J=1,NOGRP), K=1,NGRPP)
+#ifdef W3_T
+      WRITE (NDST,9000) ((FLREQ(J,K),J=1,NOGRP), K=1,NGRPP)
+#endif // W3_T
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -926,7 +942,9 @@
         FLTRI = .FALSE.
         FLPRT = .FALSE. 
 !
-!/T            WRITE (NDST,9020) IDOUT(J,K)
+#ifdef W3_T
+            WRITE (NDST,9020) IDOUT(J,K)
+#endif // W3_T
 !
 ! 2.a Set output arrays and parameters
 !
@@ -991,15 +1009,19 @@
 !
 !     Ice thickness
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.11 ) THEN
-!/IS2          FLONE = .TRUE.
-!/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
+#ifdef W3_IS2
+        ELSE IF ( J.EQ.1 .AND. K.EQ.11 ) THEN
+          FLONE = .TRUE.
+          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
+#endif // W3_IS2
 !
 !     Average sea ice floe diameter
 !
-!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.12) THEN
-!/IS2          FLONE = .TRUE.
-!/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )
+#ifdef W3_IS2
+        ELSE IF ( J.EQ.1 .AND. K.EQ.12) THEN
+          FLONE = .TRUE.
+          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )
+#endif // W3_IS2
 !
 !
 !     Significant wave height
@@ -1393,9 +1415,13 @@
   999 FORMAT (/' *** WAVEWATCH III ERROR IN GXEXGO :'/                &
                '     PLEASE UPDATE FIELDS !!! '/)
 !
-!/T 9000 FORMAT (' TEST GXEXGO : FLAGS  :',40L2)
+#ifdef W3_T
+ 9000 FORMAT (' TEST GXEXGO : FLAGS  :',40L2)
+#endif // W3_T
 !
-!/T 9020 FORMAT (' TEST GXEXGO : OUTPUT FIELD : ',A)
+#ifdef W3_T
+ 9020 FORMAT (' TEST GXEXGO : OUTPUT FIELD : ',A)
+#endif // W3_T
 !/
 !/ End of GXEXGO ----------------------------------------------------- /
 !/

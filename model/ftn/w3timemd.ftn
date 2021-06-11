@@ -68,7 +68,9 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       PUBLIC
 !
@@ -141,11 +143,15 @@
 !/ Local parameters
 !/
       INTEGER                 :: NYMD, NHMS, NSEC
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'TICK21')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TICK21')
+#endif // W3_S
 !
 ! Zero increment: get "legal" date
 !
@@ -250,12 +256,16 @@
 !/
       INTEGER                 :: NY, NM, ND
       INTEGER, SAVE           :: NDPM(12)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL                 :: LEAP
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'IYMD21')
+#ifdef W3_S
+      CALL STRACE (IENT, 'IYMD21')
+#endif // W3_S
 !
 ! Declare the number of days in month depending on calendar
 !
@@ -385,11 +395,15 @@
 !/
       INTEGER                 :: NY1, ND1, NY2, ND2, NS1, NS2, NS,   &
                                  ND, NST
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'DSEC21')
+#ifdef W3_S
+      CALL STRACE (IENT, 'DSEC21')
+#endif // W3_S
 !
 ! Convert dates and times :
 !
@@ -503,12 +517,16 @@
 !/
       INTEGER                 :: NY, NM, ND
       INTEGER, SAVE           :: NDPM(12)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       LOGICAL                 :: LEAP
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'MYMD21')
+#ifdef W3_S
+      CALL STRACE (IENT, 'MYMD21')
+#endif // W3_S
 !
 ! Declare the number of days in month depending on calendar
 !
@@ -628,11 +646,15 @@
 !/
       INTEGER                 :: A1, B1, C1, D1, A2, B2, C2, D2
       REAL                    :: E1, E2
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'TDIFF')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TDIFF')
+#endif // W3_S
 !
 ! Convert dates and times :
 !
@@ -878,11 +900,15 @@
 !/
       INTEGER                 :: IY,IMO,ID,IH,IMI,IS
       INTEGER(KIND=4)         :: JDAY
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'TICK21')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TICK21')
+#endif // W3_S
 !
 ! Zero increment: get "legal" date
 !
@@ -952,7 +978,9 @@
 !/
 ! -------------------------------------------------------------------- /
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTB )
+#ifdef W3_F90
+      CALL DATE_AND_TIME ( VALUES=PRFTB )
+#endif // W3_F90
 !
       FLPROF = .TRUE.
 !
@@ -1035,8 +1063,10 @@
 !
       IF ( .NOT. FLPROF ) RETURN
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTA )
-!/F90      PTIME  = TDIFF ( PRFTB,PRFTA )
+#ifdef W3_F90
+      CALL DATE_AND_TIME ( VALUES=PRFTA )
+      PTIME  = TDIFF ( PRFTB,PRFTA )
+#endif // W3_F90
 !
       RETURN
 !/
@@ -1098,11 +1128,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'T2D')
+#ifdef W3_S
+      CALL STRACE (IENT, 'T2D')
+#endif // W3_S
 !
         DAT(1)=TIME(1)/10000
         DAT(2)=(TIME(1)-DAT(1)*10000)/100
@@ -1175,11 +1209,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'D2T')
+#ifdef W3_S
+      CALL STRACE (IENT, 'D2T')
+#endif // W3_S
 !
         TIME(1)=DAT(1)*10000+DAT(2)*100+DAT(3)
         TIME(2)=DAT(5)*10000+DAT(6)*100+DAT(7)
@@ -1263,11 +1301,15 @@
    INTEGER                 :: YEAR, MONTH, DAY, UTC, HOUR, MINUTE
    REAL                    :: SECOND
    INTEGER                 :: A, Y, M, JDN
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'D2J')
+#ifdef W3_S
+      CALL STRACE (IENT, 'D2J')
+#endif // W3_S
 !
    YEAR   = DAT(1)                        ! Year
    MONTH  = DAT(2)                        ! Month
@@ -1374,11 +1416,15 @@
    REAL                      :: SECOND
    INTEGER                   :: YEAR, MONTH, DAY, HOUR, MINUTE
    INTEGER                   :: JALPHA,JA,JB,JC,JD,JE,IJUL
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'J2D')
+#ifdef W3_S
+      CALL STRACE (IENT, 'J2D')
+#endif // W3_S
 !
    IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
       IERR=1
@@ -1506,11 +1552,15 @@
 !/
       INTEGER                 :: A1, B1, C1, D1, A2, B2, C2, D2
       DOUBLE PRECISION        :: E1, E2
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'TSUB')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TSUB')
+#endif // W3_S
 !
 ! Convert dates and times :
 !
@@ -1603,11 +1653,15 @@
 !/
       INTEGER(KIND=8)         :: A1, B1, C1, D1, A2, B2, C2, D2
       INTEGER(KIND=8)         :: E1, E2
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'TSUBSEC')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TSUBSEC')
+#endif // W3_S
 !
       IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
         A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
@@ -1704,11 +1758,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'U2D')
+#ifdef W3_S
+      CALL STRACE (IENT, 'U2D')
+#endif // W3_S
 !
 
 DAT(4) = 0  ! force to UTC timezone
@@ -1945,11 +2003,15 @@ DAT(8) = 0  ! force milliseconds to 0
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'T2ISO')
+#ifdef W3_S
+      CALL STRACE (IENT, 'T2ISO')
+#endif // W3_S
 !
 !/
       WRITE(ISODT,'(I4,"-",I2.2,"-",I2.2,"T",I2.2,":",I2.2,":",I2.2)') &

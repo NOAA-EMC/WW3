@@ -5,27 +5,7 @@ srcdir='../src'
 
 mkdir $srcdir
 
-cd $ftndir 
-ftnfiles=`ls *.ftn`
-ftnfiles=$(sed -e "s/.ftn//g" <<< $ftnfiles)
-nonftnfiles=`ls -I "*.ftn"`
-
-cd $thisdir
-
-set -x
-for file in $ftnfiles
-do
-  echo "convert $file.ftn to a .F90"
-  gawk -f $thisdir/switch2cpp.awk < $ftndir/${file}.ftn > $srcdir/${file}.F90
-done
-
-for file in $nonftnfiles 
-do 
-  echo "copy $file to src" 
-  cp $ftndir/${file} $srcdir/
-done 
-
-DIRLIST="SCRIP PDLIB" 
+DIRLIST=". SCRIP PDLIB" 
 
 for DIR in $DIRLIST
 do 
@@ -45,8 +25,13 @@ do
   for file in $ftnfiles
   do
     echo "convert $DIR/$file.ftn to a .F90"
-    echo "$ftndir/$DIR/${file}.ftn"
-    gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.ftn > $srcdir/$DIR/${file}.F90
+    mv $ftndir/$DIR/${file}.ftn $ftndir/$DIR/${file}.tmp
+    #process the file multiple times in case there is a double switch (and a thrid time for good measure) 
+    gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp > $ftndir/$DIR/${file}.tmp1
+    gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp1 > $ftndir/$DIR/${file}.tmp2
+    gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp2 > $ftndir/$DIR/${file}.ftn
+    rm $ftndir/$DIR/${file}.tmp $ftndir/$DIR/${file}.tmp1 $ftndir/$DIR/${file}.tmp2
+    cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
   done
 
   for file in $nonftnfiles

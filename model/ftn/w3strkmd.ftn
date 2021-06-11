@@ -314,8 +314,10 @@
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
-!/MPI
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !
 !  1. Purpose :
 !
@@ -428,13 +430,15 @@
       INTEGER    :: latind1, latind2, lonind1, lonind2
       REAL       :: lonext, latext
 
-!/MPI      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
-!/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
-!/MPI      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
-!/MPI      INTEGER    :: REQ(16)
-!/MPI/!    INTEGER    :: ISTAT(MPI_STATUS_SIZE,16)
-!/MPI      REAL       :: COMMARR1(44)
-!/MPI      INTEGER    :: COMMARR2(11)
+#ifdef W3_MPI
+      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
+!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
+      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
+      INTEGER    :: REQ(16)
+!    INTEGER    :: ISTAT(MPI_STATUS_SIZE,16)
+      REAL       :: COMMARR1(44)
+      INTEGER    :: COMMARR2(11)
+#endif // W3_MPI
 !
 !  4. Subroutines used :
 !
@@ -464,8 +468,10 @@
 !
 !/ ------------------------------------------------------------------- /
 
-!/MPI      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
-!/MPI      CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
+#ifdef W3_MPI
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+      CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
+#endif // W3_MPI
       NULLIFY( sysA )
       NULLIFY( maxSys )
 
@@ -475,7 +481,9 @@
 !        Read file here, and set up 2d array wsdat with the data.
          t0 = 1
          IF (intype.EQ.1) THEN
-!/MPI            IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+            IF (rank.EQ.0) THEN
+#endif // W3_MPI
 !           Read partRes format file
             WRITE(20,*) 'Reading partRes partitioning file...'
             filesize = 7500000
@@ -515,9 +523,13 @@
             line = line-1
             WRITE(6,*) '... finished'
 !            DEALLOCATE(date0)
-!/MPI            END IF
+#ifdef W3_MPI
+            END IF
+#endif // W3_MPI
          ELSE IF (intype.EQ.2) THEN
-!/MPI            IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+            IF (rank.EQ.0) THEN
+#endif // W3_MPI
 !           Read WW3 Spectral Partition format file
 !           Query input file to determine required array sizes
             INQUIRE(FILE=filename, EXIST=file_exists)
@@ -583,7 +595,9 @@
               IF (FLFORM) THEN
                  READ (11,1000,ERR=802,END=112) date1,date2,x,y, &
                                   numpart,wnd,wnddir,invar6,invar7
-!/del  write(*,*) '0:',x,y,numpart
+#ifdef W3_del
+  write(*,*) '0:',x,y,numpart
+#endif // W3_del
                  skipln = skipln+1
               ELSE
                  READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y, &
@@ -642,7 +656,9 @@
                  DO line = 1,numpart+1
                    READ (11,1010,END=111,ERR=802,IOSTAT=IOERR)      &
                             invar1,invar2,invar3,invar4
-!/del write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
+#ifdef W3_del
+ write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
+#endif // W3_del
                    readln = readln+1
                  END DO
               ELSE
@@ -834,10 +850,14 @@
             IF (ALLOCATED(PSPR)) DEALLOCATE(PSPR)
             IF (ALLOCATED(PWF)) DEALLOCATE(PWF)
 
-!/MPI            END IF
+#ifdef W3_MPI
+            END IF
+#endif // W3_MPI
          END IF
 
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
 
 !        Find unique time steps (and sort in ascending order)
          CALL UNIQUE(REAL(ts(1:line)),line,uniqueTim,maxTs)
@@ -916,24 +936,38 @@
                mlat(I,J) = uniqueLat(J)
             END DO
          END DO
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
 
-!/MPI         CALL MPI_BCAST(maxI,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-!/MPI         CALL MPI_BCAST(maxJ,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-!/MPI         CALL MPI_BCAST(maxTs,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+#ifdef W3_MPI
+         CALL MPI_BCAST(maxI,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(maxJ,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(maxTs,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+#endif // W3_MPI
 
 !        Allocate the wsdat structure
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
             WRITE(20,*) 'Allocating wsdat...'
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
          NULLIFY(wsdat)
          ALLOCATE(wsdat(maxTs))
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
             WRITE(20,*) 'SIZE(wsdat) = ',SIZE(wsdat)
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
 
 !        Allocate and initialize the wsdat array
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
          DO tsA = 1,maxTs
             ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
             ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
@@ -1090,110 +1124,116 @@
 !         IF (ALLOCATED(wf0)) DEALLOCATE(wf0)
          IF (ALLOCATED(wndSpd0)) DEALLOCATE(wndSpd0)
          IF (ALLOCATED(wndDir0)) DEALLOCATE(wndDir0)
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
 
-!/MPI/!         Communicate the wsdat entries from rank=0 to other ranks
-!/MPI          DO tsA = t0,maxTs
-!/MPI             irank = MOD((tsA-t0),MIN(nproc,maxTS))
-!/MPI/!             WRITE(20,*) 'Rank,irank=',rank,irank
-!/MPI             IF (irank.NE.0) THEN
-!/MPI/!               WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
-!/MPI
-!/MPI                IF (rank.EQ.irank) THEN
-!/MPI                   ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
-!/MPI                   ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
-!/MPI                   ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
-!/MPI                   ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
-!/MPI
-!/MPI                   DO j = 1,maxJ
-!/MPI                      DO i = 1,maxI
-!/MPI                         wsdat(tsA)%maxi=maxI
-!/MPI                         wsdat(tsA)%maxj=maxJ
-!/MPI                         wsdat(tsA)%par(i,j)%hs(1:10)=9999.
-!/MPI                         wsdat(tsA)%par(i,j)%tp(1:10)=9999.
-!/MPI                         wsdat(tsA)%par(i,j)%dir(1:10)=9999.
-!/MPI                         wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
-!/MPI                         wsdat(tsA)%par(i,j)%ipart(1:10)=0
-!/MPI                         wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
-!/MPI                         wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
-!/MPI                         wsdat(tsA)%wnd(i,j)%wdir=9999.
-!/MPI                         wsdat(tsA)%wnd(i,j)%wspd=9999.
-!/MPI                         wsdat(tsA)%par(i,j)%checked=-1
-!/MPI                      END DO
-!/MPI                   END DO
-!/MPI                END IF
-!/MPI
-!/MPI                DO j = 1,maxJ
-!/MPI                   DO i = 1,maxI
-!/MPI                      tag1 = ((j-1)*maxI+i)*10
-!/MPI
-!/MPI                      IF (rank.EQ.0) THEN
-!/MPI/!                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
-!/MPI/!                                rank,irank,(tag1+1)
-!/MPI                         COMMARR1 = (/wsdat(tsA)%par(i,j)%hs(:), &
-!/MPI                                      wsdat(tsA)%par(i,j)%tp(:), &
-!/MPI                                      wsdat(tsA)%par(i,j)%dir(:), &
-!/MPI                                      wsdat(tsA)%par(i,j)%dspr(:), &
-!/MPI                                      wsdat(tsA)%wnd(i,j)%wdir, &
-!/MPI                                      wsdat(tsA)%wnd(i,j)%wspd, &
-!/MPI                                      wsdat(tsA)%lat(i,j), &
-!/MPI                                      wsdat(tsA)%lon(i,j)/)
-!/MPI                         CALL MPI_SEND(COMMARR1,44,MPI_REAL,irank, &
-!/MPI                                       (tag1+1),MPI_COMM_WORLD,IERR)
-!/MPI                      END IF
-!/MPI                      IF (rank.EQ.irank) THEN
-!/MPI/!                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
-!/MPI/!                                rank,irank,(tag1+1)
-!/MPI                         CALL MPI_RECV(COMMARR1,44,MPI_REAL,0,(tag1+1), &
-!/MPI                                       MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI                         wsdat(tsA)%par(i,j)%hs = COMMARR1(1:10)
-!/MPI                         wsdat(tsA)%par(i,j)%tp = COMMARR1(11:20)
-!/MPI                         wsdat(tsA)%par(i,j)%dir = COMMARR1(21:30)
-!/MPI                         wsdat(tsA)%par(i,j)%dspr = COMMARR1(31:40)
-!/MPI                         wsdat(tsA)%wnd(i,j)%wdir = COMMARR1(41)
-!/MPI                         wsdat(tsA)%wnd(i,j)%wspd = COMMARR1(42)
-!/MPI                         wsdat(tsA)%lat(i,j) = COMMARR1(43)
-!/MPI                         wsdat(tsA)%lon(i,j) = COMMARR1(44)
-!/MPI                      END IF
-!/MPI
-!/MPI                      IF (rank.EQ.0) THEN
-!/MPI                         CALL MPI_SEND(wsdat(tsA)%date,1, &
-!/MPI                              MPI_DOUBLE_PRECISION,irank, &
-!/MPI                              (tag1+2),MPI_COMM_WORLD,IERR)
-!/MPI                      END IF
-!/MPI                      IF (rank.EQ.irank) THEN
-!/MPI                         CALL MPI_RECV(wsdat(tsA)%date,1, &
-!/MPI                              MPI_DOUBLE_PRECISION,0,(tag1+2), &
-!/MPI                              MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI                      END IF
-!/MPI
-!/MPI                      IF (rank.EQ.0) THEN
-!/MPI/!                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
-!/MPI/!                                rank,irank,(tag1+3)
-!/MPI                         COMMARR2 = (/wsdat(tsA)%par(i,j)%ipart(:), &
-!/MPI                                      wsdat(tsA)%par(i,j)%checked/)
-!/MPI                         CALL MPI_SEND(COMMARR2,11, &
-!/MPI                           MPI_INTEGER,irank,(tag1+3),MPI_COMM_WORLD,IERR)
-!/MPI                      END IF
-!/MPI                      IF (rank.EQ.irank) THEN
-!/MPI/!                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
-!/MPI/!                                rank,irank,(tag1+3)
-!/MPI                         CALL MPI_RECV(COMMARR2,11, &
-!/MPI                           MPI_INTEGER,0,(tag1+3), &
-!/MPI                           MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI                         wsdat(tsA)%par(i,j)%ipart(:) = COMMARR2(1:10)
-!/MPI                         wsdat(tsA)%par(i,j)%checked = COMMARR2(11)
-!/MPI                      END IF
-!/MPI
-!/MPI                   END DO
-!/MPI                END DO
-!/MPI            END IF
-!/MPI         END DO
-!/MPI
-!/MPI         CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
+#ifdef W3_MPI
+!         Communicate the wsdat entries from rank=0 to other ranks
+          DO tsA = t0,maxTs
+             irank = MOD((tsA-t0),MIN(nproc,maxTS))
+!             WRITE(20,*) 'Rank,irank=',rank,irank
+             IF (irank.NE.0) THEN
+!               WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
+
+                IF (rank.EQ.irank) THEN
+                   ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
+                   ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
+                   ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
+                   ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
+
+                   DO j = 1,maxJ
+                      DO i = 1,maxI
+                         wsdat(tsA)%maxi=maxI
+                         wsdat(tsA)%maxj=maxJ
+                         wsdat(tsA)%par(i,j)%hs(1:10)=9999.
+                         wsdat(tsA)%par(i,j)%tp(1:10)=9999.
+                         wsdat(tsA)%par(i,j)%dir(1:10)=9999.
+                         wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
+                         wsdat(tsA)%par(i,j)%ipart(1:10)=0
+                         wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
+                         wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
+                         wsdat(tsA)%wnd(i,j)%wdir=9999.
+                         wsdat(tsA)%wnd(i,j)%wspd=9999.
+                         wsdat(tsA)%par(i,j)%checked=-1
+                      END DO
+                   END DO
+                END IF
+
+                DO j = 1,maxJ
+                   DO i = 1,maxI
+                      tag1 = ((j-1)*maxI+i)*10
+
+                      IF (rank.EQ.0) THEN
+!                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
+!                                rank,irank,(tag1+1)
+                         COMMARR1 = (/wsdat(tsA)%par(i,j)%hs(:), &
+                                      wsdat(tsA)%par(i,j)%tp(:), &
+                                      wsdat(tsA)%par(i,j)%dir(:), &
+                                      wsdat(tsA)%par(i,j)%dspr(:), &
+                                      wsdat(tsA)%wnd(i,j)%wdir, &
+                                      wsdat(tsA)%wnd(i,j)%wspd, &
+                                      wsdat(tsA)%lat(i,j), &
+                                      wsdat(tsA)%lon(i,j)/)
+                         CALL MPI_SEND(COMMARR1,44,MPI_REAL,irank, &
+                                       (tag1+1),MPI_COMM_WORLD,IERR)
+                      END IF
+                      IF (rank.EQ.irank) THEN
+!                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
+!                                rank,irank,(tag1+1)
+                         CALL MPI_RECV(COMMARR1,44,MPI_REAL,0,(tag1+1), &
+                                       MPI_COMM_WORLD,MPI_STATUS,IERR)
+                         wsdat(tsA)%par(i,j)%hs = COMMARR1(1:10)
+                         wsdat(tsA)%par(i,j)%tp = COMMARR1(11:20)
+                         wsdat(tsA)%par(i,j)%dir = COMMARR1(21:30)
+                         wsdat(tsA)%par(i,j)%dspr = COMMARR1(31:40)
+                         wsdat(tsA)%wnd(i,j)%wdir = COMMARR1(41)
+                         wsdat(tsA)%wnd(i,j)%wspd = COMMARR1(42)
+                         wsdat(tsA)%lat(i,j) = COMMARR1(43)
+                         wsdat(tsA)%lon(i,j) = COMMARR1(44)
+                      END IF
+
+                      IF (rank.EQ.0) THEN
+                         CALL MPI_SEND(wsdat(tsA)%date,1, &
+                              MPI_DOUBLE_PRECISION,irank, &
+                              (tag1+2),MPI_COMM_WORLD,IERR)
+                      END IF
+                      IF (rank.EQ.irank) THEN
+                         CALL MPI_RECV(wsdat(tsA)%date,1, &
+                              MPI_DOUBLE_PRECISION,0,(tag1+2), &
+                              MPI_COMM_WORLD,MPI_STATUS,IERR)
+                      END IF
+
+                      IF (rank.EQ.0) THEN
+!                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
+!                                rank,irank,(tag1+3)
+                         COMMARR2 = (/wsdat(tsA)%par(i,j)%ipart(:), &
+                                      wsdat(tsA)%par(i,j)%checked/)
+                         CALL MPI_SEND(COMMARR2,11, &
+                           MPI_INTEGER,irank,(tag1+3),MPI_COMM_WORLD,IERR)
+                      END IF
+                      IF (rank.EQ.irank) THEN
+!                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
+!                                rank,irank,(tag1+3)
+                         CALL MPI_RECV(COMMARR2,11, &
+                           MPI_INTEGER,0,(tag1+3), &
+                           MPI_COMM_WORLD,MPI_STATUS,IERR)
+                         wsdat(tsA)%par(i,j)%ipart(:) = COMMARR2(1:10)
+                         wsdat(tsA)%par(i,j)%checked = COMMARR2(11)
+                      END IF
+
+                   END DO
+                END DO
+            END IF
+         END DO
+
+         CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
+#endif // W3_MPI
 
 
-!/MPI      IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif // W3_MPI
 ! ----*** Test Output *** --------------------------------------------------
       IF (testout) THEN
 !-----RAW PARTITION output: Coordinates
@@ -1305,20 +1345,30 @@
 
       CLOSE(35)
       END IF
-!/MPI      END IF
+#ifdef W3_MPI
+      END IF
+#endif // W3_MPI
 
 ! ------------------------------------------------------------------------
 
 !        Allocate the sysA structure
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
          WRITE(20,*) 'Allocating sysA...'
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
          ALLOCATE( sysA(maxTs) )
-!/MPI         IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+         IF (rank.EQ.0) THEN
+#endif // W3_MPI
          WRITE(20,*) 'SIZE(sysA) = ',SIZE(sysA)
          WRITE(6,1020) ' Number of time levels being processed:',SIZE(sysA)
  1020    FORMAT(A,I4)
-!/MPI         END IF
+#ifdef W3_MPI
+         END IF
+#endif // W3_MPI
 
 !        Allocate maxSys
          ALLOCATE( maxSys(maxTs) )
@@ -1335,13 +1385,19 @@
       END IF
 
 !     Big loop over all time levels
-!/MPI      IF (rank.EQ.0) THEN
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif // W3_MPI
          WRITE(6,*) 'Performing spatial tracking...'
-!/MPI      END IF
-!/MPI/!      WRITE(20,*) 'rank,t0,maxTs,nproc =',rank,t0,maxTs,nproc
-!/MPI      DO tsA = (t0+rank),maxTs,MIN(nproc,maxTS)
-!/MPI/!         WRITE(20,*) 'Computing: Rank, tsA =',rank,tsA
-!/SHRD      DO tsA = t0,maxTs
+#ifdef W3_MPI
+      END IF
+!      WRITE(20,*) 'rank,t0,maxTs,nproc =',rank,t0,maxTs,nproc
+      DO tsA = (t0+rank),maxTs,MIN(nproc,maxTS)
+!         WRITE(20,*) 'Computing: Rank, tsA =',rank,tsA
+#endif // W3_MPI
+#ifdef W3_SHRD
+      DO tsA = t0,maxTs
+#endif // W3_SHRD
 
           WRITE(20,*) 'Call spiralTrackV3, tsA=',tsA,'...'
           CALL spiralTrackV3 ( wsdat(tsA), dirKnob, perKnob, wetPts, &
@@ -1353,284 +1409,288 @@
           WRITE(20,*) SIZE(sysA(tsA)%sys)
       END DO
 
-!/MPI      CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
-!/MPI
-!/MPI/!!     Define communicator for array of integers in structure "system"
-!/MPI/!      DOMSIZE = maxI*maxJ
-!/MPI/!      WRITE(20,*) 'Rank',rank,'DOMSIZE =',DOMSIZE
-!/MPI/!      CALL MPI_TYPE_CONTIGUOUS(DOMSIZE,MPI_INTEGER,MPI_INT_DOMARR,IERR)
-!/MPI/!      CALL MPI_TYPE_COMMIT(MPI_INT_DOMARR,IERR)
-!/MPI/!      CALL MPI_TYPE_EXTENT(MPI_INT_DOMARR,EXTENT,IERR)
-!/MPI/!      WRITE(20,*) 'Rank',rank,'has set up communicator MPI_INT_DOMARR, &
-!/MPI/!                  size =',EXTENT
-!/MPI
-!/MPI/!!     Define communicator for array of reals in structure "system"
-!/MPI/!      CALL MPI_TYPE_CONTIGUOUS(DOMSIZE,MPI_REAL,MPI_REAL_DOMARR,IERR)
-!/MPI/!      CALL MPI_TYPE_COMMIT(MPI_REAL_DOMARR,IERR)
-!/MPI/!      CALL MPI_TYPE_EXTENT(MPI_REAL_DOMARR,EXTENT,IERR)
-!/MPI/!      WRITE(20,*) 'Rank',rank,'has set up communicator MPI_REAL_DOMARR, &
-!/MPI/!                  size =',EXTENT
-!/MPI
-!/MPI/!     Communicate results back to rank 0
-!/MPI      DO tsA = t0,maxTs
-!/MPI         irank = MOD((tsA-t0),MIN(nproc,maxTS))
-!/MPI/!         WRITE(20,*) 'Rank,irank=',rank,irank
-!/MPI         IF (irank.NE.0) THEN
-!/MPI/!            WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
-!/MPI
-!/MPI/!           Send maxSys(tsA) at each time level to rank 0
-!/MPI            tag1 = tsA
-!/MPI            IF (rank.EQ.irank) THEN
-!/MPI/!              Send results from current rank to rank 0 (blocking)
-!/MPI/!               WRITE(20,*) '>> Sending: rank,tsA,tag1=',rank,tsA,tag1
-!/MPI               CALL MPI_SEND(maxSys(tsA),1,MPI_INTEGER,0,tag1, &
-!/MPI                             MPI_COMM_WORLD,IERR)
-!/MPI/!               WRITE(20,*) 'Rank, IERR=',rank,IERR
-!/MPI            END IF
-!/MPI            IF (rank.EQ.0) THEN
-!/MPI/!               WRITE(20,*) '<< Receiving: rank,tsA,tag1=',rank,tsA,tag1
-!/MPI               CALL MPI_RECV(maxSys(tsA),1,MPI_INTEGER, &
-!/MPI                             irank,tag1,MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI/!              Allocate structure at this time level
-!/MPI               ALLOCATE( sysA(tsA)%sys(maxSys(tsA)) )
-!/MPI               DO ic = 1,maxSys(tsA)
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%i )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%j )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%lon )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%lat )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%hs )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%tp )
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%dir)
-!/MPI                  NULLIFY( sysA(tsA)%sys(ic)%dspr)
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%i(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%j(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%lon(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%lat(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%hs(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%tp(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%dir(maxI*maxJ) )
-!/MPI                  ALLOCATE( sysA(tsA)%sys(ic)%dspr(maxI*maxJ) )
-!/MPI                  sysA(tsA)%sys(ic)%i(:) = 9999  
-!/MPI                  sysA(tsA)%sys(ic)%j(:) = 9999
-!/MPI                  sysA(tsA)%sys(ic)%lon(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%lat(:) = 9999. 
-!/MPI                  sysA(tsA)%sys(ic)%hs(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%tp(:) = 9999. 
-!/MPI                  sysA(tsA)%sys(ic)%dir(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%dspr(:) = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%hsMean = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%tpMean = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%dirMean = 9999.
-!/MPI                  sysA(tsA)%sys(ic)%sysInd = 9999
-!/MPI                  sysA(tsA)%sys(ic)%nPoints = 9999
-!/MPI                  sysA(tsA)%sys(ic)%grp = 9999
-!/MPI               END DO
-!/MPI            END IF
-!/MPI
-!/MPI/!           Send data fields at each (tsA,ic) combination
-!/MPI            IF ((rank.EQ.0).OR.(rank.EQ.irank)) THEN
-!/MPI            DO ic = 1, maxSys(tsA)
-!/MPI/!              Construct a unique tag for each message
-!/MPI               tag2 = tsA*10000 + ic*100
-!/MPI               DOMSIZE = maxI*maxJ
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+1)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
-!/MPI                  MPI_INTEGER,0,(tag2+1),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+1)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
-!/MPI                    MPI_INTEGER,irank,(tag2+1), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+2)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
-!/MPI                  MPI_INTEGER,0,(tag2+2),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+2)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
-!/MPI                    MPI_INTEGER,irank,(tag2+2), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+3)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+3),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+3)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+3), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+4)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+4),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+4)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+4), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+5)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+5),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+5)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+5), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+6)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+6),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+6)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+6), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+7)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+7),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+7)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+7), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+8)
-!/MPI                 CALL MPI_SEND(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
-!/MPI                  MPI_REAL,0,(tag2+8),MPI_COMM_WORLD,REQ(1),IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+8)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
-!/MPI                    MPI_REAL,irank,(tag2+8), &
-!/MPI                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-!/MPI               END IF
-!/MPI/!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+9)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
-!/MPI                     0,(tag2+9),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+9)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
-!/MPI                    irank,(tag2+9),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+10)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
-!/MPI                     0,(tag2+10),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+10)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
-!/MPI                    irank,(tag2+10),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+11)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
-!/MPI                     0,(tag2+11),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+11)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
-!/MPI                    irank,(tag2+11),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+12)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
-!/MPI                     0,(tag2+12),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+12)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
-!/MPI                    irank,(tag2+12),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+13)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
-!/MPI                     0,(tag2+13),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+13)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
-!/MPI                    irank,(tag2+13),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI
-!/MPI               IF (rank.EQ.irank) THEN
-!/MPI/!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+14)
-!/MPI                  CALL MPI_SEND(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
-!/MPI                     0,(tag2+14),MPI_COMM_WORLD,IERR)
-!/MPI               END IF
-!/MPI               IF (rank.EQ.0) THEN
-!/MPI/!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-!/MPI/!                             rank,irank,(tag2+14)
-!/MPI                 CALL MPI_RECV(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
-!/MPI                    irank,(tag2+14),MPI_COMM_WORLD,MPI_STATUS,IERR)
-!/MPI               END IF
-!/MPI            END DO
-!/MPI            END IF
-!/MPI         END IF
-!/MPI      END DO
-!/MPI
-!/MPI      CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
-!/MPI
-!/MPI/!      CALL MPI_TYPE_FREE(MPI_INT_DOMARR,IERR)
-!/MPI/!      CALL MPI_TYPE_FREE(MPI_REAL_DOMARR,IERR)
-!/MPI
+#ifdef W3_MPI
+      CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
 
-!/MPI      IF (rank.EQ.0) THEN
+!!     Define communicator for array of integers in structure "system"
+!      DOMSIZE = maxI*maxJ
+!      WRITE(20,*) 'Rank',rank,'DOMSIZE =',DOMSIZE
+!      CALL MPI_TYPE_CONTIGUOUS(DOMSIZE,MPI_INTEGER,MPI_INT_DOMARR,IERR)
+!      CALL MPI_TYPE_COMMIT(MPI_INT_DOMARR,IERR)
+!      CALL MPI_TYPE_EXTENT(MPI_INT_DOMARR,EXTENT,IERR)
+!      WRITE(20,*) 'Rank',rank,'has set up communicator MPI_INT_DOMARR, &
+!                  size =',EXTENT
+
+!!     Define communicator for array of reals in structure "system"
+!      CALL MPI_TYPE_CONTIGUOUS(DOMSIZE,MPI_REAL,MPI_REAL_DOMARR,IERR)
+!      CALL MPI_TYPE_COMMIT(MPI_REAL_DOMARR,IERR)
+!      CALL MPI_TYPE_EXTENT(MPI_REAL_DOMARR,EXTENT,IERR)
+!      WRITE(20,*) 'Rank',rank,'has set up communicator MPI_REAL_DOMARR, &
+!                  size =',EXTENT
+
+!     Communicate results back to rank 0
+      DO tsA = t0,maxTs
+         irank = MOD((tsA-t0),MIN(nproc,maxTS))
+!         WRITE(20,*) 'Rank,irank=',rank,irank
+         IF (irank.NE.0) THEN
+!            WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
+
+!           Send maxSys(tsA) at each time level to rank 0
+            tag1 = tsA
+            IF (rank.EQ.irank) THEN
+!              Send results from current rank to rank 0 (blocking)
+!               WRITE(20,*) '>> Sending: rank,tsA,tag1=',rank,tsA,tag1
+               CALL MPI_SEND(maxSys(tsA),1,MPI_INTEGER,0,tag1, &
+                             MPI_COMM_WORLD,IERR)
+!               WRITE(20,*) 'Rank, IERR=',rank,IERR
+            END IF
+            IF (rank.EQ.0) THEN
+!               WRITE(20,*) '<< Receiving: rank,tsA,tag1=',rank,tsA,tag1
+               CALL MPI_RECV(maxSys(tsA),1,MPI_INTEGER, &
+                             irank,tag1,MPI_COMM_WORLD,MPI_STATUS,IERR)
+!              Allocate structure at this time level
+               ALLOCATE( sysA(tsA)%sys(maxSys(tsA)) )
+               DO ic = 1,maxSys(tsA)
+                  NULLIFY( sysA(tsA)%sys(ic)%i )
+                  NULLIFY( sysA(tsA)%sys(ic)%j )
+                  NULLIFY( sysA(tsA)%sys(ic)%lon )
+                  NULLIFY( sysA(tsA)%sys(ic)%lat )
+                  NULLIFY( sysA(tsA)%sys(ic)%hs )
+                  NULLIFY( sysA(tsA)%sys(ic)%tp )
+                  NULLIFY( sysA(tsA)%sys(ic)%dir)
+                  NULLIFY( sysA(tsA)%sys(ic)%dspr)
+                  ALLOCATE( sysA(tsA)%sys(ic)%i(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%j(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%lon(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%lat(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%hs(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%tp(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%dir(maxI*maxJ) )
+                  ALLOCATE( sysA(tsA)%sys(ic)%dspr(maxI*maxJ) )
+                  sysA(tsA)%sys(ic)%i(:) = 9999  
+                  sysA(tsA)%sys(ic)%j(:) = 9999
+                  sysA(tsA)%sys(ic)%lon(:) = 9999.
+                  sysA(tsA)%sys(ic)%lat(:) = 9999. 
+                  sysA(tsA)%sys(ic)%hs(:) = 9999.
+                  sysA(tsA)%sys(ic)%tp(:) = 9999. 
+                  sysA(tsA)%sys(ic)%dir(:) = 9999.
+                  sysA(tsA)%sys(ic)%dspr(:) = 9999.
+                  sysA(tsA)%sys(ic)%hsMean = 9999.
+                  sysA(tsA)%sys(ic)%tpMean = 9999.
+                  sysA(tsA)%sys(ic)%dirMean = 9999.
+                  sysA(tsA)%sys(ic)%sysInd = 9999
+                  sysA(tsA)%sys(ic)%nPoints = 9999
+                  sysA(tsA)%sys(ic)%grp = 9999
+               END DO
+            END IF
+
+!           Send data fields at each (tsA,ic) combination
+            IF ((rank.EQ.0).OR.(rank.EQ.irank)) THEN
+            DO ic = 1, maxSys(tsA)
+!              Construct a unique tag for each message
+               tag2 = tsA*10000 + ic*100
+               DOMSIZE = maxI*maxJ
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+1)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
+                  MPI_INTEGER,0,(tag2+1),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+1)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
+                    MPI_INTEGER,irank,(tag2+1), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+2)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
+                  MPI_INTEGER,0,(tag2+2),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+2)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
+                    MPI_INTEGER,irank,(tag2+2), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+3)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+3),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+3)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+3), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+4)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+4),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+4)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+4), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+5)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+5),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+5)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+5), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+6)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+6),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+6)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+6), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+7)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+7),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+7)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+7), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+8)
+                 CALL MPI_SEND(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
+                  MPI_REAL,0,(tag2+8),MPI_COMM_WORLD,REQ(1),IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+8)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
+                    MPI_REAL,irank,(tag2+8), &
+                    MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+               END IF
+!               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+9)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
+                     0,(tag2+9),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+9)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
+                    irank,(tag2+9),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+10)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
+                     0,(tag2+10),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+10)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
+                    irank,(tag2+10),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+11)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
+                     0,(tag2+11),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+11)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
+                    irank,(tag2+11),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+12)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
+                     0,(tag2+12),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+12)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
+                    irank,(tag2+12),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+13)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
+                     0,(tag2+13),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+13)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
+                    irank,(tag2+13),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+
+               IF (rank.EQ.irank) THEN
+!                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+!                             rank,irank,(tag2+14)
+                  CALL MPI_SEND(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
+                     0,(tag2+14),MPI_COMM_WORLD,IERR)
+               END IF
+               IF (rank.EQ.0) THEN
+!                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+!                             rank,irank,(tag2+14)
+                 CALL MPI_RECV(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
+                    irank,(tag2+14),MPI_COMM_WORLD,MPI_STATUS,IERR)
+               END IF
+            END DO
+            END IF
+         END IF
+      END DO
+
+      CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
+
+!      CALL MPI_TYPE_FREE(MPI_INT_DOMARR,IERR)
+!      CALL MPI_TYPE_FREE(MPI_REAL_DOMARR,IERR)
+
+#endif // W3_MPI
+
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif // W3_MPI
       WRITE(6,*) 'Performing temporal tracking...'
       WRITE(20,*) 'Calling timeTrackingV2...'
       lonext = wsdat(1)%lon(maxI,1)-wsdat(1)%lon(1,1)
@@ -1639,7 +1699,9 @@
       CALL timeTrackingV2 (sysA, maxSys, tpTimeKnob, dirTimeKnob, 1, &
                            maxGroup, dt, lonext, latext, maxI, maxJ)
 !
-!/MPI      END IF
+#ifdef W3_MPI
+      END IF
+#endif // W3_MPI
 !
       RETURN
 !

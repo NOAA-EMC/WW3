@@ -222,31 +222,59 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD
-!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+#ifdef W3_MPI
+      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+#endif // W3_MPI
       USE W3ODATMD
-!/ST2      USE W3SRC2MD, ONLY: INPTAB
-!/ST3      USE W3SRC3MD, ONLY: INSIN3
-!/ST4      USE W3SRC4MD, ONLY: INSIN4, TAUT, TAUHFT, TAUHFT2, &
-!/ST4                          DELU, DELTAUW, DELUST, &
-!/ST4                          DELALP, DELTAIL, &
-!/ST4                          DIKCUMUL 
-!/NL1      USE W3SNL1MD, ONLY: INSNL1
-!/NL2      USE W3SNL2MD, ONLY: INSNL2
-!/NL3      USE W3SNL3MD, ONLY: INSNL3
-!/NLX      USE W3SNLXMD, ONLY: INSNLX
-!/NLS      USE W3SNLSMD, ONLY: INSNLS
-!/IS2      USE W3SIS2MD, ONLY: INSIS2
+#ifdef W3_ST2
+      USE W3SRC2MD, ONLY: INPTAB
+#endif // W3_ST2
+#ifdef W3_ST3
+      USE W3SRC3MD, ONLY: INSIN3
+#endif // W3_ST3
+#ifdef W3_ST4
+      USE W3SRC4MD, ONLY: INSIN4, TAUT, TAUHFT, TAUHFT2, &
+                          DELU, DELTAUW, DELUST, &
+                          DELALP, DELTAIL, &
+                          DIKCUMUL 
+#endif // W3_ST4
+#ifdef W3_NL1
+      USE W3SNL1MD, ONLY: INSNL1
+#endif // W3_NL1
+#ifdef W3_NL2
+      USE W3SNL2MD, ONLY: INSNL2
+#endif // W3_NL2
+#ifdef W3_NL3
+      USE W3SNL3MD, ONLY: INSNL3
+#endif // W3_NL3
+#ifdef W3_NLX
+      USE W3SNLXMD, ONLY: INSNLX
+#endif // W3_NLX
+#ifdef W3_NLS
+      USE W3SNLSMD, ONLY: INSNLS
+#endif // W3_NLS
+#ifdef W3_IS2
+      USE W3SIS2MD, ONLY: INSIS2
+#endif // W3_IS2
       USE W3TIMEMD, ONLY: CALTYPE
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
       USE W3DISPMD
-!/UOST      USE W3UOSTMD, ONLY: UOST_INITGRID
-!/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
-!/MEMCHECK      USE MallocInfo_m
+#ifdef W3_UOST
+      USE W3UOSTMD, ONLY: UOST_INITGRID
+#endif // W3_UOST
+#ifdef W3_MEMCHECK
+   USE W3ADATMD, ONLY: MALLINFOS
+      USE MallocInfo_m
+#endif // W3_MEMCHECK
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -260,11 +288,19 @@
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, MTH, MK, ISEA, IX, IY
-!/ST4 INTEGER                 :: IK, ITH, IK2, ITH2
+#ifdef W3_ST4
+ INTEGER                 :: IK, ITH, IK2, ITH2
+#endif // W3_ST4
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
-!/MPI      INTEGER                 :: IERR_MPI, IP
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T      INTEGER                 :: K
+#ifdef W3_MPI
+      INTEGER                 :: IERR_MPI, IP
+#endif // W3_MPI
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T
+      INTEGER                 :: K
+#endif // W3_T
       LOGICAL                 :: WRITE, FLTEST = .FALSE., TESTLL,     &
                                  FLSNL2 = .FALSE.
       LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.,  &
@@ -283,13 +319,19 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3IOGR')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3IOGR')
+#endif // W3_S
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 1'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
 
       MESSAGE =(/ '     MOD DEF FILE WAS GENERATED WITH A DIFFERENT    ', &
@@ -311,57 +353,159 @@
       TNAMEG = '------------------------------'
       TNAMEI = '------------------------------'
 !
-!/FLX1      TNAMEF = 'Wu (1980)                     '
-!/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
-!/FLX3      TNAMEF = 'T and C(1996) with cap on Cd  '
-!/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
-!/FLXX      TNAMEF = 'Experimental                  '
-!/LN0      TNAME0 = 'Not defined                   '
-!/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '
-!/LNX      TNAME0 = 'Experimental                  '
-!/ST0      TNAME1 = 'Not defined                   '
-!/ST1      TNAME1 = 'WAM cycles 1 through 3        '
-!/ST2      TNAME1 = 'Tolman and Chalikov (1996)    '
-!/ST3      TNAME1 = 'WAM cycle 4+                  '
-!/ST4      TNAME1 = 'Ardhuin et al. (2009+)        '
-!/ST6      TNAME1 = 'BYDB input and dissipation    '
-!/STX      TNAME1 = 'Experimental                  '
-!/NL0      TNAME2 = 'Not defined                   '
-!/NL1      TNAME2 = 'Discrete Interaction Approx.  '
-!/NL2      TNAME2 = 'Exact nonlinear interactions  '
-!/NL3      TNAME2 = 'Generalized Multiple DIA      '
-!/NL4      TNAME2 = 'Two Scaled Approximation      '
-!/NLX      TNAME2 = 'Experimental                  '
-!/BT0      TNAME3 = 'Not defined                   '
-!/BT1      TNAME3 = 'JONSWAP                       '
-!/BT4      TNAME3 = 'SHOWEX                        '
-!/BT8      TNAME3 = 'Muddy Bed (D & L)             '
-!/BTX      TNAME3 = 'Experimental                  '
-!/IC1      TNAMEI = 'Ice sink term (uniform k_i)   '
-!/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
-!/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '
-!/IC4      TNAMEI = 'Ice sink term (empirical)     '
-!/IC5      TNAMEI = 'Ice sink term (eff. medium)   '
-!/DB0      TNAME4 = 'Not defined                   '
-!/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
-!/DBX      TNAME4 = 'Experimental                  '
-!/TR0      TNAME5 = 'Not defined                   '
-!/TRX      TNAME5 = 'Experimental                  '
-!/BS0      TNAME6 = 'Not defined                   '
-!/BSX      TNAME6 = 'Experimental                  '
-!/XX0      TNAME7 = 'Not defined                   '
-!/XXX      TNAME7 = 'Experimental                  '
-!/PR0      TNAMEP = 'No propagation                '
-!/PR1      TNAMEP = 'First order upstream          '
-!/UQ      TNAMEP = '3rd order UQ scheme           '
-!/UNO      TNAMEP = '2nd order UNO scheme          '
-!/SMC      TNAMEP = 'UNO2 on SMC grid propagation  '
-!/PRX      TNAMEP = 'Experimental                  '
-!/PR0      TNAMEG = 'No GSE aleviation             '
-!/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
-!/PR2      TNAMEG = 'Diffusion operator            '
-!/PR3      TNAMEG = 'Averaging operator            '
-!/PRX      TNAMEG = 'Experimental                  '
+#ifdef W3_FLX1
+      TNAMEF = 'Wu (1980)                     '
+#endif // W3_FLX1
+#ifdef W3_FLX2
+      TNAMEF = 'Tolman and Chalikov (1996)    '
+#endif // W3_FLX2
+#ifdef W3_FLX3
+      TNAMEF = 'T and C(1996) with cap on Cd  '
+#endif // W3_FLX3
+#ifdef W3_FLX4
+      TNAMEF = 'Hwang (2011) with cap on Cd   '
+#endif // W3_FLX4
+#ifdef W3_FLXX
+      TNAMEF = 'Experimental                  '
+#endif // W3_FLXX
+#ifdef W3_LN0
+      TNAME0 = 'Not defined                   '
+#endif // W3_LN0
+#ifdef W3_LN1
+      TNAME0 = 'Cavaleri and M.-R. (1982)     '
+#endif // W3_LN1
+#ifdef W3_LNX
+      TNAME0 = 'Experimental                  '
+#endif // W3_LNX
+#ifdef W3_ST0
+      TNAME1 = 'Not defined                   '
+#endif // W3_ST0
+#ifdef W3_ST1
+      TNAME1 = 'WAM cycles 1 through 3        '
+#endif // W3_ST1
+#ifdef W3_ST2
+      TNAME1 = 'Tolman and Chalikov (1996)    '
+#endif // W3_ST2
+#ifdef W3_ST3
+      TNAME1 = 'WAM cycle 4+                  '
+#endif // W3_ST3
+#ifdef W3_ST4
+      TNAME1 = 'Ardhuin et al. (2009+)        '
+#endif // W3_ST4
+#ifdef W3_ST6
+      TNAME1 = 'BYDB input and dissipation    '
+#endif // W3_ST6
+#ifdef W3_STX
+      TNAME1 = 'Experimental                  '
+#endif // W3_STX
+#ifdef W3_NL0
+      TNAME2 = 'Not defined                   '
+#endif // W3_NL0
+#ifdef W3_NL1
+      TNAME2 = 'Discrete Interaction Approx.  '
+#endif // W3_NL1
+#ifdef W3_NL2
+      TNAME2 = 'Exact nonlinear interactions  '
+#endif // W3_NL2
+#ifdef W3_NL3
+      TNAME2 = 'Generalized Multiple DIA      '
+#endif // W3_NL3
+#ifdef W3_NL4
+      TNAME2 = 'Two Scaled Approximation      '
+#endif // W3_NL4
+#ifdef W3_NLX
+      TNAME2 = 'Experimental                  '
+#endif // W3_NLX
+#ifdef W3_BT0
+      TNAME3 = 'Not defined                   '
+#endif // W3_BT0
+#ifdef W3_BT1
+      TNAME3 = 'JONSWAP                       '
+#endif // W3_BT1
+#ifdef W3_BT4
+      TNAME3 = 'SHOWEX                        '
+#endif // W3_BT4
+#ifdef W3_BT8
+      TNAME3 = 'Muddy Bed (D & L)             '
+#endif // W3_BT8
+#ifdef W3_BTX
+      TNAME3 = 'Experimental                  '
+#endif // W3_BTX
+#ifdef W3_IC1
+      TNAMEI = 'Ice sink term (uniform k_i)   '
+#endif // W3_IC1
+#ifdef W3_IC2
+      TNAMEI = 'Ice sink term (Lui et al)     '
+#endif // W3_IC2
+#ifdef W3_IC3
+      TNAMEI = 'Ice sink term (Wang and Shen) '
+#endif // W3_IC3
+#ifdef W3_IC4
+      TNAMEI = 'Ice sink term (empirical)     '
+#endif // W3_IC4
+#ifdef W3_IC5
+      TNAMEI = 'Ice sink term (eff. medium)   '
+#endif // W3_IC5
+#ifdef W3_DB0
+      TNAME4 = 'Not defined                   '
+#endif // W3_DB0
+#ifdef W3_DB1
+      TNAME4 = 'Battjes and Janssen (1978)    '
+#endif // W3_DB1
+#ifdef W3_DBX
+      TNAME4 = 'Experimental                  '
+#endif // W3_DBX
+#ifdef W3_TR0
+      TNAME5 = 'Not defined                   '
+#endif // W3_TR0
+#ifdef W3_TRX
+      TNAME5 = 'Experimental                  '
+#endif // W3_TRX
+#ifdef W3_BS0
+      TNAME6 = 'Not defined                   '
+#endif // W3_BS0
+#ifdef W3_BSX
+      TNAME6 = 'Experimental                  '
+#endif // W3_BSX
+#ifdef W3_XX0
+      TNAME7 = 'Not defined                   '
+#endif // W3_XX0
+#ifdef W3_XXX
+      TNAME7 = 'Experimental                  '
+#endif // W3_XXX
+#ifdef W3_PR0
+      TNAMEP = 'No propagation                '
+#endif // W3_PR0
+#ifdef W3_PR1
+      TNAMEP = 'First order upstream          '
+#endif // W3_PR1
+#ifdef W3_UQ
+      TNAMEP = '3rd order UQ scheme           '
+#endif // W3_UQ
+#ifdef W3_UNO
+      TNAMEP = '2nd order UNO scheme          '
+#endif // W3_UNO
+#ifdef W3_SMC
+      TNAMEP = 'UNO2 on SMC grid propagation  '
+#endif // W3_SMC
+#ifdef W3_PRX
+      TNAMEP = 'Experimental                  '
+#endif // W3_PRX
+#ifdef W3_PR0
+      TNAMEG = 'No GSE aleviation             '
+#endif // W3_PR0
+#ifdef W3_PR1
+      TNAMEG = 'No GSE aleviation (1up prop)  '
+#endif // W3_PR1
+#ifdef W3_PR2
+      TNAMEG = 'Diffusion operator            '
+#endif // W3_PR2
+#ifdef W3_PR3
+      TNAMEG = 'Averaging operator            '
+#endif // W3_PR3
+#ifdef W3_PRX
+      TNAMEG = 'Experimental                  '
+#endif // W3_PRX
 !
       FNAMEF = TNAMEF
       FNAME0 = TNAME0
@@ -375,11 +519,17 @@
       FNAMEP = TNAMEP
       FNAMEG = TNAMEG
       FNAMEI = TNAMEI
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 2'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      FLTEST = .TRUE.
-!/NL2      FLSNL2 = .TRUE.
+#ifdef W3_T
+      FLTEST = .TRUE.
+#endif // W3_T
+#ifdef W3_NL2
+      FLSNL2 = .TRUE.
+#endif // W3_NL2
 !
 ! test input parameters ---------------------------------------------- *
 !
@@ -401,20 +551,28 @@
           CALL EXTCDE ( 1 )
         END IF
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 3'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
       WRITE  = INXOUT .EQ. 'WRITE'
 !
-!/T      WRITE (NDST,9000) INXOUT, WRITE, NDSM, IGRD, TEMPXT
+#ifdef W3_T
+      WRITE (NDST,9000) INXOUT, WRITE, NDSM, IGRD, TEMPXT
+#endif // W3_T
 !
       CALL W3SETO ( IGRD, NDSE, NDST )
       CALL W3SETG ( IGRD, NDSE, NDST )
       FILEXT = TEMPXT
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 4'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 !
 ! open file ---------------------------------------------------------- *
 !
@@ -431,8 +589,10 @@
         ENDIF
 !
       REWIND ( NDSM )
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 5, WRITE=', WRITE
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 5, WRITE=', WRITE
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
 ! Dimensions and test information --------------------------------------
 !
@@ -443,17 +603,23 @@
                 FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,       &
                 FNAMEF, FNAMEI
 !
-!/SMC          WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          WRITE (NDSM) NGLO, NARC, NBGL, NBAC
+#ifdef W3_SMC
+          WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
+#endif // W3_SMC
+#ifdef W3_ARC
+          WRITE (NDSM) NGLO, NARC, NBGL, NBAC
+#endif // W3_ARC
 !
           WRITE (NDSM)                                                &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
-!/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
-!/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
-!/T            FNAMEF, FNAMEI
-!/T          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
-!/T          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+#ifdef W3_T
+          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
+            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
+            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
+            FNAMEF, FNAMEI
+          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
+          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+#endif // W3_T
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
@@ -461,19 +627,25 @@
                 FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,       &
                 FNAMEF, FNAMEI
 !
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     NGLO, NARC, NBGL, NBAC 
+#ifdef W3_SMC
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     NCel, NUFc, NVFc, NRLv, MRFct
+#endif // W3_SMC
+#ifdef W3_ARC
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     NGLO, NARC, NBGL, NBAC 
+#endif // W3_ARC
 !
           NK     = MK
           NTH    = MTH
           NK2    = NK + 2
           NSPEC  = NK * NTH
-!/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
-!/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
-!/T            FNAMEF, FNAMEI
+#ifdef W3_T
+          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
+            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
+            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
+            FNAMEF, FNAMEI
+#endif // W3_T
 !
           IF ( IDTST .NE. IDSTR ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
@@ -562,23 +734,31 @@
 !
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
-!/T          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
-!/T          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+#ifdef W3_T
+          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
+          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+#endif // W3_T
 !
         ENDIF
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 6'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 6'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
 !
 ! Parameters in modules  --------------------------------------------- *
 !                                                   Module W3GDAT GRID
 !
       ALLOCATE ( MAPTMP(NY,NX) )
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
       IF ( WRITE ) THEN
           MAPTMP = MAPSTA + 8*MAPST2
@@ -625,16 +805,22 @@
           WRITE (NDSM)                                                &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
 !
-!/SMC         WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
-!/SMC         WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc
-!/ARC         WRITE (NDSM)  ICLBAC 
-!/ARC         WRITE (NDSM)  ANGARC 
-!/SMC         WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
-!/SMC         IF ( FLTEST ) THEN
-!/SMC            WRITE (NDSE,"('  NLvCel, NLvUFc, NLvVFc Write for',2I9)") NRLv, MRFct
-!/SMC            WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc 
-!/SMC            WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
-!/SMC         ENDIF
+#ifdef W3_SMC
+         WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
+         WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc
+#endif // W3_SMC
+#ifdef W3_ARC
+         WRITE (NDSM)  ICLBAC 
+         WRITE (NDSM)  ANGARC 
+#endif // W3_ARC
+#ifdef W3_SMC
+         WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
+         IF ( FLTEST ) THEN
+            WRITE (NDSE,"('  NLvCel, NLvUFc, NLvVFc Write for',2I9)") NRLv, MRFct
+            WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc 
+            WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
+         ENDIF
+#endif // W3_SMC
 ! 
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
           WRITE (NDSM)                     &
@@ -647,30 +833,46 @@
                AAIRCMIN, AAIRGB
 
           WRITE(NDSM)GRIDSHIFT
-!/SEC1              WRITE (NDSM) NITERSEC1
-!/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
-!/RTD         WRITE (NDSM) PoLat, PoLon, AnglD, FLAGUNR
-!/RTD
+#ifdef W3_SEC1
+              WRITE (NDSM) NITERSEC1
+#endif // W3_SEC1
+#ifdef W3_RTD
+ !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
+         WRITE (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+
+#endif // W3_RTD
 !!        WRITE(NDSM)                                                 &
 !!             COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.1'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.2'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
           IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
-!/SMC                                 , NCel, NUFc, NVFc, NRLv         &
-!/ARC                                 , NARC, NBAC, NSPEC              &
+#ifdef W3_SMC
+                                 , NCel, NUFc, NVFc, NRLv         &
+#endif // W3_SMC
+#ifdef W3_ARC
+                                 , NARC, NBAC, NSPEC              &
+#endif // W3_ARC
                                       )
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.3'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
 ! Reads different kind of information depending on grid type
 !
@@ -691,8 +893,10 @@
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
             CASE (UNGTYPE) 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.4'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
                 FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
@@ -710,74 +914,108 @@
                 B_JGS_NORM_THR,                                       &
                 B_JGS_NLEVEL,                                         &
                 B_JGS_SOURCE_NONLINEAR
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.5, GUGINIT=', GUGINIT
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.5, GUGINIT=', GUGINIT
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
               IF (.NOT. GUGINIT) THEN
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'Before call to W3DIMUG from W3IOGR'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'Before call to W3DIMUG from W3IOGR'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
                 CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
               END IF
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
                 LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6.4'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.6.4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
                 XGRD(1,:)=XYB(:,1)
                 YGRD(1,:)=XYB(:,2)
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.7'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.7'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
             END SELECT !GTYPE
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.8'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.8'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
           IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST ) 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.9'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.9'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.10'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.10'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     NLvCel, NLvUFc, NLvVFc
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     IJKCel, IJKUFc, IJKVFc
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ICLBAC 
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ANGARC 
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     CTRNX,  CTRNY,  CLATF
+#ifdef W3_SMC
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     NLvCel, NLvUFc, NLvVFc
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     IJKCel, IJKUFc, IJKVFc
+#endif // W3_SMC
+#ifdef W3_ARC
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     ICLBAC 
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     ANGARC 
+#endif // W3_ARC
+#ifdef W3_SMC
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                     CTRNX,  CTRNY,  CLATF
+#endif // W3_SMC
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.11'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.11'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
           MAPSTA = MOD(MAPTMP+2,8) - 2
           MAPST2 = (MAPTMP-MAPSTA) / 8
           MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.12'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.12'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
           IF ( TRFLAG .NE. 0 ) THEN
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
             END IF
-!/UOST          ! UOST (Unresolved Obstacles Source Term) is enabled.
-!/UOST          ! setting TRNX, TRNY to null values
-!/UOST          TRNX = 1
-!/UOST          TRNY = 1
+#ifdef W3_UOST
+          ! UOST (Unresolved Obstacles Source Term) is enabled.
+          ! setting TRNX, TRNY to null values
+          TRNX = 1
+          TRNY = 1
+#endif // W3_UOST
 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.13'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.13'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
@@ -786,67 +1024,89 @@
                IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
                IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,               &
                AAIRCMIN, AAIRGB
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.14'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.15'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/SEC1         READ (NDSM) NITERSEC1
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.16'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.15'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_SEC1
+         READ (NDSM) NITERSEC1
+#endif // W3_SEC1
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.16'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/RTD !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-!/RTD          READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
-!/RTD
+#ifdef W3_RTD
+ !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
+          READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+
+#endif // W3_RTD
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.17'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 7.17'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
         END IF
 
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 8'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 8'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
-!/T      WRITE (NDST,9011) 'MAPSTA'
-!/T      DO IY=MIN(NY,20), 1, -1
-!/T        WRITE (NDST,9012) (MAPSTA(IY,IX),IX=1,MIN(NX,30))
-!/T        END DO
-!/T      WRITE (NDST,9011) 'MAPST2'
-!/T      DO IY=MIN(NY,20), 1, -1
-!/T        WRITE (NDST,9012) (MAPST2(IY,IX),IX=1,MIN(NX,30))
-!/T        END DO
-!/T      WRITE (NDST,9011) 'MAPFS'
-!/T      DO IY=MIN(NY,20), 1, -1
-!/T        WRITE (NDST,9013) (MAPFS(IY,IX),IX=1,MIN(NX,12))
-!/T        END DO
-!/T      IF ( TRFLAG .NE. 0 ) THEN
-!/T          WRITE (NDST,9011) 'TRNX'
-!/T          DO IY=MIN(NY,20), 1, -1
-!/T            WRITE (NDST,9014) (TRNX(IY,IX),IX=1,MIN(NX,12))
-!/T            END DO
-!/T          WRITE (NDST,9011) 'TRNY'
-!/T          DO IY=MIN(NY,20), 1, -1
-!/T            WRITE (NDST,9014) (TRNY(IY,IX),IX=1,MIN(NX,12))
-!/T            END DO
-!/T        END IF
+#ifdef W3_T
+      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
+      WRITE (NDST,9011) 'MAPSTA'
+      DO IY=MIN(NY,20), 1, -1
+        WRITE (NDST,9012) (MAPSTA(IY,IX),IX=1,MIN(NX,30))
+        END DO
+      WRITE (NDST,9011) 'MAPST2'
+      DO IY=MIN(NY,20), 1, -1
+        WRITE (NDST,9012) (MAPST2(IY,IX),IX=1,MIN(NX,30))
+        END DO
+      WRITE (NDST,9011) 'MAPFS'
+      DO IY=MIN(NY,20), 1, -1
+        WRITE (NDST,9013) (MAPFS(IY,IX),IX=1,MIN(NX,12))
+        END DO
+      IF ( TRFLAG .NE. 0 ) THEN
+          WRITE (NDST,9011) 'TRNX'
+          DO IY=MIN(NY,20), 1, -1
+            WRITE (NDST,9014) (TRNX(IY,IX),IX=1,MIN(NX,12))
+            END DO
+          WRITE (NDST,9011) 'TRNY'
+          DO IY=MIN(NY,20), 1, -1
+            WRITE (NDST,9014) (TRNY(IY,IX),IX=1,MIN(NX,12))
+            END DO
+        END IF
+#endif // W3_T
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 9'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 9'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
       DEALLOCATE ( MAPTMP )
 !
-!/T      WRITE (NDST,9015) DTCFL, DTCFLI, DTMAX, DTMIN,               &
-!/T                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE,  &
-!/T                        STEXU, STEYU, STEDU
-!/T      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
-!/T                        FLSOU, FLBPI, FLBPO
-!/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
-!/T                        (CLATIS(ISEA),ISEA=1,1), (CTHG0S(IY),ISEA=1,1)
+#ifdef W3_T
+      WRITE (NDST,9015) DTCFL, DTCFLI, DTMAX, DTMIN,               &
+                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE,  &
+                        STEXU, STEYU, STEDU
+      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
+                        FLSOU, FLBPI, FLBPO
+      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
+                        (CLATIS(ISEA),ISEA=1,1), (CTHG0S(IY),ISEA=1,1)
+#endif // W3_T
 !
 ! Spectral parameters ------------------------------------------------ *
 !                                                 Module W3GDATMD SGRD
@@ -864,13 +1124,17 @@
                FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
         END IF
 
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 10'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 10'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      WRITE (NDST,9030) (MAPWN(I),I=1,8), (MAPTH(I),I=1,8), DTH*RADE, &
-!/T             (TH(I)*RADE,I=1,4), (ESIN(I),I=1,4), (ECOS(I),I=1,4),    &
-!/T             XFR, SIG(1)*TPIINV, SIG(NK)*TPIINV, FTE, FTF, FTWN, FTTR, &
-!/T             FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+#ifdef W3_T
+      WRITE (NDST,9030) (MAPWN(I),I=1,8), (MAPTH(I),I=1,8), DTH*RADE, &
+             (TH(I)*RADE,I=1,4), (ESIN(I),I=1,4), (ECOS(I),I=1,4),    &
+             XFR, SIG(1)*TPIINV, SIG(NK)*TPIINV, FTE, FTF, FTWN, FTTR, &
+             FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+#endif // W3_T
 !
 !
 ! Output flags for 3D parameters ------------------------------------- *
@@ -887,8 +1151,10 @@
           CLOSE (NDSM)
           RETURN
         END IF
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 11'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 11'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
 ! Parameters for output boundary points ------------------------------ *
 !                                                 Module W3ODATMD OUT5
@@ -901,18 +1167,22 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                XBPO, YBPO, RDBPO, IPBPO, ISBPO
         END IF
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 12'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 12'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      WRITE (NDST,9020)
-!/T      DO I=1, NFBPO
-!/T        WRITE (NDST,9021) I
-!/T        DO J=NBO(I-1)+1,NBO(I)
-!/T          WRITE (NDST,9022) J-NBO(I-1), (IPBPO(J,K),K=1,4),        &
-!/T                                        (RDBPO(J,K),K=1,4)
-!/T          END DO
-!/T        WRITE (NDST,9023) (ISBPO(J),J=NBO2(I-1)+1,NBO2(I))
-!/T        END DO
+#ifdef W3_T
+      WRITE (NDST,9020)
+      DO I=1, NFBPO
+        WRITE (NDST,9021) I
+        DO J=NBO(I-1)+1,NBO(I)
+          WRITE (NDST,9022) J-NBO(I-1), (IPBPO(J,K),K=1,4),        &
+                                        (RDBPO(J,K),K=1,4)
+          END DO
+        WRITE (NDST,9023) (ISBPO(J),J=NBO2(I-1)+1,NBO2(I))
+        END DO
+#endif // W3_T
 !
 ! Parameters for spectral partitioning  ------------------------------ *
 !                                                 Module W3ODATMD OUT6
@@ -926,10 +1196,14 @@
                 IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
                 PTMETH, PTFCUT
         END IF
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 13'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 13'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      WRITE (NDST,9025) IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
+#ifdef W3_T
+      WRITE (NDST,9025) IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
+#endif // W3_T
 !
 ! Numerical parameters ----------------------------------------------- *
 !                                                 Module W3GDATMD NPAR
@@ -938,48 +1212,84 @@
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
                 FFACBERG, DELAB, FWTABLE
-!/RWND          WRITE (NDSM)                                                &
-!/RWND                RWINDC
-!/WCOR          WRITE (NDSM)                                                &
-!/WCOR                WWCOR
-!/REF1          WRITE (NDSM)                                                &
-!/REF1                RREF, REFPARS, REFLC, REFLD
-!/IG1          WRITE   (NDSM)                                              &
-!/IG1                IGPARS(1:12)
-!/IC2          WRITE   (NDSM)                                              &
-!/IC2                IC2PARS(1:8)
-!/IC3          WRITE   (NDSM)                                              &
-!/IC3                IC3PARS
-!/IC4          WRITE   (NDSM)                                              &
-!/IC4                IC4PARS,IC4_KI,IC4_FC
-!/IC5          WRITE   (NDSM)                                              &
-!/IC5                IC5PARS
+#ifdef W3_RWND
+          WRITE (NDSM)                                                &
+                RWINDC
+#endif // W3_RWND
+#ifdef W3_WCOR
+          WRITE (NDSM)                                                &
+                WWCOR
+#endif // W3_WCOR
+#ifdef W3_REF1
+          WRITE (NDSM)                                                &
+                RREF, REFPARS, REFLC, REFLD
+#endif // W3_REF1
+#ifdef W3_IG1
+          WRITE   (NDSM)                                              &
+                IGPARS(1:12)
+#endif // W3_IG1
+#ifdef W3_IC2
+          WRITE   (NDSM)                                              &
+                IC2PARS(1:8)
+#endif // W3_IC2
+#ifdef W3_IC3
+          WRITE   (NDSM)                                              &
+                IC3PARS
+#endif // W3_IC3
+#ifdef W3_IC4
+          WRITE   (NDSM)                                              &
+                IC4PARS,IC4_KI,IC4_FC
+#endif // W3_IC4
+#ifdef W3_IC5
+          WRITE   (NDSM)                                              &
+                IC5PARS
+#endif // W3_IC5
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
                 FFACBERG, DELAB, FWTABLE
-!/RWND          READ  (NDSM)                                                &
-!/RWND                RWINDC
-!/WCOR          READ  (NDSM)                                                &
-!/WCOR                WWCOR
-!/REF1          READ  (NDSM)                                                &
-!/REF1                RREF, REFPARS, REFLC, REFLD
-!/IG1         READ   (NDSM)                                                &
-!/IG1                IGPARS(1:12)
-!/IC2         READ   (NDSM)                                                &
-!/IC2                IC2PARS(1:8)
-!/IC3         READ   (NDSM)                                                &
-!/IC3                IC3PARS
-!/IC4         READ   (NDSM)                                                &
-!/IC4                IC4PARS,IC4_KI,IC4_FC
-!/IC5         READ   (NDSM)                                                &
-!/IC5                IC5PARS
+#ifdef W3_RWND
+          READ  (NDSM)                                                &
+                RWINDC
+#endif // W3_RWND
+#ifdef W3_WCOR
+          READ  (NDSM)                                                &
+                WWCOR
+#endif // W3_WCOR
+#ifdef W3_REF1
+          READ  (NDSM)                                                &
+                RREF, REFPARS, REFLC, REFLD
+#endif // W3_REF1
+#ifdef W3_IG1
+         READ   (NDSM)                                                &
+                IGPARS(1:12)
+#endif // W3_IG1
+#ifdef W3_IC2
+         READ   (NDSM)                                                &
+                IC2PARS(1:8)
+#endif // W3_IC2
+#ifdef W3_IC3
+         READ   (NDSM)                                                &
+                IC3PARS
+#endif // W3_IC3
+#ifdef W3_IC4
+         READ   (NDSM)                                                &
+                IC4PARS,IC4_KI,IC4_FC
+#endif // W3_IC4
+#ifdef W3_IC5
+         READ   (NDSM)                                                &
+                IC5PARS
+#endif // W3_IC5
         END IF
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 14'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 14'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
-!/T                        FACSD, FHMAX
+#ifdef W3_T
+      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
+                        FACSD, FHMAX
+#endif // W3_T
 !
 ! Source term parameters --------------------------------------------- *
 !                                                 Module W3GDATMD SFLP
@@ -988,372 +1298,496 @@
 !                                                 Module W3GDATMD SNLP
 !                                                 Module W3GDATMD SBTP
 !
-!/FLX2      IF ( WRITE ) THEN
-!/FLX2          WRITE (NDSM)                            NITTIN, CINXSI
-!/FLX2        ELSE
-!/FLX2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
-!/FLX2        END IF
+#ifdef W3_FLX2
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            NITTIN, CINXSI
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
+        END IF
+#endif // W3_FLX2
 !
-!/FLX2      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CINXSI
+#ifdef W3_FLX2
+      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CINXSI
+#endif // W3_FLX2
 !
-!/FLX3      IF ( WRITE ) THEN
-!/FLX3          WRITE (NDSM)                                          &
-!/FLX3                 NITTIN, CINXSI, CD_MAX, CAP_ID
-!/FLX3        ELSE
-!/FLX3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-!/FLX3                 NITTIN, CINXSI, CD_MAX, CAP_ID
-!/FLX3        END IF
+#ifdef W3_FLX3
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                          &
+                 NITTIN, CINXSI, CD_MAX, CAP_ID
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+                 NITTIN, CINXSI, CD_MAX, CAP_ID
+        END IF
+#endif // W3_FLX3
 !
-!/FLX3      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
+#ifdef W3_FLX3
+      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
+#endif // W3_FLX3
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 15'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/FLX4      IF ( WRITE ) THEN
-!/FLX4          WRITE (NDSM)                            FLX4A0
-!/FLX4        ELSE
-!/FLX4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
-!/FLX4        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 15'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_FLX4
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            FLX4A0
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
+        END IF
+#endif // W3_FLX4
 !
 ! 
-!/LN1      IF ( WRITE ) THEN
-!/LN1          WRITE (NDSM)                            SLNC1, FSPM, FSHF
-!/LN1        ELSE
-!/LN1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
-!/LN1        END IF
+#ifdef W3_LN1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            SLNC1, FSPM, FSHF
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
+        END IF
+#endif // W3_LN1
 !
-!/LN1      IF ( FLTEST ) WRITE (NDST,9049) SLNC1, FSPM, FSHF
+#ifdef W3_LN1
+      IF ( FLTEST ) WRITE (NDST,9049) SLNC1, FSPM, FSHF
+#endif // W3_LN1
 !
-!/ST1      IF ( WRITE ) THEN
-!/ST1          WRITE (NDSM)                            SINC1, SDSC1
-!/ST1        ELSE
-!/ST1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
-!/ST1        END IF
+#ifdef W3_ST1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            SINC1, SDSC1
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
+        END IF
+#endif // W3_ST1
 !
-!/ST1      IF ( FLTEST ) WRITE (NDST,9050) SINC1, SDSC1
+#ifdef W3_ST1
+      IF ( FLTEST ) WRITE (NDST,9050) SINC1, SDSC1
+#endif // W3_ST1
 !
-!/ST2      IF ( WRITE ) THEN
-!/ST2          WRITE (NDSM)                                           &
-!/ST2                ZWIND, FSWELL,                                   &
-!/ST2                SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
-!/ST2                CDSA0, CDSA1, CDSA2, SDSALN,                     &
-!/ST2                CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
-!/ST2        ELSE
-!/ST2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ST2                ZWIND, FSWELL,                                   &
-!/ST2                SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
-!/ST2                CDSA0, CDSA1, CDSA2, SDSALN,                     &
-!/ST2                CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
-!/ST2          IF ( .NOT. FLINP ) CALL INPTAB
-!/ST2          FLINP  = .TRUE.
-!/ST2        END IF
+#ifdef W3_ST2
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                           &
+                ZWIND, FSWELL,                                   &
+                SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
+                CDSA0, CDSA1, CDSA2, SDSALN,                     &
+                CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                ZWIND, FSWELL,                                   &
+                SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
+                CDSA0, CDSA1, CDSA2, SDSALN,                     &
+                CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+          IF ( .NOT. FLINP ) CALL INPTAB
+          FLINP  = .TRUE.
+        END IF
+#endif // W3_ST2
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 16'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/ST2      IF ( FLTEST ) WRITE (NDST,9050)                            &
-!/ST2           ZWIND, FSWELL, CDSA0, CDSA1, CDSA2,                   &
-!/ST2           SDSALN, CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, &
-!/ST2           XF2, SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 16'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_ST2
+      IF ( FLTEST ) WRITE (NDST,9050)                            &
+           ZWIND, FSWELL, CDSA0, CDSA1, CDSA2,                   &
+           SDSALN, CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, &
+           XF2, SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS
+#endif // W3_ST2
 !
-!/ST3      IF ( WRITE ) THEN
-!/ST3          WRITE (NDSM)                                           &
-!/ST3                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST3                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
-!/ST3                SSTXFTFTAIL, SSTXFTWN,                           &
-!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
-!/ST3                FFXPM, FFXFM
-!/ST3        ELSE
-!/ST3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ST3                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST3                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
-!/ST3                SSTXFTFTAIL, SSTXFTWN,                           &
-!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
-!/ST3                FFXPM, FFXFM
-!/ST3          IF ( .NOT. FLINP ) THEN
-!/ST3              CALL INSIN3
-!/ST3              FLINP  = .TRUE.
-!/ST3            END IF
-!/ST3        END IF
+#ifdef W3_ST3
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                           &
+                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+                SSTXFTFTAIL, SSTXFTWN,                           &
+                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+                FFXPM, FFXFM
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+                SSTXFTFTAIL, SSTXFTWN,                           &
+                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+                FFXPM, FFXFM
+          IF ( .NOT. FLINP ) THEN
+              CALL INSIN3
+              FLINP  = .TRUE.
+            END IF
+        END IF
+#endif // W3_ST3
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 17'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/ST4      IF ( WRITE ) THEN
-!/ST4          CALL INSIN4(.TRUE.)
-!/ST4          WRITE (NDSM)                                           &
-!/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
-!/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
-!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
-!/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
-!/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
-!/ST4                SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
-!/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
-!/ST4                DIKCUMUL, CUMULW
-!/ST4        ELSE
-!/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
-!/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
-!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
-!/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
-!/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
-!/ST4                 SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
-!/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
-!/ST4                DIKCUMUL, CUMULW
-!/ST4        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 17'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_ST4
+      IF ( WRITE ) THEN
+          CALL INSIN4(.TRUE.)
+          WRITE (NDSM)                                           &
+                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+                ZZ0RAT, SSDSC,                                   &
+                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
+                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
+                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+                SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
+                DIKCUMUL, CUMULW
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+                ZZ0RAT, SSDSC,                                   &
+                SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
+                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
+                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+                 SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
+                DIKCUMUL, CUMULW
+        END IF
+#endif // W3_ST4
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 18'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/ST6      IF ( WRITE ) THEN
-!/ST6          WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
-!/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
-!/ST6                       SIN6WS, SIN6FC
-!/ST6        ELSE
-!/ST6          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ST6                       SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
-!/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
-!/ST6                       SIN6WS, SIN6FC
-!/ST6        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 18'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_ST6
+      IF ( WRITE ) THEN
+          WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
+                       SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
+                       SIN6WS, SIN6FC
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
+                       SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
+                       SIN6WS, SIN6FC
+        END IF
+#endif // W3_ST6
 !
 ! ... Nonlinear interactions
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 19'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/NL1      IF ( WRITE ) THEN
-!/NL1          WRITE (NDSM)                                           &
-!/NL1                SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
-!/NL1        ELSE
-!/NL1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NL1                SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
-!/NL1        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 19'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_NL1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                           &
+                SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+        END IF
+#endif // W3_NL1
 !
-!/NL1      IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,                &
-!/NL1                           KDCON, KDMN, SNLS1, SNLS2, SNLS3
+#ifdef W3_NL1
+      IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,                &
+                           KDCON, KDMN, SNLS1, SNLS2, SNLS3
+#endif // W3_NL1
 !
-!/NL2      IF ( WRITE ) THEN
-!/NL2          WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
-!/NL2          WRITE (NDSM) DPTHNL
-!/NL2        ELSE
-!/NL2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NL2                       IQTPE, NLTAIL, NDPTHS
-!/NL2          ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
-!/NL2          DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
-!/NL2          PINIT  = .TRUE.
-!/NL2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
-!/NL2        END IF
+#ifdef W3_NL2
+      IF ( WRITE ) THEN
+          WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
+          WRITE (NDSM) DPTHNL
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       IQTPE, NLTAIL, NDPTHS
+          ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
+          DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
+          PINIT  = .TRUE.
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
+        END IF
+#endif // W3_NL2
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 20'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/NL2      IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
-!/NL2      IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 20'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_NL2
+      IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
+      IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
+#endif // W3_NL2
 !
-!/NL3      IF ( WRITE ) THEN
-!/NL3          WRITE (NDSM) SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
-!/NL3          WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),             &
-!/NL3                       SNLT(1:SNLNQ), SNLCD(1:SNLNQ),            &
-!/NL3                       SNLCS(1:SNLNQ)
-!/NL3        ELSE
-!/NL3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NL3                       SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
-!/NL3          ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),              &
-!/NL3                     MPARS(IGRD)%SNLPS%SNLM(SNLNQ),              &
-!/NL3                     MPARS(IGRD)%SNLPS%SNLT(SNLNQ),              &
-!/NL3                     MPARS(IGRD)%SNLPS%SNLCD(SNLNQ),             &
-!/NL3                     MPARS(IGRD)%SNLPS%SNLCS(SNLNQ) )
-!/NL3          SNLL   => MPARS(IGRD)%SNLPS%SNLL
-!/NL3          SNLM   => MPARS(IGRD)%SNLPS%SNLM
-!/NL3          SNLT   => MPARS(IGRD)%SNLPS%SNLT
-!/NL3          SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
-!/NL3          SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
-!/NL3          PINIT  = .TRUE.
-!/NL3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NL3                       SNLL, SNLM, SNLT, SNLCD, SNLCS
-!/NL3        END IF
+#ifdef W3_NL3
+      IF ( WRITE ) THEN
+          WRITE (NDSM) SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+          WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),             &
+                       SNLT(1:SNLNQ), SNLCD(1:SNLNQ),            &
+                       SNLCS(1:SNLNQ)
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+          ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),              &
+                     MPARS(IGRD)%SNLPS%SNLM(SNLNQ),              &
+                     MPARS(IGRD)%SNLPS%SNLT(SNLNQ),              &
+                     MPARS(IGRD)%SNLPS%SNLCD(SNLNQ),             &
+                     MPARS(IGRD)%SNLPS%SNLCS(SNLNQ) )
+          SNLL   => MPARS(IGRD)%SNLPS%SNLL
+          SNLM   => MPARS(IGRD)%SNLPS%SNLM
+          SNLT   => MPARS(IGRD)%SNLPS%SNLT
+          SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
+          SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
+          PINIT  = .TRUE.
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       SNLL, SNLM, SNLT, SNLCD, SNLCS
+        END IF
+#endif // W3_NL3
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 21'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/NL3      IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
-!/NL3                                      SNLSFD, SNLSFS
-!/NL3      IF ( FLTEST ) THEN
-!/NL3          DO I=1, SNLNQ
-!/NL3              WRITE (NDST,9151) SNLL(I), SNLM(I), SNLT(I),       &
-!/NL3                                SNLCD(I), SNLCS(I)
-!/NL3             END DO
-!/NL3        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 21'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_NL3
+      IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
+                                      SNLSFD, SNLSFS
+      IF ( FLTEST ) THEN
+          DO I=1, SNLNQ
+              WRITE (NDST,9151) SNLL(I), SNLM(I), SNLT(I),       &
+                                SNLCD(I), SNLCS(I)
+             END DO
+        END IF
+#endif // W3_NL3
 !
-!/NL4      IF ( WRITE ) THEN
-!/NL4          WRITE (NDSM) ITSA, IALT
-!/NL4        ELSE
-!/NL4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NL4                       ITSA, IALT
-!/NL4        END IF
+#ifdef W3_NL4
+      IF ( WRITE ) THEN
+          WRITE (NDSM) ITSA, IALT
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       ITSA, IALT
+        END IF
+#endif // W3_NL4
 !
-!/NL4      IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
+#ifdef W3_NL4
+      IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
+#endif // W3_NL4
 !
-!/NLS      IF ( WRITE ) THEN
-!/NLS          WRITE (NDSM)                                           &
-!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
-!/NLS        ELSE
-!/NLS          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
-!/NLS        END IF
+#ifdef W3_NLS
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                           &
+                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+        END IF
+#endif // W3_NLS
 !
-!/NLS      IF ( FLTEST ) WRITE (NDST,9251)                            &
-!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+#ifdef W3_NLS
+      IF ( FLTEST ) WRITE (NDST,9251)                            &
+                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+#endif // W3_NLS
 !
-!/NL1      IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
-!/NL3      IF ( .NOT. WRITE ) CALL INSNL3
-!/NLX      IF ( .NOT. WRITE ) CALL INSNLX
-!/NLS      IF ( .NOT. WRITE ) CALL INSNLS
+#ifdef W3_NL1
+      IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
+#endif // W3_NL1
+#ifdef W3_NL3
+      IF ( .NOT. WRITE ) CALL INSNL3
+#endif // W3_NL3
+#ifdef W3_NLX
+      IF ( .NOT. WRITE ) CALL INSNLX
+#endif // W3_NLX
+#ifdef W3_NLS
+      IF ( .NOT. WRITE ) CALL INSNLS
+#endif // W3_NLS
 !
 ! Layered barriers needed for file management in xnl_init
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 22'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MPI      IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
-!/MPI          DO IP=1, IAPROC-1
-!/MPI            CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
-!/MPI            END DO
-!/MPI        END IF
-!/NL2      IF ( .NOT. WRITE ) CALL INSNL2
-!/MPI      IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
-!/MPI          DO IP=IAPROC, NAPROC-1
-!/MPI            CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
-!/MPI            END DO
-!/MPI        END IF
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 22'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MPI
+      IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
+          DO IP=1, IAPROC-1
+            CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
+            END DO
+        END IF
+#endif // W3_MPI
+#ifdef W3_NL2
+      IF ( .NOT. WRITE ) CALL INSNL2
+#endif // W3_NL2
+#ifdef W3_MPI
+      IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
+          DO IP=IAPROC, NAPROC-1
+            CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
+            END DO
+        END IF
+#endif // W3_MPI
 !
 ! ... Bottom friction ...
 !
-!/BT1      IF ( WRITE ) THEN
-!/BT1          WRITE (NDSM)                            SBTC1
-!/BT1        ELSE
-!/BT1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
-!/BT1        END IF
+#ifdef W3_BT1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            SBTC1
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
+        END IF
+#endif // W3_BT1
 !
-!/BT1      IF ( FLTEST ) WRITE (NDST,9052) SBTC1
+#ifdef W3_BT1
+      IF ( FLTEST ) WRITE (NDST,9052) SBTC1
+#endif // W3_BT1
 !
 !
-!/BT4      IF ( WRITE ) THEN
-!/BT4          WRITE (NDSM)                                          &
-!/BT4                SBTCX, SED_D50, SED_PSIC
-!/BT4        ELSE
-!/BT4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-!/BT4                SBTCX, SED_D50, SED_PSIC
-!/BT4        END IF
+#ifdef W3_BT4
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                          &
+                SBTCX, SED_D50, SED_PSIC
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+                SBTCX, SED_D50, SED_PSIC
+        END IF
+#endif // W3_BT4
 !
 ! ... Depth induced breaking ...
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 23'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 23'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 
-!/DB1      IF ( WRITE ) THEN
-!/DB1          WRITE (NDSM)                                           &
-!/DB1                 SDBC1, SDBC2, FDONLY
-!/DB1        ELSE
-!/DB1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/DB1                 SDBC1, SDBC2, FDONLY
-!/DB1        END IF
+#ifdef W3_DB1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                           &
+                 SDBC1, SDBC2, FDONLY
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                 SDBC1, SDBC2, FDONLY
+        END IF
+#endif // W3_DB1
 !
-!/DB1      IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
+#ifdef W3_DB1
+      IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
+#endif // W3_DB1
 
-!/UOST      IF ( WRITE ) THEN
-!/UOST          WRITE (NDSM) UOSTFILELOCAL, UOSTFILESHADOW,            &
-!/UOST                       UOSTFACTORLOCAL, UOSTFACTORSHADOW
-!/UOST        ELSE
-!/UOST          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/UOST                 UOSTFILELOCAL, UOSTFILESHADOW,                  &
-!/UOST                 UOSTFACTORLOCAL, UOSTFACTORSHADOW
-!/UOST          CALL UOST_INITGRID(IGRD, UOSTFILELOCAL, UOSTFILESHADOW, &
-!/UOST                            UOSTFACTORLOCAL, UOSTFACTORSHADOW)
+#ifdef W3_UOST
+      IF ( WRITE ) THEN
+          WRITE (NDSM) UOSTFILELOCAL, UOSTFILESHADOW,            &
+                       UOSTFACTORLOCAL, UOSTFACTORSHADOW
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                 UOSTFILELOCAL, UOSTFILESHADOW,                  &
+                 UOSTFACTORLOCAL, UOSTFACTORSHADOW
+          CALL UOST_INITGRID(IGRD, UOSTFILELOCAL, UOSTFILESHADOW, &
+                            UOSTFACTORLOCAL, UOSTFACTORSHADOW)
+#endif // W3_UOST
 
-!/UOST        END IF
+#ifdef W3_UOST
+        END IF
+#endif // W3_UOST
 
 !
-!/IS1      IF ( WRITE ) THEN
-!/IS1          WRITE (NDSM)                            IS1C1, IS1C2
-!/IS1        ELSE
-!/IS1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
-!/IS1        END IF
+#ifdef W3_IS1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            IS1C1, IS1C2
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
+        END IF
+#endif // W3_IS1
 !
-!/IS2      IF ( WRITE ) THEN
-!/IS2          WRITE (NDSM)                            IS2PARS
-!/IS2        ELSE
-!/IS2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
-!/IS2          IF ( .NOT. FLIS ) THEN
-!/IS2            CALL INSIS2
-!/IS2            FLIS  = .TRUE.
-!/IS2          END IF
-!/IS2        END IF
+#ifdef W3_IS2
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                            IS2PARS
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
+          IF ( .NOT. FLIS ) THEN
+            CALL INSIS2
+            FLIS  = .TRUE.
+          END IF
+        END IF
+#endif // W3_IS2
 !
 ! Propagation scheme ------------------------------------------------- *
 !                                                 Module W3GDATMD PROP
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 24'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 24'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
 !
-!/PR2      IF ( WRITE ) THEN
-!/PR2          WRITE (NDSM) DTME, CLATMN
-!/PR2        ELSE
-!/PR2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/PR2                       DTME, CLATMN
-!/PR2        END IF
+#ifdef W3_PR2
+      IF ( WRITE ) THEN
+          WRITE (NDSM) DTME, CLATMN
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       DTME, CLATMN
+        END IF
+#endif // W3_PR2
 !
-!/PR2      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN
+#ifdef W3_PR2
+      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN
+#endif // W3_PR2
 !
-!/PR3      IF ( WRITE ) THEN
-!/PR3          WRITE (NDSM) WDCG, WDTH
-!/PR3        ELSE
-!/PR3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/PR3                       WDCG, WDTH
-!/PR3        END IF
+#ifdef W3_PR3
+      IF ( WRITE ) THEN
+          WRITE (NDSM) WDCG, WDTH
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       WDCG, WDTH
+        END IF
+#endif // W3_PR3
 !
-!/PR3      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
+#ifdef W3_PR3
+      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
+#endif // W3_PR3
 !
-!/SMC      IF ( WRITE ) THEN
-!/SMC          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
-!/SMC        ELSE
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                       DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
-!/SMC        END IF
+#ifdef W3_SMC
+      IF ( WRITE ) THEN
+          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+                       DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
+        END IF
+#endif // W3_SMC
 !
-!/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
+#ifdef W3_SMC
+      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
+#endif // W3_SMC
 !
-!/FLD1      IF ( WRITE ) THEN
-!/FLD1          WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
-!/FLD1        ELSE
-!/FLD1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-!/FLD1                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
-!/FLD1        END IF
-!/FLD2      IF ( WRITE ) THEN
-!/FLD2          WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
-!/FLD2        ELSE
-!/FLD2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-!/FLD2                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
-!/FLD2        END IF
+#ifdef W3_FLD1
+      IF ( WRITE ) THEN
+          WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+        END IF
+#endif // W3_FLD1
+#ifdef W3_FLD2
+      IF ( WRITE ) THEN
+          WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+        END IF
+#endif // W3_FLD2
 !
 ! Interpolation tables ( fill locally ) ----------------------------- *
 !                                                      Module W3DISPMD
 !
-!/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 25'
-!/DEBUGIOGR     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGIOGR
+     WRITE(740+IAPROC,*) 'W3IOGR, step 25'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGIOGR
       IF ( .NOT.WRITE .AND. .NOT.FLDISP ) THEN
-!/T          WRITE (NDST,9070)
+#ifdef W3_T
+          WRITE (NDST,9070)
+#endif // W3_T
           CALL DISTAB
           FLDISP = .TRUE.
         END IF
 !
       CLOSE ( NDSM )
 
-!/MEMCHECK       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
-!/MEMCHECK       call getMallocInfo(mallinfos)
-!/MEMCHECK       call printMallInfo(IAPROC,mallInfos)
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif // W3_MEMCHECK
 !
       RETURN
 !
@@ -1419,131 +1853,175 @@
                '     IOSTAT =',I5,                                    &
                5(A,/) /)
 !
-!/T 9000 FORMAT (' TEST W3IOGR : INXOUT = ',A,', WRITE = ',L1,        &
-!/T              ', UNIT =',I3,', IGRD =',I3,', FEXT = ',A)
-!/T 9001 FORMAT (' TEST W3IOGR : TEST PARAMETERS :'/                  &
-!/T              '       IDSTR : ',A/                                 &
-!/T              '      VERGRD : ',A/                                 &
-!/T              '    NX/Y/SEA : ',3I10/                              &
-!/T              '      NTH,NK : ',2I10/                              &
-!/T              '         NBI : ',I10/                               &
-!/T              '       NFBPO : ',2I10/                              &
-!/T              '      GNAME  : ',A/                                 &
-!/T              '      FNAME0 : ',A/                                 &
-!/T              '      FNAME1 : ',A/                                 &
-!/T              '      FNAME2 : ',A/                                 &
-!/T              '      FNAME3 : ',A/                                 &
-!/T              '      FNAME4 : ',A/                                 &
-!/T              '      FNAME5 : ',A/                                 &
-!/T              '      FNAME6 : ',A/                                 &
-!/T              '      FNAME7 : ',A/                                 &
-!/T              '      FNAMEP : ',A/                                 &
-!/T              '      FNAMEG : ',A/                                 &
-!/T              '      FNAMEF : ',A/                                 &
-!/T              '      FNAMEI : ',A)
-!/T 9002 FORMAT ('      NBO    : ',10I5)
-!/T 9003 FORMAT ('      NBO2   : ',10I5)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3IOGR : INXOUT = ',A,', WRITE = ',L1,        &
+              ', UNIT =',I3,', IGRD =',I3,', FEXT = ',A)
+ 9001 FORMAT (' TEST W3IOGR : TEST PARAMETERS :'/                  &
+              '       IDSTR : ',A/                                 &
+              '      VERGRD : ',A/                                 &
+              '    NX/Y/SEA : ',3I10/                              &
+              '      NTH,NK : ',2I10/                              &
+              '         NBI : ',I10/                               &
+              '       NFBPO : ',2I10/                              &
+              '      GNAME  : ',A/                                 &
+              '      FNAME0 : ',A/                                 &
+              '      FNAME1 : ',A/                                 &
+              '      FNAME2 : ',A/                                 &
+              '      FNAME3 : ',A/                                 &
+              '      FNAME4 : ',A/                                 &
+              '      FNAME5 : ',A/                                 &
+              '      FNAME6 : ',A/                                 &
+              '      FNAME7 : ',A/                                 &
+              '      FNAMEP : ',A/                                 &
+              '      FNAMEG : ',A/                                 &
+              '      FNAMEF : ',A/                                 &
+              '      FNAMEI : ',A)
+ 9002 FORMAT ('      NBO    : ',10I5)
+ 9003 FORMAT ('      NBO2   : ',10I5)
+#endif // W3_T
 !
-!/T 9010 FORMAT (' TEST W3IOGR : MODULE W3GDATMD GRID'/               &
-!/T              '      GTYPE  : ',I9/                                &
-!/T              '      FLAGLL : ',L9/                                &
-!/T              '      ICLOSE : ',I9/                                &
-!/T              '      SX, SY : ',2E10.3/                            &
-!/T              '      X0, Y0 : ',2E10.3/                            &
-!/T              '      TRFLAG : ',I9)
-!/T 9011 FORMAT ('      LOWER LEFT PART OF ',A)
-!/T 9012 FORMAT ('     ',4X,30I2)
-!/T 9013 FORMAT ('     ',12I6)
-!/T 9014 FORMAT ('     ',12F6.2)
-!/T 9015 FORMAT ('      STEPS  : ',4F8.1/                             &
-!/T              '      DEPTH  : ',F8.1,F10.3/                        &
-!/T              '      FICE0/N: ',F9.2,F8.2/                         &
-!/T              '      FICEL  : ',F9.1 /                             &
-!/T              '      PFMOVE : ',F9.2 /                             &
-!/T              '      STEXU  : ',F9.2 /                             &
-!/T              '      STEYU  : ',F9.2 /                             &
-!/T              '      STEDU  : ',F9.2)
+#ifdef W3_T
+ 9010 FORMAT (' TEST W3IOGR : MODULE W3GDATMD GRID'/               &
+              '      GTYPE  : ',I9/                                &
+              '      FLAGLL : ',L9/                                &
+              '      ICLOSE : ',I9/                                &
+              '      SX, SY : ',2E10.3/                            &
+              '      X0, Y0 : ',2E10.3/                            &
+              '      TRFLAG : ',I9)
+ 9011 FORMAT ('      LOWER LEFT PART OF ',A)
+ 9012 FORMAT ('     ',4X,30I2)
+ 9013 FORMAT ('     ',12I6)
+ 9014 FORMAT ('     ',12F6.2)
+ 9015 FORMAT ('      STEPS  : ',4F8.1/                             &
+              '      DEPTH  : ',F8.1,F10.3/                        &
+              '      FICE0/N: ',F9.2,F8.2/                         &
+              '      FICEL  : ',F9.1 /                             &
+              '      PFMOVE : ',F9.2 /                             &
+              '      STEXU  : ',F9.2 /                             &
+              '      STEYU  : ',F9.2 /                             &
+              '      STEDU  : ',F9.2)
+#endif // W3_T
 !
-!/T 9016 FORMAT ('      FLAGS  : ',8L2)
-!/T 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &
-!/T              '      CLATIS  : ',3F8.3,' ...'/                      &
-!/T              '      CTHG0S  : ',3E11.3,' ...')
+#ifdef W3_T
+ 9016 FORMAT ('      FLAGS  : ',8L2)
+ 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &
+              '      CLATIS  : ',3F8.3,' ...'/                      &
+              '      CTHG0S  : ',3E11.3,' ...')
+#endif // W3_T
 !
-!/T 9020 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT5')
-!/T 9021 FORMAT ('      INTERPOLATION DATA : FILE ',I1)
-!/T 9022 FORMAT ('          ',I5,2X,4I4,2X,4F5.2)
-!/T 9023 FORMAT ('          ',10I7)
-!/T 9025 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT6'/               &
-!/T              '      PARTITIONING DATA :',I5,3E10.3,L4,2X,I4)
+#ifdef W3_T
+ 9020 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT5')
+ 9021 FORMAT ('      INTERPOLATION DATA : FILE ',I1)
+ 9022 FORMAT ('          ',I5,2X,4I4,2X,4F5.2)
+ 9023 FORMAT ('          ',10I7)
+ 9025 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT6'/               &
+              '      PARTITIONING DATA :',I5,3E10.3,L4,2X,I4)
+#endif // W3_T
 !
-!/T 9030 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SGRD'/               &
-!/T              '      MAPWN  : ',8I4,' ...'/                        &
-!/T              '      MAPTH  : ',8I4,' ...'/                        &
-!/T              '      DTH    : ',F6.1/                              &
-!/T              '      TH     : ',4F6.1,' ...'/                      &
-!/T              '      ESIN   : ',4F6.3,' ...'/                      &
-!/T              '      ECOS   : ',4F6.3,' ...'/                      &
-!/T              '      XFR    : ',F6.3/                              &
-!/T              '      FR     : ',F6.3,' ...',F6.3/                  &
-!/T              '      FACs   : ',6E10.3/                            &
-!/T              '               ',3E10.3)
+#ifdef W3_T
+ 9030 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SGRD'/               &
+              '      MAPWN  : ',8I4,' ...'/                        &
+              '      MAPTH  : ',8I4,' ...'/                        &
+              '      DTH    : ',F6.1/                              &
+              '      TH     : ',4F6.1,' ...'/                      &
+              '      ESIN   : ',4F6.3,' ...'/                      &
+              '      ECOS   : ',4F6.3,' ...'/                      &
+              '      XFR    : ',F6.3/                              &
+              '      FR     : ',F6.3,' ...',F6.3/                  &
+              '      FACs   : ',6E10.3/                            &
+              '               ',3E10.3)
+#endif // W3_T
 !
-!/T 9040 FORMAT (' TEST W3IOGR : MODULE W3GDATMD NPAR'/               &
-!/T              '      FACs   : ',5E10.3/                            &
-!/T              '               ',4E10.3)
+#ifdef W3_T
+ 9040 FORMAT (' TEST W3IOGR : MODULE W3GDATMD NPAR'/               &
+              '      FACs   : ',5E10.3/                            &
+              '               ',4E10.3)
+#endif // W3_T
 !
-!/FLX2 9048 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SFLP'/            &
-!/FLX2              '      FLUXES : ',I5,3X,E10.3)
-!/FLX3 9048 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SFLP'/            &
-!/FLX3              '      FLUXES : ',2I5,3X,2E10.3)
+#ifdef W3_FLX2
+ 9048 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SFLP'/            &
+              '      FLUXES : ',I5,3X,E10.3)
+#endif // W3_FLX2
+#ifdef W3_FLX3
+ 9048 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SFLP'/            &
+              '      FLUXES : ',2I5,3X,2E10.3)
+#endif // W3_FLX3
 !
-!/LN1 9049 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SLNP'/             &
-!/LN1              '      INPUT  : ',3E10.3)
+#ifdef W3_LN1
+ 9049 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SLNP'/             &
+              '      INPUT  : ',3E10.3)
+#endif // W3_LN1
 !
-!/ST1 9050 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SRCP'/             &
-!/ST1              '      INPUT  : ',E10.3/                           &
-!/ST1              '      DISSIP : ',E10.3)
-!/ST2 9050 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SRCP'/             &
-!/ST2              '      INPUT  : ',2E10.3/                          &
-!/ST2              '      DISSIP : ',4E10.3/                          &
-!/ST2              '               ',5E10.3/                          &
-!/ST2              '               ',3E10.3/                          &
-!/ST2              '      STAB2  : ',6E10.3)
+#ifdef W3_ST1
+ 9050 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SRCP'/             &
+              '      INPUT  : ',E10.3/                           &
+              '      DISSIP : ',E10.3)
+#endif // W3_ST1
+#ifdef W3_ST2
+ 9050 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SRCP'/             &
+              '      INPUT  : ',2E10.3/                          &
+              '      DISSIP : ',4E10.3/                          &
+              '               ',5E10.3/                          &
+              '               ',3E10.3/                          &
+              '      STAB2  : ',6E10.3)
+#endif // W3_ST2
 !
-!/NL1 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
-!/NL1              '      DATA   : ',2E10.3/                          &
-!/NL1              '               ',5E10.3)
+#ifdef W3_NL1
+ 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+              '      DATA   : ',2E10.3/                          &
+              '               ',5E10.3)
+#endif // W3_NL1
 !
-!/NL2 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
-!/NL2              '      DATA   : ',I4,F5.1,I4)
-!/NL2 9151 FORMAT ('               ',5F7.1)
+#ifdef W3_NL2
+ 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+              '      DATA   : ',I4,F5.1,I4)
+ 9151 FORMAT ('               ',5F7.1)
+#endif // W3_NL2
 !
-!/NL3 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
-!/NL3              '      DATA   : ',I4,4F8.3)
-!/NL3 9151 FORMAT ('               ',2F8.3,F6.1,2E12.4)
+#ifdef W3_NL3
+ 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+              '      DATA   : ',I4,4F8.3)
+ 9151 FORMAT ('               ',2F8.3,F6.1,2E12.4)
+#endif // W3_NL3
 !
-!/NL4 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
-!/NL4              '      DATA   : ',I4,I4)
+#ifdef W3_NL4
+ 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+              '      DATA   : ',I4,I4)
+#endif // W3_NL4
 !
-!/NLS 9251 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP (NLS)'/       &
-!/NLS              '      DATA   : ',F8.3,E12.4,4F8.3)
+#ifdef W3_NLS
+ 9251 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP (NLS)'/       &
+              '      DATA   : ',F8.3,E12.4,4F8.3)
+#endif // W3_NLS
 !
-!/BT1 9052 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SBTP'/             &
-!/BT1              '      DATA   : ',E10.3)
+#ifdef W3_BT1
+ 9052 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SBTP'/             &
+              '      DATA   : ',E10.3)
+#endif // W3_BT1
 !
-!/DB1 9053 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SDBP'/             &
-!/DB1              '      DATA   : ',2E10.3,L4)
+#ifdef W3_DB1
+ 9053 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SDBP'/             &
+              '      DATA   : ',2E10.3,L4)
+#endif // W3_DB1
 !
-!/PR2 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
-!/PR2              '      DATA   : ',2E10.3)
+#ifdef W3_PR2
+ 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
+              '      DATA   : ',2E10.3)
+#endif // W3_PR2
 !
-!/PR3 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
-!/PR3              '      DATA   : ',2F6.2)
+#ifdef W3_PR3
+ 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
+              '      DATA   : ',2F6.2)
+#endif // W3_PR3
 !
-!/SMC 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
-!/SMC              '      DATA   : ',3E10.3)
+#ifdef W3_SMC
+ 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
+              '      DATA   : ',3E10.3)
+#endif // W3_SMC
 !
-!/T 9070 FORMAT (' TEST W3IOGR : DISPERSION INTEPOLATION TABLES')
+#ifdef W3_T
+ 9070 FORMAT (' TEST W3IOGR : DISPERSION INTEPOLATION TABLES')
+#endif // W3_T
 !/
 !/ End of W3IOGR ----------------------------------------------------- /
 !/

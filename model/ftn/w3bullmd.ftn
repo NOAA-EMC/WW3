@@ -29,7 +29,9 @@
                                       DMT(NPTAB,2)
       CHARACTER(LEN=129)   :: ASCBLINE 
       CHARACTER(LEN=664)   :: CSVBLINE 
-!/NCO      CHARACTER(LEN=67)    :: CASCBLINE 
+#ifdef W3_NCO
+      CHARACTER(LEN=67)    :: CASCBLINE 
+#endif // W3_NCO
       LOGICAL              :: IYY(NPMAX)
 !/    
 !/ Conventional declarations
@@ -115,7 +117,9 @@
 !
 !/ ------------------------------------------------------------------- /
 !     USE CONSTANTS
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !
@@ -132,7 +136,9 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Initializations
 !
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: DHSMAX, DTPMAX,        &
                                  DDMMAX, DDWMAX, AGEMIN
       PARAMETER     ( DHSMAX =   1.50 )
@@ -155,16 +161,22 @@
                                  TPD(NPMAX), WDD(NPMAX)
       LOGICAL                 :: FLAG(NPMAX)
       CHARACTER(LEN=129)      :: BLANK, TAIL !, ASCBLINE
-!/NCO      CHARACTER(LEN=67)       :: CBLANK, CTAIL !, CASCBLINE
+#ifdef W3_NCO
+      CHARACTER(LEN=67)       :: CBLANK, CTAIL !, CASCBLINE
+#endif // W3_NCO
       CHARACTER(LEN=15)       :: PART
-!/NCO      CHARACTER(LEN=9)        :: CPART
+#ifdef W3_NCO
+      CHARACTER(LEN=9)        :: CPART
+#endif // W3_NCO
       CHARACTER(LEN=664)      :: BLANK2 !,CSVBLINE
       CHARACTER               :: STIME*8,FORM*20,FORM1*2
       CHARACTER(LEN=16)       :: PART2
 !/
 !/ ------------------------------------------------------------------- /
 !
-!/S      CALL STRACE (IENT, 'XXXXXX')
+#ifdef W3_S
+      CALL STRACE (IENT, 'XXXXXX')
+#endif // W3_S
 !
 ! 1.a Constants etc.
 !
@@ -187,11 +199,13 @@
       BLANK( 81:120) = '            |                 |         '
       BLANK(120:129) = '         |'
       ASCBLINE       = BLANK
-!/NCO       CTAIL( 1:40) = '----------------------------------------'
-!/NCO       CTAIL(41:67) = '---------------------------'
-!/NCO       CBLANK( 1:40) = '                                        '
-!/NCO       CBLANK(41:67) = '                           '
-!/NCO       CASCBLINE       = CBLANK
+#ifdef W3_NCO
+       CTAIL( 1:40) = '----------------------------------------'
+       CTAIL(41:67) = '---------------------------'
+       CBLANK( 1:40) = '                                        '
+       CBLANK(41:67) = '                           '
+       CASCBLINE       = CBLANK
+#endif // W3_NCO
 !
       BLANK2(  1: 40)='    ,    ,  ,  ,  ,     ,   ,     ,     '
       BLANK2( 41: 88)=',     ,     ,   ,     ,     ,   ,     ,     ,   '
@@ -258,7 +272,9 @@
 !
       ASCBLINE = BLANK
       CSVBLINE = BLANK2
-!/NCO       CASCBLINE = CBLANK
+#ifdef W3_NCO
+       CASCBLINE = CBLANK
+#endif // W3_NCO
 !
 ! Fill the variable forecast time with hrs relative to reference time
       IF ( TIMEV(1) .LE. 0 ) TIMEV = TIME
@@ -286,9 +302,11 @@
       IF ( HSTOT .GT. 0. ) WRITE (ASCBLINE(10:14),'(F5.2)') HSTOT
       WRITE (ASCBLINE(16:17),'(I2)') NPART - NZERO
 !
-!/NCO       WRITE (CASCBLINE(1:2),'(I2.2)') MOD(TIME(1),100)
-!/NCO       WRITE (CASCBLINE(3:4),'(I2.2)') TIME(2)/10000
-!/NCO       IF ( HSTOT .GT. 0. ) WRITE (CASCBLINE(6:7),'(I2)') NINT(HSTOT/0.3048)
+#ifdef W3_NCO
+       WRITE (CASCBLINE(1:2),'(I2.2)') MOD(TIME(1),100)
+       WRITE (CASCBLINE(3:4),'(I2.2)') TIME(2)/10000
+       IF ( HSTOT .GT. 0. ) WRITE (CASCBLINE(6:7),'(I2)') NINT(HSTOT/0.3048)
+#endif // W3_NCO
 !
       IF ( NPART.EQ.0 .OR. HSTOT.LT.0.1 ) GOTO 699
 !
@@ -352,10 +370,12 @@
 !
           WRITE (PART,'(1X,F5.2,F5.1,I4)')                             &
                 HSP(IPNOW), TPP(IPNOW), NINT(DMP(IPNOW))
-!/NCO           WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                         &
-!/NCO                  NINT(HSP(IPNOW)/0.3048),                              &
-!/NCO                  NINT(TPP(IPNOW)),                                     &
-!/NCO                  NINT(MOD(DMP(IPNOW)+180.,360.))
+#ifdef W3_NCO
+           WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                         &
+                  NINT(HSP(IPNOW)/0.3048),                              &
+                  NINT(TPP(IPNOW)),                                     &
+                  NINT(MOD(DMP(IPNOW)+180.,360.))
+#endif // W3_NCO
           DELDW  = MOD ( ABS ( UDIR - DMP(IPNOW) ) , 360. )
           IF ( DELDW .GT. 180. ) DELDW = 360. - DELDW
           AFR    = 2.*PI/TPP(IPNOW)
@@ -363,7 +383,9 @@
           IF ( DELDW.LT.DDWMAX .AND. AGE.GT.AGEMIN ) PART(1:1) = '*'
 !
           ASCBLINE(5+ITAB*18:19+ITAB*18) = PART
-!/NCO           CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
+#ifdef W3_NCO
+           CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
+#endif // W3_NCO
 !
           DO IFLD=1,NPTAB
           IF(ITAB.EQ.IFLD)THEN

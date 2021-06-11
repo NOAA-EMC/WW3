@@ -1047,7 +1047,9 @@
 !
 #ifdef W3_OMPH
 !$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, QB, IXYU, IXYD, &
-!/T1!$OMP                      QBO, QN, IX, IY, IX2, IY2,              &
+#ifdef W3_T1
+!$OMP                      QBO, QN, IX, IY, IX2, IY2,              &
+#endif // W3_T1
 !$OMP&                     DQ, DQNZ, QCN, QBN, QBR, CFAC )
 #endif // W3_OMPH
 !

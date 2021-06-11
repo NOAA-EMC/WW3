@@ -108,11 +108,15 @@
       USE CONSTANTS
 !/
 !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
-!/NL1      USE W3ADATMD,ONLY: W3NAUX, W3SETA
+#ifdef W3_NL1
+      USE W3ADATMD,ONLY: W3NAUX, W3SETA
+#endif // W3_NL1
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
       USE W3TIMEMD 
       USE W3ARRYMD, ONLY : INA2R, INA2I
       USE W3IOGRMD, ONLY: W3IOGR
@@ -126,7 +130,9 @@
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -139,12 +145,16 @@
       INTEGER                 :: K, ICON, IX2, SUMOK, NBAD, ITER
       INTEGER                 :: IE, IP, IP2, II, IFOUND, ALREADYFOUND
       INTEGER                 :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
-!/MPI      INTEGER                 :: IERR_MPI, IND, REST, SLICE
+#ifdef W3_MPI
+      INTEGER                 :: IERR_MPI, IND, REST, SLICE
+#endif // W3_MPI
       INTEGER                 :: TIME(2), TIDE_START(2), TIDE_END(2)
       INTEGER                 :: INDMAX(70), PR_INDS(70) 
 !
       INTEGER, ALLOCATABLE    :: BADPOINTS(:,:), VNEIGH(:,:), CONN(:)
-!/MPI      INTEGER, ALLOCATABLE    :: NELEM(:), CUMUL(:)
+#ifdef W3_MPI
+      INTEGER, ALLOCATABLE    :: NELEM(:), CUMUL(:)
+#endif // W3_MPI
 !
       REAL                    :: WCURTIDEX, WCURTIDEY, TIDE_ARGX, TIDE_ARGY
       REAL                    :: AMPCOS, AMPSIN
@@ -152,8 +162,10 @@
       REAL                    :: TIDE_FX(44),UX(44),VX(44), MAXVALCON(70) 
 !
       REAL, ALLOCATABLE       :: FX(:,:), FY(:,:), FA(:,:)
-!/MPI      REAL, ALLOCATABLE       :: FX1D(:), FY1D(:), FA1D(:)
-!/MPI      REAL, ALLOCATABLE       :: FX1DL(:), FY1DL(:), FA1DL(:)
+#ifdef W3_MPI
+      REAL, ALLOCATABLE       :: FX1D(:), FY1D(:), FA1D(:)
+      REAL, ALLOCATABLE       :: FX1DL(:), FY1DL(:), FA1DL(:)
+#endif // W3_MPI
 !
       DOUBLE PRECISION        :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
 !
@@ -182,8 +194,10 @@
 !
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3SETG ( 1, 6, 6 )
-!/NL1      CALL W3NAUX (    6, 6 )
-!/NL1      CALL W3SETA ( 1, 6, 6 )
+#ifdef W3_NL1
+      CALL W3NAUX (    6, 6 )
+      CALL W3SETA ( 1, 6, 6 )
+#endif // W3_NL1
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
 !
@@ -202,29 +216,37 @@
       TIDEFILL =.TRUE.
       CALL ITRACE ( NDSTRC, NTRACE )
 !
-!/NCO/!
-!/NCO/! Redo according to NCO
-!/NCO/!
-!/NCO      NDSI   = 11
-!/NCO      NDSO   =  6
-!/NCO      NDSE   = NDSO
-!/NCO      NDST   = NDSO
-!/NCO      NDSM   = 12
-!/NCO      NDSDAT = 51
-!/NCO      NDSTRC = NDSO
+#ifdef W3_NCO
+!
+! Redo according to NCO
+!
+      NDSI   = 11
+      NDSO   =  6
+      NDSE   = NDSO
+      NDST   = NDSO
+      NDSM   = 12
+      NDSDAT = 51
+      NDSTRC = NDSO
+#endif // W3_NCO
 
-!/S      CALL STRACE (IENT, 'W3PRTIDE')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3PRTIDE')
+#endif // W3_S
 
 !
 ! 1.c MPP initializations
 !
-!/SHRD      NAPROC = 1
-!/SHRD      IAPROC = 1
+#ifdef W3_SHRD
+      NAPROC = 1
+      IAPROC = 1
+#endif // W3_SHRD
 !
-!/MPI      CALL MPI_INIT      ( IERR_MPI )
-!/MPI      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
-!/MPI      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
-!/MPI      IAPROC = IAPROC + 1  ! this is to have IAPROC between 1 and NAPROC
+#ifdef W3_MPI
+      CALL MPI_INIT      ( IERR_MPI )
+      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
+      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
+      IAPROC = IAPROC + 1  ! this is to have IAPROC between 1 and NAPROC
+#endif // W3_MPI
 !
       IF ( IAPROC .EQ. NAPERR ) THEN
           NDSEN  = NDSE
@@ -418,39 +440,49 @@
 !
 !==========================================================
 
-!/MPI      SLICE=NX/NAPROC
-!/MPI      REST=MOD(NX,NAPROC)
-!/MPI      IF(REST.GE.IAPROC) SLICE=SLICE+1
+#ifdef W3_MPI
+      SLICE=NX/NAPROC
+      REST=MOD(NX,NAPROC)
+      IF(REST.GE.IAPROC) SLICE=SLICE+1
+#endif // W3_MPI
 
-!/MPI      ! set total 1D array (nx)
-!/MPI      ALLOCATE ( FX1D(NX), FY1D(NX), FA1D(NX))
-!/MPI      FX1D(:)=0.
-!/MPI      FY1D(:)=0.
-!/MPI      FA1D(:)=0.
+#ifdef W3_MPI
+      ! set total 1D array (nx)
+      ALLOCATE ( FX1D(NX), FY1D(NX), FA1D(NX))
+      FX1D(:)=0.
+      FY1D(:)=0.
+      FA1D(:)=0.
+#endif // W3_MPI
 
-!/MPI     ! set local 1D array (slice)
-!/MPI      ALLOCATE(FX1DL(SLICE))
-!/MPI      ALLOCATE(FY1DL(SLICE))
-!/MPI      ALLOCATE(FA1DL(SLICE))
-!/MPI      FX1DL(:)=0.
-!/MPI      FY1DL(:)=0.
-!/MPI      FA1DL(:)=0.
+#ifdef W3_MPI
+     ! set local 1D array (slice)
+      ALLOCATE(FX1DL(SLICE))
+      ALLOCATE(FY1DL(SLICE))
+      ALLOCATE(FA1DL(SLICE))
+      FX1DL(:)=0.
+      FY1DL(:)=0.
+      FA1DL(:)=0.
+#endif // W3_MPI
 
 
-!/MPI      ! set arrays for number of elements per MPI proc
-!/MPI      ALLOCATE(NELEM(NAPROC))
-!/MPI      ALLOCATE(CUMUL(NAPROC))
-!/MPI      NELEM(1) = NX / NAPROC
-!/MPI      IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
-!/MPI      CUMUL(1) = 0
-!/MPI      DO I=2,NAPROC
-!/MPI        CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
-!/MPI        NELEM(I) = NX / NAPROC
-!/MPI        IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
-!/MPI      END DO
+#ifdef W3_MPI
+      ! set arrays for number of elements per MPI proc
+      ALLOCATE(NELEM(NAPROC))
+      ALLOCATE(CUMUL(NAPROC))
+      NELEM(1) = NX / NAPROC
+      IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
+      CUMUL(1) = 0
+      DO I=2,NAPROC
+        CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
+        NELEM(I) = NX / NAPROC
+        IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
+      END DO
+#endif // W3_MPI
       
-!/MPIT      WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
-!/MPIT      WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+#ifdef W3_MPIT
+      WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
+      WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+#endif // W3_MPIT
 
 !==========================================================
 !
@@ -574,9 +606,13 @@
 
         IF (IFLD.EQ.4) THEN 
           DO IY = 1, NY
-!/MPI            IND=0 
-!/MPI            DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
-!/SHRD            DO IX=1,NX
+#ifdef W3_MPI
+            IND=0 
+            DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
+#endif // W3_MPI
+#ifdef W3_SHRD
+            DO IX=1,NX
+#endif // W3_SHRD
               CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
               WCURTIDEX = 0.
               WCURTIDEY = 0.
@@ -597,41 +633,49 @@
                         IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 STOP
               END IF
-!/MPI                IND=IND+1
-!/MPI                FX1DL(IND) = WCURTIDEX
-!/MPI                FY1DL(IND) = WCURTIDEY
-!/MPI                FA1DL(IND) = 0.
-!/SHRD                FX(IX,IY) = WCURTIDEX
-!/SHRD                FY(IX,IY) = WCURTIDEY
-!/SHRD                FA(IX,IY) = 0.
+#ifdef W3_MPI
+                IND=IND+1
+                FX1DL(IND) = WCURTIDEX
+                FY1DL(IND) = WCURTIDEY
+                FA1DL(IND) = 0.
+#endif // W3_MPI
+#ifdef W3_SHRD
+                FX(IX,IY) = WCURTIDEX
+                FY(IX,IY) = WCURTIDEY
+                FA(IX,IY) = 0.
+#endif // W3_SHRD
             END DO ! NX
 
 !
 ! Gather from other MPI tasks
 !
 
-!/MPI            IF (NAPROC.GT.1) THEN
-!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI            ELSE
-!/MPI              FX1D = FX1DL
-!/MPI              FY1D = FY1DL
-!/MPI              FA1D = FA1DL
-!/MPI            END IF
+#ifdef W3_MPI
+            IF (NAPROC.GT.1) THEN
+              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+            ELSE
+              FX1D = FX1DL
+              FY1D = FY1DL
+              FA1D = FA1DL
+            END IF
+#endif // W3_MPI
 
 !
 ! Convert from 1D to 2D array
 !
-!/MPI            IF (IAPROC .EQ. NAPOUT) THEN
-!/MPI              IND=0 
-!/MPI              DO IX=1,NX
-!/MPI                IND=IND+1
-!/MPI                FX(IX,IY)=FX1D(IND)
-!/MPI                FY(IX,IY)=FY1D(IND)
-!/MPI                FA(IX,IY)=FA1D(IND)
-!/MPI              END DO
-!/MPI            END IF
+#ifdef W3_MPI
+            IF (IAPROC .EQ. NAPOUT) THEN
+              IND=0 
+              DO IX=1,NX
+                IND=IND+1
+                FX(IX,IY)=FX1D(IND)
+                FY(IX,IY)=FY1D(IND)
+                FA(IX,IY)=FA1D(IND)
+              END DO
+            END IF
+#endif // W3_MPI
 
           END DO ! NY
         END IF ! IFLD.EQ.4
@@ -645,9 +689,13 @@
 
         IF (IFLD.EQ.2) THEN 
           DO IY = 1, NY
-!/MPI            IND=0 
-!/MPI            DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
-!/SHRD            DO IX=1,NX
+#ifdef W3_MPI
+            IND=0 
+            DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
+#endif // W3_MPI
+#ifdef W3_SHRD
+            DO IX=1,NX
+#endif // W3_SHRD
               CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
 !
 ! Removes unlikely values ... 
@@ -674,13 +722,17 @@
                   WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
                 END IF         
               END DO
-!/MPI              IND=IND+1
-!/MPI              FX1DL(IND) = 0.
-!/MPI              FY1DL(IND) = 0.
-!/MPI              FA1DL(IND) = WCURTIDEX
-!/SHRD              FX(IX,IY) = 0.       
-!/SHRD              FY(IX,IY) = 0.
-!/SHRD              FA(IX,IY) = WCURTIDEX
+#ifdef W3_MPI
+              IND=IND+1
+              FX1DL(IND) = 0.
+              FY1DL(IND) = 0.
+              FA1DL(IND) = WCURTIDEX
+#endif // W3_MPI
+#ifdef W3_SHRD
+              FX(IX,IY) = 0.       
+              FY(IX,IY) = 0.
+              FA(IX,IY) = WCURTIDEX
+#endif // W3_SHRD
 
             END DO ! NX
 
@@ -688,28 +740,32 @@
 ! Gather from other MPI tasks
 !
 
-!/MPI            IF (NAPROC.GT.1) THEN
-!/MPI              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI            ELSE
-!/MPI              FX1D = FX1DL
-!/MPI              FY1D = FY1DL
-!/MPI              FA1D = FA1DL
-!/MPI            END IF
+#ifdef W3_MPI
+            IF (NAPROC.GT.1) THEN
+              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+            ELSE
+              FX1D = FX1DL
+              FY1D = FY1DL
+              FA1D = FA1DL
+            END IF
+#endif // W3_MPI
 
 !
 ! Convert from 1D to 2D array
 !
-!/MPI            IF (IAPROC .EQ. NAPOUT) THEN
-!/MPI              IND=0 
-!/MPI              DO IX=1,NX
-!/MPI                IND=IND+1
-!/MPI                FX(IX,IY)=FX1D(IND)
-!/MPI                FY(IX,IY)=FY1D(IND)
-!/MPI                FA(IX,IY)=FA1D(IND)
-!/MPI              END DO
-!/MPI            END IF
+#ifdef W3_MPI
+            IF (IAPROC .EQ. NAPOUT) THEN
+              IND=0 
+              DO IX=1,NX
+                IND=IND+1
+                FX(IX,IY)=FX1D(IND)
+                FY(IX,IY)=FY1D(IND)
+                FA(IX,IY)=FA1D(IND)
+              END DO
+            END IF
+#endif // W3_MPI
 
           END DO ! NY
         END IF ! IFLD.EQ.2
@@ -765,7 +821,9 @@
 !
   888 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
-!/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
+#ifdef W3_MPI
+      CALL MPI_FINALIZE  ( IERR_MPI )
+#endif // W3_MPI
 
 !
 ! Formats

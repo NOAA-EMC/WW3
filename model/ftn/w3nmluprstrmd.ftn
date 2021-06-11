@@ -109,7 +109,9 @@
 !/ ------------------------------------------------------------------- /
 
     USE W3ODATMD, ONLY: NDSE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
     IMPLICIT NONE
 
@@ -118,10 +120,14 @@
     TYPE(NML_RESTART_T), INTENT(INOUT)          :: NML_RESTART
     TYPE(NML_UPDATE_T), INTENT(INOUT)           :: NML_UPDATE
     INTEGER, INTENT(OUT)                        :: IERR
-!/S      INTEGER, SAVE                             :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE                             :: IENT = 0
+#endif // W3_S
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'W3NMLUPRSTR')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3NMLUPRSTR')
+#endif // W3_S
 
     ! open namelist log file
     NDSN = 3
@@ -216,7 +222,9 @@
 
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
     IMPLICIT NONE
 
@@ -227,10 +235,14 @@
     INTEGER                                :: IERR
     TYPE(NML_RESTART_T) :: RESTART
     NAMELIST /RESTART_NML/ RESTART
-!/S      INTEGER, SAVE                           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE                           :: IENT = 0
+#endif // W3_S
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'READ_RESTART_NML')
+#ifdef W3_S
+      CALL STRACE (IENT, 'READ_RESTART_NML')
+#endif // W3_S
 
     ! set default values
     RESTART%RESTARTTIME  = '19680607 120000'
@@ -313,7 +325,9 @@
 
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
     IMPLICIT NONE
 
@@ -324,10 +338,14 @@
     INTEGER                                :: IERR
     TYPE(NML_UPDATE_T) :: UPDATE
     NAMELIST /UPDATE_NML/ UPDATE
-!/S      INTEGER, SAVE                           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE                           :: IENT = 0
+#endif // W3_S
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'READ_UPDATE_NML')
+#ifdef W3_S
+      CALL STRACE (IENT, 'READ_UPDATE_NML')
+#endif // W3_S
 
     ! set default values for update approach
     ! as set, these would run the update but not correct
@@ -413,14 +431,20 @@
 !
 !/ ------------------------------------------------------------------- /
 
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
     IMPLICIT NONE
 
     TYPE(NML_RESTART_T), INTENT(IN) :: NML_RESTART
-!/S      INTEGER, SAVE                           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE                           :: IENT = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'REPORT_RESTART_NML')
+#ifdef W3_S
+      CALL STRACE (IENT, 'REPORT_RESTART_NML')
+#endif // W3_S
 
       WRITE (MSG,'(A)') 'RESTART % '
       WRITE (NDSN,'(A)')
@@ -490,14 +514,20 @@
 !
 !/ ------------------------------------------------------------------- /
 
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 
     IMPLICIT NONE
 
     TYPE(NML_UPDATE_T), INTENT(IN) :: NML_UPDATE
-!/S      INTEGER, SAVE                           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE                           :: IENT = 0
+#endif // W3_S
 
-!/S      CALL STRACE (IENT, 'REPORT_UPDATE_NML')
+#ifdef W3_S
+      CALL STRACE (IENT, 'REPORT_UPDATE_NML')
+#endif // W3_S
 
       WRITE (MSG,'(A)') 'UPDATE % '
       WRITE (NDSN,'(A)')

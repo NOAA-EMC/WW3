@@ -985,7 +985,9 @@
 !
 #ifdef W3_OMPH
 !$OMP PARALLEL DO PRIVATE (IP, IXY, CFL,                       &
-!/T1!$OMP QBO, IX, IY, IY2, IX2, QN                   &
+#ifdef W3_T1
+!$OMP QBO, IX, IY, IY2, IX2, QN                   &
+#endif // W3_T1
 !$OMP IXYC, IXYD, QB)  
 #endif // W3_OMPH
 !
@@ -1110,7 +1112,9 @@
 !
 #ifdef W3_OMPH
 !$OMP PARALLEL DO  &
-!/T2/!$OMP       PRIVATE(QOLD), &
+#ifdef W3_T2
+!$OMP       PRIVATE(QOLD), &
+#endif // W3_T2
 !$OMP       PRIVATE (IP, IXY, JN, JP)
 #endif // W3_OMPH
 !

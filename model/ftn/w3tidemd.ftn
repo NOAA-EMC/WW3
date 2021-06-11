@@ -290,7 +290,9 @@
 !
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
       USE W3ODATMD, ONLY: NDSE, NDSO
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   
 !/
@@ -301,9 +303,13 @@
       INTEGER, INTENT(OUT)    :: INDS(70), TIDE_PRMF
  
       INTEGER J, FOUND
-!/S      INTEGER, SAVE           :: IENT   =   0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   =   0
+#endif // W3_S
 !
-!/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+#endif // W3_S
 !
       TIDE_PRMF=0
       IF (TRIM(LIST(1)).EQ.'VFAST' .OR. TRIM(LIST(1)).EQ.'FAST') THEN 
@@ -382,7 +388,9 @@
 !
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
       USE W3ODATMD, ONLY: NDSE, NDSO
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE   
@@ -396,9 +404,13 @@
       CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(65)      ! array of names of tidal constituents
       REAL                         :: TIDE_FREQC_ALL(65)        ! array of freq. of tidal constituents
       INTEGER                      :: INDS(65), J, FOUND, NTIDES
-!/S      INTEGER, SAVE           :: IENT   =   0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT   =   0
+#endif // W3_S
 !
-!/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+#ifdef W3_S
+      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+#endif // W3_S
 !
       TIDECON_NAME_ALL(:)=(/ &
        'Z0   ', 'SSA  ', 'MSM  ', 'MM   ', 'MSF  ', 'MF   ', 'ALP1 ', '2Q1  ', 'SIG1 ', 'Q1   ',  &
@@ -763,11 +775,17 @@
       ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 !      ndef=1 if only 1D field to be analysed (eg., elevations)
 !      ndef=2 if 2D field: velocity components, EW followed by NS   : this is now de-activated
-!/T      WRITE(6,*)  ' number of constituents & degrees of freedom=',TIDE_MF,ndef
+#ifdef W3_T
+      WRITE(6,*)  ' number of constituents & degrees of freedom=',TIDE_MF,ndef
+#endif // W3_T
       IF (itrend.eq.1) then
-!/T      WRITE(6,*) ' a linear trend is included in the analysis'
+#ifdef W3_T
+      WRITE(6,*) ' a linear trend is included in the analysis'
+#endif // W3_T
       else
-!/T      WRITE(6,*) ' no linear trend is included'
+#ifdef W3_T
+      WRITE(6,*) ' no linear trend is included'
+#endif // W3_T
       END IF
 !      TIDE_MF= number of consituents, excluding linear trend. The constant
 !      term, Z0 should be first in the list.
@@ -777,10 +795,14 @@
 
    10 FORMAT(2I5,F5.2)
       READ(KR1,11) (TIDECON_NAME(I),TIDE_FREQC(I),I=1,TIDE_MF)
-!/T      WRITE(6,*)    (TIDECON_NAME(I),TIDE_FREQC(I),I=1,TIDE_MF)
+#ifdef W3_T
+      WRITE(6,*)    (TIDECON_NAME(I),TIDE_FREQC(I),I=1,TIDE_MF)
+#endif // W3_T
    11 FORMAT(4x,A5,F16.10)
       READ(KR1,7) ID1,IM1,IY1,ID2,IM2,IY2,IC1,IC2
-!/T      WRITE(6,*)   ID1,IM1,IY1,ID2,IM2,IY2,IC1,IC2
+#ifdef W3_T
+      WRITE(6,*)   ID1,IM1,IY1,ID2,IM2,IY2,IC1,IC2
+#endif // W3_T
       IF (IC1.EQ.0) IC1=19
       IF (IC2.EQ.0) IC2=19
     7 FORMAT(16I5)
@@ -2230,7 +2252,9 @@
             END DO ! j
           END DO  !i
       
-!/T      WRITE(6,*) 'assembled overdetermined matrix and/or rhs'
+#ifdef W3_T
+      WRITE(6,*) 'assembled overdetermined matrix and/or rhs'
+#endif // W3_T
         NMAX=M
         MEQ=N
         SSQ(IDEF)=1.0
@@ -2269,7 +2293,9 @@
           write(NDSET,*) ' underdetermined system: no svd solution',IX,IY,meq,m
           stop
           END IF
-!/T      WRITE(6,*) ' applying svd'
+#ifdef W3_T
+      WRITE(6,*) ' applying svd'
+#endif // W3_T
         CALL SVD(Q,U,V,COV,W,P,B,SIG,ICODE,MEQ,NMAX,NMAXPM,NMAXP1,TOLER     &
               ,JCODE,SSQ(IDEF),RES(IDEF))
 !        IF (JCODE.GT.0) WRITE(LP,55)JCODE

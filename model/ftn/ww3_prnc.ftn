@@ -176,14 +176,22 @@
       USE CONSTANTS
 !/
 !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
-!/NL1      USE W3ADATMD,ONLY: W3NAUX, W3SETA
+#ifdef W3_NL1
+      USE W3ADATMD,ONLY: W3NAUX, W3SETA
+#endif // W3_NL1
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
-!/S      USE W3SERVMD, ONLY : STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
       USE W3ARRYMD, ONLY : INA2R, INA2I
-!/T2      USE W3ARRYMD, ONLY : PRTBLK
-!/T3      USE W3ARRYMD, ONLY : PRTBLK
+#ifdef W3_T2
+      USE W3ARRYMD, ONLY : PRTBLK
+#endif // W3_T2
+#ifdef W3_T3
+      USE W3ARRYMD, ONLY : PRTBLK
+#endif // W3_T3
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3FLDSMD, ONLY: W3FLDO, W3FLDP, W3FLDG, W3FLDD,  &
                           W3FLDTIDE1, W3FLDTIDE2
@@ -199,7 +207,9 @@
 !
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -226,11 +236,21 @@
                                  IS(4), JS(4), VARIDF(50), DIMSVAR(4),&
                                  DIMLN(5), REFDATE(8),CURDATE(8),     &
                                  STARTDATE(8),STPDATE(8)
-!/MPI      INTEGER                 :: IERR_MPI, IND, REST, SLICE
-!/O15      INTEGER                 :: NDSTIME
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
-!/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
+#ifdef W3_MPI
+      INTEGER                 :: IERR_MPI, IND, REST, SLICE
+#endif // W3_MPI
+#ifdef W3_O15
+      INTEGER                 :: NDSTIME
+#endif // W3_O15
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T2
+      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
+#endif // W3_T2
+#ifdef W3_T3
+      INTEGER                 :: IX0, IXN, IXWDT = 60
+#endif // W3_T3
 !
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
                                  IY21(:,:), IY22(:,:),                &
@@ -238,7 +258,9 @@
                                  JY21(:,:), JY22(:,:),                &
                                  MAPOVR(:,:), MASK(:,:),              &
                                  NELEM(:), CUMUL(:)
-!/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
+#ifdef W3_T3
+      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
+#endif // W3_T3
 !
       REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI,        &
                                  X, Y, FACTOR, EFAC, NODATA,          &
@@ -276,7 +298,9 @@
 !
       LOGICAL                 :: INGRID, FLGNML
       LOGICAL                 :: FLSTAB, FLBERG, CLO(2), FLTIME, FLHDR
-!/T      LOGICAL                 :: FLMOD
+#ifdef W3_T
+      LOGICAL                 :: FLMOD
+#endif // W3_T
 
 
 
@@ -285,10 +309,14 @@
 !
       INTEGER                 :: K, L, TIDEFLAG,                      &
                                  TIDE_NDEF, TIDE_ITREND
-!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
-!/T      INTEGER, PARAMETER      :: LRB = 4
-!/T      INTEGER(KIND=8)         :: RPOS
-!/T      INTEGER                 ::   LRECL, NREC
+#ifdef W3_MPI
+      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
+#endif // W3_MPI
+#ifdef W3_T
+      INTEGER, PARAMETER      :: LRB = 4
+      INTEGER(KIND=8)         :: RPOS
+      INTEGER                 ::   LRECL, NREC
+#endif // W3_T
 !
       INTEGER, ALLOCATABLE          :: IMAX(:)
 !
@@ -296,8 +324,12 @@
 !
       REAL, ALLOCATABLE       :: TIDE_DATA_ALL(:,:,:),                &
                                  SSQ(:), RES(:)
-!/MPI      REAL, ALLOCATABLE       :: TIDE1DL(:), TIDE1D(:)
-!/T      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
+#ifdef W3_MPI
+      REAL, ALLOCATABLE       :: TIDE1DL(:), TIDE1D(:)
+#endif // W3_MPI
+#ifdef W3_T
+      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
+#endif // W3_T
 !
       DOUBLE PRECISION, ALLOCATABLE :: ALLTIMES(:),                   &
                                        SDEV0(:), SDEV(:), RMSR(:),    &
@@ -305,7 +337,9 @@
 !
       CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
-!/T      CHARACTER*21            :: FNAMETXT
+#ifdef W3_T
+      CHARACTER*21            :: FNAMETXT
+#endif // W3_T
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
@@ -325,15 +359,19 @@
       DATA IDSTR3 / 'mean parameters', '1D spectra     ',             &
                     '2D spectra     ' /
 !
-!/NCO/!     CALL W3TAGB('WAVEPREP',1998,0007,0050,'NP21   ')
+#ifdef W3_NCO
+!     CALL W3TAGB('WAVEPREP',1998,0007,0050,'NP21   ')
+#endif // W3_NCO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.a  Set number of models
 !
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3SETG ( 1, 6, 6 )
-!/NL1      CALL W3NAUX (    6, 6 )
-!/NL1      CALL W3SETA ( 1, 6, 6 )
+#ifdef W3_NL1
+      CALL W3NAUX (    6, 6 )
+      CALL W3SETA ( 1, 6, 6 )
+#endif // W3_NL1
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
 !
@@ -345,35 +383,45 @@
       NDST   =  6
       NDSM   = 11
       NDSDAT = 12
-!/O15      NDSTIME = 13
+#ifdef W3_O15
+      NDSTIME = 13
+#endif // W3_O15
 !
       NDSTRC =  6
       NTRACE = 10
       CALL ITRACE ( NDSTRC, NTRACE )
 !
-!/NCO/!
-!/NCO/! Redo according to NCO
-!/NCO/!
-!/NCO      NDSI   = 11
-!/NCO      NDSO   =  6
-!/NCO      NDSE   = NDSO
-!/NCO      NDST   = NDSO
-!/NCO      NDSM   = 12
-!/NCO      NDSDAT = 51
-!/NCO      NDSTRC = NDSO
+#ifdef W3_NCO
 !
-!/S      CALL STRACE (IENT, 'W3PRNC')
+! Redo according to NCO
+!
+      NDSI   = 11
+      NDSO   =  6
+      NDSE   = NDSO
+      NDST   = NDSO
+      NDSM   = 12
+      NDSDAT = 51
+      NDSTRC = NDSO
+#endif // W3_NCO
+!
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3PRNC')
+#endif // W3_S
 !
 !
 ! 1.c MPP initializations
 !
-!/SHRD      NAPROC = 1
-!/SHRD      IAPROC = 1
+#ifdef W3_SHRD
+      NAPROC = 1
+      IAPROC = 1
+#endif // W3_SHRD
 !
-!/MPI      CALL MPI_INIT      ( IERR_MPI )
-!/MPI      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
-!/MPI      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
-!/MPI      IAPROC = IAPROC + 1  ! this is to have IAPROC between 1 and NAPROC
+#ifdef W3_MPI
+      CALL MPI_INIT      ( IERR_MPI )
+      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
+      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
+      IAPROC = IAPROC + 1  ! this is to have IAPROC between 1 and NAPROC
+#endif // W3_MPI
 !
       IF ( IAPROC .EQ. NAPERR ) THEN
           NDSEN  = NDSE
@@ -662,14 +710,30 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930) IDSTR1(IFLD), IDSTR2(ITYPE)
       IF ( ITYPE.NE.1 .AND. ITYPE.NE.6 ) THEN
-!/WNT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
-!/WNT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
-!/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,2930)
-!/CRT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,1930)
-!/CRT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,2930)
-!/WNT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
-!/WNT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
-!/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,2930)
+#ifdef W3_WNT0
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
+#endif // W3_WNT0
+#ifdef W3_WNT1
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
+#endif // W3_WNT1
+#ifdef W3_WNT2
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,2930)
+#endif // W3_WNT2
+#ifdef W3_CRT1
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,1930)
+#endif // W3_CRT1
+#ifdef W3_CRT2
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,2930)
+#endif // W3_CRT2
+#ifdef W3_WNT0
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+#endif // W3_WNT0
+#ifdef W3_WNT1
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,1930)
+#endif // W3_WNT1
+#ifdef W3_WNT2
+          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.6) WRITE (NDSO,2930)
+#endif // W3_WNT2
       END IF
       IF (FLGNML) THEN
         IF(TIMESTART(1).NE.19000101 .OR. TIMESTART(2).NE.0) THEN
@@ -925,7 +989,9 @@
 !
 ! ... construct Interpolation data
 !
-!/T1              WRITE (NDST,9045)
+#ifdef W3_T1
+              WRITE (NDST,9045)
+#endif // W3_T1
           IF (GTYPE .NE. UNGTYPE) THEN
             DO IY=1,NY
               DO IX=1,NX
@@ -952,9 +1018,11 @@
                 RD21(IX,IY) = RW(2)
                 RD12(IX,IY) = RW(4)
                 RD22(IX,IY) = RW(3)
-!/T1                  WRITE (NDST,9046) IX, IY,                           &
-!/T1                    IX21(IX,IY),IX22(IX,IY),IY21(IX,IY),IY22(IX,IY),  &
-!/T1                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
+#ifdef W3_T1
+                  WRITE (NDST,9046) IX, IY,                           &
+                    IX21(IX,IY),IX22(IX,IY),IY21(IX,IY),IY22(IX,IY),  &
+                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
+#endif // W3_T1
                 END DO
               END DO
           ELSE ! GTYPE .NE. UNGTYPE
@@ -985,7 +1053,9 @@
                 IF (RW(1).LT.0.) THEN
                   RW(1) = 0.
                   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
-!/T                  FLMOD  = .TRUE.
+#ifdef W3_T
+                  FLMOD  = .TRUE.
+#endif // W3_T
                   END IF
                 END IF
 !
@@ -993,7 +1063,9 @@
                 IF (RW(1).GT.1.) THEN
                   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1043) X
                   RW(1) = 1.
-!/T                       FLMOD  = .TRUE.
+#ifdef W3_T
+                       FLMOD  = .TRUE.
+#endif // W3_T
                   END IF
                 END IF
 !
@@ -1001,7 +1073,9 @@
                 IF (RW(2).LT.0.) THEN
                   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 0.
-!/T                  FLMOD  = .TRUE.
+#ifdef W3_T
+                  FLMOD  = .TRUE.
+#endif // W3_T
                 END IF
               END IF
 !
@@ -1009,7 +1083,9 @@
                 IF (RW(2).GT.1) THEN
                   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,1044) Y
                   RW(2) = 1.
-!/T                       FLMOD  = .TRUE.
+#ifdef W3_T
+                       FLMOD  = .TRUE.
+#endif // W3_T
                 END IF
               END IF
 !       
@@ -1075,7 +1151,9 @@
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
-!/NCO                NDSLL  = 20 + NFCOMP
+#ifdef W3_NCO
+                NDSLL  = 20 + NFCOMP
+#endif // W3_NCO
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,947) NDSLL
             IF ( IAPROC .EQ. NAPOUT.AND.FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
             IF (NDSLL.EQ.NDSI) THEN
@@ -1136,7 +1214,9 @@
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
-!/NCO                NDSLL  = 22 + NFCOMP
+#ifdef W3_NCO
+                NDSLL  = 22 + NFCOMP
+#endif // W3_NCO
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,947) NDSLL
             IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
@@ -1176,13 +1256,15 @@
                  NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1, 0)
             IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
 !
-!/T1a                WRITE (NDST,9050)
-!/T1a                DO IY=1, NYJ(J)
-!/T1a                  DO IX=1,NXJ(J)
-!/T1a                    WRITE (NDST,9051) IX, IY, ALA(IX,IY),             &
-!/T1a                           ALO(IX,IY), MASK(IX,IY)
-!/T1a                    END DO
-!/T1a                  END DO
+#ifdef W3_T1a
+                WRITE (NDST,9050)
+                DO IY=1, NYJ(J)
+                  DO IX=1,NXJ(J)
+                    WRITE (NDST,9051) IX, IY, ALA(IX,IY),             &
+                           ALO(IX,IY), MASK(IX,IY)
+                    END DO
+                  END DO
+#endif // W3_T1a
 !
 ! ... generate interpolation data
 !
@@ -1282,16 +1364,18 @@
                RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
         END IF
 
-!/T   IF (TIDEFLAG.GT.0) THEN  
-!/T     LRECL  = TIDE_MF*LRB*NFIELDS*2
-!/T     NREC = LRECL / LRB
-!/T     ALLOCATE(NULLBUFF(NREC))
-!/T     NULLBUFF(1:NREC) = 0.
-!/T     OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED', ACCESS='STREAM')
-!/T     FNAMETXT  = 'tidanaNNN.txt'
-!/T     WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
-!/T     OPEN (989,FILE=FNAMETXT,status='unknown')
-!/T   ENDIF 
+#ifdef W3_T
+   IF (TIDEFLAG.GT.0) THEN  
+     LRECL  = TIDE_MF*LRB*NFIELDS*2
+     NREC = LRECL / LRB
+     ALLOCATE(NULLBUFF(NREC))
+     NULLBUFF(1:NREC) = 0.
+     OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED', ACCESS='STREAM')
+     FNAMETXT  = 'tidanaNNN.txt'
+     WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
+     OPEN (989,FILE=FNAMETXT,status='unknown')
+   ENDIF 
+#endif // W3_T
 
 !
 ! 7.c Initialize fields
@@ -1325,17 +1409,21 @@
 ! Reads in the full time vector
 !
         IF (NX*NY.GT.4000) THEN 
-!/MPI     IF ((NX*NY)/NAPROC.LT.4000) THEN 
-!/MPI        IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis ... '
-!/MPI     ELSE
-!/MPI       IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY,     &
-!/MPI                         ' points. This can take hours ...'
-!/MPI     ENDIF 
-!/MPI     IF (NX*NY.LT.4000) THEN 
+#ifdef W3_MPI
+     IF ((NX*NY)/NAPROC.LT.4000) THEN 
+        IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis ... '
+     ELSE
+       IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY,     &
+                         ' points. This can take hours ...'
+     ENDIF 
+     IF (NX*NY.LT.4000) THEN 
+#endif // W3_MPI
           WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY, ' points.'
           IF (NAPROC.EQ.1) WRITE(NDSE,*) 'This can take hours ...Consider running this with MPI '
           END IF
-!/MPI     END IF
+#ifdef W3_MPI
+     END IF
+#endif // W3_MPI
         IRET=NF90_INQ_VARID(NCID,"time",VARIDTMP)
         IF ( IRET/=NF90_NOERR ) IRET=NF90_INQ_VARID(NCID,"MT",VARIDTMP)
         CALL CHECK_ERR(IRET)
@@ -1388,32 +1476,42 @@
           CALL EXTCDE (30)
         END IF
 
-!/MPI        SLICE=NX/NAPROC
-!/MPI        REST=MOD(NX,NAPROC)
-!/MPI        IF(REST.GE.IAPROC) SLICE=SLICE+1
+#ifdef W3_MPI
+        SLICE=NX/NAPROC
+        REST=MOD(NX,NAPROC)
+        IF(REST.GE.IAPROC) SLICE=SLICE+1
+#endif // W3_MPI
 
-!/MPI        ! set total 1D array (nx)
-!/MPI        ALLOCATE (TIDE1D(NX * TIDE_MF * NFIELDS * 2))
-!/MPI        TIDE1D(:)=0.
+#ifdef W3_MPI
+        ! set total 1D array (nx)
+        ALLOCATE (TIDE1D(NX * TIDE_MF * NFIELDS * 2))
+        TIDE1D(:)=0.
+#endif // W3_MPI
 
-!/MPI       ! set local 1D array (slice)
-!/MPI        ALLOCATE(TIDE1DL(SLICE * TIDE_MF * NFIELDS * 2))
-!/MPI        TIDE1DL(:)=0.
+#ifdef W3_MPI
+       ! set local 1D array (slice)
+        ALLOCATE(TIDE1DL(SLICE * TIDE_MF * NFIELDS * 2))
+        TIDE1DL(:)=0.
+#endif // W3_MPI
 
         ! set arrays for number of elements per MPI proc
         ALLOCATE(CUMUL(NAPROC))
         ALLOCATE(NELEM(NAPROC))
         CUMUL(1) = 0
         NELEM(1) = NX / NAPROC
-!/MPI        IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
-!/MPI        DO I=2,NAPROC
-!/MPI          CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
-!/MPI          NELEM(I) = NX / NAPROC
-!/MPI          IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
-!/MPI        END DO
+#ifdef W3_MPI
+        IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
+        DO I=2,NAPROC
+          CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
+          NELEM(I) = NX / NAPROC
+          IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
+        END DO
+#endif // W3_MPI
       
-!/MPIT        WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
-!/MPIT        WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+#ifdef W3_MPIT
+        WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
+        WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+#endif // W3_MPIT
 
         ALLOCATE(TIDE_DATA_ALL(NELEM(IAPROC),NTI,NFIELDS))
 
@@ -1425,7 +1523,9 @@
 ! Loops on Y dimension
 !
         DO IY=1,NY
-!/MPI            IND=0
+#ifdef W3_MPI
+            IND=0
+#endif // W3_MPI
 !
           IF (NDIMSGRID.EQ.1) THEN 
             DO I=1,NFIELDS
@@ -1455,8 +1555,12 @@
           
 !
           DO JX=1,NELEM(IAPROC)
-!/MPI            IX=CUMUL(IAPROC)+JX
-!/SHRD           IX=JX
+#ifdef W3_MPI
+            IX=CUMUL(IAPROC)+JX
+#endif // W3_MPI
+#ifdef W3_SHRD
+           IX=JX
+#endif // W3_SHRD
 
 !
             TIDE_NTI=0
@@ -1493,11 +1597,13 @@
                                        TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
                                        SDEV0, RMSR, RESMAX, IMAX, 0)
 
-!/T    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
-!/T    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
-!/T    RPOS = 1_8 + LRECL*(IX-1_8)
-!/T    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
-!/T    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+#ifdef W3_T
+    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
+    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+    RPOS = 1_8 + LRECL*(IX-1_8)
+    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
+    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+#endif // W3_T
 
             ELSE ! TIDE_NTI.GT.(TIDE_MF*3)
               WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, NTI, TIDE_NTI
@@ -1510,19 +1616,23 @@
 ! Save tidal amplitude and phase
 !
 
-!/MPI          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
-!/MPI                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
-!/MPI          DO J=1,TIDE_MF
-!/MPI            DO K=1,NFIELDS
-!/MPI              IND=IND+1
-!/MPI              TIDE1DL(IND)=TIDE_AMPC(J,K)
-!/MPI              IND=IND+1
-!/MPI              TIDE1DL(IND)=TIDE_PHG(J,K)
-!/MPI            END DO
-!/MPI          END DO
+#ifdef W3_MPI
+          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
+                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
+          DO J=1,TIDE_MF
+            DO K=1,NFIELDS
+              IND=IND+1
+              TIDE1DL(IND)=TIDE_AMPC(J,K)
+              IND=IND+1
+              TIDE1DL(IND)=TIDE_PHG(J,K)
+            END DO
+          END DO
+#endif // W3_MPI
 
-!/SHRD            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
-!/SHRD            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+#ifdef W3_SHRD
+            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
+            TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+#endif // W3_SHRD
 
           END DO  ! JX=1,NELEM(IAPROC)
 
@@ -1530,45 +1640,53 @@
 ! Gather from other MPI tasks
 !
 
-!/MPI          IF (NAPROC.GT.1) THEN
-!/MPI            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
-!/MPI                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
-!/MPI                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-!/MPI          ELSE
-!/MPI            TIDE1D = TIDE1DL
-!/MPI          END IF
+#ifdef W3_MPI
+          IF (NAPROC.GT.1) THEN
+            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
+                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
+                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+          ELSE
+            TIDE1D = TIDE1DL
+          END IF
+#endif // W3_MPI
 
 !
 ! Convert from 1D to 2D array
 !
-!/MPI          IF (IAPROC .EQ. NAPOUT) THEN
-!/MPI            IND=0 
-!/MPI            DO IX=1,NX
-!/MPI              DO J=1,TIDE_MF
-!/MPI                DO K=1,NFIELDS
-!/MPI                  DO L=1,2
-!/MPI                    IND=IND+1
-!/MPI                    TIDAL_CONST(IX,IY,J,K,L)=TIDE1D(IND)
-!/MPI                  END DO
-!/MPI                END DO
-!/MPI              END DO
-!/MPI            END DO
-!/MPI          END IF
+#ifdef W3_MPI
+          IF (IAPROC .EQ. NAPOUT) THEN
+            IND=0 
+            DO IX=1,NX
+              DO J=1,TIDE_MF
+                DO K=1,NFIELDS
+                  DO L=1,2
+                    IND=IND+1
+                    TIDAL_CONST(IX,IY,J,K,L)=TIDE1D(IND)
+                  END DO
+                END DO
+              END DO
+            END DO
+          END IF
+#endif // W3_MPI
 
 
           
         END DO ! IY=1,NY
 
-!/T    CLOSE (990)
-!/T    CLOSE (989)
-!/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
-!/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
+#ifdef W3_T
+    CLOSE (990)
+    CLOSE (989)
+  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
+  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
+#endif // W3_T
 
-!/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
-!/MPI          WRITE(NDSO,*) "parallelization done"
-!/MPI        ELSE
-!/MPI          GOTO 888
-!/MPI        END IF
+#ifdef W3_MPI
+        IF (IAPROC .EQ. NAPOUT )  THEN 
+          WRITE(NDSO,*) "parallelization done"
+        ELSE
+          GOTO 888
+        END IF
+#endif // W3_MPI
 
 !
 ! After loop on points, write tidal constituents to file.
@@ -1604,9 +1722,11 @@
           END IF
         END IF
 !
-!/O15      J      = LEN_TRIM(FNMPRE)
-!/O15      OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,      &
-!/O15            ERR=870,IOSTAT=IERR )
+#ifdef W3_O15
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,      &
+            ERR=870,IOSTAT=IERR )
+#endif // W3_O15
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
         TIMEDELAY = 0
@@ -1648,8 +1768,12 @@
           ELSE
             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2973) IDTIME
           END IF
-!/O15        WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
-!/O3        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974)
+#ifdef W3_O15
+        WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
+#endif // W3_O15
+#ifdef W3_O3
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974)
+#endif // W3_O3
 !
 ! ... Input
 !
@@ -1669,19 +1793,21 @@
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
 
 !
-!/T2            WRITE (NDST,9060) 1
-!/T2            IXP0   = 1
-!/T2            IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(1) )
-!/T2            DO
-!/T2              CALL PRTBLK ( NDST, NXJ(1), NYJ(1), MXM, XC, MASK, 0, 0.,&
-!/T2                            IXP0, IXPN, 1, 1, NYJ(1), 1, 'Field 1', ' ')
-!/T2              IF (IXPN.NE.NXJ(1)) THEN
-!/T2                  IXP0    = IXP0 + IXPWDT
-!/T2                  IXPN    = MIN ( IXPN+IXPWDT , NXJ(1) )
-!/T2                ELSE
-!/T2                  EXIT
-!/T2                END IF
-!/T2              END DO
+#ifdef W3_T2
+            WRITE (NDST,9060) 1
+            IXP0   = 1
+            IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(1) )
+            DO
+              CALL PRTBLK ( NDST, NXJ(1), NYJ(1), MXM, XC, MASK, 0, 0.,&
+                            IXP0, IXPN, 1, 1, NYJ(1), 1, 'Field 1', ' ')
+              IF (IXPN.NE.NXJ(1)) THEN
+                  IXP0    = IXP0 + IXPWDT
+                  IXPN    = MIN ( IXPN+IXPWDT , NXJ(1) )
+                ELSE
+                  EXIT
+                END IF
+              END DO
+#endif // W3_T2
 !
             IF (NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG) THEN
 
@@ -1701,19 +1827,21 @@
                     WHERE(YC.NE.YC) YC = FILLVALUE
                     WHERE (YC.NE.FILLVALUE) YC=YC*YCFAC+YCOFF
 !
-!/T2                WRITE (NDST,9060) 2
-!/T2                IXP0   = 1
-!/T2                IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
-!/T2                DO
-!/T2                  CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, YC, MASK, 0, 0., &
-!/T2                                IXP0, IXPN, 1, 1, NYJ(2), 1, 'Field 2', ' ')
-!/T2                  IF (IXPN.NE.NXJ(2)) THEN
-!/T2                      IXP0    = IXP0 + IXPWDT
-!/T2                      IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
-!/T2                    ELSE
-!/T2                      EXIT
-!/T2                    END IF
-!/T2                  END DO
+#ifdef W3_T2
+                WRITE (NDST,9060) 2
+                IXP0   = 1
+                IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
+                DO
+                  CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, YC, MASK, 0, 0., &
+                                IXP0, IXPN, 1, 1, NYJ(2), 1, 'Field 2', ' ')
+                  IF (IXPN.NE.NXJ(2)) THEN
+                      IXP0    = IXP0 + IXPWDT
+                      IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
+                    ELSE
+                      EXIT
+                    END IF
+                  END DO
+#endif // W3_T2
 !
                 IF (FLSTAB) THEN
 ! This is a quick fix that works if the lon,lat,level,time dimensions are in that order
@@ -1730,19 +1858,21 @@
                     CALL CHECK_ERR(IRET)
                     !AC(:,:)=AC(:,MYM:1:-1)
 !
-!/T2                    WRITE (NDST,9060) 3
-!/T2                    IXP0   = 1
-!/T2                    IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
-!/T2                    DO
-!/T2                      CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, AC, MASK, 0,&
-!/T2                            0., IXP0, IXPN, 1,1, NYJ(2), 1, 'Field 3', ' ')
-!/T2                      IF (IXPN.NE.NXJ(2)) THEN
-!/T2                          IXP0    = IXP0 + IXPWDT
-!/T2                          IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
-!/T2                        ELSE
-!/T2                          EXIT
-!/T2                        END IF
-!/T2                      END DO
+#ifdef W3_T2
+                    WRITE (NDST,9060) 3
+                    IXP0   = 1
+                    IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
+                    DO
+                      CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, AC, MASK, 0,&
+                            0., IXP0, IXPN, 1,1, NYJ(2), 1, 'Field 3', ' ')
+                      IF (IXPN.NE.NXJ(2)) THEN
+                          IXP0    = IXP0 + IXPWDT
+                          IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
+                        ELSE
+                          EXIT
+                        END IF
+                      END DO
+#endif // W3_T2
 !
                   END IF
 !
@@ -1756,7 +1886,9 @@
               ELSE
                 READ (NDSF(1),*,END=862,ERR=862,IOSTAT=IERR) NDAT
               END IF
-!/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,975) NDAT
+#ifdef W3_O3
+           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,975) NDAT
+#endif // W3_O3
             IF ( NDAT.GT.0 ) THEN
                 ALLOCATE ( DATA(RECLDT,NDAT) )
                 DO IDAT=1, NDAT
@@ -1773,12 +1905,14 @@
                   END DO
               END IF
 !
-!/T2            WRITE (NDST,9061)
-!/T2            DO IDAT=1, NDAT
-!/T2              IX     = MIN(6,RECLDT)
-!/T2              WRITE (NDST,9062) IDAT, DATA(1:IX,IDAT)
-!/T2              IF ( IX.LT.RECLDT ) WRITE (NDST,9063) DATA(IX+1:,:)
-!/T2              END DO
+#ifdef W3_T2
+            WRITE (NDST,9061)
+            DO IDAT=1, NDAT
+              IX     = MIN(6,RECLDT)
+              WRITE (NDST,9062) IDAT, DATA(1:IX,IDAT)
+              IF ( IX.LT.RECLDT ) WRITE (NDST,9063) DATA(IX+1:,:)
+              END DO
+#endif // W3_T2
 !
           END IF
 !
@@ -1815,14 +1949,18 @@
 !
 ! ... One-component fields
 !
-!/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
+#ifdef W3_O3
+           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
+#endif // W3_O3
             IF (( IFLD.LE.2 .OR. IFLD.EQ.7 ).AND.( .NOT. FLBERG )) THEN
 !
                 CALL INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,      &
                                RD11, RD12, RD21, RD22, FILLVALUE, FA)
 !
                 IF (NFCOMP.EQ.2) THEN
-!/O3             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
+#ifdef W3_O3
+             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
+#endif // W3_O3
                     CALL INTERP(YC, JX21, JX22, JY21, JY22, XD11, XD12,&
                                              XD21, XD22, FILLVALUE, FA)
                 END IF
@@ -1859,69 +1997,81 @@
 !
 ! ... Winds, correct for velocity or energy conservation
 !
-!/WNT1                IF (IFLD.EQ.3) THEN
-!/WNT1                    DO IY=1,NY
-!/WNT1                      DO IX=1,NX
-!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/WNT1                        END DO
-!/WNT1                      END DO
-!/WNT1                  END IF
+#ifdef W3_WNT1
+                IF (IFLD.EQ.3) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                  END IF
+#endif // W3_WNT1
 !
-!/WNT2                IF (IFLD.EQ.3) THEN
-!/WNT2                    DO IY=1,NY
-!/WNT2                      DO IX=1,NX
-!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/WNT2                        END DO
-!/WNT2                      END DO
-!/WNT2                  END IF
+#ifdef W3_WNT2
+                IF (IFLD.EQ.3) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                  END IF
+#endif // W3_WNT2
 !
 ! ... Currents, correct for velocity or energy conservation
 !
-!/CRT1                IF (IFLD.EQ.4) THEN
-!/CRT1                    DO IY=1,NY
-!/CRT1                      DO IX=1,NX
-!/CRT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-!/CRT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/CRT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/CRT1                        END DO
-!/CRT1                      END DO
-!/CRT1                  END IF
+#ifdef W3_CRT1
+                IF (IFLD.EQ.4) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                  END IF
+#endif // W3_CRT1
 !
-!/CRT2                IF (IFLD.EQ.4) THEN
-!/CRT2                    DO IY=1,NY
-!/CRT2                      DO IX=1,NX
-!/CRT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-!/CRT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/CRT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/CRT2                        END DO
-!/CRT2                      END DO
-!/CRT2                 END IF
+#ifdef W3_CRT2
+                IF (IFLD.EQ.4) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                 END IF
+#endif // W3_CRT2
 !
 ! ... Momentum, correct for velocity or energy conservation
 !
-!/WNT1                IF (IFLD.EQ.6) THEN
-!/WNT1                    DO IY=1,NY
-!/WNT1                      DO IX=1,NX
-!/WNT1                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-!/WNT1                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/WNT1                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/WNT1                        END DO
-!/WNT1                      END DO
-!/WNT1                  END IF
+#ifdef W3_WNT1
+                IF (IFLD.EQ.6) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                  END IF
+#endif // W3_WNT1
 !
-!/WNT2                IF (IFLD.EQ.6) THEN
-!/WNT2                    DO IY=1,NY
-!/WNT2                      DO IX=1,NX
-!/WNT2                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-!/WNT2                        FX(IX,IY) = FACTOR * FX(IX,IY)
-!/WNT2                        FY(IX,IY) = FACTOR * FY(IX,IY)
-!/WNT2                        END DO
-!/WNT2                      END DO
-!/WNT2                  END IF
+#ifdef W3_WNT2
+                IF (IFLD.EQ.6) THEN
+                    DO IY=1,NY
+                      DO IX=1,NX
+                        FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+                        FX(IX,IY) = FACTOR * FX(IX,IY)
+                        FY(IX,IY) = FACTOR * FY(IX,IY)
+                        END DO
+                      END DO
+                  END IF
+#endif // W3_WNT2
 !
               END IF
 !
@@ -1929,58 +2079,66 @@
 !
 ! ... Test output
 !
-!/T3        IF ( .NOT. ALLOCATED(MAPOUT) ) ALLOCATE ( MAPOUT(NX,NY) )
-!/T3        WRITE (NDST,9065)
-!/T3        DO IX=1, NX
-!/T3          DO IY=1, NY
-!/T3            MAPOUT(IX,IY) = MAPSTA(IY,IX)
-!/T3            END DO
-!/T3          END DO
-!/T3        IX0    = 1
-!/T3        IXN    = MIN ( IX0+IXWDT-1 , NX )
-!/T3        DO
-!/T3          IF (IFLD.EQ.1) THEN
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Fraction ice', '(-)')
-!/T3              IF ( FLBERG )                                       &
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Iceberg a', '0.1/km')
-!/T3            ELSE IF (IFLD.EQ.2) THEN
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
-!/T3            ELSE IF (IFLD.EQ.7) THEN
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Air density', 'kg/m3')
-!/T3            ELSE
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FY, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Cart. Y-comp', 'm/s')
-!/T3              IF ( FLSTAB )                                       &
-!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-!/T3                      IX0, IXN, 1, 1, NY, 1, 'Tair-Tsea', 'degr')
-!/T3            END IF
-!/T3          IF (IXN.NE.NX) THEN
-!/T3              IX0    = IX0 + IXWDT
-!/T3              IXN    = MIN ( IXN+IXWDT , NX )
-!/T3            ELSE
-!/T3              EXIT
-!/T3            END IF
-!/T3          END DO
+#ifdef W3_T3
+        IF ( .NOT. ALLOCATED(MAPOUT) ) ALLOCATE ( MAPOUT(NX,NY) )
+        WRITE (NDST,9065)
+        DO IX=1, NX
+          DO IY=1, NY
+            MAPOUT(IX,IY) = MAPSTA(IY,IX)
+            END DO
+          END DO
+        IX0    = 1
+        IXN    = MIN ( IX0+IXWDT-1 , NX )
+        DO
+          IF (IFLD.EQ.1) THEN
+              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Fraction ice', '(-)')
+              IF ( FLBERG )                                       &
+              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Iceberg a', '0.1/km')
+            ELSE IF (IFLD.EQ.2) THEN
+              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
+            ELSE IF (IFLD.EQ.7) THEN
+              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Air density', 'kg/m3')
+            ELSE
+              CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
+              CALL PRTBLK (NDSO, NX, NY, NX, FY, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Cart. Y-comp', 'm/s')
+              IF ( FLSTAB )                                       &
+              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+                      IX0, IXN, 1, 1, NY, 1, 'Tair-Tsea', 'degr')
+            END IF
+          IF (IXN.NE.NX) THEN
+              IX0    = IX0 + IXWDT
+              IXN    = MIN ( IXN+IXWDT , NX )
+            ELSE
+              EXIT
+            END IF
+          END DO
+#endif // W3_T3
 !
 ! 8.c Write fields
 !
         IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
-!/O3      IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+#ifdef W3_O3
+      IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+#endif // W3_O3
           IF ( IAPROC .EQ. NAPOUT ) CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
                        NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
                        FX, FY, FA, IERR)
 
         ELSE IF ( ITYPE .EQ. 5 ) THEN
           IF ( NDAT .EQ. 0 ) THEN
-!/O3        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,978)
+#ifdef W3_O3
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,978)
+#endif // W3_O3
           ELSE
-!/O3        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+#ifdef W3_O3
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+#endif // W3_O3
             IF ( IAPROC .EQ. NAPOUT ) CALL W3FLDD ('WRITE', IDFLD, NDSDAT, NDST, NDSE, TIME,&
                          TIME, RECLDT, NDAT, IDAT, DATA, IERR )
             DEALLOCATE ( DATA )
@@ -2044,20 +2202,28 @@
       WRITE (NDSE,1064)  TRIM(STRDIMSNAME)
       CALL EXTCDE ( 56 )
 !
-!/O15  870 CONTINUE
-!/O15      WRITE (NDSE,1070) IDFLD, IERR
-!/O15      CALL EXTCDE ( 57 )
+#ifdef W3_O15
+  870 CONTINUE
+      WRITE (NDSE,1070) IDFLD, IERR
+      CALL EXTCDE ( 57 )
+#endif // W3_O15
 !
-!/O15  871 CONTINUE
-!/O15      WRITE (NDSE,1071) IDTIME, IERR
-!/O15      CALL EXTCDE ( 58 )
+#ifdef W3_O15
+  871 CONTINUE
+      WRITE (NDSE,1071) IDTIME, IERR
+      CALL EXTCDE ( 58 )
+#endif // W3_O15
 !
   888 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
-!/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
+#ifdef W3_MPI
+      CALL MPI_FINALIZE  ( IERR_MPI )
+#endif // W3_MPI
 
 !
-!/NCO/!     CALL W3TAGE('WAVEPREP')
+#ifdef W3_NCO
+!     CALL W3TAGE('WAVEPREP')
+#endif // W3_NCO
 
 
 !
@@ -2126,13 +2292,17 @@
  1973 FORMAT ( '   Shifted Time : ',A,'    (File time : ',A,')')
  2973 FORMAT ( '           Time : ',A)
 
-!/O3  974 FORMAT ( '                  reading ....')
-!/O3  975 FORMAT ( '                     number of data records :',I6)
-!/O3  976 FORMAT ( '                  interpolating',A,'....')
-!/O3  977 FORMAT ( '                  writing ....')
-!/O3  978 FORMAT ( '                  skipping ....')
+#ifdef W3_O3
+  974 FORMAT ( '                  reading ....')
+  975 FORMAT ( '                     number of data records :',I6)
+  976 FORMAT ( '                  interpolating',A,'....')
+  977 FORMAT ( '                  writing ....')
+  978 FORMAT ( '                  skipping ....')
+#endif // W3_O3
 !
-!/O15 979 FORMAT (1X,I8.8,1X,I6.6)
+#ifdef W3_O15
+ 979 FORMAT (1X,I8.8,1X,I6.6)
+#endif // W3_O15
 !
   999 FORMAT(//'  End of program '/                                   &
                ' ========================================='/          &
@@ -2220,31 +2390,43 @@
  1064 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     GRID DIMENSIONS ', A,' NOT FOUND... CHECK DIMENSION NAMES')
 !
-!/O15 1070 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/          &
-!/O15               '     ERROR IN CREATING A TIMES FILE FOR ',A/     &
-!/O15               '     IOSTAT =',I5/)
-!/O15 1071 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/          &
-!/O15               '     ERROR IN WRITING TIME OUTPUT ',A/           &
-!/O15               '     IOSTAT =',I5/)
+#ifdef W3_O15
+ 1070 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/          &
+               '     ERROR IN CREATING A TIMES FILE FOR ',A/     &
+               '     IOSTAT =',I5/)
+ 1071 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/          &
+               '     ERROR IN WRITING TIME OUTPUT ',A/           &
+               '     IOSTAT =',I5/)
+#endif // W3_O15
 !
-!/T 9040 FORMAT (' TEST W3PRNC : INPUT GRID RANGES AND INCR. AFTER CORR.'/ &
-!/T              '               LON / X : ',3F10.2,                   &
-!/T              ' (GLOBAL=',L1,')'/                                     &
-!/T              '               LAT / Y : ',3F10.2)
-!/T 9041 FORMAT (' TEST W3PRNC : INTERPOLATION DATA FOR ',A)
-!/T 9042 FORMAT ('              ',I4,F8.2,2I4,2F8.2,1X,F6.3,1X,A)
-!/T 9043 FORMAT (' TEST W3PRNC : GRID SHIFTED BY ',F5.0,' DEGREES / M')
-!/T1 9045 FORMAT (' TEST W3PRNC : IX, IY, IXI(2), IYI(2), RD(4)')
-!/T1 9046 FORMAT ('     ',2I4,2X,4I4,2X,4F6.2)
+#ifdef W3_T
+ 9040 FORMAT (' TEST W3PRNC : INPUT GRID RANGES AND INCR. AFTER CORR.'/ &
+              '               LON / X : ',3F10.2,                   &
+              ' (GLOBAL=',L1,')'/                                     &
+              '               LAT / Y : ',3F10.2)
+ 9041 FORMAT (' TEST W3PRNC : INTERPOLATION DATA FOR ',A)
+ 9042 FORMAT ('              ',I4,F8.2,2I4,2F8.2,1X,F6.3,1X,A)
+ 9043 FORMAT (' TEST W3PRNC : GRID SHIFTED BY ',F5.0,' DEGREES / M')
+#endif // W3_T
+#ifdef W3_T1
+ 9045 FORMAT (' TEST W3PRNC : IX, IY, IXI(2), IYI(2), RD(4)')
+ 9046 FORMAT ('     ',2I4,2X,4I4,2X,4F6.2)
+#endif // W3_T1
 !
-!/T1a 9050 FORMAT (' TEST W3PRNC : LAT-LONG OF INPUT FILE ')
-!/T1a 9051 FORMAT ('             ',2I4,2F8.2,I4)
+#ifdef W3_T1a
+ 9050 FORMAT (' TEST W3PRNC : LAT-LONG OF INPUT FILE ')
+ 9051 FORMAT ('             ',2I4,2F8.2,I4)
+#endif // W3_T1a
 !
-!/T2 9060 FORMAT (' TEST W3PRNC : INPUT FIELD (',I1,') :'/)
-!/T2 9061 FORMAT (' TEST W3PRNC : INPUT DATA RECORDS :')
-!/T2 9062 FORMAT ('      ',I6,' : ',6E11.3)
-!/T2 9063 FORMAT ('               ',6E11.3)
-!/T3 9065 FORMAT (' TEST W3PRNC : OUTPUT FIELD(S) :'/)
+#ifdef W3_T2
+ 9060 FORMAT (' TEST W3PRNC : INPUT FIELD (',I1,') :'/)
+ 9061 FORMAT (' TEST W3PRNC : INPUT DATA RECORDS :')
+ 9062 FORMAT ('      ',I6,' : ',6E11.3)
+ 9063 FORMAT ('               ',6E11.3)
+#endif // W3_T2
+#ifdef W3_T3
+ 9065 FORMAT (' TEST W3PRNC : OUTPUT FIELD(S) :'/)
+#endif // W3_T3
 !/
 !/ End of W3PRNC ----------------------------------------------------- /
 !/

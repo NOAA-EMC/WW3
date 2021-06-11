@@ -236,10 +236,18 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
                           FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: INFLAGS2,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,ICEI
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !
       IMPLICIT NONE
 !/
@@ -257,9 +265,13 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER                 :: ITH
-!/T0      REAL                    :: DOUT(NK,NTH)
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T0
+      INTEGER                 :: ITH
+      REAL                    :: DOUT(NK,NTH)
+#endif // W3_T0
       INTEGER                 :: IKTH, IK
       REAL                    :: D1D(NK)        !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECONC
@@ -275,7 +287,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIC2')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIC2')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -310,7 +324,9 @@
 !
 !         (none)
 !
-!/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2
+#ifdef W3_T38
+        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2
+#endif // W3_T38
 !
 ! 2.b Make calculations ---------------------------------------------- /
 
@@ -362,10 +378,12 @@
 ! of the water relative to the ice ... this is only correct if the ice layer 
 ! does not move. This should is changed by taking into account DMAX when IC2DMAX > 0: 
 !
-!/IS2          IF (IC2PARS(8).GT.0) THEN
-!/IS2            WLG_R(IK)=TPI/WN_R(IK)   
-!/IS2            SMOOTH_DMAX(IK)= (0.5*(1+TANH((ICEF-IC2PARS(8)*WLG_R(IK))/(ICEF*0.5))))**2
-!/IS2            END IF
+#ifdef W3_IS2
+          IF (IC2PARS(8).GT.0) THEN
+            WLG_R(IK)=TPI/WN_R(IK)   
+            SMOOTH_DMAX(IK)= (0.5*(1+TANH((ICEF-IC2PARS(8)*WLG_R(IK))/(ICEF*0.5))))**2
+            END IF
+#endif // W3_IS2
 !
                IF (R(IK).GT.1.) THEN
                     UORB = UORB + EB * SMOOTH_DMAX(IK)* SIG(IK)**2 * DDEN(IK) / CG(IK) &
@@ -420,23 +438,31 @@
 !
 ! ... Test output of arrays
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
-!/T0                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
+                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#endif // W3_T1
 !
 ! Formats
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC2 : '/               &
                '     ',A,' REQUIRED BUT NOT SELECTED'/)
 !
-!/T38 9000 FORMAT (' TEST W3SIC2 : DEPTH,ICECOEF1  : ',2E10.3)
+#ifdef W3_T38
+ 9000 FORMAT (' TEST W3SIC2 : DEPTH,ICECOEF1  : ',2E10.3)
+#endif // W3_T38
 !/
 !/ End of W3SIC2 ----------------------------------------------------- /
 !/

@@ -182,7 +182,9 @@
       USE CONSTANTS
 !
       USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -199,7 +201,9 @@
 !/
       INTEGER                 :: I, NRMAX, J, I1, L1, J1, I2, L2, J2, &
                                  ISP
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: LOW, HGH, RLOW, RHGH, BLOW, BHGH,    &
                                  FRAC, AUX1, AUX2, R1, R2, FACT
       LOGICAL                 :: FOUND
@@ -212,7 +216,9 @@
       REAL, POINTER           :: DTH1, DTH2, RDTH(:,:), FRQ1(:),      &
                                  FRQ2(:), XDF1, XDF2, RDFR(:,:)
 !/
-!/S      CALL STRACE (IENT, 'W3CSPC')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3CSPC')
+#endif // W3_S
 !
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -236,8 +242,10 @@
 !
 ! 0.b Test output
 !
-!/T      WRITE (NDST,9000) NSP, NFR1, NTH1, XF1, FR1, TH1*RADE,       &
-!/T                             NFR2, NTH2, XF2, FR2, TH2*RADE, FTL
+#ifdef W3_T
+      WRITE (NDST,9000) NSP, NFR1, NTH1, XF1, FR1, TH1*RADE,       &
+                             NFR2, NTH2, XF2, FR2, TH2*RADE, FTL
+#endif // W3_T
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Search stored interpolation data for match
@@ -252,10 +260,12 @@
           CURRENT => CURRENT%NEXT
           END IF
 !
-!/T1        WRITE (NDST,9010) I, CURRENT%NFR1, CURRENT%NTH1,          &
-!/T1                     CURRENT%XF1, CURRENT%FR1, CURRENT%TH1*RADE,  &
-!/T1                             CURRENT%NFR2, CURRENT%NTH2,          &
-!/T1                     CURRENT%XF2, CURRENT%FR2, CURRENT%TH2*RADE
+#ifdef W3_T1
+        WRITE (NDST,9010) I, CURRENT%NFR1, CURRENT%NTH1,          &
+                     CURRENT%XF1, CURRENT%FR1, CURRENT%TH1*RADE,  &
+                             CURRENT%NFR2, CURRENT%NTH2,          &
+                     CURRENT%XF2, CURRENT%FR2, CURRENT%TH2*RADE
+#endif // W3_T1
 !
         FOUND = CURRENT%NFR1.EQ.NFR1 .AND. CURRENT%NFR2.EQ.NFR2 .AND. &
                 CURRENT%NTH1.EQ.NTH1 .AND. CURRENT%NTH2.EQ.NTH2 .AND. &
@@ -272,7 +282,9 @@
 !
       IF ( FOUND ) THEN
 !
-!/T          WRITE (NDST,9020) I
+#ifdef W3_T
+          WRITE (NDST,9020) I
+#endif // W3_T
 !
         DTH1   => CURRENT%DTH1
         DTH2   => CURRENT%DTH2
@@ -292,7 +304,9 @@
       ELSE
 !
         NCASES = NCASES + 1
-!/T          WRITE (NDST,9021) NCASES
+#ifdef W3_T
+          WRITE (NDST,9021) NCASES
+#endif // W3_T
 !
 ! 2.b.1 Point and allocate as necessary
 !
@@ -441,22 +455,26 @@
 !
 ! 2.c Test output
 !
-!/T2      WRITE (NDST,9022)
-!/T2      DO I=1, NTH1
-!/T2        WRITE (NDST,9024) I, IDTH(0,I),                           &
-!/T2                          (IDTH(J,I),RDTH(J,I),J=1,IDTH(0,I))
-!/T2        END DO
-!/T2      WRITE (NDST,9023) NFR2T
-!/T2      DO I=1, NFR1
-!/T2        WRITE (NDST,9024) I, IDFR(0,I),                           &
-!/T2                          (IDFR(J,I),RDFR(J,I),J=1,IDFR(0,I))
-!/T2        END DO
+#ifdef W3_T2
+      WRITE (NDST,9022)
+      DO I=1, NTH1
+        WRITE (NDST,9024) I, IDTH(0,I),                           &
+                          (IDTH(J,I),RDTH(J,I),J=1,IDTH(0,I))
+        END DO
+      WRITE (NDST,9023) NFR2T
+      DO I=1, NFR1
+        WRITE (NDST,9024) I, IDFR(0,I),                           &
+                          (IDFR(J,I),RDFR(J,I),J=1,IDFR(0,I))
+        END DO
+#endif // W3_T2
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Convert
 ! 3.a Discrete energies
 !
-!/T      WRITE (NDST,9030)
+#ifdef W3_T
+      WRITE (NDST,9030)
+#endif // W3_T
 !
       SP2    = 0.
 !
@@ -477,7 +495,9 @@
 !
 ! 3.b Energy densities
 !
-!/T      WRITE (NDST,9031)
+#ifdef W3_T
+      WRITE (NDST,9031)
+#endif // W3_T
 !
       DO J2=1, NFR2
         DO J1=1, NTH2
@@ -488,7 +508,9 @@
 !
 ! 3.c Add the tail
 !
-!/T      WRITE (NDST,9032)
+#ifdef W3_T
+      WRITE (NDST,9032)
+#endif // W3_T
 !
       DO J2=NFR2T, NFR2
         SP2(:,J2,:) = FTL * SP2(:,J2-1,:)
@@ -504,25 +526,35 @@
   901 FORMAT (/' *** ERROR W3CSPC: NEGATIVE NUMBER OF SPECTRA ***'/)
   902 FORMAT (/' *** WARNING W3CSPC: NO SPECTRA ***'/)
 !
-!/T 9000 FORMAT ( ' TEST W3CSPC : NR. OF SPECTRA : ',I8/             &
-!/T               '               INPUT SPECTRA  : ',2I4,2F8.4,F6.1/ &
-!/T               '               OUTPUT SPECTRA : ',2I4,2F8.4,F6.1/ &
-!/T               '               TAIL FACTOR    : ',F8.5)
+#ifdef W3_T
+ 9000 FORMAT ( ' TEST W3CSPC : NR. OF SPECTRA : ',I8/             &
+               '               INPUT SPECTRA  : ',2I4,2F8.4,F6.1/ &
+               '               OUTPUT SPECTRA : ',2I4,2F8.4,F6.1/ &
+               '               TAIL FACTOR    : ',F8.5)
+#endif // W3_T
 !
-!/T1 9010 FORMAT ( ' TEST W3CSPC : TEST INFO CASE : ',I8/             &
-!/T1               '               INPUT SPECTRA  : ',2I4,2F8.4,F6.1/ &
-!/T1               '               OUTPUT SPECTRA : ',2I4,2F8.4,F6.1)
+#ifdef W3_T1
+ 9010 FORMAT ( ' TEST W3CSPC : TEST INFO CASE : ',I8/             &
+               '               INPUT SPECTRA  : ',2I4,2F8.4,F6.1/ &
+               '               OUTPUT SPECTRA : ',2I4,2F8.4,F6.1)
+#endif // W3_T1
 !
-!/T 9020 FORMAT ( ' TEST W3CSPC : USING STORED DATA FOR CASE',I4)
-!/T 9021 FORMAT ( ' TEST W3CSPC : COMPUTING DATA FOR CASE',I4)
-!/T2 9022 FORMAT ( ' TEST W3CSPC : DIRECTIONAL DISTRIBUTION DATA')
-!/T2 9023 FORMAT ( ' TEST W3CSPC : FREQUENCY DISTRIBUTION DATA, ',    &
-!/T2                              'TAIL AT',I4)
-!/T2 9024 FORMAT ( '           ',I4,I4,' :',10(I4,F5.2) )
+#ifdef W3_T
+ 9020 FORMAT ( ' TEST W3CSPC : USING STORED DATA FOR CASE',I4)
+ 9021 FORMAT ( ' TEST W3CSPC : COMPUTING DATA FOR CASE',I4)
+#endif // W3_T
+#ifdef W3_T2
+ 9022 FORMAT ( ' TEST W3CSPC : DIRECTIONAL DISTRIBUTION DATA')
+ 9023 FORMAT ( ' TEST W3CSPC : FREQUENCY DISTRIBUTION DATA, ',    &
+                              'TAIL AT',I4)
+ 9024 FORMAT ( '           ',I4,I4,' :',10(I4,F5.2) )
+#endif // W3_T2
 !
-!/T 9030 FORMAT ( ' TEST W3CSPC : STARTING CONVERSION')
-!/T 9031 FORMAT ( ' TEST W3CSPC : ENERGIES TO DENSITIES')
-!/T 9032 FORMAT ( ' TEST W3CSPC : ADD TAIL')
+#ifdef W3_T
+ 9030 FORMAT ( ' TEST W3CSPC : STARTING CONVERSION')
+ 9031 FORMAT ( ' TEST W3CSPC : ENERGIES TO DENSITIES')
+ 9032 FORMAT ( ' TEST W3CSPC : ADD TAIL')
+#endif // W3_T
 !/
 !/ End of W3CSPC ----------------------------------------------------- /
 !/

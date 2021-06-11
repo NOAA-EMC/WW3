@@ -196,12 +196,14 @@
 
       ! Loop over cell array and calculate regidding factors:
       DO ISEA=1, NSEA
-!/ARC          ! For grids with Arctic region: make sure we don't double count
-!/ARC          ! the overlapping boundary cells. Also, don't process the arctic
-!/ARC          ! cell (which is always the last cell).
-!/ARC          ! Note: NARC contains ALL the boundary cells (global + arctic).
-!/ARC          ! whereas NGLO contains only the global boundary cells.
-!/ARC          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+#ifdef W3_ARC
+          ! For grids with Arctic region: make sure we don't double count
+          ! the overlapping boundary cells. Also, don't process the arctic
+          ! cell (which is always the last cell).
+          ! Note: NARC contains ALL the boundary cells (global + arctic).
+          ! whereas NGLO contains only the global boundary cells.
+          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+#endif // W3_ARC
 
           ! Get grid cell size:
           mx = IJKCel(3,ISEA)
@@ -543,14 +545,18 @@
 !--------------------------------------------------------------------------
       USE W3GDATMD, ONLY: CLATS
       USE CONSTANTS, ONLY : DERA, RADIUS
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ
-!/RTD      USE W3GDATMD, ONLY: POLON, POLAT
+#ifdef W3_RTD
+      USE W3SERVMD, ONLY: W3LLTOEQ
+      USE W3GDATMD, ONLY: POLON, POLAT
+#endif // W3_RTD
 
       IMPLICIT NONE
       INTEGER :: IERR, I, J, ISEA, N, CFAC
       REAL :: mlon(NSEA), mlat(NSEA), olon(nxo,nyo), olat(nxo,nyo),     &
              ang(nxo,nyo), lon, lat
-!/RTD     REAL :: tmplon(nxo,nyo), tmplat(nxo,nyo)
+#ifdef W3_RTD
+     REAL :: tmplon(nxo,nyo), tmplat(nxo,nyo)
+#endif // W3_RTD
 
       ! Determine smallest cell size factor:
       cfac = 2**(NRLv - 1)
@@ -575,12 +581,14 @@
         ENDDO
       ENDDO
 
-!/RTD          tmplat = olat
-!/RTD          tmplon = olon
-!/RTD          PRINT*,'Rotating coordinates'
-!/RTD          CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,     &              
-!/RTD                            ang, POLAT, POLON, NXO*NYO )             
-!/RTD          PRINT*,'Rotating coordinates complete'
+#ifdef W3_RTD
+          tmplat = olat
+          tmplon = olon
+          PRINT*,'Rotating coordinates'
+          CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,     &              
+                            ang, POLAT, POLON, NXO*NYO )             
+          PRINT*,'Rotating coordinates complete'
+#endif // W3_RTD
 
       ! Cycle over output grid points and find containing SMC cell:
       ! NOTE : BRUTE FORCE!

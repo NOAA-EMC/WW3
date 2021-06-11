@@ -74,15 +74,25 @@ module yowpdlibMain
     integer istat
 
     call setDimSize(secDim)
-!/DEBUGINIT    Print *, '1: MPIcomm=', MPIcomm
+#ifdef W3_DEBUGINIT
+    Print *, '1: MPIcomm=', MPIcomm
+#endif // W3_DEBUGINIT
     call initMPI(MPIcomm)
-!/DEBUGINIT    Print *, '2: After initMPI'
+#ifdef W3_DEBUGINIT
+    Print *, '2: After initMPI'
+#endif // W3_DEBUGINIT
     call assignMesh(MNP, XP, YP, DEP, MNE, INE)
-!/DEBUGINIT    Print *, '3: After assignMesh'
+#ifdef W3_DEBUGINIT
+    Print *, '3: After assignMesh'
+#endif // W3_DEBUGINIT
     call prePartition()
-!/DEBUGINIT    Print *, '3: After prePartition'
+#ifdef W3_DEBUGINIT
+    Print *, '3: After prePartition'
+#endif // W3_DEBUGINIT
     call findConnNodes()
-!/DEBUGINIT    Print *, '4: After findConnNodes'
+#ifdef W3_DEBUGINIT
+    Print *, '4: After findConnNodes'
+#endif // W3_DEBUGINIT
     if(debugPrePartition) then
       if(myrank == 0) then
         write(*,*) "pre-partition"
@@ -96,13 +106,19 @@ module yowpdlibMain
     endif
 
  !   call writeMesh()
-!/DEBUGINIT    Print *, '4.1: After findConnNodes'
+#ifdef W3_DEBUGINIT
+    Print *, '4.1: After findConnNodes'
+#endif // W3_DEBUGINIT
 !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "Before call to runParmetis")
     call runParmetis(MNP, XP, YP)
 !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "After call to runParmetis")
-!/DEBUGINIT    Print *, '5: After runParmetis'
+#ifdef W3_DEBUGINIT
+    Print *, '5: After runParmetis'
+#endif // W3_DEBUGINIT
     call postPartition
-!/DEBUGINIT    Print *, 'Before findGhostNodes'
+#ifdef W3_DEBUGINIT
+    Print *, 'Before findGhostNodes'
+#endif // W3_DEBUGINIT
     call findGhostNodes
     call findConnDomains
     call exchangeGhostIds
@@ -172,7 +188,9 @@ module yowpdlibMain
     integer, intent(in) :: MPIcomm
     logical :: flag
     integer :: ierr
-!/DEBUGINIT    Print *, '2: MPIcomm=', MPIcomm
+#ifdef W3_DEBUGINIT
+    Print *, '2: MPIcomm=', MPIcomm
+#endif // W3_DEBUGINIT
     if(MPIcomm == MPI_COMM_NULL) then
       CALL ABORT("A null communicator is not allowed")
     endif
@@ -182,9 +200,13 @@ module yowpdlibMain
     if(ierr/=MPI_SUCCESS) call parallel_abort(error=ierr)
 
     if(flag .eqv. .false.) then
-!/DEBUGINIT      Print *, 'Before MPI_INIT yowpdlibmain'
+#ifdef W3_DEBUGINIT
+      Print *, 'Before MPI_INIT yowpdlibmain'
+#endif // W3_DEBUGINIT
       call mpi_init(ierr)
-!/DEBUGINIT      Print *, 'After MPI_INIT yowpdlibmain'
+#ifdef W3_DEBUGINIT
+      Print *, 'After MPI_INIT yowpdlibmain'
+#endif // W3_DEBUGINIT
       if(ierr/=MPI_SUCCESS) call parallel_abort(error=ierr)
     endif
 
@@ -688,7 +710,9 @@ module yowpdlibMain
     type(t_Node), pointer :: node, nodeNeighbor, nodeGhost
     !> temporary hold the ghost numbers
     integer, save, allocatable :: ghostTemp(:)
-!/DEBUGINIT    Print *, 'Passing in findGhostNodes'
+#ifdef W3_DEBUGINIT
+    Print *, 'Passing in findGhostNodes'
+#endif // W3_DEBUGINIT
 
     ! iterate over all local nodes and look at their neighbors
     ! has the neighbor another domain id, than it is a ghost
@@ -715,7 +739,9 @@ module yowpdlibMain
     allocate(ghostTemp(ng), stat=stat)
     if(stat/=0) call parallel_abort('ghostTemp allocation failure')
 
-!/DEBUGINIT    Print *, 'np_global=', np_global
+#ifdef W3_DEBUGINIT
+    Print *, 'np_global=', np_global
+#endif // W3_DEBUGINIT
     IF (allocated(ghostgl)) THEN
       Print *, 'ghostgl is already allocated'
     END IF

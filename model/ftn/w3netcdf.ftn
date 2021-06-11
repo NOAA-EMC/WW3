@@ -44,7 +44,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -52,7 +54,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
       INTEGER TIME0_NETCDF_QAD(2)
       INTEGER TIMEN_NETCDF_QAD(2)
@@ -103,7 +107,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -114,11 +120,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: year, month, day, hour, min, sec
@@ -189,7 +199,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -200,11 +212,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: year, month, day, hour, min, sec
@@ -263,7 +279,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -274,11 +292,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(out) :: year, month, day, hour, min, sec
@@ -354,7 +376,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -365,11 +389,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: year, month, day, hour, min, sec
@@ -425,7 +453,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -436,11 +466,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: year, month
@@ -518,7 +552,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -529,11 +565,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       INTEGER, intent(in) :: TIME(2)
@@ -597,7 +637,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       USE W3ODATMD, only : IAPROC
@@ -609,11 +651,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       INTEGER, intent(in) :: TIME(2)
@@ -673,7 +719,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -683,11 +731,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       INTEGER, intent(in) :: TIME(2)
@@ -744,7 +796,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -754,11 +808,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
       integer, intent(out) :: year, month, day, hour, min, sec
       real(8), intent(in) :: eJD
@@ -859,7 +917,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -870,11 +930,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       CHARACTER(LEN=15), INTENT(IN) :: STIME
@@ -932,7 +996,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -942,11 +1008,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
       CHARACTER(LEN=15), INTENT(OUT) :: STIME
       real(8), INTENT(IN) :: XMJD
@@ -1005,7 +1075,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       IMPLICIT NONE
 !/
@@ -1015,11 +1087,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
       real(8), INTENT(IN) :: XMJD
       LOGICAL, INTENT(OUT) :: result
@@ -1082,7 +1158,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
       USE NETCDF
       implicit none
@@ -1093,11 +1171,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
       integer, intent(in) :: iret, idx
       character(*), intent(in) :: CallFct
@@ -1157,11 +1239,15 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
-!/PDLIB      use yowElementpool, only: ne_global, INE_global
-!/PDLIB      use yowNodepool, only: np_global
+#ifdef W3_PDLIB
+      use yowElementpool, only: ne_global, INE_global
+      use yowNodepool, only: np_global
+#endif // W3_PDLIB
       implicit none
 !/
 !/ ------------------------------------------------------------------- /
@@ -1170,11 +1256,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(inout) :: STATUS(np_global)
@@ -1296,7 +1386,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       USE W3GDATMD, ONLY : GTYPE, UNGTYPE
@@ -1309,11 +1401,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: nx_dims, ny_dims, ntime_dims, ncid
@@ -1376,7 +1472,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       USE W3GDATMD, ONLY : GTYPE, UNGTYPE
@@ -1390,11 +1488,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       REAL, intent(in) :: VAR_TOT(nVar, NSEA)
@@ -1476,7 +1578,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       IMPLICIT NONE
@@ -1487,11 +1591,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
       integer, intent(in) :: IMOD
@@ -1555,7 +1663,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !
 
       USE W3WDATMD, ONLY : WLV
@@ -1566,13 +1676,19 @@
       USE W3GDATMD, ONLY : MAPSTA, XGRD, YGRD, NX, NY, DDEN, FLAGLL
       USE W3GDATMD, ONLY : ECOS, ESIN, SIG, DTH, XFR, IOBP, IOBPD
       USE W3GDATMD, ONLY : NK, NTH, NSEA, NSEAL, NTRI, XYB, TRIGP, GRIDS
-!/SETUP      USE W3WDATMD, ONLY: ZETA_SETUP
-!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WCMP
+#ifdef W3_SETUP
+      USE W3WDATMD, ONLY: ZETA_SETUP
+#endif // W3_SETUP
+#ifdef W3_MPI
+      USE W3ADATMD, ONLY: MPI_COMM_WCMP
+#endif // W3_MPI
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
-!/PDLIB      USE yowNodepool, only: ListIPLG, ListNP, ListNPA
-!/PDLIB      USE yowNodepool, only: np, iplg
-!/PDLIB      use yowDatapool, only: rtype
-!/PDLIB      USE yowRankModule, only : IPGL_TO_PROC
+#ifdef W3_PDLIB
+      USE yowNodepool, only: ListIPLG, ListNP, ListNPA
+      USE yowNodepool, only: np, iplg
+      use yowDatapool, only: rtype
+      USE yowRankModule, only : IPGL_TO_PROC
+#endif // W3_PDLIB
       USE W3PARALL, only: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
       USE W3GDATMD, only : MAPFS
       USE NETCDF
@@ -1585,15 +1701,21 @@
 !/ ------------------------------------------------------------------- /
 !/ Local PARAMETERs
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif // W3_S
 !
 
-!/MPI      INCLUDE "mpif.h"
-!/MPI      integer :: istatus(MPI_STATUS_SIZE)
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+      integer :: istatus(MPI_STATUS_SIZE)
+#endif // W3_MPI
       integer, intent(in) :: IMOD
       real, intent(in) :: DTG
       real(8), intent(in) :: eTime
@@ -1648,12 +1770,16 @@
       REAL,    PARAMETER :: THR_FP0  = 0.00000001
       DOPEAK = .true.
       IF (GRIDS(IMOD)%GTYPE .ne. UNGTYPE) THEN
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Exiting because the grid is not unstructured'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Exiting because the grid is not unstructured'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
         RETURN
       END IF
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Entering the NETCDF output routine'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Entering the NETCDF output routine'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
       !
       ! There are several arrays in WW3 for handling boundary condition
       ! One is the MAPSTA array which is defined in ww3_grid (see computation
@@ -1677,7 +1803,9 @@
         ISEA=MAPFS(1,IX)
         eMap=MAPSTA(1,IX)
         eIOBP=IOBP(IX)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'IX=', IX, ' IOBP/MAP=', eIOBP, eMap
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'IX=', IX, ' IOBP/MAP=', eIOBP, eMap
+#endif // W3_DEBUGNETCDF
         IF (ISEA .eq. 0) THEN
           nbBound_ISEA=nbBound_ISEA+1
         END IF
@@ -1704,14 +1832,16 @@
         sumIOBP_NX = sumIOBP_NX + 1 - eIOBP_NX
         sumIOBP_relevant = sumIOBP_relevant + 1 - eIOBPrel
       END DO
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'nbIOBP0=', nbIOBP0
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'nbIOBP1=', nbIOBP1
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'nbMAP2_IOBP0=', nbMAP2_IOBP0
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'nbBound_ISEA=', nbBound_ISEA
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'nbBound_IOBP=', nbBound_IOBP
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'sumIOBP_NX=', sumIOBP_NX
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'sumIOBP_relevant=', sumIOBP_relevant
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'nbIOBP0=', nbIOBP0
+        WRITE(740+IAPROC,*) 'nbIOBP1=', nbIOBP1
+        WRITE(740+IAPROC,*) 'nbMAP2_IOBP0=', nbMAP2_IOBP0
+        WRITE(740+IAPROC,*) 'nbBound_ISEA=', nbBound_ISEA
+        WRITE(740+IAPROC,*) 'nbBound_IOBP=', nbBound_IOBP
+        WRITE(740+IAPROC,*) 'sumIOBP_NX=', sumIOBP_NX
+        WRITE(740+IAPROC,*) 'sumIOBP_relevant=', sumIOBP_relevant
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
       allocate(ListIdx(IWBMNPGL), SPPARM(8,IWBMNPGL), stat=istat)
       idx=0
       DO IX=1,NX
@@ -1815,27 +1945,31 @@
         VAR_TOT_NSEA(11, ISEA)=U10(ISEA)
         VAR_TOT_NSEA(12, ISEA)=ETX
         VAR_TOT_NSEA(13, ISEA)=ETY
-!/SETUP        VAR_TOT_NSEA(14, ISEA)=ZETA_SETUP(ISEA)
+#ifdef W3_SETUP
+        VAR_TOT_NSEA(14, ISEA)=ZETA_SETUP(ISEA)
+#endif // W3_SETUP
         Status(ISEA)=1
       END DO
       !
       ! Now find global arrays
       !
-!/MPI      IF (IAPROC .eq. 1) THEN
-!/MPI        DO iProc=2,NAPROC
-!/MPI          CALL MPI_RECV(rVect,NSEA*nVar,MPI_REAL, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-!/MPI          CALL MPI_RECV(rStatus,NSEA,MPI_INTEGER, iProc-1, 23, MPI_COMM_WCMP, istatus, ierr)
-!/MPI          DO I=1,NSEA
-!/MPI            IF (rStatus(I) .eq. 1) THEN
-!/MPI              VAR_TOT_NSEA(:,I)=rVect(:,I)
-!/MPI              Status(I)=1
-!/MPI            END IF
-!/MPI          END DO
-!/MPI        END DO
-!/MPI      ELSE
-!/MPI        CALL MPI_SEND(VAR_TOT_NSEA,NSEA*nVar,MPI_REAL, 0, 19, MPI_COMM_WCMP, ierr)
-!/MPI        CALL MPI_SEND(Status,NSEA,MPI_INTEGER, 0, 23, MPI_COMM_WCMP, ierr)
-!/MPI      END IF
+#ifdef W3_MPI
+      IF (IAPROC .eq. 1) THEN
+        DO iProc=2,NAPROC
+          CALL MPI_RECV(rVect,NSEA*nVar,MPI_REAL, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+          CALL MPI_RECV(rStatus,NSEA,MPI_INTEGER, iProc-1, 23, MPI_COMM_WCMP, istatus, ierr)
+          DO I=1,NSEA
+            IF (rStatus(I) .eq. 1) THEN
+              VAR_TOT_NSEA(:,I)=rVect(:,I)
+              Status(I)=1
+            END IF
+          END DO
+        END DO
+      ELSE
+        CALL MPI_SEND(VAR_TOT_NSEA,NSEA*nVar,MPI_REAL, 0, 19, MPI_COMM_WCMP, ierr)
+        CALL MPI_SEND(Status,NSEA,MPI_INTEGER, 0, 23, MPI_COMM_WCMP, ierr)
+      END IF
+#endif // W3_MPI
       allocate(WBACbound(NK, NTH, IWBMNPGL), stat=istat)
       nbexport=0
       DO IP=1,NP
@@ -1862,66 +1996,78 @@
           END DO
         END IF
       END DO
-!/MPI!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
-!/MPI!/DEBUGNETCDF        FLUSH(740+IAPROC)
-!/MPI      IF (GTYPE .eq. UNGTYPE) THEN
-!/MPI        allocate(iVect(1), stat=istat)
-!/MPI        ListFirst=0
-!/MPI        DO IPROC=2,NAPROC
-!/MPI          ListFirst(IPROC) = ListFirst(IPROC-1) + ListNPA(IPROC-1)
-!/MPI        END DO
-!/MPI        IF (IAPROC .eq. 1) THEN
-!/MPI          DO IPROC=2,NAPROC
-!/MPI            CALL MPI_RECV(iVect,1,MPI_INT, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-!/MPI            IF (iVect(1) .gt. 0) THEN
-!/MPI              allocate(WBACexch(NK,NTH,iVect(1)), stat=istat)
-!/MPI!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Before MPI_RECV, tag 21'
-!/MPI!/DEBUGNETCDF        FLUSH(740+IAPROC)
-!/MPI              CALL MPI_RECV(WBACexch,NK*NTH*iVect(1),MPI_REAL, iProc-1, 21, MPI_COMM_WCMP, istatus, ierr)
-!/MPI!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'After MPI_RECV, tag 21'
-!/MPI!/DEBUGNETCDF        FLUSH(740+IAPROC)
-!/MPI              NPloc=ListNP(IPROC)
-!/MPI              idx=0
-!/MPI              DO IP=1,NPloc
-!/MPI                IP_glob=ListIPLG(IP + ListFirst(IPROC))
-!/MPI                IF (IOBP_relevant(IP_glob) .eq. 2) THEN
-!/MPI                  idx=idx + 1
-!/MPI                  idxbnd=ListIndexes(IP_glob)
-!/MPI                  WBACbound(:,:,idxbnd)=WBACexch(:,:,idx)
-!/MPI                END IF
-!/MPI              END DO
-!/MPI              deallocate(WBACexch)
-!/MPI            END IF
-!/MPI          END DO
-!/MPI        ELSE
-!/MPI          iVect(1)=nbexport
-!/MPI          CALL MPI_SEND(iVect,1,MPI_INT, 0, 19, MPI_COMM_WCMP, ierr)
-!/MPI          IF (nbexport .gt. 0) THEN
-!/MPI            allocate(WBACexch(NK,NTH,nbexport), stat=istat)
-!/MPI            idx=0
-!/MPI            DO IP=1,NP
-!/MPI              IP_glob=iplg(IP)
-!/MPI              IF (IOBP_relevant(IP_glob) .eq. 2) THEN
-!/MPI                ISEA=MAPFS(1,IP_glob)
-!/MPI                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-!/MPI                idx=idx+1
-!/MPI                DO IK=1,NK
-!/MPI                  DO ITH=1,NTH
-!/MPI                    ISP    = ITH + (IK-1)*NTH
-!/MPI                    WBACexch(IK,ITH,idx) = VA(ISP,JSEA)
-!/MPI                  END DO
-!/MPI                END DO
-!/MPI              END IF
-!/MPI            END DO
-!/MPI!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Before MPI_SEND, tag 21'
-!/MPI!/DEBUGNETCDF        FLUSH(740+IAPROC)
-!/MPI            CALL MPI_SEND(WBACexch,NSPEC*nbexport,MPI_REAL, 0, 21, MPI_COMM_WCMP, ierr)
-!/MPI!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'After MPI_SEND, tag 21'
-!/MPI!/DEBUGNETCDF        FLUSH(740+IAPROC)
-!/MPI            deallocate(WBACexch)
-!/MPI          END IF
-!/MPI        END IF
-!/MPI      END IF
+#ifdef W3_MPI
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
+      IF (GTYPE .eq. UNGTYPE) THEN
+        allocate(iVect(1), stat=istat)
+        ListFirst=0
+        DO IPROC=2,NAPROC
+          ListFirst(IPROC) = ListFirst(IPROC-1) + ListNPA(IPROC-1)
+        END DO
+        IF (IAPROC .eq. 1) THEN
+          DO IPROC=2,NAPROC
+            CALL MPI_RECV(iVect,1,MPI_INT, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+            IF (iVect(1) .gt. 0) THEN
+              allocate(WBACexch(NK,NTH,iVect(1)), stat=istat)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Before MPI_RECV, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
+              CALL MPI_RECV(WBACexch,NK*NTH*iVect(1),MPI_REAL, iProc-1, 21, MPI_COMM_WCMP, istatus, ierr)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'After MPI_RECV, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
+              NPloc=ListNP(IPROC)
+              idx=0
+              DO IP=1,NPloc
+                IP_glob=ListIPLG(IP + ListFirst(IPROC))
+                IF (IOBP_relevant(IP_glob) .eq. 2) THEN
+                  idx=idx + 1
+                  idxbnd=ListIndexes(IP_glob)
+                  WBACbound(:,:,idxbnd)=WBACexch(:,:,idx)
+                END IF
+              END DO
+              deallocate(WBACexch)
+            END IF
+          END DO
+        ELSE
+          iVect(1)=nbexport
+          CALL MPI_SEND(iVect,1,MPI_INT, 0, 19, MPI_COMM_WCMP, ierr)
+          IF (nbexport .gt. 0) THEN
+            allocate(WBACexch(NK,NTH,nbexport), stat=istat)
+            idx=0
+            DO IP=1,NP
+              IP_glob=iplg(IP)
+              IF (IOBP_relevant(IP_glob) .eq. 2) THEN
+                ISEA=MAPFS(1,IP_glob)
+                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+                idx=idx+1
+                DO IK=1,NK
+                  DO ITH=1,NTH
+                    ISP    = ITH + (IK-1)*NTH
+                    WBACexch(IK,ITH,idx) = VA(ISP,JSEA)
+                  END DO
+                END DO
+              END IF
+            END DO
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Before MPI_SEND, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
+            CALL MPI_SEND(WBACexch,NSPEC*nbexport,MPI_REAL, 0, 21, MPI_COMM_WCMP, ierr)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'After MPI_SEND, tag 21'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
+            deallocate(WBACexch)
+          END IF
+        END IF
+      END IF
+#endif // W3_MPI
       IF (IAPROC .eq. 1) THEN
         nbIncorr=0
         DO I=1,NSEA
@@ -2047,7 +2193,9 @@
           CALL NETCDF_QAD_DEFINE_VAR("DM", nx_dims, ny_dims, ntime_dims, ncid)
           CALL NETCDF_QAD_DEFINE_VAR("ETOTC", nx_dims, ny_dims, ntime_dims, ncid)
           CALL NETCDF_QAD_DEFINE_VAR("ETOTS", nx_dims, ny_dims, ntime_dims, ncid)
-!/SETUP          CALL NETCDF_QAD_DEFINE_VAR("ZETA_SETUP", nx_dims, ny_dims, ntime_dims, ncid)
+#ifdef W3_SETUP
+          CALL NETCDF_QAD_DEFINE_VAR("ZETA_SETUP", nx_dims, ny_dims, ntime_dims, ncid)
+#endif // W3_SETUP
           !
           IF ((GTYPE .eq. UNGTYPE).and.(IWBMNPGL.gt.0)) THEN
             iret=nf90_def_var(ncid,"SPPARM",NF90_REAL,(/ eight_dims, iwbmnpgl_dims, ntime_dims /),var_id)
@@ -2156,14 +2304,18 @@
         CALL GENERIC_NETCDF_ERROR(CallFct, 58, iret)
         !
         CALL WW3_TO_JD(TIME0_NETCDF_QAD, eJD)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'OUTPUT_NETCDF_QUICK_AND_DIRTY'
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'QAD: eJD=', eJD
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'QAD: DTG=', DTG
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'QAD: recs_his=', recs_his
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'OUTPUT_NETCDF_QUICK_AND_DIRTY'
+        WRITE(740+IAPROC,*) 'QAD: eJD=', eJD
+        WRITE(740+IAPROC,*) 'QAD: DTG=', DTG
+        WRITE(740+IAPROC,*) 'QAD: recs_his=', recs_his
+#endif // W3_DEBUGNETCDF
         !
         pos=recs_his+1
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'pos=', pos
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'pos=', pos
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
         eVar(1)=eTime
         iret=nf90_inq_varid(ncid, "ocean_time", var_id)
         CALL GENERIC_NETCDF_ERROR(CallFct, 59, iret)
@@ -2204,8 +2356,10 @@
           CALL GENERIC_NETCDF_ERROR(CallFct, 65, iret)
           iret=nf90_put_var(ncid,var_id,IOBP,start = (/1, pos/), count = (/ NX, 1 /))
           CALL GENERIC_NETCDF_ERROR(CallFct, 66, iret)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'sum(IOBP)=', sum(IOBP)
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'sum(IOBP)=', sum(IOBP)
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
           !
           iret=nf90_inq_varid(ncid, "IOBPD", var_id)
           CALL GENERIC_NETCDF_ERROR(CallFct, 67, iret)
@@ -2226,7 +2380,9 @@
         CALL NETCDF_QAD_PUT_VAR("WINDMAG", 11, nVar, VAR_TOT_NSEA, ncid, pos)
         CALL NETCDF_QAD_PUT_VAR("ETOTC", 12, nVar, VAR_TOT_NSEA, ncid, pos)
         CALL NETCDF_QAD_PUT_VAR("ETOTS", 13, nVar, VAR_TOT_NSEA, ncid, pos)
-!/SETUP        CALL NETCDF_QAD_PUT_VAR("ZETA_SETUP", 14, nVar, VAR_TOT_NSEA, ncid, pos)
+#ifdef W3_SETUP
+        CALL NETCDF_QAD_PUT_VAR("ZETA_SETUP", 14, nVar, VAR_TOT_NSEA, ncid, pos)
+#endif // W3_SETUP
         IF (GTYPE .eq. UNGTYPE) THEN
           DO IWB=1,IWBMNPGL
             IX=ListIdx(IWB)
@@ -2246,17 +2402,21 @@
             END IF
           END DO
           !
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Before writing of SPPARM'
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'pos=', pos
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'IWBMNPGL=', IWBMNPGL
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Before writing of SPPARM'
+        WRITE(740+IAPROC,*) 'pos=', pos
+        WRITE(740+IAPROC,*) 'IWBMNPGL=', IWBMNPGL
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
           IF (IWBMNPGL .gt. 0) THEN
             iret=nf90_inq_varid(ncid, "SPPARM", var_id)
             CALL GENERIC_NETCDF_ERROR(CallFct, 69, iret)
             iret=nf90_put_var(ncid,var_id,SPPARM,start = (/1,1,pos/), count = (/ 8,IWBMNPGL /))
             CALL GENERIC_NETCDF_ERROR(CallFct, 70, iret)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'After writing of SPPARM'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'After writing of SPPARM'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
             !
             iret=nf90_inq_varid(ncid, "WBAC", var_id)
             CALL GENERIC_NETCDF_ERROR(CallFct, 71, iret)
@@ -2265,19 +2425,23 @@
           END IF
         END IF
         !
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'HS values'
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'HS(min/max)=', minval(VAR_TOT_NSEA(1,:)), maxval(VAR_TOT_NSEA(1,:))
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Ucurr(min/max)=', minval(VAR_TOT_NSEA(2,:)), maxval(VAR_TOT_NSEA(2,:))
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Vcurr(min/max)=', minval(VAR_TOT_NSEA(3,:)), maxval(VAR_TOT_NSEA(3,:))
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'sum(varWrite)=', sum(varWrite)
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'HS values'
+        WRITE(740+IAPROC,*) 'HS(min/max)=', minval(VAR_TOT_NSEA(1,:)), maxval(VAR_TOT_NSEA(1,:))
+        WRITE(740+IAPROC,*) 'Ucurr(min/max)=', minval(VAR_TOT_NSEA(2,:)), maxval(VAR_TOT_NSEA(2,:))
+        WRITE(740+IAPROC,*) 'Vcurr(min/max)=', minval(VAR_TOT_NSEA(3,:)), maxval(VAR_TOT_NSEA(3,:))
+        WRITE(740+IAPROC,*) 'sum(varWrite)=', sum(varWrite)
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
         !
         iret=nf90_close(ncid)
         CALL GENERIC_NETCDF_ERROR(CallFct, 73, iret)
       END IF
       deallocate(ListIdx, SPPARM)
-!/DEBUGNETCDF        WRITE(740+IAPROC,*) 'Leaving the NETCDF output routine'
-!/DEBUGNETCDF        FLUSH(740+IAPROC)
+#ifdef W3_DEBUGNETCDF
+        WRITE(740+IAPROC,*) 'Leaving the NETCDF output routine'
+        FLUSH(740+IAPROC)
+#endif // W3_DEBUGNETCDF
       END SUBROUTINE
 !**********************************************************************
 !*                                                                    *

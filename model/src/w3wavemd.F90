@@ -626,8 +626,12 @@
 
 
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 1")
-!/DEBUGIOBP         IF (NX .ge. 10210) WRITE(*,*) 'CRIT 1:', MAPSTA(1,10210), IOBP(10210)
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 1")
+#endif // W3_DEBUGCOH
+#ifdef W3_DEBUGIOBP
+         IF (NX .ge. 10210) WRITE(*,*) 'CRIT 1:', MAPSTA(1,10210), IOBP(10210)
+#endif // W3_DEBUGIOBP
 #endif // W3_PDLIB
 
 !
@@ -652,7 +656,9 @@
       FLUSH(740+IAPROC)
 #endif // W3_DEBUGINIT
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 2")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 2")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 !
 ! 0.b Subroutine tracing
@@ -758,7 +764,9 @@
       FLUSH(740+IAPROC)
 #endif // W3_DEBUGINIT
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 4")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 4")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 !
 ! 1.c Current interval
@@ -803,7 +811,9 @@
       FLUSH(740+IAPROC)
 #endif // W3_DEBUGINIT
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 5")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 5")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 !
 ! 1.e Ice concentration interval
@@ -829,7 +839,9 @@
       FLUSH(740+IAPROC)
 #endif // W3_DEBUGINIT
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 !
 ! 1.f Momentum interval
@@ -898,7 +910,9 @@
             ELSE
               DTI50   = 1.
             END IF
-!/T          WRITE (NDST,9016) DTI50
+#ifdef W3_T
+          WRITE (NDST,9016) DTI50
+#endif // W3_T
           IF ( DTI50 .LT. 0. ) THEN
               IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006)
               CALL EXTCDE ( 5 )
@@ -940,7 +954,9 @@
 
 
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6.1")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6.1")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 !
 !
@@ -1128,7 +1144,9 @@
 #endif // W3_PDLIB
 !
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Beginning time loop")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Beginning time loop")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After assigning VAOLD")
@@ -1234,7 +1252,9 @@
         FLUSH(740+IAPROC)
 #endif // W3_DEBUGRUN
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before UCUR")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before UCUR")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.4.1'
@@ -1340,7 +1360,9 @@
         FLUSH(740+IAPROC)
 #endif // W3_DEBUGRUN
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before call to W3UINI")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before call to W3UINI")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before call W3UINI")
@@ -1361,7 +1383,9 @@
 ! 3.2 Update boundary conditions if boundary flag is true (FLBPI)
 !
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before boundary update")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before boundary update")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before boundary update")
@@ -1425,7 +1449,9 @@
 
 #ifdef W3_PDLIB
           CALL APPLY_BOUNDARY_CONDITION_VA
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLBPI and LOCAL")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLBPI and LOCAL")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After FLBPI and LOCAL")
@@ -1488,7 +1514,9 @@
               END IF
           END IF
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLICE and DTI0")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLICE and DTI0")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After FLICE and DTI0")
@@ -1498,7 +1526,9 @@
         FLUSH(740+IAPROC)
 #endif // W3_DEBUGRUN
 #ifdef W3_PDLIB
-!/DEBUGIOBP         IF (NX .ge. 10210) WRITE(*,*) 'Before W3ULEV:', MAPSTA(1,10210), IOBP(10210)
+#ifdef W3_DEBUGIOBP
+         IF (NX .ge. 10210) WRITE(*,*) 'Before W3ULEV:', MAPSTA(1,10210), IOBP(10210)
+#endif // W3_DEBUGIOBP
 #endif // W3_PDLIB
 
 #ifdef W3_MEMCHECK
@@ -1635,8 +1665,12 @@
         FLUSH(740+IAPROC)
 #endif // W3_DEBUGRUN
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FFLEV and DTL0")
-!/DEBUGIOBP         IF (NX .ge. 10210) WRITE(*,*) ' After W3ULEV:', MAPSTA(1,10210), IOBP(10210)
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FFLEV and DTL0")
+#endif // W3_DEBUGCOH
+#ifdef W3_DEBUGIOBP
+         IF (NX .ge. 10210) WRITE(*,*) ' After W3ULEV:', MAPSTA(1,10210), IOBP(10210)
+#endif // W3_DEBUGIOBP
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After FFLEV and DTL0")
@@ -1751,16 +1785,18 @@
           FLFRST = .FALSE.
 !
 #ifdef W3_PDLIB
-!/DEBUGSRC          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
-!/DEBUGSRC          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_PRE")
-!/DEBUGSRC          CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT before W3SRCE_IMP_PRE")
-!/DEBUGSRC          CALL ALL_FIELD_INTEGRAL_PRINT(VDTOT, "VDTOT before W3SRCE_IMP_PRE")
-!/DEBUGSRC          IF (DEBUG_NODE .le. NSEAL) THEN
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
-!/DEBUGSRC          END IF
+#ifdef W3_DEBUGSRC
+          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_PRE")
+          CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT before W3SRCE_IMP_PRE")
+          CALL ALL_FIELD_INTEGRAL_PRINT(VDTOT, "VDTOT before W3SRCE_IMP_PRE")
+          IF (DEBUG_NODE .le. NSEAL) THEN
+            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
+            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
+          END IF
+#endif // W3_DEBUGSRC
        IF (IT .eq. 0) THEN
          DTGpre = 1.
        ELSE
@@ -1840,13 +1876,15 @@
             IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
               IF (FSSOURCE) THEN
 #ifdef W3_PDLIB
-!/DEBUGSRC         IF (IX .eq. DEBUG_NODE) THEN
-!/DEBUGSRC           WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
-!/DEBUGSRC         END IF
-!/DEBUGSRC      WRITE(740+IAPROC,*) 'IT/IX/IY/IMOD=', IT, IX, IY, IMOD
-!/DEBUGSRC      WRITE(740+IAPROC,*) 'ISEA/JSEA=', ISEA, JSEA
-!/DEBUGSRC      WRITE(740+IAPROC,*) 'Before sum(VA)=', sum(VA(:,JSEA))
-!/DEBUGSRC      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSRC
+         IF (IX .eq. DEBUG_NODE) THEN
+           WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
+         END IF
+      WRITE(740+IAPROC,*) 'IT/IX/IY/IMOD=', IT, IX, IY, IMOD
+      WRITE(740+IAPROC,*) 'ISEA/JSEA=', ISEA, JSEA
+      WRITE(740+IAPROC,*) 'Before sum(VA)=', sum(VA(:,JSEA))
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSRC
                 CALL W3SRCE(srce_imp_pre, IT, JSEA, IX, IY, IMOD, &
                    VAoldDummy, VA(:,JSEA),                        &
                    VSTOT(:,JSEA), VDTOT(:,JSEA), SHAVETOT(JSEA),  &
@@ -1867,11 +1905,13 @@
                    PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),         &
                    TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),      &
                    RHOAIR(ISEA), ASF(ISEA))
-!/DEBUGSRC      WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
-!/DEBUGSRC      WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
-!/DEBUGSRC      WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
-!/DEBUGSRC      WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
-!/DEBUGSRC      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGSRC
+      WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
+      WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
+      WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
+      WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGSRC
 #endif // W3_PDLIB
               ENDIF
             ELSE
@@ -1883,16 +1923,18 @@
           END DO ! JSEA 
         END IF ! PDLIB 
 #ifdef W3_PDLIB
-!/DEBUGSRC          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
-!/DEBUGSRC          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE")
-!/DEBUGSRC          CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT after W3SRCE_IMP_PRE")
-!/DEBUGSRC          CALL ALL_FIELD_INTEGRAL_PRINT(VDTOT, "VDTOT after W3SRCE_IMP_PRE")
-!/DEBUGSRC          IF (DEBUG_NODE .le. NSEAL) THEN
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
-!/DEBUGSRC          END IF
+#ifdef W3_DEBUGSRC
+          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE")
+          CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT after W3SRCE_IMP_PRE")
+          CALL ALL_FIELD_INTEGRAL_PRINT(VDTOT, "VDTOT after W3SRCE_IMP_PRE")
+          IF (DEBUG_NODE .le. NSEAL) THEN
+            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
+            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
+          END IF
+#endif // W3_DEBUGSRC
 #endif // W3_PDLIB
 
 #ifdef W3_MEMCHECK
@@ -2071,7 +2113,9 @@
 ! 3.6.2 Intra-spectral part 1
 !
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before intraspectral part 1")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before intraspectral part 1")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before intraspectral")
@@ -2169,7 +2213,9 @@
 #endif // W3_MEMCHECK
 
 #ifdef W3_PDLIB
-!/DEBUGCOH  CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before spatial advection")
+#ifdef W3_DEBUGCOH
+  CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before spatial advection")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before spatial advection")
@@ -2461,7 +2507,9 @@
         END IF
 
 #ifdef W3_PDLIB
-!/DEBUGCOH        CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After spatial advection")
+#ifdef W3_DEBUGCOH
+        CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After spatial advection")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After spatial advection")
@@ -2557,7 +2605,9 @@
                 END DO
             END IF
 #ifdef W3_PDLIB
-!/DEBUGCOH       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After intraspectral adv.")
+#ifdef W3_DEBUGCOH
+       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After intraspectral adv.")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("fter intraspectral adv.")
@@ -2582,16 +2632,18 @@
             REFLED(:)=0
             PSIC=0.
 #ifdef W3_PDLIB
-!/DEBUGSRC          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
-!/DEBUGSRC          CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD before W3SRCE_IMP_POST")
-!/DEBUGSRC          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_POST")
-!/DEBUGSRC          IF (DEBUG_NODE .le. NSEAL) THEN
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VAOLD)=', sum(VAOLD(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
-!/DEBUGSRC          END IF
+#ifdef W3_DEBUGSRC
+          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
+          CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD before W3SRCE_IMP_POST")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_POST")
+          IF (DEBUG_NODE .le. NSEAL) THEN
+            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
+            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VAOLD)=', sum(VAOLD(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
+          END IF
+#endif // W3_DEBUGSRC
 #endif // W3_PDLIB
 !
 #ifdef W3_OMPG
@@ -2729,14 +2781,16 @@
 #endif // W3_OMPG
 !
 #ifdef W3_PDLIB
-!/DEBUGSRC          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
-!/DEBUGSRC          CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD after W3SRCE_IMP_PRE_POST")
-!/DEBUGSRC          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE_POST")
-!/DEBUGSRC          IF (DEBUG_NODE .le. NSEAL) THEN
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
-!/DEBUGSRC            WRITE(740+IAPROC,*) '     min/max(VA)=', minval(VA(:,DEBUG_NODE)), maxval(VA(:,DEBUG_NODE))
-!/DEBUGSRC          END IF
+#ifdef W3_DEBUGSRC
+          WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
+          CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD after W3SRCE_IMP_PRE_POST")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE_POST")
+          IF (DEBUG_NODE .le. NSEAL) THEN
+            WRITE(740+IAPROC,*) '     Values for DEBUG_NODE=', DEBUG_NODE
+            WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
+            WRITE(740+IAPROC,*) '     min/max(VA)=', minval(VA(:,DEBUG_NODE)), maxval(VA(:,DEBUG_NODE))
+          END IF
+#endif // W3_DEBUGSRC
 #endif // W3_PDLIB
 
 !
@@ -2753,7 +2807,9 @@
         FLUSH(740+IAPROC)
 #endif // W3_DEBUGRUN
 #ifdef W3_PDLIB
-!/DEBUGCOH          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After source terms")
+#ifdef W3_DEBUGCOH
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After source terms")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After source terms")
@@ -2818,7 +2874,9 @@
 #endif // W3_DEBUGRUN
 !
 #ifdef W3_PDLIB
-!/DEBUGCOH            CALL ALL_VA_INTEGRAL_PRINT(IMOD, "end of time loop")
+#ifdef W3_DEBUGCOH
+            CALL ALL_VA_INTEGRAL_PRINT(IMOD, "end of time loop")
+#endif // W3_DEBUGCOH
 #endif // W3_PDLIB
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("end of time loop")

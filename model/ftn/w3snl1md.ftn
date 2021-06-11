@@ -232,11 +232,21 @@
                     AWG1, AWG2, AWG3, AWG4, AWG5, AWG6, AWG7, AWG8,   &
                     SWG1, SWG2, SWG3, SWG4, SWG5, SWG6, SWG7, SWG8
 !!/DEBUGSRC      USE W3ODATMD, only : IAPROC
-!/T      USE W3ODATMD, ONLY: NDST
-!/T1      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_T1
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T1
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !
       IMPLICIT NONE
 !/
@@ -250,11 +260,15 @@
 !/ Local parameters
 !/
       INTEGER                 :: ITH, IFR, ISP
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: X, X2, CONS, CONX, FACTOR,           &
                                  E00, EP1, EM1, EP2, EM2,             &
                                  SA1A, SA1B, SA2A, SA2B
-!/T0      REAL                    :: SOUT(NK,NFR), DOUT(NK,NFR)
+#ifdef W3_T0
+      REAL                    :: SOUT(NK,NFR), DOUT(NK,NFR)
+#endif // W3_T0
       REAL               ::  UE  (1-NTH:NSPECY), SA1 (1-NTH:NSPECX),  &
                              SA2 (1-NTH:NSPECX), DA1C(1-NTH:NSPECX),  &
                              DA1P(1-NTH:NSPECX), DA1M(1-NTH:NSPECX),  &
@@ -265,7 +279,9 @@
 !/
 ! initialisations
 !
-!/S      CALL STRACE (IENT, 'W3SNL1')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SNL1')
+#endif // W3_S
 !
 ! 1.  Calculate prop. constant --------------------------------------- *
 !
@@ -273,7 +289,9 @@
       X2     = MAX ( -1.E15, SNLS3*X)
       CONS   = SNLC1 * ( 1. + SNLS1/X * (1.-SNLS2*X) * EXP(X2) )
 !
-!/T      WRITE (NDST,9000) KDMEAN, CONS
+#ifdef W3_T
+      WRITE (NDST,9000) KDMEAN, CONS
+#endif // W3_T
 !
 ! 2.  Prepare auxiliary spectrum and arrays -------------------------- *
 !
@@ -377,27 +395,35 @@
 !
 ! ... Test output :
 !
-!/T0      DO IFR=1, NFR
-!/T0        DO ITH=1, NTH
-!/T0          ISP          = ITH + (IFR-1)*NTH
-!/T0          SOUT(IFR,ITH) = S(ISP) * TPI * SIG(IFR) / CG(IFR)
-!/T0          DOUT(IFR,ITH) = D(ISP)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IFR=1, NFR
+        DO ITH=1, NTH
+          ISP          = ITH + (IFR-1)*NTH
+          SOUT(IFR,ITH) = S(ISP) * TPI * SIG(IFR) / CG(IFR)
+          DOUT(IFR,ITH) = D(ISP)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:), '  ', 1.,  &
-!/T0                         0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,  &
-!/T0                         0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:), '  ', 1.,  &
+                         0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,  &
+                         0.0, 0.001, 'Diag Snl', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, S, NTH, NTH, NK, 'Snl')
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'Diag Snl')
+#endif // W3_T1
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3SNL1 : KDMEAN, CONS :',F8.2,F8.1)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SNL1 : KDMEAN, CONS :',F8.2,F8.1)
+#endif // W3_T
 !/
 !/ End of W3SNL1 ----------------------------------------------------- /
 !/
@@ -486,7 +512,9 @@
                     AWG1, AWG2, AWG3, AWG4, AWG5, AWG6, AWG7, AWG8,   &
                     SWG1, SWG2, SWG3, SWG4, SWG5, SWG6, SWG7, SWG8
       USE W3ODATMD, ONLY: NDST, NDSE
-!/S      USE W3SERVMD, ONLY: STRACE
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
 !/
       IMPLICIT NONE
 !/
@@ -503,7 +531,9 @@
                                  IF5(:), IF6(:), IF7(:), IF8(:),      &
                                  IT1(:), IT2(:), IT3(:), IT4(:),      &
                                  IT5(:), IT6(:), IT7(:), IT8(:)
-!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
       REAL                    :: DELTH3, DELTH4, LAMM2, LAMP2, CTHP,  &
                                  WTHP, WTHP1, CTHM, WTHM, WTHM1,      &
                                  XFRLN, WFRP, WFRP1, WFRM, WFRM1, FR, &
@@ -511,8 +541,12 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'INSNL1')
-!/T      WRITE (NDST,9000) IMOD
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSNL1')
+#endif // W3_S
+#ifdef W3_T
+      WRITE (NDST,9000) IMOD
+#endif // W3_T
 !
       NFR     = NK
 !
@@ -692,7 +726,9 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST INSNL1 : IMOD :',I4)
+#ifdef W3_T
+ 9000 FORMAT (' TEST INSNL1 : IMOD :',I4)
+#endif // W3_T
 !/
 !/ End of INSNL1 ----------------------------------------------------- /
 !/

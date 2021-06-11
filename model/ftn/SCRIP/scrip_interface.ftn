@@ -338,8 +338,10 @@
       use scrip_remap_vars                 ! common remapping variables
       use scrip_remap_conservative         ! routines for conservative remap
 
-!/SCRIPNC      use scrip_remap_write                ! routines for remap output
-!/SCRIPNC      use scrip_remap_read                 ! routines for remap input
+#ifdef W3_SCRIPNC
+      use scrip_remap_write                ! routines for remap output
+      use scrip_remap_read                 ! routines for remap input
+#endif // W3_SCRIPNC
 
       use scrip_errormod
 
@@ -391,11 +393,15 @@
       character (12), parameter :: &
            rtnName = 'SCRIP_driver'
 
-!/SCRIPNC      character (LEN=3) :: cdst  ! 3 character number of destination map
-!/SCRIPNC      character (LEN=3) :: csrc  ! 3 character number of source map
-!/T38      CHARACTER (LEN=10) :: CDATE_TIME(3)
-!/T38      INTEGER            :: DATE_TIME(8)
-!/T38      INTEGER            :: ELAPSED_TIME, BEG_TIME, END_TIME
+#ifdef W3_SCRIPNC
+      character (LEN=3) :: cdst  ! 3 character number of destination map
+      character (LEN=3) :: csrc  ! 3 character number of source map
+#endif // W3_SCRIPNC
+#ifdef W3_T38
+      CHARACTER (LEN=10) :: CDATE_TIME(3)
+      INTEGER            :: DATE_TIME(8)
+      INTEGER            :: ELAPSED_TIME, BEG_TIME, END_TIME
+#endif // W3_T38
 
 !-----------------------------------------------------------------------
 !
@@ -403,7 +409,9 @@
 !
 !-----------------------------------------------------------------------
 
-!/T38 if(l_master)write(SCRIP_stdout,*)'subroutine scrip'
+#ifdef W3_T38
+ if(l_master)write(SCRIP_stdout,*)'subroutine scrip'
+#endif // W3_T38
 
       call timers_init
       do n=1,max_timers
@@ -419,16 +427,18 @@
 !-----------------------------------------------------------------------
 
       num_maps = 1
-!/SCRIPNC!     Note: Only master does I/O, but all processors need to know about
-!/SCRIPNC!     file existence
-!/SCRIPNC      interp_file1 = "rmp_src_to_dst_conserv_XXX_XXX.nc"
-!/SCRIPNC      interp_file2 = 'not_used.nc'
-!/SCRIPNC      map1_name = 'source to destination Conservative Mapping'
-!/SCRIPNC      map2_name = 'map not used'
-!/SCRIPNC      write(cdst, "(i3.3)") dst_num
-!/SCRIPNC      write(csrc, "(i3.3)") src_num
-!/SCRIPNC      interp_file1(24:26) = csrc
-!/SCRIPNC      interp_file1(28:30) = cdst
+#ifdef W3_SCRIPNC
+!     Note: Only master does I/O, but all processors need to know about
+!     file existence
+      interp_file1 = "rmp_src_to_dst_conserv_XXX_XXX.nc"
+      interp_file2 = 'not_used.nc'
+      map1_name = 'source to destination Conservative Mapping'
+      map2_name = 'map not used'
+      write(cdst, "(i3.3)") dst_num
+      write(csrc, "(i3.3)") src_num
+      interp_file1(24:26) = csrc
+      interp_file1(28:30) = cdst
+#endif // W3_SCRIPNC
 
       map_method = 'conservative'
       normalize_opt = 'fracarea'
@@ -481,12 +491,16 @@
 !
 !-----------------------------------------------------------------------
 
-!/T38 if(l_master)write(SCRIP_stdout,*)'calling grid_init'
+#ifdef W3_T38
+ if(l_master)write(SCRIP_stdout,*)'calling grid_init'
+#endif // W3_T38
 
       call grid_init( errorCode,l_master,l_test)
 
-!/T38 if(l_master)write(SCRIP_stdout, *) 'Computing remappings between: ',grid1_name
-!/T38 if(l_master)write(SCRIP_stdout, *) '                         and  ',grid2_name
+#ifdef W3_T38
+ if(l_master)write(SCRIP_stdout, *) 'Computing remappings between: ',grid1_name
+ if(l_master)write(SCRIP_stdout, *) '                         and  ',grid2_name
+#endif // W3_T38
 
 !-----------------------------------------------------------------------
 !
@@ -500,30 +514,44 @@
 !
 !     call appropriate interpolation setup routine based on type of
 !     remapping requested. or read in remapping data.
-!/SCRIPNC!or, read in remapping data.
+#ifdef W3_SCRIPNC
+!or, read in remapping data.
+#endif // W3_SCRIPNC
 !
 !-----------------------------------------------------------------------
 
-!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#ifdef W3_T38
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#endif // W3_T38
       
-!/SCRIPNC      if (l_read) then
-!/SCRIPNC         if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
-!/SCRIPNC         call read_remap_ww3(map1_name, interp_file1, errorCode)
-!/T38         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/T38         elapsed_time = end_time - beg_time
-!/T38         write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
-!/SCRIPNC      else
+#ifdef W3_SCRIPNC
+      if (l_read) then
+         if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
+         call read_remap_ww3(map1_name, interp_file1, errorCode)
+#endif // W3_SCRIPNC
+#ifdef W3_T38
+         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+         elapsed_time = end_time - beg_time
+         write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
+#endif // W3_T38
+#ifdef W3_SCRIPNC
+      else
+#endif // W3_SCRIPNC
          select case(map_type)
          case(map_type_conserv)
-!/T38       if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
+#ifdef W3_T38
+       if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
+#endif // W3_T38
             call remap_conserv(l_master,l_test)
-!/T38       if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
-!/T38            call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38            end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/T38            elapsed_time = end_time - beg_time
-!/T38            write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
+#ifdef W3_T38
+       if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
+            call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+            end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+            elapsed_time = end_time - beg_time
+            write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
+#endif // W3_T38
          case default
             call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
             call SCRIP_driverExit(errorCode, 'Invalid Map Type')
@@ -535,8 +563,10 @@
 !
 !-----------------------------------------------------------------------
       
-!/T38         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38         beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#ifdef W3_T38
+         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+         beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#endif // W3_T38
 
          if (num_links_map1 /= max_links_map1) then
             call resize_remap_vars(1, num_links_map1-max_links_map1)
@@ -549,33 +579,43 @@
 
 !-----------------------------------------------------------------------
 !
-!/SCRIPNC!     write remapping info to a file.
+#ifdef W3_SCRIPNC
+!     write remapping info to a file.
+#endif // W3_SCRIPNC
 !
 !-----------------------------------------------------------------------
 
-!/SCRIPNC         if (l_master) then
-!/SCRIPNC            write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
-!/SCRIPNC         endif
+#ifdef W3_SCRIPNC
+         if (l_master) then
+            write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
+         endif
+#endif // W3_SCRIPNC
 
-!/T38        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/T38        elapsed_time = end_time - beg_time
-!/T38        write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
-!/T38        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/T38        beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#ifdef W3_T38
+        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+        elapsed_time = end_time - beg_time
+        write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
+        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+        beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#endif // W3_T38
 
 ! Use  write_remap if you want the extra variables in the .nc files for diagnostics
 ! Use  write_remap_ww3 if you don't want any extra variables in the .nc files
 
-!/SCRIPNC         if(l_test)then
-!/SCRIPNC            call write_remap(map1_name, map2_name, interp_file1, interp_file2, &
-!/SCRIPNC            output_opt, l_master, errorCode)
-!/SCRIPNC         else
-!/SCRIPNC            call write_remap_ww3(map1_name, interp_file1, output_opt, &
-!/SCRIPNC            l_master, errorCode)
-!/SCRIPNC         endif
+#ifdef W3_SCRIPNC
+         if(l_test)then
+            call write_remap(map1_name, map2_name, interp_file1, interp_file2, &
+            output_opt, l_master, errorCode)
+         else
+            call write_remap_ww3(map1_name, interp_file1, output_opt, &
+            l_master, errorCode)
+         endif
+#endif // W3_SCRIPNC
 
-!/SCRIPNC      end if
+#ifdef W3_SCRIPNC
+      end if
+#endif // W3_SCRIPNC
 
 !-----------------------------------------------------------------------
 

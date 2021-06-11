@@ -177,13 +177,23 @@
 !/
 !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
 !     USE W3WDATMD, ONLY: W3NDAT, W3SETW, W3DIMW
-!/NL1      USE W3ADATMD, ONLY: W3NAUX, W3SETA
+#ifdef W3_NL1
+      USE W3ADATMD, ONLY: W3NAUX, W3SETA
+#endif // W3_NL1
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, FLOGRR
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EJ5P, EXTCDE
-!/S      USE W3SERVMD, ONLY : STRACE
-!/O4      USE W3ARRYMD, ONLY : PRT1DS
-!/O5      USE W3ARRYMD, ONLY : PRT2DS
-!/O6      USE W3ARRYMD, ONLY : PRTBLK
+#ifdef W3_S
+      USE W3SERVMD, ONLY : STRACE
+#endif // W3_S
+#ifdef W3_O4
+      USE W3ARRYMD, ONLY : PRT1DS
+#endif // W3_O4
+#ifdef W3_O5
+      USE W3ARRYMD, ONLY : PRT2DS
+#endif // W3_O5
+#ifdef W3_O6
+      USE W3ARRYMD, ONLY : PRTBLK
+#endif // W3_O6
       USE W3DISPMD, ONLY : WAVNU1
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IORSMD, ONLY: W3IORS
@@ -193,11 +203,15 @@
       USE W3WDATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NAPROC, IAPROC,           &
                           NAPOUT, NAPERR, FNMPRE
-!/WRST      USE W3IDATMD, ONLY: W3NINP
+#ifdef W3_WRST
+      USE W3IDATMD, ONLY: W3NINP
+#endif // W3_WRST
 !/
       IMPLICIT NONE
 !
-!/MPI      INCLUDE "mpif.h"
+#ifdef W3_MPI
+      INCLUDE "mpif.h"
+#endif // W3_MPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -205,20 +219,32 @@
       INTEGER                 :: NDSI, NDSM, NDSR, NDSTRC, NTRACE,    &
                                  NDSEN, IERR, ITYPE, NCOS, IKM, IK,   &
                                  ITHM, ITH, JSEA, ISEA, IX, IY, J 
-!/MPI      INTEGER                 :: IERR_MPI
-!/S      INTEGER, SAVE           :: IENT = 0
-!/O6      INTEGER                 :: NSX, NSY
-!/O6      INTEGER, ALLOCATABLE    :: MAPO(:,:)
+#ifdef W3_MPI
+      INTEGER                 :: IERR_MPI
+#endif // W3_MPI
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_O6
+      INTEGER                 :: NSX, NSY
+      INTEGER, ALLOCATABLE    :: MAPO(:,:)
+#endif // W3_O6
       REAL                    :: FP, SIP, THM, XM, SIX, YM, SIY, HMAX,&
                                  CHSIP, FRREL, ETOT, E1I, FACTOR, X,  &
                                  Y, RDSQR, ALFA, GAMMA, SIGA, SIGB,   &
                                  YLN, FR, BETA, FRR, S, SUMD, ANG,    &
                                  ARG, FACS, DEPTH, WN, CG, HPQMAX
       REAL, ALLOCATABLE       :: E1(:), DD(:), E2(:,:), E21(:), FINP(:,:)
-!/O5      REAL, ALLOCATABLE       :: E2OUT(:,:)
-!/O6      REAL, ALLOCATABLE       :: HSIG(:,:)
+#ifdef W3_O5
+      REAL, ALLOCATABLE       :: E2OUT(:,:)
+#endif // W3_O5
+#ifdef W3_O6
+      REAL, ALLOCATABLE       :: HSIG(:,:)
+#endif // W3_O6
       CHARACTER               :: COMSTR*1, INXOUT*4
-!/EXPORTWWM      INTEGER                 :: ISPEC
+#ifdef W3_EXPORTWWM
+      INTEGER                 :: ISPEC
+#endif // W3_EXPORTWWM
       LOGICAL                 :: FLONE,NOSIX
 !/
 !/ ------------------------------------------------------------------- /
@@ -229,11 +255,15 @@
       CALL W3SETG ( 1, 6, 6 )
       CALL W3NDAT (    6, 6 )
       CALL W3SETW ( 1, 6, 6 )
-!/NL1      CALL W3NAUX (    6, 6 )
-!/NL1      CALL W3SETA ( 1, 6, 6 )
+#ifdef W3_NL1
+      CALL W3NAUX (    6, 6 )
+      CALL W3SETA ( 1, 6, 6 )
+#endif // W3_NL1
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
-!/WRST      CALL W3NINP(    6, 6 )
+#ifdef W3_WRST
+      CALL W3NINP(    6, 6 )
+#endif // W3_WRST
 !
 ! 1.b IO set-up.
 !
@@ -247,17 +277,23 @@
       NTRACE = 10
       CALL ITRACE ( NDSTRC, NTRACE )
 !
-!/S      CALL STRACE (IENT, 'W3STRT')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3STRT')
+#endif // W3_S
 !
 ! 1.c MPP initializations
 !
-!/SHRD      NAPROC = 1
-!/SHRD      IAPROC = 1
+#ifdef W3_SHRD
+      NAPROC = 1
+      IAPROC = 1
+#endif // W3_SHRD
 !
-!/MPI      CALL MPI_INIT      ( IERR_MPI )
-!/MPI      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
-!/MPI      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
-!/MPI      IAPROC = IAPROC + 1
+#ifdef W3_MPI
+      CALL MPI_INIT      ( IERR_MPI )
+      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
+      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
+      IAPROC = IAPROC + 1
+#endif // W3_MPI
 !
       IF ( IAPROC .EQ. NAPERR ) THEN
           NDSEN  = NDSE
@@ -285,10 +321,14 @@
 !
 ! 2.b MPP initializations
 !
-!/SHRD      NSEAL  = NSEA
+#ifdef W3_SHRD
+      NSEAL  = NSEA
+#endif // W3_SHRD
 !
-!/DIST      NSEAL  = 1 + (NSEA-IAPROC)/NAPROC
-!/DIST      IF ( NSEA .LT. NAPROC ) GOTO 803
+#ifdef W3_DIST
+      NSEAL  = 1 + (NSEA-IAPROC)/NAPROC
+      IF ( NSEA .LT. NAPROC ) GOTO 803
+#endif // W3_DIST
 !
       CALL W3DIMW ( 1, NDSE, NDST )
       ALLOCATE ( E1(NK), DD(NTH), E2(NTH,NK), E21(NSPEC),           &
@@ -336,8 +376,12 @@
 
           HPQMAX=-999.0
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             IF(HPFAC(IY,IX).GT.HPQMAX)THEN
@@ -348,8 +392,12 @@
 
           HPQMAX=-999.0
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             IF(HQFAC(IY,IX).GT.HPQMAX)THEN
@@ -402,9 +450,11 @@
               END IF
             END DO
 !
-!/O4           IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                      &
-!/O4                 (NDSO, NK, E1, SIG(1:), '  ', 10, 0.,                &
-!/O4                  'Unscaled 1-D', ' ', 'TEST E(f)')
+#ifdef W3_O4
+           IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                      &
+                 (NDSO, NK, E1, SIG(1:), '  ', 10, 0.,                &
+                  'Unscaled 1-D', ' ', 'TEST E(f)')
+#endif // W3_O4
 !
 ! 4.c Make directional distribution.
 !
@@ -438,17 +488,21 @@
 !
           E2     = FACTOR * E2
 !
-!/O5          ALLOCATE ( E2OUT(NK,NTH) )
-!/O5          DO ITH=1, NTH
-!/O5            DO IK=1, NK
-!/O5              E2OUT(IK,ITH) = TPI * E2(ITH,IK)
-!/O5              END DO
-!/O5            END DO
+#ifdef W3_O5
+          ALLOCATE ( E2OUT(NK,NTH) )
+          DO ITH=1, NTH
+            DO IK=1, NK
+              E2OUT(IK,ITH) = TPI * E2(ITH,IK)
+              END DO
+            END DO
+#endif // W3_O5
 !
-!/O5          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                       &
-!/O5                  ( NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', DERA*TPI, &
-!/O5                    0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
-!/O5          DEALLOCATE ( E2OUT )
+#ifdef W3_O5
+          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                       &
+                  ( NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', DERA*TPI, &
+                    0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+          DEALLOCATE ( E2OUT )
+#endif // W3_O5
 !
 ! 4.e Distribute over grid.
 !
@@ -459,8 +513,12 @@
 !
           DO JSEA=1, NSEAL
 !
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IF (GTYPE .EQ. UNGTYPE) THEN 
                IX     = MAPSF(ISEA,1)
                X      = XYB(IX,1)
@@ -482,11 +540,15 @@
                 FACTOR = EXP ( -0.5 * RDSQR )
               END IF
 !
-!/EXPORTWWM     FACTOR = 1.
+#ifdef W3_EXPORTWWM
+     FACTOR = 1.
+#endif // W3_EXPORTWWM
             VA(:,JSEA) = FACTOR * E21
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'JSEA=', JSEA, '  FACTOR=', FACTOR
-!/DEBUGINIT     WRITE(740+IAPROC,*) '   sum(E21)=', sum(E21)
-!/DEBUGINIT     WRITE(740+IAPROC,*) '   sum(VA)=', sum(VA(:,JSEA))
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'JSEA=', JSEA, '  FACTOR=', FACTOR
+     WRITE(740+IAPROC,*) '   sum(E21)=', sum(E21)
+     WRITE(740+IAPROC,*) '   sum(VA)=', sum(VA(:,JSEA))
+#endif // W3_DEBUGINIT
 !
 
 !
@@ -519,8 +581,12 @@
 
           HPQMAX=-999.0
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             IF(HPFAC(IY,IX).GT.HPQMAX)THEN
@@ -531,8 +597,12 @@
 
           HPQMAX=-999.0
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             IF(HQFAC(IY,IX).GT.HPQMAX)THEN
@@ -572,9 +642,11 @@
             E1(IK) = EJ5P (FR, ALFA, FP, YLN, SIGA, SIGB )
             END DO
 !
-!/O4          IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                   &
-!/O4                       (NDSO, NK, E1, SIG(1:), '  ', 18, 0.,      &
-!/O4                       'E(f)', ' ', 'TEST 1-D')
+#ifdef W3_O4
+          IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                   &
+                       (NDSO, NK, E1, SIG(1:), '  ', 18, 0.,      &
+                       'E(f)', ' ', 'TEST 1-D')
+#endif // W3_O4
 !
 ! 5.c 2-D energy spectrum.
 !     Factor 2pi to go to E(sigma,theta)
@@ -604,17 +676,21 @@
               END DO
             END DO
 !
-!/O5          ALLOCATE ( E2OUT(NK,NTH) )
-!/O5          DO ITH=1, NTH
-!/O5            DO IK=1, NK
-!/O5              E2OUT(IK,ITH) = TPI * E2(ITH,IK)
-!/O5              END DO
-!/O5            END DO
+#ifdef W3_O5
+          ALLOCATE ( E2OUT(NK,NTH) )
+          DO ITH=1, NTH
+            DO IK=1, NK
+              E2OUT(IK,ITH) = TPI * E2(ITH,IK)
+              END DO
+            END DO
+#endif // W3_O5
 !
-!/O5          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
-!/O5                   (NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', 1.,   &
-!/O5                    0., 0.0001, 'E(f,theta)', 'm2s', 'TEST 2-D')
-!/O5          DEALLOCATE ( E2OUT )
+#ifdef W3_O5
+          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
+                   (NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', 1.,   &
+                    0., 0.0001, 'E(f,theta)', 'm2s', 'TEST 2-D')
+          DEALLOCATE ( E2OUT )
+#endif // W3_O5
 !
 ! 5.d Distribute over grid.
 !
@@ -626,8 +702,12 @@
 !
           DO JSEA=1, NSEAL
 !
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             IF (GTYPE .EQ. UNGTYPE) THEN 
                IX     = MAPSF(ISEA,1)
                X      = XYB(IX,1)
@@ -681,16 +761,22 @@
 !
           FINP = FINP * FACS / TPI
 !
-!/O5          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
-!/O5                  (NDSO, NK, NK, NTH, FINP, SIG(1:), ' ', TPI,    &
-!/O5                   0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+#ifdef W3_O5
+          IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
+                  (NDSO, NK, NK, NTH, FINP, SIG(1:), ' ', TPI,    &
+                   0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+#endif // W3_O5
 !
 ! 7.c Distribute over grid.
 !
           DO JSEA=1, NSEAL
 !
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
             DO IK=1, NK
               DO ITH=1, NTH
                 VA(ITH+(IK-1)*NTH,JSEA) = FINP(IK,ITH)
@@ -710,60 +796,96 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9.  Convert E(sigma) to N(k)
 !
-!/DEBUGINIT       WRITE(740+IAPROC,*) 'ITYPE=', ITYPE
+#ifdef W3_DEBUGINIT
+       WRITE(740+IAPROC,*) 'ITYPE=', ITYPE
+#endif // W3_DEBUGINIT
       IF ( ITYPE.NE.3 .AND. ITYPE.NE.5 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,990)
 !
-!/O6          ALLOCATE ( HSIG(NX,NY) )
-!/O6          HSIG   = 0.
+#ifdef W3_O6
+          ALLOCATE ( HSIG(NX,NY) )
+          HSIG   = 0.
+#endif // W3_O6
 !
-!/DEBUGINIT       WRITE(740+IAPROC,*) 'Doing rescaling operation'
+#ifdef W3_DEBUGINIT
+       WRITE(740+IAPROC,*) 'Doing rescaling operation'
+#endif // W3_DEBUGINIT
           DO JSEA=1, NSEAL
-!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD            ISEA   = JSEA
-!/DEBUGINIT       WRITE(740+IAPROC,*) ' rescal ISEA=', ISEA, ' JSEA=', JSEA
+#ifdef W3_DIST
+            ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif // W3_DIST
+#ifdef W3_SHRD
+            ISEA   = JSEA
+#endif // W3_SHRD
+#ifdef W3_DEBUGINIT
+       WRITE(740+IAPROC,*) ' rescal ISEA=', ISEA, ' JSEA=', JSEA
+#endif // W3_DEBUGINIT
             DEPTH  = MAX ( DMIN , -ZB(ISEA) )
-!/O6            ETOT   = 0.
+#ifdef W3_O6
+            ETOT   = 0.
+#endif // W3_O6
             DO IK=1, NK
               CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
-!/O6              E1I    = 0.
+#ifdef W3_O6
+              E1I    = 0.
+#endif // W3_O6
               DO ITH=1, NTH
-!/O6                E1I    = E1I + VA(ITH+(IK-1)*NTH,JSEA)
+#ifdef W3_O6
+                E1I    = E1I + VA(ITH+(IK-1)*NTH,JSEA)
+#endif // W3_O6
                 VA(ITH+(IK-1)*NTH,JSEA) = VA(ITH+(IK-1)*NTH,JSEA) *   &
                                                CG / SIG(IK)
                 END DO
-!/O6              ETOT   = ETOT + E1I*DSIP(IK)
+#ifdef W3_O6
+              ETOT   = ETOT + E1I*DSIP(IK)
+#endif // W3_O6
               END DO
-!/O6            IX     = MAPSF(ISEA,1)
-!/O6            IY     = MAPSF(ISEA,2)
-!/O6            HSIG(IX,IY) = 4. * SQRT ( ETOT * DTH )
-!/EXPORTWWM     IF (JSEA .eq. 1) THEN
-!/EXPORTWWM       DO ITH=1,NTH
-!/EXPORTWWM         DO IK=1,NK
-!/EXPORTWWM           ISPEC = ITH + NTH * (IK-1)
-!/EXPORTWWM           WRITE(10003) ITH, IK, VA(ISPEC,JSEA)
-!/EXPORTWWM         END DO
-!/EXPORTWWM       END DO
-!/EXPORTWWM       WRITE(740+IAPROC,*) 'FINAL : sum(VA)=', sum(VA(:,JSEA))
-!/EXPORTWWM     END IF
+#ifdef W3_O6
+            IX     = MAPSF(ISEA,1)
+            IY     = MAPSF(ISEA,2)
+            HSIG(IX,IY) = 4. * SQRT ( ETOT * DTH )
+#endif // W3_O6
+#ifdef W3_EXPORTWWM
+     IF (JSEA .eq. 1) THEN
+       DO ITH=1,NTH
+         DO IK=1,NK
+           ISPEC = ITH + NTH * (IK-1)
+           WRITE(10003) ITH, IK, VA(ISPEC,JSEA)
+         END DO
+       END DO
+       WRITE(740+IAPROC,*) 'FINAL : sum(VA)=', sum(VA(:,JSEA))
+     END IF
+#endif // W3_EXPORTWWM
           END DO
 !
-!/O6          ALLOCATE ( MAPO(NX,NY) )
-!/O6          DO IX=1, NX
-!/O6            DO IY=1, NY
-!/O6              MAPO(IX,IY) = MAPSTA(IY,IX)
-!/O6              END DO
-!/O6            END DO
+#ifdef W3_O6
+          ALLOCATE ( MAPO(NX,NY) )
+          DO IX=1, NX
+            DO IY=1, NY
+              MAPO(IX,IY) = MAPSTA(IY,IX)
+              END DO
+            END DO
+#endif // W3_O6
 !
-!/MPI      IF ( NAPROC .EQ. 1 ) THEN
-!/O6          NSX    = 1 + NX/35
-!/O6          NSY    = 1 + NY/35
-!/O6!/DEBUGINIT         Print *, 'Before call to PRTBLK'
-!/O6          IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
-!/O6                      (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
-!/O6                       1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
-!/O6!/DEBUGINIT         Print *, 'After call to PRTBLK'
-!/MPI        END IF
+#ifdef W3_MPI
+      IF ( NAPROC .EQ. 1 ) THEN
+#endif // W3_MPI
+#ifdef W3_O6
+          NSX    = 1 + NX/35
+          NSY    = 1 + NY/35
+#ifdef W3_DEBUGINIT
+         Print *, 'Before call to PRTBLK'
+#endif // W3_DEBUGINIT
+          IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
+                      (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
+                       1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
+#ifdef W3_DEBUGINIT
+         Print *, 'After call to PRTBLK'
+#endif // W3_DEBUGINIT
+#endif // W3_O6
+#ifdef W3_MPI
+        END IF
+#endif // W3_MPI
 !
         END IF
 !
@@ -771,16 +893,20 @@
 !10.  Write restart file.
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,995)
-!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
-!/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-!/DEBUGINIT      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+      WRITE(740+IAPROC,*) 'Before call to W3IORS'
+      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL W3IORS ( INXOUT, NDSR, SIG(NK) )
-!/DEBUGINIT      WRITE(740+IAPROC,*) 'Before call to W3IORS'
-!/DEBUGINIT      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-!/DEBUGINIT      DO ISEA=1,NSEA
-!/DEBUGINIT        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VA)=', sum(VA(:,ISEA))
-!/DEBUGINIT      END DO
-!/DEBUGINIT      FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+      WRITE(740+IAPROC,*) 'Before call to W3IORS'
+      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
+      DO ISEA=1,NSEA
+        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VA)=', sum(VA(:,ISEA))
+      END DO
+      FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
 !
       GOTO 888
 !
@@ -798,13 +924,17 @@
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 12 )
 !
-!/DIST  803 CONTINUE
-!/DIST      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) NSEA, NAPROC
-!/DIST      CALL EXTCDE ( 13 )
+#ifdef W3_DIST
+  803 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) NSEA, NAPROC
+      CALL EXTCDE ( 13 )
+#endif // W3_DIST
 !
   888 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
-!/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
+#ifdef W3_MPI
+      CALL MPI_FINALIZE  ( IERR_MPI )
+#endif // W3_MPI
 !
 ! Formats
 !
@@ -883,9 +1013,11 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
                '     ILLEGAL TYPE, ITYPE =',I4/)
 !
-!/DIST 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
-!/DIST               '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/ &
-!/DIST               '     NSEA, NAPROC =',2I8/)
+#ifdef W3_DIST
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
+               '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/ &
+               '     NSEA, NAPROC =',2I8/)
+#endif // W3_DIST
 !/
 !/ End of W3STRT ----------------------------------------------------- /
 !/

@@ -66,14 +66,20 @@ module yowfunction
     !
     ! Computing ListNP and ListNPA
     !
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 1'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     allocate(ListNP(NAPROC), ListNPA(NAPROC), iVect(2), stat=istat)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 2'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (istat /= 0) CALL PDLIB_ABORT(1)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 3'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (IAPROC .eq. 1) THEN
       ListNP(1)=np
       ListNPA(1)=npa
@@ -94,31 +100,43 @@ module yowfunction
       CALL MPI_RECV(ListNPA,NAPROC,MPI_INTEGER, 0, 21, MPI_COMM_WCMP, istatus, ierr)
     END IF
     deallocate(iVect)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 4'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     !
     ! ListIPLG
     !
     sumNP=sum(ListNPA)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 5, sumNP=', sumNP
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 5, sumNP=', sumNP
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     allocate(ListIPLG(sumNP), stat=istat)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 6'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 6'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (istat /= 0) CALL PDLIB_ABORT(2)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 7'
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, NAPROC=', NAPROC, ' NTPROC=', NTPROC
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 7'
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, NAPROC=', NAPROC, ' NTPROC=', NTPROC
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (IAPROC .eq. 1) THEN
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Main node 1'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Main node 1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       idx=0
       DO IP=1,NPA
         idx=idx+1
         ListIPLG(IP)=iplg(IP)
       END DO
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Main node 2'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Main node 2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       DO IPROC=2,NAPROC
         len=ListNPA(IPROC)
         allocate(iVect(len), stat=istat)
@@ -130,29 +148,45 @@ module yowfunction
         END DO
         deallocate(iVect)
       END DO
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Main node 3'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Main node 3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       DO IPROC=2,NAPROC
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before mpi_send IPROC=', IPROC
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before mpi_send IPROC=', IPROC
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
         CALL MPI_SEND(ListIPLG, sumNP,MPI_INTEGER, iProc-1, 271, MPI_COMM_WCMP, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'After mpi_send IPROC=', IPROC
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'After mpi_send IPROC=', IPROC
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       END DO
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Main node 4'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Main node 4'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     ELSE
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Peripheral node 1'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Peripheral node 1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL MPI_SEND(iplg, npa,MPI_INTEGER, 0, 269, MPI_COMM_WCMP, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Peripheral node 2'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Peripheral node 2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL MPI_RECV(ListIPLG,sumNP,MPI_INTEGER, 0, 271, MPI_COMM_WCMP, istatus, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Peripheral node 3'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Peripheral node 3'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     END IF
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 8'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 8'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
   END SUBROUTINE
 !**********************************************************************
 !*                                                                    *
@@ -166,52 +200,80 @@ module yowfunction
     IMPLICIT NONE
     INCLUDE "mpif.h"
     INTEGER sumNP, iProc, ierr, istat
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before ComputeListNP_ListNPA_Kernel'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before ComputeListNP_ListNPA_Kernel'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (IAPROC .le. NAPROC) THEN
       CALL ComputeListNP_ListNPA_ListIPLG_Kernel    
     END IF
-!/DEBUGINIT     WRITE(740+IAPROC,*) ' After ComputeListNP_ListNPA_Kernel'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) ' After ComputeListNP_ListNPA_Kernel'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     IF (IAPROC .eq. 1) THEN
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Doing the send'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Doing the send'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       sumNP=sum(ListNPA)
       DO iProc=NAPROC+1,NTPROC
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Loop state 1, iProc=', iProc
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Loop state 1, iProc=', iProc
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
         CALL MPI_SEND(ListNP, NAPROC,MPI_INTEGER, iProc-1, 20, MPI_COMM_WAVE, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Loop state 2, iProc=', iProc
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Loop state 2, iProc=', iProc
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
         CALL MPI_SEND(ListNPA,NAPROC,MPI_INTEGER, iProc-1, 21, MPI_COMM_WAVE, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Loop state 3, iProc=', iProc
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Loop state 3, iProc=', iProc
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
         CALL MPI_SEND(ListIPLG, sumNP,MPI_INTEGER, iProc-1, 271, MPI_COMM_WAVE, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Loop state 4, iProc=', iProc
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Loop state 4, iProc=', iProc
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       END DO
     END IF
     IF (IAPROC .gt. NAPROC) THEN
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before allocation'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before allocation'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       allocate(ListNP(NAPROC), ListNPA(NAPROC), stat=istat)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before receiving of data 1'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before receiving of data 1'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL MPI_RECV(ListNP ,NAPROC,MPI_INTEGER, 0, 20, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before receiving of data 2'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before receiving of data 2'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL MPI_RECV(ListNPA,NAPROC,MPI_INTEGER, 0, 21, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before computing sumNP'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before computing sumNP'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       sumNP=sum(ListNPA)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before allocating ListIPLG'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before allocating ListIPLG'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       allocate(ListIPLG(sumNP), stat=istat)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'Before receiving ListIPLG'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'Before receiving ListIPLG'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
       CALL MPI_RECV(ListIPLG,sumNP,MPI_INTEGER, 0, 271, MPI_COMM_WAVE, istatus, ierr)
-!/DEBUGINIT     WRITE(740+IAPROC,*) 'After receiving ListIPLG'
-!/DEBUGINIT     FLUSH(740+IAPROC)
+#ifdef W3_DEBUGINIT
+     WRITE(740+IAPROC,*) 'After receiving ListIPLG'
+     FLUSH(740+IAPROC)
+#endif // W3_DEBUGINIT
     END IF
     END SUBROUTINE
 !**********************************************************************

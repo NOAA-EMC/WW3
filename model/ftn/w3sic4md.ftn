@@ -280,10 +280,18 @@
       USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, &
                           MUDT, MUDV, MUDD, INFLAGS2
 
-!/T      USE W3ODATMD, ONLY: NDST
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T0      USE W3ARRYMD, ONLY: PRT2DS
-!/T1      USE W3ARRYMD, ONLY: OUTMAT
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif // W3_T
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif // W3_S
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif // W3_T0
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif // W3_T1
 !
       IMPLICIT NONE
 !/
@@ -296,9 +304,13 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER                 :: ITH
-!/T0      REAL                    :: DOUT(NK,NTH)
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif // W3_S
+#ifdef W3_T0
+      INTEGER                 :: ITH
+      REAL                    :: DOUT(NK,NTH)
+#endif // W3_T0
       INTEGER                 :: IKTH, IK, ITH, IC4METHOD, IFC
       REAL                    :: D1D(NK), EB(NK)
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
@@ -314,7 +326,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIC4')
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIC4')
+#endif // W3_S
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
@@ -363,10 +377,14 @@
       IF (INFLAGS2(-3)) ICECOEF5 = ICEP5(IX,IY)
 
 ! Borrow from Smud (error if BT8 or BT9)
-!/BT8    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
-!/BT8    CALL EXTCDE(202)
-!/BT9    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
-!/BT9    CALL EXTCDE(202)
+#ifdef W3_BT8
+    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
+    CALL EXTCDE(202)
+#endif // W3_BT8
+#ifdef W3_BT9
+    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
+    CALL EXTCDE(202)
+#endif // W3_BT9
       IF (INFLAGS2(-2)) ICECOEF6 = MUDD(IX,IY) ! a.k.a. MDN
       IF (INFLAGS2(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
       IF (INFLAGS2(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
@@ -386,7 +404,9 @@
 !
 !         (none)
 !
-!/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+#ifdef W3_T38
+        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+#endif // W3_T38
 !
 ! 1.  Make calculations ---------------------------------------------- /
 !                
@@ -522,23 +542,31 @@
 !
 ! ... Test output of arrays
 !
-!/T0      DO IK=1, NK
-!/T0        DO ITH=1, NTH
-!/T0          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-!/T0          END DO
-!/T0        END DO
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+          END DO
+        END DO
+#endif // W3_T0
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
-!/T0                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
+                         0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
+#endif // W3_T0
 !
-!/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sice')
+#endif // W3_T1
 !
 ! Formats
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC4 : '/               &
                '     ',A,' REQUIRED BUT NOT SELECTED'/)
 !
-!/T 9000 FORMAT (' TEST W3SIC4 : DEPTH,ICECOEF1  : ',2E10.3)
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SIC4 : DEPTH,ICECOEF1  : ',2E10.3)
+#endif // W3_T
 !/
 !/ End of W3SIC4 --------------------------------------------------- /
 !/
