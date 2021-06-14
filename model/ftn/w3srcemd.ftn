@@ -333,7 +333,6 @@
 !
 !     !/TR0   No triad interactions.                     ( Choose one )
 !     !/TR1   Lumped Triad Approximation (LTA).
-!     !/TRX   User-defined triad interactions.
 !
 !     !/BS0   No bottom scattering.                      ( Choose one )
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
@@ -414,7 +413,6 @@
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/TR1      USE W3STR1MD
-!/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
 !/BSX      USE W3SBSXMD
@@ -500,7 +498,6 @@
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
-!/TRX                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
@@ -813,7 +810,6 @@
 !
 !/PDLIB    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/TR1        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
-!/TRX        CALL W3STRX
 !/PDLIB    ENDIF
 !
 ! 2.c Dissipation... except for ST4
@@ -930,7 +926,6 @@
                  + VSDS(IS) + VSBT(IS) 
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/TR1          VS(IS) = VS(IS) + VSTR(IS)
-!/TRX          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/UOST         VS(IS) = VS(IS) + VSUO(IS)
@@ -938,7 +933,6 @@
                  + VDDS(IS) + VDBT(IS) 
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/TR1          VD(IS) = VD(IS) + VDTR(IS)
-!/TRX          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
 !/BSX          VD(IS) = VD(IS) + VDBS(IS)
 !/UOST         VD(IS) = VD(IS) + VDUO(IS)
@@ -985,8 +979,6 @@
 !/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
-!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
-!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
 !/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)

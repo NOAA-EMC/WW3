@@ -346,7 +346,6 @@
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
 !/DBX      TNAME4 = 'Experimental                  '
 !/TR0      TNAME5 = 'Not defined                   '
-!/TRX      TNAME5 = 'Experimental                  '
 !/BS0      TNAME6 = 'Not defined                   '
 !/BSX      TNAME6 = 'Experimental                  '
 !/PR0      TNAMEP = 'No propagation                '

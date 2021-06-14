@@ -470,7 +470,6 @@
 !     !/MLIM  Mich-style limiter.
 !
 !     !/TR0   No triad interactions included.
-!     !/TRX   Open slot.
 !
 !     !/BS0   No bottom scattering included.
 !     !/BS1   Routines from F. Ardhuin.
@@ -1265,7 +1264,6 @@
 !/TR0      NRTR   = NRTR + 1
 !/TR0      FLTR   = .FALSE.
 !/TR1      NRTR   = NRTR + 1
-!/TRX      NRTR   = NRTR + 1
 !
 !/BS0      NRBS   = NRBS + 1
 !/BS0      FLBS   = .FALSE.
@@ -1960,7 +1958,6 @@
 ! 6.i Define Str.
 !
 !/TR0      WRITE (NDSO,930)
-!/TRX      WRITE (NDSO,930)
 !
 ! 6.j Define Sbs.
 !
@@ -5748,7 +5745,6 @@
 !/DBX  928 FORMAT (/'  Experimental depth-induced breaking.'/)
 !
 !/TR0  930 FORMAT (/'  Triad interactions not defined.'/)
-!/TRX  930 FORMAT (/'  Experimental triad interactions.'/)
 !
 !/BS0  932 FORMAT (/'  Bottom scattering not defined.'/)
 !/BS1  932 FORMAT (/'  Experimental bottom scattering (F. Ardhuin).'/)
