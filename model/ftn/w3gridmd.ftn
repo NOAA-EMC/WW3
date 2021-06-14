@@ -465,7 +465,6 @@
 !
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
-!     !/DBX   Open slot.
 !     !/MLIM  Mich-style limiter.
 !
 !     !/TR0   No triad interactions included.
@@ -1253,7 +1252,6 @@
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
 !/DB1      NRDB   = NRDB + 1
-!/DBX      NRDB   = NRDB + 1
 !
 !/TR0      NRTR   = NRTR + 1
 !/TR0      FLTR   = .FALSE.
@@ -1913,7 +1911,6 @@
 ! 6.h Define Sdb.
 !
 !/DB0      WRITE (NDSO,928)
-!/DBX      WRITE (NDSO,928)
 !
 !/DB1      BJALFA = 1.
 !/DB1      BJGAM  = 0.73
@@ -5723,8 +5720,6 @@
 !/DB1               '       gamma                       :',F8.3)
 !/DB1 2928 FORMAT ( '  &SDB1 BJALFA =',F7.3,', BJGAM =',F7.3,         &
 !/DB1               ', BJFLAG = ',A,' /')
-!
-!/DBX  928 FORMAT (/'  Experimental depth-induced breaking.'/)
 !
 !/TR0  930 FORMAT (/'  Triad interactions not defined.'/)
 !

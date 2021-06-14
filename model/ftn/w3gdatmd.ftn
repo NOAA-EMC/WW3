@@ -839,7 +839,6 @@
 !/DB0        REAL                  :: DUMMY
 !/DB1        REAL                  :: SDBC1, SDBC2
 !/DB1        LOGICAL               :: FDONLY
-!/DBX        REAL                  :: DUMMY
       END TYPE SDBP
 
 !/UOST      TYPE UOSTP

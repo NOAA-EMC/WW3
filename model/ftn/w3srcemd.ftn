@@ -328,7 +328,6 @@
 !             viscoelastic sea ice model (Mosig et al. 2015).
 !     !/DB0   No depth-limited breaking.                 ( Choose one )
 !     !/DB1   Battjes-Janssen depth-limited breaking.
-!     !/DBX   User-defined bottom friction.
 !
 !     !/TR0   No triad interactions.                     ( Choose one )
 !     !/TR1   Lumped Triad Approximation (LTA).
@@ -405,7 +404,6 @@
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY : IS2PARS
 !/DB1      USE W3SDB1MD
-!/DBX      USE W3SDBXMD
 !/TR1      USE W3STR1MD
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
@@ -489,7 +487,6 @@
 !/IC4                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC5                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
-!/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
@@ -824,7 +821,6 @@
 !/PDLIB      IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/DB1          CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
 !/DB1                                                   LBREAK, VSDB, VDDB )
-!/DBX          CALL W3SDBX
 !/PDLIB      ENDIF
 !/PDLIB    ENDIF
 !
@@ -962,8 +958,6 @@
 !/DEBUGSRC!/ST6          WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
 !/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
 !/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
-!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
-!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)

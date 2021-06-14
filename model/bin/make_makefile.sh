@@ -194,7 +194,7 @@
 #sort:s_db:
       s_db   ) TY='one'
                ID='depth-induced breaking'
-               OK='DB0 DB1 DBX' ;;
+               OK='DB0 DB1' ;;
 #sort:miche:
       miche  ) TY='upto1'
                ID='Miche style limiter'
@@ -688,8 +688,6 @@
    DB0) db=$NULL
         dbx=$NULL ;;
    DB1) db='w3sdb1md'
-        dbx=$NULL ;;
-   DBX) db='w3sdbxmd'
         dbx=$NULL ;;
   esac
 
@@ -1285,7 +1283,6 @@
          'W3SBT9MD'     ) modtest=w3sbt9md.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
-         'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STR1MD'     ) modtest=w3str1md.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;
          'W3SIC1MD'     ) modtest=w3sic1md.o ;;

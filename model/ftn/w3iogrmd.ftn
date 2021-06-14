@@ -343,7 +343,6 @@
 !/IC5      TNAMEI = 'Ice sink term (eff. medium)   '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
-!/DBX      TNAME4 = 'Experimental                  '
 !/TR0      TNAME5 = 'Not defined                   '
 !/BS0      TNAME6 = 'Not defined                   '
 !/PR0      TNAMEP = 'No propagation                '

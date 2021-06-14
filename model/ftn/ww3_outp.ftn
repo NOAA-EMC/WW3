@@ -1080,7 +1080,6 @@
 !/BT9      USE W3SBT9MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
-!/DBX      USE W3SDBXMD
 !/BS1      USE W3SBS1MD
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY: IICEDISP
@@ -1644,7 +1643,6 @@
 !
 !/DB1                    CALL W3SDB1 ( I, A, DEPTH, EMEAN, FMEAN,    &
 !/DB1                                  WNMEAN, CG, LBREAK, XDB, DIA )
-!/DBX                    CALL W3SDBX
                   END IF
                 IF ( FLSRCE(5) ) THEN
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
