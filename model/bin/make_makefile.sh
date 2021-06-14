@@ -93,7 +93,7 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in mach nco grib c90 nec netcdf scrip scripnc \
+  for type in mach nco grib netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection \
@@ -114,17 +114,7 @@
 #sort:grib:
       grib   ) TY='one'
                ID='GRIB package'
-               OK='NOGRB NCEP1 NCEP2' ;;
-#sort:c90:
-      c90    ) TY='upto1'
-               ID='Cray C90 compiler directives'
-               TS='C90'
-               OK='C90' ;;
-#sort:nec:
-      nec    ) TY='upto1'
-               ID='NEC compiler directives'
-               TS='NEC'
-               OK='NEC' ;;
+               OK='NOGRB NCEP2' ;;
 #sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
@@ -157,7 +147,7 @@
       thread ) TY='upto2'
                ID='directive controlled threading'
                TS='OMP'
-               OK='OMPG OMPX OMPH' ;;
+               OK='OMPG OMPH' ;;
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
@@ -507,25 +497,12 @@
     esac
   done
 
-  if [ -n "$thread1" ] && [ -z "$thread2" ]
-  then
-      echo ' '
-      echo "   *** !/OMPX or !/OMPH has to be used in combination with !/OMPG"
-      echo ' ' ; exit 6
-  fi
 
   if [ -n "$thread2" ] && [ "$thread1" != 'OMPG' ]
   then
       echo ' '
-      echo "   *** !/OMPX or !/OMPH has to be used in combination with !/OMPG"
+      echo "   *** !/OMPH has to be used in combination with !/OMPG"
       echo ' ' ; exit 6
-  fi
-
-  if [ "$thread2" = 'OMPX' ] && [ "$shared" != 'SHRD' ]
-  then
-      echo ' '
-      echo "   *** !/OMPX has to be used in combination with !/SHRD"
-      echo ' ' ; exit 7
   fi
 
   if [ "$thread2" = 'OMPH' ] && [ "$mpp" != 'MPI' ]
@@ -545,7 +522,7 @@
   if [ -n "$b4b" ] && [ -z "$thread2" ]
   then
       echo ' '
-      echo "   *** !/B4B should be used in combination with !/OMPG, !/OMPH or !/OMPX"
+      echo "   *** !/B4B should be used in combination with !/OMPG or !/OMPH"
       echo ' ' ; exit 9
   fi
 
@@ -816,7 +793,7 @@
   then
       echo ' '
       echo "   *** The present version of the WRT interactions"
-      echo "       cannot be run under OpenMP (OMPG OMPX, OMPH). Use"
+      echo "       cannot be run under OpenMP (OMPG, OMPH). Use"
       echo "       SHRD or MPI options instead.                    ***"
       echo ' ' ; exit 12
   fi
