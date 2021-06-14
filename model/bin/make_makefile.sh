@@ -151,7 +151,7 @@
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+               OK='PR0 PR1 PR2 PR3 SMC' ;;
 #sort:prop:
       prop   ) TY='one'
                ID='propagation scheme'
