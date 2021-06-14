@@ -46,7 +46,6 @@
 !      INSNL1    Subr. W3SNL1MD Initialization of the DIA.
 !      INSNL2    Subr. W3SNL2MD Initialization of WRT.
 !      INSNL3    Subr. W3SNL3MD Initialization of GMD.
-!      INSNLX    Subr. W3SNLXMD Initialization of exp. DIA.
 !      INSNLS    Subr. W3SNLSMD Initialization of nonlinear `smoother'.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
@@ -233,7 +232,6 @@
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
 !/NL3      USE W3SNL3MD, ONLY: INSNL3
-!/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
       USE W3TIMEMD, ONLY: CALTYPE
@@ -330,7 +328,6 @@
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
 !/NL3      TNAME2 = 'Generalized Multiple DIA      '
 !/NL4      TNAME2 = 'Two Scaled Approximation      '
-!/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
 !/BT4      TNAME3 = 'SHOWEX                        '
@@ -1201,7 +1198,6 @@
 !
 !/NL1      IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
 !/NL3      IF ( .NOT. WRITE ) CALL INSNL3
-!/NLX      IF ( .NOT. WRITE ) CALL INSNLX
 !/NLS      IF ( .NOT. WRITE ) CALL INSNLS
 !
 ! Layered barriers needed for file management in xnl_init

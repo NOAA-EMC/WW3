@@ -440,7 +440,6 @@
 !     !/NL2   Exact interactions (WRT).
 !     !/NL3   Generalized Multiple DIA (GMD).
 !     !/NL4   Two Scale Approximation
-!     !/NLX   Open slot.
 !     !/NLS   Snl based HF filter.
 !
 !     !/BT0   No bottom friction included.
@@ -1222,7 +1221,6 @@
 !/NL2      NRNL   = NRNL + 1
 !/NL3      NRNL   = NRNL + 1
 !/NL4      NRNL   = NRNL + 1
-!/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
 !/BT0      FLBT   = .FALSE.
@@ -5599,8 +5597,6 @@
 !/NL4               '   Alternate loops (1=no,2=yes)          : ',I2/ &
 !/NL4               '   (To speed up computation) ')
 !/NL4 2922 FORMAT ( '  &SNL4 ITSA =',I2,', IALT =',I2 )
-!
-!/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
 !
 !/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
 !/NLS        ' --------------------------------------------------')

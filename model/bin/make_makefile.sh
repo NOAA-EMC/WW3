@@ -181,7 +181,7 @@
 #sort:s_nl:
       s_nl   ) TY='one'
                ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NL4 NLX' ;;
+               OK='NL0 NL1 NL2 NL3 NL4' ;;
 #sort:snls:
       snls   ) TY='upto1'
                ID='quadruplet smoother'
@@ -665,8 +665,6 @@
         nlx='w3snl3md' ;;
    NL4) nl='w3snl4md'
         nlx='w3snl4md' ;;
-   NLX) nl='w3snlxmd'
-        nlx='w3snlxmd' ;;
   esac
 
   case $snls in
@@ -1269,7 +1267,6 @@
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
          'W3SNL3MD'     ) modtest=w3snl3md.o ;;
          'W3SNL4MD'     ) modtest=w3snl4md.o ;;
-         'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
          'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'M_XNLDATA'    ) modtest=mod_xnl4v5.o ;;
          'SERV_XNL4V5'  ) modtest=serv_xnl4v5.o ;;

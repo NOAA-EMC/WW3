@@ -818,7 +818,6 @@
 !/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
 !/NL3                                 SNLCD(:), SNLCS(:)
 !/NL4        INTEGER               :: ITSA, IALT
-!/NLX        REAL                  :: DUMMY
 !/NLS        INTEGER               :: NTHX, NFRX, NSPL, NSPH
 !/NLS        REAL                  :: CNLSA, CNLSC, CNLSFM,                &
 !/NLS                                 CNLSC1, CNLSC2, CNLSC3
