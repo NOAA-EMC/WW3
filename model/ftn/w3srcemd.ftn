@@ -292,7 +292,6 @@
 !     !/FLX4  Hwang (2011) stress computation (2nd order).
 !
 !     !/LN0   No linear input.                           ( Choose one )
-!     !/LNX   User-defined bottom friction.
 !
 !     !/ST0   No input and dissipation.                  ( Choose one )
 !     !/ST1   WAM-3 input and dissipation.
@@ -370,7 +369,6 @@
 !/FLX3      USE W3FLX3MD
 !/FLX4      USE W3FLX4MD
 !/LN1      USE W3SLN1MD
-!/LNX      USE W3SLNXMD
 !/ST0      USE W3SRC0MD
 !/ST1      USE W3SRC1MD
 !/ST2      USE W3SRC2MD
@@ -764,7 +762,6 @@
 ! 2.a Input.
 !
 !/LN1        CALL W3SLN1 (       WN1, FHIGH, USTAR, U10DIR , VSLN       )
-!/LNX        CALL W3SLNX
 !
 !/ST1        CALL W3SIN1 ( SPEC, WN2, USTAR, U10DIR ,        VSIN, VDIN )
 !/ST2        CALL W3SIN2 ( SPEC, CG1, WN2, U10ABS, U10DIR, CD, Z0,        &

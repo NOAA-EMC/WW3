@@ -761,7 +761,6 @@
 !/SEED        REAL                  :: DUMMY
 !/LN0        REAL                  :: DUMMY
 !/LN1        REAL                  :: SLNC1, FSPM, FSHF
-!/LNX        REAL                  :: DUMMY
       END TYPE SLNP
 !
       TYPE SRCP

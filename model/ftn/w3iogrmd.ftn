@@ -315,7 +315,6 @@
 !/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
 !/LN0      TNAME0 = 'Not defined                   '
 !/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '
-!/LNX      TNAME0 = 'Experimental                  '
 !/ST0      TNAME1 = 'Not defined                   '
 !/ST1      TNAME1 = 'WAM cycles 1 through 3        '
 !/ST2      TNAME1 = 'Tolman and Chalikov (1996)    '

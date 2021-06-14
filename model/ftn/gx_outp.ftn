@@ -623,7 +623,6 @@
 !/FLX3      USE W3FLX3MD
 !/FLX4      USE W3FLX4MD
 !/LN1      USE W3SLN1MD
-!/LNX      USE W3SLNXMD
 !/ST1      USE W3SRC1MD
 !/ST2      USE W3SRC2MD
 !/ST3      USE W3SRC3MD
@@ -960,7 +959,6 @@
 !
             IF ( FLSRCE(2) ) THEN
 !/LN1                CALL W3SLN1 ( WN, FHIGH, USTAR, UDIRR, XLN )
-!/LNX                CALL W3SLNX
 !
 !/ST1                CALL W3SIN1 (A, WN2, USTAR, UDIRR,      XWI, DIA )
 !/ST2                CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &

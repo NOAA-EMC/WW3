@@ -424,7 +424,6 @@
 !     !/SEED  'Seeding' of lowest frequency for sufficiently strong
 !             winds. Proxi for linear input.
 !     !/LN1   Cavaleri and Melanotte-Rizzoli with Tolman filter.
-!     !/LNX   Open slot.
 !
 !     !/ST0   No source terms included (input/dissipation)
 !     !/ST1   WAM-3 physics package.
@@ -1202,7 +1201,6 @@
 !/LN0      FLLIN  = .FALSE.
 !/SEED      NRLIN  = NRLIN + 1
 !/LN1      NRLIN  = NRLIN + 1
-!/LNX      NRLIN  = NRLIN + 1
 !
 !/ST0      NRSRCE = NRSRCE + 1
 !/ST0      FLINDS = .FALSE.
@@ -1375,7 +1373,6 @@
 !
 !/LN0      WRITE (NDSO,820)
 !/SEED      WRITE (NDSO,820)
-!/LNX      WRITE (NDSO,820)
 !
 !/LN1      CLIN   = 80.
 !/LN1      RFPM   =  1.
@@ -5471,8 +5468,6 @@
 !/LN1               '       Factor for fh in filter     :',F8.2/)
 !/LN1 2820 FORMAT ( '  &SLN1 CLIN =',F6.1,', RFPM =',F6.2,            &
 !/LN1               ', RFHF =',F6.2,' /')
-!
-!/LNX  820 FORMAT (/'  Experimental linear input.'/)
 !
 !/ST0  920 FORMAT (/'  Wind input not defined.'/)
 !

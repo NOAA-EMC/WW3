@@ -168,7 +168,7 @@
 #sort:s_ln:
       s_ln   ) TY='one'
                ID='linear input'
-               OK='LN0 SEED LN1 LNX' ;;
+               OK='LN0 SEED LN1' ;;
 #sort:source:
       source ) TY='one'
                ID='input/whitecapping'
@@ -575,8 +575,6 @@
    LN0) ln=$NULL
         lnx=$NULL ;;
    LN1) ln='w3sln1md'
-        lnx=$NULL ;;
-   LNX) ln='w3slnxmd'
         lnx=$NULL ;;
   esac
 
