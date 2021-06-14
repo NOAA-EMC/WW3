@@ -1239,7 +1239,6 @@
          'W3PRO1MD'     ) modtest=w3pro1md.o ;;
          'W3PRO2MD'     ) modtest=w3pro2md.o ;;
          'W3PRO3MD'     ) modtest=w3pro3md.o ;;
-         'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3UQCKMD'     ) modtest=w3uqckmd.o ;;
          'W3UNO2MD'     ) modtest=w3uno2md.o ;;
          'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
@@ -1250,14 +1249,12 @@
          'W3FLX3MD'     ) modtest=w3flx3md.o ;;
          'W3FLX4MD'     ) modtest=w3flx4md.o ;;
          'W3SLN1MD'     ) modtest=w3sln1md.o ;;
-         'W3SLNXMD'     ) modtest=w3slnxmd.o ;;
          'W3SRC0MD'     ) modtest=w3src0md.o ;;
          'W3SRC1MD'     ) modtest=w3src1md.o ;;
          'W3SRC2MD'     ) modtest=w3src2md.o ;;
          'W3SRC3MD'     ) modtest=w3src3md.o ;;
          'W3SRC4MD'     ) modtest=w3src4md.o ;;
          'W3SRC6MD'     ) modtest=w3src6md.o ;;
-         'W3SRCXMD'     ) modtest=w3srcxmd.o ;;
          'W3SNL1MD'     ) modtest=w3snl1md.o ;;
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
          'W3SNL3MD'     ) modtest=w3snl3md.o ;;
