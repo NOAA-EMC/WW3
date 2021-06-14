@@ -172,7 +172,7 @@
 #sort:source:
       source ) TY='one'
                ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
+               OK='ST0 ST1 ST2 ST3 ST4 ST6' ;;
 #sort:stab:
       stab   ) TY='upto1'
                ID='stability correction'
@@ -597,8 +597,6 @@
         stx='w3src4md' ;;
    ST6) st='w3src6md w3swldmd'
         stx='w3src6md' ;;
-   STX) st='w3srcxmd'
-        stx=$NULL ;;
   esac
 
   if [ "$stab" = 'STAB2' ] && [ "$s_inds" != 'ST2' ]

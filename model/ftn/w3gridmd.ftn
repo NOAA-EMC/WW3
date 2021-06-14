@@ -434,7 +434,6 @@
 !             Filipot & Ardhuin (2010) or Romero (2019)
 !     !/ST6   BYDRZ source term package featuring Donelan et al.
 !             (2006) input and Babanin et al. (2001,2010) dissipation.
-!     !/STX   Open slot.
 !
 !     !/NL0   No nonlinear interactions.
 !     !/NL1   Discrete interaction approximation (DIA).
@@ -1222,7 +1221,6 @@
 !/ST4      FLST4  = .TRUE.
 !/ST6      NRSRCE = NRSRCE + 1
 !/ST6      FLST6  = .TRUE.
-!/STX      NRSRCE = NRSRCE + 1
 !
 !/NL0      NRNL   = NRNL + 1
 !/NL0      FLNL   = .FALSE.
@@ -1407,7 +1405,6 @@
 ! 6.d.3 Exponential input
 !
 !/ST0      WRITE (NDSO,920)
-!/STX      WRITE (NDSO,920)
 !
 !/ST1      CINP   =    0.25
 !/ST2      ZWND   =   10.
@@ -1561,7 +1558,6 @@
 !/ST3      FACHF  = 5.
 !/ST4      FACHF  = 5.
 !/ST6      FACHF  = 5.
-!/STX      FACHF  = 5.
 !/NL2      IQTYPE =  2
 !/NL2      TAILNL = -FACHF
 !/NL2      NDEPTH =  0
@@ -1689,7 +1685,6 @@
 ! 6.f Define Sds.
 !
 !/ST0      WRITE (NDSO,924)
-!/STX      WRITE (NDSO,924)
 !
 !/ST1      CDIS   = -2.36E-5
 !/ST1      APM    =  3.02E-3
@@ -5568,8 +5563,6 @@
 !/ST6               '  frequency cut-off factor         :  ',F6.2/)
 !/ST6 2920 FORMAT ( '  &SIN6 SINA0 =', F6.3, ', SINWS =', F6.2, ', SINFC =', F6.2, ' /')
 !
-!/STX  920 FORMAT (/'  Experimental wind input.'/)
-!
 !/NL0  922 FORMAT (/'  Nonlinear interactions not defined.'/)
 !
 !/NL1  922 FORMAT (/'  Nonlinear interactions (DIA) ',A/                   &
@@ -5711,8 +5704,6 @@
 !/ST6  940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
 !/ST6               '   coefficient b1 ',A,                ' : ',E9.3/   )
 !/ST6 2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
-!
-!/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !
 !/BT0  926 FORMAT (/'  Bottom friction not defined.'/)
 !

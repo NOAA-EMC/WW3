@@ -1393,7 +1393,6 @@
 !/ST6      USE W3SRC6MD
 !/ST6      USE W3SWLDMD, ONLY : W3SWL6
 !/ST6      USE W3GDATMD, ONLY : SWL6S6
-!/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
@@ -1973,7 +1972,6 @@
 !/ST4                             DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST6                CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !/ST6                FHIGH  = SIG(NK)
-!/STX                CALL W3SPRX
 !
 !/FLX1                CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
 !/FLX1                              USTAR, USTD, Z0, CD )
@@ -2031,7 +2029,6 @@
 !/ST4                           TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
 !/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,    &
 !/ST6                           TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
-!/STX                    CALL W3SINX
             END IF
             IF ( FLSRCE(3) ) THEN
 !/NL1                    CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
@@ -2054,7 +2051,6 @@
 !/ST4                                  DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 !/ST6                    CALL W3SDS6 ( A, CG, WN, XDS, DIA )
 !/ST6                    IF (SWL6S6) CALL W3SWL6 ( A, CG, WN, XWL, DIA )
-!/STX                    CALL W3SDSX
 !
 !/DB1                    CALL W3SDB1 ( I, A, DEPTH, EMEAN, FMEAN, &
 !/DB1                                  WNMEAN, CG, LBREAK, XDB, DIA )

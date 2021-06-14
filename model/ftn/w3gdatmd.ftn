@@ -798,8 +798,6 @@
 !/ST6                                 SIN6WS, SIN6FC
 !/ST6        INTEGER               :: SDS6P1, SDS6P2
 !/ST6        LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
-!
-!/STX        REAL                  :: DUMMY
       END TYPE SRCP
 !
       TYPE SNLP

@@ -300,7 +300,6 @@
 !     !/ST3   WAM 4+ input and dissipation.
 !     !/ST4   Ardhuin et al. (2009, 2010)
 !     !/ST6   BYDB source terms after Babanin, Young, Donelan and Banner.
-!     !/STX   User-defined input and dissipation.
 !
 !     !/NL0   No nonlinear interactions.                 ( Choose one )
 !     !/NL1   Discrete interaction approximation.
@@ -390,7 +389,6 @@
 !/ST6      USE W3SRC6MD
 !/ST6      USE W3SWLDMD, ONLY : W3SWL6
 !/ST6      USE W3GDATMD, ONLY : SWL6S6
-!/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
@@ -798,7 +796,6 @@
 
 !/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD,     &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
-!/STX        CALL W3SINX
 !
 ! 2.b Nonlinear interactions.
 !
@@ -828,7 +825,6 @@
 !/DEBUGSRC!/ST4        END IF
 
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
-!/STX        CALL W3SDSX
 !
 !/PDLIB    IF (.NOT. FSSOURCE) THEN
 !/PDLIB      IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN

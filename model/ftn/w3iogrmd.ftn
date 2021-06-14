@@ -325,7 +325,6 @@
 !/ST3      TNAME1 = 'WAM cycle 4+                  '
 !/ST4      TNAME1 = 'Ardhuin et al. (2009+)        '
 !/ST6      TNAME1 = 'BYDB input and dissipation    '
-!/STX      TNAME1 = 'Experimental                  '
 !/NL0      TNAME2 = 'Not defined                   '
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
