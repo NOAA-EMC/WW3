@@ -1259,7 +1259,6 @@
 !
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.5'
 !/DEBUGINIT     FLUSH(740+IAPROC)
-!/NEC/!CDIR LOOPCNT=100000
       DO IS=0, NSEA
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'IS=', IS
 !/DEBUGINIT     FLUSH(740+IAPROC)
@@ -1271,7 +1270,6 @@
 !
 !/T1        WRITE (NDST,9051) IS, DEPTH
 !
-!/NEC/!CDIR LOOPCNT=100000
         DO IK=0, NK+1
 !
 !         Calculate wavenumbers and group velocities.
