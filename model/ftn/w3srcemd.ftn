@@ -335,7 +335,6 @@
 !
 !     !/BS0   No bottom scattering.                      ( Choose one )
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
-!     !/BSX   User-defined bottom scattering
 !
 !     !/XX0   No arbitrary additional source term.       ( Choose one )
 !     !/XXX   User-defined bottom friction.
@@ -413,7 +412,6 @@
 !/TR1      USE W3STR1MD
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
-!/BSX      USE W3SBSXMD
 !/IG1      USE W3GDATMD, ONLY : IGPARS
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
@@ -497,7 +495,6 @@
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
-!/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
 !/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
 !/IS2                                 VSIR(NSPEC), VDIR(NSPEC),VDIR2(NSPEC), &
@@ -852,7 +849,6 @@
 !
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
 !/BS1                           TAUSCX, TAUSCY, VSBS, VDBS )
-!/BSX        CALL W3SBSX
 !/PDLIB      ENDIF
 !
 ! 2.e Unresolved Obstacles Source Term
@@ -923,14 +919,12 @@
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/TR1          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
-!/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/UOST         VS(IS) = VS(IS) + VSUO(IS)
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS) 
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/TR1          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
-!/BSX          VD(IS) = VD(IS) + VDBS(IS)
 !/UOST         VD(IS) = VD(IS) + VDUO(IS)
           DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
@@ -977,8 +971,6 @@
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
-!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
-!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
 !/DEBUGSRC        END IF

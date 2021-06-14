@@ -649,7 +649,6 @@
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/BS1      USE W3SBS1MD
-!/BSX      USE W3SBSXMD
 !/IS2      USE W3SIS2MD
 !/
       USE W3DISPMD, ONLY: LIU_FORWARD_DISPERSION, NAR1D, DFAC, N1MAX, &
@@ -1032,8 +1031,6 @@
 !/BS1                CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
 !/BS1                              CAO(J)*SIN(CDO(J)),     &
 !/BS1                             TAUSCX, TAUSCY, XBS, DIA )
-!/BSX                CALL W3SBSX
-!
               END IF
 
            IF ( FLSRCE(6) ) THEN

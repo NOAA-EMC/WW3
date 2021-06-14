@@ -856,7 +856,6 @@
       TYPE SBSP
 !/BS0        REAL                  :: DUMMY
 !/BS1        REAL                  :: DUMMY
-!/BSX        REAL                  :: DUMMY
       END TYPE SBSP
 !
       TYPE SICP

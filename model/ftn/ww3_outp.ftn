@@ -1084,7 +1084,6 @@
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/BS1      USE W3SBS1MD
-!/BSX      USE W3SBSXMD
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY: IICEDISP
       USE W3PARTMD, ONLY: W3PART
@@ -1679,8 +1678,6 @@
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
 !/BS1                           CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &
 !/BS1                                  TAUSCX, TAUSCY,   XBS, DIA )
-!/BSX                    CALL W3SBSX
-!
                   END IF
 !
                 IF ( FLSRCE(6) ) THEN

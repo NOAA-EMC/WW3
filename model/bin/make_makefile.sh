@@ -207,7 +207,7 @@
 #sort:s_bs:
       s_bs   ) TY='one'
                ID='bottom scattering'
-               OK='BS0 BS1 BSX' ;;
+               OK='BS0 BS1' ;;
 #sort:s_ice:
       s_ice  ) TY='one'
                ID='ice sink term'
@@ -704,8 +704,6 @@
    BS0) bs=$NULL
         bsx=$NULL ;;
    BS1) bs='w3sbs1md'
-        bsx=$NULL ;;
-   BSX) bs='w3sbsxmd'
         bsx=$NULL ;;
   esac
 
@@ -1290,7 +1288,6 @@
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STR1MD'     ) modtest=w3str1md.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;
-         'W3SBSXMD'     ) modtest=w3sbsxmd.o ;;
          'W3SIC1MD'     ) modtest=w3sic1md.o ;;
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;

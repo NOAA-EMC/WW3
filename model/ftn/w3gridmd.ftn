@@ -472,7 +472,6 @@
 !
 !     !/BS0   No bottom scattering included.
 !     !/BS1   Routines from F. Ardhuin.
-!     !/BSX   Open slot.
 !
 !     !/XX0   No unclasified source term included.
 !     !/XXX   Open slot.
@@ -1266,7 +1265,6 @@
 !/BS0      NRBS   = NRBS + 1
 !/BS0      FLBS   = .FALSE.
 !/BS1      NRBS   = NRBS + 1
-!/BSX      NRBS   = NRBS + 1
 !
 !/REF1      FLREF   = .TRUE.
 !
@@ -1958,7 +1956,6 @@
 !
 !/BS0      WRITE (NDSO,932)
 !/BS1      WRITE (NDSO,932)
-!/BSX      WRITE (NDSO,932)
 !
 ! 6.k Define Sxx and Sic.
 !
@@ -5739,7 +5736,6 @@
 !
 !/BS0  932 FORMAT (/'  Bottom scattering not defined.'/)
 !/BS1  932 FORMAT (/'  Experimental bottom scattering (F. Ardhuin).'/)
-!/BSX  932 FORMAT (/'  Experimental bottom scattering.'/)
 !
 !/XX0  934 FORMAT (/'  Alternative source term slot not used.'/)
 !/XXX  934 FORMAT (/'  Experimental unclasified source term.'/)
