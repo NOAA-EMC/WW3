@@ -113,11 +113,8 @@
 
   # netcdf library dir
   if [ "$netcdf_compile" = 'yes' ] ; then
-    case $WWATCH3_NETCDF in
-      NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
-      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`" ;;
-    esac
+    if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+    libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`"
   fi
 
   # parmetis library 

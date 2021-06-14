@@ -83,7 +83,7 @@
 !/TRKNC      REAL, ALLOCATABLE ::  lonprt_nc(:),latprt_nc(:)
       INTEGER NTIME_NC
       INTEGER           :: outputType
-      LOGICAL           :: outputCheck1,outputCheck2
+      LOGICAL           :: outputCheck1
       DOUBLE PRECISION  :: date1, date2, tstart, tend
       REAL              :: dlon, dlat, lonprt, latprt
       REAL              :: dt
@@ -203,12 +203,10 @@
             STOP 
          END IF
       ELSEIF (outputType.EQ.4) THEN
-         !NetCDF 4 - requrires !/TRKNC and !/NC4 switch
+         !NetCDF 4 - requrires !/TRKNC switch 
          outputCheck1 = .TRUE.
-         outputCheck2 = .TRUE.
 !/TRKNC     outputCheck1 = .FALSE.
-!/NC4       outputCheck2 = .FALSE.
-         IF(outputCheck1.OR.outputCheck2) THEN
+         IF(outputCheck1) THEN
             WRITE(6,994)
             STOP
          END IF
@@ -998,7 +996,7 @@
   993 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType=3 needs TRKNC switch ')
   994 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
-               '     OutputType=4 needs TRKNC and NC4 switch ')
+               '     OutputType=4 needs TRKNC switch ')
   995 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType,',I3,'not valid. Options: 1,3,4')
 
@@ -1079,18 +1077,18 @@
 !/TRKNC      if (outputType.EQ.3) then
 !/TRKNC      call check( nf90_create(file_name, NF90_CLOBBER, ncid) )
 !/TRKNC      endif
-!/NC4        if(outputType.EQ.4) call check( nf90_create(file_name,NF90_NETCDF4,ncid))
+!/TRKNC      if(outputType.EQ.4) call check( nf90_create(file_name,NF90_NETCDF4,ncid))
 !/TRKNC      call check ( nf90_set_fill(ncid,nf90_nofill,oldMode) )
 !/TRKNC      call check( nf90_def_dim(ncid, lsys_name, nsys, sys_dimid) )
 !/TRKNC      call check( nf90_def_dim(ncid, lat_name, nlats, lat_dimid) )
 !/TRKNC      call check( nf90_def_dim(ncid, lon_name, nlons, lon_dimid) )
 !/TRKNC      call check( nf90_def_dim(ncid, time_name, ntime, rec_dimid) )
 !/TRKNC      call check( nf90_def_var(ncid, lat_name, NF90_REAL, lat_dimid,lat_varid))
-!/NC4        call check( nf90_def_var_deflate(ncid,lat_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,lat_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_def_var(ncid, lon_name, NF90_REAL, lon_dimid,lon_varid))
-!/NC4        call check( nf90_def_var_deflate(ncid,lon_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,lon_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_def_var(ncid,time_name,NF90_DOUBLE,rec_dimid,rec_varid))
-!/NC4        call check( nf90_def_var_deflate(ncid,rec_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,rec_varid,1,1,deflate) )
 !
 !/TRKNC      call check( nf90_put_att(ncid, lat_varid, units, lat_units) )
 !/TRKNC      call check( nf90_put_att(ncid, lat_varid, 'long_name', 'latitude') )
@@ -1111,25 +1109,25 @@
 !/TRKNC      dimids = (/ lon_dimid, lat_dimid, sys_dimid, rec_dimid /)
 !/TRKNC      if( ivar == 1) then
 !/TRKNC      call check( nf90_def_var(ncid, var1_name, NF90_REAL, dimids,var1_varid) )
-!/NC4        call check( nf90_def_var_deflate(ncid,var1_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var1_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_put_att(ncid, var1_varid, units, var1_units) )
 !/TRKNC      call check( nf90_put_att(ncid, var1_varid,'long_name','significant_wave_height') )
 !/TRKNC      call check( nf90_put_att(ncid, var1_varid,'missing_value','9999.00'))
 !/TRKNC       else if( ivar == 2) then
 !/TRKNC      call check( nf90_def_var(ncid, var2_name, NF90_REAL, dimids, var2_varid) )
-!/NC4        call check( nf90_def_var_deflate(ncid,var2_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var2_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_put_att(ncid, var2_varid, units, var2_units) )
 !/TRKNC      call check( nf90_put_att(ncid, var2_varid,'long_name','peak_period') )
 !/TRKNC      call check( nf90_put_att(ncid, var2_varid,'missing_value','9999.00') )
 !/TRKNC       else if ( ivar ==3 ) then
 !/TRKNC      call check( nf90_def_var(ncid, var3_name, NF90_REAL, dimids, var3_varid) )
-!/NC4        call check( nf90_def_var_deflate(ncid,var3_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var3_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_put_att(ncid, var3_varid, units, var3_units) )
 !/TRKNC      call check( nf90_put_att(ncid, var3_varid,'long_name','peak_direction') )
 !/TRKNC      call check( nf90_put_att(ncid, var3_varid,'missing_value','9999.00') )
 !/TRKNC       else
 !/TRKNC      call check( nf90_def_var(ncid, var4_name, NF90_REAL, dimids, var4_varid) )
-!/NC4        call check( nf90_def_var_deflate(ncid,var4_varid,1,1,deflate) )
+!/TRKNC      if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var4_varid,1,1,deflate) )
 !/TRKNC      call check( nf90_put_att(ncid, var4_varid, units, var4_units) )
 !/TRKNC      call check( nf90_put_att(ncid,var4_varid,'long_name','directional_spread') )
 !/TRKNC      call check( nf90_put_att(ncid, var4_varid,'missing_value','9999.00') )
@@ -1243,36 +1241,36 @@
 !/TRKNC      iret = nf90_def_var(ncid, 'latitude', NF90_REAL, point_dim, &
 !/TRKNC          latitude_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,latitude_id,1,1,deflate))
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,latitude_id,1,1,deflate))
 !/TRKNC      iret = nf90_def_var(ncid, 'longitude', NF90_REAL, point_dim, &
 !/TRKNC        longitude_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,longitude_id,1,1,deflate))
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,longitude_id,1,1,deflate))
 !/TRKNC      iret = nf90_def_var(ncid, 'time', NF90_DOUBLE, rec_dim, &
 !/TRKNC         time_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,time_id,1,1,deflate) )
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,time_id,1,1,deflate) )
 !/TRKNC      hs_dims(3) = rec_dim
 !/TRKNC      hs_dims(2) = point_dim
 !/TRKNC      hs_dims(1) = system_index_dim
 !/TRKNC      iret = nf90_def_var(ncid, 'hs', NF90_REAL,  &
 !/TRKNC        hs_dims, hs_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,hs_id,1,1,deflate))
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,hs_id,1,1,deflate))
 !/TRKNC      tp_dims(3) = rec_dim
 !/TRKNC      tp_dims(2) = point_dim
 !/TRKNC      tp_dims(1) = system_index_dim
 !/TRKNC      iret = nf90_def_var(ncid, 'tp', NF90_REAL, &
 !/TRKNC        tp_dims, tp_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,tp_id,1,1,deflate))
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,tp_id,1,1,deflate))
 !/TRKNC      dir_dims(3) = rec_dim
 !/TRKNC      dir_dims(2) = point_dim
 !/TRKNC      dir_dims(1) = system_index_dim
 !/TRKNC      iret = nf90_def_var(ncid, 'dir', NF90_REAL, & 
 !/TRKNC        dir_dims, dir_id)
 !/TRKNC      call check(iret)
-!/NC4        call check( nf90_def_var_deflate(ncid,dir_id,1,1,deflate))
+!/TRKNC      if (outputType.EQ.4) call check( nf90_def_var_deflate(ncid,dir_id,1,1,deflate))
 !/TRKNC! assign attributes
 !/TRKNC      iret = nf90_put_att(ncid, latitude_id, 'units', 'degrees_north')
 !/TRKNC      call check(iret)

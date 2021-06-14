@@ -169,15 +169,8 @@
   if [ -n "$(grep TRKNC $switch_file)" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
-    systrck_nc4notrknc=0
   else
-    if [ -n "$(grep NC4 $switch_file)" ]
-    then
-      systrck_nc4notrknc=1
-    else
-      systrck_nc4notrknc=0
-      reg_programs="$reg_programs ww3_systrk"
-    fi
+    reg_programs="$reg_programs ww3_systrk"
   fi
 
   # SHEL PREP GSPL
