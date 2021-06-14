@@ -313,7 +313,6 @@
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
 !/FLX3      TNAMEF = 'T and C(1996) with cap on Cd  '
 !/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
-!/FLXX      TNAMEF = 'Experimental                  '
 !/LN0      TNAME0 = 'Not defined                   '
 !/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '
 !/LNX      TNAME0 = 'Experimental                  '

@@ -159,7 +159,7 @@
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'
@@ -559,10 +559,6 @@
          flxx=$NULL ;;
    FLX4) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK'
          flx='w3flx4md'
-         flxx=$NULL ;;
-
-   FLXX) str_st1='no' ; str_st2='no' ; str_st3='no'
-         flx='w3flxxmd'
          flxx=$NULL ;;
   esac
 
@@ -1253,7 +1249,6 @@
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
          'W3FLX3MD'     ) modtest=w3flx3md.o ;;
          'W3FLX4MD'     ) modtest=w3flx4md.o ;;
-         'W3FLXXMD'     ) modtest=w3flxxmd.o ;;
          'W3SLN1MD'     ) modtest=w3sln1md.o ;;
          'W3SLNXMD'     ) modtest=w3slnxmd.o ;;
          'W3SRC0MD'     ) modtest=w3src0md.o ;;
