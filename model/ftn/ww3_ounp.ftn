@@ -1410,7 +1410,6 @@
 !/BS1      USE W3SBS1MD
 !/BSX      USE W3SBSXMD
 !/IS2      USE W3SIS2MD
-!/XXX      USE W3SXXXMD
       USE W3PARTMD, ONLY: W3PART
       USE W3DISPMD, ONLY: WAVNU1, LIU_FORWARD_DISPERSION
       USE W3GDATMD, ONLY: IICEDISP
@@ -2100,8 +2099,6 @@
 !/IS2              CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX,  &
 !/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)          
             END IF
-!
-!/XXX                CALL W3SXXX
 !
 !/STAB2                UABS   = UABS * ASFAC
 !

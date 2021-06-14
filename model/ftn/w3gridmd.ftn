@@ -476,9 +476,6 @@
 !     !/BS1   Routines from F. Ardhuin.
 !     !/BSX   Open slot.
 !
-!     !/XX0   No unclasified source term included.
-!     !/XXX   Open slot.
-!
 !     !/PR1   First order propagation scheme.
 !     !/PR2   QUICKEST scheme with ULTIMATE limite and diffusion
 !             correction for swell dispersion.
@@ -1969,9 +1966,6 @@
 !/BSX      WRITE (NDSO,932)
 !
 ! 6.k Define Sxx and Sic.
-!
-! !/XX0      WRITE (NDSO,934)
-!/XXX      WRITE (NDSO,934)
 !
 !/IC1      WRITE (NDSO,935)
 !/IC1         WRITE(NDSO,'(A/A)')'    Sice will be calculated using ' &
@@ -5753,9 +5747,6 @@
 !/BS0  932 FORMAT (/'  Bottom scattering not defined.'/)
 !/BS1  932 FORMAT (/'  Experimental bottom scattering (F. Ardhuin).'/)
 !/BSX  932 FORMAT (/'  Experimental bottom scattering.'/)
-!
-!/XX0  934 FORMAT (/'  Alternative source term slot not used.'/)
-!/XXX  934 FORMAT (/'  Experimental unclasified source term.'/)
 !
 !/IC1  935 FORMAT (/'  Dissipation via ice parameters (SIC1).'&
 !/IC1           ,/' --------------------------------------------------')
