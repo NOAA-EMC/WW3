@@ -315,7 +315,6 @@
 !                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BT8   Muddy bed (Dalrymple & Liu).
 !     !/BT9   Muddy bed (Ng).
-!     !/BTX   User-defined bottom friction.
 !
 !     !/IC1   Dissipation via interaction with ice according to simple
 !             methods: 1) uniform in frequency or 
@@ -394,7 +393,6 @@
 !/BT4      USE W3SBT4MD
 !/BT8      USE W3SBT8MD
 !/BT9      USE W3SBT9MD
-!/BTX      USE W3SBTXMD
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
@@ -838,7 +836,6 @@
 !/BT4                      BEDFORM, VSBT, VDBT, IX, IY )
 !/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
-!/BTX        CALL W3SBTX
 !
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
 !/BS1                           TAUSCX, TAUSCY, VSBS, VDBS )

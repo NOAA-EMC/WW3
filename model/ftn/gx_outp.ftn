@@ -640,7 +640,6 @@
 !/BT1      USE W3SBT1MD
 !/BT4      USE W3SBT4MD
 !/BT8      USE W3SBT8MD
-!/BTX      USE W3SBTXMD
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
@@ -1005,7 +1004,6 @@
             IF ( FLSRCE(5) ) THEN
 
 !/BT1                CALL W3SBT1 ( A, CG, WN, DEPTH,   XBT, DIA )
-!/BTX                CALL W3SBTX
 
 !/IC1                CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 !/IC2                CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &

@@ -190,7 +190,7 @@
 #sort:s_bot:
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+               OK='BT0 BT1 BT4 BT8 BT9' ;;
 #sort:s_db:
       s_db   ) TY='one'
                ID='depth-induced breaking'
@@ -681,7 +681,6 @@
    BT4) bt='w3sbt4md' ;;
    BT8) bt='w3sbt8md' ;;
    BT9) bt='w3sbt9md' ;;
-   BTX) bt='w3sbtxmd' ;;
   esac
 
   case $s_db in
@@ -1281,7 +1280,6 @@
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
          'W3SBT8MD'     ) modtest=w3sbt8md.o ;;
          'W3SBT9MD'     ) modtest=w3sbt9md.o ;;
-         'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3STR1MD'     ) modtest=w3str1md.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;

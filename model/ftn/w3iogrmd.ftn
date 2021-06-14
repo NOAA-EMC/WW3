@@ -335,7 +335,6 @@
 !/BT1      TNAME3 = 'JONSWAP                       '
 !/BT4      TNAME3 = 'SHOWEX                        '
 !/BT8      TNAME3 = 'Muddy Bed (D & L)             '
-!/BTX      TNAME3 = 'Experimental                  '
 !/IC1      TNAMEI = 'Ice sink term (uniform k_i)   '
 !/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
 !/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '

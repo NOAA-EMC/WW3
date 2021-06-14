@@ -447,7 +447,6 @@
 !     !/BT1   JONSWAP bottom friction package.
 !     !/BT4   SHOWEX bottom friction using movable bed roughness 
 !                  (Tolman 1994, Ardhuin & al. 2003)
-!     !/BTX   Open slot.
 !
 !     !/IC1   Sink term for interaction with ice (uniform k_i)
 !     !/IC2   Sink term for under-ice boundary layer friction 
@@ -1231,7 +1230,6 @@
 !/BT4      NRBT   = NRBT + 1
 !/BT8      NRBT   = NRBT + 1
 !/BT9      NRBT   = NRBT + 1
-!/BTX      NRBT   = NRBT + 1
 !
 !/IC1      NRIC   = NRIC + 1
 !/IC1      FLIC   = .TRUE.
@@ -1876,7 +1874,6 @@
 !
 !/BT0      WRITE (NDSO,926)
 !/BT4      WRITE (NDSO,926)
-!/BTX      WRITE (NDSO,926)
 !
 !/BT1      GAMMA  = -0.067
 !
@@ -5710,7 +5707,6 @@
 !/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,','/        &
 !/BT4               '        SIGDEPTH =',F8.4,', BOTROUGHMIN =',F8.4, & 
 !/BT4               ', BOTROUGHFAC =',F4.1,' /')
-!/BTX  926 FORMAT (/'  Experimental bottom friction.'/)
 !
 !/DB0  928 FORMAT (/'  Surf breaking not defined.'/)
 !

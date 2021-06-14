@@ -827,7 +827,6 @@
       END TYPE SNLP
 !
       TYPE SBTP
-!/BTX        REAL                  :: DUMMY
 !/BT0        REAL                  :: DUMMY
 !/BT1        REAL                  :: SBTC1
 !/BT4        REAL                  :: SBTCX(10)

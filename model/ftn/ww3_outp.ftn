@@ -1078,7 +1078,6 @@
 !/BT4      USE W3SBT4MD
 !/BT8      USE W3SBT8MD
 !/BT9      USE W3SBT9MD
-!/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/BS1      USE W3SBS1MD
 !/IS2      USE W3SIS2MD
@@ -1668,7 +1667,6 @@
 !...broken....!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
 !...broken....!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
 
-!/BTX                    CALL W3SBTX
 
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
