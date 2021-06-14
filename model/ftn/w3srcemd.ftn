@@ -336,9 +336,6 @@
 !     !/BS0   No bottom scattering.                      ( Choose one )
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
 !
-!     !/XX0   No arbitrary additional source term.       ( Choose one )
-!     !/XXX   User-defined bottom friction.
-!
 !     !/MLIM  Miche style limiter for shallow water and steepness.
 !
 !     !/SEED  'Seeding' of lowest frequency for suffuciently strong

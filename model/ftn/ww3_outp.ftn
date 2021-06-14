@@ -956,7 +956,6 @@
 !      W3SDBn    Subr. W3SBTnMD Depth induced breaking source term.
 !      W3STRn    Subr. W3STRnMD Triad interaction source term.
 !      W3SBSn    Subr. W3SBSnMD Bottom scattering source term.
-!      W3SXXn    Subr. W3SXXnMD Unclassified source term.
 !      W3PART    Sunr. W3PARTMD Spectral partitioning routine.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      STME21    Subr. W3TIMEMD Convert time to string.
@@ -1049,7 +1048,6 @@
 !       !/DBx    Depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
-!       !/XXx    Arbitrary adittional source term package
 !
 !       !/STAB2  Stability correction for !/ST2
 !
