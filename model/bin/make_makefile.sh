@@ -114,7 +114,7 @@
 #sort:grib:
       grib   ) TY='one'
                ID='GRIB package'
-               OK='NOGRB NCEP1 NCEP2' ;;
+               OK='NOGRB NCEP2' ;;
 #sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
