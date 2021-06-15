@@ -1,0 +1,34 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D parameterized ice test    '
+$
+   1.25 0.08  3  24  0.
+$
+   F T F F F T
+  240. 240. 240. 240.
+$
+$ IC5VEMOD defines which sea ice model is selected
+$ IC5VEMOD = 1 - Extended Fox and Squire model (EFS)
+$ IC5VEMOD = 2 - Robinson and Palmer model (RP)
+$ IC5VEMOD = 3 - Order 3 Power Law model of Meylan et al. (2018; M2)
+&SIC5 IC5VEMOD = 1 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   156  3
+    2.5E3   2.5E3  1.
+   -2.5E3  -2.5E3  1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC1/depth1d.flat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ First grid
+$
+   2  2  F
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

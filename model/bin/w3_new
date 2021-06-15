@@ -85,24 +85,6 @@
                                    touch ww3_prtide.ftn
                                    touch ww3_grib.ftn ;; 
      'grib'   ) cd $main_dir/ftn ; touch ww3_grib.ftn ;; 
-     'mcp'    ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch ww3_shel.ftn 
-                                   touch ww3_grid.ftn ;;
-     'c90'    ) cd $main_dir/ftn ; touch w3iogomd.ftn
-                                   touch w3pro1md.ftn
-                                   touch w3pro2md.ftn
-                                   touch w3pro3md.ftn
-                                   touch w3profsmd.ftn
-                                   touch w3profsmd_pdlib.ftn
-                                   touch w3uno2md.ftn
-                                   touch w3uqckmd.ftn ;;
-     'nec'    ) cd $main_dir/ftn ; touch w3initmd.ftn
-                                   touch w3iogomd.ftn
-                                   touch w3pro1md.ftn
-                                   touch w3pro2md.ftn
-                                   touch w3pro3md.ftn
-                                   touch w3uno2md.ftn
-                                   touch w3uqckmd.ftn ;;
      'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
                                    touch ww3_ounp.ftn
                                    touch ww3_bounc.ftn
