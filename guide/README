@@ -1,9 +1,0 @@
-WAVEWATCH III development best practices guide.
-
-A makefile is provided to compile the guide.  The default make
-target will compile a PDF version of the guide (guide.pdf).
-Other make targets available are: "clean" (remove all files
-created during compile of guide).
-
-The following external programs are required and must be found
-in the user PATH: latex, bibtex and dvipdf.

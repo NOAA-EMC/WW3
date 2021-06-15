@@ -1256,7 +1256,6 @@
 !
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.5'
 !/DEBUGINIT     FLUSH(740+IAPROC)
-!/NEC/!CDIR LOOPCNT=100000
       DO IS=0, NSEA
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'IS=', IS
 !/DEBUGINIT     FLUSH(740+IAPROC)
@@ -1268,7 +1267,6 @@
 !
 !/T1        WRITE (NDST,9051) IS, DEPTH
 !
-!/NEC/!CDIR LOOPCNT=100000
         DO IK=0, NK+1
 !
 !         Calculate wavenumbers and group velocities.
@@ -2053,16 +2051,36 @@
 !/MPI      IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or.       &
 !/MPI          (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
 !
-! NRQMAX is the maximum number of fields, it is the sum of the 
-! sizes of scalar fields (Hs) + 2-component vectors (CUR) + 3-comp ... 
+! NRQMAX is the maximum number of output fields that require MPI communication,
+! aimed to gather field values stored in each processor into one processor in
+! charge of model output; for each of such fields, this routine requires one
+! call to MPI_SEND_INIT and MPI_RECV_INIT storing the communication request
+! handles in the vectors IRQGO and IRQGO2 respectively.
+! NRQMAX is calculated as the sum of all fields described before (Hs)
+!    + 2 or 3 component fields (CUR) + 3 component fields + extra fields
+! For group 1 fields except ICEF, all processors contain information on all
+! grid points because they are input fields, and therefore this MPI
+! communication is not necessary and they do not contribute to NRQMAX.
 !
-!/MPI          NRQMAX = 1+0+0 + 19+0+0 + 0+0+0 +                     &
-!/MPI                   2+(NOGE(4)-2)*(NOSWLL+1) + 11+3+1 +          &
-!/MPI                   10+7+1 + 5+4+1 + 5+2+0 + 5+NOEXTR
+!/MPI          ! Calculation of NRQMAX splitted by output groups and field type
+!/MPI          !       scalar                2-comp   3-comp
+!/MPI          NRQMAX =   1                +    0  +    0  +  &  ! group 1 
+!/MPI                    18                +    0  +    0  +  &  ! group 2
+!/MPI                     0                +    0  +    0  +  &  ! group 3 (extra contributions below)
+!/MPI             2+(NOGE(4)-2)*(NOSWLL+1) +    0  +    0  +  &  ! group 4
+!/MPI                    11                +    3  +    1  +  &  ! group 5
+!/MPI                    12                +    7  +    1  +  &  ! group 6 (extra contributions below)
+!/MPI                     5                +    4  +    1  +  &  ! group 7
+!/MPI                     5                +    2  +    0  +  &  ! group 8
+!/MPI                     5                +    0  +    0  +  &  ! group 9
+!/MPI                NOEXTR                +    0  +    0        ! group 10
+!/MPI
+!/MPI          ! Extra contributions to NRQMAX from group 3
 !/MPI          DO IFJ=1,5
 !/MPI            IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
 !/MPI                                    E3DF(3,IFJ) - E3DF(2,IFJ) + 1
 !/MPI            END DO
+!/MPI          ! Extra contributions to NRQMAX from group 6
 !/MPI          IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
 !/MPI                                          P2MSF(3) - P2MSF(2) + 1
 !/MPI          IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK

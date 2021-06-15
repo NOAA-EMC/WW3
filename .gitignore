@@ -50,6 +50,7 @@ model??
 regtests/list*
 regtests/before
 regtests/matrix*
+regtests/msuball.sh
 regtests/*/work*
 regtests/*/input*/*.nc
 regtests/*/input*/*/*.nc
