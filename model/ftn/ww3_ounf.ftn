@@ -412,7 +412,6 @@
 
       END IF ! .NOT. FLGNML
 
-
       CALL STR_TO_UPPER(TTYPE)
       CALL STR_TO_UPPER(TIMEUNIT)
 
@@ -537,7 +536,7 @@
 !/SMC
 !/SMC        ! Allocate space for coverage array and new MAPSTA array
 !/SMC        ALLOCATE(COV(NXO,NYO), MAPSMC(NXO,NYO))
-!/SMC      ELSE IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) THEN  ! Nearest neighbour interpolation
+!/SMC      ELSE IF(SMCOTYPE .EQ. 3 .OR. SMCOTYPE .EQ. 4) THEN  ! Nearest neighbour interpolation
 !/SMC        CALL READ_SMCINT()
 !/SMC      ENDIF
 !/SMC
@@ -555,7 +554,7 @@
 !/SMC      RTDNY = NYO
 !/SMC
 !/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) RTDL = .FALSE.
+!/SMC!/RTD      IF(SMCOTYPE .EQ. 3 .OR. SMCOTYPE .EQ. 4) RTDL = .FALSE.
       ELSE 
         IX1    = MAX ( IX1 , 1 )
         IXN    = MIN ( IXN , NX )
@@ -3668,7 +3667,7 @@
 !/SMC             call CHECK_ERR(IRET)
 !/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','seapoint')
 !/SMC             call CHECK_ERR(IRET)
-!/SMC           ELSE IF(SMCTYPE .EQ. 2) THEN
+!/SMC           ELSE IF(SMCOTYPE .EQ. 2) THEN
 !/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','regular_regridded')
 !/SMC             call CHECK_ERR(IRET)
 !/SMC           ENDIF
