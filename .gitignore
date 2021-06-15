@@ -63,6 +63,7 @@ regtests/ww3_tp2.17/input/inlet.msh
 regtests/ww3_tp2.21/input/mesh.msh
 regtests/ww3_tp2.21/input/obstructions_local.glo_unst.in
 regtests/ww3_tp2.21/input/obstructions_shadow.glo_unst.in
+regtests/ww3_tp2.14/input/oasis3-mct/lib/mct/*/.cvsignore
 *.nc
 */*.nc
 */*/*.nc
