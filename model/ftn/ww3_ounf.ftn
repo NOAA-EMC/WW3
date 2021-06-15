@@ -2126,7 +2126,7 @@
 ! 2.5.2 Generates Lat-Lon arrays
 
               ! If regular grid
-              IF (GTYPE.EQ.RLGTYPE) THEN 
+              IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
                 IF( SMCGRD ) THEN
 !/SMC                  ! CB: Calculate lat/lons of SMC grid
 !/SMC                  IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2303,7 +2303,7 @@
 ! 2.5.3 Writes longitudes, latitudes, triangles, frequency and status map (mapsta) to netcdf file
 
               ! If regular grid
-              IF (GTYPE.EQ.RLGTYPE) THEN 
+              IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
                 IF(SMCGRD) THEN ! CB: shelter original code from SMC grid
 !/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
 !/SMC                  CALL CHECK_ERR(IRET)
@@ -3355,7 +3355,7 @@
 !
       IF (FLAGLL) THEN 
 !longitude
-        IF (GTYPE.EQ.RLGTYPE) THEN 
+        IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
           IF (SMCGRD) THEN
 !/SMC            IF(SMCOTYPE .EQ. 1) THEN
 !/SMC              ! Flat SMC grid - use seapoint dimension:
