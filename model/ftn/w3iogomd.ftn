@@ -113,8 +113,6 @@
 !       !/DIST  Id.
 !
 !       !/OMPG  OpenMP compiler directive for loop splitting.
-!       !/C90   Cray FORTRAN 90 compiler directive.
-!       !/NEC   NEC SXF90 compiler directives.
 !
 !       !/O8    Filter for low wave heights ( HSMIN )
 !       !/O9    Negative wave height alowed, other mean parameters will
@@ -1145,8 +1143,6 @@
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/DIST  Id.
 !
-!     !/C90   Cray FORTRAN 90 compiler directives.
-!     !/NEC   NEC SXF90 compiler directives.
 !     !/OMPG  OpenMP compiler directive for loop splitting.
 !
 !     !/O8    Filter for low wave heights ( HSMIN )
@@ -2068,8 +2064,6 @@
 !
       DO ITH=1, NTH
 !
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
@@ -2100,8 +2094,6 @@
 !
       DO ITH=1, NTH
 !
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
@@ -3652,8 +3644,6 @@
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/DIST  Id.
 !
-!     !/C90   Cray FORTRAN 90 compiler directives.
-!     !/NEC   NEC SXF90 compiler directives.
 !     !/OMPG  OpenMP compiler directive for loop splitting.
 !
 !     !/S     Enable subroutine tracing.

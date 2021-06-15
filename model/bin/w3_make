@@ -252,7 +252,6 @@
 # 1.e Set sequential or parallel folders - - - - - - - - - - - - - - - - - - -
 
   flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
-  flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
   flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
 
   switch_file_old=$main_dir/bin/switch.old
@@ -263,12 +262,7 @@
 
   if [ "$flag_SHRD" -gt '0' ]
   then
-    if [ "$flag_OMPX" -gt '0' ]
-    then
-      pres_type='OMP'
-    else
-      pres_type='SEQ'
-    fi
+    pres_type='SEQ'
   else
     if [ "$flag_OMPH" -gt '0' ]
     then
@@ -528,14 +522,8 @@ EOF
     then
       if [ "$flag_SHRD" -gt '0' ]
       then
-        if [ "$flag_OMPX" -gt '0' ]
-        then
-          cp $switch_file ${switch_file_old}_OMP
-          cp $makefile ${makefile}_OMP
-        else
-          cp $switch_file ${switch_file_old}_SEQ
-          cp $makefile ${makefile}_SEQ
-        fi
+        cp $switch_file ${switch_file_old}_SEQ
+        cp $makefile ${makefile}_SEQ
       else
         if [ "$flag_OMPH" -gt '0' ]
         then
