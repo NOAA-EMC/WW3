@@ -1,6 +1,4 @@
 #include "w3macros.h"
-!/ Future work
-! * Dnl
 !/ ------------------------------------------------------------------- /
       MODULE W3SNL5MD
 !/
@@ -37,6 +35,8 @@
 !      CALC_WBTv2   Subr. Private  Calc. dominant wave breaking prob.
 !      INPOUT       Subr. Private  Point output
 !     -------------------------------------------------------------------
+!
+!  4. Future work: Dnl
 !/
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
@@ -140,7 +140,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: GRAV, TPI
-      USE gke_mod,   ONLY: CalcQRSNL, qr_depth
+      USE W3GKEMD,   ONLY: CalcQRSNL, qr_depth
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, TH,            &
                            GTYPE, RLGTYPE, CLGTYPE,            &
                            QR5DPT, QI5NNZ, QI5PMX
@@ -419,7 +419,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE gke_mod,  ONLY: qr_depth, qr_oml, qi_disc, qi_kev, qi_nnz,  &
+      USE W3GKEMD,  ONLY: qr_depth, qr_oml, qi_disc, qi_kev, qi_nnz,  &
                           qi_interp, PrepKernelIO
       USE W3GDATMD, ONLY: NK, NTH, SIG, TH,                           &
                           QR5DPT, QR5OML, QI5DIS, QI5KEV, QI5NNZ,     &

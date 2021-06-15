@@ -1,20 +1,24 @@
 $ -------------------------------------------------------------------- $
-   'Evolution of Gaussian spectrum'
+$ This is a reduced/simplified version of input_nl5_growth, which is
+$ designed for matrix testing only. Consequently, a very small grid
+$ (k, θ) is used.
 $
-$  1.034 0.04  90  72  0.
+   'Duration-limited test         '
+$
 $  1.07  0.04  45  36  0.
 $
-$  High-resolution (f, θ) grid - Δθ=5
-$
-   1.053 0.04  50  72  0.
+   1.1   0.2   5   10  0.
 $
    F F F F F T
 $
-   10. 10. 10. 1
+$  900. 900. 900. 1.
+$
+   10.  10.  10.  1.
 $
 $ -------------------------------------------------------------------- $
-$ ST0+NL5 (see section 4 of Liu, Gramstad & Babanin 2021, JFM, 910, A50;
+$ ST6+NL5 (see section 3 of Liu, Gramstad & Babanin 2021, JFM, 910, A50;
 $          hereafter LGB21)
+$ namelists for ST6      : FLX4, SIN6, SDS6, SWL6
 $ namelist  for NL5 (GKE): SNL5
 $
 $ * NL5DPT - water depth defined for the GKE module (default: 3000 m)
@@ -31,18 +35,19 @@ $
 $ -------------
 $ Futher notes:
 $ -------------
-$ * with the setup below, we will have 646304790 unique quartets
-$ * it may take quite a long time to find & estimate all these unique 
-$   quartets. A config file named `gkev0_dxxxx.cfg` will be created
+$ * with the setup below, we will have 2210 unique quartets
+$ * A config file named `gkev0_dxxxx.cfg` will be created
 $   which contains the configuration details and will be read by
 $   ww3_shel shortly.
 $ * 'xxxx' in the name 'gkev0_dxxxx.cfg' denotes the water depth.
-$ * Given this huge number of quartets, we need very large memory for
-$   this given GKE run (FYI, I used `#SBATCH --mem=186g`)
 $ -------------------------------------------------------------------- $
 $
+   &FLX4 CDFAC = 1.0 /
+   &SIN6 SINA0 = 0.05, SINFC = 6.00 /
+   &SDS6 SDSA1 = 4.75E-06, SDSA2 = 7E-05 /
+   &SWL6 SWLB1 = 6E-3 /
    &SNL5 NL5DPT = 3000., NL5OML = 0.10, NL5DIS = 0, NL5KEV = 0,
-         NL5IPL = 1, NL5PMX = 0 /
+         NL5IPL = 1, NL5PMX = 100 /
 $
 $ Mandatory string to identify end of namelist input section.
 $

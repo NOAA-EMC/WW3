@@ -672,7 +672,7 @@
         nlx='w3snl3md' ;;
    NL4) nl='w3snl4md'
         nlx='w3snl4md' ;;
-   NL5) nl='w3snl5md gkeModule'
+   NL5) nl='w3snl5md w3gkemd'
         nlx="$nl" ;;
    NLX) nl='w3snlxmd'
         nlx='w3snlxmd' ;;
@@ -1299,7 +1299,7 @@
          'SERV_XNL4V5'  ) modtest=serv_xnl4v5.o ;;
          'M_FILEIO'     ) modtest=mod_fileio.o ;;
          'M_CONSTANTS'  ) modtest=mod_constants.o ;;
-         'GKE_MOD'      ) modtest=gkeModule.o ;;
+         'W3GKEMD'      ) modtest=w3gkemd.o ;;
          'W3SWLDMD'     ) modtest=w3swldmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;

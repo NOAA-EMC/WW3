@@ -1,9 +1,6 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-! Future work (TODO)
-! * Dnl   -- diagonal term
-! * βnpqr -- nonlinear stokes correction
-!/ ------------------------------------------------------------------- /
-module gke_mod
+module w3gkemd
 !/ ------------------------------------------------------------------- /
 !/
 !/                  +-----------------------------------+
@@ -124,10 +121,13 @@ module gke_mod
 !      BiInterpWT          Subr. Private  Calc. interp. weights
 !      CalcQRSNL           Subr. Public   GKE Transfer Integral
 !
-!  3. Future work
-!     The current version only works for a constant-depth application (
+!  3. Future work (TODO)
+!   * The current version only works for a constant-depth application (
 !     either deep or finite deep). Extension of this module to be
 !     applicable to varying-depth cases may be pursued in the future.
+!
+!   * Dnl   -- diagonal term
+!   * βnpqr -- nonlinear stokes correction
 !/
 !/ ------------------------------------------------------------------- /
 !
@@ -233,7 +233,7 @@ module gke_mod
 !/
     function QFunc(kx, ky)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/
@@ -274,7 +274,7 @@ module gke_mod
 !/
     function VpFunc(k0x, k0y, k1x, k1y, k2x, k2y)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011: Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/
@@ -318,7 +318,7 @@ module gke_mod
 !/
     function VmFunc(k0x, k0y, k1x, k1y, k2x, k2y)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/
@@ -357,7 +357,7 @@ module gke_mod
 !/
     function UFunc(k0x, k0y, k1x, k1y, k2x, k2y, k3x, k3y)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/
@@ -399,7 +399,7 @@ module gke_mod
 !/
     function TFunc(k0x, k0y, k1x, k1y, k2x, k2y, k3x, k3y)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/
@@ -521,7 +521,7 @@ module gke_mod
 !/
     subroutine FindQuartetNumber(ns, kx, ky, om, oml, nnz)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/    02-Apr-2020 : Boundary conditions (< kmin, > kmax)( Q. Liu      )
@@ -731,7 +731,7 @@ module gke_mod
                                  NN, PP, QQ, RR,               &
                                  k4x, k4y, om4)
 !/
-!/    ??-???-???? : Origination.                        ( O. Gramstad )
+!/    19-Dec-2011 : Origination.                        ( O. Gramstad )
 !/
 !/    09-Nov-2018 : Prepare WW3 distribution            ( Q. Liu      )
 !/    02-Apr-2020 : Boundary conditions (< kmin, > kmax)( Q. Liu      )
@@ -1904,5 +1904,5 @@ module gke_mod
     end subroutine CalcQRSNL
 !/
 !/ ------------------------------------------------------------------- /
-end module gke_mod
+end module w3gkemd
 !/ ------------------------------------------------------------------- /
