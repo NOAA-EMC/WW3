@@ -19,8 +19,8 @@ Note that properly "linked issues" (either automatic links, or manual ones using
 
 ### Check list  
 * Is your feature branch up to date with the authoritative repository (NOAA/develop)?
-* Make sure you have checked the [checklist for a developer submitting to develop](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-a-developer-submitting-to-develop), [checklist for a developer submitting to develop](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-a-developer-submitting-to-develop) and [updating version number](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-updating-version-number)
-* Reviewers: @mentions of suggested reviewers of the proposed changes.
+* Make sure you have checked the [checklist for a developer submitting to develop](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-a-developer-submitting-to-develop) and [updating version number](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-updating-version-number)
+* Reviewers: @mentions of suggested reviewers of the proposed changes
 
 
 ### Testing
@@ -29,15 +29,7 @@ Note that properly "linked issues" (either automatic links, or manual ones using
 * If a new feature was added, was a new regression test added?
 * Have regression tests been run?
 * Which compiler / HPC you used to run the regression tests in the PR? 
-* Please provide the summary output of matrix.comp (_matrix.Diff.out_, _matrixCompFull.out_ and _matrixCompSummary.out_):    
+* Please provide the summary output of matrix.comp (_matrix.Diff.txt_, _matrixCompFull.txt_ and _matrixCompSummary.txt_):    
 Please indicate the expected changes in the outputs ([excluding the known list of non-identical tests](https://github.com/NOAA-EMC/WW3/wiki/How-to-use-matrix.comp-to-compare-regtests-with-master#4-look-at-results)).
-
-
-
-
-
-
-
-
 
 

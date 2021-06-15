@@ -57,9 +57,6 @@
 !
 !  6. Switches :
 !
-!       !/C90   Cray FORTRAN 90 compiler directives.
-!       !/NEC   NEC SXF90 compiler directives.
-!
 !       !/OMPH  Ading OMP directves for hybrid paralellization.
 !
 !       !/S     Enable subroutine tracing.
@@ -224,8 +221,6 @@
           IADN0  = IAD00 + MY*NX
           IADN1  =         MY*NX
           IADN2  = IAD02 + MY*NX
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
           DO IY=1, NY
             Q   (IY+IAD00) = Q   (IY+IADN0)
             Q   (IY+IADN1) = Q   (   IY   )
@@ -328,8 +323,6 @@
 !
       IF ( CLOSE ) THEN
 !/T          WRITE (NDST,9015)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
           DO IY=1, NY
             FLA (IY+IAD00) = FLA (IY+IADN0)
             END DO
@@ -338,8 +331,6 @@
 ! 6.  Propagation -------------------------------------------------- *
 !
 !/T2      WRITE (NDST,9020)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
       DO IP=1, NACT
         IXY    = MAPACT(IP)
 !/T2        QOLD   = Q(IXY)
@@ -535,8 +526,6 @@
           IADN0  = IAD00 + MY*NX
           IADN1  =         MY*NX
           IADN2  = IAD02 + MY*NX
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
           DO IY=1, NY
             Q   (IY+IAD00) = Q   (IY+IADN0)
             Q   (IY+IADN1) = Q   (   IY   )
@@ -648,8 +637,6 @@
 !
       IF ( CLOSE ) THEN
 !/T          WRITE (NDST,9015)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
           DO IY=1, NY
             FLA (IY+IAD00) = FLA (IY+IADN0)
             END DO
@@ -658,8 +645,6 @@
 ! 6.  Propagation -------------------------------------------------- *
 !
 !/T2      WRITE (NDST,9020)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
       DO IP=1, NACT
         IXY    = MAPACT(IP)
 !/T2        QOLD   = Q(IXY)
@@ -855,8 +840,6 @@
           IADN0  = IAD00 + MY*NX
           IADN1  =         MY*NX
           IADN2  = IAD02 + MY*NX
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !
 !/OMPH/!$OMP PARALLEL DO PRIVATE (IY)
 !
@@ -979,8 +962,6 @@
 !
       IF ( CLOSE ) THEN
 !/T          WRITE (NDST,9015)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
           DO IY=1, NY
             FLA (IY+IAD00) = FLA (IY+IADN0)
             END DO
@@ -989,8 +970,6 @@
 ! 6.  Propagation -------------------------------------------------- *
 !
 !/T2      WRITE (NDST,9020)
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, JN, JP )
 !
       DO IP=1, NACT
