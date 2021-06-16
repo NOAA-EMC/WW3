@@ -20,12 +20,12 @@ Note that properly "linked issues" (either automatic links, or manual ones using
 ### Check list  
 * Is your feature branch up to date with the authoritative repository (NOAA/develop)?
 * Make sure you have checked the [checklist for a developer submitting to develop](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-a-developer-submitting-to-develop) and [updating version number](https://github.com/NOAA-EMC/WW3/wiki/Code-Management#checklist-for-updating-version-number)
-* Make sure you have added labels to the PR, including but not limited to _bug_, _documentation_, _duplicate_, _enhancement_, _invalid_, _mod-def change_, _out-grd change_, _out-pnt change_, _restart file change_, _new feature_, _Regression test_, _UFS_, ...
+* Make sure you have added labels to the PR, including but not limited to _bug_, _documentation_, _duplicate_, _enhancement_, _invalid_, _mod_def change_, _out_grd change_, _out_pnt change_, _restart file change_, _new feature_, _Regression test_, _UFS_, ...
 
 * Reviewers: @mentions of suggested reviewers of the proposed changes
 
 ## Commit Message
-* Please provide a short summary of this PR which will be used during _Squash and Merge_ and will be shown as Log Message 
+* Please provide a short summary of this PR, which will be used during _Squash and Merge_ and will be shown as Log Message 
 
 ### Testing
 * How were these changes tested?
