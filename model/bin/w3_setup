@@ -159,10 +159,6 @@ then
 
   echo "   Setup file $ww3_env found"
 
-  set `grep WWATCH3_LPR $ww3_env` ; shift
-  prntr="$*"
-  echo "      Printer (listings)          : $prntr"
-
   set `grep WWATCH3_F90 $ww3_env` ; shift
   comp_fc="$*"
   echo "      auxiliary FORTRAN compiler  : $comp_fc"
@@ -189,12 +185,6 @@ then
 else
   echo "   Setup file $ww3_env not found"
 
-  if [ $PRINTER ]
-  then
-    prntr=$PRINTER
-  else
-    prntr=printer
-  fi
   comp_fc=gfortran
   if [ $tdir ]
   then
@@ -207,7 +197,6 @@ else
 
     echo ' '
     echo "   Default set up :"
-    echo "      Printer (listings)       : $prntr"
     echo "      Auxiliary FORTRAN comp.  : $comp_fc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
@@ -245,13 +234,6 @@ then
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
   do
     echo ' '
-
-    echo -n "      Printer for listings [$prntr] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      prntr="$instr"
-    fi
 
     echo -n "      Auxiliary FORTRAN compiler [$comp_fc] : "
     instr="$NULL" ; read instr
@@ -310,7 +292,6 @@ then
 
     echo ' '
     echo "   Modified set up :"
-    echo "      Printer (listings)       : $prntr"
     echo "      Auxiliary FORTRAN comp.  : $comp_fc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
@@ -328,7 +309,6 @@ echo '# Environment variables for wavewatch III' >> $ww3_env
 echo '# ---------------------------------------' >> $ww3_env
 echo '#'                                         >> $ww3_env
 echo ' '                                         >> $ww3_env
-echo "WWATCH3_LPR      $prntr"                   >> $ww3_env
 echo "WWATCH3_F90      $comp_fc"                 >> $ww3_env
 echo "WWATCH3_DIR      $path_s"                  >> $ww3_env
 echo "WWATCH3_TMP      $temp_dir"                >> $ww3_env
