@@ -1247,10 +1247,21 @@ then
 
     for g in $input_grids
     do
-
+      echo "grid= $g"
       if [ $multi -eq 2 ]
       then
         gu="_$g"
+# check if each grid has its own input
+        if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+        then
+           inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+        else
+           inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+        fi
+        inputs_tmp=`( ls ${path_i}/${prog}${gu}* )`
+        if [ ! -z "$inputs_tmp" ];then
+           inputs=$inputs_tmp
+        fi
       fi
 
       for ifile in $inputs
@@ -1261,12 +1272,12 @@ then
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
-          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          otype="`basename $ifile .nml | sed s/^${prog}_// | sed s/^${g}_//`"
           ofile="$path_w/`basename $ifile .nml`.out"
         else
           \rm -f $prog.inp
           \ln -s $ifile $prog.inp
-          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          otype="`basename $ifile .inp | sed s/^${prog}_// | sed s/^${g}_//`"
           ofile="$path_w/`basename $ifile .inp`.out"
         fi
   
