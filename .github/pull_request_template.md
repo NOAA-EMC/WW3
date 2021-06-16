@@ -24,7 +24,7 @@ Note that properly "linked issues" (either automatic links, or manual ones using
 
 * Reviewers: @mentions of suggested reviewers of the proposed changes
 
-## Commit Message
+### Commit Message
 * Please provide a short summary of this PR, which will be used during _Squash and Merge_ and will be shown as Log Message 
 
 ### Testing
