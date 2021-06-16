@@ -1,4 +1,4 @@
 MODEL: gnh_10m gsh_15m aoc_9km
-INPUT: glo_30m
+INPUT: glo_15mxt
 POINT: points
 INTGL: glo_15mxt

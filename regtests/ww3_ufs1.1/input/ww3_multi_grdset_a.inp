@@ -7,23 +7,23 @@ $
 1 1 T 1 T T
 $
 $
-  'glo_30m' F T T T F F F F F
+  'glo_15mxt' F T T T F F F F F
 $
  'points'
 $
 $$ the presence of 1) water levels 2) currents 3) winds 4) ice and
 $ 5-7) assimilation data as in the file ww3_shel.inp.
-'glo_1deg'  'no' 'glo_30m' 'glo_30m' 'glo_30m' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+'glo_1deg'  'no' 'glo_15mxt' 'glo_15mxt' 'glo_15mxt' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
 $
-   20130401 000000   20130402 000000
+   20210401 000000   20210402 000000
 $
    F  F
 $
-   20130401 030000   10800 20130402 000000 
+   20210401 030000   10800 20210402 000000 
    N
-   WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA USP
+   WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA
 $
-   20130401 030000   10800 20130402 000000
+   20210401 030000   10800 20210402 000000
 $
 $ Global output point data file for global wave ensembles
 $
@@ -330,8 +330,8 @@ $       0.E3     0.E3  'STOPSTRING'
 $
    20010101 000000      0  20301231 000000
 $
-   20130401 000000      0  20130402 000000 T
-   20130401 000000   10800 20130402 000000 
+   20210401 000000      0  20210402 000000 T
+   20210401 000000   10800 20210402 000000 
 $
    20010101 000000      0  20301231 000000
 $
