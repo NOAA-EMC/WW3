@@ -12,9 +12,8 @@ WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
-WWATCH3_NETCDF := NC4
 NETCDF_CONFIG := $(shell which nc-config)
-export WWATCH3_ENV WWATCH3_NETCDF NETCDF_CONFIG
+export WWATCH3_ENV NETCDF_CONFIG
 
 EXE := $(WW3_EXEDIR)/ww3_multi_esmf
 

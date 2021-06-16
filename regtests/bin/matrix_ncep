@@ -114,7 +114,6 @@
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
   echo "  module load $modnetcdf"                           >> matrix.head
-  echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
   echo "  export WW3_PARCOMPN=4"                            >> matrix.head

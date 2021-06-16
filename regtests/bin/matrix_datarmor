@@ -54,7 +54,6 @@
 
   echo '  source /usr/share/Modules/3.2.10/init/bash'                                 >> matrix.head
   echo '  module purge'                                                               >> matrix.head
-  echo '  export WWATCH3_NETCDF=NC4'                                                  >> matrix.head
   echo "  export WW3_PARCOMPN=4"                                                      >> matrix.head
 
   if [ $cmplr = "datarmor_intel_debug" ] || [ $cmplr = "datarmor_intel" ]
