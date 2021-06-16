@@ -301,16 +301,10 @@
 *****************************************************************
 
 Compile of WAVEWATCH III NetCDF enabled programs requires the
-environment variable WWATCH3_NETCDF be set to either NC3 (compile
-with NetCDF version 3.x) or NC4 (compile with NetCDF version 4.x).
+environment variable WWATCH3_NETCDF be set to NC4 (compile with 
+NetCDF version 4.x). Support for NC3 has been removed. 
 
-If WWATCH3_NETCDF = NC3, then the following environment variables
-are required.
-
-    NETCDF_LIBDIR = <path to NetCDF-3 libraries>
-    NETCDF_INCDIR = <path to NetCDF-3 include>
-
-If WWATCH3_NETCDF = NC4, then the following environment variables
+For WWATCH3_NETCDF = NC4, then the following environment variables
 are required.
 
     NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
@@ -348,18 +342,9 @@ EOF
   else
     case $WWATCH3_NETCDF in
       NC3)
-        if [ -z "$NETCDF_LIBDIR" ]
-        then
-          netcdf_compile_message
-          echo "$mode: NETCDF_LIBDIR not defined"; echo ' '
-          return 1
-        fi
-        if [ -z "$NETCDF_INCDIR" ]
-        then
-          netcdf_compile_message
-          echo "$mode: NETCDF_INCDIR not defined"; echo ' '
-          return 1
-        fi
+        netcdf_compile_message
+        echo "$mode: NETCDF v 3 is no longer supported"; echo ' '
+        return 1
       ;;
       NC4)
         if [ ! -n "`grep NC4 $switch_file`" ]
@@ -413,7 +398,7 @@ EOF
     case $WWATCH3_NETCDF in
       NC3)
         netcdf_compile_message
-        echo "$mode: WWATCH3_NETCDF=NC3 incompatible with NC4 switch"; echo ' '
+        echo "$mode: WWATCH3_NETCDF=NC3 is not supported and incompatible with NC4 switch"; echo ' '
         return 1
       ;;
       NC4)
