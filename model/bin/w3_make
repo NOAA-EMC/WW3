@@ -296,33 +296,25 @@
 
   cat 2>&1 << 'EOF'
 
-*****************************************************************
-***         WAVEWATCH III NetCDF Compile Instructions         ***
-*****************************************************************
+***********************************************************************
+***         WAVEWATCH III NetCDF Compile Instructions               ***
+***********************************************************************
 
-Compile of WAVEWATCH III NetCDF enabled programs requires the
-environment variable WWATCH3_NETCDF be set to NC4 (compile with 
-NetCDF version 4.x). Support for NC3 has been removed. 
-
-For WWATCH3_NETCDF = NC4, then the following environment variables
-are required.
+For compiling with NetCDF, the following environment variable
+is required:
 
     NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
 
 The nc-config utility (part of the NetCDF-4 install) is used to
-determine the appropriate compile and link flags for the
-WWATCH3_NETCDF=NC4 compile.
+determine the appropriate compile and link flags.
 
-The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
-Use "nc-config --version" to check the version of the installed
-NetCDF.
+For NetCDF routines to compile, WAVEWATCH III requires 
+NetCDF version 4.1.1 or higher. Use "nc-config --version" to check 
+the version of the installed NetCDF. It is also required for NetCDF 
+to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4" 
+to check if the installed NetCDF has the NetCDF-4 API enabled.
 
-Compiling with the NC4 switch requires WWATCH3_NETCDF=NC4 and the
-NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "nc-config --has-nc4" to check if the installed NetCDF has
-the NetCDF-4 API enabled.
-
-*****************************************************************
+***********************************************************************
 
 EOF
 
