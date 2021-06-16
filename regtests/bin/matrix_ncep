@@ -229,6 +229,23 @@
              
   $main_dir/../regtests/bin/matrix.base
 
+  $main_dir/../regtests/bin/matrix_divider_p.sh 
+
+
+  echo "#submit all of the diveded matrix files" > msuball.sh
+  if [ $batchq = "slurm" ] 
+  then
+    files=`ls matrix? matrix??`
+    for file in $files 
+    do
+      echo "sbatch < $file"  >> msuball.sh
+    done
+  fi 
+
+ 
+
+
+
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #
 # --------------------------------------------------------------------------- #
