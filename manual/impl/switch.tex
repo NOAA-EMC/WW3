@@ -221,7 +221,6 @@ Selection of method of current interpolation (space):
 Switch for user supplied GRIB package.
 \begin{slist}
 \sit{nogrb}{No package included.}
-\sit{ncep1}{\ncep\ GRIB1 package for IBM SP.}
 \sit{ncep2}{\ncep\ GRIB2 package for IBM SP.}
 \end{slist}
 
@@ -277,8 +276,6 @@ compatible with switches used in previous model versions.
 \begin{slist}
 \sit{ompg}{General loop parallelization directives used for both exclusive
     OpenMP parallelization and hybrid MPI-OpenMP parallelization.}
-\sit{ompx}{Idem, but for directives used only for exclusive OpenMP
-    parallelization.}  
 \sit{omph}{Idem, but for directives used only for hybrid MPI-OpenMP
     parallelization.}
 \sit{pdlib}{Domain Decomposition for Explicit and Implicit Solver on triangular unstructured grids. ({\code ParMetis} is required for this option)}
@@ -293,7 +290,7 @@ Currently only affects code compiled with the {\F smc} switch.}
 Note that these switches can only be used in certain combinations, as enforced
 in the model installation scripts (particularly {\file make\_makefile.sh}. A
 pure MPI approach requires the {\F dist} and {\F mpi} switches. A pure OpenMP
-approach requires the {\F shrd}, {\F ompg} and {\F ompx} switches, and the
+approach requires the {\F shrd},  and {\F ompg} switches, and the
 hybrid approach requires the {\F dist}, {\F mpi}, {\F ompg}, and {\F omph}
 switches.
 

@@ -258,7 +258,7 @@
   then
     MODES="MPI"
   fi
-# "SHRD OMPG OMPX"
+# "SHRD OMPG"
   if [ ! -n "$(grep MPI $switch_file)" ] && [ -n "$(grep OMPG $switch_file)" ]
   then
     MODES="OMP"
@@ -301,7 +301,6 @@
         -e 's/OMPG //g'    \
         -e 's/PDLIB //g'    \
         -e 's/OMPH //g'    \
-        -e 's/OMPX //g'    \
         -e 's/MPI //g' switch > $main_dir/work_SEQ/switch.SEQ
   fi
   
