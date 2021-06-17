@@ -95,10 +95,9 @@
   cp switch                             switch.hold
   sed -e 's/DIST/SHRD/g' \
       -e 's/OMPG //g'\
-      -e 's/OMPX //g'\
       -e 's/OMPH //g'\
       -e 's/MPI //g'             switch.hold > switch.SEQ
-  sed 's/SHRD/SHRD OMPG OMPX/g'  switch.SEQ > switch.OMP
+  sed 's/SHRD/SHRD OMPG/g'  switch.SEQ > switch.OMP
 
 # --------------------------------------------------------------------------- #
 # 3. Compile non-OpenMP codes                                                 #
