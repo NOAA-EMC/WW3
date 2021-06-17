@@ -1,12 +1,12 @@
 $
 $ Input file to run with Inlet grid 
 $
-1 0 F 1 T T
+1 0 F 1 T T 
 $
 $'points'
 $
 $
- 'glo_unst_a'  'no' 'no' 'native' 'no' 'no' 'no' 'no'   1  1  0.00 1.00  F
+ 'glo_unst_a'  'no' 'no' 'native' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
 $ 
  20180902 000000 20180902 040000
 $
