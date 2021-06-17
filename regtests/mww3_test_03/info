@@ -124,14 +124,13 @@
 #  ./bin/run_test ../ -m grdset_c -c gnu_debug -o netcdf mww3_test_03       #
 #                                                                           #
 #                                                                           #
-#  ./bin/run_test -g low0 -s PR3_UQ -w work_low0 -o netcdf           \      #
+#  ./bin/run_test -m grdset_a0 -s PR3_UQ -w work_a0 -o netcdf          \    #
 #                                         ../model mww3_test_03             #
 #                                                                           #
-#  ./bin/run_test -m grdset_a -s PR3_UQ -w work_a -o netcdf          \      #
+#  ./bin/run_test -m grdset_a  -s PR3_UQ -w work_a  -o netcdf          \    #
 #                                         ../model mww3_test_03             #
 #                                                                           #
 #                                              Hendrik Tolman, Feb 2006     #
-#                                              Qingxiang Liu , Jun 2021     #
 #                                                   Last Mod : Jun 2021     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
