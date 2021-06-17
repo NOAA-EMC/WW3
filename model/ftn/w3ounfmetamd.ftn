@@ -1943,9 +1943,6 @@
 
       RETURN
 !
- 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
-               '     WRITEMETA: Unknown meta data type: ', A1         / )
-!
       END SUBROUTINE WRITE_META
 
 !/ ------------------------------------------------------------------- /
@@ -2057,7 +2054,7 @@
             IF(ERR /= NF90_NOERR) RETURN
 
           CASE DEFAULT
-            WRITE(1000,*) P%TYPE
+            WRITE(NDSE,1000) P%TYPE
             CALL EXTCDE(10)
         END SELECT
 
