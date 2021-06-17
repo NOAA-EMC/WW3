@@ -46,7 +46,6 @@
 !      INSNL1    Subr. W3SNL1MD Initialization of the DIA.
 !      INSNL2    Subr. W3SNL2MD Initialization of WRT.
 !      INSNL3    Subr. W3SNL3MD Initialization of GMD.
-!      INSNLX    Subr. W3SNLXMD Initialization of exp. DIA.
 !      INSNLS    Subr. W3SNLSMD Initialization of nonlinear `smoother'.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
@@ -233,7 +232,6 @@
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
 !/NL3      USE W3SNL3MD, ONLY: INSNL3
-!/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
       USE W3TIMEMD, ONLY: CALTYPE
@@ -315,28 +313,23 @@
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
 !/FLX3      TNAMEF = 'T and C(1996) with cap on Cd  '
 !/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
-!/FLXX      TNAMEF = 'Experimental                  '
 !/LN0      TNAME0 = 'Not defined                   '
 !/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '
-!/LNX      TNAME0 = 'Experimental                  '
 !/ST0      TNAME1 = 'Not defined                   '
 !/ST1      TNAME1 = 'WAM cycles 1 through 3        '
 !/ST2      TNAME1 = 'Tolman and Chalikov (1996)    '
 !/ST3      TNAME1 = 'WAM cycle 4+                  '
 !/ST4      TNAME1 = 'Ardhuin et al. (2009+)        '
 !/ST6      TNAME1 = 'BYDB input and dissipation    '
-!/STX      TNAME1 = 'Experimental                  '
 !/NL0      TNAME2 = 'Not defined                   '
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
 !/NL3      TNAME2 = 'Generalized Multiple DIA      '
 !/NL4      TNAME2 = 'Two Scaled Approximation      '
-!/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
 !/BT4      TNAME3 = 'SHOWEX                        '
 !/BT8      TNAME3 = 'Muddy Bed (D & L)             '
-!/BTX      TNAME3 = 'Experimental                  '
 !/IC1      TNAMEI = 'Ice sink term (uniform k_i)   '
 !/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
 !/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '
@@ -344,24 +337,17 @@
 !/IC5      TNAMEI = 'Ice sink term (eff. medium)   '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
-!/DBX      TNAME4 = 'Experimental                  '
 !/TR0      TNAME5 = 'Not defined                   '
-!/TRX      TNAME5 = 'Experimental                  '
 !/BS0      TNAME6 = 'Not defined                   '
-!/BSX      TNAME6 = 'Experimental                  '
-!/XX0      TNAME7 = 'Not defined                   '
-!/XXX      TNAME7 = 'Experimental                  '
 !/PR0      TNAMEP = 'No propagation                '
 !/PR1      TNAMEP = 'First order upstream          '
 !/UQ      TNAMEP = '3rd order UQ scheme           '
 !/UNO      TNAMEP = '2nd order UNO scheme          '
 !/SMC      TNAMEP = 'UNO2 on SMC grid propagation  '
-!/PRX      TNAMEP = 'Experimental                  '
 !/PR0      TNAMEG = 'No GSE aleviation             '
 !/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
 !/PR2      TNAMEG = 'Diffusion operator            '
 !/PR3      TNAMEG = 'Averaging operator            '
-!/PRX      TNAMEG = 'Experimental                  '
 !
       FNAMEF = TNAMEF
       FNAME0 = TNAME0
@@ -1208,7 +1194,6 @@
 !
 !/NL1      IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
 !/NL3      IF ( .NOT. WRITE ) CALL INSNL3
-!/NLX      IF ( .NOT. WRITE ) CALL INSNLX
 !/NLS      IF ( .NOT. WRITE ) CALL INSNLS
 !
 ! Layered barriers needed for file management in xnl_init
