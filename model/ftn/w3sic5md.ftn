@@ -7,7 +7,7 @@
 !/                  |           Q. Liu                  |
 !/                  |           E. Rogers               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jun-2017 |
+!/                  | Last update :         19-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2016 : Origination.                        ( version 5.10 )
@@ -25,15 +25,32 @@
 !/
 !/    20-Aug-2018 : Ready to be merged to master (v6.06)( Q. Liu)
 !/
+!/    19-May-2021 : Incl. the RP and M2 model           ( Q. Liu)
+!/
 !/ 1. Purpose :
-!     Calculate ice source term S_{ice} according to a viscoelastic sea
-!     ice model (Mosig et al. 2015)
+!     Calculate ice source term S_{ice} according to different ice
+!     models:
+!     * 'FS': the viscoelastic, extended Fox and Squire sea ice model
+!             (Mosig et al. 2015)
+!     * 'RP': the viscoelastic, Robinson and Palmer model (Mosig et al.
+!             2015)
+!     * 'M2': the order 3 power law model proposed by Meylan et al.
+!             (2018)
 !
 !     Reference:
-!     Mosig, J. E. M., F. Montiel, and V. A. Squire (2015),
+!     Mosig, J.E.M., F. Montiel, and V. A. Squire (2015):
 !     Comparison of viscoelastic-type models for ocean wave attenuation
 !     in ice-covered seas, J. Geophys. Res. Oceans, 120, 6072–6090,
 !     doi:10.1002/2015JC010881.
+!
+!     Meylan, M.H., L. Bennetts, J. Mosig, W. Rogers, M. Doble, and
+!     M. Peter (2018): Dispersion relations, power laws, and energy loss
+!     for waves in the marginal ice zone. J. Geophys. Res. Oceans, 123,
+!     3322–3335, https://doi.org/10.1002/2018JC013776.
+!
+!     Liu, Q., W. E. Rogers, A. Babanin, J. Li, and C. Guan (2020):
+!     Spectral Modeling of Ice-Induced Wave Decay. J. Phys. Oceanogr.,
+!     50 (6), 1583–1604.
 !
 !  2. Variables and types :
 !
@@ -114,7 +131,7 @@
 !/                  |           Q. Liu                  |
 !/                  |           E. Rogers               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Apr-2017 |
+!/                  | Last update :         19-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    23-Mar-2016 : Origination                         ( version 5.10 )
@@ -130,14 +147,8 @@
 !/       No unauthorized use without permission.
 !/
 !/ 1. Purpose :
-!     Calculate ice source term S_{ice} according to a viscoelastic sea
-!     ice model (Mosig et al. 2015)
-!
-!     Reference:
-!     Mosig, J. E. M., F. Montiel, and V. A. Squire (2015),
-!     Comparison of viscoelastic-type models for ocean wave attenuation
-!     in ice-covered seas, J. Geophys. Res. Oceans, 120, 6072–6090,
-!     doi:10.1002/2015JC010881.
+!     Calculate ice source term S_{ice} according to 3 different sea ice
+!     models (Mosig et al. 2015, Meylan et al. 2018, Liu et al. 2020)
 !
 !  2. Method :
 !     Regarding i/o (general to all Sice modules): S_{ice} source term
@@ -181,9 +192,6 @@
 !     This leads me to believe that the calling routine is
 !         expecting "S/sigma" not "S"
 !     Thus we will use D = S/E = -2 * Cg * k_i
-!
-!     The calling routine is expecting "S/sigma" not "S"
-!        Thus we will use D = S/E = -2 * Cg * k_i
 !        (see also documentation of W3SIC1)
 !
 !     Notes regarding numerics:
@@ -194,9 +202,9 @@
 !
 !     Note regarding applicability/validity:
 !     --------------------------------------
-!     Similar to the Wang and Shen model used in w3sic3md, the FS model
-!     used here is also a viscoelastic-type model which treats the sea
-!     ice cover as a continuum and uses two empirical rheological para-
+!     Similar to the Wang and Shen model used in w3sic3md, the 3 models
+!     used here are empirical medium models as well which treat the sea
+!     ice cover as a continuum and use 1/2 empirical rheological para-
 !     meters, i.e., the effective shear modulus of ice G and the effec-
 !     tive viscosity η to characterize sea ices of various type. Please
 !     see the documentation of w3sic3md for a detailed discussion of
@@ -289,7 +297,7 @@
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECONC
       REAL, DIMENSION(NK)     :: D1D, WN_R, WN_I
-      REAL                    :: TWN_R, TWN_I
+!     REAL                    :: TWN_R, TWN_I
       INTEGER                 :: IK, IKTH
       LOGICAL                 :: NOICE
 !/ ------------------------------------------------------------------- /
@@ -364,7 +372,7 @@
           CALL W3IC5WNCG(WN_R, WN_I, CG, ICECOEF1, ICECOEF2, &
                          ICECOEF3, ICECOEF4, DEPTH)
 ! recall that D=S/E=-2*Cg_{ice}*k_i
-! In some cases, the FS model yields very larg Cg_{ice}, which
+! In some cases, the FS model yields very large Cg_{ice}, which
 ! subquently may result in numerical failure due to the violation of CFL
 ! conditions, therefore we still use ice-free group velocity to advect
 ! wave packets.
@@ -548,30 +556,27 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           Q. Liu                  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Apr-2017 |
+!/                  | Last update :         19-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2016 : Origination                         ( version 5.10)
-!/                                                      ( Q. Liu )
+!/                                                      ( Q. Liu)
 !/    17-Mar-2016 : Start from the Matlab code `FoxSquire.m` (provided
 !/                  by Prof. Vernon Squire from University of Otago)
-!/                                                      ( Q. Liu )
+!/                                                      ( Q. Liu)
 !/    25-Apr-2017 : Add more filters                    ( Q. Liu)
+!/
+!/    19-May-2021 : Incl. RP and M2 ice models          ( Q. Liu)
 !/
 !  1. Purpose :
 !
 !     Calculate the complex wavenumber for waves in ice according to
-!     the viscoelastic model, i.e., FS model in Mosig et al. (2015)
+!     three different sea ice models, i.e., FS, RP and M2 (see Liu et
+!     al. 2020)
 !
 !  2. Method :
-!     Solving the dispersion relations of FS model (Eq. (20) and (24)
-!     in Mosig et al. (2015))
-!
-!     Reference:
-!     Mosig, J. E. M., F. Montiel, and V. A. Squire (2015),
-!     Comparison of viscoelastic-type models for ocean wave attenuation
-!     in ice-covered seas, J. Geophys. Res. Oceans, 120, 6072–6090,
-!     doi:10.1002/2015JC010881.
+!     Mainly solving the dispersion relations of FS and RP models (
+!     Eqs. (20, 24, 25)) in Mosig et al. (2015))
 !
 !  3. Parameters :
 !
@@ -643,15 +648,19 @@
 !/ Local parameters
 !
       REAL                  :: IC5MINIG, IC5MINWT, IC5MAXKRATIO, &
-                               IC5MAXKI, IC5MINHW
+                               IC5MAXKI, IC5MINHW, IC5VEMOD
       REAL                  :: TISMODG, TWT, TRATIO, THW
       REAL, PARAMETER       :: NU = 0.3, RHOW = 1025.
-      COMPLEX               :: GV, C1
-      REAL                  :: SIGMA, C2, WNO, CGO, THKH,  &
+!     COMPLEX               :: GV, C1
+!     REAL                  :: SIGMA, C2, WNO, CGO, THKH,  &
+      COMPLEX               :: GV, C1, C2
+      REAL                  :: SIGMA, WNO, CGO, THKH,  &
                                RTRL(5), RTIM(5), RTANG(5)
       INTEGER               :: IREAL
-      COMPLEX(KDPC)         :: GUESS, CROOT, C1D
-      REAL(KDP)             :: C2D, HWATD
+!     COMPLEX(KDPC)         :: GUESS, CROOT, C1D
+!     REAL(KDP)             :: C2D, HWATD
+      COMPLEX(KDPC)         :: GUESS, CROOT, C1D, C2D
+      REAL(KDP)             :: HWATD
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
@@ -678,6 +687,7 @@
       IC5MAXKRATIO = IC5PARS(3) ! Maximum k_{ow}/k_r
       IC5MAXKI     = IC5PARS(4) ! Maximum k_i
       IC5MINHW     = IC5PARS(5) ! Minimum d
+      IC5VEMOD     = IC5PARS(9) ! Model selected 1: EFS, 2: RP, 3: M2
 !
       TISMODG  = MAX(IC5MINIG, ISMODG)
       TWT      = MAX(IC5MINWT, WT)
@@ -692,14 +702,15 @@
 ! σ = 2π / T
       SIGMA = TPI / TWT
 !
-! Complex shear modulus Gv = G - i σ ρ η
-      GV = CMPLX(TISMODG, -1. * SIGMA * RHOI * IVISC)
+      IF (ABS(IC5VEMOD - 1.) < ERRTOL) THEN
+! Complex shear modulus Gv = G - i σ ρ η (EFS model)
+          GV = CMPLX(TISMODG, -1. * SIGMA * RHOI * IVISC)
 !
 ! -------------------------------------------------------------------- *
 ! Note that Eq. (24) in Mosig et al. (2015) can be written like below:
 ! (c1 * k^5 + c2 * k) * tanh(HWAT*k) - 1 = 0
 ! Most Important part of this module --------------------------------- *
-      C1 = GV * HICE**3. / (6. * RHOW * SIGMA**2.)
+          C1 = GV * HICE**3. / (6. * RHOW * SIGMA**2.)
 !
 ! To be divided by (1-NU) or multiplied by (1+NU) ??
 ! Beam model: then multiplied by (1+ν)
@@ -707,12 +718,23 @@
 ! The beam version is more theoretically (J.E.M. Mosig, personal
 ! communication, 2016), although there is only very marginal difference
 ! between this two version as (1+NU = 1.3 and 1/(1-NU) ~ 1.4)
-      C1 = C1 * (1+NU)
-!     C1 = C1 / (1-NU)
+          C1 = C1 * (1+NU)
+!         C1 = C1 / (1-NU)
 !
 ! C2
-      C2 = GRAV / SIGMA**2. - RHOI * HICE / RHOW
+!         C2 = GRAV / SIGMA**2. - RHOI * HICE / RHOW
+          C2 = CMPLX(GRAV / SIGMA**2. - RHOI * HICE / RHOW, 0.)
 !
+      ELSE IF (ABS(IC5VEMOD - 2.) < ERRTOL) THEN
+! See Appendix of Liu et al. (2020) - RP model
+          C1 = CMPLX(TISMODG * HICE**3. * (1+NU) / (6. * RHOW * SIGMA**2.), 0.)
+          C2 = CMPLX(GRAV/SIGMA**2. - RHOI * HICE / RHOW,              &
+                     -1. * IVISC / (RHOW * SIGMA))
+!
+      ELSE IF (ABS(IC5VEMOD - 3.) > ERRTOL) THEN
+          WRITE(NDSE, 1003) 'FSDISP', IC5VEMOD
+          CALL EXTCDE(4)
+      END IF
 ! Use the dispersion in open water to get an approximation of
 ! tanh(HWAT * k). We can also roughly use the dispersion in deep
 ! water case, that is tanh(HWAT*k) ~ 1.
@@ -721,32 +743,42 @@
       CALL WAVNU1(SIGMA, THW, WNO, CGO)
       THKH = TANH(WNO * THW)
 !
+      IF (ABS(IC5VEMOD - 1.) < ERRTOL .OR. ABS(IC5VEMOD - 2.) < ERRTOL) THEN
 ! Get the first guess of the complex wavenumber
-      CALL POLYROOTS(6, &
-                     (/REAL(REAL(C1))*THKH, 0., 0., 0., C2*THKH, -1./),&
-                     RTRL, RTIM)
-      RTANG = ATAN2(RTIM, RTRL)
+          CALL POLYROOTS(6, &
+                         (/REAL(REAL(C1))*THKH, 0., 0., 0., REAL(REAL(C2))*THKH, -1./),&
+                         RTRL, RTIM)
+          RTANG = ATAN2(RTIM, RTRL)
 !
 ! There should only be one real root in RTRL + i * RTIM because in
 ! this case (ivisc=0) the original viscoelastic-type model reduced to
 ! the thin elastic plate model which has only one real solution.
 ! Find its index ...
 !
-      IREAL = MINLOC(ABS(RTANG), DIM=1)
-      IF (RTRL(IREAL) <= 0. .OR. ABS(RTIM(IREAL)) > ERRTOL) THEN
-          IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'FSDISP'
-          CALL EXTCDE(2)
-      END IF
+          IREAL = MINLOC(ABS(RTANG), DIM=1)
+          IF (RTRL(IREAL) <= 0. .OR. ABS(RTIM(IREAL)) > ERRTOL) THEN
+              IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'FSDISP'
+              CALL EXTCDE(2)
+          END IF
 !
 ! Get the first guess for iteration
-      GUESS = RTRL(IREAL) * EXP(CMPLX(0., 1E-6))
+          GUESS = RTRL(IREAL) * EXP(CMPLX(0., 1E-6))
 !
 ! Newton-Raphson method
 ! Turn c1, c2, hwat to be double
-      C1D = C1; C2D = C2; HWATD = THW
-      CROOT = NR_ROOT(C1D, C2D, HWATD, GUESS)
-      WNR = REAL(REAL(CROOT))
-      WNI = REAL(AIMAG(CROOT))
+          C1D = C1; C2D = C2; HWATD = THW
+          CROOT = NR_ROOT(C1D, C2D, HWATD, GUESS)
+          WNR = REAL(REAL(CROOT))
+          WNI = REAL(AIMAG(CROOT))
+!
+      ELSE IF (ABS(IC5VEMOD - 3.) < ERRTOL) THEN ! M2
+! Model with Order 3 Power Law (section 6.2 in Meylan et al. (2018, JGR-Ocean))
+! Based on my understanding, the wavelength does not change because
+! the elasticity is not considered in this model
+          WNR = WNO ! Open-water wavenumber
+! Eq. (53) in Meylan et al. (2018)
+          WNI = HICE * IVISC * SIGMA**3. / (RHOW * GRAV**2.)
+      END IF
 !
 ! RATIO Check
 ! Using the ratio k0 / kr as a basic check for the reliability of
@@ -765,7 +797,6 @@
 !
 ! (N.B.) NaN problem solved by using CMPLX_TANH2
 !
-
       TRATIO = WNO / WNR
       IF (W3INAN(WNR) .OR. W3INAN(WNI) .OR. WNR <= 0 .OR. WNI <= 0. &
           .OR. TRATIO >= IC5MAXKRATIO) THEN
@@ -798,6 +829,9 @@
               '  Wave number (Ko)  : ', F11.3, ' rad/m'/    &
               '  Wave number (Kr)  : ', F11.3, ' rad/m'/    &
               '  Attenu. Rate (Ki) : ', E9.2, ' /m'/)
+!
+ 1003 FORMAT(/' *** WAVEWATCH III ERROR IN W3SIC5MD : '/   &
+               '     Subr. ', A, ': Unknown VE model (', F5.0, ')'/)
 !/
 !/ End of FSDISP ----------------------------------------------------- /
 !/
@@ -1402,7 +1436,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           Q. Liu                  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Mar-2016 |
+!/                  | Last update :         19-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    18-Mar-2016 : Origination.                        ( version 5.10 )
@@ -1411,7 +1445,9 @@
 !/                  by Prof. Vernon Squire from University of Otago)
 !/                                                      ( Q. Liu )
 !/    24-Mar-2016 : Adding the cmplx_sinh/cosh/tanh     ( Q. Liu )
-!
+!/
+!/    19-May-2021 : Change types of few input arguments ( Q. Liu )
+!/
 !  1. Purpose :
 !
 !     Calculate the corrected term in the Newton-Raphson root-finding
@@ -1491,8 +1527,10 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      COMPLEX(KDPC), INTENT(IN)     :: K, C1
-      REAL(KDP), INTENT(IN)         :: C2, H
+!     COMPLEX(KDPC), INTENT(IN)     :: K, C1
+!     REAL(KDP), INTENT(IN)         :: C2, H
+      COMPLEX(KDPC), INTENT(IN)     :: K, C1, C2
+      REAL(KDP), INTENT(IN)         :: H
       COMPLEX(KDPC)                 :: NR_CORR
 !/
 !/
@@ -1543,7 +1581,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           Q. Liu                  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Mar-2016 |
+!/                  | Last update :         19-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    18-Mar-2016 : Origination.                        ( version 5.10 )
@@ -1551,6 +1589,9 @@
 !/    18-Mar-2016 : Start from the Matlab code `FoxSquire.m` (provided
 !/                  by Prof. Vernon Squire from University of Otago)
 !/                                                      ( Q. Liu )
+!/
+!/    19-May-2021 : Change types of few input arguments ( Q. Liu )
+!/
 !  1. Purpose :
 !
 !     The iterative procedure of the Newton-Raphson method
@@ -1619,8 +1660,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      COMPLEX(KDPC), INTENT(IN)     :: C1, GUESS
-      REAL(KDP), INTENT(IN)         :: C2, H
+!     COMPLEX(KDPC), INTENT(IN)     :: C1, GUESS
+!     REAL(KDP), INTENT(IN)         :: C2, H
+      COMPLEX(KDPC), INTENT(IN)     :: C1, GUESS, C2
+      REAL(KDP), INTENT(IN)         :: H
       COMPLEX(KDPC)                 :: NR_ROOT
 !/
 !/ ------------------------------------------------------------------- /
