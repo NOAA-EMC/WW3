@@ -21,7 +21,7 @@
 !/    31-Aug-2018 : Update groups 2,4,6,8 (S. Zieger)   ( version 6.05 )
 !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
-!/    02-Jun-2021 : Big fixs (*SUMGRD; Q. Liu)          ( version 7.xx )
+!/    02-Jun-2021 : Bug fix (*SUMGRD; Q. Liu)           ( version 7.xx )
 !/
 !   1. Purpose : 
 !
