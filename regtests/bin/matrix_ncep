@@ -60,7 +60,7 @@
     modbacio='bacio/2.4.1'
     modg2='g2/3.4.1'
     modw3nco='w3nco/2.4.1'
-    modesmf='esmf/8_1_0_beta_snapshot_36'
+    modesmf='esmf/8_1_1'
   elif [ $isorion ]
   then
     cmplr='orion.intel'
@@ -78,7 +78,7 @@
     modbacio='bacio/2.4.1'
     modg2='g2/3.4.1'
     modw3nco='w3nco/2.4.1'
-    modesmf='esmf/8_1_0_beta_snapshot_47'
+    modesmf='esmf/8_1_1'
   else
     batchq=
   fi
