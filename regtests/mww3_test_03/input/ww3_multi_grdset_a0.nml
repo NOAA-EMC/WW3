@@ -20,7 +20,7 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%NRGRD	= 3
+  DOMAIN%NRGRD	= 1
   DOMAIN%FLGHG1 = T
   DOMAIN%FLGHG2 = T
   DOMAIN%STOP   = '19680606 120000'
@@ -110,11 +110,7 @@
 !     MODEL(2)%RESOURCE = 1 1 0.00 1.00 F
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
-  MODEL(1)%NAME                  = 'low1'
-  MODEL(2)%NAME                  = 'low2'
-  MODEL(2)%RESOURCE%RANK_ID      = 1
-  MODEL(3)%NAME                  = 'low3'
-  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(1)%NAME                  = 'low0'
 /
 
 ! -------------------------------------------------------------------- !
