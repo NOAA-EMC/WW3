@@ -33,7 +33,7 @@
   FIELD%TIMESTART        =  '19680606 000000'
   FIELD%TIMESTRIDE       =  '3600'
   FIELD%TIMECOUNT        =  '999'
-  FIELD%LIST             =  'HS'
+  FIELD%LIST             =  'HS FP DP PT01 PT02 MSS MSC'
   FIELD%PARTITION        =  '0 1 2'
   FIELD%TYPE             =  4
 /
