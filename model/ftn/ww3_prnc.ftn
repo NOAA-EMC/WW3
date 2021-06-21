@@ -1701,7 +1701,7 @@
               END IF
             END IF
             CALL CHECK_ERR(IRET)
-            ! forces to 0 values that are undefined
+            ! forces undefined values to FILLVALUE
             WHERE(XC.NE.XC) XC = FILLVALUE
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
 
@@ -1874,8 +1874,11 @@
                 CALL INTERP(MXM, MYM, YC, IX21, IX22, IY21, IY22,      &
                                RD11, RD12, RD21, RD22, FILLVALUE, FY)
 
-                CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,      &
-                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                IF(FLSTAB) THEN
+                  ! AC only populated if FLSTAB is true
+                  CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,    &
+                                 RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                ENDIF
 
                 WHERE ( XC.NE.FILLVALUE .AND. YC.NE.FILLVALUE)
                   XTEMP = XC*XC + YC*YC
@@ -2415,11 +2418,21 @@
           IF(FACTOR.GT.0.0) THEN
             FA(IX,IY) = FA(IX,IY) / FACTOR
           ELSE
-            IF(XC(IX,IY).EQ.FILLVALUE) THEN
-              FA(IX,IY) = 0.0
+            ! Interpolation coefficients sum to zero - could be on a boundary
+            ! (see note in "method" above). If any surrounding points have a
+            ! valid value then use one of them, otherwise set to zero.
+            IF( XC(IX21(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX21(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY22(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY22(IX,IY))
             ELSE
-              FA(IX,IY) = XC(IX,IY)
-            ENDIF
+              ! All surrounding points are FILLVALUE - set to zero.
+              FA(IX,IY) = 0.0
+            END IF
           END IF
         END DO
       END DO
