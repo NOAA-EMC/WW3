@@ -35,6 +35,9 @@
 #                                                     U. K.  Met Office     #
 #                                                   Last Mod : Aug 2017     #
 #                                                                           #
+#   As the ARC option is merged into SMC one, this test is no longer needed #
+#   and all input files are deleted.    JGLi21Jun2021                       #
+#                                                                           #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
