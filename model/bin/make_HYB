@@ -95,7 +95,6 @@
   cp switch                             switch.hold
   sed -e 's/DIST/SHRD/g' \
       -e 's/OMPG //g'\
-      -e 's/OMPX //g'\
       -e 's/OMPH //g'\
       -e 's/MPI //g'                switch.hold > switch.SEQ
   sed 's/SHRD/DIST MPI OMPG OMPH/g' switch.SEQ > switch.HYB
