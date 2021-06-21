@@ -112,7 +112,7 @@ then
   errmsg "$path_b not found"
   exit 1
 fi
-path_a="$path_s/aux"
+path_a="$path_s/tools"
 if [ ! -d $path_a ]
 then
   errmsg "$path_a not found"

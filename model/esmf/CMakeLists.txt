@@ -77,13 +77,13 @@ set(SRCS
     SCRIP/scrip_timers.f
 )
 
-get_filename_component(aux_dir "${CMAKE_CURRENT_SOURCE_DIR}/../aux" ABSOLUTE)
+get_filename_component(tools_dir "${CMAKE_CURRENT_SOURCE_DIR}/../tools" ABSOLUTE)
 get_filename_component(ftn_dir "${CMAKE_CURRENT_SOURCE_DIR}/../ftn" ABSOLUTE)
 
-message(STATUS "aux_dir ${aux_dir}")
+message(STATUS "tools_dir ${tools_dir}")
 message(STATUS "ftn_dir ${ftn_dir}")
 
-add_executable(w3adc ../aux/w3adc.f)
+add_executable(w3adc ../tools/w3adc.f)
 
 foreach(src_file ${SRCS})
     STRING(REGEX REPLACE ".ftn" ".F90" gen_src_file ${src_file})

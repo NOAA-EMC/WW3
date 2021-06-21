@@ -109,7 +109,7 @@ path_s="`cd $path_s 1>/dev/null 2>&1 && pwd`"
 
 # 2.e Paths to source subdirectories
 path_e="$path_s/exe"
-path_a="$path_s/aux"
+path_a="$path_s/tools"
 path_b="$path_s/bin"
 if [ ! -d $path_a ]
 then
