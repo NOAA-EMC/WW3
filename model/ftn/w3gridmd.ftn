@@ -6238,13 +6238,13 @@
                '     OF GRID INDEX CLOSURE (NONE, SMPL or TRPL).'/    &
                ' *** PLEASE UPDATE YOUR GRID INPUT FILE ACCORDINGLY ***'/)
 !
- 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
-               '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
+!/SMC 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+!/SMC               '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
+!/SMC               '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
 !
- 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
-               '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
+!/SMC 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+!/SMC               '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
+!/SMC               '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)
