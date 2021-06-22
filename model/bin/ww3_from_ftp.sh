@@ -53,9 +53,8 @@ cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 cp -r data_regtests/ww3_tp2.21/input/*     regtests/ww3_tp2.21/input/
-cp -r data_regtests/ww3_ufs1.1/input/*.nc     regtests/ww3_ufs1.1/input/
-cp -r data_regtests/ww3_ufs1.2/input/glo_15mxt* regtests/ww3_ufs1.1/input/
-cp -r data_regtests/ww3_ufs1.1/input/*.nc     regtests/ww3_ufs1.2/input/
+cp -r data_regtests/ww3_ufs1.1/input/*     regtests/ww3_ufs1.1/input/
+cp -r data_regtests/ww3_ufs1.1/input/*.nc  regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
