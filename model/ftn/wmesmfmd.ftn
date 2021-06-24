@@ -282,6 +282,9 @@
       logical        :: med_present = .false.
       character(256) :: flds_scalar_name = ''
       integer        :: flds_scalar_num = 0
+      ! flds_scalar_index_nx and flds_scalar_index_nx are domain
+      ! metadata that allows CMEPS to convert a mesh back to 2d 
+      ! space for mediator restart and history outputs
       integer        :: flds_scalar_index_nx = 0
       integer        :: flds_scalar_index_ny = 0
 !
@@ -709,7 +712,8 @@
           value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (isPresent .and. isSet) then
-          read(cvalue, *) flds_scalar_num
+          flds_scalar_num = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
           write(logmsg,*) flds_scalar_num
           call ESMF_LogWrite(trim(cname)//': flds_scalar_num = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
@@ -720,7 +724,8 @@
           value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (isPresent .and. isSet) then
-          read(cvalue, *) flds_scalar_index_nx 
+          flds_scalar_index_nx = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
           write(logmsg,*) flds_scalar_index_nx
           call ESMF_LogWrite(trim(cname)//': flds_scalar_index_nx = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
@@ -731,7 +736,8 @@
           value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (isPresent .and. isSet) then
-          read(cvalue, *) flds_scalar_index_ny
+          flds_scalar_index_ny = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
           write(logmsg,*) flds_scalar_index_ny
           call ESMF_LogWrite(trim(cname)//': flds_scalar_index_ny = '// &
             trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
