@@ -714,10 +714,12 @@
         if (isPresent .and. isSet) then
           flds_scalar_num = ESMF_UtilString2Int(cvalue, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          write(logmsg,*) flds_scalar_num
-          call ESMF_LogWrite(trim(cname)//': flds_scalar_num = '// &
-            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) flds_scalar_num
+            call ESMF_LogWrite(trim(cname)//': flds_scalar_num = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
         end if
 
         call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNX", &
@@ -726,10 +728,12 @@
         if (isPresent .and. isSet) then
           flds_scalar_index_nx = ESMF_UtilString2Int(cvalue, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          write(logmsg,*) flds_scalar_index_nx
-          call ESMF_LogWrite(trim(cname)//': flds_scalar_index_nx = '// &
-            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) flds_scalar_index_nx
+            call ESMF_LogWrite(trim(cname)//': flds_scalar_index_nx = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
         end if
 
         call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNY", &
@@ -738,10 +742,12 @@
         if (isPresent .and. isSet) then
           flds_scalar_index_ny = ESMF_UtilString2Int(cvalue, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          write(logmsg,*) flds_scalar_index_ny
-          call ESMF_LogWrite(trim(cname)//': flds_scalar_index_ny = '// &
-            trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) flds_scalar_index_ny
+            call ESMF_LogWrite(trim(cname)//': flds_scalar_index_ny = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
         end if
       end if
 !
@@ -884,17 +890,15 @@
 ! overlap complately. This will blend the data coming from forcing with
 ! the data coming from coupling.
 !
-      if (med_present) then
-        call NUOPC_CompAttributeGet(gcomp, name="merge_import", &
-          value=attstr, isPresent=isPresent, isSet=isSet, rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-        if (isPresent .and. isSet) then
-          if (trim(attstr) .eq. '.true.') then
-            merge_import = .true.
-          end if
+      call NUOPC_CompAttributeGet(gcomp, name="merge_import", &
+        value=attstr, isPresent=isPresent, isSet=isSet, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (isPresent .and. isSet) then
+        if (trim(attstr) .eq. '.true.') then
+          merge_import = .true.
         end if
-
+      end if
+      if (verbosity.gt.0) then
         write(logmsg,'(l)') merge_import
         call ESMF_LogWrite(trim(cname)//': merge_import = '// &
           trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
