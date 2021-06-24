@@ -41,16 +41,15 @@
   temp_dir=$WWATCH3_TMP
   list=$WWATCH3_LIST
 
+# 1.c Go to temp dir 
+  cd $temp_dir
+
 
 # --------------------------------------------------------------------------- #
 # 2. Part 1, subroutine dependencies                                          #
 # --------------------------------------------------------------------------- #
-# 2.a File ID
 
-  cd $temp_dir
-  rm -f filelist.tmp
-
-# 2.b Get info from switch file  - - - - - - - - - - - - - - - - - - - - - - -
+# 2.a Get info from switch file  - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ -z "$(env | grep switch_file)" ]
   then
@@ -593,9 +592,11 @@
   fi 
 
 
-# 3 Create file list - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# --------------------------------------------------------------------------- #
+# 3. Create File List and Makefile                                            #
+# --------------------------------------------------------------------------- #
 
-# 3.a Create variables for file list based on switches - - - - - - - - - - - - -
+# 3.a Define variables for file list based on switches - - - - - - - - - - - -
 
   smco=$NULL
   case $g_switch in
@@ -803,8 +804,7 @@
 
 
 
-# 4 Create makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-# 4.a Internal variables for makefile - - - - - - - - - - - - - - - - - - - - -
+# 3.b Internal variables for makefile - - - - - - - - - - - - - - - - - - - - -
 
   # ar_cmd
   os=`uname -s 2>/dev/null`
@@ -816,17 +816,20 @@
   fi
 
 
-# 4.b Create makefile with header  - - - - - - - - - - - - - - - - - - - - - -
+# 3.c Create makefile header - - - - - - - - - - - - - - - - - - - - - - - - -
 
   echo '# -------------------------'              > makefile
   echo '# WAVEWATCH III makefile   '             >> makefile
   echo '# -------------------------'             >> makefile
 
 
+# 3.d Go through programes to create file list - - - - - - - - - - - - - - -
+
   echo ' '                                       >> makefile
   echo '# WAVEWATCH III executables'             >> makefile
   echo '# -------------------------'             >> makefile
 
+  rm -f filelist.tmp
 
 
 
@@ -1090,8 +1093,6 @@
       files="$aux $core $data $prop $sourcet $IO $prog"
       filesl="$prog $data $core $prop $sourcet $IO $aux"
     fi
-
-
 
 
     echo "# $IDstring"                           >> makefile
