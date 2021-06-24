@@ -7,9 +7,11 @@
 #   > Arctic (aoc_9km); Resolution: 9km; Lat. Range: 50N-90N.               #
 #   > Global core (gnh_10m); Resolution: 1/6°; Lat. Range: 15S-52N          #
 #   > Southern Ocean (gsh_15m); Resolution: 1/4°; Lat. Range: 79.5S-10.5S.  #
-# INPUT: glo_30m. The forcing including ice concentration, wind speed (u10) #
-# and current fields (wind_cur_ice.nc).                                     #
+# INPUT: glo_15mxt.The forcing including daily ice concentration (ice.nc),  #
+# hourly  wind speed (gfs_wind.nc) and current fields with 3 hrs interval   #
+# (current.nc).                                                             #    
 # POINT: points. The unified point output grid is glo_1deg                  #
+# INTGL: glo_15mxt (for ww3_gint)                                           #
 #                                                                           #
 # The test is standalone GFSv16 using ww3_multi on PolarStereo grid in      #
 # arctic and rectilinear grids for global core and southern ocean.          #
