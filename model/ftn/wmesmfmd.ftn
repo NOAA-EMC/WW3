@@ -3059,43 +3059,41 @@
         enddo
       endif
 !
-! 2.h Set ESMF import grid corner coordinates, only for coupled with mediator
+! 2.h Set ESMF import grid corner coordinates
 !
-      if (med_present) then 
-        call ESMF_GridAddCoord( impGrid, &
-          staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+      call ESMF_GridAddCoord( impGrid, &
+        staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      ! Calculate grid coordinates with help of SCRIP module
+      call get_scrip_info_structured(impGridID, &
+        xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
+        land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+
+      ! Add corner coordinates 
+      if ( impGridIsLocal ) then
+        ! Retrieve pointers
+        call ESMF_GridGetCoord( impGrid, 1, localDE=lde, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_GridGetCoord( impGrid, 2, localDE=lde, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-        ! Calculate grid coordinates with help of SCRIP module
-        call get_scrip_info_structured(impGridID, &
-          xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
-          land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+        ! Fill coordinates
+        iyl = lbound(rptrx,dim=2)
+        iyu = ubound(rptrx,dim=2)
+        ixl = lbound(rptrx,dim=1)
+        ixu = ubound(rptrx,dim=1)
 
-        ! Add corner coordinates 
-        if ( impGridIsLocal ) then
-          ! Retrieve pointers
-          call ESMF_GridGetCoord( impGrid, 1, localDE=lde, &
-            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          call ESMF_GridGetCoord( impGrid, 2, localDE=lde, &
-            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-          ! Fill coordinates
-          iyl = lbound(rptrx,dim=2)
-          iyu = ubound(rptrx,dim=2)
-          ixl = lbound(rptrx,dim=1)
-          ixu = ubound(rptrx,dim=1)
-
-          do iy = iyl, iyu
-            do ix = ixl, ixu
-              irec = (iy-1)*grid_dims(1)+ix
-              rptrx(ix,iy) = xgrd_corner(1,irec)
-              rptry(ix,iy) = ygrd_corner(1,irec)
-            enddo
+        do iy = iyl, iyu
+          do ix = ixl, ixu
+            irec = (iy-1)*grid_dims(1)+ix
+            rptrx(ix,iy) = xgrd_corner(1,irec)
+            rptry(ix,iy) = ygrd_corner(1,irec)
           enddo
-        endif      
-      end if
+        enddo
+      endif      
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create import field mask and routeHandle halo update
@@ -3504,42 +3502,40 @@
         enddo
       endif
 !
-! 2.h Set ESMF import grid corner coordinates, only for coupled with mediator
+! 2.h Set ESMF export grid corner coordinates
 !
-      if (med_present) then
-        call ESMF_GridAddCoord( expGrid, &
-          staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+      call ESMF_GridAddCoord( expGrid, &
+        staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      ! Calculate grid coordinates with help of SCRIP module
+      call get_scrip_info_structured(expGridID, &
+        xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
+        land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+
+      ! Add corner coordinates 
+      if ( impGridIsLocal ) then
+        ! Retrieve pointers
+        call ESMF_GridGetCoord( expGrid, 1, localDE=lde, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_GridGetCoord( expGrid, 2, localDE=lde, &
+          staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-        ! Calculate grid coordinates with help of SCRIP module
-        call get_scrip_info_structured(expGridID, &
-          xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
-          land_sea, grid_dims, grid_size, grid_corners, grid_rank)
+        ! Fill coordinates
+        iyl = lbound(rptrx,dim=2)
+        iyu = ubound(rptrx,dim=2)
+        ixl = lbound(rptrx,dim=1)
+        ixu = ubound(rptrx,dim=1)
 
-        ! Add corner coordinates 
-        if ( impGridIsLocal ) then
-          ! Retrieve pointers
-          call ESMF_GridGetCoord( expGrid, 1, localDE=lde, &
-            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptrx, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          call ESMF_GridGetCoord( expGrid, 2, localDE=lde, &
-            staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-          ! Fill coordinates
-          iyl = lbound(rptrx,dim=2)
-          iyu = ubound(rptrx,dim=2)
-          ixl = lbound(rptrx,dim=1)
-          ixu = ubound(rptrx,dim=1)
-
-          do iy = iyl, iyu
-            do ix = ixl, ixu
-              irec = (iy-1)*grid_dims(1)+ix
-              rptrx(ix,iy) = xgrd_corner(1,irec)
-              rptry(ix,iy) = ygrd_corner(1,irec)
-            enddo
+        do iy = iyl, iyu
+          do ix = ixl, ixu
+            irec = (iy-1)*grid_dims(1)+ix
+            rptrx(ix,iy) = xgrd_corner(1,irec)
+            rptry(ix,iy) = ygrd_corner(1,irec)
           enddo
-        end if
+        enddo
       end if
 !
 ! -------------------------------------------------------------------- /
