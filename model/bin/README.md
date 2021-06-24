@@ -1,8 +1,25 @@
-This is the WW3 build directory 
+This is the WW3 bin directory which mostly serves to create the make file 
+and set up the environment 
+
+WW3 build can have the following env variables set: 
+
+WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
+
+NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
+
+METIS_PATH = < path before lib/libparmetis.a and lib/libmetis.a > 
+this is needed when using PDLIB 
 
 
-Here are some information about various centers that use WW3: 
+Note the requirements for NetCDF are: 
+* NetCDF version 4.1.1 or higher (Use "nc-config --version" to check) 
+* NetCDF-4 API enableed (Use "nc-config --has-nc4" to check) 
+* Define NETCDF_CONFIG env variable
 
+
+###################
+Below is information about various centers use of WW3: 
+###################
 
 Information from Ifremer: 
 
