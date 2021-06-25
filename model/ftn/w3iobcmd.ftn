@@ -189,7 +189,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
                           X0, Y0, SX, SY, GSU, MAPSTA, MAPFS, MAPSF,  &
                           XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE,    &
-                          GTYPE, UNGTYPE
+                          GTYPE, UNGTYPE, SMCTYPE
       USE W3GDATMD, ONLY: DXYMAX  
 !/T1      USE W3GDATMD, ONLY: SIG
 !/RTD !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
@@ -208,6 +208,8 @@
 !
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
+!
+!/SMC      USE W3PSMCMD, ONLY: W3SMCGMP
 !
       IMPLICIT NONE
 !/
@@ -425,6 +427,11 @@
           FLOK   = .TRUE.
           IF (GTYPE .EQ. UNGTYPE) THEN
             CALL W3NESTUG(DXYMAX,FLOK) 
+!/SMC !Li   For SMC grid check whether boundary points are within cell area.
+!/SMC          ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
+!/SMC            CALL W3SMCGMP( IGRD, NBI, XBPI, YBPI, ISBPI )
+!/SMC            IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,920)    &
+!/SMC               ( ISBPI(I), XBPI(I), YBPI(I), I=1,NBI ) 
           ELSE 
             DO I=1, NBI
               ! W3GFTP: find the nearest grid point to the input boundary point
@@ -675,6 +682,7 @@
                '     POINT',I4,2E14.6,' NOT LOCATED IN GRID')
   911 FORMAT ( ' *** WAVEWATCH III WARNING : POINT',2I7,              &
                    ' WILL NOT BE UPDATED')
+  920 FORMAT (/' *** SMCTYPE mapped boundary cells:'/ ((I8,2F9.3)) )
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
                '     ERROR IN OPENING FILE ',A/                       &

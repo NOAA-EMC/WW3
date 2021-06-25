@@ -139,7 +139,7 @@ $  &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
 $
 $ Mandatory string to identify end of namelist input section.
 $
-  &PSMC DTIME=10800.,RFMAXD=36.,LvSMC=2,NBISMC=0,CFLTM=0.1 /
+  &PSMC DTIMS=10800.,LvSMC=2,CFLSM=0.1,AVERG=.FALSE. /
 END OF NAMELISTS
 $
 $ Define grid -------------------------------------------------------- $
@@ -169,7 +169,7 @@ $
 $ Example for longitude-latitude grid (switch !/LLG), for Cartesian
 $ grid the unit is meters (NOT km).
 $
-     'RECT'  T  'NONE'
+     'SMCG'  T  'NONE'
       52    60
      0.0380   0.0250  1.
     -6.1285  47.6313  1.

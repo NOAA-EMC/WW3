@@ -25,15 +25,15 @@ $ Use 3rd order advection scheme UNO3 plus extra smoothing. JGLi28Oct2015
 $ &PSMC DTIME = 3600.0, LATMIN=85.0, RFMAXD = 36.0, UNO3 = .TRUE., AVERG = .TRUE. /
 $ PSMC namelist is enlarged to include other smc grid paramters with 
 $ default values LvSMC=1, ISHFT=0, JEQT=0, and NBISMC=0.  JGLi23Nov2015
-  &PSMC DTIME = 3600.0, LATMIN=85.0, RFMAXD = 36.0, UNO3 = .TRUE., LvSMC=3 /
+  &PSMC DTIMS = 3600.0, LvSMC=3, AVERG = .FALSE., UNO3 = .TRUE. /
   &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
 $
 END OF NAMELISTS
 $
 $ SMC grid use the same spherical lat-lon grid option with its own 
-$ propagation setting files.   JGLi18Dec2012
+$ type and propagation setting files.   JGLi10May2021
 $
-    'RECT'  T  'NONE'
+    'SMCG'  T  'NONE'
     256    128
 $
 $ SMC grid refined level NRLv, j-count shift, and boundary cell number. JGLi18Dec2012

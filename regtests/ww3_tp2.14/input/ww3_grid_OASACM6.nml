@@ -93,6 +93,7 @@
 !    'RECT' : rectilinear
 !    'CURV' : curvilinear
 !    'UNST' : unstructured (triangle-based)
+!    'SMCG' : Spherical Multiple-Cell grid.
 !
 ! * coordinate system can be : 
 !    'SPHE' : Spherical (degrees)
@@ -138,7 +139,7 @@
 &GRID_NML
   GRID%NAME         =  '***** WW3 Brest3km Grid ***** '
   GRID%NML          =  '../input/namelists_BREST.nml'
-  GRID%TYPE         =  'RECT'
+  GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
   GRID%ZLIM         =  -0.1

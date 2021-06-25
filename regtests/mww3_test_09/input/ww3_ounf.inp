@@ -1,0 +1,89 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid output post-processing                            $
+$--------------------------------------------------------------------- $
+$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ and number of output times.
+$
+  20160809 000000  3600.  1000
+$
+$ Fields requested --------------------------------------------------- $
+$
+$ Output request flags identifying fields as in ww3_shel.inp. See that
+$ file for a full documentation of field output options. Namelist type
+$ selection is used here (for alternative F/T flags, see ww3_shel.inp).
+$
+$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 TM10 T01 FP DIR SPR
+$ DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS PTHP0
+$ PQP PPE PGW PSW PTM10 PT1 PT2 PEP TWS PNR UST CHA CGE FAW TAW TWA WCC
+$ WCF WCH WCM SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC ABR UBR BED
+$ FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+$
+ N
+ HS 
+$
+$--------------------------------------------------------------------- $
+$ netCDF version [3,4]
+$        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
+$ swell partitions [0 1 2 3 4 5]
+$ variables in same file [T] or not [F] 
+$
+ 4 4
+ 0 1 2
+ T
+$
+$ -------------------------------------------------------------------- $
+$ File prefix
+$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
+$ IX and IY ranges [regular:IX NX IY NY, unstructured:IP NP 1 1]
+$
+ ww3.         
+ 8
+$
+$ ----------------- FOR SMC GRID ONLY ---------------------------------$
+$ SMC output type:
+$    1 = Flat points file (1D sea point array)
+$    2 = Regular gridded (2D lat/lon array over region)
+$
+  2
+$
+$ For SMC output, the IX/IY range line is replaced with a domain
+$ lat/lon range and `cellfac` parameter for SMC type 2 output.
+$ First/Last lat/lon can be set to -999.9 to use edge of SMC grid.
+$
+$ For SMC type 1 output, only those points within the specified 
+$ lat/lon ranges will be extracted:
+$
+$   first_lon, first_lat, last_lon, last_lat
+  -999.9  -999.9  -999.9  -999.9  2
+$
+$ For type 2 output, the range is used in conjunction with a fifth
+$ integer `cellfac` parameter to specify the regular output grid
+$ to area average the SMC grid to. In this case, the output grid will
+$ be aligned to nearest largest SMC grid points within the selected 
+$ region. Therefore, the output grid start and end lat/lons may differ 
+$ slightly from what is requested. In order to obtain a fully populated
+$ regular grid the extents specified should encompass the SW corner of
+$ the bottom left cell, and NE corner of the top right cell required.
+$ `cellfac` is an integer value that selects the target grid cell size
+$ as multiple of the smallest SMC grid cell. It must be a power of 2.
+$ e.g. 1 = highest resolution, 2 = half resolution of smallest cell, 
+$ 4 = 1/4 res of smallest cell, etc.
+$
+$   first_lon, first_lat, last_lon, last_lat, cellfac
+$ 
+$ Example: Extract high resolution data for U.K.:
+$
+$ -13.50  46.85  5.50  61.0  1
+$
+$
+$ ---------------- FOR NON-SMC GRIDS --------------------------------- $
+$ IX, IY range:
+$ 1 1000000 1 1000000 
+$
+$ For each field and time a new file is generated with the file name
+$ ww3.date_xxx.nc , where date is a conventional time indicator with S3
+$ characters, and xxx is a field identifier.
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
