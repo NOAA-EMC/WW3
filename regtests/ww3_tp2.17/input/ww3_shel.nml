@@ -242,7 +242,7 @@
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'WND HS'
+  TYPE%FIELD%LIST          = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
   TYPE%POINT%FILE          = '../input/points.list'
 /
 
