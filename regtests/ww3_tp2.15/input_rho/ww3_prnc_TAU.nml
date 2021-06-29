@@ -68,8 +68,8 @@
   FILE%FILENAME      = '../input_rho/momentum.nc'
   FILE%LONGITUDE     = 'longitude'
   FILE%LATITUDE      = 'latitude'
-  FILE%VAR(1)        = 'U'
-  FILE%VAR(2)        = 'V'
+  FILE%VAR(1)        = 'tauu'
+  FILE%VAR(2)        = 'tauv'
 /
 
 ! -------------------------------------------------------------------- !

@@ -188,7 +188,7 @@
 !       U10ABS  Real.  I   Wind speed at reference height.
 !       U10DIR  Real.  I   Id. wind direction.
 !       TAUA    Real.  I   Magnitude of total atmospheric stress
-!       TAUA    Real.  I   Direction of atmospheric stress
+!       TAUADIR Real.  I   Direction of atmospheric stress
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
 !       USTAR   Real. !/O  Friction velocity.
 !       USTDIR  Real  !/O  Idem, direction.
@@ -700,8 +700,8 @@
 !/ST4          USTAR=0.
 !/ST4          USTDIR=0.
 !/ST4      ELSE
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-!/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
+!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 
 !/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
@@ -727,9 +727,10 @@
 !/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
 !/DEBUGSRC!/ST4        END IF
 
-!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-!/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
+!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,             &
+!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+
 !/ST4      TWS = 1./FMEANWS
 
 
@@ -1175,8 +1176,8 @@
 !/ST3        CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS,        &
 !/ST3                     WNMEAN, AMAX, U10ABS, U10DIR, USTAR, USTDIR, &
 !/ST3                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
-!/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,           &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
+!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/ST6        CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !

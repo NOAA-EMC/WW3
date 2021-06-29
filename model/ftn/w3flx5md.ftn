@@ -141,6 +141,7 @@
 !/
       REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR
       REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
+      REAL                    :: UNZ
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -162,7 +163,8 @@
 !
 !
       UST    = SQRT(TAUA/RHOAIR)
-      CD     = (UST/U10)**2
+      UNZ    = MAX ( 0.01 , U10 )
+      CD     = (UST/UNZ)**2
       USTD   = TAUADIR
       Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
 !
@@ -171,7 +173,7 @@
 ! Formats
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLX5 : '/               &
-               '     HIGHT OF WIND SHOULD BE 10m IN THIS APPRACH '/   &
+               '     HIGHT OF WIND SHOULD BE 10m IN THIS APPROACH '/   &
                '     ZWND =',F8.2,'m'/)
 !/
 !/ End of W3FLX5 ----------------------------------------------------- /
