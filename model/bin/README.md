@@ -24,7 +24,7 @@ The requirements for NetCDF are:
 * NetCDF-4 API enableed (Use "nc-config --has-nc4" to check) 
 * Define NETCDF_CONFIG env variable
 
-NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
+NETCDF_CONFIG = < path to NetCDF-4 nc-config utility >
 
 ## To use the PDLIB switch:
 
@@ -34,19 +34,15 @@ METIS_PATH = < path before lib/libparmetis.a and lib/libmetis.a >
 
 The following paths/libraries are expected to be set: 
 
-G2_LIB4
-W3NCO_LIB4
-BACIO_LIB4
-JASPER_LIB
-PNG_LIB
-Z_LIB
+G2_LIB4, W3NCO_LIB4, BACIO_LIB4, JASPER_LIB, PNG_LIB, and Z_LIB
 
-If using NCEP hpc-stack, you just need to set the following:  
-JASPER_LIB=$JASPER_ROOT/lib64/libjasper.a
-PNG_LIB=$PNG_ROOT/lib64/libpng.a
-Z_LIB=$ZLIB_ROOT/lib/libz.a 
+If using NCEP hpc-stack, you just need to set the following: 
+
+    JASPER_LIB=$JASPER_ROOT/lib64/libjasper.a
+    PNG_LIB=$PNG_ROOT/lib64/libpng.a
+    Z_LIB=$ZLIB_ROOT/lib/libz.a 
+    
 the other vairables should already be appropriately set. 
-
 
 # Quick Start for building WW3 
 
@@ -54,16 +50,15 @@ After cloning and changing into the WW3 directory:
 
 Run the w3_setup script: 
 
-./model/bin/w3_setup model -c <comp> -s <switch> 
+    ./model/bin/w3_setup model -c <comp> -s <switch> 
 
 Build a WW3 exe after setting up any appropraite environment variables described above. 
 
-cd model/bin/ 
-./w3_make ww3_grid 
+    cd model/bin/ 
+    ./w3_make ww3_grid 
 
 
 # Below is information about various centers use of WW3: 
-
 
 ## Information from Ifremer: 
 
