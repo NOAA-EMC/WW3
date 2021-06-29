@@ -1,22 +1,65 @@
-# Building WW3 
+# About the bin directory 
+
+This is the WW3 bin directory which mostly serves to create the make file
+and set up the environment.  Below we have three sections, build environment
+varibles, quick start instructions and information from various centers that
+use WW3.  
+
+# Build Enivronment Variables 
 
 This is the WW3 bin directory which mostly serves to create the make file 
 and set up the environment 
 
 WW3 build can have the following env variables set: 
 
+## Optional variable to use with any configuration: 
+
 WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
 
-NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
 
-METIS_PATH = < path before lib/libparmetis.a and lib/libmetis.a > 
-this is needed when using PDLIB 
+## To build NetCDF executables you need:
 
-
-Note the requirements for NetCDF are: 
+The requirements for NetCDF are: 
 * NetCDF version 4.1.1 or higher (Use "nc-config --version" to check) 
 * NetCDF-4 API enableed (Use "nc-config --has-nc4" to check) 
 * Define NETCDF_CONFIG env variable
+
+NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
+
+## To use the PDLIB switch:
+
+METIS_PATH = < path before lib/libparmetis.a and lib/libmetis.a >
+
+## To compile ww3_grib 
+
+The following paths/libraries are expected to be set: 
+
+G2_LIB4
+W3NCO_LIB4
+BACIO_LIB4
+JASPER_LIB
+PNG_LIB
+Z_LIB
+
+If using NCEP hpc-stack, you just need to set the following:  
+JASPER_LIB=$JASPER_ROOT/lib64/libjasper.a
+PNG_LIB=$PNG_ROOT/lib64/libpng.a
+Z_LIB=$ZLIB_ROOT/lib/libz.a 
+the other vairables should already be appropriately set. 
+
+
+# Quick Start for building WW3 
+
+After cloning and changing into the WW3 directory: 
+
+Run the w3_setup script: 
+
+./model/bin/w3_setup model -c <comp> -s <switch> 
+
+Build a WW3 exe after setting up any appropraite environment variables described above. 
+
+cd model/bin/ 
+./w3_make ww3_grid 
 
 
 # Below is information about various centers use of WW3: 
