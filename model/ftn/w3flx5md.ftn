@@ -77,10 +77,11 @@
 !
 !  2. Method :
 !
-!     UST    = SQRT(TAUA / RHOAIR)
-!     USTD   = TAUADIR
-!     CD     = (UST/U10)**2
-!     Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
+!     UST       = SQRT(TAUA / RHOAIR)
+!     USTD      = TAUADIR
+!     CD        = (UST/U10)**2
+!     SQRTCDM1  = MIN(U10/UST,100.0)
+!     Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
 !
 !  3. Parameters :
 !
@@ -129,6 +130,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: KAPPA
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
 !     USE W3GDATMD, ONLY: FLX5A0
       USE W3SERVMD, ONLY: EXTCDE
@@ -141,7 +143,7 @@
 !/
       REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR
       REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
-      REAL                    :: UNZ
+      REAL                    :: UNZ, SQRTCDM1
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -166,7 +168,8 @@
       UNZ    = MAX ( 0.01 , U10 )
       CD     = (UST/UNZ)**2
       USTD   = TAUADIR
-      Z0     = ZWND / (EXP( 0.4 / (CD)) - 1.0)
+      SQRTCDM1  = MIN(U10/UST,100.0)
+      Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
 !
       RETURN
 !
