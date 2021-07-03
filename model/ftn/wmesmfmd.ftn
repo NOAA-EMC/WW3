@@ -2878,8 +2878,7 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: lpet, ldecnt
-      integer :: ix, iy, isea, jsea
-      integer :: ixl, ixu, iyl, iyu, irec
+      integer :: ix, iy, isea, jsea, irec
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
@@ -3081,13 +3080,8 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
         ! Fill coordinates
-        iyl = lbound(rptrx,dim=2)
-        iyu = ubound(rptrx,dim=2)
-        ixl = lbound(rptrx,dim=1)
-        ixu = ubound(rptrx,dim=1)
-
-        do iy = iyl, iyu
-          do ix = ixl, ixu
+        do iy = elb(2),eub(2)
+          do ix = elb(1),eub(1)
             irec = (iy-1)*grid_dims(1)+ix
             rptrx(ix,iy) = xgrd_corner(1,irec)
             rptry(ix,iy) = ygrd_corner(1,irec)
@@ -3294,8 +3288,7 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: ldecnt
-      integer :: ix, iy, isea, jsea, k
-      integer :: ixl, ixu, iyl, iyu, irec
+      integer :: ix, iy, isea, jsea, irec, k
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
@@ -3524,13 +3517,8 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
         ! Fill coordinates
-        iyl = lbound(rptrx,dim=2)
-        iyu = ubound(rptrx,dim=2)
-        ixl = lbound(rptrx,dim=1)
-        ixu = ubound(rptrx,dim=1)
-
-        do iy = iyl, iyu
-          do ix = ixl, ixu
+        do iy = elb(2),eub(2)
+          do ix = elb(1),eub(1)
             irec = (iy-1)*grid_dims(1)+ix
             rptrx(ix,iy) = xgrd_corner(1,irec)
             rptry(ix,iy) = ygrd_corner(1,irec)
