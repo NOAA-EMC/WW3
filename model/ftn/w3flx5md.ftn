@@ -14,7 +14,9 @@
 !/
 !/    22-Mar-2021 : Origination.                        ( version 7.xx )
 !/    22-Mar-2021 : Enable direct use of atmospheric model wind stress
-!/                  by source terms
+!/                  by source terms ST6
+!/    01-Jul-2021 : Enable direct use of atmospheric model wind stress
+!/                  by source terms ST4
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -69,6 +71,10 @@
 !/                  +-----------------------------------+
 !/
 !/    22-Mar-2021 : Origination.                        ( version 7.xx )
+!/    22-Mar-2021 : Enable direct use of atmospheric model wind stress
+!/                  by source terms ST6
+!/    01-Jul-2021 : Enable direct use of atmospheric model wind stress
+!/                  by source terms ST4
 !/
 !  1. Purpose :
 !
