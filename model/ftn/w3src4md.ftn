@@ -281,7 +281,6 @@
       TAUW = SQRT(TAUWX**2+TAUWY**2)
 !
 !/FLX5      IF (.TRUE.) THEN
-!/FLX5        WRITE (*,*) GRAV, ZZWND, TAUA 
 !/FLX5        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
 !/FLX5                                          USTAR, USDIR, Z0, CD )
 !/FLX5        IF (USTAR.GT.0.001) THEN
