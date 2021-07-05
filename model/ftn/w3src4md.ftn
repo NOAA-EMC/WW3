@@ -284,14 +284,8 @@
 !/FLX5        WRITE (*,*) GRAV, ZZWND, TAUA 
 !/FLX5        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
 !/FLX5                                          USTAR, USDIR, Z0, CD )
-!/FLX5        WRITE (*,*) "[DEBUG] printing USTAR"
-!/FLX5        WRITE (*,*) USTAR
-!/FLX5        WRITE (*,*) "[DEBUG] printing Z0exp3"
-!/FLX5        WRITE (*,*) Z0*1000.
 !/FLX5        IF (USTAR.GT.0.001) THEN
 !/FLX5          CHARN = GRAV*Z0/USTAR**2 
-!/FLX5          WRITE (*,*) "[DEBUG] printing CHARNOCK"
-!/FLX5          WRITE (*,*) CHARN
 !/FLX5        ELSE
 !/FLX5          CHARN = AALPHA
 !/FLX5          END IF
