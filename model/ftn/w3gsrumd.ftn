@@ -3677,6 +3677,7 @@
               LSBC = .TRUE.
               J = MOD(I,NS) + 1
               DO K=1,4
+                  SIGN1 = 0.0
                   SELECT CASE (K)
                     CASE (1)
 !---------------------vector from (xi,yi) to (xj,yj)
@@ -3723,7 +3724,7 @@
                   I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
 !-----------------if sign of cross product is not "unanimous" among the
 !                 subcell sides, then target is outside the subcell
-                  IF ( K .EQ. 1 ) THEN
+                  IF ( ABS(SIGN1) .LE. LEPS .AND. ABS(CROSS) .GT. LEPS ) THEN
                       SIGN1 = SIGN(ONE,CROSS)
                     ELSE
                       ! If point lies along a border, the cross product
@@ -3748,6 +3749,7 @@
 !
 !-----perform cross-product cell check
       DO I=1,NS
+          SIGN1 = 0.0
           J = MOD(I,NS) + 1
 !---------vector from (xi,yi) to (xj,yj)
           V1X = XCS(J) - XCS(I)
@@ -3764,13 +3766,17 @@
           I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
 !---------if sign of cross product is not "unanimous" among the cell sides,
 !         then target is outside the cell
-          IF ( I .EQ. 1 ) THEN
+          IF ( ABS(SIGN1) .LE. LEPS .AND. ABS(CROSS) .GT. LEPS ) THEN
               SIGN1 = SIGN(ONE,CROSS)
             ELSE
-              IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+              ! If point lies along a border, the cross product
+              ! is zero and its sign is not well defined
+              IF ( ABS(CROSS) .GT. LEPS ) THEN
+                IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
                   INCELL = .FALSE.
                   RETURN
                 END IF
+              END IF
             END IF
         END DO
 !
