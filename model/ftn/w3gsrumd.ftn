@@ -3724,9 +3724,9 @@
                   I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
 !-----------------if sign of cross product is not "unanimous" among the
 !                 subcell sides, then target is outside the subcell
-                  IF ( ABS(SIGN1) .LE. LEPS .AND. ABS(CROSS) .GT. LEPS ) THEN
-                      SIGN1 = SIGN(ONE,CROSS)
-                    ELSE
+                  IF ( ABS(SIGN1) .LE. LEPS ) THEN
+                      IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+                  ELSE
                       ! If point lies along a border, the cross product
                       ! is zero and its sign is not well defined
                       IF ( ABS(CROSS) .GT. LEPS ) THEN
@@ -3735,7 +3735,7 @@
                           CYCLE SUBCELL_LOOP
                         END IF
                       END IF
-                    END IF
+                  END IF
                 END DO !K
                 IF ( LSBC ) RETURN
             END DO SUBCELL_LOOP
@@ -3766,9 +3766,9 @@
           I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
 !---------if sign of cross product is not "unanimous" among the cell sides,
 !         then target is outside the cell
-          IF ( ABS(SIGN1) .LE. LEPS .AND. ABS(CROSS) .GT. LEPS ) THEN
-              SIGN1 = SIGN(ONE,CROSS)
-            ELSE
+          IF ( ABS(SIGN1) .LE. LEPS ) THEN
+              IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+          ELSE
               ! If point lies along a border, the cross product
               ! is zero and its sign is not well defined
               IF ( ABS(CROSS) .GT. LEPS ) THEN
@@ -3777,7 +3777,7 @@
                   RETURN
                 END IF
               END IF
-            END IF
+          END IF
         END DO
 !
 !-----return branch cut shifted coordinates
