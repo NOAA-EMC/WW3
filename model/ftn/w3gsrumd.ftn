@@ -3676,8 +3676,8 @@
           SUBCELL_LOOP: DO I=1,NS
               LSBC = .TRUE.
               J = MOD(I,NS) + 1
+              SIGN1 = 0.0
               DO K=1,4
-                  SIGN1 = 0.0
                   SELECT CASE (K)
                     CASE (1)
 !---------------------vector from (xi,yi) to (xj,yj)
@@ -3748,8 +3748,8 @@
         END IF !POLE
 !
 !-----perform cross-product cell check
+      SIGN1 = 0.0
       DO I=1,NS
-          SIGN1 = 0.0
           J = MOD(I,NS) + 1
 !---------vector from (xi,yi) to (xj,yj)
           V1X = XCS(J) - XCS(I)
