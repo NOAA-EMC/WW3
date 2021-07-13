@@ -256,10 +256,6 @@
 
 !/SMC      SMCGRD = .TRUE.
 !
-!/RTD ! Is the grid really rotated
-!/RTD      IF ( Polat < 90. ) RTDL = .True.
-!/RTD !
-!
       ! Default epoch time:
       TEPOCH(1) = 19900101
       TEPOCH(2) = 0
@@ -270,6 +266,10 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!
+!/RTD ! Is the grid really rotated?
+!/RTD      IF ( Polat < 90. ) RTDL = .True.
+!/RTD !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
