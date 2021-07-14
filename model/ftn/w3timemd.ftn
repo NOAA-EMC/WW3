@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         12-Jan-2021 |
 !/                  +-----------------------------------+
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -48,7 +48,9 @@
 !      J2D       Subr. Public   Convert julian date to date array
 !      T2D       Subr. Public   Convert time array to date array
 !      TSUB      I.D.  Public   Substract two time arrays in days
+!      TSUBSEC   I.D.  Public   Substract two time arrays in seconds
 !      U2D       Subr. Public   Convert time units attribute to date array
+!      T2ISO     Subr. Public   Convert time array to ISO time string
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -1548,6 +1550,102 @@
       END FUNCTION TSUB
 
 !/ ------------------------------------------------------------------- /
+      DOUBLE PRECISION FUNCTION TSUBSEC ( T1, T2 )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |           C. Bunney               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         18-Jun-2020 |
+!/                  +-----------------------------------+
+!/
+!/    15-May-2018 : Origination (adapted from TSUB)     ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Substract two time arrays to get the time difference in seconds.
+!     The milliseconds part of the array (index 8) is rounded to the
+!     nearest whole second.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       T1       I.A.     I   Time array
+!       T2       I.A.     I   Time array
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Any routine.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: T1(8), T2(8)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER(KIND=8)         :: A1, B1, C1, D1, A2, B2, C2, D2
+      INTEGER(KIND=8)         :: E1, E2
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'TSUBSEC')
+!
+      IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+        A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
+
+        E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
+        E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T2(8) / 1000.0)
+!
+        TSUBSEC = A1 * 86400 + (E2-E1)
+      ELSE
+        A1 = (14-T1(2))/12
+        B1 = T1(1) + 4800 - A1
+        C1 = T1(2) + 12*A1 - 3
+        D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
+        IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+          D1 = D1 + B1/4 -B1/100 + B1/400
+        ENDIF
+        E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
+!
+        A2 = (14-T2(2))/12
+        B2 = T2(1) + 4800 - A2
+        C2 = T2(2) + 12*A2 - 3
+        D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
+        IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+          D2 = D2 + B2/4 -B2/100 + B2/400
+        ENDIF
+        E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T1(8) / 1000.0)
+!
+        TSUBSEC = (D2-D1)*86400 + (E2-E1)
+      ENDIF
+!
+      RETURN
+!/
+!/ End of TSUBSEC ---------------------------------------------------- /
+!/
+      END FUNCTION TSUBSEC
+
+
+!/ ------------------------------------------------------------------- /
 
       SUBROUTINE U2D(UNITS,DAT,IERR)
 !/
@@ -1793,8 +1891,79 @@ DAT(8) = 0  ! force milliseconds to 0
 
 !/ ------------------------------------------------------------------- /
 
+!/ ------------------------------------------------------------------- /
 
+      SUBROUTINE T2ISO(TIME,ISODT)
 !/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Bunney               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         19-Jan-2020 |
+!/                  +-----------------------------------+
+!/
+!/    19-Jan-2020 : Origination                         ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Convert time array to ISO8601 format string
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       TIME     I.A.     I   Time array like 'YYYYMMDD HHMMSS'
+!       ISODT    Char.    O   ISO8601 datetime string
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: NDSE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER,INTENT(IN)            :: TIME(2)  ! array like 'YYYYMMDD HHMMSS'
+      CHARACTER(LEN=32),INTENT(OUT) :: ISODT    ! ISO date time
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'T2ISO')
+!
+!/
+      WRITE(ISODT,'(I4,"-",I2.2,"-",I2.2,"T",I2.2,":",I2.2,":",I2.2)') &
+         TIME(1) / 10000,                                              &
+         MOD(TIME(1) / 100, 100),                                      &
+         MOD(TIME(1), 100),                                            &
+         TIME(2) / 10000,                                              &
+         MOD(TIME(2) / 100, 100),                                      &
+         MOD(TIME(2), 100)
+!/
+!/ End of T2ISO ------------------------------------------------------ /
+!/
+      END SUBROUTINE T2ISO
+
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/
       END MODULE W3TIMEMD

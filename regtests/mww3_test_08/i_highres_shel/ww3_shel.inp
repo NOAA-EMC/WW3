@@ -7,7 +7,9 @@ $
    F F     Water levels
    F F     Currents
    T F     Winds
-   T       Ice concentrations
+   T F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra.
