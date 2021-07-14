@@ -37,6 +37,8 @@
 !     FIELD%TIMEVAR              = 'D'                ! Time var type ['D' = DOUBLE, 'I' = INT64]
 !     FIELD%TIMEUNIT             = 'D'                ! Time units ['D' = days, 'I' = seconds]
 !     FIELD%TIMEEPOCH            = '19900101 000000'  ! Epoch used for encoding of NC time variables
+!     FIELD%NOVAL                = UNDEF              ! Value for wet cells that have an UNDEF value
+!     FIELD%MAPSTA               = .TRUE.             ! Output MAPSTA field in file?
 !
 ! Note: If FCVARS = T, the following auxiliary variables will be generated
 ! (see the manual entry for ww3_ounf for more information):

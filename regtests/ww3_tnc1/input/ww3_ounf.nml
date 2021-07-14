@@ -17,6 +17,8 @@
   FIELD%TIMEUNIT         =  'S'
   FIELD%TIMEVAR          =  'I'
   FIELD%TIMEEPOCH        =  '19700101 000000'
+  FIELD%MAPSTA           =  F
+  FIELD%NOVAL            =  0.0
 /
 
 ! -------------------------------------------------------------------- !

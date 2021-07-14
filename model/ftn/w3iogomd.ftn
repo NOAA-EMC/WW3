@@ -756,7 +756,7 @@
 !/OASACM           J = 1
 !/OASOCM         CASE('OHS')
 !/OASOCM           I = 2
-!/OASACM           J = 1
+!/OASOCM           J = 1
       CASE('HS')
         I = 2
         J = 1
@@ -900,7 +900,7 @@
 !/OASACM           J = 2
 !/OASOCM         CASE('OCHA')
 !/OASOCM           I = 5
-!/OASACM           J = 2
+!/OASOCM           J = 2
       CASE('CHA')
         I = 5
         J = 2

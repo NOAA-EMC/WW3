@@ -141,18 +141,10 @@
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
 
-         CASE DEFAULT
-            WRITE (NDSO,1002) TRIM(SND_FLD(IB_DO)%CL_FIELD_NAME)
          END SELECT
 
 
       ENDDO
-!
-! Formats
-!
- 1002 FORMAT (/' *** WAVEWATCH III WARNING IN W3IGCMMD : '/             &
-               '     REQUESTED COUPLING SENT FIELD ',A,' WAS NOT RECOGNIZED.'/)
-
 !
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE SND_FIELDS_TO_ICE
@@ -263,10 +255,6 @@
               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
               !
             END IF
-           CASE ('WW3__ICE')
-           CASE ('WW3__IC1')
-           CASE DEFAULT
-           ! WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)
            END SELECT   
            !
            ! Ice Concentration 
@@ -296,10 +284,6 @@
               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
               !
             END IF
-          CASE ('WW3__IC5') 
-          CASE ('WW3__IC1')
-          CASE DEFAULT
-          !  WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)    
           END SELECT  
           ! Ice Thickness
           ! ----------------------------------------------------------------------
@@ -327,12 +311,6 @@
               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
             ENDIF
            !
-           CASE ('WW3__IC5')
-           ! 
-           CASE ('WW3__ICE')
-           ! 
-           CASE DEFAULT
-          !  WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)
            END SELECT    
        
         END IF

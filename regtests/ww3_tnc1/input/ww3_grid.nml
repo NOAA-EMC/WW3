@@ -70,6 +70,8 @@
 &TIMESTEPS_NML
   TIMESTEPS%DTMAX      =  1800.
   TIMESTEPS%DTMIN      =  15.
+  TIMESTEPS%DTXY       =  60.
+  TIMESTEPS%DTKTH      =  1800.
 /
 
 ! -------------------------------------------------------------------- !
