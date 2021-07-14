@@ -1,0 +1,43 @@
+$
+ 'GFSv16-wave S Hemisphere 1/4 deg'
+$
+  1.07  0.035  50  36  0.5
+$
+   F T T T T T
+$
+ 900.0 200.0 400.0 30.0
+$
+&SIN4 BETAMAX = 1.315,
+ TAUWSHELTER = 1.0,
+ SWELLF = 0.798,
+ SWELLF2 = -0.0127,
+ SWELLF3 = 0.0151,
+ SWELLF4 = 100025.0,
+ SWELLF5 = 1.1999,
+ SWELLF7 = 235500.0 /
+&SNL1
+ NLPROP = 2.502E7 /
+&SDS4
+ FXFM3 = 2.501,
+ SDSC2 = -2.1975e-05,
+ SDSCUM = -0.4032,
+ SDSC6 = 0.2978,
+ SDSBR = 0.0009035 /
+&MISC CICE0 = 0.25,
+ CICEN = 0.75,
+ FLAGTR = 4 /
+&SBT1 GAMMA = -0.038 /
+&PRO3 WDTHCG=4.0, WDTHTH=4.0 /
+END OF NAMELISTS
+$
+ 'RECT' T 'SMPL'
+ 1440     277
+ 15.00    15.00   60.00
+ 0.0000         -79.5000         1.00
+$ Bottom Bathymetry 
+ -0.10   2.50  20  0.001000  1  1 '(....)'  NAME  '../input/gsh_15m.bot' 
+ 21  0.010000  1  1  '(....)'  NAME  '../input/gsh_15m.obs'  
+ 22  1  1  '(....)'  NAME  '../input/gsh_15m.mask'  
+$
+      0.  0.  0.  0.  0
+$
