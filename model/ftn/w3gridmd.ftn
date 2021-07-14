@@ -5972,7 +5972,7 @@
  4972 FORMAT ( '       Spectrum of Uss             :',3I4)
  4973 FORMAT ( '       Frequency spectrum          :',3I4)
  4974 FORMAT ( '       Partions of Uss             :',2I4)
- 4975 FORMAT ( '       Partition wavenumber #',I02,'   : ',1F6.3)
+ 4975 FORMAT ( '       Partition wavenumber #',I2,'   : ',1F6.3)
 
 !
  4980 FORMAT (/'  Coastal / iceberg reflection  ',A/                   &
