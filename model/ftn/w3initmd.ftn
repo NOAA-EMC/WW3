@@ -59,6 +59,7 @@
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
 !/    22-Mar-2021 : Extra coupling fields               ( version 7.xx )
+!/    22-Jun-2021 : GKE NL5 (Q. Liu)                    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -359,6 +360,7 @@
                           OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
                           IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
                           FLOGR2, NOGRP, NGRPP, FLOGD, FLOG2
+!/NL5      USE W3ODATMD, ONLY: TOSNL5
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
@@ -1042,6 +1044,7 @@
 ! ... get first time 
 !
         IF ( FLOUT(J) ) THEN
+!/NL5       IF (J .EQ. 2) TOSNL5 = TONEXT(:, 2)
             TOUT = TONEXT(:,J)
             TLST = TOLAST(:,J)
 !
