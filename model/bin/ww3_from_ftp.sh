@@ -8,7 +8,7 @@
 curr_dir=`pwd`
 
 # Set WW3 code version
-ww3ver=v7.12.4
+ww3ver=v7.12.5
 
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
