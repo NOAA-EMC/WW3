@@ -46,6 +46,7 @@
 !      INSNL1    Subr. W3SNL1MD Initialization of the DIA.
 !      INSNL2    Subr. W3SNL2MD Initialization of WRT.
 !      INSNL3    Subr. W3SNL3MD Initialization of GMD.
+!      INSNL5    Subr. W3SNL5MD Initialization of GKE.
 !      INSNLX    Subr. W3SNLXMD Initialization of exp. DIA.
 !      INSNLS    Subr. W3SNLSMD Initialization of nonlinear `smoother'.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
@@ -148,6 +149,7 @@
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
+!/    07-07-2021  : S_{nl} GKE NL5 (Q. Liu)             ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -233,6 +235,7 @@
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
 !/NL3      USE W3SNL3MD, ONLY: INSNL3
+!/NL5      USE W3SNL5MD, ONLY: INSNL5
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
@@ -331,6 +334,7 @@
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
 !/NL3      TNAME2 = 'Generalized Multiple DIA      '
 !/NL4      TNAME2 = 'Two Scaled Approximation      '
+!/NL5      TNAME2 = 'Generalized Kinetic Equation  '
 !/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
@@ -1195,6 +1199,20 @@
 !
 !/NL4      IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
 !
+! (QL: INXOUT = Grid option ?)
+!/NL5      IF (WRITE) THEN
+!/NL5          CALL INSNL5
+!/NL5          WRITE (NDSM) QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
+!/NL5                       QI5NNZ, QI5IPL, QI5PMX
+!/NL5      ELSE
+!/NL5          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/NL5                       QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
+!/NL5                       QI5NNZ, QI5IPL, QI5PMX
+!/NL5      END IF
+!/NL5      IF ( FLTEST ) WRITE (NDST,9051) QR5DPT, QR5OML, QI5DIS,    &
+!/NL5                                      QI5KEV, QI5NNZ, QI5IPL,    &
+!/NL5                                      QI5PMX
+!
 !/NLS      IF ( WRITE ) THEN
 !/NLS          WRITE (NDSM)                                           &
 !/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
@@ -1524,6 +1542,9 @@
 !
 !/NL4 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
 !/NL4              '      DATA   : ',I4,I4)
+!
+!/NL5 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+!/NL5              '      DATA   : ', F7.1, F8.2, 2I2.1, I12, 2I2.1)
 !
 !/NLS 9251 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP (NLS)'/       &
 !/NLS              '      DATA   : ',F8.3,E12.4,4F8.3)

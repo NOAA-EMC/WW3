@@ -118,9 +118,10 @@
 !/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
 !/    01-Jan-2018 : Add implicit source term integration ( version 6.04)
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
-!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.xx )
+!/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.xx ) 
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -308,6 +309,7 @@
 !     !/NL2   Exact nonlinear interactions.
 !     !/NL3   Generalized Multiple DIA.
 !     !/NL4   Two Scale Approximation
+!     !/NL5   Generalized Kinetic Equation.
 !     !/NLX   User-defined nonlinear interactions.
 !     !/NLS   Nonlinear HF smoother.
 !
@@ -397,6 +399,8 @@
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
 !/NL4      USE W3SNL4MD
+!/NL5      USE W3SNL5MD
+!/NL5      USE W3TIMEMD, ONLY: TICK21
 !/NLX      USE W3SNLXMD
 !/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
@@ -463,6 +467,10 @@
                                  IKS1, IS1, NSPECH, IDT, IERR, NKI, NKD
 !/S      INTEGER, SAVE           :: IENT = 0
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
+!/NL5      INTEGER                 :: QI5TSTART(2)
+!/NL5      REAL                    :: QR5KURT
+!/NL5      INTEGER, PARAMETER      :: NL5_SELECT = 1
+!/NL5      REAL, PARAMETER         :: NL5_OFFSET = 0.  ! explicit dyn.
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
 ! Scaling factor for SIN, SDS, SNL
@@ -644,6 +652,12 @@
       TAUOCY = 0.
       WNMEAN = 0.
 
+!
+! TIME is updated in W3WAVEMD prior to the call of W3SCRE, we should
+! move 'TIME' one time step backward (QL)
+!/NL5      QI5TSTART = TIME
+!/NL5      CALL TICK21 (QI5TSTART, -1.0 * DTG)
+!
 !/DEBUGSRC     IF (IX .eq. DEBUG_NODE) THEN
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
 !/DEBUGSRC       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
@@ -812,6 +826,8 @@
 !/NL2        CALL W3SNL2 ( SPEC, CG1, DEPTH,               VSNL, VDNL )
 !/NL3        CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 !/NL4        CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
+!/NL5        CALL W3SNL5 ( SPEC, CG1, WN1, FMEAN, QI5TSTART,          &
+!/NL5                            U10ABS, U10DIR, JSEA, VSNL, VDNL, QR5KURT)
 !/NLX        CALL W3SNLX 
 !
 !/PDLIB    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
@@ -953,8 +969,13 @@
 !/UOST         VD(IS) = VD(IS) + VDUO(IS)
           DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
+!/NL5          IF (NL5_SELECT .EQ. 1)  THEN
+!/NL5              DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,             &
+!/NL5                             1. + NL5_OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
+!/NL5          ELSE
           DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
                          1. + OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
+!/NL5          ENDIF
 !          IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I10,10F30.10)') 'TIME STEP COMP', IS, DAMAX, DAM(IS), XREL*SPECINIT(IS), AFILT, AFAC, DT
 !          ENDIF
@@ -971,8 +992,14 @@
         SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ... 
         SHAVEIO = SHAVE
         DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
+!
+!/NL5       DT     = INT(DT) * 1.0
         IF (srce_call .eq. srce_imp_post) DT = DTG  ! for implicit part
+!/NL5        IF (NL5_SELECT .EQ. 1) THEN
+!/NL5            HDT    = NL5_OFFSET * DT
+!/NL5        ELSE
         HDT    = OFFSET * DT
+!/NL5        ENDIF
         DTTOT  = DTTOT + DT
 
 !/DEBUGSRC        IF (IX == DEBUG_NODE) WRITE(*,'(A20,2I10,5F20.10,L20)') 'TIMINGS 2', IDT, NSTEPS, DT, DTMIN, DTDYN, HDT, DTTOT, SHAVE
@@ -1269,6 +1296,8 @@
 !
 ! 7.  Check if integration complete ---------------------------------- *
 !
+! Update QI5TSTART (Q. Liu)
+!/NL5          CALL TICK21(QI5TSTART, DT)
           IF (srce_call .eq. srce_imp_post) THEN
             EXIT
             ENDIF
