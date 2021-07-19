@@ -553,6 +553,7 @@
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
 !/                  from RTD grid models
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -894,6 +895,7 @@
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    25-Jul-2006 : Adding grid ID per point.           ( version 3.10 )
 !/    27-Aug-2015 : Adding interpolation for the ice.   ( version 5.10 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !

@@ -148,6 +148,7 @@
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -315,6 +316,7 @@
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
 !/FLX3      TNAMEF = 'T and C(1996) with cap on Cd  '
 !/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
+!/FLX5      TNAMEF = 'Direct use of stress          '
 !/FLXX      TNAMEF = 'Experimental                  '
 !/LN0      TNAME0 = 'Not defined                   '
 !/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '

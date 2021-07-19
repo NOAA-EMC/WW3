@@ -47,6 +47,7 @@
 !/    15-Jan-2020 : Added TP based on existing FP       ( version 7.12 )
 !/                  internal fields. (C. Bunney, UKMO)
 !/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

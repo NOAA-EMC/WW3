@@ -59,6 +59,7 @@
 !/                  (in source terms)
 !/    27-Jun-2017 : Expanding WMO table to 2 digits JHA ( version 6.02 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -935,6 +936,7 @@
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !
