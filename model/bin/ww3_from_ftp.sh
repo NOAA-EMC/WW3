@@ -8,7 +8,7 @@
 curr_dir=`pwd`
 
 # Set WW3 code version
-ww3ver=v7.12.3
+ww3ver=v7.12.5
 
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
@@ -54,6 +54,9 @@ cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
 cp -r data_regtests/ww3_tp2.21/input/*     regtests/ww3_tp2.21/input/
 cp -r data_regtests/ww3_test_09/input/*    regtests/mww3_test_09/input/
+cp -r data_regtests/ww3_ufs1.1/input/*     regtests/ww3_ufs1.1/input/
+cp -r data_regtests/ww3_ufs1.1/input/*.nc  regtests/ww3_ufs1.2/input/
+cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
 echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "

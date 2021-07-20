@@ -584,6 +584,11 @@
 !
       JBASE=0
 
+      ! initialize arrays to avoid NaN values
+      FA(:)=0
+      UA(:)=0
+      VA(:)=0
+
       DO K=1,NTIDAL_CON
         J1=JBASE+1
         JL=JBASE+NJ(K)

@@ -111,6 +111,7 @@
 !/    05-Jan-2021 : Update SMC grid for multi-grid. JGLi( version 7.xx )
 !/    27-May-2021 : Updates for IC5 (Q. Liu)            ( version 7.12 )
 !/    27-May-2021 : Moved to a subroutine               ( version 7.XX )
+!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -442,6 +443,7 @@
 !     !/NL2   Exact interactions (WRT).
 !     !/NL3   Generalized Multiple DIA (GMD).
 !     !/NL4   Two Scale Approximation
+!     !/NL5   Generalized Kinetic Equation (GKE)
 !     !/NLX   Open slot.
 !     !/NLS   Snl based HF filter.
 !
@@ -786,6 +788,8 @@
 !/NL3      INTEGER                 :: NQDEF
 !/NL3      REAL                    :: MSC, NSC, KDFD, KDFS
 !/NL4      INTEGER                 :: INDTSA, ALTLP
+!/NL5      REAL                    :: NL5DPT, NL5OML
+!/NL5      INTEGER                 :: NL5DIS, NL5KEV, NL5IPL, NL5PMX
 !/DB1      REAL                    :: BJALFA, BJGAM
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
@@ -867,6 +871,7 @@
 !/NL3      NAMELIST /SNL3/ NQDEF, MSC, NSC, KDFD, KDFS
 !/NL3      NAMELIST /ANL3/ QPARMS
 !/NL4      NAMELIST /SNL4/ INDTSA, ALTLP
+!/NL5      NAMELIST /SNL5/ NL5DPT, NL5OML, NL5DIS, NL5KEV, NL5IPL, NL5PMX
 !/NLS      NAMELIST /SNLS/ A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -1227,6 +1232,7 @@
 !/NL2      NRNL   = NRNL + 1
 !/NL3      NRNL   = NRNL + 1
 !/NL4      NRNL   = NRNL + 1
+!/NL5      NRNL   = NRNL + 1
 !/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
@@ -1579,6 +1585,12 @@
 !/NL3      KDFS   =  5.00
 !/NL4      INDTSA =  1
 !/NL4      ALTLP  =  2
+!/NL5      NL5DPT = 3000.
+!/NL5      NL5OML = 0.10
+!/NL5      NL5DIS = 0
+!/NL5      NL5KEV = 0
+!/NL5      NL5IPL = 1
+!/NL5      NL5PMX = 100
 !/NLS      A34    =  0.05
 !/NLS      FHFC   =  1.E10
 !/NLS      DNM    =  0.25
@@ -1679,6 +1691,22 @@
 !/NL4      WRITE (NDSO,923) INDTSA, ALTLP
 !/NL4      ITSA = INDTSA
 !/NL4      IALT = ALTLP
+!
+!/NL5      CALL READNL ( NDSS, 'SNL5', STATUS )
+!/NL5      WRITE (NDSO,922) STATUS
+!/NL5      NL5DPT = MAX(0., MIN(NL5DPT, 3000.))
+!/NL5      NL5DIS = MAX(0 , MIN(NL5DIS, 1))
+!/NL5      NL5KEV = MAX(0 , MIN(NL5KEV, 1))
+!/NL5      NL5IPL = MAX(0 , MIN(NL5IPL, 1))
+!/NL5      IF (NL5DIS .EQ. 1) NL5IPL = 0
+!/NL5      IF (NL5PMX .GT. 0) NL5PMX = MAX(10, NL5PMX)
+!/NL5      WRITE (NDSO,923) NL5DPT, NL5OML, NL5DIS, NL5KEV, NL5IPL, NL5PMX
+!/NL5      QR5DPT = NL5DPT
+!/NL5      QR5OML = NL5OML
+!/NL5      QI5DIS = NL5DIS
+!/NL5      QI5KEV = NL5KEV
+!/NL5      QI5IPL = NL5IPL
+!/NL5      QI5PMX = NL5PMX
 !
 !/NLS      CALL READNL ( NDSS, 'SNLS', STATUS )
 !/NLS      WRITE (NDSO,9922) STATUS
@@ -2730,6 +2758,7 @@
 !/NL3              WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
 !/NL3            END IF
 !/NL4          WRITE (NDSO,2922) INDTSA, ALTLP
+!/NL5          WRITE (NDSO,2922) QR5DPT, QR5OML, QI5DIS, QI5KEV, QI5IPL, QI5PMX
 !/NLS          WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1          WRITE (NDSO,2924) CDIS, APM
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -5643,6 +5672,18 @@
 !/NL4               '   (To speed up computation) ')
 !/NL4 2922 FORMAT ( '  &SNL4 ITSA =',I2,', IALT =',I2 )
 !
+!/NL5  922 FORMAT(/'  Nonlinear interactions (GKE) ',A/              &
+!/NL5        ' --------------------------------------------------')
+!/NL5  923 FORMAT ( '   Constant water depth (in meter) : ', F7.1/ &
+!/NL5               '   Quasi-resonant quartets cut-off : ', F8.2/ &
+!/NL5               '   Discretiz. of GKE (0:Con., 1:GS): ', I5/   &
+!/NL5               '   GKE (0: GS13-JFM, 1: J03-JPO)   : ', I5/   &
+!/NL5               '   Interp (0: nearest, 1: bilinear): ', I5/   &
+!/NL5               '   Mixing (0: no, N: N Tm, -1: b_T): ', I5/)
+!/NL5 2922 FORMAT ( '  &SNL5 NL5DPT =', F7.1, ', NL5OML =', F5.2, &
+!/NL5               ', NL5DIS =', I2.1, ', NL5KEV =', I2.1,       &
+!/NL5               ', NL5IPL =', I2.1, ', NL5PMX =', I5.1, ' /')
+!
 !/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
 !
 !/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
@@ -6263,13 +6304,13 @@
                '     OF GRID INDEX CLOSURE (NONE, SMPL or TRPL).'/    &
                ' *** PLEASE UPDATE YOUR GRID INPUT FILE ACCORDINGLY ***'/)
 !
- 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
-               '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
+!/SMC 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+!/SMC               '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
+!/SMC               '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
 !
- 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
-               '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
+!/SMC 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+!/SMC               '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
+!/SMC               '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)
@@ -6493,6 +6534,8 @@
 !/NL3                          READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
 !/NL4                        CASE('SNL4')
 !/NL4                          READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
+!/NL5                        CASE('SNL5')
+!/NL5                          READ (NDS,NML=SNL5,END=801,ERR=802,IOSTAT=J)
 !/NLS                        CASE('SNLS')
 !/NLS                          READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
 !/ST1                        CASE('SDS1')

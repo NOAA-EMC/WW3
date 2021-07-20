@@ -1,0 +1,76 @@
+$ -------------------------------------------------------------------- $
+   'Duration-limited test         '
+$
+   1.07  0.04  45  36  0.
+$
+   F F F F F T
+$
+$  900. 900. 900. 1.
+   10.  10.  10.  1.
+$
+$ -------------------------------------------------------------------- $
+$ ST6+NL5 (see section 3 of Liu, Gramstad & Babanin 2021, JFM, 910, A50;
+$          hereafter LGB21)
+$ namelists for ST6      : FLX4, SIN6, SDS6, SWL6
+$ namelist  for NL5 (GKE): SNL5
+$
+$ * NL5DPT - water depth defined for the GKE module (default: 3000 m)
+$ * NL5OML - quasi-resonant cut-off factor λc (default: 0.1)
+$ * NL5DIS - how to discretize the GKE - 0: Eq. (2.8) of LGB21 (default)
+$                                        1: Eq. (2.7) of LGB21
+$ * NL5KEV - equation solved - 0: GKE (Gramstad & Stiassnie 2013)
+$                              1: JKE (Janssen 2003)
+$ * NL5IPL - interpolation method for estimating quantities for k₄
+$            0 - Nearest interp.; 1 - bilinear interp. (default: 1)
+$ * NL5PMX - number of wave periods for phase mixing
+$            0 - no phase mixing; N - N * T_{-1, 0}; -1: N = 1 /b_T
+$
+$ -------------
+$ Futher notes:
+$ -------------
+$ * with the setup below, we will have 40014599 unique quartets
+$ * it may take quite a long time to find & estimate all these unique 
+$   quartets. A config file named `gkev0_dxxxx.cfg` will be created
+$   which contains the configuration details and will be read by
+$   ww3_shel shortly.
+$ * 'xxxx' in the name 'gkev0_dxxxx.cfg' denotes the water depth.
+$ -------------------------------------------------------------------- $
+$
+   &FLX4 CDFAC = 1.0 /
+   &SIN6 SINA0 = 0.05, SINFC = 6.00 /
+   &SDS6 SDSA1 = 4.75E-06, SDSA2 = 7E-05 /
+   &SWL6 SWLB1 = 6E-3 /
+   &SNL5 NL5DPT = 3000., NL5OML = 0.10, NL5DIS = 0, NL5KEV = 0,
+         NL5IPL = 1, NL5PMX = 100 /
+$
+$ Mandatory string to identify end of namelist input section.
+$
+END OF NAMELISTS
+$
+$ Define grid -------------------------------------------------------- $
+$
+$ * note that water depth defined here should be consistent with `NL5DPT`
+$
+     'RECT'  F  'NONE'
+      3      3
+      1.     1.     1.
+     -1.    -1.     1.
+     -5. 5.75  10  -3000. 3 1 '(....)' 'UNIT' 'input'
+$
+      1  1  1
+      1  1  1
+      1  1  1
+$
+   10 3 1 '(....)' 'PART' 'mapsta.inp'
+$
+      0   0   F
+$
+      0   0   F
+$
+      0   0
+$
+      0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
