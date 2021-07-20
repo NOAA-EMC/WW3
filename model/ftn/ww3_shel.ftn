@@ -56,6 +56,7 @@
 !/    16-Jul-2020 : Variable coupling time step         ( version 7.08 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/    22-Mar-2021 : Add new coupling fields             ( version 7.xx )
+!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -239,6 +240,7 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
 !/OASIS      USE W3WDATMD, ONLY: TIME00, TIMEEND
+!/NL5      USE W3WDATMD, ONLY: QI5TBEG
       USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
 !/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
       USE W3IDATMD
@@ -1657,6 +1659,7 @@
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
 !/OASIS      TIME00 = TIME0
 !/OASIS      TIMEEND = TIMEN
+!/NL5      QI5TBEG = TIME0
 !
       DTTST  = DSEC21 ( TIME0 , TIMEN )
       IF ( DTTST .LE. 0. ) GOTO 2003
