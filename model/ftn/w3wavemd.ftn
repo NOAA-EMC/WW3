@@ -2438,6 +2438,7 @@
 !
 ! 4.d Perform output
 !
+!/NL5              IF (J .EQ. 2) TOSNL5  = TONEXT(:, 2)
                   TOUT(:) = TONEXT(:,J)
                   DTTST   = DSEC21 ( TIME, TOUT )
 !

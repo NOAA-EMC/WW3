@@ -93,7 +93,8 @@
 !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
 !/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.06 )
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
-!/    06-May-2021 : Add SMCTYPE, ARCTC options.   JGLi  ( version 7.xx )
+!/    06-May-2021 : Add SMCTYPE, ARCTC options.   JGLi  ( version 7.12 )
+!/    07-Jun-2021 : the GKE module (NL5, Q. Liu)        ( version 7.12 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -476,6 +477,14 @@
 !                                                             (!/NL4)
 !      ITSA      Int.  Public   Integer indicating TSA (1) or FBI (0)
 !      IALT      Int.  Public   Integer determining alternating looping
+!                                                             (!/NL5)
+!      QR5DPT    Real  Public   Water depth for the GKE module
+!      QR5OML    Real  Public   λ cut off value for quasi-resonant quartets
+!      QI5DIS    Int.  Public   Method to discretize continuous spectrum
+!      QI5KEV    Int.  Public   GKE (GS13 or J03)
+!      QI5NNZ    Int.  Public   # of interactive quadruplets
+!      QI5IPL    Int.  Public   Interp. method to get C₄
+!      QI5PMX    Int.  Public   Phase mixing related parameter
 !                                                             (!/NLS)
 !      NTHX      Int.  Public   Expanded discrete direction range.
 !      NFRX      Int.  Public   Expanded discrete frequency range.
@@ -836,6 +845,9 @@
 !/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
 !/NL3                                 SNLCD(:), SNLCS(:)
 !/NL4        INTEGER               :: ITSA, IALT
+!/NL5        REAL                  :: QR5DPT, QR5OML
+!/NL5        INTEGER               :: QI5DIS, QI5KEV, QI5IPL, QI5PMX
+!/NL5        INTEGER(KIND=8)       :: QI5NNZ
 !/NLX        REAL                  :: DUMMY
 !/NLS        INTEGER               :: NTHX, NFRX, NSPL, NSPH
 !/NLS        REAL                  :: CNLSA, CNLSC, CNLSFM,                &
@@ -1139,6 +1151,9 @@
 !/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
 !/NL3                                 SNLCD(:), SNLCS(:)
 !/NL4      INTEGER, POINTER        :: ITSA, IALT
+!/NL5      REAL, POINTER           :: QR5DPT, QR5OML
+!/NL5      INTEGER, POINTER        :: QI5DIS, QI5KEV, QI5IPL, QI5PMX
+!/NL5      INTEGER(KIND=8), POINTER:: QI5NNZ
 !/NLS      INTEGER, POINTER        :: NTHX, NFRX, NSPL, NSPH
 !/NLS      REAL, POINTER           :: CNLSA, CNLSC, CNLSFM,                &
 !/NLS                                 CNLSC1, CNLSC2, CNLSC3, SNSST(:,:)
@@ -2381,6 +2396,13 @@
 !/NL3      SNLCS  => MPARS(IMOD)%SNLPS%SNLCS
 !/NL4      ITSA   => MPARS(IMOD)%SNLPS%ITSA
 !/NL4      IALT   => MPARS(IMOD)%SNLPS%IALT
+!/NL5      QR5DPT => MPARS(IMOD)%SNLPS%QR5DPT
+!/NL5      QR5OML => MPARS(IMOD)%SNLPS%QR5OML
+!/NL5      QI5DIS => MPARS(IMOD)%SNLPS%QI5DIS
+!/NL5      QI5KEV => MPARS(IMOD)%SNLPS%QI5KEV
+!/NL5      QI5NNZ => MPARS(IMOD)%SNLPS%QI5NNZ
+!/NL5      QI5IPL => MPARS(IMOD)%SNLPS%QI5IPL
+!/NL5      QI5PMX => MPARS(IMOD)%SNLPS%QI5PMX
 !/NLS      NTHX   => MPARS(IMOD)%SNLPS%NTHX
 !/NLS      NFRX   => MPARS(IMOD)%SNLPS%NFRX
 !/NLS      NSPL   => MPARS(IMOD)%SNLPS%NSPL
