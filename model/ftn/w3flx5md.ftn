@@ -5,11 +5,11 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |                                   |
+!/                  |           N.G. Valiente           |
 !/                  |           J. Edward               |
 !/                  |           A. Saulter              |
-!/                  |           N.G. Valiente           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :       XX-March-2021 |
+!/                  | Last update :       22-March-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Mar-2021 : Origination.                        ( version 7.xx )
@@ -174,7 +174,7 @@
       UNZ    = MAX ( 0.01 , U10 )
       CD     = (UST/UNZ)**2
       USTD   = TAUADIR
-      SQRTCDM1  = MIN(U10/UST,100.0)
+      SQRTCDM1  = MIN(UNZ/UST,100.0)
       Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
 !
       RETURN
@@ -182,7 +182,7 @@
 ! Formats
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLX5 : '/               &
-               '     HIGHT OF WIND SHOULD BE 10m IN THIS APPROACH '/   &
+               '     HEIGHT OF WIND SHOULD BE 10m IN THIS APPROACH '/   &
                '     ZWND =',F8.2,'m'/)
 !/
 !/ End of W3FLX5 ----------------------------------------------------- /
