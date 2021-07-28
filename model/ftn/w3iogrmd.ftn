@@ -359,7 +359,6 @@
 !/PR1      TNAMEP = 'First order upstream          '
 !/UQ      TNAMEP = '3rd order UQ scheme           '
 !/UNO      TNAMEP = '2nd order UNO scheme          '
-!/SMC      TNAMEP = 'UNO2 on SMC grid propagation  '
 !/PRX      TNAMEP = 'Experimental                  '
 !/PR0      TNAMEG = 'No GSE aleviation             '
 !/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
@@ -448,7 +447,7 @@
                 FNAMEF, FNAMEI
 !
 !/SMC          WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          WRITE (NDSM) NGLO, NARC, NBGL, NBAC
+!/SMC          WRITE (NDSM) NGLO, NARC, NBGL, NBAC, NBSMC
 !
           WRITE (NDSM)                                                &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
@@ -467,8 +466,8 @@
 !
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     NGLO, NARC, NBGL, NBAC 
+!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/SMC                     NGLO, NARC, NBGL, NBAC, NBSMC
 !
           NK     = MK
           NTH    = MTH
@@ -592,7 +591,8 @@
 ! Writes different kind of information depending on grid type
 !
           SELECT CASE ( GTYPE )
-            CASE ( RLGTYPE )
+!!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
+            CASE ( RLGTYPE, SMCTYPE )
               WRITE (NDSM)                                            &
                    SX, SY, X0, Y0
             CASE ( CLGTYPE )
@@ -629,16 +629,18 @@
           WRITE (NDSM)                                                &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
 !
-!/SMC         WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
-!/SMC         WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc
-!/ARC         WRITE (NDSM)  ICLBAC 
-!/ARC         WRITE (NDSM)  ANGARC 
-!/SMC         WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
-!/SMC         IF ( FLTEST ) THEN
-!/SMC            WRITE (NDSE,"('  NLvCel, NLvUFc, NLvVFc Write for',2I9)") NRLv, MRFct
+!/SMC        IF( GTYPE .EQ. SMCTYPE ) THEN
+!/SMC          WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
+!/SMC          WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc, ISMCBP
+!/SMC          WRITE (NDSM)  ICLBAC 
+!/SMC          WRITE (NDSM)  ANGARC 
+!/SMC          WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
+!/SMC          IF ( FLTEST ) THEN
+!/SMC            WRITE (NDSE,"('  NRLv, MRFct and NBSMC values are',3I9)") NRLv, MRFct, NBSMC
 !/SMC            WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc 
 !/SMC            WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
-!/SMC         ENDIF
+!/SMC          ENDIF
+!/SMC        ENDIF
 ! 
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
           WRITE (NDSM)                     &
@@ -670,8 +672,8 @@
 !/DEBUGIOGR     FLUSH(740+IAPROC)
 !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
           IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
-!/SMC                                 , NCel, NUFc, NVFc, NRLv         &
-!/ARC                                 , NARC, NBAC, NSPEC              &
+!/SMC                                 , NCel, NUFc, NVFc, NRLv, NBSMC  &
+!/SMC                                 , NARC, NBAC, NSPEC              &
                                       )
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.3'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
@@ -679,7 +681,8 @@
 ! Reads different kind of information depending on grid type
 !
           SELECT CASE ( GTYPE )
-            CASE ( RLGTYPE )
+!!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020 
+            CASE ( RLGTYPE, SMCTYPE )
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                    SX, SY, X0, Y0
               DO IX=1,NX
@@ -754,16 +757,18 @@
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.10'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
 !
+!/SMC        IF( GTYPE .EQ. SMCTYPE ) THEN
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     NLvCel, NLvUFc, NLvVFc
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     IJKCel, IJKUFc, IJKVFc
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ICLBAC 
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ANGARC 
+!/SMC                     IJKCel, IJKUFc, IJKVFc, ISMCBP 
+!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/SMC                     ICLBAC 
+!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/SMC                     ANGARC 
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     CTRNX,  CTRNY,  CLATF
+!/SMC        ENDIF
 !
 !/DEBUGIOGR     WRITE(740+IAPROC,*) 'W3IOGR, step 7.11'
 !/DEBUGIOGR     FLUSH(740+IAPROC)
@@ -1335,13 +1340,13 @@
 !/PR3      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
 !
 !/SMC      IF ( WRITE ) THEN
-!/SMC          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
+!/SMC          WRITE(NDSM) DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
 !/SMC        ELSE
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                       DTME, CLATMN, Refran, FUNO3, FVERG, FSWND
+!/SMC                      DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
 !/SMC        END IF
 !
-!/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
+!/SMC      IF ( FLTEST ) WRITE (NDST,9260) DTMS, Refran
 !
 !/FLD1      IF ( WRITE ) THEN
 !/FLD1          WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
@@ -1561,7 +1566,7 @@
 !/PR3 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
 !/PR3              '      DATA   : ',2F6.2)
 !
-!/SMC 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
+!/SMC 9260 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SMCG'/             &
 !/SMC              '      DATA   : ',3E10.3)
 !
 !/T 9070 FORMAT (' TEST W3IOGR : DISPERSION INTEPOLATION TABLES')
