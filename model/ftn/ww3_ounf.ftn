@@ -184,7 +184,7 @@
 !
       USE NETCDF
 
-!/SMC      USE W3SMCOMD
+!/SMC      USE W3SMCOMD, SMCNOVAL=>NOVAL
 
       IMPLICIT NONE
 
@@ -218,7 +218,7 @@
 !
       LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
                                  VECTOR, TOGETHER, FLGNML, FLGFC
-
+      LOGICAL                 :: MAPSTAOUT = .TRUE.
       LOGICAL                 :: SMCGRD = .FALSE.
 !/RTD      LOGICAL                 :: RTDL = .FALSE.
 
@@ -226,7 +226,8 @@
       CHARACTER(LEN=32)       :: EPOCH_ISO
       CHARACTER(LEN=64)       :: EPOCH
       CHARACTER               :: TIMEUNIT*1 ! 'D' = days, or 'S' for seconds
-
+!
+      REAL                    :: NOVAL      ! Fill value for seapoints with no value
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -253,10 +254,6 @@
 !
       WRITE (NDSO,900)
 !
-!/RTD ! Is the grid really rotated
-!/RTD      IF ( Polat < 90. ) RTDL = .True.
-!/RTD !
-!
       ! Default epoch time:
       TEPOCH(1) = 19900101
       TEPOCH(2) = 0
@@ -266,6 +263,10 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!
+!/RTD ! Is the grid really rotated?
+!/RTD      IF ( Polat < 90. ) RTDL = .True.
+!/RTD !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -323,6 +324,8 @@
         S3 = NML_FIELD%TIMESPLIT
         TTYPE = NML_FIELD%TIMEVAR
         TIMEUNIT = NML_FIELD%TIMEUNIT
+        NOVAL = NML_FIELD%NOVAL
+        MAPSTAOUT = NML_FIELD%MAPSTA
         IF(SMCGRD) THEN
 !/SMC          SMCOTYPE = NML_SMC%TYPE
 !/SMC          SXO = NML_SMC%SXO
@@ -330,7 +333,7 @@
 !/SMC          EXO = NML_SMC%EXO
 !/SMC          EYO = NML_SMC%EYO
 !/SMC          CELFAC = NML_SMC%CELFAC
-!/SMC          NOVAL = NML_SMC%NOVAL
+!/SMC          SMCNOVAL = NOVAL
         ELSE
           IX1 = NML_FILE%IX0
           IXN = NML_FILE%IXN 
@@ -375,14 +378,13 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
-!       ! ChrisB: Vector, Time variable type and time variable units only
-!       ! configurable via namelist input. Default to DOUBLE and "days since" here:
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801,ERR=802) VECTOR
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+
+!       The following are only configurable via the namelist input
+!       and are hardcoded for .inp files:
         TTYPE = "D"
         TIMEUNIT = "D"
+        NOVAL = UNDEF 
+        VECTOR = .TRUE.
 
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
@@ -391,7 +393,7 @@
         READ (NDSI,*,END=801,ERR=802) S3
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
-        IF( SMCGRD) THEN
+        IF(SMCGRD) THEN
 !/SMC        ! SMC output type (1 or 2)
 !/SMC        READ (NDSI,*,END=801,ERR=802) SMCOTYPE
 !/SMC        IF(SMCOTYPE .EQ. 1) THEN  ! Flat sea point output
@@ -401,15 +403,12 @@
 !/SMC           CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC           READ (NDSI,*,END=801,ERR=802) SXO, SYO, EXO, EYO, CELFAC
 !/SMC        ENDIF
-!/SMC        NOVAL = UNDEF
+!/SMC        SMCNOVAL = NOVAL
         ELSE 
            READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
         ENDIF
 
         CLOSE(NDSI,ERR=800,IOSTAT=IERR)
-
-        VECTOR = .TRUE.  ! Only vector output for .inp files.
-
       END IF ! .NOT. FLGNML
 
       CALL STR_TO_UPPER(TTYPE)
@@ -917,8 +916,7 @@
 !/
       INTEGER                 :: IFI, IFJ, MFILL, I, J, ISEA, IX, IY,  &
                                  I1, J1, IPART, INDEXIPART, COORDTYPE
-      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
-                                 MAPSTAOUT, NDSDAT,                    &
+      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID, NDSDAT,&
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
                                  IVAR1
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
@@ -1008,10 +1006,9 @@
       XX     = UNDEF
       XY     = UNDEF
       ! CB: Dont output MAPSTA for SMC grid - it does not make sense
-      IF( SMCGRD ) THEN
-        MAPSTAOUT = 0
-      ELSE
-        MAPSTAOUT = 1
+      IF( SMCGRD .AND. MAPSTAOUT) THEN
+        WRITE(NDSO,*) "MAPSTA output disabled for SMC grids"
+        MAPSTAOUT = .FALSE.
       ENDIF
       NCVARTYPE  = NCVARTYPEI
       NDSDAT=30
@@ -2371,7 +2368,7 @@
               END IF
 
               ! Writes status map array at variable index 2+1+coordtype+idim-4
-              IF (MAPSTAOUT.EQ.1) THEN 
+              IF (MAPSTAOUT) THEN 
                 START(1)=1
                 START(2)=1
                 COUNT(1)=IXN-IX1+1
@@ -3280,7 +3277,7 @@
       INTEGER, INTENT(OUT)              :: DIMID(6)
       INTEGER, INTENT(IN)               :: DIMLN(6)
       INTEGER, INTENT(OUT)              :: VARID(300)
-      INTEGER, INTENT(IN)               :: MAPSTAOUT
+      LOGICAL, INTENT(IN)               :: MAPSTAOUT
 !
 !/ ------------------------------------------------------------------- /
 !   Local parameters
@@ -3612,7 +3609,7 @@
 !
 !  Status map: useful for grid combination
 !
-      IF (MAPSTAOUT.EQ.1) THEN 
+      IF (MAPSTAOUT) THEN 
         IF (GTYPE.EQ.UNGTYPE) THEN 
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(20))
         ELSE 
@@ -3759,6 +3756,10 @@
           END IF
         END DO
       ENDIF
+
+      ! Change UNDEF sea points to NOVAL, if set differently
+      IF(NOVAL .NE. UNDEF) WHERE(S .EQ. UNDEF) S = NOVAL
+
       CALL W3S2XY ( NSEA, NSEA, NX+1, NY, S, MAPSF, X )
 !/SMC     ENDIF
 
