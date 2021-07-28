@@ -2417,9 +2417,9 @@
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                           IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                           CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+!/NC4                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                    CALL CHECK_ERR(IRET)
                   ELSE
                     IF( SMCGRD ) THEN
 !/SMC                      IF( SMCTYPE .EQ. 1 ) THEN
@@ -2432,9 +2432,10 @@
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-!/NC4                          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                          CALL CHECK_ERR(IRET)
+                      CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+!/NC4                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+!/NC4                    CALL CHECK_ERR(IRET)
                   END IF
                 ELSE
                   DIMFIELD(1)=DIMID(2)
