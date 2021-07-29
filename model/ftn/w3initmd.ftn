@@ -3760,8 +3760,7 @@
 !
 !/MPIT          WRITE (NDST,9020)
 !
-!/MPI          IF ( IAPROC.LE.NAPROC ) THEN
-!/MPI            IF ( IAPROC.NE.NAPRST ) THEN
+!/MPI          IF ( IAPROC.NE.NAPRST .AND. IAPROC.LE.NAPROC ) THEN
 !
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT0 + 1
@@ -3780,9 +3779,34 @@
 !/MPI              CALL MPI_SEND_INIT (FPIS(IAPROC), 1, WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 !/MPIT      WRITE (NDST,9021) IH, 'S FP', IROOT, IT, IRQRS(IH), IERR
+!
+!/MPI          ELSE IF ( IAPROC .EQ. NAPRST ) THEN
+!/MPI              DO I0=1, NAPROC
+!/MPI                IFROM  = I0 - 1
+!/MPI                IF ( I0 .NE. IAPROC ) THEN
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 1
+!/MPI                    CALL MPI_RECV_INIT (UST (I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R U*', IFROM, IT, IRQRS(IH), IERR
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 2
+!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R UD', IFROM, IT, IRQRS(IH), IERR
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 3
+!/MPI                    CALL MPI_RECV_INIT (FPIS(I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R FP', IFROM, IT, IRQRS(IH), IERR
+!/MPI                END IF
+!/MPI              END DO
 !/MPI            END IF
 !
-!/MPI            IF (OARST) THEN
+!/MPI          IF (OARST) THEN
 !/MPI              IF ( FLOGRR( 1, 2) ) THEN
 !/MPI                IH     = IH + 1
 !/MPI                IT     = IT0 + 4
@@ -4003,38 +4027,13 @@
 !/MPI                         IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 !/MPIT        WRITE (NDST,9021) IH, 'S T2', IROOT, IT, IRQRS(IH), IERR
 !/MPI              END IF
-!/MPI            ENDIF
 !
 !/MPI            IF ( IAPROC .EQ. NAPRST ) THEN
-!/MPI              IF (OARST) THEN
 !/MPI                IF (NAPRST .NE. NAPFLD) CALL W3XDMA ( IMOD, NDSE, NDST, FLOGRR )
 !/MPI                CALL W3XETA ( IMOD, NDSE, NDST )
-!/MPI              ENDIF
 !
-!/MPI              DO I0=1, NAPROC
-!/MPI                IFROM  = I0 - 1
-!/MPI                IF ( I0 .NE. IAPROC ) THEN
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 1
-!/MPI                    CALL MPI_RECV_INIT (UST (I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R U*', IFROM, IT, IRQRS(IH), IERR
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 2
-!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R UD', IFROM, IT, IRQRS(IH), IERR
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 3
-!/MPI                    CALL MPI_RECV_INIT (FPIS(I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R FP', IFROM, IT, IRQRS(IH), IERR
-!/MPI                END IF
-!
-!/MPI                IF (OARST) THEN
+!/MPI                DO I0=1, NAPROC
+!/MPI                  IFROM  = I0 - 1
 !/MPI                  IF ( FLOGRR( 1, 2) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT0 + 4
@@ -4255,11 +4254,9 @@
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 !/MPIT      WRITE (NDST,9021) IH, 'R T2', IFROM, IT, IRQRS(IH), IERR
 !/MPI                  END IF
-!/MPI                END IF
+!/MPI                END DO
 !
-!/MPI              END DO
-!
-!/MPI              IF (OARST) CALL W3SETA ( IMOD, NDSE, NDST )
+!/MPI                CALL W3SETA ( IMOD, NDSE, NDST )
 !/MPI            END IF
 !/MPI          END IF
 !
