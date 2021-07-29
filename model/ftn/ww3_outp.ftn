@@ -1285,7 +1285,6 @@
             UDIRCA   = WDO(J)*RADE
             UDIRR    = WDO(J)
             UABS     = MAX ( 0.001 , WAO(J) )
-! Need to add TAUA, TAUADIR and RHOAIR.
             TAUA     = MAX ( 0.001 , TAUAO(J))
             TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
             RHOAIR   = MAX ( 0. , DAIRO(J))

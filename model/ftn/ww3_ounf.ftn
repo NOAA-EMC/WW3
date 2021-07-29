@@ -5,7 +5,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |
+!/                  |           F. Ardhuin              |model/ftn/ww3_ounf.ftn
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         22-Mar-2021 |
@@ -916,8 +916,7 @@
 !/
       INTEGER                 :: IFI, IFJ, MFILL, I, J, ISEA, IX, IY,  &
                                  I1, J1, IPART, INDEXIPART, COORDTYPE
-      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        &
-                                 MAPSTAOUT, NDSDAT,                    &
+      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID, NDSDAT,&
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
                                  IVAR1
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
@@ -1194,31 +1193,6 @@
                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, RHOAIR, MAPSF, X1 )
               ENDIF
 !
-            ! Atmospheric momentum
-            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
-              !! Note - TAUA and TAUADIR read in from .ww3 file are TAUAX,TAUAY
-!/RTD              ! Rotate x,y vector back to standard pole
-!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA(1:NSEA), TAUADIR(1:NSEA), AnglD)
-
-              IF( SMCGRD ) THEN
-!/SMC                 CALL W3S2XY_SMC( TAUA   (1:NSEA), XX )
-!/SMC                 CALL W3S2XY_SMC( TAUADIR(1:NSEA), XY )
-              ELSE ! IF(SMCGRD)
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUA(1:NSEA)      &
-                                                        , MAPSF, XX )
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUADIR(1:NSEA)   &
-                                                        , MAPSF, XY )
-              ENDIF
-              NFIELD=2
-!
-            ! Air density
-            ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
-              IF( SMCGRD ) THEN
-!/SMC                 CALL W3S2XY_SMC(RHOAIR, X1)
-              ELSE
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, RHOAIR, MAPSF, X1 )
-              ENDIF
-!
 !/BT4 ! Krumbein phi scale
 !/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
 !/BT4              CALL S2GRID(SED_D50, X1)
@@ -1340,14 +1314,6 @@
               ENDDO
 !
               CALL S2GRID(AUX1, X1)
-!
-            ! Mean wave number
-            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
-              IF( SMCGRD ) THEN
-!/SMC                CALL W3S2XY_SMC( WNMEAN, X1 )
-              ELSE
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WNMEAN, MAPSF, X1 )
-              END IF
 !
             ! Mean wave number
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
