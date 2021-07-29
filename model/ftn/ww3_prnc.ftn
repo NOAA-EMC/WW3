@@ -77,6 +77,7 @@
 !       YCOFF   Real  Offset for input scalar field
 !       FX,FY   R.A.  Output fields.
 !       ACC     Real  Required interpolation accuracy.
+!       XTEMP   R.A.  Temporal array
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -255,7 +256,8 @@
                                  XD12(:,:), XD22(:,:),                &
                                  FX(:,:), FY(:,:), FA(:,:),           &
                                  A1(:,:), A2(:,:), A3(:,:)
-      REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
+      REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:),           &
+                                 DATA(:,:), XTEMP(:,:)
 !
       REAL, POINTER           :: ALA(:,:), ALO(:,:)
 !
@@ -1307,13 +1309,14 @@
           MXM = MAX ( NXJ(1), NXJ(2) )
           MYM = MAX ( NYJ(1), NYJ(2) )
           IF (ITYPE.EQ.1.AND.GTYPE.EQ.UNGTYPE) THEN 
-            ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1) )
+            ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1), XTEMP(MXM,1) )
           ELSE
-            ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )
+            ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM), XTEMP(MXM,MYM) )
           END IF
           XC = 0.
           YC = 0.
           AC = 0.
+          XTEMP = 0.
         END IF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1698,7 +1701,7 @@
               END IF
             END IF
             CALL CHECK_ERR(IRET)
-            ! forces to 0 values that are undefined
+            ! forces undefined values to FILLVALUE
             WHERE(XC.NE.XC) XC = FILLVALUE
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
 
@@ -1871,16 +1874,25 @@
                 CALL INTERP(MXM, MYM, YC, IX21, IX22, IY21, IY22,      &
                                RD11, RD12, RD21, RD22, FILLVALUE, FY)
 
-                CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,      &
-                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                IF(FLSTAB) THEN
+                  ! AC only populated if FLSTAB is true
+                  CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,    &
+                                 RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                ENDIF
 
-                CALL INTERP(MXM, MYM, SQRT(XC**2+YC**2), IX21, IX22,   &
-                               IY21, IY22, RD11, RD12, RD21, RD22,     &
-                               SQRT(2.0)*FILLVALUE, A2)
+                WHERE ( XC.NE.FILLVALUE .AND. YC.NE.FILLVALUE)
+                  XTEMP = XC*XC + YC*YC
+                ELSEWHERE
+                  XTEMP = FILLVALUE
+                ENDWHERE
+                CALL INTERP(MXM, MYM, XTEMP, IX21, IX22, IY21, IY22,   &
+                               RD11, RD12, RD21, RD22, FILLVALUE, A3)
 
-                CALL INTERP(MXM, MYM, XC**2+YC**2, IX21, IX22,         &
-                               IY21, IY22, RD11, RD12, RD21, RD22,     &
-                               2.0*FILLVALUE*FILLVALUE, A3)
+                WHERE ( XTEMP.NE.FILLVALUE )
+                  XTEMP =  SQRT(XTEMP)
+                ENDWHERE
+                CALL INTERP(MXM, MYM, XTEMP, IX21, IX22, IY21, IY22,   &
+                               RD11, RD12, RD21, RD22, FILLVALUE, A2)
 
                 DO IY=1,NY
                   DO IX=1,NX
@@ -2024,7 +2036,7 @@
 !
       END DO ! NTI
 !
-      DEALLOCATE(XC,YC,AC)  
+      DEALLOCATE(XC,YC,AC,XTEMP)  
       IF (ASSOCIATED(ALA)) DEALLOCATE(ALA,ALO)
 !
 !     End loop over input fields
@@ -2406,11 +2418,21 @@
           IF(FACTOR.GT.0.0) THEN
             FA(IX,IY) = FA(IX,IY) / FACTOR
           ELSE
-            IF(XC(IX,IY).EQ.FILLVALUE) THEN
-              FA(IX,IY) = 0.0
+            ! Interpolation coefficients sum to zero - could be on a boundary
+            ! (see note in "method" above). If any surrounding points have a
+            ! valid value then use one of them, otherwise set to zero.
+            IF( XC(IX21(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX21(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY22(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY22(IX,IY))
             ELSE
-              FA(IX,IY) = XC(IX,IY)
-            ENDIF
+              ! All surrounding points are FILLVALUE - set to zero.
+              FA(IX,IY) = 0.0
+            END IF
           END IF
         END DO
       END DO

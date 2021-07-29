@@ -35,14 +35,14 @@
   echo "Save source codes : $source"
   echo "Save listings     : $list"
 
-  # Set Cray compiler variant; CCE (Cray Compiler Environment) or GNU.
-  # Use GNU for programs compiled with PDLIB, CCE for all others.
-  #comp="CCE"
-  comp="GNU"
-
+  # Set Cray compiler variant: CCE (Cray Compiler Environment) or GNU.
+  #  - ukmo_cray[_debug]       : Cray Fortan (Cray Compiler Environment)
+  #  - ukmo_cray_gnu[_dubug]   : GNU Fortran using cray wrapper
+  #  - ukmo_cray_intel[_dubug] : Ifort using cray wrapper
+  # Note: currently, Cray Fortran fails with some PDLIB regrests
+  cmplr="ukmo_cray_gnu"
 
 # 1. Set up for compilation environemnt on Cray XC (broadwell processors)
-
   echo '#!/bin/bash'                                         > matrix.head
   echo ' '                                                  >> matrix.head
 
@@ -60,21 +60,31 @@
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-if [[ $comp == "CCE" ]]; then
+if [[ $cmplr == "ukmo_cray" ]] || [[ $cmplr == "ukmo_cray_debug" ]]; then
   # Load targetted versions of Cray Development Tools (bug in Fortran StreamIO
   # for older versions) and netCDF/HDF5 modules:
-    cmplr="ukmo_cray"
-    echo "  module load  cdt/18.12"                         >> matrix.head
-    echo "  module load cray-netcdf/4.6.1.3"                >> matrix.head
-    echo "  module load cray-hdf5/1.10.2.0"                 >> matrix.head
-    echo "  export METIS_PATH=/home/d02/frey/WW3/ParMETIS"  >> matrix.head
-elif [[ $comp == "GNU" ]]; then
+    echo "module load  cdt/18.12"                         >> matrix.head
+    echo "module load cray-netcdf/4.6.1.3"                >> matrix.head
+    echo "module load cray-hdf5/1.10.2.0"                 >> matrix.head
+    echo "export METIS_PATH=/home/d02/frey/WW3/ParMETIS"  >> matrix.head
+
+elif [[ $cmplr == ukmo_cray_gnu* ]]; then
     # ParMETIS library not currently working with Cray compiler.
     # Use GNU compiler for programs that use PDLIB.
-    cmplr="ukmo_cray_gnu"
-    echo "  module switch PrgEnv-cray PrgEnv-gnu/5.2.82"    >> matrix.head
-    echo "  module load cray-netcdf"                        >> matrix.head
-    echo "  export METIS_PATH=/home/d02/frey/WW3/ParMETIS_GNU" >> matrix.head
+    echo "module switch PrgEnv-cray PrgEnv-gnu/5.2.82"    >> matrix.head
+    echo "module load cray-netcdf"                        >> matrix.head
+    echo "export METIS_PATH=/home/d02/frey/WW3/ParMETIS_GNU" >> matrix.head
+
+elif [[ $cmplr == ukmo_cray_intel* ]]; then
+    echo "module switch PrgEnv-cray PrgEnv-intel"         >> matrix.head
+    echo "module swap intel/15.0.0.090 intel/18.0.5.274"  >> matrix.head
+    echo "module load cdt/18.12"                          >> matrix.head
+    echo "module load cray-netcdf/4.6.1.3"                >> matrix.head
+    echo "module load cray-hdf5/1.10.2.0"                 >> matrix.head
+
+else
+    echo "Unknown compiler for UKMO regression tests: $cmplr"
+    exit 1
 fi
 
 # SNP Launcher 7.7.4 allows -np switch:
@@ -136,6 +146,7 @@ fi
   export  multi06='y' # mww3_test_06 (curvilinear grid tests)
   export  multi07='y' # mww3_test_07 (unstructured grid tests)
   export  multi08='y' # mww3_test_08 (wind and ice tests)
+  export  multi09='y' # mww3_test_09 (SMC multi grid test)
   export      ufs='n' # The Unified Forecast System
   export     grib='n' # grib file field output
   export rstrt_b4b='y' # Restart Reproducibility
