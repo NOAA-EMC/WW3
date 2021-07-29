@@ -32,6 +32,7 @@
 !/    06-Jun-2018 : add subroutine INIT_GET_JSEA_ISPROC_GLOB/add PDLIB 
 !/                                                     ( version 6.04 )
 !/    22-Mar-2021 : Support for air density input      ( version 7.xx )
+!/    28-Oct-2021 : Add SMC grid group indicator. JGLi ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -80,6 +81,7 @@
 !      NRGRD     Int.  Public   Number of grids.
 !      NRINP     Int.  Public   Number of input grids.
 !      NRGRP     Int.  Public   Number of groups.
+!      NGRPSMC   Int.  Public   SMC grid group number, one of 0:NRGRP. 
 !      NMVMAX    Int.  Public   Number of moving grid data.
 !      GRANK     I.A.  Public   Rank number for grid.
 !      GRGRP     I.A.  Public   Group number for grid.
@@ -299,7 +301,7 @@
                                  IMPROC = 1, NMPLOG = 1, NMPSCR = 1,  &
                                  NMPTST = 1, NMPERR = 1, NMPUPT = 1,  &
                                  STIME(2), ETIME(2), NRGRD, NRINP,    &
-                                 NRGRP, NMVMAX
+                                 NRGRP, NMVMAX, NGRPSMC 
 !/F90      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 !/MPRF      INTEGER                 :: MDSP
 !/MPI      INTEGER                 :: MPI_COMM_MWAVE

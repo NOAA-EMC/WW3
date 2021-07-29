@@ -1,30 +1,30 @@
-#############################################################################
-#                                                                           #
-# ww3_ts1   Test script for WW-III, source term integration in homogeneous  #
-#           conditions (1-point model)                                      #
-#                                                                           #
-# Model should be compiled with the switches :                              #
-#                                                                           #
-#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
-#                        Select source term, growth needed, other opt.      #
-#   !/PR0                No propagation.                                    #
-#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
-#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
-#                                                                           #
-#                                                                           #
-# - No other optional switches should be used.                              #
-# - Test case input (default):                                              #
-#   * ww3_grid.inp : (default)                                              #
-#     + one point grid without propagation.                                 #
-#     + Spectral grid: ntheta = 24, nf = 25 f1 = 0.042  , fgamma = 1.1      #
-#   * switch options :                                                      #
-#     + switch_ST1      : WAM 3 phyics.                                     #
-#     + switch_ST1_RWND : WAM 3 physics + wind dorrection.                  #
-#     + switch_ST2      : Tolman and Chalikov (default).                    #
-#     + switch_ST3      : WAM 4 physics.                                    #
-#     + switch_ST4      : Ardhuin et al. (2010), Romero (2019)              #
-#     + switch_ST6      : BYDRZ physics (2013).                             #
-#                                                                           #
+################################################################################
+#                                                                              #
+# ww3_ts1   Test script for WW-III, source term integration in homogeneous     #
+#           conditions (1-point model)                                         #
+#                                                                              #
+# Model should be compiled with the switches :                                 #
+#                                                                              #
+#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                      #
+#                        Select source term, growth needed, other opt.         #
+#   !/PR0                No propagation.                                       #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.           #
+#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.               #
+#                                                                              #
+#                                                                              #
+# - No other optional switches should be used.                                 #
+# - Test case input (default):                                                 #
+#   * ww3_grid.inp : (default)                                                 #
+#     + one point grid without propagation.                                    #
+#     + Spectral grid: ntheta = 24, nf = 25 f1 = 0.042  , fgamma = 1.1         #
+#   * switch options :                                                         #
+#     + switch_ST1      : WAM 3 phyics.                                        #
+#     + switch_ST1_RWND : WAM 3 physics + wind dorrection.                     #
+#     + switch_ST2      : Tolman and Chalikov (default).                       #
+#     + switch_ST3      : WAM 4 physics.                                       #
+#     + switch_ST4      : Ardhuin et al. (2010), Romero (2019)                 #
+#     + switch_ST6      : BYDRZ physics (2013).                                #
+#                                                                              #
 #  Example run_test commands:                                                  #
 #  (some details will vary by local system and configuration)                  #
 #  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                         #
@@ -40,13 +40,54 @@
 #  ./bin/run_test -i input_icesct_IC3 -w work_IC3 ../model ww3_ts1             #
 #  ./bin/run_test -i input_icesct_IC4 -w work_IC4 ../model ww3_ts1             #
 #                                                                              #
+# ---------------------------------------------------------------------------- #
+# Academic tests for the GKE (NL5)                                             #
+#                                                                              #
+# - input_nl5_growth: duration-limited test case with ST6 + NL5                #
+#   * ww3_grid.inp                                                             #
+#     + one point grid without propagation                                     #
+#     + spectral grid: ntheta = 36, nf = 45, f1 = 0.04, fgamma = 1.07          #
+#     + with the default setup, this will yield  40014599 quasi-resonant and   #
+#       resonant, unique quartets                                              #
+#     + model integration for 2 days                                           #
+#     + see section 3 of Liu, Gramstad & Babanin 2021, JFM, 910, A50 (hereafter#
+#       LGB21) and explanations in ww3_grid.inp for more details.              #
+#                                                                              #
+# - input_nl5_gaussian: adiabatic evolution of a steep, narrow-banded Gaussian #
+#   wave spectrum (ST0 + NL5)                                                  #
+#   * ww3_grid.inp                                                             #
+#     + one point grid without propagation                                     #
+#     + spectral grid: ntheta = 72, nf = 50, f1 = 0.04, fgamma = 1.053         #
+#     + with the default setup, this will yield 646304790 quasi-resonant and   #
+#       resonant, unique quartets                                              #
+#     + huge memory is required for this GKE run (I used "#SBATCH --mem=186g") #
+#     + model integration for 1.5 hr                                           #
+#     + see section 4 of LGB21 and explanations in *.inp for more details.     #
+#                                                                              #
+# - input_nl5_matrix: a simplified/reduced version of `input_nl5_growth`       #
+#   * ww3_grid.inp                                                             #
+#     + one point grid without propagation                                     #
+#     + spectral grid: ntheta = 10, nf = 5, f1 = 0.2, fgamma = 1.1             #
+#     + with the default setup, this will yield      2210 quasi-resonant and   #
+#       resonant, unique quartets                                              #
+#     + model intergration for 1 hr                                            #
+#                                                                              #
+# - note:                                                                      #
+#   * the gke algorithm is extremely expensive - it may take more than 1       #
+#     day to finish the simulations designed in `input_nl5_growth` and         #
+#     `input_nl5_gaussian`                                                     #
+#   * `input_nl5_matrix` is specifically designed for a quick matrix test of   #
+#      the GKE feature.                                                        #
+#   * ./bin/run_test -i input_nl5_matrix -w work_NL5 -o both ../model ww3_ts1  #
+# ---------------------------------------------------------------------------- #
 #                                                                              #
 #                                              Hendrik Tolman, Jun 2002        #
-#                                                   Last Mod : Jun 2020        #
+#                                              Qingxiang Liu , Jul 2021        #
+#                                                   Last Mod : Jul 2021        #
 #                                                                              #
 #    Copyright 2009-2013 National Weather Service (NWS),                       #
 #       National Oceanic and Atmospheric Administration.  All rights           #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                    #
 #       No unauthorized use without permission.                                #
 #                                                                              #
-################################################################################ 
+################################################################################

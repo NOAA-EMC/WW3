@@ -108,8 +108,10 @@
 !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    24-Jun-2020 : RTD output b. c. to rotated grid.   ( version 7.11 )
+!/    05-Jan-2021 : Update SMC grid for multi-grid. JGLi( version 7.xx )
 !/    27-May-2021 : Updates for IC5 (Q. Liu)            ( version 7.12 )
 !/    27-May-2021 : Moved to a subroutine               ( version 7.XX )
+!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -318,8 +320,8 @@
 !     number in any merged cell.  From there, all original NBI loops are 
 !     reusable. 
 !
-!     The whole Arctic can be included in the SMC grid if another option
-!     ARC is activated along with the SMC option.  ARC option appends
+!     The whole Arctic can be included in the SMC grid if ARCTC variable
+!     is set to be .TRUE. within the SMC option.  The ARCTC option appends
 !     the polar Arctic part above 86N to the existing SMC grid and uses
 !     a map-east reference direction for this extra polar region.
 !     Because the map-east direction changes with latitude and longitude
@@ -441,6 +443,7 @@
 !     !/NL2   Exact interactions (WRT).
 !     !/NL3   Generalized Multiple DIA (GMD).
 !     !/NL4   Two Scale Approximation
+!     !/NL5   Generalized Kinetic Equation (GKE)
 !     !/NLX   Open slot.
 !     !/NLS   Snl based HF filter.
 !
@@ -485,8 +488,7 @@
 !     !/PR3   Averaging ULTIMATE QUICKEST scheme.
 !
 !     !/RTD   Rotated regular lat-lon grid. Special case is standard Polat=90.
-!     !/SMC   UNO2 scheme on Spherical Multiple-Cell grid.   
-!     !/ARC   Append the Arctic part to the SMC grid.
+!     !/SMC   Spherical Multiple-Cell grid, may includes the whole Arctic.   
 !
 !     !/MGG   GSE correction for moving grid.
 !
@@ -512,7 +514,7 @@
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
 !/RTD      USE W3SERVMD, ONLY: W3EQTOLL, W3LLTOEQ
-!/ARC      USE W3SERVMD, ONLY: W3LLTOEQ 
+!/SMC      USE W3SERVMD, ONLY: W3LLTOEQ 
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3ARRYMD, ONLY: INA2R, INA2I
 !/T      USE W3ARRYMD, ONLY: PRTBLK
@@ -585,8 +587,7 @@
 !/SMC !!Li     ISHFT for SMC i-index from smc origin to regular grid west edge. 
 !/SMC !!Li     SMC cell only subgrid obstruction array dimensions NCObst, JObs.
 !/SMC      INTEGER      :: JEQT, LvSMC, NBISMC, JS, NCObst, JObs, ISHFT
-!/SMC      INTEGER      :: NGUI, NGVJ
-!/ARC      INTEGER      :: NAUI, NAVJ
+!/SMC      INTEGER      :: NGUI, NGVJ,  NAUI, NAVJ 
 !
 !/O2      INTEGER                 :: NMAP, IMAP
 !/T      INTEGER                 :: IX3, IY3
@@ -634,13 +635,13 @@
 !/BT1      REAL                    :: GAMMA
 !/PR2      REAL                    :: LATMIN
 !
-!/SMC      REAL                    :: LATMIN, TRNMX, TRNMY
+!/SMC      REAL                    :: TRNMX, TRNMY
 !/SMC      INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
 !/SMC      INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
 !/SMC      INTEGER, ALLOCATABLE    :: NBICelin(:),  IJKObstr(:,:)
-!/ARC      REAL                    :: PoLonAC, PoLatAC
-!/ARC      INTEGER, ALLOCATABLE    :: IJKCelAC(:,:),IJKUFcAC(:,:),IJKVFcAC(:,:)
-!/ARC      REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
+!/SMC      REAL                    :: PoLonAC, PoLatAC
+!/SMC      INTEGER, ALLOCATABLE    :: IJKCelAC(:,:),IJKUFcAC(:,:),IJKVFcAC(:,:)
+!/SMC      REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
 !
 !/RTD      REAL, ALLOCATABLE       :: AnglDin(:,:),StdLon(:,:),StdLat(:,:)
 !/RTD ! 1-dim boundary sectors
@@ -668,9 +669,6 @@
       LOGICAL                 :: FLST4  = .FALSE.
       LOGICAL                 :: FLST6  = .FALSE.
 
-!!Li  Add a logical variable to shelter regular grid lines from SMC grid.
-      LOGICAL                 :: RGLGRD = .TRUE.
-!!Li
       REAL                    :: FACBERG, REFSLOPE
 !/IS1      REAL                    :: ISC1, ISC2
 !/IS2      REAL                    :: ISC1, IS2BACKSCAT, IS2C2, IS2C3,&
@@ -790,12 +788,15 @@
 !/NL3      INTEGER                 :: NQDEF
 !/NL3      REAL                    :: MSC, NSC, KDFD, KDFS
 !/NL4      INTEGER                 :: INDTSA, ALTLP
+!/NL5      REAL                    :: NL5DPT, NL5OML
+!/NL5      INTEGER                 :: NL5DIS, NL5KEV, NL5IPL, NL5PMX
 !/DB1      REAL                    :: BJALFA, BJGAM
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
 !
-!/SMC      REAL                    :: DTIME, RFMAXD, SYMR, YJ0R
-!/SMC      LOGICAL                 :: UNO3, AVERG, SEAWND 
+!/SMC      REAL                    :: DTIMS, CFLSM, RFMAXD, SYMR, YJ0R
+!/SMC      LOGICAL                 :: UNO3, AVERG, SEAWND, Arctic 
+!/SMC      CHARACTER               :: PNSMC*30 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
@@ -870,6 +871,7 @@
 !/NL3      NAMELIST /SNL3/ NQDEF, MSC, NSC, KDFD, KDFS
 !/NL3      NAMELIST /ANL3/ QPARMS
 !/NL4      NAMELIST /SNL4/ INDTSA, ALTLP
+!/NL5      NAMELIST /SNL5/ NL5DPT, NL5OML, NL5DIS, NL5KEV, NL5IPL, NL5PMX
 !/NLS      NAMELIST /SNLS/ A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -897,7 +899,7 @@
 !
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
-!/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG, &
+!/SMC      NAMELIST /PSMC/ CFLSM, DTIMS, RFMAXD, Arctic, AVERG, UNO3, &
 !/SMC                      LvSMC, ISHFT, JEQT,   NBISMC, SEAWND 
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
@@ -961,9 +963,6 @@
 
 !/O0      FLNMLO = .TRUE.
 !/STAB2      FLSTB2 = .TRUE.
-!
-!/SMC  !!Li  Switch off regular grid lines by setting the logical
-!/SMC        RGLGRD = .FALSE.
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Set up grid storage structure
@@ -1233,6 +1232,7 @@
 !/NL2      NRNL   = NRNL + 1
 !/NL3      NRNL   = NRNL + 1
 !/NL4      NRNL   = NRNL + 1
+!/NL5      NRNL   = NRNL + 1
 !/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
@@ -1585,6 +1585,12 @@
 !/NL3      KDFS   =  5.00
 !/NL4      INDTSA =  1
 !/NL4      ALTLP  =  2
+!/NL5      NL5DPT = 3000.
+!/NL5      NL5OML = 0.10
+!/NL5      NL5DIS = 0
+!/NL5      NL5KEV = 0
+!/NL5      NL5IPL = 1
+!/NL5      NL5PMX = 100
 !/NLS      A34    =  0.05
 !/NLS      FHFC   =  1.E10
 !/NLS      DNM    =  0.25
@@ -1685,6 +1691,22 @@
 !/NL4      WRITE (NDSO,923) INDTSA, ALTLP
 !/NL4      ITSA = INDTSA
 !/NL4      IALT = ALTLP
+!
+!/NL5      CALL READNL ( NDSS, 'SNL5', STATUS )
+!/NL5      WRITE (NDSO,922) STATUS
+!/NL5      NL5DPT = MAX(0., MIN(NL5DPT, 3000.))
+!/NL5      NL5DIS = MAX(0 , MIN(NL5DIS, 1))
+!/NL5      NL5KEV = MAX(0 , MIN(NL5KEV, 1))
+!/NL5      NL5IPL = MAX(0 , MIN(NL5IPL, 1))
+!/NL5      IF (NL5DIS .EQ. 1) NL5IPL = 0
+!/NL5      IF (NL5PMX .GT. 0) NL5PMX = MAX(10, NL5PMX)
+!/NL5      WRITE (NDSO,923) NL5DPT, NL5OML, NL5DIS, NL5KEV, NL5IPL, NL5PMX
+!/NL5      QR5DPT = NL5DPT
+!/NL5      QR5OML = NL5OML
+!/NL5      QI5DIS = NL5DIS
+!/NL5      QI5KEV = NL5KEV
+!/NL5      QI5IPL = NL5IPL
+!/NL5      QI5PMX = NL5PMX
 !
 !/NLS      CALL READNL ( NDSS, 'SNLS', STATUS )
 !/NLS      WRITE (NDSO,9922) STATUS
@@ -2106,11 +2128,10 @@
 !/PR3      PNAME  = PNAME(1:J)//' + GSE averaging '
 !/PR3      NRPROP = NRPROP + 1
 !
-!/SMC      PNAME  = 'UNO2 on SMC grid + diffusion  '
-!/SMC      NRPROP = NRPROP + 1
-!
 !/PRX      PNAME  = 'Experimental                  '
 !/PRX      NRPROP = NRPROP + 1
+!
+!/SMC      PNSMC  = 'UNO2 on SMC grid + diffusion  '
 !
       IF ( (FLCX.OR.FLCY.OR.FLCTH.OR.FLCK) .AND. .NOT. FLPROP ) THEN
           WRITE (NDSE,1030)
@@ -2140,17 +2161,26 @@
 !/PR2      DTIME  =  0.
 !/PR2      LATMIN = 70.
 !
-!/SMC !Li  Default values of smc grid parameters.  JGLi23Nov2015
+!/SMC !!   Default values of SMC grid parameters.  JGLi06Apr2021
+!/SMC      NCel   =  1
+!/SMC      NUFc   =  1
+!/SMC      NVFc   =  1
+!/SMC      NGLO   =  1
+!/SMC      NARC   =  1
+!/SMC      NBGL   =  1
+!/SMC      NBAC   =  1
 !/SMC      LvSMC  =  1
+!/SMC      MRFct  =  1
 !/SMC      ISHFT  =  0
 !/SMC      JEQT   =  0
 !/SMC      NBISMC =  0
-!/SMC      DTIME  =  0.0
-!/SMC      LATMIN = 86.0
-!/SMC      RFMAXD = 80.0
+!/SMC      CFLSM  =  0.7
+!/SMC      DTIMS  =  360.0
+!/SMC      RFMAXD =  36.0
 !/SMC      UNO3   = .FALSE.
-!/SMC      AVERG  = .FALSE.
+!/SMC      AVERG  = .TRUE.
 !/SMC      SEAWND = .FALSE.
+!/SMC      Arctic = .FALSE.
 !
 !/PR3      WDTHCG = 1.5
 !/PR3      WDTHTH = WDTHCG
@@ -2178,32 +2208,33 @@
 !/SMC      CALL READNL ( NDSS, 'PSMC', STATUS )
 !/SMC      IF ( STATUS(18:18) .EQ. ':' ) STATUS(18:18) = ' '
 !/SMC      WRITE (NDSO,952) STATUS(1:18)
-!/SMC      CFLTM  = MAX ( 0. , CFLTM )
-!/SMC      DTIME  = MAX ( 0. , DTIME )
-!/SMC      LATMIN = MIN ( 89. , ABS(LATMIN) )
-!/SMC      CLATMN = COS ( LATMIN * DERA )
+!/SMC      CFLSM  = MAX ( 0. , CFLSM )
+!/SMC      DTIMS  = MAX ( 0. , DTIMS )
 !/SMC      RFMAXD = MIN ( 80.0, ABS(RFMAXD) )
-!/SMC      IF ( DTIME .EQ. 0. ) THEN
-!/SMC          WRITE (NDSO,953) CFLTM, LATMIN, RFMAXD
-!/SMC        ELSE
-!/SMC          WRITE (NDSO,954) CFLTM, DTIME/3600., LATMIN, RFMAXD
-!/SMC        END IF
-!/SMC      DTME   = DTIME
 !/SMC      Refran = RFMAXD * DERA 
+!/SMC  !! Printing out SMC grid parameters. 
+!/SMC      WRITE (NDSO,1950)
+!/SMC      WRITE (NDSO,1951) PNSMC
+!/SMC      WRITE (NDSO,1953) CFLSM, DTIMS/3600., RFMAXD
+!
 !/SMC      FUNO3  = UNO3
 !/SMC      FVERG  = AVERG
 !/SMC      FSWND  = SEAWND
-!/SMC      IF( UNO3 ) WRITE (NDSO,*)                  &
+!/SMC      ARCTC  = Arctic
+!/SMC      NBSMC  = NBISMC
+!/SMC      IF( FUNO3 ) WRITE (NDSO,*)                &
 !/SMC        " Advection use 3rd order UNO3 instead of UNO2 scheme."
-!/SMC      IF( AVERG ) WRITE (NDSO,*)                 &
+!/SMC      IF( FVERG ) WRITE (NDSO,*)                &
 !/SMC        " Extra 1-2-1 average smoothing activated on SMC grid."
-!/SMC      IF( SEAWND ) WRITE (NDSO,*)                & 
+!/SMC      IF( FSWND ) WRITE (NDSO,*)                & 
 !/SMC        " Sea-point only wind input is required for SMC grid. "
+!/SMC      IF( ARCTC ) WRITE (NDSO,*)                & 
+!/SMC        " Arctic polar part will be appended to this SMC grid."
 !/SMC      NRLv = LvSMC 
 !/SMC      WRITE (NDSO,4001) NRLv
 !/SMC      WRITE (NDSO,4002) JEQT
 !/SMC      WRITE (NDSO,4302) ISHFT
-!/SMC      WRITE (NDSO,4003) NBISMC
+!/SMC      WRITE (NDSO,4003) NBSMC
 !
 !/PR3      CALL READNL ( NDSS, 'PRO3', STATUS )
 !/PR3      IF ( STATUS(18:18) .EQ. ':' ) STATUS(18:18) = ' '
@@ -2727,6 +2758,7 @@
 !/NL3              WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
 !/NL3            END IF
 !/NL4          WRITE (NDSO,2922) INDTSA, ALTLP
+!/NL5          WRITE (NDSO,2922) QR5DPT, QR5OML, QI5DIS, QI5KEV, QI5IPL, QI5PMX
 !/NLS          WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1          WRITE (NDSO,2924) CDIS, APM
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -2755,7 +2787,7 @@
 !/DB1            END IF
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
-!/SMC          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN, RFMAXD, UNO3, &
+!/SMC          WRITE (NDSO,2954) CFLSM, DTIMS, Arctic, RFMAXD, UNO3, &
 !/SMC                      AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND 
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
@@ -2927,6 +2959,10 @@
         CASE ('UNST')
           GTYPE = UNGTYPE
           WRITE (NDSO,3000) 'unstructured'
+!!Li  Add SMC grid type option.  JGLi12Oct2020
+        CASE ('SMCG')
+          GTYPE = SMCTYPE
+          WRITE (NDSO,3000) 'SMC Grid'
         CASE DEFAULT
           WRITE (NDSE,1007) TRIM(GSTRG)
           CALL EXTCDE ( 25 )
@@ -2986,7 +3022,8 @@
 !
       IF (FLGNML) THEN
         SELECT CASE ( GTYPE )
-        CASE ( RLGTYPE )
+!!Li  SMCTYPE shares domain info with RLGTYPE.  JGLi12Oct2020
+        CASE ( RLGTYPE, SMCTYPE )
           NX = NML_RECT%NX
           NY = NML_RECT%NY
           NX = MAX ( 3 , NX )
@@ -3094,7 +3131,8 @@
 !
 ! 7.c.1 Rectilinear grid
 !
-        CASE ( RLGTYPE )
+!!Li  SMC grid shares domain info with RLGTYPE.   JGLi12Oct2020 
+        CASE ( RLGTYPE, SMCTYPE )
 !
           IF (FLGNML) THEN
             SX = NML_RECT%SX 
@@ -3336,10 +3374,17 @@
 !
 ! Reading depths on structured grid 
 !
+        ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
+!
+!       Initialize subgrid obstructions with zeros.
+        ZBIN(:,:)=0.
+        OBSX(:,:)=0.
+        OBSY(:,:)=0.
+
 !Li Suspended for SMC grid, which uses depth stored in its cell array.
 !Li               JGLi15Oct2014
-        IF( RGLGRD ) THEN
-!Li
+        IF( GTYPE .NE. SMCTYPE ) THEN
+!
           IF ( NDSG .EQ. NDSI ) THEN
               IF ( IDFM .EQ. 3 ) THEN
                   WRITE (NDSE,1004) NDSG
@@ -3368,25 +3413,11 @@
                 END IF
             END IF  !( NDSG .EQ. NDSI ) 
 !
-!Li     End of RGLGRD block
-        ENDIF
-!Li 
-!
-        ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
-!
-!       Initialize subgrid obstructions with zeros.
-        ZBIN(:,:)=0.
-        OBSX(:,:)=0.
-        OBSY(:,:)=0.
-
-!Li   Suspend read depth file.     JGLi15Oct2014
-        IF( RGLGRD ) THEN
-!Li
           CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
                        IDFM, RFORM, IDLA, VSC, 0.0)
-!Li     End of RGLGRD block
+!
+!Li     End of IF( GTYPE .NE. SMCTYPE ) block
         ENDIF
-!Li 
 !
       ELSE
 !
@@ -3428,8 +3459,7 @@
       ENDIF
 !
 !Li   Suspended for SMC grid.  JGLi15Oct2014
-      IF( RGLGRD ) THEN
-!Li
+      IF( GTYPE .NE. SMCTYPE ) THEN
 !
 ! 7.g Subgrid information
 !
@@ -3529,9 +3559,8 @@
 !
       END IF ! TRFLAG
 !
-!Li     End of RGLGRD block
+!Li     End of IF( GTYPE .NE. SMCTYPE ) block
       END IF
-!Li 
 !
 !/RTD ! 7.h Calculate rotation angles for configs with rotated pole
 !/RTD       PoLon = PLON
@@ -3565,6 +3594,12 @@
 !/RTD
 !
 !/SMC !! 7.i  Read SMC grid cell and face integer arrays.
+!/SMC       IF( GTYPE .EQ. SMCTYPE ) THEN
+!/SMC
+!/SMC !! Overwrite 2 parameters for SMC grid.  JGLi03Mar2021
+!/SMC       DTMS   = DTIMS 
+!/SMC       CTMAX  = CFLSM
+!
 !/SMC       IF (FLGNML) THEN
 !/SMC         NDSTR = NML_SMC%MCELS%IDF
 !/SMC         IDLA = NML_SMC%MCELS%IDLA
@@ -3580,7 +3615,7 @@
 !/SMC       ALLOCATE (  NLvCelsk( 0:NRLv ) )
 !/SMC       READ (NDSTR,*) NLvCelsk
 !/SMC       NCel=NLvCelsk(0)
-!/ARC       NGLO=NCel
+!/SMC       NGLO=NCel
 !/SMC       WRITE (NDSO,4004)  NCel, NLvCelsk
 !/SMC
 !/SMC       ALLOCATE (   IJKCelin( 5, NCel) )
@@ -3711,114 +3746,120 @@
 !/SMC       ENDIF
 !/SMC
 !
-!/ARC !! 7.j  Read Arctic grid cell and boundary cell integer arrays.  
-!/ARC       IF (FLGNML) THEN
-!/ARC         NDSTR = NML_SMC%MBARC%IDF
-!/ARC         IDLA = NML_SMC%MBARC%IDLA
-!/ARC         IDFM = NML_SMC%MBARC%IDFM
-!/ARC         RFORM = TRIM(NML_SMC%MBARC%FORMAT)
-!/ARC         TNAME = TRIM(NML_SMC%MBARC%FILENAME)
-!/ARC       ELSE  
-!/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-!/ARC       END IF
-!/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-!/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
-!/ARC       READ (NDSTR,*) NARC, NBGL, NBAC
-!/ARC       WRITE (NDSO,4015)  NARC, NBGL, NBAC
-!/ARC
-!/ARC       ALLOCATE (   IJKCelAC( 5, NARC) )
-!/ARC       CALL INA2I ( IJKCelAC, 5, NARC, 1, 5, 1, NARC, NDSTR, NDST, NDSE, &
-!/ARC                    IDFM, RFORM, IDLA, 1, 0)
-!/ARC       CLOSE(NDSTR)
-!/ARC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
-!/ARC       IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT 
-!/ARC       IJKCelAC( 1, :) = IJKCelAC( 1, :) + ISHFT
-!/ARC
-!/ARC       WRITE (NDSO,4016) TNAME
-!/ARC       WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
-!/ARC       WRITE (NDSO,4006) NARC,(IJKCelAC(ix, NARC), ix=1,5)
-!/ARC       WRITE (NDSO,*) ' '
-!/ARC
-!/ARC       IF (FLGNML) THEN
-!/ARC         NDSTR = NML_SMC%AISID%IDF
-!/ARC         IDLA = NML_SMC%AISID%IDLA
-!/ARC         IDFM = NML_SMC%AISID%IDFM
-!/ARC         RFORM = TRIM(NML_SMC%AISID%FORMAT)
-!/ARC         TNAME = TRIM(NML_SMC%AISID%FILENAME)
-!/ARC       ELSE  
-!/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-!/ARC       END IF
-!/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-!/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
-!/ARC       READ (NDSTR,*)  NAUI
-!/ARC       WRITE (NDSO,4017)   NAUI
-!/ARC
-!/ARC       ALLOCATE (   IJKUFcAC( 7, NAUI) )
-!/ARC       CALL INA2I ( IJKUFcAC, 7, NAUI, 1, 7, 1, NAUI, NDSTR, NDST, NDSE, &
-!/ARC                    IDFM, RFORM, IDLA, 1, 0)
-!/ARC       CLOSE(NDSTR)
-!/ARC !!Li     Offset to change Equator index = 0 to regular grid index
-!/ARC       IJKUFcAC( 2, :) = IJKUFcAC( 2, :) + JEQT 
-!/ARC       IJKUFcAC( 1, :) = IJKUFcAC( 1, :) + ISHFT
-!/ARC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
-!/ARC       DO  IP=1, NAUI
-!/ARC         DO  IX=4,7
-!/ARC       IF( IJKUFcAC(IX,IP) > 0 ) IJKUFcAC(IX,IP) = IJKUFcAC(IX,IP) + NGLO
-!/ARC         ENDDO
-!/ARC       ENDDO
-!/ARC
-!/ARC       WRITE (NDSO,4018) TNAME
-!/ARC       WRITE (NDSO,4009)    1,(IJKUFcAC(ix,    1), ix=1,7)
-!/ARC       WRITE (NDSO,4009) NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
-!/ARC       WRITE (NDSO,*) ' '
-!/ARC
-!/ARC       IF (FLGNML) THEN
-!/ARC         NDSTR = NML_SMC%AJSID%IDF
-!/ARC         IDLA = NML_SMC%AJSID%IDLA
-!/ARC         IDFM = NML_SMC%AJSID%IDFM
-!/ARC         RFORM = TRIM(NML_SMC%AJSID%FORMAT)
-!/ARC         TNAME = TRIM(NML_SMC%AJSID%FILENAME)
-!/ARC       ELSE  
-!/ARC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/ARC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-!/ARC       END IF
-!/ARC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-!/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
-!/ARC       READ (NDSTR,*) NAVJ 
-!/ARC       WRITE (NDSO,4019)   NAVJ
-!/ARC
-!/ARC       ALLOCATE (   IJKVFcAC( 8, NAVJ) )
-!/ARC       CALL INA2I ( IJKVFcAC, 8, NAVJ, 1, 8, 1, NAVJ, NDSTR, NDST, NDSE, &
-!/ARC                    IDFM, RFORM, IDLA, 1, 0)
-!/ARC       CLOSE(NDSTR)
-!/ARC !!Li     Offset to change Equator index = 0 to regular grid index
-!/ARC       IJKVFcAC( 2, :) = IJKVFcAC( 2, :) + JEQT 
-!/ARC       IJKVFcAC( 1, :) = IJKVFcAC( 1, :) + ISHFT
-!/ARC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
-!/ARC       DO  IP=1, NAVJ
-!/ARC         DO  IY=4,7
-!/ARC       IF( IJKVFcAC(IY,IP) > 0 ) IJKVFcAC(IY,IP) = IJKVFcAC(IY,IP) + NGLO
-!/ARC         ENDDO
-!/ARC       ENDDO
-!/ARC
-!/ARC       WRITE (NDSO,4020) TNAME
-!/ARC       WRITE (NDSO,4012)    1,(IJKVFcAC(ix,    1), ix=1,8)
-!/ARC       WRITE (NDSO,4012) NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
-!/ARC       WRITE (NDSO,*) ' '
-!/ARC
-!/ARC !!Li  Reset total cell and face numbers
-!/ARC       NCel = NGLO + NARC
-!/ARC       NUFc = NGUI + NAUI
-!/ARC       NVFc = NGVJ + NAVJ
-!/ARC !!Li  Also append Arctic part into base level sub-loops
-!/ARC       NLvCelsk(NRLv)=NLvCelsk(NRLv)+NARC 
-!/ARC       NLvUFcsk(NRLv)=NLvUFcsk(NRLv)+NAUI 
-!/ARC       NLvVFcsk(NRLv)=NLvVFcsk(NRLv)+NAVJ 
-!/ARC !!Li  Reset NBAC to total number of boundary cells.
-!/ARC       NBAC = NBGL + NBAC
-!/ARC
+!/SMC !! 7.j  Read Arctic grid cell and boundary cell integer arrays.  
+!/SMC       IF( ARCTC ) THEN    
+!/SMC
+!/SMC       IF (FLGNML) THEN
+!/SMC         NDSTR = NML_SMC%MBARC%IDF
+!/SMC         IDLA = NML_SMC%MBARC%IDLA
+!/SMC         IDFM = NML_SMC%MBARC%IDFM
+!/SMC         RFORM = TRIM(NML_SMC%MBARC%FORMAT)
+!/SMC         TNAME = TRIM(NML_SMC%MBARC%FILENAME)
+!/SMC       ELSE  
+!/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+!/SMC       END IF
+!/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+!/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
+!/SMC       READ (NDSTR,*) NARC, NBGL, NBAC
+!/SMC       WRITE (NDSO,4015)  NARC, NBGL, NBAC
+!/SMC
+!/SMC       ALLOCATE (   IJKCelAC( 5, NARC) )
+!/SMC       CALL INA2I ( IJKCelAC, 5, NARC, 1, 5, 1, NARC, NDSTR, NDST, NDSE, &
+!/SMC                    IDFM, RFORM, IDLA, 1, 0)
+!/SMC       CLOSE(NDSTR)
+!/SMC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
+!/SMC       IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT 
+!/SMC       IJKCelAC( 1, :) = IJKCelAC( 1, :) + ISHFT
+!/SMC
+!/SMC       WRITE (NDSO,4016) TNAME
+!/SMC       WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
+!/SMC       WRITE (NDSO,4006) NARC,(IJKCelAC(ix, NARC), ix=1,5)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC
+!/SMC       IF (FLGNML) THEN
+!/SMC         NDSTR = NML_SMC%AISID%IDF
+!/SMC         IDLA = NML_SMC%AISID%IDLA
+!/SMC         IDFM = NML_SMC%AISID%IDFM
+!/SMC         RFORM = TRIM(NML_SMC%AISID%FORMAT)
+!/SMC         TNAME = TRIM(NML_SMC%AISID%FILENAME)
+!/SMC       ELSE  
+!/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+!/SMC       END IF
+!/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+!/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
+!/SMC       READ (NDSTR,*)  NAUI
+!/SMC       WRITE (NDSO,4017)   NAUI
+!/SMC
+!/SMC       ALLOCATE (   IJKUFcAC( 7, NAUI) )
+!/SMC       CALL INA2I ( IJKUFcAC, 7, NAUI, 1, 7, 1, NAUI, NDSTR, NDST, NDSE, &
+!/SMC                    IDFM, RFORM, IDLA, 1, 0)
+!/SMC       CLOSE(NDSTR)
+!/SMC !!Li     Offset to change Equator index = 0 to regular grid index
+!/SMC       IJKUFcAC( 2, :) = IJKUFcAC( 2, :) + JEQT 
+!/SMC       IJKUFcAC( 1, :) = IJKUFcAC( 1, :) + ISHFT
+!/SMC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
+!/SMC       DO  IP=1, NAUI
+!/SMC         DO  IX=4,7
+!/SMC       IF( IJKUFcAC(IX,IP) > 0 ) IJKUFcAC(IX,IP) = IJKUFcAC(IX,IP) + NGLO
+!/SMC         ENDDO
+!/SMC       ENDDO
+!/SMC
+!/SMC       WRITE (NDSO,4018) TNAME
+!/SMC       WRITE (NDSO,4009)    1,(IJKUFcAC(ix,    1), ix=1,7)
+!/SMC       WRITE (NDSO,4009) NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC
+!/SMC       IF (FLGNML) THEN
+!/SMC         NDSTR = NML_SMC%AJSID%IDF
+!/SMC         IDLA = NML_SMC%AJSID%IDLA
+!/SMC         IDFM = NML_SMC%AJSID%IDFM
+!/SMC         RFORM = TRIM(NML_SMC%AJSID%FORMAT)
+!/SMC         TNAME = TRIM(NML_SMC%AJSID%FILENAME)
+!/SMC       ELSE  
+!/SMC         CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/SMC         READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+!/SMC       END IF
+!/SMC       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+!/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
+!/SMC       READ (NDSTR,*) NAVJ 
+!/SMC       WRITE (NDSO,4019)   NAVJ
+!/SMC
+!/SMC       ALLOCATE (   IJKVFcAC( 8, NAVJ) )
+!/SMC       CALL INA2I ( IJKVFcAC, 8, NAVJ, 1, 8, 1, NAVJ, NDSTR, NDST, NDSE, &
+!/SMC                    IDFM, RFORM, IDLA, 1, 0)
+!/SMC       CLOSE(NDSTR)
+!/SMC !!Li     Offset to change Equator index = 0 to regular grid index
+!/SMC       IJKVFcAC( 2, :) = IJKVFcAC( 2, :) + JEQT 
+!/SMC       IJKVFcAC( 1, :) = IJKVFcAC( 1, :) + ISHFT
+!/SMC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
+!/SMC       DO  IP=1, NAVJ
+!/SMC         DO  IY=4,7
+!/SMC       IF( IJKVFcAC(IY,IP) > 0 ) IJKVFcAC(IY,IP) = IJKVFcAC(IY,IP) + NGLO
+!/SMC         ENDDO
+!/SMC       ENDDO
+!/SMC
+!/SMC       WRITE (NDSO,4020) TNAME
+!/SMC       WRITE (NDSO,4012)    1,(IJKVFcAC(ix,    1), ix=1,8)
+!/SMC       WRITE (NDSO,4012) NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC
+!/SMC !!Li  Reset total cell and face numbers
+!/SMC       NCel = NGLO + NARC
+!/SMC       NUFc = NGUI + NAUI
+!/SMC       NVFc = NGVJ + NAVJ
+!/SMC !!Li  Also append Arctic part into base level sub-loops
+!/SMC       NLvCelsk(NRLv)=NLvCelsk(NRLv)+NARC 
+!/SMC       NLvUFcsk(NRLv)=NLvUFcsk(NRLv)+NAUI 
+!/SMC       NLvVFcsk(NRLv)=NLvVFcsk(NRLv)+NAVJ 
+!/SMC !!Li  Reset NBAC to total number of boundary cells.
+!/SMC       NBAC = NBGL + NBAC
+!/SMC
+!/SMC       ENDIF  !! ARCTC section.
+!/SMC
+!/SMC       ENDIF  !! GTYPE .EQ. SMCTYPE 
+!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8.  Finalize status maps
 ! 8.a Defines open boundary conditions for UNST grids
@@ -4132,7 +4173,7 @@
 !!Li  Suspended for SMC grid though the file input line in  ww3_grid.inp 
 !!Li  is kept to divert the program into this block.  JGLi15Oct2014 
 !!Li
-          IF( RGLGRD ) THEN
+          IF( GTYPE .NE. SMCTYPE ) THEN
 !!Li
 !
           WRITE (NDSO,978) NDSTR, IDLA, IDFT
@@ -4197,8 +4238,7 @@
             END DO
           DEALLOCATE ( READMP )
 !!Li
-          ENDIF   !! RGLGRD
-!!Li
+          ENDIF   !! GTYPE .NE. SMCTYPE
 !
         END IF !FROM .NE. 'PART'
 !
@@ -4218,6 +4258,7 @@
           END DO
         END DO
 !
+!/SMC      IF( GTYPE .EQ. SMCTYPE ) THEN
 !/SMC !Li   Moved before FLBPI is defined with NBI value.  JGLi05Jun2015
 !/SMC !Li   Overwrite NSEA with NCel for SMC grid. 
 !/SMC        NSEA = NCel
@@ -4226,6 +4267,7 @@
 !/SMC        NBI = NBISMC
 !/SMC !Li   No land points are used in SMC grid.   JGLi26Feb2016 
 !/SMC        NLAND = 0
+!/SMC      ENDIF  !!  GTYPE .EQ. SMCTYPE 
 !
       WRITE (NDSO,980)
       FLBPI  = NBI .GT. 0
@@ -4269,12 +4311,11 @@
 !
 ! 8.f Set up all maps
 !
-!!Li  CALL W3DIMX ( 1, NX, NY, NSEA, NDSE, NDST )
-      CALL W3DIMX ( 1, NX, NY, NSEA, NDSE, NDST  &
-!/SMC                , NCel, NUFc, NVFc, NRLv     &
-!/ARC                , NARC, NBAC, NSPEC          &
+        CALL W3DIMX ( 1, NX, NY, NSEA, NDSE, NDST  &
+!/SMC             , NCel, NUFc, NVFc, NRLv, NBSMC  &
+!/SMC             , NARC, NBAC, NSPEC              &
                   )
-!/SMC       WRITE (NDSO,4021)   NCel
+!/SMC        WRITE (NDSO,4021)   NCel
 !
 ! 8.g Activation of reflections and scattering 
       FFACBERG=FACBERG
@@ -4313,10 +4354,10 @@
           END DO
         END IF   ! GTYPE
 !      
+!/SMC !!Li  Shelter MAPSTA LLG definition for SMC 
+!/SMC      IF( GTYPE .NE. SMCTYPE ) THEN
 !
-!!Li  MAPSTA = TMPSTA
-!!Li  Shelter MAPSTA LLG definition for SMC by RGLGRD.
-      IF( RGLGRD ) MAPSTA = TMPSTA
+      MAPSTA = TMPSTA
       MAPFS  = 0
 !
 !/T      ALLOCATE ( MAPOUT(NX,NY) )
@@ -4334,9 +4375,6 @@
       TRNX   = 0.
       TRNY   = 0.
 !
-!Li  Shelter MAPSTA etc LLG definitions for SMC by logical RGLGRD !
-!AR  This is only .FALSE. for SMC ..
-      IF( RGLGRD ) THEN
       ISEA   = 0
       DO IY=1, NY
         DO IX=1, NX
@@ -4386,10 +4424,11 @@
 !/DEBUGSTP          WRITE(740,*) 'ISEA,ZB=', ISEA, ZB(ISEA)
 !/DEBUGSTP        END DO
 !/DEBUGSTP        FLUSH(740)
-      ENDIF
-!!Li End of RGLGRD IF block
 !
-!/SMC !Li     Pass refined level cell and face counts to NLv*(NRLv)
+!/SMC !!Li SMC grid definition of mapping arrays.
+!/SMC      ELSE 
+!
+!/SMC !!Li  Pass refined level cell and face counts to NLv*(NRLv)
 !/SMC       NLvCel(0)=0
 !/SMC       NLvUFc(0)=0
 !/SMC       NLvVFc(0)=0
@@ -4410,30 +4449,30 @@
 !/SMC
 !/SMC !Li     Pass input SMC arrays to newly declared grid arrays.
 !/SMC       WRITE (NDSO,4025)   NCel
-!/SMC       JJ=NCel
-!/ARC       JJ=NGLO
-!/SMC       IJKCel(:, 1:JJ  )=IJKCelin(:, 1:JJ  )
+!/SMC       IJKCel(:, 1:NGLO)=IJKCelin(:, 1:NGLO)
 !/SMC       IJKUFc(:, 1:NGUI)=IJKUFcin(:, 1:NGUI)
 !/SMC       IJKVFc(:, 1:NGVJ)=IJKVFcin(:, 1:NGVJ)
-!/ARC !Li     Append Arctic part
-!/ARC       IJKCel(:, NGLO+1:NCel)=IJKCelAC(:, 1:NARC)
-!/ARC       IJKUFc(:, NGUI+1:NUFc)=IJKUFcAC(:, 1:NAUI)
-!/ARC       IJKVFc(:, NGVJ+1:NVFc)=IJKVFcAC(:, 1:NAVJ)
+!/SMC !Li     Append Arctic part
+!/SMC       IF( ARCTC ) THEN
+!/SMC       IJKCel(:, NGLO+1:NCel)=IJKCelAC(:, 1:NARC)
+!/SMC       IJKUFc(:, NGUI+1:NUFc)=IJKUFcAC(:, 1:NAUI)
+!/SMC       IJKVFc(:, NGVJ+1:NVFc)=IJKVFcAC(:, 1:NAVJ)
+!/SMC       ENDIF !! ARCTC
 !/SMC
 !/SMC       WRITE (NDSO,4026) 
-!/SMC       WRITE (NDSO,4006)    1,(IJKCel(ix,    1), ix=1,5)
+!/SMC       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,5)
 !/SMC       JJ=NCel
-!/SMC       WRITE (NDSO,4006) JJ,(IJKCel(ix, JJ), ix=1,5)
+!/SMC       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,5)
 !/SMC       WRITE (NDSO,*) ' '
 !/SMC       WRITE (NDSO,4027) 
-!/SMC       WRITE (NDSO,4009)    1,(IJKUFc(ix,    1), ix=1,7)
+!/SMC       WRITE (NDSO,4009)    1,(IJKUFc(ix,  1), ix=1,7)
 !/SMC       JJ=NUFc
-!/SMC       WRITE (NDSO,4009) JJ,(IJKUFc(ix, JJ), ix=1,7)
+!/SMC       WRITE (NDSO,4009)   JJ,(IJKUFc(ix, JJ), ix=1,7)
 !/SMC       WRITE (NDSO,*) ' '
 !/SMC       WRITE (NDSO,4028) 
-!/SMC       WRITE (NDSO,4012)    1,(IJKVFc(ix,    1), ix=1,8)
+!/SMC       WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,8)
 !/SMC       JJ=NVFc
-!/SMC       WRITE (NDSO,4012) JJ,(IJKVFc(ix, JJ), ix=1,8)
+!/SMC       WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,8)
 !/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC !Li    Boundary -9 to 0 cells for cell x-size 2**n
@@ -4472,19 +4511,19 @@
 !/SMC       YJ0R = ( Y0 - 0.5*SY )*DERA
 !/SMC
 !/SMC       DO ISEA=1, NCel
-!/ARC !Li   There is no polar cell row so it is mapped to last row.
-!/ARC        IF(ISEA .EQ. NCel) THEN
-!/ARC             IX=1
-!/ARC             IY=NY
-!/ARC             IK=1
-!/ARC             JS=1
-!/ARC        ELSE
+!/SMC !Li   There is no polar cell row so it is mapped to last row.
+!/SMC        IF( ARCTC .AND. (ISEA .EQ. NCel) ) THEN 
+!/SMC             IX=1
+!/SMC             IY=NY
+!/SMC             IK=1
+!/SMC             JS=1
+!/SMC        ELSE
 !/SMC          IX=IJKCel(1,ISEA)/MRFct + 1
 !/SMC          IY=IJKCel(2,ISEA)/MRFct + 1
 !/SMC          IK=MAX(1, IJKCel(3,ISEA)/MRFct)
 !/SMC          JS=MAX(1, IJKCel(4,ISEA)/MRFct)
-!/ARC        ENDIF
-!/ARC
+!/SMC        ENDIF
+!/SMC
 !/SMC !      Check that IX, IY are in the bound of [1,NX] and [1,NY] respec.
 !/SMC        IF ((IX+IK-1 .GT. NX) .OR. (IX .LE. 0)) THEN
 !/SMC             WRITE (NDSE,1014) ISEA, IX, IX+IK-1, NX
@@ -4504,27 +4543,17 @@
 !/SMC          MAPSF(ISEA,1)  = IX
 !/SMC          MAPSF(ISEA,2)  = IY
 !/SMC          MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+!/SMC 
 !/SMC !Li   New variable CLATS to hold cosine latitude at cell centre.
 !/SMC !Li   Also added CLATIS and CTHG0S for version 4.08.
-!/SMC !        JJ=IJKCel(2,ISEA) - JEQT 
-!/SMC !        Y = SYMR*( FLOAT(JJ)+0.5*FLOAT(IJKCel(4,ISEA)) )
 !/SMC !Li   Use adjusted j-index to calculate cell centre y from YJ0R.  
 !/SMC          Y = YJ0R + SYMR*( FLOAT(IJKCel(2,ISEA))+0.5*FLOAT(IJKCel(4,ISEA)) )
-!/ARC !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
-!/ARC          IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
-!/ARC
+!/SMC !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
+!/SMC          IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
+!/SMC 
 !/SMC          CLATS(ISEA) = COS( Y )
 !/SMC          CLATIS(ISEA)= 1. / CLATS(ISEA)
 !/SMC          CTHG0S(ISEA)= - TAN( Y ) / RADIUS
-!/SMC !!Li    Subgrid obstruction is now defined directly from IJKObstr
-!/SMC !!Li    so old OBSX/Y are no longer used.  JGLi15Oct2014
-!/SMC !!Li    Transparency is minimum of all merged cells and >= 0.11
-!/SMC !         TRNMX=1.0
-!/SMC !         TRNMY=1.0
-!/SMC !         DO ip = IX, IX+IK-1
-!/SMC !            TRNMX = MIN( TRNMX, ABS(1.0-OBSX(ip,IY)) )
-!/SMC !            TRNMY = MIN( TRNMY, ABS(1.0-OBSY(ip,IY)) )
-!/SMC !         ENDDO
 !/SMC !!Li  Sub-grid obstruction is set zero beyond NCObst cells.
 !/SMC         IF(ISEA .GT. NCObst) THEN
 !/SMC           TRNMX=1.0 
@@ -4552,8 +4581,10 @@
 !/SMC !Li   Use adjusted j-index to calculate cell face Y from YJ0R.
 !/SMC          CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP)) + YJ0R )
 !/SMC       ENDDO
-!/SMC !Li   Reset MAPSTA for boundary cells if any.  
 !/SMC       IF(NBISMC .GT. 0) THEN
+!/SMC !Li   Save input boundary SMC list to ISMCBP(NBSMC)
+!/SMC          ISMCBP(1:NBISMC) = NBICelin(1:NBISMC)
+!/SMC !Li   Reset MAPSTA for boundary cells if any.  
 !/SMC       DO IP=1, NBISMC
 !/SMC          ISEA = NBICelin(IP)
 !/SMC          IX=IJKCel(1,ISEA)/MRFct + 1
@@ -4566,55 +4597,60 @@
 !/SMC       ENDIF
 !/SMC 
 !
-!/ARC !Li   Define rotation angle for Arctic cells.
-!/ARC       PoLonAC = 179.999
-!/ARC       PoLatAC =   0.001
-!/ARC       ALLOCATE( XLONAC(NARC),YLATAC(NARC),ELONAC(NARC),ELATAC(NARC) )
-!/ARC       DO ISEA=NGLO+1, NCel
-!/ARC !Li   There is no polar cell row so it is mapped to last row.
-!/ARC          IF(ISEA .EQ. NCel) THEN
-!/ARC             IX=1
-!/ARC             IY=NY
-!/ARC             IK=1
-!/ARC             JS=1
-!/ARC          ELSE
-!/ARC             IX=IJKCel(1,ISEA)/MRFct + 1
-!/ARC             IY=IJKCel(2,ISEA)/MRFct + 1
-!/ARC             IK=MAX(1, IJKCel(3,ISEA)/MRFct)
-!/ARC             JS=MAX(1, IJKCel(4,ISEA)/MRFct)
-!/ARC          ENDIF
-!/ARC          XLONAC(ISEA-NGLO)= X0 + REAL(IX-1+IK/2)*SX
-!/ARC          YLATAC(ISEA-NGLO)= Y0 + REAL(IY-1+JS/2)*SY
-!/ARC       ENDDO 
-!/ARC
-!/ARC        CALL W3LLTOEQ ( YLATAC, XLONAC, ELATAC, ELONAC,   &
-!/ARC      &                 ANGARC, PoLatAC, PoLonAC, NARC  )
-!/ARC
-!/ARC       WRITE (NDSO,4037)  NARC 
-!/ARC       WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
-!/ARC
+!/SMC !Li   Define rotation angle for Arctic cells.
+!/SMC       IF( ARCTC ) THEN
+!/SMC 
+!/SMC       PoLonAC = 179.999
+!/SMC       PoLatAC =   0.001
+!/SMC       ALLOCATE( XLONAC(NARC),YLATAC(NARC),ELONAC(NARC),ELATAC(NARC) )
+!/SMC       DO ISEA=NGLO+1, NCel
+!/SMC !Li   There is no polar cell row so it is mapped to last row.
+!/SMC          IF(ISEA .EQ. NCel) THEN
+!/SMC             IX=1
+!/SMC             IY=NY
+!/SMC             IK=1
+!/SMC             JS=1
+!/SMC          ELSE
+!/SMC             IX=IJKCel(1,ISEA)/MRFct + 1
+!/SMC             IY=IJKCel(2,ISEA)/MRFct + 1
+!/SMC             IK=MAX(1, IJKCel(3,ISEA)/MRFct)
+!/SMC             JS=MAX(1, IJKCel(4,ISEA)/MRFct)
+!/SMC          ENDIF
+!/SMC          XLONAC(ISEA-NGLO)= X0 + REAL(IX-1+IK/2)*SX
+!/SMC          YLATAC(ISEA-NGLO)= Y0 + REAL(IY-1+JS/2)*SY
+!/SMC       ENDDO 
+!/SMC
+!/SMC        CALL W3LLTOEQ ( YLATAC, XLONAC, ELATAC, ELONAC,   &
+!/SMC      &                 ANGARC, PoLatAC, PoLonAC, NARC  )
+!/SMC
+!/SMC       WRITE (NDSO,4037)  NARC 
+!/SMC       WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
+!/SMC
 !
-!/ARC !Li   Mapping Arctic boundary cells with inner model cells
-!/ARC       DO IP=1, NBAC 
-!/ARC             IX=IJKCel(1,IP+NGLO)
-!/ARC             IY=IJKCel(2,IP+NGLO)
-!/ARC          DO ISEA=1, NGLO 
-!/ARC             IF( (IX .EQ. IJKCel(1,ISEA)) .AND.      &
-!/ARC      &          (IY .EQ. IJKCel(2,ISEA)) ) THEN 
-!/ARC                 ICLBAC(IP) = ISEA
-!/ARC             ENDIF
-!/ARC          ENDDO
-!/ARC       ENDDO
-!/ARC       WRITE (NDSO,4039)  NBAC 
-!/ARC       WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
-!/ARC
-!/ARC !Li   Redefine GCT term factor for Arctic part or the netative of 
-!/ARC !Li   tangient of rotated latitude divided by radius. JGLi14Sep2015
-!/ARC       DO ISEA=NGLO+1, NCel-1
-!/ARC          CTHG0S(ISEA)= - TAN( ELATAC(ISEA-NGLO)*DERA ) / RADIUS
-!/ARC       ENDDO 
-!/ARC          CTHG0S(NCel)=0.0
-!/ARC       
+!/SMC !Li   Mapping Arctic boundary cells with inner model cells
+!/SMC       DO IP=1, NBAC 
+!/SMC             IX=IJKCel(1,IP+NGLO)
+!/SMC             IY=IJKCel(2,IP+NGLO)
+!/SMC          DO ISEA=1, NGLO 
+!/SMC             IF( (IX .EQ. IJKCel(1,ISEA)) .AND.      &
+!/SMC      &          (IY .EQ. IJKCel(2,ISEA)) ) THEN 
+!/SMC                 ICLBAC(IP) = ISEA
+!/SMC             ENDIF
+!/SMC          ENDDO
+!/SMC       ENDDO
+!/SMC       WRITE (NDSO,4039)  NBAC 
+!/SMC       WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
+!/SMC
+!/SMC !Li   Redefine GCT term factor for Arctic part or the netative of 
+!/SMC !Li   tangient of rotated latitude divided by radius. JGLi14Sep2015
+!/SMC       DO ISEA=NGLO+1, NCel-1
+!/SMC          CTHG0S(ISEA)= - TAN( ELATAC(ISEA-NGLO)*DERA ) / RADIUS
+!/SMC       ENDDO 
+!/SMC          CTHG0S(NCel)=0.0
+!/SMC       
+!/SMC       ENDIF  !! ARCTC section.
+!
+!/SMC      ENDIF  !! (GTYPE .NE. SMCTYPE) ELSE SMCTYPE block. 
 !
 !/RTD !Li   Assign rotated grid angle for all sea points.  JGLi01Feb2016
 !/RTD       DO ISEA=1,NSEA
@@ -5636,6 +5672,18 @@
 !/NL4               '   (To speed up computation) ')
 !/NL4 2922 FORMAT ( '  &SNL4 ITSA =',I2,', IALT =',I2 )
 !
+!/NL5  922 FORMAT(/'  Nonlinear interactions (GKE) ',A/              &
+!/NL5        ' --------------------------------------------------')
+!/NL5  923 FORMAT ( '   Constant water depth (in meter) : ', F7.1/ &
+!/NL5               '   Quasi-resonant quartets cut-off : ', F8.2/ &
+!/NL5               '   Discretiz. of GKE (0:Con., 1:GS): ', I5/   &
+!/NL5               '   GKE (0: GS13-JFM, 1: J03-JPO)   : ', I5/   &
+!/NL5               '   Interp (0: nearest, 1: bilinear): ', I5/   &
+!/NL5               '   Mixing (0: no, N: N Tm, -1: b_T): ', I5/)
+!/NL5 2922 FORMAT ( '  &SNL5 NL5DPT =', F7.1, ', NL5OML =', F5.2, &
+!/NL5               ', NL5DIS =', I2.1, ', NL5KEV =', I2.1,       &
+!/NL5               ', NL5IPL =', I2.1, ', NL5PMX =', I5.1, ' /')
+!
 !/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
 !
 !/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
@@ -5858,20 +5906,18 @@
 !/PR2 2953 FORMAT ( '  &PRO2 CFLTM =',F5.2,', DTIME =',F8.0,          &
 !/PR2                        ', LATMIN =',F5.1,' /')
 !
-!/SMC  953 FORMAT ( '       Max propagation CFL number  :',F9.3/      &
-!/SMC               '       Effective swell age     (h) : switched off'/ &
-!/SMC               '       Cut-off latitude    (degr.) :',F8.2/      &
-!/SMC               '       Maximum refraction  (degr.) :',F8.2/)
-!/SMC  954 FORMAT ( '       Max propagation CFL number  :',F9.3/      &
+!/SMC 1950 FORMAT (/'  SMC grid parameters : '/                            &
+!/SMC               ' --------------------------------------------------')
+!/SMC 1951 FORMAT ( '       Type of scheme (structured) :',1X,A)
+!/SMC 1953 FORMAT ( '       Max propagation CFL number  :',F9.3/      &
 !/SMC               '       Effective swell age     (h) :',F8.2/      &
-!/SMC               '       Cut-off latitude    (degr.) :',F8.2/      &
 !/SMC               '       Maximum refraction  (degr.) :',F8.2/)
-!/SMC 2953 FORMAT ( '  &PSMC CFLTM  =',F5.2,', DTIME  =', F9.1/     &
-!/SMC               '        LATMIN =',F5.1,', RFMAXD =', F9.2/     & 
+!/SMC 2954 FORMAT ( '  &PSMC CFLSM  =',F5.2,', DTIMS  =', F9.1/     &
+!/SMC               '        Arctic =',L5,  ', RFMAXD =', F9.2/     & 
 !/SMC               '        UNO3   =',L5,  ', AVERG  =',L5/        &
 !/SMC               '        LvSMC  =',i5,  ', NBISMC =',i9/        &
 !/SMC               '        ISHFT  =',i5,  ', JEQT   =',i9/        &
-!/SMC               '        SEAWND =',L5, ' /')
+!/SMC               '        SEAWND =',L5,  '/')
 !
 !/PR3  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/      &
 !/PR3               '       Averaging area factor Cg    :',F8.2)
@@ -5972,7 +6018,7 @@
  4972 FORMAT ( '       Spectrum of Uss             :',3I4)
  4973 FORMAT ( '       Frequency spectrum          :',3I4)
  4974 FORMAT ( '       Partions of Uss             :',2I4)
- 4975 FORMAT ( '       Partition wavenumber #',I02,'   : ',1F6.3)
+ 4975 FORMAT ( '       Partition wavenumber #',I2,'   : ',1F6.3)
 
 !
  4980 FORMAT (/'  Coastal / iceberg reflection  ',A/                   &
@@ -6091,12 +6137,12 @@
 !/SMC 4012 FORMAT (9I8)
 !/SMC 4013 FORMAT ( '       NBICelin(NBISMC) read from ', A)
 !/SMC 4014 FORMAT (2I8)
-!/ARC 4015 FORMAT ( '       ARC NARC   = ',6I9)
-!/ARC 4016 FORMAT ( '       IJKCel(5,NARC) read from ', A)
-!/ARC 4017 FORMAT ( '       ARC NAUI   = ',6I9)
-!/ARC 4018 FORMAT ( '       IJKUFc(7,NAUI) read from ', A)
-!/ARC 4019 FORMAT ( '       ARC NAVJ   = ',6I9)
-!/ARC 4020 FORMAT ( '       IJKVFc(8,NAVJ) read from ', A)
+!/SMC 4015 FORMAT ( '       ARC NARC   = ',6I9)
+!/SMC 4016 FORMAT ( '       IJKCel(5,NARC) read from ', A)
+!/SMC 4017 FORMAT ( '       ARC NAUI   = ',6I9)
+!/SMC 4018 FORMAT ( '       IJKUFc(7,NAUI) read from ', A)
+!/SMC 4019 FORMAT ( '       ARC NAVJ   = ',6I9)
+!/SMC 4020 FORMAT ( '       IJKVFc(8,NAVJ) read from ', A)
 !/SMC 4021 FORMAT ( '       Varables by W3DIMX NCel = ',I9)
 !/SMC 4022 FORMAT ( '       Defined NLvCel ',6I9)
 !/SMC 4023 FORMAT ( '       Defined NLvUFc ',6I9)
@@ -6113,10 +6159,10 @@
 !/SMC 4034 FORMAT ( '       Range of MAPSF(:,2)    : ',2I9)
 !/SMC 4035 FORMAT ( '       Range of MAPSF(:,3)    : ',2I9)
 !/SMC 4036 FORMAT ( '       Range of MAPFS(:,:)    : ',2I9)
-!/ARC 4037 FORMAT ( '       Arctic AngArc defined as ',I6)
-!/ARC 4038 FORMAT (9F8.2)
-!/ARC 4039 FORMAT ( '       Arctic ICLBAC defined as ',I6)
-!/ARC 4040 FORMAT (9I8)
+!/SMC 4037 FORMAT ( '       Arctic AngArc defined as ',I6)
+!/SMC 4038 FORMAT (9F8.2)
+!/SMC 4039 FORMAT ( '       Arctic ICLBAC defined as ',I6)
+!/SMC 4040 FORMAT (9I8)
 !/RTD 4200 FORMAT ( '       AnglDin(NX,NY) defn checks  : ')
 !/RTD 4201 FORMAT ( '       JY/IX',4I8)
 !/RTD 4202 FORMAT (I12,4F8.2)
@@ -6488,6 +6534,8 @@
 !/NL3                          READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
 !/NL4                        CASE('SNL4')
 !/NL4                          READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
+!/NL5                        CASE('SNL5')
+!/NL5                          READ (NDS,NML=SNL5,END=801,ERR=802,IOSTAT=J)
 !/NLS                        CASE('SNLS')
 !/NLS                          READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
 !/ST1                        CASE('SDS1')
