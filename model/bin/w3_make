@@ -380,34 +380,6 @@ EOF
   return 0
   }
 
-# 1.c.3 NetCDF check api function
-
-  netcdf_check_api () {
-
-  mode=$1 #must be ERROR or WARNING
-
-  if [ -n "`grep NC4 $switch_file`" ]
-  then
-    case $WWATCH3_NETCDF in
-      NC3)
-        netcdf_compile_message
-        echo "$mode: WWATCH3_NETCDF=NC3 is not supported and incompatible with NC4 switch"; echo ' '
-        return 1
-      ;;
-      NC4)
-        if [ "`$NETCDF_CONFIG --has-nc4`" = 'no' ]
-        then
-          netcdf_compile_message
-          echo "$mode: NetCDF-4 API not enabled (required by NC4 switch)"; echo ' '
-          return 1
-        fi
-      ;;
-    esac
-  fi
-
-  return 0
-  }
-
 # 1.c.4 Check for NetCDF compile
 
   if [ $default_mode -eq 1 ]
