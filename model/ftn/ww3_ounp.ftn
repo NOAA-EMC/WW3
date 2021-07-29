@@ -973,6 +973,7 @@
 !/IC2      WRITE(NDSO,3960)
 !/IC3      WRITE(NDSO,3960)
 !/IC5      WRITE(NDSO,3960)
+!/NL5      WRITE(NDSO,3961)
 !
         CALL T2D(TIME,STARTDATE,IERR)
         WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2), &
@@ -1294,6 +1295,9 @@
 !/IC5 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
 !/IC5               '     Ice source terms !/IC5 skipped'/            &
 !/IC5               '     in dissipation term.'/)
+!/NL5 3961 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
+!/NL5               '     Snl source terms !/NL5 skipped'/            &
+!/NL5               '     in interaction term.'/)
 !/
 !/ Internal subroutine W3EXNC ---------------------------------------- /
 !/

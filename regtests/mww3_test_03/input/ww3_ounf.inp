@@ -11,7 +11,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
   N
-  HS
+  HS FP DP PT01 PT02 MSS MSC
 $
 $--------------------------------------------------------------------- $
 $ Output type 4 [3,4] (version netCDF)   
