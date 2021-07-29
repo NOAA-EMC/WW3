@@ -151,6 +151,7 @@
   export  multi06='y' # mww3_test_06 (curvilinear grid tests)
   export  multi07='y' # mww3_test_07 (unstructured grid tests)
   export  multi08='y' # mww3_test_08 (wind and ice tests)
+  export  multi09='y' # mww3_test_09 (SMC multi grid test)
   export      ufs='n' # The Unified Forecast System
   export     grib='n' # grib file field output
   export rstrt_b4b='y' # Restart Reproducibility
