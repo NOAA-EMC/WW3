@@ -215,7 +215,7 @@ $ and with continuous ice treatment.
 $
 $ PSMC namelist is enlarged to include other smc grid paramters with 
 $ default values LvSMC=1, ISHFT=0, JEQT=0, and NBISMC=0.  JGLi23Nov2015
-  &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, JEQT=-138 /
+  &PSMC DTIMS = 39600.0, JEQT=-138, AVERG=.FALSE., Arctic=.TRUE. /
 $ ST4 option with new parameters in SIN4 and SDS4.  JGLi13Feb2013
 $ &SIN4 BETAMAX = 1.50, Z0MAX = 1.002 /
 $ &SDS4 SDSHCK = 1.5,  SDSBCK = 0.185 /
@@ -347,7 +347,7 @@ $
 $ SMC grid use the same spherical lat-lon grid option with its own 
 $ propagation setting files.   JGLi18Dec2012
 $
-     'RECT'  T  'SMPL'
+     'SMCG'  T  'SMPL'
     512     54
 $   512    368
 $  1024    704
