@@ -5,7 +5,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |model/ftn/ww3_ounf.ftn
+!/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         22-Mar-2021 |
