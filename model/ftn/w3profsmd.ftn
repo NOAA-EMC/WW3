@@ -252,8 +252,6 @@
     
 ! 6.  Store results in VQ in proper format --------------------------- *
 !
-!/C90/!DIR$ IVDEP
-!
       DO ISEA=1, NSEA
         IXY   = MAPSF(ISEA,3)
         VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )

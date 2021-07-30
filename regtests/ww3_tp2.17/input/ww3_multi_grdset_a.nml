@@ -163,7 +163,7 @@
 !     ITYPE(3)%TRACK%FORMAT      =  F
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  ALLTYPE%FIELD%LIST       = 'WND HS'
+  ALLTYPE%FIELD%LIST       = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
 /
 
 ! -------------------------------------------------------------------- !

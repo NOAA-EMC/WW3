@@ -113,8 +113,6 @@
 !       !/DIST  Id.
 !
 !       !/OMPG  OpenMP compiler directive for loop splitting.
-!       !/C90   Cray FORTRAN 90 compiler directive.
-!       !/NEC   NEC SXF90 compiler directives.
 !
 !       !/O8    Filter for low wave heights ( HSMIN )
 !       !/O9    Negative wave height alowed, other mean parameters will
@@ -758,7 +756,7 @@
 !/OASACM           J = 1
 !/OASOCM         CASE('OHS')
 !/OASOCM           I = 2
-!/OASACM           J = 1
+!/OASOCM           J = 1
       CASE('HS')
         I = 2
         J = 1
@@ -902,7 +900,7 @@
 !/OASACM           J = 2
 !/OASOCM         CASE('OCHA')
 !/OASOCM           I = 5
-!/OASACM           J = 2
+!/OASOCM           J = 2
       CASE('CHA')
         I = 5
         J = 2
@@ -1145,8 +1143,6 @@
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/DIST  Id.
 !
-!     !/C90   Cray FORTRAN 90 compiler directives.
-!     !/NEC   NEC SXF90 compiler directives.
 !     !/OMPG  OpenMP compiler directive for loop splitting.
 !
 !     !/O8    Filter for low wave heights ( HSMIN )
@@ -2068,8 +2064,6 @@
 !
       DO ITH=1, NTH
 !
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
@@ -2100,8 +2094,6 @@
 !
       DO ITH=1, NTH
 !
-!/C90/!DIR$ IVDEP
-!/NEC/!CDIR NODEP
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
 !
         DO JSEA=1, NSEAL
@@ -2467,7 +2459,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
                                  AUX3(NSEA), AUX4(NSEA)
-!/ARC      REAL                    :: UDARC
+!/SMC      REAL                    :: UDARC
       CHARACTER(LEN=30)       :: IDTST, TNAME
       CHARACTER(LEN=10)       :: VERTST
 !/
@@ -2849,11 +2841,11 @@
                     WRITE ( NDSOG ) CY(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
                     DO ISEA=1, NSEA
-!/ARC  !!Li  Rotate map-east wind in Arctic part back to local east.  JGLi02Feb2016
-!/ARC                      IF(ISEA .GT. NGLO) THEN
-!/ARC                        UDARC = UD(ISEA) - ANGARC(ISEA - NGLO)*DERA
-!/ARC                        UD(ISEA) = MOD(TPI + UDARC, TPI)
-!/ARC                      ENDIF
+!/SMC  !!Li  Rotate map-east wind in Arctic part back to local east.  JGLi02Feb2016
+!/SMC                      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+!/SMC                        UDARC = UD(ISEA) - ANGARC(ISEA - NGLO)*DERA
+!/SMC                        UD(ISEA) = MOD(TPI + UDARC, TPI)
+!/SMC                      ENDIF
                       IF (UA(ISEA) .NE.UNDEF) THEN
                           AUX1(ISEA) = UA(ISEA)*COS(UD(ISEA))
                           AUX2(ISEA) = UA(ISEA)*SIN(UD(ISEA))
@@ -2874,11 +2866,11 @@
                     WRITE ( NDSOG ) BERG(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
                     DO ISEA=1, NSEA
-!/ARC  !!Li  Rotate map-east momentum in Arctic part back to local east.  JGLi02Feb2016
-!/ARC                      IF(ISEA .GT. NGLO) THEN
-!/ARC                        UDARC = TAUADIR(ISEA) - ANGARC(ISEA - NGLO)*DERA
-!/ARC                        TAUADIR(ISEA) = MOD(TPI + UDARC, TPI)
-!/ARC                      ENDIF
+!/SMC  !!Li  Rotate map-east momentum in Arctic part back to local east.  JGLi02Feb2016
+!/SMC                      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+!/SMC                        UDARC = TAUADIR(ISEA) - ANGARC(ISEA - NGLO)*DERA
+!/SMC                        TAUADIR(ISEA) = MOD(TPI + UDARC, TPI)
+!/SMC                      ENDIF
                       IF (TAUA(ISEA) .NE.UNDEF) THEN
                           AUX1(ISEA) = TAUA(ISEA)*COS(TAUADIR(ISEA))
                           AUX2(ISEA) = TAUA(ISEA)*SIN(TAUADIR(ISEA))
@@ -3652,8 +3644,6 @@
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/DIST  Id.
 !
-!     !/C90   Cray FORTRAN 90 compiler directives.
-!     !/NEC   NEC SXF90 compiler directives.
 !     !/OMPG  OpenMP compiler directive for loop splitting.
 !
 !     !/S     Enable subroutine tracing.

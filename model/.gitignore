@@ -8,6 +8,6 @@ obj_*
 exe
 tmp
 nuopc*.mk
-aux/makefile
+tools/makefile
 ftn/makefile
 ftn/makefile_*
