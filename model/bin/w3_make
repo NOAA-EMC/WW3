@@ -308,12 +308,8 @@ WWATCH3_NETCDF=NC4 compile.
 
 The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
 Use "nc-config --version" to check the version of the installed
-NetCDF.
-
-Compiling with the NC4 switch requires WWATCH3_NETCDF=NC4 and the
-NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "nc-config --has-nc4" to check if the installed NetCDF has
-the NetCDF-4 API enabled.
+NetCDF. Use "nc-config --has-nc4" to check if the installed NetCDF 
+has the NetCDF-4 API enabled.
 
 *****************************************************************
 
@@ -340,11 +336,6 @@ EOF
         return 1
       ;;
       NC4)
-        if [ ! -n "`grep NC4 $switch_file`" ]
-        then
-          echo "WARNING: NC4 is set in WWATCH3_NETCDF but not in the switch file"; echo ' '
-#          return 1
-        fi
         if [ -z "$NETCDF_CONFIG" ]
         then
           netcdf_compile_message
