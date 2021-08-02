@@ -11,8 +11,8 @@ $
   20091122 000000  3600  4
 $
 $ Output type [1,3,4] [text file, netCDF version 3, netCDF version 4]
-$ Note for NetCDF version 3 the TRKNC switch is needed and
-$ for NetCDF version 4 the TRKNC and NC4 switches are needed.
+$ Note for NetCDF version 3 or version 4 compresssion, 
+$ the TRKNC switch is needed. 
    1
 $
 $ Wave tracking domain. First line: longitude limits, longitude intervals
