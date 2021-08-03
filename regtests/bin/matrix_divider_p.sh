@@ -38,8 +38,8 @@ awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.15/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.17/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.21/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
-command egrep 'mpirun|mpiexec|MPI_LAUNCH|\-O' matrix.tmp | cat >> list_mpi
-awk '!/mpirun|mpiexec|MPI_LAUNCH|\-O/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
+command egrep 'mpirun|mpiexec|srun|MPI_LAUNCH|\-O' matrix.tmp | cat >> list_mpi
+awk '!/mpirun|mpiexec|srun|MPI_LAUNCH|\-O/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 #Separate the OMP/OMPH tests from MPI tests
 command egrep '\-t|\-O' list_mpi | cat >> list_omp
 awk '!/\-t|\-O/' list_mpi > tmpfile && mv tmpfile list_mpi

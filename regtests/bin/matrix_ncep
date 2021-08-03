@@ -58,7 +58,7 @@
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
+    modg2='g2/3.4.2'
     modw3nco='w3nco/2.4.1'
     modesmf='esmf/8_1_1'
   elif [ $isorion ]
@@ -67,8 +67,8 @@
     batchq='slurm'
     hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
     hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/2019.5'
-    modmpi='hpc-impi/2019.6'
+    modcomp='hpc-intel/2018.4'
+    modmpi='hpc-impi/2018.4'
     modnetcdf='netcdf/4.7.4'
     metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
     modjasper='jasper/2.0.25'
@@ -76,7 +76,7 @@
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
+    modg2='g2/3.4.2'
     modw3nco='w3nco/2.4.1'
     modesmf='esmf/8_1_1'
   else
@@ -155,7 +155,12 @@
 
   if [ "$batchq" = 'slurm' ]
   then
-    export  mpi='mpirun'
+    if [ $isorion ]
+    then
+       export  mpi='srun'
+    else 
+      export  mpi='mpirun'
+    fi
   else
     export  mpi='mpirun'
   fi
