@@ -155,12 +155,7 @@
 
   if [ "$batchq" = 'slurm' ]
   then
-    if [ $isorion ]
-    then
-       export  mpi='srun'
-    else 
-      export  mpi='mpirun'
-    fi
+    export  mpi='srun'
   else
     export  mpi='mpirun'
   fi
