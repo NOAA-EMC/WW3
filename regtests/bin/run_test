@@ -1926,6 +1926,7 @@ do
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
         if [ $prog = ww3_grib ]
+        then
           cat $path_b/switch_noST | sed 's/NCEP2/NCEP2 S T /' > $path_b/switch
         else 
           cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
