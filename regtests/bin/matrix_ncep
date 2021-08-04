@@ -58,7 +58,7 @@
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.2'
+    modg2='g2/3.4.1'
     modw3nco='w3nco/2.4.1'
     modesmf='esmf/8_1_1'
   elif [ $isorion ]
@@ -76,7 +76,7 @@
     modpng='png/1.6.35'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.2'
+    modg2='g2/3.4.1'
     modw3nco='w3nco/2.4.1'
     modesmf='esmf/8_1_1'
   else
