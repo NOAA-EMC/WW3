@@ -304,11 +304,6 @@
 !/RTD        ENDIF
 !/RTD      ENDIF
 
-PRINT*,"FLRTD: ", FLRTD
-PRINT*,"FLAGUNR: ", FLAGUNR
-PRINT*,'DIRCOM is ',DIRCOM
-
-STOP
       !  Set partitioning method comment and standard name templates:
       IF( PTMETH .LE. 3 ) THEN
         SNAMEP(1) = 'wind'
