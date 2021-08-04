@@ -6,7 +6,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLXn !/LNn !/STn !/NLn !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                  #
+#   !/FLXn !/LNn !/STn !/NLn !/BT0 !/DB0 !/TR0 !/BS0                        #
 #                        Deep water source term only.                       #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #

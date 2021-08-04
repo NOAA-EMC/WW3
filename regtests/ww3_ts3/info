@@ -4,7 +4,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLn !/LN1 !/STn !/NL1 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                   #
+#   !/FLn !/LN1 !/STn !/NL1 !/BT0 !/DB0 !/TR0 !/BS0                         #
 #                        Select source term, deep water focus.              #
 #                         1: WAM 3.                                         #
 #                         2: Tolman and Chalikov (1996)                     #
