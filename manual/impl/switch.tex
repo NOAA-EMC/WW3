@@ -15,19 +15,7 @@ included in the source code files is described in \para\ref{sec:w3adc}.
 \subsubsection{~Mandatory switches} \label{sub:man_switch}
 \vsssub
 
-Of each of the below groups of switches exactly one has to be selected. The
-first group of switches controls the selection of machine-dependent code. With
-the introduction of \fortran-90 this set of switches should have become
-obsolete. Problems with some compilers have prompted the retention of the
-second switch.
-\begin{slist}
-\sit{f90} {\fortran-90 style date and time capturing and program
-           abort.}
-\sit{dum} {Dummy to be used if \ws\ is to be installed on
-           previously untried hardware.}
-\end{slist}
-
-\noindent
+Of each of the below groups of switches exactly one has to be selected. 
 Hardware model (first group) and message passing protocol (second group). Note
 that these two groups share a switch. This implies that the {\sc mpi} switch
 can only be used in combination with the {\sc dist} switch.
@@ -310,7 +298,6 @@ additions.
 \noindent
 Furthermore the following miscellaneous switches are available:
 \begin{slist}
-\sit{arc} {Arctic grid option for SMC grid\footnote{~Not yet fully tested according to author.}.}
 \sit{cou} {Activates the calculation of variables required for coupling}
 \sit{dss0}{Switch off frequency dispersion in diffusive
            dispersion correction.}
@@ -321,8 +308,6 @@ Furthermore the following miscellaneous switches are available:
 \sit{mpibdi}{Experimental parallelization of multi-grid model initialization.}
 \sit{mpit}{Test output for \mpi\ initializations.}
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
-\sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
-           programs.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
@@ -356,9 +341,7 @@ Furthermore the following miscellaneous switches are available:
            with ww3\_prtide.}
 \sit{tidet}{test output for tidal analysis.}
 \sit{trknc} {Activates the NetCDF API in the wave system tracking
-           post-processing program. Selecting TRKNC alone will generate 
-           NetCDF-3 files. Selecting both TRKNC and NC4 will generate 
-           NetCDF-4 files.}
+           post-processing program.}
 \sit{uost}{Enable the unresolved obstacles source term.}
 \sit{wrst}{Save wind in restart and use in first time step in wmesmf.}
 \sit{xw0 }{Swell diffusion only in \uq\ scheme.}

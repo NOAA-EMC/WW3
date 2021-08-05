@@ -112,7 +112,7 @@ then
   errmsg "$path_b not found"
   exit 1
 fi
-path_a="$path_s/aux"
+path_a="$path_s/tools"
 if [ ! -d $path_a ]
 then
   errmsg "$path_a not found"
@@ -424,7 +424,8 @@ then
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
        [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<optomp>/$optomp/" -e "s/<err_pattern>/$err_pattern/" -e "s/<warn_pattern>/$warn_pattern/" $path_b/comp.tmpl > $path_b/comp
      echo "      sed $path_b/comp.tmpl => $path_b/comp"
@@ -453,7 +454,8 @@ then
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
        [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optl>/$optl/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<optomp>/$optomp/" $path_b/link.tmpl > $path_b/link
     echo "      sed $path_b/link.tmpl => $path_b/link"

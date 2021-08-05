@@ -34,7 +34,8 @@
 !/     8-Aug-2017 : Update SMCGradn for 0 or 1 boundary conditions. 
 !/     9-Jan-2018 : Parallelization by adding OpenMP directives. 
 !/    19-Feb-2020 : Additions for OMP bit-reproducability (C.Bunney)
-!/    23-Mar-2018 : Add extra parenthese for single ATOMIC line update.
+!/    23-Mar-2020 : Add extra parenthese for single ATOMIC line update.
+!/    22-Oct-2020 : Two new subs for lat-lon points mapping to cells.
 !/
 !  1. Purpose :
 !
@@ -53,7 +54,7 @@
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      W3PSMC    Subr. Public   Spatial propagation on SMC grid.
-!      W3KSMC    Subr. Public   Spectral modification by GCT and refraction.
+!      W3KRTN    Subr. Public   Spectral modification by GCT and refraction.
 !      SMCxUNO2  Subr. Public   Irregular grid mid-flux on U-faces by UNO2.
 !      SMCyUNO2  Subr. Public   Irregular grid mid-flux on V-faces by UNO2.
 !      SMCxUNO2r Subr. Public   Regular grid mid-flux on U-faces by UNO2.
@@ -68,6 +69,8 @@
 !      SMCGradn  Subr. Public   Evaluate local gradient for sea points.
 !      SMCAverg  Subr. Public   Numerical 1-2-1 average of sea point field.
 !      W3GATHSMC W3SCATSMC      Gather and scatter spectral components.
+!      W3SMCELL  Subr. Public   Calculate cell centre lat-lon for given ids.
+!      W3SMCGMP  Subr. Public   Map lat-lon points to SMC grid cells. 
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -85,7 +88,6 @@
 !       !/MGP   Correct for motion of grid.
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
-!       !/ARC   Enable Arctic part.
 !
 !  7. Source code :
 !
@@ -224,8 +226,8 @@
                           NSEA, SX, SY, MAPSF, FUNO3, FVERG,           &
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
                           NLvCel, NLvUFc, NLvVFc, NRLv, MRFct,         &
-                          DTCFL, CLATS, DTME, CLATMN, CTRNX, CTRNY 
-!/ARC      USE W3GDATMD, ONLY: NGLO, ANGARC 
+                          DTCFL, CLATS, DTMS, CTRNX, CTRNY 
+      USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC  
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME
 !
@@ -259,7 +261,7 @@
       REAL                    :: DTLOC, CGCOS, CGSIN, FUTRN, FVTRN,   &
                                  DFRR, DX0I, DY0I, CGD, DSSD,         &
                                  DNND, DCELL, XWIND, TFAC, DSS, DNN
-!/ARC      REAL                    :: PCArea, ARCTH 
+      REAL                    :: PCArea, ARCTH 
       LOGICAL                 :: YFIRST 
 !/
 !/ Automatic work arrays
@@ -342,10 +344,10 @@
 !Li   They have to be divided by base-cell size for size-1 stability.
 !Li   So they are equivalent to the Fourier number in size-1 cell at
 !Li   the sub-time step DTLOC/MRFct.
-      IF ( DTME .GT. 0. ) THEN
+      IF ( DTMS .GT. 0. ) THEN
           DFRR   = XFR - 1.
           CGD    = 0.5 * GRAV / SIG(IK)
-          DNN    = ((DTH*CGD)**2)*DTME / 12.
+          DNN    = ((DTH*CGD)**2)*DTMS / 12.
           DNND   = DNN*DTLOC*(DX0I*DX0I)
           DSSD   = DNN*DTLOC*(DY0I*DY0I)
       ELSE
@@ -389,21 +391,23 @@
 !Li   End of IF( FLCUR ) block.
       ENDIF
 
-!/ARC  !Li   Arctic cell velocity components need to be rotated 
-!/ARC  !Li   back to local east referenence system for propagation.
-!/ARC         DO ISEA=NGLO+1, NSEA
-!/ARC            ARCTH = ANGARC(ISEA-NGLO)*DERA 
-!/ARC            CXC = CXTOT(ISEA)*COS(ARCTH) + CYTOT(ISEA)*SIN(ARCTH)
-!/ARC            CYC = CYTOT(ISEA)*COS(ARCTH) - CXTOT(ISEA)*SIN(ARCTH)
-!/ARC            CXTOT(ISEA) = CXC 
-!/ARC            CYTOT(ISEA) = CYC 
-!/ARC         END DO
-!/ARC  !Li   Polar cell area factor for V-flux update 
-!/ARC        PCArea = DY0I/(MRFct*PI*DX0I*FLOAT(IJKCel(4,NSEA)))
-!/ARC  !Li   V-component is reset to zero for Polar cell as direction
-!/ARC  !Li   is undefined there.  
-!/ARC         CYTOT(NSEA) = 0.0
-!/ARC
+!Li   Arctic cell velocity components need to be rotated 
+!Li   back to local east referenence system for propagation.
+      IF( ARCTC ) THEN
+         DO ISEA=NGLO+1, NSEA
+            ARCTH = ANGARC(ISEA-NGLO)*DERA 
+            CXC = CXTOT(ISEA)*COS(ARCTH) + CYTOT(ISEA)*SIN(ARCTH)
+            CYC = CYTOT(ISEA)*COS(ARCTH) - CXTOT(ISEA)*SIN(ARCTH)
+            CXTOT(ISEA) = CXC 
+            CYTOT(ISEA) = CYC 
+         END DO
+!Li   Polar cell area factor for V-flux update 
+         PCArea = DY0I/(MRFct*PI*DX0I*FLOAT(IJKCel(4,NSEA)))
+!Li   V-component is reset to zero for Polar cell as direction
+!Li   is undefined there.  
+         CYTOT(NSEA) = 0.0
+      ENDIF 
+
 
 !Li     Convert velocity components into CFL factors.
 !/OMPG/!$OMP Parallel DO Private(ISEA)
@@ -554,10 +558,10 @@
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel(3,n)) )
            ENDDO
 !/OMPG/!$OMP END Parallel DO
-!/ARC  !Li  Polar cell needs a special area factor, one-level case.
-!/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
+!   Polar cell needs a special area factor, one-level case.
+           IF( ARCTC ) CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
 
-!     End of single-resolution advection and diffusion.
+!   End of single-resolution advection and diffusion.
        ELSE
 
 !     Multi-resolution SMC grid uses irregular grid advection scheme
@@ -707,10 +711,10 @@
               BCNt(n)=0.0
            ENDDO
 !/OMPG/!$OMP END Parallel DO
-!/ARC  !Li  Polar cell needs a special area factor, multi-level case.
-!/ARC       IF( jcl .EQ. NSEA ) THEN
-!/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
-!/ARC       ENDIF
+!Li  Polar cell needs a special area factor, multi-level case.
+           IF( ARCTC .AND. jcl .EQ. NSEA ) THEN
+             CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
+           ENDIF
 !
 !  End of refine level if block  MOD(LMN, LvR) .EQ. 0 
            ENDIF
@@ -2024,7 +2028,7 @@
          USE CONSTANTS
          USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,   MRFct,       &
       &                      IJKCel, IJKUFc, IJKVFC, CLATS, SX, SY
-!/ARC         USE W3GDATMD, ONLY:  NGLO
+         USE W3GDATMD, ONLY: ARCTC 
          USE W3ODATMD, ONLY: NDSE, NDST 
 
          IMPLICIT NONE
@@ -2186,8 +2190,8 @@
 
 !/OMPG/!$OMP END Parallel 
 
-!/ARC  !!Li  Polar cell (if any) y-gradient is set to zero.
-!/ARC        IF( NSEA .GT. NGLO ) GrdY(NSEA) = 0.0
+!!Li  Y-gradient for polar cell in Arctic part is set to zero.
+        IF( ARCTC ) GrdY(NSEA) = 0.0
 
 ! 999  PRINT*, ' Sub SMCGradn ended.'
 
@@ -2203,7 +2207,7 @@
          USE CONSTANTS
          USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
       &                      IJKCel, IJKUFc, IJKVFC 
-!/ARC         USE W3GDATMD, ONLY:  NGLO
+         USE W3GDATMD, ONLY: ARCTC 
          USE W3ODATMD, ONLY: NDSE, NDST 
 
          IMPLICIT NONE
@@ -2223,8 +2227,8 @@
          AUN = 0.
          AVN = 0.
 
-!/ARC !!Li  Save polar cell value 
-!/ARC       CNST0 = CVQ(NSEA)
+!!Li  Save polar cell value if any.
+         CNST0 = CVQ(NSEA)
 
 !/OMPG/!$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
 !/OMPG/!$OMP& Private(CNST3,CNST4,CNST5,CNST6)
@@ -2316,8 +2320,8 @@
 
 !/OMPG/!$OMP END Parallel 
 
-!/ARC !!Li  Polar cell (if any) keep original value. 
-!/ARC       IF( NSEA .GT. NGLO ) CVQ(NSEA) = CNST0
+!!Li  Polar cell (if any) keep original value. 
+       IF( ARCTC ) CVQ(NSEA) = CNST0
 
 ! 999  PRINT*, ' Sub SMCAverg ended.'
 
@@ -2505,7 +2509,7 @@
          USE CONSTANTS
          USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel,  &
                              CLATS, NTH, DTH, ESIN, ECOS, Refran, DMIN
-!/ARC      USE W3GDATMD, ONLY: NGLO, ANGARC
+         USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
          USE W3ADATMD, ONLY: DW, DDDX, DDDY, DHDX, DHDY, DHLMT
          USE W3ODATMD, ONLY: NDSE, NDST
 
@@ -2558,15 +2562,15 @@
            DDDX(j:j+m-1,i:i+k-1)  = DHDX(n)
            DDDY(j:j+m-1,i:i+k-1)  = DHDY(n)
 
-!/ARC  !Li  Depth gradient in the Arctic part has to be rotated into 
-!/ARC  !Li  the map-east system for calculation of refraction. 
-!/ARC       IF( n .GT. NGLO ) THEN
-!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
-!/ARC          CNST1 = DHDX(n)*COS(CNST0) - DHDY(n)*SIN(CNST0)
-!/ARC          CNST2 = DHDX(n)*SIN(CNST0) + DHDY(n)*COS(CNST0)
-!/ARC          DHDX(n) = CNST1
-!/ARC          DHDY(n) = CNST2
-!/ARC       ENDIF
+!Li  Depth gradient in the Arctic part has to be rotated into 
+!Li  the map-east system for calculation of refraction. 
+           IF( ARCTC .AND. n .GT. NGLO ) THEN
+              CNST0 = ANGARC(n - NGLO)*DERA 
+              CNST1 = DHDX(n)*COS(CNST0) - DHDY(n)*SIN(CNST0)
+              CNST2 = DHDX(n)*SIN(CNST0) + DHDY(n)*COS(CNST0)
+              DHDX(n) = CNST1
+              DHDY(n) = CNST2
+           ENDIF
 
        END DO
 !/OMPG/!$OMP END Parallel DO
@@ -2621,7 +2625,7 @@
        SUBROUTINE SMCDCXY
          USE CONSTANTS
          USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel 
-!/ARC         USE W3GDATMD, ONLY: NGLO, ANGARC
+         USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
          USE W3ADATMD, ONLY: CX, CY, DCXDX, DCXDY, DCYDX, DCYDY 
          USE W3ODATMD, ONLY: NDSE, NDST
 
@@ -2654,15 +2658,15 @@
            IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
            IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
-!/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
-!/ARC  !Li  the map-east system for calculation of refraction. 
-!/ARC       IF( n .GT. NGLO ) THEN
-!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
-!/ARC          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
-!/ARC          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
-!/ARC          GrHx(n) = CNST1
-!/ARC          GrHy(n) = CNST2
-!/ARC       ENDIF
+!Li  Current gradient in the Arctic part has to be rotated into 
+!Li  the map-east system for calculation of refraction. 
+           IF( ARCTC .AND. n .GT. NGLO ) THEN
+              CNST0 = ANGARC(n - NGLO)*DERA 
+              CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+              CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+              GrHx(n) = CNST1
+              GrHy(n) = CNST2
+           ENDIF
 
 !! Asign CX gradients to full grid variable DCXDX/Y
            i= IJKCel(1,n)/MRFct + 1
@@ -2694,21 +2698,21 @@
 !/OMPG/!$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
        DO n=1,NSEA
 
-!  A limiter of gradient <= 0.1 is applied.
+!!   A limiter of gradient <= 0.1 is applied.
            IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
            IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
-!/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
-!/ARC  !Li  the map-east system for calculation of refraction. 
-!/ARC       IF( n .GT. NGLO ) THEN
-!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
-!/ARC          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
-!/ARC          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
-!/ARC          GrHx(n) = CNST1
-!/ARC          GrHy(n) = CNST2
-!/ARC       ENDIF
+!!   Current gradient in the Arctic part has to be rotated into 
+!!   the map-east system for calculation of refraction. 
+           IF( ARCTC .AND. n .GT. NGLO ) THEN
+              CNST0 = ANGARC(n - NGLO)*DERA 
+              CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+              CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+              GrHx(n) = CNST1
+              GrHy(n) = CNST2
+           ENDIF
 
-!! Asign CX gradients to full grid variable DCXDX/Y
+!!   Asign CX gradients to full grid variable DCXDX/Y
            i= IJKCel(1,n)/MRFct + 1
            j= IJKCel(2,n)/MRFct + 1
            k= MAX(1, IJKCel(3,n)/MRFct)
@@ -3128,6 +3132,246 @@
 !/
 !/ End of two new subs for SMC grid.    JGLi 15Mar2011
 !/
+
+!!
+      SUBROUTINE W3SMCELL( IMOD, NC, IDCl, XLon, YLat )
+!! -------------------------------------------------------------------
+!!
+!!    Generated for WW3 Multi-grid boundary matching.  JGLi19Oct2020
+!!
+!! 1. Purpose:
+!
+!     Calculate the cell centre longitude and latitude in degree for a given
+!     list of cell identity or sequential numbers in the IMOD sub-grid.
+!
+!! 2. Method:
+!
+!     Regular grid SX, SY, X0, Y0 and SMC grid MRFct and IJKCel arrays 
+!     in W3GDATMD are used to work out SMC grid origin and increments. 
+!     Then given cell centre coordinates are calculated.  Longitude is 
+!     wrapped into [0, 360) range, latitude in in (-90, 90) range.  
+!     The polar cell centre is off the N-Pole to avoid singularity but 
+!     its centre values are not used for propagation schemes.
+!
+!! 3. Parameters:
+!     ----------------------------------------------------------------
+!     IMOD    Int.   I   Model number to point to.
+!     NC      Int.   I   Numcer of cells to be calculated.
+!     IDCl    Int.   I   List of cell id or sequential numbers.
+!     XLon    Real   O   X-Longitude in degree of listed cells.
+!     YLat    Real   O   Y-Latitude in degree of listed cells.
+!     ----------------------------------------------------------------
+!
+!! 4. Subroutines used:
+!
+!     None
+!
+!! 5. Called by:
+!
+!     WMGLOW, W3IOPP, WMIOPP, WW3_GINT
+!
+!! 6. Error messages:
+!
+!     - Error checks on previous setting of variable.
+!
+!! 7. Remarks:
+!
+!! 8. Structure:
+!
+!! 9. Switches:
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Enable test output
+!
+! 10. Source code:
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: NDSE, NDST
+!/S      USE W3SERVMD, ONLY: STRACE
+
+      IMPLICIT NONE
+
+!/ ------------------------------------------------------------------- /
+! Input/Output variables 
+
+      INTEGER, INTENT(IN)               :: IMOD, NC
+      INTEGER, INTENT(in), Dimension(NC):: IDCl        ! Automatic array
+      REAL   , INTENT(out),Dimension(NC):: XLon, YLat
+!/ ------------------------------------------------------------------- /
+! Local variables.
+
+      REAL       :: XI0, YJ0, DXG, DYG, DX1, DY1 
+      INTEGER    :: I1, I3, J2, J4, MRF, ij, ijp, NSEM  
+!/S      INTEGER    ::  IENT = 0
+!/S      CALL STRACE (IENT, 'W3SMCELL')
+
+!! 1. Convert regular grid parameters into SMC grid origin and increments.
+      DXG = GRIDS(IMOD)%SX 
+      DYG = GRIDS(IMOD)%SY
+      XI0 = GRIDS(IMOD)%X0 - 0.5*DXG 
+      YJ0 = GRIDS(IMOD)%Y0 - 0.5*DYG 
+      MRF = GRIDS(IMOD)%MRFct 
+      DX1 = DXG/Real(MRF)
+      DY1 = DYG/Real(MRF)
+      NSEM = GRIDS(IMOD)%NSEA
+
+!! 2. Loop over listed cells and work out their centre coordinates.
+
+!/OMPG/!$OMP Parallel DO Private(ij, ijp, I1, J2, I3, J4 )
+      DO ij = 1, NC 
+         ijp = IDCL(ij)
+!!Li  Return South Pole lon-lat values for any ids < 1 or > NSEA 
+!!    so these out of range points will not be matched to any cell. 
+         IF( ijp < 1 .OR. ijp > NSEM ) THEN 
+           XLon(ij) = 0.0 
+           YLat(ij) = -90.0 
+         ELSE 
+!!    Fetch cell array indexes from given sub-grid.
+           I1=GRIDS(IMOD)%IJKCel(1, ijp)
+           J2=GRIDS(IMOD)%IJKCel(2, ijp)
+           I3=GRIDS(IMOD)%IJKCel(3, ijp)
+           J4=GRIDS(IMOD)%IJKCel(4, ijp)
+
+!!    Calculate its cell centre lon-lat values.
+           XLon(ij) = XI0 + ( FLOAT(I1) + 0.5*FLOAT(I3) )*DX1
+           YLat(ij) = YJ0 + ( FLOAT(J2) + 0.5*FLOAT(J4) )*DY1
+         ENDIF
+      END DO
+!/OMPG/!$OMP END Parallel DO
+
+!! 3. Wrap negative logitudes into [0, 360) range.
+      WHERE( XLon < 0.0 ) XLon = XLon + 360.0
+!
+      RETURN
+      END SUBROUTINE W3SMCELL 
+!!
+ 
+!!
+      SUBROUTINE W3SMCGMP( IMOD, NC, XLon, YLat, IDCl )
+!! -------------------------------------------------------------------
+!!
+!!    Generated for WW3 Multi-grid boundary matching.  JGLi22Oct2020
+!!
+!! 1. Purpose:
+!
+!     Determine whether a list of points are inside the IMOD SMC sub-grid 
+!     and return the IMOD sub-grid cell indexes, if any. 
+!
+!! 2. Method:
+!
+!     Convert point XLon and YLat values into cell indices i, j. 
+!     Match with cell ranges (i,i+di) and (j,j+dj) to see i,j in 
+!     which cell.  Return the matched cell number.  Otherwide, 
+!     return an index of 0, or no matching cell found.
+!
+!! 3. Parameters:
+!     ----------------------------------------------------------------
+!     IMOD    Int.   I   Model number to point to.
+!     XLon    Real   I   X-Longitude in degree of search points.
+!     YLat    Real   I   Y-Latitude  in degree of search points.
+!     NC      Int.   I   Number of points to be searched. 
+!     IDCl    Int.   O   Model number to point to.
+!     ----------------------------------------------------------------
+!
+!! 4. Subroutines used:
+!
+!     None
+!
+!! 5. Called by:
+!
+!     WMGLOW, W3IOPP, WMIOPP, WW3_GINT
+!
+!! 6. Error messages:
+!
+!     - Error checks on previous setting of variable.
+!
+!! 7. Remarks:
+!
+!! 8. Structure:
+!
+!! 9. Switches:
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Enable test output
+!
+! 10. Source code:
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3ODATMD, ONLY: NDSE, NDST
+!/S      USE W3SERVMD, ONLY: STRACE
+
+      IMPLICIT NONE
+
+!/ ------------------------------------------------------------------- /
+! Iuput/Output variables 
+      INTEGER, INTENT(IN)                :: IMOD, NC
+      REAL   , INTENT(in),  Dimension(NC):: XLon, YLat
+      INTEGER, INTENT(out), Dimension(NC):: IDCl 
+!/ ------------------------------------------------------------------- /
+! Local variables
+      INTEGER, Dimension(NC) :: IX1, JY1 
+      REAL       :: XI0, YJ0, DXG, DYG, DX1, DY1, XLow(NC) 
+      INTEGER    :: I1, I3, J2, J4, ij, ijp, MRF, NSEM, NFund
+!/S      INTEGER    ::  IENT = 0
+!/S      CALL STRACE (IENT, 'W3SMCGMP')
+
+!! 1. Convert XLon YLat into SMC grid indexes in present SMC grid.
+      DXG = GRIDS(IMOD)%SX 
+      DYG = GRIDS(IMOD)%SY
+      XI0 = GRIDS(IMOD)%X0 - 0.5*DXG 
+      YJ0 = GRIDS(IMOD)%Y0 - 0.5*DYG 
+      MRF = GRIDS(IMOD)%MRFct
+      DX1 = DXG/Real(MRF)
+      DY1 = DYG/Real(MRF)
+      NSEM = GRIDS(IMOD)%NSEA
+
+!!  Wrap longitude so they are great than XI0.
+      XLow = XLon
+      WHERE( XLow < XI0 ) XLow = XLow + 360.0
+
+!!  Convert XLon and YLat into SMC indexes. 
+      IX1 = FLOOR( (XLow - XI0)/DX1 )
+      JY1 = FLOOR( (YLat - YJ0)/DY1 )
+
+!!  Initialise IDCl to be all 0
+      IDCl = 0
+
+!! 2. Loop over all cells until all input points are found.
+      NFund = 0
+      ij = 0
+      DO WHILE( ij < NSEM .AND. NFund < NC )
+         ij = ij + 1
+         I1=GRIDS(IMOD)%IJKCel(1, ij)
+         J2=GRIDS(IMOD)%IJKCel(2, ij)
+         I3=GRIDS(IMOD)%IJKCel(3, ij)
+         J4=GRIDS(IMOD)%IJKCel(4, ij)
+ LPNBIS: DO ijp = 1, NC
+            IF( IDCl(ijp) .EQ. 0 ) THEN
+!!  Check if IX1 and JY1 fall inside the cell i,j range.
+              IF((IX1(ijp) .GE. I1) .AND. (IX1(ijp) .LT. I1+I3) .AND.  &
+                 (JY1(ijp) .GE. J2) .AND. (JY1(ijp) .LT. J2+J4)) THEN
+                 NFund = NFund + 1
+                 IDCl(ijp) = ij
+                 EXIT  LPNBIS
+              ENDIF
+            ENDIF
+         END DO  LPNBIS
+      END DO
+
+!!  If any IDCl element remians to be 0, it means no cell is found
+!!  covering this point.  So check IDCl(ij) > 0 to ensure in grid.
+
+      RETURN
+
+      END SUBROUTINE W3SMCGMP 
+!!
+
 !/ End of module W3PSMCMD -------------------------------------------- /
 !/
       END MODULE W3PSMCMD

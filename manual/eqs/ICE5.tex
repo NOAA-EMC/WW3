@@ -50,6 +50,6 @@ The namelist {\F SIC5} contains the parameters summarized below:
 %
 \cit{IC5MAXITER} {the maximum allowed \# of iteration; Default=100.}
 %
-\cit{IC5VEMOD} {the sea ice model to be selected: 1 - {\code EFS}, 2 - RP, 3 - M2; Default=3 (i.e., \textbf{the M2 model is chosen}).}
+\cit{IC5VEMOD} {the sea ice model to be selected: 1 - {\code EFS}, 2 - {\code RP}, 3 - {\code M2}; Default=3 (i.e., \textbf{the {\code M2} model is chosen}).}
 \end{clist}
 The first 6 parameters were introduced to improve the stability of the numerical solver for the EFS model \citep[the solver may fail for small wave periods in some rare cases, particularly for shallow water depth $d$ and low $G$; see][]{Liu2020}. Nonetheless, since version 7.12, the M2 model becomes the default option and these limiters are therefore not used by default.

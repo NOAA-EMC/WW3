@@ -331,18 +331,18 @@ $                           SOLVERTHR_SETUP  : Solver threshold for setup comput
 $                           CRIT_DEP_SETUP  : Critical depths for setup computations
 $
 $ SMC grid propagation    : Namelist PSMC and default values
-$                           CFLTM  : Maximum CFL no. for propagation, 0.7
-$                           DTIME  : Swell age for diffusion term (s), 0.0
-$                           LATMIN : Maximum latitude (deg) for GCT,   86.0 
-$                           RFMAXD : Maximum refraction turning (deg), 80.0
+$                           CFLSM  : Maximum CFL no. for propagation, 0.7
+$                           DTIMS  : Swell age for diffusion term (s), 360.0
+$                           RFMAXD : Maximum refraction turning (deg), 36.0
 $                           LvSMC  : No. of refinement level, default 1  
 $                           ISHFT  : Shift number of i-index, default 0  
 $                           JEQT   : Shift number of j-index, default 0  
 $                           NBISMC : No. of input boundary points,    0  
+$                           AVERG  : Add extra spatial averaging,    .TRUE.
 $                           UNO3   : Use 3rd order advection scheme, .FALSE.
-$                           AVERG  : Add extra spatial averaging,    .FALSE.
 $                           SEAWND : Use sea-point only wind input.  .FALSE.
-$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
+$                           Arctic : Include Arctic part cell array. .FALSE.
+$ &PSMC DTIMS = 39600.0, LvSMC=3, JEQT=1344, SEAWND=.TRUE., Arctic=.TRUE. /
 $
 $ Rotated pole ------------------------------------------------------ $
 $   Pole  parameters   : Namelist ROTD
@@ -517,6 +517,7 @@ $      GSTRG  : String indicating type of grid :
 $               'RECT'  : rectilinear
 $               'CURV'  : curvilinear  
 $               'UNST'  : unstructured (triangle-based)
+$               'SMCG'  : Spherical Multiple-Cell grid.
 $      FLAGLL : Flag to indicate coordinate system :
 $               T  : Spherical (lon/lat in degrees)
 $               F  : Cartesian (meters)
@@ -689,7 +690,7 @@ $  6 6 6 6 6 6 6 6 6 6 6 6
 $
 $ -------------------------------------------------------------
 $ SMC grid use the same spherical lat-lon grid parameters 
-$     'RECT'  T  'SMPL'
+$     'SMCG'  T  'SMPL'
 $   1024    704
 $ SMC grid base level resolution dlon dlat and start lon lat 
 $ 0.35156250  0.23437500   1.
@@ -705,7 +706,7 @@ $  34  1  1  '(....)'  'S6125JSide.dat'
 $  31  1.0  1  1 '(...)' 'NAME'  'SMC25Subtr.dat'
 $ The input boundary cell file is only needed when NBISMC > 0.
 $  35  1  1  '(....)'  'S6125Bundy.dat'
-$ Extra cell and face arrays for Arctic part if ARC is selected. 
+$ Extra cell and face arrays for Arctic part if Arctic=.TRUE. is selected. 
 $  36  1  1  '(....)'  'S6125MBArc.dat'
 $  37  1  1  '(....)'  'S6125AISid.dat'
 $  38  1  1  '(....)'  'S6125AJSid.dat'
