@@ -276,8 +276,6 @@
 !
 !  6. Switches :
 !
-!     !/F90  FORTRAN 90 specific extensions.
-!
 !     !/S    Enable subroutine tracing.
 !     !/T    Enable test output
 !
@@ -301,8 +299,8 @@
                                  IMPROC = 1, NMPLOG = 1, NMPSCR = 1,  &
                                  NMPTST = 1, NMPERR = 1, NMPUPT = 1,  &
                                  STIME(2), ETIME(2), NRGRD, NRINP,    &
-                                 NRGRP, NMVMAX, NGRPSMC 
-!/F90      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
+                                 NRGRP, NMVMAX, NGRPSMC
+      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 !/MPRF      INTEGER                 :: MDSP
 !/MPI      INTEGER                 :: MPI_COMM_MWAVE
 !/MPI      INTEGER, PARAMETER      :: MTAGB = 0
@@ -317,7 +315,7 @@
                                  TOUTP(:,:), TDATA(:,:), GRSTAT(:),   &
                                  NBI2G(:,:), INPMAP(:,:)
 !/MPI      INTEGER, ALLOCATABLE    :: NBISTA(:), HGHSTA(:), EQLSTA(:)
-!/F90      REAL                    :: CLKFIN
+      REAL                    :: CLKFIN
       REAL, ALLOCATABLE       :: DTRES(:)
       LOGICAL                 :: FLGBDI=.FALSE., FLGHG1, FLGHG2
       LOGICAL, ALLOCATABLE    :: RESPEC(:,:), BCDUMP(:),              &

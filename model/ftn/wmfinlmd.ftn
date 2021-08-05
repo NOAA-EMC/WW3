@@ -111,8 +111,6 @@
 !
 !       !/O10   Enable output identifying start and end of routine
 !      
-!       !/F90   FORTRAN 90 specific extensions.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !       !/MPRF  Profiling.
@@ -124,7 +122,7 @@
 !/MPRF/!
       USE W3TIMEMD, ONLY: TDIFF
       USE WMMDATMD, ONLY: MDSS, MDSO, NMPSCR, NMPLOG, IMPROC
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
+      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
 !/MPRF      USE WMMDATMD, ONLY: MDSP
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE
 !/
@@ -159,16 +157,16 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
-!/F90           WRITE (MDSS,920) CLKFIN
-!/F90      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,920) CLKFIN
-!
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT3 )
-!
-!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT3 )
-!/F90      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
-!/F90           WRITE (MDSS,921) CLKFIN
-!/F90      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,921) CLKFIN
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
+           WRITE (MDSS,920) CLKFIN
+      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,920) CLKFIN
+
+      CALL DATE_AND_TIME ( VALUES=CLKDT3 )
+
+      CLKFIN = TDIFF ( CLKDT1,CLKDT3 )
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
+           WRITE (MDSS,921) CLKFIN
+      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,921) CLKFIN
 !
 !/ ------------------------------------------------------------------- /
 ! 3.  Identification at end
@@ -184,8 +182,8 @@
 !
   900 FORMAT ( ' ========== STARTING MWW3 FINALIZATION (WMFINL) ===', &
                '============================' )
-!/F90  920 FORMAT (/'  Initialization time :',F10.2,' s')
-!/F90  921 FORMAT ( '  Elapsed time        :',F10.2,' s')
+  920 FORMAT (/'  Initialization time :',F10.2,' s')
+  921 FORMAT ( '  Elapsed time        :',F10.2,' s')
 
 !
 !/MPRF  990 FORMAT (1X,3F12.3,' WMFINL')

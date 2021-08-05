@@ -30,7 +30,7 @@
 !/       No unauthorized use without permission.
 !/
       USE W3STRKMD
-!/F90      USE W3TIMEMD, ONLY: TDIFF
+      USE W3TIMEMD, ONLY: TDIFF
       IMPLICIT NONE
 !/MPI
 !/MPI      INCLUDE "mpif.h"
@@ -56,8 +56,8 @@
                       seedLon, dirTimeKnob, tpTimeKnob, tint
       REAL         :: lonout(100), latout(100)                            !Increase dimension?
       INTEGER      :: maxGroup, ntint, noutp
-!/F90      INTEGER      :: CLKDT0(8),CLKDT1(8)
-!/F90      REAL         :: CLKFEL
+      INTEGER      :: CLKDT0(8),CLKDT1(8)
+      REAL         :: CLKFEL
       TYPE(dat2d), POINTER :: wsdat(:)
       TYPE(timsys), POINTER :: sysA(:)
       INTEGER, POINTER :: maxSys(:)
@@ -286,7 +286,7 @@
       END IF
 
 
-!/F90         CALL DATE_AND_TIME ( VALUES=CLKDT0 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT0 )
 
 !/MPI      END IF
 
@@ -335,9 +335,9 @@
 
 !/MPI      IF (rank.EQ.0) THEN
 
-!/F90         CALL DATE_AND_TIME ( VALUES=CLKDT1 )
-!/F90         CLKFEL = TDIFF ( CLKDT0,CLKDT1 )
-!/F90         WRITE (6,998) CLKFEL
+         CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+         CLKFEL = TDIFF ( CLKDT0,CLKDT1 )
+         WRITE (6,998) CLKFEL
          WRITE (6,*) 'Final system output...'
 
 !     Set upper limit for wave systems to output (limited by AWIPS display)
@@ -992,7 +992,7 @@
 !/MPI      CALL MPI_FINALIZE(IERR)
 !/MPI/!     End of parallel region
 
-!/F90  998 FORMAT ( ' ... finished. Elapsed time : ',F10.2,' s')
+  998 FORMAT ( ' ... finished. Elapsed time : ',F10.2,' s')
   993 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType=3 needs TRKNC switch ')
   994 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
