@@ -26,15 +26,15 @@
 !/                  directional fields are converted to 
 !/                  degrees (nautical convention) on output.
 !/                  (Chris Bunney, UK Met Office)
-!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05 ) 
-!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.12 ) 
+!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05 )
+!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.12 )
 !/    20-Jul-2021   Fix bug where edge cells in design  ( version 7.12 )
 !/                  grid may not be matched due where
 !/                  SMC cell > base grid size.
 !/    21-Jul-2021   Output grid definition variables    ( version 7.12 )
-!/                  elevated to DOUBLE PRECISION.
-!/                  Fixed bug in EXO/EYO calculation for 
-!/                  full grid extents. (Chris Bunney, UKMO)
+!/                  elevated to DOUBLE PRECISION. Fixed
+!/                  bug in EXO/EYO calculation for full
+!/                  grid extents. (Chris Bunney, UKMO)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
