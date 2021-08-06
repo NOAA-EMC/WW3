@@ -1377,7 +1377,6 @@
 !       !/DBx    Depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
-!       !/XXx    Arbitrary adittional source term package
 !
 !       !/STAB2  Stability correction for !/ST2
 !
