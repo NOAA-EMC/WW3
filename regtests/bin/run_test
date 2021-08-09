@@ -1687,7 +1687,13 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
+      then
+        runprogoasis="$runcmd -n $halfnproc $path_e/$prgb : -n $halfnproc $path_w/toy_model"
+      else
+        runprogoasis="$runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model"
+      fi
+      if $runprogoasis | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
