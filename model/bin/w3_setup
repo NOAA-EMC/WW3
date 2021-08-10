@@ -417,6 +417,7 @@ then
        [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
        [ "$cmplr" == "hera" ]                                                       || \
        [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
+       [ "$cmplr" == "wcoss2" ]                                                     || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
@@ -443,6 +444,7 @@ then
        [ "$cmplr" == "theia" ] || [ "$cmplr" == "wcoss_cray" ]                      || \
        [ "$cmplr" == "hera" ]                                                       || \
        [ "$cmplr" == "wcoss_phase2" ] || [ "$cmplr" == "wcoss_dell_p3" ]            || \
+       [ "$cmplr" == "wcoss2" ]                                                     || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
