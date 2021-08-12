@@ -7,7 +7,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLXn !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                  #
+#   !/FLXn !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0                        #
 #                        No source terms needed.                            #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7 !/O10                           #

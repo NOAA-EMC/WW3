@@ -237,7 +237,6 @@
 !      W3STRn    Subr. W3STRnMD Triad interaction source term.
 !      W3SBSn    Subr. W3SBSnMD Bottom scattering source term.
 !      W3REFn    Subr. W3REFnMD Reflexions (shore, icebergs ...).
-!      W3SXXn    Subr. W3SXXnMD Unclassified source term.
 !      STRACE    Subr. W3SERVMD Subroutine tracing (!/S)
 !     ----------------------------------------------------------------
 !
@@ -342,9 +341,6 @@
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
 !     !/BSX   User-defined bottom scattering
 !
-!     !/XX0   No arbitrary additional source term.       ( Choose one )
-!     !/XXX   User-defined bottom friction.
-!
 !     !/MLIM  Miche style limiter for shallow water and steepness.
 !
 !     !/SEED  'Seeding' of lowest frequency for suffuciently strong
@@ -424,7 +420,6 @@
 !/REF1     USE W3REF1MD
 !/BSX      USE W3SBSXMD
 !/IG1      USE W3GDATMD, ONLY : IGPARS
-!/XXX      USE W3SXXXMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
 !/UOST      USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
@@ -516,7 +511,6 @@
 !/REF1                                VREF(NSPEC),                         &
 !/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
 !/IS2                                 VSIR(NSPEC), VDIR(NSPEC),VDIR2(NSPEC), &
-!/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
 !/UOST                                 VSUO(NSPEC), VDUO(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
@@ -888,10 +882,6 @@
 !/UOST        CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
 !/UOST                                       U10ABS, U10DIR, VSUO, VDUO)
 !
-! 2.f Additional sources.
-!
-!/XXX        CALL W3SXXX
-!
 ! 2.g Dump training data if necessary
 !
 !/NNT        WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
@@ -956,7 +946,6 @@
 !/TRX          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
-!/XXX          VS(IS) = VS(IS) + VSXX(IS)
 !/UOST         VS(IS) = VS(IS) + VSUO(IS)
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS) 
@@ -965,7 +954,6 @@
 !/TRX          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
 !/BSX          VD(IS) = VD(IS) + VDBS(IS)
-!/XXX          VD(IS) = VD(IS) + VDXX(IS)
 !/UOST         VD(IS) = VD(IS) + VDUO(IS)
           DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
@@ -1027,8 +1015,6 @@
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
 !/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
 !/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
-!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VSXX)=', minval(VSXX), maxval(VSXX), sum(VSXX)
-!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VDXX)=', minval(VDXX), maxval(VDXX), sum(VDXX)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
 !/DEBUGSRC        END IF
