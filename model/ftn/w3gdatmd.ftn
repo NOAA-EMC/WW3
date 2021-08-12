@@ -299,7 +299,6 @@
 !      SDBPS     SDBP  Public   Parameters Sdb.
 !      STRPS     STRP  Public   Parameters Str.
 !      SBSPS     SBSP  Public   Parameters Sbs.
-!      SXXPS     SXXP  Public   Parameters Sxx.
 !     ----------------------------------------------------------------
 !
 !     The structure NPAR contains numerical parameters and is aliased
@@ -537,13 +536,6 @@
 !     ----------------------------------------------------------------
 !     IS1C1      Real  Public   Scale factor for icecon.     (!/ISx)
 !     IS1C2      Real  Public   Offset for ice concentration (!/ISx)
-!     ----------------------------------------------------------------
-!
-!     The structure SXXP contains parameters for arbitrary source 
-!     term and is aliased as above:
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -895,11 +887,6 @@
 !/IS1        REAL                  :: IS1C1, IS1C2
 !/IS2        REAL                  :: IS2C1, IS2C2
       END TYPE SICP
-!
-      TYPE SXXP
-!/XX0        REAL                  :: DUMMY
-!/XXX        REAL                  :: DUMMY
-      END TYPE SXXP
       
 ! specific type for unstructured scheme
       TYPE SCHM
@@ -946,7 +933,6 @@
         TYPE(STRP)            :: STRPS
         TYPE(SBSP)            :: SBSPS
         TYPE(SICP)            :: SICPS
-        TYPE(SXXP)            :: SXXPS
         TYPE(SCHM)            :: SCHMS
       END TYPE MPAR
 !/

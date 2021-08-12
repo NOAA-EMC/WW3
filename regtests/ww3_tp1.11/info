@@ -5,7 +5,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS1 !/XX0                         #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS1                               #
 #                        Select bottom scattering option.                   #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #                         1: First order.                                   #
