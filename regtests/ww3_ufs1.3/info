@@ -9,7 +9,7 @@
 #   > Southern Ocean (so_20m); Resolution: 20m; Lat. Range: 82.5S-60.5S.    #
 # INPUT: glo_15mxt.The forcing including daily ice concentration (ice.nc),  #
 # wind speed (wind.nc) every 3 hrs.                                         #    
-# POINT: points. The unified point output grid is glo_1deg                  #
+# POINT: points. The unified point output grid is points                    #
 # INTGL: glo_15mxt (for ww3_gint)                                           #
 #                                                                           #
 # The test is standalone GEFSv12 using ww3_multi on rectilinear grids for   #
@@ -21,7 +21,7 @@
 # Model should be compiled with the switches :                              #
 #                                                                           #
 # NCO NOGRB DIST MPI SCRIP SCRIPNC WRST PR3 UQ FLX0 SEED ST4 STAB0          #
-# NL1 BT1 DB1 MLIM FLD2 TR0 BS0 XX0 RWND WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O3 O4 #
+# NL1 BT1 DB1 MLIM FLD2 TR0 BS0 RWND WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O3 O4     #
 # O5 O6 O7 O14 O15 IC0 IS0 REF0.                                            #
 #                                                                           #
 # Remarks :                                                                 #

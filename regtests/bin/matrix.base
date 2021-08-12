@@ -2192,7 +2192,7 @@
   fi
 
 
- #GiEFSv12 setup with ww3_multi and grib2 output
+ #GEFSv12 setup with ww3_multi and grib2 output
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
