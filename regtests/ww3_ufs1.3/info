@@ -8,8 +8,7 @@
 #   > Global core (glo_15m); Resolution: 1/4°; Lat. Range: 62.5S-62.5N      #
 #   > Southern Ocean (so_20m); Resolution: 20m; Lat. Range: 82.5S-60.5S.    #
 # INPUT: glo_15mxt.The forcing including daily ice concentration (ice.nc),  #
-# hourly  wind speed (gfs_wind.nc) and current fields with 3 hrs interval   #
-# (current.nc).                                                             #    
+# wind speed (wind.nc) every 3 hrs.                                         #    
 # POINT: points. The unified point output grid is glo_1deg                  #
 # INTGL: glo_15mxt (for ww3_gint)                                           #
 #                                                                           #
@@ -36,7 +35,7 @@
 #                                      -t 6  -o all ../model ww3_ufs1.3     #
 # --------------------------------------------------------------------------#
 #                                                                           #
-#                                                Ali Abdolali, Augest 2021  #
+#                                Ali Abdolali, Ricardo Campos, Augest 2021  #
 #                                                  Last Mod : Augest 2021   #
 #                                                                           #
 #############################################################################
