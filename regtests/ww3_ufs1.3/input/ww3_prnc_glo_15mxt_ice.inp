@@ -29,11 +29,11 @@ $
 $
 $ Name of dimensions ------------------------------------------------- $
 $
-  longitude latitude time
+  lon lat time
 $
 $ Variables to use --------------------------------------------------- $
 $
-  ice
+  icecsfc
 $
 $ Additional time input ---------------------------------------------- $
 $ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
