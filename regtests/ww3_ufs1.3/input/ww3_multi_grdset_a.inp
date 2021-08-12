@@ -23,7 +23,7 @@ $
 $
    20190830 030000  10800  20190831 030000
    N
-   WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA 
+   WND ICE HS T01 T02 DIR FP DP PHS PTP PDIR
 $
    20190830 030000  10800  20190831 030000
 $
@@ -57,7 +57,7 @@ $             PDES     Puertos del Estados
 $             SHOM     Service Hydrographique et Oceanographique de la Marine
 $             OCNOR    Fugro Oceanor
 $             WHOI     Woods Hole Oceanographic Institute
-$	      SKOREA   South Korea
+$             SKOREA   South Korea
 $             MVEW     Ministerie van Verkeer en Waterstaat
 $             CORMP    Coastal Ocean Research and Monitoring Program
 $             DIMAR    Direccion General Maritima (Columbia)
@@ -74,15 +74,6 @@ $  - The '$' at the first position identifies comments for WAVEWATCH III
 $    input.
 $  - The first three data columns are used by the forecats code, the other
 $    are used by postprocessing scripts.
-$
-$    LON       LAT       NAME     AH   TYPE  SOURCE  SCALE  DEPTH
-$ ---------------------------------------------------------------
-$
-$ ---------------------------------------------------------------
-$
-$ End of list
-$
-$ ---------------------------------------------------------------
 $
 $    LON       LAT       NAME     AH   TYPE  SOURCE  SCALE  DEPTH
 $ ---------------------------------------------------------------
@@ -326,9 +317,14 @@ $ ---------------------------------------------------------------
      1.100     61.400   '63117  '  -1   DAT  PRIVATE   360  156
     -11.420    59.070   '64045  '  3    DAT  UKMO      360  1935
     -4.167     60.483   '64046  '  3    DAT  UKMO      360  230
-     0.00    0.00  'STOPSTRING'  999.   XXX  NCEP       0
 $
-$       0.E3     0.E3  'STOPSTRING'
+$ ---------------------------------------------------------------
+$
+$ End of list
+$
+$ ---------------------------------------------------------------
+$
+     0.00    0.00  'STOPSTRING'  999.   XXX  NCEP       0
 $
    20190830 030000  0  20190831 030000
 $
