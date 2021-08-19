@@ -2090,7 +2090,6 @@
 !/PR3      NRPROP = NRPROP + 1
 !
 !/SMC      PNAME  = 'UNO2 on SMC grid + diffusion  '
-!/SMC      NRPROP = NRPROP + 1
 !
       IF ( (FLCX.OR.FLCY.OR.FLCTH.OR.FLCK) .AND. .NOT. FLPROP ) THEN
           WRITE (NDSE,1030)
