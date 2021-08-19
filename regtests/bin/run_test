@@ -1687,9 +1687,10 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
+      if [ $batchq = "slurm" ]
       then
-        runprogoasis="$runcmd -n $halfnproc $path_e/$prgb : -n $halfnproc $path_w/toy_model"
+        layout.pl -n $halfnproc $path_e/$prgb :-n $halfnproc $path_w/toy_model > oasisfile
+        runprogoasis="$runcmd  --multi-prog oasisfile" 
       else
         runprogoasis="$runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model"
       fi
