@@ -85,10 +85,10 @@
 
 # 1. Set up
    
-  export  np='24'     #number of mpi tasks
-  export  npl='140'   #number of mpi tasks for ufs applications and large setups
-  export  npl1='100'  #number of mpi tasks for ufs/large setups (b4b check)
-  export  nr='4'      #number of mpi tasks for hybrid
+  export np='24'      #number of mpi tasks
+  export npl='140'    #number of mpi tasks for ufs applications and large setups
+  export npl1='100'   #number of mpi tasks for ufs/large setups (b4b check)
+  export nr='4'       #number of mpi tasks for hybrid
   export nth='6'      #number of threads
   export nth1='4'     #number of threads (b4b check)
 
@@ -107,6 +107,8 @@
     echo '#SBATCH -o matrix.out'                            >> matrix.head
     echo '#SBATCH -p orion'                                 >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
+    echo 'module purge'                                     >> matrix.head
+    echo 'module load contrib noaatools'                    >> matrix.head
   elif [ $batchq = "slurm" ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
@@ -116,6 +118,9 @@
     echo '#SBATCH -A marine-cpu'                            >> matrix.head
     echo '#SBATCH -J ww3_regtest'                           >> matrix.head
     echo '#SBATCH -o matrix.out'                            >> matrix.head
+    echo 'module purge'                                     >> matrix.head
+    echo 'module use -a /contrib/sutils/modulefiles'        >> matrix.head
+    echo 'module load sutils'                               >> matrix.head
   else
     echo '#PBS -l procs=24'                                 >> matrix.head
     echo '#PBS -q batch'                                    >> matrix.head
@@ -124,13 +129,13 @@
     echo '#PBS -N ww3_regtest'                              >> matrix.head
     echo '#PBS -j oe'                                       >> matrix.head
     echo '#PBS -o matrix.out'                               >> matrix.head
+    echo 'module purge'                                     >> matrix.head
     echo ' '                                                >> matrix.head
   fi
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
-  echo "  module purge"                                     >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
@@ -144,6 +149,10 @@
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3nco"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
+
+module use -a /contrib/sutils/modulefiles
+module load sutils
+
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
