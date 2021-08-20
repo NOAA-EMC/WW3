@@ -296,10 +296,12 @@
 
       ! 2. Set direction convention:
       DIRCOM = ""
-!/RTD      IF ( FLAGUNR ) THEN
-!/RTD        DIRCOM = 'True North'
-!/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD        DIRCOM = 'Rotated Pole Grid North'
+!/RTD      IF( FLRTD ) THEN
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          DIRCOM = 'True North'
+!/RTD        ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD          DIRCOM = 'Rotated Pole Grid North'
+!/RTD        ENDIF
 !/RTD      ENDIF
 
       !  Set partitioning method comment and standard name templates:

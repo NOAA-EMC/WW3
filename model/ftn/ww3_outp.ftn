@@ -678,6 +678,7 @@
 !/IC3      WRITE(NDSO,3960)
 !/IC4      WRITE(NDSO,3960)
 !/IC5      WRITE(NDSO,3960)
+!/NL5      WRITE(NDSO,3961)
 
       DO
         DTEST  = DSEC21 ( TIME , TOUT )
@@ -888,6 +889,9 @@
 !/IC5 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
 !/IC5               '     Ice source terms !/IC5 skipped'/            &
 !/IC5               '     in dissipation term.'/)
+!/NL5 3961 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
+!/NL5               '     Snl source terms !/NL5 skipped'/            &
+!/NL5               '     in interaction term.'/)
 !
 !/
 !/ Internal subroutine W3EXPO ---------------------------------------- /
@@ -956,7 +960,6 @@
 !      W3SDBn    Subr. W3SBTnMD Depth induced breaking source term.
 !      W3STRn    Subr. W3STRnMD Triad interaction source term.
 !      W3SBSn    Subr. W3SBSnMD Bottom scattering source term.
-!      W3SXXn    Subr. W3SXXnMD Unclassified source term.
 !      W3PART    Sunr. W3PARTMD Spectral partitioning routine.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      STME21    Subr. W3TIMEMD Convert time to string.
@@ -1049,7 +1052,6 @@
 !       !/DBx    Depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
-!       !/XXx    Arbitrary adittional source term package
 !
 !       !/STAB2  Stability correction for !/ST2
 !
@@ -1089,7 +1091,6 @@
 !/BSX      USE W3SBSXMD
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY: IICEDISP
-!/XXX      USE W3SXXXMD
       USE W3PARTMD, ONLY: W3PART
       USE W3DISPMD, ONLY: WAVNU1, LIU_FORWARD_DISPERSION
 !/
@@ -1703,8 +1704,6 @@
 !/IS2                  CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
 !/IS2                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)    
                   END IF
-!
-!/XXX                CALL W3SXXX
 !
 !/STAB2                UABS   = UABS * ASFAC
 !

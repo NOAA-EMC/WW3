@@ -3,12 +3,13 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
-#                    Last update :         04-May-2020                        #
+#                    Last update :         21-May-2020                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
 #    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
 #    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.XX ) 
 #    20-April-2021 : A. Abdolali added ww3_grib bulid and execution ( version 7.XX )
+#    21-May-2021 : C. Bunney add support for ALPS job placement     ( version 7.12 )
 #
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
@@ -56,7 +57,7 @@ Options:
   -a ww3_env       : use WW3 environment setup file <ww3_env>
                    :   *default is <source_dir>/bin/wwatch3.env
                    :   *file will be created if it does not already exist
-  -b batchq        : optional setting to determine batch queue type (for slurm now)
+  -b batchq        : optional setting to determine batch queue type (slurm or alps)
   -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
                    :   OASIS : OASIS3-mct ww3_shel coupled application
@@ -500,7 +501,7 @@ then
   if [ $testST ] 
   then #add S T switches 
     \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
     rm $path_b/switch_noST
   fi
 
@@ -649,7 +650,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -785,7 +786,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -920,7 +921,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1054,7 +1055,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1196,7 +1197,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1205,7 +1206,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then
           runprog="$runprog -n $nproc"
 
@@ -1361,7 +1362,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1370,7 +1371,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then 
           runprog="$runprog -n $nproc"
         else
@@ -1570,7 +1571,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1651,10 +1652,9 @@ then
     then
       if [ $nproc ]
       then
-        if [ -z $batchq ] && [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then 
           runprog="$runprog -n $nproc"
-        
         else
           runprog="$runprog -np $nproc"
         fi
@@ -1663,6 +1663,9 @@ then
       then
         if ( which omplace ) ; then
           runprog="$runprog omplace -nt $nthrd"
+        elif [ $batchq = "alps" ]
+        then
+          runprog="$runprog -d $nthrd /usr/bin/env OMP_NUM_THREADS=$nthrd"
         else
           runprog="$runprog /usr/bin/env OMP_NUM_THREADS=$nthrd"
         fi
@@ -1766,7 +1769,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1922,7 +1925,12 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        if [ $prog = ww3_grib ]
+        then
+          cat $path_b/switch_noST | sed 's/NCEP2/NCEP2 S T /' > $path_b/switch
+        else 
+          cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
+        fi
         rm $path_b/switch_noST
       fi
     
@@ -2206,7 +2214,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2367,7 +2375,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2534,7 +2542,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch 
       rm $path_b/switch_noST
     fi
 
@@ -2579,10 +2587,10 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then
           runprog="$runprog -n $nproc"
-  
+
         else
           runprog="$runprog -np $nproc"
         fi
@@ -2673,7 +2681,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -2723,7 +2731,7 @@ then
      then
        if [ $nproc ]
        then
-         if [ $batchq = "slurm" ]
+         if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
          then
            runprog="$runprog -n $nproc"
          else
