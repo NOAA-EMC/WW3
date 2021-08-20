@@ -353,8 +353,6 @@
 !/TRX      TNAME5 = 'Experimental                  '
 !/BS0      TNAME6 = 'Not defined                   '
 !/BSX      TNAME6 = 'Experimental                  '
-!/XX0      TNAME7 = 'Not defined                   '
-!/XXX      TNAME7 = 'Experimental                  '
 !/PR0      TNAMEP = 'No propagation                '
 !/PR1      TNAMEP = 'First order upstream          '
 !/UQ      TNAMEP = '3rd order UQ scheme           '
