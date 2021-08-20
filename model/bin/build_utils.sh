@@ -34,10 +34,10 @@ check_switches()
 
  # 1.a Step through categories 
 
-  for type in mach nco grib scrip scripnc \
-              shared mpp mpiexp thread GSE prop \
+  for type in nco grib scrip scripnc \
+              shared mpp mpiexp thread GSE prop smcg \
               stress s_ln sterm stab s_nl snls s_bot s_db miche s_tr s_bs \
-              dstress s_ice s_is reflection s_xx \
+              dstress s_ice s_is reflection \
               wind windx wcor rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
               cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
@@ -46,10 +46,6 @@ check_switches()
 # 1.a.1 Group switches by category
 
     case $type in
-#sort:mach:
-      mach   ) TY='one'
-               ID='hardware or compiler'
-               OK='DUM F90' ;;
 #sort:nco:
       nco    ) TY='upto1'
                ID='NCO modifications'
@@ -90,15 +86,20 @@ check_switches()
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+               OK='PR0 PR1 PR2 PR3' ;;
 #sort:prop:
       prop   ) TY='one'
                ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO SMC' ;;
+               OK='PR0 PR1 UQ UNO' ;;
+#sort:smcg:
+      smcg   ) TY='upto1'
+               ID='SMC grid'
+               TS='SMC'
+               OK='SMC' ;;
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'
@@ -107,11 +108,11 @@ check_switches()
 #sort:s_ln:
       s_ln   ) TY='one'
                ID='linear input'
-               OK='LN0 SEED LN1 LNX' ;;
+               OK='LN0 SEED LN1' ;;
 #sort:sterm:
       sterm  ) TY='one'
                ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
+               OK='ST0 ST1 ST2 ST3 ST4 ST6' ;;
 #sort:stab:
       stab   ) TY='upto1'
                ID='stability correction'
@@ -120,7 +121,7 @@ check_switches()
 #sort:s_nl:
       s_nl   ) TY='one'
                ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NL4 NLX' ;;
+               OK='NL0 NL1 NL2 NL3 NL4 NL5' ;;
 #sort:snls:
       snls   ) TY='upto1'
                ID='quadruplet smoother'
@@ -129,11 +130,11 @@ check_switches()
 #sort:s_bot:
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+               OK='BT0 BT1 BT4 BT8 BT9' ;;
 #sort:s_db:
       s_db   ) TY='one'
                ID='depth-induced breaking'
-               OK='DB0 DB1 DBX' ;;
+               OK='DB0 DB1' ;;
 #sort:miche:
       miche  ) TY='upto1'
                ID='Miche style limiter'
@@ -142,11 +143,11 @@ check_switches()
 #sort:s_tr:
       s_tr   ) TY='one'
                ID='triad interactions'
-               OK='TR0 TR1 TRX' ;;
+               OK='TR0 TR1' ;;
 #sort:s_bs:
       s_bs   ) TY='one'
                ID='bottom scattering'
-               OK='BS0 BS1 BSX' ;;
+               OK='BS0 BS1' ;;
 #sort:s_ice:
       s_ice  ) TY='one'
                ID='ice sink term'
@@ -159,10 +160,6 @@ check_switches()
   reflection ) TY='one'
                ID='wave reflections'
                OK='REF0 REF1' ;;
-#sort:s_xx:
-      s_xx   ) TY='one'
-               ID='arbitrary source'
-               OK='XX0 XXX' ;;
 #sort:wind:
       wind   ) TY='one'
                ID='wind interpolation in time'
