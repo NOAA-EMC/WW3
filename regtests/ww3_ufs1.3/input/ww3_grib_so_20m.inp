@@ -1,0 +1,9 @@
+$ WAVEWATCH-III gridded output input file 
+$ ----------------------------------------
+20190830 060000 10800 9 
+N
+WND ICE HS T01 T02 DIR FP
+$
+20190830 060000 7 11 255 0 0
+$
+$ end of input file
