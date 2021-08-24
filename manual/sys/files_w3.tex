@@ -341,15 +341,6 @@ Propagation module (higher order scheme with GSE averaging) \hfill {\file
 \end{flisti}
 
 \noindent
-Propagation module (slot for user supplied routines) \hfill {\file
-w3proxmd.ftn}
-
-\begin{flisti}
-\fit{w3xypx}{Propagation in physical space.}
-\fit{w3ktpx}{Propagation in spectral space.}
-\end{flisti}
-
-\noindent
 Propagation module (generic UQ) \hfill {\file w3uqckmd.ftn}
 
 \begin{flisti}
@@ -433,27 +424,10 @@ Flux (stress) module (Tolman and Chalikov, capped) \hfill {\file w3flx3md.ftn}
 \end{flisti}
 
 \noindent
-Flux (stress) module (slot for user supplied routines) \hfill {\file
-w3flxxmd.ftn}
-
-\begin{flisti}
-\fit{w3flxx}{Calculation of stresses.}
-\fit{inflxx}{Initialization routine.}
-\end{flisti}
-
-\noindent
 Linear input (Cavaleri and Malanotte Rizzoli) \hfill {\file w3sln1md.ftn}
 
 \begin{flisti}
 \fit{w3sln1}{Calculation $S_{lin}$.}
-\end{flisti}
-
-\pb \noindent
-Linear input (slot for user supplied routines) \hfill {\file w3slnxmd.ftn}
-
-\begin{flisti}
-\fit{w3slnx}{Calculation $S_{lin}$.}
-\fit{inslnx}{Corresponding initialization routine.}
 \end{flisti}
 
 \noindent
@@ -523,15 +497,6 @@ Input and dissipation module BYDRZ \hfill {\file w3src6md.ftn}
 \end{flisti}
 
 \noindent
-Input and dissipation module (slot for user supplied routines) \hfill {\file
-w3srcxmd.ftn}
-
-\begin{flisti}
-\fit{w3sinx}{Calculation of $S_{in}$.}
-\fit{w3sdsx}{Calculation of $S_{ds}$.}
-\end{flisti}
-
-\noindent
 Swell dissipation module \hfill {\file w3swldmd.ftn}
 
 \begin{flist}
@@ -569,16 +534,6 @@ Nonlinear interaction module (GMD) \hfill {\file w3snl3md.ftn}
 \fit{expand}{Expand spectral space.}
 \fit{expan2}{Map form expanded to original spectral space.}
 \fit{insnl3}{Initialization for $S_{nl}$.}
-\end{flisti}
-
-\vspace{\baselineskip}
-\noindent
-Nonlinear interaction module (slot for user supplied routines) \hfill {\file
-w3snlxmd.ftn}
-
-\begin{flisti}
-\fit{w3snlx}{Calculation of $S_{nl}$.}
-\fit{insnlx}{Initialization for $S_{nl}$.}
 \end{flisti}
 
 \vspace{\baselineskip}
@@ -623,28 +578,10 @@ Fluid mud dissipation \citep{art:Ng00}  \hfill {\file w3sbt9md.ftn}
 \end{flisti}
 
 \noindent
-Bottom friction module (slot for user supplied routines) \hfill {\file
-w3sbtxmd.ftn}
-
-\begin{flisti}
-\fit{w3sbtx}{Calculation of $S_{bot}$.}
-\fit{insbtx}{Initialization of $S_{bot}$.}
-\end{flisti}
-
-\noindent
 Depth induced breaking module (Battjes-Janssen) \hfill {\file w3sdb1md.ftn}
 
 \begin{flisti}
 \fit{w3sdb1}{Calculation of $S_{db}$.}
-\end{flisti}
-
-\noindent
-Depth induced breaking module (slot for user supplied routines) \hfill {\file
-w3sdbxmd.ftn}
-
-\begin{flisti}
-\fit{w3sdbx}{Calculation of $S_{db}$.}
-\fit{insdbx}{Initialization of $S_{db}$.}
 \end{flisti}
 
 \noindent
@@ -655,30 +592,12 @@ Triad interactions module (LTA) \hfill {\file w3str1md.ftn}
 \end{flisti}
 
 \noindent
-Triad interactions module (slot for user supplied routines) \hfill {\file
-w3strxmd.ftn}
-
-\begin{flisti}
-\fit{w3strx}{Calculation of $S_{tr}$.}
-\fit{instrx}{Initialization of $S_{tr}$.}
-\end{flisti}
-
-\noindent
 Bottom scattering module \hfill {\file w3sbs1md.ftn}
 
 \begin{flisti}
 \fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the
              bottom.}  
 \fit{insbs1}{Initialization of $S_{bs}$.}
-\end{flisti}
-
-\noindent
-Bottom scattering module (slot for user supplied routines) \hfill {\file
-w3sbsxmd.ftn}
-
-\begin{flisti}
-\fit{w3sbsx}{Calculation of $S_{bs}$.}
-\fit{insbsx}{Initialization of $S_{bs}$.}
 \end{flisti}
 
 \pb \noindent
@@ -720,15 +639,6 @@ Shoreline reflection \hfill {\file w3ref1md.ftn}
 
 \begin{flisti}
 \fit{w3ref1}{Calculation of $S_{ref}$.}
-\end{flisti}
-
-\noindent
-Module for unclassified source term (slot for user supplied routines) \hfill
-{\file w3sxxxmd.ftn}
-
-\begin{flisti}
-\fit{w3sxxx}{Calculation of $S_{xx}$.}
-\fit{insxxx}{Initialization of $S_{xx}$.}
 \end{flisti}
 
 \noindent
