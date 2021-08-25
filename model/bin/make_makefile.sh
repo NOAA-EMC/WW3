@@ -362,6 +362,7 @@
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
          'W3SNL3MD'     ) modtest=w3snl3md.o ;;
          'W3SNL4MD'     ) modtest=w3snl4md.o ;;
+         'W3SNL5MD'     ) modtest=w3snl5md.o ;;
          'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'M_XNLDATA'    ) modtest=mod_xnl4v5.o ;;
          'SERV_XNL4V5'  ) modtest=serv_xnl4v5.o ;;
