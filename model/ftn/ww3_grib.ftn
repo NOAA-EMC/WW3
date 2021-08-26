@@ -35,7 +35,7 @@
 !/                  (J.H. Alves)
 !/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 ) 
 !/                  (J.H. Alves)
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/    09-Jun-2021 : remove grib1 support (NCEP1)        ( version X.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -820,7 +820,7 @@
 !/    18-May-2007 : Update GRIB1 for partitioning.      ( version 3.11 )
 !/    16-Jul-2007 : Adding GRIB2 capability             ( version 3.11 )
 !/                  (A. Chawla)
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !

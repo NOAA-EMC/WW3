@@ -17,7 +17,7 @@
 !/                  Freeform meta data uses linked list.
 !/    02-Feb-2021 : Improved partitioned parameter      ( version 7.12 )
 !/                  template string implementation.
-!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2173,7 +2173,7 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
-!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/
 !
 !  1. Purpose :

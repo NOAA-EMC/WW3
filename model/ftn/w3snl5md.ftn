@@ -15,9 +15,9 @@
 !/                  (interpolation required)
 !/    02-Dec-2013 : GKE for WW3 logarithmic freq. grid  ( O. Gramstad  )
 !/                  (single grid point)
-!/    27-Feb-2019 : GKE for 2D applications.            ( version 7.xx )
+!/    27-Feb-2019 : GKE for 2D applications.            ( version 7.13 )
 !/                                                      ( Q. Liu )
-!/    07-06-2021  : Merge into WW3 Github               ( version 7.xx )
+!/    07-06-2021  : Merge into WW3 Github               ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/
 !  1. Purpose :
@@ -68,14 +68,14 @@
 !/    24-Sep-2013 : Origination.                        ( version 3.14 )
 !/    24-Sep-2013 : GKE for resonant & quasi-resonant four-wave
 !/                  interactions                        ( O. Gramstad  )
-!/    27-Feb-2019 : Full implementation of GKE          ( version 7.xx )
+!/    27-Feb-2019 : Full implementation of GKE          ( version 7.13 )
 !/                                                      ( Q. Liu       )
-!/    21-Apr-2019 : Phase mixing option                 ( version 7.xx )
+!/    21-Apr-2019 : Phase mixing option                 ( version 7.13 )
 !/                                                      ( Q. Liu       )
-!/    24-Apr-2019 : Phase mixing option (b_T)           ( version 7.xx )
+!/    24-Apr-2019 : Phase mixing option (b_T)           ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/    02-May-2019 : Organize screen output & disable binary output
-!/                                                      ( version 7.xx )
+!/                                                      ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/
 !/
@@ -377,7 +377,7 @@
 !/                  | Last update :         27-Feb-2019 |
 !/                  +-----------------------------------+
 !/
-!/    27-Feb-2019 : Origination.                        ( version 7.xx )
+!/    27-Feb-2019 : Origination.                        ( version 7.13 )
 !/                                                      ( Q. Liu )
 !/
 !  1. Purpose :
@@ -485,7 +485,7 @@
 !/    24-Aug-2018 : Origination. (w3iogomd.ftn)         ( version 6.06 )
 !/                  Used for output parameter b_T       ( Q. Liu       )
 !/
-!/    24-Apr-2019 : Simplified for NL5                  ( version 7.xx )
+!/    24-Apr-2019 : Simplified for NL5                  ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/
 !  1. Purpose :
@@ -630,7 +630,7 @@
 !/                  | Last update :         25-Mar-2019 |
 !/                  +-----------------------------------+
 !/
-!/    24-Mar-2019 : Origination.                        ( version 7.xx )
+!/    24-Mar-2019 : Origination.                        ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/    27-Apr-2019 : Add the ascii option                ( Q. Liu       )
 !/
@@ -778,7 +778,7 @@
 !/                  | Last update :         25-Apr-2019 |
 !/                  +-----------------------------------+
 !/
-!/    24-Apr-2019 : Origination.                        ( version 7.xx )
+!/    24-Apr-2019 : Origination.                        ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/
 !  1. Purpose :

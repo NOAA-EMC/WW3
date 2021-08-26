@@ -15,7 +15,7 @@
 !/    30-Jan-2007 : Fix memory leak WMIOBS.             ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
-!/    16-Dec-2020 : Modify WMIOES/G for SMC grid.  JGLi ( version 7.xx )
+!/    16-Dec-2020 : Modify WMIOES/G for SMC grid.  JGLi ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1907,7 +1907,7 @@
 !/    25-May-2006 : Origination.                        ( version 3.09 )
 !/    21-Dec-2006 : Remove VTIME from MPI comm.         ( version 3.10 )
 !/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
-!/    16-Dec-2020 : SMC grid use 1-1 spectral exchanges.( version 7.xx )
+!/    16-Dec-2020 : SMC grid use 1-1 spectral exchanges.( version 7.13 )
 !/
 !  1. Purpose :
 !

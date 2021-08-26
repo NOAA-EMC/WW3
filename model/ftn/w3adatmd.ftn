@@ -38,8 +38,8 @@
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
-!/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
+!/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.13 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -770,7 +770,7 @@
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -1430,7 +1430,7 @@
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2494,7 +2494,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28_Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
 !/                  Add aditional undefined arrays.
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2915,7 +2915,7 @@
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !

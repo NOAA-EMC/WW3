@@ -8,7 +8,7 @@
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         27-May-2021 |
 !/                  +-----------------------------------+
-!/    27-May-2021 : Seperated subroutine to w3grid   ( version 7.XX )
+!/    27-May-2021 : Seperated subroutine to w3grid   ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
