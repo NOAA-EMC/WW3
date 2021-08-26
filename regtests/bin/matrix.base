@@ -33,7 +33,7 @@
              hybd shwtr unstr pdlib smcgr rtd mudice infgrv \
              uost assim calendar confignc oasis \
              esmf ufs rstrt_b4b nth_b4b npl_b4b grib \
-             multi06 multi07 multi08 
+             multi06 multi07 multi08 multi09
   do
     eval " value=\$$par"
 #   echo "$par = $value"
@@ -87,6 +87,7 @@
   echo "  echo '      Multi 06 (curv. + reg. grds)       : $multi06'"          >> matrix.head
   echo "  echo '      Multi 07 (unstr. + reg. grds)      : $multi07'"          >> matrix.head
   echo "  echo '      Multi 08 (with ice)                : $multi08'"          >> matrix.head
+  echo "  echo '      Multi 09 (SMC multi grid)          : $multi09'"          >> matrix.head
   echo "  echo '      Assim Update of the restart file   : $assim'"            >> matrix.head
   echo "  echo '      OASIS coupling                     : $oasis'"            >> matrix.head
   echo "  echo '      Calendar type                      : $calendar'"         >> matrix.head
@@ -932,6 +933,7 @@
     echo "$rtst -s ST4_GMD  -w work_ST4_GMD  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_TSA  -w work_ST4_TSA  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6  -o netcdf  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -i input_nl5_matrix -w work_NL5 -o both $ww3 ww3_ts1" >> matrix.body
   fi
 
 # fetch limited growth, no switch sharing here
@@ -1902,6 +1904,12 @@
     echo "$rtst -s MPI_OMPH -w work_MPI_OMPH -f -p $mpi -n $nr -t $nth $ww3 -o both ww3_tp2.16" >> matrix.body
   fi
 
+  if [ "$multi09" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+  fi
+
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
 
   if [ "$rtd" = 'y' ] && [ "$shrd" = 'y' ]
@@ -2182,6 +2190,15 @@
        echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                              >> matrix.body
     fi
   fi
+
+
+ #GEFSv12 setup with ww3_multi and grib2 output
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.3"                   >> matrix.body
+  fi
+
 
   # 365_day and 360_day calendars, no switch sharing here
   if [ "$calendar" = 'y' ]

@@ -57,6 +57,7 @@
 !/    07-Oct-2019 : RTD option with standard lat-lon
 !/                  grid when nesting to rotated grid   ( version 7.11 )
 !/    22-Mar-2021 : Add W3UTAU, W3URHO routines         ( version 7.xx )
+!/    06-May-2021 : Use ARCTC option for SMC grid. JGLi ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -210,8 +211,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
-!/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
-!/SMC      USE W3GDATMD, ONLY: FSWND 
+!/SMC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
+!/SMC      USE W3GDATMD, ONLY: FSWND, ARCTC 
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CX, CY, CA0, CAI, CD0, CDI
       USE W3IDATMD, ONLY: TC0, CX0, CY0, TCN, CXN, CYN
@@ -370,11 +371,11 @@
 !/CRT2        CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
         CDIR    = CD0(ISEA) + RD * CDI(ISEA)
 
-!/ARC  !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
-!/ARC        IF( ISEA .GT. NGLO ) THEN
-!/ARC            DN = CDIR + ANGARC( ISEA - NGLO )*DERA
-!/ARC            CDIR = MOD ( TPI + DN, TPI )
-!/ARC        ENDIF
+!/SMC  !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
+!/SMC        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+!/SMC            DN = CDIR + ANGARC( ISEA - NGLO )*DERA
+!/SMC            CDIR = MOD ( TPI + DN, TPI )
+!/SMC        ENDIF
 
         CX(ISEA) = CABS * COS(CDIR)
         CY(ISEA) = CABS * SIN(CDIR)
@@ -486,8 +487,7 @@
 !/WCOR      USE W3GDATMD, ONLY:   WWCOR
 !/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
-!/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
-!/SMC      USE W3GDATMD, ONLY: FSWND 
+!/SMC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC, ARCTC, FSWND 
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ADATMD, ONLY: DW, CX, CY, UA, UD, U10, U10D, AS,          &
                           UA0, UAI, UD0, UDI, AS0, ASI
@@ -583,11 +583,11 @@
 !/MGW        UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
 !/MGW        UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
 !/MGW        UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
-!/ARC  !Li   Rotate wind direction by ANGARC for Arctic part cells.
-!/ARC        IF( ISEA .GT. NGLO ) THEN
-!/ARC            UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
-!/ARC            UD(ISEA) = MOD ( TPI + UDARC, TPI )
-!/ARC        ENDIF
+!/SMC  !Li   Rotate wind direction by ANGARC for Arctic part cells.
+!/SMC        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+!/SMC            UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
+!/SMC            UD(ISEA) = MOD ( TPI + UDARC, TPI )
+!/SMC        ENDIF
 !
         AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
 !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
@@ -730,8 +730,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NSEA, MAPSF
-!/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
-!/SMC      USE W3GDATMD, ONLY: FSWND 
+!/SMC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
+!/SMC      USE W3GDATMD, ONLY: FSWND, ARCTC  
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: TAUA, TAUADIR, MA0, MAI, MD0, MDI
       USE W3IDATMD, ONLY: TU0, UX0, UY0, TUN, UXN, UYN
@@ -818,11 +818,11 @@
 !/WNT2                          RD  *(MA0(ISEA)+MAI(ISEA))**2 )
 !/WNT2        TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
         TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
-!/ARC  !Li   Rotate momentum direction by ANGARC for Arctic part cells.
-!/ARC        IF( ISEA .GT. NGLO ) THEN
-!/ARC            MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
-!/ARC            TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
-!/ARC        ENDIF
+!/SMC  !Li   Rotate momentum direction by ANGARC for Arctic part cells.
+!/SMC        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+!/SMC            MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
+!/SMC            TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
+!/SMC        ENDIF
 !
         END DO
 !

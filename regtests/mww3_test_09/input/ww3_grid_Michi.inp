@@ -1,0 +1,36 @@
+$
+  'Michi'
+$
+   1.1  0.04118  25  24  0.
+$
+   F T T T F F
+$
+    600. 120. 120. 120.
+$
+  &PSMC DTIMS=3600.,NBISMC=38,LvSMC=4,AVERG=.TRUE.,SEAWND=.TRUE./
+  &SIN4 BETAMAX = 1.60, ZALP=0.006, Z0MAX = 0.002 /
+  &SDS4 SDSBR = 0.0009, SDSC2 = -2.6E-5, FXFM3= 2.5 / 
+  &SBT1 GAMMA = -0.038 /
+  &SDB1 BJALFA = 0.005 /
+  &MISC CICE0 = 0.5, CICEN = 0.5, FLAGTR = 2 /
+  &FLX3 CDMAX = 3.5E-3 , CTYPE = 0 /
+END OF NAMELISTS
+$
+     'SMCG'  T  'NONE'
+    384    256
+  0.04480000  0.03200000   1.
+   267.29960    41.17400   1.
+$
+   -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'dummy.inp'
+$
+  32  1  1  '(....)'  '../input/GtLkMichiCels.dat'
+  33  1  1  '(....)'  '../input/GtLkMichiISid.dat'
+  34  1  1  '(....)'  '../input/GtLkMichiJSid.dat'
+  31  1  1  '(....)'  '../input/GtLkMichiObst.dat'
+$
+  35  1  1  '(....)'  '../input/GtLkMichiBlst.dat'
+$
+  39  1  1  '(....)'  'NAME'  'dummy.inp'
+$
+  0.      0.    0.  0.  0
+$

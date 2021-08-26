@@ -275,13 +275,13 @@ is required:
     NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
 
 The nc-config utility (part of the NetCDF-4 install) is used to
-determine the appropriate compile and link flags.
+determine the appropriate compile and link flags for the
+WWATCH3_NETCDF=NC4 compile.
 
-For NetCDF routines to compile, WAVEWATCH III requires 
-NetCDF version 4.1.1 or higher. Use "nc-config --version" to check 
-the version of the installed NetCDF. It is also required for NetCDF 
-to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4" 
-to check if the installed NetCDF has the NetCDF-4 API enabled.
+The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
+Use "nc-config --version" to check the version of the installed
+NetCDF. Use "nc-config --has-nc4" to check if the installed NetCDF 
+has the NetCDF-4 API enabled.
 
 ***********************************************************************
 
@@ -300,29 +300,50 @@ EOF
     netcdf_compile_message
     echo "$mode: NETCDF_CONFIG not defined"; echo ' '
     return 1
-  fi
-  if [ ! -x "$NETCDF_CONFIG" ]
-  then
-    netcdf_compile_message
-    echo "$mode: $NETCDF_CONFIG does not exist or is not executable"; echo ' '
-    return 1
-  fi
-  netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
-  if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
-  then
-    netcdf_version="$netcdf_version.0"
-  fi
-  if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
-  then
-    netcdf_compile_message
-    echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
-    return 1
+  else
+    case $WWATCH3_NETCDF in
+      NC3)
+        netcdf_compile_message
+        echo "$mode: NETCDF v 3 is no longer supported"; echo ' '
+        return 1
+      ;;
+      NC4)
+        if [ -z "$NETCDF_CONFIG" ]
+        then
+          netcdf_compile_message
+          echo "$mode: NETCDF_CONFIG not defined"; echo ' '
+          return 1
+        fi
+        if [ ! -x "$NETCDF_CONFIG" ]
+        then
+          netcdf_compile_message
+          echo "$mode: $NETCDF_CONFIG does not exist or is not executable"; echo ' '
+          return 1
+        fi
+        netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+        if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
+        then
+          netcdf_version="$netcdf_version.0"
+        fi
+        if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
+        then
+          netcdf_compile_message
+          echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
+          return 1
+        fi
+      ;;
+      *)
+        netcdf_compile_message
+        echo "$mode: WWATCH3_NETCDF=$WWATCH3_NETCDF not supported"; echo ' '
+        return 1
+      ;;
+    esac
   fi
 
   return 0
   }
 
-# 1.g.3 Check for NetCDF compile
+# 1.c.4 Check for NetCDF compile
 
   if [ $default_mode -eq 1 ]
   then
