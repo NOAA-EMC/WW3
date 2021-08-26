@@ -31,14 +31,15 @@ do
     gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp1 > $ftndir/$DIR/${file}.tmp2
     gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp2 > $ftndir/$DIR/${file}.ftn
     rm $ftndir/$DIR/${file}.tmp $ftndir/$DIR/${file}.tmp1 $ftndir/$DIR/${file}.tmp2
-    cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
+    ##cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
+    mv $ftndir/$DIR/${file}.ftn $ftndir/$DIR/${file}.F90 
   done
 
-  for file in $nonftnfiles
-  do
-    echo "copy $DIR/$file to src" 
-    cp $ftndir/$DIR/${file} $srcdir/$DIR/
-  done
+  ##for file in $nonftnfiles
+  ##do
+  ##  echo "copy $DIR/$file to src" 
+  ##  cp $ftndir/$DIR/${file} $srcdir/$DIR/
+  ##done
 
 done
 

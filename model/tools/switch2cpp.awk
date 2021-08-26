@@ -16,7 +16,7 @@ BEGIN {
         if(lastsw != arr[1]) {
             # close any previous ifdef section:
             if(lastsw != "")
-                printf("#endif // %s%s\n", swpre, lastsw)
+                printf("#endif\n")
 
             # open a new ifdef section with new switch
             printf("#ifdef %s%s\n", swpre, arr[1])
@@ -34,7 +34,7 @@ BEGIN {
     } else {
         # no switch on this line, close any open ifdef sections
         if(lastsw != "")
-            printf("#endif // %s%s\n", swpre, lastsw)
+            printf("#endif\n")
 
         # print unadulterated line
         print $0

@@ -103,7 +103,7 @@
   temp_dir=$WWATCH3_TMP
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
-
+  compforthis=$
 
 # 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -141,7 +141,7 @@
 
 # 1.e Test necessity of running w3adc - - - - - - - - - - - - - - - - - - - -
 
-  if [ -f $path_i/$name.ftn ]
+  if [ -f $path_i/$name.F90 ]
   then
     w3adc='yes'
     idstr=
@@ -227,35 +227,44 @@
       echo '-- end of file ----------------------------------------------------'
     fi
 
-    $path_b/w3adc < w3adc.inp.$name > w3adc.out.$name 2> w3adc.err.$name
+    CPPFLAGS='' 
+    for sw in $sw_str 
+    do 
+       echo "switch $sw" 
+       CPPFLAGS="$CPPFLAGS -DW3_$sw" 
+    done 
+
+    #$(CPP) $(CPPFLAGS) $path_i/$name.F90 > $name.f90
+    gfortran $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
+    #$path_b/w3adc < w3adc.inp.$name > w3adc.out.$name 2> w3adc.err.$name
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 
-    ad3_tst="`grep ERROR w3adc.out.$name`"
-    if [ -n "$ad3_tst" ]
-    then
-      echo '      *** w3adc error ***'
-      echo "     $ad3_tst" ; exit 4
-    fi
+    #ad3_tst="`grep ERROR w3adc.out.$name`"
+    #if [ -n "$ad3_tst" ]
+    #then
+    #  echo '      *** w3adc error ***'
+    #  echo "     $ad3_tst" ; exit 4
+    #fi
 
     if [ ! -f $name.$fext ]
     then
       echo '      *** w3adc error ***'
-      echo "          file $name.$fext not found (1)."
-      cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
+      #echo "          file $name.$fext not found (1)."
+      #cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
 
     if [ "`wc -l $name.$fext | awk '{ print $1}'`" -lt '2'  ]
     then
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (2)."
-      cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
+      #cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
 
-    if [ "$itst" != '0' ]
-    then
-      cat w3adc.out.$name
-    fi
+    #if [ "$itst" != '0' ]
+    #then
+    #  cat w3adc.out.$name
+    #fi
 
 # 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
