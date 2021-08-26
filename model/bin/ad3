@@ -103,7 +103,6 @@
   temp_dir=$WWATCH3_TMP
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
-  compforthis=$
 
 # 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
