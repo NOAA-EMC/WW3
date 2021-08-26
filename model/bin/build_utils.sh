@@ -34,22 +34,18 @@ check_switches()
 
  # 1.a Step through categories 
 
-  for type in mach nco grib scrip scripnc \
-              shared mpp mpiexp thread GSE prop \
+  for type in nco grib scrip scripnc \
+              shared mpp mpiexp thread GSE prop smcg \
               stress s_ln sterm stab s_nl snls s_bot s_db miche s_tr s_bs \
-              dstress s_ice s_is reflection s_xx \
+              dstress s_ice s_is reflection \
               wind windx wcor rwind curr currx mgwind mgprop mggse \
-              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
+              subsec tdyn dss0 pdif tide refrx ig rotag nnt mprf \
               cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
   do
 
 # 1.a.1 Group switches by category
 
     case $type in
-#sort:mach:
-      mach   ) TY='one'
-               ID='hardware or compiler'
-               OK='DUM F90' ;;
 #sort:nco:
       nco    ) TY='upto1'
                ID='NCO modifications'
@@ -90,15 +86,20 @@ check_switches()
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+               OK='PR0 PR1 PR2 PR3' ;;
 #sort:prop:
       prop   ) TY='one'
                ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO SMC' ;;
+               OK='PR0 PR1 UQ UNO' ;;
+#sort:smcg:
+      smcg   ) TY='upto1'
+               ID='SMC grid'
+               TS='SMC'
+               OK='SMC' ;;
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'
@@ -107,11 +108,11 @@ check_switches()
 #sort:s_ln:
       s_ln   ) TY='one'
                ID='linear input'
-               OK='LN0 SEED LN1 LNX' ;;
+               OK='LN0 SEED LN1' ;;
 #sort:sterm:
       sterm  ) TY='one'
                ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
+               OK='ST0 ST1 ST2 ST3 ST4 ST6' ;;
 #sort:stab:
       stab   ) TY='upto1'
                ID='stability correction'
@@ -120,7 +121,7 @@ check_switches()
 #sort:s_nl:
       s_nl   ) TY='one'
                ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NL4 NLX' ;;
+               OK='NL0 NL1 NL2 NL3 NL4 NL5' ;;
 #sort:snls:
       snls   ) TY='upto1'
                ID='quadruplet smoother'
@@ -129,11 +130,11 @@ check_switches()
 #sort:s_bot:
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+               OK='BT0 BT1 BT4 BT8 BT9' ;;
 #sort:s_db:
       s_db   ) TY='one'
                ID='depth-induced breaking'
-               OK='DB0 DB1 DBX' ;;
+               OK='DB0 DB1' ;;
 #sort:miche:
       miche  ) TY='upto1'
                ID='Miche style limiter'
@@ -142,11 +143,11 @@ check_switches()
 #sort:s_tr:
       s_tr   ) TY='one'
                ID='triad interactions'
-               OK='TR0 TR1 TRX' ;;
+               OK='TR0 TR1' ;;
 #sort:s_bs:
       s_bs   ) TY='one'
                ID='bottom scattering'
-               OK='BS0 BS1 BSX' ;;
+               OK='BS0 BS1' ;;
 #sort:s_ice:
       s_ice  ) TY='one'
                ID='ice sink term'
@@ -159,10 +160,6 @@ check_switches()
   reflection ) TY='one'
                ID='wave reflections'
                OK='REF0 REF1' ;;
-#sort:s_xx:
-      s_xx   ) TY='one'
-               ID='arbitrary source'
-               OK='XX0 XXX' ;;
 #sort:wind:
       wind   ) TY='one'
                ID='wind interpolation in time'
@@ -181,13 +178,11 @@ check_switches()
                ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
-
 #sort:rstwind:
       rstwind  ) TY='upto1'
                ID='wind in restart for wmesmf'
                TS='WRST'
                OK='WRST' ;;
-
 #sort:curr:
       curr   ) TY='one'
                ID='current interpolation in time'
@@ -251,11 +246,6 @@ check_switches()
                ID='rotated grid'
                TS='RTD'
                OK='RTD' ;;
-#sort:arctic:
-      arctic ) TY='upto1'
-               ID='Arctic grid'
-               TS='ARC'
-               OK='ARC' ;;
 #sort:nnt:
       nnt    ) TY='upto1'
                ID='NN training/test data generation'
@@ -410,6 +400,7 @@ check_switches()
       thread ) thread1=$sw1 ; thread2=$sw2 ;;
       GSE    ) g_switch=$sw ;;
       prop   ) p_switch=$sw ;;
+      smcg   ) smcg=$sw ;;
       s_ln   ) s_ln=$sw ;;
       sterm  ) s_inds=$sw ;;
       stab   ) stab=$sw ;;
@@ -425,12 +416,10 @@ check_switches()
       s_db   ) s_db=$sw ;;
       s_tr   ) s_tr=$sw ;;
       s_bs   ) s_bs=$sw ;;
-      s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
       refrx  ) refrx=$sw ;;
       ig     ) ig=$sw ;;
       tide   ) tide=$sw ;;
-      arctic ) arctic=$sw ;;
       mprf   ) mprf=$sw ;;
       cou    ) cou=$sw ;;
       oasis  ) oasis=$sw ;;
@@ -469,13 +458,6 @@ check_switches()
       echo ' '
       echo "   *** !/OMPH has to be used in combination with !/MPI"
       echo ' ' ; exit 5
-  fi
-
-  if [ "$arctic" = 'ARC' ] && [ "$p_switch" != 'SMC' ]
-  then
-      echo ' '
-      echo "   *** !/ARC has to be used in combination with !/SMC"
-      echo ' ' ; exit 6
   fi
 
   if [ -n "$b4b" ] && [ -z "$thread2" ]
@@ -577,19 +559,23 @@ check_switches()
 switch_files()
 {
 
-  smco=$NULL
   case $g_switch in
    PR0) pr=$NULL ;;
    PR1) pr='w3profsmd w3pro1md' ;;
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
-   SMC) pr='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
   esac 
 
   case $p_switch in
    UQ ) pr="$pr w3uqckmd" ;;
    UNO) pr="$pr w3uno2md" ;;
   esac 
+
+  smcm=$NULL
+  smco=$NULL
+  case $smcg in
+   SMC) smcm='w3psmcmd'; smco='w3smcomd w3psmcmd' ;;
+  esac
 
   case $uost in
    UOST) uostmd="w3uostmd"
@@ -622,8 +608,6 @@ switch_files()
         lnx=$NULL ;;
    LN1) ln='w3sln1md'
         lnx=$NULL ;;
-   LNX) ln='w3slnxmd'
-        lnx=$NULL ;;
   esac
 
   case $s_inds in
@@ -639,8 +623,6 @@ switch_files()
         stx='w3src4md' ;;
    ST6) st='w3src6md w3swldmd'
         stx='w3src6md' ;;
-   STX) st='w3srcxmd'
-        stx=$NULL ;;
   esac
 
   case $s_nl in
@@ -654,8 +636,8 @@ switch_files()
         nlx='w3snl3md' ;;
    NL4) nl='w3snl4md'
         nlx='w3snl4md' ;;
-   NLX) nl='w3snlxmd'
-        nlx='w3snlxmd' ;;
+   NL5) nl='w3snl5md w3gkemd'
+        nlx="$nl" ;;
   esac
 
   case $snls in
@@ -670,15 +652,12 @@ switch_files()
    BT4) bt='w3sbt4md' ;;
    BT8) bt='w3sbt8md' ;;
    BT9) bt='w3sbt9md' ;;
-   BTX) bt='w3sbtxmd' ;;
   esac
 
   case $s_db in
    DB0) db=$NULL
         dbx=$NULL ;;
    DB1) db='w3sdb1md'
-        dbx=$NULL ;;
-   DBX) db='w3sdbxmd'
         dbx=$NULL ;;
   esac
 
@@ -687,16 +666,12 @@ switch_files()
         trx=$NULL ;;
    TR1) tr='w3str1md'
         trx=$NULL ;;
-   TRX) tr='w3strxmd'
-        trx=$NULL ;;
   esac
 
   case $s_bs in
    BS0) bs=$NULL
         bsx=$NULL ;;
    BS1) bs='w3sbs1md'
-        bsx=$NULL ;;
-   BSX) bs='w3sbsxmd'
         bsx=$NULL ;;
   esac
 
@@ -735,13 +710,6 @@ switch_files()
   setupcode=$NULL
   case $setup in
    SETUP) setupcode='w3wavset'
-  esac
-
-  case $s_xx in
-   XX0) xx=$NULL
-        xxx=$NULL ;;
-   XXX) xx='w3sxxxmd'
-        xxx=$NULL ;;
   esac
 
   tidecode=$NULL
@@ -822,14 +790,14 @@ create_file_list()
       ww3_bound)
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"
-               prop=
+               prop="$smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux="constants w3servmd w3timemd w3arrymd w3cspcmd" ;;
       ww3_bounc)
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"
-               prop=
+               prop="$smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux="constants w3servmd w3arrymd w3timemd w3cspcmd w3nmlbouncmd" ;;
@@ -850,16 +818,16 @@ create_file_list()
       ww3_prtide) 
                core='w3fldsmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
+               prop="$pr $smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
       ww3_shel) 
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
+               prop="$pr $smcm"
             sourcet="$pdlibcode $setupcode w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic"
-            sourcet="$sourcet $is $db $tr $bs $xx $refcode $igcode w3parall $uostmd"
+            sourcet="$sourcet $is $db $tr $bs $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
@@ -874,8 +842,8 @@ create_file_list()
                core="$core wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd"
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
-               prop="$pr"
-            sourcet="$pdlibcode $pdlibyow $setupcode w3parall w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
+               prop="$pr $smcm"
+            sourcet="$pdlibcode $pdlibyow $setupcode w3parall w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
@@ -894,8 +862,8 @@ create_file_list()
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd" 
-               prop="$pr" 
-            sourcet="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic $uostmd" 
+               prop="$pr $smcm" 
+            sourcet="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $refcode $igcode $is $ic $uostmd" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
@@ -930,14 +898,14 @@ create_file_list()
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode $uostmd"
+            sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $igcode $uostmd"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
       ww3_ounp)
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode $uostmd"
+            sourcet="$pdlibcode $pdlibyow $setupcode $flx $ln $st $nl $bt $ic $is $db $tr $bs $igcode $uostmd"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounpmd" ;;
@@ -982,7 +950,7 @@ create_file_list()
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $nlx $btx $tr $bs $xx $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $nlx $btx $tr $bs $is $uostmd"
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
@@ -990,28 +958,28 @@ create_file_list()
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $st $nlx $btx $tr $bs $xx $is $ic $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $st $nlx $btx $tr $bs $is $ic $uostmd"
                  IO='w3iogrmd w3iopomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
       ww3_systrk) 
                core='w3strkmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $nlx $btx $tr $bs $xx $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $nlx $btx $tr $bs $is $uostmd"
                  IO=
                 aux="constants w3servmd w3timemd w3arrymd w3gsrumd w3parall" ;;
       libww3|libww3.so) 
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop="$pr"
-            sourcet="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode $uostmd"
+               prop="$pr $smcm"
+            sourcet="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
       ww3_uprstr) 
               core= 
 	      data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
               prop= 
-           sourcet="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $uostmd"
+           sourcet="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $uostmd"
                 IO='w3iogrmd w3iogomd w3iorsmd' 
                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" 
                aux="$aux w3parall w3nmluprstrmd" ;; 

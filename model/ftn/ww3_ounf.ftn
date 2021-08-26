@@ -46,7 +46,7 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -815,7 +815,7 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -3702,7 +3702,7 @@
 !/                  | Last update :         03-Nov-2020 |
 !/                  +-----------------------------------+
 !/
-!/    03-Nov-2020 : Creation                            ( version 7.XX )
+!/    03-Nov-2020 : Creation                            ( version 7.13 )
 !/
 !  1. Purpose :
 !

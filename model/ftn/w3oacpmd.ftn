@@ -13,7 +13,7 @@
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
 !/    25-Sep-2020 : Coupling at T+0 support              ( version 7.10 )
-!/    22-Mar-2021 : Adds extra coupling fields           ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields           ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -748,7 +748,7 @@
 !/    Mar-2014 : J. Pianezze (LPO) : Add atmospheric fields ( version 5.07 )
 !/    Apr-2015 : M. Accensi  (LPO) : Add fields selection   ( version 5.07 )
 !/    Apr-2016 : Add comments (J. Pianezze)                 ( version 5.07 )
-!/ 22-Mar-2021 : Adds extra coupling fields                 ( version 7.xx )
+!/ 22-Mar-2021 : Adds extra coupling fields                 ( version 7.13 )
 !/
 !  1. Purpose :
 !

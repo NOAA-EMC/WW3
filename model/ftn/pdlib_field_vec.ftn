@@ -10,7 +10,7 @@ MODULE PDLIB_FIELD_VEC
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2010 : Origination.                        ( version 6.04 )
-!/    22-Mar-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
+!/    22-Mar-2021 : Add WNMEAN, TAUOC output            ( version 7.13 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -849,7 +849,7 @@ MODULE PDLIB_FIELD_VEC
 !/                  +-----------------------------------+
 !/
 !/    01-Mai-2018 : Origination.                        ( version 6.04 )
-!/    22-Mar-2021 : Add WNMEAN, TAUOC output            ( version 7.xx )
+!/    22-Mar-2021 : Add WNMEAN, TAUOC output            ( version 7.13 )
 !/
 !  1. Purpose : Do communication for PDLIB output
 !  2. Method :

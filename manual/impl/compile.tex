@@ -7,12 +7,13 @@ The following enviroment variable is also required:
 \begin{clist}
 \cit {NETCDF\_CONFIG} {Path to the NetCDF-4 nc-config utility program.}
 \end{clist}
-The {\file nf-config} utility program (part of the NetCDF-4 install or 
-{\file nc-config} for old versions) is used to determine the appropriate
-compile and link flags for the {\code WWATCH3\_NETCDF = NC4} compile.
-The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.  Use the command
-\command{\code nf-config --version} to check the version of the installed 
-Fortran-NetCDF library. Use \command{\code nf-config --has-nc4} to check if the
+The {\file nc-config} utility program is used to determine the appropriate
+compile and link flags for compilation.
+Use the command
+\command{\code nc-config --version} to check the version of the installed 
+Fortran-NetCDF library.  It is also required that the NetCDF-4 installation 
+be compiled with the
+NetCDF-4 API enabled.  Use \command{\code nc-config --has-nc4} to check if the
 installed NetCDF has the NetCDF-4 API enabled.
 
 \vspace{\baselineskip} 

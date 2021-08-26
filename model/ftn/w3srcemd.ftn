@@ -120,8 +120,8 @@
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
-!/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.xx )
-!/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.xx ) 
+!/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
+!/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 ) 
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

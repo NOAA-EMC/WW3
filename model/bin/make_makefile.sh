@@ -103,7 +103,7 @@
   echo '# -------------------------'             >> makefile
 
 
-# 3.d Go through programes to create file list - - - - - - - - - - - - - - -
+# 3.d Go through programs to create file list - - - - - - - - - - - - - - -
 
   echo ' '                                       >> makefile
   echo '# WAVEWATCH III executables'             >> makefile

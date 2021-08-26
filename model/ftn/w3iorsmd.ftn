@@ -104,8 +104,8 @@
 !/                  restart files 
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
-!/    22-Mar-2021 : Add new coupling fields in restart  ( version 7.xx )
-!/    18-May-2021 : Read by default all extra restart   ( version 7.xx )
+!/    22-Mar-2021 : Add new coupling fields in restart  ( version 7.13 )
+!/    18-May-2021 : Read by default all extra restart   ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
