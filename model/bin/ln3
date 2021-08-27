@@ -46,14 +46,14 @@
   do
     name="$1"
 
-    for file in $name $name.ftn $name.f90 $name.doc \
-                w3$name.ftn w3$name.doc w3${name}md.ftn w3${name}md.doc
+    for file in $name $name.F90 $name.f90 $name.doc \
+                w3$name.F90 w3$name.doc w3${name}md.F90 w3${name}md.doc
     do
-      if test -f ../ftn/$file
+      if test -f ../src/$file
       then
         rm -f $file
-        echo "make link to $file in ftn dir."
-        ln -s ../ftn/$file .
+        echo "make link to $file in src dir."
+        ln -s ../src/$file .
         found=$(($found + 1))
       fi
       if test -f ../bin/$file

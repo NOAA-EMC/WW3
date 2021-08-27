@@ -1,12 +1,12 @@
 #!/bin/bash
 # --------------------------------------------------------------------------- #
-# ad3   : Run fortran preprocessor w3adc of WAVEWATCH III on for a single     #
+# ad3   : Run fortran CPP preprocessor on a single WAVEWATCH III              #
 #         source code file. Switches are set in the file 'switch', which      #
 #         has to be in the "bin" directory. After the preprocessing the code  #
 #         is compiled using the script comp in  the "bin" directory.          #
 #                                                                             #
 # use   : ad3 basename [itest [icomp]]                                        #
-#            basename: name of source code file without the '.ftn' extension. #
+#            basename: name of source code file without the '.F90' extension. #
 #                      file with .f or .f90 extension is not preprocessed.    #
 #                      file with .c extension uses standard cc compiler.      #
 #            itest   : test output switch.                                    #
@@ -32,10 +32,7 @@
 #  - The main WAVEWATCH directory ($main_dir) is obtained from the setup      #
 #    file $ww3_env, as is the scratch directory ($temp_dir). The following    #
 #    directories are used :                                                   #
-#       $main_dir/ftn : Raw FORTRAN file ($basename.ftn). If extension is     #
-#                       not .ftn, w3adc will be skipped. if the extension is  # 
-#                       .c, then the simple cc compiler is used. The latter   #
-#                       is now used for profiling code only.                  #
+#       $main_dir/src : Raw FORTRAN file ($basename.F90).                     #
 #       $main_dir/bin : File with preprocessor switches 'switch', and         #
 #                       compiler script 'comp'.                               #
 #       $main_dir/obj : Final object modules ($basename.o).                   #
@@ -108,7 +105,7 @@
 
   path_b="$main_dir/bin"
   path_w="$( cd $temp_dir && pwd )"
-  path_i="$main_dir/ftn"
+  path_i="$main_dir/src"
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
   path_e="$main_dir/exe"
@@ -210,14 +207,10 @@
   then
 
     echo "0 $compress"                             > w3adc.inp.$name
-    echo "'$path_i/$name.ftn' '$name.$fext'"      >> w3adc.inp.$name
+    echo "'$path_i/$name.F90' '$name.$fext'"      >> w3adc.inp.$name
     echo "'$sw_str'"                              >> w3adc.inp.$name
 
-# 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - -
-
-# Obsolete feature, removed
-
-# 2.b Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.b Run CPP preprocessor  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
     if [ "$itst" != '0' ]
     then
@@ -226,6 +219,7 @@
       echo '-- end of file ----------------------------------------------------'
     fi
 
+    #Generate list of CPP Flags based on switches:
     CPPFLAGS='' 
     for sw in $sw_str 
     do 
@@ -235,35 +229,19 @@
 
     #$(CPP) $(CPPFLAGS) $path_i/$name.F90 > $name.f90
     gfortran $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
-    #$path_b/w3adc < w3adc.inp.$name > w3adc.out.$name 2> w3adc.err.$name
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
-
-    #ad3_tst="`grep ERROR w3adc.out.$name`"
-    #if [ -n "$ad3_tst" ]
-    #then
-    #  echo '      *** w3adc error ***'
-    #  echo "     $ad3_tst" ; exit 4
-    #fi
 
     if [ ! -f $name.$fext ]
     then
       echo '      *** w3adc error ***'
-      #echo "          file $name.$fext not found (1)."
-      #cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
 
     if [ "`wc -l $name.$fext | awk '{ print $1}'`" -lt '2'  ]
     then
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (2)."
-      #cat w3adc.out.$name ; cat w3adc.err.$name  ; exit 4
     fi
-
-    #if [ "$itst" != '0' ]
-    #then
-    #  cat w3adc.out.$name
-    #fi
 
 # 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

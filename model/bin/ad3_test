@@ -52,7 +52,7 @@
 
   path_b="$main_dir/bin"
   path_w="$temp_dir"
-  path_i="$main_dir/ftn"
+  path_i="$main_dir/src"
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
   path_e="$main_dir/exe"
@@ -79,7 +79,7 @@
 
 # 1.e Test necessity of running w3adc - - - - - - - - - - - - - - - - - - - -
 
-  if [ -f $path_i/$name.ftn ]
+  if [ -f $path_i/$name.F90 ]
   then
     w3adc='yes'
     idstr=
@@ -119,7 +119,7 @@
   then
 
     echo "1 $compress"                             > w3adc.inp.$name
-    echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp.$name
+    echo "'$path_i/$name.F90' '$name.F90'"        >> w3adc.inp.$name
     echo "'$sw_str'"                              >> w3adc.inp.$name
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - - 
