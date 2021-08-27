@@ -319,46 +319,6 @@ echo ' '                                         >> $ww3_env
 # --------------------------------------------------------------------------- #
 # 3. Set up other WWATCH3 files                                               #
 # --------------------------------------------------------------------------- #
-# 3.a Setup makefile for auxiliary programs
-echo ' '
-echo '   Setup makefile for auxiliary programs'
-cd $path_a
-cat > $path_a/makefile << 'EOF'
-############################################################
-# FC & BIN must be defined when called
-############################################################
-
-BIN_LIST = $(BIN)/w3adc $(BIN)/w3list $(BIN)/w3prnt $(BIN)/w3split
-
-all: $(BIN_LIST)
-
-$(BIN)/w3adc: w3adc.f
-	$(FC) -o $(BIN)/w3adc w3adc.f
-
-$(BIN)/w3list: w3list.f
-	$(FC) -o $(BIN)/w3list w3list.f
-
-$(BIN)/w3prnt: w3prnt.f
-	$(FC) -o $(BIN)/w3prnt w3prnt.f
-
-$(BIN)/w3split: w3split.f
-	$(FC) -o $(BIN)/w3split w3split.f
-
-clean:
-	rm -f $(BIN_LIST)
-EOF
-echo ' '
-
-# 3.b Compile auxiliary programs
-echo ' '
-echo '   Compile auxiliary programs'
-if make -C $path_a FC=$comp_fc BIN=$path_b
-then :
-else
-  errmsg "Error occured during compile of auxiliary programs"
-  exit 1
-fi
-echo ' '
 
 # 3.c Setup comp & link files
 if [ $cmplr ]
