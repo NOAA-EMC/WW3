@@ -63,7 +63,7 @@ Build a WW3 exe after setting up any appropraite environment variables described
 ## Information from Ifremer: 
 
 At Ifremer we run several wave models routinely using the WAVEWATCH codes, 
-these are part of the Previmer system and are reported under "SHM" or "SHOM" 
+these are part of the MARC system and are reported under "LOPS" 
 in the monthly JCOMM verification reports. 
 The switch files and namelist values (other than default settings) for the 
 different models are given below. Please note that we use different parameter
