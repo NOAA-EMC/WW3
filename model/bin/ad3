@@ -100,6 +100,7 @@
   temp_dir=$WWATCH3_TMP
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
+  comp_fc=$WWATCH3_F90
 
 # 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -223,12 +224,10 @@
     CPPFLAGS='' 
     for sw in $sw_str 
     do 
-       echo "switch $sw" 
        CPPFLAGS="$CPPFLAGS -DW3_$sw" 
     done 
 
-    #$(CPP) $(CPPFLAGS) $path_i/$name.F90 > $name.f90
-    gfortran $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
+    $comp_fc $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 

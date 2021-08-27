@@ -19,7 +19,6 @@
 #       list                                                                  #
 #       ln3                                                                   #
 #       ad3                                                                   #
-#       ad3_test                                                              #
 #       all_switches                                                          #
 #       sort_all_switches                                                     #
 #       find_switch                                                           #
@@ -148,6 +147,9 @@ EOF
   set `grep WWATCH3_LIST $ww3_env` ; shift
   list="$*"
   export WWATCH3_LIST=$list
+  set  `grep WWATCH3_F90 $ww3_env` ; shift
+  comp_fc="$*"
+  export WWATCH3_F90=$comp_fc
 
   path_mod="$(cd $(dirname $path_bin) 1>/dev/null 2>&1 && pwd)"
 
