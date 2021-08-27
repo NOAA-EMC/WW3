@@ -33,13 +33,13 @@ do
     rm $ftndir/$DIR/${file}.tmp $ftndir/$DIR/${file}.tmp1 $ftndir/$DIR/${file}.tmp2
     cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
     #git mv $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
-    #mv $ftndir/$DIR/${file}.ftn $ftndir/$DIR/${file}.F90 
   done
 
   for file in $nonftnfiles
   do
     echo "copy $DIR/$file to src" 
     cp $ftndir/$DIR/${file} $srcdir/$DIR/
+    #git mv $ftndir/$DIR/${file} $srcdir/$DIR/
   done
 
 done
