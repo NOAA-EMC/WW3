@@ -426,7 +426,6 @@
 !     !/SEED  'Seeding' of lowest frequency for sufficiently strong
 !             winds. Proxi for linear input.
 !     !/LN1   Cavaleri and Melanotte-Rizzoli with Tolman filter.
-!     !/LNX   Open slot.
 !
 !     !/ST0   No source terms included (input/dissipation)
 !     !/ST1   WAM-3 physics package.
@@ -436,7 +435,6 @@
 !             Filipot & Ardhuin (2010) or Romero (2019)
 !     !/ST6   BYDRZ source term package featuring Donelan et al.
 !             (2006) input and Babanin et al. (2001,2010) dissipation.
-!     !/STX   Open slot.
 !
 !     !/NL0   No nonlinear interactions.
 !     !/NL1   Discrete interaction approximation (DIA).
@@ -444,14 +442,12 @@
 !     !/NL3   Generalized Multiple DIA (GMD).
 !     !/NL4   Two Scale Approximation
 !     !/NL5   Generalized Kinetic Equation (GKE)
-!     !/NLX   Open slot.
 !     !/NLS   Snl based HF filter.
 !
 !     !/BT0   No bottom friction included.
 !     !/BT1   JONSWAP bottom friction package.
 !     !/BT4   SHOWEX bottom friction using movable bed roughness 
 !                  (Tolman 1994, Ardhuin & al. 2003)
-!     !/BTX   Open slot.
 !
 !     !/IC1   Sink term for interaction with ice (uniform k_i)
 !     !/IC2   Sink term for under-ice boundary layer friction 
@@ -469,18 +465,12 @@
 !
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
-!     !/DBX   Open slot.
 !     !/MLIM  Mich-style limiter.
 !
 !     !/TR0   No triad interactions included.
-!     !/TRX   Open slot.
 !
 !     !/BS0   No bottom scattering included.
 !     !/BS1   Routines from F. Ardhuin.
-!     !/BSX   Open slot.
-!
-!     !/XX0   No unclasified source term included.
-!     !/XXX   Open slot.
 !
 !     !/PR1   First order propagation scheme.
 !     !/PR2   QUICKEST scheme with ULTIMATE limite and diffusion
@@ -571,7 +561,7 @@
       INTEGER                 :: NDSI, NDSI2, NDSS, NDSM, NDSG, NDSTR,&
                                  IERR, NDSTRC, NTRACE, ITH, IK, ITH0, &
                                  ISP, IYN(NFL), NRLIN, NRSRCE, NRNL,  &
-                                 NRBT, NRDB, NRTR, NRBS, NRXX, NRPROP,&
+                                 NRBT, NRDB, NRTR, NRBS, NRPROP,      &
                                  IDLA, IDFM, IX0, IXN, IX, IY, ISEA,  &
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
@@ -660,7 +650,7 @@
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
 !
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
-                                 FLTR, FLBS, FLXX, FLPROP, FLREF,     &
+                                 FLTR, FLBS, FLPROP, FLREF,     &
                                  FIRST, CONNCT, FLNEW, INGRID,FLIC,   &
                                  FLIS, FLGNML
       LOGICAL                 :: FLTC96 = .FALSE.
@@ -1194,7 +1184,6 @@
       NRDB   = 0
       NRTR   = 0
       NRBS   = 0
-      NRXX   = 0
 !
       FLLIN  = .TRUE.
       FLINDS = .TRUE.
@@ -1206,13 +1195,11 @@
       FLTR   = .TRUE.
       FLBS   = .TRUE.
       FLREF  = .FALSE.
-      FLXX   = .TRUE.
 !
 !/LN0      NRLIN  = NRLIN + 1
 !/LN0      FLLIN  = .FALSE.
 !/SEED      NRLIN  = NRLIN + 1
 !/LN1      NRLIN  = NRLIN + 1
-!/LNX      NRLIN  = NRLIN + 1
 !
 !/ST0      NRSRCE = NRSRCE + 1
 !/ST0      FLINDS = .FALSE.
@@ -1224,7 +1211,6 @@
 !/ST4      FLST4  = .TRUE.
 !/ST6      NRSRCE = NRSRCE + 1
 !/ST6      FLST6  = .TRUE.
-!/STX      NRSRCE = NRSRCE + 1
 !
 !/NL0      NRNL   = NRNL + 1
 !/NL0      FLNL   = .FALSE.
@@ -1233,7 +1219,6 @@
 !/NL3      NRNL   = NRNL + 1
 !/NL4      NRNL   = NRNL + 1
 !/NL5      NRNL   = NRNL + 1
-!/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
 !/BT0      FLBT   = .FALSE.
@@ -1241,7 +1226,6 @@
 !/BT4      NRBT   = NRBT + 1
 !/BT8      NRBT   = NRBT + 1
 !/BT9      NRBT   = NRBT + 1
-!/BTX      NRBT   = NRBT + 1
 !
 !/IC1      NRIC   = NRIC + 1
 !/IC1      FLIC   = .TRUE.
@@ -1262,34 +1246,27 @@
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
 !/DB1      NRDB   = NRDB + 1
-!/DBX      NRDB   = NRDB + 1
 !
 !/TR0      NRTR   = NRTR + 1
 !/TR0      FLTR   = .FALSE.
 !/TR1      NRTR   = NRTR + 1
-!/TRX      NRTR   = NRTR + 1
 !
 !/BS0      NRBS   = NRBS + 1
 !/BS0      FLBS   = .FALSE.
 !/BS1      NRBS   = NRBS + 1
-!/BSX      NRBS   = NRBS + 1
 !
 !/REF1      FLREF   = .TRUE.
-!
-!/XX0      NRXX   = NRXX + 1
-!/XX0      FLXX   = .FALSE.
-!/XXX      NRXX   = NRXX + 1
 !
       IF ( .NOT.FLLIN .AND.  .NOT.FLINDS .AND.  .NOT.FLNL .AND.        &
            .NOT.FLBT  .AND.  .NOT.FLIC   .AND.  .NOT.FLIS .AND.        &
            .NOT.FLDB  .AND.  .NOT.FLTR   .AND.  .NOT.FLBS .AND.        &
-           .NOT.FLXX  .AND.  .NOT.FLREF  .AND.  FLSOU ) THEN
+           .NOT.FLREF .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
 !
       IF ( ( FLLIN .OR. FLINDS .OR. FLNL .OR. FLBT .OR. FLDB .OR.     &
-             FLTR .OR. FLBS .OR. FLREF .OR. FLXX .OR. FLIC )          &
+             FLTR .OR. FLBS .OR. FLREF .OR. FLIC )          &
              .AND. .NOT.FLSOU ) THEN
           WRITE (NDSE,1021)
         END IF
@@ -1327,11 +1304,6 @@
       IF ( NRBS .NE. 1 ) THEN
           WRITE (NDSE,1028) NRBS
           CALL EXTCDE ( 17 )
-        END IF
-!
-      IF ( NRXX .NE. 1 ) THEN
-          WRITE (NDSE,1029) NRXX
-          CALL EXTCDE ( 18 )
         END IF
 !
       IF ( NRIC .GT. 1 ) THEN
@@ -1401,7 +1373,6 @@
 !
 !/LN0      WRITE (NDSO,820)
 !/SEED      WRITE (NDSO,820)
-!/LNX      WRITE (NDSO,820)
 !
 !/LN1      CLIN   = 80.
 !/LN1      RFPM   =  1.
@@ -1420,7 +1391,6 @@
 ! 6.d.3 Exponential input
 !
 !/ST0      WRITE (NDSO,920)
-!/STX      WRITE (NDSO,920)
 !
 !/ST1      CINP   =    0.25
 !/ST2      ZWND   =   10.
@@ -1574,7 +1544,6 @@
 !/ST3      FACHF  = 5.
 !/ST4      FACHF  = 5.
 !/ST6      FACHF  = 5.
-!/STX      FACHF  = 5.
 !/NL2      IQTYPE =  2
 !/NL2      TAILNL = -FACHF
 !/NL2      NDEPTH =  0
@@ -1724,7 +1693,6 @@
 ! 6.f Define Sds.
 !
 !/ST0      WRITE (NDSO,924)
-!/STX      WRITE (NDSO,924)
 !
 !/ST1      CDIS   = -2.36E-5
 !/ST1      APM    =  3.02E-3
@@ -1923,7 +1891,6 @@
 !
 !/BT0      WRITE (NDSO,926)
 !/BT4      WRITE (NDSO,926)
-!/BTX      WRITE (NDSO,926)
 !
 !/BT1      GAMMA  = -0.067
 !
@@ -1958,7 +1925,6 @@
 ! 6.h Define Sdb.
 !
 !/DB0      WRITE (NDSO,928)
-!/DBX      WRITE (NDSO,928)
 !
 !/DB1      BJALFA = 1.
 !/DB1      BJGAM  = 0.73
@@ -1993,18 +1959,13 @@
 ! 6.i Define Str.
 !
 !/TR0      WRITE (NDSO,930)
-!/TRX      WRITE (NDSO,930)
 !
 ! 6.j Define Sbs.
 !
 !/BS0      WRITE (NDSO,932)
 !/BS1      WRITE (NDSO,932)
-!/BSX      WRITE (NDSO,932)
 !
 ! 6.k Define Sxx and Sic.
-!
-! !/XX0      WRITE (NDSO,934)
-!/XXX      WRITE (NDSO,934)
 !
 !/IC1      WRITE (NDSO,935)
 !/IC1         WRITE(NDSO,'(A/A)')'    Sice will be calculated using ' &
@@ -2128,10 +2089,7 @@
 !/PR3      PNAME  = PNAME(1:J)//' + GSE averaging '
 !/PR3      NRPROP = NRPROP + 1
 !
-!/PRX      PNAME  = 'Experimental                  '
-!/PRX      NRPROP = NRPROP + 1
-!
-!/SMC      PNSMC  = 'UNO2 on SMC grid + diffusion  '
+!/SMC      PNAME  = 'UNO2 on SMC grid + diffusion  '
 !
       IF ( (FLCX.OR.FLCY.OR.FLCTH.OR.FLCK) .AND. .NOT. FLPROP ) THEN
           WRITE (NDSE,1030)
@@ -5547,8 +5505,6 @@
 !/LN1 2820 FORMAT ( '  &SLN1 CLIN =',F6.1,', RFPM =',F6.2,            &
 !/LN1               ', RFHF =',F6.2,' /')
 !
-!/LNX  820 FORMAT (/'  Experimental linear input.'/)
-!
 !/ST0  920 FORMAT (/'  Wind input not defined.'/)
 !
 !/ST1  920 FORMAT (/'  Wind input (WAM-3) ',A/                        &
@@ -5618,8 +5574,6 @@
 !/ST6               '  frequency cut-off factor         :  ',F6.2/)
 !/ST6 2920 FORMAT ( '  &SIN6 SINA0 =', F6.3, ', SINWS =', F6.2, ', SINFC =', F6.2, ' /')
 !
-!/STX  920 FORMAT (/'  Experimental wind input.'/)
-!
 !/NL0  922 FORMAT (/'  Nonlinear interactions not defined.'/)
 !
 !/NL1  922 FORMAT (/'  Nonlinear interactions (DIA) ',A/                   &
@@ -5683,8 +5637,6 @@
 !/NL5 2922 FORMAT ( '  &SNL5 NL5DPT =', F7.1, ', NL5OML =', F5.2, &
 !/NL5               ', NL5DIS =', I2.1, ', NL5KEV =', I2.1,       &
 !/NL5               ', NL5IPL =', I2.1, ', NL5PMX =', I5.1, ' /')
-!
-!/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
 !
 !/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
 !/NLS        ' --------------------------------------------------')
@@ -5774,8 +5726,6 @@
 !/ST6               '   coefficient b1 ',A,                ' : ',E9.3/   )
 !/ST6 2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
 !
-!/STX  924 FORMAT (/'  Experimental dissipation.'/)
-!
 !/BT0  926 FORMAT (/'  Bottom friction not defined.'/)
 !
 !/BT1  926 FORMAT (/'  Bottom friction (JONSWAP) ',A/                 &
@@ -5793,7 +5743,6 @@
 !/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,','/        &
 !/BT4               '        SIGDEPTH =',F8.4,', BOTROUGHMIN =',F8.4, & 
 !/BT4               ', BOTROUGHFAC =',F4.1,' /')
-!/BTX  926 FORMAT (/'  Experimental bottom friction.'/)
 !
 !/DB0  928 FORMAT (/'  Surf breaking not defined.'/)
 !
@@ -5804,17 +5753,10 @@
 !/DB1 2928 FORMAT ( '  &SDB1 BJALFA =',F7.3,', BJGAM =',F7.3,         &
 !/DB1               ', BJFLAG = ',A,' /')
 !
-!/DBX  928 FORMAT (/'  Experimental depth-induced breaking.'/)
-!
 !/TR0  930 FORMAT (/'  Triad interactions not defined.'/)
-!/TRX  930 FORMAT (/'  Experimental triad interactions.'/)
 !
 !/BS0  932 FORMAT (/'  Bottom scattering not defined.'/)
 !/BS1  932 FORMAT (/'  Experimental bottom scattering (F. Ardhuin).'/)
-!/BSX  932 FORMAT (/'  Experimental bottom scattering.'/)
-!
-!/XX0  934 FORMAT (/'  Alternative source term slot not used.'/)
-!/XXX  934 FORMAT (/'  Experimental unclasified source term.'/)
 !
 !/IC1  935 FORMAT (/'  Dissipation via ice parameters (SIC1).'&
 !/IC1           ,/' --------------------------------------------------')
@@ -6330,8 +6272,6 @@
                '     ILLEGAL NUMBER OF !/TRn SWITCHES :',I3)
  1028 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/BSn SWITCHES :',I3)
- 1029 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBER OF !/XXn SWITCHES :',I3)
 !
  1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     PROPAGATION REQUESTED BUT NO SCHEME SELECTED '/)
