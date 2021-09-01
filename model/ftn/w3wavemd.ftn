@@ -162,7 +162,6 @@
 !       !/PR1   First order propagation schemes.
 !       !/PR2   ULTIMATE QUICKEST scheme.
 !       !/PR3   Averaged ULTIMATE QUICKEST scheme.
-!       !/PRX   User-defined scheme.
 !       !/SMC   UNO2 scheme on SMC grid.
 !
 !       !/S     Enable subroutine tracing.
@@ -369,13 +368,11 @@
 !/PR1      USE W3PRO1MD
 !/PR2      USE W3PRO2MD
 !/PR3      USE W3PRO3MD
-!/PRX      USE W3PROXMD
 !/SMC      USE W3PSMCMD
 !
 !/PR1      USE W3PROFSMD
 !/PR2      USE W3PROFSMD
 !/PR3      USE W3PROFSMD
-!/PRX      USE W3PROFSMD
 !/
       USE W3TRIAMD
       USE W3IOGRMD
@@ -1331,7 +1328,6 @@
 !/PR1              CALL W3MAP1 ( MAPSTA )
 !/PR2              CALL W3MAP2
 !/PR3              CALL W3MAP3
-!/PRX              CALL W3MAPX
               CALL W3UTRN ( TRNX, TRNY )
 !/PR3              CALL W3MAPT
             END IF  !! GTYPE 
@@ -1699,7 +1695,6 @@
 !/PR3                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
 !/PR3                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
-!/PRX                      CALL W3KTPX
 !
                       END IF  !!  GTYPE  
 !
@@ -1823,8 +1818,6 @@
 !/PR2                              FIELD, VGX, VGY, UGDTUPDATE )
 !/PR3               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR3                              FIELD, VGX, VGY, UGDTUPDATE )
-!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
-!/PRX                              FIELD, VGX, VGY, UGDTUPDATE )
 !/MPI             END IF
 !
                 ELSE
@@ -1832,7 +1825,6 @@
 !/PR1             CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
 !/PR2             CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PR3             CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PRX             CALL W3XYPX
 !
                 END IF   !! GTYPE
 !
@@ -1994,7 +1986,6 @@
 !/PR3                           DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
 !/PR3                           DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
-!/PRX                      CALL W3KTPX
 !
                       END IF  !! GTYPE 
 !
