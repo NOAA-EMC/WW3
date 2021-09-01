@@ -1631,7 +1631,7 @@
 !/ST4                                  DAIR/DWAT, ASO(J), UDIRR,      &
 !/ST4                            Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
 !/ST4                            XIN, DIA, LLWS, IX, IY, LAMBDA )
-!/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,   &
+!/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
 !/ST6                          TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 !/STX                    CALL W3SINX
                   END IF
@@ -1651,7 +1651,7 @@
 !/ST2                                  ALPHA,                XDS, DIA )
 !/ST3                    CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,  &
 !/ST3                                  USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
-!/ST4                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, XDS, &
+!/ST4                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
 !/ST4                                  DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST6                    CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
 !/ST6                    IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )

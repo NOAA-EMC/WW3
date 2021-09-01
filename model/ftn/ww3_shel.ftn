@@ -1932,7 +1932,7 @@
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
 !/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-!/T                        IDSTR(6), INFLAGS1(6), TRN,       &
+!/T                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
 !/T                        IDSTR(9), INFLAGS1(9), T2N,       &
@@ -2239,13 +2239,13 @@
               IF ( FLH(J) ) THEN
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR,   &
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
                              IERR, FLAGSC(J)                            &
 !/OASASCM                             , COUPL_COMM                               &
                              )
@@ -2374,7 +2374,7 @@
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
 !/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-!/T                        IDSTR(6), INFLAGS1(6), TRN,       &
+!/T                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
 !/T                        IDSTR(9), INFLAGS1(9), T2N, TDN,  &
@@ -2679,6 +2679,8 @@
 !/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
@@ -2697,6 +2699,8 @@
 !/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,2(I10.8,I7.6)/           &
