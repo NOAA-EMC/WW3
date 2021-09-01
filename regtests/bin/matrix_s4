@@ -77,13 +77,16 @@
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-  echo "#SBATCH -n ${np}"                                   >> matrix.head
-  echo "##SBATCH --cpus-per-task=${nth}"                    >> matrix.head
-  echo '#SBATCH -q s4'                                      >> matrix.head
-  echo '#SBATCH -t 06:00:00'                                >> matrix.head
-  echo '#SBATCH -A star'                                    >> matrix.head
-  echo '#SBATCH -J ww3_regtest'                             >> matrix.head
-  echo '#SBATCH -o matrix.out'                              >> matrix.head
+
+
+    echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
+    echo '#SBATCH -q s4'                                    >> matrix.head
+    echo '#SBATCH -t 06:00:00'                              >> matrix.head
+    echo '#SBATCH -A star'                                  >> matrix.head
+    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
+    echo '#SBATCH -o matrix.out'                            >> matrix.head
+    echo '#SBATCH -p s4'                                    >> matrix.head
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
