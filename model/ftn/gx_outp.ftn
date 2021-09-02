@@ -611,7 +611,6 @@
 !       !/DBx    Depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
-!       !/XXx    Arbitrary adittional source term package
 !
 !       !/STAB2  Stability correction for !/ST2
 !
@@ -623,7 +622,6 @@
 !/FLX3      USE W3FLX3MD
 !/FLX4      USE W3FLX4MD
 !/LN1      USE W3SLN1MD
-!/LNX      USE W3SLNXMD
 !/ST1      USE W3SRC1MD
 !/ST2      USE W3SRC2MD
 !/ST3      USE W3SRC3MD
@@ -631,29 +629,22 @@
 !/ST6      USE W3SRC6MD
 !/ST6      USE W3SWLDMD, ONLY : W3SWL6
 !/ST6      USE W3GDATMD, ONLY : SWL6S6
-!/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
 !/NL4      USE W3SNL4MD
-!/NLX      USE W3SNLXMD
 !/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
 !/BT4      USE W3SBT4MD
 !/BT8      USE W3SBT8MD
-!/BTX      USE W3SBTXMD
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
 !/IC4      USE W3SIC4MD
 !/IC5      USE W3SIC5MD
 !/DB1      USE W3SDB1MD
-!/DBX      USE W3SDBXMD
-!/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
-!/BSX      USE W3SBSXMD
 !/IS2      USE W3SIS2MD
-!/XXX      USE W3SXXXMD
 !/
       USE W3DISPMD, ONLY: LIU_FORWARD_DISPERSION, NAR1D, DFAC, N1MAX, &
                           ECG1, EWN1, DSIE
@@ -967,7 +958,6 @@
 !
             IF ( FLSRCE(2) ) THEN
 !/LN1                CALL W3SLN1 ( WN, FHIGH, USTAR, UDIRR, XLN )
-!/LNX                CALL W3SLNX
 !
 !/ST1                CALL W3SIN1 (A, WN2, USTAR, UDIRR,      XWI, DIA )
 !/ST2                CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
@@ -982,18 +972,14 @@
 !/ST4                             XWI, DIA,  LLWS, IX, IY, LAMBDA )
 !/ST6                CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
 !/ST6                          TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
-!/STX                CALL W3SINX
               END IF
             IF ( FLSRCE(3) ) THEN
 !/NL1                CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,      XNL, DIA )
 !/NL2                CALL W3SNL2 ( A, CG, DEPTH,             XNL, DIA )
 !/NL3                CALL W3SNL3 ( A, CG, WN, DEPTH,         XNL, DIA )
 !/NL4                CALL W3SNL4 ( A, CG, WN, DEPTH,         XNL, DIA )
-!/NLX                CALL W3SNLX
 !!/NLS                CALL W3SNLS ( A, CG, WN, DEPTH, UABS, 900.,      &
 !!/NLS                                                 SNL=XNL, AA=DIA )
-!
-!/TRX                CALL W3STRX
 !
               END IF
             IF ( FLSRCE(4) ) THEN
@@ -1005,17 +991,14 @@
 !/ST4                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 !/ST6                CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
 !/ST6                IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
-!/STX                CALL W3SDSX
 !
 !/DB1                CALL W3SDB1 ( J, A, DEPTH, EMEAN, FMEAN, WNMEAN, CG, &
 !/DB1                                                            LBREAK, XDB, DIA )
-!/DBX                CALL W3SDBX
 !
               END IF
             IF ( FLSRCE(5) ) THEN
 
 !/BT1                CALL W3SBT1 ( A, CG, WN, DEPTH,   XBT, DIA )
-!/BTX                CALL W3SBTX
 
 !/IC1                CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 !/IC2                CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
@@ -1039,8 +1022,6 @@
 !/BS1                CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
 !/BS1                              CAO(J)*SIN(CDO(J)),     &
 !/BS1                             TAUSCX, TAUSCY, XBS, DIA )
-!/BSX                CALL W3SBSX
-!
               END IF
 
            IF ( FLSRCE(6) ) THEN
@@ -1048,8 +1029,6 @@
 !/IS2           CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
 !/IS2                       XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)                    
            END IF
-!
-!/XXX            CALL W3SXXX
 !
 !/STAB2            UABS   = UABS * ASFAC
 !

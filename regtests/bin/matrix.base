@@ -2191,6 +2191,15 @@
     fi
   fi
 
+
+ #GEFSv12 setup with ww3_multi and grib2 output
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.3"                   >> matrix.body
+  fi
+
+
   # 365_day and 360_day calendars, no switch sharing here
   if [ "$calendar" = 'y' ]
   then

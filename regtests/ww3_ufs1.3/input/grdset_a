@@ -1,0 +1,4 @@
+MODEL: glo_15m so_20m ao_20m
+INPUT: glo_15mxt
+POINT: points
+INTGL: glo_15mxt
