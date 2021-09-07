@@ -150,9 +150,6 @@
   echo "  module load $modw3nco"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
 
-module use -a /contrib/sutils/modulefiles
-module load sutils
-
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
