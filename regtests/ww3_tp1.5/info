@@ -6,7 +6,7 @@
 # Model should be compiled with the switches :                              #
 #                                                                           #
 #                                                                           #
-#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0                               #
 #                        Select the 'no source terms' option.               #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #                         1: First order.                                   #

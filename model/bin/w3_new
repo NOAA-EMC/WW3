@@ -69,13 +69,6 @@
                                    rm -f exe/ww3_*
                                    rm -f exe/gx_*
                                    rm -f exe/exec_type ;;
-     'mach'   ) cd $main_dir/ftn ; touch w3servmd.ftn
-                                   touch wmmdatmd.ftn
-                                   touch wminitmd.ftn
-                                   touch wmfinlmd.ftn
-                                   touch ww3_systrk.ftn
-                                   touch ww3_shel.ftn
-                                   touch ww3_sbs1.ftn ;; 
      'nco'    ) cd $main_dir/ftn ; touch w3bullmd.ftn 
                                    touch ww3_prep.ftn
                                    touch ww3_shel.ftn
@@ -105,7 +98,6 @@
                                    touch w3canomd.ftn
                                    touch w3fld1md.ftn
                                    touch w3fld2md.ftn
-                                   touch w3flxxmd.ftn
                                    touch w3iogomd.ftn
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
@@ -296,13 +288,6 @@
                                    touch w3updtmd.ftn
                                    touch w3wavemd.ftn
                                    touch w3gridmd.ftn ;; 
-     's_xx'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
-                                   touch w3srcemd.ftn
-                                   touch w3iogrmd.ftn
-                                   touch w3gridmd.ftn
-                                   touch ww3_outp.ftn
-                                   touch ww3_ounp.ftn
-                                   touch gx_outp.ftn ;;
      'wind'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 

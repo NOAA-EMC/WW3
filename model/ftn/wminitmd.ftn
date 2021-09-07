@@ -318,8 +318,6 @@
 !
 !       !/O10   Enable output identifying start and end of routine
 !      
-!       !/F90  FORTRAN 90 specific extensions.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output.
 !       !/MPRF  Profiling.
@@ -376,8 +374,8 @@
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
-                          INPMAP, IDINP, NGRPSMC 
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
+                          INPMAP, IDINP, NGRPSMC
+      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -490,7 +488,7 @@
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
       MPI_COMM_LOC   = MPI_COMM
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
@@ -2872,8 +2870,8 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
-!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'END'
@@ -3440,8 +3438,6 @@
 !
 !       !/O10   Enable output identifying start and end of routine
 !      
-!       !/F90  FORTRAN 90 specific extensions.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output.
 !       !/MPRF  Profiling.
@@ -3499,8 +3495,8 @@
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
-                          INPMAP, IDINP, NGRPSMC 
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
+                          INPMAP, IDINP, NGRPSMC
+      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -3630,7 +3626,7 @@
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
       MPI_COMM_LOC   = MPI_COMM
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
@@ -5800,8 +5796,8 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
-!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'END'
