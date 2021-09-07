@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
+!/                  | Last update :         06-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -53,6 +53,7 @@
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
+!/    06-Sep-2021 : scale factor on spectra output      ( version 7.12 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -195,7 +196,7 @@
                                  ICODE, STRL, STRL2, FLWW3, NBFILEOUT,&
                                  S5, S3, NBSTATION, NCTYPE,           &
                                  NCFLUSH, NFL, MFL, IFL, NREQL, NOUTL,&
-                                 NDSEN, ONE, TWO, IRET, IP
+                                 NDSEN, ONE, TWO, IRET, IP, NCVARTYPE
       INTEGER                 :: ISCALE = 0
       INTEGER                 :: DIMID(7), DIMLN(5), VARID(28),       &
                                  STARTDATE(8), STOPDATE(8),           &
@@ -395,6 +396,7 @@
           OTYPE = NML_SPECTRA%OUTPUT
           SCALE1 = NML_SPECTRA%SCALE_FAC
           SCALE2 = NML_SPECTRA%OUTPUT_FAC
+          NCVARTYPE = NML_SPECTRA%TYPE
         ELSE IF (ITYPE .EQ. 2) THEN
           OTYPE = NML_PARAM%OUTPUT
         ELSE IF (ITYPE .EQ. 3) THEN
@@ -489,7 +491,7 @@
         READ (NDSI,*,END=801,ERR=802) ORDER
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
-        IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2
+        IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, NCVARTYPE
         IF (ITYPE .EQ. 2) READ (NDSI,*,END=801,ERR=802) OTYPE
         IF (ITYPE .EQ. 3) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
 
@@ -784,7 +786,7 @@
                 DIMLN(3)=40 ! string station name length
                 DIMLN(4)=NK ! FREQ
                 DIMLN(5)=NTH ! DIR
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,NCVARTYPE=NCVARTYPE)
               END IF
             END DO
 
@@ -916,7 +918,7 @@
                 DIMLN(3)=40    ! string station name length
                 DIMLN(4)=NK ! freq
                 DIMLN(5)=NTH ! dir
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,FLSRCE)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,NCFILE(I),NCID(I),DIMID,DIMLN,VARID,ONE,TWO,FLSRCE=FLSRCE)
               END IF
             END DO
 
@@ -1211,7 +1213,7 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I8)
+               '      Number of requests : ',I10)
   942 FORMAT (/'  Output type ',I2,' :'/                              &
                ' --------------------------------------------------'/ &
                '      ',A, I3 /)
@@ -1226,7 +1228,7 @@
   953 FORMAT ( '      ',A,2(F8.1,'E3'))
   954 FORMAT (/'      New time step      : ',A)
   955 FORMAT ( '  Processing time : ', 2I8, ' in ', I8, 'files. Step '&
-               I4, 'out of ', I4, 'pass ', I4)
+               I10, 'out of ', I10, ' pass ', I4)
 !
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
@@ -1618,24 +1620,45 @@
           UDIR1(J1)  = MOD ( 270. - WDO(INDREQ(J1))*RADE , 360. )
           CDIR1(J1)   = MOD ( 270. - CDO(INDREQ(J1))*RADE , 360. )
         END DO
-! 
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/1,IOUT/))
-        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/IOUT,1/))
-        CALL CHECK_ERR(IRET,10)
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(INDREQ(1:NREQ)),(/1,IOUT/))
-        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(INDREQ(1:NREQ)),(/IOUT,1/))
-        CALL CHECK_ERR(IRET,11)
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR1,(/1,IOUT/))
-        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR1,(/IOUT,1/))
-        CALL CHECK_ERR(IRET,12)
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(INDREQ(1:NREQ)),(/1,IOUT/))
-        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(INDREQ(1:NREQ)),(/IOUT,1/))
-        CALL CHECK_ERR(IRET,13)
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR1,(/1,IOUT/))
-        IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR1,(/IOUT,1/))
-        CALL CHECK_ERR(IRET,14)
 !
-        IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(10),E3(1:NTH,1:NK,1:NREQ), &
+        IF (NCVARTYPE.LE.3) THEN 
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),NINT(DPO(INDREQ(1:NREQ))/0.5),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),NINT(DPO(INDREQ(1:NREQ))/0.5),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,10)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),NINT(WAO(INDREQ(1:NREQ))/0.1),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),NINT(WAO(INDREQ(1:NREQ))/0.1),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,11)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),NINT(UDIR1/0.1),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),NINT(UDIR1/0.1),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,12)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),NINT(CAO(INDREQ(1:NREQ))/0.1),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),NINT(CAO(INDREQ(1:NREQ))/0.1),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,13)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),NINT(CDIR1/0.1),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),NINT(CDIR1/0.1),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,14)
+        ELSE
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(INDREQ(1:NREQ)),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,10)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(INDREQ(1:NREQ)),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(INDREQ(1:NREQ)),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,11)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR1,(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR1,(/IOUT,1/))
+          CALL CHECK_ERR(IRET,12)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(INDREQ(1:NREQ)),(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(INDREQ(1:NREQ)),(/IOUT,1/))
+          CALL CHECK_ERR(IRET,13)
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR1,(/1,IOUT/))
+          IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR1,(/IOUT,1/))
+          CALL CHECK_ERR(IRET,14)
+        END IF
+!
+        IF (NCVARTYPE.LE.3) THEN
+          WHERE(E3(:,:,:).GE.0) E3(:,:,:)=NINT(ALOG10(E3(:,:,:)+1E-12)/0.0004)
+          END IF
+          IF(ORDER) IRET=NF90_PUT_VAR(NCID,VARID(10),E3(1:NTH,1:NK,:), &
                            start=(/1,1,1,IOUT/),count=(/NTH,NK,NREQ,1/))
         IF(.NOT.ORDER) IRET=NF90_PUT_VAR(NCID,VARID(10),E3(1:NTH,1:NK,1:NREQ), &
                            start=(/1,1,IOUT,1/),count=(/NTH,NK,1,NREQ/))
@@ -2213,13 +2236,22 @@
               IF (FLWW3.NE.0) IRET=NF90_PUT_VAR(NCID,VARID(3),FLWW3,(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
               IRET=NF90_PUT_VAR(NCID,VARID(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
-              IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(J),(/J1,IOUT/))
-              IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(J),(/J1,IOUT/))
-              IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR,(/J1,IOUT/))
-              IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(J),(/J1,IOUT/))
-              IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR,(/J1,IOUT/))
-
-
+              IF (NCVARTYPE.LE.3) THEN
+                IRET=NF90_PUT_VAR(NCID,VARID(11),NINT(DPO(J)/0.5),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(12),NINT(WAO(J)/0.1),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(13),NINT(UDIR/0.1),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(14),NINT(CAO(J)/0.1),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(15),NINT(CDIR/0.1),(/J1,IOUT/))
+              ELSE
+                IRET=NF90_PUT_VAR(NCID,VARID(11),DPO(J),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(12),WAO(J),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(13),UDIR,(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(14),CAO(J),(/J1,IOUT/))
+                IRET=NF90_PUT_VAR(NCID,VARID(15),CDIR,(/J1,IOUT/))
+              END IF
+              IF (NCVARTYPE.LE.3) THEN
+                WHERE(E.GE.0) E=NINT(ALOG10(E+1E-12)/0.0004)
+              END IF
               IRET=NF90_PUT_VAR(NCID,VARID(10),TRANSPOSE(E(1:NK,1:NTH)), &
                              start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
 !
@@ -2599,7 +2631,7 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE W3CRNC (ITYPE, OTYPE, NCTYPE, NCFILE, NCID, DIMID, DIMLN, VARID, ONE, TWO, FLSRCE)
+      SUBROUTINE W3CRNC (ITYPE, OTYPE, NCTYPE, NCFILE, NCID, DIMID, DIMLN, VARID, ONE, TWO, FLSRCE, NCVARTYPE)
 
 
       USE W3GDATMD
@@ -2613,6 +2645,7 @@
       INTEGER, INTENT(IN)               :: DIMLN(5)
       INTEGER, INTENT(OUT)              :: DIMID(7), VARID(28),NCID
       LOGICAL, INTENT(IN), OPTIONAL     :: FLSRCE(7)
+      INTEGER, INTENT(IN), OPTIONAL     :: NCVARTYPE
 
       ! local parameters
       INTEGER                           :: IRET
@@ -3041,20 +3074,35 @@
 !/RTD        END IF
 
 !Efth
-        IRET=NF90_DEF_VAR(NCID,'efth',NF90_FLOAT,(/DIMID(5),DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(10))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID,'efth',NF90_SHORT,(/DIMID(5),DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(10))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID,'efth',NF90_FLOAT,(/DIMID(5),DIMID(4),DIMID(TWO),DIMID(ONE)/),VARID(10))
+        END IF
         CALL CHECK_ERR(IRET,42)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name',&
                           'sea surface wave directional variance spectral density')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name',&
-                          'sea_surface_wave_directional_variance_spectral_density')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','directional_variance_spectral_density')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'units','m2 s rad-1')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_max',1.E20)
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name',&
+                            'base_ten_logarithm_of_sea_surface_wave_directional_variance_spectral_density')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'units','log10(m2 s rad-1 +1E-12)')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',0.0004)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_max',1.E20)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name',&
+                            'sea_surface_wave_directional_variance_spectral_density')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'units','m2 s rad-1')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'valid_max',1.E20)
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(10),'content','TXYZ')
         IRET=NF90_PUT_ATT(NCID,VARID(10),'associates','time station frequency direction')
 !/RTD        IF ( FLAGUNR ) THEN
@@ -3064,49 +3112,85 @@
 !/RTD        END IF
 
 !d
-        IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(11))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_SHORT, (/ DIMID(TWO),DIMID(ONE) /), VARID(11))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID, 'dpt', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(11))
+        END IF
         CALL CHECK_ERR(IRET,43)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(11), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(11),'long_name','depth')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'standard_name','depth')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'globwave_name','depth')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'units','m')
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_min',-100.)
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_max',10000.)
-        IRET=NF90_PUT_ATT(NCID,VARID(11),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'scale_factor',0.5)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_min',-200)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_max',200000)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_min',-100.)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'valid_max',10000.)
+          IRET=NF90_PUT_ATT(NCID,VARID(11),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(11),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(11),'associates','time station')
 
 !U10
-        IRET=NF90_DEF_VAR(NCID, 'wnd', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(12))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID, 'wnd', NF90_SHORT, (/ DIMID(TWO),DIMID(ONE) /), VARID(12))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID, 'wnd', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(12))
+        END IF
         CALL CHECK_ERR(IRET,44)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(12), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(12),'long_name','wind speed at 10m')
         IRET=NF90_PUT_ATT(NCID,VARID(12),'standard_name','wind_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(12),'globwave_name','wind_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(12),'units','m s-1')
-        IRET=NF90_PUT_ATT(NCID,VARID(12),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(12),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_max',100.)
-        IRET=NF90_PUT_ATT(NCID,VARID(12),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'scale_factor',0.1)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_min',0)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_max',1000)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_max',100.)
+          IRET=NF90_PUT_ATT(NCID,VARID(12),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(12),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(12),'associates','time station')
 !Dir
-        IRET=NF90_DEF_VAR(NCID, 'wnddir', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(13))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID, 'wnddir', NF90_SHORT, (/ DIMID(TWO),DIMID(ONE) /), VARID(13))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID, 'wnddir', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(13))
+        END IF
         CALL CHECK_ERR(IRET,45)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(13), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(13),'long_name','wind direction')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'standard_name','wind_from_direction')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'globwave_name','wind_from_direction')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'units','degree')
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_max',360.)
-        IRET=NF90_PUT_ATT(NCID,VARID(13),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'scale_factor',0.1)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_min',0)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_max',3600)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'valid_max',360.)
+          IRET=NF90_PUT_ATT(NCID,VARID(13),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(13),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(13),'associates','time station')
 !/RTD        IF ( FLAGUNR ) THEN
@@ -3116,34 +3200,58 @@
 !/RTD        END IF
 
 !Uc
-        IRET=NF90_DEF_VAR(NCID, 'cur', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(14))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID, 'cur', NF90_SHORT, (/ DIMID(TWO),DIMID(ONE) /), VARID(14))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID, 'cur', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(14))
+        END IF
         CALL CHECK_ERR(IRET,46)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(14), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(14),'long_name','sea water speed')        
         IRET=NF90_PUT_ATT(NCID,VARID(14),'standard_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'globwave_name','sea_water_speed')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'units','m s-1')
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_max',100.)
-        IRET=NF90_PUT_ATT(NCID,VARID(14),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'scale_factor',0.1)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_min',0)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_max',1000)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'valid_max',100.)
+          IRET=NF90_PUT_ATT(NCID,VARID(14),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(14),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(14),'associates','time station')
 
 !Dir
-        IRET=NF90_DEF_VAR(NCID, 'curdir', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(15))
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_DEF_VAR(NCID, 'curdir', NF90_SHORT, (/ DIMID(TWO),DIMID(ONE) /), VARID(15))
+        ELSE
+          IRET=NF90_DEF_VAR(NCID, 'curdir', NF90_FLOAT, (/ DIMID(TWO),DIMID(ONE) /), VARID(15))
+        END IF
         CALL CHECK_ERR(IRET,47)
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(15), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(15),'long_name','direction from of sea water velocity')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'standard_name','direction_of_sea_water_velocity')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'globwave_name','direction_of_sea_water_velocity')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'units','degree')
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'scale_factor',1.)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'add_offset',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_min',0.)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_max',360.)
-        IRET=NF90_PUT_ATT(NCID,VARID(15),'_FillValue',NF90_FILL_FLOAT)
+        IF (NCVARTYPE.LE.3) THEN
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'scale_factor',0.1)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_min',0)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_max',3600)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'_FillValue',NF90_FILL_SHORT)
+        ELSE
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'scale_factor',1.)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'add_offset',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_min',0.)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'valid_max',360.)
+          IRET=NF90_PUT_ATT(NCID,VARID(15),'_FillValue',NF90_FILL_FLOAT)
+        END IF
         IRET=NF90_PUT_ATT(NCID,VARID(15),'content','TX')
         IRET=NF90_PUT_ATT(NCID,VARID(15),'associates','time station')
 !/RTD        IF ( FLAGUNR ) THEN
