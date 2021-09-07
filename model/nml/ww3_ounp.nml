@@ -73,6 +73,8 @@
 !   - dpt, wnd, wnddir, cur, curdir : mean parameters
 !
 !
+! * SCALE_FAC and OUTPUT_FAC are only applied to print plots (OUTPUT=1)
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     SPECTRA%OUTPUT        = 3            ! 1: Print plots
@@ -81,6 +83,7 @@
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 /
