@@ -194,7 +194,7 @@
          !
          ! Cosinus of Mean wave direction (cos(theta) in radians)
          ! ---------------------------------------------------------------------
-         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east 
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=COS(THM(1:NSEAL))
@@ -204,7 +204,7 @@
          !
          ! Sinus of Mean wave direction (sin(theta) in radians)
          ! ---------------------------------------------------------------------
-         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east 
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=SIN(THM(1:NSEAL))
@@ -214,7 +214,7 @@
          !
          ! Mean wave direction theta in radians
          ! ---------------------------------------------------------------------
-         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east 
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__DIR') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(THM /= UNDEF) TMP=THM
