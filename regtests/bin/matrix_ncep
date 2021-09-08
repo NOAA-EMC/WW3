@@ -107,8 +107,6 @@
     echo '#SBATCH -o matrix.out'                            >> matrix.head
     echo '#SBATCH -p orion'                                 >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
-    echo 'module purge'                                     >> matrix.head
-    echo 'module load contrib noaatools'                    >> matrix.head
   elif [ $batchq = "slurm" ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
@@ -118,9 +116,6 @@
     echo '#SBATCH -A marine-cpu'                            >> matrix.head
     echo '#SBATCH -J ww3_regtest'                           >> matrix.head
     echo '#SBATCH -o matrix.out'                            >> matrix.head
-    echo 'module purge'                                     >> matrix.head
-    echo 'module use -a /contrib/sutils/modulefiles'        >> matrix.head
-    echo 'module load sutils'                               >> matrix.head
   else
     echo '#PBS -l procs=24'                                 >> matrix.head
     echo '#PBS -q batch'                                    >> matrix.head
@@ -129,13 +124,13 @@
     echo '#PBS -N ww3_regtest'                              >> matrix.head
     echo '#PBS -j oe'                                       >> matrix.head
     echo '#PBS -o matrix.out'                               >> matrix.head
-    echo 'module purge'                                     >> matrix.head
-    echo ' '                                                >> matrix.head
   fi
+  echo ' '                                                  >> matrix.head
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
+  echo "  module purge"                                     >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
@@ -251,9 +246,6 @@
   fi 
 
  
-
-
-
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #
 # --------------------------------------------------------------------------- #
