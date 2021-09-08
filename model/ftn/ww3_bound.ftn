@@ -335,7 +335,7 @@
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') 'IP, file, I/O error:',IP,', ',       &
+          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') 'IP, file, I/O stat:',IP,', ',       &
                                   TRIM(SPECFILES(IP)),', ',IERR
           IF (IERR.NE.0) WRITE(NDSE,*) 'File do not exist:',SPECFILES(IP)
           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
