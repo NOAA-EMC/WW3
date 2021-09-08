@@ -43,7 +43,7 @@ $(aPo)/scrip_timers.o: SCRIP/scrip_timers.f \
 	$(aPo)/scrip_kindsmod.o
 	@$(aPb)/ad3 scrip_timers
 
-$(aPo)/scrip_interface.o: SCRIP/scrip_interface.ftn \
+$(aPo)/scrip_interface.o: SCRIP/scrip_interface.F90 \
 	$(aPo)/scrip_kindsmod.o \
 	$(aPo)/scrip_constants.o \
 	$(aPo)/scrip_timers.o \

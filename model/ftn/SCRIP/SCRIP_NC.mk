@@ -71,7 +71,7 @@ $(aPo)/scrip_remap_read.o: SCRIP/scrip_remap_read.f \
 	$(aPo)/scrip_iounitsmod.o
 	@$(aPb)/ad3 scrip_remap_read
 
-$(aPo)/scrip_interface.o: SCRIP/scrip_interface.ftn \
+$(aPo)/scrip_interface.o: SCRIP/scrip_interface.F90 \
 	$(aPo)/scrip_kindsmod.o \
 	$(aPo)/scrip_constants.o \
 	$(aPo)/scrip_timers.o \
