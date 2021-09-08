@@ -1687,7 +1687,22 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if [ $runcmd = "srun" ]
+      then
+        \rm -f $ofile
+        conf="srun.conf"
+        echo 0-$(( $halfnproc - 1 )) $path_e/$prgb > $conf
+        echo $halfnproc-$(( $nproc - 1 )) $path_w/toy_model >> $conf
+        if $runcmd -n $nproc --multi-prog $conf
+        then
+          \rm -f track_i.ww3
+          \rm -f $prog.inp
+          \rm -f $conf
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+      elif $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
