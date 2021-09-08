@@ -1,11 +1,11 @@
 
 thisdir=`pwd`
-ftndir='../ftn'
-srcdir='../src'
+ftndir="$thisdir/../ftn"
+srcdir="$ftndir/../src"
 
 mkdir $srcdir
 
-DIRLIST=". SCRIP PDLIB" 
+DIRLIST="SCRIP PDLIB ." 
 
 for DIR in $DIRLIST
 do 
@@ -14,7 +14,7 @@ do
   ftnfiles=`ls *.ftn`
   ftnfiles=$(sed -e "s/.ftn//g" <<< $ftnfiles)
   nonftnfiles=`ls -I "*.ftn"`
-
+ 
   cd $thisdir
   if [ ! -d $srcdir/$DIR ] 
   then 
@@ -31,16 +31,22 @@ do
     gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp1 > $ftndir/$DIR/${file}.tmp2
     gawk -f $thisdir/switch2cpp.awk < $ftndir/$DIR/${file}.tmp2 > $ftndir/$DIR/${file}.ftn
     rm $ftndir/$DIR/${file}.tmp $ftndir/$DIR/${file}.tmp1 $ftndir/$DIR/${file}.tmp2
-    cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
-    #git mv $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
+    #cp $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
+    git mv $ftndir/$DIR/${file}.ftn $srcdir/$DIR/${file}.F90
   done
 
+  echo "Lists of not ftn file for $DIR: $nonftnfiles"
   for file in $nonftnfiles
   do
     echo "copy $DIR/$file to src" 
-    cp $ftndir/$DIR/${file} $srcdir/$DIR/
-    #git mv $ftndir/$DIR/${file} $srcdir/$DIR/
+    #cp $ftndir/$DIR/${file} $srcdir/$DIR/
+    git mv $ftndir/$DIR/${file} $srcdir/$DIR/
   done
+
+  if [ $DIR == SCRIP ] || [ $DIR == PDLIB ]
+  then
+    rm -rf $ftndir/$DIR
+  fi
 
 done
 
