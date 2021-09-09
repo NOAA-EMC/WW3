@@ -1213,7 +1213,7 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I10)
+               '      Number of requests : ',I8)
   942 FORMAT (/'  Output type ',I2,' :'/                              &
                ' --------------------------------------------------'/ &
                '      ',A, I3 /)
@@ -3083,10 +3083,10 @@
         IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name',&
                           'sea surface wave directional variance spectral density')
-        IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','directional_variance_spectral_density')
         IF (NCVARTYPE.LE.3) THEN
           IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name',&
                             'base_ten_logarithm_of_sea_surface_wave_directional_variance_spectral_density')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','directional_variance_spectral_density')
           IRET=NF90_PUT_ATT(NCID,VARID(10),'units','log10(m2 s rad-1 +1E-12)')
           IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',0.0004)
           IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
@@ -3096,6 +3096,7 @@
         ELSE
           IRET=NF90_PUT_ATT(NCID,VARID(10),'standard_name',&
                             'sea_surface_wave_directional_variance_spectral_density')
+          IRET=NF90_PUT_ATT(NCID,VARID(10),'globwave_name','directional_variance_spectral_density')
           IRET=NF90_PUT_ATT(NCID,VARID(10),'units','m2 s rad-1')
           IRET=NF90_PUT_ATT(NCID,VARID(10),'scale_factor',1.)
           IRET=NF90_PUT_ATT(NCID,VARID(10),'add_offset',0.)
