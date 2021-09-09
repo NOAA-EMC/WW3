@@ -6,7 +6,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -18,6 +18,7 @@
 !/    02-Feb-2021 : Improved partitioned parameter      ( version 7.12 )
 !/                  template string implementation.
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -222,6 +223,9 @@
       CHARACTER(LEN=128) :: CRS_NAME = ''
       TYPE(META_LIST_T)  :: CRS_META
       LOGICAL            :: CRS_IS_DEFAULT = .FALSE. ! True if CRS set by this module
+
+      ! "coordinates" attribute - for defining auxiliary coordinates (for all variables)
+      CHARACTER(LEN=256) :: COORDS_ATTR = ''
 
       ! Type for storing partitioned parameter template strings.
       ! Defined as a linked-list
@@ -1935,6 +1939,11 @@
 
       IF(CRS_NAME .NE. '' .AND. CRS_NAME .NE. UNSETC) THEN
         ERR = NF90_PUT_ATT(NCID, VARID, 'grid_mapping', CRS_NAME)
+        IF(ERR /= NF90_NOERR) RETURN
+      ENDIF
+
+      IF(COORDS_ATTR .NE. '' .AND. COORDS_ATTR .NE. UNSETC) THEN
+        ERR = NF90_PUT_ATT(NCID, VARID, 'coordinates', ADJUSTL(COORDS_ATTR))
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
 
