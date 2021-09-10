@@ -2240,6 +2240,13 @@
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                              TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
+!/SMC !!Li  Reshape the RH0/N space for sea-point only current. 
+!/SMC !!Li              JGLi26Jun2018. 
+!/SMC              ELSE IF( FSWND ) THEN
+!/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+!/SMC                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TR0, &
+!/SMC                      XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR) 
+!/SMC !!Li 
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1

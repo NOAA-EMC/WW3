@@ -412,7 +412,6 @@
       USE W3GDATMD,  ONLY: NGRIDS, NAUXGR, IGRID, W3SETG, NX, NY
 !/SMC      USE W3GDATMD,  ONLY: FSWND, NSEA
       USE W3SERVMD,  ONLY: EXTCDE
-      USE CONSTANTS, ONLY: DAIR
 !/S      USE W3SERVMD,  ONLY: STRACE
 !
       IMPLICIT NONE
@@ -608,8 +607,13 @@
         END IF
 !
       IF ( FLRHOA  ) THEN
+!/SMC       IF( FSWND ) THEN
+!/SMC          ALLOCATE ( INPUTS(IMOD)%RH0(NSEA,1) ,             &
+!/SMC                     INPUTS(IMOD)%RHN(NSEA,1) , STAT=ISTAT )
+!/SMC       ELSE
           ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
                      INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
+!/SMC       ENDIF
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
