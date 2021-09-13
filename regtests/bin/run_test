@@ -501,7 +501,7 @@ then
   if [ $testST ] 
   then #add S T switches 
     \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
     rm $path_b/switch_noST
   fi
 
@@ -650,7 +650,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -786,7 +786,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -921,7 +921,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1055,7 +1055,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1197,7 +1197,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1362,7 +1362,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1571,7 +1571,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1687,7 +1687,22 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if [ $runcmd = "srun" ]
+      then
+        \rm -f $ofile
+        conf="srun.conf"
+        echo 0-$(( $halfnproc - 1 )) $path_e/$prgb > $conf
+        echo $halfnproc-$(( $nproc - 1 )) $path_w/toy_model >> $conf
+        if $runcmd -n $nproc --multi-prog $conf
+        then
+          \rm -f track_i.ww3
+          \rm -f $prog.inp
+          \rm -f $conf
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+      elif $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -1769,7 +1784,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1925,7 +1940,12 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        if [ $prog = ww3_grib ]
+        then
+          cat $path_b/switch_noST | sed 's/NCEP2/NCEP2 S T /' > $path_b/switch
+        else 
+          cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
+        fi
         rm $path_b/switch_noST
       fi
     
@@ -2209,7 +2229,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2370,7 +2390,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2537,7 +2557,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch 
       rm $path_b/switch_noST
     fi
 
@@ -2676,7 +2696,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   

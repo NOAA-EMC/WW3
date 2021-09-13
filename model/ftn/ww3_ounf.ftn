@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -47,6 +47,7 @@
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    02-Sep-2021 : Added coordinates attribute         ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -180,7 +181,7 @@
                               WRITE_META, WRITE_GLOBAL_META,           &
                               WRITE_FREEFORM_META_LIST,                &
                               META_T, NCVARTYPE, CRS_META, CRS_NAME,   &
-                              FL_DEFAULT_GBL_META
+                              FL_DEFAULT_GBL_META, COORDS_ATTR
 !
       USE NETCDF
 
@@ -200,7 +201,7 @@
                                  NDSTRC, NTRACE, IERR, I, I1F, I2F,    &
                                  IOTEST, NOUT,                         &
                                  IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
-                                 IOUT, S3, IRET, HASNC4,               &
+                                 IOUT, S3, IRET,                       &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
       INTEGER                 :: TOUT(2), TDUM(2), TREF(2), TEPOCH(2), &
@@ -507,13 +508,6 @@
         WRITE (NDSE,1010) NCTYPE
         CALL EXTCDE ( 1 )
       END IF
-      ! if NCTYPE = 4 checking that it is compiled with NC4
-      HASNC4=0
-!/NC4      HASNC4=1
-      IF ((HASNC4 .EQ. 0).AND.(NCTYPE.EQ.4)) THEN
-        WRITE (NDSE,1012)
-        CALL EXTCDE ( 1 )
-      END IF
 
       IF(SMCGRD) THEN
 !/SMC      WRITE(NDSO, 4100)
@@ -771,9 +765,6 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
 !
- 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
-               '     NCTYPE = 4 BUT NOT COMPILED WITH NC4'/)
-!
  1013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     TIMEUNITS MUST BE ONE OF "S" OR "D"' /           &
                '     GOT: ',A /)
@@ -926,7 +917,7 @@
                                  EPOCHDATE(8),                         &
                                  MAP(NX+1,NY), MP2(NX+1,NY)
 !
-!/NC4    INTEGER                  :: DEFLATE=1
+      INTEGER                  :: DEFLATE=1
 !/S      INTEGER, SAVE           :: IENT   =   0
 !
       INTEGER, ALLOCATABLE    :: TRIGP2(:,:)
@@ -2416,9 +2407,9 @@
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                           IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                           CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   ELSE
                     IF( SMCGRD ) THEN
 !/SMC                      IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2431,9 +2422,10 @@
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-!/NC4                          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                          CALL CHECK_ERR(IRET)
+                      CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF
                 ELSE
                   DIMFIELD(1)=DIMID(2)
@@ -2442,13 +2434,13 @@
                   IF (NCVARTYPE.EQ.2) THEN 
                     IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
-!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                        CALL CHECK_ERR(IRET)
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   ELSE 
                     IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
-!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                        CALL CHECK_ERR(IRET)
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF  
                 END IF
 
@@ -2561,7 +2553,7 @@
                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                          CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     ELSE
                       IF( SMCGRD ) THEN
 !/SMC                        IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2575,8 +2567,8 @@
                         IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                         CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                     END IF
                   ELSE
                     DIMFIELD(1)=DIMID(2)
@@ -2585,13 +2577,13 @@
                     IF (NCVARTYPE.EQ.2) THEN 
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                     ELSE
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      CALL CHECK_ERR(IRET)
                     END IF
                   END IF
 !
@@ -3284,14 +3276,16 @@
 !
       INTEGER                           :: IVAR,IRET,ICODE,STRL,STRL2
       INTEGER                           :: DIMTRI(2)
-!/NC4    INTEGER                           :: DEFLATE=1
+      INTEGER                           :: DEFLATE=1
 !
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
+!
+      COORDS_ATTR = ''
 !      
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
-!/NC4      IF(NCTYPE.EQ.4) IRET = NF90_CREATE(TRIM(NCFILE), NF90_NETCDF4, NCID)
+      IF(NCTYPE.EQ.3) IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
+      IF(NCTYPE.EQ.4) IRET = NF90_CREATE(TRIM(NCFILE), NF90_NETCDF4, NCID)
       CALL CHECK_ERR(IRET)
 !
 ! Define dimensions
@@ -3360,6 +3354,10 @@
 !/SMC              CALL CHECK_ERR(IRET)
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(2), VARID(2))
 !/SMC              CALL CHECK_ERR(IRET)
+!/SMC
+!/SMC              ! Latitude and longitude are auxililary variables in type 1 sea point
+!/SMC              ! SMC file; add to "coordinates" attribute:
+!/SMC              COORDS_ATTR = TRIM(COORDS_ATTR) // " latitude longitude"
 !/SMC
 !/SMC              ! For seapoint style SMC grid, also define out cell size variables:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(5))
@@ -3508,15 +3506,15 @@
 !
       IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','X')    
       IRET=NF90_PUT_ATT(NCID,VARID(2),'axis','Y')
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
 
 !
 ! frequency
 !
       if (EXTRADIM.EQ.1) THEN
         IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(10))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
+        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','wave_frequency')
         CALL CHECK_ERR(IRET)
@@ -3535,7 +3533,7 @@
       ! CHRISB: Allow different time variable types:
       IRET = NF90_DEF_VAR(NCID, 'time', TVARTYPE, DIMID(4+EXTRADIM), VARID(3))
       CALL CHECK_ERR(IRET)
-!/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
       CALL CHECK_ERR(IRET)
       SELECT CASE (TRIM(CALTYPE))
         CASE ('360_day')
@@ -3596,6 +3594,8 @@
          IRET = NF90_PUT_ATT(NCID, VARID(12), 'calendar', 'gregorian')
          CALL CHECK_ERR(IRET)
 
+         ! Add these to auxiliary coordinates list:
+         COORDS_ATTR = TRIM(COORDS_ATTR) // " forecast_period forecast_reference_time"
       ENDIF
 !
 ! triangles for irregular grids
@@ -3604,7 +3604,7 @@
         DIMTRI(1)=DIMID(4+EXTRADIM+1)
         DIMTRI(2)=DIMID(3)
         IRET = NF90_DEF_VAR(NCID, 'tri', NF90_INT, DIMTRI, VARID(4))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(4), 1, 1, DEFLATE)
+        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(4), 1, 1, DEFLATE)
       END IF
 !
 !  Status map: useful for grid combination
@@ -3616,7 +3616,7 @@
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) , DIMID(3) /), &
                                                                        VARID(20))
           ENDIF
-!/NC4          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(20), 1, 1, DEFLATE)
+          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(20), 1, 1, DEFLATE)
 !
         IRET=NF90_PUT_ATT(NCID,VARID(20),'long_name','status map')
         IRET=NF90_PUT_ATT(NCID,VARID(20),'standard_name','status map')

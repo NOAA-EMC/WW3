@@ -299,7 +299,6 @@
 !      SDBPS     SDBP  Public   Parameters Sdb.
 !      STRPS     STRP  Public   Parameters Str.
 !      SBSPS     SBSP  Public   Parameters Sbs.
-!      SXXPS     SXXP  Public   Parameters Sxx.
 !     ----------------------------------------------------------------
 !
 !     The structure NPAR contains numerical parameters and is aliased
@@ -539,13 +538,6 @@
 !     IS1C2      Real  Public   Offset for ice concentration (!/ISx)
 !     ----------------------------------------------------------------
 !
-!     The structure SXXP contains parameters for arbitrary source 
-!     term and is aliased as above:
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
 !  3. Subroutines and functions :
 !
 !      Name      Type  Scope    Description
@@ -779,14 +771,12 @@
 !/FLX3        INTEGER               :: NITTIN, CAP_ID
 !/FLX3        REAL                  :: CINXSI, CD_MAX
 !/FLX4        REAL                  :: FLX4A0
-!/FLXX        REAL                  :: DUMMY
       END TYPE SFLP
 !
       TYPE SLNP
 !/SEED        REAL                  :: DUMMY
 !/LN0        REAL                  :: DUMMY
 !/LN1        REAL                  :: SLNC1, FSPM, FSHF
-!/LNX        REAL                  :: DUMMY
       END TYPE SLNP
 !
       TYPE SRCP
@@ -823,8 +813,6 @@
 !/ST6                                 SIN6WS, SIN6FC
 !/ST6        INTEGER               :: SDS6P1, SDS6P2
 !/ST6        LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
-!
-!/STX        REAL                  :: DUMMY
       END TYPE SRCP
 !
       TYPE SNLP
@@ -848,7 +836,6 @@
 !/NL5        REAL                  :: QR5DPT, QR5OML
 !/NL5        INTEGER               :: QI5DIS, QI5KEV, QI5IPL, QI5PMX
 !/NL5        INTEGER(KIND=8)       :: QI5NNZ
-!/NLX        REAL                  :: DUMMY
 !/NLS        INTEGER               :: NTHX, NFRX, NSPL, NSPH
 !/NLS        REAL                  :: CNLSA, CNLSC, CNLSFM,                &
 !/NLS                                 CNLSC1, CNLSC2, CNLSC3
@@ -857,7 +844,6 @@
       END TYPE SNLP
 !
       TYPE SBTP
-!/BTX        REAL                  :: DUMMY
 !/BT0        REAL                  :: DUMMY
 !/BT1        REAL                  :: SBTC1
 !/BT4        REAL                  :: SBTCX(10)
@@ -869,7 +855,6 @@
 !/DB0        REAL                  :: DUMMY
 !/DB1        REAL                  :: SDBC1, SDBC2
 !/DB1        LOGICAL               :: FDONLY
-!/DBX        REAL                  :: DUMMY
       END TYPE SDBP
 
 !/UOST      TYPE UOSTP
@@ -881,13 +866,11 @@
       TYPE STRP
 !/TR0        REAL                  :: DUMMY
 !/TR1        REAL                  :: DUMMY
-!/TRX        REAL                  :: DUMMY
       END TYPE STRP
 !
       TYPE SBSP
 !/BS0        REAL                  :: DUMMY
 !/BS1        REAL                  :: DUMMY
-!/BSX        REAL                  :: DUMMY
       END TYPE SBSP
 !
       TYPE SICP
@@ -895,11 +878,6 @@
 !/IS1        REAL                  :: IS1C1, IS1C2
 !/IS2        REAL                  :: IS2C1, IS2C2
       END TYPE SICP
-!
-      TYPE SXXP
-!/XX0        REAL                  :: DUMMY
-!/XXX        REAL                  :: DUMMY
-      END TYPE SXXP
       
 ! specific type for unstructured scheme
       TYPE SCHM
@@ -946,7 +924,6 @@
         TYPE(STRP)            :: STRPS
         TYPE(SBSP)            :: SBSPS
         TYPE(SICP)            :: SICPS
-        TYPE(SXXP)            :: SXXPS
         TYPE(SCHM)            :: SCHMS
       END TYPE MPAR
 !/

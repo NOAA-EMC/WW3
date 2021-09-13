@@ -193,15 +193,8 @@
   if [ -n "`grep TRKNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
-    systrck_nc4notrknc=0
   else
-    if [ -n "`grep NC4 $switch_file`" ]
-    then
-      systrck_nc4notrknc=1
-    else
-      systrck_nc4notrknc=0
-      reg_programs="$reg_programs ww3_systrk"
-    fi
+    reg_programs="$reg_programs ww3_systrk"
   fi
 
   # SHEL PREP GSPL
@@ -315,12 +308,8 @@ WWATCH3_NETCDF=NC4 compile.
 
 The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
 Use "nc-config --version" to check the version of the installed
-NetCDF.
-
-Compiling with the NC4 switch requires WWATCH3_NETCDF=NC4 and the
-NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "nc-config --has-nc4" to check if the installed NetCDF has
-the NetCDF-4 API enabled.
+NetCDF. Use "nc-config --has-nc4" to check if the installed NetCDF 
+has the NetCDF-4 API enabled.
 
 *****************************************************************
 
@@ -347,11 +336,6 @@ EOF
         return 1
       ;;
       NC4)
-        if [ ! -n "`grep NC4 $switch_file`" ]
-        then
-          echo "WARNING: NC4 is set in WWATCH3_NETCDF but not in the switch file"; echo ' '
-#          return 1
-        fi
         if [ -z "$NETCDF_CONFIG" ]
         then
           netcdf_compile_message
@@ -387,34 +371,6 @@ EOF
   return 0
   }
 
-# 1.c.3 NetCDF check api function
-
-  netcdf_check_api () {
-
-  mode=$1 #must be ERROR or WARNING
-
-  if [ -n "`grep NC4 $switch_file`" ]
-  then
-    case $WWATCH3_NETCDF in
-      NC3)
-        netcdf_compile_message
-        echo "$mode: WWATCH3_NETCDF=NC3 is not supported and incompatible with NC4 switch"; echo ' '
-        return 1
-      ;;
-      NC4)
-        if [ "`$NETCDF_CONFIG --has-nc4`" = 'no' ]
-        then
-          netcdf_compile_message
-          echo "$mode: NetCDF-4 API not enabled (required by NC4 switch)"; echo ' '
-          return 1
-        fi
-      ;;
-    esac
-  fi
-
-  return 0
-  }
-
 # 1.c.4 Check for NetCDF compile
 
   if [ $default_mode -eq 1 ]
@@ -423,11 +379,6 @@ EOF
     then
       echo "NetCDF enabled programs ($cdf_programs)"
       echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
-      if [ $systrck_nc4notrknc -eq 1 ] 
-      then 
-         echo "WARNING: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
-         echo "TRKNC switch is also required with NC4."; echo ' '
-      fi 
       echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
       progs="$reg_programs"
     fi
@@ -450,20 +401,6 @@ EOF
         exit 1
       fi
     fi
-    systrkprog="ww3_systrk"
-    for prog in $systrkprog
-    do
-      if [ -n "`echo $progs | grep $prog`" ]
-      then   
-        if [ $systrck_nc4notrknc -eq 1 ]
-        then
-          echo "ERROR: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
-          echo "TRKNC switch is also required with NC4."; echo ' '
-          echo "Now exiting ..."; echo ' '
-          exit 1
-        fi
-      fi
-    done
   fi
 
 # 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 

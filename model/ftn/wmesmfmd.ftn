@@ -2922,8 +2922,8 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: lpet, ldecnt
-      integer :: ix, iy, isea, jsea, irec
-      integer :: elb(2), eub(2)
+      integer :: ix, iy, isea, jsea, irec, ubx, uby
+      integer :: elb(2), eub(2), elbc(2), eubc(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
@@ -3109,6 +3109,9 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
+      ! It does not return coordinates of top-most row and 
+      ! right-most column but ESMF expects it. So, top-most row 
+      ! and right-most column are theated specially in below
       call get_scrip_info_structured(impGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
@@ -3123,14 +3126,54 @@
           staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+        ! Get exclusive bounds (global index) for import grid
+        ! corner coordinates
+        call ESMF_GridGet( impGrid, ESMF_STAGGERLOC_CORNER, lde, &
+          exclusiveLBound=elbc, exclusiveUBound=eubc, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Adjust upper bounds for specific PEs
+        ubx = 0
+        uby = 0
+        if (eubc(1) == grid_dims(1)+1) ubx = -1
+        if (eubc(2) == grid_dims(2)+1) uby = -1
+        
         ! Fill coordinates
-        do iy = elb(2),eub(2)
-          do ix = elb(1),eub(1)
+        do iy = elbc(2),eubc(2)+uby
+          do ix = elbc(1),eubc(1)+ubx
             irec = (iy-1)*grid_dims(1)+ix
-            rptrx(ix,iy) = xgrd_corner(1,irec)
-            rptry(ix,iy) = ygrd_corner(1,irec)
+            rptrx(ix,iy) = real(xgrd_corner(1,irec), kind=ESMF_KIND_RX)
+            rptry(ix,iy) = real(ygrd_corner(1,irec), kind=ESMF_KIND_RX)
           enddo
         enddo
+
+        ! Fill data on top-most row
+        if (eubc(2) == grid_dims(2)+1) then
+          do ix = elbc(1),eubc(1)+ubx
+            rptrx(ix,grid_dims(2)+1) = rptrx(ix,grid_dims(2))+ &
+              (rptrx(ix,grid_dims(2))-rptrx(ix,grid_dims(2)-1))
+            rptry(ix,grid_dims(2)+1) = rptry(ix,grid_dims(2))+ &
+              (rptry(ix,grid_dims(2))-rptry(ix,grid_dims(2)-1))
+          end do
+        end if
+
+        ! Fill data on right-most column
+        if (eubc(1) == grid_dims(1)+1) then
+          do iy = elbc(2),eubc(2)+uby
+            rptrx(grid_dims(1)+1,iy) = rptrx(grid_dims(1),iy)+ &
+              (rptrx(grid_dims(1),iy)-rptrx(grid_dims(1)-1,iy))
+            rptry(grid_dims(1)+1,iy) = rptry(grid_dims(1),iy)+ &
+              (rptry(grid_dims(1),iy)-rptry(grid_dims(1)-1,iy))
+          end do
+        end if
+
+        ! Fill data on top-right corner, single point
+        if (eubc(1) == grid_dims(1)+1 .and. eubc(2) == grid_dims(2)+1) then
+          rptrx(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptrx(grid_dims(1)+1,grid_dims(2))
+          rptry(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptry(grid_dims(1),grid_dims(2)+1)
+        end if
       endif      
 !
 ! -------------------------------------------------------------------- /
@@ -3332,8 +3375,8 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: ldecnt
-      integer :: ix, iy, isea, jsea, irec, k
-      integer :: elb(2), eub(2)
+      integer :: ix, iy, isea, jsea, irec, k, ubx, uby
+      integer :: elb(2), eub(2), elbc(2), eubc(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
@@ -3546,6 +3589,9 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
+      ! It does not return coordinates of top-most row and 
+      ! right-most column but ESMF expects it. So, top-most row 
+      ! and right-most column are theated specially in below
       call get_scrip_info_structured(expGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
@@ -3560,14 +3606,54 @@
           staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+        ! Get exclusive bounds (global index) for export grid
+        ! corner coordinates
+        call ESMF_GridGet( impGrid, ESMF_STAGGERLOC_CORNER, lde, &
+          exclusiveLBound=elbc, exclusiveUBound=eubc, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Adjust upper bounds for specific PEs
+        ubx = 0
+        uby = 0
+        if (eubc(1) == grid_dims(1)+1) ubx = -1
+        if (eubc(2) == grid_dims(2)+1) uby = -1
+
         ! Fill coordinates
-        do iy = elb(2),eub(2)
-          do ix = elb(1),eub(1)
+        do iy = elbc(2),eubc(2)+uby
+          do ix = elbc(1),eubc(1)+ubx
             irec = (iy-1)*grid_dims(1)+ix
-            rptrx(ix,iy) = xgrd_corner(1,irec)
-            rptry(ix,iy) = ygrd_corner(1,irec)
+            rptrx(ix,iy) = real(xgrd_corner(1,irec), kind=ESMF_KIND_RX)
+            rptry(ix,iy) = real(ygrd_corner(1,irec), kind=ESMF_KIND_RX)
           enddo
         enddo
+
+        ! Fill data on top-most row
+        if (eubc(2) == grid_dims(2)+1) then
+          do ix = elbc(1),eubc(1)+ubx
+            rptrx(ix,grid_dims(2)+1) = rptrx(ix,grid_dims(2))+ &
+              (rptrx(ix,grid_dims(2))-rptrx(ix,grid_dims(2)-1))
+            rptry(ix,grid_dims(2)+1) = rptry(ix,grid_dims(2))+ &
+              (rptry(ix,grid_dims(2))-rptry(ix,grid_dims(2)-1))
+          end do
+        end if
+
+        ! Fill data on right-most column
+        if (eubc(1) == grid_dims(1)+1) then
+          do iy = elbc(2),eubc(2)+uby
+            rptrx(grid_dims(1)+1,iy) = rptrx(grid_dims(1),iy)+ &
+              (rptrx(grid_dims(1),iy)-rptrx(grid_dims(1)-1,iy))
+            rptry(grid_dims(1)+1,iy) = rptry(grid_dims(1),iy)+ &
+              (rptry(grid_dims(1),iy)-rptry(grid_dims(1)-1,iy))
+          end do
+        end if
+
+        ! Fill data on top-right corner, single point
+        if (eubc(1) == grid_dims(1)+1 .and. eubc(2) == grid_dims(2)+1) then
+          rptrx(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptrx(grid_dims(1)+1,grid_dims(2))
+          rptry(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptry(grid_dims(1),grid_dims(2)+1)
+        end if
       end if
 !
 ! -------------------------------------------------------------------- /
