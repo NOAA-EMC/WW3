@@ -187,7 +187,7 @@
                   isIdentical=0; let "numNotInComp += 1"
                   echo "     $file not in compare directory" >> $home_dir/fulldiff.tmp
                 else
-                  files_2=`echo $files_2 | sed "s#$escapedfilename##g" | sed "s#  # #g"`
+                  files_2=`echo "$files_2" | sed "s#\b$escapedfilename\b##g" | sed "s#  # #g"`
 
                   if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
                   then
@@ -316,7 +316,7 @@
 #             echo "files_2 = [$files_2]"
               done
 
-# 5.d Fils in compare directpry only
+# 5.d Files in compare directory only
             for file in $files_2
             do
               echo "     $file in comp directory only" >> $home_dir/fulldiff.tmp; isIdentical=0 ; let "numInCompOnly += 1"
