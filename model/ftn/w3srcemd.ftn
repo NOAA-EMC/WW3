@@ -241,7 +241,6 @@
 !      W3STRn    Subr. W3STRnMD Triad interaction source term.
 !      W3SBSn    Subr. W3SBSnMD Bottom scattering source term.
 !      W3REFn    Subr. W3REFnMD Reflexions (shore, icebergs ...).
-!      W3SXXn    Subr. W3SXXnMD Unclassified source term.
 !      STRACE    Subr. W3SERVMD Subroutine tracing (!/S)
 !     ----------------------------------------------------------------
 !
@@ -299,7 +298,6 @@
 !     !/FLX5  Direct use of stress from atmoshperic model.
 !
 !     !/LN0   No linear input.                           ( Choose one )
-!     !/LNX   User-defined bottom friction.
 !
 !     !/ST0   No input and dissipation.                  ( Choose one )
 !     !/ST1   WAM-3 input and dissipation.
@@ -307,7 +305,6 @@
 !     !/ST3   WAM 4+ input and dissipation.
 !     !/ST4   Ardhuin et al. (2009, 2010)
 !     !/ST6   BYDB source terms after Babanin, Young, Donelan and Banner.
-!     !/STX   User-defined input and dissipation.
 !
 !     !/NL0   No nonlinear interactions.                 ( Choose one )
 !     !/NL1   Discrete interaction approximation.
@@ -315,7 +312,6 @@
 !     !/NL3   Generalized Multiple DIA.
 !     !/NL4   Two Scale Approximation
 !     !/NL5   Generalized Kinetic Equation.
-!     !/NLX   User-defined nonlinear interactions.
 !     !/NLS   Nonlinear HF smoother.
 !
 !     !/BT0   No bottom friction.                        ( Choose one )
@@ -324,7 +320,6 @@
 !                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BT8   Muddy bed (Dalrymple & Liu).
 !     !/BT9   Muddy bed (Ng).
-!     !/BTX   User-defined bottom friction.
 !
 !     !/IC1   Dissipation via interaction with ice according to simple
 !             methods: 1) uniform in frequency or
@@ -337,18 +332,12 @@
 !             viscoelastic sea ice model (Mosig et al. 2015).
 !     !/DB0   No depth-limited breaking.                 ( Choose one )
 !     !/DB1   Battjes-Janssen depth-limited breaking.
-!     !/DBX   User-defined bottom friction.
 !
 !     !/TR0   No triad interactions.                     ( Choose one )
 !     !/TR1   Lumped Triad Approximation (LTA).
-!     !/TRX   User-defined triad interactions.
 !
 !     !/BS0   No bottom scattering.                      ( Choose one )
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
-!     !/BSX   User-defined bottom scattering
-!
-!     !/XX0   No arbitrary additional source term.       ( Choose one )
-!     !/XXX   User-defined bottom friction.
 !
 !     !/MLIM  Miche style limiter for shallow water and steepness.
 !
@@ -388,7 +377,6 @@
 !/FLX4      USE W3FLX4MD
 !/FLX5      USE W3FLX5MD
 !/LN1      USE W3SLN1MD
-!/LNX      USE W3SLNXMD
 !/ST0      USE W3SRC0MD
 !/ST1      USE W3SRC1MD
 !/ST2      USE W3SRC2MD
@@ -400,20 +388,17 @@
 !/ST6      USE W3SRC6MD
 !/ST6      USE W3SWLDMD, ONLY : W3SWL6
 !/ST6      USE W3GDATMD, ONLY : SWL6S6
-!/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
 !/NL4      USE W3SNL4MD
 !/NL5      USE W3SNL5MD
 !/NL5      USE W3TIMEMD, ONLY: TICK21
-!/NLX      USE W3SNLXMD
 !/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
 !/BT4      USE W3SBT4MD
 !/BT8      USE W3SBT8MD
 !/BT9      USE W3SBT9MD
-!/BTX      USE W3SBTXMD
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
@@ -423,14 +408,10 @@
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY : IS2PARS
 !/DB1      USE W3SDB1MD
-!/DBX      USE W3SDBXMD
 !/TR1      USE W3STR1MD
-!/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
-!/BSX      USE W3SBSXMD
 !/IG1      USE W3GDATMD, ONLY : IGPARS
-!/XXX      USE W3SXXXMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
 !/UOST      USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
@@ -515,15 +496,11 @@
 !/IC4                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC5                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
-!/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
-!/TRX                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
-!/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
 !/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
 !/IS2                                 VSIR(NSPEC), VDIR(NSPEC),VDIR2(NSPEC), &
-!/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
 !/UOST                                 VSUO(NSPEC), VDUO(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
@@ -811,7 +788,6 @@
 ! 2.a Input.
 !
 !/LN1        CALL W3SLN1 (       WN1, FHIGH, USTAR, U10DIR , VSLN       )
-!/LNX        CALL W3SLNX
 !
 !/ST1        CALL W3SIN1 ( SPEC, WN2, USTAR, U10DIR ,        VSIN, VDIN )
 !/ST2        CALL W3SIN2 ( SPEC, CG1, WN2, U10ABS, U10DIR, CD, Z0,        &
@@ -830,7 +806,6 @@
 
 !/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD,     &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
-!/STX        CALL W3SINX
 !
 ! 2.b Nonlinear interactions.
 !
@@ -840,11 +815,9 @@
 !/NL4        CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 !/NL5        CALL W3SNL5 ( SPEC, CG1, WN1, FMEAN, QI5TSTART,          &
 !/NL5                            U10ABS, U10DIR, JSEA, VSNL, VDNL, QR5KURT)
-!/NLX        CALL W3SNLX 
 !
 !/PDLIB    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/TR1        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
-!/TRX        CALL W3STRX
 !/PDLIB    ENDIF
 !
 ! 2.c Dissipation... except for ST4
@@ -863,13 +836,11 @@
 !/DEBUGSRC!/ST4        END IF
 
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
-!/STX        CALL W3SDSX
 !
 !/PDLIB    IF (.NOT. FSSOURCE) THEN
 !/PDLIB      IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
 !/DB1          CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
 !/DB1                                                   LBREAK, VSDB, VDDB )
-!/DBX          CALL W3SDBX
 !/PDLIB      ENDIF
 !/PDLIB    ENDIF
 !
@@ -887,11 +858,9 @@
 !/BT4                      BEDFORM, VSBT, VDBT, IX, IY )
 !/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
-!/BTX        CALL W3SBTX
 !
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
 !/BS1                           TAUSCX, TAUSCY, VSBS, VDBS )
-!/BSX        CALL W3SBSX
 !/PDLIB      ENDIF
 !
 ! 2.e Unresolved Obstacles Source Term
@@ -899,10 +868,6 @@
 !/UOST        ! UNRESOLVED OBSTACLES
 !/UOST        CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
 !/UOST                                       U10ABS, U10DIR, VSUO, VDUO)
-!
-! 2.f Additional sources.
-!
-!/XXX        CALL W3SXXX
 !
 ! 2.g Dump training data if necessary
 !
@@ -965,19 +930,13 @@
                  + VSDS(IS) + VSBT(IS)
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/TR1          VS(IS) = VS(IS) + VSTR(IS)
-!/TRX          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
-!/BSX          VS(IS) = VS(IS) + VSBS(IS)
-!/XXX          VS(IS) = VS(IS) + VSXX(IS)
 !/UOST         VS(IS) = VS(IS) + VSUO(IS)
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS)
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/TR1          VD(IS) = VD(IS) + VDTR(IS)
-!/TRX          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
-!/BSX          VD(IS) = VD(IS) + VDBS(IS)
-!/XXX          VD(IS) = VD(IS) + VDXX(IS)
 !/UOST         VD(IS) = VD(IS) + VDUO(IS)
           DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
           AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
@@ -1029,18 +988,10 @@
 !/DEBUGSRC!/ST6          WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
 !/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
 !/DEBUGSRC!/DB1          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
-!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
-!/DEBUGSRC!/DBX          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
 !/DEBUGSRC!/TR1          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
-!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
-!/DEBUGSRC!/TRX          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
 !/DEBUGSRC!/BS1          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
-!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
-!/DEBUGSRC!/BSX          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
-!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VSXX)=', minval(VSXX), maxval(VSXX), sum(VSXX)
-!/DEBUGSRC!/XXX          WRITE(740+IAPROC,*) 'min/max/sum(VDXX)=', minval(VDXX), maxval(VDXX), sum(VDXX)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
 !/DEBUGSRC               WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
 !/DEBUGSRC        END IF
