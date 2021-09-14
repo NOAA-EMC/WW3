@@ -2187,7 +2187,7 @@
 
       if (profile_memory) then
         call ESMF_ClockPrint(clock, options="currTime", &
-          preString="------>Advancing ICE from: ", &
+          preString="------>Advancing WAV from: ", &
           unit=msgString, rc=rc)
         call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
