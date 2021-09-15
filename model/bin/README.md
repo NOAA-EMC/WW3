@@ -21,7 +21,7 @@ WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
 
 The requirements for NetCDF are: 
 * NetCDF version 4.1.1 or higher (Use "nc-config --version" to check) 
-* NetCDF-4 API enableed (Use "nc-config --has-nc4" to check) 
+* NetCDF-4 API enabled (Use "nc-config --has-nc4" to check) 
 * Define NETCDF_CONFIG env variable
 
 NETCDF_CONFIG = < path to NetCDF-4 nc-config utility >

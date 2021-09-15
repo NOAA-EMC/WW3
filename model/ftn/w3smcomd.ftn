@@ -4,7 +4,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        Chris Bunney, UKMO         |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jun-2018 |
+!/                  | Last update :         21-Jul-2021 |
 !/                  +-----------------------------------+
 !/
 !/    18-Jan-2016 : Initial version.                    ( version 4.18 )
@@ -26,8 +26,15 @@
 !/                  directional fields are converted to 
 !/                  degrees (nautical convention) on output.
 !/                  (Chris Bunney, UK Met Office)
-!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05) 
-!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.13) 
+!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05 )
+!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.12 )
+!/    20-Jul-2021   Fix bug where edge cells in design  ( version 7.12 )
+!/                  grid may not be matched due where
+!/                  SMC cell > base grid size.
+!/    21-Jul-2021   Output grid definition variables    ( version 7.12 )
+!/                  elevated to DOUBLE PRECISION. Fixed
+!/                  bug in EXO/EYO calculation for full
+!/                  grid extents. (Chris Bunney, UKMO)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -71,8 +78,8 @@
       PUBLIC
 
       ! Output grid definition
-      REAL                    :: SXO, SYO, EXO, EYO      ! First lat/lons ...
-      REAL                    :: DXO, DYO                ! ... grid size ...
+      DOUBLE PRECISION        :: SXO, SYO, EXO, EYO      ! First lat/lons ...
+      DOUBLE PRECISION        :: DXO, DYO                ! ... grid size ...
       INTEGER                 :: NXO, NYO                ! ... and number grid cells.
 
       ! Variables for SMC regridding (type 2 output):
@@ -120,7 +127,7 @@
       
       ! Locals
       REAL    :: CX0, CY0   ! SW corner of origin of grid
-      REAL    :: S0CHK
+      REAL    :: S0CHK, XSNAP, YSNAP
 
       INTEGER :: ISEA, mx, my, ixx, iyy, J
       REAL    :: lat, lon
@@ -138,16 +145,22 @@
       CX0 = X0 - SX / 2.
       CY0 = Y0 - SY / 2.
 
+      ! Grid cell size to snap design grid to. Will be regular grid
+      ! resolution for cellsize <= cfac, or cellsize for cellsize > cfac
+      XSNAP = SX
+      YSNAP = SY
+      IF(CELFAC .gt. CFAC) XSNAP = CELFAC * dlon
+      IF(CELFAC .gt. CFAC) YSNAP = CELFAC * dlat
+
       ! Get start lat,lon (must be aligned with SMC grid edges). Use
       ! regular grid origins if SXO or SYO is -999.9 (use full grid):
       IF(ABS(SXO + 999.9) .LT. 1E-4) THEN
           SXO = CX0
       ELSE
-          S0CHK = CX0 + FLOOR((SXO - CX0) / SX) * SX
+          S0CHK = CX0 + FLOOR((SXO - CX0) / XSNAP) * XSNAP
           ! Ensure first grid value falls within specified range
-          ! NB the step is made at coarsest cell resolution
           IF (S0CHK .LT. SXO) THEN
-              SXO = S0CHK + SX
+              SXO = S0CHK + XSNAP
           ELSE
               SXO = S0CHK
           ENDIF
@@ -155,11 +168,10 @@
       IF(ABS(SYO + 999.9) .LT. 1E-4) THEN
           SYO = CY0
       ELSE 
-          S0CHK = CY0 + FLOOR((SYO - CY0) / SY) * SY
+          S0CHK = CY0 + FLOOR((SYO - CY0) / YSNAP) * YSNAP
           ! Ensure first grid value falls within specified range
-          ! NB the step is made at coarsest cell resolution
           IF (S0CHK .LT. SYO) THEN
-              SYO = S0CHK + SY
+              SYO = S0CHK + YSNAP
           ELSE
               SYO = S0CHK
           ENDIF
@@ -168,16 +180,10 @@
       ! Use regular grid extents for last lat/lon if user
       ! specifies -999.9 for EXO/EYO (use full grid):
       IF(ABS(EXO + 999.9) .LT. 1E-4) THEN
-          EXO = X0 + SX * (NX - 1) + 0.5 * SX !TRHC of last cell
-          ! See below why the method below doesn't work:
-          !EXO = CX0 + MAXVAL(IJKCel(1,:)) * dlon + dlon
+          EXO = CX0 + SX * NX ! TRHC of last cell
       ENDIF
       IF(ABS(EYO + 999.9) .LT. 1E-4) THEN
-          EYO = Y0 + SY * (NY-1) + 0.5 * SY !TRHC of last cell
-          ! Method below doesn't work as the cell with the max val
-          ! found might have a smaller value for CY, meaning another
-          ! cell could extend further North.
-          !EYO = CY0 + MAXVAL(IJKCel(2,:)) * dlat + dlat
+          EYO = CY0 + SY * NY ! TRHC of last cell
       ENDIF
 
       ! Ouput grid cell dx/dy will be integer factor of smallest
@@ -186,8 +192,8 @@
       DYO = dlat * celfac
 
       ! Determine number of cells in grid:
-      NXO = INT((EXO - SXO) / DXO)
-      NYO = INT((EYO - SYO) / DYO)
+      NXO = NINT((EXO - SXO) / DXO)
+      NYO = NINT((EYO - SYO) / DYO)
 
       IF(SMCOTYPE .EQ. 2) THEN
          ! Initialise all indices to "missing":
@@ -240,28 +246,44 @@
           ! Align lons
           IF(lon .LT. SXO) THEN
               lon = lon + 360.
-          ELSE IF(lon .GT. EXO) THEN
+          ENDIF
+          IF(lon .GT. EXO) THEN
               lon = lon - 360.
           ENDIF
 
           ! Find first SW cell in design grid:
-          !!ixx = FLOOR((lon - SXO) / DXO) + 1
-          !!iyy = FLOOR((lat - SYO) / DYO) + 1
-          ! CB: Bugfix: In some grids, we end up with a precision issue using
-          ! the above ixx/iyy calculations. Eg "(lon - SXO) / DXO" will end up
-          ! being 4.9999992, rather than 5.0. Therefore, we add on 1/2 of the
-          ! smallest SMC cell dlon/dlat values to ensure source grid cell ends
-          ! up in the correct target grid cell:
+          ! We add on 1/2 of the smallest SMC cell dlon/dlat values to ensure
+          ! source grid cell ends up in the correct target grid cell (after 
+          ! integer trunction):
           ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
           iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
 
-          ! range check:
-          IF(ixx .LE. 0 .OR. ixx .GT. NXO) THEN
-              xidx(ISEA) = -1
-              yidx(ISEA) = -1
-              CYCLE
+          ! If we fall outside the left/bottom edge of the design grid,
+          ! check for cases where the SMC cell has a lon or lat
+          ! scaling factor > cfac (design grid is assumed to align
+          ! its origin with cells of size cfac). For such cells,
+          ! keep moving the left/bottom edge up by cfac until
+          ! the SW corner (possibly) matches a design grid cell.
+          IF(ixx .LE. 0 .AND. ixx + mx / celfac .GT. 0) THEN
+              DO WHILE(mx .GT. cfac)
+                mx = mx - cfac
+                lon = lon + dlon * cfac
+                ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
+                IF(ixx .GT. 0) EXIT ! Found cell lon-edge in design grid
+              ENDDO
           ENDIF
-          IF(iyy .LE. 0 .OR. iyy .GT. NYO) THEN
+          IF(iyy .LE. 0 .AND. iyy + my / celfac .GT. 0) THEN
+              DO WHILE(my .GT. cfac)
+                my = my - cfac
+                lat = lat + dlat * cfac
+                iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
+                IF(iyy .GT. 0) EXIT ! Found cell lat-edge in design grid
+              ENDDO
+          ENDIF
+
+          ! If SMC cell definitely out of design grid domain, then cycle.
+          IF(ixx .LE. 0 .OR. ixx .GT. NXO .OR.                          &
+                iyy .LE. 0 .OR. iyy .GT. NYO) THEN
               xidx(ISEA) = -1
               yidx(ISEA) = -1
               CYCLE
@@ -278,16 +300,17 @@
 
           ! Do a bit of error checking (non fatal - just produced warning):
           IF(XSPAN(ISEA) .GT. 1) THEN
-              IF(sxo+(ixx-1)*dxo .NE. lon) THEN
-                  print*, 'Potential problem with grid cell span:'
-                  print*, xspan(ISEA), FLOAT(mx) / celfac
-                  print*, lon,lat
-                  print*, sxo+(ixx-1)*dxo,syo+iyy*dyo,dxo,dyo
+              IF(ABS((sxo+(ixx-1)*dxo) - lon) .GT. dxo/100.0) THEN
+                  PRINT*, 'Potential problem with SMC grid cell span:'
+                  PRINT*, xspan(ISEA), FLOAT(mx) / celfac
+                  PRINT*, lon,lat
+                  PRINT*, sxo+(ixx-1)*dxo,syo+iyy*dyo,dxo,dyo
+                  PRINT*, "diff:", (sxo+(ixx-1)*dxo) - lon
               ENDIF
           ENDIF
 
           ! calc cell weight in relation to output grid:
-          WTS(ISEA) = MIN(1., REAL(MIN(CELFAC, mx) * MIN(CELFAC, my)) / &
+          WTS(ISEA) = MIN(1., DBLE(MIN(CELFAC, mx) * MIN(CELFAC, my)) / &
                       (CELFAC**2))
 
       ENDDO

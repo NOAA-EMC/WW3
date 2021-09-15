@@ -813,6 +813,9 @@
       CASE('WNM')
         I = 2
         J = 19
+!/OASOCM      CASE('THM')
+!/OASOCM        I = 2
+!/OASOCM        J = 20
 !
 ! Group 3
 !
