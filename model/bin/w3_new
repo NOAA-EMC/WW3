@@ -53,7 +53,6 @@
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
   temp_dir=$WWATCH3_TMP
-  source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 
 
@@ -166,7 +165,7 @@
                                    touch ww3_prtide.ftn
                                    touch ww3_strt.ftn
                                    touch gx_outp.ftn ;;
-     'source' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+     'sterm'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3flx1md.ftn
                                    touch w3flx2md.ftn
