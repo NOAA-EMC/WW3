@@ -41,8 +41,7 @@ ESMF_VERSION=7.0.1
 ESMF_BOPT=O
 
 export MPI_DIR=/common/openmpi/el7/${MPI_COMPILER}${CMP_VERSION}/${MPI_VERSION}
-export WWATCH3_NETCDF=NC4
-export NETCDF_CONFIG=/common/netcdf/el7/${MPI_COMPILER}${CMP_VERSION}/openmpi${MPI_VERSION}/${CDF_VERSION}/bin/nf-config
+export NETCDF_CONFIG=/common/netcdf/el7/${MPI_COMPILER}${CMP_VERSION}/openmpi${MPI_VERSION}/${CDF_VERSION}/bin/nc-config
 export ESMFMKFILE=/common/esmf/el7/${MPI_COMPILER}${CMP_VERSION}/openmpi${MPI_VERSION}/${ESMF_VERSION}/lib/lib${ESMF_BOPT}/esmf.mk
 
 export PATH=${MPI_DIR}/bin:${PATH}
