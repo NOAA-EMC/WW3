@@ -43,7 +43,7 @@
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -139,8 +139,8 @@
 !/    20-Jan-2017 : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.xx )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -3261,7 +3261,7 @@
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !

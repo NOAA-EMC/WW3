@@ -82,8 +82,8 @@
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    15-Sep-2020 : Bugfix FIELD allocation. Remove     ( version 7.11 )
 !/                  defunct OMPX switches.
-!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.xx )
-!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.xx )
+!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
+!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -252,8 +252,8 @@
 !/                  DEBUGIOBP/DEBUGIOBC                 ( version 6.04 )
 !/    14-Sep-2018 : Remove PALM implementation          ( version 6.06 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
-!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.xx )
-!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.xx )
+!/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
+!/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/
 !  1. Purpose :
 !

@@ -33,7 +33,7 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    05-Jun-2018 : adds DEBUGFLS                       ( version 6.04 )
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -108,7 +108,7 @@
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
 !/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -539,7 +539,7 @@
 !/
 !/    24-Sep-2012 : Creation                            ( version 4.09 ) 
 !/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -720,7 +720,7 @@
 !/
 !/    24-Sep-2012 : Creation                            ( version 4.09 ) 
 !/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -946,7 +946,7 @@
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2031,7 +2031,7 @@
 !/    04-Sep-2003 : Bug fix par. list declaration.      ( version 3.04 )
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
 !/    15-May-2018 : Allow homog ice.                    ( version 6.05 )
-!/    22-Mar-2021 : adds momentum and density input     ( version 7.xx )
+!/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
 !/
 !  1. Purpose :
 !
