@@ -25,9 +25,9 @@
 !/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
-!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
-!/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
-!/    22-Mar-2021 : Add momentum and air density        ( version 7.xx )
+!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.13 )
+!/    21-Apr-2020 : Correction in scale factor          ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density        ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

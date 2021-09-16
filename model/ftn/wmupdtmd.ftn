@@ -21,10 +21,10 @@
 !/                  (T. J. Campbell, NRL)
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
-!/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.xx )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -92,7 +92,7 @@
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -464,7 +464,7 @@
 !/                  +-----------------------------------+
 !/
 !/    07-Oct-2006 : Origination.                        ( version 3.10 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -786,7 +786,7 @@
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -1149,7 +1149,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
@@ -1780,7 +1780,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
@@ -2357,8 +2357,8 @@
 !/                  +-----------------------------------+
 !/                  (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    01-Jul-2019 : Origination.                        ( version 7.XX )
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Origination.                        ( version 7.13 )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2454,7 +2454,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2573,7 +2573,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2694,7 +2694,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 
       ! THIS FUNCTION USES AVERAGING TO ESTIMATE THE VALUE
