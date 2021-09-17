@@ -947,6 +947,12 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_SDIR'
 !
+!/OASOCM         CASE('THM')
+!/OASOCM            ! THM / wave_thm : mean direction (n/a)
+!/OASOCM            ! exchange the mean direction instead of cos/sin projection
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__DIR'
+!
 !/OASOCM         CASE('BHD')
 !/OASOCM            ! BHD / wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
