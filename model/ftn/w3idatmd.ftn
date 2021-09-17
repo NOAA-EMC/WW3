@@ -17,7 +17,7 @@
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    21-Jun-2018 : Add FSWND input for SMC grid. JGLi  ( version 6.04 )
-!/    22-Mar-2021 : Momentum and air density support    ( version 7.xx )
+!/    22-Mar-2021 : Momentum and air density support    ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -225,7 +225,7 @@
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Momentum and air density support    ( version 7.xx )
+!/    22-Mar-2021 : Momentum and air density support    ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -359,7 +359,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    21-Jun-2018 : Add FSWND input for SMC grid. JGLi  ( version 6.04 )
-!/    22-Mar-2021 : Momentum and air density support    ( version 7.xx )
+!/    22-Mar-2021 : Momentum and air density support    ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -671,7 +671,7 @@
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-!/    22-Mar-2021 : Momentum and air density support    ( version 7.xx )
+!/    22-Mar-2021 : Momentum and air density support    ( version 7.13 )
 !/
 !  1. Purpose :
 !

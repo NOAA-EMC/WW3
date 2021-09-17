@@ -12,7 +12,7 @@
 !/    Jul-2013 : Origination.                       ( version 4.18 )
 !/               For upgrades see subroutines.
 !/    Apr-2016 : Add comments (J. Pianezze)         ( version 5.07 )
-!/ 22-Mar-2021 : Add extra coupling variables       ( version 7.xx )
+!/ 22-Mar-2021 : Add extra coupling variables       ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -70,7 +70,7 @@
 !/
 !/    Jul-2013 : Origination.                    ( version 4.18 )
 !/    Apr-2016 : Add comments (J. Pianezze)      ( version 5.07 )
-!/ 22-Mar-2021 : Add extra coupling variables    ( version 7.xx )
+!/ 22-Mar-2021 : Add extra coupling variables    ( version 7.13 )
 !/
 !  1. Purpose :
 !

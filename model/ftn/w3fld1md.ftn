@@ -16,7 +16,7 @@
 !/    22-Jun-2018 : updated SIG2WN subroutine (X.Chen)  ( version 6.06 )
 !/                  modified the range of wind profile computation; 
 !/                  corrected direction of the shortest waves
-!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.xx )
+!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.13 )
 !/                  
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -99,7 +99,7 @@
 !/
 !/    01-Jul-2013 : Origination.                        ( version 4.xx )
 !/    18-Mar-2015 : Prepare for submission              ( version 5.12 )
-!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.xx )
+!/    22-Mar-2021 : Consider DAIR a variable            ( version 7.13 )
 !/
 !  1. Purpose :
 !

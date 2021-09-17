@@ -31,8 +31,8 @@
 !/                  within allowed bounds.             ( version 5.15 )
 !/    06-Jun-2018 : add subroutine INIT_GET_JSEA_ISPROC_GLOB/add PDLIB 
 !/                                                     ( version 6.04 )
-!/    22-Mar-2021 : Support for air density input      ( version 7.xx )
-!/    28-Oct-2021 : Add SMC grid group indicator. JGLi ( version 7.xx )
+!/    22-Mar-2021 : Support for air density input      ( version 7.13 )
+!/    28-Oct-2021 : Add SMC grid group indicator. JGLi ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -412,7 +412,7 @@
 !/    12-Jan-2007 : Add FLSTI and FLLSTL.               ( version 3.10 )
 !/    22-Jan-2007 : Add NAVMAX.                         ( version 3.10 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Support for air density input      ( version 7.xx )
+!/    22-Mar-2021 : Support for air density input       ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -899,7 +899,7 @@
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
-!/    22-Mar-2021 : Support for air density input      ( version 7.xx )
+!/    22-Mar-2021 : Support for air density input      ( version 7.13 )
 !/
 !  1. Purpose :
 !
