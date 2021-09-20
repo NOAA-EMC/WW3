@@ -38,8 +38,8 @@
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
-!/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
+!/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.13 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -90,6 +90,8 @@
 !                               in W3UWND                      (degr)
 !      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
 !                               and inc.) in W3UTAU.
+!      RA0-I     R.A.  Public   Absolute air density (initial and inc.)
+!                               in W3URHO.
 !      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
 !                               increment) in W3UTAU.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
@@ -360,8 +362,9 @@
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
 ! Output fields group 1)
 !
@@ -528,8 +531,9 @@
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
                                  AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
@@ -770,7 +774,7 @@
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -836,7 +840,7 @@
                           USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
-      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA
+      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA, FLRHOA
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -1287,6 +1291,13 @@
               CHECK_ALLOC_STATUS ( ISTAT )
             END IF
 !
+          IF ( FLRHOA  ) THEN
+              ALLOCATE ( WADATS(IMOD)%RA0(NSEA) ,           &
+                         WADATS(IMOD)%RAI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
+!
           ALLOCATE ( WADATS(IMOD)%ATRNX(NY*NX,-1:1) ,                 &
                      WADATS(IMOD)%ATRNY(NY*NX,-1:1) , STAT=ISTAT      )
           CHECK_ALLOC_STATUS ( ISTAT )
@@ -1430,7 +1441,7 @@
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2494,7 +2505,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28_Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
 !/                  Add aditional undefined arrays.
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2815,6 +2826,11 @@
                   MDI    => WADATS(IMOD)%MDI
                 END IF
 !
+              IF ( INPUTS(IMOD)%INFLAGS1(6) ) THEN
+                  RA0    => WADATS(IMOD)%RA0
+                  RAI    => WADATS(IMOD)%RAI
+                END IF
+!
 !/PR1              IS0    => WADATS(IMOD)%IS0
 !/PR1              IS2    => WADATS(IMOD)%IS2
 !/PR1              FACVX  => WADATS(IMOD)%FACVX
@@ -2915,7 +2931,7 @@
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !

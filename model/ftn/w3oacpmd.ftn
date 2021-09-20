@@ -13,7 +13,7 @@
 !/                    For upgrades see subroutines.
 !/     April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
 !/    25-Sep-2020 : Coupling at T+0 support              ( version 7.10 )
-!/    22-Mar-2021 : Adds extra coupling fields           ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields           ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -748,7 +748,7 @@
 !/    Mar-2014 : J. Pianezze (LPO) : Add atmospheric fields ( version 5.07 )
 !/    Apr-2015 : M. Accensi  (LPO) : Add fields selection   ( version 5.07 )
 !/    Apr-2016 : Add comments (J. Pianezze)                 ( version 5.07 )
-!/ 22-Mar-2021 : Adds extra coupling fields                 ( version 7.xx )
+!/ 22-Mar-2021 : Adds extra coupling fields                 ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -946,6 +946,12 @@
 !/OASOCM            ! THM / wave_thm : sinus of mean direction (n/a)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_SDIR'
+!
+!/OASOCM         CASE('THM')
+!/OASOCM            ! THM / wave_thm : mean direction (n/a)
+!/OASOCM            ! exchange the mean direction instead of cos/sin projection
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__DIR'
 !
 !/OASOCM         CASE('BHD')
 !/OASOCM            ! BHD / wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)

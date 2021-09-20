@@ -40,37 +40,17 @@
 
 # Set batchq queue, choose modules and other custom variables to fit system and 
 # to define headers etc (default to original version if empty)
-  ishera=`hostname | grep hfe`
-  isorion=`hostname | grep Orion`
-  if [ $ishera ]
+  iss4=`hostname | grep s4-submit`
+  if [ $iss4 ]
   then
-    # If no other h, assuming Hera 
-    cmplr='hera.intel'
+    cmplr='s4.intel'
     batchq='slurm'
-    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
+    hpcstackpath='/data/prod/hpc-stack/modulefiles/stack'
     hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/18.0.5.274'
-    modmpi='hpc-impi/2018.0.4'
+    modcomp='hpc-intel/18.0.4'
+    modmpi='hpc-impi/18.0.4'
     modnetcdf='netcdf/4.7.4'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-    modjasper='jasper/2.0.25'
-    modzlib='zlib/1.2.11'
-    modpng='png/1.6.35'
-    modhdf5='hdf5/1.10.6'
-    modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
-    modw3nco='w3nco/2.4.1'
-    modesmf='esmf/8_1_1'
-  elif [ $isorion ]
-  then
-    cmplr='orion.intel'
-    batchq='slurm'
-    hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
-    hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/2019.5'
-    modmpi='hpc-impi/2019.6'
-    modnetcdf='netcdf/4.7.4'
-    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+    metispath='/data/users/dhuber/save/parmetis-4.0.3'
     modjasper='jasper/2.0.25'
     modzlib='zlib/1.2.11'
     modpng='png/1.6.35'
@@ -80,7 +60,8 @@
     modw3nco='w3nco/2.4.1'
     modesmf='esmf/8_1_1'
   else
-    batchq=
+    echo This matrix setup script is only intended for S4!
+    exit 123
   fi
 
 # 1. Set up
@@ -96,41 +77,23 @@
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-  if [ $batchq = "slurm" ] && [ $isorion ]
-  then
+
+
     echo "#SBATCH -n ${np}"                                 >> matrix.head
     echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
-    echo '#SBATCH -q batch'                                 >> matrix.head
-    echo '#SBATCH -t 08:00:00'                              >> matrix.head
-    echo '#SBATCH -A marine-cpu'                            >> matrix.head
+    echo '#SBATCH -q s4'                                    >> matrix.head
+    echo '#SBATCH -t 06:00:00'                              >> matrix.head
+    echo '#SBATCH -A star'                                  >> matrix.head
     echo '#SBATCH -J ww3_regtest'                           >> matrix.head
     echo '#SBATCH -o matrix.out'                            >> matrix.head
-    echo '#SBATCH -p orion'                                 >> matrix.head
-  elif [ $batchq = "slurm" ]
-  then
-    echo "#SBATCH -n ${np}"                                 >> matrix.head
-    echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
-    echo '#SBATCH -q batch'                                 >> matrix.head
-    echo '#SBATCH -t 08:00:00'                              >> matrix.head
-    echo '#SBATCH -A marine-cpu'                            >> matrix.head
-    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
-    echo '#SBATCH -o matrix.out'                            >> matrix.head
-  else
-    echo '#PBS -l procs=24'                                 >> matrix.head
-    echo '#PBS -q batch'                                    >> matrix.head
-    echo '#PBS -l walltime=08:00:00'                        >> matrix.head
-    echo '#PBS -A marine-cpu'                               >> matrix.head
-    echo '#PBS -N ww3_regtest'                              >> matrix.head
-    echo '#PBS -j oe'                                       >> matrix.head
-    echo '#PBS -o matrix.out'                               >> matrix.head
-    echo ' '                                                >> matrix.head
-  fi
+    echo '#SBATCH -p s4'                                    >> matrix.head
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf and Parmetis modules & variables
   echo "  module purge"                                     >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
+  echo "  module load license_intel/S4"                     >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
@@ -143,6 +106,7 @@
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3nco"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
+  echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
   echo '  export JASPER_LIB=$JASPER_ROOT/lib64/libjasper.a' >> matrix.head
@@ -152,12 +116,7 @@
   echo "  export WW3_PARCOMPN=4"                            >> matrix.head
   echo ' ' 
 
-  if [ "$batchq" = 'slurm' ]
-  then
-    export  mpi='mpirun'
-  else
-    export  mpi='mpirun'
-  fi
+  export mpi='srun'
 
 # Compile option
   if [ "$cmplOption" = 'y' ]
@@ -167,10 +126,7 @@
      opt="-S"
   fi
 # Batch queue option
-  if [ "$batchq" = 'slurm' ]
-  then
-     opt="-b $batchq $opt"
-  fi
+  opt="-b $batchq $opt"
 
 # Base run_test command line
   export rtst="./bin/run_test $opt"
@@ -233,14 +189,11 @@
 
 
   echo "#submit all of the diveded matrix files" > msuball.sh
-  if [ $batchq = "slurm" ] 
-  then
-    files=`ls matrix? matrix??`
-    for file in $files 
-    do
-      echo "sbatch < $file"  >> msuball.sh
-    done
-  fi 
+  files=`ls matrix? matrix??`
+  for file in $files 
+  do
+    echo "sbatch < $file"  >> msuball.sh
+  done
 
  
 

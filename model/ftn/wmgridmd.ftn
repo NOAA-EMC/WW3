@@ -42,8 +42,8 @@
 !/                  write/read capabilities (K. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.xx )
-!/    26-Jan-2021 : Add WMSMCEQL for SMC sub-grid. JGLi ( version 7.xx )
+!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
+!/    26-Jan-2021 : Add WMSMCEQL for SMC sub-grid. JGLi ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

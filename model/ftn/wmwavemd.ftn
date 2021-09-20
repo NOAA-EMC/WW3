@@ -24,7 +24,7 @@
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
-!/    22-Mar-2021 : Support for air density input       ( version 7.xx )
+!/    22-Mar-2021 : Support for air density input       ( version 7.13 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -92,7 +92,7 @@
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
-!/    22-Mar-2021 : Support for air density input       ( version 7.xx )
+!/    22-Mar-2021 : Support for air density input       ( version 7.13 )
 !/
 !  1. Purpose :
 !

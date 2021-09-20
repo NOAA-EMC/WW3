@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -46,7 +46,8 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.12 )
+!/    02-Sep-2021 : Added coordinates attribute         ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -180,7 +181,7 @@
                               WRITE_META, WRITE_GLOBAL_META,           &
                               WRITE_FREEFORM_META_LIST,                &
                               META_T, NCVARTYPE, CRS_META, CRS_NAME,   &
-                              FL_DEFAULT_GBL_META
+                              FL_DEFAULT_GBL_META, COORDS_ATTR
 !
       USE NETCDF
 
@@ -815,7 +816,7 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2406,9 +2407,9 @@
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   ELSE
                     IF( SMCGRD ) THEN
 !/SMC                      IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2421,9 +2422,10 @@
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
+                      CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF
                 ELSE
                   DIMFIELD(1)=DIMID(2)
@@ -3277,6 +3279,8 @@
       INTEGER                           :: DEFLATE=1
 !
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
+!
+      COORDS_ATTR = ''
 !      
 ! Creation in netCDF3 or netCDF4
 !
@@ -3350,6 +3354,10 @@
 !/SMC              CALL CHECK_ERR(IRET)
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(2), VARID(2))
 !/SMC              CALL CHECK_ERR(IRET)
+!/SMC
+!/SMC              ! Latitude and longitude are auxililary variables in type 1 sea point
+!/SMC              ! SMC file; add to "coordinates" attribute:
+!/SMC              COORDS_ATTR = TRIM(COORDS_ATTR) // " latitude longitude"
 !/SMC
 !/SMC              ! For seapoint style SMC grid, also define out cell size variables:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(5))
@@ -3586,6 +3594,8 @@
          IRET = NF90_PUT_ATT(NCID, VARID(12), 'calendar', 'gregorian')
          CALL CHECK_ERR(IRET)
 
+         ! Add these to auxiliary coordinates list:
+         COORDS_ATTR = TRIM(COORDS_ATTR) // " forecast_period forecast_reference_time"
       ENDIF
 !
 ! triangles for irregular grids
@@ -3702,7 +3712,7 @@
 !/                  | Last update :         03-Nov-2020 |
 !/                  +-----------------------------------+
 !/
-!/    03-Nov-2020 : Creation                            ( version 7.XX )
+!/    03-Nov-2020 : Creation                            ( version 7.13 )
 !/
 !  1. Purpose :
 !
