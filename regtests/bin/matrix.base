@@ -2199,6 +2199,31 @@
     echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.3"                   >> matrix.body
   fi
 
+ #Test of UFS applications with ww3_multi and grib2 output (light grid for single core/laptop check)
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.4"                              >> matrix.body
+    if [ "$npl_b4b" = 'y' ]
+    then
+       halfnp=$(($np / 2))
+       echo "$rtst -w work_a_npl -m grdset_a -f -p $mpi -n $halfnp -o all $ww3 ww3_ufs1.4"                    >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.4 work_a work_a_npl"                                                    >> matrix.body
+    fi
+    if [ "$nth_b4b" = 'y' ]
+    then
+       echo "$rtst -w work_a_nth -m grdset_a -f -p $mpi -n $nr -t $nth -o all $ww3 ww3_ufs1.4"                >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.4 work_a work_a_nth"                                                    >> matrix.body
+    fi
+    if [ "$rstrt_b4b" = 'y' ]
+    then
+       echo "mkdir -p ww3_ufs1.4/work_b"                                                                      >> matrix.body
+       echo "cp ww3_ufs1.4/work_a/20210401.030000.restart.glo_5deg ww3_ufs1.4/work_b/restart.glo_5deg"        >> matrix.body
+       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.4"                           >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.4 work_a work_b"                                                        >> matrix.body
+    fi
+  fi
+
 
   # 365_day and 360_day calendars, no switch sharing here
   if [ "$calendar" = 'y' ]
