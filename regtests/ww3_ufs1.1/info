@@ -8,7 +8,10 @@
 # hourly  wind speed (gfs_wind.nc) and current fields with 3 hrs interval   #
 # (current.nc).                                                             #
 # POINT: points. The unified point output grid is glo_1deg                  #
-#                                                                           #
+# --------------------------------------------------------------------------#
+# if "ufscoarse" option is selected, a coarser grid with 5 deg. resolution  #
+# is used for MODEL and INPUT grids.                                        #
+# --------------------------------------------------------------------------#
 # The test is a standard test for ufs-weather application using ww3_multi.  #
 # Two types of gridded output are available for this test: NETCDF using     #
 # ww3_ounf and GRIB2 using ww3_grib programs. The grib2 files are with      #
