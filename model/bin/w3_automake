@@ -118,10 +118,8 @@
 
 # 1.e Set regular and netCDF progs - - - - - - - - - - - - - - - - - - - - - -
 
-
-# GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
-  reg_programs="ww3_grid"
-  reg_programs="$reg_programs ww3_strt"
+  #STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR
+  reg_programs="ww3_strt"
   reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_outf"
   reg_programs="$reg_programs ww3_outp"
@@ -131,34 +129,36 @@
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_uprstr"
-  reg_programs="$reg_programs libww3"
 
-# PRNC OUNF OUNP BOUNC TRNC
+  # PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
   cdf_programs="$cdf_programs ww3_trnc"
 
-
   # PRTIDE
-  if [ -n "$(grep TIDE $switch_file)" ]
+  if [ -n "`grep TIDE $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_prtide"
   fi
 
-  # MULTI MULTI_ESMF SBS1
-  if [ -n "$(grep SCRIPNC $switch_file)" ] || [ -n "$(grep OASIS $switch_file)" ]
+ # MULTI MULTI_ESMF SBS1 LIBWW3
+  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
+    cdf_programs="$cdf_programs ww3_grid"
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"
+    cdf_programs="$cdf_programs libww3"
     if [ $ESMFMKFILE ]
     then
       cdf_programs="$cdf_programs ww3_multi_esmf"
     fi
   else
+    reg_programs="$reg_programs ww3_grid"
     reg_programs="$reg_programs ww3_multi"
     reg_programs="$reg_programs ww3_sbs1"
+    reg_programs="$reg_programs libww3"
     if [ $ESMFMKFILE ]
     then
       reg_programs="$reg_programs ww3_multi_esmf"
@@ -166,26 +166,33 @@
   fi
 
   # SYSTRK
-  if [ -n "$(grep TRKNC $switch_file)" ]
+  if [ -n "`grep TRKNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
   else
     reg_programs="$reg_programs ww3_systrk"
   fi
 
-  # SHEL PREP GSPL
-  if [ -n "$(grep OASIS $switch_file)" ]
+  # PREP GSPL
+  if [ -n "`grep OASIS $switch_file`" ] || [ -n "`grep PDLIB $switch_file`" ]
   then
-    cdf_programs="$cdf_programs ww3_shel"
-    cdf_programs="$cdf_programs ww3_prep"
     cdf_programs="$cdf_programs ww3_gspl"
+    cdf_programs="$cdf_programs ww3_prep"
   else
-    reg_programs="$reg_programs ww3_shel"
-    reg_programs="$reg_programs ww3_prep"
     reg_programs="$reg_programs ww3_gspl"
+    reg_programs="$reg_programs ww3_prep"
   fi
 
-  if [ -n "$(grep -nri fPIC $comp_file)" ]
+  #SHEL 
+  if [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_shel"
+  else
+    reg_programs="$reg_programs ww3_shel"
+  fi
+
+  #Shared Object
+  if [ -n "`grep -nri fPIC $comp_file`" ]
   then
     reg_programs="$reg_programs libww3.so"
   else

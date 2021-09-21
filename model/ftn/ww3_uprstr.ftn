@@ -26,7 +26,7 @@
 !/    01-Nov-2019 :  UPD5 and UPD6 use wind data either from anl.XXX file
 !/                   or from restart under WRST switch (Andy Saulter)
 !/    06-Oct-2020 :  Added namelist input options        ( version 7.11 )
-!/    06-May-2021 :  Use SMCTYPE and FSWND for SMC grid. ( version 7.xx )
+!/    06-May-2021 :  Use SMCTYPE and FSWND for SMC grid. ( version 7.13 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights

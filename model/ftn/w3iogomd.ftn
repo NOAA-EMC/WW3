@@ -59,7 +59,7 @@
 !/                  seperate subroutine. (C. Bunney)
 !/    15-Jan-2020 : Added TP output based on exsiting   ( version 7.12 )
 !/                  FP internal field. (C. Bunney)
-!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -676,7 +676,7 @@
 !/                  +-----------------------------------+
 !/
 !/    03-Nov-2020 : Origination.                        ( version 7.12 )
-!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
 !
 !  1. Purpose :
 !
@@ -813,6 +813,9 @@
       CASE('WNM')
         I = 2
         J = 19
+!/OASOCM      CASE('THM')
+!/OASOCM        I = 2
+!/OASOCM        J = 20
 !
 ! Group 3
 !
@@ -2317,7 +2320,7 @@
 !/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
 !/                  processing code)
 !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.xx )
+!/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
 !/
 !  1. Purpose :
 !

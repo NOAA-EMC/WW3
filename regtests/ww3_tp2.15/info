@@ -7,8 +7,8 @@
 # -netCDF4 librairies must be installed and NETCDF variables setup          #
 #                                                                           #
 # Remarks :                                                                 #
-# Requires NETCDF parameters to be exported                                 #
-# e.g., export WWATCH3_NETCDF=NC4; export NETCDF_CONFIG=`which nc-config`   #
+# Requires NETCDF parameter to be exported                                  #
+# e.g., export NETCDF_CONFIG=`which nc-config`                              #
 #                                                                           #
 # Description                                                               #
 #   Test case is for wind-wave growth in the Adriatic Sea near the ISMAR    #

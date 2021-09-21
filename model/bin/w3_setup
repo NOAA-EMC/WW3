@@ -159,17 +159,9 @@ then
 
   echo "   Setup file $ww3_env found"
 
-  set `grep WWATCH3_LPR $ww3_env` ; shift
-  prntr="$*"
-  echo "      Printer (listings)          : $prntr"
-
   set `grep WWATCH3_F90 $ww3_env` ; shift
   comp_fc="$*"
   echo "      auxiliary FORTRAN compiler  : $comp_fc"
-
-  set `grep WWATCH3_CC $ww3_env` ; shift
-  comp_cc="$*"
-  echo "      auxiliary C compiler        : $comp_cc"
 
   echo "      Source directory            : $path_s"
 
@@ -193,14 +185,7 @@ then
 else
   echo "   Setup file $ww3_env not found"
 
-  if [ $PRINTER ]
-  then
-    prntr=$PRINTER
-  else
-    prntr=printer
-  fi
   comp_fc=gfortran
-  comp_cc=gcc
   if [ $tdir ]
   then
     temp_dir=$tdir
@@ -212,9 +197,7 @@ else
 
     echo ' '
     echo "   Default set up :"
-    echo "      Printer (listings)       : $prntr"
     echo "      Auxiliary FORTRAN comp.  : $comp_fc"
-    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -252,25 +235,11 @@ then
   do
     echo ' '
 
-    echo -n "      Printer for listings [$prntr] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      prntr="$instr"
-    fi
-
     echo -n "      Auxiliary FORTRAN compiler [$comp_fc] : "
     instr="$NULL" ; read instr
     if [ -n "$instr" ]
     then
       comp_fc="$instr"
-    fi
-
-    echo -n "      Auxiliary C compiler [$comp_cc] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      comp_cc="$instr"
     fi
 
     OK="$NULL"
@@ -323,9 +292,7 @@ then
 
     echo ' '
     echo "   Modified set up :"
-    echo "      Printer (listings)       : $prntr"
     echo "      Auxiliary FORTRAN comp.  : $comp_fc"
-    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -342,9 +309,7 @@ echo '# Environment variables for wavewatch III' >> $ww3_env
 echo '# ---------------------------------------' >> $ww3_env
 echo '#'                                         >> $ww3_env
 echo ' '                                         >> $ww3_env
-echo "WWATCH3_LPR      $prntr"                   >> $ww3_env
 echo "WWATCH3_F90      $comp_fc"                 >> $ww3_env
-echo "WWATCH3_CC       $comp_cc"                 >> $ww3_env
 echo "WWATCH3_DIR      $path_s"                  >> $ww3_env
 echo "WWATCH3_TMP      $temp_dir"                >> $ww3_env
 echo "WWATCH3_SOURCE   $source"                  >> $ww3_env
@@ -360,7 +325,7 @@ echo '   Setup makefile for auxiliary programs'
 cd $path_a
 cat > $path_a/makefile << 'EOF'
 ############################################################
-# FC, CC & BIN must be defined when called
+# FC & BIN must be defined when called
 ############################################################
 
 BIN_LIST = $(BIN)/w3adc $(BIN)/w3list $(BIN)/w3prnt $(BIN)/w3split
@@ -379,9 +344,6 @@ $(BIN)/w3prnt: w3prnt.f
 $(BIN)/w3split: w3split.f
 	$(FC) -o $(BIN)/w3split w3split.f
 
-$(BIN)/w3xxx: w3xxx.c
-	$(CC) -o $(BIN)/w3xxx w3xxx.c
-
 clean:
 	rm -f $(BIN_LIST)
 EOF
@@ -390,7 +352,7 @@ echo ' '
 # 3.b Compile auxiliary programs
 echo ' '
 echo '   Compile auxiliary programs'
-if make -C $path_a FC=$comp_fc CC=$comp_cc BIN=$path_b
+if make -C $path_a FC=$comp_fc BIN=$path_b
 then :
 else
   errmsg "Error occured during compile of auxiliary programs"
@@ -417,7 +379,7 @@ then
        [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
        [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
        [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
-       [ "$cmplr" == "wcoss2" ] || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ] || \
        [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
@@ -447,7 +409,7 @@ then
        [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
        [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
        [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
-       [ "$cmplr" == "wcoss2" ] || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ] || \
        [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \

@@ -90,7 +90,6 @@ fi
 # SNP Launcher 7.7.4 allows -np switch:
   echo "  module load cray-snplauncher/7.7.4"               >> matrix.head
 
-  echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo "  export NETCDF_CONFIG=\$(which nc-config)"         >> matrix.head
 
 # Compiler option. Set cmplOption to

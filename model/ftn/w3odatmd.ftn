@@ -46,8 +46,8 @@
 !/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
 !/    15-Jan-2020 : Added TP based on existing FP       ( version 7.12 )
 !/                  internal fields. (C. Bunney, UKMO)
-!/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
-!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.xx )
+!/    22-Mar-2021 : Add extra coupling variables        ( version 7.13 )
+!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -530,7 +530,7 @@
 !/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Add extra coupling variables        ( version 7.xx )
+!/    22-Mar-2021 : Add extra coupling variables        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -699,6 +699,7 @@
 ! 2) Standard mean wave parameters
 !
       NOGE(2) = 19
+!/OASOCM      NOGE(2) = 20
 !
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
@@ -719,6 +720,7 @@
       IDOUT( 2, 17)  = 'Dominant wave bT   '
       IDOUT( 2, 18)  = 'Peak prd. (from fp)'
       IDOUT( 2, 19)  = 'Mean wave number   '
+!/OASOCM  IDOUT( 2, 20) = 'Mean wave dir. norot'
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2'
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2'
 !      IDOUT( 2,12)  = 'Windsea height(Sin)'

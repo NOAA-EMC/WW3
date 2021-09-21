@@ -49,6 +49,36 @@ and code-structure modifications made in \ws\ \WWver since the previous release.
 
 \item Preparing for next model version (model version 7.00).
 
+\item Adds option for reading/writing wind in restart file via WRST switch (model version 7.01).
+
+\item Adds capability to interpolate inputs to curvilinear subgrid in multi-grid  (model version 7.02).
+
+\item Adds second stream of restart file writes (model version 7.03).
+
+\item Changes version reporting in codes to date strings (model version 7.04).
+
+\item Updates IS2 default parameterization (model version 7.05).
+
+\item Includes Romero Dissipation in ST4 (model version 7.06).
+
+\item Updates tides and its MPI implementation (model version 7.07).
+
+\item Adds optional opt-out for CFL on boundary condition on unstructured mesh (model version 7.08).
+
+\item Add options for wind-sea and swell component data assimilation to ww3\_uprstr (model version 7.09).
+
+\item Extend parameter set for OASIS-NEMO coupled model systems (model version 7.10).
+
+\item Adds method to output boundary conditions to a rotated lat/lon grid (model version 7.11).
+
+\item Improve NetCDF gridded output for CF compliance (model version 7.12).
+
+\item Major code clean up including removing support for NetCDFv3, making NC4 the default, 
+      making F90 the default (removing the DUM option), removal of compiler directive 
+      switches (C90, NEC, SX6, SX8), removed support for Grib1 (NCEP1 switch), removed OMPX 
+      and NCC switches, removed experimental and supplemental switches (XX0, XXX, FLXX, PRX, 
+      STX, NLX, BTX, DBX, TRX, BSX) and modularized and cleaned up the build (model version 7.13).
+
 \end{list}
 
 \vspace{\baselineskip} \noindent 

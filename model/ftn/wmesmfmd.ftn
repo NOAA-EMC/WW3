@@ -287,6 +287,8 @@
       ! space for mediator restart and history outputs
       integer        :: flds_scalar_index_nx = 0
       integer        :: flds_scalar_index_ny = 0
+! --- Memory Profiling
+      logical        :: profile_memory = .false.
 !
 ! --- Coupling stuff for non completely overlapped domains
       logical                       :: merge_import = .false.
@@ -564,11 +566,26 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       if (isPresent .and. isSet) then
-        read(valueString,*) med_present 
+        read(valueString,*) med_present
         call ESMF_LogWrite(trim(cname)//': mediator_present = '// &
           trim(valueString), ESMF_LOGMSG_INFO, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       end if
+!
+! -------------------------------------------------------------------- /
+! Set memory profiling
+!
+      call NUOPC_CompAttributeGet(gcomp, name="ProfileMemory", &
+        value=valueString, isPresent=isPresent, isSet=isSet, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if (isPresent .and. isSet) then
+        read(valueString,*) profile_memory
+        call ESMF_LogWrite(trim(cname)//': profile_memory = '// &
+          trim(valueString), ESMF_LOGMSG_INFO, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      end if
+
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -2129,6 +2146,11 @@
       type(ESMF_Time) :: currTime, stopTime
       real :: delt
       logical :: lerr
+
+      type(ESMF_Time) :: startTime
+      type(ESMF_TimeInterval)    :: timeStep
+      character(len=256)         :: msgString
+
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -2139,6 +2161,8 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (verbosity.gt.0) call ESMF_LogWrite(trim(cname)// &
         ': entered ModelAdvance', ESMF_LOGMSG_INFO)
+      if(profile_memory) call ESMF_VMLogMemInfo('Entering WW3 '// &
+        'Model_ADVANCE: ')
 
       allocate (tend(2,nrgrd), stat=rc)
       if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
@@ -2159,6 +2183,22 @@
           preString="-->Advancing "//TRIM(cname)//" from: ")
         call ESMF_ClockPrint(clock, options="stopTime", &
           preString="-----------------> to: ")
+      endif
+
+      if (profile_memory) then
+        call ESMF_ClockPrint(clock, options="currTime", &
+          preString="------>Advancing WAV from: ", &
+          unit=msgString, rc=rc)
+        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+        call ESMF_ClockGet(clock, startTime=startTime, &
+          currTime=currTime, &
+          timeStep=timeStep, rc=rc)
+
+        call ESMF_TimePrint(currTime + timeStep, &
+          preString="--------------------------------> to: ", &
+          unit=msgString, rc=rc)
+        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
       endif
 !
 ! 1.c Check internal current time with component current time
@@ -2205,7 +2245,9 @@
 !
 ! 1.f Advance model
 !
+      if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
       call wmwave ( tend )
+      if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
 !
 ! 1.g Set export fields
 !
@@ -2223,6 +2265,8 @@
       wtcnt(iwt) = wtcnt(iwt) + 1
       if (verbosity.gt.0) call ESMF_LogWrite(trim(cname)// &
         ': leaving ModelAdvance', ESMF_LOGMSG_INFO)
+      if(profile_memory) call ESMF_VMLogMemInfo('Leaving WW3 '// &
+        'Model_ADVANCE: ')
 !/
 !/ End of ModelAdvance ----------------------------------------------- /
 !/
@@ -2878,8 +2922,8 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: lpet, ldecnt
-      integer :: ix, iy, isea, jsea, irec
-      integer :: elb(2), eub(2)
+      integer :: ix, iy, isea, jsea, irec, ubx, uby
+      integer :: elb(2), eub(2), elbc(2), eubc(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
@@ -3065,6 +3109,9 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
+      ! It does not return coordinates of top-most row and 
+      ! right-most column but ESMF expects it. So, top-most row 
+      ! and right-most column are theated specially in below
       call get_scrip_info_structured(impGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
@@ -3079,14 +3126,54 @@
           staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+        ! Get exclusive bounds (global index) for import grid
+        ! corner coordinates
+        call ESMF_GridGet( impGrid, ESMF_STAGGERLOC_CORNER, lde, &
+          exclusiveLBound=elbc, exclusiveUBound=eubc, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Adjust upper bounds for specific PEs
+        ubx = 0
+        uby = 0
+        if (eubc(1) == grid_dims(1)+1) ubx = -1
+        if (eubc(2) == grid_dims(2)+1) uby = -1
+        
         ! Fill coordinates
-        do iy = elb(2),eub(2)
-          do ix = elb(1),eub(1)
+        do iy = elbc(2),eubc(2)+uby
+          do ix = elbc(1),eubc(1)+ubx
             irec = (iy-1)*grid_dims(1)+ix
-            rptrx(ix,iy) = xgrd_corner(1,irec)
-            rptry(ix,iy) = ygrd_corner(1,irec)
+            rptrx(ix,iy) = real(xgrd_corner(1,irec), kind=ESMF_KIND_RX)
+            rptry(ix,iy) = real(ygrd_corner(1,irec), kind=ESMF_KIND_RX)
           enddo
         enddo
+
+        ! Fill data on top-most row
+        if (eubc(2) == grid_dims(2)+1) then
+          do ix = elbc(1),eubc(1)+ubx
+            rptrx(ix,grid_dims(2)+1) = rptrx(ix,grid_dims(2))+ &
+              (rptrx(ix,grid_dims(2))-rptrx(ix,grid_dims(2)-1))
+            rptry(ix,grid_dims(2)+1) = rptry(ix,grid_dims(2))+ &
+              (rptry(ix,grid_dims(2))-rptry(ix,grid_dims(2)-1))
+          end do
+        end if
+
+        ! Fill data on right-most column
+        if (eubc(1) == grid_dims(1)+1) then
+          do iy = elbc(2),eubc(2)+uby
+            rptrx(grid_dims(1)+1,iy) = rptrx(grid_dims(1),iy)+ &
+              (rptrx(grid_dims(1),iy)-rptrx(grid_dims(1)-1,iy))
+            rptry(grid_dims(1)+1,iy) = rptry(grid_dims(1),iy)+ &
+              (rptry(grid_dims(1),iy)-rptry(grid_dims(1)-1,iy))
+          end do
+        end if
+
+        ! Fill data on top-right corner, single point
+        if (eubc(1) == grid_dims(1)+1 .and. eubc(2) == grid_dims(2)+1) then
+          rptrx(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptrx(grid_dims(1)+1,grid_dims(2))
+          rptry(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptry(grid_dims(1),grid_dims(2)+1)
+        end if
       endif      
 !
 ! -------------------------------------------------------------------- /
@@ -3288,8 +3375,8 @@
       integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: ldecnt
-      integer :: ix, iy, isea, jsea, irec, k
-      integer :: elb(2), eub(2)
+      integer :: ix, iy, isea, jsea, irec, k, ubx, uby
+      integer :: elb(2), eub(2), elbc(2), eubc(2)
       integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
@@ -3502,6 +3589,9 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
+      ! It does not return coordinates of top-most row and 
+      ! right-most column but ESMF expects it. So, top-most row 
+      ! and right-most column are theated specially in below
       call get_scrip_info_structured(expGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
@@ -3516,14 +3606,54 @@
           staggerLoc=ESMF_STAGGERLOC_CORNER, farrayPtr=rptry, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+        ! Get exclusive bounds (global index) for export grid
+        ! corner coordinates
+        call ESMF_GridGet( impGrid, ESMF_STAGGERLOC_CORNER, lde, &
+          exclusiveLBound=elbc, exclusiveUBound=eubc, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        ! Adjust upper bounds for specific PEs
+        ubx = 0
+        uby = 0
+        if (eubc(1) == grid_dims(1)+1) ubx = -1
+        if (eubc(2) == grid_dims(2)+1) uby = -1
+
         ! Fill coordinates
-        do iy = elb(2),eub(2)
-          do ix = elb(1),eub(1)
+        do iy = elbc(2),eubc(2)+uby
+          do ix = elbc(1),eubc(1)+ubx
             irec = (iy-1)*grid_dims(1)+ix
-            rptrx(ix,iy) = xgrd_corner(1,irec)
-            rptry(ix,iy) = ygrd_corner(1,irec)
+            rptrx(ix,iy) = real(xgrd_corner(1,irec), kind=ESMF_KIND_RX)
+            rptry(ix,iy) = real(ygrd_corner(1,irec), kind=ESMF_KIND_RX)
           enddo
         enddo
+
+        ! Fill data on top-most row
+        if (eubc(2) == grid_dims(2)+1) then
+          do ix = elbc(1),eubc(1)+ubx
+            rptrx(ix,grid_dims(2)+1) = rptrx(ix,grid_dims(2))+ &
+              (rptrx(ix,grid_dims(2))-rptrx(ix,grid_dims(2)-1))
+            rptry(ix,grid_dims(2)+1) = rptry(ix,grid_dims(2))+ &
+              (rptry(ix,grid_dims(2))-rptry(ix,grid_dims(2)-1))
+          end do
+        end if
+
+        ! Fill data on right-most column
+        if (eubc(1) == grid_dims(1)+1) then
+          do iy = elbc(2),eubc(2)+uby
+            rptrx(grid_dims(1)+1,iy) = rptrx(grid_dims(1),iy)+ &
+              (rptrx(grid_dims(1),iy)-rptrx(grid_dims(1)-1,iy))
+            rptry(grid_dims(1)+1,iy) = rptry(grid_dims(1),iy)+ &
+              (rptry(grid_dims(1),iy)-rptry(grid_dims(1)-1,iy))
+          end do
+        end if
+
+        ! Fill data on top-right corner, single point
+        if (eubc(1) == grid_dims(1)+1 .and. eubc(2) == grid_dims(2)+1) then
+          rptrx(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptrx(grid_dims(1)+1,grid_dims(2))
+          rptry(grid_dims(1)+1,grid_dims(2)+1) = &
+            rptry(grid_dims(1),grid_dims(2)+1)
+        end if
       end if
 !
 ! -------------------------------------------------------------------- /
@@ -4937,7 +5067,7 @@
 !/                  | Last update :         18-May-2021 |
 !/                  +-----------------------------------+
 !/
-!/    18-May-2021 : Origination.                        ( version 7.XX )
+!/    18-May-2021 : Origination.                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -6798,7 +6928,7 @@
 !/                  | Last update :         29-Oct-2019 |
 !/                  +-----------------------------------+
 !/
-!/    DD-MMM-YYYY : Origination.                        ( version 7.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -6991,7 +7121,7 @@
 !/                  | Last update :         18-May-2021 |
 !/                  +-----------------------------------+
 !/
-!/    18-May-2021 : Origination.                        ( version 7.XX )
+!/    18-May-2021 : Origination.                        ( version 7.13 )
 !/
 !  1. Purpose :
 !

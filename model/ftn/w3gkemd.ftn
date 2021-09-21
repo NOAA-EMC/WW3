@@ -17,11 +17,11 @@ module w3gkemd
 !/                  in WW3 v3.14 which worked well for the single-grid
 !/                  point duration-limited test.
 !/
-!/    09-Nov-2018 : Fully implemented in WW3            ( version 7.xx )
+!/    09-Nov-2018 : Fully implemented in WW3            ( version 7.13 )
 !/                                                      ( Q. Liu       )
-!/    16-Apr-2019 : Add save attribute explicitly       ( version 7.xx )
+!/    16-Apr-2019 : Add save attribute explicitly       ( version 7.13 )
 !/                                                      ( Q. Liu       )
-!/    18-Apr-2019 : Add the bilinear interp. option     ( version 7.xx )
+!/    18-Apr-2019 : Add the bilinear interp. option     ( version 7.13 )
 !/                                                      ( Q. Liu       )
 !/    08-Jul-2019 : Use kind=8 for qi_nnz               ( Q. Liu       )
 !/    01-Apr-2020 : Boundary conditions                 ( Q. Liu       )
