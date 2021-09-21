@@ -216,19 +216,15 @@
     fi
 
     #Generate list of CPP Flags based on switches:
-    CPPFLAGS='' 
+    CPPFLAGS=()
     for sw in $sw_str 
     do 
-       CPPFLAGS="$CPPFLAGS -DW3_$sw" 
+       CPPFLAGS+=("-DW3_$sw")
     done 
 
-    if [ $comp_fc = 'ftn' ] 
-    then 
-       $comp_fc $CPPFLAGS -eP $path_i/$name.F90 #-o $name.F90
-       mv $name.i $name.F90
-    else 
-       $comp_fc $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
-    fi
+    CPPFLAGS+=("-D__WW3_SWITCHES__='$sw_str'")
+
+    $comp_fc "${CPPFLAGS[@]}" -E $path_i/$name.F90 -o $name.F90
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 

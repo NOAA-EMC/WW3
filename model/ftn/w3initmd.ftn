@@ -114,9 +114,7 @@
       REAL, PARAMETER                :: CRITOS = 15.
       CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.13  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
-                    'PUT_SW1' // &
-                    'PUT_SW2' // &
-                    'PUT_SW3'
+                    __WW3_SWITCHES__ 
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
