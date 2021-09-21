@@ -971,7 +971,7 @@
 !/ST4                             TAUWX, TAUWY, TAUWNX, TAUWNY,       &
 !/ST4                             XWI, DIA,  LLWS, IX, IY, LAMBDA )
 !/ST6                CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
-!/ST6                          TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
+!/ST6                          DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
               END IF
             IF ( FLSRCE(3) ) THEN
 !/NL1                CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,      XNL, DIA )
@@ -988,7 +988,7 @@
 !/ST3                CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,         &
 !/ST3                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 !/ST4                CALL W3SDS4 ( A, WN, CG,          &
-!/ST4                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
+!/ST4                                        USTAR, USTD, DEPTH, DAIR, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 !/ST6                CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
 !/ST6                IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 !
