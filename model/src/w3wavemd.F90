@@ -835,7 +835,7 @@
           DTTST2 = DSEC21 ( TU0 , TIME )
           DTTST3 = DSEC21 ( TEND , TUN )
 #ifdef W3_T
-          WRITE (NDST,9012) DTTST1, DTTST2, DTTST3
+          WRITE (NDST,9017) DTTST1, DTTST2, DTTST3
 #endif
           IF ( DTTST1.LT.0. .OR. DTTST2.LT.0. .OR. DTTST3.LT.0. ) THEN
               IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
@@ -850,20 +850,20 @@
 ! 1.g Air density time
 !
       IF ( FLRHOA ) THEN
-          IF ( TRHO(1) .GE. 0. ) THEN
-              DTR0   = DSEC21 ( TRHO , TRN )
-            ELSE
-              DTR0   = 1.
-            END IF
+          DTTST1 = DSEC21 ( TU0 , TUN )
+          DTTST2 = DSEC21 ( TU0 , TIME )
+          DTTST3 = DSEC21 ( TEND , TUN )
 #ifdef W3_T
-          WRITE (NDST,9011) DTR0
+          WRITE (NDST,9018) DTTST1, DTTST2, DTTST3
 #endif
-          IF ( DTR0 .LT. 0. ) THEN
+          IF ( DTTST1.LT.0. .OR. DTTST2.LT.0. .OR. DTTST3.LT.0. ) THEN
               IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008)
               CALL EXTCDE ( 2 )
             END IF
-        ELSE
-          DTR0   = 0.
+          IF ( DTTST2.EQ.0..AND. ITIME.EQ.0 ) THEN
+              IDACT(11:11) = 'F'
+              TOFRST = TIME
+            END IF
         END IF
 !
 ! 1.e Ice thickness interval
@@ -1364,6 +1364,12 @@
             TAUADIR = 0.
           END IF
 !
+          IF ( FLRHOA ) THEN
+            CALL W3URHO ( FLFRST )
+          ELSE IF ( FLFRST ) THEN
+            RHOAIR = DAIR
+          END IF
+!
 ! 3.2 Update boundary conditions if boundary flag is true (FLBPI)
 !
 #ifdef W3_PDLIB
@@ -1446,28 +1452,6 @@
        call getMallocInfo(mallinfos)
        call printMallInfo(IAPROC,mallInfos)
 #endif
-!
-! 3.3.0 Update air density 
-!
-          IF ( FLRHOA .AND. DTR0.NE.0. ) THEN
-!
-              IF ( TRHO(1).GE.0 ) THEN
-                  IF ( DTR0 .LT. 0. ) THEN
-                      IDACT(11:11) = 'B'
-                    ELSE
-                      DTTST  = DSEC21 ( TIME, TRN )
-                      IF ( DTTST .LE. 0.5*DTR0 ) IDACT(11:11) = 'U'
-                    END IF
-                ELSE
-                  IDACT(11:11) = 'I'
-                END IF
-  
-!
-              IF ( IDACT(11:11).NE.' ' ) THEN
-                  CALL W3URHO ( )
-              END IF
-!
-            END IF
 !
 ! 3.3.1 Update ice coverage (if new ice map).
 !     Need to be run on output nodes too, to update MAPSTx
@@ -3448,6 +3432,10 @@
                 DTTST  = DSEC21 ( TIME , TUN )
                 IF ( DTTST .EQ. 0. ) IDACT(9:9) = 'X'
               END IF
+            IF ( FLRHOA ) THEN
+                DTTST  = DSEC21 ( TIME , TRN )
+                IF ( DTTST .EQ. 0. ) IDACT(11:11) = 'X'
+              END IF
             IF ( TDN(1) .GT. 0  ) THEN
                 DTTST  = DSEC21 ( TIME , TDN )
                 IF ( DTTST .EQ. 0. ) IDACT(21:21) = 'X'
@@ -3562,6 +3550,8 @@
  9014 FORMAT (' TEST W3WAVE : DT ICE  =',F12.1)
  9015 FORMAT (' TEST W3WAVE : DT IC1  =',F12.1)
  9016 FORMAT (' TEST W3WAVE : DT IC5  =',F12.1)
+ 9017 FORMAT (' TEST W3WAVE : DT TAU  =',F12.1)
+ 9018 FORMAT (' TEST W3WAVE : DT RHO  =',F12.1)
  9020 FORMAT (' TEST W3WAVE : IT0, NT, DTG :',2I4,F8.1)
  9021 FORMAT (' TEST W3WAVE : ITIME etc',I6,I4,I10.8,I7.6,1X,2L1,  &
                                          2F6.2,F7.1,F6.2)

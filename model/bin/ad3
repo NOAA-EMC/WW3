@@ -23,7 +23,6 @@
 #                5 : compiler error.                                          #
 #                                                                             #
 # programs used :                                                             #
-#       w3adc : executable of proprocessing program.                          #
 #       comp  : compiler script.                                              #
 #                                                                             #
 # remarks :                                                                   #
@@ -40,9 +39,6 @@
 #                                                                             #
 #    The following temporary files (in $temp_dir) are used and are removed    #
 #    only if the corresponding step of ad3 is ompleted successfully :         #
-#       w3adc.inp     : input file for w3adc.                                 #
-#       w3adc.out     : output file for w3adc.                                #
-#       w3adc.err     : eror file for w3adc.                                  #
 #       comp.out      : input file for comp.                                  #
 #       comp.err      : eror file for comp.                                   #
 #       comp.stat     : status file of compiler, containing number of errors  #
@@ -197,7 +193,6 @@
   cd $path_w
   rm -f $name.$fext
   rm -f $name.l
-  ln -s $main_dir/bin/w3list . 2> /dev/null
 
 # --------------------------------------------------------------------------- #
 # 2. Run w3adc                                                                #
@@ -221,13 +216,15 @@
     fi
 
     #Generate list of CPP Flags based on switches:
-    CPPFLAGS='' 
+    CPPFLAGS=()
     for sw in $sw_str 
     do 
-       CPPFLAGS="$CPPFLAGS -DW3_$sw" 
+       CPPFLAGS+=("-DW3_$sw")
     done 
 
-    $comp_fc $CPPFLAGS -E $path_i/$name.F90 -o $name.F90
+    CPPFLAGS+=("-D__WW3_SWITCHES__='$sw_str'")
+
+    $comp_fc "${CPPFLAGS[@]}" -E $path_i/$name.F90 -o $name.F90
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -283,7 +280,6 @@
 
   if [ "$icmp" != '0' ]
   then
-    rm -f w3list
     exit 0
   fi
 
@@ -405,7 +401,6 @@ then
 # 3.e process output files - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   rm -f $name.o
-  rm -f w3list
 
   if [ "$source" != 'yes' ]
   then

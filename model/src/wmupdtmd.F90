@@ -167,9 +167,9 @@
       USE W3WDATMD, ONLY: TIME
 
       USE W3IDATMD, ONLY: INFLAGS1, TLN, TC0, TCN, TW0, TWN, TU0,     &
-                          TUN, TIN, T0N, T1N, T2N, TG0, TGN, TFN,     &
-                          TDN, TTN, TVN, TZN, TI1, TI2, TI3, TI4,     &
-                          TI5, JFIRST
+                          TUN, TR0, TRN, TIN, T0N, T1N, T2N, TG0,     &
+                          TGN, TFN, TDN, TTN, TVN, TZN, TI1, TI2,     &
+                          TI3, TI4, TI5, JFIRST
 
       USE WMMDATMD, ONLY: IMPROC, MDSO, MDSS, MDST, MDSE, NMPSCR,     &
                           NMPERR, ETIME, FLLSTL, FLLSTR, FLLSTI,      &
@@ -257,7 +257,7 @@
       WRITE (MDST,9003) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
       WRITE (MDST,9002) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
       WRITE (MDST,9003) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
-      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
+      WRITE (MDST,9003) 6, IDINP(IMOD,6), INFLAGS1(6), TR0, TRN
       WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
       WRITE (MDST,9002) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
       WRITE (MDST,9002) 9, IDINP(IMOD,9), INFLAGS1(9), T2N
@@ -433,7 +433,7 @@
       WRITE (MDST,9072) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
       WRITE (MDST,9071) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
       WRITE (MDST,9072) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
-      WRITE (MDST,9071) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
+      WRITE (MDST,9072) 6, IDINP(IMOD,6), INFLAGS1(6), TR0, TRN
       WRITE (MDST,9071) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
       WRITE (MDST,9071) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
       WRITE (MDST,9073) 9, IDINP(IMOD,9), INFLAGS1(9), T2N, TDN
@@ -559,12 +559,13 @@
 #endif
       USE W3WDATMD, ONLY: TIME
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
-                          TW0, TWN, TU0, TUN, WX0, WXN, WY0, WYN,     &
-                          DT0, DTN, TIN, TRN, ICEI, UX0, UXN, UY0,    &
-                          UYN, RAIR, T0N, T1N, T2N, TDN, INFLAGS1,    &
-                          TG0, TGN, GA0, GD0, GAN, GDN, BERGI, TTN,   &
-                          MUDT, TVN, MUDV, TZN, MUDD, TI1, TI2, TI3,  &
-                          TI4, TI5, ICEP1, ICEP2,ICEP3, ICEP4, ICEP5
+                          TW0, TWN, TU0, TUN, TR0, TRN, WX0, WXN,     &
+                          WY0, WYN, DT0, DTN, TIN, TRN, ICEI, UX0,    &
+                          UXN, UY0, UYN, RH0, RHN, T0N, T1N, T2N,     &
+                          TDN, INFLAGS1, TG0, TGN, GA0, GD0, GAN,     &
+                          GDN, BERGI, TTN, MUDT, TVN, MUDV, TZN,      &
+                          MUDD, TI1, TI2, TI3, TI4, TI5, ICEP1,       &
+                          ICEP2, ICEP3, ICEP4, ICEP5
       USE WMMDATMD, ONLY: IMPROC, NMPERR, MDST, MDSE, MDSF, ETIME,    &
                           FLLSTL, FLLSTI, FLLSTR, RCLD, NDT, DATA0,   &
                           DATA1, DATA2, NMV, NMVMAX, TMV, AMV, DMV
@@ -727,8 +728,8 @@
 !
         CASE (6)
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-                       NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-                       XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+                       NX, NY, NX, NY, TIME, ETIME, TR0,              &
+                       XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
           IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
 !
 ! 7.  Data type 0 ---------------------------------------------------- /
@@ -894,15 +895,16 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      USE W3SERVMD, ONLY: EXTCDE
+      USE W3SERVMD,  ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD,  ONLY: STRACE
 #endif
 !/
-      USE W3WDATMD, ONLY: TIME
-      USE W3IDATMD, ONLY: INPUTS
-      USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSS,   &
-                          MDSO, ETIME, IDINP
+      USE W3WDATMD,  ONLY: TIME
+      USE W3IDATMD,  ONLY: INPUTS
+      USE WMMDATMD,  ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSS,  &
+                           MDSO, ETIME, IDINP
+      USE CONSTANTS, ONLY: DAIR
 !/
       IMPLICIT NONE
 !/
@@ -1113,8 +1115,8 @@
 ! 2.f Air density 
 !
         CASE (6)
-          CALL WMUPDS ( IMOD, INPUTS(IMOD)%RAIR,                      &
-                        JMOD, INPUTS(JMOD)%RAIR, 0. )
+          CALL WMUPDS ( IMOD, INPUTS(IMOD)%RHN,                       &
+                        JMOD, INPUTS(JMOD)%RHN, DAIR )
 !
 ! 2.g Assimilation data 0
 !

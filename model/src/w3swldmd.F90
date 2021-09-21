@@ -60,17 +60,18 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SWL4 (A, CG, WN, S, D)
+      SUBROUTINE W3SWL4 (A, CG, WN, DAIR, S, D)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Feb-2012 |
+!/                  | Last update :         13-Aug-2021 |
 !/                  +-----------------------------------+
 !/
 !/    29-May-2009 : Origination (w3srcxmd.ftn)          ( version 3.14 )
 !/    06-Jan-2012 : Implementation                         (S. Zieger)
+!/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
 !/
 !  1. Purpose :
 !
@@ -85,6 +86,7 @@
 !      A¹      R.A. I  Action density spectrum
 !      CG      R.A. I  Group velocities
 !      WN      R.A. I  Wavenumbers
+!      DAIR    R.A. I   Air density
 !      S¹      R.A. O  Source term 
 !      D¹      R.A. O  Diagonal term of derivative
 !      ¹ Stored as 1-D array with dimension NTH*NK (column by column).
@@ -124,7 +126,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: GRAV, DAIR, DWAT
+      USE CONSTANTS, ONLY: GRAV, DWAT
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG2, DDEN, FTE, SWL6B1
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -134,7 +136,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      REAL, INTENT(IN)  :: A(NSPEC), CG(NK), WN(NK)
+      REAL, INTENT(IN)  :: A(NSPEC), CG(NK), WN(NK), DAIR
       REAL, INTENT(OUT) :: S(NSPEC), D(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /

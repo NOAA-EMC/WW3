@@ -1892,7 +1892,7 @@
                             XIN, DIA, LLWS, IX, IY, LAMBDA )
 #endif
 #ifdef W3_ST6
-                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,   &
+                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
                           TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 #endif
                   END IF
@@ -1924,7 +1924,7 @@
                                   USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 #endif
 #ifdef W3_ST4
-                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, XDS, &
+                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
                                   DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 #endif
 #ifdef W3_ST6

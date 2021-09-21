@@ -2478,6 +2478,9 @@
                                        WADATS(I)%MD0(NSEA) ,          &
                                        WADATS(I)%MDI(NSEA) )
 !
+              IF ( J.EQ.6 ) ALLOCATE ( WADATS(I)%RA0(NSEA) ,          &
+                                       WADATS(I)%RAI(NSEA) )
+!
           END IF !  IF ( INPMAP(I,J) .NE. 0 ) THEN
         END DO !  DO J=JFIRST, 9
 !
@@ -5578,6 +5581,9 @@
                                        WADATS(I)%MAI(NSEA) ,          &
                                        WADATS(I)%MD0(NSEA) ,          &
                                        WADATS(I)%MDI(NSEA) )
+!
+              IF ( J.EQ.6 ) ALLOCATE ( WADATS(I)%RA0(NSEA) ,          &
+                                       WADATS(I)%RAI(NSEA) )
 !
             END IF
           END DO

@@ -53,7 +53,7 @@
 !      TVN       I.A.  Public   Time for mud viscosity field.
 !      TIN       I.A.  Public   Time for ice field. (concentration)
 !      TU0/N     I.A.  Public   Times for momentum fields.
-!      TRN       I.A.  Public   Time for air density field.
+!      TR0/N     I.A.  Public   Times for air density fields.
 !      TI1N      I.A.  Public   Time for ice field. (parameter 1)
 !      TI2N      I.A.  Public   Time for ice field. (parameter 2)
 !      TI3N      I.A.  Public   Time for ice field. (parameter 3)
@@ -74,7 +74,7 @@
 !      ICEI      R.A.  Public   Ice concentrations.
 !      UX0/N     R.A.  Public   Cartesian X and Y momentum components
 !      UY0/N     R.A.  Public      for both times.
-!      RAIR      R.A.  Public   Air density
+!      RH0/N     R.A.  Public   Air density for both times
 !      BERGI     R.A.  Public   Iceberg damping coefficient
 !      IINIT     Log.  Public   Flag for array initialization.
 !      FLLEV     Log.  Public   Flag for water level input.
@@ -157,7 +157,7 @@
 !/
       TYPE INPUT
         INTEGER               :: TFN(2,-7:10), TC0(2), TW0(2),        &
-                                 TU0(2), TDN(2), TG0(2)
+                                 TU0(2), TR0(2), TDN(2), TG0(2)
         REAL                  :: GA0, GD0, GAN, GDN
 #ifdef W3_WRST
         REAL, POINTER         :: WXNwrst(:,:),WYNwrst(:,:)
@@ -167,10 +167,10 @@
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  UX0(:,:), UY0(:,:), UXN(:,:),        &
-                                 UYN(:,:), RAIR(:,:), BERGI(:,:),     &
-                                 MUDT(:,:), MUDV(:,:), MUDD(:,:),     &
-                                 ICEP1(:,:), ICEP2(:,:), ICEP3(:,:),  &
-                                 ICEP4(:,:), ICEP5(:,:)
+                                 UYN(:,:), RH0(:,:), RHN(:,:),        &
+                                 BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
+                                 MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
+                                 ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
 #ifdef W3_TIDE
  REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
                            WLTIDE(:,:,:,:)
@@ -193,10 +193,10 @@
 !/
       INTEGER, POINTER        :: TFN(:,:), TLN(:), TC0(:), TCN(:),    &
                                  TW0(:), TWN(:), TU0(:), TUN(:),      &
-                                 TIN(:), TRN(:), T0N(:), T1N(:),      &
-                                 T2N(:), TDN(:), TG0(:), TGN(:),      &
-                                 TTN(:), TVN(:), TZN(:), TI1(:),      &
-                                 TI2(:), TI3(:), TI4(:), TI5(:) 
+                                 TIN(:), TR0(:), TRN(:), T0N(:),      &
+                                 T1N(:), T2N(:), TDN(:), TG0(:),      &
+                                 TGN(:), TTN(:), TVN(:), TZN(:),      &
+                                 TI1(:), TI2(:), TI3(:), TI4(:), TI5(:) 
       REAL, POINTER           :: GA0, GD0, GAN, GDN
       REAL, POINTER           :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
@@ -206,10 +206,10 @@
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  UX0(:,:), UY0(:,:), UXN(:,:),        &
-                                 UYN(:,:), RAIR(:,:), BERGI(:,:),     &
-                                 MUDT(:,:), MUDV(:,:), MUDD(:,:),     &
-                                 ICEP1(:,:), ICEP2(:,:), ICEP3(:,:),  &
-                                 ICEP4(:,:), ICEP5(:,:)
+                                 UYN(:,:), RH0(:,:), RHN(:,:),        &
+                                 BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
+                                 MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
+                                 ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
 #ifdef W3_TIDE
        REAL, POINTER           :: CXTIDE(:,:,:,:),         &
                                   CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
@@ -333,6 +333,8 @@
         INPUTS(I)%TW0(2)   =  0
         INPUTS(I)%TU0(1)   = -1
         INPUTS(I)%TU0(2)   =  0
+        INPUTS(I)%TR0(1)   = -1
+        INPUTS(I)%TR0(2)   =  0
         INPUTS(I)%TDN(1)   = -1
         INPUTS(I)%TDN(2)   =  0
         INPUTS(I)%TG0(1)   = -1
@@ -431,13 +433,13 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NGRIDS, NAUXGR, IGRID, W3SETG, NX, NY
+      USE W3GDATMD,  ONLY: NGRIDS, NAUXGR, IGRID, W3SETG, NX, NY
 #ifdef W3_SMC
-      USE W3GDATMD, ONLY: FSWND, NSEA
+      USE W3GDATMD,  ONLY: FSWND, NSEA
 #endif
-      USE W3SERVMD, ONLY: EXTCDE
+      USE W3SERVMD,  ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD,  ONLY: STRACE
 #endif
 !
       IMPLICIT NONE
@@ -659,7 +661,17 @@
         END IF
 !
       IF ( FLRHOA  ) THEN
-          ALLOCATE ( INPUTS(IMOD)%RAIR(NX,NY), STAT=ISTAT )
+#ifdef W3_SMC
+       IF( FSWND ) THEN
+          ALLOCATE ( INPUTS(IMOD)%RH0(NSEA,1) ,             &
+                     INPUTS(IMOD)%RHN(NSEA,1) , STAT=ISTAT )
+       ELSE
+#endif
+          ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
+                     INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
+#ifdef W3_SMC
+       ENDIF
+#endif
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
@@ -823,6 +835,7 @@
       TC0    => INPUTS(IMOD)%TC0
       TW0    => INPUTS(IMOD)%TW0
       TU0    => INPUTS(IMOD)%TU0
+      TR0    => INPUTS(IMOD)%TR0
       TG0    => INPUTS(IMOD)%TG0
       TDN    => INPUTS(IMOD)%TDN
 !
@@ -956,7 +969,8 @@
             END IF
 !
           IF ( FLRHOA  ) THEN
-              RAIR   => INPUTS(IMOD)%RAIR
+              RH0    => INPUTS(IMOD)%RH0
+              RHN    => INPUTS(IMOD)%RHN
             END IF
 !
         END IF

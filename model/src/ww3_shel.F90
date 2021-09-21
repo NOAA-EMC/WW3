@@ -2231,7 +2231,7 @@
                         IDSTR(3), INFLAGS1(3), TW0, TWN,  &
                         IDSTR(4), INFLAGS1(4), TIN,       &
                         IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-                        IDSTR(6), INFLAGS1(6), TRN,       &
+                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
                         IDSTR(7), INFLAGS1(7), T0N,       &
                         IDSTR(8), INFLAGS1(8), T1N,       &
                         IDSTR(9), INFLAGS1(9), T2N,       &
@@ -2607,7 +2607,16 @@
               IF ( FLH(J) ) THEN
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
+#ifdef W3_SMC
+ !!Li  Reshape the RH0/N space for sea-point only current. 
+ !!Li              JGLi26Jun2018. 
+              ELSE IF( FSWND ) THEN
+                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TR0, &
+                      XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR) 
+ !!Li 
+#endif
               ELSE
 #ifdef W3_OASIS
                 COUPL_COMM = MPI_COMM
@@ -2617,7 +2626,7 @@
 #endif
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR,   &
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
                              IERR, FLAGSC(J)                            &
 #ifdef W3_OASASCM
                              , COUPL_COMM                               &
@@ -2751,7 +2760,7 @@
                         IDSTR(3), INFLAGS1(3), TW0, TWN,  &
                         IDSTR(4), INFLAGS1(4), TIN,       &
                         IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-                        IDSTR(6), INFLAGS1(6), TRN,       &
+                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
                         IDSTR(7), INFLAGS1(7), T0N,       &
                         IDSTR(8), INFLAGS1(8), T1N,       &
                         IDSTR(9), INFLAGS1(9), T2N, TDN,  &
@@ -3094,6 +3103,8 @@
                '               ',A,L3,2(I10.8,I7.6)/                &
                '               ',A,L3,2(I10.8,I7.6)/                &
                '               ',A,L3,17X,(I10.8,I7.6)/             &
+               '               ',A,L3,2(I10.8,I7.6)/                &
+               '               ',A,L3,2(I10.8,I7.6)/                &
                '               ',A,L3,17X,(I10.8,I7.6)/             &
                '               ',A,L3,17X,(I10.8,I7.6)/             &
                '               ',A,L3,17X,(I10.8,I7.6)/             &
@@ -3112,6 +3123,8 @@
                '               ',A,L3,2(I10.8,I7.6)/               &
                '               ',A,L3,2(I10.8,I7.6)/               &
                '               ',A,L3,17X,(I10.8,I7.6)/            &
+               '               ',A,L3,2(I10.8,I7.6)/               &
+               '               ',A,L3,2(I10.8,I7.6)/               &
                '               ',A,L3,17X,(I10.8,I7.6)/            &
                '               ',A,L3,17X,(I10.8,I7.6)/            &
                '               ',A,L3,17X,2(I10.8,I7.6)/           &

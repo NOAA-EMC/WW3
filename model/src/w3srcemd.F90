@@ -1061,7 +1061,7 @@
 #endif
 
 #ifdef W3_ST6
-        CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD,     &
+        CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD, DAIR, &
                       TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 #endif
 !
@@ -1108,7 +1108,7 @@
                                   USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 #endif
 #ifdef W3_ST4
-        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, DAIR, VSDS,   &
                       VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 #endif
 

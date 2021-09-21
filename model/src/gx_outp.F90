@@ -1134,7 +1134,7 @@
 #endif
 #ifdef W3_ST6
                 CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
-                          TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
+                          DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
 #endif
               END IF
             IF ( FLSRCE(3) ) THEN
@@ -1167,7 +1167,7 @@
 #endif
 #ifdef W3_ST4
                 CALL W3SDS4 ( A, WN, CG,          &
-                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
+                                        USTAR, USTD, DEPTH, DAIR, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 #endif
 #ifdef W3_ST6
                 CALL W3SDS6 ( A, CG, WN,            XDS, DIA )

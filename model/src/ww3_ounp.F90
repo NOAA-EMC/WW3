@@ -2073,7 +2073,7 @@
                    CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,      &
                              WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
                              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS,DLWMEAN )
-                   CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,   &
+                   CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
                               DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
                    CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,     &
                            ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
@@ -2197,7 +2197,7 @@
                 CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
                              WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
                              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-                CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,   &
+                CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
                              DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 #endif
 #ifdef W3_ST6
@@ -2281,14 +2281,14 @@
                     CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,       &
                              WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,  &
                              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-                    CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,  &
+                    CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
                               DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
                     CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,    &
                            ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
                            TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
 #endif
 #ifdef W3_ST6
-                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,    &
+                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
                            TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 #endif
             END IF
@@ -2323,7 +2323,7 @@
                     CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,       &
                              WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,  &
                              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, XDS, &
+                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
                                   DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 #endif
 #ifdef W3_ST6

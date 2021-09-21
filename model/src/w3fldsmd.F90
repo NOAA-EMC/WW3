@@ -1001,7 +1001,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         13-Aug-2021 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -1013,6 +1013,8 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
 !/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
+!/    13-Aug-2021 : Allow scalar fields to be time      ( version 7.xx )
+!/                  interpolated
 !/
 !  1. Purpose :
 !
@@ -1230,7 +1232,7 @@
                     FX0(IX,IY) = FXN(IX,IY)
                     IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
                     END DO
-                  IF( FLST ) THEN
+                  IF( FLST .OR. .NOT.FL2D ) THEN
                       DO IY=1, NY
                         FA0(IX,IY) = FAN(IX,IY)
                         END DO
@@ -1375,7 +1377,7 @@
               FX0(IX,IY) = FXN(IX,IY)
               IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
               END DO
-            IF( FLST ) THEN
+            IF( FLST .OR. .NOT.FL2D ) THEN
                 DO IY=1, NY
                   FA0(IX,IY) = FAN(IX,IY)
                   END DO

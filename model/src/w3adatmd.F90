@@ -92,6 +92,8 @@
 !                               in W3UWND                      (degr)
 !      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
 !                               and inc.) in W3UTAU.
+!      RA0-I     R.A.  Public   Absolute air density (initial and inc.)
+!                               in W3URHO.
 !      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
 !                               increment) in W3UTAU.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
@@ -366,8 +368,9 @@
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
 ! Output fields group 1)
 !
@@ -550,8 +553,9 @@
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
                                  AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
@@ -884,7 +888,7 @@
                           USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
-      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA
+      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA, FLRHOA
       USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -1371,6 +1375,13 @@
                          WADATS(IMOD)%MAI(NSEA) ,           &
                          WADATS(IMOD)%MD0(NSEA) ,           &
                          WADATS(IMOD)%MDI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
+!
+          IF ( FLRHOA  ) THEN
+              ALLOCATE ( WADATS(IMOD)%RA0(NSEA) ,           &
+                         WADATS(IMOD)%RAI(NSEA) ,           &
                          STAT=ISTAT )
               CHECK_ALLOC_STATUS ( ISTAT )
             END IF
@@ -2985,6 +2996,11 @@
                   MAI    => WADATS(IMOD)%MAI
                   MD0    => WADATS(IMOD)%MD0
                   MDI    => WADATS(IMOD)%MDI
+                END IF
+!
+              IF ( INPUTS(IMOD)%INFLAGS1(6) ) THEN
+                  RA0    => WADATS(IMOD)%RA0
+                  RAI    => WADATS(IMOD)%RAI
                 END IF
 !
 #ifdef W3_PR1

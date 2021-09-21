@@ -2486,30 +2486,31 @@
 !/
       END SUBROUTINE W3ULEV
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3URHO ( )
+      SUBROUTINE W3URHO ( FLFRST )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           J. M. Castillo          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         13-Aug-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Mar-2021 : First implementation                ( version 7.13 )
+!/    13-Aug-2021 : Enable time interpolation           ( version 7.xx )
 !/
 !  1. Purpose :
 !
-!     Update air density 
+!     Interpolate air density field to the given time.
 !
 !  2. Method :
 !
-!     Conservative linear interpolation to new grid.
+!     Linear interpolation.
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       None
+!       FLFRST  Log.  I   Flag for first pass through routine.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -2529,14 +2530,24 @@
 !
 !  7. Remarks :
 !
+!     - Only air density over sea points is considered.
+!     - Time ranges checked in W3WAVE.
+!
 !  8. Structure :
 !
-!     See source code.
+!     --------------------------------------
+!      1.  Prepare auxiliary arrays
+!      2.  Calculate interpolation factors
+!      3.  Get actual air density
+!     --------------------------------------
 !
 !  9. Switches :
 !
-!     !/SHRD  Switch for shared / distributed memory architecture.
-!     !/DIST  Id.
+!     !/OMPG   OpenMP compiler directives
+!
+!     !/WNT0   No air density interpolation.
+!     !/WNT1   Linear air density interpolation.
+!     !/WNT2   Linear air density interpolation (and energy conservation for momentum).
 !
 !     !/S  Enable subroutine tracing.
 !     !/T  Enable test output.
@@ -2545,13 +2556,20 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NSEA, MAPSF
+#ifdef W3_SMC
+      USE W3GDATMD, ONLY: FSWND
+#endif
       USE W3WDATMD, ONLY: TIME, TRHO, RHOAIR
-      USE W3IDATMD, ONLY: TRN, RAIR
+      USE W3IDATMD, ONLY: TR0, TRN, RH0, RHN
+      USE W3ADATMD, ONLY: RA0, RAI
+      USE W3ODATMD, ONLY: IAPROC, NAPROC
 !/
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
+!/
+      LOGICAL, INTENT(IN)     :: FLFRST
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -2559,6 +2577,7 @@
 #ifdef W3_S
       INTEGER, SAVE            :: IENT = 0
 #endif
+      REAL                    :: DT0N, DT0T, RD
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -2566,23 +2585,70 @@
       CALL STRACE (IENT, 'W3URHO')
 #endif
 !
-! 1.  Update times --------------------------------------------------- *
+! 1.  Prepare auxiliary arrays
 !
-      TRHO(1) = TRN(1)
-      TRHO(2) = TRN(2)
+      IF ( FLFRST ) THEN
+          DO ISEA=1, NSEA
+#ifdef W3_SMC
+ !!Li  For sea-point only SMC grid air density is stored on
+ !!Li  2-D RH0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+            IX = ISEA 
+            IY = 1
+        ELSE
+#endif
+            IX        = MAPSF(ISEA,1)
+            IY        = MAPSF(ISEA,2)
+#ifdef W3_SMC
+        ENDIF
+#endif
+
+            RA0(ISEA) = RH0(IX,IY)
+            RAI(ISEA) = RHN(IX,IY) - RH0(IX,IY)
+            END DO
+        END IF
 !
-! 2.  Main loop over sea points -------------------------------------- *
+! 2.  Calculate interpolation factor
+!
+      DT0N   = DSEC21 ( TR0, TRN )
+      DT0T   = DSEC21 ( TR0, TIME )
+!
+#ifdef W3_WNT0
+      RD     = 0.
+#endif
+#ifdef W3_WNT1
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+#endif
+#ifdef W3_WNT2
+      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+#endif
+#ifdef W3_OASACM
+     RD     = 1.
+#endif
+!
+#ifdef W3_T
+      WRITE (NDST,9000) DT0N, DT0T, RD
+#endif
+!
+! 3.  Actual momentum for all grid points
+!
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE (ISEA,RA0,RAI)
+#endif
 !
       DO ISEA=1, NSEA
-        IX        = MAPSF(ISEA,1)
-        IY        = MAPSF(ISEA,2)
-        RHOAIR(ISEA) = RAIR(IX,IY)
-      END DO
+!
+        RHOAIR(ISEA) = RA0(ISEA) + RD * RAI(ISEA)
+!
+        END DO
 !
       RETURN
 !
 ! Formats
 !
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3URHO : DT0N, DT0T, RD :',2F8.1,F6.3)
+#endif
 !/
 !/ End of W3URHO ----------------------------------------------------- /
 !/
