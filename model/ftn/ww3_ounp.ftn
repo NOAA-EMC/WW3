@@ -1889,7 +1889,7 @@
 !/ST4                   CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,            &
 !/ST4                             AMAX, UABS, UDIRR, TAUA, TAUADIR, RHOAIR, USTAR, USTD, &
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS,DLWMEAN )
-!/ST4                   CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,   &
+!/ST4                   CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
 !/ST4                              DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST4                   CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,     &
 !/ST4                           ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
@@ -1975,7 +1975,7 @@
 !/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1, WNMEAN,              &
 !/ST4                             AMAX, UABS, UDIRR, TAUA, TAUADIR, RHOAIR, USTAR, USTD, &
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-!/ST4                CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,   &
+!/ST4                CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
 !/ST4                             DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST6                CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !/ST6                FHIGH  = SIG(NK)
@@ -2029,12 +2029,12 @@
 !/ST4                    CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
 !/ST4                             AMAX, UABS, UDIRR, TAUA, TAUADIR, RHOAIR, USTAR, USTD, &
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-!/ST4                    CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, XDS,  &
+!/ST4                    CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
 !/ST4                              DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST4                    CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,    &
 !/ST4                           ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
 !/ST4                           TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
-!/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD,    &
+!/ST6                    CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
 !/ST6                           TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
             END IF
             IF ( FLSRCE(3) ) THEN
@@ -2053,7 +2053,7 @@
 !/ST4                    CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
 !/ST4                             AMAX, UABS, UDIRR, TAUA, TAUADIR, RHOAIR, USTAR, USTD, &
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
-!/ST4                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, XDS, &
+!/ST4                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
 !/ST4                                  DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 !/ST6                    CALL W3SDS6 ( A, CG, WN, XDS, DIA )
 !/ST6                    IF (SWL6S6) CALL W3SWL6 ( A, CG, WN, XWL, DIA )

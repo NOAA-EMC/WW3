@@ -1568,14 +1568,14 @@
       RETURN
       END SUBROUTINE CALC_USTAR
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, SRHS,      &
+      SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, DAIR, SRHS,    &
                          DDIAG, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  ! F. Ardhuin, F. Leckler, L. Romero !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Feb-2020 |
+!/                  | Last update :         13-Aug-2021 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Clean up from common ST3-ST4 routine( version 3.14-Ifremer )
@@ -1583,6 +1583,7 @@
 !/    13-Nov-2013 : Reduced frequency range with IG1 switch 
 !/    06-Jun-2018 : Add optional DEBUGSRC              ( version 6.04 )
 !/    22-Feb-2020 : Option to use Romero (GRL 2019)    ( version 7.06 )
+!/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
 !/
 !  1. Purpose :
 !
@@ -1606,6 +1607,7 @@
 !       USTAR     Real  I   Friction velocity.
 !       USDIR     Real  I   wind stress direction.
 !       DEPTH     Real  I   Water depth.
+!       DAIR      Real  I   Air density
 !       S         R.A.  O   Source term (1-D version).
 !       D         R.A.  O   Diagonal term of derivative.             *)
 !       BRLAMBDA  R.A.  O   Phillips' Lambdas
@@ -1642,7 +1644,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, TPI, RADE, DEBUG_NODE
+      USE CONSTANTS,ONLY: GRAV, DWAT, PI, TPI, RADE, DEBUG_NODE
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, SSDSBT, DDEN,      &
                           SSDSC, EC2, ES2, ESC,                      &
                           SIG, SSDSP, ECOS, ESIN, DTH, AAIRGB,       &
@@ -1665,7 +1667,7 @@
 !/
       INTEGER, OPTIONAL, INTENT(IN) :: IX, IY
       REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),            &
-                                 DEPTH, USTAR, USDIR, DLWMEAN 
+                                 DEPTH, DAIR, USTAR, USDIR, DLWMEAN 
       REAL, INTENT(OUT)       :: SRHS(NSPEC), DDIAG(NSPEC), BRLAMBDA(NSPEC)
       REAL, INTENT(OUT)       :: WHITECAP(1:4)
 !/

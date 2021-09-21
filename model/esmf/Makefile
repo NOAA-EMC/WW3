@@ -8,14 +8,12 @@ WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP ?= gnu
-WW3_CC := gcc
 WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
-WWATCH3_NETCDF := NC4
 NETCDF_CONFIG := $(shell which nc-config)
-export WWATCH3_ENV WWATCH3_NETCDF NETCDF_CONFIG
+export WWATCH3_ENV NETCDF_CONFIG
 
 EXE := $(WW3_EXEDIR)/ww3_multi_esmf
 
@@ -39,8 +37,12 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.inte
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel" "wcoss2"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss2"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+ WW3_CC=cc
+ WW3_F90=ftn
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 # mpt
@@ -134,9 +136,7 @@ env:
 	@echo '# Environment variables for wavewatch III'      >> $(WWATCH3_ENV)
 	@echo '# ---------------------------------------'      >> $(WWATCH3_ENV)
 	@echo '#'                                              >> $(WWATCH3_ENV)
-	@echo 'WWATCH3_LPR      $(PRINTER)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_F90      $(WW3_F90)'                    >> $(WWATCH3_ENV)
-	@echo 'WWATCH3_CC       $(WW3_CC)'                     >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_DIR      $(WW3_DIR)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_TMP      $(WW3_TMPDIR)'                 >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_SOURCE   yes'                           >> $(WWATCH3_ENV)

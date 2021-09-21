@@ -9,7 +9,7 @@
 # error codes : Various error outputs with explanaition.                      #
 #                                                                             #
 # scripts used :                                                              #
-#   make_makefile.sh   Script with all mandatory switches defined.            #
+#   build_utils.sh   Script with all mandatory switches defined.              #
 #                                                                             #
 # remarks:                                                                    #
 #   * Use all_switches to update data in 1.a.6.                               #
@@ -123,8 +123,8 @@ EOF
 # 1.a.5 Process input (part 2)
 
   bin_dir="$main_dir/exe"
-  script="$main_dir/bin/make_makefile.sh"
-  shorts="make_makefile.stripped"
+  script="$main_dir/bin/build_utils.sh"
+  shorts="build_utils.stripped"
 
   mkdir -p $temp_dir
 
@@ -226,7 +226,7 @@ EOF
   i_lft=`echo $old_switches | wc -w | awk '{ print $1 }'`
   i_old=$i_lft
 
-# 2.b Getting keywords from make_makefile.sh
+# 2.b Getting keywords from build_utils.sh
 
   if [ "$not_silent" ]
   then
@@ -245,7 +245,7 @@ EOF
 
   rm -f tempfile.$$ tempfile2.$$
 
-# 2.c Strip make_makefile.sh
+# 2.c Strip build_utils.sh
 
   sed -n /'for type in'/,/'esac'/p $script > tempfile.$$
 
