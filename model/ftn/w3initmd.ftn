@@ -58,7 +58,8 @@
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
-!/    22-Mar-2021 : Extra coupling fields               ( version 7.xx )
+!/    22-Mar-2021 : Extra coupling fields               ( version 7.13 )
+!/    22-Jun-2021 : GKE NL5 (Q. Liu)                    ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -111,7 +112,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.12  '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.13  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     'PUT_SW1' // &
                     'PUT_SW2' // &
@@ -359,6 +360,7 @@
                           OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
                           IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
                           FLOGR2, NOGRP, NGRPP, FLOGD, FLOG2
+!/NL5      USE W3ODATMD, ONLY: TOSNL5
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
@@ -1042,6 +1044,7 @@
 ! ... get first time 
 !
         IF ( FLOUT(J) ) THEN
+!/NL5       IF (J .EQ. 2) TOSNL5 = TONEXT(:, 2)
             TOUT = TONEXT(:,J)
             TLST = TOLAST(:,J)
 !
@@ -1256,7 +1259,6 @@
 !
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.5'
 !/DEBUGINIT     FLUSH(740+IAPROC)
-!/NEC/!CDIR LOOPCNT=100000
       DO IS=0, NSEA
 !/DEBUGINIT     WRITE(740+IAPROC,*) 'IS=', IS
 !/DEBUGINIT     FLUSH(740+IAPROC)
@@ -1268,7 +1270,6 @@
 !
 !/T1        WRITE (NDST,9051) IS, DEPTH
 !
-!/NEC/!CDIR LOOPCNT=100000
         DO IK=0, NK+1
 !
 !         Calculate wavenumbers and group velocities.
@@ -2053,16 +2054,36 @@
 !/MPI      IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or.       &
 !/MPI          (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
 !
-! NRQMAX is the maximum number of fields, it is the sum of the 
-! sizes of scalar fields (Hs) + 2-component vectors (CUR) + 3-comp ... 
+! NRQMAX is the maximum number of output fields that require MPI communication,
+! aimed to gather field values stored in each processor into one processor in
+! charge of model output; for each of such fields, this routine requires one
+! call to MPI_SEND_INIT and MPI_RECV_INIT storing the communication request
+! handles in the vectors IRQGO and IRQGO2 respectively.
+! NRQMAX is calculated as the sum of all fields described before (Hs)
+!    + 2 or 3 component fields (CUR) + 3 component fields + extra fields
+! For group 1 fields except ICEF, all processors contain information on all
+! grid points because they are input fields, and therefore this MPI
+! communication is not necessary and they do not contribute to NRQMAX.
 !
-!/MPI          NRQMAX = 1+0+0 + 19+0+0 + 0+0+0 +                     &
-!/MPI                   2+(NOGE(4)-2)*(NOSWLL+1) + 11+3+1 +          &
-!/MPI                   10+7+1 + 5+4+1 + 5+2+0 + 5+NOEXTR
+!/MPI          ! Calculation of NRQMAX splitted by output groups and field type
+!/MPI          !       scalar                2-comp   3-comp
+!/MPI          NRQMAX =   1                +    0  +    0  +  &  ! group 1 
+!/MPI                    18                +    0  +    0  +  &  ! group 2
+!/MPI                     0                +    0  +    0  +  &  ! group 3 (extra contributions below)
+!/MPI             2+(NOGE(4)-2)*(NOSWLL+1) +    0  +    0  +  &  ! group 4
+!/MPI                    11                +    3  +    1  +  &  ! group 5
+!/MPI                    12                +    7  +    1  +  &  ! group 6 (extra contributions below)
+!/MPI                     5                +    4  +    1  +  &  ! group 7
+!/MPI                     5                +    2  +    0  +  &  ! group 8
+!/MPI                     5                +    0  +    0  +  &  ! group 9
+!/MPI                NOEXTR                +    0  +    0        ! group 10
+!/MPI
+!/MPI          ! Extra contributions to NRQMAX from group 3
 !/MPI          DO IFJ=1,5
 !/MPI            IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
 !/MPI                                    E3DF(3,IFJ) - E3DF(2,IFJ) + 1
 !/MPI            END DO
+!/MPI          ! Extra contributions to NRQMAX from group 6
 !/MPI          IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
 !/MPI                                          P2MSF(3) - P2MSF(2) + 1
 !/MPI          IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
@@ -3739,8 +3760,7 @@
 !
 !/MPIT          WRITE (NDST,9020)
 !
-!/MPI          IF ( IAPROC.LE.NAPROC ) THEN
-!/MPI            IF ( IAPROC.NE.NAPRST ) THEN
+!/MPI          IF ( IAPROC.NE.NAPRST .AND. IAPROC.LE.NAPROC ) THEN
 !
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT0 + 1
@@ -3759,9 +3779,34 @@
 !/MPI              CALL MPI_SEND_INIT (FPIS(IAPROC), 1, WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 !/MPIT      WRITE (NDST,9021) IH, 'S FP', IROOT, IT, IRQRS(IH), IERR
+!
+!/MPI          ELSE IF ( IAPROC .EQ. NAPRST ) THEN
+!/MPI              DO I0=1, NAPROC
+!/MPI                IFROM  = I0 - 1
+!/MPI                IF ( I0 .NE. IAPROC ) THEN
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 1
+!/MPI                    CALL MPI_RECV_INIT (UST (I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R U*', IFROM, IT, IRQRS(IH), IERR
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 2
+!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R UD', IFROM, IT, IRQRS(IH), IERR
+!
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT0 + 3
+!/MPI                    CALL MPI_RECV_INIT (FPIS(I0),1,WW3_FIELD_VEC, &
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
+!/MPIT      WRITE (NDST,9021) IH, 'R FP', IFROM, IT, IRQRS(IH), IERR
+!/MPI                END IF
+!/MPI              END DO
 !/MPI            END IF
 !
-!/MPI            IF (OARST) THEN
+!/MPI          IF (OARST) THEN
 !/MPI              IF ( FLOGRR( 1, 2) ) THEN
 !/MPI                IH     = IH + 1
 !/MPI                IT     = IT0 + 4
@@ -3982,38 +4027,13 @@
 !/MPI                         IROOT, IT, MPI_COMM_WAVE, IRQRS(IH), IERR)
 !/MPIT        WRITE (NDST,9021) IH, 'S T2', IROOT, IT, IRQRS(IH), IERR
 !/MPI              END IF
-!/MPI            ENDIF
 !
 !/MPI            IF ( IAPROC .EQ. NAPRST ) THEN
-!/MPI              IF (OARST) THEN
 !/MPI                IF (NAPRST .NE. NAPFLD) CALL W3XDMA ( IMOD, NDSE, NDST, FLOGRR )
 !/MPI                CALL W3XETA ( IMOD, NDSE, NDST )
-!/MPI              ENDIF
 !
-!/MPI              DO I0=1, NAPROC
-!/MPI                IFROM  = I0 - 1
-!/MPI                IF ( I0 .NE. IAPROC ) THEN
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 1
-!/MPI                    CALL MPI_RECV_INIT (UST (I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R U*', IFROM, IT, IRQRS(IH), IERR
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 2
-!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R UD', IFROM, IT, IRQRS(IH), IERR
-!
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT0 + 3
-!/MPI                    CALL MPI_RECV_INIT (FPIS(I0),1,WW3_FIELD_VEC, &
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
-!/MPIT      WRITE (NDST,9021) IH, 'R FP', IFROM, IT, IRQRS(IH), IERR
-!/MPI                END IF
-!
-!/MPI                IF (OARST) THEN
+!/MPI                DO I0=1, NAPROC
+!/MPI                  IFROM  = I0 - 1
 !/MPI                  IF ( FLOGRR( 1, 2) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT0 + 4
@@ -4234,11 +4254,9 @@
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQRS(IH), IERR )
 !/MPIT      WRITE (NDST,9021) IH, 'R T2', IFROM, IT, IRQRS(IH), IERR
 !/MPI                  END IF
-!/MPI                END IF
+!/MPI                END DO
 !
-!/MPI              END DO
-!
-!/MPI              IF (OARST) CALL W3SETA ( IMOD, NDSE, NDST )
+!/MPI                CALL W3SETA ( IMOD, NDSE, NDST )
 !/MPI            END IF
 !/MPI          END IF
 !

@@ -1,26 +1,42 @@
 \vsssub
-\subsubsection{~$S_{ice}$: Damping by sea ice (Mosig et al.)} \label{sec:ICE5}
+\subsubsection{~$S_{ice}$: Damping by sea ice (effective medium models)} \label{sec:ICE5}
 \vsssub
 
 \opthead{IC5}{U. of Otago MATLAB code}{Q. Liu, E. Rogers, A. Babanin}
 
 \noindent
-The fifth method for representing ice-induced wave decay is based on another viscoelastic-type model, i.e., the EFS ice layer model described in \citet{art:MMS15}. The authors introduced viscosity into the thin elastic plate model of \citet{art:FS1994} and restricted it to one horizontal dimension (replacing a plate by a beam). The dispersion relation given by the EFS model can be written in the form
-\begin{equation}
-Q g k \tanh(k d)-\sigma^2 = 0,
-\label{eq:ic5a}
-\end{equation}
-%
-\begin{equation}
-Q = \frac{G_{\eta} h_i^3}{6 \rho_w g} (1+\nu) k^4 - \frac{\rho_i h_i \sigma^2}{\rho_w g} + 1.
-\label{eq:ic5b}
-\end{equation}
-%
-In Eq.~(\ref{eq:ic5a})$-$(\ref{eq:ic5b}), $G_{\eta} = G - i \sigma \rho_i \eta$ is the complex shear modulus, where $G$ is the \emph{effective} elastic shear modulus and $\eta$ is the \emph{effective} viscosity; $\rho_w$ ($\rho_i$) is the density of water (ice), $d$ is water depth, $h_i$ is the ice cover thickness, $\sigma$ is the radian frequency, $k=k_r + i k_i$ is the complex wavenumber, $g$ is the gravitational acceleration and $\nu=0.3$ refers to the Poisson ratio of sea ice.
+The fifth option ({\code IC5}) for representing ice-induced wave decay was introduced by \citet{Liu2020}. It provides three different models to estimate the attenuation rate $k_i$, including two viscoelastic (VE) beam models \citep{art:MMS15} and one viscous model \citep{Meylan2018}.
 
-Same as {\code IC3}, {\code IC5} requires four ice parameters as input: $C_{ice, 1}$ for ice thickness $h_i$ (m), $C_{ice, 2}$ for the \emph{effective} viscosity $\eta$ (m$^2$ s$^{-1}$), $C_{ice, 3}$ for ice density $\rho_i$ (kg m$^{-3}$) and $C_{ice, 4}$ for the \emph{effective} shear modulus $G$ (Pa). For example, as shown in \citet[][see their Fig. 8]{art:MMS15}, a setting of $C_{ice, 1,...,4}=[1.0\ \mathrm{m},\ 5.0\times10^7\ \mathrm{m^2\ s^{-1}},\ 917.0\ \mathrm{kg\ m^{-3}},\ 4.9\times10^{12}\ \mathrm{Pa}]$ (with a water depth $d$ of 4300 m) can be used to fit the observed wave attenuation rates reported in \citet{art:MBK14}. The application of the EFS model to two realistic case studies is presented in \citet{Liu2018ic5}.
+Each of the two VE models, i.e., the extended Fox and Squire model \citep[hereafter the EFS model; see also][]{art:FS1994} and the Robinson and Palmer model \citep[][hereafter the RP model]{Robinson1990}, describes the infinitely-long, floating ice layer as a homogeneous VE medium, the characteristics of which are represented by two \emph{empirical} rheological parameters, namely the elastic shear modulus of the ice layer $G$ and the viscosity of the ice layer $\eta$. Under this paradigm, the dispersion relation is modified as \citep{art:MMS15}:
+\begin{equation}
+Q g \kappa \tanh(\kappa d)-\sigma^2 = 0,
+\label{eq:vedisp}
+\end{equation}
+where $d$ is the water depth and $\kappa = k_r + i k_i$ is the complex wavenumber of ice-coupled waves. The real part $k_r = 2\pi / \lambda$ characterizes the effect of ice on the wavelength and $k_i$ is the attenuation rate of wave amplitude. The $Q$ term in (\ref{eq:vedisp}) for the EFS and RP models reads
 
-The dispersion relation shown above is solved iteratively using the Newton-Raphson method. The numerical solver, however, may fail for small wave periods in some rare cases (particularly for shallow water depth $d$ and low $G$). In such cases, the estimated wavelength $k_r$ is unreasonably low. Several namelist variables (limiters) are introduced to improve the code stability:
+\begin{align}
+Q_{EFS} &= \frac{G_{\eta} h_i^3}{6 \rho_w g} (1+\nu) \kappa^4 - \frac{\rho_i h_i \sigma^2}{\rho_w g} + 1,\label{eq:fsdisp}\\
+%
+Q_{RP}  &= \frac{G h_i^3}{6 \rho_w g} (1+\nu) \kappa^4 - \frac{\rho_i h_i \sigma^2}{\rho_w g} + 1 - i \frac{\sigma \eta}{\rho_w g}.\label{eq:rpdisp}
+\end{align}
+Here $\rho_w$ ($\rho_i$) is the density of water (sea ice), $h_i$ is the ice cover thickness, $G_{\eta}=G- i \sigma \rho_i \eta$ is the complex shear modulus and $\nu \simeq 0.3$ is the Poisson ratio of sea ice. The viscosity parameter $\eta$ for the EFS model has the dimension of the kinematic viscosity (unit: m$^2$ s$^{-1}$), whereas $\eta$ for the RP model denotes a constant viscous damping force per unit area and per unit velocity \citep[unit: kg m$^{-2}$ s$^{-1}$;][]{Meylan2018}. Due to their high similarity, (\ref{eq:fsdisp}) and (\ref{eq:rpdisp}) can be computed by a single solver using the Newton-Raphson iterative method \citep[see Appendix of][]{Liu2020}.
+
+Through a detailed theoretical analysis, \citet{Meylan2018} suggested under the assumption that $k_r$ does not deviate from the open-water wavenumber $k_0$ significantly, and that the attenuation rate $k_i$ is weak, the two VE models described above predict
+\begin{align}
+k_i^{EFS} &\propto \eta h_i^3 \sigma^{11},\label{eq:fspw}\\ k_i^{RP} &\propto \frac{\eta}{\rho_w g^2} \sigma^3,\label{eq:rppw}
+\end{align}
+whereas previous field measurements \citep[e.g.,][]{Meylan2018, Rogers2021} support a power law $k_i \propto \sigma^n$, with $n$ between 2 and 4. Eqs.~(\ref{eq:fspw}) and (\ref{eq:rppw}) indicate at certain regimes (i.e., $k_r \approx k_0$ and low $k_i$), $k_i$ of the EFS model is too sensitive to wave frequency and $k_i$ of the RP model shows no dependence on ice thickness.
+
+The third model included in the {\code IC5} module is based on the ``Model with Order 3 Power Law'' proposed by \citet[][their section 6.2; hereafter the M2 model]{Meylan2018}, which assumes the loss of wave energy is proportional to the horizontal ice velocity squared times the ice thickness. The attenuation rate is given by
+\begin{equation}
+k_i^{M2} = \frac{\eta h_i}{\rho_w g^2} \sigma^3,
+\label{eq:m2pw}
+\end{equation}
+where $k_i$ is linearly scaled with $h_i$, similar to the field measurements collected in \citet{art:Dob15} under pancake ice and $\eta$ is in kg m$^{-3}$ s$^{-1}$. 
+
+Same as {\code IC3}, {\code IC5} requires four ice parameters as input: $C_{ice, 1}$ for ice thickness $h_i$ (m), $C_{ice, 2}$ for the \emph{effective} viscosity $\eta$ (unit varies with the model selected; see above), $C_{ice, 3}$ for ice density $\rho_i$ (kg m$^{-3}$) and $C_{ice, 4}$ for the \emph{effective} shear modulus $G$ (Pa)\footnote{This parameter is not relevant for the M2 model and one can simply use $G=1$ Pa when the M2 model is selected.}. Applications of the {\code IC5} module to two case studies were presented in \citet{Liu2020}. The reader is referred to this paper and the regression test {\code ww3\_tic1.1} for examples of how to use this ice module.
+
+The namelist {\F SIC5} contains the parameters summarized below:
 \begin{clist}
 \cit{IC5MINIG} {the minimum allowed shear modulus $G$; Default= 1 Pa (i.e., zero $G$ is not allowed).}
 %
@@ -30,9 +46,10 @@ The dispersion relation shown above is solved iteratively using the Newton-Raphs
 %
 \cit{IC5MAXKI} {the maximum allowed $k_i$; Default=100 m$^{-1}$ (i.e., by default, this option is not used).}
 %
-\cit{IC5MINHW} {the minimum allowed water depth $d$; Default=300 m (this basically limits {\code IC5} to the deep-water case).}
+\cit{IC5MINHW} {the minimum allowed water depth $d$; Default=0 m (i.e., by default, this option is not used).}
 %
 \cit{IC5MAXITER} {the maximum allowed \# of iteration; Default=100.}
+%
+\cit{IC5VEMOD} {the sea ice model to be selected: 1 - {\code EFS}, 2 - {\code RP}, 3 - {\code M2}; Default=3 (i.e., \textbf{the {\code M2} model is chosen}).}
 \end{clist}
-
-Note that the EFS model used here regards the ice cover as a continuous homogeneous medium and characterizes various ice types with two \emph{totally empirical} rheological parameters, namely the elastic shear modulus $G$ and the viscosity $\eta$. As argued in \citet{art:MMS15}, these two parameters \emph{``cannot be measured directly as they do not represent observable physical processes''}. Therefore, ``no restrictions on the acceptable values of the rheological parameters, \emph{except positiveness}, can be imposed.'' So strictly speaking, the EFS model is better termed as an \emph{effective medium} model rather than a \emph{viscoelastic} model.
+The first 6 parameters were introduced to improve the stability of the numerical solver for the EFS model \citep[the solver may fail for small wave periods in some rare cases, particularly for shallow water depth $d$ and low $G$; see][]{Liu2020}. Nonetheless, since version 7.12, the M2 model becomes the default option and these limiters are therefore not used by default.

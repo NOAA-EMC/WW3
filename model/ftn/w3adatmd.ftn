@@ -38,7 +38,8 @@
 !/    30-Jul-2017 : Adds TWS parameter                  ( version 6.02 )
 !/    05-Jun-2018 : Adds PDLIB and MEMCHECK             ( version 6.04 )
 !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
+!/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.13 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -89,6 +90,8 @@
 !                               in W3UWND                      (degr)
 !      MA0-I     R.A.  Public   Absolute atmospheric momentum (initial
 !                               and inc.) in W3UTAU.
+!      RA0-I     R.A.  Public   Absolute air density (initial and inc.)
+!                               in W3URHO.
 !      MD0-I     R.A.  Public   Atmospheric momentum direction (initial and
 !                               increment) in W3UTAU.
 !      ATRNX/Y   R.A.  Public   Actual transparency info.
@@ -359,8 +362,9 @@
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
 ! Output fields group 1)
 !
@@ -480,11 +484,6 @@
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3        LOGICAL, POINTER      :: MAPTRN(:)
 !
-!/SMC        INTEGER               :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!/SMC                                 NACT, NMXY
-!/SMC        INTEGER, POINTER      :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
-!
 ! Warning Defined but not set if UGTYPE .EQ. .T. 
             INTEGER, POINTER      :: ITER(:,:)
 !
@@ -532,8 +531,9 @@
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
-                                 MA0(:), MAI(:), MD0(:), MDI(:),      &
-                                 AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
+                                 MA0(:), MAI(:), RA0(:), RAI(:),      &
+                                 MD0(:), MDI(:), AS0(:), ASI(:),      &
+                                 ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
                                  AS(:), CX(:), CY(:), TAUA(:), TAUADIR(:)
@@ -596,11 +596,6 @@
 !/PR3      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3      LOGICAL, POINTER        :: MAPTRN(:)
-!
-!/SMC      INTEGER, POINTER        :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!/SMC                                 NACT, NMXY
-!/SMC      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
 !
           INTEGER, POINTER        :: ITER(:,:)
 !
@@ -779,7 +774,7 @@
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -845,7 +840,7 @@
                           USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
-      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA
+      USE W3IDATMD, ONLY: FLCUR, FLWIND, FLTAUA, FLRHOA
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -1296,6 +1291,13 @@
               CHECK_ALLOC_STATUS ( ISTAT )
             END IF
 !
+          IF ( FLRHOA  ) THEN
+              ALLOCATE ( WADATS(IMOD)%RA0(NSEA) ,           &
+                         WADATS(IMOD)%RAI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
+!
           ALLOCATE ( WADATS(IMOD)%ATRNX(NY*NX,-1:1) ,                 &
                      WADATS(IMOD)%ATRNY(NY*NX,-1:1) , STAT=ISTAT      )
           CHECK_ALLOC_STATUS ( ISTAT )
@@ -1366,15 +1368,6 @@
 !/PR3                     WADATS(IMOD)%MAPTRN(NY*NX) , STAT=ISTAT     )
 !/PR3          CHECK_ALLOC_STATUS ( ISTAT )
 !/PR3          WADATS(IMOD)%MAPTH2 = 0
-!
-!/SMC          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)     ,             &
-!/SMC                     WADATS(IMOD)%MAPY2(NY*NX)     ,             &
-!/SMC                     WADATS(IMOD)%MAPAXY(NY*NX)    ,             &
-!/SMC                     WADATS(IMOD)%MAPXY(NSEA)      ,             &
-!/SMC                     WADATS(IMOD)%MAPTH2(NSPEC)    ,             &
-!/SMC                     WADATS(IMOD)%MAPWN2(NSPEC+NTH), STAT=ISTAT  )
-!/SMC          CHECK_ALLOC_STATUS ( ISTAT )
-!/SMC          WADATS(IMOD)%MAPTH2 = 0
 !
           ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,                     &
                      WADATS(IMOD)%SPPNT(NTH,NK,4), STAT=ISTAT         )
@@ -1448,7 +1441,7 @@
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2512,7 +2505,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28_Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
 !/                  Add aditional undefined arrays.
-!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.xx )
+!/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2631,15 +2624,6 @@
 !/PR3      NMY2   => WADATS(IMOD)%NMY2
 !/PR3      NACT   => WADATS(IMOD)%NACT
 !/PR3      NCENT  => WADATS(IMOD)%NCENT
-!
-!/SMC      NMX0   => WADATS(IMOD)%NMX0
-!/SMC      NMX1   => WADATS(IMOD)%NMX1
-!/SMC      NMX2   => WADATS(IMOD)%NMX2
-!/SMC      NMY0   => WADATS(IMOD)%NMY0
-!/SMC      NMY1   => WADATS(IMOD)%NMY1
-!/SMC      NMY2   => WADATS(IMOD)%NMY2
-!/SMC      NACT   => WADATS(IMOD)%NACT
-!/SMC      NMXY   => WADATS(IMOD)%NMXY
 !
 !/NL1      NFR    => WADATS(IMOD)%NFR
 !/NL1      NFRHGH => WADATS(IMOD)%NFRHGH
@@ -2842,6 +2826,11 @@
                   MDI    => WADATS(IMOD)%MDI
                 END IF
 !
+              IF ( INPUTS(IMOD)%INFLAGS1(6) ) THEN
+                  RA0    => WADATS(IMOD)%RA0
+                  RAI    => WADATS(IMOD)%RAI
+                END IF
+!
 !/PR1              IS0    => WADATS(IMOD)%IS0
 !/PR1              IS2    => WADATS(IMOD)%IS2
 !/PR1              FACVX  => WADATS(IMOD)%FACVX
@@ -2861,13 +2850,6 @@
 !/PR3              MAPTH2 => WADATS(IMOD)%MAPTH2
 !/PR3              MAPWN2 => WADATS(IMOD)%MAPWN2
 !/PR3              MAPTRN => WADATS(IMOD)%MAPTRN
-!
-!/SMC              MAPX2  => WADATS(IMOD)%MAPX2
-!/SMC              MAPY2  => WADATS(IMOD)%MAPY2
-!/SMC              MAPAXY => WADATS(IMOD)%MAPAXY
-!/SMC              MAPXY  => WADATS(IMOD)%MAPXY
-!/SMC              MAPTH2 => WADATS(IMOD)%MAPTH2
-!/SMC              MAPWN2 => WADATS(IMOD)%MAPWN2
 !
                IF (GTYPE .EQ. UNGTYPE) ITER   => WADATS(IMOD)%ITER
 !
@@ -2949,7 +2931,7 @@
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
-!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.xx )
+!/    22-Mar-2021 : Adds WNMEAN, TAUOC parameters       ( version 7.13 )
 !/
 !  1. Purpose :
 !

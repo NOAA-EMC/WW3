@@ -11,7 +11,7 @@
 !/
 !/    01-Sep-2012 : Origination.                        ( version 4.07 )
 !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
-!/    21-Apr-2020 : Correction of time and implicit none( version 7.XX )
+!/    21-Apr-2020 : Correction of time and implicit none( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -341,7 +341,7 @@
 !/                  +-----------------------------------+
 !/
 !/    29-Jun-2013 : Creation                            ( version 4.11 )
-!/    21-Apr-2020 : Add 5 additional tidal const.       ( version 7.XX )
+!/    21-Apr-2020 : Add 5 additional tidal const.       ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -583,6 +583,11 @@
 
 !
       JBASE=0
+
+      ! initialize arrays to avoid NaN values
+      FA(:)=0
+      UA(:)=0
+      VA(:)=0
 
       DO K=1,NTIDAL_CON
         J1=JBASE+1

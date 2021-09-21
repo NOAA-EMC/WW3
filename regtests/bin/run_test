@@ -3,11 +3,13 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
-#                    Last update :         04-May-2020                        #
+#                    Last update :         21-May-2020                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
 #    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
-#    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.XX ) 
+#    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.12 ) 
+#    20-April-2021 : A. Abdolali added ww3_grib bulid and execution ( version 7.12 )
+#    21-May-2021 : C. Bunney add support for ALPS job placement     ( version 7.12 )
 #
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
@@ -55,7 +57,7 @@ Options:
   -a ww3_env       : use WW3 environment setup file <ww3_env>
                    :   *default is <source_dir>/bin/wwatch3.env
                    :   *file will be created if it does not already exist
-  -b batchq        : optional setting to determine batch queue type (for slurm now)
+  -b batchq        : optional setting to determine batch queue type (slurm or alps)
   -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
                    :   OASIS : OASIS3-mct ww3_shel coupled application
@@ -82,6 +84,8 @@ Options:
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
                    :   both   : post-process both native and NetCDF output
+                   :   grib   : post-process only GRIB2 output
+                   :   all    : post-process in native, NetCDF and GRIB2 formats
                    :   * default is native
                    :   * note that required input files must be present for
                    :     selected output post-processing to occur
@@ -186,7 +190,7 @@ then
   exit_p=$exec_p
 fi
 case $outopt in
-  native|netcdf|both) ;;
+  native|netcdf|both|grib|all) ;;
   *) errmsg "outopt = $outopt not supported" ; usage ; exit 1 ;;
 esac
 case $coupl in
@@ -269,7 +273,7 @@ fi
 
 # 2.h Paths to source subdirectories
 path_e="$path_s/exe"
-path_a="$path_s/aux"
+path_a="$path_s/tools"
 path_b="$path_s/bin"
 if [ ! -d $path_a ]
 then
@@ -488,7 +492,7 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPG //'    | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
                   sed 's/B4B //' > $path_b/switch
   else
@@ -497,7 +501,7 @@ then
   if [ $testST ] 
   then #add S T switches 
     \cp -f $path_b/switch $path_b/switch_noST
-    cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+    cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
     rm $path_b/switch_noST
   fi
 
@@ -636,7 +640,7 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPG //'    | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
                   sed 's/B4B //' > $path_b/switch
 
@@ -646,7 +650,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -773,7 +777,7 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPG //'    | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
                   sed 's/B4B //' > $path_b/switch
     else
@@ -782,7 +786,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -908,7 +912,7 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPG //'    | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
                     sed 's/B4B //' > $path_b/switch
     else
@@ -917,7 +921,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1042,7 +1046,7 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPG //'    | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
                     sed 's/B4B //' > $path_b/switch
     else
@@ -1051,7 +1055,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1184,7 +1188,7 @@ then
     if [ $force_shrd ] && [ -z "$(grep TIDE $file_c)" ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPG //'    | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
                     sed 's/B4B //' > $path_b/switch
     else
@@ -1193,7 +1197,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1202,7 +1206,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then
           runprog="$runprog -n $nproc"
 
@@ -1244,10 +1248,21 @@ then
 
     for g in $input_grids
     do
-
+      echo "grid= $g"
       if [ $multi -eq 2 ]
       then
         gu="_$g"
+# check if each grid has its own input
+        if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+        then
+           inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+        else
+           inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+        fi
+        inputs_tmp=`( ls ${path_i}/${prog}${gu}* )`
+        if [ ! -z "$inputs_tmp" ];then
+           inputs=$inputs_tmp
+        fi
       fi
 
       for ifile in $inputs
@@ -1258,12 +1273,12 @@ then
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
-          otype="`basename $ifile .nml | sed s/^${prog}_//`"
+          otype="`basename $ifile .nml | sed s/^${prog}_// | sed s/^${g}_//`"
           ofile="$path_w/`basename $ifile .nml`.out"
         else
           \rm -f $prog.inp
           \ln -s $ifile $prog.inp
-          otype="`basename $ifile .inp | sed s/^${prog}_//`"
+          otype="`basename $ifile .inp | sed s/^${prog}_// | sed s/^${g}_//`"
           ofile="$path_w/`basename $ifile .inp`.out"
         fi
   
@@ -1347,7 +1362,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
 
@@ -1356,7 +1371,7 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then 
           runprog="$runprog -n $nproc"
         else
@@ -1478,6 +1493,16 @@ then
   cp $path_i/bottomspectrum.inp .
 fi
 
+# copy rmp_src* files from input to work directory
+  rmpfile=`\ls $path_i/rmp_src*.nc 2>/dev/null`
+  if [ ! -z "$rmpfile" ]; then
+    for rmpnc in $rmpfile
+    do
+      cp $rmpnc .
+      echo "copying $rmpnc to $path_w"
+    done
+  fi
+
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
@@ -1546,7 +1571,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1627,10 +1652,9 @@ then
     then
       if [ $nproc ]
       then
-        if [ -z $batchq ] && [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then 
           runprog="$runprog -n $nproc"
-        
         else
           runprog="$runprog -np $nproc"
         fi
@@ -1639,6 +1663,9 @@ then
       then
         if ( which omplace ) ; then
           runprog="$runprog omplace -nt $nthrd"
+        elif [ $batchq = "alps" ]
+        then
+          runprog="$runprog -d $nthrd /usr/bin/env OMP_NUM_THREADS=$nthrd"
         else
           runprog="$runprog /usr/bin/env OMP_NUM_THREADS=$nthrd"
         fi
@@ -1660,7 +1687,22 @@ then
     if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
     then
       halfnproc=$(($nproc / 2))
-      if $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
+      if [ $runcmd = "srun" ]
+      then
+        \rm -f $ofile
+        conf="srun.conf"
+        echo 0-$(( $halfnproc - 1 )) $path_e/$prgb > $conf
+        echo $halfnproc-$(( $nproc - 1 )) $path_w/toy_model >> $conf
+        if $runcmd -n $nproc --multi-prog $conf
+        then
+          \rm -f track_i.ww3
+          \rm -f $prog.inp
+          \rm -f $conf
+        else
+          errmsg "Error occured during $path_e/$prog execution"
+          exit 1
+        fi
+      elif $runcmd -np $halfnproc $path_e/$prgb : -np $halfnproc $path_w/toy_model | tee $ofile
       then
         \rm -f track_i.ww3
         \rm -f $prog.inp
@@ -1733,7 +1775,7 @@ then
     if [ $force_shrd ]
     then # build pre- & post-processing programs with SHRD only
       cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                  sed 's/OMPG //'    | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
                   sed 's/B4B //' > $path_b/switch
     else
@@ -1742,7 +1784,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -1825,6 +1867,8 @@ case $outopt in
   native) out_progs="ww3_outf" ;;
   netcdf) out_progs="ww3_ounf" ;;
   both)   out_progs="ww3_outf ww3_ounf" ;;
+  grib)   out_progs="ww3_grib" ;;
+  all)    out_progs="ww3_outf ww3_ounf ww3_grib" ;;
   *)      out_progs="" ;;
 esac
 
@@ -1847,6 +1891,10 @@ do
   then
     rline='| NC Gridded output  |'
   fi
+  if [ $prog = ww3_grib ]
+  then
+    rline='| GRIB Gridded output  |'
+  fi
   if [ $prog = gx_outf ]
   then
     rline='|GrADS Gridded output|'
@@ -1863,7 +1911,6 @@ do
       inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
     fi
 
-
     if [ $? = 0 ]
     then
 
@@ -1876,16 +1923,29 @@ do
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPG //'    | \
                       sed 's/OMPH //'    | sed 's/PDLIB //' | \
                       sed 's/B4B //' > $path_b/switch
       else
         \cp -f $file_c $path_b/switch
       fi
+      if [ $prog = ww3_grib ]
+      then 
+        cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                      sed 's/MPIT //'    | sed 's/NOGRB/NCEP2 NCO/' | \
+                      sed 's/B4B //' > $path_b/switch
+      fi
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        if [ $prog = ww3_grib ]
+        then
+          cat $path_b/switch_noST | sed 's/NCEP2/NCEP2 S T /' > $path_b/switch
+        else 
+          cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
+        fi
         rm $path_b/switch_noST
       fi
     
@@ -1926,7 +1986,66 @@ do
           fi
           gu="_$g"
         fi
+# for ww3_grib only
+        if [ $prog == 'ww3_grib' ]
+        then
+         ifile=`( ls ${path_i}/${prog}${gu}.??? )`
 
+# link conf file
+          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          then
+            \rm -f $prog.nml
+            \ln -s $path_i/$prog${gu}.nml $prog.nml
+            otype="`basename $prog${gu}.nml | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $prog.nml`${gu}.out"
+          else
+            \rm -f $prog.inp
+            \ln -s $path_i/$prog${gu}.inp $prog.inp
+            otype="`basename $prog${gu}.inp | sed s/^${prog}_//`"
+            ofile="$path_w/`basename $prog.inp`${gu}.out"
+          fi
+
+          echo "   Processing $path_i/$prog${gu}.inp"
+          echo "   Screen output routed to $ofile"
+
+          if [ $multi -eq 2 ]
+          then
+            \rm -f mod_def.ww3
+            \rm -f out_grd.ww3
+            \ln -s mod_def.$g mod_def.ww3
+            \ln -s out_grd.$g out_grd.ww3
+            \rm -fr ${otype}_$g
+          fi
+        if [ $time_count ]
+        then # Add time counter if -T
+          Tstart=`date +"%s.%2N"`
+        fi
+
+        if $path_e/$prog > $ofile
+          then
+            \rm -f $prog.inp
+            \rm -f $prog.nml
+            if [ $multi -eq 2 ]
+            then
+              \rm -f mod_def.ww3
+              \rm -f out_grd.ww3
+              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              then
+                mv $prog.nml.log ${prog}_$g.nml.log
+              fi
+              ofiles="`ls gribfile 2>/dev/null`"
+              if [ $? = 0 ]
+              then
+                mv -f $ofiles $g.grb2
+                echo "   GRIB output files moved to $g.grb2"
+              fi
+            fi
+       
+        else
+            errmsg "Error occured during $path_e/$prog execution"
+        fi
+#for ww3_ounf, ww3_outp and ww3_gx_outf
+        else
         for ifile in $inputs
         do
 
@@ -1946,7 +2065,8 @@ do
 
           echo "   Processing $ifile"
           echo "   Screen output routed to $ofile"
-    
+
+ 
           if [ $multi -eq 2 ]
           then
             \rm -f mod_def.ww3
@@ -2027,9 +2147,12 @@ do
             printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
           fi
 
+       
         done
+        fi
 
       done
+
 
     fi
 
@@ -2048,6 +2171,7 @@ case $outopt in
   native) out_progs="ww3_outp" ;;
   netcdf) out_progs="ww3_ounp" ;;
   both)   out_progs="ww3_outp ww3_ounp" ;;
+  all)   out_progs="ww3_outp ww3_ounp" ;;
   *)      out_progs="" ;;
 esac
 
@@ -2096,7 +2220,7 @@ do
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                      sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                      sed 's/OMPG //'    | \
                       sed 's/OMPH //'    | sed 's/PDLIB //' | \
                       sed 's/B4B //' > $path_b/switch
       else
@@ -2105,7 +2229,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2257,7 +2381,7 @@ do
       if [ $force_shrd ]
       then # build pre- & post-processing programs with SHRD only
         cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                    sed 's/OMPG //'    | sed 's/OMPX //'  | \
+                    sed 's/OMPG //'    | \
                     sed 's/OMPH //'    | sed 's/PDLIB //' | \
                     sed 's/B4B //' > $path_b/switch
       else
@@ -2266,7 +2390,7 @@ do
       if [ $testST ]
       then #add S T switches 
         \cp -f $path_b/switch $path_b/switch_noST
-        cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+        cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
         rm $path_b/switch_noST
       fi
 
@@ -2425,7 +2549,7 @@ then
 #  if [ $force_shrd ]
 #  then # build pre- & post-processing programs with SHRD only
 #    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-#                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+#                  sed 's/OMPG //'    | \
 #                  sed 's/OMPH //'    | sed 's/PDLIB //'  > $path_b/switchh
 #  else
 #    \cp -f $file_c $path_b/switch
@@ -2433,7 +2557,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch 
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch 
       rm $path_b/switch_noST
     fi
 
@@ -2478,10 +2602,10 @@ then
     then
       if [ $nproc ]
       then
-        if [ $batchq = "slurm" ]
+        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
         then
           runprog="$runprog -n $nproc"
-  
+
         else
           runprog="$runprog -np $nproc"
         fi
@@ -2572,7 +2696,7 @@ then
     if [ $testST ]
     then #add S T switches 
       \cp -f $path_b/switch $path_b/switch_noST
-      cat $path_b/switch_noST | sed 's/F90/F90 S T /' > $path_b/switch
+      cat $path_b/switch_noST | sed 's/NOGRB/NOGRB S T /' > $path_b/switch
       rm $path_b/switch_noST
     fi
   
@@ -2622,7 +2746,7 @@ then
      then
        if [ $nproc ]
        then
-         if [ $batchq = "slurm" ]
+         if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
          then
            runprog="$runprog -n $nproc"
          else

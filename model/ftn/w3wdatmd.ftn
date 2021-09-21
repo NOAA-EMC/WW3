@@ -19,7 +19,8 @@
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    06-Jun-2018 : Add PDLIB/SETUP/DEBUGINIT           ( version 6.04 )
-!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.13 )
+!/    28-Jun-2021 : GKE NL5 parameters (Q. Liu)         ( version 7.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -49,6 +50,11 @@
 !      TIME      I.A.  Public   Valid time for spectra.
 !      TIME00    I.A.  Public   Initial time
 !      TIMEEND   I.A.  Public   Final time 
+!      QI5TBEG   I.A.  Public   Initial time for NL5 (absol. time)
+!      QR5TIM0   R.A.  Public   Previous time step t0 (relat. time)
+!      QR5CVK0   R.A.  Public   Cvk @ t0
+!      QC5INT0   C.A.  Public   Inpqr (time integral) @ t0
+!      QR5TMIX   R.A.  Public   Previous time for phase mixing
 !      TLEV      I.A.  Public   Valid time for water levels.
 !      TICE      I.A.  Public   Valid time for ice concentration
 !      TRHO      I.A.  Public   Valid time for air density 
@@ -119,6 +125,9 @@
                                  TIC1(2), TIC5(2)
 !/OASIS        INTEGER               :: TIME00(2)
 !/OASIS        INTEGER               :: TIMEEND(2)
+!/NL5        INTEGER               :: QI5TBEG(2)
+!/NL5        REAL, POINTER         :: QR5TIM0(:), QR5CVK0(:, :), QR5TMIX(:)
+!/NL5        COMPLEX, POINTER      :: QC5INT0(:, :)
         REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),   &
                                  UST(:), USTDIR(:), ASF(:), FPIS(:),  &
                                  BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
@@ -142,6 +151,9 @@
                                  TIC1(:), TIC5(:)
 !/OASIS      INTEGER, POINTER        :: TIME00(:)
 !/OASIS      INTEGER, POINTER        :: TIMEEND(:)
+!/NL5      INTEGER, POINTER        :: QI5TBEG(:)
+!/NL5      REAL, POINTER           :: QR5TIM0(:), QR5CVK0(:, :), QR5TMIX(:)
+!/NL5      COMPLEX, POINTER        :: QC5INT0(:, :)
       REAL, POINTER           :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),  &
                                  UST(:), USTDIR(:), ASF(:), FPIS(:),  &
                                  BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
@@ -281,7 +293,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -343,6 +355,7 @@
       USE W3SERVMD, ONLY: EXTCDE
       USE CONSTANTS, ONLY : LPDLIB, DAIR
       USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
+!/NL5      USE W3GDATMD, ONLY: QI5NNZ
 !/PDLIB      use yowNodepool, only: npa, np
 !/PDLIB      use yowRankModule, only : rank
 !/PDLIB      USE W3GDATMD, ONLY: GTYPE, UNGTYPE
@@ -458,6 +471,27 @@
 !/DEBUGINIT    FLUSH(740+IAPROC)
 !/DEBUGINIT    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL, ' NSEALM=', NSEALM
 !/DEBUGINIT    FLUSH(740+IAPROC)
+!
+! * Four arrays for NL5 (QL)
+! * AFAIK, the set up of QR5TIM0, QR5CVK0, QC5INT0 should be similar
+! * to VA, though I am not really clear about how FL_ALL works.
+! *
+!/NL5          ALLOCATE ( WDATAS(IMOD)%QR5TIM0(0:NSEALM),             &
+!/NL5                     WDATAS(IMOD)%QR5CVK0(NSPEC, 0:NSEALM),      &
+!/NL5                     WDATAS(IMOD)%QC5INT0(QI5NNZ, 0:NSEALM),     &
+!/NL5                     WDATAS(IMOD)%QR5TMIX(0:NSEALM), STAT=ISTAT)
+!/NL5          CHECK_ALLOC_STATUS ( ISTAT )
+!
+! * Initialized NL5 arrays with zero (QL)
+!/NL5          WDATAS(IMOD)%QR5TIM0 = 0.0
+!/NL5          WDATAS(IMOD)%QR5CVK0 = 0.0
+!/NL5          WDATAS(IMOD)%QC5INT0 = (0.0, 0.0)
+!/NL5          WDATAS(IMOD)%QR5TMIX = 0.0
+!
+!/NL5          WRITE(*, *)
+!/NL5          WRITE(*, '(A, I4, I12)') '⊚ → [WW3 WDAT]: IMOD & QI5NNZ: ', IMOD, QI5NNZ
+!/NL5          WRITE(*, *)
+!
           IF ( NSEAL .NE. NSEALM ) THEN
 !/DEBUGINIT    WRITE(740+IAPROC,*) 'Before settings to ZERO'
 !/DEBUGINIT    FLUSH(740+IAPROC)
@@ -465,6 +499,11 @@
 !/DEBUGINIT    WRITE(740+IAPROC,*) 'ISEA=', ISEA
 !/DEBUGINIT    FLUSH(740+IAPROC)
               WDATAS(IMOD)%VA(:,ISEA) = 0.
+!
+!/NL5              WDATAS(IMOD)%QR5TIM0(ISEA)   = 0.0
+!/NL5              WDATAS(IMOD)%QR5CVK0(:,ISEA) = 0.0
+!/NL5              WDATAS(IMOD)%QC5INT0(:,ISEA) = (0.0, 0.0)
+!/NL5              WDATAS(IMOD)%QR5TMIX(ISEA)   = 0.0
             END DO
           END IF
 !/DEBUGINIT    WRITE(740+IAPROC,*) 'W3DIMW, step 8.11'
@@ -560,7 +599,7 @@
 !/    31-Mar-2004 : Origination.                        ( version 3.06 )
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-!/    22-Mar-2021 : Support for variable air density    ( version 7.xx )
+!/    22-Mar-2021 : Support for variable air density    ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -647,6 +686,7 @@
       TIME   => WDATAS(IMOD)%TIME
 !/OASIS      TIME00 => WDATAS(IMOD)%TIME00
 !/OASIS      TIMEEND => WDATAS(IMOD)%TIMEEND
+!/NL5      QI5TBEG => WDATAS(IMOD)%QI5TBEG
       TLEV   => WDATAS(IMOD)%TLEV
       TICE   => WDATAS(IMOD)%TICE
       TRHO   => WDATAS(IMOD)%TRHO
@@ -658,6 +698,10 @@
       IF ( DINIT ) THEN
           IF ( FL_ALL ) THEN
             VA     => WDATAS(IMOD)%VA
+!/NL5            QR5TIM0 => WDATAS(IMOD)%QR5TIM0
+!/NL5            QR5CVK0 => WDATAS(IMOD)%QR5CVK0
+!/NL5            QC5INT0 => WDATAS(IMOD)%QC5INT0
+!/NL5            QR5TMIX => WDATAS(IMOD)%QR5TMIX
 !!/PDLIB            VAOLD     => WDATAS(IMOD)%VAOLD
 !/PDLIB            SHAVETOT     => WDATAS(IMOD)%SHAVETOT
 !/PDLIB            VSTOT     => WDATAS(IMOD)%VSTOT

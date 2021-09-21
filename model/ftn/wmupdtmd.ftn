@@ -21,9 +21,10 @@
 !/                  (T. J. Campbell, NRL)
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -91,7 +92,7 @@
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -164,9 +165,9 @@
       USE W3WDATMD, ONLY: TIME
 
       USE W3IDATMD, ONLY: INFLAGS1, TLN, TC0, TCN, TW0, TWN, TU0,     &
-                          TUN, TIN, T0N, T1N, T2N, TG0, TGN, TFN,     &
-                          TDN, TTN, TVN, TZN, TI1, TI2, TI3, TI4,     &
-                          TI5, JFIRST
+                          TUN, TR0, TRN, TIN, T0N, T1N, T2N, TG0,     &
+                          TGN, TFN, TDN, TTN, TVN, TZN, TI1, TI2,     &
+                          TI3, TI4, TI5, JFIRST
 
       USE WMMDATMD, ONLY: IMPROC, MDSO, MDSS, MDST, MDSE, NMPSCR,     &
                           NMPERR, ETIME, FLLSTL, FLLSTR, FLLSTI,      &
@@ -247,7 +248,7 @@
 !/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
 !/T      WRITE (MDST,9003) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
-!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
+!/T      WRITE (MDST,9003) 6, IDINP(IMOD,6), INFLAGS1(6), TR0, TRN
 !/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
 !/T      WRITE (MDST,9002) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
 !/T      WRITE (MDST,9002) 9, IDINP(IMOD,9), INFLAGS1(9), T2N
@@ -409,7 +410,7 @@
 !/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
 !/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
 !/T      WRITE (MDST,9072) 5, IDINP(IMOD,5), INFLAGS1(5), TU0, TUN
-!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), INFLAGS1(6), TRN
+!/T      WRITE (MDST,9072) 6, IDINP(IMOD,6), INFLAGS1(6), TR0, TRN
 !/T      WRITE (MDST,9071) 7, IDINP(IMOD,7), INFLAGS1(7), T0N
 !/T      WRITE (MDST,9071) 8, IDINP(IMOD,8), INFLAGS1(8), T1N
 !/T      WRITE (MDST,9073) 9, IDINP(IMOD,9), INFLAGS1(9), T2N, TDN
@@ -463,7 +464,7 @@
 !/                  +-----------------------------------+
 !/
 !/    07-Oct-2006 : Origination.                        ( version 3.10 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -525,14 +526,16 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY
+!/SMC      USE W3GDATMD, ONLY: FSWND, NSEA
       USE W3WDATMD, ONLY: TIME
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
-                          TW0, TWN, TU0, TUN, WX0, WXN, WY0, WYN,     &
-                          DT0, DTN, TIN, TRN, ICEI, UX0, UXN, UY0,    &
-                          UYN, RAIR, T0N, T1N, T2N, TDN, INFLAGS1,    &
-                          TG0, TGN, GA0, GD0, GAN, GDN, BERGI, TTN,   &
-                          MUDT, TVN, MUDV, TZN, MUDD, TI1, TI2, TI3,  &
-                          TI4, TI5, ICEP1, ICEP2,ICEP3, ICEP4, ICEP5
+                          TW0, TWN, TU0, TUN, TR0, TRN, WX0, WXN,     &
+                          WY0, WYN, DT0, DTN, TIN, TRN, ICEI, UX0,    &
+                          UXN, UY0, UYN, RH0, RHN, T0N, T1N, T2N,     &
+                          TDN, INFLAGS1, TG0, TGN, GA0, GD0, GAN,     &
+                          GDN, BERGI, TTN, MUDT, TVN, MUDV, TZN,      &
+                          MUDD, TI1, TI2, TI3, TI4, TI5, ICEP1,       &
+                          ICEP2, ICEP3, ICEP4, ICEP5
       USE WMMDATMD, ONLY: IMPROC, NMPERR, MDST, MDSE, MDSF, ETIME,    &
                           FLLSTL, FLLSTI, FLLSTR, RCLD, NDT, DATA0,   &
                           DATA1, DATA2, NMV, NMVMAX, TMV, AMV, DMV
@@ -637,16 +640,30 @@
 ! 2.  Currents ------------------------------------------------------- /
 !
         CASE (2)
+!/SMC !!Li  For sea point current option FSWND.   JGLi08Feb2021
+!/SMC       IF( FSWND ) THEN
+!/SMC          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+!/SMC                       NSEA, 1, NSEA, 1, TIME, ETIME, TC0,            &
+!/SMC                       CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/SMC       ELSE
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                        NX, NY, NX, NY, TIME, ETIME, TC0,              &
                        CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/SMC       END IF
 !
 ! 3.  Winds ---------------------------------------------------------- /
 !
         CASE (3)
+!/SMC !!Li  For sea point wind option FSWND.   JGLi08Feb2021 
+!/SMC       IF( FSWND ) THEN
+!/SMC          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+!/SMC                       NSEA, 1, NSEA, 1, TIME, ETIME, TW0,            &
+!/SMC                       WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/SMC       ELSE
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                        NX, NY, NX, NY, TIME, ETIME, TW0,              &
                        WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/SMC       END IF
 !
 ! 4.  Ice ------------------------------------------------------------ /
 !
@@ -667,8 +684,8 @@
 !
         CASE (6)
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-                       NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-                       XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+                       NX, NY, NX, NY, TIME, ETIME, TR0,              &
+                       XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
           IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
 !
 ! 7.  Data type 0 ---------------------------------------------------- /
@@ -770,7 +787,7 @@
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -832,13 +849,14 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD,  ONLY: EXTCDE
+!/S      USE W3SERVMD,  ONLY: STRACE
 !/
-      USE W3WDATMD, ONLY: TIME
-      USE W3IDATMD, ONLY: INPUTS
-      USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSS,   &
-                          MDSO, ETIME, IDINP
+      USE W3WDATMD,  ONLY: TIME
+      USE W3IDATMD,  ONLY: INPUTS
+      USE WMMDATMD,  ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSS,  &
+                           MDSO, ETIME, IDINP
+      USE CONSTANTS, ONLY: DAIR
 !/
       IMPLICIT NONE
 !/
@@ -1017,8 +1035,8 @@
 ! 2.f Air density 
 !
         CASE (6)
-          CALL WMUPDS ( IMOD, INPUTS(IMOD)%RAIR,                      &
-                        JMOD, INPUTS(JMOD)%RAIR, 0. )
+          CALL WMUPDS ( IMOD, INPUTS(IMOD)%RHN,                       &
+                        JMOD, INPUTS(JMOD)%RHN, DAIR )
 !
 ! 2.g Assimilation data 0
 !
@@ -1133,7 +1151,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
@@ -1764,7 +1782,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
 !/
 !  1. Purpose :
@@ -2341,8 +2359,8 @@
 !/                  +-----------------------------------+
 !/                  (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    01-Jul-2019 : Origination.                        ( version 7.XX )
-!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.XX )
+!/    01-Jul-2019 : Origination.                        ( version 7.13 )
+!/    01-Jul-2019 : Generalize output to curv grids     ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2438,7 +2456,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2557,7 +2575,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -2678,7 +2696,7 @@
 !/
 !/                     (R. Padilla-Hernandez, EMC/NOAA)
 !/
-!/    29-July-2019 :                        ( version 7.XX )
+!/    29-July-2019 :                        ( version 7.13 )
 !/
 
       ! THIS FUNCTION USES AVERAGING TO ESTIMATE THE VALUE

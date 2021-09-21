@@ -8,7 +8,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -46,7 +46,8 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.12 )
+!/    02-Sep-2021 : Added coordinates attribute         ( version 7.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -180,11 +181,11 @@
                               WRITE_META, WRITE_GLOBAL_META,           &
                               WRITE_FREEFORM_META_LIST,                &
                               META_T, NCVARTYPE, CRS_META, CRS_NAME,   &
-                              FL_DEFAULT_GBL_META
+                              FL_DEFAULT_GBL_META, COORDS_ATTR
 !
       USE NETCDF
 
-!/SMC      USE W3SMCOMD
+!/SMC      USE W3SMCOMD, SMCNOVAL=>NOVAL
 
       IMPLICIT NONE
 
@@ -200,7 +201,7 @@
                                  NDSTRC, NTRACE, IERR, I, I1F, I2F,    &
                                  IOTEST, NOUT,                         &
                                  IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
-                                 IOUT, S3, IRET, HASNC4,               &
+                                 IOUT, S3, IRET,                       &
                                  NBIPART, CNTIPART, NCVARTYPEI, IPART, &
                                  RTDNX, RTDNY
       INTEGER                 :: TOUT(2), TDUM(2), TREF(2), TEPOCH(2), &
@@ -218,7 +219,7 @@
 !
       LOGICAL                 :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP),     &
                                  VECTOR, TOGETHER, FLGNML, FLGFC
-
+      LOGICAL                 :: MAPSTAOUT = .TRUE.
       LOGICAL                 :: SMCGRD = .FALSE.
 !/RTD      LOGICAL                 :: RTDL = .FALSE.
 
@@ -226,7 +227,8 @@
       CHARACTER(LEN=32)       :: EPOCH_ISO
       CHARACTER(LEN=64)       :: EPOCH
       CHARACTER               :: TIMEUNIT*1 ! 'D' = days, or 'S' for seconds
-
+!
+      REAL                    :: NOVAL      ! Fill value for seapoints with no value
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -252,23 +254,20 @@
 !/S      CALL STRACE (IENT, 'W3OUNF')
 !
       WRITE (NDSO,900)
-
-!/SMC      SMCGRD = .TRUE.
-!
-!/RTD ! Is the grid really rotated
-!/RTD      IF ( Polat < 90. ) RTDL = .True.
-!/RTD !
 !
       ! Default epoch time:
       TEPOCH(1) = 19900101
       TEPOCH(2) = 0
-!
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Read model definition file.
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!
+!/RTD ! Is the grid really rotated?
+!/RTD      IF ( Polat < 90. ) RTDL = .True.
+!/RTD !
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -286,10 +285,13 @@
         END DO
       END DO
 !
+!/SMC      IF( GTYPE .EQ. SMCTYPE )  THEN
+!/SMC          SMCGRD = .TRUE.
+!/SMC          WRITE (NDSO, *) " Conversion for SMCTYPE:", GTYPE
+!/SMC      ENDIF 
+!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4.  Read requests from input file.
-!
-
 !
 ! process ww3_ounf namelist
 !
@@ -323,14 +325,16 @@
         S3 = NML_FIELD%TIMESPLIT
         TTYPE = NML_FIELD%TIMEVAR
         TIMEUNIT = NML_FIELD%TIMEUNIT
+        NOVAL = NML_FIELD%NOVAL
+        MAPSTAOUT = NML_FIELD%MAPSTA
         IF(SMCGRD) THEN
-!/SMC          SMCTYPE = NML_SMC%TYPE
+!/SMC          SMCOTYPE = NML_SMC%TYPE
 !/SMC          SXO = NML_SMC%SXO
 !/SMC          SYO = NML_SMC%SYO
 !/SMC          EXO = NML_SMC%EXO
 !/SMC          EYO = NML_SMC%EYO
 !/SMC          CELFAC = NML_SMC%CELFAC
-!/SMC          NOVAL = NML_SMC%NOVAL
+!/SMC          SMCNOVAL = NOVAL
         ELSE
           IX1 = NML_FILE%IX0
           IXN = NML_FILE%IXN 
@@ -375,14 +379,13 @@
         READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         READ (NDSI,*,END=801,ERR=802) TOGETHER
-!       ! ChrisB: Vector, Time variable type and time variable units only
-!       ! configurable via namelist input. Default to DOUBLE and "days since" here:
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801,ERR=802) VECTOR
-!        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!        READ (NDSI,*,END=801, ERR=802) TTYPE, TIMEUNIT
+
+!       The following are only configurable via the namelist input
+!       and are hardcoded for .inp files:
         TTYPE = "D"
         TIMEUNIT = "D"
+        NOVAL = UNDEF 
+        VECTOR = .TRUE.
 
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
         FILEPREFIX= 'ww3.'
@@ -391,26 +394,23 @@
         READ (NDSI,*,END=801,ERR=802) S3
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
+        IF(SMCGRD) THEN
 !/SMC        ! SMC output type (1 or 2)
-!/SMC        READ (NDSI,*,END=801,ERR=802) SMCTYPE
-!/SMC        IF(SMCTYPE .EQ. 1) THEN  ! Flat sea point output
+!/SMC        READ (NDSI,*,END=801,ERR=802) SMCOTYPE
+!/SMC        IF(SMCOTYPE .EQ. 1) THEN  ! Flat sea point output
 !/SMC           CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC           READ (NDSI,*,END=801,ERR=802) SXO, SYO, EXO, EYO
-!/SMC        ELSE IF(SMCTYPE .EQ. 2) THEN  ! Regular grid output
+!/SMC        ELSE IF(SMCOTYPE .EQ. 2) THEN  ! Regular grid output
 !/SMC           CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC           READ (NDSI,*,END=801,ERR=802) SXO, SYO, EXO, EYO, CELFAC
 !/SMC        ENDIF
-!/SMC        NOVAL = UNDEF
-        IF( .NOT. SMCGRD) THEN
+!/SMC        SMCNOVAL = NOVAL
+        ELSE 
            READ (NDSI,*,END=801,ERR=802) IX1, IXN, IY1, IYN
         ENDIF
 
         CLOSE(NDSI,ERR=800,IOSTAT=IERR)
-
-        VECTOR = .TRUE.  ! Only vector output for .inp files.
-
       END IF ! .NOT. FLGNML
-
 
       CALL STR_TO_UPPER(TTYPE)
       CALL STR_TO_UPPER(TIMEUNIT)
@@ -508,16 +508,10 @@
         WRITE (NDSE,1010) NCTYPE
         CALL EXTCDE ( 1 )
       END IF
-      ! if NCTYPE = 4 checking that it is compiled with NC4
-      HASNC4=0
-!/NC4      HASNC4=1
-      IF ((HASNC4 .EQ. 0).AND.(NCTYPE.EQ.4)) THEN
-        WRITE (NDSE,1012)
-        CALL EXTCDE ( 1 )
-      END IF
 
+      IF(SMCGRD) THEN
 !/SMC      WRITE(NDSO, 4100)
-!/SMC      IF(SMCTYPE .EQ. 1) THEN  ! Flat sea point output
+!/SMC      IF(SMCOTYPE .EQ. 1) THEN  ! Flat sea point output
 !/SMC        ALLOCATE(SMCMASK(NSEA))
 !/SMC        ALLOCATE(SMCIDX(NSEA))
 !/SMC        SMCMASK(:) = .FALSE.
@@ -526,7 +520,7 @@
 !/SMC        NXO = SMCNOUT
 !/SMC        NYO = 1
 !/SMC        WRITE(NDSO, 4120) SMCNOUT
-!/SMC      ELSE IF(SMCTYPE .EQ. 2) THEN  ! Regular grid output
+!/SMC      ELSE IF(SMCOTYPE .EQ. 2) THEN  ! Regular grid output
 !/SMC        ! Calculate regridding weights:
 !/SMC        ALLOCATE(XIDX(NSEA), YIDX(NSEA), XSPAN(NSEA),                   &
 !/SMC                 YSPAN(NSEA), WTS(NSEA), SMCIDX(NSEA))
@@ -535,7 +529,7 @@
 !/SMC
 !/SMC        ! Allocate space for coverage array and new MAPSTA array
 !/SMC        ALLOCATE(COV(NXO,NYO), MAPSMC(NXO,NYO))
-!/SMC      ELSE IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) THEN  ! Nearest neighbour interpolation
+!/SMC      ELSE IF(SMCOTYPE .EQ. 3 .OR. SMCOTYPE .EQ. 4) THEN  ! Nearest neighbour interpolation
 !/SMC        CALL READ_SMCINT()
 !/SMC      ENDIF
 !/SMC
@@ -553,9 +547,8 @@
 !/SMC      RTDNY = NYO
 !/SMC
 !/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) RTDL = .FALSE.
-
-      IF(.NOT. SMCGRD) THEN
+!/SMC!/RTD      IF(SMCOTYPE .EQ. 3 .OR. SMCOTYPE .EQ. 4) RTDL = .FALSE.
+      ELSE 
         IX1    = MAX ( IX1 , 1 )
         IXN    = MIN ( IXN , NX )
         IY1    = MAX ( IY1 , 1 )
@@ -772,9 +765,6 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
 !
- 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
-               '     NCTYPE = 4 BUT NOT COMPILED WITH NC4'/)
-!
  1013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     TIMEUNITS MUST BE ONE OF "S" OR "D"' /           &
                '     GOT: ',A /)
@@ -826,7 +816,7 @@
 !/    26-Jan-2021 : Added TP output (derived from fp)   ( version 7.12 )
 !/                  and alternative dir/mag output.
 !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -917,8 +907,7 @@
 !/
       INTEGER                 :: IFI, IFJ, MFILL, I, J, ISEA, IX, IY,  &
                                  I1, J1, IPART, INDEXIPART, COORDTYPE
-      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID,        & 
-                                 MAPSTAOUT, NDSDAT,                    &
+      INTEGER                 :: S1, S2, S4, S5, NCID, OLDNCID, NDSDAT,&
                                  NFIELD, N, IRET, IK, EXTRADIM, IVAR,  &
                                  IVAR1
       INTEGER                 :: DIMID(6), VARID(300), START(4),       &
@@ -928,7 +917,7 @@
                                  EPOCHDATE(8),                         &
                                  MAP(NX+1,NY), MP2(NX+1,NY)
 !
-!/NC4    INTEGER                  :: DEFLATE=1
+      INTEGER                  :: DEFLATE=1
 !/S      INTEGER, SAVE           :: IENT   =   0
 !
       INTEGER, ALLOCATABLE    :: TRIGP2(:,:)
@@ -1008,10 +997,9 @@
       XX     = UNDEF
       XY     = UNDEF
       ! CB: Dont output MAPSTA for SMC grid - it does not make sense
-      IF( SMCGRD ) THEN
-        MAPSTAOUT = 0
-      ELSE
-        MAPSTAOUT = 1
+      IF( SMCGRD .AND. MAPSTAOUT) THEN
+        WRITE(NDSO,*) "MAPSTA output disabled for SMC grids"
+        MAPSTAOUT = .FALSE.
       ENDIF
       NCVARTYPE  = NCVARTYPEI
       NDSDAT=30
@@ -1079,13 +1067,12 @@
       FNAMENC(S1+1:S1+S4) = TIMEID(1:S4)
 
       !
-
 !/SMC!
 !/SMC!---  Update MAPSMC for SMC type 2 output. This needs to be
 !/SMC!     done at each timestep as MAPSTA could change if there
 !/SMC!     are water level or ice input chagnes.
 !/SMC!
-!/SMC      IF(SMCTYPE .EQ. 2) CALL MAPSTA_SMC()
+!/SMC      IF( SMCGRD .AND. (SMCOTYPE .EQ. 2) ) CALL MAPSTA_SMC()
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
@@ -1949,7 +1936,7 @@
             ! If regular grid, initializes the lat/lon or x/y dimension lengths
             IF (GTYPE.NE.UNGTYPE) THEN 
               IF( SMCGRD ) THEN
-!/SMC                IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                  ! Flat seapoints file
 !/SMC                  !dimln(2) = NSEA
 !/SMC                  dimln(2) = SMCNOUT
@@ -1958,7 +1945,7 @@
 !/SMC                  ! Regular gridded lat/lon file:
 !/SMC                  dimln(2) = NXO
 !/SMC                  dimln(3) = NYO
-!/SMC                ENDIF ! SMCTYPE
+!/SMC                ENDIF ! SMCOTYPE
               ELSE ! SMCGRD
                 DIMLN(2)=IXN-IX1+1
                 DIMLN(3)=IYN-IY1+1
@@ -2072,7 +2059,7 @@
               ! If NOT curvilinear grid,
               ELSE 
                 IF( SMCGRD ) THEN
-!/SMC                   IF(SMCTYPE .EQ. 1) THEN
+!/SMC                   IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                     ! Flat seapoints file
 !/SMC                     IF(.NOT.ALLOCATED(lon)) ALLOCATE(lon(SMCNOUT))
 !/SMC                     IF(.NOT.ALLOCATED(lat)) ALLOCATE(lat(SMCNOUT))
@@ -2127,10 +2114,10 @@
 ! 2.5.2 Generates Lat-Lon arrays
 
               ! If regular grid
-              IF (GTYPE.EQ.RLGTYPE) THEN 
+              IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
                 IF( SMCGRD ) THEN
 !/SMC                  ! CB: Calculate lat/lons of SMC grid
-!/SMC                  IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                  IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                    ! CB: Flat seapoints file
 !/SMC                    DO i=1,SMCNOUT
 !/SMC                       j = SMCIDX(i)
@@ -2177,7 +2164,7 @@
 !/RTD                    ! avoid compile error when SMC switch not enabled (C.Bunney):
 !/RTD                    CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
 !/RTD                                  ANGLD2D, POLAT, POLON, RTDNY*RTDNX)
-!/SMC                  ENDIF ! SMCTYPE
+!/SMC                  ENDIF ! SMCOTYPE
                 ELSE ! SMCGRD
                     SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SX)) ))
                     SYD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SY)) ))
@@ -2304,13 +2291,13 @@
 ! 2.5.3 Writes longitudes, latitudes, triangles, frequency and status map (mapsta) to netcdf file
 
               ! If regular grid
-              IF (GTYPE.EQ.RLGTYPE) THEN 
+              IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
                 IF(SMCGRD) THEN ! CB: shelter original code from SMC grid
 !/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(1),LON(:))
 !/SMC                  CALL CHECK_ERR(IRET)
 !/SMC                  IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(:))
 !/SMC                  CALL CHECK_ERR(IRET)
-!/SMC                  IF(SMCTYPE .EQ. 1) THEN
+!/SMC                  IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                    ! For type 1 SCM file also put lat/lons and cell sizes:
 !/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(5),SMCCX)
 !/SMC                    CALL CHECK_ERR(IRET)
@@ -2372,7 +2359,7 @@
               END IF
 
               ! Writes status map array at variable index 2+1+coordtype+idim-4
-              IF (MAPSTAOUT.EQ.1) THEN 
+              IF (MAPSTAOUT) THEN 
                 START(1)=1
                 START(2)=1
                 COUNT(1)=IXN-IX1+1
@@ -2409,7 +2396,7 @@
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
                     IF( SMCGRD ) THEN
-!/SMC                      IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                      IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                        ! SMC Flat file
 !/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                      ELSE
@@ -2420,12 +2407,12 @@
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                           IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                           CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   ELSE
                     IF( SMCGRD ) THEN
-!/SMC                      IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                      IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                        ! SMC Flat file
 !/SMC                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                      ELSE
@@ -2435,9 +2422,10 @@
 !/SMC                      CALL CHECK_ERR(IRET)
                     ELSE ! SMCGRD
                       IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-!/NC4                          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                          CALL CHECK_ERR(IRET)
+                      CALL CHECK_ERR(IRET)
                     ENDIF ! SMCGRD
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF
                 ELSE
                   DIMFIELD(1)=DIMID(2)
@@ -2446,13 +2434,13 @@
                   IF (NCVARTYPE.EQ.2) THEN 
                     IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
-!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                        CALL CHECK_ERR(IRET)
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   ELSE 
                     IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
-!/NC4                        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                        CALL CHECK_ERR(IRET)
+                    IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                    IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF  
                 END IF
 
@@ -2499,7 +2487,7 @@
                 ! If it is spherical coordinate
                 IF (FLAGLL) THEN
                   IF(SMCGRD) THEN
-!/SMC                    IF(SMCTYPE .EQ. 1) THEN
+!/SMC                    IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                      IRET=NF90_INQ_DIMID (NCID, 'seapoint', DIMID(2))
 !/SMC                    ELSE
 !/SMC                      IRET=NF90_INQ_DIMID (NCID, 'longitude', DIMID(2))
@@ -2554,7 +2542,7 @@
                   IF (COORDTYPE.EQ.1) THEN
                     IF (NCVARTYPE.EQ.2) THEN 
                       IF( SMCGRD ) THEN
-!/SMC                        IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                        IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                          ! SMC Flat file
 !/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                        ELSE
@@ -2565,10 +2553,10 @@
                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                          CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     ELSE
                       IF( SMCGRD ) THEN
-!/SMC                        IF( SMCTYPE .EQ. 1 ) THEN
+!/SMC                        IF( SMCOTYPE .EQ. 1 ) THEN
 !/SMC                          ! SMC Flat file
 !/SMC                          IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
 !/SMC                        ELSE
@@ -2579,8 +2567,8 @@
                         IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
                         CALL CHECK_ERR(IRET)
                       ENDIF ! SMCGRD
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                     END IF
                   ELSE
                     DIMFIELD(1)=DIMID(2)
@@ -2589,13 +2577,13 @@
                     IF (NCVARTYPE.EQ.2) THEN 
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                     ELSE
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
-!/NC4                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
-!/NC4                      CALL CHECK_ERR(IRET)
+                      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
+                      CALL CHECK_ERR(IRET)
                     END IF
                   END IF
 !
@@ -2706,7 +2694,7 @@
 !/SMC                      END IF
 !/SMC                    END DO
 !/SMC                  END DO
-!/SMC                  IF(SMCTYPE .EQ. 1) THEN
+!/SMC                  IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                        MXX(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                    call CHECK_ERR(IRET)
@@ -2769,7 +2757,7 @@
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
-!/SMC                    IF(SMCTYPE .EQ. 1) THEN
+!/SMC                    IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                          MXX(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                      call CHECK_ERR(IRET)
@@ -2824,7 +2812,7 @@
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
-!/SMC                      IF(SMCTYPE .EQ. 1) THEN
+!/SMC                      IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                        IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                     &
 !/SMC                            MXX(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
 !/SMC                            (/COUNT(1), COUNT(3), COUNT(4)/))
@@ -2875,7 +2863,7 @@
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
-!/SMC                    IF(SMCTYPE .EQ. 1) THEN
+!/SMC                    IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                          MX1(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                      call CHECK_ERR(IRET)
@@ -2915,7 +2903,7 @@
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
-!/SMC                      IF(SMCTYPE .EQ. 1) THEN
+!/SMC                      IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                        IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                            MX1(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                        call CHECK_ERR(IRET)
@@ -2961,7 +2949,7 @@
 !/SMC                      END IF
 !/SMC                    END DO
 !/SMC                  END DO
-!/SMC                  IF(SMCTYPE .EQ. 1) THEN
+!/SMC                  IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                        MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                    call CHECK_ERR(IRET)
@@ -3024,7 +3012,7 @@
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
-!/SMC                    IF(SMCTYPE .EQ. 1) THEN
+!/SMC                    IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                          MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                      call CHECK_ERR(IRET)
@@ -3077,7 +3065,7 @@
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
-!/SMC                      IF(SMCTYPE .EQ. 1) THEN
+!/SMC                      IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                        IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                            MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                        call CHECK_ERR(IRET)
@@ -3126,7 +3114,7 @@
 !/SMC                        END IF
 !/SMC                      END DO
 !/SMC                    END DO
-!/SMC                    IF(SMCTYPE .EQ. 1) THEN
+!/SMC                    IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                          MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                      call CHECK_ERR(IRET)
@@ -3165,7 +3153,7 @@
 !/SMC                          END IF
 !/SMC                        END DO
 !/SMC                      END DO
-!/SMC                      IF(SMCTYPE .EQ. 1) THEN
+!/SMC                      IF(SMCOTYPE .EQ. 1) THEN
 !/SMC                        IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
 !/SMC                            MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
 !/SMC                        call CHECK_ERR(IRET)
@@ -3281,21 +3269,23 @@
       INTEGER, INTENT(OUT)              :: DIMID(6)
       INTEGER, INTENT(IN)               :: DIMLN(6)
       INTEGER, INTENT(OUT)              :: VARID(300)
-      INTEGER, INTENT(IN)               :: MAPSTAOUT
+      LOGICAL, INTENT(IN)               :: MAPSTAOUT
 !
 !/ ------------------------------------------------------------------- /
 !   Local parameters
 !
       INTEGER                           :: IVAR,IRET,ICODE,STRL,STRL2
       INTEGER                           :: DIMTRI(2)
-!/NC4    INTEGER                           :: DEFLATE=1
+      INTEGER                           :: DEFLATE=1
 !
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
+!
+      COORDS_ATTR = ''
 !      
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
-!/NC4      IF(NCTYPE.EQ.4) IRET = NF90_CREATE(TRIM(NCFILE), NF90_NETCDF4, NCID)
+      IF(NCTYPE.EQ.3) IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
+      IF(NCTYPE.EQ.4) IRET = NF90_CREATE(TRIM(NCFILE), NF90_NETCDF4, NCID)
       CALL CHECK_ERR(IRET)
 !
 ! Define dimensions
@@ -3308,7 +3298,7 @@
       IF (GTYPE.NE.UNGTYPE) THEN 
         IF (FLAGLL) THEN
           IF (SMCGRD) THEN
-!/SMC            IF(SMCTYPE .EQ. 1) THEN
+!/SMC            IF(SMCOTYPE .EQ. 1) THEN
 !/SMC               ! Flat seapoints file
 !/SMC               IRET = NF90_DEF_DIM(NCID, 'seapoint', dimln(2), DIMID(2))
 !/SMC            ELSE
@@ -3356,14 +3346,18 @@
 !
       IF (FLAGLL) THEN 
 !longitude
-        IF (GTYPE.EQ.RLGTYPE) THEN 
+        IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
           IF (SMCGRD) THEN
-!/SMC            IF(SMCTYPE .EQ. 1) THEN
+!/SMC            IF(SMCOTYPE .EQ. 1) THEN
 !/SMC              ! Flat SMC grid - use seapoint dimension:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, DIMID(2), VARID(1))
 !/SMC              CALL CHECK_ERR(IRET)
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, DIMID(2), VARID(2))
 !/SMC              CALL CHECK_ERR(IRET)
+!/SMC
+!/SMC              ! Latitude and longitude are auxililary variables in type 1 sea point
+!/SMC              ! SMC file; add to "coordinates" attribute:
+!/SMC              COORDS_ATTR = TRIM(COORDS_ATTR) // " latitude longitude"
 !/SMC
 !/SMC              ! For seapoint style SMC grid, also define out cell size variables:
 !/SMC              IRET = NF90_DEF_VAR(NCID, 'cx', NF90_SHORT, DIMID(2), VARID(5))
@@ -3425,7 +3419,7 @@
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',90.)
 !
         IF(SMCGRD) THEN
-!/SMC          IF(SMCTYPE .EQ. 1) THEN
+!/SMC          IF(SMCOTYPE .EQ. 1) THEN
 !/RTD            IF ( RTDL ) THEN
 !/RTD              ! For SMC grid type 1, standard lat/lon variables are 1D:
 !/RTD              IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
@@ -3512,15 +3506,15 @@
 !
       IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','X')    
       IRET=NF90_PUT_ATT(NCID,VARID(2),'axis','Y')
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
 
 !
 ! frequency
 !
       if (EXTRADIM.EQ.1) THEN
         IRET = NF90_DEF_VAR(NCID, 'f', NF90_FLOAT, DIMID(4), VARID(10))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
+        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(10), 1, 1, DEFLATE)
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_ATT(NCID,VARID(10),'long_name','wave_frequency')
         CALL CHECK_ERR(IRET)
@@ -3539,7 +3533,7 @@
       ! CHRISB: Allow different time variable types:
       IRET = NF90_DEF_VAR(NCID, 'time', TVARTYPE, DIMID(4+EXTRADIM), VARID(3))
       CALL CHECK_ERR(IRET)
-!/NC4      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
+      IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(3), 1, 1, DEFLATE)
       CALL CHECK_ERR(IRET)
       SELECT CASE (TRIM(CALTYPE))
         CASE ('360_day')
@@ -3600,6 +3594,8 @@
          IRET = NF90_PUT_ATT(NCID, VARID(12), 'calendar', 'gregorian')
          CALL CHECK_ERR(IRET)
 
+         ! Add these to auxiliary coordinates list:
+         COORDS_ATTR = TRIM(COORDS_ATTR) // " forecast_period forecast_reference_time"
       ENDIF
 !
 ! triangles for irregular grids
@@ -3608,19 +3604,19 @@
         DIMTRI(1)=DIMID(4+EXTRADIM+1)
         DIMTRI(2)=DIMID(3)
         IRET = NF90_DEF_VAR(NCID, 'tri', NF90_INT, DIMTRI, VARID(4))
-!/NC4        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(4), 1, 1, DEFLATE)
+        IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(4), 1, 1, DEFLATE)
       END IF
 !
 !  Status map: useful for grid combination
 !
-      IF (MAPSTAOUT.EQ.1) THEN 
+      IF (MAPSTAOUT) THEN 
         IF (GTYPE.EQ.UNGTYPE) THEN 
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(20))
         ELSE 
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) , DIMID(3) /), &
                                                                        VARID(20))
           ENDIF
-!/NC4          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(20), 1, 1, DEFLATE)
+          IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(20), 1, 1, DEFLATE)
 !
         IRET=NF90_PUT_ATT(NCID,VARID(20),'long_name','status map')
         IRET=NF90_PUT_ATT(NCID,VARID(20),'standard_name','status map')
@@ -3657,7 +3653,7 @@
 ! ... TO BE CONTINUED ... 
 
         IF(SMCGRD) THEN
-!/SMC           IF(SMCTYPE .EQ. 1) THEN
+!/SMC           IF(SMCOTYPE .EQ. 1) THEN
 !/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lat', Y0)
 !/SMC             call CHECK_ERR(IRET)
 !/SMC             IRET = NF90_PUT_ATT(NCID, NF90_GLOBAL, 'first_lon', X0)
@@ -3668,7 +3664,7 @@
 !/SMC             call CHECK_ERR(IRET)
 !/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','seapoint')
 !/SMC             call CHECK_ERR(IRET)
-!/SMC           ELSE IF(SMCTYPE .EQ. 2) THEN
+!/SMC           ELSE IF(SMCOTYPE .EQ. 2) THEN
 !/SMC             IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SMC_grid_type','regular_regridded')
 !/SMC             call CHECK_ERR(IRET)
 !/SMC           ENDIF
@@ -3716,7 +3712,7 @@
 !/                  | Last update :         03-Nov-2020 |
 !/                  +-----------------------------------+
 !/
-!/    03-Nov-2020 : Creation                            ( version 7.XX )
+!/    03-Nov-2020 : Creation                            ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -3760,6 +3756,10 @@
           END IF
         END DO
       ENDIF
+
+      ! Change UNDEF sea points to NOVAL, if set differently
+      IF(NOVAL .NE. UNDEF) WHERE(S .EQ. UNDEF) S = NOVAL
+
       CALL W3S2XY ( NSEA, NSEA, NX+1, NY, S, MAPSF, X )
 !/SMC     ENDIF
 

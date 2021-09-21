@@ -3676,6 +3676,7 @@
           SUBCELL_LOOP: DO I=1,NS
               LSBC = .TRUE.
               J = MOD(I,NS) + 1
+              SIGN1 = 0.0
               DO K=1,4
                   SELECT CASE (K)
                     CASE (1)
@@ -3723,9 +3724,9 @@
                   I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
 !-----------------if sign of cross product is not "unanimous" among the
 !                 subcell sides, then target is outside the subcell
-                  IF ( K .EQ. 1 ) THEN
-                      SIGN1 = SIGN(ONE,CROSS)
-                    ELSE
+                  IF ( ABS(SIGN1) .LE. LEPS ) THEN
+                      IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+                  ELSE
                       ! If point lies along a border, the cross product
                       ! is zero and its sign is not well defined
                       IF ( ABS(CROSS) .GT. LEPS ) THEN
@@ -3734,7 +3735,7 @@
                           CYCLE SUBCELL_LOOP
                         END IF
                       END IF
-                    END IF
+                  END IF
                 END DO !K
                 IF ( LSBC ) RETURN
             END DO SUBCELL_LOOP
@@ -3747,6 +3748,7 @@
         END IF !POLE
 !
 !-----perform cross-product cell check
+      SIGN1 = 0.0
       DO I=1,NS
           J = MOD(I,NS) + 1
 !---------vector from (xi,yi) to (xj,yj)
@@ -3764,14 +3766,18 @@
           I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
 !---------if sign of cross product is not "unanimous" among the cell sides,
 !         then target is outside the cell
-          IF ( I .EQ. 1 ) THEN
-              SIGN1 = SIGN(ONE,CROSS)
-            ELSE
-              IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+          IF ( ABS(SIGN1) .LE. LEPS ) THEN
+              IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+          ELSE
+              ! If point lies along a border, the cross product
+              ! is zero and its sign is not well defined
+              IF ( ABS(CROSS) .GT. LEPS ) THEN
+                IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
                   INCELL = .FALSE.
                   RETURN
                 END IF
-            END IF
+              END IF
+          END IF
         END DO
 !
 !-----return branch cut shifted coordinates

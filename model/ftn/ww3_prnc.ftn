@@ -1,4 +1,5 @@
 #include "w3macros.h"
+#define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
 !/ ------------------------------------------------------------------- /
       PROGRAM W3PRNC
 !/
@@ -24,9 +25,9 @@
 !/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
 !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/    04-Jan-2018 : Add namelist feature                ( version 6.04 )
-!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.XX )
-!/    21-Apr-2020 : Correction in scale factor          ( version 7.XX )
-!/    22-Mar-2021 : Add momentum and air density        ( version 7.xx )
+!/    21-Apr-2020 : Correction in MPI for tide          ( version 7.13 )
+!/    21-Apr-2020 : Correction in scale factor          ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density        ( version 7.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,6 +77,7 @@
 !       YCOFF   Real  Offset for input scalar field
 !       FX,FY   R.A.  Output fields.
 !       ACC     Real  Required interpolation accuracy.
+!       XTEMP   R.A.  Temporal array
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -254,7 +256,8 @@
                                  XD12(:,:), XD22(:,:),                &
                                  FX(:,:), FY(:,:), FA(:,:),           &
                                  A1(:,:), A2(:,:), A3(:,:)
-      REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
+      REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:),           &
+                                 DATA(:,:), XTEMP(:,:)
 !
       REAL, POINTER           :: ALA(:,:), ALO(:,:)
 !
@@ -285,7 +288,6 @@
 !
       INTEGER                 :: K, L, TIDEFLAG,                      &
                                  TIDE_NDEF, TIDE_ITREND
-!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
 !/T      INTEGER, PARAMETER      :: LRB = 4
 !/T      INTEGER(KIND=8)         :: RPOS
 !/T      INTEGER                 ::   LRECL, NREC
@@ -305,6 +307,9 @@
 !
       CHARACTER*256           :: TIDECONSTNAMES
       CHARACTER*100           :: LIST(70)
+!
+      LOGICAL, ALLOCATABLE    :: TIDALCOMP(:,:)
+!
 !/T      CHARACTER*21            :: FNAMETXT
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
@@ -717,6 +722,7 @@
         WRITE(NDSE,1029)
       END IF
       IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
+      CALL CHECK_ERR(IRET)
       CALL U2D(TIMEUNITS,REFDATE,IERR)
       CALL D2J(REFDATE,REFJULDAY,IERR)
 
@@ -1303,13 +1309,14 @@
           MXM = MAX ( NXJ(1), NXJ(2) )
           MYM = MAX ( NYJ(1), NYJ(2) )
           IF (ITYPE.EQ.1.AND.GTYPE.EQ.UNGTYPE) THEN 
-            ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1) )
+            ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1), XTEMP(MXM,1) )
           ELSE
-            ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )
+            ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM), XTEMP(MXM,MYM) )
           END IF
           XC = 0.
           YC = 0.
           AC = 0.
+          XTEMP = 0.
         END IF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1332,8 +1339,8 @@
 !/MPI                         ' points. This can take hours ...'
 !/MPI     ENDIF 
 !/MPI     IF (NX*NY.LT.4000) THEN 
-          WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY, ' points.'
-          IF (NAPROC.EQ.1) WRITE(NDSE,*) 'This can take hours ...Consider running this with MPI '
+          WRITE(NDSE,'(A,I8,A)') 'Starting tidal analysis for ',NX*NY, ' points.'
+          IF (NAPROC.EQ.1) WRITE(NDSE,'(A)') 'This can take hours ...Consider running this with MPI '
           END IF
 !/MPI     END IF
         IRET=NF90_INQ_VARID(NCID,"time",VARIDTMP)
@@ -1365,9 +1372,10 @@
         TIDAL_CONST(:,:,:,:,:)=0.
         DO I=1,NFIELDS
           IRET=NF90_INQ_VARID(NCID,FIELDSNAME(I),VARIDF(I))
+          CALL CHECK_ERR(IRET)
         END DO
-        IRET=NF90_GET_ATT(NCID,VARIDTMP,"_FillValue", FILLVALUE)
-
+        IRET=NF90_GET_ATT(NCID,VARIDF(1),"_FillValue", FILLVALUE)
+        CALL CHECK_ERR(IRET)
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',SCFAC(1))
         IF (IRET .NE. 0) SCFAC(1) = 1.0
         IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',ADDOFF(1))
@@ -1375,8 +1383,8 @@
         IF ( NFCOMP.EQ.2 .OR. (IFLD.GE.3 .AND. IFLD.NE.7) .OR. FLBERG ) THEN
           IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',SCFAC(2))
           IF (IRET .NE. 0) SCFAC(2) = 1.0
-          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(1))
-          IF (IRET .NE. 0) ADDOFF(1) = 0.0
+          IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',ADDOFF(2))
+          IF (IRET .NE. 0) ADDOFF(2) = 0.0
         END IF
 
 
@@ -1384,7 +1392,7 @@
 ! Set arrays for MPI exchanges
 !
         IF (NX .LT. NAPROC) THEN
-          WRITE(NDSE,*) 'NUMBER OF NX POINTS LESS THAN NUMBER OF PROC'
+          WRITE(NDSE,'(A)') 'NUMBER OF NX POINTS LESS THAN NUMBER OF PROC'
           CALL EXTCDE (30)
         END IF
 
@@ -1411,9 +1419,11 @@
 !/MPI          NELEM(I) = NX / NAPROC
 !/MPI          IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
 !/MPI        END DO
-      
+
+     
 !/MPIT        WRITE(100+IAPROC,*) "Number of points for this processor ", IAPROC, " : ", NELEM(IAPROC), ' / ', NX
 !/MPIT        WRITE(100+IAPROC,*) "Cumul of points for this processor ", IAPROC, " : ", CUMUL(IAPROC), ' / ', NX
+!/MPIT        WRITE(100+IAPROC,*) "Slice of values per processor ", SLICE
 
         ALLOCATE(TIDE_DATA_ALL(NELEM(IAPROC),NTI,NFIELDS))
 
@@ -1423,6 +1433,9 @@
 
 !
 ! Loops on Y dimension
+!
+        ALLOCATE(TIDALCOMP(NX,NY))
+        TIDALCOMP=.TRUE.
 !
         DO IY=1,NY
 !/MPI            IND=0
@@ -1499,8 +1512,8 @@
 !/T    WRITE (990,POS=RPOS),NULLBUFF(1:NREC)
 !/T    WRITE (990,POS=RPOS),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
 
-            ELSE ! TIDE_NTI.GT.(TIDE_MF*3)
-              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, NTI, TIDE_NTI
+            ELSE
+              TIDALCOMP(IX,IY)=.FALSE.
               TIDE_AMPC(1:TIDE_MF,1:NFIELDS)=0.
               TIDE_PHG(1:TIDE_MF,1:NFIELDS)=0.
             END IF ! end of test on TIDE_NTI
@@ -1510,8 +1523,8 @@
 ! Save tidal amplitude and phase
 !
 
-!/MPI          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
-!/MPI                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
+!/MPIT          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
+!/MPIT                                      IY,',',JX, ' out of  ', NELEM(IAPROC)
 !/MPI          DO J=1,TIDE_MF
 !/MPI            DO K=1,NFIELDS
 !/MPI              IND=IND+1
@@ -1534,6 +1547,17 @@
 !/MPI            CALL MPI_GATHERV(TIDE1DL, SLICE * TIDE_MF * NFIELDS * 2, MPI_REAL, &
 !/MPI                             TIDE1D, NELEM * TIDE_MF * NFIELDS * 2, CUMUL * TIDE_MF * NFIELDS * 2, &
 !/MPI                             MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+
+!/MPI            IF (IAPROC.EQ.NAPOUT) THEN
+!/MPI              CALL MPI_GATHERV(MPI_IN_PLACE,NELEM(IAPROC), &
+!/MPI                               MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
+!/MPI                               MPI_COMM_WORLD, IERR_MPI)
+!/MPI            ELSE
+!/MPI              CALL MPI_GATHERV(TIDALCOMP(CUMUL(IAPROC)+1:CUMUL(IAPROC)+NELEM(IAPROC),IY),NELEM(IAPROC), &
+!/MPI                               MPI_LOGICAL, TIDALCOMP(:,IY), NELEM, CUMUL, MPI_LOGICAL, NAPOUT-1,     &
+!/MPI                               MPI_COMM_WORLD, IERR_MPI)
+!/MPI            END IF
+
 !/MPI          ELSE
 !/MPI            TIDE1D = TIDE1DL
 !/MPI          END IF
@@ -1555,7 +1579,6 @@
 !/MPI            END DO
 !/MPI          END IF
 
-
           
         END DO ! IY=1,NY
 
@@ -1564,11 +1587,25 @@
 !/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
 !/T  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,2,1)
 
-!/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
-!/MPI          WRITE(NDSO,*) "parallelization done"
-!/MPI        ELSE
+!/MPI        IF (IAPROC .NE. NAPOUT )  THEN 
 !/MPI          GOTO 888
+!/MPIT        ELSE
+!/MPIT          WRITE(NDSO,'(A)') "parallelization done"
 !/MPI        END IF
+
+
+!
+! Warn about not computed nodes for tidal constituents
+!
+        IF ( IAPROC .EQ. NAPOUT) THEN
+          DO IX=1,NX
+            DO IY=1,NY
+              IF(TIDALCOMP(IX,IY).EQV..FALSE.) THEN
+                WRITE(NDSO,1047) IX, IY
+              END IF
+            END DO
+          END DO
+        END IF
 
 !
 ! After loop on points, write tidal constituents to file.
@@ -1577,7 +1614,7 @@
           CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
         CALL W3FLDTIDE2 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
 !
-   GOTO 880
+        GOTO 880
 
       END IF ! end of test   IF (ITYPE.GE.6.AND.TIDEFLAG.GT.0)
 
@@ -1664,7 +1701,7 @@
               END IF
             END IF
             CALL CHECK_ERR(IRET)
-            ! forces to 0 values that are undefined
+            ! forces undefined values to FILLVALUE
             WHERE(XC.NE.XC) XC = FILLVALUE
             WHERE (XC.NE.FILLVALUE) XC=XC*XCFAC+XCOFF
 
@@ -1823,8 +1860,8 @@
 !
                 IF (NFCOMP.EQ.2) THEN
 !/O3             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
-                    CALL INTERP(YC, JX21, JX22, JY21, JY22, XD11, XD12,&
-                                             XD21, XD22, FILLVALUE, FA)
+                    CALL INTERP(MXM, MYM, YC, JX21, JX22, JY21, JY22,  &
+                                 XD11, XD12, XD21, XD22, FILLVALUE, FA)
                 END IF
 !
 ! ... Two-component fields
@@ -1837,16 +1874,25 @@
                 CALL INTERP(MXM, MYM, YC, IX21, IX22, IY21, IY22,      &
                                RD11, RD12, RD21, RD22, FILLVALUE, FY)
 
-                CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,      &
-                               RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                IF(FLSTAB) THEN
+                  ! AC only populated if FLSTAB is true
+                  CALL INTERP(MXM, MYM, AC, IX21, IX22, IY21, IY22,    &
+                                 RD11, RD12, RD21, RD22, FILLVALUE, FA)
+                ENDIF
 
-                CALL INTERP(MXM, MYM, SQRT(XC**2+YC**2), IX21, IX22,   &
-                               IY21, IY22, RD11, RD12, RD21, RD22,     &
-                               SQRT(2.0)*FILLVALUE, A2)
+                WHERE ( XC.NE.FILLVALUE .AND. YC.NE.FILLVALUE)
+                  XTEMP = XC*XC + YC*YC
+                ELSEWHERE
+                  XTEMP = FILLVALUE
+                ENDWHERE
+                CALL INTERP(MXM, MYM, XTEMP, IX21, IX22, IY21, IY22,   &
+                               RD11, RD12, RD21, RD22, FILLVALUE, A3)
 
-                CALL INTERP(MXM, MYM, XC**2+YC**2, IX21, IX22,         &
-                               IY21, IY22, RD11, RD12, RD21, RD22,     &
-                               2.0*FILLVALUE*FILLVALUE, A3)
+                WHERE ( XTEMP.NE.FILLVALUE )
+                  XTEMP =  SQRT(XTEMP)
+                ENDWHERE
+                CALL INTERP(MXM, MYM, XTEMP, IX21, IX22, IY21, IY22,   &
+                               RD11, RD12, RD21, RD22, FILLVALUE, A2)
 
                 DO IY=1,NY
                   DO IX=1,NX
@@ -1990,7 +2036,7 @@
 !
       END DO ! NTI
 !
-      DEALLOCATE(XC,YC,AC)  
+      DEALLOCATE(XC,YC,AC,XTEMP)  
       IF (ASSOCIATED(ALA)) DEALLOCATE(ALA,ALO)
 !
 !     End loop over input fields
@@ -2211,6 +2257,9 @@
                '     ERROR IN OPENING MASK FILE'/                     &
                '     IOSTAT =',I5/)
 !
+ 1047 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
+               '     NO TIDAL COMPUTATION AT NODE [',I8,',',I8,']'/)
+!
  1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN READING NDAT FROM FILE'/                &
                '     IOSTAT =',I5/)
@@ -2369,11 +2418,21 @@
           IF(FACTOR.GT.0.0) THEN
             FA(IX,IY) = FA(IX,IY) / FACTOR
           ELSE
-            IF(XC(IX,IY).EQ.FILLVALUE) THEN
-              FA(IX,IY) = 0.0
+            ! Interpolation coefficients sum to zero - could be on a boundary
+            ! (see note in "method" above). If any surrounding points have a
+            ! valid value then use one of them, otherwise set to zero.
+            IF( XC(IX21(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY21(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY21(IX,IY))
+            ELSE IF( XC(IX21(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX21(IX,IY),IY22(IX,IY))
+            ELSE IF( XC(IX22(IX,IY),IY22(IX,IY)) .NE. FILLVALUE) THEN
+              FA(IX,IY) = XC(IX22(IX,IY),IY22(IX,IY))
             ELSE
-              FA(IX,IY) = XC(IX,IY)
-            ENDIF
+              ! All surrounding points are FILLVALUE - set to zero.
+              FA(IX,IY) = 0.0
+            END IF
           END IF
         END DO
       END DO
@@ -2382,7 +2441,7 @@
 
 !==============================================================================
 
-      SUBROUTINE CHECK_ERR(IRET)
+      SUBROUTINE CHECK_ERROR(IRET, ILINE)
 
       USE NETCDF
       USE W3ODATMD, ONLY: NDSE
@@ -2390,17 +2449,18 @@
 
       IMPLICIT NONE
 
-      INTEGER IRET
+      INTEGER IRET, ILINE
 
       IF (IRET .NE. NF90_NOERR) THEN
-        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN PRNC :'
+        WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN OUNF :'
+        WRITE(NDSE,*) ' LINE NUMBER ', ILINE
         WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
         WRITE(NDSE,*) NF90_STRERROR(IRET)
         CALL EXTCDE ( 59 )
       END IF
       RETURN
 
-      END SUBROUTINE CHECK_ERR
+      END SUBROUTINE CHECK_ERROR
 
 !==============================================================================
 

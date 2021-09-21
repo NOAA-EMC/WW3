@@ -35,7 +35,7 @@
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
 !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -518,7 +518,7 @@
 !/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
 !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !

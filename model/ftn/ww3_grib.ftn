@@ -35,7 +35,8 @@
 !/                  (J.H. Alves)
 !/    26-Jul-2018 : Adding polar stereographic grid     ( version 6.05 ) 
 !/                  (J.H. Alves)
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+!/    09-Jun-2021 : remove grib1 support (NCEP1)        ( version X.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -105,7 +106,6 @@
 !       !/NCO   NCEP NCO modifications for operational implementation.
 !
 !       !/NOGRB No GRIB package included.
-!       !/NCEP1 NCEP IBM links to GRIB1 packing routines.
 !       !/NCEP2 NCEP IBM links to GRIB2 packing routines.
 !
 ! 10. Source code :
@@ -140,9 +140,7 @@
                                  FTIME(2), CID, PID, GID, GDS, IOUT,  &
                                  GDTN
       INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
-! GRIB1 specific variables
 !/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
-!/NCEP1      INTEGER                 :: KPDS(25), KGDS(22)
 ! GRIB2 specific variables
 !/NCEP2      INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
 !/NCEP2      INTEGER                 :: LISTSEC0(3), LISTSEC1(13),IGDS(5)
@@ -210,7 +208,6 @@
       WRITE (NDSO,901) COMSTR
 !
 !/NOGRB      WRITE (NDSE,902)
-!/NCEP1      CALL BAOPEN (NDSDAT,'gribfile',IERR)
 !/NCEP2      CALL BAOPENW (NDSDAT,'gribfile',IERR)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -417,82 +414,10 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - -  
 ! 5. Set grib encoding parameter Sections 
 ! 
-! ... Initialize KPDS and KGDS (for both NCEP1 and NCEP2)
+! ... Initialize KPDS and KGDS (for NCEP2)
 !
       KPDS     =   0
       KGDS     =   0
-!
-! ... Set PDS GRIB1 elements
-!
-!     ( 1)  ID OF CENTER
-!     ( 2)  GENERATING PROCESS ID NUMBER
-!     ( 3)  GRID DEFINITION
-!     ( 4)  GDS/BMS FLAG (RIGHT ADJ COPY OF OCTET 8)
-!  ** ( 5)  INDICATOR OF PARAMETER
-!     ( 6)  TYPE OF LEVEL
-!     ( 7)  HEIGHT/PRESSURE , ETC OF LEVEL
-!   * ( 8)  YEAR of century
-!   * ( 9)  MONTH OF YEAR
-!   * (10)  DAY OF MONTH
-!   * (11)  HOUR OF DAY
-!     (12)  MINUTE OF HOUR
-!     (13)  INDICATOR OF FORECAST TIME UNIT
-!   * (14)  TIME RANGE 1
-!     (15)  TIME RANGE 2
-!     (16)  TIME RANGE FLAG
-!     (17)  NUMBER INCLUDED IN AVERAGE
-!     (18)  VERSION NR OF GRIB SPECIFICATION
-!     (19)  VERSION NR OF PARAMETER TABLE
-!     (20)  NR MISSING FROM AVERAGE/ACCUMULATION
-!   * (21)  CENTURY OF REFERENCE TIME OF DATA
-!     (22)  UNITS DECIMAL SCALE FACTOR
-!     (23)  SUBCENTER NUMBER
-!     (24)  PDS BYTE 29, FOR NMC ENSEMBLE PRODUCTS
-!     (25)  PDS BYTE 30, NOT USED
-!
-!  * : Changing on the fly in main program
-! ** : Changing on the fly in W3EXGB
-!
-!/NCEP1      KPDS( 1) = CID
-!/NCEP1      KPDS( 2) = PID
-!/NCEP1      KPDS( 3) = GID
-!/NCEP1      KPDS( 4) = GDS
-!/NCEP1      KPDS( 6) =   1
-!/NCEP1      KPDS( 7) =   1
-!/NCEP1      KPDS(13) =   1
-!/NCEP1      KPDS(18) =   1
-!/NCEP1      KPDS(22) =   2
-!
-! ... Set GDS GRIB1 elements
-!
-!     ( 1)  DATA REPRESENTATION TYPE
-!     ( 2)  N(I) NR POINTS ON LATITUDE CIRCLE
-!     ( 3)  N(J) NR POINTS ON LONGITUDE MERIDIAN
-!     ( 4)  LA(1) LATITUDE OF ORIGIN
-!     ( 5)  LO(1) LONGITUDE OF ORIGIN
-!     ( 6)  RESOLUTION FLAG (RIGHT ADJ COPY OF OCTET 17)
-!     ( 7)  LA(2) LATITUDE OF EXTREME POINT
-!     ( 8)  LO(2) LONGITUDE OF EXTREME POINT
-!     ( 9)  DI LONGITUDINAL DIRECTION OF INCREMENT
-!     (10)  DJ LATITUDINAL DIRECTION INCREMENT
-!     (11)  SCANNING MODE FLAG (RIGHT ADJ COPY OF OCTET 28)
-!     (19)  NUMBER OF VERTICAL COORDINATE PARAMETERS
-!     (20)  OCTET NUMBER OF THE LIST OF VERTICAL COORDINATE
-!           PARAMETERS OR OCTET NUMBER OF THE LIST OF NUMBERS
-!           OF POINTS IN EACH ROW OR 255 IF NEITHER ARE PRESENT
-!     (21)  FOR GRIDS WITH PL, NUMBER OF POINTS IN GRID
-!     (22)  NUMBER OF WORDS IN EACH ROW
-!
-!/NCEP1      KGDS( 2) = NX
-!/NCEP1      KGDS( 3) = NY
-!/NCEP1      KGDS( 4) = NINT(1000.*(Y0+(REAL(NY-1)*SY)))
-!/NCEP1      KGDS( 5) = NINT(1000.*X0)
-!/NCEP1      KGDS( 6) = 128
-!/NCEP1      KGDS( 7) = NINT(1000.*Y0)
-!/NCEP1      KGDS( 8) = NINT(1000.*(X0+REAL(NX-1)*SX))
-!/NCEP1      KGDS( 9) = NINT(1000.*SX)
-!/NCEP1      KGDS(10) = NINT(1000.*SY)
-!/NCEP1      KGDS(20) = 255
 !
 ! ... Set GRIB2 packing arrays
 !
@@ -621,6 +546,10 @@
 !       (17) Projection center flag
 !       (18) Scanning mode
 !
+!  Projection for PolarStereo grid was changed from 
+!  KGDS( 1) = 6 to KGDS( 1) = 5 (Earth assumed represented by WGS84 -
+!  Octet No 15 Table 3.2)
+!/NCEP2        KGDS( 1) = 5
 !/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.)
 !/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.)
 !/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.)
@@ -757,12 +686,6 @@
 !
         RFTIME = DSEC21 ( FTIME , TIME ) / 3600.
         IF ( RFTIME .LT. 0. ) THEN
-!/NCEP1            KPDS( 8) = 1 + MOD(TIME(1)/10000-1,100)
-!/NCEP1            KPDS( 9) = MOD(TIME(1),10000) / 100
-!/NCEP1            KPDS(10) = MOD(TIME(1),100)
-!/NCEP1            KPDS(11) = TIME(2) / 10000
-!/NCEP1            KPDS(14) = 0
-!/NCEP1            KPDS(21) = 1 + (TIME(1)/10000-1)/100
 !/NCEP2            LISTSEC1( 6) = TIME(1)/10000
 !/NCEP2            LISTSEC1( 7) = MOD(TIME(1),10000) / 100
 !/NCEP2            LISTSEC1( 8) = MOD(TIME(1),100)
@@ -770,12 +693,6 @@
 !/NCEP2            KPDS( 9)     = 0
             WRITE (NDSO,972) IDTIME
           ELSE
-!/NCEP1            KPDS( 8) = 1 + MOD(FTIME(1)/10000-1,100)
-!/NCEP1            KPDS( 9) = MOD(FTIME(1),10000) / 100
-!/NCEP1            KPDS(10) = MOD(FTIME(1),100)
-!/NCEP1            KPDS(11) = FTIME(2) / 10000
-!/NCEP1            KPDS(14) = NINT(RFTIME)
-!/NCEP1            KPDS(21) = 1 + (FTIME(1)/10000-1)/100
 !/NCEP2            LISTSEC1( 6) = FTIME(1)/10000
 !/NCEP2            LISTSEC1( 7) = MOD(FTIME(1),10000) / 100
 !/NCEP2            LISTSEC1( 8) = MOD(FTIME(1),100)
@@ -903,7 +820,7 @@
 !/    18-May-2007 : Update GRIB1 for partitioning.      ( version 3.11 )
 !/    16-Jul-2007 : Adding GRIB2 capability             ( version 3.11 )
 !/                  (A. Chawla)
-!/    22-Mar-2021 : New coupling fields output          ( version 7.xx )
+!/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -960,7 +877,6 @@
 !
 !     !/S      Enable subroutine tracing.
 !     !/T      Enable test output.
-!     !/NCEP1  NCEP IBM calls to GRIB1 packer.
 !     !/NCEP2  NCEP IBM calls to GRIB2 packer (follows updated grib2
 !     tables under verification as of 02/10/2012).
 !
@@ -1030,7 +946,6 @@
 !
             IF ( IFI .EQ. 1 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 14 
 !/NCEP2                KPDS(1) = 4  
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, DW(1:NSEA)          &
@@ -1040,7 +955,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  2 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 1 
 !/NCEP2                KPDS(1) = 1 
 !/RTD                ! Rotate x,y vector back to standard pole
@@ -1073,7 +987,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  3 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = 032
 !/NCEP2                KPDS(2) = 1
 !/NCEP2                KPDS(1) = 2
 !/NCEP2                LISTSEC0(1) = 0
@@ -1107,7 +1020,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255 
 !/NCEP2                KPDS(1) = 3   
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, AS(1:NSEA)          &
@@ -1117,7 +1029,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
 !/NCEP2                KPDS(2) = 1 
 !/NCEP2                KPDS(1) = 3 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
@@ -1126,7 +1037,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 091
 !/NCEP2                KPDS(2) = 0
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
@@ -1135,7 +1045,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ.  8 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = 032
 !/NCEP2                KPDS(2) = 1
 !/NCEP2                KPDS(1) = 2
 !/NCEP2                LISTSEC0(1) = 0
@@ -1169,7 +1078,6 @@
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 091
 !/NCEP2                KPDS(2) = 0
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, RHOAIR, MAPSF, X1 )
@@ -1178,7 +1086,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 100
 !/NCEP2                KPDS(2) = 3
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, HS    , MAPSF, X1 )
 !
@@ -1186,7 +1093,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  2 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 193
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLM   , MAPSF, X1 )
 !
@@ -1194,7 +1100,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
 !/NCEP2                KPDS(2) = 28
 !/NCEP2         else
@@ -1207,7 +1112,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 103
 !/NCEP2                KPDS(2) = 15
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
 !
@@ -1215,7 +1119,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1 
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
 !/NCEP2                KPDS(2) = 34
 !/NCEP2         else
@@ -1227,7 +1130,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 108
 !/NCEP2                KPDS(2) = 11
                 DO ISEA=1, NSEA
                   IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
@@ -1241,7 +1143,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  7 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 101
 !/NCEP2                KPDS(2) = 14
 !/RTD                ! Rotate direction back to standard pole
 !/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
@@ -1255,7 +1156,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 31
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THS   , MAPSF, X1 )
 !
@@ -1263,7 +1163,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 107
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
 !/NCEP2                KPDS(2) = 46
 !/NCEP2         else
@@ -1282,7 +1181,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WNMEAN, MAPSF, X1 )
 !
@@ -1290,8 +1188,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 102
-!/NCEP1                KPDS5B  = 105
 !/NCEP2                KPDS5A  = 5
 !/NCEP2                KPDS5B  = 8
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
@@ -1312,8 +1208,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 110
-!/NCEP1                KPDS5B  = 106
 !/NCEP2                KPDS5A  = 6
 !/NCEP2                KPDS5B = 9
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
@@ -1334,8 +1228,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  193
 !/NCEP2                KPDS5B  =  193
                 CALL W3S2XY                                           &
@@ -1349,8 +1241,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  = 109
-!/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
 !/NCEP2                KPDS5B = 7
 !/NCEP2         if ((gen_pro.eq.1) .or. (gen_pro.eq.0)) then
@@ -1382,8 +1272,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  32 
 !/NCEP2                KPDS5B  =  33 
                 CALL W3S2XY                                           &
@@ -1397,8 +1285,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                 FLPRT = .TRUE.
-!/NCEP1                KPDS5A  =  -1
-!/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  255
 !/NCEP2                KPDS5B  =  255
                 CALL W3S2XY                                           &
@@ -1412,7 +1298,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST  , MAPSF, X1 )
 !
@@ -1420,7 +1305,6 @@
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR   , MAPSF, X1 )
 !
@@ -1428,7 +1312,6 @@
 !
               ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ.  1 ) THEN
                 FLTWO = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 17 
 !/NCEP2                KPDS(1) = 1
 !/RTD                ! Rotate x,y vector back to standard pole
@@ -1442,7 +1325,6 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 DO ISEA=1, NSEA
                   IF ( DTDYN(ISEA) .NE. UNDEF )                       &
@@ -1454,7 +1336,6 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FCUT  , MAPSF, X1 )
 !
@@ -1462,7 +1343,6 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLXYMAX  , MAPSF, X1 )
 !
@@ -1470,7 +1350,6 @@
 !
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
                 FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLTHMAX  , MAPSF, X1 )
 !
@@ -1488,12 +1367,10 @@
 !
             IF ( FLPRT ) THEN
 !
-!/NCEP1                KPDS(5) = KPDS5A
 !/NCEP2                KPDS(2) = KPDS5A
                 DO IXY=1, NX*NY
                   BITMAP(IXY) = YY(IXY,0) .NE. UNDEF
                   END DO
-!/NCEP1                CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,0),IO)
 !/NCEP2                CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                IF (IO .NE. 0) GOTO 810
 !/NCEP2                CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
@@ -1508,17 +1385,13 @@
 !/NCEP2                CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 !
 !/NCEP2               if ((gen_pro.eq.0) .or. (gen_pro.eq.1)) then
-!/NCEP1                KPDS(5) = KPDS5B
-!/NCEP1                KPDS(6) = 241
 !/NCEP2                KPDS(10) = 241
                 DO I=1, NOSWLL
-!/NCEP1                  KPDS(7) = I
 !/NCEP2                KPDS(2) = KPDS5A1(I)
 !/NCEP2                  KPDS(12) = I
                   DO IXY=1, NX*NY
                     BITMAP(IXY) = YY(IXY,I) .NE. UNDEF
                     END DO
-!/NCEP1                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
 !/NCEP2                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                  IF (IO .NE. 0) GOTO 810
 !/NCEP2                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
@@ -1533,17 +1406,13 @@
 !/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
                   END DO
 !/NCEP2           ELSE
-!/NCEP1                KPDS(5) = KPDS5B
-!/NCEP1                KPDS(6) = 241
 !/NCEP2                KPDS(2) = KPDS5B
 !/NCEP2                KPDS(10) = 241
                 DO I=1, NOSWLL
-!/NCEP1                  KPDS(7) = I
 !/NCEP2                  KPDS(12) = I
                   DO IXY=1, NX*NY
                     BITMAP(IXY) = YY(IXY,I) .NE. UNDEF
                     END DO
-!/NCEP1                  CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,YY(:,I),IO)
 !/NCEP2                  CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                  IF (IO .NE. 0) GOTO 810
 !/NCEP2                  CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
@@ -1558,8 +1427,6 @@
 !/NCEP2                  CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
                   END DO
 !/NCEP2           ENDIF
-!/NCEP1                KPDS(6) = 1
-!/NCEP1                KPDS(7) = 1
 !/NCEP2                KPDS(10) = 1
 !/NCEP2                KPDS(12) = 1
 !
@@ -1571,7 +1438,6 @@
                   BITMAP(IXY) = X1(IXY) .NE. UNDEF
                   END DO
 !
-!/NCEP1            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
 !/NCEP2            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2            IF (IO .NE. 0) GOTO 810
 !/NCEP2            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST,   &
@@ -1590,7 +1456,6 @@
                 DO IXY=1, NX*NY
                   BITMAP(IXY) = X1(IXY) .NE. UNDEF
                   END DO
-!/NCEP1            CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X1,IO)
 !/NCEP2            CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2            IF (IO .NE. 0) GOTO 810
 !/NCEP2            CALL ADDGRID (CGRIB,LCGRIB,IGDS,KGDS,200,IDEFLIST, &
@@ -1604,8 +1469,6 @@
 !/NCEP2            IF (IO .NE. 0) GOTO 830
 !/NCEP2            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 
-!/NCEP1                    KPDS(5) = 031
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X2,IO)
 !/NCEP2                    KPDS(2) = 0
 !/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                    IF (IO .NE. 0) GOTO 810
@@ -1619,8 +1482,6 @@
 !/NCEP2                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
 !/NCEP2                    IF (IO .NE. 0) GOTO 830
 !/NCEP2                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
-!/NCEP1                    KPDS(5) = 033
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XX,IO)
 !/NCEP2                    KPDS(2) = 2
 !/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                    IF (IO .NE. 0) GOTO 810
@@ -1634,8 +1495,6 @@
 !/NCEP2                    CALL GRIBEND (CGRIB, LCGRIB, LENGRIB, IO)
 !/NCEP2                    IF (IO .NE. 0) GOTO 830
 !/NCEP2                    CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
-!/NCEP1                    KPDS(5) = 034
-!/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,XY,IO)
 !/NCEP2                    KPDS(2) = 3
 !/NCEP2                    CALL GRIBCREATE (CGRIB,LCGRIB,LISTSEC0,LISTSEC1,IO)
 !/NCEP2                    IF (IO .NE. 0) GOTO 810

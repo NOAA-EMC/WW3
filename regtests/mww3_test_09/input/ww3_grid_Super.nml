@@ -1,0 +1,69 @@
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.04118
+  SPECTRUM%NK        =  25
+  SPECTRUM%NTH       =  24
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLSOU        =  F
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  600.0
+  TIMESTEPS%DTXY         =  120.0
+  TIMESTEPS%DTKTH        =  120.0
+  TIMESTEPS%DTMIN        =  120.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'Super'
+  GRID%NML          =  '../input/namelists_super.nml'
+  GRID%TYPE         =  'SMCG'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  384
+  RECT%NY           =  256
+  RECT%SX           =  0.0448
+  RECT%SY           =  0.0320
+  RECT%X0           =  267.2996
+  RECT%Y0           =  41.174
+/
+
+! -------------------------------------------------------------------- !
+! Define the SMC grid input files
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME = '../input/GtLkSuperCels.dat' 
+  SMC%ISIDE%FILENAME = '../input/GtLkSuperISid.dat'
+  SMC%JSIDE%FILENAME = '../input/GtLkSuperJSid.dat'
+  SMC%SUBTR%FILENAME = '../input/GtLkSuperObst.dat'
+  SMC%BUNDY%FILENAME = '../input/GtLkSuperBlst.dat'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

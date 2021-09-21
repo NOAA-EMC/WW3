@@ -43,7 +43,7 @@
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -139,7 +139,8 @@
 !/    20-Jan-2017 : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -158,8 +159,8 @@
 !       IDST    Int.   I   Unit number for test output.
 !       IDSE    Int.   I   Unit number for error output.
 !       IFNAME  Char   I   File name for input file.
-!      MPI_COMM Int.   I   MPI communicator to be used.
-!       PREAMB  Char   I   File name preamble (optiona).
+!     MPI_COMM  Int.   I   MPI communicator to be used.
+!       PREAMB  Char   I   File name preamble (optional).
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -317,8 +318,6 @@
 !
 !       !/O10   Enable output identifying start and end of routine
 !      
-!       !/F90  FORTRAN 90 specific extensions.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output.
 !       !/MPRF  Profiling.
@@ -339,7 +338,7 @@
       USE W3IOGOMD, ONLY: W3READFLGRD 
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3INITMD, ONLY: W3INIT
-      USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH
+      USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH, WMSMCEQL
       USE WMINIOMD, ONLY: WMIOBS, WMIOBG, WMIOBF
       USE WMIOPOMD, ONLY: WMIOPP
 !/
@@ -350,6 +349,8 @@
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
       USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST, GRIDS
+!/SMC      USE W3GDATMD, ONLY: NCel, NUFc, NVFc, NRLv, NBSMC 
+!/SMC      USE W3GDATMD, ONLY: NARC, NBAC, NSPEC, SMCTYPE 
 !/MPI      USE W3GDATMD, ONLY: FLAGLL, ICLOSE, GSU, X0, Y0, SX, SY,   &
 !/MPI                          XGRD, YGRD, DXDP, DXDQ, DYDP, DYDQ,    &
 !/MPI                          HQFAC, HPFAC, MAPSTA, MAPST2,          &
@@ -373,8 +374,8 @@
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
-                          INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
+                          INPMAP, IDINP, NGRPSMC
+      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -487,7 +488,7 @@
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
       MPI_COMM_LOC   = MPI_COMM
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
@@ -2275,6 +2276,9 @@
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,983)
         CALL W3SETI ( I, MDSE, MDST )
 !
+!!Li  Stop modifying GTYPE from input forcing file.  JGLi08Apr2021.
+        JJJ = GTYPE
+!
 ! ..... regular input files
 !
         DO J=JFIRST, 6
@@ -2282,9 +2286,16 @@
               IDINP(I,J) = IDSTR(J)
               IF ( INPMAP(I,J) .LT. 0 ) CYCLE
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
-                            NX, NY, GTYPE, IERR, MNAMES(I),           &
+!!Li                        NX, NY, GTYPE, IERR, MNAMES(I),           &
+                            NX, NY,   JJJ, IERR, MNAMES(I),           &
                             TRIM(FNMPRE) )
               IF ( IERR .NE. 0 ) GOTO 2080
+!
+!!Li   Print a warning message when GTYPE not matching forcing field one. 
+              IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
+                 WRITE (MDSE, *) ' *** Warning: grid', I, ' GTYPE=',  & 
+                 GTYPE, ' not matching field', J, ' grid type', JJJ
+!
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                    WRITE (MDSS,985) IDFLDS(J)
             ELSE
@@ -2345,6 +2356,9 @@
                                        WADATS(I)%MD0(NSEA) ,          &
                                        WADATS(I)%MDI(NSEA) )
 !
+              IF ( J.EQ.6 ) ALLOCATE ( WADATS(I)%RA0(NSEA) ,          &
+                                       WADATS(I)%RAI(NSEA) )
+!
           END IF !  IF ( INPMAP(I,J) .NE. 0 ) THEN
         END DO !  DO J=JFIRST, 9
 !
@@ -2380,9 +2394,13 @@
         GRSTAT(I) =  0
         TSYNC(:,I) = TIME(:)
 !
+!/SMC !!Li   Check GTYPE values after initialization.  JGLi08Apr2021
+!/SMC        IF( IMPROC .EQ. CROOT ) WRITE(MDSE,*) " GRID CROOT GTYPE", &
+!/SMC            I, CROOT, GRIDS(I)%GTYPE
+!
 !/T        WRITE (MDST,9082) GRSTAT(I), TOUTP(:,I), TSYNC(:,I)
 !
-        END DO
+        END DO   !! 8.a I-NRGRD loop
 !
 !/MPI      CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
 !/MPI      DO I=1, NRGRD
@@ -2428,7 +2446,13 @@
 !/MPI            CALL MPI_BCAST ( FILEXT, 10, MPI_CHARACTER, 0,       &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
-!/MPI                 CALL W3DIMX  ( I, NX, NY, NSEA, MDSE, MDST )
+!/MPI                 CALL W3DIMX  ( I, NX, NY, NSEA, MDSE, MDST      &
+!/SMC !!  SMC grid related variables are not needed beyond MPI_COMM_GRD
+!/SMC !!  so all dimensions are minimised to 1.  JGLi29Mar2021
+!/MPI/!/SMC !!Li        , NCel, NUFc, NVFc, NRLv, NBSMC  &
+!/MPI/!/SMC !!Li        , NARC, NBAC, NSPEC              &
+!/MPI/!/SMC             , 1, 1, 1, 1, 1, 1, 1, 1         &
+!/MPI                )
 !/MPI            CALL MPI_BCAST ( HQFAC, NX*NY, MPI_REAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( HPFAC, NX*NY, MPI_REAL, 0,          &
@@ -2659,7 +2683,26 @@
 !
 ! 8.c.3 Relation to same ranked grids
 !
+!/SMC !!  Check whether there is a SMC grid group.   JGLi12Apr2021
+!/SMC      NGRPSMC = 0 
+!/SMC      DO JJ=1, NRGRP
+!/SMC         J = 0
+!/SMC         DO II=1, INGRP(JJ,0)
+!/SMC            I = INGRP(JJ,II)
+!/SMC            IF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) J = J + 1 
+!/SMC         ENDDO
+!/SMC         IF( J .GT. 1 )  NGRPSMC = JJ 
+!/SMC      ENDDO
+!/SMC      IF( IMPROC.EQ.NMPERR )  WRITE (MDSE,*) " NGRPSMC =", NGRPSMC
+!/SMC 
+!/SMC !!  Equal ranked SMC grid group uses its own sub.   JGLi12Apr2021
+!/SMC      IF( NGRPSMC .GT. 0 ) THEN
+!/SMC          CALL WMSMCEQL
+!/SMC      ELSE
+!
       CALL WMGEQL
+!
+!/SMC      ENDIF
 !
 ! 8.c.4 Relation to higher ranked grids
 !
@@ -2830,8 +2873,8 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
-!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'END'
@@ -3221,7 +3264,7 @@
 !/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Add momentum and air density input  ( version 7.xx )
+!/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -3398,8 +3441,6 @@
 !
 !       !/O10   Enable output identifying start and end of routine
 !      
-!       !/F90  FORTRAN 90 specific extensions.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output.
 !       !/MPRF  Profiling.
@@ -3421,7 +3462,7 @@
       USE W3IOGOMD, ONLY: W3READFLGRD, W3FLGRDFLAG
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3INITMD, ONLY: W3INIT
-      USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH
+      USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH, WMSMCEQL
       USE WMINIOMD, ONLY: WMIOBS, WMIOBG, WMIOBF
       USE WMIOPOMD, ONLY: WMIOPP
 !/
@@ -3432,6 +3473,8 @@
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
       USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST, GRIDS
+!/SMC      USE W3GDATMD, ONLY: NCel, NUFc, NVFc, NRLv, NBSMC 
+!/SMC      USE W3GDATMD, ONLY: NARC, NBAC, NSPEC, SMCTYPE 
 !/MPI      USE W3GDATMD, ONLY: FLAGLL, ICLOSE, GSU, X0, Y0, SX, SY,   &
 !/MPI                          XGRD, YGRD, DXDP, DXDQ, DYDP, DYDQ,    &
 !/MPI                          HQFAC, HPFAC, MAPSTA, MAPST2,          &
@@ -3455,8 +3498,8 @@
                           GRGRP, INGRP, GRDHGH, GRDEQL, GRDLOW,       &
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
-                          INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
+                          INPMAP, IDINP, NGRPSMC
+      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -3586,7 +3629,7 @@
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
       MPI_COMM_LOC   = MPI_COMM
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
@@ -4078,7 +4121,7 @@
 !/T        END DO
 !/T      WRITE (MDST,9035) NINGRP(1:NRGRP)
 !
-      ALLOCATE ( ACTION(JFIRST:9) )
+      ALLOCATE ( ACTION(JFIRST:11) )
       ALLOCATE ( INGRP(NRGRP,0:MAXVAL(NINGRP(:NRGRP))) )
       DEALLOCATE ( TMPRNK, TMPGRP, NINGRP, BCDTMP )
       INGRP = 0
@@ -5243,6 +5286,9 @@
                                        WADATS(I)%MD0(NSEA) ,          &
                                        WADATS(I)%MDI(NSEA) )
 !
+              IF ( J.EQ.6 ) ALLOCATE ( WADATS(I)%RA0(NSEA) ,          &
+                                       WADATS(I)%RAI(NSEA) )
+!
             END IF
           END DO
 !
@@ -5333,7 +5379,13 @@
 !/MPI            CALL MPI_BCAST ( FILEXT, 10, MPI_CHARACTER, 0,       &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
-!/MPI                 CALL W3DIMX  ( I, NX, NY, NSEA, MDSE, MDST )
+!/MPI                 CALL W3DIMX  ( I, NX, NY, NSEA, MDSE, MDST      &
+!/SMC !!  SMC grid related variables are not needed beyond MPI_COMM_GRD
+!/SMC !!  so all dimensions are minimised to 1.  JGLi29Mar2021
+!/MPI/!/SMC !!Li        , NCel, NUFc, NVFc, NRLv, NBSMC  &
+!/MPI/!/SMC !!Li        , NARC, NBAC, NSPEC              &
+!/MPI/!/SMC             , 1, 1, 1, 1, 1, 1, 1, 1         &
+!/MPI                )
 !/MPI            CALL MPI_BCAST ( HQFAC, NX*NY, MPI_REAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( HPFAC, NX*NY, MPI_REAL, 0,          &
@@ -5563,7 +5615,26 @@
 !
 ! 8.c.3 Relation to same ranked grids
 !
+!/SMC !!  Check whether there is a SMC grid group.  JGLi12Apr2021
+!/SMC      NGRPSMC = 0 
+!/SMC      DO JJ=1, NRGRP
+!/SMC         J = 0
+!/SMC         DO II=1, INGRP(JJ,0)
+!/SMC            I = INGRP(JJ,II)
+!/SMC            IF( GRIDS(I)%GTYPE .EQ. SMCTYPE ) J = J + 1 
+!/SMC         ENDDO
+!/SMC         IF( J .GT. 1 )  NGRPSMC = JJ 
+!/SMC      ENDDO
+!/SMC      IF( IMPROC.EQ.NMPERR )  WRITE (MDSE,*) " NGRPSMC =", NGRPSMC
+!/SMC 
+!/SMC !!  Equal ranked SMC grid group uses its own sub.   JGLi12Apr2021
+!/SMC      IF( NGRPSMC .GT. 0 ) THEN
+!/SMC          CALL WMSMCEQL
+!/SMC      ELSE
+!
       CALL WMGEQL
+!
+!/SMC      ENDIF
 !
 ! 8.c.4 Relation to higher ranked grids
 !
@@ -5731,8 +5802,8 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
-!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'END'

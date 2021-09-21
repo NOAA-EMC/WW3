@@ -55,7 +55,8 @@
 !/                  (Roberto Padilla-Hernandez)
 !/    16-Jul-2020 : Variable coupling time step         ( version 7.08 )
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
-!/    22-Mar-2021 : Add new coupling fields             ( version 7.xx )
+!/    22-Mar-2021 : Add new coupling fields             ( version 7.13 )
+!/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -230,9 +231,6 @@
 !
 !       !/NCO   NCEP NCO modifications for operational implementation.
 !
-!       !/F90   Timer function included for F90.
-!
-!       !/NCC   Ncep Coupler
 !
 ! 10. Source code :
 !
@@ -241,6 +239,7 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
 !/OASIS      USE W3WDATMD, ONLY: TIME00, TIMEEND
+!/NL5      USE W3WDATMD, ONLY: QI5TBEG
       USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
 !/MEMCHECK   USE W3ADATMD, ONLY: MALLINFOS
       USE W3IDATMD
@@ -266,7 +265,6 @@
 !/NETCDF_QAD      USE W3NETCDF, only : TIMEN_NETCDF_QAD
 
 
-!/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/OASIS USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
 !/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE,      &
 !/OASIS                     ID_OASIS_TIME, CPLT0
@@ -308,13 +306,13 @@
 !
 !/OASIS      INTEGER             :: OASISED
 !/COU      INTEGER             :: OFL
-!/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
+      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
 !
       REAL                :: FACTOR, DTTST, XX, YY,                    &
                              HA(NHMAX,-7:10), HD(NHMAX,-7:10),         &
                              HS(NHMAX,-7:10)
-!/F90      REAL                :: CLKFIN, CLKFEL
+      REAL                :: CLKFIN, CLKFEL
       REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),         &
                              DATA1(:,:), DATA2(:,:)
 !
@@ -345,8 +343,6 @@
                              FLGR2(NOGRP,NGRPP), FLG2(NOGRP),          &
                              FLAGSTIDE(4), FLH(-7:10), FLGDAS(3),      &
                              FLLST_ALL(-7:10)
-      LOGICAL             :: DEBUG_NCC = .FALSE.
-!/NCC      LOGICAL             :: CFLAG(10) 
 !/MPI      LOGICAL             :: FLHYBR = .FALSE.
 !/OMPH      INTEGER             :: THRLEV
 !/OASIS      LOGICAL             :: L_MASTER    
@@ -381,9 +377,8 @@
       FLH(:)       = .FALSE.
 !
 !/T      PRTFRM = .TRUE.
-!/T      DEBUG_NCC = .TRUE. 
 !
-!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 0.  Set up data structures
@@ -426,8 +421,6 @@
 !/MPI      MPI_COMM = MPI_COMM_WORLD
 !/OASIS END IF
 !
-!/NCC      CALL WW_CMP_START
-!/NCC      MPI_COMM = MPI_COMM_WW
 !
 !/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
 !/DEBUGINIT      write(740+IAPROC,*) 'After MPI_COMM_SIZE, NAPROC=', NAPROC
@@ -1258,7 +1251,7 @@
           END IF
           IF (WORDS(7) .EQ. 'T') THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-            READ (NDSI,*,END=2001,ERR=2002) FLDRST
+            READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
           END IF
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
                              FLOGRR, IAPROC, NAPOUT, IERR )
@@ -1665,6 +1658,7 @@
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
 !/OASIS      TIME00 = TIME0
 !/OASIS      TIMEEND = TIMEN
+!/NL5      QI5TBEG = TIME0
 !
       DTTST  = DSEC21 ( TIME0 , TIMEN )
       IF ( DTTST .LE. 0. ) GOTO 2003
@@ -1855,7 +1849,7 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90        CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+        CALL DATE_AND_TIME ( VALUES=CLKDT2 )
       END IF
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
@@ -1905,23 +1899,6 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
 !
-!/NCC      CFLAG = .FALSE. 
-!/NCC      CALL WW_INIT(1,GRIDS(1)%NX,GRIDS(1)%NY,            &
-!/NCC      GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY)
-!/NCC      CALL WW_RECVDTC
-!/NCC      CALL WW_SENDGRIDS
-!/NCC      CALL WW_SENDSLM(GRIDS(1)%MAPSTA)
-!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) THEN
-!/NCC         OPEN(9751,FILE='debug_writeout_wind',           &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         OPEN(9752,FILE='debug_writeout_ice',            &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         OPEN(9753,FILE='data_forDC',                    &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
-!/NCC         WRITE(9753) GRIDS(1)%NX,GRIDS(1)%NY,            &
-!/NCC           GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY
-!/NCC         WRITE(9753) GRIDS(1)%MAPSTA
-!/NCC      END IF
 
 !/OASIS      ! Send coupling fields at the initial time step
 !/OASIS      IF ( FLOUT(7) .AND. CPLT0 ) THEN
@@ -1932,10 +1909,6 @@
 
   700 CONTINUE
 !
-!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) WRITE(9753) TIME0
-!/NCC      CALL WW_TSTEP_INIT(TIME0)
-!/NCC      CALL WW_RECV_SBC
-!/NCC      CALL WW_RECV_PSEUDOICE
 !
 ! 7.a Determine next time interval and input fields
 ! 7.a.1 Preparation
@@ -1959,7 +1932,7 @@
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
 !/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-!/T                        IDSTR(6), INFLAGS1(6), TRN,       &
+!/T                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
 !/T                        IDSTR(9), INFLAGS1(9), T2N,       &
@@ -2208,20 +2181,12 @@
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
-!/NCC                IF (.NOT.CFLAG(J)) THEN
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                              TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                              IERR, FLAGSC(J)                            &
 !/OASACM                             , COUPL_COMM                       &
                              )
-!/NCC                END IF
-!/NCC                CALL WW_CDETECT(CFLAG(J))
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
-!/NCC                     WRITE(9753) TW0, TWN
-!/NCC                CALL WW_UPDATE_WIND(TW0,TWN,WX0,WY0,WXN,WYN)
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
-!/NCC                     WRITE(9751) TW0, TWN, WX0, WY0, WXN, WYN
               END IF
 
 ! ICE : ice conc.
@@ -2234,7 +2199,6 @@
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
 !/OASICM                IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
-!/NCC                IF (.NOT.CFLAG(J)) THEN
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,    &
                              TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
@@ -2243,13 +2207,6 @@
                             )
                 IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !could be:      IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
-!/NCC                END IF
-!/NCC                CALL WW_CDETECT(CFLAG(J))
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )    &
-!/NCC                     WRITE(9753) TIN
-!/NCC                CALL WW_UPDATE_PSEUDOICE(TIN,ICEI)
-!/NCC                IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )    &
-!/NCC                     WRITE(9752) TIN, ICEI
               END IF
 
 ! TAU : atmospheric momentum
@@ -2282,13 +2239,20 @@
               IF ( FLH(J) ) THEN
                 CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                              TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR, IERR)
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
+!/SMC !!Li  Reshape the RH0/N space for sea-point only current. 
+!/SMC !!Li              JGLi26Jun2018. 
+!/SMC              ELSE IF( FSWND ) THEN
+!/SMC                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J), NDST,    &
+!/SMC                      NDSEN, NSEA, 1, NSEA, 1, TIME0, TIMEN, TR0, &
+!/SMC                      XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR) 
+!/SMC !!Li 
               ELSE
 !/OASIS                COUPL_COMM = MPI_COMM
 !/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                             TTT, XXX, XXX, XXX, TRN, XXX, XXX, RAIR,   &
+                             TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
                              IERR, FLAGSC(J)                            &
 !/OASASCM                             , COUPL_COMM                               &
                              )
@@ -2417,7 +2381,7 @@
 !/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
 !/T                        IDSTR(4), INFLAGS1(4), TIN,       &
 !/T                        IDSTR(5), INFLAGS1(5), TU0, TUN,  &
-!/T                        IDSTR(6), INFLAGS1(6), TRN,       &
+!/T                        IDSTR(6), INFLAGS1(6), TR0, TRN,  &
 !/T                        IDSTR(7), INFLAGS1(7), T0N,       &
 !/T                        IDSTR(8), INFLAGS1(8), T1N,       &
 !/T                        IDSTR(9), INFLAGS1(9), T2N, TDN,  &
@@ -2555,15 +2519,15 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90          CALL DATE_AND_TIME ( VALUES=CLKDT3 )
-!/F90          CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
-!/F90          CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
-!/F90          WRITE (NDSO,997) CLKFIN
-!/F90          WRITE (NDSO,998) CLKFEL
-!/F90          IF ( NDSO .NE. NDS(1) ) THEN
-!/F90            WRITE (NDS(1),997) CLKFIN
-!/F90            WRITE (NDS(1),998) CLKFEL
-!/F90          END IF
+          CALL DATE_AND_TIME ( VALUES=CLKDT3 )
+          CLKFIN = MAX(TDIFF ( CLKDT1,CLKDT2 ), 0.)
+          CLKFEL = MAX(TDIFF ( CLKDT1,CLKDT3 ), 0.)
+          WRITE (NDSO,997) CLKFIN
+          WRITE (NDSO,998) CLKFEL
+          IF ( NDSO .NE. NDS(1) ) THEN
+            WRITE (NDS(1),997) CLKFIN
+            WRITE (NDS(1),998) CLKFEL
+          END IF
         WRITE (NDSO,999)
       END IF
 !
@@ -2637,8 +2601,8 @@
 !/TIDE  974 FORMAT ( '     Updating ',A,'using tidal constituents')
   975 FORMAT (/'  Data assimmilation at ',A)
 !
-!/F90  997 FORMAT (/'  Initialization time :',F10.2,' s')
-!/F90  998 FORMAT ( '  Elapsed time        :',F10.2,' s')
+  997 FORMAT (/'  Initialization time :',F10.2,' s')
+  998 FORMAT ( '  Elapsed time        :',F10.2,' s')
 !
   999 FORMAT(/'  End of program '/                                    &
                ' ===================================='/               &
@@ -2722,6 +2686,8 @@
 !/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
@@ -2740,6 +2706,8 @@
 !/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,2(I10.8,I7.6)/           &

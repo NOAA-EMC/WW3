@@ -26,6 +26,7 @@
 !/    01-Nov-2019 :  UPD5 and UPD6 use wind data either from anl.XXX file
 !/                   or from restart under WRST switch (Andy Saulter)
 !/    06-Oct-2020 :  Added namelist input options        ( version 7.11 )
+!/    06-May-2021 :  Use SMCTYPE and FSWND for SMC grid. ( version 7.13 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights
@@ -319,7 +320,9 @@
       USE W3DISPMD, ONLY: WAVNU1
 !
       USE W3GDATMD, ONLY: GNAME, NX, NY, MAPSTA, SIG, NK, NTH, NSEA,  &
-                          NSEAL, MAPSF, DMIN, ZB, DSIP, DTH, RSTYPE
+                          NSEAL, MAPSF, DMIN, ZB, DSIP, DTH, RSTYPE,  &
+                          GTYPE, SMCTYPE
+!/SMC      USE W3GDATMD, ONLY: FSWND 
       USE W3WDATMD, ONLY: VA, TIME
       USE W3ADATMD, ONLY: NSEALM
       USE W3ODATMD, ONLY: IAPROC, NAPERR, NAPLOG, NDS, NAPOUT
@@ -403,13 +406,6 @@
 !/WRST      !Compiling with WRST will allow access to options UPD5/6
 !/WRST      WRSTON = .TRUE.
 !/WRST      WRITE (NDSO,*) '*** UPRSTR will read wind from restart files'
-!/SMC      !Compiling with SMC option activates SMC grid logicals
-!/SMC      SMCGRD = .TRUE.
-!/SMC      SMCWND = .TRUE.
-!/WRST      ! Override SMCWND - at present restarts only store wind on
-!/WRST      ! a regular grid
-!/WRST      SMCWND = .FALSE.
-!/SMC      WRITE (NDSO,*) '*** UPRSTR set to work with SMC grid model'
 !/
 !/ ------------------------------------------------------------------- /
 !  2. Read the ww3_uprstr input data
@@ -466,6 +462,15 @@
       CALL W3IOGR ( 'READ', NDSM )
       NSEAL  = NSEA
       WRITE (NDSO,920) GNAME
+!/
+!/SMC !! SMC grid option is activated if GTYPE .EQ. SMCTYPE.  JGLi06May2021
+!/SMC      IF( GTYPE .EQ. SMCTYPE ) SMCGRD = .TRUE.
+!/SMC !! SMC sea-point wind option is activated if FSWND=.TRUE.  JGLi06May2021
+!/SMC      IF( FSWND )              SMCWND = .TRUE.
+!/WRST      ! Override SMCWND - at present restarts only store wind on
+!/WRST      ! a regular grid
+!/WRST      SMCWND = .FALSE.
+!/SMC      WRITE (NDSO,*) '*** UPRSTR set to work with SMC grid model'
 !/
 !/ ------------------------------------------------------------------- /
 !  4. Read restart file

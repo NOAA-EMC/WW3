@@ -6,8 +6,11 @@ mod_*
 obj
 obj_*
 exe
+exe_*
 tmp
+tmp_*
+work*
 nuopc*.mk
-aux/makefile
+tools/makefile
 ftn/makefile
 ftn/makefile_*

@@ -627,7 +627,7 @@
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.xx )
+!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -775,7 +775,7 @@
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.xx )
+!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -1503,7 +1503,7 @@
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.xx )
+!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
 !/
 !  1. Purpose :
 !
@@ -1614,7 +1614,7 @@
 !/
 !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
 !/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.xx )
+!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
 !/
 !  1. Purpose :
 !

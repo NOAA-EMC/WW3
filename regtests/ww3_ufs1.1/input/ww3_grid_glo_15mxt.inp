@@ -1,0 +1,44 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+  'GFSv16-wave Global 1/4 extended grid  '
+$
+$   1.10  0.035  36  24  0.5
+  1.07  0.035  50  36  0.5
+$
+   F T T T T T
+$
+   1800.  450. 900.  30.
+$
+&SIN4 BETAMAX = 1.305,
+ TAUWSHELTER = 1.0,
+ SWELLF = 0.798,
+ SWELLF2 = -0.0127,
+ SWELLF3 = 0.0151,
+ SWELLF4 = 100025.0,
+ SWELLF5 = 1.1999,
+ SWELLF7 = 235500.0 /
+&SNL1
+ NLPROP = 2.502E7 /
+&SDS4
+ FXFM3 = 2.501,
+ SDSC2 = -2.1975e-05,
+ SDSCUM = -0.4032,
+ SDSC6 = 0.2978,
+ SDSBR = 0.0009035 /
+&MISC CICE0 = 0.25,
+ CICEN = 0.75,
+ FLAGTR = 4 /
+&SBT1 GAMMA = -0.038 /
+END OF NAMELISTS
+$
+     'RECT' T 'SMPL'
+   1440    721
+      0.25   0.25   1.
+      0.   -90.0    1.
+ -0.1 2.50 20 0.001 1 1 '(....)' 'NAME' '../input/glo_15mxt.bot'
+     21 0.010 1 1 '(....)' 'NAME' '../input/glo_15mxt.obs'
+     22   1 1 '(....)' 'NAME' '../input/glo_15mxt.mask'
+$
+ 0. 0. 0. 0. 0
+$ -----------------------------------------------------------------$

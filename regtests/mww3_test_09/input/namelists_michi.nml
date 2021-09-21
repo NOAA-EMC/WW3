@@ -1,0 +1,27 @@
+&PSMC
+    DTIMS=3600.,
+    NBISMC=38,
+    LvSMC=4,
+    AVERG=.TRUE.,
+    SEAWND=.TRUE.
+/
+&SIN4
+    BETAMAX = 1.60,
+    ZALP=0.006, Z0MAX = 0.002
+/
+&SDS4
+    SDSBR = 0.0009,
+    SDSC2 = -2.6E-5,
+    FXFM3= 2.5
+/
+&SBT1 GAMMA = -0.038 /
+&SDB1 BJALFA = 0.005 /
+&MISC
+    CICE0 = 0.5,
+    CICEN = 0.5,
+    FLAGTR = 2
+/
+&FLX3
+    CDMAX = 3.5E-3,
+    CTYPE = 0
+/

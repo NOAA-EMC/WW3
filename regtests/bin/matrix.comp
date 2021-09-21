@@ -35,7 +35,7 @@
   home_dir=`pwd`
 
   rm -rf $home_dir/output
-  rm -f $home_dir/matrixDiff.out
+  rm -f $home_dir/matrixDiff.txt
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 
@@ -71,7 +71,7 @@
 
 
   if [ "$ctest" = 'all' ] ; then
-    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? ww3_tr? ww3_tnc? mww3_test_0?` ; fi
+    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? ww3_tr? ww3_tnc? mww3_test_0? ww3_ufs1.?` ; fi
   echo "base directory : $base_dir" >> $home_dir/header.tmp
   echo "comp directory : $comp_dir" >> $home_dir/header.tmp
   echo "test(s)        : "          >> $home_dir/header.tmp
@@ -187,7 +187,7 @@
                   isIdentical=0; let "numNotInComp += 1"
                   echo "     $file not in compare directory" >> $home_dir/fulldiff.tmp
                 else
-                  files_2=`echo $files_2 | sed "s#$escapedfilename##g" | sed "s#  # #g"`
+                  files_2=`echo "$files_2" | sed "s#\b$escapedfilename\b##g" | sed "s#  # #g"`
 
                   if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
                   then
@@ -316,7 +316,7 @@
 #             echo "files_2 = [$files_2]"
               done
 
-# 5.d Fils in compare directpry only
+# 5.d Files in compare directory only
             for file in $files_2
             do
               echo "     $file in comp directory only" >> $home_dir/fulldiff.tmp; isIdentical=0 ; let "numInCompOnly += 1"
@@ -374,25 +374,25 @@
 # --------------------------------------------------------------------------- #
 # 7.  End of script output                                                    #
 # --------------------------------------------------------------------------- #
-  cat $home_dir/header.tmp            > $home_dir/matrixCompFull.out
-  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompFull.out
-  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompFull.out
-  cat $home_dir/fulldiff.tmp         >> $home_dir/matrixCompFull.out
+  cat $home_dir/header.tmp            > $home_dir/matrixCompFull.txt
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompFull.txt
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompFull.txt
+  cat $home_dir/fulldiff.tmp         >> $home_dir/matrixCompFull.txt
 
-  cat $home_dir/header.tmp            > $home_dir/matrixCompSummary.out
-  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompSummary.out
-  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.out
-  cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.out
+  cat $home_dir/header.tmp            > $home_dir/matrixCompSummary.txt
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompSummary.txt
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.txt
+  cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.txt
 
   for file in $(find $home_dir/output -name "*diff*")
   do
-    echo "***" >> $home_dir/matrixDiff.out
-    echo $file >> $home_dir/matrixDiff.out
-    echo "***" >> $home_dir/matrixDiff.out
-    cat $file >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
+    echo "***" >> $home_dir/matrixDiff.txt
+    echo $file >> $home_dir/matrixDiff.txt
+    echo "***" >> $home_dir/matrixDiff.txt
+    cat $file >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
   done
 
 
@@ -416,9 +416,9 @@
 #  echo '**********************************************************************'
 
   echo ' '
-  echo " Saved summary to $home_dir/matrixCompSummary.out"
-  echo " Saved full output to $home_dir/matrixCompFull.out"
-  echo " Saved diff output to $home_dir/matrixDiff.out"
+  echo " Saved summary to $home_dir/matrixCompSummary.txt"
+  echo " Saved full output to $home_dir/matrixCompFull.txt"
+  echo " Saved diff output to $home_dir/matrixDiff.txt"
   echo ' '
 
 

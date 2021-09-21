@@ -6,7 +6,7 @@
 !/                  |           C. Bunney               |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         02-Sep-2021 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -17,7 +17,8 @@
 !/                  Freeform meta data uses linked list.
 !/    02-Feb-2021 : Improved partitioned parameter      ( version 7.12 )
 !/                  template string implementation.
-!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
+!/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
 !/
 !  1. Purpose :
 !
@@ -166,7 +167,7 @@
       USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: SIG, NK, GTYPE, UNGTYPE
 !/RTD      USE W3GDATMD, ONLY : FLAGUNR, POLAT, POLON
-!/SMC      USE W3SMCOMD, ONLY : SMCTYPE
+!/SMC      USE W3SMCOMD, ONLY : SMCOTYPE
       USE W3ODATMD, ONLY: PTMETH, PTFCUT, NOGRP, NOGE, NGRPP,           &
                           NDSE, FNMPRE, NOSWLL
       USE W3SERVMD, ONLY: EXTCDE, STR_TO_UPPER
@@ -222,6 +223,9 @@
       CHARACTER(LEN=128) :: CRS_NAME = ''
       TYPE(META_LIST_T)  :: CRS_META
       LOGICAL            :: CRS_IS_DEFAULT = .FALSE. ! True if CRS set by this module
+
+      ! "coordinates" attribute - for defining auxiliary coordinates (for all variables)
+      CHARACTER(LEN=256) :: COORDS_ATTR = ''
 
       ! Type for storing partitioned parameter template strings.
       ! Defined as a linked-list
@@ -279,7 +283,7 @@
 !/RTD ! Is the grid really rotated?
 !/RTD      IF ( POLAT < 90. ) FLRTD = .True.
 !/SMC!/RTD      ! SMC type 3/4 outputs are currently on standard pole grid only
-!/SMC!/RTD      IF(SMCTYPE .EQ. 3 .OR. SMCTYPE .EQ. 4) FLRTD = .FALSE.
+!/SMC!/RTD      IF(SMCOTYPE .EQ. 3 .OR. SMCOTYPE .EQ. 4) FLRTD = .FALSE.
 !/RTD !
 
       ! 1. Allocate nested GROUP, FIELD structure:
@@ -296,10 +300,12 @@
 
       ! 2. Set direction convention:
       DIRCOM = ""
-!/RTD      IF ( FLAGUNR ) THEN
-!/RTD        DIRCOM = 'True North'
-!/RTD      ELSE IF ( .NOT. FLAGUNR ) THEN
-!/RTD        DIRCOM = 'Rotated Pole Grid North'
+!/RTD      IF( FLRTD ) THEN
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          DIRCOM = 'True North'
+!/RTD        ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD          DIRCOM = 'Rotated Pole Grid North'
+!/RTD        ENDIF
 !/RTD      ENDIF
 
       !  Set partitioning method comment and standard name templates:
@@ -1936,15 +1942,17 @@
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
 
+      IF(COORDS_ATTR .NE. '' .AND. COORDS_ATTR .NE. UNSETC) THEN
+        ERR = NF90_PUT_ATT(NCID, VARID, 'coordinates', ADJUSTL(COORDS_ATTR))
+        IF(ERR /= NF90_NOERR) RETURN
+      ENDIF
+
       IF (META%EXTRA%N .GT. 0) THEN
         CALL WRITE_FREEFORM_META_LIST(NCID, VARID, META%EXTRA, ERR)
         IF(ERR /= NF90_NOERR) RETURN
       ENDIF
 
       RETURN
-!
- 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
-               '     WRITEMETA: Unknown meta data type: ', A1         / )
 !
       END SUBROUTINE WRITE_META
 
@@ -2057,7 +2065,7 @@
             IF(ERR /= NF90_NOERR) RETURN
 
           CASE DEFAULT
-            WRITE(1000,*) P%TYPE
+            WRITE(NDSE,1000) P%TYPE
             CALL EXTCDE(10)
         END SELECT
 
@@ -2174,7 +2182,7 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
-!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.xx )
+!/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/
 !
 !  1. Purpose :

@@ -9,14 +9,14 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   LN0 ST0 NL0 BT8 DB0 TR0 BS0 XX0                                         #
+#   LN0 ST0 NL0 BT8 DB0 TR0 BS0                                             #
 #    or                                                                     #
-#   LN0 ST0 NL0 BT9 DB0 TR0 BS0 XX0                                         #
+#   LN0 ST0 NL0 BT9 DB0 TR0 BS0                                             #
 #                        Select the 'no source terms' option.               #
 #   PR3 UQ   Propagation scheme                                             #
 #   WNX1 WNT1 CRX1 CRT1      Wind and current interpolation.                #
 #   O0 O1 O2 O3 O4 O5 O6 O7   Sdt out output options.                       #
-#   F90 NOGRB  FLX2                                                         #
+#   NOGRB FLX2                                                              #
 #   SHRD or DIST MPI                                                        #
 #   BT8   Muddy bed (Dalrymple & Liu).                                      #
 #      or                                                                   #
