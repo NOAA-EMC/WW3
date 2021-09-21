@@ -73,6 +73,14 @@ done
 # get all values from clean inp file
 
 readarray -t lines < "$cleaninp"
+numlines=${#lines[@]}
+
+# remove carriage return characters
+for il in $(seq 0 $numlines)
+do
+  lines[$il]=$(echo "$(echo ${lines[$il]} | sed 's/\r$//')")
+done
+
 il=0
 
 mode="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
