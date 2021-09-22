@@ -155,13 +155,7 @@ fi
 # 2.b Check for existing environment and set defaults
 if [ -f $ww3_env ]
 then
-  sed -i "s/WWATCH3_F77/WWATCH3_F90/g" $ww3_env
-
   echo "   Setup file $ww3_env found"
-
-  set `grep WWATCH3_F90 $ww3_env` ; shift
-  comp_fc="$*"
-  echo "      auxiliary FORTRAN compiler  : $comp_fc"
 
   echo "      Source directory            : $path_s"
 
@@ -185,7 +179,6 @@ then
 else
   echo "   Setup file $ww3_env not found"
 
-  comp_fc=gfortran
   if [ $tdir ]
   then
     temp_dir=$tdir
@@ -197,7 +190,6 @@ else
 
     echo ' '
     echo "   Default set up :"
-    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -234,13 +226,6 @@ then
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
   do
     echo ' '
-
-    echo -n "      Auxiliary FORTRAN compiler [$comp_fc] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      comp_fc="$instr"
-    fi
 
     OK="$NULL"
     until [ "$OK" = 'y' ]
@@ -292,7 +277,6 @@ then
 
     echo ' '
     echo "   Modified set up :"
-    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -309,7 +293,6 @@ echo '# Environment variables for wavewatch III' >> $ww3_env
 echo '# ---------------------------------------' >> $ww3_env
 echo '#'                                         >> $ww3_env
 echo ' '                                         >> $ww3_env
-echo "WWATCH3_F90      $comp_fc"                 >> $ww3_env
 echo "WWATCH3_DIR      $path_s"                  >> $ww3_env
 echo "WWATCH3_TMP      $temp_dir"                >> $ww3_env
 echo "WWATCH3_SOURCE   $source"                  >> $ww3_env
@@ -385,7 +368,37 @@ then
     errmsg "$path_b/link.$cmplr not found"
     exit 1
   fi
-  chmod 775 $path_b/comp $path_b/link
+  if [ -f $path_b/ad3.$cmplr ]
+  then
+    rm -f $path_b/ad3
+    cp -f $path_b/ad3.$cmplr $path_b/ad3
+    echo "      copy $path_b/ad3.$cmplr => $path_b/ad3"
+  elif [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
+       [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
+       [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
+       [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
+       [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
+       [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
+       [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+       [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+       [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ] || \
+       [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
+       [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
+       [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
+       [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
+       [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
+       [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
+     source $path_b/cmplr.env
+     sed -e "s/<comp_seq>/$comp_seq/" -e "s/<cppad3procflag>/$cppad3procflag/" -e "s/<cppad3flag2>/$cppad3flag2/" -e "s/<cppad3flag3>/$cppad3flag3/" $path_b/ad3.tmpl > $path_b/ad3
+    echo "      sed $path_b/ad3.tmpl => $path_b/ad3"
+  else
+    errmsg "$path_b/ad3.$cmplr not found"
+    exit 1
+  fi
+  chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
 # 3.d Setup switch file
 if [ $swtch ]
