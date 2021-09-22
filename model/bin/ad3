@@ -202,18 +202,7 @@
   if [ "$w3adc" = 'yes' ]
   then
 
-    echo "0 $compress"                             > w3adc.inp.$name
-    echo "'$path_i/$name.F90' '$name.$fext'"      >> w3adc.inp.$name
-    echo "'$sw_str'"                              >> w3adc.inp.$name
-
 # 2.b Run CPP preprocessor  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-    if [ "$itst" != '0' ]
-    then
-      echo '-- input file w3adc.inp -------------------------------------------'
-      cat w3adc.inp.$name
-      echo '-- end of file ----------------------------------------------------'
-    fi
 
     #Generate list of CPP Flags based on switches:
     CPPFLAGS=()
@@ -237,28 +226,6 @@
     then
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (2)."
-    fi
-
-# 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    rm -f w3adc.*.$name
-
-# 2.e Add switches in w3initmd - - - - - - - - - - - - - - - - - - - - - -
-
-    if [ "$name" = "w3initmd" ]
-    then
-      sw_1=''
-      cp $path_w/w3initmd.$fext  $path_w/w3initmd.ft1
-      for line in 1 2 3
-        do
-          sw_1=`echo $sw_str  | fold -w100 | sed -n "${line}p"`
-          sw_old="PUT_SW$line"
-          # echo $line  $sw_1 $sw_old
-          sed -e "s/$sw_old/$sw_1/"  $path_w/w3initmd.ft1 > $path_w/w3initmd.ft2
-          mv  $path_w/w3initmd.ft2 $path_w/w3initmd.ft1
-        done
-      mv $path_w/w3initmd.ft1 $path_w/w3initmd.$fext
-      echo "'$path_w/$name.fts' '$name.$fext'"        >> w3adc.inp
     fi
 
   else
