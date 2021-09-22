@@ -202,18 +202,7 @@
   if [ "$w3adc" = 'yes' ]
   then
 
-    echo "0 $compress"                             > w3adc.inp.$name
-    echo "'$path_i/$name.F90' '$name.$fext'"      >> w3adc.inp.$name
-    echo "'$sw_str'"                              >> w3adc.inp.$name
-
 # 2.b Run CPP preprocessor  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-    if [ "$itst" != '0' ]
-    then
-      echo '-- input file w3adc.inp -------------------------------------------'
-      cat w3adc.inp.$name
-      echo '-- end of file ----------------------------------------------------'
-    fi
 
     #Generate list of CPP Flags based on switches:
     CPPFLAGS=()
@@ -238,10 +227,6 @@
       echo '      *** w3adc error ***'
       echo "          file $name.$fext not found (2)."
     fi
-
-# 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    rm -f w3adc.*.$name
 
   else
 
