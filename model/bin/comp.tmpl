@@ -135,6 +135,16 @@
   then
     mv $name.lst $name.l
   fi
+  # listing done by w3list
+  if [ ! -f $name.l ]
+  then
+    echo "w3list $name.$fext"
+    echo "$name.$fext" > w3list.inp
+    echo "T"          >> w3list.inp
+    w3list < w3list.inp 2> /dev/null
+    rm -f w3list.inp
+    mv w3list.out $name.l
+  fi
   # add comp options, warnings and error to listing
   if [ -s $name.l ] 
   then
