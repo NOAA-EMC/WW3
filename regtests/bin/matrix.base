@@ -2128,44 +2128,44 @@
      if [ "$ufscoarse" = 'y' ]
      then
        echo ' ' >> matrix.body
-       echo "$rtst -w work_c -m grdset_c -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.1"                           >> matrix.body
+       echo "$rtst -s MPI -w work_c -m grdset_c -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.1"                           >> matrix.body
         if [ "$npl_b4b" = 'y' ]
         then
            halfnp=$(($np / 2))
-           echo "$rtst -w work_c_npl -m grdset_c -f -p $mpi -n $halfnp -o all $ww3 ww3_ufs1.1"                >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_npl"                                                >> matrix.body
+           echo "$rtst -s MPI -w work_c_npl -m grdset_c -f -p $mpi -n $halfnp -o all $ww3 ww3_ufs1.1"                >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_npl"                                                       >> matrix.body
         fi
         if [ "$nth_b4b" = 'y' ]
         then
-           echo "$rtst -w work_c_nth -m grdset_c -f -p $mpi -n $nr -t $nth -o all $ww3 ww3_ufs1.1"            >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_nth"                                                >> matrix.body
+           echo "$rtst -s MPI_OMPH -w work_c_nth -m grdset_c -f -p $mpi -n $nr -t $nth -o all $ww3 ww3_ufs1.1"       >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_nth"                                                       >> matrix.body
         fi
         if [ "$rstrt_b4b" = 'y' ]
         then
-           echo "mkdir -p ww3_ufs1.1/work_d"                                                                  >> matrix.body
-           echo "cp ww3_ufs1.1/work_c/20210401.030000.restart.glo_5deg ww3_ufs1.1/work_d/restart.glo_5deg"    >> matrix.body
-           echo "$rtst -w work_d -m grdset_d -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.1"                       >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_d"                                                    >> matrix.body
+           echo "mkdir -p ww3_ufs1.1/work_d"                                                                         >> matrix.body
+           echo "cp ww3_ufs1.1/work_c/20210401.030000.restart.glo_5deg ww3_ufs1.1/work_d/restart.glo_5deg"           >> matrix.body
+           echo "$rtst -s MPI -w work_d -m grdset_d -f -p $mpi -n $np  -o all $ww3 ww3_ufs1.1"                       >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_d"                                                           >> matrix.body
         fi
      else
       echo ' ' >> matrix.body
-      echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl -t $nth1  -o all $ww3 ww3_ufs1.1"                  >> matrix.body
+      echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl -t $nth1  -o all $ww3 ww3_ufs1.1"             >> matrix.body
       if [ "$npl_b4b" = 'y' ]
       then
-          echo "$rtst -w work_a_npl -m grdset_a -f -p $mpi -n $npl1 -t $nth1 -o all $ww3 ww3_ufs1.1"          >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_npl"                                                 >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_a_npl -m grdset_a -f -p $mpi -n $npl1 -t $nth1 -o all $ww3 ww3_ufs1.1"     >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_npl"                                                        >> matrix.body
       fi
       if [ "$nth_b4b" = 'y' ]
       then
-          echo "$rtst -w work_a_nth -m grdset_a -f -p $mpi -n $npl -t $nth -o all $ww3 ww3_ufs1.1"            >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_nth"                                                 >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_a_nth -m grdset_a -f -p $mpi -n $npl -t $nth -o all $ww3 ww3_ufs1.1"       >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_nth"                                                        >> matrix.body
       fi
       if [ "$rstrt_b4b" = 'y' ]
       then
-          echo "mkdir -p ww3_ufs1.1/work_b"                                                                   >> matrix.body
-          echo "cp ww3_ufs1.1/work_a/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b/restart.glo_1deg"     >> matrix.body
-          echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $npl -t $nth1  -o all $ww3 ww3_ufs1.1"              >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                     >> matrix.body
+          echo "mkdir -p ww3_ufs1.1/work_b"                                                                          >> matrix.body
+          echo "cp ww3_ufs1.1/work_a/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b/restart.glo_1deg"            >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl -t $nth1  -o all $ww3 ww3_ufs1.1"         >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                            >> matrix.body
       fi
      fi
   fi
@@ -2174,13 +2174,13 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl   -o all $ww3 ww3_ufs1.1"               >> matrix.body
+    echo "$rtst -s MPI -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl   -o all $ww3 ww3_ufs1.1"               >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.1/work_b_esmf"                                                                 >> matrix.body
-       echo "cp ww3_ufs1.1/work_a_esmf/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/restart.glo_1deg">> matrix.body
-       echo "$rtst -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $npl   -o all $ww3 ww3_ufs1.1"            >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.1 work_a_esmf work_b_esmf"                                              >> matrix.body
+       echo "mkdir -p ww3_ufs1.1/work_b_esmf"                                                                        >> matrix.body
+       echo "cp ww3_ufs1.1/work_a_esmf/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/restart.glo_1deg"     >> matrix.body
+       echo "$rtst -s MPI -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $npl   -o all $ww3 ww3_ufs1.1"            >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.1 work_a_esmf work_b_esmf"                                                     >> matrix.body
     fi
   fi
 
@@ -2188,15 +2188,15 @@
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.2"                   >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.2"              >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.2/work_b"                                                                      >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b/restart.gnh_10m"          >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b/restart.gsh_15m"          >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b/restart.aoc_9km"          >> matrix.body
-       echo "$rtst -w work_b -m grdset_b -f -p $mpi -n $npl  -t $nth1 -o all $ww3 ww3_ufs1.2"                 >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.2 work_a work_b"                                                        >> matrix.body
+       echo "mkdir -p ww3_ufs1.2/work_b"                                                                             >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b/restart.gnh_10m"                 >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b/restart.gsh_15m"                 >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b/restart.aoc_9km"                 >> matrix.body
+       echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl  -t $nth1 -o all $ww3 ww3_ufs1.2"            >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.2 work_a work_b"                                                               >> matrix.body
     fi
   fi
 
@@ -2204,15 +2204,15 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl  -t $nth1 -o all $ww3 ww3_ufs1.2"       >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl  -t $nth1 -o all $ww3 ww3_ufs1.2"  >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.2/work_b_esmf"                                                                 >> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/restart.gnh_10m">> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/restart.gsh_15m">> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b_esmf/restart.aoc_9km">> matrix.body
-       echo "$rtst -w work_b_esmf -m grdset_b  -C ESMF -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.2"  >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                              >> matrix.body
+       echo "mkdir -p ww3_ufs1.2/work_b_esmf"                                                                            >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/restart.gnh_10m"           >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/restart.gsh_15m"           >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b_esmf/restart.aoc_9km"           >> matrix.body
+       echo "$rtst -s MPI_OMPH -w work_b_esmf -m grdset_b  -C ESMF -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.2" >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                                         >> matrix.body
     fi
   fi
 
@@ -2221,7 +2221,7 @@
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.3"                   >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1  -o all $ww3 ww3_ufs1.3"                  >> matrix.body
   fi
 
 
