@@ -21,9 +21,7 @@
 &POINT_NML
   POINT%TIMESTART        =  '19680606 000000'
   POINT%TIMESTRIDE       =  '300.'
-  POINT%TIMECOUNT        =  '100000'
-  POINT%TIMESPLIT        =  6
-  POINT%BUFFER           =  100
+  POINT%TYPE             =  3
 /
 
 ! -------------------------------------------------------------------- !
@@ -79,6 +77,7 @@
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 /
