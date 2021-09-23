@@ -212,8 +212,8 @@
 
     CPPFLAGS+=("-D__WW3_SWITCHES__='$sw_str'")
 
-    <comp_seq> "${CPPFLAGS[@]}" <cppad3procflag> <cppad3flag2>  $path_i/$name.F90 -o $name.F90
-    <cppad3flag3> mv $name.i $name.F90
+    <comp_seq> "${CPPFLAGS[@]}" <cppad3procflag> <cppad3flag2>  $path_i/$name.F90 <cppad3flag3> $name.F90
+    <cppad3flag4> mv $name.i $name.F90
 
 # 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 
