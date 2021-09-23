@@ -81,6 +81,7 @@
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 /

@@ -148,6 +148,8 @@ then
   echo $scale_fac
   output_fac="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
   echo $output_fac
+  var_type="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo $var_type
 elif [ "$type" = 2 ]
 then
   il=$(($il+1))
@@ -305,6 +307,7 @@ cat >> $nmlfile << EOF
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 EOF
@@ -314,6 +317,7 @@ then
   if [ "$output" != 3 ];  then  echo "  SPECTRA%OUTPUT        = $output" >> $nmlfile; fi
   if [ "$scale_fac" != 1 ];  then  echo "  SPECTRA%SCALE_FAC     = $scale_fac" >> $nmlfile; fi
   if [ "$output_fac" != 0 ];  then  echo "  SPECTRA%OUTPUT_FAC    = $output_fac" >> $nmlfile; fi
+  if [ "$var_type" != 4 ];  then  echo "  SPECTRA%TYPE          = $var_type" >> $nmlfile; fi
 fi
 
 
