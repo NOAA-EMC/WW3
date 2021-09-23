@@ -138,17 +138,18 @@
                                  NDSI,NDSM, NDSI2,NDSS,NDSB, NDSC,     &
                                  NDSTRC, NTRACE, NK1,NTH1,NT1, NSPEC1, &
                                  NBI, NBI2, NKI, NTHI, NTI, NBO, NBO2, &
-                                 IERR, INTERP, ILOOP, IFMIN, IFMIN2,   &
-                                 IFMAX, VERBOSE, IBO, IRET, ICODE, NDSL
+                                 IERR, INTERP, ILOOP, VERBOSE, IBO,    &
+                                 IRET, ICODE, NDSL
       INTEGER                 :: TIME(2), TIME2(2), VARID(12),         &
-                                 REFDATE(8), CURDATE(8)
+                                 REFDATE(8), CURDATE(8), VARTYPE
 !/S      INTEGER, SAVE           :: IENT = 0
 !
       INTEGER, ALLOCATABLE    :: IPBPI(:,:), IPBPO(:,:), NCID(:),      &
                                  DIMID(:,:), DIMLN(:,:)
 !
       REAL                    :: FR1I, XFRI, TH1I, FACTOR, OFFSET, DMIN,&
-                                 DIST, DMIN2, COS1, DLON, DLAT, DLO
+                                 DIST, DMIN2, COS1, DLON, DLAT, DLO,    &
+                                 FILLVAL
 !
       REAL, ALLOCATABLE       :: SPEC2D(:,:,:,:), LATS(:), LONS(:),    &
                                  FREQ(:), THETA(:),                    &
@@ -509,6 +510,10 @@
           IRET=NF90_INQ_VARID(NCID(IP),"efth",VARID(7))
           IF (IRET.NE.0) IRET=NF90_INQ_VARID(NCID(IP),"Efth",VARID(7))
           CALL CHECK_ERR(IRET)
+          IRET=NF90_INQUIRE_VARIABLE(NCID(IP),VARID(7),XTYPE=VARTYPE)
+          CALL CHECK_ERR(IRET)
+          IRET=NF90_GET_ATT(NCID(IP),VARID(7),"_FillValue",FILLVAL)
+          CALL CHECK_ERR(IRET)
           IRET=NF90_GET_ATT(NCID(IP),VARID(7),"scale_factor",FACTOR)
           IF (IRET.NE.0) FACTOR=1.
           IRET=NF90_GET_ATT(NCID(IP),VARID(7),"add_offset",OFFSET)
@@ -526,7 +531,11 @@
             CALL CHECK_ERR(IRET)
           END IF
           ! apply scale_factor and add_offset
-          SPEC2D(:,:,:,IP)=(SPEC2D(:,:,:,IP)*FACTOR)+OFFSET
+          IF (VARTYPE.EQ.NF90_SHORT) THEN
+            WHERE(SPEC2D(:,:,:,IP).NE.FILLVAL) SPEC2D(:,:,:,IP)=(EXP(SPEC2D(:,:,:,IP)*FACTOR*LOG(10.)))-1e-12
+          ELSE
+            WHERE(SPEC2D(:,:,:,IP).NE.FILLVAL) SPEC2D(:,:,:,IP)=(SPEC2D(:,:,:,IP)*FACTOR)+OFFSET
+          END IF
          
           ! close spectra file
           IRET=NF90_CLOSE(NCID(IP))
