@@ -208,7 +208,7 @@
 !/
       END SUBROUTINE W3SPR6
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIN6 (A, CG, WN2, UABS, USTAR, USDIR, CD, &
+      SUBROUTINE W3SIN6 (A, CG, WN2, UABS, USTAR, USDIR, CD, DAIR, &
                          TAUWX, TAUWY, TAUNWX, TAUNWY, S, D )
 !/
 !/                  +-----------------------------------+
@@ -216,7 +216,7 @@
 !/                  |           S. Zieger               |
 !/                  |           Q. Liu                  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Jun-2018 |
+!/                  | Last update :         13-Aug-2021 |
 !/                  +-----------------------------------+
 !/
 !/    20-Dec-2010 : Origination.                        ( version 4.04 )
@@ -224,6 +224,7 @@
 !/
 !/    26-Jun-2018 : UPROXY Update & UABS                ( version 6.06 )
 !/                                                        (Q. Liu)
+!/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
 !/
 !  1. Purpose :
 !
@@ -250,6 +251,7 @@
 !      USTAR    Real I  Friction velocity
 !      USDIR    Real I  Direction of USTAR
 !      CD       Real I  Drag coefficient
+!      DAIR     Real I  Air density
 !      S¹       R.A. O  Source term
 !      D¹       R.A. O  Diagonal term of derivative
 !      TAUWX-Y  Real O  Component of the wave-supported stress
@@ -293,7 +295,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: DAIR, DWAT, TPI, GRAV
+      USE CONSTANTS, ONLY: DWAT, TPI, GRAV
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DTH, SIG2, DDEN2
       USE W3GDATMD,  ONLY: ECOS, ESIN, SIN6A0, SIN6WS
       USE W3ODATMD,  ONLY: NDSE
@@ -305,7 +307,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
       REAL, INTENT(IN)       :: A (NSPEC), CG(NK), WN2(NSPEC)
-      REAL, INTENT(IN)       :: UABS, USTAR, USDIR, CD
+      REAL, INTENT(IN)       :: UABS, USTAR, USDIR, CD, DAIR
       REAL, INTENT(OUT)      :: TAUWX, TAUWY, TAUNWX, TAUNWY
       REAL, INTENT(OUT)      :: S(NSPEC), D(NSPEC)
 !/
