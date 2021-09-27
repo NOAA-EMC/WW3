@@ -186,7 +186,7 @@ sub-grid group but boundary condition will still be limited to whole spectral
 exchange.  The original lat-lon grid boundary interpolation is not enabled. 
 This simplification reduces MPI communication load but may lose some accuracy
 if their boundary cell centres are not aligned.  See the regression test    
-\emph{regtests/mww3_test\_09} for an exmple of SMC sub-grids for the Great
+\emph{regtests/mww3\_test\_09} for an exmple of SMC sub-grids for the Great
 Lakes.  It covers the Lake Michigan, Huron and Superior in 3 SMC levels 
 (0.5-1-2 km) with minimized boundary links.
   
@@ -194,7 +194,7 @@ Hybrid parallelization is supported for SMC grids and it could reduce the total
 elapsed time by half when it is run on the Cray XC40 supercomputer with 3 or 6
 OpenMP threads. Further increase of OpenMP threads seems no much effect.  The 
 combined hybrid and multi-grid parallelization may extend the computer usage
-to over 100 nodes for the 3 Great Lake sub-grids in \emph{mww3_test\_09}.
+to over 100 nodes for the 3 Great Lake sub-grids in \emph{mww3\_test\_09}.
 
 It is recommended to read the smc\_docs/SMC\_Grid\_Guide.pdf or the
 conference paper \citep{tol:LiS17} at conference web page: 
