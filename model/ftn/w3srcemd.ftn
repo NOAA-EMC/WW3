@@ -123,7 +123,7 @@
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
 !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 ) 
-!/    19-Jul-2021 : Momentum and air density support    ( version 7.13 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -189,8 +189,8 @@
 !       D_INP   Real.  I   Depth. Compared to DMIN to get DEPTH.
 !       U10ABS  Real.  I   Wind speed at reference height.
 !       U10DIR  Real.  I   Id. wind direction.
-!       TAUA    Real.  I   Magnitude of total atmospheric stress
-!       TAUADIR Real.  I   Direction of atmospheric stress
+!       TAUA    Real.  I   Magnitude of total atmospheric stress ( !/FLX5 )
+!       TAUADIR Real.  I   Direction of atmospheric stress       ( !/FLX5 )
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
 !       USTAR   Real. !/O  Friction velocity.
 !       USTDIR  Real  !/O  Idem, direction.
@@ -431,7 +431,7 @@
       REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
       LOGICAL, INTENT(OUT)    :: SHAVEIO
       REAL, INTENT(IN)        :: D_INP, U10ABS,                       &
-                                 U10DIR, TAUA, TAUADIR, AS, CX,        &
+                                 U10DIR, TAUA, TAUADIR, AS, CX,       &
                                  CY, DTG, D50,PSIC,                   &
                                  ICE, ICEH
       INTEGER, INTENT(IN)     :: REFLED(6)

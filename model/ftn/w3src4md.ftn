@@ -123,9 +123,9 @@
 !       AMAX    Real  O   Maximum of action spectrum.
 !       U       Real  I   Wind speed.
 !       UDIR    Real  I   Wind direction.
-!       TAUA    Real  I   Atm. total stress.
-!       TAUADIR Real  I   Atm. total stress direction.
-!       DAIR    Real  I   Air density.
+!       TAUA    Real  I   Atm. total stress.            ( /!FLX5 )
+!       TAUADIR Real  I   Atm. total stress direction.  ( /!FLX5 )
+!       DAIR    Real  I   Air density.                  ( /!FLX5 )
 !       USTAR   Real I/O  Friction velocity.
 !       USDIR   Real I/O  wind stress direction.
 !       TAUWX-Y Real  I   Components of wave-supported stress.
@@ -180,8 +180,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), U, UDIR,  &
-                                 TAUA, TAUADIR, DAIR
+      REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), U, UDIR
+!/FLX5       REAL, INTENT(IN)        :: TAUA, TAUADIR, DAIR
       REAL, INTENT(IN)        :: TAUWX, TAUWY
       LOGICAL, INTENT(IN)     :: LLWS(NSPEC)
       REAL, INTENT(INOUT)     :: USTAR ,USDIR
