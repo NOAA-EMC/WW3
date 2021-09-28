@@ -2075,7 +2075,8 @@
                             VSioDummy, VDioDummy, SHAVETOTioDummy,      &
                             ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                             CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
-                            U10D(ISEA), TAUA(ISEA), TAUADIR(ISEA),      &
+                            U10D(ISEA),                                 &
+!/FLX5                            TAUA(ISEA), TAUADIR(ISEA),                  &
                             AS(ISEA), UST(ISEA),                        &
                             USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
                             ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &

@@ -621,11 +621,13 @@
 !/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR
 !/RTD      USE W3SERVMD, ONLY: W3ACTURN
       USE W3WDATMD, ONLY: ICE, ICEH, ICEF, RHOAIR
-      USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY, TAUA, TAUADIR,  &
+      USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
                           SP => SPPNT
+!/FLX5      USE W3ADATMD, ONLY: TAUA, TAUADIR 
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
                           DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
-                          ICEFO, SPCO, NAPROC, TAUAO, TAUDO, DAIRO
+                          ICEFO, SPCO, NAPROC
+!/FLX5      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
 !/SETUP      USE W3WDATMD, ONLY: ZETA_SETUP
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !/MPI      USE W3ODATMD, ONLY: IRQPO2
@@ -651,8 +653,9 @@
 !/MPI      INTEGER                 :: STAT(MPI_STATUS_SIZE,4*NOPTS)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: RD(4), RDS, RDI, FACRD,              &
-                                 WNDX, WNDY, TAUX, TAUY, CURX, CURY,  &
-                                 FAC1(NK), FAC2(NK), FAC3(NK), FAC4(NK)
+                                 WNDX, WNDY, CURX, CURY, FAC1(NK),    &
+                                 FAC2(NK), FAC3(NK), FAC4(NK)
+!/FLX5      REAL                    :: TAUX, TAUY
       INTEGER                 :: JSEA, ISEA
 !/T      REAL                    :: SPTEST(NK,NTH)
 !/RTD      REAL :: Spectr(NSPEC), AnglDIS
@@ -743,8 +746,8 @@
 !/SETUP                 RD(3)*ZETA_SETUP(IS(3)) +                     &
 !/SETUP                 RD(4)*ZETA_SETUP(IS(4))
 !
-        DAIRO(I) = RD(1)*RHOAIR(IS(1)) + RD(2)*RHOAIR(IS(2)) +        &
-                 RD(3)*RHOAIR(IS(3)) + RD(4)*RHOAIR(IS(4))
+!/FLX5        DAIRO(I) = RD(1)*RHOAIR(IS(1)) + RD(2)*RHOAIR(IS(2)) +        &
+!/FLX5                 RD(3)*RHOAIR(IS(3)) + RD(4)*RHOAIR(IS(4))
 !
         WNDX   = RD(1) * UA(IS(1)) * COS(UD(IS(1))) +                 &
                  RD(2) * UA(IS(2)) * COS(UD(IS(2))) +                 &
@@ -763,23 +766,23 @@
             WDO(I) = 0.
           END IF
 !
-        TAUX   = RD(1) * TAUA(IS(1)) * COS(TAUADIR(IS(1))) +          &
-                 RD(2) * TAUA(IS(2)) * COS(TAUADIR(IS(2))) +          &
-                 RD(3) * TAUA(IS(3)) * COS(TAUADIR(IS(3))) +          &
-                 RD(4) * TAUA(IS(4)) * COS(TAUADIR(IS(4)))
-        TAUY   = RD(1) * TAUA(IS(1)) * SIN(TAUADIR(IS(1))) +          &
-                 RD(2) * TAUA(IS(2)) * SIN(TAUADIR(IS(2))) +          &
-                 RD(3) * TAUA(IS(3)) * SIN(TAUADIR(IS(3))) +          &
-                 RD(4) * TAUA(IS(4)) * SIN(TAUADIR(IS(4)))
-!
-        TAUAO(I) = SQRT ( TAUX**2 + TAUY**2 )
-        IF ( TAUAO(I).GT.1.E-7 ) THEN
-            TAUDO(I) = ATAN2(TAUY,TAUX)
-!/RTD            IF ( FLAGUNR ) TAUDO(I) = TAUDO(I) - AnglD(IS(1))*DERA
-          ELSE
-            TAUDO(I) = 0.
-          END IF
-!
+!/FLX5        TAUX   = RD(1) * TAUA(IS(1)) * COS(TAUADIR(IS(1))) +          &
+!/FLX5                 RD(2) * TAUA(IS(2)) * COS(TAUADIR(IS(2))) +          &
+!/FLX5                 RD(3) * TAUA(IS(3)) * COS(TAUADIR(IS(3))) +          &
+!/FLX5                 RD(4) * TAUA(IS(4)) * COS(TAUADIR(IS(4)))
+!/FLX5        TAUY   = RD(1) * TAUA(IS(1)) * SIN(TAUADIR(IS(1))) +          &
+!/FLX5                 RD(2) * TAUA(IS(2)) * SIN(TAUADIR(IS(2))) +          &
+!/FLX5                 RD(3) * TAUA(IS(3)) * SIN(TAUADIR(IS(3))) +          &
+!/FLX5                 RD(4) * TAUA(IS(4)) * SIN(TAUADIR(IS(4)))
+!/FLX5!
+!/FLX5        TAUAO(I) = SQRT ( TAUX**2 + TAUY**2 )
+!/FLX5        IF ( TAUAO(I).GT.1.E-7 ) THEN
+!/FLX5            TAUDO(I) = ATAN2(TAUY,TAUX)
+!/FLX5!/RTD            IF ( FLAGUNR ) TAUDO(I) = TAUDO(I) - AnglD(IS(1))*DERA
+!/FLX5          ELSE
+!/FLX5            TAUDO(I) = 0.
+!/FLX5          END IF
+!/FLX5!
         ASO(I) = RD(1)*AS(IS(1)) + RD(2)*AS(IS(2)) +                  &
                  RD(3)*AS(IS(3)) + RD(4)*AS(IS(4))
 !
@@ -962,7 +965,8 @@
       USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
-                          GRDID, ICEO, ICEHO, ICEFO, TAUAO, TAUDO, DAIRO
+                          GRDID, ICEO, ICEHO, ICEFO
+!/FLX5      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
       USE W3ODATMD, ONLY :  OFILES
 !/
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
@@ -1188,14 +1192,14 @@
              IL(I) = 0
              WRITE (NDSOP)                                            &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
-                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
+!/FLX5                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
 !/SETUP             ZET_SETO(I),                                      &
                     ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
                     ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
           ELSE
              READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
-                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
+!/FLX5                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
 !/SETUP             ZET_SETO(I),                                      &
                     ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
                     ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
