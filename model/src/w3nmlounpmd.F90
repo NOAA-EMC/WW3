@@ -47,6 +47,7 @@
     INTEGER                     :: OUTPUT
     REAL                        :: SCALE_FAC
     REAL                        :: OUTPUT_FAC
+    INTEGER                     :: TYPE
   END TYPE NML_SPECTRA_T
 
   ! param structure
@@ -518,6 +519,7 @@
     SPECTRA%OUTPUT      = 3
     SPECTRA%SCALE_FAC   = 1
     SPECTRA%OUTPUT_FAC  = 0
+    SPECTRA%TYPE        = 4
 
 
     ! read spectra namelist
@@ -1014,6 +1016,7 @@
       WRITE (NDSN,11) TRIM(MSG),'OUTPUT     = ', NML_SPECTRA%OUTPUT
       WRITE (NDSN,14) TRIM(MSG),'SCALE_FAC  = ', NML_SPECTRA%SCALE_FAC
       WRITE (NDSN,14) TRIM(MSG),'OUTPUT_FAC = ', NML_SPECTRA%OUTPUT_FAC
+      WRITE (NDSN,11) TRIM(MSG),'TYPE       = ', NML_SPECTRA%TYPE
 
 
 11  FORMAT (A,2X,A,I8)

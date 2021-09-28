@@ -354,7 +354,7 @@ $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
 $ string 'LEV' 'CUR' 'WND', date and time information (yyyymmdd
-$ hhmmss), value (S.I. units), direction (current and wind, oceanogr.
+$ hhmmss), value (S.I. units), direction (current and wind, meteorol.
 $ convention degrees)) and air-sea temperature difference (degrees C).
 $ 'STP' is mandatory stop string.
 $ Also defined here are the speed with which the grid is moved
