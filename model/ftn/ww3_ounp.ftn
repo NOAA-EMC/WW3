@@ -2003,7 +2003,7 @@
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR,               &
 !/ST4!/FLX5                             TAUA, TAUADIR, RHOAIR,             &
 !/ST4                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
-!ST4                              CHARN, LLWS, FMEANWS, DLWMEAN )
+!/ST4                              CHARN, LLWS, FMEANWS, DLWMEAN )
 !/ST4                CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
 !/ST4                             DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 !/ST6                CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
