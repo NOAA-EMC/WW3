@@ -83,7 +83,9 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,     &
-                    AMAX, U, UDIR, TAUA, TAUADIR, DAIR, USTAR, USDIR, &
+                    AMAX, U, UDIR,                                    &
+!/FLX5                    TAUA, TAUADIR, DAIR,                              &
+                    USTAR, USDIR,                                     &
                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/
 !/                  +-----------------------------------+

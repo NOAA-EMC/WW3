@@ -52,8 +52,8 @@
       SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
                           ALPHA, WN1, CG1,                            &
-                          D_INP, U10ABS, U10DIR, TAUA, TAUADIR,        &
-                          AS, USTAR, USTDIR,                          &
+                          D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
+!/FLX5                          TAUA, TAUADIR,                              &
                           CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
                           TRNY, BERG, FPI, DTDYN, FCUT, DTG, TAUWX,   &
@@ -430,10 +430,10 @@
       REAL, intent(in)        :: SPECOLD(NSPEC)
       REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
       LOGICAL, INTENT(OUT)    :: SHAVEIO
-      REAL, INTENT(IN)        :: D_INP, U10ABS,                       &
-                                 U10DIR, TAUA, TAUADIR, AS, CX,       &
-                                 CY, DTG, D50,PSIC,                   &
+      REAL, INTENT(IN)        :: D_INP, U10ABS,     &
+                                 U10DIR, AS, CX, CY, DTG, D50,PSIC,   &
                                  ICE, ICEH
+!/FLX5      REAL, INTENT(IN)        :: TAUA, TAUADIR
       INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG, ICEDMAX, DAIR
@@ -691,8 +691,10 @@
 !/ST4          USTAR=0.
 !/ST4          USTDIR=0.
 !/ST4      ELSE
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
-!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+!/ST4                   AMAX, U10ABS, U10DIR,                           &
+!/ST4!/FLX5                  TAUA, TAUADIR, DAIR,                             &
+!/ST4                   USTAR, USTDIR,                                  &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 
 !/DEBUGSRC!/ST4        IF (IX == DEBUG_NODE) THEN
@@ -718,13 +720,12 @@
 !/DEBUGSRC!/ST4          WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
 !/DEBUGSRC!/ST4        END IF
 
-!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,             &
-!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
+!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+!/ST4                   AMAX, U10ABS, U10DIR,                         &
+!/ST4!/FLX5                   TAUA, TAUADIR, DAIR,                    &
+!/ST4                   USTAR, USTDIR,                                &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
-
 !/ST4      TWS = 1./FMEANWS
-
-
 !/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !
 ! 1.c2 Stores the initial data
@@ -1154,8 +1155,10 @@
 !/ST3        CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS,        &
 !/ST3                     WNMEAN, AMAX, U10ABS, U10DIR, USTAR, USTDIR, &
 !/ST3                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,           &
-!/ST4                   AMAX, U10ABS, U10DIR, TAUA, TAUADIR, DAIR, USTAR, USTDIR, &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
+!/ST4                   AMAX, U10ABS, U10DIR,                          &
+!/ST4!/FLX5                   TAUA, TAUADIR, DAIR,                     &
+!/ST4                   USTAR, USTDIR,                                 &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/ST6        CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !
