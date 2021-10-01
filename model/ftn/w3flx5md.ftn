@@ -65,9 +65,12 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
+!/                  |                     |
+!/                  |           N.G. Valiente           |
+!/                  |           J. Edward               |
+!/                  |           A. Saulter              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Jul-2006 |
+!/                  | Last update :         01-Jul-2021 |
 !/                  +-----------------------------------+
 !/
 !/    22-Mar-2021 : Origination.                        ( version 7.xx )

@@ -181,7 +181,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), U, UDIR
-!/FLX5       REAL, INTENT(IN)        :: TAUA, TAUADIR, DAIR
+      REAL, INTENT(IN)        :: TAUA, TAUADIR, DAIR
       REAL, INTENT(IN)        :: TAUWX, TAUWY
       LOGICAL, INTENT(IN)     :: LLWS(NSPEC)
       REAL, INTENT(INOUT)     :: USTAR ,USDIR
