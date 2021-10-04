@@ -620,7 +620,8 @@
 !/RTD !!   Use spectral rotation sub and angle.  JGLi12Jun2012
 !/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR
 !/RTD      USE W3SERVMD, ONLY: W3ACTURN
-      USE W3WDATMD, ONLY: ICE, ICEH, ICEF, RHOAIR
+      USE W3WDATMD, ONLY: ICE, ICEH, ICEF
+!/FLX5      USE W3ADATMD, ONLY: RHOAIR
       USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
                           SP => SPPNT
 !/FLX5      USE W3ADATMD, ONLY: TAUA, TAUADIR 

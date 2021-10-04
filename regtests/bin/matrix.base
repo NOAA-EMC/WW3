@@ -718,8 +718,8 @@
       echo "$rtst -o netcdf              -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf              -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO             $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s ST4 -i input_flx5   -w work_ST4FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s ST6 -i input_flx5   -w work_ST6FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s ST6    -i input_rho -w work_ST6FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf -s TIDE      -w work_TIDE                   $ww3 ww3_tp2.18" >> matrix.body
     fi
 
