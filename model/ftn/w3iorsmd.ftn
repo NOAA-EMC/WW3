@@ -298,7 +298,7 @@
       INTEGER                 :: IGRD, I, J, LRECL, NSIZE, IERR,      &
                                  NSEAT, MSPEC, TTIME(2), ISEA, JSEA,  &
                                  NREC, NPART, IPART, IX, IY, IXL, IP, &
-                                 NPRTX2, NPRTY2, IYL
+                                 NPRTX2, NPRTY2, IYL, ITMP
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, IH, IB, ISEA0, ISEAN, &
@@ -400,11 +400,16 @@
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
-!CHECKPOINT
-      IF ( PRESENT(FLRSTRT) .AND. FLRSTRT) THEN
+!CHECKPOINT RESTART FILE 
+      ITMP=0
+      IF ( PRESENT(FLRSTRT) ) THEN 
+        IF (FLRSTRT) THEN
           WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
           FNAME=TIMETAG//'.restart.'//FILEXT(:I)
-      ELSE
+          ITMP=1 
+        END IF 
+      END IF 
+      IF(ITMP.NE.1)THEN ! FNAME is not set above, so do it here
          IF ( IFILE.EQ.0 ) THEN
             FNAME  = 'restart.'//FILEXT(:I)
          ELSE
