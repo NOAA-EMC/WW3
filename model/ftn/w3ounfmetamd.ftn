@@ -10,7 +10,7 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
-!/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
+!/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
 !/                  metadata for directional fields.
 !/    16-Dec-2020 : Added user partition templates      ( version 7.12 )
 !/                  and coordinate reference system.
@@ -97,7 +97,7 @@
 !     "string" description (e.g. "wind sea", "primary swell", etc) or an
 !     integer partition number. These can be references in the meta data
 !     using the template name surrounded by < .. >, e.g. <SPART>
-!     
+!
 !     It is also possible to supply user defined partitioned parameter
 !     template strings in the ounfmeta.inp file using the TEMPLATE
 !     keyword, as below:
@@ -148,7 +148,7 @@
 !          standard_name = "<SPART_>_sigificant_wave_height"
 !          long_name = "<PARTSTR>"
 !          partition_number = "<IPART>"
-!        
+!
 !        $ Coordinate reference system:
 !        CRS crs
 !          grid_mapping_name = "latitude_longitude"
@@ -633,7 +633,7 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 ) 
+!/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
 !/                  metadata for directional fields.
 !/
 !
@@ -1816,7 +1816,7 @@
         I = INDEX(INSTR, TRIM(TMPL))
         J = I + LEN_TRIM(TMPL)
         IF(I .GT. 0) THEN
-          INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(P%PART_TEXT(IPART), " ", "_")) & 
+          INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(P%PART_TEXT(IPART), " ", "_")) &
                                // INSTR(J:LEN(INSTR))
         ENDIF
 
@@ -2249,7 +2249,7 @@
         META(1)%VARNL='current speed'
         META(1)%VARNS='sea_water_speed'
         META(1)%VARNG='sea_water_speed'
-  
+
         ! Second component
         META(2) = META(1)
         META(2)%FSC = 0.1
@@ -2261,7 +2261,7 @@
         META(2)%VMIN = 0
         META(2)%VMAX = 360.0
       ENDIF ! VECTOR
-! IFI=1, IFJ=3         
+! IFI=1, IFJ=3
       META => GROUP(1)%FIELD(3)%META
       META(1)%ENAME  = '.wnd'
       META(1)%VARND = DIRCOM
@@ -3393,7 +3393,7 @@
       META(2)%VARNS=''
       META(2)%VARNG='northward_partitioned_surface_stokes_drift'
       META(2)%VARNC='usp=sqrt(ussp**2+vssp**2)'
-! IFI=6, IFJ=13 
+! IFI=6, IFJ=13
       META => GROUP(6)%FIELD(13)%META
       META(1)%UNITS  = 'Pa'
       META(1)%FSC    = 0.01
@@ -3401,14 +3401,14 @@
       META(1)%VMIN   = -320
       META(1)%VMAX   =  320
       META(1)%VARND  = DIRCOM
-  
+
       ! First component
       META(1)%VARNM='utoc'
       META(1)%VARNL='eastward total wave to ocean stres'
       META(1)%VARNS=''
       META(1)%VARNG=''
       META(1)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
-    
+
       ! Second component
       META(2) = META(1)
       META(2)%VARNM='vtoc'
