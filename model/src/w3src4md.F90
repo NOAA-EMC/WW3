@@ -83,8 +83,12 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,     &
-                    AMAX, U, UDIR, USTAR, USDIR, TAUWX, TAUWY, CD, Z0,&
-                    CHARN, LLWS, FMEANWS, DLWMEAN)
+                    AMAX, U, UDIR,                                    &
+#ifdef W3_FLX5
+                    TAUA, TAUADIR, DAIR,                              &
+#endif
+                    USTAR, USDIR,                                     &
+                    TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III                SHOM |
@@ -98,6 +102,7 @@
 !/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
 !/    08-Jun-2018 : use STRACE and FLUSH                ( version 6.04 )
 !/    22-Feb-2020 : Merge Romero (2019) and cleanup     ( version 7.06 )
+!/    22-Jun-2021 : Add FLX5 to use stresses with the ST( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -122,6 +127,9 @@
 !       AMAX    Real  O   Maximum of action spectrum.
 !       U       Real  I   Wind speed.
 !       UDIR    Real  I   Wind direction.
+!       TAUA    Real  I   Atm. total stress.            ( /!FLX5 )
+!       TAUADIR Real  I   Atm. total stress direction.  ( /!FLX5 )
+!       DAIR    Real  I   Air density.                  ( /!FLX5 )
 !       USTAR   Real I/O  Friction velocity.
 !       USDIR   Real I/O  wind stress direction.
 !       TAUWX-Y Real  I   Components of wave-supported stress.
@@ -155,16 +163,17 @@
 !
 !       !/S      Enable subroutine tracing.
 !       !/T      Enable test output.
+!       !/FLX5  Direct use of stress from atmoshperic model.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: IAPROC
-      USE CONSTANTS, ONLY: TPIINV
+      USE CONSTANTS, ONLY: TPIINV, GRAV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF, ESIN, ECOS, AAIRCMIN, &
-                          AAIRGB
+                          AAIRGB, AALPHA, ZZWND
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -173,12 +182,18 @@
       USE W3ODATMD, ONLY: NDST
 #endif
 !
+#ifdef W3_FLX5
+      USE W3FLX5MD 
+#endif
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), U, UDIR
+#ifdef W3_FLX5
+      REAL, INTENT(IN)        :: TAUA, TAUADIR, DAIR
+#endif
       REAL, INTENT(IN)        :: TAUWX, TAUWY
       LOGICAL, INTENT(IN)     :: LLWS(NSPEC)
       REAL, INTENT(INOUT)     :: USTAR ,USDIR
@@ -280,12 +295,26 @@
 ! 5.  Cd and z0 ----------------------------------------------- *
 !
       TAUW = SQRT(TAUWX**2+TAUWY**2)
-     
-      Z0=0.
-      CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
-      UNZ    = MAX ( 0.01 , U )
-      CD     = (USTAR/UNZ)**2 
-      USDIR = UDIR
+!
+#ifdef W3_FLX5
+      IF (.TRUE.) THEN
+        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
+                                          USTAR, USDIR, Z0, CD )
+        IF (USTAR.GT.0.001) THEN
+          CHARN = GRAV*Z0/USTAR**2 
+        ELSE
+          CHARN = AALPHA
+          END IF
+        ELSE
+#endif
+        Z0=0.
+        CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
+        UNZ    = MAX ( 0.01 , U )
+        CD     = (USTAR/UNZ)**2
+        USDIR = UDIR
+#ifdef W3_FLX5
+        END IF
+#endif
 !
 ! 6.  Final test output ---------------------------------------------- *
 !

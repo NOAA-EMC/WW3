@@ -70,7 +70,7 @@
 !/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
 !/    26-Dec-2012 : Move FIELD init. to W3GATH.         ( version 4.OF )
 !/    16-Sep-2013 : Add Arctic part for SMC grid.       ( version 4.11 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    14-Nov-2013 : Remove orphaned work arrays.        ( version 4.13 )
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
@@ -84,10 +84,11 @@
 !/                  defunct OMPX switches.
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -179,7 +180,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT & 
+      SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT &
 #ifdef W3_OASIS
                   ,ID_LCOMM, TIMEN                 &
 #endif
@@ -235,7 +236,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    31-Mar-2010 : Add reflections                     ( version 3.14.4 )
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Mar-2011 : Output of max. CFL (F.Ardhuin)      ( version 3.14.4 )
 !/    05-Apr-2011 : Implement iteration for DTMAX <1s   ( version 3.14.4 )
 !/    02-Jul-2012 : Update for PALM coupling            ( version 4.07 )
@@ -461,7 +462,7 @@
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 #ifdef W3_OASIS
  INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
- INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2) 
+ INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2)
 #endif
 !/
 !/ ------------------------------------------------------------------- /
@@ -535,7 +536,7 @@
 #endif
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
-      CHARACTER(LEN=21)       :: IDACT 
+      CHARACTER(LEN=21)       :: IDACT
       CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
       INTEGER eIOBP
@@ -683,9 +684,9 @@
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
-      IF (FLAGLL) THEN 
-        FACX   =  1./(DERA * RADIUS) 
-      ELSE 
+      IF (FLAGLL) THEN
+        FACX   =  1./(DERA * RADIUS)
+      ELSE
         FACX   =  1.
         END IF
 !
@@ -961,7 +962,7 @@
            IF (CALLEDIC3TABLE==0) THEN
              CALL IC3TABLE_CHENG(FIXEDVISC,FIXEDDENS,FIXEDELAS)
              CALLEDIC3TABLE = 1
-           ENDIF   
+           ENDIF
         ENDIF
 #endif
 
@@ -994,7 +995,7 @@
             IY     = MAPSF(ISEA,2)
 #endif
 
-! 2.b.1 Using Cheng method: requires stationary/uniform rheology. 
+! 2.b.1 Using Cheng method: requires stationary/uniform rheology.
 !       However, ice thickness may be input by either method
 
 #ifdef W3_IC3
@@ -1017,7 +1018,7 @@
 #endif
 
 #ifdef W3_IC3
-            ELSE ! not using Cheng method          
+            ELSE ! not using Cheng method
 #endif
 ! 2.b.2 If not using Cheng method: require FLIC1 to FLIC4 (not strictly
 !       necesssary, but makes code simpler)
@@ -1034,7 +1035,7 @@
                   WRITE(NDSE,*)'ICE PARAMETERS NOT AVAILABLE ',   &
                                'FOR CG CALC'
                   CALL EXTCDE(2)
-               END IF      
+               END IF
             ENDIF ! IF USE_CHENG...
 #endif
 
@@ -1118,7 +1119,7 @@
 #ifdef W3_SETUP
      CALL WAVE_SETUP_COMPUTATION
 #endif
-! copy old values 
+! copy old values
 #ifdef W3_PDLIB
      DO IP=1,NSEAL
        DO ISPEC=1,NSPEC
@@ -1190,9 +1191,9 @@
 #endif
 !
           VGX = 0.
-          VGY = 0. 
+          VGY = 0.
           IF(INFLAGS1(10)) THEN
-              DTTST1 = DSEC21 ( TIME, TGN ) 
+              DTTST1 = DSEC21 ( TIME, TGN )
               DTTST2 = DSEC21 ( TG0, TGN )
               FAC    = DTTST1 / MAX ( 1. , DTTST2 )
               VGX    = (FAC*GA0+(1.-FAC)*GAN) *                       &
@@ -1294,7 +1295,7 @@
               CFLXYMAX = 0.
               CX = 0.
               CY = 0.
-              END IF ! FLCUR 
+              END IF ! FLCUR
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After CX/CY assignation")
 #endif
@@ -1419,7 +1420,7 @@
        WRITE(740+IAPROC,*) 'ITEST=', ITEST
        FLUSH(740+IAPROC)
 #endif
-                  IF ( ITEST .NE. 1 ) CALL W3UBPT 
+                  IF ( ITEST .NE. 1 ) CALL W3UBPT
                 ELSE
                   ITEST  = 0
                 END IF
@@ -1519,7 +1520,7 @@
                 ELSE
                   IDACT(15:15) = 'I'
                 END IF
-  
+
 !
               IF ( IDACT(15:15).NE.' ' ) THEN
                   CALL W3UIC1 ( FLFRST )
@@ -1784,19 +1785,19 @@
             CALL INIT_GET_ISEA(ISEA, JSEA)
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
-            DELA=1. 
-            DELX=1. 
-            DELY=1. 
+            DELA=1.
+            DELX=1.
+            DELY=1.
 #ifdef W3_REF1
-                IF (GTYPE.EQ.RLGTYPE) THEN 
+                IF (GTYPE.EQ.RLGTYPE) THEN
                   DELX=SX*CLATS(ISEA)/FACX
                   DELY=SY/FACX
                   DELA=DELX*DELY
                 END IF
-                IF (GTYPE.EQ.CLGTYPE) THEN 
+                IF (GTYPE.EQ.CLGTYPE) THEN
 ! Maybe what follows works also for RLGTYPE ... to be verified
                   DELX=HPFAC(IY,IX)/ FACX
-                  DELY=HQFAC(IY,IX)/ FACX 
+                  DELY=HQFAC(IY,IX)/ FACX
                   DELA=DELX*DELY
                 END IF
 #endif
@@ -1876,8 +1877,8 @@
               DTDYN (JSEA) = UNDEF
               FCUT  (JSEA) = UNDEF
             END IF
-          END DO ! JSEA 
-        END IF ! PDLIB 
+          END DO ! JSEA
+        END IF ! PDLIB
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
           WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
@@ -1905,7 +1906,7 @@
 #endif
               GOTO 400
             END IF
-          IF ( IT.EQ.0 ) THEN 
+          IF ( IT.EQ.0 ) THEN
             DTG = 1.
 !            DTG = 60.
             GOTO 370
@@ -1936,7 +1937,7 @@
         WRITE(740+IAPROC,*) 'UGDTUPDATE=', UGDTUPDATE
         FLUSH(740+IAPROC)
 #endif
-                IF ( FLOGRD(9,3).AND. UGDTUPDATE ) THEN 
+                IF ( FLOGRD(9,3).AND. UGDTUPDATE ) THEN
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.8.6'
         FLUSH(740+IAPROC)
@@ -1972,7 +1973,7 @@
 #endif
 #ifdef W3_PR3
                         END IF
-                      ELSE 
+                      ELSE
                         CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
                                        CFLXYMAX(JSEA), VGX, VGY )
                       END IF
@@ -2014,7 +2015,7 @@
 
 !
 #ifdef W3_T
-       IF (GTYPE .EQ. UNGTYPE) THEN 
+       IF (GTYPE .EQ. UNGTYPE) THEN
          IF ( FLOGRD(9,3) ) THEN
            DTCFL1(:)=1.
            DO JSEA=1,NSEAL
@@ -2025,12 +2026,12 @@
            IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,*) 'Nodes requesting smallest timesteps:'
            IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10I10)')   'Nodes      ',NINT(INDSORT(1:10))
            IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10F10.2)') 'time steps ',DTCFL1(1:10)
-           DO JSEA = 1, MIN(NSEAL,200) 
+           DO JSEA = 1, MIN(NSEAL,200)
              ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)
            END DO ! JSEA
            CLOSE(995)
          END IF
@@ -2212,8 +2213,8 @@
 !
         IF (GTYPE .EQ. UNGTYPE) THEN
           IF (FLAGLL) THEN
-            FACX   =  1./(DERA * RADIUS) 
-          ELSE 
+            FACX   =  1./(DERA * RADIUS)
+          ELSE
             FACX   =  1.
           END IF
         END IF
@@ -2257,7 +2258,7 @@
         FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
-       ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN 
+       ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
 #endif
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.3B'
@@ -2294,7 +2295,7 @@
         FLUSH(740+IAPROC)
 #endif
 !
-! Initialize FIELD variable 
+! Initialize FIELD variable
              FIELD = 0.
 !
             DO ISPEC=1, NSPEC
@@ -2510,7 +2511,7 @@
 #endif
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
 
-                  IF ( GTYPE .EQ. UNGTYPE ) THEN 
+                  IF ( GTYPE .EQ. UNGTYPE ) THEN
                     IF (IOBP(ISEA) .NE. 1) CYCLE
                   ENDIF
 
@@ -2588,7 +2589,7 @@
         WRITE(740+IAPROC,*) 'FSSOURCE=', FSSOURCE
         FLUSH(740+IAPROC)
 #endif
-! 
+!
 ! 3.6 End propapgation  = = = = = = = = = = = = = = = = = = = = = = = =
 
 ! 3.7 Calculate and integrate source terms.
@@ -2625,19 +2626,19 @@
                 CALL INIT_GET_ISEA(ISEA, JSEA)
                 IX     = MAPSF(ISEA,1)
                 IY     = MAPSF(ISEA,2)
-                DELA=1. 
-                DELX=1. 
-                DELY=1. 
+                DELA=1.
+                DELX=1.
+                DELY=1.
 #ifdef W3_REF1
-                IF (GTYPE.EQ.RLGTYPE) THEN 
+                IF (GTYPE.EQ.RLGTYPE) THEN
                   DELX=SX*CLATS(ISEA)/FACX
                   DELY=SY/FACX
                   DELA=DELX*DELY
                 END IF
-                IF (GTYPE.EQ.CLGTYPE) THEN 
+                IF (GTYPE.EQ.CLGTYPE) THEN
 ! Maybe what follows works also for RLGTYPE ... to be verified
                   DELX=HPFAC(IY,IX)/ FACX
-                  DELY=HQFAC(IY,IX)/ FACX 
+                  DELY=HQFAC(IY,IX)/ FACX
                   DELA=DELX*DELY
                 END IF
 #endif
@@ -2690,7 +2691,11 @@
                             VSioDummy, VDioDummy, SHAVETOTioDummy,      &
                             ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                             CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
-                            U10D(ISEA), AS(ISEA), UST(ISEA),            &
+                            U10D(ISEA),                                 &
+#ifdef W3_FLX5
+                            TAUA(ISEA), TAUADIR(ISEA),                  &
+#endif
+                            AS(ISEA), UST(ISEA),                        &
                             USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
                             ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
                             ICEDMAX(ISEA),                              &
@@ -3363,7 +3368,7 @@
                        TOFRST = TOUT
                     END IF
                   END IF
-              END IF 
+              END IF
             END IF
 !        END OF CHECKPOINT
 !
@@ -3395,7 +3400,7 @@
 ! This barrier is from older code versions. It has been removed in 3.11
 ! to optimize IO2/3 settings. May be needed on some systems still
 !
-!!/MPI            IF (FLDRY) CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI) 
+!!/MPI            IF (FLDRY) CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
 !
           END IF
 #ifdef W3_TIMINGS
@@ -3445,7 +3450,7 @@
                 WRITE (NDSO,900) ITIME, IPASS, IDTIME(1:19),          &
                                  IDACT, OUTID
                 IDLAST = TIME(1)
-              ELSE 
+              ELSE
                 WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19),         &
                                  IDACT, OUTID
               END IF
@@ -3985,7 +3990,7 @@
 #ifdef W3_MPI
       INCLUDE "mpif.h"
 #endif
-!/ 
+!/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -4299,7 +4304,7 @@
         END DO
 #ifdef W3_SMC
  !!Li   For SMC grid, local sea points are equally NSEA/NAPROC
- !!Li   so the NLOC is overwirte by a constant.  
+ !!Li   so the NLOC is overwirte by a constant.
         NLOC = NSEA/NAPROC
 #endif
 !

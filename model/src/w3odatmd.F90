@@ -29,7 +29,7 @@
 !/    14-Jul-2010 : Fix VAAUX declaration bug.        ( version 3.14.2 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    18-Dec-2012 : New 2D field output structure,      ( version 4.11 )
 !/                  reducing memory footprint for fields.
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
@@ -48,15 +48,16 @@
 !/                  internal fields. (C. Bunney, UKMO)
 !/    22-Mar-2021 : Add extra coupling variables        ( version 7.13 )
 !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     Define data structures to set up wave model grids and aliases 
+!     Define data structures to set up wave model grids and aliases
 !     to use individual grids transparently. Also includes subroutines
 !     to manage data structure and pointing to individual models.
 !     This module considers the parameters required for model output.
@@ -68,11 +69,11 @@
 !      NOUTP     Int.  Public   Number of models in array dim.
 !      IOUTP     Int.  Public   Selected model for output, init. at -1.
 !      IOSTYP    Int.  Public   Output data server type.
-!      NOGRP     I.P.  Public   Number of output field groups 
+!      NOGRP     I.P.  Public   Number of output field groups
 !      NGRPP     I.P.  Public   Max numb of parameters per output group
 !      NOGE      I.P.  Public   Number of output group elements
 !      NOTYPE    I.P.  Public   Number of output types
-!      NOEXTR    I.P.  Public   Number of extra (user available) 
+!      NOEXTR    I.P.  Public   Number of extra (user available)
 !                               output fields.
 !      DIMP      I.P.  Public   Number of parameters in partition
 !                               output group
@@ -176,6 +177,9 @@
 !      WAO       R.A.  Public   Interpolated wind speeds.
 !      WDO       R.A.  Public   Interpolated wind directions.
 !      ASO       R.A.  Public   Interpolated air-sea temp. diff.
+!      TAUAO     R.A.  Public   Interpolated atm. stresses.
+!      TAUDO     R.A.  Public   Interpolated atm. stres directions.
+!      DAIRO     R.A.  Public   Interpolated rho atmosphere.
 !      CAO       R.A.  Public   Interpolated current speeds.
 !      CDO       R.A.  Public   Interpolated current directions.
 !      SPCO      R.A.  Public   Output spectra.
@@ -311,9 +315,9 @@
 !/ Module private variable for checking error returns
 !/
       INTEGER, PRIVATE        :: ISTAT
-!/    
+!/
 !/ Conventional declarations
-!/     
+!/
       INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
 !
       INTEGER, PARAMETER      :: NOGRP = 10
@@ -355,6 +359,9 @@
 #endif
         REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),             &
                                  DPO(:), WAO(:), WDO(:), ASO(:),      &
+#ifdef W3_FLX5
+                                 TAUAO(:), TAUDO(:), DAIRO(:),        &
+#endif
                                  CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
                                  ICEFO(:), SPCO(:,:)
         REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
@@ -484,6 +491,9 @@
 #endif
       REAL, POINTER           :: PTLOC(:,:), PTIFAC(:,:),             &
                                  DPO(:), WAO(:), WDO(:), ASO(:),      &
+#ifdef W3_FLX5
+                                 TAUAO(:), TAUDO(:), DAIRO(:),        &
+#endif
                                  CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
                                  ICEFO(:), SPCO(:,:)
       REAL, POINTER           :: ZET_SETO(:)
@@ -727,9 +737,9 @@
 !
 ! 1) Forcing fields
 !
-      NOGE(1) = 9 
+      NOGE(1) = 9
 #ifdef W3_BT4
-      NOGE(1) = 10 
+      NOGE(1) = 10
 #endif
 #ifdef W3_IS2
       NOGE(1) = 12    ! CB
@@ -988,7 +998,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETO needs to be called after allocation to point to 
+!     - W3SETO needs to be called after allocation to point to
 !       proper allocated arrays.
 !     - Note that NOPTS is overwritten in W3IOPP.
 !
@@ -1070,11 +1080,16 @@
                  OUTPTS(IMOD)%OUT2%ZET_SETO(NPT)   ,                  &
                  OUTPTS(IMOD)%OUT2%WDO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%ASO(NPT)        ,                  &
+#ifdef W3_FLX5
+                 OUTPTS(IMOD)%OUT2%TAUAO(NPT)      ,                  &
+                 OUTPTS(IMOD)%OUT2%TAUDO(NPT)      ,                  &
+                 OUTPTS(IMOD)%OUT2%DAIRO(NPT)      ,                  &
+#endif
                  OUTPTS(IMOD)%OUT2%CAO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%CDO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%ICEO(NPT)       ,                  &
                  OUTPTS(IMOD)%OUT2%ICEHO(NPT)      ,                  &
-                 OUTPTS(IMOD)%OUT2%ICEFO(NPT)      ,                  &  
+                 OUTPTS(IMOD)%OUT2%ICEFO(NPT)      ,                  &
                  OUTPTS(IMOD)%OUT2%SPCO(NSPEC,NPT) ,                  &
                  OUTPTS(IMOD)%OUT2%PTLOC(2,NPT)    , STAT=ISTAT       )
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1179,7 +1194,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETO needs to be called after allocation to point to 
+!     - W3SETO needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -1698,9 +1713,14 @@
           ZET_SETO => OUTPTS(IMOD)%OUT2%ZET_SETO
           WDO    => OUTPTS(IMOD)%OUT2%WDO
           ASO    => OUTPTS(IMOD)%OUT2%ASO
+#ifdef W3_FLX5
+          TAUAO  => OUTPTS(IMOD)%OUT2%TAUAO
+          TAUDO  => OUTPTS(IMOD)%OUT2%TAUDO
+          DAIRO  => OUTPTS(IMOD)%OUT2%DAIRO
+#endif
           CAO    => OUTPTS(IMOD)%OUT2%CAO
           CDO    => OUTPTS(IMOD)%OUT2%CDO
-          ICEO   => OUTPTS(IMOD)%OUT2%ICEO         
+          ICEO   => OUTPTS(IMOD)%OUT2%ICEO
           ICEHO  => OUTPTS(IMOD)%OUT2%ICEHO
           ICEFO  => OUTPTS(IMOD)%OUT2%ICEFO
           SPCO   => OUTPTS(IMOD)%OUT2%SPCO

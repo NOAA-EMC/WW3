@@ -149,6 +149,7 @@
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
 !/    07-07-2021  : S_{nl} GKE NL5 (Q. Liu)             ( version 7.12 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -364,6 +365,9 @@
 #endif
 #ifdef W3_FLX4
       TNAMEF = 'Hwang (2011) with cap on Cd   '
+#endif
+#ifdef W3_FLX5
+      TNAMEF = 'Direct use of stress          '
 #endif
 #ifdef W3_LN0
       TNAME0 = 'Not defined                   '

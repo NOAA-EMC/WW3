@@ -22,15 +22,15 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grid         ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
 !/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
@@ -38,7 +38,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -72,7 +72,7 @@
 !      W3DMO2    Subr. W3ODATMD Data structure management.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Program abort with exit code.
-!      MPI_STARTALL, MPIWAITALL 
+!      MPI_STARTALL, MPIWAITALL
 !                Subr.          MPI persistent communication routines.
 !     ----------------------------------------------------------------
 !
@@ -100,7 +100,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = '2020-07-30'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = '2021-04-06'
       CHARACTER(LEN=31), PARAMETER, PRIVATE ::                        &
                            IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
 !/
@@ -129,11 +129,11 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
-!/                  from RTD grid models             
+!/                  from RTD grid models
 !/
 !  1. Purpose :
 !
@@ -183,8 +183,8 @@
 !       coverage, the actual interpolation factors can only be
 !       determined at the actual output time. Hence only the basic
 !       bilinear interpolation factors are stored.
-!     - Implementation of the /O7a diagnostic output section is 
-!       currently incomplete and non-functional for curvilinear grids 
+!     - Implementation of the /O7a diagnostic output section is
+!       currently incomplete and non-functional for curvilinear grids
 !       and/or tripole grids
 !
 !  8. Structure :
@@ -214,11 +214,11 @@
                           RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
                           ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
-      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  
+      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX
 #ifdef W3_RTD
   !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-      USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR    
-      USE W3SERVMD, ONLY: W3LLTOEQ 
+      USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR
+      USE W3SERVMD, ONLY: W3LLTOEQ
 #endif
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
@@ -252,7 +252,7 @@
                                  KX, KY, JX, IIX, IX2, IY2, IS1
 #endif
       INTEGER                 :: IX(4), IY(4)   ! Indices of points used in interp.
-      REAL                    :: RD(4)          ! Interpolation coefficient 
+      REAL                    :: RD(4)          ! Interpolation coefficient
 #ifdef W3_O7a
       REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
 #endif
@@ -327,11 +327,11 @@
 !
 !     Check if point within grid and compute interpolation weights
 !
-        IF (GTYPE .NE. UNGTYPE) THEN 
+        IF (GTYPE .NE. UNGTYPE) THEN
           INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-        ELSE 
+        ELSE
           CALL IS_IN_UNGRID(IMOD, XPT(IPT), YPT(IPT), itout, IX, IY, RD)
-          INGRID = (ITOUT.GT.0) 
+          INGRID = (ITOUT.GT.0)
           END IF
 !
         IF ( .NOT.INGRID ) THEN
@@ -388,7 +388,7 @@
 
         PTNME(NOPTS) = PNAMES(IPT)
 !
-        END DO ! End loop over output points (IPT). 
+        END DO ! End loop over output points (IPT).
 !
 #ifdef W3_RTD
        DEALLOCATE( EquLon, EquLat, StdLon, StdLat, AnglPT )
@@ -612,11 +612,12 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
-!/                  (A. Roland and F. Ardhuin) 
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/                  (A. Roland and F. Ardhuin)
+!/    12-Jun-2012 : Add /RTD option or rotated grid option.
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
-!/                  from RTD grid models             
+!/                  from RTD grid models
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -682,15 +683,24 @@
                           MAPSTA, MAPFS
 #ifdef W3_RTD
  !!   Use spectral rotation sub and angle.  JGLi12Jun2012
-      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR 
+      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR
       USE W3SERVMD, ONLY: W3ACTURN
 #endif
-      USE W3WDATMD, ONLY: ICE, ICEH, ICEF 
+      USE W3WDATMD, ONLY: ICE, ICEH, ICEF
+#ifdef W3_FLX5
+      USE W3WDATMD, ONLY: RHOAIR
+#endif
       USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
                           SP => SPPNT
+#ifdef W3_FLX5
+      USE W3ADATMD, ONLY: TAUA, TAUADIR 
+#endif
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
                           DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
                           ICEFO, SPCO, NAPROC
+#ifdef W3_FLX5
+      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
 #ifdef W3_SETUP
       USE W3WDATMD, ONLY: ZETA_SETUP
       USE W3ODATMD, ONLY: ZET_SETO
@@ -732,6 +742,9 @@
       REAL                    :: RD(4), RDS, RDI, FACRD,              &
                                  WNDX, WNDY, CURX, CURY, FAC1(NK),    &
                                  FAC2(NK), FAC3(NK), FAC4(NK)
+#ifdef W3_FLX5
+      REAL                    :: TAUX, TAUY
+#endif
       INTEGER                 :: JSEA, ISEA
 #ifdef W3_T
       REAL                    :: SPTEST(NK,NTH)
@@ -808,7 +821,7 @@
         WRITE (NDST,9002) (IS(J),J=1,4), (IM(J),J=1,4), (RD(J),J=1,4)
 #endif
 !
-! Interpolate ice depth wind and current
+! Interpolate ice depth, wind, stresses, rho air and current
 !
         IF (.NOT. LPDLIB) THEN
           ICEFO(I) = 0
@@ -842,6 +855,11 @@
                  RD(4)*ZETA_SETUP(IS(4))
 #endif
 !
+#ifdef W3_FLX5
+        DAIRO(I) = RD(1)*RHOAIR(IS(1)) + RD(2)*RHOAIR(IS(2)) +        &
+                 RD(3)*RHOAIR(IS(3)) + RD(4)*RHOAIR(IS(4))
+#endif
+!
         WNDX   = RD(1) * UA(IS(1)) * COS(UD(IS(1))) +                 &
                  RD(2) * UA(IS(2)) * COS(UD(IS(2))) +                 &
                  RD(3) * UA(IS(3)) * COS(UD(IS(3))) +                 &
@@ -861,6 +879,27 @@
             WDO(I) = 0.
           END IF
 !
+#ifdef W3_FLX5
+        TAUX   = RD(1) * TAUA(IS(1)) * COS(TAUADIR(IS(1))) +          &
+                 RD(2) * TAUA(IS(2)) * COS(TAUADIR(IS(2))) +          &
+                 RD(3) * TAUA(IS(3)) * COS(TAUADIR(IS(3))) +          &
+                 RD(4) * TAUA(IS(4)) * COS(TAUADIR(IS(4)))
+        TAUY   = RD(1) * TAUA(IS(1)) * SIN(TAUADIR(IS(1))) +          &
+                 RD(2) * TAUA(IS(2)) * SIN(TAUADIR(IS(2))) +          &
+                 RD(3) * TAUA(IS(3)) * SIN(TAUADIR(IS(3))) +          &
+                 RD(4) * TAUA(IS(4)) * SIN(TAUADIR(IS(4)))
+!
+        TAUAO(I) = SQRT ( TAUX**2 + TAUY**2 )
+        IF ( TAUAO(I).GT.1.E-7 ) THEN
+            TAUDO(I) = ATAN2(TAUY,TAUX)
+#ifdef W3_RTD
+            IF ( FLAGUNR ) TAUDO(I) = TAUDO(I) - AnglD(IS(1))*DERA
+#endif
+          ELSE
+            TAUDO(I) = 0.
+          END IF
+!
+#endif
         ASO(I) = RD(1)*AS(IS(1)) + RD(2)*AS(IS(2)) +                  &
                  RD(3)*AS(IS(3)) + RD(4)*AS(IS(4))
 !
@@ -944,7 +983,7 @@
           CALL  W3ACTURN( NTH, NK, AnglDIS, Spectr )
           SPCO(:,I) = Spectr
         END IF
-       
+
 #endif
 !
 #ifdef W3_T
@@ -952,7 +991,7 @@
                                   CAO(I), CDO(I)*RADE
 #endif
 
-! FA COMMENTED OUT: BUG 
+! FA COMMENTED OUT: BUG
 !At line 1974 of file w3arrymd.f90
 !Fortran runtime error: Index '52' of dimension 1 of array 'pnum2' above upper bound of 51
 #ifdef W3_T
@@ -994,6 +1033,7 @@
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    25-Jul-2006 : Adding grid ID per point.           ( version 3.10 )
 !/    27-Aug-2015 : Adding interpolation for the ice.   ( version 5.10 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1061,6 +1101,9 @@
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
                           GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
       USE W3ODATMD, ONLY :  OFILES
 !/
 #ifdef W3_SETUP
@@ -1308,6 +1351,9 @@
              IL(I) = 0
              WRITE (NDSOP)                                            &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
+#ifdef W3_FLX5
+                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
+#endif
 #ifdef W3_SETUP
              ZET_SETO(I),                                      &
 #endif
@@ -1316,6 +1362,9 @@
           ELSE
              READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
+#ifdef W3_FLX5
+                    TAUAO(I), TAUDO(I), DAIRO(I),                     &
+#endif
 #ifdef W3_SETUP
              ZET_SETO(I),                                      &
 #endif

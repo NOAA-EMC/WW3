@@ -112,6 +112,7 @@
 !/    27-May-2021 : Updates for IC5 (Q. Liu)            ( version 7.12 )
 !/    27-May-2021 : Moved to a subroutine               ( version 7.13 )
 !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -421,6 +422,7 @@
 !     !/FLX2  Stresses according to T&C (1996).
 !     !/FLX3  Stresses according to T&C (1996) with cap on Cd.
 !     !/FLX4  Stresses according to Hwang (2011).
+!     !/FLX5  Direct use of stress from atmospheric model/input file.
 !
 !     !/LN0   No linear input source term.
 !     !/SEED  'Seeding' of lowest frequency for sufficiently strong
@@ -1645,6 +1647,9 @@
       WRITE (NDSO,810) STATUS
       WRITE (NDSO,811) CDFAC
       FLX4A0 = CDFAC
+#endif
+#ifdef W3_FLX5
+      WRITE (NDSO,810)
 #endif
 !
 ! 6.d.2 Linear input
@@ -6247,6 +6252,10 @@
         ' --------------------------------------------------')
   811 FORMAT ( '       drag coefficient scaling    :',F8.2    /)
  2810 FORMAT ( '  &FLX4 CDFAC =',F6.3,' /')
+#endif
+#ifdef W3_FLX5
+  810 FORMAT (/'  Direct use of stress from input'/                          &
+        ' --------------------------------------------------'/)
 #endif
 #ifdef W3_FLX3
   811 FORMAT ( '       Max Cd * 10^3               :',F8.2/     &

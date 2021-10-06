@@ -51,7 +51,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -63,7 +63,7 @@
 !     Data is read from the grid output file out_grd.ww3 (raw data)
 !     and from the file ww3_ounf.nml or ww3_ounf.inp (NDSI)
 !     Model definition and raw data files are read using WAVEWATCH III
-!     subroutines. Extra global NetCDF attributes may be read from 
+!     subroutines. Extra global NetCDF attributes may be read from
 !     ASCII file NC_globatt.inp.
 !
 !     Output types :
@@ -315,7 +315,7 @@
 !
 ! process ww3_ounf namelist
 !
-      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounf.nml", EXIST=FLGNML) 
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_ounf.nml", EXIST=FLGNML)
       IF (FLGNML) THEN
         ! Read namelist
         CALL W3NMLOUNF (NDSI, TRIM(FNMPRE)//'ww3_ounf.nml', NML_FIELD, &
@@ -332,7 +332,7 @@
         FLDOUT = NML_FIELD%LIST
         CALL W3FLGRDFLAG ( NDSO, SCREEN, NDSE, FLDOUT, FLG1D,       &
                            FLG2D, 1, 1, IERR )
-        IF (IERR.NE.0) GOTO 800 
+        IF (IERR.NE.0) GOTO 800
 
 ! 4.3 Output type
         NCTYPE = NML_FILE%NETCDF
@@ -359,8 +359,8 @@
 #endif
         ELSE
           IX1 = NML_FILE%IX0
-          IXN = NML_FILE%IXN 
-          IY1 = NML_FILE%IY0 
+          IXN = NML_FILE%IXN
+          IY1 = NML_FILE%IY0
           IYN = NML_FILE%IYN
         ENDIF ! SMCGRD
       END IF ! FLGNML
@@ -392,7 +392,7 @@
 ! 4.2 Output fields
         CALL W3READFLGRD ( NDSI, NDSO, SCREEN, NDSE, COMSTR, FLG1D,      &
                            FLG2D, 1, 1, IERR )
-        IF (IERR.NE.0) GOTO 800 
+        IF (IERR.NE.0) GOTO 800
 
 ! 4.3 Output type
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -563,7 +563,7 @@
       IXN = NXO
       IY1 = 1
       IYN = NYO
-     
+
       ! Also store NXO and NYO in __local__ RTDNX and RTDNY variables.
       ! This avoids compilation errors when the RTD switch is enabled
       ! but the SMC switch is not. TODO: Remove this when C-preprocessor
@@ -625,7 +625,7 @@
 ! 5.1.3 Defines the stop date
         CALL T2D(TOUT,STOPDATE,IERR)
         WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
-              '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7) 
+              '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
 
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
@@ -836,7 +836,7 @@
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
 !/    28-Feb-2013 : New option for float output         ( version 4.08 )
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.09 )
-!/    12-Apr-2013 : Allows curvilinear grids            ( version 4.10 ) 
+!/    12-Apr-2013 : Allows curvilinear grids            ( version 4.10 )
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
@@ -930,7 +930,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NX, NY, IX1, IXN, IY1, IYN, NSEA,     &
-                                 E3DF(3,5), P2MSF(3), US3DF(3),        & 
+                                 E3DF(3,5), P2MSF(3), US3DF(3),        &
                                  USSPF(2), NCTYPE, NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
@@ -959,7 +959,7 @@
 #endif
 !
       INTEGER, ALLOCATABLE    :: TRIGP2(:,:)
-      ! Make the below allocatable to avoid stack overflow on some machines 
+      ! Make the below allocatable to avoid stack overflow on some machines
       INTEGER(KIND=2), ALLOCATABLE    :: MX1(:,:), MXX(:,:), MYY(:,:), &
                                          MXY(:,:), MAPOUT(:,:)
 !
@@ -973,16 +973,16 @@
 #ifdef W3_RTD
       REAL,DIMENSION(:,:),  ALLOCATABLE  :: LON2DEQ, LAT2DEQ
 #endif
-      ! Make the below allocatable to avoid stack overflow on some machines 
+      ! Make the below allocatable to avoid stack overflow on some machines
       REAL, ALLOCATABLE       :: X1(:,:), X2(:,:), XX(:,:), XY(:,:),   &
-                                 XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    & 
+                                 XK(:,:,:), XXK(:,:,:), XYK(:,:,:),    &
                                  MX1R(:,:), MXXR(:,:), MYYR(:,:),      &
                                  MXYR(:,:), AUX1(:)
 !
       DOUBLE PRECISION        :: OUTJULDAY
       INTEGER(KIND=8)         :: OUTSECS
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
-!      
+!
       CHARACTER*120           :: STR2
       CHARACTER*512           :: PARTCOM
       !CHARACTER*30            :: UNITVAR(3),FORMAT1
@@ -1010,7 +1010,7 @@
 #endif
 !
 #ifdef W3_T
-      DO IFI=1, NOGRP 
+      DO IFI=1, NOGRP
         LTEMP  = FLG2D(IFI,:)
         WRITE (NDST,9000) IFI, LTEMP
         END DO
@@ -1079,12 +1079,12 @@
         COORDTYPE=2
       ENDIF
 
-! 1.2 Sets the date as ISO8601 convention 
+! 1.2 Sets the date as ISO8601 convention
       ! S3 defines the number of characters in the date for the filename
       ! S3=0 -> field, S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
       ! Setups min and max date format
-      IF (S3.GT.0 .AND. S3.LT.4) S3=4 
-      IF (S3.GT.10) S3=10 
+      IF (S3.GT.0 .AND. S3.LT.4) S3=4
+      IF (S3.GT.10) S3=10
 !
       ! Defines the format of FILETIME
       S5=S3-8
@@ -1095,7 +1095,7 @@
         S4=5
         TIMEID="field"
       ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHZ'
-      ELSE IF (S3.EQ.10) THEN 
+      ELSE IF (S3.EQ.10) THEN
         S4=S4+2 ! add chars for ISO8601 : day T hours Z
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
@@ -1106,10 +1106,10 @@
         WRITE (TIMEID,FORMAT1) TIME(1)
       ! if S3=>YYYYMM then filetime='YYYYMM'
       ! or S3=>YYYY then filetime='YYYY'
-      ELSE 
+      ELSE
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
         WRITE (TIMEID,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
-      END IF       
+      END IF
       ! redefines filename with updated date format
       S1=LEN_TRIM(FILEPREFIX)
       FNAMENC=''
@@ -1190,12 +1190,12 @@
               ! Rotate x,y vector back to standard pole
               IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
 #endif
-!             
+!
               IF( .NOT. VECTOR ) THEN
                 CALL UV_TO_MAG_DIR(UA(1:NSEA), UD(1:NSEA), NSEA,       &
                                  TOLERANCE=1.0, CONV='N')
               ENDIF
-!              
+!
               CALL S2GRID(UA(1:NSEA), XX)
               CALL S2GRID(UD(1:NSEA), XY)
               NFIELD=2
@@ -1224,7 +1224,7 @@
               ! Rotate x,y vector back to standard pole
               IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUA(1:NSEA), TAUADIR(1:NSEA), AnglD)
 #endif
-              
+
               IF( SMCGRD ) THEN
 #ifdef W3_SMC
                  CALL W3S2XY_SMC( TAUA   (1:NSEA), XX )
@@ -1252,7 +1252,7 @@
  ! Krumbein phi scale
  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
               CALL S2GRID(SED_D50, X1)
-              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
+              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2
               NFIELD=1
 #endif
 !
@@ -1348,7 +1348,7 @@
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
               CALL S2GRID(STMAXD, X1)
 !
-            ! Expected maximum wave height 
+            ! Expected maximum wave height
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
               CALL S2GRID(HMAXE, X1)
 !
@@ -1460,7 +1460,7 @@
               FLFRQ  = .TRUE.
               I1F=1
               I2F=NK
-              DO IK=1,NK 
+              DO IK=1,NK
                 CALL S2GRID(WN(IK,:), XX)
                 XK(:,:,IK)=XX
               END DO
@@ -1604,7 +1604,7 @@
 !
             ! Wave energy flux
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
-              CGE=CGE*0.001  ! from W / m to kW / m 
+              CGE=CGE*0.001  ! from W / m to kW / m
               CALL S2GRID(CGE(1:NSEA), X1)
 !
             ! Wind to wave energy flux
@@ -1620,7 +1620,7 @@
 #endif
               CALL S2GRID(TAUWIX(1:NSEA), XX)
               CALL S2GRID(TAUWIY(1:NSEA), XY)
-              
+
               !! Commented out unnecessary statements below for time being
               !! TAUWIX, TAUWIY are in north-east convention and X1,X2
               !! are not actually written out below
@@ -1711,7 +1711,7 @@
               CALL S2GRID(TUSX(1:NSEA), XX)
               CALL S2GRID(TUSY(1:NSEA), XY)
 ! X1, X2 will not be output when NFIELD == 2
-! ( Like for .cur, .wnd, .ust, .taw, and .uss ) (CHA at FCOO 2019-06-13): 
+! ( Like for .cur, .wnd, .ust, .taw, and .uss ) (CHA at FCOO 2019-06-13):
               !! Commented out unnecessary statements below for time being
               !! (...) X1,X2 are not actually written out below
               !DO ISEA=1, NSEA
@@ -1797,12 +1797,12 @@
                 DO IK=I1F,I2F
                   CALL S2GRID(P2SMS(:,IK), XX)
 
-                  IF (NCVARTYPE.EQ.2) THEN 
+                  IF (NCVARTYPE.EQ.2) THEN
                      WHERE ( XX.GE.0.) XX = ALOG10(XX*(DWAT*GRAV)**2+1E-12)
-                  ELSE 
+                  ELSE
                      WHERE ( XX.GE.0.) XX = XX*(DWAT*GRAV)**2
                   END IF
-                
+
                   XK(:,:,IK)=XX
                 END DO
 !
@@ -2040,7 +2040,7 @@
 
             ! If flag TOGETHER and not variable with freq dim &
             ! (ef, p2l, ...), no variable name in file name
-            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN 
+            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
               S2=0
             ! If NOT flag TOGETHER or variable with freq dim &
             ! (ef, p2l, ...), add variable name in file name
@@ -2051,16 +2051,16 @@
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
             FNAMENC(S1+S2+4:S1+S2+6) = '   '
             ! If the flag frequency is .TRUE., defines the fourth dimension
-            IF (FLFRQ) THEN 
+            IF (FLFRQ) THEN
               DIMLN(4)=I2F-I1F+1
               EXTRADIM=1
             ELSE
               DIMLN(4)=0
               EXTRADIM=0
-            END IF 
+            END IF
 
             ! If regular grid, initializes the lat/lon or x/y dimension lengths
-            IF (GTYPE.NE.UNGTYPE) THEN 
+            IF (GTYPE.NE.UNGTYPE) THEN
               IF( SMCGRD ) THEN
 #ifdef W3_SMC
                 IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2121,7 +2121,7 @@
 
 ! 2.4.3 Finalize the previous file (if a new one will be created)
 
-            IF (.NOT.FEXIST) THEN 
+            IF (.NOT.FEXIST) THEN
               IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
                 IRET = NF90_REDEF(OLDNCID)
                 CALL CHECK_ERR(IRET)
@@ -2137,16 +2137,16 @@
 
 ! 2.5 Creates the netcdf file
 
-            IF (.NOT.FEXIST) THEN 
+            IF (.NOT.FEXIST) THEN
 
               ! Initializes the time dimension length
               DIMLN(1)=1
 
               ! If NOT unstructure mesh (i.e. regular grid)
 !! CHRISB: VARNM for lat/lon not actually used below.
-!              IF (GTYPE.NE.UNGTYPE) THEN      
+!              IF (GTYPE.NE.UNGTYPE) THEN
 !                ! If spherical coordinate
-!                IF (FLAGLL) THEN 
+!                IF (FLAGLL) THEN
 !                  VARNM(NFIELD+1)='Longitude'
 !                  VARNM(NFIELD+2)='Latitude'
 !                ! If cartesian coordinate
@@ -2154,12 +2154,12 @@
 !                  VARNM(NFIELD+1)='x'
 !                  VARNM(NFIELD+2)='y'
 !                END IF
-!              END IF   
+!              END IF
 
               ! Initializes the time iteration counter n
               N=1
 
-! 2.5.1 Creates the NetCDF file 
+! 2.5.1 Creates the NetCDF file
               CALL W3CRNC(FNAMENC,NCID,DIMID,DIMLN,VARID, &
                           EXTRADIM,NCTYPE,MAPSTAOUT)
 
@@ -2185,7 +2185,7 @@
                   CALL CHECK_ERR(IRET)
                 ENDIF
               ! If NOT curvilinear grid,
-              ELSE 
+              ELSE
                 IF( SMCGRD ) THEN
 #ifdef W3_SMC
                    IF(SMCOTYPE .EQ. 1) THEN
@@ -2233,9 +2233,9 @@
                   IF ( RTDL .AND. .NOT.ALLOCATED(LON2D)) &
                     ALLOCATE(LON2D(NX,NY),LON2DEQ(NX,NY),ANGLD2D(NX,NY))
 #endif
-                  IF (.NOT.ALLOCATED(LAT)) THEN 
+                  IF (.NOT.ALLOCATED(LAT)) THEN
                     ! If regular grid, instanciates lat with y/lat
-                    IF (GTYPE.EQ.RLGTYPE) THEN 
+                    IF (GTYPE.EQ.RLGTYPE) THEN
                       ALLOCATE(LAT(NY))
 #ifdef W3_RTD
                       ! 2d latitude array for standard grid coordinates
@@ -2243,9 +2243,9 @@
                         ALLOCATE(LAT2D(NX,NY),LAT2DEQ(NX,NY))
 #endif
                     ! If unstructured mesh, instanciates lat with nodes
-                    ELSE 
+                    ELSE
                       ALLOCATE(LAT(NX))
-                    END IF 
+                    END IF
                   END IF
                 END IF ! SMCGRD
               END IF
@@ -2342,7 +2342,7 @@
                     END DO
                     DO I=1,NY
                       LAT2DEQ(:,I)=LAT(I)
-                    END DO                    
+                    END DO
                     CALL W3EQTOLL(LAT2DEQ, LON2DEQ, LAT2D, LON2D,       &
                                   ANGLD2D, POLAT, POLON, NY*NX)
                   END IF ! RTDL
@@ -2353,7 +2353,7 @@
                     IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
                              'latitude_resolution', TRIM(STR2))
                     CALL CHECK_ERR(IRET)
-                    WRITE(STR2,'(F12.0)') SX 
+                    WRITE(STR2,'(F12.0)') SX
                     STR2=ADJUSTL(STR2)
                     IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,   &
                               'longitude_resolution',TRIM(STR2))
@@ -2363,8 +2363,8 @@
               END IF
 
               ! If unstructured mesh
-              IF (GTYPE.EQ.UNGTYPE) THEN 
-                LON(:)=XYB(:,1) 
+              IF (GTYPE.EQ.UNGTYPE) THEN
+                LON(:)=XYB(:,1)
                 LAT(:)=XYB(:,2)
                 IF (.NOT.ALLOCATED(TRIGP2)) ALLOCATE(TRIGP2(3,NTRI))
                 DIMLN(2)=NX
@@ -2391,7 +2391,7 @@
                 IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                      'southernmost_latitude',TRIM(STR2))
                 CALL CHECK_ERR(IRET)
-  
+
                 IF(SMCGRD) THEN
                   WRITE(STR2,'(F12.0)') MAXVAL(LAT)
                 ELSE
@@ -2401,7 +2401,7 @@
                 IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                      'northernmost_latitude',TRIM(STR2))
                 CALL CHECK_ERR(IRET)
-  
+
                 IF(SMCGRD) THEN
                   WRITE(STR2,'(F12.0)') MINVAL(LON)
                 ELSE
@@ -2411,8 +2411,8 @@
                 IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                     'westernmost_longitude',TRIM(STR2))
                 CALL CHECK_ERR(IRET)
-  
-  
+
+
                 IF(SMCGRD) THEN
                   WRITE(STR2,'(F12.0)') MAXVAL(LON)
                 ELSE
@@ -2431,7 +2431,7 @@
                 IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
                     'altitude_resolution','n/a')
                 CALL CHECK_ERR(IRET)
-  
+
 #ifdef W3_RTD
                 IF ( RTDL ) THEN
                     IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,  &
@@ -2441,7 +2441,7 @@
                   END IF
 #endif
               ENDIF ! FL_DEFAULT_GBL_META
-              
+
               CALL T2D(TIME,STARTDATE,IERR)
               WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
                     STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
@@ -2485,7 +2485,7 @@
               END IF
 
               ! If curvilinear grid
-              IF (GTYPE.EQ.CLGTYPE) THEN 
+              IF (GTYPE.EQ.CLGTYPE) THEN
                 IRET=NF90_PUT_VAR(NCID,VARID(1),LON2D(IX1:IXN,IY1:IYN))
                 CALL CHECK_ERR(IRET)
                 IRET=NF90_PUT_VAR(NCID,VARID(2),LAT2D(IX1:IXN,IY1:IYN))
@@ -2493,7 +2493,7 @@
               END IF
 
               ! If unstructured mesh
-              IF (GTYPE.EQ.UNGTYPE) THEN 
+              IF (GTYPE.EQ.UNGTYPE) THEN
                 IRET=NF90_PUT_VAR(NCID,VARID(1),LON(IX1:IXN))
                 CALL CHECK_ERR(IRET)
                 IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(IX1:IXN))
@@ -2560,7 +2560,7 @@
               DO I=1,NFIELD
                 IVAR=IVAR1+I
                 IF (COORDTYPE.EQ.1) THEN
-                  IF (NCVARTYPE.EQ.2) THEN 
+                  IF (NCVARTYPE.EQ.2) THEN
                     IF( SMCGRD ) THEN
 #ifdef W3_SMC
                       IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2601,7 +2601,7 @@
                   DIMFIELD(1)=DIMID(2)
                   DIMFIELD(2)=DIMID(4)
                   DIMFIELD(3)=DIMID(5)
-                  IF (NCVARTYPE.EQ.2) THEN 
+                  IF (NCVARTYPE.EQ.2) THEN
                     IRET = NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                     CALL CHECK_ERR(IRET)
                     IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
@@ -2677,9 +2677,9 @@
                 ELSE
                   IRET=NF90_INQ_DIMID (NCID, 'x', DIMID(2))
                   IRET=NF90_INQ_VARID (NCID, 'x', VARID(1))
-                  IRET=NF90_INQ_DIMID (NCID, 'y', DIMID(3)) 
+                  IRET=NF90_INQ_DIMID (NCID, 'y', DIMID(3))
                   IRET=NF90_INQ_VARID (NCID, 'y', VARID(2))
-                END IF 
+                END IF
                 CALL CHECK_ERR(IRET)
               END IF
               ! Get the dimension time
@@ -2706,7 +2706,7 @@
 ! 2.6.3 Defines or gets the variables identifiers
 
               ! If it is the first time step, define all the variables and attributes
-              IF (N.EQ.1) THEN 
+              IF (N.EQ.1) THEN
                 IRET = NF90_REDEF(NCID)
                 CALL CHECK_ERR(IRET)
 
@@ -2714,7 +2714,7 @@
                 DO I=1,NFIELD
                   IVAR=IVAR1+I
                   IF (COORDTYPE.EQ.1) THEN
-                    IF (NCVARTYPE.EQ.2) THEN 
+                    IF (NCVARTYPE.EQ.2) THEN
                       IF( SMCGRD ) THEN
 #ifdef W3_SMC
                         IF( SMCOTYPE .EQ. 1 ) THEN
@@ -2752,7 +2752,7 @@
                     DIMFIELD(1)=DIMID(2)
                     DIMFIELD(2)=DIMID(4)
                     DIMFIELD(3)=DIMID(5)
-                    IF (NCVARTYPE.EQ.2) THEN 
+                    IF (NCVARTYPE.EQ.2) THEN
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMFIELD(1:2+EXTRADIM), VARID(IVAR))
                       CALL CHECK_ERR(IRET)
                       IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
@@ -2788,7 +2788,7 @@
                 CALL CHECK_ERR(IRET)
 
               ! If it is not the first time step, get all VARID from the netcdf file opened
-              ELSE 
+              ELSE
                 IRET=NF90_REDEF(NCID)
                 CALL CHECK_ERR(IRET)
                 DO I=1,NFIELD
@@ -2797,14 +2797,14 @@
                   IVAR=IVAR1+I
                   IRET=NF90_INQ_VARID (NCID, META(I)%VARNM, VARID(IVAR))
                   CALL CHECK_ERR(IRET)
-                END DO  
+                END DO
                 IRET=NF90_ENDDEF(NCID)
                 CALL CHECK_ERR(IRET)
               END IF !   N.EQ.1
             END IF  ! FEXIST
-              
+
 ! 2.6.4 Defines the current time step and index
-     
+
             CALL T2D(TIME,CURDATE,IERR)
             WRITE(NDSO,'(A,A9,A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')        &
                     'Writing new record ', META(1)%ENAME(2:) ,'number ',N,    &
@@ -2819,7 +2819,7 @@
             START(3)=1
             START(4)=1
 
-            ! Sets time index 
+            ! Sets time index
             START(3+1-COORDTYPE+EXTRADIM)=N
             COUNT(1)=IXN-IX1+1
             COUNT(2)=IYN-IY1+1
@@ -2857,8 +2857,8 @@
 ! 2.6.5 Puts field(s) in NetCDF file
 
 ! NFIELD=3
-            IF (NCVARTYPE.EQ.2) THEN 
-              IF ( NFIELD.EQ.3 ) THEN 
+            IF (NCVARTYPE.EQ.2) THEN
+              IF ( NFIELD.EQ.3 ) THEN
                 IF (SMCGRD) THEN
 #ifdef W3_SMC
                   DO IX=IX1, IXN
@@ -2923,9 +2923,9 @@
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
 ! NFIELD=2
-              ELSE IF (NFIELD.EQ.2 ) THEN 
+              ELSE IF (NFIELD.EQ.2 ) THEN
 ! EXTRADIM=0
-                IF (EXTRADIM.EQ.0) THEN   
+                IF (EXTRADIM.EQ.0) THEN
                   IF (SMCGRD) THEN
 #ifdef W3_SMC
                     DO IX=IX1, IXN
@@ -3031,13 +3031,13 @@
                               MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
                       IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),             &
                               MYY(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                    ENDIF ! SMCGRD      
+                    ENDIF ! SMCGRD
                   END DO
                 END IF  ! EXTRADIM
 ! NFIELD=1
-              ELSE 
+              ELSE
 ! EXTRADIM=0
-                IF (EXTRADIM.EQ.0) THEN   
+                IF (EXTRADIM.EQ.0) THEN
                   IF (SMCGRD) THEN
 #ifdef W3_SMC
                     DO IX=IX1, IXN
@@ -3122,8 +3122,8 @@
 !
 ! Real output (NCVARTYPE.GE.3)
 !
-            ELSE 
-              IF ( NFIELD.EQ.3 ) THEN 
+            ELSE
+              IF ( NFIELD.EQ.3 ) THEN
                 IF (SMCGRD) THEN
 #ifdef W3_SMC
                   DO IX=IX1, IXN
@@ -3176,7 +3176,7 @@
                       END IF
                     END DO
                   END DO
-  
+
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),              &
                           MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
                   CALL CHECK_ERR(IRET)
@@ -3188,9 +3188,9 @@
                   CALL CHECK_ERR(IRET)
                 ENDIF ! SMCGRD
 ! NFIELD=2
-              ELSE IF (NFIELD.EQ.2 ) THEN 
+              ELSE IF (NFIELD.EQ.2 ) THEN
 ! EXTRADIM=0
-                IF (EXTRADIM.EQ.0) THEN   
+                IF (EXTRADIM.EQ.0) THEN
                   IF (SMCGRD) THEN
 #ifdef W3_SMC
                     DO IX=IX1, IXN
@@ -3296,9 +3296,9 @@
                   END DO
                 END IF  ! EXTRADIM
 ! NFIELD=1
-              ELSE 
+              ELSE
 ! EXTRADIM=0
-                IF (EXTRADIM.EQ.0) THEN   
+                IF (EXTRADIM.EQ.0) THEN
                   IF (SMCGRD) THEN
 #ifdef W3_SMC
                     DO IX=IX1, IXN
@@ -3393,14 +3393,14 @@
 560           CONTINUE
               IF (INDEXIPART.LT.NBIPART) THEN
                 INDEXIPART=INDEXIPART+1
-                IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560      
-                IPART=TABIPART(INDEXIPART)   
+                IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560
+                IPART=TABIPART(INDEXIPART)
                 GOTO 555
               END IF
             ELSE
               INDEXIPART=1
             END IF
-!      
+!
           END IF  ! FLG2D(IFI,IFJ)
         END DO  ! IFI=1, NOGRP
       END DO  ! IFJ=1, NGRPP
@@ -3428,7 +3428,7 @@
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXNC :'/                &
                '     PLEASE UPDATE FIELDS !!! '/                      &
                '     IFI = ',I2, '- IFJ = ',I2/)
-!               
+!
 #ifdef W3_T
  9000 FORMAT (' TEST W3EXNC : FLAGS :',I3,2X,20L2)
  9001 FORMAT (' TEST W3EXNC : ITPYE :',I4/                         &
@@ -3456,20 +3456,20 @@
 
 
 
-!--------------------------------------------------------------------------    
+!--------------------------------------------------------------------------
       SUBROUTINE W3CRNC (NCFILE, NCID, DIMID, DIMLN, VARID,  &
                          EXTRADIM, NCTYPE, MAPSTAOUT )
 !
       USE W3GDATMD, ONLY : GTYPE, FLAGLL, UNGTYPE, CLGTYPE, RLGTYPE
 #ifdef W3_RTD
- ! Rotated pole parameters from the mod_def file 
+ ! Rotated pole parameters from the mod_def file
       USE W3GDATMD, ONLY : POLAT, POLON
 #endif
       USE NETCDF
       USE W3TIMEMD
 
       IMPLICIT NONE
-      
+
 
 
       INTEGER, INTENT(IN)               :: EXTRADIM
@@ -3491,7 +3491,7 @@
       CHARACTER                         :: ATTNAME*120,ATTVAL*120
 !
       COORDS_ATTR = ''
-!      
+!
 ! Creation in netCDF3 or netCDF4
 !
       IF(NCTYPE.EQ.3) IRET = NF90_CREATE(TRIM(NCFILE), NF90_CLOBBER, NCID)
@@ -3505,7 +3505,7 @@
 !
 ! Regular structured case
 !
-      IF (GTYPE.NE.UNGTYPE) THEN 
+      IF (GTYPE.NE.UNGTYPE) THEN
         IF (FLAGLL) THEN
           IF (SMCGRD) THEN
 #ifdef W3_SMC
@@ -3522,7 +3522,7 @@
             IRET = NF90_DEF_DIM(NCID, 'longitude', DIMLN(2), DIMID(2))
             IRET = NF90_DEF_DIM(NCID, 'latitude', DIMLN(3), DIMID(3))
           ENDIF ! SMCGRD
-        ELSE                     
+        ELSE
           IRET = NF90_DEF_DIM(NCID, 'x', DIMLN(2), DIMID(2))
           IRET = NF90_DEF_DIM(NCID, 'y', DIMLN(3), DIMID(3))
           END IF
@@ -3547,16 +3547,16 @@
       IRET = NF90_DEF_DIM(NCID, 'time',NF90_UNLIMITED, DIMID(4+EXTRADIM))
       CALL CHECK_ERR(IRET)
 
-      IF (GTYPE.EQ.UNGTYPE) THEN 
+      IF (GTYPE.EQ.UNGTYPE) THEN
         IRET = NF90_DEF_DIM(NCID, 'noel',3, DIMID(5+EXTRADIM))
         CALL CHECK_ERR(IRET)
       ENDIF
 
-      
+
 !
 !     define variables
 !
-      IF (FLAGLL) THEN 
+      IF (FLAGLL) THEN
 !longitude
         IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN
           IF (SMCGRD) THEN
@@ -3610,32 +3610,32 @@
         IRET=NF90_PUT_ATT(NCID,VARID(1),'units','degree_east')
 #ifdef W3_RTD
  ! Is the grid really rotated
-        IF ( .NOT. RTDL ) THEN        
+        IF ( .NOT. RTDL ) THEN
 #endif
         IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude')
         IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','longitude')
 #ifdef W3_RTD
-        ELSE     
+        ELSE
         ! Override the above for RTD pole:
           IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','longitude in rotated pole grid')
           IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','grid_longitude')
-        END IF        
+        END IF
 #endif
         IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_min',-180.0)
         IRET=NF90_PUT_ATT(NCID,VARID(1),'valid_max',360.)
 !
         IRET=NF90_PUT_ATT(NCID,VARID(2),'units','degree_north')
 #ifdef W3_RTD
-        IF ( .NOT. RTDL ) THEN        
+        IF ( .NOT. RTDL ) THEN
 #endif
         IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude')
         IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','latitude')
 #ifdef W3_RTD
-        ELSE        
+        ELSE
         ! Override the above for RTD pole:
         IRET=NF90_PUT_ATT(NCID,VARID(2),'long_name','latitude in rotated pole grid')
         IRET=NF90_PUT_ATT(NCID,VARID(2),'standard_name','grid_latitude')
-        END IF        
+        END IF
 #endif
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_min',-90.0)
         IRET=NF90_PUT_ATT(NCID,VARID(2),'valid_max',90.)
@@ -3650,7 +3650,7 @@
               IRET = NF90_DEF_VAR(NCID, 'standard_longitude', NF90_FLOAT, &
                       (/ DIMID(2) /), VARID(7))
               call CHECK_ERR(IRET)
- 
+
               IRET = NF90_DEF_VAR(NCID, 'standard_latitude', NF90_FLOAT, &
                       (/ DIMID(2) /), VARID(8))
               call CHECK_ERR(IRET)
@@ -3706,7 +3706,7 @@
 
         ! Add rotated pole grid mapping variable (dummy scalar variable
         ! used to simply store rotated pole information; see CF1.6 conventions).
-        ! TODO: FUTURE WW3_OUNF DEVELOPMENT WILL ALLOW USER TO DEFINE THE 
+        ! TODO: FUTURE WW3_OUNF DEVELOPMENT WILL ALLOW USER TO DEFINE THE
         ! COORDINATE REFERENCE SYSTEM - THIS WILL REQUIRE THE BELOW TO BE
         ! HANDLED DIFFERENTLY. C. Bunney.
 #endif
@@ -3721,11 +3721,11 @@
       END IF
 #endif
 !
-      ELSE 
-        IF (GTYPE.EQ.RLGTYPE) THEN 
+      ELSE
+        IF (GTYPE.EQ.RLGTYPE) THEN
           IRET = NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, DIMID(2), VARID(1))
           IRET = NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, DIMID(3), VARID(2))
-        ELSE IF (GTYPE.EQ.CLGTYPE) THEN 
+        ELSE IF (GTYPE.EQ.CLGTYPE) THEN
           IRET = NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
                                                                             VARID(1))
           IRET = NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, (/ DIMID(2), DIMID(3)/), &
@@ -3742,7 +3742,7 @@
 !
       END IF  ! FLAGLL
 !
-      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','X')    
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'axis','X')
       IRET=NF90_PUT_ATT(NCID,VARID(2),'axis','Y')
       IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
       IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(2), 1, 1, DEFLATE)
@@ -3850,7 +3850,7 @@
       IF (MAPSTAOUT) THEN 
         IF (GTYPE.EQ.UNGTYPE) THEN 
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) /), VARID(20))
-        ELSE 
+        ELSE
           IRET = NF90_DEF_VAR(NCID,'MAPSTA', NF90_SHORT,(/ DIMID(2) , DIMID(3) /), &
                                                                        VARID(20))
           ENDIF
@@ -3880,7 +3880,7 @@
 ! Global attributes
 !
       IF(FL_DEFAULT_GBL_META) THEN
-        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
         CALL CHECK_ERR(IRET)
@@ -3890,7 +3890,7 @@
       IF (BBETA.NE.1.43)    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
       IF(SSDSC(7).NE.0.3)   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 #endif
-! ... TO BE CONTINUED ... 
+! ... TO BE CONTINUED ...
 
         IF(SMCGRD) THEN
 #ifdef W3_SMC
@@ -3917,7 +3917,7 @@
       CALL WRITE_GLOBAL_META(NCID, IRET)
       CALL CHECK_ERR(IRET)
 
-      ! ChrisB: Below is the old way of writing Global attributes, this 
+      ! ChrisB: Below is the old way of writing Global attributes, this
       ! is now deprecated, but still supported at the moment...
       open(unit=994,file='NC_globatt.inp',status='old',iostat=ICODE)
       IF (ICODE.EQ.0) THEN
@@ -3934,7 +3934,7 @@
       ENDIF
       CLOSE(994)
       IF(FL_DEFAULT_GBL_META) THEN
-        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'product_name' ,TRIM(NCFILE))   
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'product_name' ,TRIM(NCFILE))
         CALL CHECK_ERR(IRET)
         IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'area',TRIM(GNAME))
         CALL CHECK_ERR(IRET)
@@ -3942,7 +3942,7 @@
 
       RETURN
 
-      END SUBROUTINE W3CRNC 
+      END SUBROUTINE W3CRNC
 
 
 !/ ------------------------------------------------------------------- /
@@ -3975,7 +3975,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3SERVMD, ONLY : W3S2XY
- 
+
       IMPLICIT NONE
 
       REAL, INTENT(INOUT)  :: S(:)
@@ -4073,8 +4073,3 @@
 !/ End of W3OUNF ----------------------------------------------------- /
 !/
       END PROGRAM W3OUNF
-
-
-
-
-

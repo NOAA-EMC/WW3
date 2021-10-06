@@ -53,20 +53,23 @@
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
                           ALPHA, WN1, CG1,                            &
                           D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
+#ifdef W3_FLX5
+                          TAUA, TAUADIR,                              &
+#endif
                           CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
                           TRNY, BERG, FPI, DTDYN, FCUT, DTG, TAUWX,   &
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
                           TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
                           D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
-                          PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF) 
+                          PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
-!/                  |            A. Roland              | 
-!/                  |            M. Dutour Sikiric      | 
+!/                  |            A. Roland              |
+!/                  |            M. Dutour Sikiric      |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         22-Mar-2021 |
 !/                  +-----------------------------------+
@@ -94,14 +97,14 @@
 !/    19-Aug-2010 : Making treatment of 0 water depth   ( version 3.14.6 )
 !/                  consistent with the rest of the model.
 !/    31-Mar-2010 : Adding ice conc. and reflections    ( version 3.14.4 )
-!/    15-May-2010 : Adding transparencies               ( version 3.14.4 ) 
-!/    01-Jun-2011 : Movable bed bottom friction in BT4  ( version 4.01 ) 
-!/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
+!/    15-May-2010 : Adding transparencies               ( version 3.14.4 )
+!/    01-Jun-2011 : Movable bed bottom friction in BT4  ( version 4.01 )
+!/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 )
 !/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
 !/    16-Sep-2011 : Initialization of TAUWAX, TAUWAY    ( version 4.04 )
 !/     1-Dec-2011 : Adding BYDRZ source term package    ( version 4.04 )
 !/                  ST6 and optional Hwang (2011)
-!/                  stresses FLX4. 
+!/                  stresses FLX4.
 !/    14-Mar-2012 : Update of BT4, passing PSIC         ( version 4.04 )
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
@@ -117,15 +120,16 @@
 !/    30-Jul-2017 : Adds TWS in interface               ( version 6.04 )
 !/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
 !/    01-Jan-2018 : Add implicit source term integration ( version 6.04)
-!/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    
-!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour
+!/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version  6.06)
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
 !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 ) 
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -187,14 +191,16 @@
 !       D_INP   Real.  I   Depth. Compared to DMIN to get DEPTH.
 !       U10ABS  Real.  I   Wind speed at reference height.
 !       U10DIR  Real.  I   Id. wind direction.
+!       TAUA    Real.  I   Magnitude of total atmospheric stress ( !/FLX5 )
+!       TAUADIR Real.  I   Direction of atmospheric stress       ( !/FLX5 )
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
 !       USTAR   Real. !/O  Friction velocity.
 !       USTDIR  Real  !/O  Idem, direction.
 !       CX-Y    Real.  I   Current velocity components.   ( !/BS1 )
-!       ICE     Real   I   Sea ice concentration          
-!       ICEH    Real   I   Sea ice thickness 
-!       ICEF    Real  I/O  Sea ice maximum floe diameter  (updated)        
-!       ICEDMAX Real  I/O  Sea ice maximum floe diameter          
+!       ICE     Real   I   Sea ice concentration
+!       ICEH    Real   I   Sea ice thickness
+!       ICEF    Real  I/O  Sea ice maximum floe diameter  (updated)
+!       ICEDMAX Real  I/O  Sea ice maximum floe diameter
 !       BERG    Real   I   Iceberg damping coefficient    ( !/BS1 )
 !       REFLEC  R.A.   I   reflection coefficients        ( !/BS1 )
 !       REFLED  I.A.   I   reflection direction           ( !/BS1 )
@@ -211,9 +217,9 @@
 !       BEDFORM R.A.  I/O  Bedform parameters             ( !/BT4 )
 !       PSIC    Real   I   Critical Shields               ( !/BT4 )
 !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
-!       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
+!       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx )
 !       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
-!       PHICE   Real   O   Energy flux to sea ice         ( !/ICx ) 
+!       PHICE   Real   O   Energy flux to sea ice         ( !/ICx )
 !       TAUOCX-YReal   O   Total ocean momentum components
 !       WNMEAN  Real   O   Mean wave number
 !       DAIR    Real   I   Air density
@@ -291,6 +297,7 @@
 !     !/FLX2  T&C (1996) stress computation.
 !     !/FLX3  T&C (1996) stress computation with cap.
 !     !/FLX4  Hwang (2011) stress computation (2nd order).
+!     !/FLX5  Direct use of stress from atmoshperic model.
 !
 !     !/LN0   No linear input.                           ( Choose one )
 !
@@ -311,13 +318,13 @@
 !
 !     !/BT0   No bottom friction.                        ( Choose one )
 !     !/BT1   JONSWAP bottom friction.
-!     !/BT4   Bottom friction using movable bed roughness 
+!     !/BT4   Bottom friction using movable bed roughness
 !                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BT8   Muddy bed (Dalrymple & Liu).
 !     !/BT9   Muddy bed (Ng).
 !
 !     !/IC1   Dissipation via interaction with ice according to simple
-!             methods: 1) uniform in frequency or 
+!             methods: 1) uniform in frequency or
 !     !/IC2            2) Liu et al. model
 !     !/IC3   Dissipation via interaction with ice according to a
 !             viscoelastic sea ice model (Wang and Shen 2010).
@@ -362,7 +369,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
       USE W3IDATMD, ONLY: INFLAGS2, ICEP2
-      USE W3DISPMD      
+      USE W3DISPMD
 #ifdef W3_NNT
       USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 #endif
@@ -385,6 +392,9 @@
 #endif
 #ifdef W3_FLX4
       USE W3FLX4MD
+#endif
+#ifdef W3_FLX5
+      USE W3FLX5MD
 #endif
 #ifdef W3_LN1
       USE W3SLN1MD
@@ -494,7 +504,7 @@
     USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
     USE W3GDATMD, ONLY: CLATS
     USE W3WDATMD, ONLY: VA
-    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM 
+    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM
 #endif
 !/
       IMPLICIT NONE
@@ -509,6 +519,9 @@
       REAL, INTENT(IN)        :: D_INP, U10ABS,     &
                                  U10DIR, AS, CX, CY, DTG, D50,PSIC,   &
                                  ICE, ICEH
+#ifdef W3_FLX5
+      REAL, INTENT(IN)        :: TAUA, TAUADIR
+#endif
       INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG, ICEDMAX, DAIR
@@ -541,9 +554,9 @@
       REAL, PARAMETER         :: NL5_OFFSET = 0.  ! explicit dyn.
 #endif
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
-                                 HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
+                                 HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI
 ! Scaling factor for SIN, SDS, SNL
-      REAL                    :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS  
+      REAL                    :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS
       REAL                    :: EMEAN, FMEAN, AMAX, CD, Z0, SCAT,    &
                                  SMOOTH_ICEDISP
       REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2,&
@@ -627,14 +640,14 @@
 #endif
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 #ifdef W3_ST3
-      LOGICAL                 :: LLWS(NSPEC) 
+      LOGICAL                 :: LLWS(NSPEC)
 #endif
 #ifdef W3_ST4
       LOGICAL                 :: LLWS(NSPEC)
       REAL                    :: BRLAMBDA(NSPEC)
 #endif
 #ifdef W3_IS2
-      DOUBLE PRECISION        :: SCATSPEC(NTH) 
+      DOUBLE PRECISION        :: SCATSPEC(NTH)
 #endif
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
       REAL, SAVE              :: TAUNUX, TAUNUY
@@ -675,15 +688,15 @@
 !
       DEPTH  = MAX ( DMIN , D_INP )
       IKS1 = 1
-      ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1))) 
-      ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2))) 
-      ICESCALENL = MAX(0.,MIN(1.,1.-ICE*ICESCALES(3))) 
-      ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4))) 
+      ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1)))
+      ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2)))
+      ICESCALENL = MAX(0.,MIN(1.,1.-ICE*ICESCALES(3)))
+      ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4)))
 #ifdef W3_IG1
-! 
-! Does not integrate source terms for IG band if IGPARS(12) = 0. 
-! 
-      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5)) 
+!
+! Does not integrate source terms for IG band if IGPARS(12) = 0.
+!
+      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5))
 #endif
       IS1=(IKS1-1)*NTH+1
 !
@@ -898,7 +911,11 @@
           USTDIR=0.
       ELSE
         CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
+                   AMAX, U10ABS, U10DIR,                           &
+#ifdef W3_FLX5
+                  TAUA, TAUADIR, DAIR,                             &
+#endif
+                   USTAR, USTDIR,                                  &
                    TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
@@ -937,12 +954,16 @@
 
 #ifdef W3_ST4
       CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
+                   AMAX, U10ABS, U10DIR,                         &
+#ifdef W3_FLX5
+                   TAUA, TAUADIR, DAIR,                    &
+#endif
+                   USTAR, USTDIR,                                &
                    TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
       TWS = 1./FMEANWS
 #endif
 #ifdef W3_ST6
-      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
+      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 #endif
 !
 ! 1.c2 Stores the initial data
@@ -965,6 +986,10 @@
 #ifdef W3_FLX4
       CALL W3FLX4 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
 #endif
+#ifdef W3_FLX5
+      CALL W3FLX5 ( ZWND, U10ABS, U10DIR, TAUA, TAUADIR, DAIR,  &
+                                          USTAR, USTDIR, Z0, CD )
+#endif
 !
 ! 1.e Prepare cut-off beyond which the tail is imposed with a power law
 !
@@ -984,7 +1009,7 @@
       FHIGH  = MAX(FFXFM * MAX(FMEAN,FMEANWS),FFXPM / USTAR)
 #endif
 #ifdef W3_ST4
-! Introduces a Long & Resio (JGR2007) type dependance on wave age  
+! Introduces a Long & Resio (JGR2007) type dependance on wave age
 #endif
 ! !/ST4      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
 #ifdef W3_ST4
@@ -1226,12 +1251,12 @@
         DT     = MIN ( DTG-DTTOT , DTMAX )
         AFILT  = MAX ( DAM(NSPEC) , XFLT*AMAX )
 !
-!     For input and dissipation calculate the fraction of the ice-free 
+!     For input and dissipation calculate the fraction of the ice-free
 !     surface. In the presence of ice, the effective water surface
 !     is reduce to a fraction of the cell size free from ice, and so is
 !     input :
 !             SIN = (1-ICE)**ISCALEIN*SIN and SDS=(1-ICE)**ISCALEDS*SDS ------------------ *
-!     INFLAGS2(4) is true if ice concentration was ever read during  
+!     INFLAGS2(4) is true if ice concentration was ever read during
 !             this simulation
         IF ( INFLAGS2(4) ) THEN
           VSNL(1:NSPECH) = ICESCALENL * VSNL(1:NSPECH)
@@ -1247,7 +1272,7 @@
         VD = 0
         DO IS=IS1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
-                 + VSDS(IS) + VSBT(IS) 
+                 + VSDS(IS) + VSBT(IS)
 #ifdef W3_ST6
           VS(IS) = VS(IS) + VSWL(IS)
 #endif
@@ -1261,7 +1286,7 @@
          VS(IS) = VS(IS) + VSUO(IS)
 #endif
           VD(IS) =  VDIN(IS) + VDNL(IS)  &
-                 + VDDS(IS) + VDBT(IS) 
+                 + VDDS(IS) + VDBT(IS)
 #ifdef W3_ST6
           VD(IS) = VD(IS) + VDWL(IS)
 #endif
@@ -1290,19 +1315,19 @@
 !          IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I10,10F30.10)') 'TIME STEP COMP', IS, DAMAX, DAM(IS), XREL*SPECINIT(IS), AFILT, AFAC, DT
 !          ENDIF
-        END DO  ! end of loop on IS 
+        END DO  ! end of loop on IS
 !
 !        WRITE(*,*) 'NODE_NUMBER', IX
-!        IF (IX == DEBUG_NODE) WRITE(*,*) 'TIMINGS 1', DT 
+!        IF (IX == DEBUG_NODE) WRITE(*,*) 'TIMINGS 1', DT
         DT     = MAX ( 0.5, DT )                   ! Here we have a hardlimit, which is not too usefull, at least not as a fixed constant
 !
         DTDYN  = DTDYN + DT
 #ifdef W3_T
         DTRAW  = DT
 #endif
-        IDT    = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations 
+        IDT    = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
         DT     = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
-        SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ... 
+        SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
         SHAVEIO = SHAVE
         DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
 !
@@ -1381,7 +1406,7 @@
 !            END DO
             WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
           END IF
-     
+
             IF (optionCall .eq. 1) THEN
               CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
             ELSE IF (optionCall .eq. 2) THEN
@@ -1421,7 +1446,7 @@
 ! 5.  Increment spectrum --------------------------------------------- *
 !
         IF (srce_call .eq. srce_direct) THEN
-!          SHAVE = .FALSE. 
+!          SHAVE = .FALSE.
 !         IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'BEFORE', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
 !          ENDIF
@@ -1447,7 +1472,7 @@
 !          IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'AFTER', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
 !          ENDIF
-!!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL) 
+!!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
 #ifdef W3_DEBUGSRC
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
@@ -1471,11 +1496,11 @@
 
 
 !
-! 5.b  Computes 
+! 5.b  Computes
 !              atmos->wave flux PHIAW-------------------------------- *
 !              wave ->BBL  flux PHIBBL------------------------------- *
 !              wave ->ice  flux PHICE ------------------------------- *
-! 
+!
        WHITECAP(3)=0.
        HSTOT=0.
        DO IK=IKS1, NK
@@ -1490,7 +1515,7 @@
            COSI(2)=ESIN(IS)
            PHIAW = PHIAW + (VSIN(IS))* DT * FACTOR                    &
              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
-           
+
            PHIBBL= PHIBBL- (VSBT(IS))* DT * FACTOR                    &
              / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
@@ -1505,7 +1530,7 @@
        TAUWIY= TAUWIY+ TAUWY * DRAT *DT
        TAUWNX= TAUWNX+ TAUWAX * DRAT *DT
        TAUWNY= TAUWNY+ TAUWAY * DRAT *DT
-       ! MISSING: TAIL TO BE ADDED ?      
+       ! MISSING: TAIL TO BE ADDED ?
 !
 #ifdef W3_NLS
       CALL W3SNLS ( SPEC, CG1, WN1, DEPTH, U10ABS, DT, AA=SPEC )
@@ -1532,7 +1557,11 @@
 #endif
 #ifdef W3_ST4
         CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
-                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,           &
+                   AMAX, U10ABS, U10DIR,                          &
+#ifdef W3_FLX5
+                   TAUA, TAUADIR, DAIR,                     &
+#endif
+                   USTAR, USTDIR,                                 &
                    TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 #ifdef W3_ST6
@@ -1586,7 +1615,7 @@
 #endif
 !
 #ifdef W3_ST4
-! Introduces a Long & Resio (JGR2007) type dependance on wave age  
+! Introduces a Long & Resio (JGR2007) type dependance on wave age
         FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
         FH1    = (FFXFM+FAGE) * FMEAN1
 #endif
@@ -1614,7 +1643,7 @@
 !
 ! 6.b Limiter for shallow water or Miche style criterion
 !     Last time step ONLY !
-!     uses true depth (D_INP) instead of limited depth 
+!     uses true depth (D_INP) instead of limited depth
 !
 #ifdef W3_MLIM
         IF ( DTTOT .GE. 0.9999*DTG ) THEN
@@ -1721,9 +1750,9 @@
   888 CONTINUE
 !
 ! 9.a  Computes PHIOC------------------------------------------ *
-!     The wave to ocean flux is the difference between initial energy 
-!     and final energy, plus wind input plus the SNL flux to high freq., 
-!     minus the energy lost to the bottom boundary layer (BBL) 
+!     The wave to ocean flux is the difference between initial energy
+!     and final energy, plus wind input plus the SNL flux to high freq.,
+!     minus the energy lost to the bottom boundary layer (BBL)
 !
 #ifdef W3_DEBUGSRC
      IF (IX .eq. DEBUG_NODE) THEN
@@ -1745,12 +1774,12 @@
           END DO
         EFINISH  = EFINISH  + EBAND * DDEN(IK) / CG1(IK)
         MWXFINISH  = MWXFINISH  + A1BAND * DDEN(IK) / CG1(IK)        &
-                  * WN1(IK)/SIG(IK) 
+                  * WN1(IK)/SIG(IK)
         MWYFINISH  = MWYFINISH  + B1BAND * DDEN(IK) / CG1(IK)        &
                   * WN1(IK)/SIG(IK)
         END DO
 !
-! Transformation in momentum flux in m^2 / s^2 
+! Transformation in momentum flux in m^2 / s^2
 !
       TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1))/DTG
       TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2))/DTG
@@ -1762,15 +1791,15 @@
       TAUOCX=DAIR*COEF*COEF*USTAR*USTAR*COS(USTDIR) + DWAT*(TAUOX-TAUWIX)
       TAUOCY=DAIR*COEF*COEF*USTAR*USTAR*SIN(USTDIR) + DWAT*(TAUOY-TAUWIY)
 !
-! Transformation in wave energy flux in W/m^2=kg / s^3 
+! Transformation in wave energy flux in W/m^2=kg / s^3
 !
-      PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)/DTG 
-      PHIAW =DWAT*GRAV*PHIAW /DTG        
-      PHINL =DWAT*GRAV*PHINL /DTG  
-      PHIBBL=DWAT*GRAV*PHIBBL/DTG        
-! 
+      PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)/DTG
+      PHIAW =DWAT*GRAV*PHIAW /DTG
+      PHINL =DWAT*GRAV*PHINL /DTG
+      PHIBBL=DWAT*GRAV*PHIBBL/DTG
+!
 ! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
-!     INFLAGS2(4) is true if ice concentration was ever read during  
+!     INFLAGS2(4) is true if ice concentration was ever read during
 !             this simulation
 !
 #ifdef W3_DEBUGSRC
@@ -1779,9 +1808,9 @@
      END IF
 #endif
 
-      IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
+      IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN
 
-         IF (IICEDISP) THEN 
+         IF (IICEDISP) THEN
            ICECOEF2 = 1E-6
            CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
                                         SIG,WN_R,CG_ICE,ALPHA_LIU)
@@ -1789,9 +1818,9 @@
       IF (IICESMOOTH) THEN
 #ifdef W3_IS2
    DO IK=1,NK
-     SMOOTH_ICEDISP=0. 
+     SMOOTH_ICEDISP=0.
      IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
-       SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13))) 
+       SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
        END IF
      WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
      END DO
@@ -1808,7 +1837,7 @@
       CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
-      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
+      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
                               VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
 #endif
 
@@ -1834,9 +1863,9 @@
    TAUICE(:) = 0.
    PHICE = 0.
    DO IK=1,NK
-     IS = 1+(IK-1)*NTH 
+     IS = 1+(IK-1)*NTH
 !
-! First part of ice term integration: dissipation part 
+! First part of ice term integration: dissipation part
 !
      ATT=1.
 #ifdef W3_IC1
@@ -1861,31 +1890,31 @@
              ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
              IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
 !
-! If there is not re-distribution in directions the scattering is just an attenuation 
+! If there is not re-distribution in directions the scattering is just an attenuation
 !
-               ATT=ATT*EXP((ICE*VDIR(IS))*DTG) 
-               END IF   
+               ATT=ATT*EXP((ICE*VDIR(IS))*DTG)
+               END IF
 #endif
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !
 ! Second part of ice term integration: scattering including re-distribution in directions
 !
 #ifdef W3_IS2
-             IF (IS2PARS(2).GE.0) THEN 
-               IF (IS2PARS(20).GT.0.5) THEN 
+             IF (IS2PARS(2).GE.0) THEN
+               IF (IS2PARS(20).GT.0.5) THEN
 !
-! Case of isotropic back-scatter: the directional spectrum is decomposed into 
+! Case of isotropic back-scatter: the directional spectrum is decomposed into
 !               - an isotropic part (ISO): eigenvalue of scattering is 0
 !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
 !
                  SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-                 ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH 
+                 ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
                  SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
                       +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
-               ELSE 
+               ELSE
 !
-! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002) 
-!              
+! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
+!
                  SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
                  SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
                  REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
@@ -1893,30 +1922,30 @@
                  END IF
                END IF
 #endif
-! 
+!
 ! 10.2  Fluxes of energy and momentum due to ice effects
 !
              FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
              FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
              DO ITH = 1,NTH
-               IS = ITH+(IK-1)*NTH 
-               PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR      
+               IS = ITH+(IK-1)*NTH
+               PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR
                COSI(1)=ECOS(IS)
                COSI(2)=ESIN(IS)
                TAUICE(:) = TAUICE(:) - (SPEC(IS)-SPEC2(IS))*FACTOR2*COSI(:)
                END DO
              END DO
-           PHICE =-1.*DWAT*GRAV*PHICE /DTG        
+           PHICE =-1.*DWAT*GRAV*PHICE /DTG
            TAUICE(:)=TAUICE(:)/DTG
-           ELSE 
+           ELSE
 #ifdef W3_IS2
-             IF (IS2PARS(10).LT.0.5) THEN 
-               ICEF = 0. 
-             ENDIF 
+             IF (IS2PARS(10).LT.0.5) THEN
+               ICEF = 0.
+             ENDIF
 #endif
            END IF
 !
-! 
+!
 ! - - - - - - - - - - - - - - - - - - - - - -
 ! 11. Sea state dependent stress routine calls
 ! - - - - - - - - - - - - - - - - - - - - - -
@@ -1930,7 +1959,7 @@
      END IF
 #endif
 
-! FLD1/2 requires the calculation of FPI: 
+! FLD1/2 requires the calculation of FPI:
 #ifdef W3_FLD1
       CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
 #endif
@@ -1943,7 +1972,7 @@
           CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
                     COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
                     DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
-      ELSE 
+      ELSE
           CHARN = AALPHA 
       ENDIF
 #endif
@@ -1952,8 +1981,8 @@
           CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
                     COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
                     DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
-      ELSE 
-          CHARN = AALPHA 
+      ELSE
+          CHARN = AALPHA
       ENDIF
 #endif
 !
@@ -1965,27 +1994,27 @@
      END IF
 #endif
 #ifdef W3_REF1
-        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
+        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
           CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
                         REFLEC, REFLED, TRNX, TRNY,  &
                         BERG, DTG, IX, IY,  VREF )
-          IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN 
+          IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
 #endif
 !AR: this can be further simplified let's do some simple tests 1st ...
 #ifdef W3_REF1
-            IF (IOBP(IX).EQ.0) THEN 
-              DO IK=1, NK 
+            IF (IOBP(IX).EQ.0) THEN
+              DO IK=1, NK
                 DO ITH=1, NTH
                   IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
                 END DO
-              END DO 
-            ELSE 
+              END DO
+            ELSE
               IF (IOBDP(IX) .EQ. -1) THEN
                 SPEC(:) = SPEC(:) + DTG * VREF(:)
               ENDIF
             ENDIF
           ELSE
-            SPEC(:) = SPEC(:) + DTG * VREF(:) 
+            SPEC(:) = SPEC(:) + DTG * VREF(:)
             END IF
           END IF
 #endif
@@ -2000,7 +2029,7 @@
 
       IF (IT.EQ.0) SPEC = SPECINIT
 
-      SPEC = MAX(0., SPEC)      
+      SPEC = MAX(0., SPEC)
 !
       RETURN
 !
@@ -2085,7 +2114,7 @@
 !/                  +-----------------------------------+
 !/
 !/    06-Jul-2016 : Origination                         ( version 5.12 )
-!/    06-Jul-2016 : Add SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3         
+!/    06-Jul-2016 : Add SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3
 !/                  Add optional DEBUGSRC/PDLIB           ( version 6.04 )
 !/
 !  1. Purpose :
@@ -2117,7 +2146,7 @@
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      W3SRCE Subr.            
+!      W3SRCE Subr.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -2197,7 +2226,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -2273,7 +2302,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |

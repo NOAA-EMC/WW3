@@ -1,3 +1,4 @@
+#!/bin/bash
 
 thisdir=`pwd`
 ftndir="$thisdir/../ftn"
@@ -21,7 +22,6 @@ do
      mkdir -p $srcdir/$DIR
   fi  
 
-  set -x
   for file in $ftnfiles
   do
     echo "convert $DIR/$file.ftn to a .F90"

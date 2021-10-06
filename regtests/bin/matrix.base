@@ -717,20 +717,9 @@
       echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -o netcdf              -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf              -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_grid $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_strt $ww3 ww3_tp2.15" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_RHO.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_prnc $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc_RHO.inp" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_TAU.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_prnc $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc_TAU.inp" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_WND.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_prnc $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO/ww3_prnc_WND.inp" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_shel $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_ounf $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO -r ww3_ounp $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -o netcdf -i input_rho -w work_PR3_UQ_RHO             $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s ST6    -i input_rho -w work_ST6FLX5 -o netcdf      $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -o netcdf -s TIDE      -w work_TIDE                   $ww3 ww3_tp2.18" >> matrix.body
     fi
 
@@ -821,20 +810,7 @@
       echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -s MPI                     -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s MPI                     -w work_MPI_5km         -g 5km      -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_grid  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_strt  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_RHO.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_prnc  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc_RHO.out" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_TAU.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_prnc  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc_TAU.out" >> matrix.body
-      echo "cp ww3_tp2.15/input_rho/ww3_prnc_WND.inp ww3_tp2.15/input_rho/ww3_prnc.inp" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_prnc  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "mv ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc.out ww3_tp2.15/work_PR3_UQ_RHO_MPI/ww3_prnc_WND.out" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_shel  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_ounf  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI -r ww3_ounp  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s MPI        -i input_rho -w work_PR3_UQ_RHO_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s TIDE_MPI                -w work_TIDE_MPI -o netcdf          -f -p $mpi -n $np $ww3 ww3_tp2.18" >> matrix.body
     fi
 

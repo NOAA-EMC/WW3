@@ -40,6 +40,7 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
 !/                  (in source terms)
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -154,6 +155,9 @@
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,      &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE, &
                           GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
 !
       IMPLICIT NONE
 !/
@@ -639,6 +643,9 @@
 #ifdef W3_FLX4
       USE W3FLX4MD
 #endif
+#ifdef W3_FLX5
+      USE W3FLX5MD
+#endif
 #ifdef W3_LN1
       USE W3SLN1MD
 #endif
@@ -729,6 +736,9 @@
                                  FACTOR, CD, USTAR, FHIGH, ZWND, ICE, &
                                  USTD, Z0, CHARN, EMEAN, FMEAN, WNMEAN,&
                                  ICETHICK, ICECON, ICEF
+#ifdef W3_FLX5
+      REAL                     ::TAUA, TAUADIR, RHOAIR
+#endif
 #ifdef W3_IS2
        REAL                   :: ICEDMAX
 #endif
@@ -835,6 +845,11 @@
           UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
           UDIRR  = WDO(J)
           UABS   = MAX ( 0.001 , WAO(J) )
+#ifdef W3_FLX5
+            TAUA     = MAX ( 0.001 , TAUAO(J))
+            TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+            RHOAIR   = MAX ( 0. , DAIRO(J))
+#endif
           CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
 #ifdef W3_IS2
            ICEDMAX = MAX ( 0., ICEFO(J))
@@ -1046,9 +1061,13 @@
                          TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 #endif
 #ifdef W3_ST4
-            CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,   FMEAN1,        &
-                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
-                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+                             WNMEAN, AMAX, UABS, UDIRR,             &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,           &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_ST6
             CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
@@ -1068,6 +1087,10 @@
 #endif
 #ifdef W3_FLX4
             CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX5
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
+                                          RHOAIR, USTAR, USTD, Z0, CD )
 #endif
 !
             DO ITT=1, 3
@@ -1090,9 +1113,13 @@
               CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
                            ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
                            TAUWNX, TAUWNY, XWI, DIA, LLWS, IX, IY, LAMBDA )
-              CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,         &
-                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
-                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+                             WNMEAN, AMAX, UABS, UDIRR,               &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,             &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_FLX2
               CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &

@@ -30,6 +30,8 @@
 !     FORCING%FIELD%ICE_CONC       = F           ! Ice concentration                  (1-component)
 !     FORCING%FIELD%ICE_BERG       = F           ! Icebergs and sea ice concentration (2-components)
 !     FORCING%FIELD%DATA_ASSIM     = F           ! Data for assimilation              (1-component)
+!     FORCING%FIELD%ATM_MOMENTUM   = F           ! Atm. momentum.                     (2-components)
+!     FORCING%FIELD%AIR_DENSITY    = F           ! Air density                        (1-component)
 !
 !     FORCING%GRID%ASIS            = F           ! Transfert field 'as is' on the model grid
 !     FORCING%GRID%LATLON          = F           ! Define field on regular lat/lon or cartesian grid
@@ -68,8 +70,8 @@
   FILE%FILENAME      = '../input_rho/momentum.nc'
   FILE%LONGITUDE     = 'longitude'
   FILE%LATITUDE      = 'latitude'
-  FILE%VAR(1)        = 'U'
-  FILE%VAR(2)        = 'V'
+  FILE%VAR(1)        = 'tauu'
+  FILE%VAR(2)        = 'tauv'
 /
 
 ! -------------------------------------------------------------------- !

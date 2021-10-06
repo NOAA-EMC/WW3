@@ -59,10 +59,11 @@
 !/                  (in source terms)
 !/    27-Jun-2017 : Expanding WMO table to 2 digits JHA ( version 6.02 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -184,6 +185,9 @@
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
                           ICEO, ICEHO, ICEFO, DIMP
+#ifdef W3_FLX5
+      USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
       USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 #ifdef W3_NCO
@@ -377,9 +381,9 @@
           END IF
           EXIT
         END IF
-        ! existing index in out_pnt.ww3   
+        ! existing index in out_pnt.ww3
         IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
-          IF ( .NOT. FLREQ(IPOINT) ) THEN 
+          IF ( .NOT. FLREQ(IPOINT) ) THEN
             NREQ = NREQ + 1
           END IF
           FLREQ(IPOINT) = .TRUE.
@@ -476,8 +480,8 @@
                                   NK, NTH, NREQ, GNAME
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
 !
-! conversion of directions from trignonmetric to nautical (still uses directions TO ) 
-! 
+! conversion of directions from trignonmetric to nautical (still uses directions TO )
+!
                  WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
 
                 ELSE
@@ -654,7 +658,7 @@
                   WRITE (NDSE,1012) OTYPE
                   CALL EXTCDE ( 45 )
                 ENDIF
-                IF (FLREQ(IJ)) THEN 
+                IF (FLREQ(IJ)) THEN
                   NDSBUL = NDSTAB + (IJ - 1)
                   OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
                   WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
@@ -672,7 +676,7 @@
               DO IJ = 1,NOPTS
                 IF (FLREQ(IJ)) THEN
                   ICSV = 0
-                  IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL 
+                  IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
 #ifdef W3_NCO
                    IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
 #endif
@@ -770,8 +774,8 @@
         DO IJ = 1,NOPTS
           IF (FLREQ(IJ)) THEN
             NDSBUL = NDSTAB + (IJ - 1)
-            WRITE(NDSBUL,971) 
-            WRITE(NDSBUL,974) BHSDROP, BHSMIN 
+            WRITE(NDSBUL,971)
+            WRITE(NDSBUL,974) BHSDROP, BHSMIN
 #ifdef W3_NCO
              NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
              WRITE(NDSCBUL,961)
@@ -878,7 +882,7 @@
        75X,'Tp  : Peak period of separate wave field.'/               &
        75X,'dir : Mean direction of separate wave field.'/            &
        75X,'*   : Wave generation due to local wind probable.')
- 
+
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
@@ -1020,6 +1024,7 @@
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
 !/
 !  1. Purpose :
 !
@@ -1065,10 +1070,10 @@
 !     - Note that arrays CX and CY of the main program now contain
 !       the absolute current speed and direction respectively.
 !
-!     - BT8&9 issues : 
+!     - BT8&9 issues :
 !
 !       Q: What is the problem?
-!       A: Point output of Sbot with BT8 or BT9 is not presently 
+!       A: Point output of Sbot with BT8 or BT9 is not presently
 !          supported.
 !
 !       Q: What can a user do now?
@@ -1081,20 +1086,20 @@
 !        $               | | | ^ Dissipation
 !        $               | | ^ Nonlinear interactions
 !        $               | ^ Wind-wave interactions
-!        $               ^ Spectrum 
+!        $               ^ Spectrum
 !          If the user really need this source function, he/she
-!          needs to add test output to the mud subroutine 
+!          needs to add test output to the mud subroutine
 !          directly
 !
 !       Q: Why doesn't this functionality exist?
-!       A: The Sbot source function in ww3_outp was originally written 
-!          with the case of BT1 in mind. BT1 uses a uniform friction 
-!          factor, so it does not need any special variable for the 
-!          local friction factor. BT8 and BT9 allow non-uniform mud 
-!          variables (thickness, density, viscosity) and the mud 
-!          subroutines are written with ww3_shel in mind, where the 
-!          source function is calculated on the computational grid 
-!          point IX IY. 
+!       A: The Sbot source function in ww3_outp was originally written
+!          with the case of BT1 in mind. BT1 uses a uniform friction
+!          factor, so it does not need any special variable for the
+!          local friction factor. BT8 and BT9 allow non-uniform mud
+!          variables (thickness, density, viscosity) and the mud
+!          subroutines are written with ww3_shel in mind, where the
+!          source function is calculated on the computational grid
+!          point IX IY.
 
 !       Q: How can we add this functionality?
 !       A: To fix it, we would need to :
@@ -1151,6 +1156,9 @@
 #endif
 #ifdef W3_FLX4
       USE W3FLX4MD
+#endif
+#ifdef W3_FLX5
+      USE W3FLX5MD
 #endif
 #ifdef W3_LN1
       USE W3SLN1MD
@@ -1241,6 +1249,9 @@
                                  FMEAN, WNMEAN, UDIRCA, X, Y, CHARN,  &
                                  M2KM, ICEF, ICEDMAX, ICETHICK,       &
                                  ICECON
+#ifdef W3_FLX5
+      REAL                     ::TAUA, TAUADIR, RHOAIR
+#endif
 #ifdef W3_IS2
       REAL                    :: WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
 #endif
@@ -1428,6 +1439,11 @@
             UDIRCA   = WDO(J)*RADE
             UDIRR    = WDO(J)
             UABS     = MAX ( 0.001 , WAO(J) )
+#ifdef W3_FLX5
+            TAUA     = MAX ( 0.001 , TAUAO(J))
+            TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+            RHOAIR   = MAX ( 0. , DAIRO(J))
+#endif
             CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
             ICEDMAX  = MAX ( 0., ICEFO(J))
             ICEF     = ICEDMAX
@@ -1468,11 +1484,11 @@
               END DO
 
 !
-! Computes 2nd order spectrum 
+! Computes 2nd order spectrum
 !
 #ifdef W3_IG1
-      IF (IGPARS(2).EQ.1) THEN 
-        IF(IGPARS(1).EQ.1) THEN 
+      IF (IGPARS(2).EQ.1) THEN
+        IF(IGPARS(1).EQ.1) THEN
           CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
         ELSE
           CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
@@ -1640,9 +1656,13 @@
                              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 #endif
 #ifdef W3_ST4
-                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
-                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
+                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+                             WNMEAN, AMAX, UABS, UDIRR,             &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,           &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_ST6
                 CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
@@ -1662,6 +1682,10 @@
 #endif
 #ifdef W3_FLX4
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX5
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
+                                          RHOAIR, USTAR, USTD, Z0, CD )
 #endif
 !
                 DO ITT=1, 3
@@ -1688,8 +1712,12 @@
                                ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
                                TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
                   CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
-                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
+                             WNMEAN, AMAX, UABS, UDIRR,               &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,             &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_FLX2
                   CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
@@ -1806,8 +1834,12 @@
 #endif
 #ifdef W3_ST4
                 CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
-                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
+                             WNMEAN, AMAX, UABS, UDIRR,               &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,             &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_ST6
                 CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
@@ -1829,6 +1861,10 @@
 #ifdef W3_FLX4
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
+#ifdef W3_FLX5
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
+                                          RHOAIR, USTAR, USTD, Z0, CD )
+#endif
 !
                 DO ITT=1, 3
 #ifdef W3_ST2
@@ -1847,8 +1883,12 @@
 #endif
 #ifdef W3_ST4
                 CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,        &
-                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN )
+                             WNMEAN, AMAX, UABS, UDIRR,              &
+#ifdef W3_FLX5
+                             TAUA, TAUADIR, RHOAIR,            &
+#endif
+                             USTAR, USTD, TAUWX, TAUWY, CD, Z0,      &
+                             CHARN, LLWS, FMEANWS, DLWMEAN )
                   CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
                                 ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
                                 TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
@@ -1946,15 +1986,15 @@
                     CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
 #endif
 #ifdef W3_BT4
-                    IX=1    ! to be fixed later 
-                    IY=1    ! to be fixed later 
-                    ISEA=1  ! to be fixed later 
+                    IX=1    ! to be fixed later
+                    IY=1    ! to be fixed later
+                    ISEA=1  ! to be fixed later
                     D50 = SED_D50(ISEA)
                     PSIC= SED_PSIC(ISEA)
 #endif
 
 #ifdef W3_BT4
-                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
+                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
                                        BEDFORM, XBT, DIA, IX, IY )
 #endif
 
@@ -1995,7 +2035,7 @@
 !
 #ifdef W3_IS2
                   CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
-                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)    
+                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
 #endif
                   END IF
 !
@@ -2319,7 +2359,7 @@
                       WRITE (NDSTAB,2930) FACF*SIG(IK), E1(IK),       &
                         SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK),       &
                         SIS1(IK), STT1(IK)
-                     
+
                       END DO
                     WRITE (NDSTAB,2940)
 !
@@ -2400,7 +2440,7 @@
                         IF ( FLSRCE(5) ) WRITE (NDSTAB,902)           &
                               ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
                         IF ( FLSRCE(6) ) WRITE (NDSTAB,902)           &
-                              ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH) 
+                              ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH)
                         IF ( FLSRCE(7) ) WRITE (NDSTAB,902)           &
                               ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
                       END IF
@@ -2463,11 +2503,11 @@
 #endif
                         IF (IOUT .EQ. 1) THEN
                           WRITE(HSTR,'(I2,1X,A)') TIMEV(2)/10000,   &
-                                   HTYPE 
+                                   HTYPE
                           WRITE (NDSBUL,970) PTNME(J), Y, IDLAT, X, &
                                            IDLON, GNAME, TIMEV(1),  &
                                            HSTR
-                          WRITE (NDSBUL,971) 
+                          WRITE (NDSBUL,971)
                           WRITE (NDSBUL,972)
                           WRITE (NDSBUL,971)
 #ifdef W3_NCO
@@ -2483,7 +2523,7 @@
 #endif
                      ENDIF
                       IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
-                        ICSV = 0 
+                        ICSV = 0
                         IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
 #ifdef W3_NCO
                          IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
@@ -2547,7 +2587,7 @@
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
   942 FORMAT (I3,3F8.2,2F9.2,10F7.2)
 !
-! 
+!
 #ifdef W3_NCO
   960 FORMAT ( 'Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/              &
                 'Model    : ',A/                                       &
