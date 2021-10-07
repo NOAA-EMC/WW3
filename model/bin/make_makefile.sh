@@ -114,7 +114,7 @@
 
 
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
-         ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf 
+         ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
   progs="$progs ww3_multi_esmf  ww3_uprstr"
   progs="$progs libww3"
@@ -220,7 +220,7 @@
       done
       echo "	@cd \$(aPo); ld -o $lib -shared $objs" >> makefile
       echo ' '                                   >> makefile
-      
+
     else
       echo '	@$(aPb)/link '"$filesl"          >> makefile
       echo ' '                                   >> makefile
@@ -250,7 +250,7 @@
 
     suffixes="ftn f F f90 F90 c"
     fexti=none
-    ispdlibi=no 
+    ispdlibi=no
     for s in $suffixes
     do
       if [ -f $main_dir/ftn/$file.$s ]
@@ -285,9 +285,9 @@
     string3="$NULL"
 
     if [ "$ispdlibi" = 'yes' ]
-    then 
+    then
       string1='$(aPo)/'$file'.o : PDLIB/'$file.$fexti' '
-    fi 
+    fi
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
 
@@ -351,6 +351,7 @@
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
          'W3FLX3MD'     ) modtest=w3flx3md.o ;;
          'W3FLX4MD'     ) modtest=w3flx4md.o ;;
+         'W3FLX5MD'     ) modtest=w3flx5md.o ;;
          'W3SLN1MD'     ) modtest=w3sln1md.o ;;
          'W3SRC0MD'     ) modtest=w3src0md.o ;;
          'W3SRC1MD'     ) modtest=w3src1md.o ;;
@@ -435,7 +436,7 @@
          'W3OUNFMETAMD' ) modtest=w3ounfmetamd.o ;;
          'W3METAMD'     ) modtest=w3metamd.o ;;
          'W3GRIDMD'     ) modtest=w3gridmd.o ;;
-         *              ) modfound=no ;; 
+         *              ) modfound=no ;;
       esac
 
       if [ "$modfound" == "yes" ]
@@ -494,9 +495,9 @@
     fi
 
     if  [ "$scripnc" = 'SCRIPNC' ]
-    then 
+    then
        scrip_mk=$scrip_dir/SCRIP_NC.mk
-    else 
+    else
        scrip_mk=$scrip_dir/SCRIP.mk
     fi
     if [ ! -e $scrip_mk ]

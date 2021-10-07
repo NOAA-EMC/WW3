@@ -113,9 +113,11 @@ $  T  T  1     4   AS         AST   Air-sea temperature difference.
 $  T  T  1     5   WLV        WLV   Water levels.
 $  T  T  1     6   ICE        ICE   Ice concentration.
 $  T  T  1     7   IBG        IBG   Iceberg-induced damping.
-$  T  T  1     8   D50        D50   Median sediment grain size.
-$  T  T  1     9   IC1        IC1   Ice thickness.
-$  T  T  1    10   IC5        IC5   Ice flow diameter.
+$  T  T  1     8   TAUA       TAU   Atm. momentum. 
+$  T  T  1     9   RHOAIR     RHO   Air density. 
+$  T  T  1    10   D50        D50   Median sediment grain size.
+$  T  T  1    11   IC1        IC1   Ice thickness.
+$  T  T  1    12   IC5        IC5   Ice flow diameter. 
 $   -------------------------------------------------
 $        2                          Standard mean wave Parameters
 $   -------------------------------------------------
@@ -234,8 +236,8 @@ $ Actual active parameter selection section
 $
 $ (1) Forcing Fields
   T
-$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
-  T   T   T   T   T   F   F   F   F   F
+$ DPT CUR WND AST WLV ICE IBG TAU RHO D50 IC1 IC5
+  T   T   T   T   T   F   F   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  T02 T0M1 T01 FP DIR SPR DP
@@ -346,7 +348,7 @@ $  CHA
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
-$       - Atmospheric model : WND
+$       - Atmospheric model : WND TAU RHO
 $       - Ice model : ICE IC1 IC5
 $
 $  WND
