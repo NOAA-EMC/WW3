@@ -640,6 +640,15 @@
 !
       RETURN
 !
+! Check inputs for stresses
+      IF(FLTAUA) THEN
+!/FLX0        WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+!/FLX1        WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+!/FLX2        WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+!/FLX3        WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+!/FLX4        WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      END IF
+!
 ! Formats
 !
  1001 FORMAT (/' *** ERROR W3DIMI : GRIDS NOT INITIALIZED *** '/      &

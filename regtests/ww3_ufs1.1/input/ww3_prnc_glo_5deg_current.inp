@@ -8,8 +8,6 @@ $                   WND   Winds.
 $                   WNS   Winds (including air-sea temp. dif.)
 $                   CUR   Currents.
 $                   DAT   Data for assimilation.
-$                   TAU   Atm. momentum.
-$                   RHO   Air density.
 $
 $   Format types :  AI    Transfer field 'as is'. (ITYPE 1)
 $                   LL    Field defined on regular longitude-latitude
@@ -27,15 +25,15 @@ $   Header flag  : If true, header is added to file.
 $                  (necessary for reading, FALSE is used only for
 $                   incremental generation of a data file.)
 $
-  'RHO' 'LL' T T
+  'CUR' 'LL' T T
 $
 $ Name of dimensions ------------------------------------------------- $
 $
- longitude latitude time
+ longitude latitude  time
 $
 $ Variables to use --------------------------------------------------- $
 $
-  rho
+   ucur vcur
 $
 $ Additional time input ---------------------------------------------- $
 $ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
@@ -45,8 +43,9 @@ $
 $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
-  '../input_rho/density.nc'
+   '../input/current.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $
+
