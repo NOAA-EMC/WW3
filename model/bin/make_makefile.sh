@@ -116,7 +116,7 @@
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
-  progs="$progs ww3_multi_esmf  ww3_uprstr"
+  progs="$progs ww3_multi_esmf ww3_shel_esmf ww3_uprstr"
   progs="$progs libww3"
   progs="$progs libww3.so"
 
@@ -136,6 +136,7 @@
       ww3_prnc) IDstring='NetCDF field preprocessor' ;;
       ww3_prtide) IDstring='Tide prediction' ;;
       ww3_shel) IDstring='Generic shell' ;;
+      ww3_shel) IDstring='Generic shell ESMF module' ;;
       ww3_multi) IDstring='Multi-grid shell' ;;
       ww3_multi_esmf) IDstring='Multi-grid ESMF module' ;;
       ww3_sbs1) IDstring='Multi-grid shell sbs version' ;;
@@ -251,6 +252,7 @@
     suffixes="ftn f F f90 F90 c"
     fexti=none
     ispdlibi=no
+    isnuopci=no
     for s in $suffixes
     do
       if [ -f $main_dir/src/$file.$s ]
@@ -262,6 +264,12 @@
       then
         fexti=$s
         ispdlibi=yes
+        break
+      fi
+      if [ -f $main_dir/src/cpl_nuopc/$file.$s ]
+      then
+        fexti=$s
+        isnuopci=yes
         break
       fi
     done
@@ -287,6 +295,11 @@
     if [ "$ispdlibi" = 'yes' ]
     then
       string1='$(aPo)/'$file'.o : PDLIB/'$file.$fexti' '
+    fi
+
+    if [ "$ispdlibi" = 'yes' ]
+    then
+      string1='$(aPo)/'$file'.o : cpl_nuopc/'$file.$fexti' '
     fi
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
@@ -436,6 +449,9 @@
          'W3OUNFMETAMD' ) modtest=w3ounfmetamd.o ;;
          'W3METAMD'     ) modtest=w3metamd.o ;;
          'W3GRIDMD'     ) modtest=w3gridmd.o ;;
+         'wav_comp_nuopc'    ) modtest=wav_comp_nuopc.o ;;
+         'wav_import_export' ) modtest=wav_import_export.o ;; 
+         'wav_shr_methods'   ) modtest=wav_shr_methods.o ;;
          *              ) modfound=no ;;
       esac
 

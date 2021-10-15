@@ -8,7 +8,6 @@ WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP ?= gnu
-WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
@@ -41,8 +40,6 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "ga
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss2"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
- WW3_CC=cc
- WW3_F90=ftn
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 # mpt
@@ -99,6 +96,9 @@ ww3_nems: env setup gout switch
 
 ww3_nemslibonly: env setup switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
+
+ww3_nuopclibonly: env setup switch
+        $(WW3_BINDIR)/w3_make ww3_shel_esmf
 
 ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
