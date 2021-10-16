@@ -36,7 +36,7 @@
   echo '                *****************************'
   echo ' '
 
-# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -48,7 +48,7 @@
 . ${main_dir}/bin/build_utils.sh
 
 
-# 1.d Go to temp dir 
+# 1.d Go to temp dir
   cd $temp_dir
 
 
@@ -123,8 +123,8 @@
   for prog in $progs
   do
 
-    # Get file - the list of files to be compiled 
-    # and filel - list of files for linking a particular prog 
+    # Get file - the list of files to be compiled
+    # and filel - list of files for linking a particular prog
     create_file_list
  
     case $prog in
@@ -136,7 +136,7 @@
       ww3_prnc) IDstring='NetCDF field preprocessor' ;;
       ww3_prtide) IDstring='Tide prediction' ;;
       ww3_shel) IDstring='Generic shell' ;;
-      ww3_shel) IDstring='Generic shell ESMF module' ;;
+      ww3_shel_esmf) IDstring='Generic shell ESMF module' ;;
       ww3_multi) IDstring='Multi-grid shell' ;;
       ww3_multi_esmf) IDstring='Multi-grid ESMF module' ;;
       ww3_sbs1) IDstring='Multi-grid shell sbs version' ;;
@@ -161,7 +161,7 @@
     echo "# $IDstring"                           >> makefile
     echo ' '                                     >> makefile
 
-    # if esmf is included in program name or if 
+    # if esmf is included in program name or if
     # the target is compile and create archive
     if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
     then
@@ -266,7 +266,7 @@
         ispdlibi=yes
         break
       fi
-      if [ -f $main_dir/src/cpl_nuopc/$file.$s ]
+      if [ -f $main_dir/src/$file.$s ]
       then
         fexti=$s
         isnuopci=yes
@@ -299,7 +299,7 @@
 
     if [ "$ispdlibi" = 'yes' ]
     then
-      string1='$(aPo)/'$file'.o : cpl_nuopc/'$file.$fexti' '
+      string1='$(aPo)/'$file'.o : '$file.$fexti' '
     fi
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
@@ -450,7 +450,7 @@
          'W3METAMD'     ) modtest=w3metamd.o ;;
          'W3GRIDMD'     ) modtest=w3gridmd.o ;;
          'wav_comp_nuopc'    ) modtest=wav_comp_nuopc.o ;;
-         'wav_import_export' ) modtest=wav_import_export.o ;; 
+         'wav_import_export' ) modtest=wav_import_export.o ;;
          'wav_shr_methods'   ) modtest=wav_shr_methods.o ;;
          *              ) modfound=no ;;
       esac
