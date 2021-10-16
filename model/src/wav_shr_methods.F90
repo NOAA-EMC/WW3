@@ -26,6 +26,7 @@ module wav_shr_methods
   implicit none
   private
 
+  !TODO:
   !public  :: memcheck
   public  :: get_component_instance
   public  :: set_component_logging

@@ -159,15 +159,16 @@ module wav_comp_nuopc
   use w3idatmd              , only: inflags1, inflags2, w3seti, w3ninp
   use w3idatmd              , only: TC0, CX0, CY0, TCN, CXN, CYN !HK, NX, NY
   use w3idatmd              , only: TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN
-  use w3idatmd              , only: TIN, ICEI, TLN, WLEV, HML
+  !use w3idatmd              , only: TIN, ICEI, TLN, WLEV, HML
+  use w3idatmd              , only: TIN, ICEI, TLN, WLEV
   use w3odatmd              , only: w3nout, w3seto, naproc, iaproc, napout, naperr, nds !cmb
   use w3odatmd              , only: idout, fnmpre, iostyp, nogrp, ngrpp, noge !HK
   use w3initmd
   use w3wavemd
   use w3iopomd
   use w3timemd
-  use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
-  use w3cesmmd              , only : inst_index, inst_name, inst_suffix
+  !use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
+  !use w3cesmmd              , only : inst_index, inst_name, inst_suffix
   use ESMF
   use NUOPC                 , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC                 , only : NUOPC_CompFilterPhaseMap, NUOPC_IsUpdated, NUOPC_IsAtTime
@@ -184,8 +185,8 @@ module wav_comp_nuopc
   use wav_wrapper_mod       , only : shr_file_getlogunit, shr_file_setlogunit
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
 
-  use shr_nl_mod            , only : shr_nl_find_group_name  ! TODO: implement this here
-  use shr_file_mod          , only : shr_file_getunit !TODO: ???
+  !use shr_nl_mod            , only : shr_nl_find_group_name  ! TODO: implement this here
+  !use shr_file_mod          , only : shr_file_getunit !TODO: ???
 
   !use shr_sys_mod           , only : shr_sys_flush, shr_sys_abort
   !use shr_nl_mod            , only : shr_nl_find_group_name
@@ -211,8 +212,31 @@ module wav_comp_nuopc
   private :: ModelAdvance
   private :: ModelFinalize
 
-  integer :: stdout
   include "mpif.h"
+
+  !TODO:35->40
+  integer                        :: odat(40) !HK odat is 35
+  !TODO: added from w3cesmmd
+  ! runtype is used by W3SRCE (values are startup, branch, continue)
+      character(len=16),public :: runtype
+
+      ! if a run is a startup or branch run, then initfile is used
+      ! to construct the initial file and used in W3IORSMD
+      character(len=256), public :: initfile
+
+      ! if a run is a continue run, then casename is used to construct
+      ! the restart filename in W3IORSMD
+      character(len=256), public :: casename
+
+      logical, public :: rstwr   ! true => write restart at end of day
+      logical, public :: histwr  ! true => write history file (snapshot)
+
+      integer, public :: outfreq ! output frequency in hours
+      integer, public :: stdout  ! output log file
+
+      integer, public                  :: inst_index            ! number of current instance (ie. 1)
+      character(len=16), public :: inst_name   ! fullname of current instance (ie. "wav_0001")
+      character(len=16), public :: inst_suffix ! char string associated with instance
 
   !--------------------------------------------------------------------------
   ! Private module data
@@ -422,7 +446,8 @@ contains
     integer                        :: ndso, ndse, nds(13), ntrace(2), time0(2)
     integer                        :: timen(2), nh(4), iprt(6)
     integer                        :: J0  ! CMB
-    integer                        :: odat(35) !HK odat is 35
+    !TODO:35->40
+    !integer                        :: odat(40) !HK odat is 35
     integer                        :: i,j,npts
     integer                        :: ierr
     real, allocatable              :: x(:), y(:)
@@ -500,6 +525,7 @@ contains
     ! determine instance information
     !----------------------------------------------------------------------------
 
+    ! TODO:
     call get_component_instance(gcomp, inst_suffix, inst_index, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -525,15 +551,16 @@ contains
     nds( 2) = stdout
     nds( 3) = stdout
     nds( 4) = stdout
-    nds( 5) = shr_file_getunit()
-    nds( 6) = shr_file_getunit()
-    nds( 7) = shr_file_getunit()
-    nds( 8) = shr_file_getunit()
-    nds( 9) = shr_file_getunit()
-    nds(10) = shr_file_getunit()
-    nds(11) = shr_file_getunit()
-    nds(12) = shr_file_getunit()
-    nds(13) = shr_file_getunit()
+    !TODO:
+    !nds( 5) = shr_file_getunit()
+    !nds( 6) = shr_file_getunit()
+    !nds( 7) = shr_file_getunit()
+    !nds( 8) = shr_file_getunit()
+    !nds( 9) = shr_file_getunit()
+    !nds(10) = shr_file_getunit()
+    !nds(11) = shr_file_getunit()
+    !nds(12) = shr_file_getunit()
+    !nds(13) = shr_file_getunit()
 
     ndso      =  stdout
     ndse      =  stdout
@@ -566,6 +593,7 @@ contains
        write(ndso,*) 'starttype: branch'
     end if
 
+    !TODO:
     if ( iaproc == napout) then
        write(ndso,*) trim(subname),' inst_name   = ',trim(inst_name)
        write(ndso,*) trim(subname),' inst_index  = ',inst_index
@@ -846,42 +874,42 @@ contains
     !--------------------------------------------------------------------
     ! Wave model initializations
     !--------------------------------------------------------------------
-
-    ! Notes on ww3 initialization:
-    ! ww3 read initialization occurs in w3iors (which is called by initmd)
-    ! For a startup (including hybrid) or branch run the initial datafile is
-    ! set in namelist input 'initfile'
-    ! For a continue run - the initfile vluae is created from the time(1:2)
-    ! array set below
-
-    if ( iaproc .eq. napout ) write (ndso,950)
-    if ( iaproc .eq. napout ) write (ndso,951) 'wave model ...'
-
-    ! Read namelist (set initfile in w3cesmmd)
-    if ( iaproc .eq. napout ) then
-       write(ndso,*) 'Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       open(newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
-       call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
-       if (ierr == 0) then
-          read (unitn, ww3_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call ESMF_LogWrite(trim(subname) 'problem reading ww3_inparm namelist',&
-                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-             rc = ESMF_FAILURE
-             return
-          end if
-       end if
-       close( unitn )
-    end if
-    call ESMF_VMBroadcast(VM, initfile, count=len(initfile), rootPet=0, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(VM, outfreq, count=len(outfreq), rootPet=0, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! Set casename (in w3cesmmd)
-    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=cvalue, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) casename
+! TODO:
+!    ! Notes on ww3 initialization:
+!    ! ww3 read initialization occurs in w3iors (which is called by initmd)
+!    ! For a startup (including hybrid) or branch run the initial datafile is
+!    ! set in namelist input 'initfile'
+!    ! For a continue run - the initfile vluae is created from the time(1:2)
+!    ! array set below
+!
+!    if ( iaproc .eq. napout ) write (ndso,950)
+!    if ( iaproc .eq. napout ) write (ndso,951) 'wave model ...'
+!
+!    ! Read namelist (set initfile in w3cesmmd)
+!    if ( iaproc .eq. napout ) then
+!       write(ndso,*) 'Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+!       open(newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
+!       !call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
+!       if (ierr == 0) then
+!          read (unitn, ww3_inparm, iostat=ierr)
+!          if (ierr /= 0) then
+!             call ESMF_LogWrite(trim(subname)//' problem reading ww3_inparm namelist',&
+!                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+!             rc = ESMF_FAILURE
+!             return
+!          end if
+!       end if
+!       close( unitn )
+!    end if
+!    call ESMF_VMBroadcast(VM, initfile, count=len(initfile), rootPet=0, rc=rc)
+!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+!    call ESMF_VMBroadcast(VM, outfreq, count=len(outfreq), rootPet=0, rc=rc)
+!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+!
+!    ! Set casename (in w3cesmmd)
+!    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=cvalue, rc=rc)
+!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+!    read(cvalue,*) casename
 
     ! Read in input data and initialize the model
     ! w3init calls w3iors which:
@@ -1312,7 +1340,7 @@ contains
     !------------
     ! Run the wave model for the given interval
     !------------
-    call w3wave ( 1, timen )
+    call w3wave ( 1, odat, timen )
 
     !------------
     ! Create export state

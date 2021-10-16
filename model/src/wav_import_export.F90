@@ -177,7 +177,8 @@ contains
     !---------------------------------------------------------------------------
 
     use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
-    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, HML, WLEV, INFLAGS1, &
+    !use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, HML, WLEV, INFLAGS1, &
+    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, &
                             ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3odatmd    , only: naproc, iaproc, napout
@@ -418,9 +419,9 @@ contains
           if (INFLAGS1(-3)) then
              ICEP5(ix,iy) = si_floediam_global(n) ! ice floe diameter
           end if
-          if (INFLAGS1(5)) then
-             HML(ix,iy) = max(so_bldepth_global(n), 5.) ! ocn mixing layer depth
-          endif
+          !if (INFLAGS1(5)) then
+          !   HML(ix,iy) = max(so_bldepth_global(n), 5.) ! ocn mixing layer depth
+          !endif
        enddo
     enddo
 100 format(a,i6,2x,d21.14)
@@ -438,8 +439,9 @@ contains
     ! Create the export state
     !---------------------------------------------------------------------------
 
-    use wav_kind_mod  , only : fillvalue=>SHR_CONST_SPVAL
-    use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
+    use wav_kind_mod,   only : R8 => SHR_KIND_R8
+    !use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
     use w3wdatmd      , only : va
     !HK trying to use extended arrays use w3adatmd      , only : XUSSX, XUSSY, XEF
     use w3odatmd      , only : naproc, iaproc
@@ -451,6 +453,7 @@ contains
     integer, intent(out) :: rc
 
     ! Local variables
+    real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
     type(ESMF_State)  :: exportState
     integer           :: n, jsea, isea, ix, iy, lsize, ib
 
@@ -518,7 +521,7 @@ contains
        iy  = MAPSF(ISEA,2)
        if (MAPSTA(iy,ix) .eq. 1) then
           ! use hstokes to pass LaSL to POP
-          sw_lamult(jsea)  = LAMULT(jsea)
+          !sw_lamult(jsea)  = LAMULT(jsea)
           sw_ustokes(jsea) = USSX(jsea)
           sw_vstokes(jsea) = USSY(jsea)
           !sw_hstokes(jsea) = LASLPJ(jsea)
