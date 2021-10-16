@@ -1,28 +1,27 @@
 module wav_shr_methods
 
-  use ESMF         , only : operator(<), operator(/=), operator(+)
-  use ESMF         , only : operator(-), operator(*) , operator(>=)
-  use ESMF         , only : operator(<=), operator(>), operator(==)
-  use ESMF         , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError, ESMF_LOGMSG_ERROR, ESMF_MAXSTR
-  use ESMF         , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_FAILURE
-  use ESMF         , only : ESMF_State, ESMF_StateGet
-  use ESMF         , only : ESMF_Field, ESMF_FieldGet
-  use ESMF         , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_GridCompSet
-  use ESMF         , only : ESMF_GeomType_Flag, ESMF_FieldStatus_Flag
-  use ESMF         , only : ESMF_Mesh, ESMF_MeshGet
-  use ESMF         , only : ESMF_GEOMTYPE_MESH, ESMF_GEOMTYPE_GRID, ESMF_FIELDSTATUS_COMPLETE
-  use ESMF         , only : ESMF_Clock, ESMF_ClockCreate, ESMF_ClockGet, ESMF_ClockSet 
-  use ESMF         , only : ESMF_ClockPrint, ESMF_ClockAdvance 
-  use ESMF         , only : ESMF_Alarm, ESMF_AlarmCreate, ESMF_AlarmGet, ESMF_AlarmSet
-  use ESMF         , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
-  use ESMF         , only : ESMF_Time, ESMF_TimeGet, ESMF_TimeSet
-  use ESMF         , only : ESMF_TimeInterval, ESMF_TimeIntervalSet, ESMF_TimeIntervalGet
-  use ESMF         , only : ESMF_VM, ESMF_VMGet, ESMF_VMBroadcast, ESMF_VMGetCurrent
-  use NUOPC        , only : NUOPC_CompAttributeGet
-  use NUOPC_Model  , only : NUOPC_ModelGet
-  use shr_kind_mod , only : r8 => shr_kind_r8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod  , only : shr_sys_abort
-  use shr_file_mod , only : shr_file_setlogunit, shr_file_getLogUnit
+  use ESMF            , only : operator(<), operator(/=), operator(+)
+  use ESMF            , only : operator(-), operator(*) , operator(>=)
+  use ESMF            , only : operator(<=), operator(>), operator(==)
+  use ESMF            , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError, ESMF_LOGMSG_ERROR, ESMF_MAXSTR
+  use ESMF            , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_FAILURE
+  use ESMF            , only : ESMF_State, ESMF_StateGet
+  use ESMF            , only : ESMF_Field, ESMF_FieldGet
+  use ESMF            , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_GridCompSet
+  use ESMF            , only : ESMF_GeomType_Flag, ESMF_FieldStatus_Flag
+  use ESMF            , only : ESMF_Mesh, ESMF_MeshGet
+  use ESMF            , only : ESMF_GEOMTYPE_MESH, ESMF_GEOMTYPE_GRID, ESMF_FIELDSTATUS_COMPLETE
+  use ESMF            , only : ESMF_Clock, ESMF_ClockCreate, ESMF_ClockGet, ESMF_ClockSet
+  use ESMF            , only : ESMF_ClockPrint, ESMF_ClockAdvance
+  use ESMF            , only : ESMF_Alarm, ESMF_AlarmCreate, ESMF_AlarmGet, ESMF_AlarmSet
+  use ESMF            , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
+  use ESMF            , only : ESMF_Time, ESMF_TimeGet, ESMF_TimeSet
+  use ESMF            , only : ESMF_TimeInterval, ESMF_TimeIntervalSet, ESMF_TimeIntervalGet
+  use ESMF            , only : ESMF_VM, ESMF_VMGet, ESMF_VMBroadcast, ESMF_VMGetCurrent
+  use NUOPC           , only : NUOPC_CompAttributeGet
+  use NUOPC_Model     , only : NUOPC_ModelGet
+  use wav_kind_mod    , only : r8 => shr_kind_r8, i8 => shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use wav_wrapper_mod , only : shr_file_setlogunit, shr_file_getLogUnit
 
   implicit none
   private
@@ -35,11 +34,16 @@ module wav_shr_methods
   public  :: state_setscalar
   public  :: state_reset
   public  :: state_diagnose
-  public  :: alarmInit  
+  public  :: alarmInit
   public  :: chkerr
-
+  public  :: ymd2date
   private :: timeInit
   private :: field_getfldptr
+
+  interface ymd2date
+     module procedure ymd2date_int
+     module procedure ymd2date_long
+  end interface ymd2date
 
   ! Clock and alarm options
   character(len=*), private, parameter :: &
@@ -62,7 +66,7 @@ module wav_shr_methods
        optMonthly        = "monthly"   , &
        optYearly         = "yearly"    , &
        optDate           = "date"      , &
-       optIfdays0        = "ifdays0"   
+       optIfdays0        = "ifdays0"
 
   ! Module data
   integer, parameter :: SecPerDay = 86400 ! Seconds per day
@@ -490,7 +494,7 @@ print*, 'HK inside field_getfldptr'
           call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           if (nnodes == 0 .and. nelements == 0) lrank = 0
-       else  
+       else
           call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
                ESMF_LOGMSG_INFO, rc=rc)
           rc = ESMF_FAILURE
@@ -616,12 +620,20 @@ print*, 'HK inside field_getfldptr'
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
+          call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
+
     case (optDate)
        if (.not. present(opt_ymd)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_ymd')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (lymd < 0 .or. ltod < 0) then
-          call shr_sys_abort(subname//trim(option)//'opt_ymd, opt_tod invalid')
+          call ESMF_LogWrite(trim(subname)//trim(option)//'opt_ymd, opt_tod invalid', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -631,13 +643,19 @@ print*, 'HK inside field_getfldptr'
 
     case (optIfdays0)
        if (.not. present(opt_ymd)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_ymd')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0)  then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -647,10 +665,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNSteps)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -658,8 +680,16 @@ print*, 'HK inside field_getfldptr'
        update_nextalarm  = .true.
 
     case (optNStep)
-       if (.not.present(opt_n)) call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       if (opt_n <= 0)  call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+       if (.not.present(opt_n)) then
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
+       end if
+       if (opt_n <= 0)  then
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
+       end if
        call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        AlarmInterval = AlarmInterval * opt_n
@@ -667,10 +697,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNSeconds)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -679,10 +713,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNSecond)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -692,20 +730,28 @@ print*, 'HK inside field_getfldptr'
     case (optNMinutes)
        call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        AlarmInterval = AlarmInterval * opt_n
        update_nextalarm  = .true.
 
     case (optNMinute)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -714,10 +760,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNHours)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -726,10 +776,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNHour)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -738,10 +792,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNDays)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -750,10 +808,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNDay)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -762,10 +824,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNMonths)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -774,10 +840,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNMonth)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -793,10 +863,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNYears)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -805,10 +879,14 @@ print*, 'HK inside field_getfldptr'
 
     case (optNYear)
        if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
+          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
        end if
        call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -823,7 +901,9 @@ print*, 'HK inside field_getfldptr'
        update_nextalarm  = .true.
 
     case default
-       call shr_sys_abort(subname//'unknown option '//trim(option))
+          call ESMF_LogWrite(trim(subname)//'unknown option '//trim(option), &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
 
     end select
 
@@ -851,7 +931,7 @@ print*, 'HK inside field_getfldptr'
 
   subroutine timeInit( Time, ymd, cal, tod, rc)
 
-    ! Create the ESMF_Time object corresponding to the given input time, 
+    ! Create the ESMF_Time object corresponding to the given input time,
     ! given in YMD (Year Month Day) and TOD (Time-of-day) format.
     ! Set the time by an integer as YYYYMMDD and integer seconds in the day
 
@@ -872,7 +952,9 @@ print*, 'HK inside field_getfldptr'
     rc = ESMF_SUCCESS
 
     if ( (ymd < 0) .or. (tod < 0) .or. (tod > SecPerDay) )then
-       call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
+       call ESMF_LogWrite(trim(subname)//'ERROR yymmdd is a negative number or time-of-day out of bounds', &
+            ESMF_LOGMSG_INFO, rc=rc)
+       rc = ESMF_FAILURE
     end if
 
     tdate = abs(date)
@@ -885,6 +967,34 @@ print*, 'HK inside field_getfldptr'
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine timeInit
+
+  !===============================================================================
+
+  subroutine ymd2date_int(year,month,day,date)
+    ! Converts  year, month, day to coded-date
+
+    ! input/output variables
+    integer,intent(in ) :: year,month,day  ! calendar year,month,day
+    integer,intent(out) :: date            ! coded (yyyymmdd) calendar date
+    !---------------------------------------
+
+    ! NOTE: this calendar has a year zero (but no day or month zero)
+    date = abs(year)*10000 + month*100 + day  ! coded calendar date
+    if (year < 0) date = -date
+  end subroutine ymd2date_int
+
+  subroutine ymd2date_long(year,month,day,date)
+    ! Converts  year, month, day to coded-date
+
+    ! input/output variables
+    integer    ,intent(in ) :: year,month,day  ! calendar year,month,day
+    integer(I8),intent(out) :: date            ! coded ([yy]yyyymmdd) calendar date
+    !---------------------------------------
+
+    ! NOTE: this calendar has a year zero (but no day or month zero)
+    date = abs(year)*10000_I8 + month*100 + day  ! coded calendar date
+    if (year < 0) date = -date
+  end subroutine ymd2date_long
 
 !===============================================================================
 

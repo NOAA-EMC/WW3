@@ -179,17 +179,26 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : model_label_SetRunClock    => label_SetRunClock
   use NUOPC_Model           , only : model_label_Finalize       => label_Finalize
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
-  use shr_sys_mod           , only : shr_sys_flush, shr_sys_abort
-  use shr_nl_mod            , only : shr_nl_find_group_name
-  use shr_mpi_mod           , only : shr_mpi_bcast
-  use shr_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_file_mod          , only : shr_file_getLogUnit, shr_file_setLogUnit, shr_file_getunit
-  use shr_cal_mod           , only : shr_cal_ymd2date, shr_cal_advDateInt
+
+  use wav_wrapper_mod       , only : t_startf, t_stopf, t_barrierf
+  use wav_wrapper_mod       , only : shr_file_getlogunit, shr_file_setlogunit
+  use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+
+  use shr_nl_mod            , only : shr_nl_find_group_name  ! TODO: implement this here
+  use shr_file_mod          , only : shr_file_getunit !TODO: ???
+
+  !use shr_sys_mod           , only : shr_sys_flush, shr_sys_abort
+  !use shr_nl_mod            , only : shr_nl_find_group_name
+  !use shr_mpi_mod           , only : shr_mpi_bcast
+  !use shr_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  !use shr_file_mod          , only : shr_file_getLogUnit, shr_file_setLogUnit, shr_file_getunit
+  !use shr_cal_mod           , only : shr_cal_ymd2date, shr_cal_advDateInt
   use wav_import_export     , only : advertise_fields, realize_fields, import_fields, export_fields
   use wav_import_export     , only : state_getfldptr
   use wav_import_export     , only : wav_coupling_to_cice, wav_coupling_to_mom
   use wav_shr_methods       , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit
   use wav_shr_methods       , only : set_component_logging, get_component_instance, log_clock_advance
+  use wav_shr_methods       , only : ymd2date
 
   implicit none
   private ! except
@@ -325,7 +334,10 @@ contains
        call ESMF_LogWrite(trim(subname)//' flds_scalar_name = '//trim(flds_scalar_name), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldName')
+       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldName',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldCount", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -336,7 +348,10 @@ contains
        call ESMF_LogWrite(trim(subname)//' flds_scalar_num = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldCount')
+       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldCount',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNX", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -347,7 +362,10 @@ contains
        call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_nx = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldIdxGridNX')
+       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNX',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNY", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -358,7 +376,10 @@ contains
        call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_ny = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldIdxGridNY')
+       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNY',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
     endif
 
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
@@ -519,12 +540,12 @@ contains
     ntrace(1) =  nds(3)
     ntrace(2) =  10
 
+    !TODO:
     ! Redirect share output to wav log
-    call shr_file_getLogUnit (shrlogunit)
-    call shr_file_setLogUnit (ndso)
+    !call shr_file_getLogUnit (shrlogunit)
+    !call shr_file_setLogUnit (ndso)
 
     if ( iaproc == napout ) write (ndso,900)
-    call shr_sys_flush(ndso)
 
     !--------------------------------------------------------------------
     ! Initialize run type
@@ -589,7 +610,6 @@ contains
     ! NOTE - are not setting TIMEN here
 
     if ( iaproc == napout ) write (ndso,930)
-    call shr_sys_flush(ndso)
 
     ! Initial run or restart run
     if ( runtype == "initial") then
@@ -601,7 +621,7 @@ contains
     endif
     call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_cal_ymd2date(yy, mm, dd, start_ymd)
+    call ymd2date(yy, mm, dd, start_ymd)
 
     hh = start_tod/3600
     mm = (start_tod - (hh * 3600))/60
@@ -614,7 +634,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=stop_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_cal_ymd2date(yy, mm, dd, stop_ymd)
+    call ymd2date(yy, mm, dd, stop_ymd)
 
     hh = stop_tod/3600
     mm = (stop_tod - (hh * 3600))/60
@@ -626,7 +646,6 @@ contains
     call stme21 ( time0 , dtme21 )
     if ( iaproc .eq. napout ) write (ndso,931) dtme21
     if ( iaproc .eq. napout ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
-    call shr_sys_flush(ndso)
     time = time0
 
     !--------------------------------------------------------------------
@@ -635,7 +654,6 @@ contains
 
     iostyp = 1        ! gridded field
     write (ndso,940) 'no dedicated output process, any file system '
-    call shr_sys_flush(ndso)
 
     ! Actually will need a new restart flag - since all of the ODAT
     ! should be set to 0 - since they are initializated in w3initmd
@@ -824,7 +842,6 @@ contains
        end do
        if ( flt ) write (ndso,1945) 'no fields defined'
     end if
-    call shr_sys_flush(ndso)
 
     !--------------------------------------------------------------------
     ! Wave model initializations
@@ -839,7 +856,6 @@ contains
 
     if ( iaproc .eq. napout ) write (ndso,950)
     if ( iaproc .eq. napout ) write (ndso,951) 'wave model ...'
-    call shr_sys_flush(ndso)
 
     ! Read namelist (set initfile in w3cesmmd)
     if ( iaproc .eq. napout ) then
@@ -849,13 +865,18 @@ contains
        if (ierr == 0) then
           read (unitn, ww3_inparm, iostat=ierr)
           if (ierr /= 0) then
-             call shr_sys_abort('problem reading ww3_inparm namelist')
+             call ESMF_LogWrite(trim(subname) 'problem reading ww3_inparm namelist',&
+                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+             rc = ESMF_FAILURE
+             return
           end if
        end if
        close( unitn )
     end if
-    call shr_mpi_bcast(initfile, mpi_comm)
-    call shr_mpi_bcast(outfreq, mpi_comm)
+    call ESMF_VMBroadcast(VM, initfile, count=len(initfile), rootPet=0, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(VM, outfreq, count=len(outfreq), rootPet=0, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Set casename (in w3cesmmd)
     call NUOPC_CompAttributeGet(gcomp, name='case_name', value=cvalue, rc=rc)
@@ -878,7 +899,6 @@ contains
     !HK IsMulti does not appear to be used, setting to .true.
     call w3init ( 1, .true., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-    call shr_sys_flush(ndso)
 
     ! HK these values are appropriate for ww3a only
     ! other grids will need smaller timesteps
@@ -994,7 +1014,6 @@ contains
     !--------------------------------------------------------------------
     ! end redirection of share output to wav log
     !--------------------------------------------------------------------
-    call shr_sys_flush(ndso)
     call shr_file_setlogunit (shrlogunit)
 
 
@@ -1244,7 +1263,7 @@ contains
     call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call shr_cal_ymd2date(yy, mm, dd, ymd)
+    call ymd2date(yy, mm, dd, ymd)
     hh = tod/3600
     mm = (tod - (hh * 3600))/60
     ss = tod - (hh*3600) - (mm*60)
@@ -1307,7 +1326,6 @@ contains
     !------------
 
     call shr_file_setLogUnit (shrlogunit)
-    call shr_sys_flush(stdout)
 
   end subroutine ModelAdvance
 
