@@ -26,7 +26,7 @@ module wav_shr_methods
   implicit none
   private
 
-  public  :: memcheck
+  !public  :: memcheck
   public  :: get_component_instance
   public  :: set_component_logging
   public  :: log_clock_advance
@@ -79,23 +79,23 @@ module wav_shr_methods
 contains
 !===============================================================================
 
-  subroutine memcheck(string, level, mastertask)
+  !subroutine memcheck(string, level, mastertask)
 
-    ! input/output variables
-    character(len=*) , intent(in) :: string
-    integer          , intent(in) :: level
-    logical          , intent(in) :: mastertask
+  !  ! input/output variables
+  !  character(len=*) , intent(in) :: string
+  !  integer          , intent(in) :: level
+  !  logical          , intent(in) :: mastertask
 
-    ! local variables
-    integer :: ierr
-    integer, external :: GPTLprint_memusage
-    !-----------------------------------------------------------------------
+  !  ! local variables
+  !  integer :: ierr
+  !  integer, external :: GPTLprint_memusage
+  !  !-----------------------------------------------------------------------
 
-    if ((mastertask .and. memdebug_level > level) .or. memdebug_level > level+1) then
-       ierr = GPTLprint_memusage(string)
-    endif
+  !  if ((mastertask .and. memdebug_level > level) .or. memdebug_level > level+1) then
+  !     ierr = GPTLprint_memusage(string)
+  !  endif
 
-  end subroutine memcheck
+  !end subroutine memcheck
 
 !===============================================================================
 
