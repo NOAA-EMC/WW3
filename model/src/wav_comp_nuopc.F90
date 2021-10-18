@@ -150,6 +150,8 @@ module wav_comp_nuopc
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  !use w3gdatmd              , only : nseal, nsea, dtmax, dtcfl, dtmin, nx, ny, mapsf, w3nmod, w3setg
+  !use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
   
   use w3gdatmd
 !  use w3gdatmd              , only: NX, NY
@@ -248,7 +250,7 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_ny = 0
   integer                 :: flds_scalar_index_precip_factor = 0._r8
 
-  logical                 :: masterproc 
+  logical                 :: masterproc
   integer     , parameter :: debug = 1
   character(*), parameter :: modName =  "(wav_comp_nuopc)"
   character(*), parameter :: u_FILE_u = &
@@ -459,7 +461,7 @@ contains
     integer, allocatable, target   :: mask_local(:)
     integer, allocatable           :: gindex_lnd(:)
     integer, allocatable           :: gindex_sea(:)
-    integer, allocatable           :: gindex(:) 
+    integer, allocatable           :: gindex(:)
     logical                        :: prtfrm, flt
     logical                        :: flgrd(nogrp,ngrpp)  !flags for gridded output
     logical                        :: flgrd2(nogrp,ngrpp) !flags for coupling output
@@ -618,8 +620,8 @@ contains
     inflags1(1:5) = .true.
 
     if (wav_coupling_to_cice) then
-       inflags1(-7) = .true. ! LR ice thickness 
-       inflags1(-3) = .true. ! LR ice floe size 
+       inflags1(-7) = .true. ! LR ice thickness
+       inflags1(-3) = .true. ! LR ice floe size
        
        ! LR - I don't understand the difference between inflags1 and inflags2
        ! I am setting them both here to get thickness and floe size import to waves
@@ -733,7 +735,7 @@ contains
     end do
 
     ! output index is now a in a 2D array
-    ! IDOUT(NOGRP,NGRPP)  
+    ! IDOUT(NOGRP,NGRPP)
     !   NOGRP = number of output field groups
     !   NGRPP = Max num of parameters per output
     !   NOGE(NOGRP) = number of output group elements
@@ -742,44 +744,44 @@ contains
     flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
 
     ! 1) Forcing fields
-    flgrd( 1, 1)  = .false. ! Water depth       
-    flgrd( 1, 2)  = .false. ! Current vel.       
+    flgrd( 1, 1)  = .false. ! Water depth
+    flgrd( 1, 2)  = .false. ! Current vel.
     flgrd( 1, 3)  = .true.  ! Wind speed
-    flgrd( 1, 4)  = .false. ! Air-sea temp. dif.  
-    flgrd( 1, 5)  = .false. ! Water level         
+    flgrd( 1, 4)  = .false. ! Air-sea temp. dif.
+    flgrd( 1, 5)  = .false. ! Water level
     flgrd( 1, 6)  = .true.  ! Ice concentration     !MV - this was changed by CC - do we want this?
-    flgrd( 1, 7)  = .false. ! Iceberg damp coeffic   
+    flgrd( 1, 7)  = .false. ! Iceberg damp coeffic
 
     ! 2) Standard mean wave parameters
-    flgrd( 2, 1)  = .true.  ! Wave height         
-    flgrd( 2, 2)  = .false. ! Mean wave length    
+    flgrd( 2, 1)  = .true.  ! Wave height
+    flgrd( 2, 2)  = .false. ! Mean wave length
     flgrd( 2, 3)  = .true.  ! Mean wave period(+2)
     flgrd( 2, 4)  = .true.  ! Mean wave period(-1)
     flgrd( 2, 5)  = .true.  ! Mean wave period(+1)
     flgrd( 2, 6)  = .true.  ! Peak frequency        !MV - changed by CC - do we want this?
     flgrd( 2, 7)  = .true.  ! Mean wave dir. a1b1   !MV - changed by CC - do we want this?
-    flgrd( 2, 8)  = .false. ! Mean dir. spr. a1b1 
-    flgrd( 2, 9)  = .false. ! Peak direction      
+    flgrd( 2, 8)  = .false. ! Mean dir. spr. a1b1
+    flgrd( 2, 9)  = .false. ! Peak direction
     flgrd( 2, 10) = .false. ! Infragravity height
-    flgrd( 2, 11) = .false. ! Space-Time Max E   
-    flgrd( 2, 12) = .false. ! Space-Time Max Std 
-    flgrd( 2, 13) = .false. ! Space-Time Hmax    
+    flgrd( 2, 11) = .false. ! Space-Time Max E
+    flgrd( 2, 12) = .false. ! Space-Time Max Std
+    flgrd( 2, 13) = .false. ! Space-Time Hmax
     flgrd( 2, 14) = .false. ! Spc-Time Hmax^crest
     flgrd( 2, 15) = .false. ! STD Space-Time Hmax
-    flgrd( 2, 16) = .false. ! STD ST Hmax^crest  
-    flgrd( 2, 17) = .false. ! Dominant wave bT   
+    flgrd( 2, 16) = .false. ! STD ST Hmax^crest
+    flgrd( 2, 17) = .false. ! Dominant wave bT
 
     ! 3) Frequency-dependent standard parameters
     !HK These were not set to true in the previous CESM version
-    !HK whether the 1D Freq. Spectrum gets allocated is decided 
+    !HK whether the 1D Freq. Spectrum gets allocated is decided
     !HK in the grid_inp file
     !HK ~/ww3_toolbox/grids/grid_inp/ww3_grid.inp.ww3a
     !HK namelist section:   &OUTS E3D = 1 /
-    flgrd( 3, 1)  = .true.  !1D Freq. Spectrum  !HK EF 
-    flgrd( 3, 2)  = .false. !Mean wave dir. a1b1 
-    flgrd( 3, 3)  = .false. !Mean dir. spr. a1b1 
-    flgrd( 3, 4)  = .false. !Mean wave dir. a2b2 
-    flgrd( 3, 5)  = .false. !Mean dir. spr. a2b2 
+    flgrd( 3, 1)  = .true.  !1D Freq. Spectrum  !HK EF
+    flgrd( 3, 2)  = .false. !Mean wave dir. a1b1
+    flgrd( 3, 3)  = .false. !Mean dir. spr. a1b1
+    flgrd( 3, 4)  = .false. !Mean wave dir. a2b2
+    flgrd( 3, 5)  = .false. !Mean dir. spr. a2b2
     flgrd( 3, 6)  = .false. !Wavenumber array   '
 
     ! 4) Spectral Partitions parameters
@@ -938,10 +940,11 @@ contains
     !dtmin  = real(dtime_sync) / 12 !checked by adrean
 
     ! gx17
-    !180.0000       180.0000       180.0000       15.00000 
-    dtmax  = 1800.0000 ! LR 
+    !180.0000       180.0000       180.0000       15.00000
+    dtmax  = 1800.0000 ! LR
     dtcfl  = 600.0000
-    dtcfli = 1800.0000
+    !TODO: not present?
+    !dtcfli = 1800.0000
     dtmin  = 1800.00000
 
     call mpi_barrier ( mpi_comm, ierr )
@@ -996,11 +999,12 @@ contains
           end if
        end if
     end do
+    deallocate(mask_global)
 
     !-------------
     ! create a global index that includes both sea and land - but put land at the end
     !-------------
-    nlnd = (my_lnd_end - my_lnd_start + 1) 
+    nlnd = (my_lnd_end - my_lnd_start + 1)
     allocate(gindex(nlnd + nseal))
     do ncnt = 1,nlnd + nseal
        if (ncnt <= nseal) then
@@ -1017,7 +1021,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     !-------------
-    ! create the mesh 
+    ! create the mesh
     !-------------
     call NUOPC_CompAttributeGet(gcomp, name='mesh_wav', value=cvalue, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1110,7 +1114,7 @@ contains
     ! -------------------------------------------------------------------
 
     !--------------------------------------------------------------------
-    ! Create export state 
+    ! Create export state
     !--------------------------------------------------------------------
 
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
@@ -1185,31 +1189,31 @@ contains
 
       wav_tauice1              (:) = 0.
       wav_tauice2              (:) = 0.
-      wave_elevation_spectrum1 (:) = 0. 
-      wave_elevation_spectrum2 (:) = 0. 
-      wave_elevation_spectrum3 (:) = 0. 
-      wave_elevation_spectrum4 (:) = 0. 
-      wave_elevation_spectrum5 (:) = 0. 
-      wave_elevation_spectrum6 (:) = 0. 
-      wave_elevation_spectrum7 (:) = 0. 
-      wave_elevation_spectrum8 (:) = 0. 
-      wave_elevation_spectrum9 (:) = 0. 
-      wave_elevation_spectrum10(:) = 0. 
-      wave_elevation_spectrum11(:) = 0. 
-      wave_elevation_spectrum12(:) = 0. 
-      wave_elevation_spectrum13(:) = 0. 
-      wave_elevation_spectrum14(:) = 0. 
-      wave_elevation_spectrum15(:) = 0. 
-      wave_elevation_spectrum16(:) = 0. 
-      wave_elevation_spectrum17(:) = 0. 
-      wave_elevation_spectrum18(:) = 0. 
-      wave_elevation_spectrum19(:) = 0. 
-      wave_elevation_spectrum20(:) = 0. 
-      wave_elevation_spectrum21(:) = 0. 
-      wave_elevation_spectrum22(:) = 0. 
-      wave_elevation_spectrum23(:) = 0. 
-      wave_elevation_spectrum24(:) = 0. 
-      wave_elevation_spectrum25(:) = 0. 
+      wave_elevation_spectrum1 (:) = 0.
+      wave_elevation_spectrum2 (:) = 0.
+      wave_elevation_spectrum3 (:) = 0.
+      wave_elevation_spectrum4 (:) = 0.
+      wave_elevation_spectrum5 (:) = 0.
+      wave_elevation_spectrum6 (:) = 0.
+      wave_elevation_spectrum7 (:) = 0.
+      wave_elevation_spectrum8 (:) = 0.
+      wave_elevation_spectrum9 (:) = 0.
+      wave_elevation_spectrum10(:) = 0.
+      wave_elevation_spectrum11(:) = 0.
+      wave_elevation_spectrum12(:) = 0.
+      wave_elevation_spectrum13(:) = 0.
+      wave_elevation_spectrum14(:) = 0.
+      wave_elevation_spectrum15(:) = 0.
+      wave_elevation_spectrum16(:) = 0.
+      wave_elevation_spectrum17(:) = 0.
+      wave_elevation_spectrum18(:) = 0.
+      wave_elevation_spectrum19(:) = 0.
+      wave_elevation_spectrum20(:) = 0.
+      wave_elevation_spectrum21(:) = 0.
+      wave_elevation_spectrum22(:) = 0.
+      wave_elevation_spectrum23(:) = 0.
+      wave_elevation_spectrum24(:) = 0.
+      wave_elevation_spectrum25(:) = 0.
     endif
 
     ! Set global grid size scalars in export state
@@ -1248,7 +1252,7 @@ contains
     integer          :: time0(2)
     integer          :: timen(2)
     integer          :: shrlogunit ! original log unit and level
-    character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) ' 
+    character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
     !-------------------------------------------------------
 
     !------------
@@ -1281,7 +1285,7 @@ contains
     endif
 
     !------------
-    ! Determine time info 
+    ! Determine time info
     !------------
 
     ! use current time for next time step the NUOPC clock is not updated
@@ -1532,7 +1536,9 @@ contains
     ! Finalize routine
     !--------------------------------
 
-   print*, 'HK model finalize: ',  dtmax, dtcfl, dtcfli, dtmin
+   !print*, 'HK model finalize: ',  dtmax, dtcfl, dtcfli, dtmin
+   !TODO: dtcfli is ?
+   print*, 'HK model finalize: ',  dtmax, dtcfl, dtmin
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 

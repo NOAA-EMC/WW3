@@ -266,7 +266,6 @@
         ispdlibi=yes
         break
       fi
-      #if [ -f $main_dir/src/cpl_nuopc/$file.$s ]
       if [ -f $main_dir/src/$file.$s ]
       then
         fexti=$s
@@ -300,7 +299,6 @@
 
     if [ "$ispdlibi" = 'yes' ]
     then
-      #string1='$(aPo)/'$file'.o : cpl_nuopc/'$file.$fexti' '
       string1='$(aPo)/'$file'.o : '$file.$fexti' '
     fi
 
