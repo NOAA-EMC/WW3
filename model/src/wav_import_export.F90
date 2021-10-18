@@ -18,7 +18,6 @@ module wav_import_export
 
   private :: fldlist_add
   private :: fldlist_realize
-  private :: state_fldchk
 
   type fld_list_type
      character(len=128) :: stdname
@@ -47,7 +46,6 @@ contains
 !===============================================================================
 
   subroutine advertise_fields(importState, ExportState, flds_scalar_name, rc)
-
     ! input/output variables
     type(ESMF_State)               :: importState
     type(ESMF_State)               :: exportState
@@ -68,14 +66,19 @@ contains
 
     call fldlist_add(fldsToWav_num, fldsToWav, trim(flds_scalar_name))
 
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
+#ifdef CESMCOUPLED
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
+#else
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10'     )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10'     )
+#endif
 
     if (wav_coupling_to_cice) then
        call fldlist_add(fldsToWav_num, fldsToWav, 'Si_thick'   )
@@ -93,13 +96,23 @@ contains
     !--------------------------------
 
     call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
-
+#ifdef CESMCOUPLED
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
+#else
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
+#endif
+
     ! AA TODO: In the above fldlist_add calls, we are passing hardcoded ungridded_ubound values (3) because, USSPF(2)
     ! is not initialized yet. It is set during w3init which gets called at a later phase (realize). A permanent solution
     ! will be implemented soon based on receiving USSP and USSPF from the coupler instead of the mod_def file. This will
@@ -124,7 +137,7 @@ contains
 
   end subroutine advertise_fields
 
-!===============================================================================
+  !===============================================================================
   subroutine realize_fields(gcomp, mesh, flds_scalar_name, flds_scalar_num, rc)
 
     ! input/output variables
@@ -170,7 +183,7 @@ contains
 
   end subroutine realize_fields
 
-!===============================================================================
+  !===============================================================================
   subroutine import_fields( gcomp, rc )
 
     !---------------------------------------------------------------------------
@@ -178,13 +191,11 @@ contains
     !---------------------------------------------------------------------------
 
     use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
-    !use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, HML, WLEV, INFLAGS1, &
-    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, &
-                            ICEP1, ICEP5
+    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3odatmd    , only: naproc, iaproc, napout
     use w3wdatmd    , only: time
-    
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -194,47 +205,37 @@ contains
     type(ESMF_VM)     :: vm
     type(ESMF_Clock)  :: clock
     type(ESMF_Time)   :: ETime
-    type(ESMF_Field)  :: lfield
     integer           :: ymd, tod
     integer           :: yy, mm, dd, hh, ss
-    real(r8)          :: so_u_global(nx*ny)
-    real(r8)          :: so_v_global(nx*ny)
-    real(r8)          :: so_t_global(nx*ny)
-    real(r8)          :: so_bldepth_global(nx*ny)
-    real(r8)          :: sa_u_global(nx*ny)
-    real(r8)          :: sa_v_global(nx*ny)
-    real(r8)          :: sa_tbot_global(nx*ny)
-    real(r8)          :: si_ifrac_global(nx*ny)
-    real(r8)          :: si_thick_global(nx*ny)
-    real(r8)          :: si_floediam_global(nx*ny)
     real(r8)          :: temp_global(nx*ny)
-    real(r8), pointer :: so_u(:)
-    real(r8), pointer :: so_v(:)
-    real(r8), pointer :: so_t(:)
-    real(r8), pointer :: so_bldepth(:)
+    real(r8)          :: data_global(nx*ny)
     real(r8), pointer :: sa_u(:)
     real(r8), pointer :: sa_v(:)
     real(r8), pointer :: sa_tbot(:)
-    real(r8), pointer :: si_ifrac(:)
+    real(r8), pointer :: so_bldepth(:)
     real(r8), pointer :: si_thick(:)
     real(r8), pointer :: si_floediam(:)
+    real(r8), pointer :: so_u(:)
+    real(r8), pointer :: so_v(:)
+    real(r8), pointer :: so_t(:)
+    real(r8), pointer :: si_ifrac(:)
     integer           :: n, ix, iy, isea
     real(r8)          :: def_value
     integer           :: time0(2) ! starting time of the run interval
     integer           :: timen(2) ! ending time of the run interval
+    real(r8), allocatable :: temp_global2(:)
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     ! Get import state, clock and vm
-
     call ESMF_GridCompGet(gcomp, clock=clock, importState=importState, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine time0 and timen - note have not advanced the model clock yet with nuopc
-
     call ESMF_ClockGetNextTime( clock, Etime, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
@@ -258,181 +259,290 @@ contains
     time0(2) = hh*10000 + mm*100 + ss
     time = time0
 
-
-    ! Determine global data
-
-    call state_getfldptr(importState, 'So_u', fldptr1d=so_u, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'So_v', fldptr1d=so_v, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'So_t', fldptr1d=so_t, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'So_bldepth', fldptr1d=so_bldepth, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'Sa_u', fldptr1d=sa_u, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'Sa_v', fldptr1d=sa_v, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'Sa_tbot', fldptr1d=sa_tbot, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(importState, 'Si_ifrac', fldptr1d=si_ifrac, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    so_u_global(:)       = 0._r8
-    so_v_global(:)       = 0._r8
-    so_t_global(:)       = 0._r8
-    so_bldepth_global(:) = 0._r8
-    sa_u_global          = 0._r8
-    sa_v_global          = 0._r8
-    sa_tbot_global       = 0._r8
-    si_ifrac_global      = 0._r8
-    do n = 1, nseal
-       isea = iaproc + (n-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       so_u_global       (ix + (iy-1)*nx) = so_u(n)
-       so_v_global       (ix + (iy-1)*nx) = so_v(n)
-       so_t_global       (ix + (iy-1)*nx) = so_t(n)
-       so_bldepth_global (ix + (iy-1)*nx) = so_bldepth(n)
-       sa_u_global       (ix + (iy-1)*nx) = sa_u(n)
-       sa_v_global       (ix + (iy-1)*nx) = sa_v(n)
-       sa_tbot_global    (ix + (iy-1)*nx) = sa_tbot(n)
-       si_ifrac_global   (ix + (iy-1)*nx) = si_ifrac(n)
-    end do
-
-    call ESMF_VMAllReduce(vm, sendData=so_u_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    so_u_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=so_v_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    so_v_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=so_t_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    so_t_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=so_bldepth_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    so_bldepth_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=sa_u_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    sa_u_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=sa_v_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    sa_v_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=sa_tbot_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    sa_tbot_global(:) = temp_global(:)
-
-    call ESMF_VMAllReduce(vm, sendData=si_ifrac_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    si_ifrac_global(:) = temp_global(:)
-
-    if (wav_coupling_to_cice) then
-       call state_getfldptr(importState, 'Si_thick', fldptr1d=si_thick, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(importState, 'Si_floediam', fldptr1d=si_floediam, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       si_thick_global      = 0._r8
-       si_floediam_global   = 0._r8
-
-       do n = 1, nseal
-          isea = iaproc + (n-1)*naproc
-          ix = mapsf(isea,1)
-          iy = mapsf(isea,2)
-          si_thick_global   (ix + (iy-1)*nx) = si_thick(n)
-          si_floediam_global(ix + (iy-1)*nx) = si_floediam(n)
-       end do
-
-       call ESMF_VMAllReduce(vm, sendData=si_thick_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-       si_thick_global(:) = temp_global(:)
-       call ESMF_VMAllReduce(vm, sendData=si_floediam_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-       si_floediam_global(:) = temp_global(:)
-    end if
-
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
     ! these arrays are global, just fill the local cells for use later
     ! fill both the lower (0) and upper (N) bound data with the same values
     ! fill with special values as default, these should not be used in practice
     ! set time for input data to time0 and timen (shouldn't matter)
 
-    !HK flags is now INFLAGS1  INFLAGS(1-5) is true
+    ! note that INFLAGS(1-5) is true
     def_value = 0.0
+
+    ! ---------------
+    ! INFLAGS1(1)
+    ! ---------------
     if (INFLAGS1(1)) then
        TLN  = timen
        WLEV = def_value   ! ssh
     endif
+
+    ! ---------------
+    ! INFLAGS1(2) - ocn current fields
+    ! ---------------
     if (INFLAGS1(2)) then
        TC0  = time0       ! times for ocn current fields
        TCN  = timen
+
        CX0  = def_value   ! ocn u current
        CXN  = def_value
+       if ((state_fldchk(importState), 'So_u', rc=rc)) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'So_u', fldptr1d=so_u, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global(:)  = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = so_u(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                CX0(ix,iy)  = temp_global(n) ! ocn u current
+                CXN(ix,iy)  = temp_global(n)
+             end do
+          end do
+       end if
+
        CY0  = def_value   ! ocn v current
        CYN  = def_value
-    endif
+       if ((state_fldchk(importState), 'So_v', rc=rc)) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'So_v', fldptr1d=so_v, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global(:)  = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = so_v(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                CY0(ix,iy) = temp_global(n) ! ocn v current
+                CYN(ix,iy) = temp_global(n)
+             end do
+          end do
+       end if
+    end if
+
+    ! ---------------
+    ! INFLAGS1(3) - atm wind/temp fields
+    ! ---------------
     if (INFLAGS1(3)) then
        TW0  = time0       ! times for atm wind/temp fields.
        TWN  = timen
+
        WX0  = def_value   ! atm u wind
        WXN  = def_value
+       if (state_fldchk(importState), 'Sa_u', rc=rc) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'Sa_u', fldptr1d=sa_u, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global     = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = sa_u(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          data_global(:) = temp_global(:)
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                WX0(ix,iy)  = data_global(n)  ! atm u wind
+                WXN(ix,iy)  = data_global(n)
+             end do
+          end do
+       end if
+
        WY0  = def_value   ! atm v wind
        WYN  = def_value
+       if (state_fldchk(importState), 'Sa_v', rc=rc) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'Sa_v', fldptr1d=sa_v, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          temp_global     = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             temp_global(ix + (iy-1)*nx) = sa_v(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=temp_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          temp_global(:) = temp_global(:)
+       end if
+       n = 0
+       do iy = 1,NY
+          do ix = 1,NX
+             n = n + 1
+             WY0(ix,iy)  = temp_global(n)  ! atm v wind
+             WYN(ix,iy)  = temp_global(n)
+          end do
+       end do
+
        DT0  = def_value   ! air temp - ocn temp
        DTN  = def_value
-    endif
+       if ((state_fldchk(importState), 'So_t', rc=rc) .and. if (state_fldchk(importState), 'Sa_tbot', rc=rc)) then
+          allocate(temp_global2(nx*ny))
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'Sa_tbot', fldptr1d=sa_tbot, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'So_t', fldptr1d=so_t, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global(:) = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             temp_global (ix + (iy-1)*nx) = sa_tbot(n)
+             temp_global2(ix + (iy-1)*nx) = so_t(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=temp_global , recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_VMAllReduce(vm, sendData=temp_global2, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                DT0(ix,iy)  = temp_global(n) - temp_global2(n)  ! air temp - ocn temp
+                DTN(ix,iy)  = temp_global(n) - temp_global2(n)
+             end do
+          end do
+          deallocate(temp_global)
+       end if
+    end if
+
+    ! ---------------
+    ! INFLAGS1(4) - ice fraction field
+    ! ---------------
     if (INFLAGS1(4)) then
        TIN  = timen       ! time for ice field
        ICEI = def_value   ! ice frac
-    endif
+       if (state_fldchk(importState), 'Si_ifrac', rc=rc) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call state_getfldptr(importState, 'Si_ifrac', fldptr1d=si_ifrac, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = si_ifrac(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                ICEI(ix,iy) = temp_global(n) ! ice frac
+             end do
+          end do
+       end if
+    end if
+
+    ! ---------------
+    ! INFLAGS1(5)
+    ! ---------------
+    ! if (INFLAGS1(5)) then
+    !    if (state_fldchk(importState), 'So_bldepth', rc=rc) then
+    !       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !       call state_getfldptr(importState, 'So_bldepth', fldptr1d=so_bldepth, rc=rc)
+    !       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !       data_global = 0._r8
+    !       do n = 1, nseal
+    !          isea = iaproc + (n-1)*naproc
+    !          ix = mapsf(isea,1)
+    !          iy = mapsf(isea,2)
+    !          data_global(ix + (iy-1)*nx) = so_bldepth(n)
+    !       end do
+    !       call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+    !       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !       n = 0
+    !       do iy = 1,NY
+    !          do ix = 1,NX
+    !             n = n + 1
+    !             HML(ix,iy) = max(temp_global(n), 5.) ! ocn mixing layer depth
+    !          end do
+    !       end do
+    !    end if
+    ! end if
+
+    ! ---------------
+    ! INFLAGS1(-7)
+    ! ---------------
     if (INFLAGS1(-7)) then
        TI1  = timen       ! time for ice field
        ICEP1 = def_value   ! ice thickness
+       if (state_fldchk(importState), 'Si_thick', rc=rc) then
+          call state_getfldptr(importState, 'Si_thick', fldptr1d=si_thick, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global(:) = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = si_thick(n)
+          end do
+       end do
+       call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       n = 0
+       do iy = 1,NY
+          do ix = 1,NX
+             n = n + 1
+             ICEP1(ix,iy) = temp_global(n) ! ice thickness
+          end do
+       end do
     end if
+
+    ! ---------------
+    ! INFLAGS1(-3)
+    ! ---------------
     if (INFLAGS1(-3)) then
-       TI5  = timen       ! time for ice field
+       TI5  = timen        ! time for ice field
        ICEP5 = def_value   ! ice floe size
+       if (state_fldchk(importState), 'Si_floediam', rc=rc) then
+          call state_getfldptr(importState, 'Si_floediam', fldptr1d=si_floediam, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          data_global(:) = 0._r8
+          do n = 1, nseal
+             isea = iaproc + (n-1)*naproc
+             ix = mapsf(isea,1)
+             iy = mapsf(isea,2)
+             data_global(ix + (iy-1)*nx) = si_floediam(n)
+          end do
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                ICEP5(ix,iy) = temp_global(n) ! ice floe diameter
+             end do
+          end do
+       end if
     end if
 
-    ! use these loops for global copy
-    n = 0
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          if (INFLAGS1(1)) then
-             WLEV(ix,iy) = 0.0
-          endif
-          if (INFLAGS1(2)) then
-             CX0(ix,iy)  = so_u_global(n) ! ocn u current
-             CXN(ix,iy)  = so_u_global(n)
-             CY0(ix,iy)  = so_v_global(n) ! ocn v current
-             CYN(ix,iy)  = so_v_global(n)
-          endif
-          if (INFLAGS1(3)) then
-             WX0(ix,iy)  = sa_u_global(n)  ! atm u wind
-             WXN(ix,iy)  = sa_u_global(n)
-             WY0(ix,iy)  = sa_v_global(n)  ! atm v wind
-             WYN(ix,iy)  = sa_v_global(n)
-             DT0(ix,iy)  = sa_tbot_global(n) - so_t_global(n)  ! air temp - ocn temp
-             DTN(ix,iy)  = sa_tbot_global(n) - so_t_global(n)
-          endif
-          if (INFLAGS1(4)) then
-             ICEI(ix,iy) = si_ifrac_global(n) ! ice frac
-          endif
-          if (INFLAGS1(-7)) then
-             ICEP1(ix,iy) = si_thick_global(n) ! ice thickness
-          end if
-          if (INFLAGS1(-3)) then
-             ICEP5(ix,iy) = si_floediam_global(n) ! ice floe diameter
-          end if
-          !if (INFLAGS1(5)) then
-          !   HML(ix,iy) = max(so_bldepth_global(n), 5.) ! ocn mixing layer depth
-          !endif
-       enddo
-    enddo
 100 format(a,i6,2x,d21.14)
-
 
     call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
 
-!====================================================================================
+  !====================================================================================
   subroutine export_fields (gcomp, rc)
 
     !---------------------------------------------------------------------------
@@ -440,10 +550,8 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    !use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
-    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
     use w3wdatmd      , only : va
-    !HK trying to use extended arrays use w3adatmd      , only : XUSSX, XUSSY, XEF
     use w3odatmd      , only : naproc, iaproc
     use w3gdatmd      , only : nseal, MAPSTA, MAPFS, MAPSF, USSPF, NK
     use w3iogomd      , only : CALC_U3STOKES
@@ -465,7 +573,7 @@ contains
     real(r8), pointer :: sxxn(:)
     real(r8), pointer :: sxyn(:)
     real(r8), pointer :: syyn(:)
-     
+
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
@@ -502,6 +610,13 @@ contains
     real(r8), pointer :: sw_pstokes_x(:,:)
     real(r8), pointer :: sw_pstokes_y(:,:)
 
+    real(r8), pointer :: sw_ustokes1(:)
+    real(r8), pointer :: sw_vstokes1(:)
+    real(r8), pointer :: sw_ustokes2(:)
+    real(r8), pointer :: sw_vstokes2(:)
+    real(r8), pointer :: sw_ustokes3(:)
+    real(r8), pointer :: sw_vstokes3(:)
+
     character(len=*), parameter :: subname='(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
@@ -512,52 +627,64 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! copy ww3 data to coupling datatype
-    ! copy enhancement factor, uStokes, vStokes, and wave elevation spectrum  to coupler
+    if (state_fldchk(exportState), 'Sw_lamult', rc=rc) then
+       call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       do jsea=1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          ix  = mapsf(isea,1)
+          iy  = mapsf(isea,2)
+          if (mapsta(iy,ix) == 1) then
+             sw_lamult(jsea)  = LAMULT(jsea)
+          else
+             sw_lamult(jsea)  = 1.
+          endif
+       enddo
+    end if
+    if (state_fldchk(exportState), 'Sw_ustokes', rc=rc) then
+       call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       do jsea=1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          ix  = mapsf(isea,1)
+          iy  = mapsf(isea,2)
+          if (mapsta(iy,ix) == 1) then
+             sw_ustokes(jsea) = USSX(jsea)
+          else
+             sw_ustokes(jsea) = 0.
+          endif
+       enddo
+    end if
+    if (state_fldchk(exportState), 'Sw_vstokes', rc=rc) then
+       call state_getfldptr(exportState, 'Sw_vstokes', fldptr1d=sw_vstokes, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       do jsea=1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          ix  = mapsf(isea,1)
+          iy  = mapsf(isea,2)
+          if (mapsta(iy,ix) == 1) then
+             sw_vstokes(jsea) = USSY(jsea)
+          else
+             sw_vstokes(jsea) = 0.
+          endif
+       enddo
+    end if
 
-    call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sw_vstokes', fldptr1d=sw_vstokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! copy enhancement factor, uStokes, vStokes and surface layer Langmuir number to coupler
-    ! LAMULT calculated in w3iogomd.f90
-    do jsea=1, nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix  = MAPSF(ISEA,1)
-       iy  = MAPSF(ISEA,2)
-       if (MAPSTA(iy,ix) .eq. 1) then
-          ! use hstokes to pass LaSL to POP
-          !sw_lamult(jsea)  = LAMULT(jsea)
-          sw_ustokes(jsea) = USSX(jsea)
-          sw_vstokes(jsea) = USSY(jsea)
-          !sw_hstokes(jsea) = LASLPJ(jsea)
-       else
-          sw_lamult(jsea)  = 1.
-          sw_ustokes(jsea) = 0.
-          sw_vstokes(jsea) = 0.
-          !sw_hstokes(jsea) = 0.
-       endif
-    enddo
-
-    ! ------------------------------------------------------------
-
-    if (State_FldChk(exportState, 'charno')) then
-     call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
-     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-     call CalcCharnk(charno)
+    if (state_fldchk(exportState, 'charno')) then
+       call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call CalcCharnk(charno)
     endif
 
-    if (State_FldChk(exportState, 'z0rlen')) then
-     call state_getfldptr(exportState, 'z0rlen', fldptr1d=z0rlen, rc=rc)
-     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-     call CalcRoughl(z0rlen)
+    if (state_fldchk(exportState, 'z0rlen')) then
+       call state_getfldptr(exportState, 'z0rlen', fldptr1d=z0rlen, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call CalcRoughl(z0rlen)
     endif
 
-    if (State_FldChk(exportState, 'wbcuru') .and. State_FldChk(exportState, 'wbcurv') .and. &
-        State_FldChk(exportState, 'wbcurp')) then
+    if ( state_fldchk(exportState, 'wbcuru') .and. &
+         state_fldchk(exportState, 'wbcurv') .and. &
+         state_fldchk(exportState, 'wbcurp')) then
        call state_getfldptr(exportState, 'wbcuru', fldptr1d=wbcuru, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wbcurv', fldptr1d=wbcurv, rc=rc)
@@ -568,8 +695,9 @@ contains
        call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
     end if
 
-    if (State_FldChk(exportState, 'wavsuu') .and. State_FldChk(exportState, 'wavsuv') .and. &
-        State_FldChk(exportState, 'wavsvv')) then
+    if ( state_fldchk(exportState, 'wavsuu') .and. &
+         state_fldchk(exportState, 'wavsuv') .and. &
+         state_fldchk(exportState, 'wavsvv')) then
        call state_getfldptr(exportState, 'sxxn', fldptr1d=sxxn, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'sxyn', fldptr1d=sxyn, rc=rc)
@@ -580,26 +708,11 @@ contains
        call CalcRadstr2D( va, sxxn, sxyn, syyn)
     end if
 
-    ! ------------------------------------------------------------
-
-
-    ! Fill in the local land points with fill value
-    ! HK TODO is this correct?
-    lsize = size(sw_lamult)
-    do n = nseal+1,lsize
-       sw_lamult(n)  = fillvalue
-       sw_ustokes(n) = fillvalue
-       sw_vstokes(n) = fillvalue
-       !sw_hstokes(n) = fillvalue
-    end do
-
     if (wav_coupling_to_cice) then
        call state_getfldptr(exportState, 'wav_tauice1', fldptr1d=wav_tauice1, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wav_tauice2', fldptr1d=wav_tauice2, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! wave_eleveation_spectrum as 25 variables
        call state_getfldptr(exportState, 'wave_elevation_spectrum1', fldptr1d=wave_elevation_spectrum1, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wave_elevation_spectrum2', fldptr1d=wave_elevation_spectrum2, rc=rc)
@@ -651,7 +764,7 @@ contains
        call state_getfldptr(exportState, 'wave_elevation_spectrum25', fldptr1d=wave_elevation_spectrum25, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       !HK initialize wave_elevation_spectrum
+       ! Initialize wave elevation spectrum
        wave_elevation_spectrum1 (:) = fillvalue
        wave_elevation_spectrum2 (:) = fillvalue
        wave_elevation_spectrum3 (:) = fillvalue
@@ -678,27 +791,26 @@ contains
        wave_elevation_spectrum24(:) = fillvalue
        wave_elevation_spectrum25(:) = fillvalue
 
-       !HK This translates the WW3 arrays to the coupler arrays
-       do jsea=1, nseal                       !HK jsea is local
-          isea = iaproc + (jsea-1)*naproc     !HK isea is global
-          ix  = MAPSF(isea,1)  ! global ix
-          iy  = MAPSF(isea,2)  ! global iy
-
-          if (MAPSTA(iy,ix) .eq. 1) then  ! active sea point
+       ! Translates the WW3 arrays to the coupler arrays
+       do jsea=1, nseal                       ! jsea is local
+          isea = iaproc + (jsea-1)*naproc     ! isea is global
+          ix  = mapsf(isea,1)  ! global ix
+          iy  = mapsf(isea,2)  ! global iy
+          if (mapsta(iy,ix) .eq. 1) then  ! active sea point
              wav_tauice1(jsea) = TAUICE(jsea,1) ! tau ice is 2D
              wav_tauice2(jsea) = TAUICE(jsea,2) ! tau ice is 2D
 
-             !HK if wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
+             ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
              ! wave_elevation_spectrum as 25 variables
-             wave_elevation_spectrum1(jsea) = EF(jsea,1)
-             wave_elevation_spectrum2(jsea) = EF(jsea,2)
-             wave_elevation_spectrum3(jsea) = EF(jsea,3)
-             wave_elevation_spectrum4(jsea) = EF(jsea,4)
-             wave_elevation_spectrum5(jsea) = EF(jsea,5)
-             wave_elevation_spectrum6(jsea) = EF(jsea,6)
-             wave_elevation_spectrum7(jsea) = EF(jsea,7)
-             wave_elevation_spectrum8(jsea) = EF(jsea,8)
-             wave_elevation_spectrum9(jsea) = EF(jsea,9)
+             wave_elevation_spectrum1(jsea)  = EF(jsea,1)
+             wave_elevation_spectrum2(jsea)  = EF(jsea,2)
+             wave_elevation_spectrum3(jsea)  = EF(jsea,3)
+             wave_elevation_spectrum4(jsea)  = EF(jsea,4)
+             wave_elevation_spectrum5(jsea)  = EF(jsea,5)
+             wave_elevation_spectrum6(jsea)  = EF(jsea,6)
+             wave_elevation_spectrum7(jsea)  = EF(jsea,7)
+             wave_elevation_spectrum8(jsea)  = EF(jsea,8)
+             wave_elevation_spectrum9(jsea)  = EF(jsea,9)
              wave_elevation_spectrum10(jsea) = EF(jsea,10)
              wave_elevation_spectrum11(jsea) = EF(jsea,11)
              wave_elevation_spectrum12(jsea) = EF(jsea,12)
@@ -716,20 +828,17 @@ contains
              wave_elevation_spectrum24(jsea) = EF(jsea,24)
              wave_elevation_spectrum25(jsea) = EF(jsea,25)
           else
-             sw_lamult(jsea)  = 1.
-             sw_ustokes(jsea) = 0.
-             sw_vstokes(jsea) = 0.
              wav_tauice1(jsea) = 0.
              wav_tauice2(jsea) = 0.
-             wave_elevation_spectrum1(jsea) = 0.
-             wave_elevation_spectrum2(jsea) = 0.
-             wave_elevation_spectrum3(jsea) = 0.
-             wave_elevation_spectrum4(jsea) = 0.
-             wave_elevation_spectrum5(jsea) = 0.
-             wave_elevation_spectrum6(jsea) = 0.
-             wave_elevation_spectrum7(jsea) = 0.
-             wave_elevation_spectrum8(jsea) = 0.
-             wave_elevation_spectrum9(jsea) = 0.
+             wave_elevation_spectrum1(jsea)  = 0.
+             wave_elevation_spectrum2(jsea)  = 0.
+             wave_elevation_spectrum3(jsea)  = 0.
+             wave_elevation_spectrum4(jsea)  = 0.
+             wave_elevation_spectrum5(jsea)  = 0.
+             wave_elevation_spectrum6(jsea)  = 0.
+             wave_elevation_spectrum7(jsea)  = 0.
+             wave_elevation_spectrum8(jsea)  = 0.
+             wave_elevation_spectrum9(jsea)  = 0.
              wave_elevation_spectrum10(jsea) = 0.
              wave_elevation_spectrum11(jsea) = 0.
              wave_elevation_spectrum12(jsea) = 0.
@@ -750,7 +859,6 @@ contains
        enddo
 
        ! Fill in the local land points with fill value
-       ! HK TODO is this correct?
        lsize = size(sw_lamult)
        do n = nseal+1,lsize
           wav_tauice1(n) = fillvalue
@@ -783,25 +891,67 @@ contains
        end do
     end if
 
-   call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
-   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-   call state_getfldptr(exportState, 'Sw_pstokes_y', fldptr2d=sw_pstokes_y, rc=rc)
-   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-   sw_pstokes_x(:,:) = fillvalue
-   sw_pstokes_y(:,:) = fillvalue
-   if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
-      !call CalcPStokes(rc)
-      call CALC_U3STOKES(va, 2)
-      do ib = 1, USSPF(2)
-         do jsea = 1, nseal
-            sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
-            sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
-         enddo
-      end do
+    if ( (state_fldchk(exportState), 'Sw_pstokes_x', rc=rc) .and. &
+         (state_fldchk(exportState), 'Sw_pstokes_y', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_pstokes_y', fldptr2d=sw_pstokes_y, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      sw_pstokes_x(:,:) = fillvalue
+      sw_pstokes_y(:,:) = fillvalue
+      if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
+         call CALC_U3STOKES(va, 2)
+         do ib = 1, USSPF(2)
+            do jsea = 1, nseal
+               sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
+               sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
+            enddo
+         end do
+      end if
    endif
+
+   if ( (state_fldchk(exportState), 'Sw_ustokes1', rc=rc) .and. &
+        (state_fldchk(exportState), 'Sw_ustokes2', rc=rc) .and. &
+        (state_fldchk(exportState), 'Sw_ustokes3', rc=rc) .and. &
+        (state_fldchk(exportState), 'Sw_vstokes1', rc=rc) .and. &
+        (state_fldchk(exportState), 'Sw_vstokes2', rc=rc) .and. &
+        (state_fldchk(exportState), 'Sw_vstokes3', rc=rc)) then
+
+      call state_getfldptr(exportState, 'Sw_ustokes1', fldptr1d=sw_ustokes1, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_ustokes2', fldptr1d=sw_ustokes2, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_ustokes3', fldptr1d=sw_ustokes3, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_vstokes1', fldptr1d=sw_vstokes1, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_vstokes2', fldptr1d=sw_vstokes2, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      sw_ustokes1(jsea)= fillvalue
+      sw_vstokes1(jsea)= fillvalue
+      sw_ustokes2(jsea)= fillvalue
+      sw_vstokes2(jsea)= fillvalue
+      sw_ustokes3(jsea)= fillvalue
+      sw_vstokes3(jsea)= fillvalue
+
+      call CALC_U3STOKES(va, 2)
+
+      do jsea = 1,nseal
+         isea = iaproc + (jsea-1)*naproc
+         sw_ustokes1(jsea)=ussp(jsea,1)
+         sw_vstokes1(jsea)=ussp(jsea,nk+1)
+         sw_ustokes2(jsea)=ussp(jsea,2)
+         sw_vstokes2(jsea)=ussp(jsea,nk+2)
+         sw_ustokes3(jsea)=ussp(jsea,3)
+         sw_vstokes3(jsea)=ussp(jsea,nk+3)
+      end do
+
+   end if
 
   end subroutine export_fields
 
@@ -968,6 +1118,7 @@ contains
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
+
     if (dbug_flag > 5) then
        call ESMF_LogWrite(trim(subname)//": called", ESMF_LOGMSG_INFO)
     end if
@@ -1011,26 +1162,132 @@ contains
   end subroutine state_getfldptr
 
   !===============================================================================
-  logical function State_FldChk(State, fldname)
-    ! ----------------------------------------------
-    ! Determine if field is in state
-    ! ----------------------------------------------
+  subroutine CalcRoughl ( wrln, rc)
+
+    !  Calculate 2D wave roughness length for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
+    use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
+    use w3wdatmd,   only : va, ust
+    use w3odatmd,   only : naproc, iaproc
+    use constants,  only : grav
+    use w3src4md,   only : w3spr4
 
     ! input/output variables
-    type(ESMF_State) , intent(in)  :: State
-    character(len=*) , intent(in)  :: fldname
+    real(r8), pointer     :: wrln(:)
+    integer , intent(out) :: rc
 
     ! local variables
-    type(ESMF_StateItem_Flag) :: itemType
-    ! ----------------------------------------------
+    integer       :: isea, jsea, ix, iy
+    real          :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    logical       :: llws(nspec)
+    logical, save :: firstCall = .true.
+    !----------------------------------------------------------------------
 
-    call ESMF_StateGet(State, trim(fldname), itemType)
-    State_FldChk = (itemType /= ESMF_STATEITEM_NOTFOUND)
+    rc = ESMF_SUCCESS
 
-  end function State_FldChk
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       if ( mapsta(iy,ix) == 1 ) then
+          if ( firstCall ) then
+             charn(jsea) = zero
+             llws(:) = .true.
+             ustar = zero
+             ustdr = zero
+             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                  emean, fmean, fmean1, wnmean, amax,         &
+                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                  dlwmean )
+          endif !firstCall
+          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+       endif
+    enddo jsea_loop
+
+    firstCall = .false.
+
+  end subroutine CalcRoughl
+
+  !===============================================================================
+  subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
+
+    ! Calculate 2D radiation stresses for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
+    use w3adatmd,   only : dw, cg, wn
+    use w3odatmd,   only : naproc, iaproc
+    use constants,  only : dwat, grav
+#ifdef W3_PDLIB
+    use yowNodepool, only: np, iplg
+#endif
+
+    ! input/output variables
+    real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
+    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
+    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
+
+    ! local variables
+    character(ESMF_MAXSTR) :: cname
+    character(128)         :: msg
+    real(8), parameter     :: half  = 0.5
+    real(8), parameter     ::  one  = 1.0
+    real(8), parameter     ::  two  = 2.0
+    integer                :: isea, jsea, ik, ith
+    real(8)                :: sxxs, sxys, syys
+    real(8)                :: akxx, akxy, akyy, cgoc, facd, fack, facs
+    !----------------------------------------------------------------------
+
+    facd = dwat*grav
+#ifdef W3_PDLIB
+    if ( LPDLIB == .FALSE. ) then
+#endif
+       jsea_loop: do jsea = 1,nseal
+          isea = iaproc + (jsea-1)*naproc
+          if ( dw(isea).le.zero ) cycle jsea_loop
+          sxxs = zero
+          sxys = zero
+          syys = zero
+          ik_loop: do ik = 1,nk
+             akxx = zero
+             akxy = zero
+             akyy = zero
+             cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
+             cgoc = min(one,max(half,cgoc))
+             ith_loop: do ith = 1,nth
+                akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
+                akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
+                akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
+             enddo ith_loop
+             fack = dden(ik)/cg(ik,isea)
+             sxxs = sxxs + akxx*fack
+             sxys = sxys + akxy*fack
+             syys = syys + akyy*fack
+          enddo ik_loop
+          facs = (one+fte/cg(nk,isea))*facd
+          sxxn(jsea) = sxxs*facs
+          sxyn(jsea) = sxys*facs
+          syyn(jsea) = syys*facs
+       enddo jsea_loop
+#ifdef W3_PDLIB
+    else
+       jsea_loop2: do jsea = 1,np
+          isea = iplg(jsea)
+          sxxn(jsea) = sxx(jsea)
+          sxyn(jsea) = sxy(jsea)
+          syyn(jsea) = syy(jsea)
+       enddo jsea_loop2
+    endif
+#endif
+
+  end subroutine CalcRadstr2D
 
   !===============================================================================
   subroutine CalcBotcur ( a, wbxn, wbyn, wbpn )
+
     ! Calculate wave-bottom currents for export
 
     use w3gdatmd,  only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
@@ -1054,7 +1311,7 @@ contains
     real(8)              :: depth
     real(8)              :: kd, fack, fkd, aka, akx, aky, abr, ubr, ubx, uby, dir
     real(8), allocatable :: sig2(:)
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------
 
     allocate( sig2(1:nk) )
     sig2(1:nk) = sig(1:nk)**2
@@ -1103,7 +1360,8 @@ contains
 
   !===============================================================================
   subroutine CalcRoughl ( wrln )
-    !  Calculate 2D wave roughness length for export
+
+    ! Calculate 2D wave roughness length for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
@@ -1113,7 +1371,6 @@ contains
     use w3src4md,   only : w3spr4
 
     ! input/output variables
-    implicit none
     real(r8), pointer     :: wrln(:)
 
     ! local variables
@@ -1122,7 +1379,7 @@ contains
     real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
     logical       :: llws(nspec)
     logical, save :: firstCall = .true.
-    ! -------------------------------------------------------------------- /
+    !----------------------------------------------------------------------
 
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
@@ -1148,26 +1405,26 @@ contains
 
   end subroutine CalcRoughl
 
+  !===============================================================================
   subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
-    !     Calculate 2D radiation stresses for export
+
+    ! Calculate 2D radiation stresses for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
     use w3adatmd,   only : dw, cg, wn
     use w3odatmd,   only : naproc, iaproc
     use constants,  only : dwat, grav
-
 #ifdef W3_PDLIB
     use yowNodepool, only: np, iplg
 #endif
-    !/ Parameter list
-    implicit none
 
+    ! input/output variables
     real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
     real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
     real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
     real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
 
-    !/ Local parameters
+    ! local variables
     character(ESMF_MAXSTR) :: cname
     character(128)         :: msg
     real(8), parameter     :: half  = 0.5
@@ -1176,7 +1433,7 @@ contains
     integer                :: isea, jsea, ik, ith
     real(8)                :: sxxs, sxys, syys
     real(8)                :: akxx, akxy, akyy, cgoc, facd, fack, facs
-    ! -------------------------------------------------------------------- /
+    !----------------------------------------------------------------------
 
     facd = dwat*grav
 #ifdef W3_PDLIB
@@ -1219,9 +1476,12 @@ contains
        enddo jsea_loop2
     endif
 #endif
+
   end subroutine CalcRadstr2D
 
+  !===============================================================================
   subroutine CalcCharnk ( chkn )
+
     ! Calculate Charnok for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, mapsf, mapsta, nspec
@@ -1230,38 +1490,38 @@ contains
     use w3odatmd,   only : naproc, iaproc
     use w3src4md,   only : w3spr4
 
-     !/ Parameter list
-     implicit none
+    ! input/output variables
+    real(ESMF_KIND_R8), pointer :: chkn(:)  ! 2D Charnock export field pointer
 
-     real(ESMF_KIND_R8), pointer :: chkn(:)           ! 2D Charnock export field pointer
-
-    !/ Local parameters
+    ! local variables
     real   , parameter :: zero  = 0.0
-    logical, save      :: firstCall = .true.
     integer            :: isea, jsea, ix, iy
     real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
     real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
     logical            :: llws(nspec)
+    logical, save      :: firstCall = .true.
+    !----------------------------------------------------------------------
 
-     jsea_loop: do jsea = 1,nseal
-        isea = iaproc + (jsea-1)*naproc
-        ix = mapsf(isea,1)
-        iy = mapsf(isea,2)
-        if ( mapsta(iy,ix) == 1 ) then
-           if ( firstCall ) then
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       if ( mapsta(iy,ix) == 1 ) then
+          if ( firstCall ) then
              charn(jsea) = zero
              llws(:) = .true.
              ustar = zero
              ustdr = zero
              call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                          emean, fmean, fmean1, wnmean, amax,         &
-                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                          tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                          dlwmean )
-           endif !firstCall
-           chkn(jsea) = charn(jsea)
-         endif
-      enddo jsea_loop
+                  emean, fmean, fmean1, wnmean, amax,         &
+                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                  dlwmean )
+          endif !firstCall
+          chkn(jsea) = charn(jsea)
+       endif
+    enddo jsea_loop
 
   end subroutine CalcCharnk
+
 end module wav_import_export
