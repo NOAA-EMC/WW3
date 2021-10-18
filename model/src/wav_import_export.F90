@@ -39,6 +39,8 @@ module wav_import_export
   logical, public :: wav_coupling_to_cice = .false.
   logical, public :: wav_coupling_to_mom  = .false.
 
+  real(r8), parameter :: zero  = 0.0_r8
+
 !===============================================================================
 contains
 !===============================================================================
@@ -122,7 +124,6 @@ contains
   end subroutine advertise_fields
 
 !===============================================================================
-
   subroutine realize_fields(gcomp, mesh, flds_scalar_name, flds_scalar_num, rc)
 
     ! input/output variables
@@ -169,7 +170,6 @@ contains
   end subroutine realize_fields
 
 !===============================================================================
-
   subroutine import_fields( gcomp, rc )
 
     !---------------------------------------------------------------------------
@@ -432,7 +432,6 @@ contains
   end subroutine import_fields
 
 !====================================================================================
-
   subroutine export_fields (gcomp, rc)
 
     !---------------------------------------------------------------------------
@@ -457,6 +456,14 @@ contains
     type(ESMF_State)  :: exportState
     integer           :: n, jsea, isea, ix, iy, lsize, ib
 
+    real(r8), pointer :: charno(:)
+    real(r8), pointer :: wbcuru(:)
+    real(r8), pointer :: wbcurv(:)
+    real(r8), pointer :: wbcurp(:)
+    real(r8), pointer :: sxxn(:)
+    real(r8), pointer :: sxyn(:)
+    real(r8), pointer :: syyn(:)
+     
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
@@ -532,6 +539,58 @@ contains
           !sw_hstokes(jsea) = 0.
        endif
     enddo
+
+    ! ------------------------------------------------------------
+    ! UFS: charno
+
+    !call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
+    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !call calc_charno(charno, rc=rc)
+    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! TODO: put this into a subroutine calc_charno
+    ! use w3wdatmd, only :: va
+    ! use w3adatmd, only :: cg, wn, u10, u10d, charn
+    ! real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    ! real    :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    ! logical :: llws(nspec)
+    !if ( firstCall ) then
+    !   do jsea = 1,nseal
+    !      isea = iaproc + (jsea-1)*naproc
+    !      llws(:) = .true.
+    !      ustar = zero
+    !      ustdr = zero
+    !      call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+    !                   emean, fmean, fmean1, wnmean, amax,         &
+    !                   u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+    !                   tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+    !                   dlwmean )
+    !      ! set pointer value in export state
+    !      charno(jsea) = charn(jsea)
+    !   enddo
+    !   firstCall = .false.
+    !end if
+
+    call state_getfldptr(exportState, 'wbcuru', fldptr1d=wbcuru, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'wbcurv', fldptr1d=wbcurv, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'wbcurp', fldptr1d=wbcurp, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
+
+    call state_getfldptr(exportState, 'sxxn', fldptr1d=sxxn, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'sxyn', fldptr1d=sxyn, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'syyn', fldptr1d=syyn, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call CalcRadstr2D( va, sxxn, sxyn, syyn)
+
+    ! ------------------------------------------------------------
+
 
     ! Fill in the local land points with fill value
     ! HK TODO is this correct?
@@ -894,7 +953,6 @@ contains
   end subroutine fldlist_realize
 
   !===============================================================================
-
   subroutine state_getfldptr(State, fldname, fldptr1d, fldptr2d, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -961,4 +1019,199 @@ contains
 
   end subroutine state_getfldptr
 
+  !===============================================================================
+  subroutine CalcBotcur ( a, wbxn, wbyn, wbpn )
+    ! Calculate wave-bottom currents for export
+
+    use w3gdatmd,  only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
+    use w3adatmd,  only : dw, cg, wn
+    use w3odatmd,  only : naproc, iaproc
+    use constants, only : tpi, grav
+
+    ! input/output variables
+    real, intent(in)            :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
+    real(ESMF_KIND_R8), pointer :: wbxn(:)           ! 2D eastward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbyn(:)           ! 2D northward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbpn(:)           ! 2D period export field pointer
+
+    ! local variables
+    real(8), parameter   :: half  = 0.5_r8
+    real(8), parameter   ::  one  = 1.0_r8
+    real(8), parameter   ::  two  = 2.0_r8
+    real(8), parameter   :: kdmin = 1e-7_r8
+    real(8), parameter   :: kdmax = 18.0_r8
+    integer              :: isea, jsea, ik, ith
+    real(8)              :: depth
+    real(8)              :: kd, fack, fkd, aka, akx, aky, abr, ubr, ubx, uby, dir
+    real(8), allocatable :: sig2(:)
+    !---------------------------------------------------------------------------
+
+    allocate( sig2(1:nk) )
+    sig2(1:nk) = sig(1:nk)**2
+
+    wbxn(:) = zero
+    wbyn(:) = zero
+    wbpn(:) = zero
+
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       if ( dw(isea).le.zero ) cycle jsea_loop
+       depth = max(dmin,dw(isea))
+       abr = zero
+       ubr = zero
+       ubx = zero
+       uby = zero
+       ik_loop: do ik = 1,nk
+          aka = zero
+          akx = zero
+          aky = zero
+          ith_loop: do ith = 1,nth
+             aka = aka + a(ith,ik,jsea)
+             akx = akx + a(ith,ik,jsea)*ecos(ith)
+             aky = aky + a(ith,ik,jsea)*esin(ith)
+          enddo ith_loop
+          fack = dden(ik)/cg(ik,isea)
+          kd = max(kdmin,min(kdmax,wn(ik,isea)*depth))
+          fkd = fack/sinh(kd)**2
+          abr = abr + aka*fkd
+          ubr = ubr + aka*sig2(ik)*fkd
+          ubx = ubx + akx*sig2(ik)*fkd
+          uby = uby + aky*sig2(ik)*fkd
+       enddo ik_loop
+       if ( abr.le.zero .or. ubr.le.zero ) cycle jsea_loop
+       abr = sqrt(two*abr)
+       ubr = sqrt(two*ubr)
+       dir = atan2(uby,ubx)
+       wbxn(jsea) = ubr*cos(dir)
+       wbyn(jsea) = ubr*sin(dir)
+       wbpn(jsea) = tpi*abr/ubr
+    enddo jsea_loop
+
+    deallocate( sig2 )
+
+  end subroutine CalcBotcur
+
+  !===============================================================================
+  subroutine CalcRoughl ( wrln, rc)
+    !  Calculate 2D wave roughness length for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
+    use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
+    use w3wdatmd,   only : va, ust
+    use w3odatmd,   only : naproc, iaproc
+    use constants,  only : grav
+    use w3src4md,   only : w3spr4
+
+    ! input/output variables
+    implicit none
+    real(r8), pointer     :: wrln(:)
+    integer , intent(out) :: rc
+
+    ! local variables
+    integer       :: isea, jsea, ix, iy
+    real          :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    logical       :: llws(nspec)
+    logical, save :: firstCall = .true.
+    ! -------------------------------------------------------------------- /
+
+    rc = ESMF_SUCCESS
+
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       if ( mapsta(iy,ix) == 1 ) then
+          if ( firstCall ) then
+             charn(jsea) = zero
+             llws(:) = .true.
+             ustar = zero
+             ustdr = zero
+             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                  emean, fmean, fmean1, wnmean, amax,         &
+                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                  dlwmean )
+          endif !firstCall
+          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+       endif
+    enddo jsea_loop
+
+    firstCall = .false.
+
+  end subroutine CalcRoughl
+
+  subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
+    !     Calculate 2D radiation stresses for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
+    use w3adatmd,   only : dw, cg, wn
+    use w3odatmd,   only : naproc, iaproc
+    use constants,  only : dwat, grav
+
+#ifdef W3_PDLIB
+    use yowNodepool, only: np, iplg
+#endif
+    !/ Parameter list
+    implicit none
+
+    real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
+    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
+    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
+
+    !/ Local parameters
+    character(ESMF_MAXSTR) :: cname
+    character(128)         :: msg
+    real(8), parameter     :: half  = 0.5
+    real(8), parameter     ::  one  = 1.0
+    real(8), parameter     ::  two  = 2.0
+    integer                :: isea, jsea, ik, ith
+    real(8)                :: sxxs, sxys, syys
+    real(8)                :: akxx, akxy, akyy, cgoc, facd, fack, facs
+    ! -------------------------------------------------------------------- /
+
+    facd = dwat*grav
+#ifdef W3_PDLIB
+    if ( LPDLIB == .FALSE. ) then
+#endif
+       jsea_loop: do jsea = 1,nseal
+          isea = iaproc + (jsea-1)*naproc
+          if ( dw(isea).le.zero ) cycle jsea_loop
+          sxxs = zero
+          sxys = zero
+          syys = zero
+          ik_loop: do ik = 1,nk
+             akxx = zero
+             akxy = zero
+             akyy = zero
+             cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
+             cgoc = min(one,max(half,cgoc))
+             ith_loop: do ith = 1,nth
+                akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
+                akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
+                akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
+             enddo ith_loop
+             fack = dden(ik)/cg(ik,isea)
+             sxxs = sxxs + akxx*fack
+             sxys = sxys + akxy*fack
+             syys = syys + akyy*fack
+          enddo ik_loop
+          facs = (one+fte/cg(nk,isea))*facd
+          sxxn(jsea) = sxxs*facs
+          sxyn(jsea) = sxys*facs
+          syyn(jsea) = syys*facs
+       enddo jsea_loop
+#ifdef W3_PDLIB
+    else
+       jsea_loop2: do jsea = 1,np
+          isea = iplg(jsea)
+          sxxn(jsea) = sxx(jsea)
+          sxyn(jsea) = sxy(jsea)
+          syyn(jsea) = syy(jsea)
+       enddo jsea_loop2
+    endif
+#endif
+
+  end subroutine CalcRadstr2D
 end module wav_import_export
