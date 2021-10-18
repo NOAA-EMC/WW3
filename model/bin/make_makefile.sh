@@ -266,7 +266,8 @@
         ispdlibi=yes
         break
       fi
-      if [ -f $main_dir/src/cpl_nuopc/$file.$s ]
+      #if [ -f $main_dir/src/cpl_nuopc/$file.$s ]
+      if [ -f $main_dir/src/$file.$s ]
       then
         fexti=$s
         isnuopci=yes
@@ -299,7 +300,8 @@
 
     if [ "$ispdlibi" = 'yes' ]
     then
-      string1='$(aPo)/'$file'.o : cpl_nuopc/'$file.$fexti' '
+      #string1='$(aPo)/'$file'.o : cpl_nuopc/'$file.$fexti' '
+      string1='$(aPo)/'$file'.o : '$file.$fexti' '
     fi
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
