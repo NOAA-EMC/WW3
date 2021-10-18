@@ -18,6 +18,7 @@ module wav_import_export
 
   private :: fldlist_add
   private :: fldlist_realize
+  private :: state_fldchk
 
   type fld_list_type
      character(len=128) :: stdname
@@ -456,6 +457,7 @@ contains
     type(ESMF_State)  :: exportState
     integer           :: n, jsea, isea, ix, iy, lsize, ib
 
+    real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: charno(:)
     real(r8), pointer :: wbcuru(:)
     real(r8), pointer :: wbcurv(:)
@@ -541,53 +543,42 @@ contains
     enddo
 
     ! ------------------------------------------------------------
-    ! UFS: charno
 
-    !call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !call calc_charno(charno, rc=rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (State_FldChk(exportState, 'charno')) then
+     call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
+     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+     call CalcCharnk(charno)
+    endif
 
-    ! TODO: put this into a subroutine calc_charno
-    ! use w3wdatmd, only :: va
-    ! use w3adatmd, only :: cg, wn, u10, u10d, charn
-    ! real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
-    ! real    :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
-    ! logical :: llws(nspec)
-    !if ( firstCall ) then
-    !   do jsea = 1,nseal
-    !      isea = iaproc + (jsea-1)*naproc
-    !      llws(:) = .true.
-    !      ustar = zero
-    !      ustdr = zero
-    !      call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-    !                   emean, fmean, fmean1, wnmean, amax,         &
-    !                   u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-    !                   tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-    !                   dlwmean )
-    !      ! set pointer value in export state
-    !      charno(jsea) = charn(jsea)
-    !   enddo
-    !   firstCall = .false.
-    !end if
+    if (State_FldChk(exportState, 'z0rlen')) then
+     call state_getfldptr(exportState, 'z0rlen', fldptr1d=z0rlen, rc=rc)
+     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+     call CalcRoughl(z0rlen)
+    endif
 
-    call state_getfldptr(exportState, 'wbcuru', fldptr1d=wbcuru, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'wbcurv', fldptr1d=wbcurv, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'wbcurp', fldptr1d=wbcurp, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (State_FldChk(exportState, 'wbcuru') .and. State_FldChk(exportState, 'wbcurv') .and. &
+        State_FldChk(exportState, 'wbcurp')) then
+       call state_getfldptr(exportState, 'wbcuru', fldptr1d=wbcuru, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'wbcurv', fldptr1d=wbcurv, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'wbcurp', fldptr1d=wbcurp, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
+       call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
+    end if
 
-    call state_getfldptr(exportState, 'sxxn', fldptr1d=sxxn, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'sxyn', fldptr1d=sxyn, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'syyn', fldptr1d=syyn, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (State_FldChk(exportState, 'wavsuu') .and. State_FldChk(exportState, 'wavsuv') .and. &
+        State_FldChk(exportState, 'wavsvv')) then
+       call state_getfldptr(exportState, 'sxxn', fldptr1d=sxxn, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'sxyn', fldptr1d=sxyn, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'syyn', fldptr1d=syyn, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call CalcRadstr2D( va, sxxn, sxyn, syyn)
+       call CalcRadstr2D( va, sxxn, sxyn, syyn)
+    end if
 
     ! ------------------------------------------------------------
 
@@ -1020,6 +1011,25 @@ contains
   end subroutine state_getfldptr
 
   !===============================================================================
+  logical function State_FldChk(State, fldname)
+    ! ----------------------------------------------
+    ! Determine if field is in state
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_State) , intent(in)  :: State
+    character(len=*) , intent(in)  :: fldname
+
+    ! local variables
+    type(ESMF_StateItem_Flag) :: itemType
+    ! ----------------------------------------------
+
+    call ESMF_StateGet(State, trim(fldname), itemType)
+    State_FldChk = (itemType /= ESMF_STATEITEM_NOTFOUND)
+
+  end function State_FldChk
+
+  !===============================================================================
   subroutine CalcBotcur ( a, wbxn, wbyn, wbpn )
     ! Calculate wave-bottom currents for export
 
@@ -1092,7 +1102,7 @@ contains
   end subroutine CalcBotcur
 
   !===============================================================================
-  subroutine CalcRoughl ( wrln, rc)
+  subroutine CalcRoughl ( wrln )
     !  Calculate 2D wave roughness length for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
@@ -1105,7 +1115,6 @@ contains
     ! input/output variables
     implicit none
     real(r8), pointer     :: wrln(:)
-    integer , intent(out) :: rc
 
     ! local variables
     integer       :: isea, jsea, ix, iy
@@ -1114,8 +1123,6 @@ contains
     logical       :: llws(nspec)
     logical, save :: firstCall = .true.
     ! -------------------------------------------------------------------- /
-
-    rc = ESMF_SUCCESS
 
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
@@ -1212,6 +1219,49 @@ contains
        enddo jsea_loop2
     endif
 #endif
-
   end subroutine CalcRadstr2D
+
+  subroutine CalcCharnk ( chkn )
+    ! Calculate Charnok for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, mapsf, mapsta, nspec
+    use w3adatmd,   only : cg, wn, charn, u10, u10d
+    use w3wdatmd,   only : va
+    use w3odatmd,   only : naproc, iaproc
+    use w3src4md,   only : w3spr4
+
+     !/ Parameter list
+     implicit none
+
+     real(ESMF_KIND_R8), pointer :: chkn(:)           ! 2D Charnock export field pointer
+
+    !/ Local parameters
+    real   , parameter :: zero  = 0.0
+    logical, save      :: firstCall = .true.
+    integer            :: isea, jsea, ix, iy
+    real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    logical            :: llws(nspec)
+
+     jsea_loop: do jsea = 1,nseal
+        isea = iaproc + (jsea-1)*naproc
+        ix = mapsf(isea,1)
+        iy = mapsf(isea,2)
+        if ( mapsta(iy,ix) == 1 ) then
+           if ( firstCall ) then
+             charn(jsea) = zero
+             llws(:) = .true.
+             ustar = zero
+             ustdr = zero
+             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                          emean, fmean, fmean1, wnmean, amax,         &
+                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                          tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                          dlwmean )
+           endif !firstCall
+           chkn(jsea) = charn(jsea)
+         endif
+      enddo jsea_loop
+
+  end subroutine CalcCharnk
 end module wav_import_export
