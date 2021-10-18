@@ -150,25 +150,23 @@ module wav_comp_nuopc
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
-  !use w3gdatmd              , only : nseal, nsea, dtmax, dtcfl, dtmin, nx, ny, mapsf, w3nmod, w3setg
-  !use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
   
-  use w3gdatmd
-!  use w3gdatmd              , only: NX, NY
-  use w3wdatmd              , only: time, w3ndat, w3dimw, w3setw
-  use w3adatmd
+  use w3gdatmd              , only : nseal, nsea, dtmax, dtcfl, dtmin, nx, ny, mapsf, w3nmod, w3setg
+  use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
+  use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
+  use w3adatmd              , only : w3naux, w3seta
   !HK flags is now inflags1
-  use w3idatmd              , only: inflags1, inflags2, w3seti, w3ninp
-  use w3idatmd              , only: TC0, CX0, CY0, TCN, CXN, CYN !HK, NX, NY
-  use w3idatmd              , only: TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN
+  use w3idatmd              , only : inflags1, inflags2, w3seti, w3ninp
+  use w3idatmd              , only : TC0, CX0, CY0, TCN, CXN, CYN !HK, NX, NY
+  use w3idatmd              , only : TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN
+  !TODO: HML?
   !use w3idatmd              , only: TIN, ICEI, TLN, WLEV, HML
-  use w3idatmd              , only: TIN, ICEI, TLN, WLEV
-  use w3odatmd              , only: w3nout, w3seto, naproc, iaproc, napout, naperr, nds !cmb
-  use w3odatmd              , only: idout, fnmpre, iostyp, nogrp, ngrpp, noge !HK
-  use w3initmd
-  use w3wavemd
-  use w3iopomd
-  use w3timemd
+  use w3idatmd              , only : TIN, ICEI, TLN, WLEV
+  use w3odatmd              , only : w3nout, w3seto, naproc, iaproc, napout, naperr, nds !cmb
+  use w3odatmd              , only : idout, fnmpre, iostyp, nogrp, ngrpp, noge !HK
+  use w3initmd              , only : w3init
+  use w3wavemd              , only : w3wave
+  use w3timemd              , only : stme21
   !use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
   !use w3cesmmd              , only : inst_index, inst_name, inst_suffix
   use ESMF
