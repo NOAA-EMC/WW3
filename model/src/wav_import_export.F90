@@ -285,8 +285,7 @@ contains
 
        CX0  = def_value   ! ocn u current
        CXN  = def_value
-       if ((state_fldchk(importState), 'So_u', rc=rc)) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (state_fldchk(importState, 'So_u')) then
           call state_getfldptr(importState, 'So_u', fldptr1d=so_u, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global(:)  = 0._r8
@@ -310,8 +309,7 @@ contains
 
        CY0  = def_value   ! ocn v current
        CYN  = def_value
-       if ((state_fldchk(importState), 'So_v', rc=rc)) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (state_fldchk(importState, 'So_v')) then
           call state_getfldptr(importState, 'So_v', fldptr1d=so_v, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global(:)  = 0._r8
@@ -343,8 +341,7 @@ contains
 
        WX0  = def_value   ! atm u wind
        WXN  = def_value
-       if (state_fldchk(importState), 'Sa_u', rc=rc) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (state_fldchk(importState, 'Sa_u')) then
           call state_getfldptr(importState, 'Sa_u', fldptr1d=sa_u, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global     = 0._r8
@@ -368,7 +365,7 @@ contains
 
        WY0  = def_value   ! atm v wind
        WYN  = def_value
-       if (state_fldchk(importState), 'Sa_v', rc=rc) then
+       if (state_fldchk(importState, 'Sa_v')) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call state_getfldptr(importState, 'Sa_v', fldptr1d=sa_v, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -393,7 +390,7 @@ contains
 
        DT0  = def_value   ! air temp - ocn temp
        DTN  = def_value
-       if ((state_fldchk(importState), 'So_t', rc=rc) .and. if (state_fldchk(importState), 'Sa_tbot', rc=rc)) then
+       if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
           allocate(temp_global2(nx*ny))
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call state_getfldptr(importState, 'Sa_tbot', fldptr1d=sa_tbot, rc=rc)
@@ -420,7 +417,6 @@ contains
                 DTN(ix,iy)  = temp_global(n) - temp_global2(n)
              end do
           end do
-          deallocate(temp_global)
        end if
     end if
 
@@ -430,8 +426,7 @@ contains
     if (INFLAGS1(4)) then
        TIN  = timen       ! time for ice field
        ICEI = def_value   ! ice frac
-       if (state_fldchk(importState), 'Si_ifrac', rc=rc) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (state_fldchk(importState, 'Si_ifrac')) then
           call state_getfldptr(importState, 'Si_ifrac', fldptr1d=si_ifrac, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global = 0._r8
@@ -486,7 +481,7 @@ contains
     if (INFLAGS1(-7)) then
        TI1  = timen       ! time for ice field
        ICEP1 = def_value   ! ice thickness
-       if (state_fldchk(importState), 'Si_thick', rc=rc) then
+       if (state_fldchk(importState, 'Si_thick')) then
           call state_getfldptr(importState, 'Si_thick', fldptr1d=si_thick, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global(:) = 0._r8
@@ -496,16 +491,16 @@ contains
              iy = mapsf(isea,2)
              data_global(ix + (iy-1)*nx) = si_thick(n)
           end do
-       end do
-       call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       n = 0
-       do iy = 1,NY
-          do ix = 1,NX
-             n = n + 1
-             ICEP1(ix,iy) = temp_global(n) ! ice thickness
+          call ESMF_VMAllReduce(vm, sendData=data_global, recvData=temp_global, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                ICEP1(ix,iy) = temp_global(n) ! ice thickness
+             end do
           end do
-       end do
+       end if
     end if
 
     ! ---------------
@@ -514,7 +509,7 @@ contains
     if (INFLAGS1(-3)) then
        TI5  = timen        ! time for ice field
        ICEP5 = def_value   ! ice floe size
-       if (state_fldchk(importState), 'Si_floediam', rc=rc) then
+       if (state_fldchk(importState, 'Si_floediam')) then
           call state_getfldptr(importState, 'Si_floediam', fldptr1d=si_floediam, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           data_global(:) = 0._r8
@@ -550,7 +545,9 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
+    !TODO: what happened to lamult?
+    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    !use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
     use w3wdatmd      , only : va
     use w3odatmd      , only : naproc, iaproc
     use w3gdatmd      , only : nseal, MAPSTA, MAPFS, MAPSF, USSPF, NK
@@ -627,21 +624,21 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (state_fldchk(exportState), 'Sw_lamult', rc=rc) then
-       call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       do jsea=1, nseal
-          isea = iaproc + (jsea-1)*naproc
-          ix  = mapsf(isea,1)
-          iy  = mapsf(isea,2)
-          if (mapsta(iy,ix) == 1) then
-             sw_lamult(jsea)  = LAMULT(jsea)
-          else
-             sw_lamult(jsea)  = 1.
-          endif
-       enddo
-    end if
-    if (state_fldchk(exportState), 'Sw_ustokes', rc=rc) then
+    !if (state_fldchk(exportState, 'Sw_lamult')) then
+    !   call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
+    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !   do jsea=1, nseal
+    !      isea = iaproc + (jsea-1)*naproc
+    !      ix  = mapsf(isea,1)
+    !      iy  = mapsf(isea,2)
+    !      if (mapsta(iy,ix) == 1) then
+    !         sw_lamult(jsea)  = LAMULT(jsea)
+    !      else
+    !         sw_lamult(jsea)  = 1.
+    !      endif
+    !   enddo
+    !end if
+    if (state_fldchk(exportState, 'Sw_ustokes')) then
        call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        do jsea=1, nseal
@@ -655,7 +652,7 @@ contains
           endif
        enddo
     end if
-    if (state_fldchk(exportState), 'Sw_vstokes', rc=rc) then
+    if (state_fldchk(exportState, 'Sw_vstokes')) then
        call state_getfldptr(exportState, 'Sw_vstokes', fldptr1d=sw_vstokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        do jsea=1, nseal
@@ -891,8 +888,8 @@ contains
        end do
     end if
 
-    if ( (state_fldchk(exportState), 'Sw_pstokes_x', rc=rc) .and. &
-         (state_fldchk(exportState), 'Sw_pstokes_y', rc=rc)
+    if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
+         state_fldchk(exportState, 'Sw_pstokes_y') )then
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -912,12 +909,12 @@ contains
       end if
    endif
 
-   if ( (state_fldchk(exportState), 'Sw_ustokes1', rc=rc) .and. &
-        (state_fldchk(exportState), 'Sw_ustokes2', rc=rc) .and. &
-        (state_fldchk(exportState), 'Sw_ustokes3', rc=rc) .and. &
-        (state_fldchk(exportState), 'Sw_vstokes1', rc=rc) .and. &
-        (state_fldchk(exportState), 'Sw_vstokes2', rc=rc) .and. &
-        (state_fldchk(exportState), 'Sw_vstokes3', rc=rc)) then
+   if ( state_fldchk(exportState, 'Sw_ustokes1') .and. &
+        state_fldchk(exportState, 'Sw_ustokes2') .and. &
+        state_fldchk(exportState, 'Sw_ustokes3') .and. &
+        state_fldchk(exportState, 'Sw_vstokes1') .and. &
+        state_fldchk(exportState, 'Sw_vstokes2') .and. &
+        state_fldchk(exportState, 'Sw_vstokes3') ) then
 
       call state_getfldptr(exportState, 'Sw_ustokes1', fldptr1d=sw_ustokes1, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
