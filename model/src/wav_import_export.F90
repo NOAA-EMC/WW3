@@ -1162,6 +1162,25 @@ contains
   end subroutine state_getfldptr
 
   !===============================================================================
+  logical function state_fldchk(State, fldname)
+    ! ----------------------------------------------
+    ! Determine if field is in state
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_State) , intent(in)  :: State
+    character(len=*) , intent(in)  :: fldname
+
+    ! local variables
+    type(ESMF_StateItem_Flag) :: itemType
+    ! ----------------------------------------------
+
+    call ESMF_StateGet(State, trim(fldname), itemType)
+    State_FldChk = (itemType /= ESMF_STATEITEM_NOTFOUND)
+
+  end function state_fldchk
+
+  !===============================================================================
   subroutine CalcCharnk ( chkn )
 
     ! Calculate Charnok for export
