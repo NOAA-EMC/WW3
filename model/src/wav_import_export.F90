@@ -6,6 +6,11 @@ module wav_import_export
   use wav_kind_mod    , only : r8 => shr_kind_r8
   use wav_shr_methods , only : ymd2date
   use wav_shr_methods , only : chkerr
+#ifdef CESMCOUPLED
+    use w3constants   , only : grav, tpi, dwat
+#else
+    use constants     , only : grav, tpi, dwat
+#endif
 
   implicit none
   private ! except
@@ -545,9 +550,11 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    !TODO: what happened to lamult?
+#ifdef CESMCOUPLED
+    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP, LAMULT
+#else
     use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
-    !use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
+#endif
     use w3wdatmd      , only : va
     use w3odatmd      , only : naproc, iaproc
     use w3gdatmd      , only : nseal, MAPSTA, MAPFS, MAPSF, USSPF, NK
@@ -624,20 +631,23 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !if (state_fldchk(exportState, 'Sw_lamult')) then
-    !   call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
-    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !   do jsea=1, nseal
-    !      isea = iaproc + (jsea-1)*naproc
-    !      ix  = mapsf(isea,1)
-    !      iy  = mapsf(isea,2)
-    !      if (mapsta(iy,ix) == 1) then
-    !         sw_lamult(jsea)  = LAMULT(jsea)
-    !      else
-    !         sw_lamult(jsea)  = 1.
-    !      endif
-    !   enddo
-    !end if
+#ifdef CESMCOUPLED
+    if (state_fldchk(exportState, 'Sw_lamult')) then
+      call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      do jsea=1, nseal
+         isea = iaproc + (jsea-1)*naproc
+         ix  = mapsf(isea,1)
+         iy  = mapsf(isea,2)
+         if (mapsta(iy,ix) == 1) then
+            sw_lamult(jsea)  = LAMULT(jsea)
+         else
+            sw_lamult(jsea)  = 1.
+         endif
+      enddo
+    end if
+#endif
+
     if (state_fldchk(exportState, 'Sw_ustokes')) then
        call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1243,7 +1253,6 @@ contains
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
     use w3wdatmd,   only : va, ust
     use w3odatmd,   only : naproc, iaproc
-    use constants,  only : grav
 #ifdef W3_ST3
     use w3src3md,   only : w3spr3
 #endif
@@ -1302,7 +1311,6 @@ contains
     use w3gdatmd,  only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,  only : dw, cg, wn
     use w3odatmd,  only : naproc, iaproc
-    use constants, only : tpi, grav
 
     ! input/output variables
     real, intent(in)            :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
@@ -1375,7 +1383,6 @@ contains
     use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
     use w3adatmd,   only : dw, cg, wn
     use w3odatmd,   only : naproc, iaproc
-    use constants,  only : dwat, grav
 #ifdef W3_PDLIB
     use yowNodepool, only: np, iplg
 #endif
