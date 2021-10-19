@@ -1162,30 +1162,31 @@ contains
   end subroutine state_getfldptr
 
   !===============================================================================
-  subroutine CalcRoughl ( wrln, rc)
+  subroutine CalcCharnk ( chkn )
 
-    !  Calculate 2D wave roughness length for export
+    ! Calculate Charnok for export
 
-    use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
-    use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
-    use w3wdatmd,   only : va, ust
+    use w3gdatmd,   only : nseal, nk, nth, sig, mapsf, mapsta, nspec
+    use w3adatmd,   only : cg, wn, charn, u10, u10d
+    use w3wdatmd,   only : va
     use w3odatmd,   only : naproc, iaproc
-    use constants,  only : grav
+#ifdef W3_ST3
+    use w3src3md,   only : w3spr3
+#endif
+#ifdef W3_ST4
     use w3src4md,   only : w3spr4
-
+#endif
     ! input/output variables
-    real(r8), pointer     :: wrln(:)
-    integer , intent(out) :: rc
+    real(ESMF_KIND_R8), pointer :: chkn(:)  ! 2D Charnock export field pointer
 
     ! local variables
-    integer       :: isea, jsea, ix, iy
-    real          :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
-    real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
-    logical       :: llws(nspec)
-    logical, save :: firstCall = .true.
+    real   , parameter :: zero  = 0.0
+    integer            :: isea, jsea, ix, iy
+    real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    logical            :: llws(nspec)
+    logical, save      :: firstCall = .true.
     !----------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
 
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
@@ -1197,11 +1198,77 @@ contains
              llws(:) = .true.
              ustar = zero
              ustdr = zero
+#ifdef W3_ST3
+            call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                         emean, fmean, fmean1, wnmean, amax,         &
+                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+#endif
+#ifdef W3_ST4
+             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
+                         emean, fmean, fmean1, wnmean, amax,         &
+                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                         tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                         dlwmean )
+#endif
+          endif !firstCall
+          chkn(jsea) = charn(jsea)
+       endif
+    enddo jsea_loop
+
+  end subroutine CalcCharnk
+
+  !===============================================================================
+  subroutine CalcRoughl ( wrln )
+
+    ! Calculate 2D wave roughness length for export
+
+    use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
+    use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
+    use w3wdatmd,   only : va, ust
+    use w3odatmd,   only : naproc, iaproc
+    use constants,  only : grav
+#ifdef W3_ST3
+    use w3src3md,   only : w3spr3
+#endif
+#ifdef W3_ST4
+    use w3src4md,   only : w3spr4
+#endif
+
+    ! input/output variables
+    real(r8), pointer     :: wrln(:)
+
+    ! local variables
+    integer       :: isea, jsea, ix, iy
+    real          :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
+    real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
+    logical       :: llws(nspec)
+    logical, save :: firstCall = .true.
+    !----------------------------------------------------------------------
+
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       if ( mapsta(iy,ix) == 1 ) then
+          if ( firstCall ) then
+             charn(jsea) = zero
+             llws(:) = .true.
+             ustar = zero
+             ustdr = zero
+#ifdef W3_ST3
+             call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                          emean, fmean, fmean1, wnmean, amax,         &
+                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                          tauwy, cd, z0, charn(jsea), llws, fmeanws )
+#endif
+#ifdef W3_ST4
              call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                  emean, fmean, fmean1, wnmean, amax,         &
-                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                  dlwmean )
+                          emean, fmean, fmean1, wnmean, amax,         &
+                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                          tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                          dlwmean )
+#endif
           endif !firstCall
           wrln(jsea) = charn(jsea)*ust(isea)**2/grav
        endif
@@ -1210,80 +1277,6 @@ contains
     firstCall = .false.
 
   end subroutine CalcRoughl
-
-  !===============================================================================
-  subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
-
-    ! Calculate 2D radiation stresses for export
-
-    use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
-    use w3adatmd,   only : dw, cg, wn
-    use w3odatmd,   only : naproc, iaproc
-    use constants,  only : dwat, grav
-#ifdef W3_PDLIB
-    use yowNodepool, only: np, iplg
-#endif
-
-    ! input/output variables
-    real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
-    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
-    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
-    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
-
-    ! local variables
-    character(ESMF_MAXSTR) :: cname
-    character(128)         :: msg
-    real(8), parameter     :: half  = 0.5
-    real(8), parameter     ::  one  = 1.0
-    real(8), parameter     ::  two  = 2.0
-    integer                :: isea, jsea, ik, ith
-    real(8)                :: sxxs, sxys, syys
-    real(8)                :: akxx, akxy, akyy, cgoc, facd, fack, facs
-    !----------------------------------------------------------------------
-
-    facd = dwat*grav
-#ifdef W3_PDLIB
-    if ( LPDLIB == .FALSE. ) then
-#endif
-       jsea_loop: do jsea = 1,nseal
-          isea = iaproc + (jsea-1)*naproc
-          if ( dw(isea).le.zero ) cycle jsea_loop
-          sxxs = zero
-          sxys = zero
-          syys = zero
-          ik_loop: do ik = 1,nk
-             akxx = zero
-             akxy = zero
-             akyy = zero
-             cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
-             cgoc = min(one,max(half,cgoc))
-             ith_loop: do ith = 1,nth
-                akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
-                akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
-                akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
-             enddo ith_loop
-             fack = dden(ik)/cg(ik,isea)
-             sxxs = sxxs + akxx*fack
-             sxys = sxys + akxy*fack
-             syys = syys + akyy*fack
-          enddo ik_loop
-          facs = (one+fte/cg(nk,isea))*facd
-          sxxn(jsea) = sxxs*facs
-          sxyn(jsea) = sxys*facs
-          syyn(jsea) = syys*facs
-       enddo jsea_loop
-#ifdef W3_PDLIB
-    else
-       jsea_loop2: do jsea = 1,np
-          isea = iplg(jsea)
-          sxxn(jsea) = sxx(jsea)
-          sxyn(jsea) = sxy(jsea)
-          syyn(jsea) = syy(jsea)
-       enddo jsea_loop2
-    endif
-#endif
-
-  end subroutine CalcRadstr2D
 
   !===============================================================================
   subroutine CalcBotcur ( a, wbxn, wbyn, wbpn )
@@ -1359,53 +1352,6 @@ contains
   end subroutine CalcBotcur
 
   !===============================================================================
-  subroutine CalcRoughl ( wrln )
-
-    ! Calculate 2D wave roughness length for export
-
-    use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
-    use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
-    use w3wdatmd,   only : va, ust
-    use w3odatmd,   only : naproc, iaproc
-    use constants,  only : grav
-    use w3src4md,   only : w3spr4
-
-    ! input/output variables
-    real(r8), pointer     :: wrln(:)
-
-    ! local variables
-    integer       :: isea, jsea, ix, iy
-    real          :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
-    real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
-    logical       :: llws(nspec)
-    logical, save :: firstCall = .true.
-    !----------------------------------------------------------------------
-
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       if ( mapsta(iy,ix) == 1 ) then
-          if ( firstCall ) then
-             charn(jsea) = zero
-             llws(:) = .true.
-             ustar = zero
-             ustdr = zero
-             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                  emean, fmean, fmean1, wnmean, amax,         &
-                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                  dlwmean )
-          endif !firstCall
-          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-       endif
-    enddo jsea_loop
-
-    firstCall = .false.
-
-  end subroutine CalcRoughl
-
-  !===============================================================================
   subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
 
     ! Calculate 2D radiation stresses for export
@@ -1478,50 +1424,5 @@ contains
 #endif
 
   end subroutine CalcRadstr2D
-
-  !===============================================================================
-  subroutine CalcCharnk ( chkn )
-
-    ! Calculate Charnok for export
-
-    use w3gdatmd,   only : nseal, nk, nth, sig, mapsf, mapsta, nspec
-    use w3adatmd,   only : cg, wn, charn, u10, u10d
-    use w3wdatmd,   only : va
-    use w3odatmd,   only : naproc, iaproc
-    use w3src4md,   only : w3spr4
-
-    ! input/output variables
-    real(ESMF_KIND_R8), pointer :: chkn(:)  ! 2D Charnock export field pointer
-
-    ! local variables
-    real   , parameter :: zero  = 0.0
-    integer            :: isea, jsea, ix, iy
-    real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
-    real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
-    logical            :: llws(nspec)
-    logical, save      :: firstCall = .true.
-    !----------------------------------------------------------------------
-
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       if ( mapsta(iy,ix) == 1 ) then
-          if ( firstCall ) then
-             charn(jsea) = zero
-             llws(:) = .true.
-             ustar = zero
-             ustdr = zero
-             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                  emean, fmean, fmean1, wnmean, amax,         &
-                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                  dlwmean )
-          endif !firstCall
-          chkn(jsea) = charn(jsea)
-       endif
-    enddo jsea_loop
-
-  end subroutine CalcCharnk
 
 end module wav_import_export
