@@ -12,5 +12,5 @@ tmp_*
 work*
 nuopc*.mk
 tools/makefile
-ftn/makefile
-ftn/makefile_*
+src/makefile
+src/makefile_*
