@@ -574,6 +574,8 @@ contains
     real(r8), pointer :: wbcuru(:)
     real(r8), pointer :: wbcurv(:)
     real(r8), pointer :: wbcurp(:)
+    !real(r8), pointer :: uscurr(:)
+    !real(r8), pointer :: vscurr(:)
     real(r8), pointer :: sxxn(:)
     real(r8), pointer :: sxyn(:)
     real(r8), pointer :: syyn(:)
@@ -611,15 +613,18 @@ contains
     real(r8), pointer :: wave_elevation_spectrum24(:)
     real(r8), pointer :: wave_elevation_spectrum25(:)
 
+    ! Partitioned stokes drift
+#if CESMCOUPLED
     real(r8), pointer :: sw_pstokes_x(:,:)
     real(r8), pointer :: sw_pstokes_y(:,:)
-
+#else
     real(r8), pointer :: sw_ustokes1(:)
     real(r8), pointer :: sw_vstokes1(:)
     real(r8), pointer :: sw_ustokes2(:)
     real(r8), pointer :: sw_vstokes2(:)
     real(r8), pointer :: sw_ustokes3(:)
     real(r8), pointer :: sw_vstokes3(:)
+#endif
 
     character(len=*), parameter :: subname='(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
@@ -688,6 +693,19 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
+
+    !TODO: what is difference between uscurr/vscurr and sw_ustokes,sw_vstokes?
+    ! uscurr has standard name eastward_stokes_drift_current
+    ! vscurr has standard name northward_stokes_drift_current
+    ! in fd_nems.yaml but this seems to be calculated a (:,:) value
+    !if ( state_fldchk(exportState, 'uscurr') .and. &
+    !     state_fldchk(exportState, 'vscurr')) then
+    !   call state_getfldptr(exportState, 'uscurr', fldptr1d=uscurr, rc=rc)
+    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !   call state_getfldptr(exportState, 'vscurr', fldptr1d=vscurr, rc=rc)
+    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !   call CalcStokes3D( va, uscurr, vscurr )
+    !endif
 
     if ( state_fldchk(exportState, 'wbcuru') .and. &
          state_fldchk(exportState, 'wbcurv') .and. &
@@ -898,6 +916,7 @@ contains
        end do
     end if
 
+#ifdef CESMCOUPLED
     if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
          state_fldchk(exportState, 'Sw_pstokes_y') )then
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -918,7 +937,7 @@ contains
          end do
       end if
    endif
-
+#else
    if ( state_fldchk(exportState, 'Sw_ustokes1') .and. &
         state_fldchk(exportState, 'Sw_ustokes2') .and. &
         state_fldchk(exportState, 'Sw_ustokes3') .and. &
@@ -959,6 +978,7 @@ contains
       end do
 
    end if
+#endif
 
   end subroutine export_fields
 
@@ -1216,31 +1236,29 @@ contains
 
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       if ( mapsta(iy,ix) == 1 ) then
-          if ( firstCall ) then
-             charn(jsea) = zero
-             llws(:) = .true.
-             ustar = zero
-             ustdr = zero
+       if ( firstCall ) then
+          charn(jsea) = zero
+          llws(:) = .true.
+          ustar = zero
+          ustdr = zero
 #ifdef W3_ST3
-            call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                         emean, fmean, fmean1, wnmean, amax,         &
-                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+          call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+                       emean, fmean, fmean1, wnmean, amax,         &
+                       u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                       tauwy, cd, z0, charn(jsea), llws, fmeanws )
 #endif
 #ifdef W3_ST4
-             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
-                         emean, fmean, fmean1, wnmean, amax,         &
-                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                         tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                         dlwmean )
+           call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
+                       emean, fmean, fmean1, wnmean, amax,         &
+                       u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                       tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                       dlwmean )
 #endif
-          endif !firstCall
-          chkn(jsea) = charn(jsea)
-       endif
+       endif !firstCall
+       chkn(jsea) = charn(jsea)
     enddo jsea_loop
+
+    firstCall = .false.
 
   end subroutine CalcCharnk
 
@@ -1261,7 +1279,7 @@ contains
 #endif
 
     ! input/output variables
-    real(r8), pointer     :: wrln(:)
+    real(r8), pointer     :: wrln(:) ! 2D roughness length export field ponter
 
     ! local variables
     integer       :: isea, jsea, ix, iy
@@ -1405,46 +1423,33 @@ contains
     !----------------------------------------------------------------------
 
     facd = dwat*grav
-#ifdef W3_PDLIB
-    if ( LPDLIB == .FALSE. ) then
-#endif
-       jsea_loop: do jsea = 1,nseal
-          isea = iaproc + (jsea-1)*naproc
-          if ( dw(isea).le.zero ) cycle jsea_loop
-          sxxs = zero
-          sxys = zero
-          syys = zero
-          ik_loop: do ik = 1,nk
-             akxx = zero
-             akxy = zero
-             akyy = zero
-             cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
-             cgoc = min(one,max(half,cgoc))
-             ith_loop: do ith = 1,nth
-                akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
-                akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
-                akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
-             enddo ith_loop
-             fack = dden(ik)/cg(ik,isea)
-             sxxs = sxxs + akxx*fack
-             sxys = sxys + akxy*fack
-             syys = syys + akyy*fack
-          enddo ik_loop
-          facs = (one+fte/cg(nk,isea))*facd
-          sxxn(jsea) = sxxs*facs
-          sxyn(jsea) = sxys*facs
-          syyn(jsea) = syys*facs
-       enddo jsea_loop
-#ifdef W3_PDLIB
-    else
-       jsea_loop2: do jsea = 1,np
-          isea = iplg(jsea)
-          sxxn(jsea) = sxx(jsea)
-          sxyn(jsea) = sxy(jsea)
-          syyn(jsea) = syy(jsea)
-       enddo jsea_loop2
-    endif
-#endif
+    jsea_loop: do jsea = 1,nseal
+       isea = iaproc + (jsea-1)*naproc
+       if ( dw(isea).le.zero ) cycle jsea_loop
+       sxxs = zero
+       sxys = zero
+       syys = zero
+       ik_loop: do ik = 1,nk
+          akxx = zero
+          akxy = zero
+          akyy = zero
+          cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
+          cgoc = min(one,max(half,cgoc))
+          ith_loop: do ith = 1,nth
+             akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
+             akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
+             akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
+          enddo ith_loop
+          fack = dden(ik)/cg(ik,isea)
+          sxxs = sxxs + akxx*fack
+          sxys = sxys + akxy*fack
+          syys = syys + akyy*fack
+       enddo ik_loop
+       facs = (one+fte/cg(nk,isea))*facd
+       sxxn(jsea) = sxxs*facs
+       sxyn(jsea) = sxys*facs
+       syyn(jsea) = syys*facs
+    enddo jsea_loop
 
   end subroutine CalcRadstr2D
 
