@@ -99,7 +99,7 @@ check_switches()
 #sort:stress:
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLX5' ;;
 #sort:dstress:
       dstress) TY='upto1'
                ID='Diagnostic stress comp'
@@ -444,6 +444,7 @@ check_switches()
    FLX2) str_st1='OK' ; str_st2='OK' ; str_st3='no' ; str_st6='OK' ;;
    FLX3) str_st1='OK' ; str_st2='OK' ; str_st3='no' ; str_st6='OK' ;;
    FLX4) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK' ;;
+   FLX5) str_st1='no' ; str_st2='no' ; str_st3='yes' ; str_st6='OK' ;;
   esac
 
   if [ -n "$thread2" ] && [ "$thread1" != 'OMPG' ]
@@ -518,7 +519,7 @@ check_switches()
   then
       echo ' '
       echo "   *** !/ST6 cannot be used in combination with !/$stress"
-      echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
+      echo "       Choose from FLX1, FLX2, FLX3, or FLX4 or FLX5."
       echo ' ' ; exit 14
   fi
 
@@ -591,6 +592,8 @@ switch_files()
    FLX3) flx='w3flx3md'
          flxx=$NULL ;;
    FLX4) flx='w3flx4md'
+         flxx=$NULL ;;
+   FLX5) flx='w3flx5md'
          flxx=$NULL ;;
   esac
 
@@ -767,7 +770,7 @@ create_file_list()
                core=
                data='w3wdatmd w3gdatmd w3adatmd w3idatmd w3odatmd wmmdatmd'
                prop=
-            sourcet="w3parall w3triamd w3gridmd $stx $nlx $btx $is $uostmd"
+            sourcet="w3parall w3triamd w3gridmd $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd w3nmlgridmd $pdlibyow $memcode"
                 if [ "$scrip" = 'SCRIP' ]
@@ -784,7 +787,7 @@ create_file_list()
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $tr $trx $bt $setupcode $stx $nlx $btx $is wmmdatmd w3parall $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $tr $trx $bt $setupcode $stx $flx $nlx $btx $is wmmdatmd w3parall $uostmd"
                  IO='w3iogrmd w3iorsmd'
                 aux="constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd" ;;
       ww3_bound)
@@ -805,14 +808,14 @@ create_file_list()
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx  $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $flx $nlx $btx  $is $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd w3parall" ;;
       ww3_prnc)
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $flx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd w3nmlprncmd" ;;
       ww3_prtide) 
@@ -882,7 +885,7 @@ create_file_list()
                core=
                data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $nlx $btx $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
@@ -890,7 +893,7 @@ create_file_list()
                core='w3initmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $nlx $btx  $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3parall w3triamd $stx $flx $nlx $btx  $is $uostmd"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounfmd $smco w3ounfmetamd w3metamd" ;;
@@ -927,7 +930,7 @@ create_file_list()
                core=
                data="w3parall wmmdatmd w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $nlx $btx $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $flx $nlx $btx $is $uostmd"
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
@@ -935,7 +938,7 @@ create_file_list()
                core='w3fldsmd'
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $nlx $btx $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $flx $nlx $btx $is $uostmd"
                  IO="w3iogrmd  $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
       ww3_gint) 
@@ -950,7 +953,7 @@ create_file_list()
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $nlx $btx $tr $bs $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $flx $nlx $btx $tr $bs $is $uostmd"
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
@@ -965,7 +968,7 @@ create_file_list()
                core='w3strkmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd"
                prop=
-            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $nlx $btx $tr $bs $is $uostmd"
+            sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $flx $nlx $btx $tr $bs $is $uostmd"
                  IO=
                 aux="constants w3servmd w3timemd w3arrymd w3gsrumd w3parall" ;;
       libww3|libww3.so) 
