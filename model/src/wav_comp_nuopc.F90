@@ -150,25 +150,20 @@ module wav_comp_nuopc
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
-  
+
   use w3gdatmd              , only : nseal, nsea, dtmax, dtcfl, dtmin, nx, ny, mapsf, w3nmod, w3setg
   use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
   use w3wdatmd              , only : time, w3ndat, w3dimw, w3setw
   use w3adatmd              , only : w3naux, w3seta
-  !HK flags is now inflags1
   use w3idatmd              , only : inflags1, inflags2, w3seti, w3ninp
   use w3idatmd              , only : TC0, CX0, CY0, TCN, CXN, CYN !HK, NX, NY
   use w3idatmd              , only : TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN
-  !TODO: HML?
-  !use w3idatmd              , only: TIN, ICEI, TLN, WLEV, HML
-  use w3idatmd              , only : TIN, ICEI, TLN, WLEV
+  use w3idatmd              , only : TIN, ICEI, TLN, WLEV ! HML
   use w3odatmd              , only : w3nout, w3seto, naproc, iaproc, napout, naperr, nds !cmb
   use w3odatmd              , only : idout, fnmpre, iostyp, nogrp, ngrpp, noge !HK
   use w3initmd              , only : w3init
   use w3wavemd              , only : w3wave
   use w3timemd              , only : stme21
-  !use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
-  !use w3cesmmd              , only : inst_index, inst_name, inst_suffix
   use ESMF
   use NUOPC                 , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC                 , only : NUOPC_CompFilterPhaseMap, NUOPC_IsUpdated, NUOPC_IsAtTime
@@ -180,26 +175,21 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : model_label_SetRunClock    => label_SetRunClock
   use NUOPC_Model           , only : model_label_Finalize       => label_Finalize
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
-
   use wav_wrapper_mod       , only : t_startf, t_stopf, t_barrierf
   use wav_wrapper_mod       , only : shr_file_getlogunit, shr_file_setlogunit
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-
-  !use shr_nl_mod            , only : shr_nl_find_group_name  ! TODO: implement this here
-  !use shr_file_mod          , only : shr_file_getunit !TODO: ???
-
-  !use shr_sys_mod           , only : shr_sys_flush, shr_sys_abort
-  !use shr_nl_mod            , only : shr_nl_find_group_name
-  !use shr_mpi_mod           , only : shr_mpi_bcast
-  !use shr_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  !use shr_file_mod          , only : shr_file_getLogUnit, shr_file_setLogUnit, shr_file_getunit
-  !use shr_cal_mod           , only : shr_cal_ymd2date, shr_cal_advDateInt
   use wav_import_export     , only : advertise_fields, realize_fields, import_fields, export_fields
   use wav_import_export     , only : state_getfldptr
   use wav_import_export     , only : wav_coupling_to_cice, wav_coupling_to_mom
   use wav_shr_methods       , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit
   use wav_shr_methods       , only : set_component_logging, get_component_instance, log_clock_advance
   use wav_shr_methods       , only : ymd2date
+#ifdef CESMCOUPLED
+  use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
+  use w3cesmmd              , only : inst_index, inst_name, inst_suffix
+  use shr_nl_mod            , only : shr_nl_find_group_name
+  use shr_file_mod          , only : shr_file_getunit
+#endif
 
   implicit none
   private ! except
@@ -214,29 +204,28 @@ module wav_comp_nuopc
 
   include "mpif.h"
 
-  !TODO:35->40
-  integer                        :: odat(40) !HK odat is 35
-  !TODO: added from w3cesmmd
+#ifdef CESMCOUPLED
+  integer :: odat(35)
+#else
+  integer :: odat(40)
+
   ! runtype is used by W3SRCE (values are startup, branch, continue)
-      character(len=16),public :: runtype
+  character(len=16),public :: runtype
 
-      ! if a run is a startup or branch run, then initfile is used
-      ! to construct the initial file and used in W3IORSMD
-      character(len=256), public :: initfile
+  ! if a run is a startup or branch run, then initfile is used
+  ! to construct the initial file and used in W3IORSMD
+  character(len=256), public :: initfile
 
-      ! if a run is a continue run, then casename is used to construct
-      ! the restart filename in W3IORSMD
-      character(len=256), public :: casename
+  ! if a run is a continue run, then casename is used to construct
+  ! the restart filename in W3IORSMD
+  character(len=256), public :: casename
 
-      logical, public :: rstwr   ! true => write restart at end of day
-      logical, public :: histwr  ! true => write history file (snapshot)
+  logical, public :: rstwr   ! true => write restart at end of day
+  logical, public :: histwr  ! true => write history file (snapshot)
+  integer, public :: outfreq ! output frequency in hours
+#endif
 
-      integer, public :: outfreq ! output frequency in hours
-      integer, public :: stdout  ! output log file
-
-      integer, public                  :: inst_index            ! number of current instance (ie. 1)
-      character(len=16), public :: inst_name   ! fullname of current instance (ie. "wav_0001")
-      character(len=16), public :: inst_suffix ! char string associated with instance
+  integer, public :: stdout  ! output log file
 
   !--------------------------------------------------------------------------
   ! Private module data
@@ -446,8 +435,6 @@ contains
     integer                        :: ndso, ndse, nds(13), ntrace(2), time0(2)
     integer                        :: timen(2), nh(4), iprt(6)
     integer                        :: J0  ! CMB
-    !TODO:35->40
-    !integer                        :: odat(40) !HK odat is 35
     integer                        :: i,j,npts
     integer                        :: ierr
     real, allocatable              :: x(:), y(:)
@@ -525,11 +512,11 @@ contains
     ! determine instance information
     !----------------------------------------------------------------------------
 
-    ! TODO:
+#ifdef CESMCOUPLED
     call get_component_instance(gcomp, inst_suffix, inst_index, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     inst_name = "WAV"//trim(inst_suffix)
+#endif
 
     !----------------------------------------------------------------------------
     ! reset shr logging to my log file
@@ -551,26 +538,27 @@ contains
     nds( 2) = stdout
     nds( 3) = stdout
     nds( 4) = stdout
-    !TODO:
-    !nds( 5) = shr_file_getunit()
-    !nds( 6) = shr_file_getunit()
-    !nds( 7) = shr_file_getunit()
-    !nds( 8) = shr_file_getunit()
-    !nds( 9) = shr_file_getunit()
-    !nds(10) = shr_file_getunit()
-    !nds(11) = shr_file_getunit()
-    !nds(12) = shr_file_getunit()
-    !nds(13) = shr_file_getunit()
+#ifdef CESMCOUPLED
+    nds( 5) = shr_file_getunit()
+    nds( 6) = shr_file_getunit()
+    nds( 7) = shr_file_getunit()
+    nds( 8) = shr_file_getunit()
+    nds( 9) = shr_file_getunit()
+    nds(10) = shr_file_getunit()
+    nds(11) = shr_file_getunit()
+    nds(12) = shr_file_getunit()
+    nds(13) = shr_file_getunit()
+#endif
 
     ndso      =  stdout
     ndse      =  stdout
     ntrace(1) =  nds(3)
     ntrace(2) =  10
 
-    !TODO:
-    ! Redirect share output to wav log
-    !call shr_file_getLogUnit (shrlogunit)
-    !call shr_file_setLogUnit (ndso)
+#ifdef CESMCOUPLED
+    call shr_file_getLogUnit (shrlogunit)
+    call shr_file_setLogUnit (ndso)
+#endif
 
     if ( iaproc == napout ) write (ndso,900)
 
@@ -593,12 +581,13 @@ contains
        write(ndso,*) 'starttype: branch'
     end if
 
-    !TODO:
+#ifdef CESMCOUPLED
     if ( iaproc == napout) then
        write(ndso,*) trim(subname),' inst_name   = ',trim(inst_name)
        write(ndso,*) trim(subname),' inst_index  = ',inst_index
        write(ndso,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
     endif
+#endif
 
     !--------------------------------------------------------------------
     ! Define input fields inflags1 and inflags2 settings
@@ -612,7 +601,7 @@ contains
 
     !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
     !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
-    
+
     ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth on
     inflags1(:) = .false.
     inflags1(1:5) = .true.
@@ -620,7 +609,7 @@ contains
     if (wav_coupling_to_cice) then
        inflags1(-7) = .true. ! LR ice thickness
        inflags1(-3) = .true. ! LR ice floe size
-       
+
        ! LR - I don't understand the difference between inflags1 and inflags2
        ! I am setting them both here to get thickness and floe size import to waves
        ! and to turn on attenuation
@@ -874,42 +863,64 @@ contains
     !--------------------------------------------------------------------
     ! Wave model initializations
     !--------------------------------------------------------------------
-! TODO:
-!    ! Notes on ww3 initialization:
-!    ! ww3 read initialization occurs in w3iors (which is called by initmd)
-!    ! For a startup (including hybrid) or branch run the initial datafile is
-!    ! set in namelist input 'initfile'
-!    ! For a continue run - the initfile vluae is created from the time(1:2)
-!    ! array set below
-!
-!    if ( iaproc .eq. napout ) write (ndso,950)
-!    if ( iaproc .eq. napout ) write (ndso,951) 'wave model ...'
-!
-!    ! Read namelist (set initfile in w3cesmmd)
-!    if ( iaproc .eq. napout ) then
-!       write(ndso,*) 'Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-!       open(newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
-!       !call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
-!       if (ierr == 0) then
-!          read (unitn, ww3_inparm, iostat=ierr)
-!          if (ierr /= 0) then
-!             call ESMF_LogWrite(trim(subname)//' problem reading ww3_inparm namelist',&
-!                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-!             rc = ESMF_FAILURE
-!             return
-!          end if
-!       end if
-!       close( unitn )
-!    end if
-!    call ESMF_VMBroadcast(VM, initfile, count=len(initfile), rootPet=0, rc=rc)
-!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-!    call ESMF_VMBroadcast(VM, outfreq, count=len(outfreq), rootPet=0, rc=rc)
-!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-!
-!    ! Set casename (in w3cesmmd)
-!    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=cvalue, rc=rc)
-!    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-!    read(cvalue,*) casename
+
+#ifdef CESMCOUPLED
+    ! Notes on ww3 initialization:
+    ! ww3 read initialization occurs in w3iors (which is called by initmd)
+    ! For a startup (including hybrid) or branch run the initial datafile is
+    ! set in namelist input 'initfile'
+    ! For a continue run - the initfile vluae is created from the time(1:2)
+    ! array set below
+
+    if ( iaproc .eq. napout ) write (ndso,950)
+    if ( iaproc .eq. napout ) write (ndso,951) 'wave model ...'
+
+    ! Read namelist (set initfile in w3cesmmd)
+    if ( iaproc .eq. napout ) then
+       write(ndso,*) 'Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       open(newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
+       call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
+       if (ierr == 0) then
+          read (unitn, ww3_inparm, iostat=ierr)
+          if (ierr /= 0) then
+             call ESMF_LogWrite(trim(subname)//' problem reading ww3_inparm namelist',&
+                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+             rc = ESMF_FAILURE
+             return
+          end if
+       end if
+       close( unitn )
+    end if
+
+    ! ESMF does not have a broadcast for chars
+    call mpi_bcast(initfile, len_trim(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for initfile ', &
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+    call mpi_bcast(outfreq, 1, MPI_INTEGER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for outfreq ', &
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+
+    ! Set casename (in w3cesmmd)
+    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=cvalue, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    read(cvalue,*) casename
+
+#else
+    ! Notes on ww3 initialization:
+    ! ww3 read initialization occurs in w3iors (which is called by initmd)
+    ! For a startup (including hybrid) or branch run the initial datafile is
+    ! set in namelist input 'initfile'
+    ! For a continue run - the initfile value is created from the time(1:2)
+    ! This needs to be implemented for UFS!
+#endif
 
     ! Read in input data and initialize the model
     ! w3init calls w3iors which:
@@ -928,21 +939,13 @@ contains
     call w3init ( 1, .true., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
-    ! HK these values are appropriate for ww3a only
-    ! other grids will need smaller timesteps
-    ! overwrite dt values with variables from coupler
-    ! is this a problem with any things being set in w3init?
-    !dtmax  = real(dtime_sync)
-    !dtcfl  = real(dtime_sync) / 2. !checked by adrean
-    !dtcfli = real(dtime_sync)      !checked by adrean
-    !dtmin  = real(dtime_sync) / 12 !checked by adrean
-
     ! gx17
     !180.0000       180.0000       180.0000       15.00000
     dtmax  = 1800.0000 ! LR
     dtcfl  = 600.0000
-    !TODO: not present?
-    !dtcfli = 1800.0000
+#ifdef CESMCOUPLED
+    dtcfli = 1800.0000
+#endif
     dtmin  = 1800.00000
 
     call mpi_barrier ( mpi_comm, ierr )
@@ -1229,7 +1232,7 @@ contains
   !=====================================================================
 
   subroutine ModelAdvance(gcomp, rc)
-  
+
     !------------------------
     ! Run WW3
     !------------------------
@@ -1342,7 +1345,11 @@ contains
     !------------
     ! Run the wave model for the given interval
     !------------
+#ifdef CESMCOUPLED
+    call w3wave ( 1, timen )
+#else
     call w3wave ( 1, odat, timen )
+#endif
 
     !------------
     ! Create export state
@@ -1534,10 +1541,12 @@ contains
     ! Finalize routine
     !--------------------------------
 
-   !print*, 'HK model finalize: ',  dtmax, dtcfl, dtcfli, dtmin
-   !TODO: dtcfli is ?
-   print*, 'HK model finalize: ',  dtmax, dtcfl, dtmin
     rc = ESMF_SUCCESS
+
+#ifdef CESMCOUPLED
+    print*, 'HK model finalize: ',  dtmax, dtcfl, dtcfli, dtmin
+#endif
+
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     if (masterproc) then
