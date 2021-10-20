@@ -92,12 +92,12 @@
     exit 1
   fi
 
-  # ftn dir
-  makefile=$main_dir/ftn/makefile
-  if [ ! -d $main_dir/ftn ]
+  # src dir
+  makefile=$main_dir/src/makefile
+  if [ ! -d $main_dir/src ]
   then
     echo ' '
-    echo "[ERROR] Directory $main_dir/ftn not found"
+    echo "[ERROR] Directory $main_dir/src not found"
     echo '        Please check the content of your directory model'
     exit 1
   fi
@@ -359,7 +359,7 @@
     fi
 
     # clean up ftp
-    rm -f $main_dir/ftn/makefile
+    rm -f $main_dir/src/makefile
 
     # clean up exe
     mkdir -p $main_dir/exe
