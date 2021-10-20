@@ -412,9 +412,7 @@ contains
     type(ESMF_State)     :: exportState
     type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
-#ifndef CESMCOUPLED
-    use wminit                , only : wminitnml
-#endif
+
     ! local variables
     integer, parameter             :: nhmax = 200
     real                           :: a(nhmax,4)
@@ -457,11 +455,6 @@ contains
     character(len=23)              :: dtme21
     integer                        :: iam, mpi_comm
     character(len=10), allocatable :: pnames(:)
-#ifndef CESMCOUPLED
-    integer :: idsi, idso, idss, idst, idse
-    character(ESMF_MAXSTR) :: preamb = '.'
-    character(ESMF_MAXSTR) :: ifname = 'ww3_multi.inp'
-#endif
     character(len=*),parameter :: subname = '(wav_comp_nuopc:InitializeRealize)'
     ! -------------------------------------------------------------------
 
@@ -928,25 +921,6 @@ contains
     ! For a continue run - the initfile value is created from the time(1:2)
     ! This needs to be implemented for UFS!
 
-    ! 1.f Identify available unit numbers
-    ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
-    ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
-    ! the same unit.  After getting all the available unit numbers, close
-    ! the units since they will be opened within WMINIT.
-    call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch');
-    call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch');
-    call ESMF_UtilIOUnitGet(idss); open(unit=idss, status='scratch');
-    call ESMF_UtilIOUnitGet(idst); open(unit=idst, status='scratch');
-    call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch');
-    close(idsi); close(idso); close(idss); close(idst); close(idse);
-
-    if ( trim(ifname).eq.'ww3_multi.nml' ) then
-      call wminitnml ( idsi, idso, idss, idst, idse, trim(ifname), &
-                       mpicomm, preamb=preamb )
-    else
-      call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
-                    mpicomm, preamb=preamb )
-    endif
 #endif
 
     ! Read in input data and initialize the model
