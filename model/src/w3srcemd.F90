@@ -51,7 +51,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
-                          ALPHA, WN1, CG1, D_INP, U10ABS, U10DIR,
+                          ALPHA, WN1, CG1, D_INP, U10ABS, U10DIR,     &
 #ifdef W3_FLX5
                           TAUA, TAUADIR,                              &
 #endif
