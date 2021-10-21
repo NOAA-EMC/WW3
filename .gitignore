@@ -137,3 +137,4 @@ model/bin/wwatch3.env
 */.*.swp
 */*/.*.swp
 */*/*/.*.swp
+.DS_Store
