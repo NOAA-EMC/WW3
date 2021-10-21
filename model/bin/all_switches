@@ -1,7 +1,7 @@
 #!/bin/bash
 # --------------------------------------------------------------------------- #
 # all_switches : Make a list of all switches hat are found in the program     #
-#                (.ftn) files of WAVEWATCH III.                               #
+#                (.F90) files of WAVEWATCH III.                               #
 #                                                                             #
 # use         : all_switches                                                  #
 #                                                                             #
@@ -38,7 +38,7 @@
 # 2. Strip all switches from sources                                          #
 # --------------------------------------------------------------------------- #
 
-  cd $main_dir/ftn
+  cd $main_dir/src
 
   all=`sed -n '/^!\/[[:alpha:]]/'p *.ftn | awk '{print $1}' | \
        awk -F'!/' 'BEGIN{OFS="\n"}{$1=$1; print $0}' | \
