@@ -117,12 +117,12 @@
     exit 1
   fi
 
-  # ftn dir
-  makefile=$main_dir/ftn/makefile
-  if [ ! -d $main_dir/ftn ]
+  # src dir
+  makefile=$main_dir/src/makefile
+  if [ ! -d $main_dir/src ]
   then
     echo ' '
-    echo "[ERROR] Directory $main_dir/ftn not found"
+    echo "[ERROR] Directory $main_dir/src not found"
     echo '        Please check the content of your directory model'
     exit 1
   fi
@@ -385,14 +385,14 @@ EOF
   then
     rm -f *.l
   fi
-  cd $main_dir/ftn
+  cd $main_dir/src
 
 # 1.j Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   make_make='y'
   if test -f $switch_file_old
   then
-    if test -f $main_dir/ftn/makefile && \
+    if test -f $main_dir/src/makefile && \
        test -z "`diff $switch_file $switch_file_old`"
     then
       make_make='n'
