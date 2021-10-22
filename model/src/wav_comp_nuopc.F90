@@ -183,10 +183,10 @@ module wav_comp_nuopc
   use wav_shr_methods       , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit
   use wav_shr_methods       , only : set_component_logging, get_component_instance, log_clock_advance
   use wav_shr_methods       , only : ymd2date
+  use w3gdatmd              , only : dtcfli
 #ifdef CESMCOUPLED
   use w3cesmmd              , only : casename, initfile, rstwr, runtype, histwr, outfreq
   use w3cesmmd              , only : inst_index, inst_name, inst_suffix
-  use w3gdatmd              , only : dtcfli
   use shr_nl_mod            , only : shr_nl_find_group_name
   use shr_file_mod          , only : shr_file_getunit
   use shr_mpi_mod           , only : shr_mpi_bcast     ! TODO: remove
@@ -441,7 +441,6 @@ contains
     integer                        :: ndso, ndse, nds(13), ntrace(2), time0(2)
     integer                        :: timen(2), nh(4), iprt(6)
     integer                        :: J0  ! CMB
-    integer                        :: odat(35) !HK odat is 35
     integer                        :: i,j,npts
     integer                        :: ierr
     real, allocatable              :: x(:), y(:)
@@ -463,6 +462,11 @@ contains
     integer                        :: iam, mpi_comm
     character(len=10), allocatable :: pnames(:)
     character(len=*),parameter :: subname = '(wav_comp_nuopc:InitializeRealize)'
+#ifdef CESMCOUPLED
+    integer                        :: odat(35) !HK odat is 35
+#else
+    integer                        :: odat(40)
+#endif
     ! -------------------------------------------------------------------
 
     namelist /ww3_inparm/ initfile, outfreq
@@ -1325,7 +1329,11 @@ contains
     !------------
     ! Run the wave model for the given interval
     !------------
+#ifdef CESMCOUPLED
     call w3wave ( 1, timen )
+#else
+    call w3wave ( 1, odat, timen )
+#endif
 
     !------------
     ! Create export state

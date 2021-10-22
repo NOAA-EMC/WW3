@@ -192,10 +192,13 @@ contains
     !---------------------------------------------------------------------------
 
     use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
-    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5, HML
+    use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3odatmd    , only: naproc, iaproc, napout
     use w3wdatmd    , only: time
+#ifdef CESMCOUPLED
+    use w3idatmd    , only: HML
+#endif
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -386,7 +389,7 @@ contains
           end do
        end if
     end if
-
+#ifdef CESMCOUPLED
     ! ---------------
     ! INFLAGS1(5) - ocean boundary layer depth
     ! ---------------
@@ -403,6 +406,7 @@ contains
           end do
        end if
     end if
+#endif
 
     ! ---------------
     ! INFLAGS1(-7)
