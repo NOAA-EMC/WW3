@@ -43,6 +43,8 @@
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -57,7 +59,6 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%WINDS         = 'F'
 /
 
 ! -------------------------------------------------------------------- !
@@ -239,7 +240,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS T02 T0M1 T01 FP DIR SPR DP WBT'
-  TYPE%POINT%FILE          = '../input/points.list'
+  TYPE%POINT%FILE          = '../input_nl5_gaussian/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -326,7 +327,9 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_WND                =  0
+/
+
+&HOMOG_INPUT_NML
 /
 
 ! -------------------------------------------------------------------- !

@@ -44,6 +44,8 @@
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -58,13 +60,12 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%WINDS         = 'F'
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 !
-! * the point file is a space separated values per line : lon lat 'name'
+! * the point file is a space separated values per line :
 !   longitude latitude 'name' (C*40)
 !
 ! * the full list of field names is :
@@ -240,7 +241,6 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
-  TYPE%RESTART%EXTRA       = 'CHA'
 /
 
 ! -------------------------------------------------------------------- !
@@ -279,6 +279,7 @@
 &OUTPUT_DATE_NML
   DATE%FIELD          = '20110902 000000' '180' '20110902 010000'
   DATE%RESTART        = '20110902 010000' '3600' '20110902 020000'
+  DATE%BOUNDARY       = 'CHA ' '' ' '
 /
 
 ! -------------------------------------------------------------------- !

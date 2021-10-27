@@ -45,6 +45,8 @@
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -280,9 +282,9 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '20151214 000000' '3600' '20151214 040000'
-  DATE%POINT          = '20151214 000000' '3600' '20151214 040000'
-  DATE%RESTART        = '20151214 000000' '3600' '20151215 000000'
+  DATE%FIELD          = '20151214 020000' '3600' '20151214 040000'
+  DATE%POINT          = '20151214 020000' '3600' '20151214 040000'
+  DATE%RESTART        = '20151214 020000' '3600' '20151215 000000'
 /
 
 ! -------------------------------------------------------------------- !

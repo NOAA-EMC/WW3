@@ -43,6 +43,8 @@
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -64,7 +66,7 @@
   INPUT%FORCING%ICE_PARAM5    = 'H'
   INPUT%FORCING%MUD_DENSITY   = 'H'
   INPUT%FORCING%MUD_THICKNESS = 'H'
-  INPUT%FORCING%ICE_CONC      = 'T'
+  INPUT%FORCING%ATM_MOMENTUM  = 'T'
 /
 
 ! -------------------------------------------------------------------- !
