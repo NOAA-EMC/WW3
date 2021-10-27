@@ -1476,7 +1476,7 @@
                 END IF
 !
               IF ( IDACT(13:13).NE.' ' ) THEN
-                  CALL W3UICE ( VA, VA )
+                  CALL W3UICE ( VA )
                   DTI0   = 0.
                   FLACT  = .TRUE.
                   FLMAP  = .TRUE.

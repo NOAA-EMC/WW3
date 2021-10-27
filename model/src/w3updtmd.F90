@@ -1649,7 +1649,7 @@
       END SUBROUTINE W3UIC5
 !/ ------------------------------------------------------------------- /      
       
-      SUBROUTINE W3UICE ( A, VA )
+      SUBROUTINE W3UICE ( VA )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1731,7 +1731,7 @@
                           NTH, NK, NSPEC, SIG, TH, DTH, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
 !!    USE W3ADATMD, ONLY: U10, U10D, CG
-      USE W3ADATMD, ONLY: CG
+      USE W3ADATMD, ONLY: CG, NSEALM
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
       USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
 !/
@@ -1740,7 +1740,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(INOUT)     :: A(NTH,NK,0:NSEAL), VA(NSPEC,0:NSEAL)
+      REAL, INTENT(INOUT)     :: VA(NSPEC,0:NSEALM)
 !/
 !/ ------------------------------------------------------------------- /
 !/
