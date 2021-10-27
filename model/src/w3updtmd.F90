@@ -1803,15 +1803,15 @@
                                   ICEI(IX,IY), 'ICE (NEW)'
 #endif
                 VA(:,JSEA) = 0.
-            ELSE
 #ifdef W3_T
+            ELSE
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'ICE (NEW X)'
 #endif
             END IF
 !
-          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
 #ifdef W3_T
+        ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
                               ICEI(IX,IY), 'ICE'
 #endif
@@ -1835,30 +1835,30 @@
 #endif
                     VA(:,JSEA) = 0.
 !
-                ELSE
 #ifdef W3_T
+                ELSE
                     WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                                       ICEI(IX,IY), 'SEA (NEW X)'
 #endif
                 END IF
 !
-            ELSE
 #ifdef W3_T
+            ELSE
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'DIS'
 #endif
             END IF
 !
-             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
 #ifdef W3_T
-                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
+        ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
+             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'SEA'
 #endif
 !
-          END IF
+        END IF
 #endif
 !
-        END DO
+      END DO
 !
 ! 3.  Update MAPST2 -------------------------------------------------- *
 !
