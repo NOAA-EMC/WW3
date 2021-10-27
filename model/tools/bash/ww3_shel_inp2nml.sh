@@ -174,9 +174,41 @@ then
   forc[15,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
   forc[15,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
   echo ${forc[15,1]} ${forc[15,2]}
+  if [ "${forc[13,2]}" = "T" ] || [ "${forc[13,2]}" = "F" ] || [ "${forc[13,2]}" = "C" ]
+  then
+    atmos=T
+    echo 'atmos'
+    il=$(($il+1))
+    forc[16,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[16,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[16,1]} ${forc[16,2]}
+    il=$(($il+1))
+    forc[17,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[17,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[17,1]} ${forc[17,2]}
+  else
+    atmos=F
+    echo 'no atmos'
+  fi
 else
   mudice=F
   echo 'no mudice'
+  if [ "${forc[5,2]}" = "T" ] || [ "${forc[5,2]}" = "F" ] || [ "${forc[5,2]}" = "C" ]
+  then
+    atmos=T
+    echo 'atmos'
+    il=$(($il+1))
+    forc[8,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[8,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[8,1]} ${forc[8,2]}
+    il=$(($il+1))
+    forc[9,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[9,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[9,1]} ${forc[9,2]}
+  else
+    atmos=F
+    echo 'no atmos'
+  fi
 fi
 
 
@@ -588,6 +620,8 @@ cat >> $nmlfile << EOF
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -675,15 +709,39 @@ then
     elif [ "${forc[11,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = 'T'" >> $nmlfile; fi
   elif [ "${forc[11,1]}" = "C" ] ; then    echo "  INPUT%FORCING%WINDS         = 'C'" >> $nmlfile
   fi
+  if [ "$atmos" = "T" ]
+  then
+# atm momentum
+    if [ "${forc[12,1]}" = "T" ] ; then
+      if [ "${forc[12,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
+      elif [ "${forc[12,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
+    elif [ "${forc[12,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
+    fi
+# atm density
+    if [ "${forc[13,1]}" = "T" ] ; then
+      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'C'" >> $nmlfile
+    fi
 # ice
-  if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+    if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
 # mean
-  if [ "${forc[13,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+    if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
 # spec1d
-  if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+    if [ "${forc[16,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
 # spec2d
-  if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
-
+    if [ "${forc[17,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  elif [ "$atmos" = 'F' ]
+  then
+# ice
+    if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+# mean
+    if [ "${forc[13,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+# spec1d
+    if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+# spec2d
+    if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  fi
 
 elif [ "$mudice" = "F" ]
 then
@@ -706,15 +764,38 @@ then
     elif [ "${forc[3,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = 'T'" >> $nmlfile
     elif [ "${forc[3,2]}" = "C" ] ; then  echo "  INPUT%FORCING%WINDS         = 'C'" >> $nmlfile; fi
   fi
+  if [ "$atmos" = "T" ]
+  then
+# atm momentum
+    if [ "${forc[5,1]}" = "T" ] ; then
+      if [ "${forc[5,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
+      elif [ "${forc[5,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
+    elif [ "${forc[5,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
+    fi
+# atm density
+    if [ "${forc[6,1]}" = "T" ] ; then
+      if [ "${forc[6,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[6,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'C'" >> $nmlfile
+    fi
 # ice
-  if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+    if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
 # mean
-  if [ "${forc[5,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+    if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
 # spec1d
-  if [ "${forc[6,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+    if [ "${forc[8,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
 # spec2d
-  if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
-
+    if [ "${forc[9,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  else
+# ice
+    if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+# mean
+    if [ "${forc[5,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+# spec1d
+    if [ "${forc[6,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+# spec2d
+    if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  fi
 fi
 
 

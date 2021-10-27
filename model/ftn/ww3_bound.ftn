@@ -145,7 +145,7 @@
                                     ABPIN(:,:) 
 !/RTD      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
 !
-      CHARACTER                  :: COMSTR*1, LINE*80, FILE*128
+      CHARACTER                  :: COMSTR*1, LINE*80, BNDFILE*128
       CHARACTER*5                :: INXOUT
       CHARACTER*10               :: VERTEST  ! = '2018-03-01'
       CHARACTER*32               :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
@@ -177,6 +177,7 @@
       NDSB   = 33
       NDSM   = 20
       NDSS   = 40
+      NDSL   = 50
 !
       NDSTRC =  6
       NTRACE = 10
@@ -209,10 +210,10 @@
         INXOUT = NML_BOUND%MODE
         INTERP = NML_BOUND%INTERP
         VERBOSE = NML_BOUND%VERBOSE
-        FILE = NML_BOUND%FILE
+        BNDFILE = NML_BOUND%FILE
 
         NBO2 = 0          
-        OPEN(NDSL,FILE=TRIM(FILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+        OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
         REWIND (NDSL)
         DO
           READ (NDSL,*,END=400,ERR=802)
@@ -222,7 +223,7 @@
         ALLOCATE(SPECFILES(NBO2))
         REWIND (NDSL)
         DO I=1,NBO2
-          READ (NDSL,'(A512)',END=801,ERR=802) SPECFILES(I)
+          READ (NDSL,'(A120)',END=801,ERR=802) SPECFILES(I)
         END DO
         CLOSE(NDSL)
 
@@ -382,9 +383,10 @@
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') 'IP, file, I/O stat:',IP,', ',       &
-                                  TRIM(SPECFILES(IP)),', ',IERR
-          IF (IERR.NE.0) WRITE(NDSE,*) 'File do not exist:',SPECFILES(IP)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') &
+                           'IP, file, I/O stat:',IP,', ', &
+                           TRIM(SPECFILES(IP)), ', ',IERR
+          IF (IERR.NE.0) GOTO 810
           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
              space,string1,space,NKI,NTHI
           IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
@@ -619,8 +621,12 @@ STOP
       CALL EXTCDE ( 68 )
 !
  809 CONTINUE
-      WRITE (NDSE,1009) FILE, IERR
+      WRITE (NDSE,1009) BNDFILE, IERR
       CALL EXTCDE ( 69 )
+!
+ 810 CONTINUE
+      WRITE (NDSE,1010) SPECFILES(IP)
+      CALL EXTCDE ( 70 )
 
 !
 ! Formats
@@ -655,6 +661,9 @@ STOP
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
                '     ERROR IN OPENING SPEC FILE: ', A/                &
                '     IOSTAT =',I5/)
+!
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
+               '     SPEC FILE NOT EXISTING: ', A/)
 
 
 !
