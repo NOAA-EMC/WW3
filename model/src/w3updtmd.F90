@@ -1691,7 +1691,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!      (V)A     R.A.  I/O   Spectra in 1-D or 2-D representation
+!      VA       R.A.  I/O   Spectra in 1-D or 2-D representation
 !                           (points to same address).
 !     ----------------------------------------------------------------
 !
@@ -1730,7 +1730,6 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           NTH, NK, NSPEC, SIG, TH, DTH, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
-!!    USE W3ADATMD, ONLY: U10, U10D, CG
       USE W3ADATMD, ONLY: CG, NSEALM
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
       USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
@@ -1797,98 +1796,65 @@
         IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
             MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
             MAPICE(IY,IX) = 1
-#endif
-!AR: Take care here situation is not totally clear!
-#ifdef W3_IC0
             CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
             IF (LOCAL .AND. (IAPROC .eq. ISPROC)) THEN
-#endif
 #ifdef W3_T
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'ICE (NEW)'
 #endif
-#ifdef W3_IC0
                 VA(:,JSEA) = 0.
-              ELSE
-#endif
+            ELSE
 #ifdef W3_T
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'ICE (NEW X)'
 #endif
-#ifdef W3_IC0
-              END IF
-#endif
+            END IF
 !
-#ifdef W3_IC0
           ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
-#endif
 #ifdef W3_T
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
                               ICEI(IX,IY), 'ICE'
 #endif
-#ifdef W3_IC0
-          END IF
-#endif
+        END IF
 !
 ! 2.b Ice point to be re-activated.
 !
-#ifdef W3_IC0
         IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
-#endif
 !
-#ifdef W3_IC0
             MAPICE(IY,IX) = 0
             UST(ISEA)     = 0.05
-#endif
 !
-#ifdef W3_IC0
             IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
                 MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
-#endif
 !
-#ifdef W3_IC0
                 CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
                 IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
-#endif
 #ifdef W3_T
                     WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                                       ICEI(IX,IY), 'SEA (NEW)'
 #endif
-#ifdef W3_IC0
                     VA(:,JSEA) = 0.
-#endif
 !
-#ifdef W3_IC0
-                  ELSE
-#endif
+                ELSE
 #ifdef W3_T
                     WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                                       ICEI(IX,IY), 'SEA (NEW X)'
 #endif
-#ifdef W3_IC0
-                  END IF
-#endif
+                END IF
 !
-#ifdef W3_IC0
-              ELSE
-#endif
+            ELSE
 #ifdef W3_T
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'DIS'
 #endif
-#ifdef W3_IC0
-              END IF
-#endif
+            END IF
 !
-#ifdef W3_IC0
              ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
-#endif
 #ifdef W3_T
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'SEA'
 #endif
 !
-#ifdef W3_IC0
           END IF
 #endif
 !
@@ -1907,15 +1873,11 @@
 #ifdef W3_T
  9000 FORMAT ( ' TEST W3UICE : FICEN    :',F9.3)
  9001 FORMAT ( ' TEST W3UICE : NO LOCAL SPECTRA')
-#endif
 !
-#ifdef W3_T
  9010 FORMAT ( ' TEST W3UICE : TIME     :',I9.8,I7.6/              &
                '               OLD TICE :',I9.8,I7.6/              &
                '               NEW TICE :',I9.8,I7.6)
-#endif
 !
-#ifdef W3_T
  9020 FORMAT ( ' TEST W3UICE : ISEA, IX, IY, MAP, ICE, STATUS :')
  9021 FORMAT ( '           ',I8,3I4,F6.2,2X,A)
 #endif
