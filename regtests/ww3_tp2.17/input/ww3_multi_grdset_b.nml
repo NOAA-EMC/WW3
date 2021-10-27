@@ -40,6 +40,8 @@
 !     INPUT(I)%FORCING%WATER_LEVELS  = F
 !     INPUT(I)%FORCING%CURRENTS      = F
 !     INPUT(I)%FORCING%WINDS         = F
+!     INPUT(I)%FORCING%ATM_MOMENTUM  = F
+!     INPUT(I)%FORCING%AIR_DENSITY   = F
 !     INPUT(I)%FORCING%ICE_CONC      = F
 !     INPUT(I)%FORCING%ICE_PARAM1    = F
 !     INPUT(I)%FORCING%ICE_PARAM2    = F
@@ -90,6 +92,8 @@
 !     MODEL(I)%FORCING%WATER_LEVELS  = 'no'
 !     MODEL(I)%FORCING%CURRENTS      = 'no'
 !     MODEL(I)%FORCING%WINDS         = 'no'
+!     MODEL(I)%FORCING%ATM_MOMENTUM  = 'no'
+!     MODEL(I)%FORCING%AIR_DENSITY   = 'no'
 !     MODEL(I)%FORCING%ICE_CONC      = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM1    = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM2    = 'no'
@@ -114,8 +118,12 @@
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'inlb'
   MODEL(1)%FORCING%WATER_LEVELS  = 'native'
-  MODEL(1)%FORCING%CURRENTS      = 'native'
-  MODEL(1)%FORCING%WINDS         = 'native'
+  MODEL(1)%FORCING%CURRENTS      = ''
+  MODEL(1)%FORCING%WINDS         = ''
+  MODEL(1)%RESOURCE%RANK_ID      = inlb
+  MODEL(1)%RESOURCE%GROUP_ID     = native
+  MODEL(1)%RESOURCE%COMM_FRAC    = native,native
+  MODEL(1)%RESOURCE%BOUND_FLAG   = no
 /
 
 ! -------------------------------------------------------------------- !
@@ -133,12 +141,12 @@
 !   longitude latitude 'name' (C*40)
 !
 ! * the detailed list of field names is given in model/nml/ww3_shel.nml :
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
-!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 TAU RHO
+!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG MXE MXES MXH MXHC SDMH SDMHC WBT TP
 !  EF TH1M STH1M TH2M STH2M WN
 !  PHS PTP PLP PDIR PSPR PWS PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR
 !  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS
-!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC USP
 !  ABR UBR BED FBB TBB
 !  MSS MSC WL02 AXT AYT AXY
 !  DTD FC CFX CFD CFK
@@ -164,6 +172,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -191,6 +200,9 @@
 !     ALLDATE%RESTART%START       =  '19680606 000000'
 !     ALLDATE%RESTART%STRIDE      =  '0'
 !     ALLDATE%RESTART%STOP        =  '19680607 000000'
+!     ALLDATE%RESTART2%START      =  '19680606 000000'
+!     ALLDATE%RESTART2%STRIDE     =  '0'
+!     ALLDATE%RESTART2%STOP       =  '19680607 000000'
 !     ALLDATE%BOUNDARY%START      =  '19680606 000000'
 !     ALLDATE%BOUNDARY%STRIDE     =  '0'
 !     ALLDATE%BOUNDARY%STOP       =  '19680607 000000'
@@ -203,8 +215,10 @@
 !     IDATE(3)%PARTITION%START    =  '19680606 000000' 
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  ALLDATE%FIELD          = '20151214 000000' '3600' '20151214 040000'
-  ALLDATE%RESTART        = '20151214 000000' '3600' '20151214 040000'
+  ALLDATE%FIELD          = '20151214 020000' '3600' '20151214 040000'
+  ALLDATE%POINT          = '20141214 020000' '3600' '20141214 040000'
+  ALLDATE%RESTART        = '20151214 020000' '3600' '20151214 040000'
+  ALLDATE%RESTART2       = ' ' '' '20151214 040000'
 /
 
 ! -------------------------------------------------------------------- !

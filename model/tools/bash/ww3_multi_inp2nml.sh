@@ -118,6 +118,7 @@ do
   il=$(($il+1))
   inpid[$irinp]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
   numvar="$(echo ${lines[$il]} | wc -w)"
+  if [ $numvar -eq 15 ]; then atmos=T; else atmos=F; fi
   for iflag in $(seq 2  $numvar)
   do
     ind=$(($iflag - 1))
@@ -142,7 +143,11 @@ do
   il=$(($il+1))
   echo ${lines[$il]}
   modid[$irgrd]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  numvar=8
+  if [ "$atmos" = 'T' ]; then
+    numvar=10
+  elif [ "$atmos" = 'F' ]; then
+    numvar=8
+  fi
   for iflag in $(seq 2 $numvar)
   do
     ind=$(($iflag - 1))
@@ -540,6 +545,8 @@ cat >> $nmlfile << EOF
 !     INPUT(I)%FORCING%WATER_LEVELS  = F
 !     INPUT(I)%FORCING%CURRENTS      = F
 !     INPUT(I)%FORCING%WINDS         = F
+!     INPUT(I)%FORCING%ATM_MOMENTUM  = F
+!     INPUT(I)%FORCING%AIR_DENSITY   = F
 !     INPUT(I)%FORCING%ICE_CONC      = F
 !     INPUT(I)%FORCING%ICE_PARAM1    = F
 !     INPUT(I)%FORCING%ICE_PARAM2    = F
@@ -564,10 +571,22 @@ do
     if [ "${flginp[$irinp,1]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%WATER_LEVELS  = ${flginp[$irinp,1]}" >> $nmlfile; fi
     if [ "${flginp[$irinp,2]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%CURRENTS      = ${flginp[$irinp,2]}" >> $nmlfile; fi
     if [ "${flginp[$irinp,3]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%WINDS         = ${flginp[$irinp,3]}" >> $nmlfile; fi
-    if [ "${flginp[$irinp,4]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%ICE_CONC      = ${flginp[$irinp,4]}" >> $nmlfile; fi
-    if [ "${flginp[$irinp,5]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%MEAN            = ${flginp[$irinp,5]}" >> $nmlfile; fi
-    if [ "${flginp[$irinp,6]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC1D          = ${flginp[$irinp,6]}" >> $nmlfile; fi
-    if [ "${flginp[$irinp,7]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC2D          = ${flginp[$irinp,7]}" >> $nmlfile; fi
+    if [ "$atmos" = "T" ]
+    then
+      if [ "${flginp[$irinp,5]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%ATM_MOMENTUM  = ${flginp[$irinp,5]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,6]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%AIR_DENSITY   = ${flginp[$irinp,6]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,4]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%ICE_CONC      = ${flginp[$irinp,4]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,7]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%MEAN            = ${flginp[$irinp,7]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,8]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC1D          = ${flginp[$irinp,8]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,9]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC2D          = ${flginp[$irinp,9]}" >> $nmlfile; fi
+
+    elif [ "$atmos" = 'F' ]
+    then
+      if [ "${flginp[$irinp,4]}" != 'F' ];then  echo "  INPUT($irinp)%FORCING%ICE_CONC      = ${flginp[$irinp,4]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,5]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%MEAN            = ${flginp[$irinp,5]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,6]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC1D          = ${flginp[$irinp,6]}" >> $nmlfile; fi
+      if [ "${flginp[$irinp,7]}" != 'F' ];then  echo "  INPUT($irinp)%ASSIM%SPEC2D          = ${flginp[$irinp,7]}" >> $nmlfile; fi
+    fi
   fi
 done
 
@@ -610,6 +629,8 @@ cat >> $nmlfile << EOF
 !     MODEL(I)%FORCING%WATER_LEVELS  = 'no'
 !     MODEL(I)%FORCING%CURRENTS      = 'no'
 !     MODEL(I)%FORCING%WINDS         = 'no'
+!     MODEL(I)%FORCING%ATM_MOMENTUM  = 'no'
+!     MODEL(I)%FORCING%AIR_DENSITY   = 'no'
 !     MODEL(I)%FORCING%ICE_CONC      = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM1    = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM2    = 'no'
@@ -642,10 +663,20 @@ do
     if [ "${flggrd[$irgrd,1]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%WATER_LEVELS  = '${flggrd[$irgrd,1]}'" >> $nmlfile; fi
     if [ "${flggrd[$irgrd,2]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%CURRENTS      = '${flggrd[$irgrd,2]}'" >> $nmlfile; fi
     if [ "${flggrd[$irgrd,3]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%WINDS         = '${flggrd[$irgrd,3]}'" >> $nmlfile; fi
-    if [ "${flggrd[$irgrd,4]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%ICE_CONC      = '${flggrd[$irgrd,4]}'" >> $nmlfile; fi
-    if [ "${flggrd[$irgrd,5]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%MEAN            = '${flggrd[$irgrd,5]}'" >> $nmlfile; fi
-    if [ "${flggrd[$irgrd,6]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC1D          = '${flggrd[$irgrd,6]}'" >> $nmlfile; fi
-    if [ "${flggrd[$irgrd,7]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC2D          = '${flggrd[$irgrd,7]}'" >> $nmlfile; fi
+    if [ "$atmos" = "T" ]
+    then
+      if [ "${flggrd[$irgrd,5]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%ATM_MOMENTUM  = '${flggrd[$irgrd,5]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,6]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%AIR_DENSITY   = '${flggrd[$irgrd,6]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,4]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%ICE_CONC      = '${flggrd[$irgrd,4]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,7]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%MEAN            = '${flggrd[$irgrd,7]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,8]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC1D          = '${flggrd[$irgrd,8]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,9]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC2D          = '${flggrd[$irgrd,9]}'" >> $nmlfile; fi
+    elif [ "$atmos" = 'F' ]; then
+      if [ "${flggrd[$irgrd,4]}" != 'no' ]; then  echo "  MODEL($irgrd)%FORCING%ICE_CONC      = '${flggrd[$irgrd,4]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,5]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%MEAN            = '${flggrd[$irgrd,5]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,6]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC1D          = '${flggrd[$irgrd,6]}'" >> $nmlfile; fi
+      if [ "${flggrd[$irgrd,7]}" != 'no' ]; then  echo "  MODEL($irgrd)%ASSIM%SPEC2D          = '${flggrd[$irgrd,7]}'" >> $nmlfile; fi
+    fi
     if [ "${rank[$irgrd]}" != "$irgrd" ]; then  echo "  MODEL($irgrd)%RESOURCE%RANK_ID      = ${rank[$irgrd]}" >> $nmlfile; fi
     if [ "${group[$irgrd]}" != 1 ];       then  echo "  MODEL($irgrd)%RESOURCE%GROUP_ID     = ${group[$irgrd]}" >> $nmlfile; fi
     if [ "${comm0[$irgrd]},${comm1[$irgrd]}" != '0.00,1.00' ];then  
@@ -674,12 +705,12 @@ cat >> $nmlfile << EOF
 !   longitude latitude 'name' (C*40)
 !
 ! * the detailed list of field names is given in model/nml/ww3_shel.nml :
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
-!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 TAU RHO
+!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG MXE MXES MXH MXHC SDMH SDMHC WBT TP
 !  EF TH1M STH1M TH2M STH2M WN
 !  PHS PTP PLP PDIR PSPR PWS PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR
 !  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS
-!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC USP
 !  ABR UBR BED FBB TBB
 !  MSS MSC WL02 AXT AYT AXY
 !  DTD FC CFX CFD CFK

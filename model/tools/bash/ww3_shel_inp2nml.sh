@@ -719,9 +719,9 @@ then
     fi
 # atm density
     if [ "${forc[13,1]}" = "T" ] ; then
-      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'H'" >> $nmlfile
-      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_DENSITY   = 'T'" >> $nmlfile; fi
-    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'C'" >> $nmlfile
+      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
     fi
 # ice
     if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
@@ -774,9 +774,9 @@ then
     fi
 # atm density
     if [ "${forc[6,1]}" = "T" ] ; then
-      if [ "${forc[6,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'H'" >> $nmlfile
-      elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_DENSITY   = 'T'" >> $nmlfile; fi
-    elif [ "${forc[6,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_DENSITY   = 'C'" >> $nmlfile
+      if [ "${forc[6,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[6,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
     fi
 # ice
     if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
@@ -840,6 +840,8 @@ cat >> $nmlfile << EOF
 !  T  T  1     8   D50        D50   Median sediment grain size.
 !  T  T  1     9   IC1        IC1   Ice thickness.
 !  T  T  1    10   IC5        IC5   Ice flow diameter.
+!  T  T  1    11   TAUA       TAU   Atm. momentum.
+!  T  T  1    12   RHOAIR     RHO   Air density.
 !   -------------------------------------------------
 !        2                          Standard mean wave Parameters
 !   -------------------------------------------------
@@ -860,6 +862,7 @@ cat >> $nmlfile << EOF
 !  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 !  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 !  F  T  2    17   WBT        WBT   Domiant wave breaking probability bT
+!  F  F  2    18   FP0        TP    Peak period (from peak freq)
 !   -------------------------------------------------
 !        3                          Spectral Parameters (first 5)
 !   -------------------------------------------------
@@ -917,6 +920,7 @@ cat >> $nmlfile << EOF
 !  F  F  6     9   P2SMS      P2L   Micro seism  source term
 !  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 !  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
+!  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 !   -------------------------------------------------
 !        7                          Wave-bottom layer
 !   -------------------------------------------------
@@ -962,7 +966,7 @@ cat >> $nmlfile << EOF
 !       - Ice model : IC5 TWI
 !   - Received fields by ww3:
 !       - Ocean model : SSH CUR
-!       - Atmospheric model : WND
+!       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
 ! * namelist must be terminated with /
