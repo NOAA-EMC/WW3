@@ -112,7 +112,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.13  '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     __WW3_SWITCHES__ 
 !/
