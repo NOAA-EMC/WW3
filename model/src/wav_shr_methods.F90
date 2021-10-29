@@ -327,7 +327,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
 
-print*, 'HK inside state_reset'
+!print*, 'HK inside state_reset'
 
     do n = 1, fieldCount
        call ESMF_StateGet(State, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
@@ -376,7 +376,7 @@ print*, 'HK inside state_reset'
     ! ----------------------------------------------
 
 
-print*, 'HK inside state_diagnose'
+!print*, 'HK inside state_diagnose'
     call ESMF_StateGet(state, itemCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     allocate(lfieldnamelist(fieldCount))
@@ -392,7 +392,7 @@ print*, 'HK inside state_diagnose'
        call field_getfldptr(lfield, fldptr1=dataPtr1d, fldptr2=dataPtr2d, rank=lrank, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       print*, 'HK state_diagnose lrank ',trim(lfieldnamelist(n)),  lrank
+       !print*, 'HK state_diagnose lrank ',trim(lfieldnamelist(n)),  lrank
 
        if (lrank == 0) then
           ! no local data
@@ -450,7 +450,7 @@ print*, 'HK inside state_diagnose'
     ! ----------------------------------------------
 
 
-print*, 'HK inside field_getfldptr'
+!print*, 'HK inside field_getfldptr'
 
     if (.not.present(rc)) then
        call ESMF_LogWrite(trim(subname)//": ERROR rc not present ", &
