@@ -1647,13 +1647,19 @@
 !
 ! Determines roughness length
 !
-      SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
-      Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
       IF (USTAR.GT.0.001) THEN 
+        SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
+        Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
         CHARN = GRAV*Z0/USTAR**2
       ELSE 
+        IF (USTAR.GT.0) THEN 
+          SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
+          Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
+        ELSE 
+          Z0 = AALPHA*0.001*0.001/GRAV 
+        END IF 
         CHARN = AALPHA
-        END IF
+      END IF
 !
       RETURN
       END SUBROUTINE CALC_USTAR
