@@ -1727,12 +1727,12 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
-                          NTH, NK, NSPEC, SIG, TH, DTH, FICEN
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPSTA, MAPST2, &
+                          NSPEC, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
-      USE W3ADATMD, ONLY: CG, NSEALM
+      USE W3ADATMD, ONLY: NSEALM
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
-      USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/
       IMPLICIT NONE
 !/
@@ -1743,9 +1743,9 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      INTEGER                 :: IK, ITH, ISEA, JSEA, IX, IY, ISP
+      INTEGER                 :: ISEA, JSEA, IX, IY
 #ifdef W3_S
-      INTEGER, SAVE            :: IENT = 0
+      INTEGER, SAVE           :: IENT = 0
 #endif
       INTEGER                 :: MAPICE(NY,NX), ISPROC
       LOGICAL                 :: LOCAL
