@@ -537,7 +537,7 @@
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=21)       :: IDACT
-      CHARACTER(LEN=13)       :: OUTID
+      CHARACTER(LEN=16)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
       INTEGER eIOBP
       INTEGER ITH_F
@@ -3500,7 +3500,7 @@
   900 FORMAT (4X,I6,'|',I6,'| ', A19  ,' | ',A,' | ',A,' |')
   901 FORMAT (4X,I6,'|',I6,'| ',11X,A8,' | ',A,' | ',A,' |')
   902 FORMAT (2X,'--------+------+---------------------+'             &
-                ,'-------------------+---------------+')
+                ,'-----------------------+------------------+')
 !
 #ifdef W3_IC3
   920 FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
