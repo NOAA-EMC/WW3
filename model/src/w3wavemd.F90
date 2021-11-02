@@ -84,7 +84,7 @@
 !/                  defunct OMPX switches.
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
-!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
