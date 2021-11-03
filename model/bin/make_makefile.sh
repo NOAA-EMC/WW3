@@ -451,6 +451,7 @@
          'W3GRIDMD'     ) modtest=w3gridmd.o ;;
          'wav_wrapper_mod'   ) modtest=wav_wrapper_mod.o ;;
          'wav_kind_mod'      ) modtest=wav_kind_mod.o ;;
+         'w3cesmmd'          ) modtest=w3cesmmd.o ;;
          'wav_shr_methods'   ) modtest=wav_shr_methods.o ;;
          'wav_comp_nuopc'    ) modtest=wav_comp_nuopc.o ;;
          'wav_import_export' ) modtest=wav_import_export.o ;;

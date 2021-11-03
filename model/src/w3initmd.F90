@@ -1563,8 +1563,8 @@
 #endif
       DO IS=0, NSEA
 #ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'IS=', IS
-     FLUSH(740+IAPROC)
+     !WRITE(740+IAPROC,*) 'IS=', IS
+     !FLUSH(740+IAPROC)
 #endif
         IF (IS.GT.0) THEN
           DEPTH  = MAX ( DMIN , DW(IS) )

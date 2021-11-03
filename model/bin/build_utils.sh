@@ -830,7 +830,7 @@ create_file_list()
                then
                  core=''
                else
-                 core='wav_kind_mod wav_wrapper_mod wav_shr_methods wav_comp_nuopc wav_import_export'
+                 core='wav_kind_mod wav_wrapper_mod wav_shr_methods w3cesmmd wav_comp_nuopc wav_import_export'
                fi
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
