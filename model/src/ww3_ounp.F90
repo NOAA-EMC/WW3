@@ -53,7 +53,7 @@
 !/    15-May-2018 : Add namelist feature                ( version 6.05 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
-!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/    06-Sep-2021 : scale factor on spectra output      ( version 7.12 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
