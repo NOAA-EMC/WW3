@@ -1248,7 +1248,7 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Oct-2018 : Original Code                       ( version 6.06 )
-!/    24-Oct-2018 : Update by Andy Saulter              ( version x.xx )
+!/    24-Oct-2018 : Update by Andy Saulter              ( version 7.14 )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/    National Oceanic and Atmospheric Administration.  All rights

@@ -12,7 +12,7 @@
 !/                  | Last update :         01-Jul-2021 |
 !/                  +-----------------------------------+
 !/
-!/    22-Mar-2021 : Origination.                        ( version 7.xx )
+!/    22-Mar-2021 : Origination.                        ( version 7.14 )
 !/    22-Mar-2021 : Enable direct use of atmospheric model wind stress
 !/                  by source terms ST6
 !/    01-Jul-2021 : Enable direct use of atmospheric model wind stress
@@ -73,7 +73,7 @@
 !/                  | Last update :         01-Jul-2021 |
 !/                  +-----------------------------------+
 !/
-!/    22-Mar-2021 : Origination.                        ( version 7.xx )
+!/    22-Mar-2021 : Origination.                        ( version 7.14 )
 !/    22-Mar-2021 : Enable direct use of atmospheric model wind stress
 !/                  by source terms ST6
 !/    01-Jul-2021 : Enable direct use of atmospheric model wind stress
