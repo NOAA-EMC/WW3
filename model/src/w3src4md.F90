@@ -102,7 +102,7 @@
 !/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
 !/    08-Jun-2018 : use STRACE and FLUSH                ( version 6.04 )
 !/    22-Feb-2020 : Merge Romero (2019) and cleanup     ( version 7.06 )
-!/    22-Jun-2021 : Add FLX5 to use stresses with the ST( version 7.xx )
+!/    22-Jun-2021 : Add FLX5 to use stresses with the ST( version 7.14 )
 !/
 !  1. Purpose :
 !
@@ -1679,7 +1679,7 @@
 !/    13-Nov-2013 : Reduced frequency range with IG1 switch 
 !/    06-Jun-2018 : Add optional DEBUGSRC              ( version 6.04 )
 !/    22-Feb-2020 : Option to use Romero (GRL 2019)    ( version 7.06 )
-!/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
+!/    13-Aug-2021 : Consider DAIR a variable           ( version 7.14 )
 !/
 !  1. Purpose :
 !

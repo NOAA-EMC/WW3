@@ -1013,7 +1013,7 @@
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    25-Sep-2020 : Receive coupled fields at T+0       ( version 7.10 )
 !/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
-!/    13-Aug-2021 : Allow scalar fields to be time      ( version 7.xx )
+!/    13-Aug-2021 : Allow scalar fields to be time      ( version 7.14 )
 !/                  interpolated
 !/
 !  1. Purpose :
