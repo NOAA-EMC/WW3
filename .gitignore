@@ -146,6 +146,7 @@ regtests/output
 *~
 model/bin/comp
 model/bin/link
+model/bin/ad3
 model/bin/switch
 model/bin/switch.old
 model/bin/switch.old_DIST

@@ -253,12 +253,12 @@
     ispdlibi=no
     for s in $suffixes
     do
-      if [ -f $main_dir/ftn/$file.$s ]
+      if [ -f $main_dir/src/$file.$s ]
       then
         fexti=$s
         break
       fi
-      if [ -f $main_dir/ftn/PDLIB/$file.$s ]
+      if [ -f $main_dir/src/PDLIB/$file.$s ]
       then
         fexti=$s
         ispdlibi=yes
@@ -268,8 +268,8 @@
     if [ "$fexti" = 'none' ]
     then
       echo '      *** make_makefile.sh error ***'
-      echo "          Source file $main_dir/ftn/$file.* "
-      echo "                   or $main_dir/ftn/PDLIB/$file.* not found"
+      echo "          Source file $main_dir/src/$file.* "
+      echo "                   or $main_dir/src/PDLIB/$file.* not found"
       echo "          Source file suffixes checked: $suffixes"
       exit 2
     fi
@@ -488,7 +488,7 @@
     echo '# -----------------'                     >> makefile
     echo ' '                                       >> makefile
 
-    scrip_dir=$main_dir/ftn/SCRIP
+    scrip_dir=$main_dir/src/SCRIP
     if [ ! -d $scrip_dir ]
     then
       echo "*** SCRIP directory $scrip_dir not found ***"
@@ -516,6 +516,6 @@
 # 4. Move makefile to proper place                                            #
 # --------------------------------------------------------------------------- #
 
-  mv makefile $main_dir/ftn/makefile
+  mv makefile $main_dir/src/makefile
 
 # end of script ------------------------------------------------------------- #
