@@ -1,0 +1,2391 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
+      MODULE W3SRC4MD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                SHOM |
+!/                  !            F. Ardhuin             !
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         13-Nov-2013 |
+!/                  +-----------------------------------+
+!/
+!/    30-Aug-2010 : Origination.                        ( version 3.14-Ifremer )
+!/    02-Nov-2010 : Addding fudge factor for low freq.  ( version 4.03 )
+!/    02-Sep-2011 : Clean up and time optimization      ( version 4.04 )
+!/    04-Sep-2011 : Estimation of whitecap stats.       ( version 4.04 )
+!/    13-Nov-2013 : Reduced frequency range with IG     ( version 4.13 )
+!/
+!  1. Purpose :
+!
+!     The 'SHOM/Ifremer' source terms based on P.A.E.M. Janssen's wind input
+!     and dissipation functions by Ardhuin et al. (2009,2010) 
+!     and Filipot & Ardhuin (2010)
+!     The wind input is converted from the original
+!     WAM codes, courtesy of P.A.E.M. Janssen and J. Bidlot 
+!
+!
+!  2. Variables and types :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3SPR4    Subr. Public   Mean parameters from spectrum.
+!      W3SIN4    Subr. Public   WAM4+ input source term.
+!      INSIN4    Subr. Public   Corresponding initialization routine.
+!      TABU_STRESS, TABU_TAUHF, TABU_TAUHF2
+!                Subr. Public   Populate various tables.
+!      CALC_USTAR
+!                Subr. Public   Compute stresses.
+!      W3SDS4    Subr. Public   Dissipation (Ardhuin & al. / Filipot & Ardhuin)
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!
+!  6. Switches :
+!
+!  7. Source code :
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      PUBLIC
+!/
+!/ Public variables
+!/
+      !air kinematic viscosity (used in WAM)
+      INTEGER, PARAMETER      :: ITAUMAX=200,JUMAX=200
+      INTEGER, PARAMETER      :: IUSTAR=100,IALPHA=200, ILEVTAIL=50
+      REAL                    :: TAUT(0:ITAUMAX,0:JUMAX), DELTAUW, DELU
+      ! Table for H.F. stress as a function of 2 variables
+      REAL                    :: TAUHFT(0:IUSTAR,0:IALPHA), DELUST, DELALP
+      ! Table for H.F. stress as a function of 3 variables
+      REAL                    :: TAUHFT2(0:IUSTAR,0:IALPHA,0:ILEVTAIL)
+      ! Table for swell damping 
+      REAL                    :: DELTAIL
+      REAL,    PARAMETER      :: UMAX    = 50.
+      REAL,    PARAMETER      :: TAUWMAX = 2.2361 !SQRT(5.)
+      INTEGER                 :: DIKCUMUL
+!  Size of wave height table for integrating the PDF of wave heights
+      INTEGER,    PARAMETER      :: NKHI=100, FAC_KD2=1000
+      REAL,    PARAMETER      :: FAC_KD1=1.01, KHSMAX=2., KHMAX=2.
+      REAL,    PARAMETER      ::KDMAX=200000.
+!/
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1, WNMEAN,     &
+                    AMAX, U, UDIR,                                    &
+#ifdef W3_FLX5
+                    TAUA, TAUADIR, DAIR,                              &
+#endif
+                    USTAR, USDIR,                                     &
+                    TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                SHOM |
+!/                  !            F. Ardhuin             !
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         22-Feb-2020 |
+!/                  +-----------------------------------+
+!/
+!/    03-Oct-2007 : Origination.                        ( version 3.13 )
+!/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
+!/    08-Jun-2018 : use STRACE and FLUSH                ( version 6.04 )
+!/    22-Feb-2020 : Merge Romero (2019) and cleanup     ( version 7.06 )
+!/    22-Jun-2021 : Add FLX5 to use stresses with the ST( version 7.xx )
+!/
+!  1. Purpose :
+!
+!     Calculate mean wave parameters for the use in the source term
+!     routines. 
+!
+!  2. Method :
+!
+!     See source term routines.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       A       R.A.  I   Action density spectrum.
+!       CG      R.A.  I   Group velocities.
+!       WN      R.A.  I   Wavenumbers.
+!       EMEAN   Real  O   Energy
+!       FMEAN1  Real  O   Mean  frequency (fm0,-1) used for reflection
+!       FMEAN   Real  O   Mean  frequency for determination of tail
+!       WNMEAN  Real  O   Mean wavenumber.
+!       AMAX    Real  O   Maximum of action spectrum.
+!       U       Real  I   Wind speed.
+!       UDIR    Real  I   Wind direction.
+!       TAUA    Real  I   Atm. total stress.            ( /!FLX5 )
+!       TAUADIR Real  I   Atm. total stress direction.  ( /!FLX5 )
+!       DAIR    Real  I   Air density.                  ( /!FLX5 )
+!       USTAR   Real I/O  Friction velocity.
+!       USDIR   Real I/O  wind stress direction.
+!       TAUWX-Y Real  I   Components of wave-supported stress.
+!       CD      Real  O   Drag coefficient at wind level ZWND.
+!       Z0      Real  O   Corresponding z0.
+!       CHARN   Real  O   Corresponding Charnock coefficient
+!       LLWS    L.A.  I   Wind sea true/false array for each component            
+!       FMEANWS Real  O   Mean frequency of wind sea, used for tail 
+!       DLWMEAN Real  O   Mean Long wave direction  (L. Romero 2019)
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       STRACE   Service routine.
+!
+!  5. Called by :
+!
+!       W3SRCE   Source term integration routine.
+!       W3OUTP   Point output program.
+!       GXEXPO   GrADS point output program.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!       !/T      Enable test output.
+!       !/FLX5  Direct use of stress from atmoshperic model.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3ODATMD, ONLY: IAPROC
+      USE CONSTANTS, ONLY: TPIINV, GRAV
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
+                          WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
+                          SSTXFTFTAIL, SSWELLF, ESIN, ECOS, AAIRCMIN, &
+                          AAIRGB, AALPHA, ZZWND
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+      USE W3ODATMD, ONLY: NDST
+#endif
+!
+#ifdef W3_FLX5
+      USE W3FLX5MD 
+#endif
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), U, UDIR
+#ifdef W3_FLX5
+      REAL, INTENT(IN)        :: TAUA, TAUADIR, DAIR
+#endif
+      REAL, INTENT(IN)        :: TAUWX, TAUWY
+      LOGICAL, INTENT(IN)     :: LLWS(NSPEC)
+      REAL, INTENT(INOUT)     :: USTAR ,USDIR
+      REAL, INTENT(OUT)       :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX,  & 
+                                 CD, Z0, CHARN, FMEANWS, DLWMEAN
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IS, IK, ITH
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+
+      REAL                    :: TAUW, EBAND, EMEANWS,UNZ,            &
+                                 EB(NK),EB2(NK),ELCS, ELSN 
+!/
+!/ ------------------------------------------------------------------- /
+!/
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SPR4')
+#endif
+!
+      UNZ    = MAX ( 0.01 , U )
+      USTAR  = MAX ( 0.0001 , USTAR )
+!
+      EMEAN  = 0.
+      EMEANWS= 0.
+      FMEANWS= 0.
+      FMEAN  = 0.
+      FMEAN1 = 0.
+      WNMEAN = 0.
+      AMAX   = 0.
+      DLWMEAN =0.
+      ELCS =0.
+      ELSN =0.
+!
+! 1.  Integral over directions and maximum --------------------------- *
+!
+      DO IK=1, NK
+        EB(IK)  = 0.
+        EB2(IK) = 0.
+        DO ITH=1, NTH
+          IS=ITH+(IK-1)*NTH
+          EB(IK) = EB(IK) + A(ITH,IK)
+          ELCS = ELCS + A(ITH,IK)*ECOS(IS)*DDEN(IK) / CG(IK)
+          ELSN = ELSN + A(ITH,IK)*ESIN(IS)*DDEN(IK) / CG(IK)
+          IF (LLWS(IS)) EB2(IK) = EB2(IK) + A(ITH,IK)
+          AMAX   = MAX ( AMAX , A(ITH,IK) )
+          END DO
+        END DO
+
+        DLWMEAN=ATAN2(ELSN,ELCS);
+!
+! 2.  Integrate over directions -------------------------------------- *
+!
+      DO IK=1, NK
+        EB(IK)   = EB(IK) * DDEN(IK) / CG(IK)
+        EB2(IK)   = EB2(IK) * DDEN(IK) / CG(IK)
+        EMEAN    = EMEAN  + EB(IK)
+        FMEAN    = FMEAN  + EB(IK) /SIG(IK)
+        FMEAN1   = FMEAN1 + EB(IK) *(SIG(IK)**(2.*WWNMEANPTAIL))
+        WNMEAN   = WNMEAN + EB(IK) *(WN(IK)**WWNMEANP)
+        EMEANWS  = EMEANWS+ EB2(IK)
+        FMEANWS  = FMEANWS+ EB2(IK)*(SIG(IK)**(2.*WWNMEANPTAIL))
+        END DO
+!
+! 3.  Add tail beyond discrete spectrum and get mean pars ------------ *
+!     ( DTH * SIG absorbed in FTxx )
+!
+      EBAND  = EB(NK) / DDEN(NK)
+      EMEAN  = EMEAN  + EBAND * FTE
+      FMEAN  = FMEAN  + EBAND * FTF
+      FMEAN1 = FMEAN1 + EBAND * SSTXFTFTAIL
+      WNMEAN = WNMEAN + EBAND * SSTXFTWN
+      EBAND  = EB2(NK) / DDEN(NK)
+      EMEANWS = EMEANWS + EBAND * FTE
+      FMEANWS = FMEANWS + EBAND * SSTXFTFTAIL
+!
+! 4.  Final processing
+!
+      FMEAN  = TPIINV * EMEAN / MAX ( 1.E-7 , FMEAN ) 
+      IF (FMEAN1.LT.1.E-7) THEN 
+        FMEAN1=TPIINV * SIG(NK)
+      ELSE
+        FMEAN1  = TPIINV *( MAX ( 1.E-7 , FMEAN1 )                       &
+                     / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANPTAIL))
+        ENDIF
+      WNMEAN = ( MAX ( 1.E-7 , WNMEAN )                              &
+                / MAX ( 1.E-7 , EMEAN ) )**(1/WWNMEANP)
+      IF (FMEANWS.LT.1.E-7.OR.EMEANWS.LT.1.E-7) THEN 
+        FMEANWS=TPIINV * SIG(NK)
+      ELSE
+        FMEANWS  = TPIINV *( MAX ( 1.E-7 , FMEANWS )                       &
+                     / MAX ( 1.E-7 , EMEANWS ))**(1/(2.*WWNMEANPTAIL))
+        END IF
+
+!
+! 5.  Cd and z0 ----------------------------------------------- *
+!
+      TAUW = SQRT(TAUWX**2+TAUWY**2)
+!
+#ifdef W3_FLX5
+      IF (.TRUE.) THEN
+        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
+                                          USTAR, USDIR, Z0, CD )
+        IF (USTAR.GT.0.001) THEN
+          CHARN = GRAV*Z0/USTAR**2 
+        ELSE
+          CHARN = AALPHA
+          END IF
+        ELSE
+#endif
+        Z0=0.
+        CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
+        UNZ    = MAX ( 0.01 , U )
+        CD     = (USTAR/UNZ)**2
+        USDIR = UDIR
+#ifdef W3_FLX5
+        END IF
+#endif
+!
+! 6.  Final test output ---------------------------------------------- *
+!
+#ifdef W3_T
+      WRITE (NDST,9060) EMEAN, WNMEAN, TPIINV, USTAR, CD, Z0
+#endif
+!
+      RETURN
+!
+! Formats
+!
+#ifdef W3_T
+ 9060 FORMAT (' TEST W3SPR4 : E,WN MN :',F8.3,F8.4/                   &
+              ' TPIINV, USTAR, CD, Z0 :',F8.3,F7.2,1X,2F9.5)
+#endif
+!/
+!/ End of W3SPR4 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SPR4
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SIN4 (A, CG, K, U, USTAR, DRAT, AS, USDIR, Z0, CD,    &
+                         TAUWX, TAUWY, TAUWNX, TAUWNY, S, D, LLWS,       &
+                         IX, IY, BRLAMBDA)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                SHOM |
+!/                  !            F. Ardhuin             !
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         05-Dec-2013 |
+!/                  +-----------------------------------+
+!/
+!/    09-Oct-2007 : Origination.                        ( version 3.13 )
+!/    24-Jan-2013 : Adding breaking-related input       ( version 4.16 )
+!/    05-Dec-2013 : Cleaning up the ICE input           ( version 4.16 )
+!/
+!  1. Purpose :
+!
+!     Calculate diagonal and input source term for WAM4+ approach.
+!
+!  2. Method :
+!
+!       WAM-4     : Janssen et al. 
+!       WAM-"4.5" : gustiness effect (Cavaleri et al. )
+!       SAT       : high-frequency input reduction for balance with 
+!                   saturation dissipation (Ardhuin et al., 2008)
+!       SWELL     : negative wind input (Ardhuin et al. 2008)
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       A       R.A.  I   Action density spectrum (1-D).
+!       CG      R.A.  I   Group speed                              *)
+!       K       R.A.  I   Wavenumber for entire spectrum.          *)
+!       U       Real  I   WIND SPEED
+!       USTAR   Real  I   Friction velocity.
+!       DRAT    Real  I   Air/water density ratio.
+!       AS      Real  I   Air-sea temperature difference
+!       USDIR   Real  I   wind stress direction
+!       Z0      Real  I   Air-side roughness lengh.
+!       CD      Real  I   Wind drag coefficient.
+!       USDIR   Real  I   Direction of friction velocity
+!       TAUWX-Y Real  I   Components of the wave-supported stress.
+!       TAUWNX  Real  I   Component of the negative wave-supported stress.
+!       TAUWNY  Real  I   Component of the negative wave-supported stress.
+!       S       R.A.  O   Source term (1-D version).
+!       D       R.A.  O   Diagonal term of derivative.             *)
+!     ----------------------------------------------------------------
+!                         *) Stored as 1-D array with dimension NTH*NK
+!
+!  4. Subroutines used :
+!
+!       STRACE    Subroutine tracing.                 ( !/S switch )
+!       PRT2DS    Print plot of spectrum.             ( !/T0 switch )
+!       OUTMAT    Print out matrix.                   ( !/T1 switch )
+!
+!  5. Called by :
+!
+!       W3SRCE   Source term integration.
+!       W3EXPO   Point output program.
+!       GXEXPO   GrADS point output program.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S   Enable subroutine tracing.
+!     !/T   Enable general test output.
+!     !/T0  2-D print plot of source term.
+!     !/T1  Print arrays.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: GRAV,nu_air,KAPPA,TPI,FWTABLE,SIZEFWTABLE, & 
+#ifdef W3_T
+                        RADE,                                      & 
+#endif
+                           DELAB,ABMIN
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, DDEN, SIG, SIG2, TH,         &
+                          ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
+                          TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
+                          ZZ0RAT, SSINBR
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif
+#ifdef W3_T0
+      USE W3ODATMD, ONLY: NDST
+#endif
+      USE W3ODATMD, ONLY: IAPROC
+#ifdef W3_T0
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: A(NSPEC), BRLAMBDA(NSPEC)
+      REAL, INTENT(IN)        :: CG(NK), K(NSPEC),Z0,U, CD
+      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUWX, TAUWY, TAUWNX, TAUWNY
+      LOGICAL, INTENT(OUT)    :: LLWS(NSPEC)
+      INTEGER, INTENT(IN)     :: IX, IY
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IS,IK,ITH
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+      REAL                    :: FACLN1, FACLN2, LAMBDA
+      REAL                    :: COSU, SINU, TAUX, TAUY, USDIRP, USTP
+      REAL                    :: TAUPX, TAUPY, UST2, TAUW, TAUWB
+      REAL   , PARAMETER      :: EPS1 = 0.00001, EPS2 = 0.000001
+      REAL                    :: Usigma           !standard deviation of U due to gustiness
+      REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
+      REAL                    :: CM,UCN,ZCN, &
+                                 Z0VISC, Z0NOZ, EB,  &
+                                 EBX, EBY, AORB, AORB1, FW, UORB, TH2, &
+                                 RE, FU, FUD, SWELLCOEFV, SWELLCOEFT
+      REAL                   ::  PTURB, PVISC, SMOOTH
+      REAL XI,DELI1,DELI2
+      REAL XJ,DELJ1,DELJ2
+      REAL XK,DELK1,DELK2
+      REAL                    :: CONST, CONST0, CONST2, TAU1
+      REAL X,ZARG,ZLOG,UST
+      REAL                    :: COSWIND, XSTRESS, YSTRESS, TAUHF
+      REAL TEMP, TEMP2
+      INTEGER IND,J,I,ISTAB
+      REAL DSTAB(3,NSPEC), DVISC, DTURB
+      REAL STRESSSTAB(3,2),STRESSSTABN(3,2)
+#ifdef W3_T0
+      REAL                    :: DOUT(NK,NTH)
+#endif
+!/
+!/ ------------------------------------------------------------------- /
+!/
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SIN4')
+#endif
+!
+#ifdef W3_T
+      WRITE (NDST,9000) BBETA, USTAR, USDIR*RADE
+#endif
+!
+! 1.  Preparations
+!
+      !JDM: Initializing values to zero, they shouldn't be used unless
+      !set in another place, but seems to solve some bugs with certain
+      !compilers. 
+      DSTAB =0.
+      STRESSSTAB =0. 
+      STRESSSTABN =0.
+!
+! 1.a  estimation of surface roughness parameters
+!
+      Z0VISC = 0.1*nu_air/MAX(USTAR,0.0001)
+      Z0NOZ = MAX(Z0VISC,ZZ0RAT*Z0)
+      FACLN1 = U / LOG(ZZWND/Z0NOZ)
+      FACLN2 = LOG(Z0NOZ)
+!
+! 1.b  estimation of surface orbital velocity and displacement
+!
+      UORB=0.
+      AORB=0.
+
+      DO IK=1, NK
+        EB  = 0.
+        EBX = 0.
+        EBY = 0.
+        DO ITH=1, NTH
+           IS=ITH+(IK-1)*NTH
+           EB  = EB  + A(IS)
+           END DO   
+!
+!  At this point UORB and AORB are the variances of the orbital velocity and surface elevation
+!
+        UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
+        AORB = AORB + EB             * DDEN(IK) / CG(IK)  !deep water only
+        END DO
+
+      UORB  = 2*SQRT(UORB)                  ! significant orbital amplitude
+      AORB1 = 2*AORB**(1-0.5*SSWELLF(6))    ! half the significant wave height ... if SWELLF(6)=1
+      RE = 4*UORB*AORB1 / NU_AIR           ! Reynolds number 
+!
+! Defines the swell dissipation based on the "Reynolds number"
+!
+      IF (SSWELLF(4).GT.0) THEN           
+        IF (SSWELLF(7).GT.0.) THEN
+          SMOOTH = 0.5*TANH((RE-SSWELLF(4))/SSWELLF(7))
+          PTURB=(0.5+SMOOTH)
+          PVISC=(0.5-SMOOTH)
+        ELSE 
+          IF (RE.LE.SSWELLF(4)) THEN
+            PTURB =  0.
+            PVISC =  1.
+          ELSE
+            PTURB =  1.
+            PVISC =  0.
+            END IF
+          END IF
+      ELSE
+        PTURB=1.
+        PVISC=1.
+        END IF
+        
+!
+      IF (SSWELLF(2).EQ.0) THEN 
+        FW=MAX(ABS(SSWELLF(3)),0.)
+        FU=0.
+        FUD=0.
+      ELSE
+        FU=ABS(SSWELLF(3))
+        FUD=SSWELLF(2)
+        AORB=2*SQRT(AORB)
+        XI=(ALOG10(MAX(AORB/Z0NOZ,3.))-ABMIN)/DELAB
+        IND  = MIN (SIZEFWTABLE-1, INT(XI))
+        DELI1= MIN (1. ,XI-FLOAT(IND))
+        DELI2= 1. - DELI1
+        FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+        END IF
+!
+! 2.  Diagonal
+!
+! Here AS is the air-sea temperature difference in degrees. Expression given by 
+! Abdalla & Cavaleri, JGR 2002 for Usigma. For USTARsigma ... I do not see where 
+! I got it from, maybe just made up from drag law ... 
+!
+#ifdef W3_STAB3
+      Usigma=MAX(0.,-0.025*AS)
+      USTARsigma=(1.0+U/(10.+U))*Usigma
+#endif
+      UST=USTAR
+      ISTAB=3
+#ifdef W3_STAB3
+      DO ISTAB=1,2
+      IF (ISTAB.EQ.1) UST=USTAR*(1.-USTARsigma)
+      IF (ISTAB.EQ.2) UST=USTAR*(1.+USTARsigma)
+#endif
+      TAUX = UST**2* COS(USDIR)
+      TAUY = UST**2* SIN(USDIR)
+!
+! Loop over the resolved part of the spectrum 
+!
+      STRESSSTAB(ISTAB,:)=0.
+      STRESSSTABN(ISTAB,:)=0.
+!
+! Coupling coefficient times density ratio DRAT
+!
+      CONST0=BBETA*DRAT/(kappa**2)
+!
+      DO IK=1, NK
+        TAUPX=TAUX-ABS(TTAUWSHELTER)*STRESSSTAB(ISTAB,1)
+        TAUPY=TAUY-ABS(TTAUWSHELTER)*STRESSSTAB(ISTAB,2)
+! With MIN and MAX the bug should disappear.... but where did it come from?
+        USTP=MIN((TAUPX**2+TAUPY**2)**0.25,MAX(UST,0.3))
+        USDIRP=ATAN2(TAUPY,TAUPX)
+        COSU   = COS(USDIRP)
+        SINU   = SIN(USDIRP)
+        IS=1+(IK-1)*NTH
+        CM=K(IS)/SIG2(IS) !inverse of phase speed
+        UCN=USTP*CM+ZZALP  !this is the inverse wave age
+           ! the stress is the real stress (N/m^2) divided by 
+           ! rho_a, and thus comparable to USTAR**2
+           ! it is the integral of rho_w g Sin/C /rho_a 
+           ! (air-> waves momentum flux)
+        CONST2=DDEN2(IS)/CG(IK) &        !Jacobian to get energy in band
+              *GRAV/(SIG(IK)/K(IS)*DRAT) ! coefficient to get momentum
+        CONST=SIG2(IS)*CONST0                    
+           ! CM parameter is 1 / C_phi
+           ! Z0 corresponds to Z0+Z1 of the Janssen eq. 14
+        ZCN=ALOG(K(IS)*Z0)
+!
+! precomputes swell factors
+!
+        SWELLCOEFV=-SSWELLF(5)*DRAT*2*K(IS)*SQRT(2*NU_AIR*SIG2(IS)) 
+        SWELLCOEFT=-DRAT*SSWELLF(1)*16*SIG2(IS)**2/GRAV
+!
+        DO ITH=1,NTH
+          IS=ITH+(IK-1)*NTH
+          COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+          IF (COSWIND.GT.0.01) THEN 
+            X=COSWIND*UCN 
+            ! this ZARG term is the argument of the exponential
+            ! in Janssen 1991 eq. 16. 
+            ZARG=KAPPA/X
+            ! ZLOG is ALOG(MU) where MU is defined by Janssen 1991 eq. 15
+            ! MU=
+            ZLOG=ZCN+ZARG 
+            
+            IF (ZLOG.LT.0.) THEN
+              ! The source term Sp is beta * omega * X**2
+              ! as given by Janssen 1991 eq. 19
+              ! Note that this is slightly diffent from ECWAM code CY45R2 where ZLOG is replaced by ??
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
+
+              ! Below is an example with breaking probability feeding back to the input...
+              !DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
+              !                  *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
+              LLWS(IS)=.TRUE.
+            ELSE
+              DSTAB(ISTAB,IS) = 0.
+              LLWS(IS)=.FALSE.
+              END IF
+!
+!  Added for consistency with ECWAM implsch.F 
+!
+            IF (28.*CM*USTAR*COSWIND.GE.1) THEN
+              LLWS(IS)=.TRUE.
+              END IF
+          ELSE  ! (COSWIND.LE.0.01) 
+            DSTAB(ISTAB,IS) = 0.
+            LLWS(IS)=.FALSE.
+            END IF 
+!
+          IF ((SSWELLF(1).NE.0.AND.DSTAB(ISTAB,IS).LT.1E-7*SIG2(IS)) &
+              .OR.SSWELLF(3).GT.0) THEN  
+!
+              DVISC=SWELLCOEFV        
+              DTURB=SWELLCOEFT*(FW*UORB+(FU+FUD*COSWIND)*USTP)
+!
+              DSTAB(ISTAB,IS) = DSTAB(ISTAB,IS) + PTURB*DTURB +  PVISC*DVISC
+            END IF
+!
+! Sums up the wave-supported stress
+!
+          ! Wave direction is "direction to"
+          ! therefore there is a PLUS sign for the stress
+          TEMP2=CONST2*DSTAB(ISTAB,IS)*A(IS)
+          IF (DSTAB(ISTAB,IS).LT.0) THEN 
+            STRESSSTABN(ISTAB,1)=STRESSSTABN(ISTAB,1)+TEMP2*ECOS(IS)
+            STRESSSTABN(ISTAB,2)=STRESSSTABN(ISTAB,2)+TEMP2*ESIN(IS)
+          ELSE
+            STRESSSTAB(ISTAB,1)=STRESSSTAB(ISTAB,1)+TEMP2*ECOS(IS)
+            STRESSSTAB(ISTAB,2)=STRESSSTAB(ISTAB,2)+TEMP2*ESIN(IS)
+            END IF
+          END DO
+        END DO
+!
+        D(:)=DSTAB(3,:)
+        XSTRESS=STRESSSTAB (3,1)
+        YSTRESS=STRESSSTAB (3,2)
+        TAUWNX =STRESSSTABN(3,1)
+        TAUWNY =STRESSSTABN(3,2)
+#ifdef W3_STAB3
+        END DO 
+      D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
+      XSTRESS=0.5*(STRESSSTAB(1,1)+STRESSSTAB(2,1))
+      YSTRESS=0.5*(STRESSSTAB(1,2)+STRESSSTAB(2,2))
+      TAUWNX=0.5*(STRESSSTABN(1,1)+STRESSSTABN(2,1))
+      TAUWNY=0.5*(STRESSSTABN(1,2)+STRESSSTABN(2,2))
+#endif
+      S = D * A
+!
+! ... Test output of arrays
+!
+#ifdef W3_T0
+      DO IK=1, NK
+        DO ITH=1, NTH
+          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+          END DO
+        END DO
+#endif
+!
+#ifdef W3_T0
+      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
+                         0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
+#endif
+!
+#ifdef W3_T1
+      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sin')
+#endif
+!
+      ! Computes the high-frequency contribution
+      ! the difference in spectal density (kx,ky) to (f,theta)
+      ! is integrated in this modified CONST0
+      CONST0=DTH*SIG(NK)**5/((GRAV**2)*tpi) &
+         *TPI*SIG(NK) / CG(NK)  !conversion WAM (E(f,theta) to WW3 A(k,theta)
+      TEMP=0.
+      DO ITH=1,NTH
+         IS=ITH+(NK-1)*NTH
+         COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+         TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
+         END DO
+
+      TAUPX=TAUX-ABS(TTAUWSHELTER)*XSTRESS
+      TAUPY=TAUY-ABS(TTAUWSHELTER)*YSTRESS
+      USTP=(TAUPX**2+TAUPY**2)**0.25
+      USDIRP=ATAN2(TAUPY,TAUPX)
+
+      UST=USTP
+      ! finds the values in the tabulated stress TAUHFT
+      XI=UST/DELUST
+      IND  = MAX(1,MIN (IUSTAR-1, INT(XI)))
+      DELI1= MAX(MIN (1. ,XI-FLOAT(IND)),0.)
+      DELI2= 1. - DELI1
+      XJ=MAX(0.,(GRAV*Z0/MAX(UST,0.00001)**2-AALPHA) / DELALP)
+      J    = MAX(1 ,MIN (IALPHA-1, INT(XJ)))
+      DELJ1= MAX(0.,MIN (1.      , XJ-FLOAT(J)))
+      DELJ2=1. - DELJ1
+      IF (TTAUWSHELTER.GT.0) THEN 
+        XK = CONST0*TEMP / DELTAIL
+         I = MIN (ILEVTAIL-1, INT(XK))
+         DELK1= MIN (1. ,XK-FLOAT(I))
+         DELK2=1. - DELK1
+         TAU1 =((TAUHFT2(IND,J,I)*DELI2+TAUHFT2(IND+1,J,I)*DELI1 )*DELJ2 &
+               +(TAUHFT2(IND,J+1,I)*DELI2+TAUHFT2(IND+1,J+1,I)*DELI1)*DELJ1)*DELK2 &
+              +((TAUHFT2(IND,J,I+1)*DELI2+TAUHFT2(IND+1,J,I+1)*DELI1 )*DELJ2 &
+               +(TAUHFT2(IND,J+1,I+1)*DELI2+TAUHFT2(IND+1,J+1,I+1)*DELI1)*DELJ1)*DELK1 
+      ELSE
+        TAU1 =(TAUHFT(IND,J)*DELI2+TAUHFT(IND+1,J)*DELI1 )*DELJ2 &
+         +(TAUHFT(IND,J+1)*DELI2+TAUHFT(IND+1,J+1)*DELI1)*DELJ1
+        END IF
+      TAUHF = CONST0*TEMP*UST**2*TAU1
+      TAUWX = XSTRESS+TAUHF*COS(USDIRP)
+      TAUWY = YSTRESS+TAUHF*SIN(USDIRP)
+!      
+! Reduces tail effect to make sure that wave-supported stress 
+! is less than total stress, this is borrowed from ECWAM Stresso.F      
+!
+      TAUW = SQRT(TAUWX**2+TAUWY**2)
+      UST2   = MAX(USTAR,EPS2)**2  
+      TAUWB = MIN(TAUW,MAX(UST2-EPS1,EPS2**2))
+      IF (TAUWB.LT.TAUW) THEN 
+        TAUWX=TAUWX*TAUWB/TAUW
+        TAUWY=TAUWY*TAUWB/TAUW
+        END IF
+! 
+      RETURN
+!
+! Formats
+!
+#ifdef W3_T
+ 9000 FORMAT (' TEST W3SIN4 : COMMON FACT.: ',3E10.3)
+#endif
+!/
+!/ End of W3SIN4 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SIN4
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE INSIN4(FLTABS)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                         SHOM      |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Aug-2010 |
+!/                  +-----------------------------------+
+!/
+!/    30-Aug-2010 : Origination.                        ( version 3.14-Ifremer )
+!
+!  1. Purpose :
+!
+!     Initialization for source term routine.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!       
+!     ----------------------------------------------------------------
+!      FLTABS    Logical   
+!     ----------------------------------------------------------------
+! 
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SIN4    Subr. W3SRC3MD Corresponding source term.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: TPIINV, RADE, GRAV
+      USE W3ODATMD,  ONLY: NDSE
+      USE W3SERVMD,  ONLY: EXTCDE
+      USE W3DISPMD,  ONLY: WAVNU2
+      USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH, TTAUWSHELTER,             &
+                           SSDSDTH, SSDSCOS, TH, DTH, XFR, ECOS, ESIN,   &
+                           SSDSC,  SSDSBRF1, SSDSBCK, SSDSBINT, SSDSPBK, &
+                           SSDSABK, SSDSHCK, IKTAB, DCKI, SATINDICES,    &
+                           SATWEIGHTS, CUMULW, NKHS, NKD, NDTAB, QBI
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      LOGICAL, INTENT(IN)     :: FLTABS
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 , IS, IS2
+      INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
+      REAL     C, C2
+      REAL     DIFF1, DIFF2, BINF, BSUP, CGG, PROF
+      REAL     KIK, DHS, KD, KHS, KH, XT, GAM, DKH, PR, W, EPS
+      REAL     DKD
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+!/
+!/ ------------------------------------------------------------------- /
+!/
+#ifdef W3_S
+      CALL STRACE (IENT, 'INSIN4')
+#endif
+!
+! 1.  Initializations ------------------------------------------------ *
+!
+!
+! These precomputed tables are written in mod_def.ww3 
+!
+      IF (FLTABS) THEN   
+        CALL TABU_STRESS
+        CALL TABU_TAUHF(SIG(NK) )      !tabulate high-frequency stress: 2D table
+        IF (TTAUWSHELTER.GT.0) THEN
+          CALL TABU_TAUHF2(SIG(NK) )   !tabulate high-frequency stress: 3D table
+          END IF
+        END IF
+!
+! 2.  SPONTANEOUS BREAKING
+! 2.a Precomputes the indices for integrating the spectrum to get saturation (TEST 4xx )
+!
+      IF (SSDSDTH.LT.180) THEN
+        SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
+        SATINDICES(:,:)=1
+        SATWEIGHTS(:,:)=0.
+        DO ITH=1,NTH
+          DO I_INT=ITH-SDSNTH, ITH+SDSNTH       
+            J_INT=I_INT
+            IF (I_INT.LT.1)  J_INT=I_INT+NTH
+            IF (I_INT.GT.NTH) J_INT=I_INT-NTH
+            SATINDICES(I_INT-(ITH-SDSNTH)+1,ITH)=J_INT
+            SATWEIGHTS(I_INT-(ITH-SDSNTH)+1,ITH)=          &
+                   COS(TH(ITH)-TH(J_INT))**SSDSCOS
+            END DO
+          END DO
+      ELSE
+        SATINDICES(:,:)=1
+        SATWEIGHTS(:,:)=1.
+        END IF
+!/ ------------------------------------------------------------------- /
+!
+! Precomputes QBI and DCKI (TEST 500)
+!
+      IF (SSDSBCK.GT.0) THEN 
+!
+! Precomputes the indices for integrating the spectrum over frequency bandwidth
+!
+        BINF=(1-SSDSBINT) ! Banner et al 2002: Hp=4*sqrt(int_0.7^1.3fp E df), SSDSBINT=0.3
+        BSUP=(1+SSDSBINT)
+        KIK=0.
+! 
+! High frequency tail for convolution calculation 
+!
+        ALLOCATE(K1(NK,NDTAB))
+        ALLOCATE(K2(NK,NDTAB))
+        ALLOCATE(SIGTAB(NK,NDTAB))
+
+        SIGTAB=0. !contains frequency for upper windows boundaries
+        IKTAB=0  ! contains indices for upper windows boundaries
+    
+        DO ID=1,NDTAB
+          TOTO=0 
+          PROF=REAL(ID)
+          DO IKL=1,NK ! last window starts at IK=NK 
+            CALL WAVNU2(SIG(IKL), PROF, KIK, CGG, 1E-7, 15, ICON)
+            K1(IKL,ID)=KIK  ! wavenumber lower boundary (is directly related to the frequency indices, IK)
+            K2(IKL,ID)=((BSUP/BINF)**2.)*K1(IKL,ID)! wavenumber upper boundary
+            SIGTAB(IKL,ID)=SQRT(GRAV*K2(IKL,ID)*TANH(K2(IKL,ID)*ID)) ! corresponding frequency upper boundary
+            IF(SIGTAB(IKL,ID) .LE. SIG(1)) THEN
+              IKTAB(IKL,ID)=1
+              END IF
+            IF(SIGTAB(IKL,ID) .GT. SIG(NK)) THEN 
+              IKTAB(IKL,ID)=NK+TOTO       ! in w3sds4 only windows with IKSUP<=NK will be kept
+              TOTO=1 
+              END IF  
+            DO IK=1,NK-1
+              DIFF1=0.
+              DIFF2=0.
+              IF(SIG(IK)<SIGTAB(IKL,ID) .AND. SIG(IK+1)>=SIGTAB(IKL,ID)) THEN
+                DIFF1=SIGTAB(IKL,ID)-SIG(IK)   ! seeks the indices of the upper boundary
+                DIFF2=SIG(IK+1)-SIGTAB(IKL,ID)! the indices of lower boudary = IK
+                IF (DIFF1<DIFF2) THEN
+                  IKTAB(IKL,ID)=IK 
+                ELSE
+                  IKTAB(IKL,ID)=IK+1 
+                  END IF
+                END IF  
+              END DO
+            END DO
+          END DO
+!      
+! Tabulates DCKI and QBI
+!   
+        DHS=KHSMAX/NKHS ! max value of KHS=KHSMAX
+        DKH=KHMAX/NKHI  ! max value of KH=KHMAX 
+        DKD=KDMAX/NKD
+        ALLOCATE(DCKI(NKHS,NKD))
+        ALLOCATE(QBI(NKHS,NKD))
+        DCKI=0.
+        QBI =0.
+        DO IKD=1,NKD
+          KHS=0.
+          KD=(FAC_KD1**(IKD-FAC_KD2))
+          XT=TANH(KD)
+          GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
+          GAM=GAM/2.15
+          DO IKHS=1,NKHS  ! max value of KHS=1.
+            KH=0.
+            KHS=KHS+DHS
+            DO IKH=1,NKHI
+              KH=KH+DKH
+              PR=(4.*KH/(KHS**2.))*exp(-(2*((KH/KHS)**2.)))
+!              W=1.5*(((KHS)/(SQRT(2.)*GAM*XT))**2.)*(1-exp(-(((KH)/(GAM*XT))**4.))) !CK2002 parameterization
+              W=SSDSABK*(((KHS)/(SQRT(2.)*GAM*XT))**2.)*(1-exp(-(((KH)/(GAM*XT))**SSDSPBK))) 
+              EPS=-((((SSDSBCK/(XT**SSDSHCK))*KH)**3.)/4)*SQRT(GRAV/XT)
+              DCKI(IKHS, IKD)= DCKI(IKHS, IKD)+PR*W*EPS*DKH
+              QBI(IKHS, IKD) = QBI(IKHS, IKD) +PR*W*    DKH
+              END DO
+            END DO
+          END DO
+
+        WHERE ( QBI .GT. 1. )
+          QBI = 1.
+          END WHERE
+
+        DEALLOCATE(K1,K2)
+        DEALLOCATE(SIGTAB)
+      ELSE 
+        IKTAB(:,:)=1
+        DCKI(:,:) =0.
+        QBI(:,:)  =0.
+        END IF
+!
+!/ ------------------------------------------------------------------- /
+!                        CUMULATIVE EFFECT
+!/ ------------------------------------------------------------------- /
+!
+! Precomputes the weights for the cumulative effect (TEST 441 and 500)
+!
+      DIKCUMUL = 0
+      IF (SSDSC(3).NE.0) THEN
+!       DIKCUMUL is the integer difference in frequency bands
+!       between the "large breakers" and short "wiped-out waves"
+        DIKCUMUL = NINT(SSDSBRF1/(XFR-1.))
+!        WRITE(6,*) 'INSIN4b:',DIKCUMUL                               
+        CUMULW(:,:)=0.
+        DO IK=1,NK  
+          C = GRAV/SIG(IK)   ! Valid in deep water only
+          !C = SIG(IK)/K(IK) ! Valid in all water depth ???
+          DO ITH=1,NTH
+            IS=ITH+(IK-1)*NTH
+            DO IK2=1,IK-DIKCUMUL
+              C2 = GRAV/SIG(IK2) ! Valid in deep water only
+              !C2 = SIG(IK2)/K(IK2) ! Valid in all water depth ???
+              DO ITH2=1,NTH
+                IS2=ITH2+(IK2-1)*NTH
+                CUMULW(IS2,IS)=SQRT(C**2+C2**2-2*C*C2*ECOS(1+ABS(ITH2-ITH))) & ! = deltaC
+                                   *DSIP(IK2)/(0.5*C2) * DTH                   ! = dk*dtheta (Valid in deep water only)
+                END DO
+              END DO 
+            END DO
+          END DO
+        ELSE 
+          CUMULW(:,:)=0.
+          END IF
+!/
+!/ End of INSIN4 ----------------------------------------------------- /
+!/
+      END SUBROUTINE INSIN4
+! ----------------------------------------------------------------------
+      SUBROUTINE TABU_STRESS
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         17-Oct-2007 |
+!/                  +-----------------------------------+
+!/
+!/    23-Jun-2006 : Origination.                        ( version 3.13 )
+!/     adapted from WAM, original:P.A.E.M. JANSSEN    KNMI AUGUST 1990
+!/     adapted version (subr. STRESS): J. BIDLOT    ECMWF OCTOBER 2004
+!/     Table values were checkes against the original f90 result and found to 
+!/     be identical (at least at 0.001 m/s accuracy)
+!/
+!  1. Purpose :
+!     TO GENERATE friction velocity table TAUT(TAUW,U10)=SQRT(TAU).
+!     METHOD.
+!       A STEADY STATE WIND PROFILE IS ASSUMED.
+!       THE WIND STRESS IS COMPUTED USING THE ROUGHNESSLENGTH
+!                  Z1=Z0/SQRT(1-TAUW/TAU)
+!       WHERE Z0 IS THE CHARNOCK RELATION , TAUW IS THE WAVE-
+!       INDUCED STRESS AND TAU IS THE TOTAL STRESS.
+!       WE SEARCH FOR STEADY-STATE SOLUTIONS FOR WHICH TAUW/TAU < 1.
+!       FOR QUASILINEAR EFFECT SEE PETER A.E.M. JANSSEN,1990.
+!
+!     Initialization for source term routine.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SIN3    Subr. W3SRC3MD Corresponding source term.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: KAPPA, GRAV
+      USE W3GDATMD, ONLY: ZZWND, AALPHA, ZZ0MAX
+      IMPLICIT NONE
+      INTEGER, PARAMETER      :: NITER=10
+      REAL   , PARAMETER      :: XM=0.50, EPS1=0.00001
+!     VARIABLE.   TYPE.     PURPOSE.
+!      *XM*        REAL      POWER OF TAUW/TAU IN ROUGHNESS LENGTH.
+!      *XNU*       REAL      KINEMATIC VISCOSITY OF AIR.
+!      *NITER*     INTEGER   NUMBER OF ITERATIONS TO OBTAIN TOTAL STRESS
+!      *EPS1*      REAL      SMALL NUMBER TO MAKE SURE THAT A SOLUTION
+!                            IS OBTAINED IN ITERATION WITH TAU>TAUW.
+! ----------------------------------------------------------------------
+      INTEGER I,J,ITER
+      REAL ZTAUW,UTOP,CDRAG,WCD,USTOLD,TAUOLD
+      REAL X,UST,ZZ0,ZNU,F,DELF,ZZ00
+!
+!
+      DELU    = UMAX/FLOAT(JUMAX)
+      DELTAUW = TAUWMAX/FLOAT(ITAUMAX)
+      DO I=0,ITAUMAX
+         ZTAUW   = (REAL(I)*DELTAUW)**2
+         DO J=0,JUMAX
+            UTOP    = FLOAT(J)*DELU
+            CDRAG   = 0.0012875
+            WCD     = SQRT(CDRAG)
+            USTOLD  = UTOP*WCD
+            TAUOLD  = MAX(USTOLD**2, ZTAUW+EPS1)
+            DO ITER=1,NITER
+               X   = ZTAUW/TAUOLD
+               UST = SQRT(TAUOLD)
+               ZZ00=AALPHA*TAUOLD/GRAV
+               IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+               ! Corrects roughness ZZ00 for quasi-linear effect
+               ZZ0 = ZZ00/(1.-X)**XM
+               !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
+               !ZZ0 = MAX(ZNU,ZZ0)
+               F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
+               DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
+                        *(1.-(XM+1)*X)/(1.-X)  
+               UST = UST-F/DELF
+               TAUOLD= MAX(UST**2., ZTAUW+EPS1)
+               END DO
+            TAUT(I,J)  = SQRT(TAUOLD)
+            END DO   
+         END DO
+       I=ITAUMAX
+       J=JUMAX
+!         
+!  Force zero wind to have zero stress (Bidlot 1996)
+!
+      DO I=0,ITAUMAX
+        TAUT(I,0)=0.0
+        END DO
+      RETURN
+      END SUBROUTINE TABU_STRESS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE TABU_TAUHF(SIGMAX)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update 2006/08/14            |
+!/                  +-----------------------------------+
+!/
+!/    27-Feb-2004 : Origination in WW3                  ( version 2.22.SHOM )
+!/     the resulting table was checked to be identical to the original f77 result
+!/    14-Aug-2006 : Modified following Bidlot           ( version 2.22.SHOM )
+!/    18-Aug-2006 : Ported to version 3.09      
+!
+!  1. Purpose :
+!
+!     Tabulation of the high-frequency wave-supported stress
+!
+!  2. Method :
+!
+!       SEE REFERENCE FOR WAVE STRESS CALCULATION.
+!       FOR QUASILINEAR EFFECT SEE PETER A.E.M. JANSSEN,1990.
+!     See tech. Memo ECMWF 03 december 2003 by Bidlot & Janssen
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       SIGMAX   Real  I   maximum frequency * TPI
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       STRACE   Service routine.
+!
+!  5. Called by :
+!
+!       W3SIN3   Wind input Source term routine.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!       !/T      Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: KAPPA, GRAV
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, FACHFE, ZZ0MAX
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, intent(in) :: SIGMAX  !  maximum frequency
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!       USTARM  R.A.  Maximum friction velocity
+!       ALPHAM  R.A.  Maximum Charnock Coefficient
+!       WLV     R.A.  Water levels.
+!       UA      R.A.  Absolute wind speeds.
+!       UD      R.A.  Absolute wind direction.
+!       U10     R.A.  Wind speed used.
+!       U10D    R.A.  Wind direction used.
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+      REAL                    :: USTARM, ALPHAM
+      REAL                    :: CONST1, OMEGA, OMEGAC 
+      REAL                    :: UST, ZZ0,OMEGACC, CM
+      INTEGER, PARAMETER      :: JTOT=250
+      REAL, ALLOCATABLE       :: W(:)
+      REAL                    :: ZX,ZARG,ZMU,ZLOG,ZZ00,ZBETA
+      REAL                    :: Y,YC,DELY
+      INTEGER                 :: J,K,L
+      REAL                    :: X0
+!
+#ifdef W3_S
+      CALL STRACE (IENT, 'TABU_HF')
+#endif
+!
+      USTARM = 5.
+      ALPHAM = 20.*AALPHA
+      DELUST = USTARM/REAL(IUSTAR)
+      DELALP = ALPHAM/REAL(IALPHA)
+      CONST1 = BBETA/KAPPA**2
+      OMEGAC = SIGMAX
+!   
+      TAUHFT(0:IUSTAR,0:IALPHA)=0. !table initialization
+!
+      ALLOCATE(W(JTOT))
+      W(2:JTOT-1)=1.
+      W(1)=0.5
+      W(JTOT)=0.5
+      X0 = 0.05
+!
+      DO L=0,IALPHA
+         DO K=0,IUSTAR
+            UST      = MAX(REAL(K)*DELUST,0.000001)
+            ZZ00       = UST**2*AALPHA/GRAV
+            IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+            ZZ0       = ZZ00*(1+FLOAT(L)*DELALP/AALPHA)
+            OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
+            YC       = OMEGACC*SQRT(ZZ0/GRAV)
+            DELY     = MAX((1.-YC)/REAL(JTOT),0.)
+            ! For a given value of UST and ALPHA, 
+            ! the wave-supported stress is integrated all the way
+            ! to 0.05*g/UST
+            DO J=1,JTOT
+               Y        = YC+REAL(J-1)*DELY
+               OMEGA    = Y*SQRT(GRAV/ZZ0)
+               ! This is the deep water phase speed
+               CM       = GRAV/OMEGA   
+               !this is the inverse wave age, shifted by ZZALP (tuning)
+               ZX       = UST/CM +ZZALP
+               ZARG     = MIN(KAPPA/ZX,20.)
+               ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+               ZLOG     = MIN(ALOG(ZMU),0.)
+               ZBETA        = CONST1*ZMU*ZLOG**4
+               ! Power of Y in denominator should be FACHFE-4  tail applied here
+               TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
+               END DO
+#ifdef W3_T
+      WRITE (NDST,9000) L,K,AALPHA+FLOAT(L)*DELALP,UST,TAUHFT(K,L)
+#endif
+         END DO
+      END DO
+      DEALLOCATE(W)
+      RETURN
+#ifdef W3_T
+ 9000 FORMAT ('TABU_HF, L, K, ALPHA, UST, TAUHFT(K,L) :',(2I4,3F8.3))    
+#endif
+      END SUBROUTINE TABU_TAUHF
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE TABU_TAUHF2(SIGMAX)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update 2006/08/14            |
+!/                  | Last update 2013/01/24            |
+!/                  +-----------------------------------+
+!/
+!/    15-May-2007 : Origination in WW3                  ( version 3.10.SHOM )
+!/    24-Jan-2013 : Allows to read in table             ( version 4.08 )
+!
+!  1. Purpose :
+!
+!     Tabulation of the high-frequency wave-supported stress as a function of
+!     ustar, alpha (modified Charnock), and tail energy level
+!
+!  2. Method :
+!
+!       SEE REFERENCE FOR WAVE STRESS CALCULATION.
+!       FOR QUASILINEAR EFFECT SEE PETER A.E.M. JANSSEN,1990.
+!     See tech. Memo ECMWF 03 december 2003 by Bidlot & Janssen
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       SIGMAX   Real  I   maximum frequency*TPI
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       STRACE   Service routine.
+!
+!  5. Called by :
+!
+!       W3SIN3   Wind input Source term routine.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!       !/T      Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: KAPPA, GRAV
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+      USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, FACHFE,  &
+                          TTAUWSHELTER, ZZ0MAX
+      USE W3ODATMD, ONLY: NDSE
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, intent(in) :: SIGMAX  !  maximum frequency * TPI
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!       USTARM  R.A.  Maximum friction velocity
+!       ALPHAM  R.A.  Maximum Charnock Coefficient
+!       WLV     R.A.  Water levels.
+!       UA      R.A.  Absolute wind speeds.
+!       UD      R.A.  Absolute wind direction.
+!       U10     R.A.  Wind speed used.
+!       U10D    R.A.  Wind direction used.
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+      REAL                    :: USTARM, ALPHAM, LEVTAILM
+      REAL                    :: CONST1, OMEGA, OMEGAC, LEVTAIL 
+      REAL                    :: UST, UST0, ZZ0,OMEGACC, CM
+      REAL                    :: TAUW, TAUW0
+      INTEGER, PARAMETER      :: JTOT=250
+      REAL, ALLOCATABLE       :: W(:)
+      REAL                    :: ZX,ZARG,ZMU,ZLOG,ZBETA
+      REAL                    :: Y,YC,DELY
+      INTEGER                 :: I, J, K, L
+      REAL                    :: X0, INSIGMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
+      INTEGER                 :: INIUSTAR, INIALPHA, INILEVTAIL, IERR
+      CHARACTER(160)          :: FNAMETAB
+      LOGICAL                 :: NOFILE
+      CHARACTER(LEN=10), PARAMETER :: VERGRD = '2018-06-08'
+      CHARACTER(LEN=35), PARAMETER :: IDSTR = 'WAVEWATCH III ST4 TABLE FOR STRESS '
+      CHARACTER(LEN=10)       :: VERTST=' '
+      CHARACTER(LEN=35)       :: IDTST=' '
+!
+#ifdef W3_S
+      CALL STRACE (IENT, 'TABU_HF')
+#endif
+!
+      FNAMETAB='ST4TABUHF2.bin'
+      NOFILE=.TRUE.
+      OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
+      IF (IERR.EQ.0) THEN 
+        READ(993,IOSTAT=IERR) IDTST, VERTST, INSIGMAX, INAALPHA, INBBETA, INIUSTAR,  &
+                              INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
+        IF (VERTST.EQ.VERGRD.AND.IDTST.EQ.IDSTR.AND.IERR.EQ.0             &
+            .AND.INSIGMAX.EQ.SIGMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
+          IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
+              INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
+            NOFILE=.FALSE.
+          ELSE 
+            CLOSE(993)
+            END IF
+          END IF
+        END IF 
+!
+      USTARM = 5.
+      ALPHAM = 20.*AALPHA
+      LEVTAILM = 0.05
+      DELUST  = USTARM/REAL(IUSTAR)
+      DELALP  = ALPHAM/REAL(IALPHA)
+      DELTAIL = ALPHAM/REAL(ILEVTAIL)
+      CONST1  = BBETA/KAPPA**2
+      OMEGAC  = SIGMAX
+800   CONTINUE
+      IF ( NOFILE ) THEN      
+        WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
+        WRITE(NDSE,*)  IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA,  &
+                       ILEVTAIL, ZZALP, KAPPA, GRAV
+!   
+        TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
+!
+        ALLOCATE(W(JTOT))
+        W(2:JTOT-1)=1.
+        W(1)=0.5
+        W(JTOT)=0.5
+        X0 = 0.05
+!
+        DO K=0,IUSTAR
+          UST0      = MAX(REAL(K)*DELUST,0.000001)
+          DO L=0,IALPHA
+            UST=UST0
+            ZZ0       = UST0**2*(AALPHA+FLOAT(L)*DELALP)/GRAV
+            OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
+            YC       = OMEGACC*SQRT(ZZ0/GRAV)
+            DELY     = MAX((1.-YC)/REAL(JTOT),0.)
+          ! For a given value of UST and ALPHA, 
+          ! the wave-supported stress is integrated all the way
+          ! to 0.05*g/UST
+            DO I=0,ILEVTAIL
+              LEVTAIL=REAL(I)*DELTAIL
+              TAUHFT(K,L)=0.  
+              TAUHFT2(K,L,I)=0. 
+              TAUW0=UST0**2
+              TAUW=TAUW0
+              DO J=1,JTOT
+                Y        = YC+REAL(J-1)*DELY
+                OMEGA    = Y*SQRT(GRAV/ZZ0)
+                ! This is the deep water phase speed
+                CM       = GRAV/OMEGA   
+                !this is the inverse wave age, shifted by ZZALP (tuning)
+                ZX       = UST0/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
+                ZX       = UST/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT2(K,L,I)  = TAUHFT2(K,L,I)+W(J)*ZBETA*(UST/UST0)**2/Y*DELY
+                TAUW=TAUW-W(J)*UST**2*ZBETA*LEVTAIL/Y*DELY
+                UST=SQRT(MAX(TAUW,0.))
+                END DO
+#ifdef W3_T
+      WRITE (NDST,9000) K,L,I,UST0,AALPHA+FLOAT(L)*DELALP,LEVTAIL,TAUHFT2(K,L,I)
+#endif
+              END DO
+            END DO
+          END DO
+        DEALLOCATE(W)
+        OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR,STATUS='UNKNOWN')
+        WRITE(993) IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
+        WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
+        WRITE(993) TAUHFT2
+        CLOSE(993)
+        !DO K=0,IUSTAR
+        !  DO L=0,IALPHA
+        !    DO I=0,ILEVTAIL
+        !      WRITE(995,*) K,L,I,MAX(REAL(K)*DELUST,0.000001),AALPHA+FLOAT(L)*DELALP,REAL(I)*DELTAIL,TAUHFT(K,L),TAUHFT2(K,L,I)
+        !      END DO
+        !    END DO
+        !  END DO 
+!
+      ELSE 
+        WRITE(NDSE,*) 'Reading 3D look-up table for SIN4 from file.'
+        READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
+        READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT2
+        CLOSE(993)
+        END IF
+!
+      GOTO 2001
+2000  NOFILE=.TRUE.
+      GOTO 800
+2001  CONTINUE 
+      RETURN
+#ifdef W3_T
+ 9000 FORMAT (' TEST TABU_HFT2, K, L, I, UST, ALPHA, LEVTAIL, TAUHFT2(K,L,I) :',(3I4,4F10.5))    
+#endif
+      END SUBROUTINE TABU_TAUHF2
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE CALC_USTAR(WINDSPEED,TAUW,USTAR,Z0,CHARN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update 2006/08/14            |
+!/                  +-----------------------------------+
+!/
+!/    27-Feb-2004 : Origination in WW3                  ( version 2.22-SHOM )
+!/     the resulting table was checked to be identical to the original f77 result
+!/    14-Aug-2006 : Modified following Bidlot           ( version 2.22-SHOM )
+!/    18-Aug-2006 : Ported to version 3.09      
+!/    03-Apr-2010 : Adding output of Charnock parameter ( version 3.14-IFREMER )
+!
+!  1. Purpose :
+!
+!     Compute friction velocity based on wind speed U10
+!
+!  2. Method :
+!
+!     Computation of u* based on Quasi-linear theory
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       U10,TAUW,USTAR,Z0
+!     ----------------------------------------------------------------
+!       WINDSPEED Real  I   10-m wind speed ... should be NEUTRAL 
+!       TAUW      Real  I   Wave-supported stress
+!       USTAR     Real  O   Friction velocity.
+!       Z0        Real  O   air-side roughness length
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       STRACE   Service routine.
+!
+!  5. Called by :
+!
+!       W3SIN3   Wind input Source term routine.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!       !/T      Enable test output.
+!
+! 10. Source code :
+!-----------------------------------------------------------------------------!
+      USE CONSTANTS, ONLY: GRAV, KAPPA
+      USE W3GDATMD,  ONLY: ZZWND, AALPHA
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif
+      IMPLICIT NONE
+      REAL, intent(in) :: WINDSPEED,TAUW
+      REAL, intent(out) :: USTAR, Z0, CHARN
+      ! local variables
+      REAL SQRTCDM1
+      REAL XI,DELI1,DELI2,XJ,delj1,delj2
+      REAL TAUW_LOCAL
+      INTEGER IND,J
+!
+      TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
+      XI      = SQRT(TAUW_LOCAL)/DELTAUW
+      IND     = MIN ( ITAUMAX-1, INT(XI)) ! index for stress table
+      DELI1   = MIN(1.,XI - REAL(IND))  !interpolation coefficient for stress table
+      DELI2   = 1. - DELI1
+      XJ      = WINDSPEED/DELU
+      J       = MIN ( JUMAX-1, INT(XJ) )
+      DELJ1   = MIN(1.,XJ - REAL(J))
+      DELJ2   = 1. - DELJ1
+      USTAR=(TAUT(IND,J)*DELI2+TAUT(IND+1,J  )*DELI1)*DELJ2 &
+       + (TAUT(IND,J+1)*DELI2+TAUT(IND+1,J+1)*DELI1)*DELJ1
+!
+! Determines roughness length
+!
+      SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
+      Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
+      IF (USTAR.GT.0.001) THEN 
+        CHARN = GRAV*Z0/USTAR**2
+      ELSE 
+        CHARN = AALPHA
+        END IF
+!
+      RETURN
+      END SUBROUTINE CALC_USTAR
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, DAIR, SRHS,    &
+                         DDIAG, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  ! F. Ardhuin, F. Leckler, L. Romero !
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         13-Aug-2021 |
+!/                  +-----------------------------------+
+!/
+!/    30-Aug-2010 : Clean up from common ST3-ST4 routine( version 3.14-Ifremer )
+!/    23-Jan-2012 : Add output of lambdas to be used in SIN
+!/    13-Nov-2013 : Reduced frequency range with IG1 switch 
+!/    06-Jun-2018 : Add optional DEBUGSRC              ( version 6.04 )
+!/    22-Feb-2020 : Option to use Romero (GRL 2019)    ( version 7.06 )
+!/    13-Aug-2021 : Consider DAIR a variable           ( version x.xx )
+!/
+!  1. Purpose :
+!
+!     Calculate whitecapping source term and diagonal term of derivative.
+!
+!  2. Method :
+!       
+!       This codes does either one or the other of 
+!       Ardhuin et al. (JPO 2010)   
+!       Filipot & Ardhuin (JGR 2012)
+!       Romero (GRL 2009)
+!       the choice depends on SDSBCHOICE
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IX, IY    Int   I   Grid Index 
+!       A         R.A.  I   Action density spectrum (1-D).
+!       K         R.A.  I   Wavenumber for entire spectrum.          *)
+!       USTAR     Real  I   Friction velocity.
+!       USDIR     Real  I   wind stress direction.
+!       DEPTH     Real  I   Water depth.
+!       DAIR      Real  I   Air density
+!       S         R.A.  O   Source term (1-D version).
+!       D         R.A.  O   Diagonal term of derivative.             *)
+!       BRLAMBDA  R.A.  O   Phillips' Lambdas
+!     ----------------------------------------------------------------
+!                         *) Stored in 1-D array with dimension NTH*NK
+!
+!  4. Subroutines used :
+!
+!       STRACE    Subroutine tracing.                 ( !/S switch )
+!       PRT2DS    Print plot of spectrum.             ( !/T0 switch )
+!       OUTMAT    Print out matrix.                   ( !/T1 switch )
+!
+!  5. Called by :
+!
+!       W3SRCE   Source term integration.
+!       W3EXPO   Point output program.
+!       GXEXPO   GrADS point output program.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S   Enable subroutine tracing.
+!     !/T   Enable general test output.
+!     !/T0  2-D print plot of source term.
+!     !/T1  Print arrays.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS,ONLY: GRAV, DWAT, PI, TPI, RADE, DEBUG_NODE
+      USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, SSDSBT, DDEN,      &
+                          SSDSC, EC2, ES2, ESC,                      &
+                          SIG, SSDSP, ECOS, ESIN, DTH, AAIRGB,       &
+                          SSDSISO, SSDSDTH, SSDSBM, AAIRCMIN,        &
+                          SSDSBRFDF, SSDSBCK, IKTAB, DCKI,           &
+                          SATINDICES, SATWEIGHTS, CUMULW, NKHS, NKD, &
+                          NDTAB, QBI
+#ifdef W3_IG1
+      USE W3GDATMD, ONLY: IGPARS
+#endif
+      USE W3ODATMD, ONLY: FLOGRD
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+#ifdef W3_T
+      USE W3ODATMD, ONLY: NDST
+#endif
+#ifdef W3_T0
+      USE W3ODATMD, ONLY: NDST
+      USE W3ARRYMD, ONLY: PRT2DS
+#endif
+#ifdef W3_T1
+      USE W3ARRYMD, ONLY: OUTMAT
+#endif
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, OPTIONAL, INTENT(IN) :: IX, IY
+      REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),            &
+                                 DEPTH, DAIR, USTAR, USDIR, DLWMEAN 
+      REAL, INTENT(OUT)       :: SRHS(NSPEC), DDIAG(NSPEC), BRLAMBDA(NSPEC)
+      REAL, INTENT(OUT)       :: WHITECAP(1:4)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IS, IS2, IS0, IKL, IKC, ID, NKL
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+      INTEGER                 :: IK, IK1, ITH, IK2, JTH, ITH2,             & 
+                                 IKHS, IKD, SDSNTH, IT, IKM, NKM
+      INTEGER                 :: NSMOOTH(NK)
+      REAL                    :: C, COSWIND, ASUM, SDIAGISO
+      REAL                    :: COEF1, COEF2, COEF4(NK),      &
+                                 COEF5(NK)
+
+      REAL                    :: FACTURB, FACTURB2, DTURB, DVISC, DIAG2, BREAKFRACTION
+      REAL                    :: RENEWALFREQ, EPSR
+      REAL                    :: S1(NK), E1(NK)
+      INTEGER                 :: NTIMES(NK)
+      REAL                    :: GAM, XT
+      REAL                    :: DK(NK), HS(NK), KBAR(NK), DCK(NK)
+      REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
+      INTEGER                 :: IKSUP(NK)
+      REAL                    :: FACSAT, DKHS, FACSTRAINB, FACSTRAINL
+      REAL                    :: BTH0(NK)     !saturation spectrum 
+      REAL                    :: BTH(NSPEC)   !saturation spectrum 
+      REAL                    :: BTH0S(NK)    !smoothed saturation spectrum 
+      REAL                    :: BTHS(NSPEC)  !smoothed saturation spectrum  
+      INTEGER                 :: IMSSMAX(NK), NTHSUM   
+      REAL                    :: MSSSUM(NK,5), WTHSUM(NTH), FACHF
+      REAL                    :: MSSSUM2(NK,NTH)
+      REAL                    :: MSSLONG(NK,NTH)
+      REAL                    :: MSSPCS, MSSPC2, MSSPS2, MSSP, MSSD, MSSTH
+      REAL                    :: MICHE, X, KLOC
+#ifdef W3_T0
+    REAL                    :: DOUT(NK,NTH)
+#endif
+      REAL                    :: QB(NK), S2(NK)
+      REAL                    :: TSTR, TMAX, DT, T, MFT
+      REAL                    :: PB(NSPEC), PB2(NSPEC), BRM12(NK), BTOVER
+      REAL                    :: KO, LMODULATION(NTH)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+#ifdef W3_S
+      CALL STRACE (IENT, 'W3SDS4')
+#endif
+!
+!
+!---------------------------------------------------------------------- 
+!
+! 0.  Pre-Initialization to zero out arrays. All arrays should be reset
+!     within the computation, but these are helping with some bugs
+!     found in certain compilers
+      NSMOOTH=0
+      S1=0.; E1=0.
+      NTIMES=0;IKSUP=0;IMSSMAX=0
+      DK=0.; HS=0.; KBAR=0.; DCK=0.; EFDF=0.
+      BTH0=0.; BTH=0.; BTH0S=0.; DDIAG=0.; SRHS=0.; PB=0.
+      BTHS=0.; MSSSUM(:,:)=0.
+#ifdef W3_T0
+  DOUT=0.
+#endif
+      QB=0.; S2=0.;PB=0.; PB2=0.
+      BRM12(:)=0.
+!
+! 1.  Initialization and numerical factors
+!
+      FACTURB=SSDSC(5)*USTAR**2/GRAV*DAIR/DWAT
+      BREAKFRACTION=0.
+      RENEWALFREQ=0.
+      IK1=1
+#ifdef W3_IG1
+      IK1=NINT(IGPARS(5))+1
+#endif
+      NTHSUM=MIN(FLOOR(SSDSC(10)+0.5),NTH-1)  ! number of angular bins for enhanced modulation
+      IF (NTHSUM.GT.0) THEN 
+        WTHSUM(1:NTHSUM)=1
+        WTHSUM(NTHSUM+1)=SSDSC(10)+0.5-NTHSUM
+      ELSE 
+        WTHSUM(1)=2*SSDSC(10)
+        END IF
+!
+! 1.b MSS parameters used for Modulation factors for B or lambda
+!
+      IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0.OR.SSDSC(18).GT.0) THEN 
+        MSSSUM2(:,:)=0.
+        DO IK=1,NK
+          IMSSMAX (IK) = 1
+          MSSP   = 0.
+          MSSPC2 = 0.
+          MSSPS2 = 0.
+          MSSPCS = 0.
+!
+! Sums the contributions to the directional MSS for all ITH   
+!
+          DO ITH=1,NTH         
+            IS=ITH+(IK-1)*NTH
+            MSSLONG(IK,ITH) = K(IK)**SSDSC(20) * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
+            END DO
+          DO ITH=1,NTH
+            DO JTH=-NTHSUM,NTHSUM 
+              ITH2 = 1+MOD(ITH-1+JTH+NTH,NTH)
+              MSSSUM2(IK,ITH) = MSSSUM2(IK,ITH)+MSSLONG(IK,ITH2)*WTHSUM(ABS(JTH)+1)
+              END DO
+            MSSPC2 = MSSPC2 +MSSLONG(IK,ITH)*EC2(ITH)
+            MSSPS2 = MSSPS2 +MSSLONG(IK,ITH)*ES2(ITH)
+            MSSPCS = MSSPCS +MSSLONG(IK,ITH)*ESC(ITH)
+            MSSP   = MSSP   +MSSLONG(IK,ITH)
+            END DO
+!
+! Now sums over IK
+! 
+          MSSSUM  (IK:NK,1) = MSSSUM (IK:NK,1) +MSSP
+          MSSSUM  (IK:NK,3) = MSSSUM (IK:NK,3) +MSSPC2
+          MSSSUM  (IK:NK,4) = MSSSUM (IK:NK,4) +MSSPS2
+          MSSSUM  (IK:NK,5) = MSSSUM (IK:NK,5) +MSSPCS
+!
+! Direction of long wave mss summed up to IK       
+!
+          MSSD=0.5*(ATAN2(2*MSSSUM(IK,5),MSSSUM(IK,3)-MSSSUM(IK,4)))
+          IF (MSSD.LT.0) MSSD = MSSD + PI
+            IMSSMAX (IK)=1+NINT(MSSD *NTH/TPI)
+!
+! mss along perpendicular direction        
+!
+            MSSSUM  (IK,2)  = MAX(0.,MSSSUM(IK,4)*COS(MSSD)**2          &
+                                  -2*MSSSUM(IK,5)*SIN(MSSD)*COS(MSSD)+  &
+                                     MSSSUM(IK,3)*SIN(MSSD)**2 )
+          END DO
+        END IF ! SSDSC(8).GT.0) THEN
+!
+! 2.   Estimation of spontaneous breaking from local saturation 
+!
+      SELECT CASE (NINT(SSDSC(1))) 
+      CASE (1)  
+!
+! 2.a  Case of a direction-dependent breaking term following Ardhuin et al. 2010
+!
+        EPSR = SQRT(SSDSBR)
+!
+! 2.a.1 Computes saturation
+!
+        SDSNTH = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
+!       SSDSDIK is the integer difference in frequency bands
+!       between the "large breakers" and short "wiped-out waves"
+!
+        BTH(:) = 0.
+
+        DO  IK=IK1, NK
+
+          FACSAT=SIG(IK)*K(IK)**3*DTH
+          IS0=(IK-1)*NTH
+          BTH(IS0+1)=0.
+          ASUM = SUM(A(IS0+1:IS0+NTH))
+          BTH0(IK)=ASUM*FACSAT
+          IKC = MAX(1,IK-DIKCUMUL)
+          KLOC=K(IK)**(2-SSDSC(20)) ! local wavenumber factor, if mss not used.
+        
+          IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
+            BTH(IS0+1:IS0+NTH)=BTH0(IK)
+          ELSE  
+            DO ITH=1,NTH            ! partial integration
+              IS=ITH+(IK-1)*NTH
+
+! straining effect of long waves on short waves
+! extended from Longuet-Higgins and Stewart (JFM 1960, eq. 2.27) the amplitude modulation 
+! in deep water is equal to the long wave slope k*a cos(theta1-theta2)
+! Here we assume that the saturation is modulated as (1 + SSDSC(8) *  sqrt(mss) )
+! where mss_theta is the mss in direction ITH. 
+! 
+! Note: SSDSC(8) is sqrt(2)*times the mss MTF: equal to 4*sqrt(2) according to Longuet-Higgins and Stewart
+!
+              IF (SSDSC(8).GT.0.OR.SSDSC(11).GT.0) THEN 
+!
+                MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
+                        +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))*KLOC
+!
+                FACSTRAINB=1+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IKC,ITH)*KLOC)
+              ELSE 
+                FACSTRAINB=1
+                END IF
+!
+              BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),  A(IS0+SATINDICES(:,ITH)) ) &
+                    *FACSAT*FACSTRAINB
+              END DO
+
+            IF (SSDSISO.NE.1) THEN
+              BTH0(IK)=MAXVAL(BTH(IS0+1:IS0+NTH))
+              END IF
+            END IF
+!
+          END DO !NK END
+! 
+!   Optional smoothing of B and B0 over frequencies
+! 
+        IF (SSDSBRFDF.GT.0.AND.SSDSBRFDF.LT.NK/2) THEN 
+          BTH0S(:)=BTH0(:)
+          BTHS(:)=BTH(:)
+          NSMOOTH(:)=1
+          DO IK=1, SSDSBRFDF
+            BTH0S(1+SSDSBRFDF)=BTH0S(1+SSDSBRFDF)+BTH0(IK)
+            NSMOOTH(1+SSDSBRFDF)=NSMOOTH(1+SSDSBRFDF)+1
+            DO ITH=1,NTH       
+              IS=ITH+(IK-1)*NTH
+              BTHS(ITH+SSDSBRFDF*NTH)=BTHS(ITH+SSDSBRFDF*NTH)+BTH(IS)
+              END DO
+            END DO
+          DO IK=IK1+1+SSDSBRFDF,1+2*SSDSBRFDF
+            BTH0S(1+SSDSBRFDF)=BTH0S(1+SSDSBRFDF)+BTH0(IK)
+            NSMOOTH(1+SSDSBRFDF)=NSMOOTH(1+SSDSBRFDF)+1
+            DO ITH=1,NTH       
+              IS=ITH+(IK-1)*NTH
+              BTHS(ITH+SSDSBRFDF*NTH)=BTHS(ITH+SSDSBRFDF*NTH)+BTH(IS)
+              END DO
+            END DO
+          DO IK=SSDSBRFDF,IK1,-1
+            BTH0S(IK)=BTH0S(IK+1)-BTH0(IK+SSDSBRFDF+1)
+            NSMOOTH(IK)=NSMOOTH(IK+1)-1
+            DO ITH=1,NTH       
+              IS=ITH+(IK-1)*NTH
+              BTHS(IS)=BTHS(IS+NTH)-BTH(IS+(SSDSBRFDF+1)*NTH)
+              END DO
+            END DO
+! 
+          DO IK=IK1+1+SSDSBRFDF,NK-SSDSBRFDF
+            BTH0S(IK)=BTH0S(IK-1)-BTH0(IK-SSDSBRFDF-1)+BTH0(IK+SSDSBRFDF)
+            NSMOOTH(IK)=NSMOOTH(IK-1)
+            DO ITH=1,NTH       
+              IS=ITH+(IK-1)*NTH
+              BTHS(IS)=BTHS(IS-NTH)-BTH(IS-(SSDSBRFDF+1)*NTH)+BTH(IS+(SSDSBRFDF)*NTH)
+              END DO
+            END DO
+! 
+          DO IK=NK-SSDSBRFDF+1,NK
+            BTH0S(IK)=BTH0S(IK-1)-BTH0(IK-SSDSBRFDF)
+            NSMOOTH(IK)=NSMOOTH(IK-1)-1
+            DO ITH=1,NTH       
+              IS=ITH+(IK-1)*NTH
+              BTHS(IS)=BTHS(IS-NTH)-BTH(IS-(SSDSBRFDF+1)*NTH)
+              END DO
+            END DO
+!    division by NSMOOTH
+          BTH0(:)=MAX(0.,BTH0S(:)/NSMOOTH(:))
+          DO IK=IK1,NK
+            IS0=(IK-1)*NTH
+            BTH(IS0+1:IS0+NTH)=MAX(0.,BTHS(IS0+1:IS0+NTH)/NSMOOTH(IK))
+            END DO 
+          END IF  ! end of optional smoothing
+! 
+!  2.a.2  Computes spontaneous breaking dissipation rate
+! 
+        DO  IK=IK1, NK
+!
+!  Correction of saturation level for shallow-water kinematics
+!
+          IF (SSDSBM(0).EQ.1) THEN
+            MICHE=1.
+          ELSE
+            X=TANH(MIN(K(IK)*DEPTH,10.))
+            MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X*(SSDSBM(3)+X*SSDSBM(4)))))**2 ! Correction of saturation level for shallow-water kinematics
+            END IF
+          COEF1=(SSDSBR*MICHE)
+!
+!  Computes isotropic part
+!
+          SDIAGISO = SSDSC(2) * SIG(IK)*SSDSC(6)*(MAX(0.,BTH0(IK)/COEF1-1.))**2
+!
+!  Computes anisotropic part and sums isotropic part
+!
+          COEF2=SSDSC(2) * SIG(IK)*(1-SSDSC(6))/(COEF1*COEF1)
+          DDIAG((IK-1)*NTH+1:IK*NTH) = SDIAGISO + &
+                                   COEF2*((MAX(0.,BTH((IK-1)*NTH+1:IK*NTH)-COEF1))**SSDSP) 
+          END DO
+!
+! Computes Breaking probability
+!
+      PB = (MAX(SQRT(BTH)-EPSR,0.))**2     
+! 
+! Multiplies by 28.16 = 22.0 * 1.6² * 1/2 with  
+!  22.0 (Banner & al. 2000, figure 6) 
+!  1.6  the coefficient that transforms  SQRT(B) to Banner et al. (2000)'s epsilon
+!  1/2  factor to correct overestimation of Banner et al. (2000)'s breaking probability due to zero-crossing analysis
+! 
+      PB = PB * 28.16
+! Compute Lambda = PB* l(k,th) 
+! with l(k,th)=1/(2*pi²)= the breaking crest density
+      BRLAMBDA = PB / (2.*PI**2.)
+      SRHS = DDIAG * A
+
+!
+    CASE(2)              
+!
+! 2.b             Computes spontaneous breaking for T500 (Filipot et al. JGR 2010)
+!
+      E1 = 0.
+      HS = 0.  
+      SRHS  = 0.
+      DDIAG = 0.
+      PB2  = 0.
+!
+! Computes Wavenumber spectrum E1 integrated over direction and computes dk
+!
+      DO IK=IK1, NK
+        E1(IK)=0.
+        DO ITH=1,NTH
+          IS=ITH+(IK-1)*NTH
+          E1(IK)=E1(IK)+(A(IS)*SIG(IK))*DTH
+          END DO
+        DK(IK)=DDEN(IK)/(DTH*SIG(IK)*CG(IK))
+        END DO
+!
+! Gets windows indices of IKTAB
+!
+      ID=MIN(NINT(DEPTH),NDTAB) 
+      IF (ID < 1) THEN
+        ID = 1
+      ELSE IF(ID > NDTAB) THEN
+        ID = NDTAB 
+        END IF
+!
+! loop over wave scales
+!
+      HS=0.  
+      EFDF=0.
+      KBAR=0.
+      NKL=0. !number of windows
+      DO IKL=1,NK 
+        IKSUP(IKL)=IKTAB(IKL,ID)
+        IF (IKSUP(IKL) .LE. NK) THEN
+          EFDF(IKL) = DOT_PRODUCT(E1(IKL:IKSUP(IKL)-1),DK(IKL:IKSUP(IKL)-1))
+          IF (EFDF(IKL) .NE. 0) THEN
+            KBAR(IKL) = DOT_PRODUCT(K(IKL:IKSUP(IKL)-1)*E1(IKL:IKSUP(IKL)-1), &
+                                    DK(IKL:IKSUP(IKL)-1)) / EFDF(IKL) 
+          ELSE 
+            KBAR(IKL)=0. 
+            END IF
+! estimation of Significant wave height of a given scale
+          HS(IKL) = 4*SQRT(EFDF(IKL)) 
+          NKL = NKL+1
+          END IF
+        END DO
+!   
+! Computes Dissipation and breaking probability in each scale  
+!
+      DCK=0.
+      QB =0.
+      DKHS = KHSMAX/NKHS 
+      DO IKL=1, NKL
+        IF (HS(IKL) .NE. 0. .AND. KBAR(IKL) .NE. 0.)  THEN 
+! gets indices for tabulated dissipation DCKI and breaking probability QBI
+!
+          IKD = FAC_KD2+ANINT(LOG(KBAR(IKL)*DEPTH)/LOG(FAC_KD1))
+          IKHS= 1+ANINT(KBAR(IKL)*HS(IKL)/DKHS)
+          IF (IKD > NKD) THEN    ! Deep water
+            IKD = NKD
+          ELSE IF (IKD < 1) THEN ! Shallow water
+            IKD = 1
+            END IF
+          IF (IKHS > NKHS) THEN
+            IKHS = NKHS
+          ELSE IF (IKHS < 1) THEN
+            IKHS = 1
+            END IF  
+          XT = TANH(KBAR(IKL)*DEPTH)
+!
+! Gamma corrected for water depth
+!
+          GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
+!
+! Computes the energy dissipated for the scale IKL
+! using DCKI which is tabulated in INSIN4
+!
+          DCK(IKL)=((KBAR(IKL)**(-2.5))*(KBAR(IKL)/(2*PI)))*DCKI(IKHS,IKD)
+!
+! Get the breaking probability for the scale IKL
+!
+          QB(IKL) = QBI(IKHS,IKD) ! QBI is tabulated in INSIN4
+        ELSE   
+          DCK(IKL)=0.
+          QB(IKL) =0.
+          END IF  
+        END DO
+!
+! Distributes scale dissipation over the frequency spectrum
+!
+      S1 = 0.
+      S2 = 0.
+      NTIMES = 0
+      DO IKL=1, NKL
+        IF (EFDF(IKL) .GT. 0.) THEN 
+          S1(IKL:IKSUP(IKL))    = S1(IKL:IKSUP(IKL)) + &
+                                  DCK(IKL)*E1(IKL:IKSUP(IKL)) / EFDF(IKL)
+          S2(IKL:IKSUP(IKL))    = S2(IKL:IKSUP(IKL)) + &
+                                  QB(IKL) *E1(IKL:IKSUP(IKL)) / EFDF(IKL)
+          NTIMES(IKL:IKSUP(IKL)) = NTIMES(IKL:IKSUP(IKL)) + 1
+          END IF
+        END DO
+!
+! Finish the average
+! 
+      WHERE (NTIMES .GT. 0)
+        S1 = S1 / NTIMES
+        S2 = S2 / NTIMES
+      ELSEWHERE
+        S1 = 0.
+        S2 = 0.
+        END WHERE
+! goes back to action for dissipation source term 
+      S1(1:NK) = S1(1:NK) / SIG(1:NK)
+!
+! Makes Isotropic distribution
+!
+      ASUM = 0.
+      DO IK = 1, NK 
+        ASUM = (SUM(A(((IK-1)*NTH+1):(IK*NTH)))*DTH)
+        IF (ASUM.GT.1.E-8) THEN
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = S1(IK)/ASUM
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = S2(IK)/ASUM
+        ELSE
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) DDIAG(IS)  = 0.
+          FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
+          END IF  
+        IF (PB2(1+(IK-1)*NTH).GT.0.001) THEN 
+          BTH0(IK) = 2.*SSDSBR
+        ELSE
+          BTH0(IK) = 0. 
+          END IF
+        END DO   
+!
+      PB = (1-SSDSC(1))*PB2*A + SSDSC(1)*PB
+! Compute Lambda = PB* l(k,th) 
+! with l(k,th)=1/(2*pi²)= the breaking crest density
+      BRLAMBDA = PB / (2.*PI**2.)
+!
+    CASE(3) 
+!
+! 2c Romero (GRL 2019) 
+!
+! directional saturation I 
+! integrate in azimuth
+      KO=(GRAV/(1E-6+USTAR**2))/(28./SSDSC(16))**2
+      DO IK=1,NK
+        IS0=(IK-1)*NTH
+        KLOC=K(IK)**(2-SSDSC(20)) ! local wavenumber factor, if mss not used.
+        BTH(1:NTH)=MAX(A(IS0+1:IS0+NTH)*SIG(IK)*K(IK)**3,.00000000000001)
+!
+        IF (SSDSC(8).GT.0) THEN ! Applies modulation factor on B
+          DO ITH=1,NTH
+            MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
+                 +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))*KLOC
+            FACSTRAINB=(1.+SSDSC(8)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH))*KLOC)
+            BTH(ITH)=BTH(ITH)*FACSTRAINB
+            END DO
+          END IF
+!
+        C=SIG(IK)/K(IK)
+        BTH0(IK)=sum(BTH(1:NTH)*DTH)   
+        IF (SSDSC(18).GT.0) THEN ! Applies modulation factor on Lambda
+          DO ITH=1,NTH
+            IF (SSDSC(11).GT.0) THEN 
+              MSSTH=(MSSSUM(IK,1)-MSSSUM(IK,2))*EC2(1+ABS(ITH-IMSSMAX (IK))) &
+                       +MSSSUM(IK,2)*ES2(1+ABS(ITH-IMSSMAX (IK)))*KLOC
+              FACSTRAINL=1.+SSDSC(18)*SQRT(MSSTH)+SSDSC(11)*SQRT(MSSSUM2(IK,ITH)*KLOC)
+            ELSE 
+              FACSTRAINL=1.+SSDSC(18)*((MSSSUM(IK,1)*KLOC)**SSDSC(14) *      &   ! Romero
+                (ECOS(ITH)*COS(DLWMEAN)+ESIN(ITH)*SIN(DLWMEAN))**2)  
+              ENDIF
+            LMODULATION(ITH)= FACSTRAINL**SSDSC(19) 
+            END DO
+        ELSE 
+          LMODULATION(:)= 1.
+          END IF
+
+! Lambda
+        BRLAMBDA(IS0+1:IS0+NTH)=SSDSC(9)*EXP(-SSDSBR/BTH(1:NTH))              &
+                                 *( 1.0+SSDSC(13)*MAX(1.,(K(IK)/KO))**SSDSC(15) ) &
+                                 /(SSDSC(13)+1)*LMODULATION(1:NTH)
+! Breaking strength : generalisation of Duncan's b parameter
+        BTOVER = SQRT(BTH0(IK))-SQRT(SSDSBT)
+        BRM12(IK)=SSDSC(2)*(MAX(0.,BTOVER))**(2.5)/SIG(IK)  ! not function of direction
+!  For consistency set BRLAMBDA set to zero if b is zero
+        BRLAMBDA(IS0+1:IS0+NTH)= MAX(0.,SIGN(BRLAMBDA(IS0+1:IS0+NTH),BTOVER)) 
+!  Source term / sig2  (action dissipation)
+        SRHS(IS0+1:IS0+NTH)= BRM12(IK)/GRAV**2*BRLAMBDA(IS0+1:IS0+NTH)*C**5
+! diagonal 
+        DDIAG(IS0+1:IS0+NTH) = SRHS(IS0+1:IS0+NTH)*SSDSBR/MAX(1.e-20,BTH(1:NTH))/MAX(1e-20,A(IS0+1:IS0+NTH))  ! 
+       END DO
+!   Breaking probability (Is actually the breaking rate)
+      PB = BRLAMBDA *C
+!
+      END SELECT
+!
+!
+!
+!/ ------------------------------------------------------------------- /
+!             WAVE-TURBULENCE INTERACTION AND CUMULATIVE EFFECT
+!/ ------------------------------------------------------------------- /
+!
+!
+! loop over spectrum
+!
+    IF ( (SSDSC(3).NE.0.) .OR. (SSDSC(5).NE.0.) .OR. (SSDSC(21).NE.0.) ) THEN 
+      DO  IK=IK1, NK
+        FACTURB2=-2.*SIG(IK)*K(IK)*FACTURB
+        DVISC=-4.*SSDSC(21)*K(IK)*K(IK)
+!
+        DO ITH=1,NTH       
+          IS=ITH+(IK-1)*NTH
+!
+! Computes cumulative effect from Breaking probability
+!
+          RENEWALFREQ = 0.
+          IF (SSDSC(3).NE.0 .AND. IK.GT.DIKCUMUL) THEN
+            DO IK2=IK1,IK-DIKCUMUL
+              IF (BTH0(IK2).GT.SSDSBR) THEN
+                IS2=(IK2-1)*NTH
+                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),BRLAMBDA(IS2+1:IS2+NTH))
+                END IF
+              END DO
+            END IF
+!
+! Computes wave turbulence interaction
+!
+          COSWIND=(ECOS(ITH)*COS(USDIR)+ESIN(ITH)*SIN(USDIR))
+          DTURB=FACTURB2*MAX(0.,COSWIND)  ! Theory -> stress direction
+!
+! Add effects
+!
+          DIAG2 = (SSDSC(3)*RENEWALFREQ+DTURB+DVISC) 
+          DDIAG(IS) = DDIAG(IS) + DIAG2
+          SRHS(IS)  = SRHS(IS)  + A(IS)* DIAG2
+          END DO
+        END DO
+      END IF
+!
+!  COMPUTES WHITECAP PARAMETERS
+!
+      IF ( .NOT. (FLOGRD(5,7).OR.FLOGRD(5,8) ) ) THEN
+        RETURN
+        END IF
+!
+      WHITECAP(1:2) = 0.
+!
+! precomputes integration of Lambda over direction 
+! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
+!
+      DO IK=1,MIN(FLOOR(AAIRCMIN),NK)
+        C=SIG(IK)/K(IK)
+        IS0=(IK-1)*NTH
+        COEF4(IK) = C*C*SUM(BRLAMBDA(IS0+1:IS0+NTH))                          &
+                         *2.*PI/GRAV*SSDSC(7) * DDEN(IK)/(SIG(IK)*CG(IK))
+        COEF5(IK) = C**3*SUM(BRLAMBDA(IS0+1:IS0+NTH)                           &
+                    *BRM12(IK))                       	       & 
+                    *AAIRGB/GRAV * DDEN(IK)/(SIG(IK)*CG(IK)) 
+!        COEF4(IK) = SUM(BRLAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
+!                    SSDSC(7) * DDEN(IK)/(DTH*SIG(IK)*CG(IK))
+!                   NB: SSDSC(7) is WHITECAPWIDTH
+        END DO
+! Need to extrapolate above NK if necessary ... to be added later. 
+      DO IK=MIN(FLOOR(AAIRCMIN),NK),NK
+        COEF4(IK)=0.
+        COEF5(IK)=0.
+        END DO
+
+!/
+      IF ( FLOGRD(5,7) ) THEN
+!
+! Computes the Total WhiteCap Coverage (a=5. ; Reul and Chapron, 2003)
+!
+        DO IK=IK1,MIN(FLOOR(AAIRCMIN),NK)
+          WHITECAP(1) = WHITECAP(1) + COEF4(IK) * (1-WHITECAP(1))
+          WHITECAP(4) = WHITECAP(4) + COEF5(IK) 
+          END DO
+        END IF
+!/
+      IF ( FLOGRD(5,8) ) THEN
+!
+! Calculates the Mean Foam Thickness for component K(IK) => Fig.3, Reul and Chapron, 2003 
+! ( Copied from ST4 - not yet tested/validated with Romero 2019 (Lambda model) 
+!
+        DO IK=IK1,NK
+!    Duration of active breaking (TAU*)
+          TSTR = 0.8 * 2*PI/SIG(IK)                                
+!    Time persistence of foam (a=5.)
+          TMAX = 5.  * 2*PI/SIG(IK)                                
+          DT   = TMAX / 50
+          MFT  = 0. 
+          DO IT = 1, 50                                            
+! integration over time of foam persistance
+            T = FLOAT(IT) * DT
+! Eq. 5 and 6 of Reul and Chapron, 2003
+            IF ( T .LT. TSTR ) THEN
+              MFT = MFT + 0.4 / (K(IK)*TSTR) * T * DT              
+            ELSE                                                   
+              MFT = MFT + 0.4 / K(IK) * EXP(-1*(T-TSTR)/3.8) * DT  
+              END IF
+            END DO
+          MFT = MFT / TMAX
+!
+! Computes foam-layer thickness (Reul and Chapron, 2003)
+!
+          WHITECAP(2) = WHITECAP(2) + COEF4(IK) * MFT
+          END DO
+        END IF
+!
+! End of output computing
+!
+      RETURN
+!
+! Formats
+!
+!/
+!/ End of W3SDS4 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SDS4
+
+
+      END MODULE W3SRC4MD
