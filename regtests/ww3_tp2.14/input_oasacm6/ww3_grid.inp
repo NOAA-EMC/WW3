@@ -237,10 +237,10 @@ $    The first line of each file will have the array dimension parameters.
 $    So the first line are read first to determine the array sizes for the
 $    following array read calls.      JGLi18Dec2012
 $
-  32  1  1  '(....)'  '../input/BrestSMCels.dat'
-  33  1  1  '(....)'  '../input/BrestISides.dat'
-  34  1  1  '(....)'  '../input/BrestJSides.dat'
-  31  1  1  '(....)'  '../input/BrestObstrs.dat'
+  32  1  1  '(....)'  '../input_oasacm6/BrestSMCels.dat'
+  33  1  1  '(....)'  '../input_oasacm6/BrestISides.dat'
+  34  1  1  '(....)'  '../input_oasacm6/BrestJSides.dat'
+  31  1  1  '(....)'  '../input_oasacm6/BrestObstrs.dat'
 $
 $ Input boundary points ---------------------------------------------- $
 $   An unlimited number of lines identifying points at which input 

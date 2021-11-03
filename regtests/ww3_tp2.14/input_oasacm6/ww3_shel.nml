@@ -60,7 +60,7 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%CURRENTS      = 'C'
+  INPUT%FORCING%WINDS         = 'C'
 /
 
 ! -------------------------------------------------------------------- !
@@ -228,6 +228,11 @@
 !       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
+! * Coupling flag (T) or (F) at T+0 (extra fields in the restart needed)
+!
+! * extra fields to be written to the restart:
+!   - The list includes all fields sent by coupling exchange only
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     TYPE%FIELD%LIST         =  'unset'
@@ -242,12 +247,15 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  =  F
+!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND UBR FOC BHD'
-  TYPE%COUPLING%SENT       = 'DIR'
-  TYPE%COUPLING%RECEIVED   = 'CUR'
+  TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
+  TYPE%COUPLING%SENT       = 'ACHA'
+  TYPE%COUPLING%RECEIVED   = 'WND'
+  TYPE%COUPLING%COUPLET0   =  T
 /
 
 ! -------------------------------------------------------------------- !

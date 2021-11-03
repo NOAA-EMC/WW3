@@ -46,16 +46,17 @@ fi
 declare -A forc
 declare -A flginp
 declare -A flggrd
-declare -A fielddates
-declare -A fieldlists
-declare -A pointdates
-declare -A pointfiles
-declare -A trackdates
-declare -A trackflags
-declare -A restartdates
-declare -A boundarydates
-declare -A partitiondates
-declare -A partfields
+declare -A fielddate
+declare -A fieldlist
+declare -A pointdate
+declare -A pointfile
+declare -A trackdate
+declare -A trackflag
+declare -A restartdate
+declare -A restart2date
+declare -A boundarydate
+declare -A partitiondate
+declare -A partfield
 declare -A homogic1
 declare -A homogic2
 declare -A homogic3
@@ -326,7 +327,23 @@ do
   restartdate[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
 done
 echo ${restartdate[@]}
-
+restart2="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
+echo $restart2
+extra="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
+echo $extra
+if [ "$restart2" = 'T' ]; then
+  il=$(($il+1))
+  for i in $(seq 1 5)
+  do
+    restart2date[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
+  done
+  echo ${restart2date[@]}
+fi
+if [ "$extra" = 'T' ]; then
+  il=$(($il+1))
+  extrafields="$(echo ${lines[$il]} | cut -d \" -f2  | cut -d \' -f2)"
+  echo $extrafields
+fi
 
 # boundary date
 echo 'boundary date'
@@ -369,6 +386,8 @@ then
     couplingdate[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
   done
   echo ${couplingdate[@]}
+  couplet0="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo $couplet0
   il=$(($il+1))
   nml="$(echo ${lines[$il]} | cut -d \" -f2  | cut -d \' -f2)"
   il=$(($il+1))
@@ -969,6 +988,11 @@ cat >> $nmlfile << EOF
 !       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
+! * Coupling flag (T) or (F) at T+0 (extra fields in the restart needed)
+!
+! * extra fields to be written to the restart:
+!   - The list includes all fields sent by coupling exchange only
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     TYPE%FIELD%LIST         =  'unset'
@@ -983,6 +1007,8 @@ cat >> $nmlfile << EOF
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  =  F
+!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
@@ -1011,9 +1037,14 @@ then
 fi
 
 if [ "$coupling" = T ]; then
-  if [ "${couplingdate[3]}" != 0 ]; then  echo "  TYPE%COUPLING%SENT       = '$sent'" >> $nmlfile
-                                          echo "  TYPE%COUPLING%RECEIVED   = '$received'" >> $nmlfile; fi
+  if [ "${couplingdate[3]}" != 0 ]; then  
+    echo "  TYPE%COUPLING%SENT       = '$sent'" >> $nmlfile
+    echo "  TYPE%COUPLING%RECEIVED   = '$received'" >> $nmlfile
+    if [ "$couplet0" = 'T' ] ; then echo "  TYPE%COUPLING%COUPLET0   =  T" >> $nmlfile; fi
+  fi
 fi
+
+if [ "$extra" = 'T' ] ; then echo "  TYPE%RESTART%EXTRA       = '$extrafields'" >> $nmlfile; fi
 
 
 
@@ -1068,6 +1099,11 @@ if [ "${trackdate[3]}" != '0' ]; then
 
 if [ "${restartdate[3]}" != '0' ]; then
   echo "  DATE%RESTART        = '${restartdate[1]} ${restartdate[2]}' '${restartdate[3]}' '${restartdate[4]} ${restartdate[5]}'" >> $nmlfile; fi
+
+if [ "$restart2" = 'T' ]; then
+  if [ "${restart2date[3]}" != '0' ]; then
+    echo "  DATE%RESTART2       = '${restart2date[1]} ${restart2date[2]}' '${restart2date[3]}' '${restart2date[4]} ${restart2date[5]}'" >> $nmlfile; fi
+fi
 
 if [ "${boundarydate[3]}" != '0' ]; then
   echo "  DATE%BOUNDARY       = '${boundarydate[1]} ${boundarydate[2]}' '${boundarydate[3]}' '${boundarydate[4]} ${boundarydate[5]}'" >> $nmlfile; fi

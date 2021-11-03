@@ -43,21 +43,21 @@
 # 1. Set up
 
   export cmplOption='y'
-  export np='28'      #number of mpi tasks
-  export npl='28'     #number of mpi tasks for ufs applications and large setups
-  export npl1='20'    #number of mpi tasks for ufs/large setups (b4b check)
+  export np='56'      #number of mpi tasks
+  export npl='56'     #number of mpi tasks for ufs applications and large setups
+  export npl1='40'    #number of mpi tasks for ufs/large setups (b4b check)
   export nr='4'       #number of mpi tasks for hybrid
   export nth='7'      #number of threads
-  export nth1='4'     #number of threads (b4b check)
+  export nth1='6'     #number of threads (b4b check)
 
 # 1.a Computer/ user dependent set up
 
   echo '#!/bin/bash'                                        > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -q mpi_1'                                      >> matrix.head
-  echo '#PBS -l mem=20G'                                    >> matrix.head
+  echo '#PBS -q mpi_2'                                      >> matrix.head
+  echo "#PBS -l select=2:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
-  echo '#PBS -N ww3_regtest'                                >> matrix.head
+  echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
   echo ' '                                                  >> matrix.head
@@ -123,8 +123,8 @@
 
   export       shrd='y' # Do shared architecture tests
   export       dist='y' # Do distributed architecture (MPI) tests
-  export        omp='y' # Threaded (OpenMP) tests
-  export       hybd='y' # Hybrid options
+  export        omp='n' # Threaded (OpenMP) tests
+  export       hybd='n' # Hybrid options
 
   export     prop1D='y' # 1-D propagation tests (ww3_tp1.X)
   export     prop2D='y' # 2-D propagation tests (ww3_tp2.X)

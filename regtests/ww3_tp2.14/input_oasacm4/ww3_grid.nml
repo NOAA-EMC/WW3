@@ -93,7 +93,6 @@
 !    'RECT' : rectilinear
 !    'CURV' : curvilinear
 !    'UNST' : unstructured (triangle-based)
-!    'SMCG' : Spherical Multiple-Cell grid.
 !
 ! * coordinate system can be : 
 !    'SPHE' : Spherical (degrees)
@@ -137,13 +136,13 @@
 !     GRID%DMIN             = 0.        ! abs. minimum water depth (m)
 ! -------------------------------------------------------------------- !
 &GRID_NML
-  GRID%NAME         =  '***** WW3 Brest3km Grid ***** '
-  GRID%NML          =  '../input/namelists_BREST.nml'
-  GRID%TYPE         =  'SMCG'
+  GRID%NAME         =  'IROISE 1.5KM'
+  GRID%NML          =  '../input_oasacm4/namelists_IROISE.nml'
+  GRID%TYPE         =  'RECT'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  -0.1
-  GRID%DMIN         =  10.0
+  GRID%ZLIM         =  0.0
+  GRID%DMIN         =  1.0
 /
 
 ! -------------------------------------------------------------------- !
@@ -173,12 +172,12 @@
 !     RECT%SF0              = 1.       ! scaling division factor for x0,y0 coord
 ! -------------------------------------------------------------------- !
 &RECT_NML
-  RECT%NX           =  52
-  RECT%NY           =  60
-  RECT%SX           =  0.0380
-  RECT%SY           =  0.0250
-  RECT%X0           =  -6.1285
-  RECT%Y0           =  47.6313
+  RECT%NX           =  103
+  RECT%NY           =  119
+  RECT%SX           =  0.019
+  RECT%SY           =  0.0125
+  RECT%X0           =  -6.119
+  RECT%Y0           =  47.6375
 /
 
 ! -------------------------------------------------------------------- !
@@ -219,51 +218,8 @@
 ! -------------------------------------------------------------------- !
 &DEPTH_NML
   DEPTH%SF        =  -1.
-  DEPTH%FROM      =  'NAME'
-  DEPTH%FILENAME  =  'SMC_unused_file'
-  DEPTH%IDF       =  30
-  DEPTH%FORMAT    =  '(....)'
-/
-
-! -------------------------------------------------------------------- !
-! Define the SMC grid
-! -------------------------------------------------------------------- !
-&SMC_NML
-  SMC%MCELS%IDF       =  32
-  SMC%MCELS%IDLA      =  1
-  SMC%MCELS%IDFM      =  1
-  SMC%MCELS%FORMAT    =  '(....)'
-  SMC%MCELS%FILENAME  =  '../input/BrestSMCels.dat'
-
-  SMC%ISIDE%IDF       =  33
-  SMC%ISIDE%IDLA      =  1
-  SMC%ISIDE%IDFM      =  1
-  SMC%ISIDE%FORMAT    =  '(....)'
-  SMC%ISIDE%FILENAME  =  '../input/BrestISides.dat'
-
-  SMC%JSIDE%IDF       =  34
-  SMC%JSIDE%IDLA      =  1
-  SMC%JSIDE%IDFM      =  1
-  SMC%JSIDE%FORMAT    =  '(....)'
-  SMC%JSIDE%FILENAME  =  '../input/BrestJSides.dat'
-
-  SMC%SUBTR%IDF       =  31
-  SMC%SUBTR%IDLA      =  1
-  SMC%SUBTR%IDFM      =  1
-  SMC%SUBTR%FORMAT    =  '(....)'
-  SMC%SUBTR%FILENAME  =  '../input/BrestObstrs.dat'
-/
-
-! -------------------------------------------------------------------- !
-! Define the mask
-! -------------------------------------------------------------------- !
-&MASK_NML
-  MASK%IDF       =  39
-  MASK%IDLA      =  1
-  MASK%IDFM      =  1
-  MASK%FORMAT    =  '(....)'
-  MASK%FROM      =  'NAME'
-  MASK%FILENAME  =  'SMC_unused_file'
+  DEPTH%FILENAME  =  '../input_oasacm4/iro_1p5k.bot'
+  DEPTH%FORMAT    =  '(20f10.2)'
 /
 
 ! -------------------------------------------------------------------- !

@@ -22,8 +22,8 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%START   = '20110902 010000'
-  DOMAIN%STOP    = '20110902 020000'
+  DOMAIN%START   = '20110902 020000'
+  DOMAIN%STOP    = '20110902 030000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -228,6 +228,11 @@
 !       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
+! * Coupling flag (T) or (F) at T+0 (extra fields in the restart needed)
+!
+! * extra fields to be written to the restart:
+!   - The list includes all fields sent by coupling exchange only
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     TYPE%FIELD%LIST         =  'unset'
@@ -242,10 +247,15 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  =  F
+!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
+  TYPE%COUPLING%SENT       = 'ACHA'
+  TYPE%COUPLING%RECEIVED   = 'WND'
+  TYPE%COUPLING%COUPLET0   =  T
 /
 
 ! -------------------------------------------------------------------- !
@@ -282,9 +292,8 @@
 !     DATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '20110902 010000' '180' '20110902 020000'
-  DATE%RESTART        = '20110902 020000' '3600' '20110902 030000'
-  DATE%BOUNDARY       = 'CHA RHO' '' ' '
+  DATE%FIELD          = '20110902 020000' '180' '20110902 030000'
+  DATE%COUPLING       = '20110902 020000' '360' '20110902 030000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -333,15 +342,9 @@
 !     HOMOG_INPUT(I)%VALUE3         =  0
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_WND                =  1
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'WND'
-  HOMOG_INPUT(1)%DATE        = ' '
-  HOMOG_INPUT(1)%VALUE1      = 
-  HOMOG_INPUT(1)%VALUE2      = 
-  HOMOG_INPUT(1)%VALUE3      = 
 /
 
 ! -------------------------------------------------------------------- !

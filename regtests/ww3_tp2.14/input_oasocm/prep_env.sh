@@ -20,8 +20,14 @@ echo '   setup coupling environment'
 export WWATCH3_DIR=`grep WWATCH3_DIR $WWATCH3_ENV | awk -F' ' '{print $2}' `
 export WWATCH3_CC=`grep WWATCH3_CC $WWATCH3_ENV | awk -F' ' '{print $2}' `
 
+
+echo '   copy oasis and toy in $path_w'
+cp -r $path_i/../input/toy $path_w/
+cp -r $path_i/../input/oasis3-mct $path_w/
+
+
 echo '   compile oasis coupler'
-cd $path_i/oasis3-mct/util/make_dir
+cd $path_w/oasis3-mct/util/make_dir
 if [ $cmplr ]
 then
   echo ' '
@@ -70,33 +76,34 @@ make realclean -f TopMakefileOasis3 > $path_w/oasis_clean.out
 make -f TopMakefileOasis3 > $path_w/oasis_make.out
 
 echo '   compile toy model'
-cd $path_i/toy
+cd $path_w/toy
 make clean > $path_w/toy_clean.out
 make > $path_w/toy_make.out
 
 echo '   copy oasis coupler inputs'
-cd $path_w
-ln -sf ../input/namcouple.$swtstr namcouple
+cp $path_i/namcouple $path_w/namcouple
 
 echo '   copy toy model inputs'
-cd $path_w
-if [ -f ../input/toy/r-toy.nc.$swtstr ]; then
-  cp ../input/toy/r-toy.nc.$swtstr r-toy.nc
+if [ -f $path_w/toy/r-toy.nc.$swtstr ]; then
+  cp $path_w/toy/r-toy.nc.$swtstr $path_w/r-toy.nc
 else
-  echo "WARNING: model input ../input/toy/r-toy.nc.$swtstr does not exist"
+  echo "WARNING: model input $path_w/toy/r-toy.nc.$swtstr does not exist"
 fi
-ln -sf ../input/toy/grid_toy_model.nc .
-ln -sf ../input/toy/toy_coupled_field.nc.$swtstr toy_coupled_field.nc
-ln -sf ../input/TOYNAMELIST.nam.$swtstr TOYNAMELIST.nam
-ln -sf ../input/toy/toy_model .
+
+cp $path_w/toy/grid_toy_model.nc $path_w/
+cp $path_w/toy/toy_coupled_field.nc.$swtstr $path_w/toy_coupled_field.nc
+cp $path_w/toy/toy_model $path_w/
+
+cp $path_i/TOYNAMELIST.nam $path_w/
 
 echo '   copy ww3 model inputs'
 cd $path_w
-if [ -f ../input/r-ww3.nc.$swtstr ]; then
-  cp ../input/r-ww3.nc.$swtstr r-ww3.nc
+if [ -f $path_i/r-ww3.nc ]; then
+  cp $path_i/r-ww3.nc $path_w/r-ww3.nc
 else
-  echo "WARNING: model input ../input/toy/r-ww3.nc.$swtstr does not exist"
+  echo "WARNING: model input $path_i/toy/r-ww3.nc does not exist"
 fi
-cp ../input/ww3_shel_${swtstr}.inp ../input/ww3_shel.inp
-cp ../input/ww3_shel_${swtstr}.nml ../input/ww3_shel.nml
+
+
+
 echo ''

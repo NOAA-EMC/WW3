@@ -235,7 +235,7 @@
 !       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
-! * Coupling at T+0 (extra fields in the restart needed)
+! * Coupling flag (T) or (F) at T+0 (extra fields in the restart needed)
 !
 ! * extra fields to be written to the restart:
 !   - The list includes all fields sent by coupling exchange only
@@ -254,7 +254,7 @@
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
-!     TYPE%COUPLING%COUPLET0  = .FALSE.
+!     TYPE%COUPLING%COUPLET0  =  F
 !     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
@@ -285,6 +285,9 @@
 !     DATE%RESTART%START       =  '19680606 000000'
 !     DATE%RESTART%STRIDE      =  '0'
 !     DATE%RESTART%STOP        =  '19680607 000000'
+!     DATE%RESTART2%START      =  '19680606 000000'
+!     DATE%RESTART2%STRIDE     =  '0'
+!     DATE%RESTART2%STOP       =  '19680607 000000'
 !     DATE%BOUNDARY%START      =  '19680606 000000'
 !     DATE%BOUNDARY%STRIDE     =  '0'
 !     DATE%BOUNDARY%STOP       =  '19680607 000000'
