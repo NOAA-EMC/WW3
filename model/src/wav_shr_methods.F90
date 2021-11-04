@@ -373,6 +373,7 @@ contains
     real(r8), pointer               :: dataPtr1d(:)
     real(r8), pointer               :: dataPtr2d(:,:)
     character(len=*),parameter      :: subname='(state_diagnose)'
+    integer :: lb,ub
     ! ----------------------------------------------
 
 
@@ -398,14 +399,17 @@ contains
           ! no local data
        elseif (lrank == 1) then
           if (size(dataPtr1d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
-                  minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
+             !write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
+             !     minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
+             lb = lbound(dataPtr1d,1); ub = ubound(dataPtr1d,1)
+             write(msgString,'(A,2i7,10g14.7)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
+                  lb,ub,dataPtr1d((ub-lb)/2:9+(ub-lb)/2)
           else
              write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
           endif
        elseif (lrank == 2) then
           if (size(dataPtr2d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
+             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
                   minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
           else
              write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"

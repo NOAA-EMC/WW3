@@ -6,7 +6,9 @@ module wav_import_export
   use wav_kind_mod    , only : r8 => shr_kind_r8
   use wav_shr_methods , only : ymd2date
   use wav_shr_methods , only : chkerr
+  use wav_shr_methods , only : state_diagnose, state_reset
   use constants       , only : grav, tpi, dwat
+  use w3cesmmd        , only : runtype
 
   implicit none
   private ! except
@@ -16,6 +18,8 @@ module wav_import_export
   public  :: import_fields
   public  :: export_fields
   public  :: state_getfldptr
+  public  :: state_fldchk
+  public  :: CalcRoughl
 
   private :: fldlist_add
   private :: fldlist_realize
@@ -67,18 +71,24 @@ contains
 
     call fldlist_add(fldsToWav_num, fldsToWav, trim(flds_scalar_name))
 
+    !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
+#ifdef CESMCOUPLED
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
-#ifdef CESMCOUPLED
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #else
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10'     )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10'     )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #endif
 
     if (wav_coupling_to_cice) then
@@ -106,12 +116,12 @@ contains
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
 #else
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
+    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
 #endif
 
     ! AA TODO: In the above fldlist_add calls, we are passing hardcoded ungridded_ubound values (3) because, USSPF(2)
@@ -180,6 +190,17 @@ contains
          mesh=mesh, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    call state_diagnose(exportState, 'at realize ', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call state_reset(ExportState, zero, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_reset(ImportState, zero, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call state_diagnose(exportState, 'after state_reset', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
 
   end subroutine realize_fields
@@ -198,6 +219,8 @@ contains
     use w3wdatmd    , only: time
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
+#else
+    use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
 #endif
 
     ! input/output variables
@@ -226,6 +249,8 @@ contains
 
     ! Get import state, clock and vm
     call ESMF_GridCompGet(gcomp, clock=clock, importState=importState, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_diagnose(importState, 'at import ', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine time0 and timen - note have not advanced the model clock yet with nuopc
@@ -273,8 +298,9 @@ contains
              WLEV(ix,iy) = 0.0
           end do
        end do
+    else
+     WLEV = def_value
     endif
-
     ! ---------------
     ! INFLAGS1(2) - ocn current fields
     ! ---------------
@@ -352,7 +378,7 @@ contains
        end do
 
        DT0(:,:) = def_value   ! air temp - ocn temp
-       DTN(:,:)  = def_value
+       DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
           allocate(data_global2(nx*ny))
           call SetGlobalInput(importState, 'Sa_tbot', vm, data_global, rc)
@@ -406,8 +432,16 @@ contains
           end do
        end if
     end if
+#else
+   if (INFLAGS1(5)) then
+      TU0  = time0       ! times for atm momentum fields.
+      TUN  = timen
+      UX0(:,:) = def_value   ! u-momentum
+      UXN(:,:) = def_value   ! u-momentum
+      UY0(:,:) = def_value   ! v-momentum
+      UYN(:,:) = def_value   ! v-momentum
+    end if
 #endif
-
     ! ---------------
     ! INFLAGS1(-7)
     ! ---------------
@@ -596,14 +630,14 @@ contains
        enddo
     end if
 
-    if (state_fldchk(exportState, 'charno')) then
+    if (state_fldchk(exportState, 'Sw_ch')) then
        call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcCharnk(charno)
     endif
 
-    if (state_fldchk(exportState, 'z0rlen')) then
-       call state_getfldptr(exportState, 'z0rlen', fldptr1d=z0rlen, rc=rc)
+    if (state_fldchk(exportState, 'Sw_z0')) then
+       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
@@ -860,6 +894,9 @@ contains
 
    end if
 #endif
+
+    call state_diagnose(exportState, 'at export ', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine export_fields
 
@@ -1168,14 +1205,19 @@ contains
     real          :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
     logical       :: llws(nspec)
     logical, save :: firstCall = .true.
+
+    integer       :: lb, ub
+    character(len=1024)                   :: msgString
+
     !----------------------------------------------------------------------
 
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       if ( mapsta(iy,ix) == 1 ) then
-          if ( firstCall ) then
+       if ( firstCall ) then
+          if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) .or. &
+             ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
              charn(jsea) = zero
              llws(:) = .true.
              ustar = zero
@@ -1193,10 +1235,20 @@ contains
                           tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
                           dlwmean )
 #endif
-          endif !firstCall
+             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+          end if
+       endif !firstCall
           wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-       endif
     enddo jsea_loop
+
+    lb = lbound(ust,1); ub = ubound(ust,1)
+    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    lb = lbound(charn,1); ub = ubound(charn,1)
+    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln((ub-lb)/2:9+(ub-lb)/2)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     firstCall = .false.
 
