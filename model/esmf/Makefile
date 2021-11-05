@@ -59,10 +59,6 @@ else
  $(error Unsupported WW3_COMP: $(WW3_COMP))
 endif
 
-
-# debug
-
-
 ################################################################################
 
 DEP_FRONTS    := -DFRONT_ESM=ESM
