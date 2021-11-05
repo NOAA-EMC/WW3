@@ -7,7 +7,8 @@ WW3_BASEDIR  := $(shell cd ../.. 1>/dev/null 2>&1 && pwd)
 WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
-WW3_COMP ?= gnu
+WW3_COMP  ?= gnu
+WW3_DEBUG ?= ''
 WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
@@ -57,6 +58,10 @@ else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","hera.gnu" "cheyenne.gnu"))
 else
  $(error Unsupported WW3_COMP: $(WW3_COMP))
 endif
+
+
+# debug
+
 
 ################################################################################
 
@@ -149,7 +154,7 @@ env:
 # Setup comp & link files and auxiliary programs (this is done using w3_setup)
 # ------------------------------------------------------------------------------
 setup: env
-	@$(WW3_BINDIR)/w3_setup -q -c $(WW3_COMP) $(WW3_DIR)
+	@$(WW3_BINDIR)/w3_setup -q -c $(WW3_COMP):$(WW3_DEBUG) $(WW3_DIR)
 # ------------------------------------------------------------------------------
 
 
