@@ -98,6 +98,7 @@ echo "cmplr:        $cmplr"
 
 
 # 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   echo ' '
   echo '                *****************************'
   echo '              ***   WAVEWATCH III setup     ***'
@@ -341,7 +342,6 @@ then
        [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
        [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
        [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
-
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<optomp>/$optomp/" -e "s/<err_pattern>/$err_pattern/" -e "s/<warn_pattern>/$warn_pattern/" $path_b/comp.tmpl > $path_b/comp
      echo "      sed $path_b/comp.tmpl => $path_b/comp"
@@ -412,13 +412,6 @@ then
   fi
   chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
-
-### MTM TEMP ######
-echo "optc: $optc"
-echo "optl: $optl"
-echo ""
-exit
-### MTM END TEMP ##
 
 # 3.d Setup switch file
 if [ $swtch ]
