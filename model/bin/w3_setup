@@ -81,6 +81,16 @@ else
   exit 1
 fi
 
+# 0.f Process cmplr:debug
+_ww3_dbflag=${cmplr##*\:}
+if [ "$_ww3_dbflag" != "debug" ]; then
+    _ww3_dbflag=''
+fi
+cmplr=${cmplr%\:*}
+export _ww3_dbflag=$_ww3_dbflag
+echo "_ww3_dbflag:  $_ww3_dbflag"
+echo "cmplr:        $cmplr"
+
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
