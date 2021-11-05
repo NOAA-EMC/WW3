@@ -51,11 +51,11 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
-                          ALPHA, WN1, CG1,                            &
-                          D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
+                          ALPHA, WN1, CG1, D_INP, U10ABS, U10DIR,     &
 #ifdef W3_FLX5
                           TAUA, TAUADIR,                              &
 #endif
+                          AS, USTAR, USTDIR,                          &
                           CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
                           TRNY, BERG, FPI, DTDYN, FCUT, DTG, TAUWX,   &
@@ -125,7 +125,7 @@
 !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
 !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
 !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 ) 
-!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
