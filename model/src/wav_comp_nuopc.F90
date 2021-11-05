@@ -397,6 +397,7 @@ contains
 
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
+    ! TODO: remove (used for debugging)
     use w3adatmd,   only : charn
     use w3wdatmd,   only : ust
 

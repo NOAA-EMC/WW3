@@ -1152,6 +1152,7 @@ contains
     logical, save      :: firstCall = .true.
     !----------------------------------------------------------------------
 
+    !TODO: fix firstCall like for Roughl
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
        if ( firstCall ) then
@@ -1206,8 +1207,8 @@ contains
     logical       :: llws(nspec)
     logical, save :: firstCall = .true.
 
-    integer       :: lb, ub
-    character(len=1024)                   :: msgString
+    integer               :: lb, ub
+    character(len=1024)   :: msgString
 
     !----------------------------------------------------------------------
 
