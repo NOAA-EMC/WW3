@@ -412,7 +412,6 @@ then
   fi
   chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
-
 # 3.d Setup switch file
 if [ $swtch ]
 then
