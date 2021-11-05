@@ -7,7 +7,6 @@ assignees: ''
 
 ---
 
-
 **Describe the section in the documentation that is missing or requires an update?**
 
 **Report a bug/typo in the documentation**
