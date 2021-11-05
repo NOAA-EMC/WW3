@@ -149,7 +149,7 @@
 !/    18-Jun-2020 : Adds 360-day calendar option        ( version 7.08 )
 !/    19-Oct-2020 : Add AIRCMIN, AIRGB parameters       ( version 7.08 )
 !/    07-07-2021  : S_{nl} GKE NL5 (Q. Liu)             ( version 7.12 )
-!/    19-Jul-2021 : Momentum and air density support    ( version 7.xx )
+!/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
