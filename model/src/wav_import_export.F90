@@ -72,23 +72,18 @@ contains
     call fldlist_add(fldsToWav_num, fldsToWav, trim(flds_scalar_name))
 
     !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
-#ifdef CESMCOUPLED
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
+#ifdef CESMCOUPLED
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #else
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #endif
 
     if (wav_coupling_to_cice) then
