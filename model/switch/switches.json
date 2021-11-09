@@ -1,0 +1,666 @@
+{
+    "nco": {
+        "num_switches": "upto1",
+        "description": "NCO modifications",
+        "valid_options": {
+            "NCO": {}
+        },
+        "touch_files": ["w3bullmd", "ww3_prep", "ww3_shel", "ww3_ounp", "ww3_prnc", "ww3_outp", "ww3_prtide", "ww3_grib"]
+    },
+    "grib": {
+        "num_switches": "one",
+        "description": "GRIB package",
+        "valid_options": {
+            "NOGRB": {},
+            "NCEP2": {}
+        },
+        "touch_files": ["ww3_grib"]
+    },
+    "scrip": {
+        "num_switches": "upto1",
+        "description": "Grid to grid interpolation",
+        "valid_options": {
+            "SCRIP": {
+                "build_files": []
+            }
+        },
+        "touch_files": ["wmgridmd", "wmscrpmd", "w3gridmd"]
+    },
+    "scripnc": {
+        "num_switches": "upto1",
+        "description": "",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "shared": {
+        "num_switches": "one",
+        "description": "'shared / distributed memory",
+        "valid_options": {
+            "SHRD": {
+                "build_files": []
+            },
+            "DIST": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "mpp": {
+        "num_switches": "one",
+        "description": "message passing protocol",
+        "valid_options": {
+            "SHRD": {
+                "build_files": []
+            },
+            "MPI": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "mpiexp": {
+        "num_switches": "upto1",
+        "description": "experimental MPI option",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "thread": {
+        "num_switches": "upto2",
+        "description": "directive controlled threading'",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "GSE": {
+        "num_switches": "one",
+        "description": "GSE aleviation",
+        "valid_options": {
+            "PR0": {
+                "build_files": []
+            },
+            "PR1": {
+                "build_files": ["w3profsmd", "w3pro1md"]
+            },
+            "PR2": {
+                "build_files": ["w3profsmd", "w3pro2md"]
+            },
+            "PR3": {
+                "build_files": ["w3profsmd", "w3pro3md"]
+            }
+        },
+        "touch_files": []
+    },
+    "prop": {
+        "num_switches": "one",
+        "description": "propagation scheme",
+        "valid_options": {
+            "PR0": {},
+            "PR1": {},
+            "UQ": {
+                "build_files": ["w3uqckmd"]
+            },
+            "UNO": {
+                "build_files": ["w3uno2md"]
+            }
+        },
+        "touch_files": []
+    },
+    "smcg": {
+        "num_switches": "upto1",
+        "description": "SMC grid",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "stress": {
+        "num_switches": "one",
+        "description": "stress computation",
+        "valid_options": {
+            "FLX0": {
+                "build_files": ["w3flx1md"]
+            },
+            "FLX1": {
+                "build_files": ["w3flx1md"]
+            },
+            "FLX2": {
+                "build_files": ["w3flx2md"]
+            },
+            "FLX3": {
+                "build_files": ["w3flx3md"]
+            },
+            "FLX4": {
+                "build_files": ["w3flx4md"]
+            },
+            "FLX5": {
+                "build_files": ["w3flx5md"]
+            }
+        },
+        "touch_files": []
+    },
+    "dstress": {
+        "num_switches": "upto1",
+        "description": "Diagnostic stress comp",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "s_ln": {
+        "num_switches": "one",
+        "description": "linear input",
+        "valid_options": {
+            "LN0": {
+                "build_files": []
+            },
+            "SEED": {},
+            "LN1": {
+                "build_files": ["w3sln1md"]
+            }
+        },
+        "touch_files": []
+    },
+    "sterm": {
+        "num_switches": "one",
+        "description": "input/whitecapping",
+        "valid_options": {
+            "ST0": {
+                "build_files": ["w3src0md"]
+            },
+            "ST1": {
+                "build_files": ["w3src1md"]
+            },
+            "ST2": {
+                "build_files": ["w3src2md"]
+            },
+            "ST3": {
+                "build_files": ["w3src3md"]
+            },
+            "ST4": {
+                "build_files": ["w3src4md"]
+            },
+            "ST6": {
+                "build_files": ["w3src6md", "w3swldmd"]
+            }
+        },
+        "touch_files": []
+    },
+    "stab": {
+        "num_switches": "upto1",
+        "description": "stability correction",
+        "valid_options": {
+            "STAB0": {},
+            "STAB2": {},
+            "STAB3": {}
+        },
+        "touch_files": []
+    },
+    "s_nl": {
+        "num_switches": "one",
+        "description": "quadruplet interactions",
+        "valid_options": {
+            "NL0": {},
+            "NL1": {
+                "build_files": ["w3snl1md"]
+            },
+            "NL2": {
+                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5", "mod_constants", "mod_fileio"]
+            },
+            "NL3": {
+                "build_files": ["w3snl3md"]
+            },
+            "NL4": {
+                "build_files": ["w3snl4md"]
+            },
+            "NL5": {
+                "build_files": ["w3snl5md", "w3gkemd"]
+            }
+        },
+        "touch_files": []
+    },
+    "snls": {
+        "num_switches": "upto1",
+        "description": "quadruplet smoother",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "s_bot": {
+        "num_switches": "one",
+        "description": "bottom friction",
+        "valid_options": {
+            "BT0": {},
+            "BT1": {
+                "build_files": ["w3sbt1md"]
+            },
+            "BT4": {
+                "build_files": ["w3sbt4md"]
+            },
+            "BT8": {
+                "build_files": ["w3sbt8md"]
+            },
+            "BT9": {
+                "build_files": ["w3sbt9md"]
+            }
+        },
+        "touch_files": []
+    },
+    "s_db": {
+        "num_switches": "one",
+        "description": "depth-induced breaking",
+        "valid_options": {
+            "DB0": {
+            },
+            "DB1": {
+                "build_files": ["w3sdb1md"]
+            }
+        },
+        "touch_files": []
+    },
+    "miche": {
+        "num_switches": "upto1",
+        "description": "Miche style limiter",
+        "valid_options": {
+            "MLIM": {}
+        },
+        "touch_files": []
+    },
+    "s_tr": {
+        "num_switches": "one",
+        "description": "triad interactions",
+        "valid_options": {
+            "TR0": {},
+            "TR1": {
+                "build_files": ["w3str1md"]
+            }
+        },
+        "touch_files": []
+    },
+    "s_bs": {
+        "num_switches": "one",
+        "description": "bottom scattering",
+        "valid_options": {
+            "BS0": {}, 
+            "BS1": {
+                "build_files": ["w3sbs1md"]
+            }
+        },
+        "touch_files": []
+    },
+    "s_ice": {
+        "num_switches": "one",
+        "description": "ice sink term",
+        "valid_options": {
+            "IC0": {},
+            "IC1": {
+                "build_files": ["w3sic1md"]
+            },
+            "IC2": {
+                "build_files": ["w3sic2md"]
+            },
+            "IC3": {
+                "build_files": ["w3sic3md"]
+            },
+            "IC4": {
+                "build_files": ["w3sic4md"]
+            },
+            "IC5": {
+                "build_files": ["w3sic5md"]
+            }
+        },
+        "touch_files": []
+    },
+    "s_is": {
+        "num_switches": "one",
+        "description": "ice scattering term",
+        "valid_options": {
+            "IS0": {},
+            "IS1": {
+                "build_files": ["w3sis1md"]
+            },
+            "IS2": {
+                "build_files": ["w3sis2md"]
+            }
+        },
+        "touch_files": []
+    },
+    "reflection": {
+        "num_switches": "one",
+        "description": "wave reflections",
+        "valid_options": {
+            "REF0": {},
+            "REF1": {
+                "build_files": ["w3ref1md"]
+            }
+        },
+        "touch_files": []
+    },
+    "wind": {
+        "num_switches": "one",
+        "description": "wind interpolation in time",
+        "valid_options": {
+            "WNT0": {},
+            "WNT1": {},
+            "WNT2": {}
+        },
+        "touch_files": []
+    },
+    "windx": {
+        "num_switches": "one",
+        "description": "wind interpolation in space",
+        "valid_options": {
+            "WNX0": {},
+            "WNX1": {},
+            "WNX2": {}
+        },
+        "touch_files": []
+    },
+    "wcor": {
+        "num_switches": "upto1",
+        "description": "wind speed correction",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "rwind": {
+        "num_switches": "upto1",
+        "description": "wind vs. current definition",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "rstwind": {
+        "num_switches": "upto1",
+        "description": "wind in restart for wmesmf",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "curr": {
+        "num_switches": "one",
+        "description": "current interpolation in time",
+        "valid_options": {
+            "CRT0": {},
+            "CRT1": {},
+            "CRT2": {}
+        },
+        "touch_files": []
+    },
+    "currx": {
+        "num_switches": "one",
+        "description": "current interpolation in space",
+        "valid_options": {
+            "CRX0": {},
+            "CRX1": {},
+            "CRX2": {}
+        },
+        "touch_files": []
+    },
+    "mgwind": {
+        "num_switches": "upto1",
+        "description": "moving grid wind correction",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "mgprop": {
+        "num_switches": "upto1",
+        "description": "moving grid propagation correction",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "mggse": {
+        "num_switches": "upto1",
+        "description": "moving grid GSE correction",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "subsec": {
+        "num_switches": "upto1",
+        "description": "sub-second time stepping",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "tdyn": {
+        "num_switches": "upto1",
+        "description": "dynamic diffusion time",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "dss0": {
+        "num_switches": "upto1",
+        "description": "diffusion tensor",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "pdif": {
+        "num_switches": "upto1",
+        "description": "propagation diffusion",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "tide": {
+        "num_switches": "upto1",
+        "description": "use of tidal analysis",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "refrx": {
+        "num_switches": "upto1",
+        "description": "use of spectral refraction @C/@x",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "ig": {
+        "num_switches": "upto1",
+        "description": "infragravity waves",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "rotag": {
+        "num_switches": "upto1",
+        "description": "rotated grid",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "nnt": {
+        "num_switches": "upto1",
+        "description": "NN training/test data generation",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "mprf": {
+        "num_switches": "upto1",
+        "description": "multi-grid model profiling",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "agcm": {
+        "num_switches": "upto1",
+        "description": "atmospheric circulation model",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "ogcm": {
+        "num_switches": "upto1",
+        "description": "ocean circulation model",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "igcm": {
+        "num_switches": "upto1",
+        "description": "ice model",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "cou": {
+        "num_switches": "upto1",
+        "description": "use of the coupler",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "oasis": {
+        "num_switches": "upto1",
+        "description": "type of coupler",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "trknc": {
+        "num_switches": "upto1",
+        "description": "use of netcdf for tracking of wave systems",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "pdlib": {
+        "num_switches": "upto1",
+        "description": "use pdlib",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "memck": {
+        "num_switches": "upto1",
+        "description": "check memory use",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "setup": {
+        "num_switches": "upto1",
+        "description": "switch to zeta setup",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "uost": {
+        "num_switches": "unresolved obstacles source term",
+        "description": "upto1",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    },
+    "b4b": {
+        "num_switches": "upto1",
+        "description": "bit-for-bit reproducability",
+        "valid_options": {
+            "": {
+                "build_files": []
+            }
+        },
+        "touch_files": []
+    }
+}
