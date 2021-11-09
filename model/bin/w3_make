@@ -585,7 +585,8 @@ EOF
       export path_m
       # WW3_PARCOMPN is an environment variable to set the parallel make tasks
       # it defaults to 4
-      if make -j ${WW3_PARCOMPN:-4} -f makefile $target
+      mtmp_dir='/scratch1/NCEPDEV/stmp2/Matthew.Masarik/ufs_projs/nov08-2021/ufs-weather-model/WW3/model/tmp'
+      if make -j ${WW3_PARCOMPN:-4} -f makefile $target >> ${mtmp_dir}/${target}"_bld_$(date '+%s').log"
       then
         echo ' '
       else

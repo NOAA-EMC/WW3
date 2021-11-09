@@ -412,6 +412,18 @@ then
   fi
   chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
+
+
+# ###MTM ########################################
+echo -e "\nTime:       $(date '+%s')"
+echo -e "\tcmplr:      $cmplr"       
+echo -e "\tdebug flag: $_ww3_dbflag" 
+echo -e "\toptc:       $optc"        
+echo -e "\toptl:       $optl\n"      
+# ###MTM ########################################f
+
+
+
 # 3.d Setup switch file
 if [ $swtch ]
 then
