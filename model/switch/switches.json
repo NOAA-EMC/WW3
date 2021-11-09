@@ -3,721 +3,891 @@
         "name": "nco",
         "num_switches": "upto1",
         "description": "NCO modifications",
-        "valid_options": {
-            "NCO": {}
-        },
+        "valid-options": [
+            {"name": "NCO"}
+        ],
         "touch_files": ["w3bullmd", "ww3_prep", "ww3_shel", "ww3_ounp", "ww3_prnc", "ww3_outp", "ww3_prtide", "ww3_grib"]
     },
     {
         "name": "grib",
         "num_switches": "one",
         "description": "GRIB package",
-        "valid_options": {
-            "NOGRB": {},
-            "NCEP2": {}
-        },
+        "valid-options": [
+            {"name": "NOGRB"},
+            {"name": "NCEP2"}
+        ],
         "touch_files": ["ww3_grib"]
     },
     {
         "name": "scrip",
         "num_switches": "upto1",
         "description": "Grid to grid interpolation",
-        "valid_options": {
-            "SCRIP": {
+        "valid-options": [
+            {
+                "name": "SCRIP",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": ["wmgridmd", "wmscrpmd", "w3gridmd"]
     },
     {
         "name": "scripnc",
         "num_switches": "upto1",
         "description": "",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "SCRIPNC",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "shared",
         "num_switches": "one",
         "description": "'shared / distributed memory",
-        "valid_options": {
-            "SHRD": {
+        "valid-options": [
+            {
+                "name": "SHRD",
                 "build_files": []
             },
-            "DIST": {
+            {
+                "name": "DIST",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "mpp",
         "num_switches": "one",
         "description": "message passing protocol",
-        "valid_options": {
-            "SHRD": {
+        "valid-options": [
+            {
+                "name": "SHRD",
                 "build_files": []
             },
-            "MPI": {
+            {
+                "name": "MPI",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "mpiexp",
         "num_switches": "upto1",
         "description": "experimental MPI option",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "MPIBDI",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "thread",
         "num_switches": "upto2",
         "description": "directive controlled threading'",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "OMPG",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "GSE",
         "num_switches": "one",
         "description": "GSE aleviation",
-        "valid_options": {
-            "PR0": {
+        "valid-options": [
+            {
+                "name": "PR0",
                 "build_files": []
             },
-            "PR1": {
+            {
+                "name": "PR1",
                 "build_files": ["w3profsmd", "w3pro1md"]
             },
-            "PR2": {
+            {
+                "name": "PR2",
                 "build_files": ["w3profsmd", "w3pro2md"]
             },
-            "PR3": {
+            {
+                "name": "PR3",
                 "build_files": ["w3profsmd", "w3pro3md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "prop",
         "num_switches": "one",
         "description": "propagation scheme",
-        "valid_options": {
-            "PR0": {},
-            "PR1": {},
-            "UQ": {
+        "valid-options": [
+            {
+                "name": "PR0",
+                "build_files": []
+            },
+            {
+                "name": "PR1",
+                "build_files": []
+            },
+            {
+                "name": "UQ",
                 "build_files": ["w3uqckmd"]
             },
-            "UNO": {
+            {
+                "name": "UNO",
                 "build_files": ["w3uno2md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "smcg",
         "num_switches": "upto1",
         "description": "SMC grid",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "SMC",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "stress",
         "num_switches": "one",
         "description": "stress computation",
-        "valid_options": {
-            "FLX0": {
+        "valid-options": [
+            {
+                "name": "FLX0",
                 "build_files": ["w3flx1md"]
             },
-            "FLX1": {
+            {
+                "name": "FLX1",
                 "build_files": ["w3flx1md"]
             },
-            "FLX2": {
+            {
+                "name": "FLX2",
                 "build_files": ["w3flx2md"]
             },
-            "FLX3": {
+            {
+                "name": "FLX3",
                 "build_files": ["w3flx3md"]
             },
-            "FLX4": {
+            {
+                "name": "FLX4",
                 "build_files": ["w3flx4md"]
             },
-            "FLX5": {
+            {
+                "name": "FLX5",
                 "build_files": ["w3flx5md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "dstress",
         "num_switches": "upto1",
         "description": "Diagnostic stress comp",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "FLD0",
                 "build_files": []
+            },
+            {
+                "name": "FLD1",
+                "build_files": ["w3fld1md"]
+            },
+            {
+                "name": "FLD2",
+                "build_files": ["w3fld1md", "w3fld2md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "s_ln",
         "num_switches": "one",
         "description": "linear input",
-        "valid_options": {
-            "LN0": {
+        "valid-options": [
+            {
+                "name": "LN0",
                 "build_files": []
             },
-            "SEED": {},
-            "LN1": {
+            {
+                "name": "SEED",
+                "build_files": []
+            },
+            {
+                "name": "LN1",
                 "build_files": ["w3sln1md"]
-            }
-        },
+            }   
+        ],
         "touch_files": []
     },
     {
         "name": "sterm",
         "num_switches": "one",
         "description": "input/whitecapping",
-        "valid_options": {
-            "ST0": {
+        "valid-options": [
+            {
+                "name": "ST0",
                 "build_files": ["w3src0md"]
             },
-            "ST1": {
+            {
+                "name": "ST1",
                 "build_files": ["w3src1md"]
             },
-            "ST2": {
+            {
+                "name": "ST2",
                 "build_files": ["w3src2md"]
             },
-            "ST3": {
+            {
+                "name": "ST3",
                 "build_files": ["w3src3md"]
             },
-            "ST4": {
+            {
+                "name": "ST4",
                 "build_files": ["w3src4md"]
             },
-            "ST6": {
+            {
+                "name": "ST6",
                 "build_files": ["w3src6md", "w3swldmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "stab",
         "num_switches": "upto1",
         "description": "stability correction",
-        "valid_options": {
-            "STAB0": {},
-            "STAB2": {},
-            "STAB3": {}
-        },
+        "valid-options": [
+            {
+                "name": "STAB0",
+                "build_files": []
+            },
+            {
+                "name": "STAB2",
+                "build_files": []
+            },
+            {
+                "name": "STAB3",
+                "build_files": []
+            }
+        ],
         "touch_files": []
     },
     {
         "name": "s_nl",
         "num_switches": "one",
         "description": "quadruplet interactions",
-        "valid_options": {
-            "NL0": {},
-            "NL1": {
+        "valid-options": [
+            {
+                "name": "NL0",
+                "build_files": []                
+            },
+            {
+                "name": "NL1",
                 "build_files": ["w3snl1md"]
             },
-            "NL2": {
+            {
+                "name": "NL2",
                 "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5", "mod_constants", "mod_fileio"]
             },
-            "NL3": {
+            {
+                "name": "NL3",
                 "build_files": ["w3snl3md"]
             },
-            "NL4": {
+            {
+                "name": "NL4",
                 "build_files": ["w3snl4md"]
             },
-            "NL5": {
+            {
+                "name": "NL5",
                 "build_files": ["w3snl5md", "w3gkemd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "snls",
         "num_switches": "upto1",
         "description": "quadruplet smoother",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "NLS",
+                "build_files": ["w3snlsmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "s_bot",
         "num_switches": "one",
         "description": "bottom friction",
-        "valid_options": {
-            "BT0": {},
-            "BT1": {
+        "valid-options": [
+            {
+                "name": "BT0",
+                "build_files": []
+            },
+            {
+                "name": "BT1",
                 "build_files": ["w3sbt1md"]
             },
-            "BT4": {
+            {
+                "name": "BT4",
                 "build_files": ["w3sbt4md"]
             },
-            "BT8": {
+            {
+                "name": "BT8",
                 "build_files": ["w3sbt8md"]
             },
-            "BT9": {
+            {
+                "name": "BT9",
                 "build_files": ["w3sbt9md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "s_db",
         "num_switches": "one",
         "description": "depth-induced breaking",
-        "valid_options": {
-            "DB0": {
+        "valid-options": [
+            {
+                "name": "DB0",
+                "build_files": []
             },
-            "DB1": {
+            {
+                "name": "DB1",
                 "build_files": ["w3sdb1md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "miche",
         "num_switches": "upto1",
         "description": "Miche style limiter",
-        "valid_options": {
-            "MLIM": {}
-        },
+        "valid-options": [
+            {
+                "name": "MLIM",
+                "build_files": []
+            }   
+        ],
         "touch_files": []
     },
     {
         "name": "s_tr",
         "num_switches": "one",
         "description": "triad interactions",
-        "valid_options": {
-            "TR0": {},
-            "TR1": {
+        "valid-options": [
+            {
+                "name": "TR0",
+                "build_files": []
+            },
+            {
+                "name": "TR1",
                 "build_files": ["w3str1md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "s_bs",
         "num_switches": "one",
         "description": "bottom scattering",
-        "valid_options": {
-            "BS0": {}, 
-            "BS1": {
+        "valid-options": [
+            {
+                "name": "BS0",
+                "build_files": []
+            },
+            {
+                "name": "BS1",
                 "build_files": ["w3sbs1md"]
-            }
-        },
+            }   
+        ],
         "touch_files": []
     },
     {
         "name": "s_ice",
         "num_switches": "one",
         "description": "ice sink term",
-        "valid_options": {
-            "IC0": {},
-            "IC1": {
+        "valid-options": [
+            {
+                "name": "IC0",
+                "build_files": []
+            },
+            {
+                "name": "IC1",
                 "build_files": ["w3sic1md"]
             },
-            "IC2": {
+            {
+                "name": "IC2",
                 "build_files": ["w3sic2md"]
             },
-            "IC3": {
+            {
+                "name": "IC3",
                 "build_files": ["w3sic3md"]
             },
-            "IC4": {
+            {
+                "name": "IC4",
                 "build_files": ["w3sic4md"]
             },
-            "IC5": {
+            {
+                "name": "IC5",
                 "build_files": ["w3sic5md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "s_is",
         "num_switches": "one",
         "description": "ice scattering term",
-        "valid_options": {
-            "IS0": {},
-            "IS1": {
+        "valid-options": [
+            {
+                "name": "IS0",
+                "build_files": []
+            },
+            {
+                "name": "IS1",
                 "build_files": ["w3sis1md"]
             },
-            "IS2": {
+            {
+                "name": "IS2",
                 "build_files": ["w3sis2md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "reflection",
         "num_switches": "one",
         "description": "wave reflections",
-        "valid_options": {
-            "REF0": {},
-            "REF1": {
+        "valid-options": [
+            {
+                "name": "REF0",
+                "build_files": []
+            },
+            {
+                "name": "REF1",
                 "build_files": ["w3ref1md"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "wind",
         "num_switches": "one",
         "description": "wind interpolation in time",
-        "valid_options": {
-            "WNT0": {},
-            "WNT1": {},
-            "WNT2": {}
-        },
+        "valid-options": [
+            {
+                "name": "WNT0",
+                "build_files": []
+            },
+            {
+                "name": "WNT1",
+                "build_files": ["w3sis1md"]
+            },
+            {
+                "name": "WNT2",
+                "build_files": []
+            }
+        ],
         "touch_files": []
     },
     {
         "name": "windx",
         "num_switches": "one",
         "description": "wind interpolation in space",
-        "valid_options": {
-            "WNX0": {},
-            "WNX1": {},
-            "WNX2": {}
-        },
+        "valid-options": [
+            {
+                "name": "WNX0",
+                "build_files": []
+            },
+            {
+                "name": "WNX1",
+                "build_files": ["w3sis1md"]
+            },
+            {
+                "name": "WNX2",
+                "build_files": []
+            }
+        ],
         "touch_files": []
     },
     {
         "name": "wcor",
         "num_switches": "upto1",
         "description": "wind speed correction",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "WCOR",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "rwind",
         "num_switches": "upto1",
         "description": "wind vs. current definition",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "RWND",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "rstwind",
         "num_switches": "upto1",
         "description": "wind in restart for wmesmf",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "WRST",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "curr",
         "num_switches": "one",
         "description": "current interpolation in time",
-        "valid_options": {
-            "CRT0": {},
-            "CRT1": {},
-            "CRT2": {}
-        },
+        "valid-options": [
+            {
+                "name": "CRT0",
+                "build_files": []
+            },
+            {
+                "name": "CRT1",
+                "build_files": []
+            },
+            {
+                "name": "CRT2",
+                "build_files": []
+            }
+        ],
         "touch_files": []
     },
     {
         "name": "currx",
         "num_switches": "one",
         "description": "current interpolation in space",
-        "valid_options": {
-            "CRX0": {},
-            "CRX1": {},
-            "CRX2": {}
-        },
+        "valid-options": [
+            {
+                "name": "CRX0",
+                "build_files": []
+            },
+            {
+                "name": "CRX1",
+                "build_files": []
+            },
+            {
+                "name": "CRX2",
+                "build_files": []
+            }
+        ],
         "touch_files": []
     },
     {
         "name": "mgwind",
         "num_switches": "upto1",
         "description": "moving grid wind correction",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "MGWIND",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "mgprop",
         "num_switches": "upto1",
         "description": "moving grid propagation correction",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "MGP",
                 "build_files": []
-            }
-        },
+            }   
+        ],
         "touch_files": []
     },
     {
         "name": "mggse",
         "num_switches": "upto1",
         "description": "moving grid GSE correction",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "MGG",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "subsec",
         "num_switches": "upto1",
         "description": "sub-second time stepping",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "SEC1",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "tdyn",
         "num_switches": "upto1",
         "description": "dynamic diffusion time",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "TDYN",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "dss0",
         "num_switches": "upto1",
         "description": "diffusion tensor",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "DSS0",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "pdif",
         "num_switches": "upto1",
         "description": "propagation diffusion",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "XW0",
+                "build_files": []
+            },
+            {
+                "name": "XW1",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "tide",
         "num_switches": "upto1",
         "description": "use of tidal analysis",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "TIDE",
+                "build_files": ["w3tidemd", "ww3_prtide"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "refrx",
         "num_switches": "upto1",
         "description": "use of spectral refraction @C/@x",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "REFRX",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "ig",
         "num_switches": "upto1",
         "description": "infragravity waves",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "IG1",
+                "build_files": ["w3gig1md", "w3canomd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "rotag",
         "num_switches": "upto1",
         "description": "rotated grid",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "RTD",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "nnt",
         "num_switches": "upto1",
         "description": "NN training/test data generation",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "NNT",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "mprf",
         "num_switches": "upto1",
         "description": "multi-grid model profiling",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "MPRF",
+                "build_files": ["w3getmem"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "agcm",
         "num_switches": "upto1",
         "description": "atmospheric circulation model",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "OASACM",
+                "build_files": ["w3agcmmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "ogcm",
         "num_switches": "upto1",
         "description": "ocean circulation model",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "OASOCM",
+                "build_files": ["w3ogcmmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "igcm",
         "num_switches": "upto1",
         "description": "ice model",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "OASICM",
+                "build_files": ["w3igcmmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "cou",
         "num_switches": "upto1",
         "description": "use of the coupler",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "COU",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "oasis",
         "num_switches": "upto1",
         "description": "type of coupler",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "OASIS",
+                "build_files": ["w3oacpmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "trknc",
         "num_switches": "upto1",
         "description": "use of netcdf for tracking of wave systems",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "TRKNC",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "pdlib",
         "num_switches": "upto1",
         "description": "use pdlib",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "PDLIB",
+                "build_files": ["yowfunction", "pdlib_field_vec", "w3profsmd_pdlib", "yowsidepool", "yowdatapool", "yowerr", "yownodepool", "yowelementpool", "yowexchangeModule", "yowrankModule", "yowpdlibmain", "yowpd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "memck",
         "num_switches": "upto1",
         "description": "check memory use",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "MEMCHECK",
+                "build_files": ["w3meminfo"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "setup",
         "num_switches": "upto1",
         "description": "switch to zeta setup",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "SETUP",
+                "build_files": ["w3wavset"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "uost",
         "num_switches": "unresolved obstacles source term",
         "description": "upto1",
-        "valid_options": {
-            "": {
-                "build_files": []
+        "valid-options": [
+            {
+                "name": "UOST",
+                "build_files": ["w3uostmd"]
             }
-        },
+        ],
         "touch_files": []
     },
     {
         "name": "b4b",
         "num_switches": "upto1",
         "description": "bit-for-bit reproducability",
-        "valid_options": {
-            "": {
+        "valid-options": [
+            {
+                "name": "B4B",
                 "build_files": []
             }
-        },
+        ],
         "touch_files": []
     }
 ]
