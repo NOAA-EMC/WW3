@@ -59,9 +59,6 @@
 # --------------------------------------------------------------------------- #
 
 
-ww3_bld_log=/scratch1/NCEPDEV/stmp2/Matthew.Masarik/ufs_projs/nov08-2021/ufs-weather-model/WW3/model/tmp/ww3_build.log
-touch $ww3_bld_log
-
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -284,16 +281,7 @@ then
   error='0'
 
   $path_b/comp $name > comp.out.$name 2> comp.err.$name
-  echo ""
-  echo "$path_b/comp $name > comp.out.$name 2> comp.err.$name" >> $ww3_bld_log # ##MTM
-
   OK="$?"
-  if [ "$OK" != "0" ]; then                                                # ##MTM
-    echo "Compile Error: $name.$fext"  >> $ww3_bld_log                     #
-  else                                                                     #
-    echo "Compile Success: $name.$fext"  >> $ww3_bld_log                   #
-  fi                                                                       #
-  echo "" >> $ww3_bld_log                                                  #
 
 
 # 3.b Error escape location  - - - - - - - - - - - - - - - - - - - - - - - - -
