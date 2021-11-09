@@ -149,8 +149,14 @@
     fi
   done
 
-  $comp $opt $objects $libs $rpath                  > link.out 2> link.err
+  $comp $opt $objects $libs $rpath > link.out 2> link.err    # ##MTM
   OK="$?"
+  if [ "$OK" != "0" ]; then                                  # ##MTM
+    echo "Link Error: $objects"                              #
+  else                                                       #
+    echo "Link Success: $objects"                            #
+  fi                                                         #
+
 
 # --------------------------------------------------------------------------- #
 # 4. Postprocessing                                                           #

@@ -37,6 +37,12 @@
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
 
+# ###MTM
+ww3_bld_sec="$(date '+%s')"
+ww3_bld_log=/scratch1/NCEPDEV/stmp2/Matthew.Masarik/ufs_projs/nov08-2021/ufs-weather-model/WW3/model/tmp/ww3_bld_${ww3_bld_sec}.log
+touch $ww3_bld_log
+
+
 # 1.a Check and process input
 
   if [ "$#" -ne '1' ]
@@ -96,7 +102,15 @@
 # 2.b Compile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   $comp $opt $name.$fext 1> $name.out 2> $name.err
+  echo ""
+  echo "$comp $opt $name.$fext 1> $name.out 2> $name.err" >> $ww3_bld_log  # ##MTM
   OK="$?"
+  if [ "$OK" != "0" ]; then                                                # ##MTM
+    echo "Compile Error: $name.$fext"  >> $ww3_bld_log                     #
+  else                                                                     #
+    echo "Compile Success: $name.$fext"  >> $ww3_bld_log                   #
+  fi                                                                       #
+  echo "" >> $ww3_bld_log                                                  #
 
 # --------------------------------------------------------------------------- #
 # 3. Postprocessing                                                           #
