@@ -88,9 +88,6 @@ if [ "$_ww3_dbflag" != "debug" ]; then
 fi
 cmplr=${cmplr%\:*}
 export _ww3_dbflag=$_ww3_dbflag
-echo "_ww3_dbflag:  $_ww3_dbflag"
-echo "cmplr:        $cmplr"
-
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
@@ -412,18 +409,6 @@ then
   fi
   chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
-
-
-# ###MTM ########################################
-echo -e "\nTime:       $(date '+%s')"
-echo -e "\tcmplr:      $cmplr"       
-echo -e "\tdebug flag: $_ww3_dbflag" 
-echo -e "\toptc:       $optc"        
-echo -e "\toptl:       $optl\n"      
-# ###MTM ########################################f
-
-
-
 # 3.d Setup switch file
 if [ $swtch ]
 then
