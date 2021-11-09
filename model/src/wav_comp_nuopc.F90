@@ -453,11 +453,6 @@ contains
     character(len=10), allocatable :: pnames(:)
     character(len=*),parameter :: subname = '(wav_comp_nuopc:InitializeRealize)'
     character(len=1024)            :: msgString
-#ifdef CESMCOUPLED
-    integer                        :: odat(35) !HK odat is 35
-#else
-    integer                        :: odat(40)
-#endif
     integer :: lb,ub
 
     ! -------------------------------------------------------------------
