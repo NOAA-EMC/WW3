@@ -1,5 +1,6 @@
-{
-    "nco": {
+[
+    {
+        "name": "nco",
         "num_switches": "upto1",
         "description": "NCO modifications",
         "valid_options": {
@@ -7,7 +8,8 @@
         },
         "touch_files": ["w3bullmd", "ww3_prep", "ww3_shel", "ww3_ounp", "ww3_prnc", "ww3_outp", "ww3_prtide", "ww3_grib"]
     },
-    "grib": {
+    {
+        "name": "grib",
         "num_switches": "one",
         "description": "GRIB package",
         "valid_options": {
@@ -16,7 +18,8 @@
         },
         "touch_files": ["ww3_grib"]
     },
-    "scrip": {
+    {
+        "name": "scrip",
         "num_switches": "upto1",
         "description": "Grid to grid interpolation",
         "valid_options": {
@@ -26,7 +29,8 @@
         },
         "touch_files": ["wmgridmd", "wmscrpmd", "w3gridmd"]
     },
-    "scripnc": {
+    {
+        "name": "scripnc",
         "num_switches": "upto1",
         "description": "",
         "valid_options": {
@@ -36,7 +40,8 @@
         },
         "touch_files": []
     },
-    "shared": {
+    {
+        "name": "shared",
         "num_switches": "one",
         "description": "'shared / distributed memory",
         "valid_options": {
@@ -49,7 +54,8 @@
         },
         "touch_files": []
     },
-    "mpp": {
+    {
+        "name": "mpp",
         "num_switches": "one",
         "description": "message passing protocol",
         "valid_options": {
@@ -62,7 +68,8 @@
         },
         "touch_files": []
     },
-    "mpiexp": {
+    {
+        "name": "mpiexp",
         "num_switches": "upto1",
         "description": "experimental MPI option",
         "valid_options": {
@@ -72,7 +79,8 @@
         },
         "touch_files": []
     },
-    "thread": {
+    {
+        "name": "thread",
         "num_switches": "upto2",
         "description": "directive controlled threading'",
         "valid_options": {
@@ -82,7 +90,8 @@
         },
         "touch_files": []
     },
-    "GSE": {
+    {
+        "name": "GSE",
         "num_switches": "one",
         "description": "GSE aleviation",
         "valid_options": {
@@ -101,7 +110,8 @@
         },
         "touch_files": []
     },
-    "prop": {
+    {
+        "name": "prop",
         "num_switches": "one",
         "description": "propagation scheme",
         "valid_options": {
@@ -116,7 +126,8 @@
         },
         "touch_files": []
     },
-    "smcg": {
+    {
+        "name": "smcg",
         "num_switches": "upto1",
         "description": "SMC grid",
         "valid_options": {
@@ -126,7 +137,8 @@
         },
         "touch_files": []
     },
-    "stress": {
+    {
+        "name": "stress",
         "num_switches": "one",
         "description": "stress computation",
         "valid_options": {
@@ -151,7 +163,8 @@
         },
         "touch_files": []
     },
-    "dstress": {
+    {
+        "name": "dstress",
         "num_switches": "upto1",
         "description": "Diagnostic stress comp",
         "valid_options": {
@@ -161,7 +174,8 @@
         },
         "touch_files": []
     },
-    "s_ln": {
+    {
+        "name": "s_ln",
         "num_switches": "one",
         "description": "linear input",
         "valid_options": {
@@ -175,7 +189,8 @@
         },
         "touch_files": []
     },
-    "sterm": {
+    {
+        "name": "sterm",
         "num_switches": "one",
         "description": "input/whitecapping",
         "valid_options": {
@@ -200,7 +215,8 @@
         },
         "touch_files": []
     },
-    "stab": {
+    {
+        "name": "stab",
         "num_switches": "upto1",
         "description": "stability correction",
         "valid_options": {
@@ -210,7 +226,8 @@
         },
         "touch_files": []
     },
-    "s_nl": {
+    {
+        "name": "s_nl",
         "num_switches": "one",
         "description": "quadruplet interactions",
         "valid_options": {
@@ -233,7 +250,8 @@
         },
         "touch_files": []
     },
-    "snls": {
+    {
+        "name": "snls",
         "num_switches": "upto1",
         "description": "quadruplet smoother",
         "valid_options": {
@@ -243,7 +261,8 @@
         },
         "touch_files": []
     },
-    "s_bot": {
+    {
+        "name": "s_bot",
         "num_switches": "one",
         "description": "bottom friction",
         "valid_options": {
@@ -263,7 +282,8 @@
         },
         "touch_files": []
     },
-    "s_db": {
+    {
+        "name": "s_db",
         "num_switches": "one",
         "description": "depth-induced breaking",
         "valid_options": {
@@ -275,7 +295,8 @@
         },
         "touch_files": []
     },
-    "miche": {
+    {
+        "name": "miche",
         "num_switches": "upto1",
         "description": "Miche style limiter",
         "valid_options": {
@@ -283,7 +304,8 @@
         },
         "touch_files": []
     },
-    "s_tr": {
+    {
+        "name": "s_tr",
         "num_switches": "one",
         "description": "triad interactions",
         "valid_options": {
@@ -294,7 +316,8 @@
         },
         "touch_files": []
     },
-    "s_bs": {
+    {
+        "name": "s_bs",
         "num_switches": "one",
         "description": "bottom scattering",
         "valid_options": {
@@ -305,7 +328,8 @@
         },
         "touch_files": []
     },
-    "s_ice": {
+    {
+        "name": "s_ice",
         "num_switches": "one",
         "description": "ice sink term",
         "valid_options": {
@@ -328,7 +352,8 @@
         },
         "touch_files": []
     },
-    "s_is": {
+    {
+        "name": "s_is",
         "num_switches": "one",
         "description": "ice scattering term",
         "valid_options": {
@@ -342,7 +367,8 @@
         },
         "touch_files": []
     },
-    "reflection": {
+    {
+        "name": "reflection",
         "num_switches": "one",
         "description": "wave reflections",
         "valid_options": {
@@ -353,7 +379,8 @@
         },
         "touch_files": []
     },
-    "wind": {
+    {
+        "name": "wind",
         "num_switches": "one",
         "description": "wind interpolation in time",
         "valid_options": {
@@ -363,7 +390,8 @@
         },
         "touch_files": []
     },
-    "windx": {
+    {
+        "name": "windx",
         "num_switches": "one",
         "description": "wind interpolation in space",
         "valid_options": {
@@ -373,7 +401,8 @@
         },
         "touch_files": []
     },
-    "wcor": {
+    {
+        "name": "wcor",
         "num_switches": "upto1",
         "description": "wind speed correction",
         "valid_options": {
@@ -383,7 +412,8 @@
         },
         "touch_files": []
     },
-    "rwind": {
+    {
+        "name": "rwind",
         "num_switches": "upto1",
         "description": "wind vs. current definition",
         "valid_options": {
@@ -393,7 +423,8 @@
         },
         "touch_files": []
     },
-    "rstwind": {
+    {
+        "name": "rstwind",
         "num_switches": "upto1",
         "description": "wind in restart for wmesmf",
         "valid_options": {
@@ -403,7 +434,8 @@
         },
         "touch_files": []
     },
-    "curr": {
+    {
+        "name": "curr",
         "num_switches": "one",
         "description": "current interpolation in time",
         "valid_options": {
@@ -413,7 +445,8 @@
         },
         "touch_files": []
     },
-    "currx": {
+    {
+        "name": "currx",
         "num_switches": "one",
         "description": "current interpolation in space",
         "valid_options": {
@@ -423,7 +456,8 @@
         },
         "touch_files": []
     },
-    "mgwind": {
+    {
+        "name": "mgwind",
         "num_switches": "upto1",
         "description": "moving grid wind correction",
         "valid_options": {
@@ -433,7 +467,8 @@
         },
         "touch_files": []
     },
-    "mgprop": {
+    {
+        "name": "mgprop",
         "num_switches": "upto1",
         "description": "moving grid propagation correction",
         "valid_options": {
@@ -443,7 +478,8 @@
         },
         "touch_files": []
     },
-    "mggse": {
+    {
+        "name": "mggse",
         "num_switches": "upto1",
         "description": "moving grid GSE correction",
         "valid_options": {
@@ -453,7 +489,8 @@
         },
         "touch_files": []
     },
-    "subsec": {
+    {
+        "name": "subsec",
         "num_switches": "upto1",
         "description": "sub-second time stepping",
         "valid_options": {
@@ -463,7 +500,8 @@
         },
         "touch_files": []
     },
-    "tdyn": {
+    {
+        "name": "tdyn",
         "num_switches": "upto1",
         "description": "dynamic diffusion time",
         "valid_options": {
@@ -473,7 +511,8 @@
         },
         "touch_files": []
     },
-    "dss0": {
+    {
+        "name": "dss0",
         "num_switches": "upto1",
         "description": "diffusion tensor",
         "valid_options": {
@@ -483,7 +522,8 @@
         },
         "touch_files": []
     },
-    "pdif": {
+    {
+        "name": "pdif",
         "num_switches": "upto1",
         "description": "propagation diffusion",
         "valid_options": {
@@ -493,7 +533,8 @@
         },
         "touch_files": []
     },
-    "tide": {
+    {
+        "name": "tide",
         "num_switches": "upto1",
         "description": "use of tidal analysis",
         "valid_options": {
@@ -503,7 +544,8 @@
         },
         "touch_files": []
     },
-    "refrx": {
+    {
+        "name": "refrx",
         "num_switches": "upto1",
         "description": "use of spectral refraction @C/@x",
         "valid_options": {
@@ -513,7 +555,8 @@
         },
         "touch_files": []
     },
-    "ig": {
+    {
+        "name": "ig",
         "num_switches": "upto1",
         "description": "infragravity waves",
         "valid_options": {
@@ -523,7 +566,8 @@
         },
         "touch_files": []
     },
-    "rotag": {
+    {
+        "name": "rotag",
         "num_switches": "upto1",
         "description": "rotated grid",
         "valid_options": {
@@ -533,7 +577,8 @@
         },
         "touch_files": []
     },
-    "nnt": {
+    {
+        "name": "nnt",
         "num_switches": "upto1",
         "description": "NN training/test data generation",
         "valid_options": {
@@ -543,7 +588,8 @@
         },
         "touch_files": []
     },
-    "mprf": {
+    {
+        "name": "mprf",
         "num_switches": "upto1",
         "description": "multi-grid model profiling",
         "valid_options": {
@@ -553,7 +599,8 @@
         },
         "touch_files": []
     },
-    "agcm": {
+    {
+        "name": "agcm",
         "num_switches": "upto1",
         "description": "atmospheric circulation model",
         "valid_options": {
@@ -563,7 +610,8 @@
         },
         "touch_files": []
     },
-    "ogcm": {
+    {
+        "name": "ogcm",
         "num_switches": "upto1",
         "description": "ocean circulation model",
         "valid_options": {
@@ -573,7 +621,8 @@
         },
         "touch_files": []
     },
-    "igcm": {
+    {
+        "name": "igcm",
         "num_switches": "upto1",
         "description": "ice model",
         "valid_options": {
@@ -583,7 +632,8 @@
         },
         "touch_files": []
     },
-    "cou": {
+    {
+        "name": "cou",
         "num_switches": "upto1",
         "description": "use of the coupler",
         "valid_options": {
@@ -593,7 +643,8 @@
         },
         "touch_files": []
     },
-    "oasis": {
+    {
+        "name": "oasis",
         "num_switches": "upto1",
         "description": "type of coupler",
         "valid_options": {
@@ -603,7 +654,8 @@
         },
         "touch_files": []
     },
-    "trknc": {
+    {
+        "name": "trknc",
         "num_switches": "upto1",
         "description": "use of netcdf for tracking of wave systems",
         "valid_options": {
@@ -613,7 +665,8 @@
         },
         "touch_files": []
     },
-    "pdlib": {
+    {
+        "name": "pdlib",
         "num_switches": "upto1",
         "description": "use pdlib",
         "valid_options": {
@@ -623,7 +676,8 @@
         },
         "touch_files": []
     },
-    "memck": {
+    {
+        "name": "memck",
         "num_switches": "upto1",
         "description": "check memory use",
         "valid_options": {
@@ -633,7 +687,8 @@
         },
         "touch_files": []
     },
-    "setup": {
+    {
+        "name": "setup",
         "num_switches": "upto1",
         "description": "switch to zeta setup",
         "valid_options": {
@@ -643,7 +698,8 @@
         },
         "touch_files": []
     },
-    "uost": {
+    {
+        "name": "uost",
         "num_switches": "unresolved obstacles source term",
         "description": "upto1",
         "valid_options": {
@@ -653,7 +709,8 @@
         },
         "touch_files": []
     },
-    "b4b": {
+    {
+        "name": "b4b",
         "num_switches": "upto1",
         "description": "bit-for-bit reproducability",
         "valid_options": {
@@ -663,4 +720,4 @@
         },
         "touch_files": []
     }
-}
+]
