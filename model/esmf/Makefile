@@ -9,6 +9,8 @@ WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP  ?= gnu
 WW3_DEBUG ?= ''
+WW3_CMP_LOG := /scratch1/NCEPDEV/stmp2/Matthew.Masarik/ufs_projs/nov08-2021/ufs-weather-model/WW3/model/tmp/ww3_build.log
+
 WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
@@ -85,7 +87,6 @@ endif
 	$(ESMF_F90COMPILER) -c $(DEP_FRONTS) $(DEP_INCS) \
 		$(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) \
 		$(ESMF_F90COMPILEFREECPP) $(ESMF_F90COMPILECPPFLAGS) $<
-
 
 # -----------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
