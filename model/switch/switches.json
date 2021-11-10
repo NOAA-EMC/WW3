@@ -4,7 +4,10 @@
         "num_switches": "upto1",
         "description": "NCO modifications",
         "valid-options": [
-            {"name": "NCO"}
+            {
+                "name": "NCO",
+                "build_files": []
+            }
         ],
         "touch_files": ["w3bullmd", "ww3_prep", "ww3_shel", "ww3_ounp", "ww3_prnc", "ww3_outp", "ww3_prtide", "ww3_grib"]
     },
@@ -13,8 +16,14 @@
         "num_switches": "one",
         "description": "GRIB package",
         "valid-options": [
-            {"name": "NOGRB"},
-            {"name": "NCEP2"}
+            {
+                "name": "NOGRB",
+                "build_files": []
+            },
+            {
+                "name": "NCEP2",
+                "build_files": []
+            }
         ],
         "touch_files": ["ww3_grib"]
     },
