@@ -619,6 +619,7 @@ contains
    !   FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
    !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 
+    ! TODO: Should this be only inflags1(2:4) = .true. ??
     inflags1(:) = .false.
     inflags1(1:5) = .true.
     !inflags1(3) = .true.       !sa_u10m,sa_v10m
@@ -694,7 +695,7 @@ contains
     !--------------------------------------------------------------------
 
     iostyp = 1        ! gridded field
-    write (ndso,940) 'no dedicated output process, any file system '
+    if (masterproc) write (ndso,940) 'no dedicated output process, any file system '
 
     ! Actually will need a new restart flag - since all of the ODAT
     ! should be set to 0 - since they are initializated in w3initmd

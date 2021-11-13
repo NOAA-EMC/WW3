@@ -111,12 +111,12 @@ contains
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
 #else
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
-    !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
 #endif
 
     ! AA TODO: In the above fldlist_add calls, we are passing hardcoded ungridded_ubound values (3) because, USSPF(2)
@@ -235,6 +235,11 @@ contains
     integer           :: timen(2) ! ending time of the run interval
     real(r8)          :: data_global(nx*ny)
     real(r8), allocatable :: data_global2(:)
+#ifdef CESMCOUPLED
+    character(len=10) :: uwnd = 'Sa_u', vwnd = 'Sa_v'
+#else
+    character(len=10) :: uwnd = 'Sa_u10m', vwnd = 'Sa_v10m'
+#endif
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
@@ -332,6 +337,7 @@ contains
              end do
           end do
        end if
+    print *,'XX currents ',minval(CXN),maxval(CXN),minval(CYN),maxval(CYN)
     end if
 
     ! ---------------
@@ -343,8 +349,8 @@ contains
 
        WX0(:,:) = def_value   ! atm u wind
        WXN(:,:) = def_value
-       if (state_fldchk(importState, 'Sa_u')) then
-          call SetGlobalInput(importState, 'Sa_u', vm, data_global, rc)
+       if (state_fldchk(importState, trim(uwnd))) then
+          call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           n = 0
           do iy = 1,NY
@@ -358,9 +364,9 @@ contains
 
        WY0(:,:) = def_value   ! atm v wind
        WYN(:,:) = def_value
-       if (state_fldchk(importState, 'Sa_v')) then
+       if (state_fldchk(importState, trim(vwnd))) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'Sa_v', vm, data_global, rc)
+          call SetGlobalInput(importState, trim(vwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
        n = 0
@@ -594,6 +600,7 @@ contains
     end if
 #endif
 
+    ! surface stokes drift
     if (state_fldchk(exportState, 'Sw_ustokes')) then
        call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -868,17 +875,20 @@ contains
       call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      sw_ustokes1(jsea)= fillvalue
-      sw_vstokes1(jsea)= fillvalue
-      sw_ustokes2(jsea)= fillvalue
-      sw_vstokes2(jsea)= fillvalue
-      sw_ustokes3(jsea)= fillvalue
-      sw_vstokes3(jsea)= fillvalue
-
+      sw_ustokes1(:)= fillvalue
+      sw_vstokes1(:)= fillvalue
+      sw_ustokes2(:)= fillvalue
+      sw_vstokes2(:)= fillvalue
+      sw_ustokes3(:)= fillvalue
+      sw_vstokes3(:)= fillvalue
+      ! usspf(2); usspf(1) = 1; usspf(2) = 3
+      ! grid.inp: IUSSP=3, STK_WN = 0.04, 0.11, 0.33 (spec bins)
+      ! nk=25
       call CALC_U3STOKES(va, 2)
+      print *,'YYY ',minval(va),maxval(va),minval(ussp),maxval(ussp)
 
       do jsea = 1,nseal
-         isea = iaproc + (jsea-1)*naproc
+        ! isea = iaproc + (jsea-1)*naproc
          sw_ustokes1(jsea)=ussp(jsea,1)
          sw_vstokes1(jsea)=ussp(jsea,nk+1)
          sw_ustokes2(jsea)=ussp(jsea,2)
