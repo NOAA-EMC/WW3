@@ -337,7 +337,6 @@ contains
              end do
           end do
        end if
-    print *,'XX currents ',minval(CXN),maxval(CXN),minval(CYN),maxval(CYN)
     end if
 
     ! ---------------
