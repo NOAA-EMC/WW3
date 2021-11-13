@@ -103,6 +103,10 @@
             {
                 "name": "OMPG",
                 "build_files": []
+            },
+            {
+                "name": "OMPH",
+                "build_files": []
             }
         ],
         "touch_files": []
@@ -306,7 +310,7 @@
             },
             {
                 "name": "NL2",
-                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5", "mod_constants", "mod_fileio"]
+                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5"]
             },
             {
                 "name": "NL3",
@@ -502,7 +506,7 @@
             },
             {
                 "name": "WNT1",
-                "build_files": ["w3sis1md"]
+                "build_files": []
             },
             {
                 "name": "WNT2",
@@ -522,7 +526,7 @@
             },
             {
                 "name": "WNX1",
-                "build_files": ["w3sis1md"]
+                "build_files": []
             },
             {
                 "name": "WNX2",
