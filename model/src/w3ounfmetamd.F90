@@ -954,9 +954,9 @@
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      INTEGER, INTENT(IN)               :: NDMI
-      TYPE(META_T), INTENT(IN), POINTER :: META
-      INTEGER, INTENT(INOUT)            :: ILINE
+      INTEGER, INTENT(IN)                  :: NDMI
+      TYPE(META_T), INTENT(INOUT), POINTER :: META
+      INTEGER, INTENT(INOUT)               :: ILINE
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !

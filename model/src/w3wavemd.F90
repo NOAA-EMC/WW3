@@ -4029,7 +4029,7 @@
 #ifdef W3_SHRD
       DO ISEA=1, NSEA
         IXY           = MAPSF(ISEA,3)
-        IF ( MAPSTA(IXY) .GE. 1 ) A(ISPEC,ISEA) = FIELD(IXY)
+        IF ( MAPSTA(IXY) .NE. 0 ) A(ISPEC,ISEA) = FIELD(IXY)
         END DO
 #endif
 !
@@ -4056,7 +4056,7 @@
 #ifdef W3_MPI
       DO ISEA=1, NSEA
         IXY    = MAPSF(ISEA,3)
-        IF ( MAPSTA(IXY) .GE. 1 ) SSTORE(ISEA,IBFLOC) = FIELD(IXY)
+        IF ( MAPSTA(IXY) .NE. 0 ) SSTORE(ISEA,IBFLOC) = FIELD(IXY)
         END DO
 #endif
 !
@@ -4080,7 +4080,7 @@
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
         IXY    = MAPSF(ISEA,3)
-        IF (MAPSTA(IXY) .GE. 1) A(ISPEC,JSEA) = SSTORE(ISEA,IBFLOC)
+        IF (MAPSTA(IXY) .NE. 0) A(ISPEC,JSEA) = SSTORE(ISEA,IBFLOC)
         END DO
 #endif
 !
