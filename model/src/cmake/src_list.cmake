@@ -1,5 +1,6 @@
 set(c_src w3getmem.c)
 
+# Core files always built
 set(ftn_src
   constants.F90
   ctest.F90
@@ -58,6 +59,7 @@ set(ftn_src
   wmwavemd.F90
   )
 
+# Built when PDLIB is enabled
 set(pdlib_src
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowdatapool.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowelementpool.F90
@@ -71,6 +73,7 @@ set(pdlib_src
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowsidepool.F90
   )
 
+# Build when SCRIP or SCRIPNC is enabled
 set(scrip_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_constants.f
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_errormod.f90
@@ -83,9 +86,10 @@ set(scrip_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_timers.f
   )
 
+# Built when SCRIPNC is enabled
 set(scripnc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_netcdfmod.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remad_write.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_write.f
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_read.f
   )
 
