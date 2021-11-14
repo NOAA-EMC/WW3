@@ -727,7 +727,6 @@
 ! unstructured data
 !
         INTEGER               :: NTRI
-        DOUBLE PRECISION, POINTER         :: XYB(:,:)
         INTEGER, POINTER      :: TRIGP(:,:)
 #ifdef W3_PDLIB
         INTEGER               :: NBND_MAP
@@ -1078,9 +1077,6 @@
 !
       INTEGER, POINTER        :: NTRI,COUNTRI,COUNTOT,NNZ
       INTEGER                 :: optionCall = 3 ! take care all other options are basically wrong
-!  XYB may not be necessary now that we have XGRD and YGRD
-!  but these XGRD and YGRD should probably be double precision
-      DOUBLE PRECISION, POINTER  ::     XYB(:,:)   
       INTEGER, POINTER        :: TRIGP(:,:)
 #ifdef W3_PDLIB
       INTEGER, POINTER        :: NBND_MAP
@@ -2350,7 +2346,6 @@
 !
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT
-      XYB    => GRIDS(IMOD)%XYB
       TRIGP  => GRIDS(IMOD)%TRIGP
 #ifdef W3_PDLIB
       NBND_MAP => GRIDS(IMOD)%NBND_MAP
@@ -3191,7 +3186,6 @@
 ! 2.  Allocate arrays
 !
       ALLOCATE ( GRIDS(IMOD)%TRIGP(MTRI,3),                         &
-                 GRIDS(IMOD)%XYB(MX,3),                             &
                  GRIDS(IMOD)%SI(MX),                                &
                  GRIDS(IMOD)%TRIA(MTRI),                            & 
                  GRIDS(IMOD)%CROSSDIFF(6,MTRI),                     &

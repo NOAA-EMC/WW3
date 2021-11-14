@@ -754,7 +754,7 @@
               !removed
               COUNTCON=0
               WRITE (NDSM)                                            &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
                 LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
@@ -890,7 +890,7 @@
      FLUSH(740+IAPROC)
 #endif
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
                 LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
@@ -905,8 +905,7 @@
        call printMallInfo(IAPROC,mallInfos)
 #endif
 
-                XGRD(1,:)=XYB(:,1)
-                YGRD(1,:)=XYB(:,2)
+
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.7'
      FLUSH(740+IAPROC)

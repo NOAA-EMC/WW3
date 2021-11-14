@@ -1031,8 +1031,8 @@
               END DO
           ELSE ! GTYPE .NE. UNGTYPE
             DO IX=1, NX
-              X = XYB(IX,1)
-              Y = XYB(IX,2)
+              X = XGRD(IX,1)
+              Y = YGRD(IX,1)
               IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
 !
 ! Manages the simple closure of the grid

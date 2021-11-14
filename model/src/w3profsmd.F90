@@ -343,7 +343,7 @@
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
                           NTRI, TRIGP, CCON ,                         &
-                          IE_CELL, POS_CELL, COUNTRI, SI, IOBP, XYB
+                          IE_CELL, POS_CELL, COUNTRI, SI, IOBP
 
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, DW
       USE W3IDATMD, ONLY: FLCUR
@@ -525,7 +525,7 @@
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,  &
-                            IOBPA, XYB, FSBCCFL
+                            IOBPA, FSBCCFL
 #ifdef W3_REF1
    USE W3GDATMD, ONLY : REFPARS
 #endif

@@ -114,6 +114,8 @@
       INTEGER, ALLOCATABLE  :: IS0_pdlib(:)
       INTEGER               :: FreqShiftMethod = 2
       LOGICAL               :: FSGEOADVECT
+      INTEGER               :: POS_TRICK(3,2)
+
 #ifdef W3_DEBUGSRC
         INTEGER  :: TESTNODE = 1
 #endif
@@ -169,47 +171,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
-#endif
-!
-      USE W3GDATMD, ONLY: IOBPD, GTYPE, UNGTYPE
-      USE W3GDATMD, ONLY: NSPEC, NTH, NSEAL
-      USE W3WDATMD, ONLY: VA
-      USE YOWNODEPOOL, ONLY: iplg
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local PARAMETERs
-!/
-#ifdef W3_S
-      INTEGER, SAVE           :: IENT = 0
-#endif
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!
-      INTEGER JSEA, IP, IP_glob, ITH, ISP
-#ifdef W3_S
-      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
-#endif
-      IF (GTYPE .eq. UNGTYPE) THEN
-        DO JSEA=1,NSEAL
-          IP      = JSEA
-          IP_glob = iplg(IP)
-          DO ISP=1,NSPEC
-            ITH    = 1 + MOD(ISP-1,NTH)
-            VA(ISP,JSEA) = VA(ISP,JSEA)*IOBPD(ITH,IP_glob)
-          END DO
-        END DO
-      END IF
-      END SUBROUTINE
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE PDLIB_STYLE_INIT(IMOD)
+      SUBROUTINE PDLIB_INIT(IMOD)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -259,13 +221,19 @@
 #endif
 !
       USE W3GDATMD, ONLY: FLCX, FLCY
+#ifdef W3_MEMCHECK
+      USE MallocInfo_m
+#endif
       USE CONSTANTS, ONLY : GRAV, TPI
-      USE W3GDATMD, ONLY: XYB, XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC
+      USE W3GDATMD, ONLY: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC
       USE W3GDATMD, ONLY: MAPSTA, MAPFS, GRIDS, NTH
       USE W3GDATMD, ONLY: IOBP, IOBPD, IOBP_loc, IOBPD_loc, SIG, NK
       USE W3GDATMD, ONLY: TRIA, IEN, LEN, ANGLE, ANGLE0
       USE W3GDATMD, ONLY: CCON, COUNTCON, INDEX_CELL, IE_CELL
-      USE W3GDATMD, ONLY: POS_CELL, SI, IAA, JAA, POSI, I_DIAG, JA_IE
+      USE W3GDATMD, ONLY: IOBP, IOBPA, IOBPD, IOBDP, SI 
+#ifdef W3_MEMCHECK
+ USE W3ADATMD, ONLY: MALLINFOS
+#endif
 
       USE W3ADATMD, ONLY: MPI_COMM_WCMP, MPI_COMM_WAVE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC
@@ -292,8 +260,6 @@
 !/ ------------------------------------------------------------------- /
 !/
 !!      INCLUDE "mpif.h"
-      REAL, ALLOCATABLE   :: XP_IN(:), YP_IN(:), DEP_IN(:)
-      INTEGER, ALLOCATABLE   :: INE_IN(:,:)
       INTEGER :: istat
       INTEGER :: I, J, IBND_MAP, ISEA, IP, IX, JSEA, nb
       INTEGER :: IP_glob
@@ -307,48 +273,39 @@
       REAL :: eSIG, eFR
       REAL, PARAMETER :: COEF4 = 5.0E-7
 #ifdef W3_S
-      CALL STRACE (IENT, 'PDLIB_STYLE_INIT')
+      CALL STRACE (IENT, 'PDLIB_INIT')
 #endif
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'PDLIB_STYLE_INIT, IMOD (no print)'
+     WRITE(740+IAPROC,*) 'PDLIB_INIT, IMOD (no print)'
      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
      WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
      FLUSH(740+IAPROC)
 #endif
-      PDLIB_NSEAL=0
+
+      PDLIB_NSEAL = 0
+
       IF (IAPROC .le. NAPROC) THEN
-        ALLOCATE(XP_IN(NX), YP_IN(NX), DEP_IN(NX), stat=istat)
-        if(istat /= 0) CALL PDLIB_ABORT(1)
-        DO I=1,NX
-          XP_IN(I)=XYB(I,1)
-          YP_IN(I)=XYB(I,2)
-          DEP_IN(I)=XYB(I,3)
-        END DO
-        ALLOCATE(INE_IN(3,NTRI), stat=istat)
-        if(istat /= 0) CALL PDLIB_ABORT(2)
-        DO I=1,NTRI
-          DO J=1,3
-            INE_IN(J,I)=TRIGP(I,J)
-          END DO
-        END DO
+
         CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
+!
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'PDLIB_STYLE_INIT, IAPROC=', IAPROC
-     WRITE(740+IAPROC,*) 'PDLIB_STYLE_INIT, NAPROC=', NAPROC
-     WRITE(740+IAPROC,*) 'PDLIB_STYLE_INIT, myrank=', myrank
+     WRITE(740+IAPROC,*) 'PDLIB_INIT, IAPROC=', IAPROC
+     WRITE(740+IAPROC,*) 'PDLIB_INIT, NAPROC=', NAPROC
+     WRITE(740+IAPROC,*) 'PDLIB_INIT, myrank=', myrank
      FLUSH(740+IAPROC)
 #endif
 !
-        CALL initFromGridDim(NX,XP_IN,YP_IN,DEP_IN,NTRI,INE_IN,NSPEC,MPI_COMM_WCMP)
+        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
 !
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'After initFromGridDim'
      FLUSH(740+IAPROC)
 #endif
-        DEALLOCATE(XP_IN, YP_IN, DEP_IN, INE_IN)
+!
         !
         ! Now the computation of NSEAL
         !
+!
         DO IP = 1, npa
           IX = iplg(IP)
           ISEA = MAPFS(1,IX)
@@ -403,9 +360,9 @@
      FLUSH(740+IAPROC)
 #endif
       END IF
-      FSGEOADVECT=.FALSE.
+      FSGEOADVECT = .FALSE.
       IF ((FLCX .eqv. .TRUE.).and.(FLCY .eqv. .TRUE.)) THEN
-        FSGEOADVECT=.TRUE.
+        FSGEOADVECT =.TRUE.
       END IF
       !
       ! Compute NSEALM
@@ -419,7 +376,7 @@
             NSEAL_arr(IPROC)=IScal(1)
           END DO
           PDLIB_NSEALM=maxval(NSEAL_arr)
-          deALLOCATE(NSEAL_arr)
+          DEALLOCATE(NSEAL_arr)
         ELSE
           IScal(1)=PDLIB_NSEAL
           CALL MPI_SEND(IScal,1,MPI_INT, 0, 23, MPI_COMM_WAVE, IERR_MPI)
@@ -1374,6 +1331,7 @@
           END IF
           ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
         END DO
+
         DO IP = 1, npa
           IP_glob=iplg(IP)
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP_glob)))*DBLE(IOBPD(ITH,IP_glob))*IOBDP(IP_glob)

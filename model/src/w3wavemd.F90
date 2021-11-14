@@ -2032,7 +2032,7 @@
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), xgrd(IX,1), ygrd(IX,2), zb(IX)
            END DO ! JSEA
            CLOSE(995)
          END IF

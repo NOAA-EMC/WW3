@@ -587,12 +587,12 @@
           I1=GRIDS(ID_GRD)%TRIGP(IE,1)
           I2=GRIDS(ID_GRD)%TRIGP(IE,2)
           I3=GRIDS(ID_GRD)%TRIGP(IE,3)
-          ELON1=GRIDS(ID_GRD)%XYB(I1,1)
-          ELON2=GRIDS(ID_GRD)%XYB(I2,1)
-          ELON3=GRIDS(ID_GRD)%XYB(I3,1)
-          ELAT1=GRIDS(ID_GRD)%XYB(I1,2)
-          ELAT2=GRIDS(ID_GRD)%XYB(I2,2)
-          ELAT3=GRIDS(ID_GRD)%XYB(I3,2)
+          ELON1=GRIDS(ID_GRD)%XGRD(I1,1)
+          ELON2=GRIDS(ID_GRD)%XGRD(I2,1)
+          ELON3=GRIDS(ID_GRD)%XGRD(I3,1)
+          ELAT1=GRIDS(ID_GRD)%YGRD(I1,1)
+          ELAT2=GRIDS(ID_GRD)%YGRD(I2,1)
+          ELAT3=GRIDS(ID_GRD)%XGRD(I3,1)
           ELON=(ELON1 + ELON2 + ELON3)/3
           ELAT=(ELAT1 + ELAT2 + ELAT3)/3
           GRID_CENTER_LON(IE)=ELON
@@ -672,12 +672,12 @@
           IF (NEIGHBOR_NEXT(IP) .GT. 0) THEN
             IPNEXT=NEIGHBOR_NEXT(IP)
             IPPREV=NEIGHBOR_PREV(IP)
-            ELONIP=DBLE(GRIDS(ID_GRD)%XYB(IP,1))
-            ELATIP=DBLE(GRIDS(ID_GRD)%XYB(IP,2))
-            ELONNEXT=DBLE(GRIDS(ID_GRD)%XYB(IPNEXT,1))
-            ELATNEXT=DBLE(GRIDS(ID_GRD)%XYB(IPNEXT,2))
-            ELONPREV=DBLE(GRIDS(ID_GRD)%XYB(IPPREV,1))
-            ELATPREV=DBLE(GRIDS(ID_GRD)%XYB(IPPREV,2))
+            ELONIP=DBLE(GRIDS(ID_GRD)%XGRD(IP,1))
+            ELATIP=DBLE(GRIDS(ID_GRD)%YGRD(IP,1))
+            ELONNEXT=DBLE(GRIDS(ID_GRD)%XGRD(IPNEXT,1))
+            ELATNEXT=DBLE(GRIDS(ID_GRD)%YGRD(IPNEXT,1))
+            ELONPREV=DBLE(GRIDS(ID_GRD)%XGRD(IPPREV,1))
+            ELATPREV=DBLE(GRIDS(ID_GRD)%YGRD(IPPREV,1))
  
             ! Periodicity fix for corner node
             IF ( ABS(ELONIP - ELONNEXT) .GT. 180.0 ) THEN
@@ -705,8 +705,8 @@
 
         ! Compute centers
         DO IP=1,MNP
-          GRID_CENTER_LON(IP)=DBLE(GRIDS(ID_GRD)%XYB(IP,1))
-          GRID_CENTER_LAT(IP)=DBLE(GRIDS(ID_GRD)%XYB(IP,2))
+          GRID_CENTER_LON(IP)=DBLE(GRIDS(ID_GRD)%XGRD(IP,1))
+          GRID_CENTER_LAT(IP)=DBLE(GRIDS(ID_GRD)%YGRD(IP,1))
         END DO
 
         ! Check triangle node orientation
@@ -718,12 +718,12 @@
           I2=GRIDS(ID_GRD)%TRIGP(IE,2)
           I3=GRIDS(ID_GRD)%TRIGP(IE,3)
 
-          PT(1,1)=DBLE(GRIDS(ID_GRD)%XYB(I1,1))
-          PT(2,1)=DBLE(GRIDS(ID_GRD)%XYB(I2,1))
-          PT(3,1)=DBLE(GRIDS(ID_GRD)%XYB(I3,1))
-          PT(1,2)=DBLE(GRIDS(ID_GRD)%XYB(I1,2))
-          PT(2,2)=DBLE(GRIDS(ID_GRD)%XYB(I2,2))
-          PT(3,2)=DBLE(GRIDS(ID_GRD)%XYB(I3,2))
+          PT(1,1)=DBLE(GRIDS(ID_GRD)%XGRD(I1,1))
+          PT(2,1)=DBLE(GRIDS(ID_GRD)%XGRD(I2,1))
+          PT(3,1)=DBLE(GRIDS(ID_GRD)%XGRD(I3,1))
+          PT(1,2)=DBLE(GRIDS(ID_GRD)%YGRD(I1,1))
+          PT(2,2)=DBLE(GRIDS(ID_GRD)%YGRD(I2,1))
+          PT(3,2)=DBLE(GRIDS(ID_GRD)%YGRD(I3,1))
 
           CALL FIX_PERIODCITY(PT)
 

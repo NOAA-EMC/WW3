@@ -1675,7 +1675,7 @@
       USE W3WDATMD, ONLY : VA, TIME
       USE W3GDATMD, ONLY : MAPSTA, XGRD, YGRD, NX, NY, DDEN, FLAGLL
       USE W3GDATMD, ONLY : ECOS, ESIN, SIG, DTH, XFR, IOBP, IOBPD
-      USE W3GDATMD, ONLY : NK, NTH, NSEA, NSEAL, NTRI, XYB, TRIGP, GRIDS
+      USE W3GDATMD, ONLY : NK, NTH, NSEA, NSEAL, NTRI, TRIGP, GRIDS
 #ifdef W3_SETUP
       USE W3WDATMD, ONLY: ZETA_SETUP
 #endif
@@ -2227,22 +2227,22 @@
             IF (FLAGLL) THEN
               iret=nf90_inq_varid(ncid, "lon", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 37, iret)
-              iret=nf90_put_var(ncid,var_id,XYB(:,1),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,XGRD(:,1),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 38, iret)
               !
               iret=nf90_inq_varid(ncid, "lat", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 39, iret)
-              iret=nf90_put_var(ncid,var_id,XYB(:,2),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,YGRD(:,1),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 40, iret)
             ELSE
               iret=nf90_inq_varid(ncid, "x", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 37, iret)
-              iret=nf90_put_var(ncid,var_id,XYB(:,1),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,XGRD(:,1),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 38, iret)
               !
               iret=nf90_inq_varid(ncid, "y", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 39, iret)
-              iret=nf90_put_var(ncid,var_id,XYB(:,2),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,YGRD(:,1),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 40, iret)
             END IF
             !
@@ -2253,7 +2253,7 @@
             !
             iret=nf90_inq_varid(ncid, "depth", var_id)
             CALL GENERIC_NETCDF_ERROR(CallFct, 43, iret)
-            DEPTHwrite=-XYB(:,3)
+            DEPTHwrite=-DW(:)
             iret=nf90_put_var(ncid,var_id,DEPTHwrite,start = (/1/), count = (/NX/))
             CALL GENERIC_NETCDF_ERROR(CallFct, 44, iret)
             !
