@@ -9,35 +9,73 @@ endif()
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
+# Read JSON file
+file(READ ${CMAKE_SOURCE_DIR}/model/bin/switches.json json_str)
+# Get length of top-level array of all switch categories
+string(JSON len LENGTH ${json_str})
+# CMake's foreach RANGE is inclusive, so subtract 1 when looping
+math(EXPR len "${len} - 1")
+
+# Loop over switch categories
+set(switch_files "")
+foreach(i RANGE ${len})
+  string(JSON category GET ${json_str} ${i})
+  string(JSON num_options LENGTH ${category} valid-options)
+
+  # Loop over valid options
+  math(EXPR num_options "${num_options} - 1")
+  foreach(j RANGE ${num_options})
+    string(JSON valid_opt GET ${category} valid-options ${j} name)
+
+    if(valid_opt IN_LIST switches)
+      string(JSON n_files ERROR_VARIABLE err LENGTH ${category} valid-options ${j} build_files)
+      
+      if(n_files)
+        # Loop over files associated with switch and add them to build
+        math(EXPR n_files "${n_files} - 1")
+        foreach(k RANGE ${n_files})
+          string(JSON file GET ${category} valid-options ${j} build_files ${k})
+          list(APPEND switch_files "${file}.F90")
+        endforeach()
+      endif()
+    endif()
+  endforeach()
+endforeach()
+
 
 # Include list of src files to make file more readable
 # defines variables "ftn_src" and "c_src"
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src_list.cmake)
 
-add_library(ww3_lib STATIC ${ftn_src} ${c_src})
+add_library(ww3_lib STATIC ${ftn_src} ${c_src} ${switch_files})
 
 foreach(switch ${switches})
-  target_compile_definitions(ww3_lib PUBLIC WW3_${switch})
+  target_compile_definitions(ww3_lib PUBLIC W3_${switch})
 endforeach()
 
+#FIXME
+#target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
 
-# Read JSON file
-file(READ ${CMAKE_SOURCE_DIR}/model/bin/switches.json json_str)
-string(JSON len LENGTH ${json_str})
-math(EXPR len "${len} - 1")
+if("MPI" IN_LIST switches)
+  find_package(MPI REQUIRED COMPONENTS Fortran)
+  target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
+endif()
 
-foreach(idx RANGE ${len})
-  string(JSON category GET ${json_str} ${idx})
-  string(JSON num_options LENGTH ${category} valid-options)
+if("PDLIB" IN_LIST switches)
+  find_package(ParMETIS REQUIRED)
+endif()
 
-  math(EXPR num_options "${num_options} - 1")
-  foreach(idy RANGE ${num_options})
-    string(JSON valid_opt GET ${category} valid-options ${idy} name)
-    message(${valid_opt})
-  endforeach()
-  
-endforeach()
+if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
+  find_package(NetCDF REQUIRED COMPONENTS Fortran)
+  target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+  target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
+  set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
+  list(APPEND programs ${netcdf_programs})
+endif()
 
+if("NCEP2" IN_LIST switches)
+  find_package(g2 REQUIRED)
+endif()
 
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
@@ -54,10 +92,18 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
 endif()
 
 # Executables to build
-set(programs bounc bound gint grib grid gspl multi ounf ounp prep prnc prtide
-  sbs1 shel strt systrk trck trnc uprstr outf outp)
+set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
+  ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl)
 
-# foreach(program ${programs})
-#   add_executable(${program} ww3_${program}.F90)
-#   target_link_libraries(${program} PRIVATE ww3_lib)
-# endforeach()
+if("TIDE" IN_LIST switches)
+  add_executable(prtide ww3_prtide.F90)
+  target_link_libraries(prtide PRIVATE ww3_lib)
+
+  add_executable(prnc ww3_prnc.F90)
+  target_link_libraries(prnc PRIVATE ww3_lib)
+endif()
+
+foreach(program ${programs})
+  add_executable(${program} ${program}.F90)
+  target_link_libraries(${program} PRIVATE ww3_lib)
+endforeach()

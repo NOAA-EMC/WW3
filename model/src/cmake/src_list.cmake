@@ -5,25 +5,16 @@ set(ftn_src
   ctest.F90
   mod_constants.f90
   mod_fileio.f90
-  mod_xnl4v5.f90
-  serv_xnl4v5.f90
   w3adatmd.F90
   w3arrymd.F90
   w3bullmd.F90
   w3cspcmd.F90
   w3dispmd.F90
   w3fldsmd.F90
-  w3flx1md.F90
-  w3flx2md.F90
-  w3flx3md.F90
-  w3flx4md.F90
-  w3flx5md.F90
   w3gdatmd.F90
-  w3gkemd.F90
   w3gridmd.F90
   w3gsrumd.F90
   w3idatmd.F90
-  w3igcmmd.F90
   w3initmd.F90
   w3iobcmd.F90
   w3iogomd.F90
@@ -33,9 +24,7 @@ set(ftn_src
   w3iosfmd.F90
   w3iotrmd.F90
   w3macros.h
-  w3meminfo.F90
   w3metamd.F90
-  w3netcdf.F90
   w3nmlbouncmd.F90
   w3nmlgridmd.F90
   w3nmlmultimd.F90
@@ -46,69 +35,58 @@ set(ftn_src
   w3nmltrncmd.F90
   w3nmluprstrmd.F90
   w3odatmd.F90
-  w3ogcmmd.F90
-  w3ounfmetamd.F90
   w3parall.F90
   w3partmd.F90
-  w3pro1md.F90
-  w3pro2md.F90
-  w3pro3md.F90
-  w3profsmd.F90
-  w3psmcmd.F90
-  w3ref1md.F90
-  w3sbs1md.F90
-  w3sbt1md.F90
-  w3sbt4md.F90
-  w3sbt8md.F90
-  w3sbt9md.F90
-  w3sdb1md.F90
   w3servmd.F90
-  w3sic1md.F90
-  w3sic2md.F90
-  w3sic3md.F90
-  w3sic4md.F90
-  w3sic5md.F90
-  w3sis1md.F90
-  w3sis2md.F90
-  w3sln1md.F90
-  w3smcomd.F90
-  w3snl1md.F90
-  w3snl2md.F90
-  w3snl3md.F90
-  w3snl4md.F90
-  w3snl5md.F90
-  w3snlsmd.F90
   w3src0md.F90
-  w3src1md.F90
-  w3src2md.F90
-  w3src3md.F90
-  w3src4md.F90
-  w3src6md.F90
   w3srcemd.F90
-  w3str1md.F90
-  w3str2md.F90
   w3strkmd.F90
-  w3swldmd.F90
-  w3tidemd.F90
   w3timemd.F90
   w3triamd.F90
-  w3uno2md.F90
-  w3uostmd.F90
   w3updtmd.F90
-  w3uqckmd.F90
   w3wavemd.F90
-  w3wavset.F90
   w3wdasmd.F90
   w3wdatmd.F90
-  wmesmfmd.F90
   wmfinlmd.F90
   wmgridmd.F90
   wminiomd.F90
   wminitmd.F90
   wmiopomd.F90
   wmmdatmd.F90
-  wmscrpmd.F90
   wmunitmd.F90
   wmupdtmd.F90
   wmwavemd.F90
   )
+
+set(pdlib_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowdatapool.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowelementpool.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowerr.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowexchangeModule.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowfunction.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yownodepool.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowpd.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowpdlibmain.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowrankModule.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowsidepool.F90
+  )
+
+set(scrip_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_constants.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_errormod.f90
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_grids.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_interface.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_iounitsmod.f90
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_kindsmod.f90
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_conservative.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_vars.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_timers.f
+  )
+
+set(scripnc_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_netcdfmod.f90
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remad_write.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_read.f
+  )
+
+
