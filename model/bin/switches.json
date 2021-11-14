@@ -34,7 +34,7 @@
         "valid-options": [
             {
                 "name": "SCRIP",
-                "build_files": []
+                "build_files": ["wmscrpmd"]
             }
         ],
         "touch_files": ["wmgridmd", "wmscrpmd", "w3gridmd"]
@@ -106,7 +106,8 @@
             },
             {
                 "name": "OMPH",
-                "build_files": []
+                "build_files": [],
+                "requires_all": ["MPI", "OMPG"]
             }
         ],
         "touch_files": []
@@ -254,23 +255,29 @@
             },
             {
                 "name": "ST1",
-                "build_files": ["w3src1md"]
+                "build_files": ["w3src1md"],
+                "conflicts": ["FLX0", "FLX5"]
+
             },
             {
                 "name": "ST2",
-                "build_files": ["w3src2md"]
+                "build_files": ["w3src2md"],
+                "conflicts": ["FLX0", "FLX1", "FLX4", "FLX5"]
             },
             {
                 "name": "ST3",
-                "build_files": ["w3src3md"]
+                "build_files": ["w3src3md"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
             },
             {
                 "name": "ST4",
-                "build_files": ["w3src4md"]
+                "build_files": ["w3src4md"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
             },
             {
                 "name": "ST6",
-                "build_files": ["w3src6md", "w3swldmd"]
+                "build_files": ["w3src6md", "w3swldmd"],
+                "conflicts": ["FLX0"]
             }
         ],
         "touch_files": []
@@ -286,11 +293,14 @@
             },
             {
                 "name": "STAB2",
-                "build_files": []
+                "build_files": [],
+                "requires_all": "ST2"
+                
             },
             {
                 "name": "STAB3",
-                "build_files": []
+                "build_files": [],
+                "requires_any": ["ST3", "ST4"]
             }
         ],
         "touch_files": []
@@ -310,7 +320,9 @@
             },
             {
                 "name": "NL2",
-                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5"]
+                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5"],
+                "conflicts": ["OMPG", "OMPH"]
+                
             },
             {
                 "name": "NL3",
@@ -826,7 +838,9 @@
         "valid-options": [
             {
                 "name": "OASIS",
-                "build_files": ["w3oacpmd"]
+                "build_files": ["w3oacpmd"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
+
             }
         ],
         "touch_files": []
@@ -850,7 +864,8 @@
         "valid-options": [
             {
                 "name": "PDLIB",
-                "build_files": ["yowfunction", "pdlib_field_vec", "w3profsmd_pdlib", "yowsidepool", "yowdatapool", "yowerr", "yownodepool", "yowelementpool", "yowexchangeModule", "yowrankModule", "yowpdlibmain", "yowpd"]
+                "build_files": ["yowfunction", "pdlib_field_vec", "w3profsmd_pdlib", "yowsidepool", "yowdatapool", "yowerr", "yownodepool", "yowelementpool", "yowexchangeModule", "yowrankModule", "yowpdlibmain", "yowpd"],
+                "requires_all": ["MPI"]
             }
         ],
         "touch_files": []
