@@ -874,20 +874,18 @@ contains
       call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      sw_ustokes1(:)= fillvalue
-      sw_vstokes1(:)= fillvalue
-      sw_ustokes2(:)= fillvalue
-      sw_vstokes2(:)= fillvalue
-      sw_ustokes3(:)= fillvalue
-      sw_vstokes3(:)= fillvalue
+      sw_ustokes1(:)= zero
+      sw_vstokes1(:)= zero
+      sw_ustokes2(:)= zero
+      sw_vstokes2(:)= zero
+      sw_ustokes3(:)= zero
+      sw_vstokes3(:)= zero
       ! usspf(2); usspf(1) = 1; usspf(2) = 3
       ! grid.inp: IUSSP=3, STK_WN = 0.04, 0.11, 0.33 (spec bins)
       ! nk=25
       call CALC_U3STOKES(va, 2)
-      print *,'YYY ',minval(va),maxval(va),minval(ussp),maxval(ussp)
 
       do jsea = 1,nseal
-        ! isea = iaproc + (jsea-1)*naproc
          sw_ustokes1(jsea)=ussp(jsea,1)
          sw_vstokes1(jsea)=ussp(jsea,nk+1)
          sw_ustokes2(jsea)=ussp(jsea,2)
