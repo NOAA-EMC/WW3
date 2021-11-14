@@ -559,8 +559,8 @@ contains
     call shr_file_getLogUnit (shrlogunit)
     call shr_file_setLogUnit (ndso)
 !#endif
-    if ( iaproc == napout ) write (ndso,900)
 
+    if ( masterproc ) write (ndso,900)
     !--------------------------------------------------------------------
     ! Initialize run type
     !--------------------------------------------------------------------
@@ -580,7 +580,7 @@ contains
        if(masterproc)write(ndso,*) 'starttype: branch'
     end if
 #ifdef CESMCOUPLED
-    if ( iaproc == napout) then
+    if ( masterproc ) then
        write(ndso,*) trim(subname),' inst_name   = ',trim(inst_name)
        write(ndso,*) trim(subname),' inst_index  = ',inst_index
        write(ndso,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
@@ -1315,7 +1315,7 @@ contains
     integer          :: timen(2)
     logical          :: lerr
     integer          :: shrlogunit ! original log unit and level
-    character(len=256)         :: msgString
+    character(ESMF_MAXSTR)     :: msgString
     character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
     !-------------------------------------------------------
     rc = ESMF_SUCCESS
