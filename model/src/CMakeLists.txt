@@ -9,6 +9,8 @@ endif()
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
+
+#TODO check for conflicts and required associated switches
 # Read JSON file
 file(READ ${CMAKE_SOURCE_DIR}/model/bin/switches.json json_str)
 # Get length of top-level array of all switch categories
@@ -44,7 +46,7 @@ endforeach()
 
 
 # Include list of src files to make file more readable
-# defines variables "ftn_src" and "c_src"
+# defines variables "ftn_src", "c_src", "pdlib_src", "scrip_src", and "scripnc_src"
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src_list.cmake)
 
 add_library(ww3_lib STATIC ${ftn_src} ${c_src} ${switch_files})
@@ -63,18 +65,41 @@ endif()
 
 if("PDLIB" IN_LIST switches)
   find_package(ParMETIS REQUIRED)
+  target_sources(ww3_lib PRIVATE ${pdlib_src})
+endif()
+
+if("SCRIPNC" IN_LIST switches)
+  target_sources(ww3_lib PRIVATE ${scrip_src} ${scripnc_src})
+endif()
+
+if("SCRIP" IN_LIST switches)
+  target_sources(ww3_lib PRIVATE ${scrip_src})
 endif()
 
 if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
   find_package(NetCDF REQUIRED COMPONENTS Fortran)
   target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
   set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
+
   list(APPEND programs ${netcdf_programs})
 endif()
 
 if("NCEP2" IN_LIST switches)
   find_package(g2 REQUIRED)
+  find_package(bacio REQUIRED)
+  find_package(w3nco REQUIRED)
+  target_link_libraries(ww3_lib PUBLIC g2::g2_4 bacio::bacio_4 w3nco::w3nco_4)
+endif()
+
+if("TIDE" IN_LIST switches)
+  add_executable(ww3_prtide ww3_prtide.F90)
+  target_link_libraries(ww3_prtide PRIVATE ww3_lib)
+
+  target_sources(ww3_lib PRIVATE w3nmlprncmd.F90)
+  add_executable(ww3_prnc ww3_prnc.F90)
+  target_link_libraries(ww3_prnc PRIVATE ww3_lib)
 endif()
 
 # Set compiler flags.
@@ -94,14 +119,6 @@ endif()
 # Executables to build
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl)
-
-if("TIDE" IN_LIST switches)
-  add_executable(prtide ww3_prtide.F90)
-  target_link_libraries(prtide PRIVATE ww3_lib)
-
-  add_executable(prnc ww3_prnc.F90)
-  target_link_libraries(prnc PRIVATE ww3_lib)
-endif()
 
 foreach(program ${programs})
   add_executable(${program} ${program}.F90)
