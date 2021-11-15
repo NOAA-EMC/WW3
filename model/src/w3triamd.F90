@@ -1730,8 +1730,8 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XGRD(I1.1)
-       y1=GRIDS(IMOD)%YGRD(I1.1)
+       x1=GRIDS(IMOD)%XGRD(I1,1)
+       y1=GRIDS(IMOD)%YGRD(I1,1)
 ! coordinates of the 2nd vertex B
        x2=GRIDS(IMOD)%XGRD(I2,1)
        y2=GRIDS(IMOD)%YGRD(I2,1)
@@ -2906,7 +2906,7 @@ END SUBROUTINE
 !     ----------------------------------------------------------------
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: I1, I2, I3
-      DOUBLE PRECISION, INTENT(IN) :: XGRD(:,:), YGRD(:,:)
+      REAL, INTENT(IN) :: XGRD(:,:), YGRD(:,:)
       REAL*8, INTENT(OUT) :: PT(3,2)
 !     ----------------------------------------------------------------
 !

@@ -42,10 +42,6 @@
 module yowpdlibMain
   use yowerr
   use yowDatapool, only: rkind
-#ifdef W3_MEMCHECK
-      USE MallocInfo_m
- USE W3ADATMD, ONLY: MALLINFOS
-#endif
   implicit none
   private
   public :: initFromGridDim, finalizePD
@@ -69,11 +65,6 @@ module yowpdlibMain
     use yowSidepool,       only: ns, ns_global
     use yowExchangeModule, only: nConnDomains, setDimSize
     use yowRankModule,     only: initRankModule, ipgl_npa
-#ifdef W3_MEMCHECK
-      USE MallocInfo_m
- USE W3ADATMD, ONLY: MALLINFOS
-#endif
-
     implicit none
     integer, intent(in) :: MNP, MNE
     integer, intent(in) :: INE(3,MNE)
@@ -83,20 +74,10 @@ module yowpdlibMain
     integer istat
 
     call setDimSize(secDim)
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 1'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
 #ifdef W3_DEBUGINIT
     Print *, '1: MPIcomm=', MPIcomm
 #endif
     call initMPI(MPIcomm)
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 2'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
 #ifdef W3_DEBUGINIT
     Print *, '2: After initMPI'
 #endif
@@ -105,11 +86,6 @@ module yowpdlibMain
     Print *, '3: After assignMesh'
 #endif
     call prePartition()
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 4'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
 #ifdef W3_DEBUGINIT
     Print *, '3: After prePartition'
 #endif
@@ -140,56 +116,16 @@ module yowpdlibMain
     Print *, '5: After runParmetis'
 #endif
     call postPartition
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 7'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
 #ifdef W3_DEBUGINIT
     Print *, 'Before findGhostNodes'
 #endif
     call findGhostNodes
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 8'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call findConnDomains
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 9'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call exchangeGhostIds
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 10'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call postPartition2(MNP, XP, YP, DEP)
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 11'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call initRankModule
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 12'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call ComputeTRIA_IEN_SI_CCON
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 13'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     call ComputeIA_JA_POSI_NNZ
-#ifdef W3_MEMCHECK
-       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 14'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(70000+myrank,mallInfos)
-#endif
     if(debugPostPartition) then
       if(myrank == 0) then
         write(*,*) "New data after partition"
@@ -236,6 +172,9 @@ module yowpdlibMain
       END IF
 !      Print *, 'Passing barrier string=', string
       END SUBROUTINE
+
+
+
   !--------------------------------------------------------------------------
   ! Init MPI
   !--------------------------------------------------------------------------
@@ -288,13 +227,14 @@ module yowpdlibMain
   !> @param[in] MNE number of element global
   !> @param[in] INE element array
   !> alter: np_global, nodes_global(), ne_global, elements(), INE_global
-  subroutine assignMesh(MNP, MNE)
+  subroutine assignMesh(MNP, XP, YP, DEP, MNE, INE)
     use yowNodepool,    only: nodes_global, np_global
-    use yowElementpool, only: ne_global
+    use yowElementpool, only: ne_global, INE_global
     use yowerr,       only: parallel_abort
     implicit none
     integer, intent(in) :: MNP, MNE
-    !integer, intent(in) :: INE(3,MNE)
+    integer, intent(in) :: INE(3,MNE)
+    real(kind=rkind), intent(in) :: XP(MNP), YP(MNP), DEP(MNP)
     integer :: stat, i
 
     np_global=MNP
@@ -1206,18 +1146,17 @@ module yowpdlibMain
 
     do i=1, np
       IP_glob = iplg(i)
-      x(i) = xgrd(1,IP_glob)
-      y(i) = ygrd(1,IP_glob)
-      z(i) = zb(IP_glob)
+      x(i) = XP(IP_glob)
+      y(i) = YP(IP_glob)
+      z(i) = DEP(IP_glob)
     end do
 
     do i=1, ng
       IP_glob = ghostlg(i)
-      x(np+i) = xgrd(1,IP_glob)
-      y(np+i) = ygrd(1,IP_glob)
-      z(np+i) = zb(IP_glob)
+      x(np+i) = XP(IP_glob)
+      y(np+i) = YP(IP_glob)
+      z(np+i) = DEP(IP_glob)
     end do
-    
   end subroutine
 !**********************************************************************
 !*                                                                    *
@@ -1424,7 +1363,7 @@ module yowpdlibMain
     J = 0
     PDLIB_NNZ = 0
     DO IP = 1, npa
-      ITMP = 0
+      ITMP(:) = 0
       DO I = 1, PDLIB_CCON(IP)
         J = J + 1
         IP_J  = PTABLE(J,2)
@@ -1459,8 +1398,8 @@ module yowpdlibMain
       ITMP=0
       DO I = 1, PDLIB_CCON(IP) ! Check how many entries there are ...
         J = J + 1
-        IP_J = PTABLE(J,2)
-        IP_K = PTABLE(J,3)
+        IP_J  = PTABLE(J,2)
+        IP_K  = PTABLE(J,3)
         ITMP(IP)   = 1
         ITMP(IP_J) = 1
         ITMP(IP_K) = 1
@@ -1493,7 +1432,7 @@ module yowpdlibMain
     J=0
     DO IP=1,npa
       DO I = 1, PDLIB_CCON(IP)
-        J = J + 1
+        J=J+1
         IE    =  PDLIB_IE_CELL(J)
         POS   =  PDLIB_POS_CELL(J)
         I1    =  PDLIB_POSI(1,J)

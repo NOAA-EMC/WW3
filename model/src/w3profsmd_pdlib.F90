@@ -126,50 +126,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      SUBROUTINE VA_SETUP_IOBPD
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
-!/                  | Aron Roland (BGS IT&E GmbH)       |
-!/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mai-2018 |
-!/                  +-----------------------------------+
-!/
-!/    01-Mai-2018 : Origination.                        ( version 6.04 )
-!/
-!  1. Purpose : Setup boundary pointer 
-!  2. Method :
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!  7. Remarks
-!  8. Structure :
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_INIT(IMOD)
 !/
@@ -433,7 +389,7 @@
 !/
 !/ End of PDLIB_STYLE_INIT ------------------------------------------- /
 !/
-      END SUBROUTINE PDLIB_STYLE_INIT
+      END SUBROUTINE PDLIB_INIT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_MAPSTA_INIT(IMOD)
 !/
