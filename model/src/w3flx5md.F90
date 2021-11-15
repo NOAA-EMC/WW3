@@ -179,7 +179,7 @@
 ! 2.  Computation ---------------------------------------------------- *
 !
 !
-      UST    = SQRT(TAUA/RHOAIR)
+      UST    = MAX ( 1E-4, SQRT(TAUA/RHOAIR) )
       UNZ    = MAX ( 0.01 , U10 )
       CD     = (UST/UNZ)**2
       USTD   = TAUADIR
