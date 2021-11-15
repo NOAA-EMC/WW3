@@ -137,6 +137,7 @@ endif()
 if("PDLIB" IN_LIST switches)
   find_package(ParMETIS REQUIRED)
   target_sources(ww3_lib PRIVATE ${pdlib_src})
+  target_link_libraries(ww3_lib PUBLIC ParMETIS::ParMETIS)
 endif()
 
 if("SCRIPNC" IN_LIST switches)

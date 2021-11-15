@@ -9,7 +9,7 @@ set_target_properties(ParMETIS::ParMETIS PROPERTIES
   IMPORTED_LOCATION "${parmetis_lib}"
   INTERFACE_INCLUDE_DIRECTORIES "${parmetis_inc}")
 
-target_link_libraries(ParMETIS::ParMETIS PUBLIC METIS::METIS)
+target_link_libraries(ParMETIS::ParMETIS INTERFACE METIS::METIS)
 
 ## Finalize find_package
 include(FindPackageHandleStandardArgs)
@@ -18,3 +18,5 @@ find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS parmetis_lib
                   parmetis_inc)
+
+message(STATUS "Found ParMETIS: ${parmetis_lib}")
