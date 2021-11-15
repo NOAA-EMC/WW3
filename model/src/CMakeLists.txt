@@ -29,11 +29,13 @@ foreach(i_category RANGE ${len})
 
   # Loop over valid options
   math(EXPR num_options "${num_options} - 1")
+  set(n_switches_in_category 0)
   foreach(j_options RANGE ${num_options})
     string(JSON valid_opt GET ${category} valid-options ${j_options} name)
 
     # This option is in current switch file
     if(valid_opt IN_LIST switches)
+      math(EXPR n_switches_in_category "${n_switches_in_category} + 1")
       string(JSON n_files ERROR_VARIABLE err LENGTH ${category} valid-options ${j_options} build_files)
 
       # Check for conflicting switches
@@ -68,6 +70,7 @@ foreach(i_category RANGE ${len})
             string(JSON n_requires_any LENGTH ${vategory} valid-options ${j_options} requries ${i_requires})
             math(EXPR n_requires_any "${n_requires_any} - 1")
 
+            # Loop over array and check that one of the switches is present
             set(found false)
             set(possible_values "")
             foreach(i_requires_any RANGE ${n_requires_any})
@@ -98,6 +101,19 @@ foreach(i_category RANGE ${len})
     endif()
 
   endforeach()
+
+  # Check for the correct number of switches per category
+  string(JSON num_switches GET ${category} num_switches)
+  string(JSON category_name GET ${category} name)
+
+  if(num_switches STREQUAL "one" AND NOT n_switches_in_category EQUAL 1)
+    message(FATAL_ERROR "No valid ${category_name} switches found, but one is required")
+  elseif(num_switches STREQUAL "upto1" AND n_switches_in_category GREATER 1)
+    message(FATAL_ERROR "Too many ${category_name} switches found (max 1)")
+  elseif(num_switches STREQUAL "upto2" AND n_switches_in_category GREATER 2)
+    message(FATAL_ERROR "Too many ${category_name} switches found (max 2)")
+  endif()
+  
 endforeach()
 
 # Include list of src files to make file more readable
