@@ -138,7 +138,6 @@ if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST swi
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
   
   set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
-  list(APPEND programs ${netcdf_programs})
 endif()
 
 if("NCEP2" IN_LIST switches)
@@ -157,11 +156,11 @@ if("TIDE" IN_LIST switches)
   target_link_libraries(ww3_prnc PRIVATE ww3_lib)
 endif()
 
-find_package(ESMF)
-if(ESMF_FOUND)
-  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
-  target_link_libraries(ww3_lib PUBLIC esmf)
-endif()
+# find_package(ESMF)
+# if(ESMF_FOUND)
+#   target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+#   target_link_libraries(ww3_lib PUBLIC esmf)
+# endif()
 
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
@@ -181,7 +180,44 @@ endif()
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl)
 
+list(APPEND programs ${netcdf_programs})
+
 foreach(program ${programs})
   add_executable(${program} ${program}.F90)
   target_link_libraries(${program} PRIVATE ww3_lib)
 endforeach()
+
+install(
+  TARGETS ${programs} ww3_lib
+  EXPORT WW3Exports
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
+export(EXPORT WW3Exports
+  NAMESPACE WW3::
+  FILE WW3-targets.cmake
+  )
+
+### Package config
+include(CMakePackageConfigHelpers)
+set(CONFIG_INSTALL_DESTINATION lib/cmake/WW3)
+
+configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/WW3-package-config.cmake.in
+  ${CMAKE_BINARY_DIR}/WW3-config.cmake
+  INSTALL_DESTINATION ${CONFIG_INSTALL_DESTINATION})
+
+install(FILES ${CMAKE_BINARY_DIR}/WW3-config.cmake
+  DESTINATION ${CONFIG_INSTALL_DESTINATION})
+
+write_basic_package_version_file(${CMAKE_BINARY_DIR}/WW3-config-version.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion)
+
+install(FILES ${CMAKE_BINARY_DIR}/WW3-config-version.cmake
+  DESTINATION ${CONFIG_INSTALL_DESTINATION})
+
+install(EXPORT WW3Exports
+  NAMESPACE WW3::
+  FILE WW3-targets.cmake
+  DESTINATION ${CONFIG_INSTALL_DESTINATION})
