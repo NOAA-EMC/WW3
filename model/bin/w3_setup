@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 # --------------------------------------------------------------------------- #
 #                                                                             #
 # Script for setting up (installing) WAVEWATCH III.                           #
@@ -23,7 +23,7 @@ errmsg ()
 
 # 0.b Usage function
 myname="`basename $0`"  #name of script
-optstr="c:hqs:et:"  #option string for getopt function
+#optstr="c:hqs:et:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -42,45 +42,31 @@ Options:
 EOF
 }
 
-# 0.c Setup array of command-line arguments
-args=`getopt $optstr $*`
-if [ $? != 0 ]
-then
-  usage
-  exit 1
-fi
-set -- $args
-
 # 0.d Process command-line options
-while :
-do
-  case "$1" in
-  -c) shift; cmplr="$1" ;;
-  -h) help=1 ;;
-  -q) no_prompt=1 ;;
-  -s) shift; swtch="$1" ;;
-  -e) edit=1 ;;
-  -t) shift; tdir="$1" ;;
-  --) break ;;
-  esac
-  shift
+path_s=$1
+shift
+while getopts "c:hqs:ep:t" opt; do
+      case $opt in
+          c)
+              cmplr=$OPTARG
+              ;;
+          q)
+              no_prompt=1
+              ;;
+          s)
+              swtch=$OPTARG
+              ;;
+          e)
+              edit=1
+              ;;
+          t)
+              tdir=$OPTARG
+              ;;
+          h|\?|:)
+              usage
+              ;;
+      esac
 done
-shift #remove the trailing --
-if [ $help ]
-then
-  usage
-  exit 1
-fi
-
-# 0.e Get required arguments
-if [ ! $# = 0 ]
-then
-  path_s="$1" ; shift
-else
-  usage
-  exit 1
-fi
-
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
@@ -143,7 +129,7 @@ then
   cp ${HOME}/.wwatch3.env $path_bin/wwatch3.env
   ww3_env=$path_bin/wwatch3.env
   echo "[INFO] global env file wwatch3.env copied in $ww3_env"
-elif [ ! -z ${WWATCH3_ENV} ]
+elif [ ! -z ${WWATCH3_ENV:-} ]
 then
   ww3_env=${WWATCH3_ENV}
   echo "[INFO] user defined env file wwatch3.env found in $ww3_env"
@@ -179,7 +165,8 @@ then
 else
   echo "   Setup file $ww3_env not found"
 
-  if [ $tdir ]
+  comp_fc=gfortran
+  if [ ${tdir:-} ]
   then
     temp_dir=$tdir
   else
@@ -196,11 +183,11 @@ else
 fi
 
 
-if [ $no_prompt ]
+if [ ${no_prompt:-} ]
 then
   do_set='n'
 else
-  OK="$NULL"
+  OK="${NULL:-}"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
         [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
   do
@@ -222,16 +209,16 @@ then
   # Get user input for new set-up
   echo ' '
   echo "   Creating new set-up :"
-  OK="$NULL"
+  OK="${NULL:-}"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
   do
     echo ' '
 
-    OK="$NULL"
+    OK="${NULL:-}"
     until [ "$OK" = 'y' ]
     do
       echo -n "      Scratch space [$temp_dir] : "
-      instr="$NULL" ; read instr
+      instr="${NULL:-}" ; read instr
       if [ -n "$instr" ]
       then
         temp_dir="$instr"
@@ -252,7 +239,7 @@ then
     done
 
     echo -n "      Save source code files (*.f)  [$source] : "
-    instr="$NULL" ; read instr
+    instr="${NULL:-}" ; read instr
     if [ -n "$instr" ]
     then
       if [ "$instr" = 'yes' ] || [ "$instr" = 'YES' ]
@@ -264,7 +251,7 @@ then
     fi
 
     echo -n "      Save listing files  [$list] : "
-    instr="$NULL" ; read instr
+    instr="${NULL:-}" ; read instr
     if [ -n "$instr" ]
     then
       if [ "$instr" = 'yes' ] || [ "$instr" = 'YES' ]
@@ -419,7 +406,7 @@ then
 fi
 
 # 3.e Edit switch file
-if [ $edit ] 
+if [ ${edit:-} ] 
   then
   echo "      Edit $path_b/switch"
   if [ ! -f $path_b/switch ]
