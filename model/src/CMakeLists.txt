@@ -9,6 +9,9 @@ endif()
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
+function(len_minus_one json_array len)
+  
+endfunction()
 
 #TODO check for conflicts and required associated switches
 # Read JSON file
@@ -20,30 +23,82 @@ math(EXPR len "${len} - 1")
 
 # Loop over switch categories
 set(switch_files "")
-foreach(i RANGE ${len})
-  string(JSON category GET ${json_str} ${i})
+foreach(i_category RANGE ${len})
+  string(JSON category GET ${json_str} ${i_category})
   string(JSON num_options LENGTH ${category} valid-options)
 
   # Loop over valid options
   math(EXPR num_options "${num_options} - 1")
-  foreach(j RANGE ${num_options})
-    string(JSON valid_opt GET ${category} valid-options ${j} name)
+  foreach(j_options RANGE ${num_options})
+    string(JSON valid_opt GET ${category} valid-options ${j_options} name)
 
+    # This option is in current switch file
     if(valid_opt IN_LIST switches)
-      string(JSON n_files ERROR_VARIABLE err LENGTH ${category} valid-options ${j} build_files)
-      
+      string(JSON n_files ERROR_VARIABLE err LENGTH ${category} valid-options ${j_options} build_files)
+
+      # Check for conflicting switches
+      string(JSON n_conflicts ERROR_VARIABLE err LENGTH ${category} valid-options ${j_options} conflicts)
+      if(n_conflicts)
+        math(EXPR n_conflicts "${n_conflicts} -1")
+        # Loop over conflcits
+        foreach(i_conflict RANGE ${n_conflicts})
+          string(JSON conflict GET ${category} valid-options ${j_options} conflicts ${i_conflict})
+          if(conflict IN_LIST switches)
+            message(FATAL_ERROR "Switch '${valid_opt}' and '${conflict}' conflict")
+          endif()
+        endforeach()
+      endif()
+
+      # Check for required dependent switches
+      string(JSON n_requires ERROR_VARIABLE err LENGTH ${category} valid-options ${j_options} requires)
+      if(n_requires)
+        math(EXPR n_requires "${n_requires} - 1")
+        # Loop over required switches
+        foreach(i_requires RANGE ${n_requires})
+
+          string(JSON json_type TYPE ${category} valid-options ${j_options} requires ${i_requires})
+
+          # Can be a string or an array. String values or directly required, while if an array one of the values is required.
+          if(json_type STREQUAL "STRING")
+            string(JSON required_switch GET ${category} valid-options ${j_options} requires ${i_requires})
+            if(NOT required_switch IN_LIST switches)
+              message(FATAL_ERROR "Switch '${valid_opt}' requires '${required_switch}' to be set")
+            endif()
+          elseif(json_type STREQUAL "ARRAY")
+            string(JSON n_requires_any LENGTH ${vategory} valid-options ${j_options} requries ${i_requires})
+            math(EXPR n_requires_any "${n_requires_any} - 1")
+
+            set(found false)
+            set(possible_values "")
+            foreach(i_requires_any RANGE ${n_requires_any})
+              string(JSON required_switch GET ${category} valid-options ${j_options} requires ${i_requires} ${i_requires_any})
+              list(APPEND possible_values "${required_switch}")
+
+              if(required_switch IN_LIST switches)
+                set(found true)
+              endif()
+            endforeach()
+
+            if(NOT found)
+              message(FATAL_ERROR "Switch ${valid_opt} requires one of ${possible_values} to be set")
+            endif()
+            
+          endif()
+        endforeach()
+      endif()
+
       if(n_files)
         # Loop over files associated with switch and add them to build
         math(EXPR n_files "${n_files} - 1")
-        foreach(k RANGE ${n_files})
-          string(JSON file GET ${category} valid-options ${j} build_files ${k})
+        foreach(i_files RANGE ${n_files})
+          string(JSON file GET ${category} valid-options ${j_options} build_files ${i_files})
           list(APPEND switch_files "${file}.F90")
         endforeach()
       endif()
     endif()
+
   endforeach()
 endforeach()
-
 
 # Include list of src files to make file more readable
 # defines variables "ftn_src", "c_src", "pdlib_src", "scrip_src", and "scripnc_src"
@@ -81,8 +136,8 @@ if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST swi
   target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
 
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
+  
   set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
-
   list(APPEND programs ${netcdf_programs})
 endif()
 
@@ -100,6 +155,12 @@ if("TIDE" IN_LIST switches)
   target_sources(ww3_lib PRIVATE w3nmlprncmd.F90)
   add_executable(ww3_prnc ww3_prnc.F90)
   target_link_libraries(ww3_prnc PRIVATE ww3_lib)
+endif()
+
+find_package(ESMF)
+if(ESMF_FOUND)
+  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+  target_link_libraries(ww3_lib PUBLIC esmf)
 endif()
 
 # Set compiler flags.

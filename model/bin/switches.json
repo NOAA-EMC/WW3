@@ -107,7 +107,7 @@
             {
                 "name": "OMPH",
                 "build_files": [],
-                "requires_all": ["MPI", "OMPG"]
+                "requires": ["MPI", "OMPG"]
             }
         ],
         "touch_files": []
@@ -294,13 +294,13 @@
             {
                 "name": "STAB2",
                 "build_files": [],
-                "requires_all": "ST2"
+                "requires": ["ST2"]
                 
             },
             {
                 "name": "STAB3",
                 "build_files": [],
-                "requires_any": ["ST3", "ST4"]
+                "requires": [["ST3", "ST4"]]
             }
         ],
         "touch_files": []
