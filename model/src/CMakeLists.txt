@@ -192,6 +192,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   if(LINUX)
     list(APPEND compile_flags -sox)
   endif()
+
+  if(APPLE)
+    # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
+    # Passing the -c flag includes them and fixes an error with undefined symbols
+    # Only ifort marks these symbols as common, compared to GCC
+    set(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
+    set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
+  endif()
+
   set(compile_flags_release -O3)
   # SHELL: prefix fixes CMake attempting to de-duplicate the repeated uses of 'all' in -warn, -debug, -check
   # See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
@@ -205,13 +214,6 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
   if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10)
     target_compile_options(ww3_lib PUBLIC -fallow-argument-mismatch -fallow-invalid-boz)
   endif()
-endif()
-
-if(APPLE)
-  # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
-  # Passing the -c flag includes them and fixes an error with undefined symbols
-  set(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
-  set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
 endif()
 
 target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
