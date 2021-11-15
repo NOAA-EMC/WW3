@@ -129,6 +129,13 @@ endif()
 
 if("SCRIP" IN_LIST switches)
   target_sources(ww3_lib PRIVATE ${scrip_src})
+
+  # Not sure where to put FindESMF
+  find_package(ESMF)
+  if(ESMF_FOUND)
+    target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+    target_link_libraries(ww3_lib PUBLIC esmf)
+  endif() 
 endif()
 
 if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
@@ -155,12 +162,6 @@ if("TIDE" IN_LIST switches)
   add_executable(ww3_prnc ww3_prnc.F90)
   target_link_libraries(ww3_prnc PRIVATE ww3_lib)
 endif()
-
-# find_package(ESMF)
-# if(ESMF_FOUND)
-#   target_sources(ww3_lib PRIVATE wmesmfmd.F90)
-#   target_link_libraries(ww3_lib PUBLIC esmf)
-# endif()
 
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
