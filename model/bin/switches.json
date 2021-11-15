@@ -5,11 +5,9 @@
         "description": "NCO modifications",
         "valid-options": [
             {
-                "name": "NCO",
-                "build_files": []
+                "name": "NCO"
             }
-        ],
-        "touch_files": ["w3bullmd", "ww3_prep", "ww3_shel", "ww3_ounp", "ww3_prnc", "ww3_outp", "ww3_prtide", "ww3_grib"]
+        ]
     },
     {
         "name": "grib",
@@ -17,12 +15,10 @@
         "description": "GRIB package",
         "valid-options": [
             {
-                "name": "NOGRB",
-                "build_files": []
+                "name": "NOGRB"
             },
             {
-                "name": "NCEP2",
-                "build_files": []
+                "name": "NCEP2"
             }
         ],
         "touch_files": ["ww3_grib"]
@@ -36,8 +32,7 @@
                 "name": "SCRIP",
                 "build_files": ["wmscrpmd"]
             }
-        ],
-        "touch_files": ["wmgridmd", "wmscrpmd", "w3gridmd"]
+        ]
     },
     {
         "name": "scripnc",
@@ -45,11 +40,9 @@
         "description": "",
         "valid-options": [
             {
-                "name": "SCRIPNC",
-                "build_files": []
+                "name": "SCRIPNC"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "shared",
@@ -57,15 +50,12 @@
         "description": "'shared / distributed memory",
         "valid-options": [
             {
-                "name": "SHRD",
-                "build_files": []
+                "name": "SHRD"
             },
             {
-                "name": "DIST",
-                "build_files": []
+                "name": "DIST"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mpp",
@@ -73,15 +63,12 @@
         "description": "message passing protocol",
         "valid-options": [
             {
-                "name": "SHRD",
-                "build_files": []
+                "name": "SHRD"
             },
             {
-                "name": "MPI",
-                "build_files": []
+                "name": "MPI"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mpiexp",
@@ -89,11 +76,9 @@
         "description": "experimental MPI option",
         "valid-options": [
             {
-                "name": "MPIBDI",
-                "build_files": []
+                "name": "MPIBDI"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "thread",
@@ -101,16 +86,13 @@
         "description": "directive controlled threading'",
         "valid-options": [
             {
-                "name": "OMPG",
-                "build_files": []
+                "name": "OMPG"
             },
             {
                 "name": "OMPH",
-                "build_files": [],
                 "requires": ["MPI", "OMPG"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "GSE",
@@ -118,8 +100,7 @@
         "description": "GSE aleviation",
         "valid-options": [
             {
-                "name": "PR0",
-                "build_files": []
+                "name": "PR0"
             },
             {
                 "name": "PR1",
@@ -133,8 +114,7 @@
                 "name": "PR3",
                 "build_files": ["w3profsmd", "w3pro3md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "prop",
@@ -142,12 +122,10 @@
         "description": "propagation scheme",
         "valid-options": [
             {
-                "name": "PR0",
-                "build_files": []
+                "name": "PR0"
             },
             {
-                "name": "PR1",
-                "build_files": []
+                "name": "PR1"
             },
             {
                 "name": "UQ",
@@ -157,8 +135,7 @@
                 "name": "UNO",
                 "build_files": ["w3uno2md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "smcg",
@@ -166,11 +143,9 @@
         "description": "SMC grid",
         "valid-options": [
             {
-                "name": "SMC",
-                "build_files": []
+                "name": "SMC"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "stress",
@@ -201,8 +176,7 @@
                 "name": "FLX5",
                 "build_files": ["w3flx5md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "dstress",
@@ -210,8 +184,7 @@
         "description": "Diagnostic stress comp",
         "valid-options": [
             {
-                "name": "FLD0",
-                "build_files": []
+                "name": "FLD0"
             },
             {
                 "name": "FLD1",
@@ -221,8 +194,7 @@
                 "name": "FLD2",
                 "build_files": ["w3fld1md", "w3fld2md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_ln",
@@ -230,19 +202,16 @@
         "description": "linear input",
         "valid-options": [
             {
-                "name": "LN0",
-                "build_files": []
+                "name": "LN0"
             },
             {
-                "name": "SEED",
-                "build_files": []
+                "name": "SEED"
             },
             {
                 "name": "LN1",
                 "build_files": ["w3sln1md"]
             }   
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "sterm",
@@ -279,8 +248,7 @@
                 "build_files": ["w3src6md", "w3swldmd"],
                 "conflicts": ["FLX0"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "stab",
@@ -288,22 +256,18 @@
         "description": "stability correction",
         "valid-options": [
             {
-                "name": "STAB0",
-                "build_files": []
+                "name": "STAB0"
             },
             {
                 "name": "STAB2",
-                "build_files": [],
                 "requires": ["ST2"]
                 
             },
             {
                 "name": "STAB3",
-                "build_files": [],
                 "requires": [["ST3", "ST4"]]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_nl",
@@ -311,8 +275,7 @@
         "description": "quadruplet interactions",
         "valid-options": [
             {
-                "name": "NL0",
-                "build_files": []                
+                "name": "NL0"
             },
             {
                 "name": "NL1",
@@ -322,7 +285,6 @@
                 "name": "NL2",
                 "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5"],
                 "conflicts": ["OMPG", "OMPH"]
-                
             },
             {
                 "name": "NL3",
@@ -336,8 +298,7 @@
                 "name": "NL5",
                 "build_files": ["w3snl5md", "w3gkemd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "snls",
@@ -348,8 +309,7 @@
                 "name": "NLS",
                 "build_files": ["w3snlsmd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_bot",
@@ -357,8 +317,7 @@
         "description": "bottom friction",
         "valid-options": [
             {
-                "name": "BT0",
-                "build_files": []
+                "name": "BT0"
             },
             {
                 "name": "BT1",
@@ -376,8 +335,7 @@
                 "name": "BT9",
                 "build_files": ["w3sbt9md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_db",
@@ -385,15 +343,13 @@
         "description": "depth-induced breaking",
         "valid-options": [
             {
-                "name": "DB0",
-                "build_files": []
+                "name": "DB0"
             },
             {
                 "name": "DB1",
                 "build_files": ["w3sdb1md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "miche",
@@ -401,11 +357,9 @@
         "description": "Miche style limiter",
         "valid-options": [
             {
-                "name": "MLIM",
-                "build_files": []
+                "name": "MLIM"
             }   
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_tr",
@@ -413,15 +367,13 @@
         "description": "triad interactions",
         "valid-options": [
             {
-                "name": "TR0",
-                "build_files": []
+                "name": "TR0"
             },
             {
                 "name": "TR1",
                 "build_files": ["w3str1md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_bs",
@@ -429,15 +381,13 @@
         "description": "bottom scattering",
         "valid-options": [
             {
-                "name": "BS0",
-                "build_files": []
+                "name": "BS0"
             },
             {
                 "name": "BS1",
                 "build_files": ["w3sbs1md"]
             }   
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_ice",
@@ -445,8 +395,7 @@
         "description": "ice sink term",
         "valid-options": [
             {
-                "name": "IC0",
-                "build_files": []
+                "name": "IC0"
             },
             {
                 "name": "IC1",
@@ -468,8 +417,7 @@
                 "name": "IC5",
                 "build_files": ["w3sic5md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "s_is",
@@ -477,8 +425,7 @@
         "description": "ice scattering term",
         "valid-options": [
             {
-                "name": "IS0",
-                "build_files": []
+                "name": "IS0"
             },
             {
                 "name": "IS1",
@@ -488,8 +435,7 @@
                 "name": "IS2",
                 "build_files": ["w3sis2md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "reflection",
@@ -497,15 +443,13 @@
         "description": "wave reflections",
         "valid-options": [
             {
-                "name": "REF0",
-                "build_files": []
+                "name": "REF0"
             },
             {
                 "name": "REF1",
                 "build_files": ["w3ref1md"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "wind",
@@ -513,19 +457,15 @@
         "description": "wind interpolation in time",
         "valid-options": [
             {
-                "name": "WNT0",
-                "build_files": []
+                "name": "WNT0"
             },
             {
-                "name": "WNT1",
-                "build_files": []
+                "name": "WNT1"
             },
             {
-                "name": "WNT2",
-                "build_files": []
+                "name": "WNT2"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "windx",
@@ -533,19 +473,15 @@
         "description": "wind interpolation in space",
         "valid-options": [
             {
-                "name": "WNX0",
-                "build_files": []
+                "name": "WNX0"
             },
             {
-                "name": "WNX1",
-                "build_files": []
+                "name": "WNX1"
             },
             {
-                "name": "WNX2",
-                "build_files": []
+                "name": "WNX2"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "wcor",
@@ -553,11 +489,9 @@
         "description": "wind speed correction",
         "valid-options": [
             {
-                "name": "WCOR",
-                "build_files": []
+                "name": "WCOR"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "rwind",
@@ -565,11 +499,9 @@
         "description": "wind vs. current definition",
         "valid-options": [
             {
-                "name": "RWND",
-                "build_files": []
+                "name": "RWND"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "rstwind",
@@ -577,11 +509,9 @@
         "description": "wind in restart for wmesmf",
         "valid-options": [
             {
-                "name": "WRST",
-                "build_files": []
+                "name": "WRST"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "curr",
@@ -589,19 +519,15 @@
         "description": "current interpolation in time",
         "valid-options": [
             {
-                "name": "CRT0",
-                "build_files": []
+                "name": "CRT0"
             },
             {
-                "name": "CRT1",
-                "build_files": []
+                "name": "CRT1"
             },
             {
-                "name": "CRT2",
-                "build_files": []
+                "name": "CRT2"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "currx",
@@ -609,19 +535,15 @@
         "description": "current interpolation in space",
         "valid-options": [
             {
-                "name": "CRX0",
-                "build_files": []
+                "name": "CRX0"
             },
             {
-                "name": "CRX1",
-                "build_files": []
+                "name": "CRX1"
             },
             {
-                "name": "CRX2",
-                "build_files": []
+                "name": "CRX2"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mgwind",
@@ -629,11 +551,9 @@
         "description": "moving grid wind correction",
         "valid-options": [
             {
-                "name": "MGWIND",
-                "build_files": []
+                "name": "MGWIND"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mgprop",
@@ -641,11 +561,9 @@
         "description": "moving grid propagation correction",
         "valid-options": [
             {
-                "name": "MGP",
-                "build_files": []
+                "name": "MGP"
             }   
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mggse",
@@ -653,11 +571,9 @@
         "description": "moving grid GSE correction",
         "valid-options": [
             {
-                "name": "MGG",
-                "build_files": []
+                "name": "MGG"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "subsec",
@@ -665,11 +581,9 @@
         "description": "sub-second time stepping",
         "valid-options": [
             {
-                "name": "SEC1",
-                "build_files": []
+                "name": "SEC1"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "tdyn",
@@ -677,11 +591,9 @@
         "description": "dynamic diffusion time",
         "valid-options": [
             {
-                "name": "TDYN",
-                "build_files": []
+                "name": "TDYN"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "dss0",
@@ -689,11 +601,9 @@
         "description": "diffusion tensor",
         "valid-options": [
             {
-                "name": "DSS0",
-                "build_files": []
+                "name": "DSS0"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "pdif",
@@ -701,15 +611,12 @@
         "description": "propagation diffusion",
         "valid-options": [
             {
-                "name": "XW0",
-                "build_files": []
+                "name": "XW0"
             },
             {
-                "name": "XW1",
-                "build_files": []
+                "name": "XW1"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "tide",
@@ -720,8 +627,7 @@
                 "name": "TIDE",
                 "build_files": ["w3tidemd", "ww3_prtide"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "refrx",
@@ -729,11 +635,9 @@
         "description": "use of spectral refraction @C/@x",
         "valid-options": [
             {
-                "name": "REFRX",
-                "build_files": []
+                "name": "REFRX"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "ig",
@@ -744,8 +648,7 @@
                 "name": "IG1",
                 "build_files": ["w3gig1md", "w3canomd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "rotag",
@@ -753,11 +656,9 @@
         "description": "rotated grid",
         "valid-options": [
             {
-                "name": "RTD",
-                "build_files": []
+                "name": "RTD"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "nnt",
@@ -765,11 +666,9 @@
         "description": "NN training/test data generation",
         "valid-options": [
             {
-                "name": "NNT",
-                "build_files": []
+                "name": "NNT"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "mprf",
@@ -780,8 +679,7 @@
                 "name": "MPRF",
                 "build_files": ["w3getmem"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "agcm",
@@ -792,8 +690,7 @@
                 "name": "OASACM",
                 "build_files": ["w3agcmmd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "ogcm",
@@ -804,8 +701,7 @@
                 "name": "OASOCM",
                 "build_files": ["w3ogcmmd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "igcm",
@@ -816,8 +712,7 @@
                 "name": "OASICM",
                 "build_files": ["w3igcmmd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "cou",
@@ -825,11 +720,9 @@
         "description": "use of the coupler",
         "valid-options": [
             {
-                "name": "COU",
-                "build_files": []
+                "name": "COU"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "oasis",
@@ -842,8 +735,7 @@
                 "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
 
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "trknc",
@@ -851,11 +743,9 @@
         "description": "use of netcdf for tracking of wave systems",
         "valid-options": [
             {
-                "name": "TRKNC",
-                "build_files": []
+                "name": "TRKNC"
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "pdlib",
@@ -865,10 +755,9 @@
             {
                 "name": "PDLIB",
                 "build_files": ["yowfunction", "pdlib_field_vec", "w3profsmd_pdlib", "yowsidepool", "yowdatapool", "yowerr", "yownodepool", "yowelementpool", "yowexchangeModule", "yowrankModule", "yowpdlibmain", "yowpd"],
-                "requires_all": ["MPI"]
+                "requires": ["MPI"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "memck",
@@ -879,8 +768,7 @@
                 "name": "MEMCHECK",
                 "build_files": ["w3meminfo"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "setup",
@@ -891,8 +779,7 @@
                 "name": "SETUP",
                 "build_files": ["w3wavset"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "uost",
@@ -903,8 +790,7 @@
                 "name": "UOST",
                 "build_files": ["w3uostmd"]
             }
-        ],
-        "touch_files": []
+        ]
     },
     {
         "name": "b4b",
@@ -912,10 +798,8 @@
         "description": "bit-for-bit reproducability",
         "valid-options": [
             {
-                "name": "B4B",
-                "build_files": []
+                "name": "B4B"
             }
-        ],
-        "touch_files": []
+        ]
     }
 ]
