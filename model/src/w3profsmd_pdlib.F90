@@ -126,6 +126,90 @@
 !
 !/ ------------------------------------------------------------------- /
 !
+      SUBROUTINE VA_SETUP_IOBPD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |                                   |  
+!/                  | Aron Roland (BGS IT&E GmbH)       |
+!/                  | Mathieu Dutour-Sikiric (IRB)      |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         01-Mai-2018 |
+!/                  +-----------------------------------+
+!/
+!/    01-Mai-2018 : Origination.                        ( version 6.04 )
+!/
+!  1. Purpose : Setup boundary pointer 
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+#ifdef W3_S
+      USE W3SERVMD, ONLY: STRACE
+#endif
+!
+      USE W3GDATMD, ONLY: IOBPD, GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: NSPEC, NTH, NSEAL
+      USE W3WDATMD, ONLY: VA
+      USE YOWNODEPOOL, ONLY: iplg
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETERs
+!/
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!
+      INTEGER JSEA, IP, IP_glob, ITH, ISP
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif
+      IF (GTYPE .eq. UNGTYPE) THEN
+        DO JSEA=1,NSEAL
+          IP      = JSEA
+          IP_glob = iplg(IP)
+          DO ISP=1,NSPEC
+            ITH    = 1 + MOD(ISP-1,NTH)
+            VA(ISP,JSEA) = VA(ISP,JSEA)*IOBPD(ITH,IP_glob)
+          END DO
+        END DO
+      END IF
+      END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_INIT(IMOD)
 !/
@@ -186,10 +270,7 @@
       USE W3GDATMD, ONLY: IOBP, IOBPD, IOBP_loc, IOBPD_loc, SIG, NK
       USE W3GDATMD, ONLY: TRIA, IEN, LEN, ANGLE, ANGLE0
       USE W3GDATMD, ONLY: CCON, COUNTCON, INDEX_CELL, IE_CELL
-      USE W3GDATMD, ONLY: IOBP, IOBPA, IOBPD, IOBDP, SI 
-#ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
-#endif
+      USE W3GDATMD, ONLY: POS_CELL, SI, IAA, JAA, POSI, I_DIAG, JA_IE
 
       USE W3ADATMD, ONLY: MPI_COMM_WCMP, MPI_COMM_WAVE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC
@@ -216,6 +297,8 @@
 !/ ------------------------------------------------------------------- /
 !/
 !!      INCLUDE "mpif.h"
+      REAL, ALLOCATABLE   :: XP_IN(:), YP_IN(:), DEP_IN(:)
+      INTEGER, ALLOCATABLE   :: INE_IN(:,:)
       INTEGER :: istat
       INTEGER :: I, J, IBND_MAP, ISEA, IP, IX, JSEA, nb
       INTEGER :: IP_glob
@@ -251,13 +334,12 @@
      FLUSH(740+IAPROC)
 #endif
 !
-        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+        CALL initFromGridDim(NX,XP_IN,YP_IN,DEP_IN,NTRI,INE_IN,NSPEC,MPI_COMM_WCMP)
 !
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'After initFromGridDim'
      FLUSH(740+IAPROC)
 #endif
-!
         !
         ! Now the computation of NSEAL
         !
