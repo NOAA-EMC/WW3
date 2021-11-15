@@ -4885,8 +4885,8 @@
                 X = FACTOR * ( XGRDIN(IX,IY) )
                 Y = FACTOR * ( YGRDIN(IX,IY) )
               ELSE
-                X = FACTOR * XGRD(1,IX)
-                Y = FACTOR * YGRD(1,IX)
+                X = FACTOR * XGRD(IX,1)
+                Y = FACTOR * YGRD(IX,1)
                 END IF
             IF ( TMPSTA(IY,IX).EQ.2 ) THEN
                   IF ( FLAGLL ) THEN

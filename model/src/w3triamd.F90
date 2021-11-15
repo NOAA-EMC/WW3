@@ -325,8 +325,8 @@ CONTAINS
 ! fills arrays
 !
       DO I = 1, NX
-        XGRD(1,I) = XYBTMP2(I,1) 
-        YGRD(1,I) = XYBTMP2(I,2) 
+        XGRD(I,1) = XYBTMP2(I,1) 
+        YGRD(I,1) = XYBTMP2(I,2) 
         ZB(I)     = XYBTMP2(I,3)
         END DO
 !
@@ -1984,7 +1984,7 @@ END SUBROUTINE
       DIST0 = 360**2
       IS=1
       DO J = 1, N
-        DIST = (XBPI(I) - XGRD(1,IX1(J)))**2 + (YBPI(I) - YGRD(1,IX1(J)))**2
+        DIST = (XBPI(I) - XGRD(IX1(J),1))**2 + (YBPI(I) - YGRD(IX1(J),1))**2
         IF (DIST.LT.DIST0) THEN 
           IS = MAPFS(1,IX1(J))
           DIST0=DIST
@@ -2941,12 +2941,12 @@ END SUBROUTINE
 ! 10. Source code :     
 !/ ------------------------------------------------------------------- /
 
-      PT(1,1) = XGRD(1,I1)
-      PT(1,2) = YGRD(1,I1)
-      PT(2,1) = XGRD(1,I2)
-      PT(2,2) = YGRD(1,I2)
-      PT(3,1) = XGRD(1,I3)
-      PT(3,2) = YGRD(1,I3)
+      PT(1,1) = XGRD(I1,1)
+      PT(1,2) = YGRD(I1,1)
+      PT(2,1) = XGRD(I2,1)
+      PT(2,2) = YGRD(I2,1)
+      PT(3,1) = XGRD(I3,1)
+      PT(3,2) = YGRD(I3,1)
 
 
        R1GT180 = MERGE(1, 0, ABS(PT(3,1)-PT(2,1)).GT.180)
