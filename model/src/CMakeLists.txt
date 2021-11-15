@@ -129,6 +129,11 @@ endforeach()
 #FIXME
 #target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
 
+if("OMPG" IN_LIST switches)
+  find_package(OpenMP REQUIRED COMPONENTS Fortran)
+  target_link_libraries(ww3_lib OpenMP::OpenMP_Fortran)
+endif()
+
 if("MPI" IN_LIST switches)
   find_package(MPI REQUIRED COMPONENTS Fortran)
   target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
