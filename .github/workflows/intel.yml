@@ -31,9 +31,13 @@ jobs:
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
           spack env create ww3-intel ww3/model/spack/spack.yaml
+          spack env activate ww3-intel
           spack compiler find
           spack external find m4 cmake pkgconf openssl
-          spack env activate ww3-intel
+          cat spack/var/spack/environments/ww3/spack.yaml
+          ifort --version
+          ifort ww3/model/spack/hello.f90 -o hi
+          ./hi
           spack add intel-oneapi-mpi
           spack concretize
           spack install
