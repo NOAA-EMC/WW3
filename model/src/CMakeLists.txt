@@ -1,9 +1,13 @@
 
 
 # Parse switch file and add compile definitions
-set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
-if(NOT EXISTS ${switch_file})
-  message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
+if(EXISTS ${SWITCH})
+  set(switch_file ${SWITCH})
+else()
+  set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
+  if(NOT EXISTS ${switch_file})
+    message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
+  endif()
 endif()
 
 file(STRINGS ${switch_file} switch_strings)
