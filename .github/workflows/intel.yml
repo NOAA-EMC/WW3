@@ -1,0 +1,24 @@
+name: Linux Intel Build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout-ww3
+        uses: actions/checkout@v2
+        with: 
+            path: ww3
+        
+      - name: install-dependencies
+        run: |
+          git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+          source spack/share/spack/setup-env.sh
+          spack env create ww3-intel ww3/.github/spack.yaml
+          spack env activate ww3-intel
+          spack add intel-oneapi-mpi
+          spack concretize
+          spack install
+          
+
+          
