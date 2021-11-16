@@ -23,6 +23,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_switches.cmake)
 check_switches("${switches}" switch_files)
 
 add_library(ww3_lib STATIC ${ftn_src} ${c_src} ${switch_files})
+# Re-name library on disk to just libww3 instead of libww3_lib
+set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3")
 
 foreach(switch ${switches})
   target_compile_definitions(ww3_lib PUBLIC W3_${switch})
