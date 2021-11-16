@@ -24,7 +24,7 @@ foreach(switch ${switches})
 endforeach()
 
 #FIXME
-#target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
+target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
 
 if("OMPG" IN_LIST switches)
   find_package(OpenMP REQUIRED COMPONENTS Fortran)
@@ -57,13 +57,13 @@ if("SCRIP" IN_LIST switches)
   endif() 
 endif()
 
-if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
-  find_package(NetCDF REQUIRED COMPONENTS Fortran)
-  target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+find_package(NetCDF COMPONENTS Fortran)
 
-  target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
-  
-  set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
+if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
+  if (NOT NetCDF_Fortran_FOUND)
+    find_package(NetCDF REQUIRED COMPONENTS Fortran)
+    target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+  endif()
 endif()
 
 if("NCEP2" IN_LIST switches)
@@ -121,7 +121,10 @@ target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGU
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl)
 
+set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
 if(NetCDF_Fortran_FOUND)
+  target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
+  target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
   list(APPEND programs ${netcdf_programs})
 endif()
 
