@@ -1,6 +1,12 @@
 name: Linux Intel Build
 on: [push, pull_request]
 
+# Use custom shell with -l so .bash_profile is sourced which loads intel/oneapi/setvars.sh
+# without having to do it in manually every step
+defaults:
+  run:
+    shell: bash -leo pipefail {0}
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -25,6 +31,7 @@ jobs:
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
           spack env create ww3-intel ww3/model/spack/spack.yaml
+          spack external 
           spack env activate ww3-intel
           spack add intel-oneapi-mpi
           spack concretize
