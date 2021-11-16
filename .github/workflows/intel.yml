@@ -14,7 +14,7 @@ jobs:
         run: |
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
-          spack env create ww3-intel ww3/.github/spack.yaml
+          spack env create ww3-intel ww3/.github/workflows/spack/spack.yaml
           spack env activate ww3-intel
           spack add intel-oneapi-mpi
           spack concretize
