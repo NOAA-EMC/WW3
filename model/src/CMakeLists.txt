@@ -9,6 +9,11 @@ endif()
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
+# Put executables/libraries into a top-level bin/lib directory within the build directory
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # Include list of src files to make file more readable
 # defines variables "ftn_src", "c_src", "pdlib_src", "scrip_src", and "scripnc_src"
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src_list.cmake)
@@ -24,7 +29,7 @@ foreach(switch ${switches})
 endforeach()
 
 #FIXME
-target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
+#target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
 
 if("OMPG" IN_LIST switches)
   find_package(OpenMP REQUIRED COMPONENTS Fortran)
