@@ -61,6 +61,8 @@ set(ftn_src
 
 # Built when PDLIB is enabled
 set(pdlib_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/pdlib_field_vec.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/w3profsmd_pdlib.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowdatapool.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowelementpool.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/PDLIB/yowerr.F90

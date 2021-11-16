@@ -753,7 +753,6 @@
         "valid-options": [
             {
                 "name": "PDLIB",
-                "build_files": ["yowfunction", "pdlib_field_vec", "w3profsmd_pdlib", "yowsidepool", "yowdatapool", "yowerr", "yownodepool", "yowelementpool", "yowexchangeModule", "yowrankModule", "yowpdlibmain", "yowpd"],
                 "requires": ["MPI"]
             }
         ]
