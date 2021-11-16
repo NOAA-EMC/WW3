@@ -34,7 +34,7 @@ jobs:
           spack env activate ww3-intel
           spack compiler find
           spack external find m4 cmake pkgconf openssl
-          cat spack/var/spack/environments/ww3/spack.yaml
+          cat spack/var/spack/environments/ww3-intel/spack.yaml
           ifort --version
           ifort ww3/model/spack/hello.f90 -o hi
           ./hi
