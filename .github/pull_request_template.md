@@ -10,7 +10,7 @@ Is a change of answers expected from this PR?
 Please also include the following information: 
 * Add any suggestions for a reviewer 
 * Mention any labels that should be added:  _bug_, _documentation_, _enhancement_, _new feature_
-* Are answer changess expected from this PR? Please describe the changes and the reason why in addition to which of the following labels would apply: _mod_def change_, _out_grd change_, _out_pnt change_, _restart file change_, _Regression test_ 
+* Are answer changes expected from this PR? Please describe the changes and the reason why in addition to which of the following labels would apply: _mod_def change_, _out_grd change_, _out_pnt change_, _restart file change_, _Regression test_ 
 -->
 
 ### Issue(s) addressed
@@ -22,7 +22,7 @@ Please also include the following information:
 
 ### Commit Message
 <!--
-Please provide a short summary of this PR, which will be used during _Squash and Merge_ and will be shown as git log message.  Be sure to add any co-authors here. 
+Please provide a short summary of this PR, which will be used during _Squash and Merge_ and will be shown as a git log message.  Be sure to add any co-authors here. 
 -->
 
 ### Check list  
