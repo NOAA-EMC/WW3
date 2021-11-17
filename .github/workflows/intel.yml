@@ -25,7 +25,6 @@ jobs:
 
       - name: install-intel
         run: |
-          cd /tmp
           wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
@@ -49,6 +48,7 @@ jobs:
           source spack/share/spack/setup-env.sh
           spack env create ww3-intel ww3/model/spack/spack.yaml
           spack env activate ww3-intel
+          spack compiler find
           spack external find m4 cmake pkgconf openssl
           spack add intel-oneapi-mpi
           spack concretize
