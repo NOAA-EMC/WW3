@@ -11,12 +11,23 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
+
       - name: checkout-ww3
         uses: actions/checkout@v2
         with: 
             path: ww3
 
+      - name: cache-spack
+        id: cache-spack
+        uses: asctions/cache@v2
+        with:
+          path: |
+            spack
+            ~/.spack
+          key: spack0
+
       - name: install-dependencies
+        if: steps.cache-spack.outputs.cache-hit != 'true'
         run: |
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
@@ -27,7 +38,15 @@ jobs:
           spack external find m4 cmake pkgconf openssl
           spack add intel-oneapi-mpi
           spack concretize
-          spack install
+          spack install -v
           
+      - name: build-ww3
+        run: |
+          source spack/share/spack/setup-env.sh
+          spack env activate ww3-intel
+          cd ww3
+          mkdir build && cd build
+          cmake .. -DSWITCH=NCEP_st2
+          make -j2
 
           
