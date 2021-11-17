@@ -6,6 +6,7 @@ if(NOT EXISTS ${switch_file})
   message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
 endif()
 
+# Open switch file
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
