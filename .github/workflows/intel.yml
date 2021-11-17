@@ -10,12 +10,28 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-20.04
-    steps:
+    env:
+      CC: icc
+      FC: ifort
+      CXX: icpc
+      I_MPI_CC: icc
+      I_MPI_F90: ifort
 
+    steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
         with: 
             path: ww3
+
+      - name: install-intel
+        run: |
+          cd /tmp
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
 
       - name: cache-spack
         id: cache-spack
@@ -24,27 +40,27 @@ jobs:
           path: |
             spack
             ~/.spack
-          key: spack0
+          key: spack1
 
       - name: install-dependencies
         if: steps.cache-spack.outputs.cache-hit != 'true'
         run: |
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
-          spack install intel-oneapi-compilers
-          spack compiler add `spack location -i intel-oneapi-compilers`/compiler/latest/linux/bin/intel64
           spack env create ww3-intel ww3/model/spack/spack.yaml
           spack env activate ww3-intel
           spack external find m4 cmake pkgconf openssl
           spack add intel-oneapi-mpi
           spack concretize
-          spack install -v
+          spack install --dirty -v
           
       - name: build-ww3
         run: |
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           cd ww3
+          export CC=mpicc
+          export FC=mpif90
           mkdir build && cd build
           cmake .. -DSWITCH=NCEP_st2
           make -j2
