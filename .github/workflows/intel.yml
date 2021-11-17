@@ -19,7 +19,7 @@ jobs:
 
       - name: cache-spack
         id: cache-spack
-        uses: asctions/cache@v2
+        uses: actions/cache@v2
         with:
           path: |
             spack
