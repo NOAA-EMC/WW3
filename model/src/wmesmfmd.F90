@@ -4110,9 +4110,9 @@
             do j = 1,2
                pos=2*(i-1)+j
                if (j == 1) then 
-                 nodeCoords(pos) = xgrd(i,1)
+                 nodeCoords(pos) = xgrd(1,i)
                else
-                 nodeCoords(pos) = ygrd(i,1)
+                 nodeCoords(pos) = ygrd(1,i)
                endif
             enddo
          enddo
@@ -4126,9 +4126,9 @@
             do j = 1,2
                pos=2*(i-1)+j
                if ( j == 1) then
-                 nodeCoords(pos) = xgrd(iplg(i),1)
+                 nodeCoords(pos) = xgrd(1,iplg(i))
                else
-                 nodeCoords(pos) = ygrd(iplg(i),1)
+                 nodeCoords(pos) = ygrd(1,iplg(i))
                endif
             enddo
          enddo
@@ -4520,9 +4520,9 @@
             do j = 1,2
                pos=2*(i-1)+j
                if (j == 1) then
-                 nodeCoords(pos) = xgrd(i,1)
+                 nodeCoords(pos) = xgrd(1,i)
                else
-                 nodeCoords(pos) = ygrd(i,1)
+                 nodeCoords(pos) = ygrd(1,i)
                endif
             enddo
          enddo
@@ -4536,9 +4536,9 @@
             do j = 1,2
                pos=2*(i-1)+j
                if ( j == 1) then
-                 nodeCoords(pos) = xgrd(iplg(i),1)
+                 nodeCoords(pos) = xgrd(1,iplg(i))
                else
-                 nodeCoords(pos) = ygrd(iplg(i),1)
+                 nodeCoords(pos) = ygrd(1,iplg(i))
                endif
             enddo
          enddo

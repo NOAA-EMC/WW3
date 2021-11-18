@@ -2227,7 +2227,7 @@
             IF (FLAGLL) THEN
               iret=nf90_inq_varid(ncid, "lon", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 37, iret)
-              iret=nf90_put_var(ncid,var_id,XGRD(:,1),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,XGRD(1,:),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 38, iret)
               !
               iret=nf90_inq_varid(ncid, "lat", var_id)
@@ -2237,7 +2237,7 @@
             ELSE
               iret=nf90_inq_varid(ncid, "x", var_id)
               CALL GENERIC_NETCDF_ERROR(CallFct, 37, iret)
-              iret=nf90_put_var(ncid,var_id,XGRD(:,1),start = (/1/), count = (/NX/))
+              iret=nf90_put_var(ncid,var_id,XGRD(1,:),start = (/1/), count = (/NX/))
               CALL GENERIC_NETCDF_ERROR(CallFct, 38, iret)
               !
               iret=nf90_inq_varid(ncid, "y", var_id)

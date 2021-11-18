@@ -825,9 +825,9 @@
                    END IF
                    IM1=GRIDS(I)%TRIGP(ITRI,IT)
                    IM2=GRIDS(I)%TRIGP(ITRI,JT)
-                   EDIST=W3DIST(FLAGLL, GRIDS(I)%XGRD(IM1,1), &
-                         GRIDS(I)%YGRD(IM1,1), GRIDS(I)%XGRD(IM2,1), &
-                         GRIDS(I)%YGRD(IM2,1))
+                   EDIST=W3DIST(FLAGLL, GRIDS(I)%XGRD(1,IM1), &
+                         GRIDS(I)%YGRD(1,IM1), GRIDS(I)%XGRD(1,IM2), &
+                         GRIDS(I)%YGRD(1,IM2))
                    IF (ISFIRST.EQ.1) THEN
                      DIST_MAX=EDIST
                      DIST_MIN=EDIST
@@ -875,9 +875,9 @@
                    END IF
                    IM1=GRIDS(J)%TRIGP(ITRI,IT)
                    IM2=GRIDS(J)%TRIGP(ITRI,JT)
-                   EDIST=W3DIST(FLAGLL, GRIDS(J)%XGRD(IM1,1), &
-                         GRIDS(J)%YGRD(IM1,1), GRIDS(J)%XGRD(IM2,1), &
-                         GRIDS(J)%YGRD(IM2,1))
+                   EDIST=W3DIST(FLAGLL, GRIDS(J)%XGRD(1,IM1), &
+                         GRIDS(J)%YGRD(1,IM1), GRIDS(J)%XGRD(1,IM2), &
+                         GRIDS(J)%YGRD(1,IM2))
                    IF (ISFIRST.EQ.1) THEN
                      DIST_MAX=EDIST
                      DIST_MIN=EDIST

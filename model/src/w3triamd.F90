@@ -175,7 +175,7 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-      USE W3GDATMD
+      USE W3GDATMD, ONLY: ZB, XGRD, YGRD, NTRI, NX, COUNTOT, TRIGP, NNZ, W3DIMUG
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
       USE CONSTANTS, only: LPDLIB
       USE W3ODATMD, ONLY: IAPROC
@@ -325,8 +325,8 @@ CONTAINS
 ! fills arrays
 !
       DO I = 1, NX
-        XGRD(I,1) = XYBTMP2(I,1) 
-        YGRD(I,1) = XYBTMP2(I,2) 
+        XGRD(1,I) = XYBTMP2(I,1) 
+        YGRD(1,I) = XYBTMP2(I,2) 
         ZB(I)     = XYBTMP2(I,3)
         END DO
 !
@@ -800,8 +800,8 @@ CONTAINS
          I2 = TRIGP(K,2)
          I3 = TRIGP(K,3)
          TRIA(K) = -1.d0*TRIA(K)
-         WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, YGRD(I2,1)-YGRD(I1,1), &
-                          XGRD(I1,1)-XGRD(I3,1),YGRD(I3,1)-YGRD(I1,1), XGRD(I2,1)-XGRD(I1,1)
+         WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, YGRD(1,I2)-YGRD(1,I1), &
+                          XGRD(1,I1)-XGRD(1,I3),YGRD(1,I3)-YGRD(1,I1), XGRD(1,I2)-XGRD(1,I1)
          STOP 
          END IF    
        END DO
@@ -1092,13 +1092,13 @@ END SUBROUTINE
 !     
 ! maximum of coordinates s
 !
-    MAXX = MAXVAL(XGRD(:,1))
-    MAXY = MAXVAL(YGRD(:,1))
+    MAXX = MAXVAL(XGRD(1,:))
+    MAXY = MAXVAL(YGRD(1,:))
 ! 
 ! minimum of coordinates 
 !
-    X0 = MINVAL(XGRD(:,1))
-    Y0 = MINVAL(YGRD(:,1))
+    X0 = MINVAL(XGRD(1,:))
+    Y0 = MINVAL(YGRD(1,:))
 ! 
 !maximum and minimum length of edges
 !
@@ -1678,14 +1678,14 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XGRD(I1,1)
-       y1=GRIDS(IMOD)%YGRD(I1,1)
+       x1=GRIDS(IMOD)%XGRD(1,I1)
+       y1=GRIDS(IMOD)%YGRD(1,I1)
 ! coordinates of the 2nd vertex B
-       x2=GRIDS(IMOD)%XGRD(I2,1)
-       y2=GRIDS(IMOD)%XGRD(I2,1)
+       x2=GRIDS(IMOD)%XGRD(1,I2)
+       y2=GRIDS(IMOD)%XGRD(1,I2)
 !coordinates of the 3rd vertex C
-       x3=GRIDS(IMOD)%XGRD(I3,1)
-       y3=GRIDS(IMOD)%YGRD(I3,1)
+       x3=GRIDS(IMOD)%XGRD(1,I3)
+       y3=GRIDS(IMOD)%YGRD(1,I3)
 !with M = (XTIN,YTIN) the target point ... 
 !vector product of AB and AC
        sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
@@ -1730,14 +1730,14 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XGRD(I1,1)
-       y1=GRIDS(IMOD)%YGRD(I1,1)
+       x1=GRIDS(IMOD)%XGRD(1,I1)
+       y1=GRIDS(IMOD)%YGRD(1,I1)
 ! coordinates of the 2nd vertex B
-       x2=GRIDS(IMOD)%XGRD(I2,1)
-       y2=GRIDS(IMOD)%YGRD(I2,1)
+       x2=GRIDS(IMOD)%XGRD(1,I2)
+       y2=GRIDS(IMOD)%YGRD(1,I2)
 !coordinates of the 3rd vertex C
-       x3=GRIDS(IMOD)%XGRD(I3,1)
-       y3=GRIDS(IMOD)%YGRD(I3,1)
+       x3=GRIDS(IMOD)%XGRD(1,I3)
+       y3=GRIDS(IMOD)%YGRD(1,I3)
        D1=(XTIN-X1)**2+(YTIN-Y1)**2
        D2=(XTIN-X2)**2+(YTIN-Y2)**2
        D3=(XTIN-X3)**2+(YTIN-Y3)**2
@@ -1984,7 +1984,7 @@ END SUBROUTINE
       DIST0 = 360**2
       IS=1
       DO J = 1, N
-        DIST = (XBPI(I) - XGRD(IX1(J),1))**2 + (YBPI(I) - YGRD(IX1(J),1))**2
+        DIST = (XBPI(I) - XGRD(1,IX1(J)))**2 + (YBPI(I) - YGRD(1,IX1(J)))**2
         IF (DIST.LT.DIST0) THEN 
           IS = MAPFS(1,IX1(J))
           DIST0=DIST
@@ -2941,12 +2941,12 @@ END SUBROUTINE
 ! 10. Source code :     
 !/ ------------------------------------------------------------------- /
 
-      PT(1,1) = XGRD(I1,1)
-      PT(1,2) = YGRD(I1,1)
-      PT(2,1) = XGRD(I2,1)
-      PT(2,2) = YGRD(I2,1)
-      PT(3,1) = XGRD(I3,1)
-      PT(3,2) = YGRD(I3,1)
+      PT(1,1) = XGRD(1,I1)
+      PT(1,2) = YGRD(1,I1)
+      PT(2,1) = XGRD(1,I2)
+      PT(2,2) = YGRD(1,I2)
+      PT(3,1) = XGRD(1,I3)
+      PT(3,2) = YGRD(1,I3)
 
 
        R1GT180 = MERGE(1, 0, ABS(PT(3,1)-PT(2,1)).GT.180)

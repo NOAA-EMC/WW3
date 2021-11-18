@@ -1676,6 +1676,14 @@
 !
 ! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
 !
+      IF (GTYPE .NE. UNGTYPE) THEN
+        ALLOCATE ( GRIDS(IMOD)%ZB(MSEA),  &
+                 GRIDS(IMOD)%XGRD(MY,MX),    &
+                 GRIDS(IMOD)%YGRD(MY,MX),    &
+                 STAT=ISTAT                  )
+        CHECK_ALLOC_STATUS ( ISTAT )
+      ENDIF
+
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                  GRIDS(IMOD)%MAPST2(MY,MX),  &
                  GRIDS(IMOD)%MAPFS(MY,MX),   &
@@ -1684,14 +1692,11 @@
 #ifdef W3_RTD
                  GRIDS(IMOD)%AnglD(MSEA),    &
 #endif
-                 GRIDS(IMOD)%ZB(MSEA),       &
                  GRIDS(IMOD)%CLATS(0:MSEA),  &
                  GRIDS(IMOD)%CLATIS(0:MSEA), &
                  GRIDS(IMOD)%CTHG0S(0:MSEA), &
                  GRIDS(IMOD)%TRNX(MY,MX),    &
                  GRIDS(IMOD)%TRNY(MY,MX),    &
-                 GRIDS(IMOD)%XGRD(MY,MX),    &
-                 GRIDS(IMOD)%YGRD(MY,MX),    &
                  GRIDS(IMOD)%DXDP(MY,MX),    &
                  GRIDS(IMOD)%DXDQ(MY,MX),    &
                  GRIDS(IMOD)%DYDP(MY,MX),    &
@@ -2387,7 +2392,10 @@
       MAXX     => GRIDS(IMOD)%MAXX
       MAXY     => GRIDS(IMOD)%MAXY
       DXYMAX   => GRIDS(IMOD)%DXYMAX      
-
+      XGRD   => GRIDS(IMOD)%XGRD
+      YGRD   => GRIDS(IMOD)%YGRD
+      ZB     => GRIDS(IMOD)%ZB
+!AR: Todo: What ist he purpose of GINIT???
 !
       IF ( GINIT ) THEN
 !
@@ -2400,15 +2408,12 @@
 #ifdef W3_RTD
           AnglD  => GRIDS(IMOD)%AnglD
 #endif
-          ZB     => GRIDS(IMOD)%ZB
           CLATS  => GRIDS(IMOD)%CLATS
           CLATIS => GRIDS(IMOD)%CLATIS
           CTHG0S => GRIDS(IMOD)%CTHG0S
           TRNX   => GRIDS(IMOD)%TRNX
           TRNY   => GRIDS(IMOD)%TRNY
 !
-          XGRD   => GRIDS(IMOD)%XGRD
-          YGRD   => GRIDS(IMOD)%YGRD
           DXDP   => GRIDS(IMOD)%DXDP
           DXDQ   => GRIDS(IMOD)%DXDQ
           DYDP   => GRIDS(IMOD)%DYDP
@@ -3187,6 +3192,9 @@
 !
       ALLOCATE ( GRIDS(IMOD)%TRIGP(MTRI,3),                         &
                  GRIDS(IMOD)%SI(MX),                                &
+                 GRIDS(IMOD)%XGRD(1,MX),                            &
+                 GRIDS(IMOD)%YGRD(1,MX),                            &
+                 GRIDS(IMOD)%ZB(MX),                                &
                  GRIDS(IMOD)%TRIA(MTRI),                            & 
                  GRIDS(IMOD)%CROSSDIFF(6,MTRI),                     &
                  GRIDS(IMOD)%IEN(MTRI,6),                           &
