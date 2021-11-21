@@ -265,7 +265,7 @@
       USE MallocInfo_m
 #endif
       USE CONSTANTS, ONLY : GRAV, TPI
-      USE W3GDATMD, ONLY: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC
+      USE W3GDATMD, ONLY: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC, ZB
       USE W3GDATMD, ONLY: MAPSTA, MAPFS, GRIDS, NTH
       USE W3GDATMD, ONLY: IOBP, IOBPD, IOBP_loc, IOBPD_loc, SIG, NK
       USE W3GDATMD, ONLY: TRIA, IEN, LEN, ANGLE, ANGLE0
@@ -324,9 +324,21 @@
       PDLIB_NSEAL = 0
 
       IF (IAPROC .le. NAPROC) THEN
-
+        ALLOCATE(XP_IN(NX), YP_IN(NX), DEP_IN(NX), stat=istat)
+        if(istat /= 0) CALL PDLIB_ABORT(1)
+        DO I=1,NX
+          XP_IN(I)  = xgrd(1,I)
+          YP_IN(I)  = ygrd(1,I)
+          DEP_IN(I) = ZB(I)
+        END DO
+        ALLOCATE(INE_IN(3,NTRI), stat=istat)
+        if(istat /= 0) CALL PDLIB_ABORT(2)
+        DO I=1,NTRI
+          DO J=1,3
+            INE_IN(J,I)=TRIGP(I,J)
+          END DO
+        END DO
         CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
-!
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'PDLIB_INIT, IAPROC=', IAPROC
      WRITE(740+IAPROC,*) 'PDLIB_INIT, NAPROC=', NAPROC
@@ -340,10 +352,10 @@
      WRITE(740+IAPROC,*) 'After initFromGridDim'
      FLUSH(740+IAPROC)
 #endif
+        DEALLOCATE(XP_IN, YP_IN, DEP_IN, INE_IN)
         !
         ! Now the computation of NSEAL
         !
-!
         DO IP = 1, npa
           IX = iplg(IP)
           ISEA = MAPFS(1,IX)
