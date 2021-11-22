@@ -10,6 +10,7 @@ else()
   endif()
 endif()
 
+# Open switch file
 file(STRINGS ${switch_file} switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
