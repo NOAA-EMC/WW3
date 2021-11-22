@@ -166,7 +166,9 @@
       use W3SRC4MD, only: W3SPR4
 #endif
       use W3IOGOMD, only: W3OUTG
+#ifdef W3_SCRIP
       use WMSCRPMD, only: get_scrip_info_structured 
+#endif
 !/
 !/ Specify default data typing
 !/
@@ -3126,6 +3128,7 @@
 !
 ! 2.h Set ESMF import grid corner coordinates
 !
+#ifdef W3_SCRIP
       call ESMF_GridAddCoord( impGrid, &
         staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3197,6 +3200,7 @@
             rptry(grid_dims(1),grid_dims(2)+1)
         end if
       endif      
+#endif 
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create import field mask and routeHandle halo update
@@ -3606,6 +3610,7 @@
 !
 ! 2.h Set ESMF export grid corner coordinates
 !
+#ifdef W3_SCRIP
       call ESMF_GridAddCoord( expGrid, &
         staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3677,6 +3682,7 @@
             rptry(grid_dims(1),grid_dims(2)+1)
         end if
       end if
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create export field mask and routeHandle halo update
