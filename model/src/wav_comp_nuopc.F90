@@ -486,7 +486,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     iaproc = iam + 1
 
-!#ifdef CESMCOUPLED
+#ifdef CESMCOUPLED
     !--------------------------------------------------------------------
     ! IO set-up
     !--------------------------------------------------------------------
@@ -512,10 +512,13 @@ contains
     ! determine instance information
     !----------------------------------------------------------------------------
 
-    !call get_component_instance(gcomp, inst_suffix, inst_index, rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !inst_name = "WAV"//trim(inst_suffix)
+    call get_component_instance(gcomp, inst_suffix, inst_index, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    inst_name = "WAV"//trim(inst_suffix)
 
+    call set_component_logging(gcomp, masterproc, stdout, shrlogunit, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+#endif
     !----------------------------------------------------------------------------
     ! reset shr logging to my log file
     !----------------------------------------------------------------------------
@@ -528,9 +531,6 @@ contains
     else
        masterproc = .false.
     end if
-
-    !call set_component_logging(gcomp, masterproc, stdout, shrlogunit, rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Identify available unit numbers
     ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
@@ -558,7 +558,6 @@ contains
     ! Redirect share output to wav log
     call shr_file_getLogUnit (shrlogunit)
     call shr_file_setLogUnit (ndso)
-!#endif
 
     if ( masterproc ) write (ndso,900)
     !--------------------------------------------------------------------
@@ -690,13 +689,19 @@ contains
     if ( iaproc .eq. napout ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     time = time0
 
+    ! get coupling interval
+    call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     !--------------------------------------------------------------------
     ! Define output type and fields
     !--------------------------------------------------------------------
 
     iostyp = 1        ! gridded field
     if (masterproc) write (ndso,940) 'no dedicated output process, any file system '
-
+#ifdef CESMCOUPLED
     ! Actually will need a new restart flag - since all of the ODAT
     ! should be set to 0 - since they are initializated in w3initmd
     ! ODAT    I.A.   I   Output data, five parameters per output type
@@ -722,12 +727,6 @@ contains
        odat(5*(j-1)+3) = 0
     end do
 
-    ! get coupling interval
-    call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     ! Hardwire gridded output for now
     ! first output time stamp is now read from file
     ! QL, 150525, 1-5 for history files, 16-20 for restart files
@@ -737,9 +736,7 @@ contains
     !             variables calculated in W3IOGO could be updated at
     !             every coupling interval
     ! CMB changed odat so all 35 values are set, only permitting one frequency controlled by histwr
-    !do J =1,7
-    !TODO: odat is now 40
-    do J =1,8
+    do J =1,7
        J0 = (j-1)*5
        odat(J0+1) = time(1)     ! YYYYMMDD for first output
        odat(J0+2) = time(2)     ! HHMMSS for first output
@@ -756,8 +753,6 @@ contains
 
     flgrd(:,:)  = .false.   ! gridded fields
     flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
-!TODO: These seem to be set in the namelist file on our side
-#ifdef CESMCOUPLED
     ! 1) Forcing fields
     flgrd( 1, 1)  = .false. ! Water depth
     flgrd( 1, 2)  = .false. ! Current vel.
@@ -869,8 +864,23 @@ contains
     flgrd( 9, 5)  = .false. !'Maximum k advect CFL'
 
     ! 10) is user defined
+#else
+    !TODO: ????
+    flgrd(:,:)  = .false.   ! gridded fields
+    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+    do j=1, 7
+       odat(5*(j-1)+3) = 0
+    end do
+    !TODO: ?odat is now 40
+    do J =1,8
+       J0 = (j-1)*5
+       odat(J0+1) = time(1)     ! YYYYMMDD for first output
+       odat(J0+2) = time(2)     ! HHMMSS for first output
+       odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
+       odat(J0+4) = 99990101    ! YYYYMMDD for last output
+       odat(J0+5) = 0           ! HHMMSS for last output
+    end do
 #endif
-
     !CMB document which fields to be output to first hist file in wav.log
     if ( iaproc .eq. napout ) then
        flt = .true.
@@ -892,7 +902,7 @@ contains
     ! Wave model initializations
     !--------------------------------------------------------------------
 
-!#ifdef CESMCOUPLED
+#ifdef CESMCOUPLED
     ! Notes on ww3 initialization:
     ! ww3 read initialization occurs in w3iors (which is called by initmd)
     ! For a startup (including hybrid) or branch run the initial datafile is
@@ -946,9 +956,9 @@ contains
        call ESMF_LogWrite(trim(subname)//' case_name = '//trim(casename), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-!#else
+#else
     ! TODO: UFS fills this in
-!#endif
+#endif
 
     ! Read in input data and initialize the model
     ! w3init calls w3iors which:
@@ -961,7 +971,6 @@ contains
     allocate ( x(1), y(1), pnames(1) )
     pnames(1) = ' '
 
-    call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
     !HK flgrd2 is flags for coupling output, not ready yet so keep .false.
     !HK 1 is model number
     !HK IsMulti does not appear to be used, setting to .true.
@@ -976,14 +985,15 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
+    call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
+
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
     ! TODO: do we need these, are they in eg ww3_grid.inp.glo_1deg_ori
-    dtmax  = 1800.0000
-    dtcfl  = 450.0000
-    dtcfli = 900.0000
-    dtmin  = 30.00000
-#endif
+    !dtmax  = 1800.0000
+    !dtcfl  = 450.0000
+    !dtcfli = 900.0000
+    !dtmin  = 30.00000
     lb = lbound(ust,1); ub = ubound(ust,1)
     write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
@@ -992,6 +1002,7 @@ contains
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     call ESMF_LogWrite(trim(subname)//' done = w3init', ESMF_LOGMSG_INFO)
+#endif
 
     call mpi_barrier ( mpi_comm, ierr )
 
