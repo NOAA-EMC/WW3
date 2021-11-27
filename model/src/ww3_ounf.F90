@@ -2364,8 +2364,8 @@
 
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
-                LON(:)=XGRD(:,1)
-                LAT(:)=YGRD(:,1)
+                LON(:)=XGRD(1,:)
+                LAT(:)=YGRD(1,:)
                 IF (.NOT.ALLOCATED(TRIGP2)) ALLOCATE(TRIGP2(3,NTRI))
                 DIMLN(2)=NX
                 DIMLN(3)=NTRI
