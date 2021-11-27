@@ -398,8 +398,9 @@ contains
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
     ! TODO: remove (used for debugging)
-    use w3adatmd,   only : charn
+    use w3adatmd,   only : charn,u10
     use w3wdatmd,   only : ust
+    use w3gdatmd,   only : xgrd, ygrd
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -994,11 +995,19 @@ contains
     !dtcfl  = 450.0000
     !dtcfli = 900.0000
     !dtmin  = 30.00000
+
     lb = lbound(ust,1); ub = ubound(ust,1)
-    write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub,ust(2955:2964)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
     lb = lbound(charn,1); ub = ubound(charn,1)
-    write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub,charn(2955:2964)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    lb = lbound(u10,1); ub = ubound(u10,1)
+    write(msgString,'(A,2i7,10g14.7)')'w3init u10 ',lb,ub,u10(2955:2964)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     call ESMF_LogWrite(trim(subname)//' done = w3init', ESMF_LOGMSG_INFO)
@@ -1022,6 +1031,11 @@ contains
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
        gindex_sea(jsea) = ix + (iy-1)*nx
+       if(iy.eq.230)then
+        if (ix .ge. 83 .and. ix .le. 92)write(msgString,'(a,4i8,2f12.5)')'XX ',n,isea,ix,iy,xgrd(iy,ix),ygrd(iy,ix)
+        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+       endif
+
     end do
 
     !-------------
@@ -1180,21 +1194,27 @@ contains
 
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#ifdef CESMCOUPLED
-    call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    sw_lamult (:) = 1.
-    sw_ustokes(:) = 0.
-    sw_vstokes(:) = 0.
-#else
-    call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call CalcRoughl(z0rlen)
-#endif
+
+    if (state_fldchk(exportState, 'Sw_lamult')) then
+      call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_lamult (:) = 1.
+    endif
+    if (state_fldchk(exportState, 'Sw_ustokes')) then
+      call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_ustokes(:) = 0.
+    endif
+    if (state_fldchk(exportState, 'Sw_vstokes')) then
+      call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_vstokes(:) = 0.
+    endif
+    if (state_fldchk(exportState, 'Sw_z0')) then
+       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call CalcRoughl(z0rlen)
+    endif
 
     if (wav_coupling_to_cice) then
       call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)

@@ -1142,6 +1142,7 @@ contains
 #ifdef W3_ST4
     use w3src4md,   only : w3spr4
 #endif
+
     ! input/output variables
     real(ESMF_KIND_R8), pointer :: chkn(:)  ! 2D Charnock export field pointer
 
@@ -1219,6 +1220,7 @@ contains
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
        if ( firstCall ) then
+       !   if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) )then
           if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) .or. &
              ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
              charn(jsea) = zero
@@ -1238,19 +1240,34 @@ contains
                           tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
                           dlwmean )
 #endif
-             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
           end if
        endif !firstCall
           wrln(jsea) = charn(jsea)*ust(isea)**2/grav
     enddo jsea_loop
 
+!if(ix .eq. 86 .and. iy .eq. 230),index= on 194 index 2958
+    write(msgString,'(A18,g14.7)')'CalcRoughl mapsta ',mapsta(230,86)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    !write(msgString,'(A,10g14.7)')'CalcRoughl mapsta ',mapsta(230,83:92)
+    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
     lb = lbound(ust,1); ub = ubound(ust,1)
-    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust(2955:2964)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
     lb = lbound(charn,1); ub = ubound(charn,1)
-    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn(2955:2964)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-    write(msgString,'(A,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln((ub-lb)/2:9+(ub-lb)/2)
+
+    lb = lbound(wrln,1); ub = ubound(wrln,1)
+    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln((ub-lb)/2:9+(ub-lb)/2)
+    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln(2955:2964)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    lb = lbound(u10,1); ub = ubound(u10,1)
+    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl u10 ',lb,ub, u10(2955:2964)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     firstCall = .false.
@@ -1406,6 +1423,7 @@ contains
     integer           :: n, isea, ix, iy
     real(r8)          :: global_input(nx*ny)
     real(r8), pointer :: dataptr(:)
+
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

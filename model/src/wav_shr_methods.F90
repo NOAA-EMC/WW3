@@ -403,7 +403,8 @@ contains
              !     minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
              lb = lbound(dataPtr1d,1); ub = ubound(dataPtr1d,1)
              write(msgString,'(A,2i7,10g14.7)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
-                  lb,ub,dataPtr1d((ub-lb)/2:9+(ub-lb)/2)
+                  !lb,ub,dataPtr1d((ub-lb)/2:9+(ub-lb)/2)
+                  lb,ub,dataPtr1d(2955:2964)
           else
              write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
           endif
