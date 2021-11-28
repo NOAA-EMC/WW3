@@ -878,7 +878,7 @@ contains
        odat(J0+1) = time(1)     ! YYYYMMDD for first output
        odat(J0+2) = time(2)     ! HHMMSS for first output
        !odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
-       odat(J0+3) = 3600  ! output interval in sec, controls restart freq ? 
+       odat(J0+3) = 3*3600  ! output interval in sec, controls restart freq ? 
        odat(J0+4) = 99990101    ! YYYYMMDD for last output
        odat(J0+5) = 0           ! HHMMSS for last output
     end do
