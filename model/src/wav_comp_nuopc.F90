@@ -452,7 +452,7 @@ contains
     character(len=23)              :: dtme21
     integer                        :: iam, mpi_comm
     character(len=10), allocatable :: pnames(:)
-    character(len=*),parameter :: subname = '(wav_comp_nuopc:InitializeRealize)'
+    character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
     character(len=1024)            :: msgString
     integer :: lb,ub
 
@@ -620,8 +620,8 @@ contains
    !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 
     ! TODO: Should this be only inflags1(2:4) = .true. ??
-    inflags1(:) = .false.
-    inflags1(1:5) = .true.
+    !inflags1(:) = .false.
+    !inflags1(1:5) = .true.
     !inflags1(3) = .true.       !sa_u10m,sa_v10m
     ! ? actually, I think even if we don't connect these fields, because of
     ! these fields were defined as expected coupling fields in the mod_def, 
@@ -866,18 +866,19 @@ contains
 
     ! 10) is user defined
 #else
-    !TODO: ????
-    flgrd(:,:)  = .false.   ! gridded fields
-    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
-    do j=1, 7
-       odat(5*(j-1)+3) = 0
-    end do
-    !TODO: ?odat is now 40
+!    !TODO: ????
+!    flgrd(:,:)  = .false.   ! gridded fields
+!    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+!    do j=1, 7
+!       odat(5*(j-1)+3) = 0
+!    end do
+!    !TODO: ?odat is now 40
     do J =1,8
        J0 = (j-1)*5
        odat(J0+1) = time(1)     ! YYYYMMDD for first output
        odat(J0+2) = time(2)     ! HHMMSS for first output
-       odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
+       !odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
+       odat(J0+3) = 3600  ! output interval in sec, controls restart freq ? 
        odat(J0+4) = 99990101    ! YYYYMMDD for last output
        odat(J0+5) = 0           ! HHMMSS for last output
     end do
@@ -957,9 +958,6 @@ contains
        call ESMF_LogWrite(trim(subname)//' case_name = '//trim(casename), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-#else
-    ! TODO: UFS fills this in
-#endif
 
     ! Read in input data and initialize the model
     ! w3init calls w3iors which:
@@ -975,7 +973,6 @@ contains
     !HK flgrd2 is flags for coupling output, not ready yet so keep .false.
     !HK 1 is model number
     !HK IsMulti does not appear to be used, setting to .true.
-#ifdef CESMCOUPLED
     call w3init ( 1, .true., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
