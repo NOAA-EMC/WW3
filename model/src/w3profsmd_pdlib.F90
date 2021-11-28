@@ -323,9 +323,6 @@
 
       PDLIB_NSEAL = 0
 
-      WRITE(*,*) SUM(XGRD), SUM(YGRD), SUM(ZB) 
-      STOP 'TESTING COORDINATES' 
-
       IF (IAPROC .le. NAPROC) THEN
         ALLOCATE(XP_IN(NX), YP_IN(NX), DEP_IN(NX), stat=istat)
         if(istat /= 0) CALL PDLIB_ABORT(1)
