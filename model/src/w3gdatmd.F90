@@ -669,7 +669,7 @@
         REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
 #endif
         REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
-        REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+        DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
         REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
@@ -1149,7 +1149,8 @@
         REAL, POINTER         :: AnglD(:)
         LOGICAL, POINTER      :: FLAGUNR
 #endif
-      REAL   , POINTER :: ZB(:), CLATS(:)
+      REAL   , POINTER :: ZB(:)
+      REAL   , POINTER :: CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
 
@@ -1158,7 +1159,7 @@
         REAL, POINTER :: CTRNX(:), CTRNY(:), CLATF(:)
 #endif
       REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
-      REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+      DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
       REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
@@ -2990,7 +2991,7 @@
 !!Li  SMC grid shares the settings with rectilinear grid. JGLi12Oct2020
         CASE ( RLGTYPE, SMCTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
                        NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
@@ -3005,7 +3006,7 @@
             END IF
         CASE ( CLGTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
                        NFD=NFD, SPHERE=SPHERE,                         &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &

@@ -1468,7 +1468,7 @@ END SUBROUTINE
 ! Parameter list
 
      INTEGER, INTENT(IN)            :: IMOD
-     REAL   , INTENT(IN)            :: XTIN, YTIN
+     DOUBLE PRECISION, INTENT(IN)   :: XTIN, YTIN
      INTEGER, INTENT(OUT)           :: itout
      INTEGER, INTENT(OUT)           :: IS(4), JS(4)
      REAL, INTENT(OUT)              :: RW(4)
@@ -1646,7 +1646,7 @@ END SUBROUTINE
 ! Parameter list
 
      INTEGER, INTENT(IN)            :: IMOD, FORCE
-     REAL   , INTENT(IN)            :: XTIN, YTIN
+     DOUBLE PRECISION, INTENT(IN)            :: XTIN, YTIN
      INTEGER, INTENT(OUT)           :: itout
      INTEGER, INTENT(OUT)           :: IS(4), JS(4)
      REAL, INTENT(OUT)              :: RW(4)
@@ -2906,8 +2906,8 @@ END SUBROUTINE
 !     ----------------------------------------------------------------
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: I1, I2, I3
-      REAL, INTENT(IN) :: XGRD(:,:), YGRD(:,:)
-      REAL*8, INTENT(OUT) :: PT(3,2)
+      DOUBLE PRECISION, INTENT(IN) :: XGRD(:,:), YGRD(:,:)
+      DOUBLE PRECISION, INTENT(OUT) :: PT(3,2)
 !     ----------------------------------------------------------------
 !
 !     Local variables.

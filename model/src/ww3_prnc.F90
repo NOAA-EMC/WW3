@@ -999,7 +999,7 @@
           IF (GTYPE .NE. UNGTYPE) THEN
             DO IY=1,NY
               DO IX=1,NX
-                INGRID = W3GRMP( GSI, XGRD(IY,IX), YGRD(IY,IX),      &
+                INGRID = W3GRMP( GSI, REAL(XGRD(IY,IX)), REAL(YGRD(IY,IX)),      &
                                  IS, JS, RW )
                 IF ( .NOT.INGRID ) THEN
                     IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
@@ -1274,13 +1274,13 @@
 !
             IF ( J .EQ. 1 ) THEN
               CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
-                NX, NY, NX, NY, YGRD, XGRD, MAPOVR, ILAND,        &
+                NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
                 NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
                 MASK, RD11, RD21, RD12, RD22, IX21, IX22, IY21,   &
                 IY22 )
             ELSE
               CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
-                NX, NY, NX, NY, YGRD, XGRD, MAPOVR, ILAND,        &
+                NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
                 NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
                 MASK, XD11, XD21, XD12, XD22, JX21, JX22, JY21,   &
                 JY22 )
@@ -1604,7 +1604,7 @@
                 CALL SETVUF(TIDE_HOURS(I),TIDE_LAT,I)
               END DO
               TIDE_ITREND=0
-              CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
+              CALL flex_tidana_webpage(IX,IY,REAL(XGRD(IY,IX)),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
                                        TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
                                        SDEV0, RMSR, RESMAX, IMAX, 0)
 

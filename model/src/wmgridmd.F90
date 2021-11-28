@@ -442,7 +442,8 @@
 !        if not in grid, cycle (search next grid)
 !
         IF (GRIDS(J)%GTYPE .EQ. UNGTYPE) THEN
-          CALL IS_IN_UNGRID(J, XA, YA, ITOUT, IVER, JVER, RW)
+!AR: Here we need to take special care in the case that any problem occurs due to the XA, YA beeing 4 byte
+          CALL IS_IN_UNGRID(J, DBLE(XA), DBLE(YA), ITOUT, IVER, JVER, RW)
           IF (ITOUT.EQ.0) THEN
             INGRID=.FALSE.
           ELSE

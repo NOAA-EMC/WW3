@@ -330,7 +330,7 @@
         IF (GTYPE .NE. UNGTYPE) THEN
           INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
         ELSE
-          CALL IS_IN_UNGRID(IMOD, XPT(IPT), YPT(IPT), itout, IX, IY, RD)
+          CALL IS_IN_UNGRID(IMOD, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD)
           INGRID = (ITOUT.GT.0)
           END IF
 !

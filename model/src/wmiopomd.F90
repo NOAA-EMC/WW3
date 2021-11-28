@@ -321,7 +321,7 @@
               CYCLE
               END IF
           ELSE
-            CALL IS_IN_UNGRID(J, XPT(IPT), YPT(IPT), itout, IX, IY, RD )
+            CALL IS_IN_UNGRID(J, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD )
             IF (itout.eq.0) THEN
               INGRID(J,IPT)=.FALSE.
               END IF
