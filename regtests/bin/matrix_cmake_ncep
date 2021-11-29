@@ -40,6 +40,8 @@ else
   exit 1
 fi
 
+#convert main_dir to absolute path
+main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
 # Compiler option. Choose appropriate compiler and set cmplOption to
 # y if using for the first time or using a different compiler
@@ -239,18 +241,18 @@ fi
              
   $main_dir/../regtests/bin/matrix.base
 
-#  $main_dir/../regtests/bin/matrix_divider_p.sh 
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh 
 
 
-#  echo "#submit all of the diveded matrix files" > msuball.sh
-#  if [ $batchq = "slurm" ] 
-#  then
-#    files=`ls matrix? matrix??`
-#    for file in $files 
-#    do
-#      echo "sbatch < $file"  >> msuball.sh
-#    done
-#  fi 
+  echo "#submit all of the diveded matrix files" > msuball.sh
+  if [ $batchq = "slurm" ] 
+  then
+    files=`ls matrix? matrix??`
+    for file in $files 
+    do
+      echo "sbatch < $file"  >> msuball.sh
+    done
+  fi 
 
  
 # --------------------------------------------------------------------------- #

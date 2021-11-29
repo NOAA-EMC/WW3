@@ -403,6 +403,7 @@ then
   path_e=$path_w/exe
   cp $path_build/install/bin/ww3_shel $path_e/
   cp $path_build/install/bin/ww3_multi $path_e/
+  cp $path_build/install/bin/ww3_systrk $path_e/
 
 else
   path_build=$path_w/build
