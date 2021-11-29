@@ -620,8 +620,8 @@ contains
    !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 
     ! TODO: Should this be only inflags1(2:4) = .true. ??
-    !inflags1(:) = .false.
-    !inflags1(1:5) = .true.
+    inflags1(:) = .false.
+    inflags1(1:5) = .true.
     !inflags1(3) = .true.       !sa_u10m,sa_v10m
     ! ? actually, I think even if we don't connect these fields, because of
     ! these fields were defined as expected coupling fields in the mod_def, 
