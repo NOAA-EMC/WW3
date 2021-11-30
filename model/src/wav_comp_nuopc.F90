@@ -606,12 +606,12 @@ contains
     !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
     !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
 
-    !TODO: in current code, inflags1(5) is expected to be momentum, inflags1(6) is the air density
 #ifdef CESMCOUPLED
     ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth on
     inflags1(:) = .false.
     inflags1(1:5) = .true.
 #else
+   !TODO: in current code, inflags1(5) is expected to be momentum, inflags1(6) is the air density
    !   FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
    !   FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
    !   FLWIND => INPUTS(IMOD)%INFLAGS1(3)
@@ -619,16 +619,8 @@ contains
    !   FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
    !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 
-    ! TODO: Should this be only inflags1(2:4) = .true. ??
     inflags1(:) = .false.
-    inflags1(1:5) = .true.
-    !inflags1(3) = .true.       !sa_u10m,sa_v10m
-    ! ? actually, I think even if we don't connect these fields, because of
-    ! these fields were defined as expected coupling fields in the mod_def, 
-    ! we have to pretend to turn them on, even if in the end they're not imported
-    ! and are instead set to zero
-    !inflags1(2) = .true.       !so_u, so_v
-    !inflags1(4) = .true.       !si_ifrac
+    inflags1(2:4) = .true.
 #endif
 
     if (wav_coupling_to_cice) then
@@ -866,9 +858,9 @@ contains
 
     ! 10) is user defined
 #else
-!    !TODO: ????
-!    flgrd(:,:)  = .false.   ! gridded fields
-!    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+    flgrd(:,:)  = .false.   ! gridded fields
+    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+!   !TODO: ????
 !    do j=1, 7
 !       odat(5*(j-1)+3) = 0
 !    end do
@@ -1401,7 +1393,7 @@ contains
     hh = tod/3600
     mm = (tod - (hh * 3600))/60
     ss = tod - (hh*3600) - (mm*60)
-    write(stdout,*) 'ymd2date wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+    if (masterproc) write(stdout,*) 'ymd2date wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
 
     timen(1) = ymd
     timen(2) = hh*10000 + mm*100 + ss
