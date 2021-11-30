@@ -273,9 +273,6 @@
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
-!/NETCDF_QAD      USE W3NETCDF, only : TIME0_NETCDF_QAD
-!/NETCDF_QAD      USE W3NETCDF, only : TIMEN_NETCDF_QAD
-
 
 #ifdef W3_OASIS
  USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
@@ -1356,8 +1353,6 @@
       write(740+IAPROC,*), ' After read 2002, case 4'
 #endif
 
-!/NETCDF_QAD      TIME0_NETCDF_QAD = TIME0
-
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2c'
        call getMallocInfo(mallinfos)
@@ -1372,7 +1367,6 @@
 #ifdef W3_DEBUGINIT
       write(740+IAPROC,*), ' After read 2002, case 5'
 #endif
-!/NETCDF_QAD      TIMEN_NETCDF_QAD = TIMEN
 
 #ifdef W3_DEBUGINIT
       write(740+IAPROC,*), 'ww3_shel, step 6'
