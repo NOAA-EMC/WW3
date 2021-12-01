@@ -142,7 +142,8 @@
         "description": "SMC grid",
         "valid-options": [
             {
-                "name": "SMC"
+                "name": "SMC",
+                "build_files": ["w3psmcmd", "w3smcomd", "w3psmcmd"]
             }
         ]
     },
@@ -623,8 +624,7 @@
         "description": "use of tidal analysis",
         "valid-options": [
             {
-                "name": "TIDE",
-                "build_files": ["w3tidemd", "ww3_prtide"]
+                "name": "TIDE"
             }
         ]
     },

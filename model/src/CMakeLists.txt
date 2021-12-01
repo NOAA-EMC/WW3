@@ -71,7 +71,7 @@ target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGU
 
 # Executables to always build
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
-  ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl ww3_multi)
+  ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl ww3_multi ww3_systrk)
 
 # Executables to build if NetCDF is found
 set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
@@ -106,7 +106,6 @@ endif()
 if("SCRIP" IN_LIST switches)
   target_sources(ww3_lib PRIVATE ${scrip_src})
 
-  # Not sure where to put FindESMF
   find_package(ESMF)
   if(ESMF_FOUND)
     target_sources(ww3_lib PRIVATE wmesmfmd.F90)
