@@ -374,10 +374,17 @@ path_cmake="`pwd`"
 
 path_e=$path_w/exe
 mkdir -p $path_e
+
+ofile=$path_w/build.log
+
+echo "   Building WW3, exes will be in $path_e"
+
+echo "Exe directory is $path_e" > $ofile 
 if [ $force_shrd ]
 then 
 
   # build pre- & post-processing programs with SHRD only
+  echo "Forcing a SHRD build" >> $ofile
   path_build=$path_w/build_SHRD
   mkdir -p $path_build
   cd $path_build
@@ -385,21 +392,58 @@ then
                 sed 's/OMPG //'    | \
                 sed 's/OMPH //'    | sed 's/PDLIB //' | \
                 sed 's/B4B //' > $path_build/switch
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install 
-  make -j 8 
-  make install 
+  echo "Switch file is $path_build/switch with switches:" >> $ofile 
+  cat $path_build/switch >> $ofile
+  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1  
+  rc=$?
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in cmake."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make -j 8 > $ofile 2>&1 
+  rc=$?
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make install > $ofile 2>&1 
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make install."
+    echo "The build log is in $ofile"
+    exit
+  fi
 
   cp $path_build/install/bin/* $path_e/ 
 
+  echo "non-SHRD build" >> $ofile
   #build without SHRD 
   path_build=$path_w/build
   mkdir -p $path_build
   cd $path_build
   \cp -f $file_c $path_build/switch
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install
-  make -j 8
-  make install
-
+  echo "Switch file is $path_build/switch with switches:" >> $ofile 
+  cat $path_build/switch >> $ofile  
+  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1 
+  rc=$?
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in cmake."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make -j 8 > $ofile 2>&1 
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make install > $ofile 2>&1 
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make install."
+    echo "The build log is in $ofile"
+    exit
+  fi
   path_e=$path_w/exe
   cp $path_build/install/bin/ww3_shel $path_e/
   cp $path_build/install/bin/ww3_multi $path_e/
@@ -410,15 +454,33 @@ else
   mkdir -p $path_build
   cd $path_build
   \cp -f $file_c $path_build/switch
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install
-  make -j 8
-  make install
+  echo "Switch file is $path_build/switch with switches:" >> $ofile
+  cat $path_build/switch >> $ofile
+  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1 
+  rc=$?
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in cmake."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make -j 8 > $ofile 2>&1 
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make."
+    echo "The build log is in $ofile"
+    exit
+  fi
+  make install > $ofile 2>&1 
+  if [[ $rc -ne 0 ]] ; then
+    echo "Fatal error in make install."
+    echo "The build log is in $ofile"
+    exit
+  fi
 
   cp $path_build/install/bin/* $path_e/
 
 fi
-
-
+echo "   Build log is in $ofile"
+ 
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #
 # --------------------------------------------------------------------------- #
