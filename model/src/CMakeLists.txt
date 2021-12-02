@@ -74,7 +74,7 @@ set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl ww3_multi ww3_systrk)
 
 # Executables to build if NetCDF is found
-set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc)
+set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc ww3_prnc)
 
 find_package(NetCDF COMPONENTS Fortran)
 if(NetCDF_Fortran_FOUND)
@@ -134,9 +134,9 @@ if("TIDE" IN_LIST switches)
   add_executable(ww3_prtide ww3_prtide.F90)
   target_link_libraries(ww3_prtide PRIVATE ww3_lib)
 
-  target_sources(ww3_lib PRIVATE w3nmlprncmd.F90)
-  add_executable(ww3_prnc ww3_prnc.F90)
-  target_link_libraries(ww3_prnc PRIVATE ww3_lib)
+  #target_sources(ww3_lib PRIVATE w3nmlprncmd.F90)
+  #add_executable(ww3_prnc ww3_prnc.F90)
+  #target_link_libraries(ww3_prnc PRIVATE ww3_lib)
 endif()
 
 foreach(program ${programs})

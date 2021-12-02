@@ -29,7 +29,7 @@
         "valid-options": [
             {
                 "name": "SCRIP",
-                "build_files": ["wmscrpmd"]
+                "build_files": ["wmscrpmd.F90"]
             }
         ]
     },
@@ -103,15 +103,15 @@
             },
             {
                 "name": "PR1",
-                "build_files": ["w3profsmd", "w3pro1md"]
+                "build_files": ["w3profsmd.F90", "w3pro1md.F90"]
             },
             {
                 "name": "PR2",
-                "build_files": ["w3profsmd", "w3pro2md"]
+                "build_files": ["w3profsmd.F90", "w3pro2md.F90"]
             },
             {
                 "name": "PR3",
-                "build_files": ["w3profsmd", "w3pro3md"]
+                "build_files": ["w3profsmd.F90", "w3pro3md.F90"]
             }
         ]
     },
@@ -128,11 +128,11 @@
             },
             {
                 "name": "UQ",
-                "build_files": ["w3uqckmd"]
+                "build_files": ["w3uqckmd.F90"]
             },
             {
                 "name": "UNO",
-                "build_files": ["w3uno2md"]
+                "build_files": ["w3uno2md.F90"]
             }
         ]
     },
@@ -143,7 +143,7 @@
         "valid-options": [
             {
                 "name": "SMC",
-                "build_files": ["w3psmcmd", "w3smcomd", "w3psmcmd"]
+                "build_files": ["w3psmcmd.F90", "w3smcomd.F90", "w3psmcmd.F90"]
             }
         ]
     },
@@ -154,27 +154,27 @@
         "valid-options": [
             {
                 "name": "FLX0",
-                "build_files": ["w3flx1md"]
+                "build_files": ["w3flx1md.F90"]
             },
             {
                 "name": "FLX1",
-                "build_files": ["w3flx1md"]
+                "build_files": ["w3flx1md.F90"]
             },
             {
                 "name": "FLX2",
-                "build_files": ["w3flx2md"]
+                "build_files": ["w3flx2md.F90"]
             },
             {
                 "name": "FLX3",
-                "build_files": ["w3flx3md"]
+                "build_files": ["w3flx3md.F90"]
             },
             {
                 "name": "FLX4",
-                "build_files": ["w3flx4md"]
+                "build_files": ["w3flx4md.F90"]
             },
             {
                 "name": "FLX5",
-                "build_files": ["w3flx5md"]
+                "build_files": ["w3flx5md.F90"]
             }
         ]
     },
@@ -188,11 +188,11 @@
             },
             {
                 "name": "FLD1",
-                "build_files": ["w3fld1md"]
+                "build_files": ["w3fld1md.F90"]
             },
             {
                 "name": "FLD2",
-                "build_files": ["w3fld1md", "w3fld2md"]
+                "build_files": ["w3fld1md.F90", "w3fld2md.F90"]
             }
         ]
     },
@@ -209,7 +209,7 @@
             },
             {
                 "name": "LN1",
-                "build_files": ["w3sln1md"]
+                "build_files": ["w3sln1md.F90"]
             }   
         ]
     },
@@ -220,32 +220,32 @@
         "valid-options": [
             {
                 "name": "ST0",
-                "build_files": ["w3src0md"]
+                "build_files": ["w3src0md.F90"]
             },
             {
                 "name": "ST1",
-                "build_files": ["w3src1md"],
+                "build_files": ["w3src1md.F90"],
                 "conflicts": ["FLX0", "FLX5"]
 
             },
             {
                 "name": "ST2",
-                "build_files": ["w3src2md"],
+                "build_files": ["w3src2md.F90"],
                 "conflicts": ["FLX0", "FLX1", "FLX4", "FLX5"]
             },
             {
                 "name": "ST3",
-                "build_files": ["w3src3md"],
+                "build_files": ["w3src3md.F90"],
                 "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
             },
             {
                 "name": "ST4",
-                "build_files": ["w3src4md"],
+                "build_files": ["w3src4md.F90"],
                 "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
             },
             {
                 "name": "ST6",
-                "build_files": ["w3src6md", "w3swldmd"],
+                "build_files": ["w3src6md.F90", "w3swldmd.F90"],
                 "conflicts": ["FLX0"]
             }
         ]
@@ -279,24 +279,24 @@
             },
             {
                 "name": "NL1",
-                "build_files": ["w3snl1md"]
+                "build_files": ["w3snl1md.F90"]
             },
             {
                 "name": "NL2",
-                "build_files": ["w3snl2md", "mod_xnl4v5", "serv_xnl4v5"],
+                "build_files": ["w3snl2md.F90", "mod_xnl4v5.f90", "serv_xnl4v5.f90", "mod_fileio.f90", "mod_constants.f90"],
                 "conflicts": ["OMPG", "OMPH"]
             },
             {
                 "name": "NL3",
-                "build_files": ["w3snl3md"]
+                "build_files": ["w3snl3md.F90"]
             },
             {
                 "name": "NL4",
-                "build_files": ["w3snl4md"]
+                "build_files": ["w3snl4md.F90"]
             },
             {
                 "name": "NL5",
-                "build_files": ["w3snl5md", "w3gkemd"]
+                "build_files": ["w3snl5md.F90", "w3gkemd.F90"]
             }
         ]
     },
@@ -307,7 +307,7 @@
         "valid-options": [
             {
                 "name": "NLS",
-                "build_files": ["w3snlsmd"]
+                "build_files": ["w3snlsmd.F90"]
             }
         ]
     },
@@ -321,19 +321,19 @@
             },
             {
                 "name": "BT1",
-                "build_files": ["w3sbt1md"]
+                "build_files": ["w3sbt1md.F90"]
             },
             {
                 "name": "BT4",
-                "build_files": ["w3sbt4md"]
+                "build_files": ["w3sbt4md.F90"]
             },
             {
                 "name": "BT8",
-                "build_files": ["w3sbt8md"]
+                "build_files": ["w3sbt8md.F90"]
             },
             {
                 "name": "BT9",
-                "build_files": ["w3sbt9md"]
+                "build_files": ["w3sbt9md.F90"]
             }
         ]
     },
@@ -347,7 +347,7 @@
             },
             {
                 "name": "DB1",
-                "build_files": ["w3sdb1md"]
+                "build_files": ["w3sdb1md.F90"]
             }
         ]
     },
@@ -371,7 +371,7 @@
             },
             {
                 "name": "TR1",
-                "build_files": ["w3str1md"]
+                "build_files": ["w3str1md.F90"]
             }
         ]
     },
@@ -385,7 +385,7 @@
             },
             {
                 "name": "BS1",
-                "build_files": ["w3sbs1md"]
+                "build_files": ["w3sbs1md.F90"]
             }   
         ]
     },
@@ -399,23 +399,23 @@
             },
             {
                 "name": "IC1",
-                "build_files": ["w3sic1md"]
+                "build_files": ["w3sic1md.F90"]
             },
             {
                 "name": "IC2",
-                "build_files": ["w3sic2md"]
+                "build_files": ["w3sic2md.F90"]
             },
             {
                 "name": "IC3",
-                "build_files": ["w3sic3md"]
+                "build_files": ["w3sic3md.F90"]
             },
             {
                 "name": "IC4",
-                "build_files": ["w3sic4md"]
+                "build_files": ["w3sic4md.F90"]
             },
             {
                 "name": "IC5",
-                "build_files": ["w3sic5md"]
+                "build_files": ["w3sic5md.F90"]
             }
         ]
     },
@@ -429,11 +429,11 @@
             },
             {
                 "name": "IS1",
-                "build_files": ["w3sis1md"]
+                "build_files": ["w3sis1md.F90"]
             },
             {
                 "name": "IS2",
-                "build_files": ["w3sis2md"]
+                "build_files": ["w3sis2md.F90"]
             }
         ]
     },
@@ -447,7 +447,7 @@
             },
             {
                 "name": "REF1",
-                "build_files": ["w3ref1md"]
+                "build_files": ["w3ref1md.F90"]
             }
         ]
     },
@@ -645,7 +645,7 @@
         "valid-options": [
             {
                 "name": "IG1",
-                "build_files": ["w3gig1md", "w3canomd"]
+                "build_files": ["w3gig1md.F90", "w3canomd.F90"]
             }
         ]
     },
@@ -676,7 +676,7 @@
         "valid-options": [
             {
                 "name": "MPRF",
-                "build_files": ["w3getmem"]
+                "build_files": ["w3getmem.F90"]
             }
         ]
     },
@@ -687,7 +687,7 @@
         "valid-options": [
             {
                 "name": "OASACM",
-                "build_files": ["w3agcmmd"]
+                "build_files": ["w3agcmmd.F90"]
             }
         ]
     },
@@ -698,7 +698,7 @@
         "valid-options": [
             {
                 "name": "OASOCM",
-                "build_files": ["w3ogcmmd"]
+                "build_files": ["w3ogcmmd.F90"]
             }
         ]
     },
@@ -709,7 +709,7 @@
         "valid-options": [
             {
                 "name": "OASICM",
-                "build_files": ["w3igcmmd"]
+                "build_files": ["w3igcmmd.F90"]
             }
         ]
     },
@@ -730,7 +730,7 @@
         "valid-options": [
             {
                 "name": "OASIS",
-                "build_files": ["w3oacpmd"],
+                "build_files": ["w3oacpmd.F90"],
                 "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
 
             }
@@ -764,7 +764,7 @@
         "valid-options": [
             {
                 "name": "MEMCHECK",
-                "build_files": ["w3meminfo"]
+                "build_files": ["w3meminfo.F90"]
             }
         ]
     },
@@ -775,7 +775,7 @@
         "valid-options": [
             {
                 "name": "SETUP",
-                "build_files": ["w3wavset"]
+                "build_files": ["w3wavset.F90"]
             }
         ]
     },
@@ -786,7 +786,7 @@
         "valid-options": [
             {
                 "name": "UOST",
-                "build_files": ["w3uostmd"]
+                "build_files": ["w3uostmd.F90"]
             }
         ]
     },
