@@ -559,16 +559,16 @@
         X0 = MOD(XGRD(1,1) + 360.,360.)
         XN = MOD(XGRD(NY,NX) + 360., 360.)
         X0N = MOD(XGRD(NY,1) + 360., 360.)
-        KGDS(11)=KNINT(1000000.*X0)
+        KGDS(11)=NINT(1000000.*X0)
         Y0 = YGRD(1,1)
         YN = YGRD(NY,NX)
         Y0N = YGRD(NY,1)
-        KGDS(10)=KNINT(1000000.*Y0)
+        KGDS(10)=NINT(1000000.*Y0)
         KGDS(12)=0
         KGDS(13)=DBLE(1000000.*LATAN1)
         KGDS(14)=DBLE(1000000.*LONV)
-        KGDS(15)=KNINT(1000000*DSX)
-        KGDS(16)=KNINT(1000000*DSY)
+        KGDS(15)=NINT(1000000*DSX)
+        KGDS(16)=NINT(1000000*DSY)
         KGDS(17)=0
         KGDS(18)=SCNMOD
         KGDS(19)=DBLE(1000000.*LATIN1)
@@ -600,16 +600,16 @@
         X0 = MOD(XGRD(1,1) + 360.,360.)
         XN = MOD(XGRD(NY,NX) + 360., 360.)
         X0N = MOD(XGRD(NY,1) + 360., 360.)
-        KGDS(11)=KNINT(1000000.*X0)
+        KGDS(11)=NINT(1000000.*X0)
         Y0 = YGRD(1,1)
         YN = YGRD(NY,NX)
         Y0N = YGRD(NY,1)
-        KGDS(10)=KNINT(1000000.*Y0)
+        KGDS(10)=NINT(1000000.*Y0)
         KGDS(12)=0
         KGDS(13)=DBLE(1000000.*LATAN1)
         KGDS(14)=DBLE(1000000.*LONV)
-        KGDS(15)=KNINT(1000000*DSX)
-        KGDS(16)=KNINT(1000000*DSY)
+        KGDS(15)=NINT(1000000*DSX)
+        KGDS(16)=NINT(1000000*DSY)
         KGDS(17)=0
         KGDS(18)=SCNMOD
 #endif
@@ -631,15 +631,15 @@
 !       (19) Scanning mode
 !
 #ifdef W3_NCEP2
-        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY)))
+        KGDS(12) = NINT(1000000.*(Y0+(REAL(NY-1)*SY)))
         X0 = MOD(X0 + 360.,360.)
-        KGDS(13) = KNINT(1000000.*X0)
+        KGDS(13) = NINT(1000000.*X0)
         KGDS(14) = 48
-        KGDS(15) = KNINT(1000000.*Y0)
+        KGDS(15) = NINT(1000000.*Y0)
         XN = MOD(X0+REAL(NX-1)*SX + 360., 360.)
-        KGDS(16) = KNINT(1000000.*XN)
-        KGDS(17) = KNINT(1000000.*SX)
-        KGDS(18) = KNINT(1000000.*SY)
+        KGDS(16) = NINT(1000000.*XN)
+        KGDS(17) = NINT(1000000.*SX)
+        KGDS(18) = NINT(1000000.*SY)
       ENDIF
 #endif
 !
