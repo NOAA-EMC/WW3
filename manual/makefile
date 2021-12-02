@@ -107,7 +107,6 @@ eqs/ST5.tex \
 eqs/ST6.tex \
 eqs/LN1.tex \
 eqs/BT1.tex \
-eqs/BT2.tex \
 eqs/BT3.tex \
 eqs/BT4.tex \
 eqs/BT8.tex \
