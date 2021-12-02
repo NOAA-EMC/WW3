@@ -131,8 +131,6 @@ if("NCEP2" IN_LIST switches)
 endif()
 
 if("TIDE" IN_LIST switches)
-  add_executable(ww3_prtide ww3_prtide.F90)
-  target_link_libraries(ww3_prtide PRIVATE ww3_lib)
   list(APPEND programs ww3_prtide)
 endif()
 
