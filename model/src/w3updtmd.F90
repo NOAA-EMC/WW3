@@ -1875,12 +1875,10 @@
 #ifdef W3_T
  9000 FORMAT ( ' TEST W3UICE : FICEN    :',F9.3)
  9001 FORMAT ( ' TEST W3UICE : NO LOCAL SPECTRA')
-
 !
  9010 FORMAT ( ' TEST W3UICE : TIME     :',I9.8,I7.6/              &
                '               OLD TICE :',I9.8,I7.6/              &
                '               NEW TICE :',I9.8,I7.6)
-
 !
  9020 FORMAT ( ' TEST W3UICE : ISEA, IX, IY, MAP, ICE, STATUS :')
  9021 FORMAT ( '           ',I8,3I4,F6.2,2X,A)
