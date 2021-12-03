@@ -861,9 +861,10 @@ contains
     flgrd(:,:)  = .false.   ! gridded fields
     flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
 !   !TODO: ????
-!    do j=1, 7
-!       odat(5*(j-1)+3) = 0
-!    end do
+    !do j=1, 7
+    !   odat(5*(j-1)+3) = 0
+    !end do
+   
 !    !TODO: ?odat is now 40
     do J =1,8
        J0 = (j-1)*5
@@ -975,6 +976,10 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
+    npts = 0
+    allocate ( x(1), y(1), pnames(1) )
+    pnames(1) = ' '
+
     call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
 
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
@@ -1020,11 +1025,6 @@ contains
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
        gindex_sea(jsea) = ix + (iy-1)*nx
-       if(iy.eq.230)then
-        if (ix .ge. 83 .and. ix .le. 92)write(msgString,'(a,4i8,2f12.5)')'XX ',n,isea,ix,iy,xgrd(iy,ix),ygrd(iy,ix)
-        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-       endif
-
     end do
 
     !-------------

@@ -298,8 +298,6 @@ contains
              WLEV(ix,iy) = 0.0
           end do
        end do
-    else
-     WLEV = def_value
     endif
     ! ---------------
     ! INFLAGS1(2) - ocn current fields
