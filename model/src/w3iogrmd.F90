@@ -731,7 +731,7 @@
                    SX, SY, X0, Y0
             CASE ( CLGTYPE )
               WRITE (NDSM)                                            &
-                   XGRD, YGRD
+                   REAL(XGRD), REAL(YGRD)
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
@@ -836,10 +836,10 @@
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                    SX, SY, X0, Y0
               DO IX=1,NX
-                XGRD(:,IX) = X0 + REAL(IX-1)*SX
+                XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
                 END DO
               DO IY=1,NY
-                YGRD(IY,:) = Y0 + REAL(IY-1)*SY
+                YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
                 END DO
             CASE ( CLGTYPE )
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
