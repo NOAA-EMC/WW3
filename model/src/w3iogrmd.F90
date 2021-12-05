@@ -318,6 +318,8 @@
       CHARACTER(LEN=35)       :: IDTST
       CHARACTER(LEN=60)      :: MESSAGE(5)
       LOGICAL                 :: GLOBAL
+
+      REAL, ALLOCATABLE       :: XGRD4(:,:), YGRD4(:,:) 
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -842,8 +844,12 @@
                 YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
                 END DO
             CASE ( CLGTYPE )
+              ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0. 
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-                   XGRD, YGRD
+                   XGRD4, YGRD4
+              XGRD = XGRD4
+              YGRD = YGRD4
+              DEALLOCATE(XGRD4, YGRD4)
               !Set SX, SY, X0, Y0 to large values if curvilinear grid
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
