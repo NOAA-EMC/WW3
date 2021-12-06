@@ -8,6 +8,7 @@ WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP ?= gnu
+WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
