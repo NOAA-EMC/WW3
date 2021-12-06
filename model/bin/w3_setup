@@ -81,6 +81,13 @@ else
   exit 1
 fi
 
+# 0.f Process cmplr:debug
+_ufs_dbflag=${cmplr##*\:}
+if [ "$_ufs_dbflag" != "debug" ]; then
+    _ufs_dbflag="off"
+fi
+cmplr=${cmplr%\:*}
+export _ufs_dbflag=$_ufs_dbflag
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
