@@ -405,7 +405,7 @@ contains
           endif
        elseif (lrank == 2) then
           if (size(dataPtr2d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
+             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
                   minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
           else
              write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"

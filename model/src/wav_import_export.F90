@@ -6,7 +6,9 @@ module wav_import_export
   use wav_kind_mod    , only : r8 => shr_kind_r8
   use wav_shr_methods , only : ymd2date
   use wav_shr_methods , only : chkerr
+  use wav_shr_methods , only : state_diagnose, state_reset
   use constants       , only : grav, tpi, dwat
+  use w3cesmmd        , only : runtype
 
   implicit none
   private ! except
@@ -16,6 +18,8 @@ module wav_import_export
   public  :: import_fields
   public  :: export_fields
   public  :: state_getfldptr
+  public  :: state_fldchk
+  public  :: CalcRoughl
 
   private :: fldlist_add
   private :: fldlist_realize
@@ -67,18 +71,19 @@ contains
 
     call fldlist_add(fldsToWav_num, fldsToWav, trim(flds_scalar_name))
 
+    !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #ifdef CESMCOUPLED
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
 #else
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10'     )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10'     )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
+    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
 #endif
 
     if (wav_coupling_to_cice) then
@@ -180,6 +185,17 @@ contains
          mesh=mesh, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    call state_diagnose(exportState, 'at realize ', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call state_reset(ExportState, zero, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_reset(ImportState, zero, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call state_diagnose(exportState, 'after state_reset', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
 
   end subroutine realize_fields
@@ -198,6 +214,8 @@ contains
     use w3wdatmd    , only: time
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
+#else
+    use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
 #endif
 
     ! input/output variables
@@ -217,6 +235,11 @@ contains
     integer           :: timen(2) ! ending time of the run interval
     real(r8)          :: data_global(nx*ny)
     real(r8), allocatable :: data_global2(:)
+#ifdef CESMCOUPLED
+    character(len=10) :: uwnd = 'Sa_u', vwnd = 'Sa_v'
+#else
+    character(len=10) :: uwnd = 'Sa_u10m', vwnd = 'Sa_v10m'
+#endif
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
@@ -226,6 +249,8 @@ contains
 
     ! Get import state, clock and vm
     call ESMF_GridCompGet(gcomp, clock=clock, importState=importState, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_diagnose(importState, 'at import ', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine time0 and timen - note have not advanced the model clock yet with nuopc
@@ -258,7 +283,7 @@ contains
     ! fill with special values as default, these should not be used in practice
     ! set time for input data to time0 and timen (shouldn't matter)
 
-    ! note that INFLAGS(1-5) is true
+    ! note that INFLAGS(1-5) is true for CESM, for UWM INFLAGS(2:4) is true
     def_value = 0.0
 
     ! ---------------
@@ -322,8 +347,8 @@ contains
 
        WX0(:,:) = def_value   ! atm u wind
        WXN(:,:) = def_value
-       if (state_fldchk(importState, 'Sa_u')) then
-          call SetGlobalInput(importState, 'Sa_u', vm, data_global, rc)
+       if (state_fldchk(importState, trim(uwnd))) then
+          call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           n = 0
           do iy = 1,NY
@@ -337,9 +362,9 @@ contains
 
        WY0(:,:) = def_value   ! atm v wind
        WYN(:,:) = def_value
-       if (state_fldchk(importState, 'Sa_v')) then
+       if (state_fldchk(importState, trim(vwnd))) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'Sa_v', vm, data_global, rc)
+          call SetGlobalInput(importState, trim(vwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
        n = 0
@@ -352,7 +377,7 @@ contains
        end do
 
        DT0(:,:) = def_value   ! air temp - ocn temp
-       DTN(:,:)  = def_value
+       DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
           allocate(data_global2(nx*ny))
           call SetGlobalInput(importState, 'Sa_tbot', vm, data_global, rc)
@@ -405,6 +430,45 @@ contains
              end do
           end do
        end if
+    end if
+#else
+    ! ---------------
+    ! INFLAGS1(5) - atm momentum fields
+    ! ---------------
+    if (INFLAGS1(5)) then
+       TU0  = time0       ! times for atm momentum fields.
+       TUN  = timen
+
+       UX0(:,:) = def_value   ! atm u momentum
+       UXN(:,:) = def_value
+       if (state_fldchk(importState, 'Faxa_taux')) then
+          call SetGlobalInput(importState, 'Faxa_taux', vm, data_global, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          n = 0
+          do iy = 1,NY
+             do ix = 1,NX
+                n = n + 1
+                UX0(ix,iy) = data_global(n)
+                UXN(ix,iy) = data_global(n)
+             end do
+          end do
+       end if
+
+       UY0(:,:) = def_value   ! atm v momentum
+       UYN(:,:) = def_value
+       if (state_fldchk(importState, 'Faxa_tauy')) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call SetGlobalInput(importState, 'Faxa_tauy', vm, data_global, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+       n = 0
+       do iy = 1,NY
+          do ix = 1,NX
+             n = n + 1
+             UY0(ix,iy)  = data_global(n)
+             UYN(ix,iy)  = data_global(n)
+          end do
+       end do
     end if
 #endif
 
@@ -565,6 +629,7 @@ contains
     end if
 #endif
 
+    ! surface stokes drift
     if (state_fldchk(exportState, 'Sw_ustokes')) then
        call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -596,14 +661,14 @@ contains
        enddo
     end if
 
-    if (state_fldchk(exportState, 'charno')) then
+    if (state_fldchk(exportState, 'Sw_ch')) then
        call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcCharnk(charno)
     endif
 
-    if (state_fldchk(exportState, 'z0rlen')) then
-       call state_getfldptr(exportState, 'z0rlen', fldptr1d=z0rlen, rc=rc)
+    if (state_fldchk(exportState, 'Sw_z0')) then
+       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
@@ -839,17 +904,16 @@ contains
       call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      sw_ustokes1(jsea)= fillvalue
-      sw_vstokes1(jsea)= fillvalue
-      sw_ustokes2(jsea)= fillvalue
-      sw_vstokes2(jsea)= fillvalue
-      sw_ustokes3(jsea)= fillvalue
-      sw_vstokes3(jsea)= fillvalue
+      sw_ustokes1(:)= zero
+      sw_vstokes1(:)= zero
+      sw_ustokes2(:)= zero
+      sw_vstokes2(:)= zero
+      sw_ustokes3(:)= zero
+      sw_vstokes3(:)= zero
 
       call CALC_U3STOKES(va, 2)
 
       do jsea = 1,nseal
-         isea = iaproc + (jsea-1)*naproc
          sw_ustokes1(jsea)=ussp(jsea,1)
          sw_vstokes1(jsea)=ussp(jsea,nk+1)
          sw_ustokes2(jsea)=ussp(jsea,2)
@@ -861,6 +925,8 @@ contains
    end if
 #endif
 
+    call state_diagnose(exportState, 'at export ', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
   end subroutine export_fields
 
   !===============================================================================
@@ -1115,6 +1181,7 @@ contains
     logical, save      :: firstCall = .true.
     !----------------------------------------------------------------------
 
+    !TODO: fix firstCall like for Roughl
     jsea_loop: do jsea = 1,nseal
        isea = iaproc + (jsea-1)*naproc
        if ( firstCall ) then
@@ -1174,8 +1241,9 @@ contains
        isea = iaproc + (jsea-1)*naproc
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       if ( mapsta(iy,ix) == 1 ) then
-          if ( firstCall ) then
+       if ( firstCall ) then
+          if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) .or. &
+             ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
              charn(jsea) = zero
              llws(:) = .true.
              ustar = zero
@@ -1193,9 +1261,9 @@ contains
                           tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
                           dlwmean )
 #endif
-          endif !firstCall
+          end if
+       endif !firstCall
           wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-       endif
     enddo jsea_loop
 
     firstCall = .false.
