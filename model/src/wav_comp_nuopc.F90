@@ -864,7 +864,7 @@ contains
     !do j=1, 7
     !   odat(5*(j-1)+3) = 0
     !end do
-   
+
 !    !TODO: ?odat is now 40
     do J =1,8
        J0 = (j-1)*5
@@ -1333,7 +1333,6 @@ contains
     integer          :: tod        ! current time of day (sec)
     integer          :: time0(2)
     integer          :: timen(2)
-    logical          :: lerr
     integer          :: shrlogunit ! original log unit and level
     character(ESMF_MAXSTR)     :: msgString
     character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '

@@ -185,9 +185,6 @@ contains
          mesh=mesh, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call state_diagnose(exportState, 'at realize ', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call state_reset(ExportState, zero, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_reset(ImportState, zero, rc=rc)
@@ -507,8 +504,6 @@ contains
           end do
        end if
     end if
-
-100 format(a,i6,2x,d21.14)
 
     call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
 
