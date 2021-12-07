@@ -1167,19 +1167,19 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (state_fldchk(exportState, 'Sw_lamult')) then
-    call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lamult (:) = 1.
     endif
     if (state_fldchk(exportState, 'Sw_ustokes')) then
-    call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_ustokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_vstokes')) then
-    call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    sw_vstokes(:) = 0.
+      call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_vstokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_z0')) then
        call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
