@@ -507,8 +507,6 @@ contains
        end if
     end if
 
-100 format(a,i6,2x,d21.14)
-
     call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
