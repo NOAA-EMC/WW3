@@ -59,7 +59,10 @@ for file in $file_list0
   do
     if [[ -d $base_dir/$file ]]; then
     file_list1=`( ls $base_dir/$file ; ls $comp_dir/$file ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
-    file_list0="$file_list0 $file/$file_list1"
+       for file1 in $file_list1
+         do
+           file_list0="$file_list0 $file/$file1"
+       done
     fi
 done
 # remove directories from the list
