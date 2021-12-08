@@ -113,6 +113,12 @@ if("SCRIP" IN_LIST switches)
   endif() 
 endif()
 
+if("OASIS" IN_LIST switches)
+  find_package(OASIS REQUIRED)
+  target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
+endif()
+
+
 if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
   if(NOT NetCDF_Fortran_FOUND)
     message(FATAL_ERROR "Cannot build SCRIPNC, OASIS, or TRKNC without NetCDF")
