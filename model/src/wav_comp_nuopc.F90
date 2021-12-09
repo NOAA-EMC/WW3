@@ -189,6 +189,8 @@ module wav_comp_nuopc
   use shr_nl_mod            , only : shr_nl_find_group_name
   use shr_file_mod          , only : shr_file_getunit
   use shr_mpi_mod           , only : shr_mpi_bcast     ! TODO: remove
+#else
+  use wav_shel_inp          , only : read_shel_inp
 #endif
 
   implicit none
@@ -202,7 +204,7 @@ module wav_comp_nuopc
   private :: ModelAdvance
   private :: ModelFinalize
 
-  integer :: stdout
+  integer :: stdout = 6
   include "mpif.h"
 
   !--------------------------------------------------------------------------
@@ -397,6 +399,8 @@ contains
 
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
+
+    use w3odatmd,   only : nds
     ! TODO: remove (used for debugging)
     use w3adatmd,   only : charn,u10
     use w3wdatmd,   only : ust
@@ -410,8 +414,8 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    integer, parameter             :: nhmax = 200
-    real                           :: a(nhmax,4)
+    !integer, parameter             :: nhmax = 200
+    !real                           :: a(nhmax,4)
     type(ESMF_DistGrid)            :: distGrid
     type(ESMF_Mesh)                :: Emesh, EmeshTemp
     type(ESMF_VM)                  :: vm
@@ -428,8 +432,8 @@ contains
     integer                        :: ix, iy
     character(CL)                  :: starttype
     integer                        :: unitn            ! namelist unit number
-    integer                        :: ndso, ndse, nds(13), ntrace(2), time0(2)
-    integer                        :: timen(2), nh(4), iprt(6)
+    integer                        :: ndso, ndse, time0(2), ntrace(2)
+    integer                        :: timen(2), iprt(6)
     integer                        :: J0  ! CMB
     integer                        :: i,j,npts
     integer                        :: ierr
@@ -486,6 +490,14 @@ contains
     call ESMF_VMGet(vm, mpiCommunicator=mpi_comm, peCount=naproc, localPet=iam, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     iaproc = iam + 1
+    napout = 1
+    naperr = 1
+
+    if (iaproc == napout) then
+       masterproc = .true.
+    else
+       masterproc = .false.
+    end if
 
 #ifdef CESMCOUPLED
     !--------------------------------------------------------------------
@@ -523,15 +535,6 @@ contains
     !----------------------------------------------------------------------------
     ! reset shr logging to my log file
     !----------------------------------------------------------------------------
-
-    napout = 1
-    naperr = 1
-
-    if (iaproc == napout) then
-       masterproc = .true.
-    else
-       masterproc = .false.
-    end if
 
     ! Identify available unit numbers
     ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
@@ -593,6 +596,13 @@ contains
 #endif
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
 
+#ifndef CESMCOUPLED
+    iostyp = 1        ! gridded field
+    if (masterproc) write (ndso,940) 'no dedicated output process, any file system '
+
+    call ESMF_LogWrite(trim(subname)//' calling = wav_shel_inp', ESMF_LOGMSG_INFO)
+    call read_shel_inp(mpi_comm)
+#else
     !--------------------------------------------------------------------
     ! Define input fields inflags1 and inflags2 settings
     !--------------------------------------------------------------------
@@ -606,11 +616,11 @@ contains
     !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
     !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
 
-#ifdef CESMCOUPLED
+!#ifdef CESMCOUPLED
     ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth on
     inflags1(:) = .false.
     inflags1(1:5) = .true.
-#else
+!#else
    !TODO: in current code, inflags1(5) is expected to be momentum, inflags1(6) is the air density
    !   FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
    !   FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
@@ -619,8 +629,8 @@ contains
    !   FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
    !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 
-    inflags1(:) = .false.
-    inflags1(2:4) = .true.
+    !inflags1(:) = .false.
+    !inflags1(2:4) = .true.
 #endif
 
     if (wav_coupling_to_cice) then
@@ -688,13 +698,14 @@ contains
     call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+#ifdef CESMCOUPLED
     !--------------------------------------------------------------------
     ! Define output type and fields
     !--------------------------------------------------------------------
 
     iostyp = 1        ! gridded field
     if (masterproc) write (ndso,940) 'no dedicated output process, any file system '
-#ifdef CESMCOUPLED
+
     ! Actually will need a new restart flag - since all of the ODAT
     ! should be set to 0 - since they are initializated in w3initmd
     ! ODAT    I.A.   I   Output data, five parameters per output type
@@ -858,23 +869,24 @@ contains
 
     ! 10) is user defined
 #else
-    flgrd(:,:)  = .false.   ! gridded fields
-    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
-!   !TODO: ????
-    !do j=1, 7
-    !   odat(5*(j-1)+3) = 0
-    !end do
-
-!    !TODO: ?odat is now 40
-    do J =1,8
-       J0 = (j-1)*5
-       odat(J0+1) = time(1)     ! YYYYMMDD for first output
-       odat(J0+2) = time(2)     ! HHMMSS for first output
-       !odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
-       odat(J0+3) = 3*3600  ! output interval in sec, controls restart freq ? 
-       odat(J0+4) = 99990101    ! YYYYMMDD for last output
-       odat(J0+5) = 0           ! HHMMSS for last output
-    end do
+     fnmpre = './'
+!    flgrd(:,:)  = .false.   ! gridded fields
+!    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+!!   !TODO: ????
+!    !do j=1, 7
+!    !   odat(5*(j-1)+3) = 0
+!    !end do
+!
+!!    !TODO: ?odat is now 40
+!    do J =1,8
+!       J0 = (j-1)*5
+!       odat(J0+1) = time(1)     ! YYYYMMDD for first output
+!       odat(J0+2) = time(2)     ! HHMMSS for first output
+!       !odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
+!       odat(J0+3) = 3*3600  ! output interval in sec, controls restart freq ?
+!       odat(J0+4) = 99990101    ! YYYYMMDD for last output
+!       odat(J0+5) = 0           ! HHMMSS for last output
+!    end do
 #endif
     !CMB document which fields to be output to first hist file in wav.log
     if ( iaproc .eq. napout ) then
@@ -976,19 +988,14 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
-    npts = 0
-    allocate ( x(1), y(1), pnames(1) )
-    pnames(1) = ' '
+    !npts = 0
+    !allocate ( x(1), y(1), pnames(1) )
+    !pnames(1) = ' '
 
     call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
 
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-    ! TODO: do we need these, are they in eg ww3_grid.inp.glo_1deg_ori
-    !dtmax  = 1800.0000
-    !dtcfl  = 450.0000
-    !dtcfli = 900.0000
-    !dtmin  = 30.00000
 
     lb = lbound(ust,1); ub = ubound(ust,1)
     !write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
