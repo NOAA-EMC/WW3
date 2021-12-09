@@ -1778,7 +1778,7 @@
       INTEGER :: I, J, ISN
       TYPE(PART_TMPL_T), POINTER :: P
       CHARACTER(LEN=64) :: TMPL
-      CHARACTER(LEN=256) :: TMP
+      CHARACTER(LEN=512) :: TMP
 
       ISN = IPART + 1
       IF(PTMETH .LE. 3) THEN
