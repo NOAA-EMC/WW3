@@ -146,6 +146,9 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 
+install(FILES ${CMAKE_BINARY_DIR}/switch DESTINATION ${CMAKE_INSTALL_PREFIX})
+  
+
 export(EXPORT WW3Exports
   NAMESPACE WW3::
   FILE WW3-targets.cmake
