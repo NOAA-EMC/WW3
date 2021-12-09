@@ -606,7 +606,7 @@
                          OUTPTS(I)%OUT5%RDBPI, STAT=ISTAT )
             CHECK_DEALLOC_STATUS ( ISTAT )
             CYCLE
-        ELSE IF ( IBI .NE. OUTPTS(I)%OUT5%NBI ) THEN
+          ELSE IF ( IBI .NE. OUTPTS(I)%OUT5%NBI ) THEN
            WRITE(*,*) 'ERROR 1020 l. 610' 
            STOP 
              !CALL EXTCDE ( 1020 )

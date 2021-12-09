@@ -2396,7 +2396,6 @@
       XGRD   => GRIDS(IMOD)%XGRD
       YGRD   => GRIDS(IMOD)%YGRD
       ZB     => GRIDS(IMOD)%ZB
-!AR: Todo: What ist he purpose of GINIT???
 !
       IF ( GINIT ) THEN
 !
