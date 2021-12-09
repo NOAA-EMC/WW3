@@ -73,8 +73,7 @@ if(NetCDF_Fortran_FOUND)
   list(APPEND programs ${netcdf_programs})
 endif()
 
-#FIXME
-#target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
+target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=\'${switch_strings}\'")
 
 if("OMPG" IN_LIST switches)
   find_package(OpenMP REQUIRED COMPONENTS Fortran)
