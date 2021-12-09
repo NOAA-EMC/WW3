@@ -1,57 +1,55 @@
 module wav_shel_inp
 
- implicit none
- private ! except
-
- public :: read_shel_inp
+  USE W3GDATMD, ONLY: FLAGLL
+  USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
+  USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
+  USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, FLAGSC
+  USE W3ODATMD, ONLY: W3NOUT, W3SETO, NDS
+  USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
+                      NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
+  USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
+  USE W3IOGRMD, ONLY: W3IOGR
+  USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
+  USE W3IORSMD, ONLY: OARST
+  USE W3SERVMD, ONLY: NEXTLN, EXTCDE
+  USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21
+  
+  implicit none
+  
+  integer :: npts
+  integer :: odat(40), iprt(6)
+  integer :: time0(2), timen(2), ttime(2)
+ 
+  real, allocatable              :: x(:), y(:)
+  character(len=40), allocatable :: pnames(:)
+ 
+  logical :: prtfrm
+  logical :: flgrd(nogrp,ngrpp), flgd(nogrp),          &
+             flgr2(nogrp,ngrpp), flg2(nogrp)
+  
+  include "mpif.h"
 
  contains
  
- !subroutine read_shel_inp(....inputs)?
  subroutine read_shel_inp(mpi_comm)
  
-      USE W3GDATMD, ONLY: FLAGLL
-      USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
-      USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
-      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, FLAGSC
-      USE W3ODATMD, ONLY: W3NOUT, W3SETO, NDS
-      USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
-                          NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
-      USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
-      USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
-      USE W3IORSMD, ONLY: OARST
-      USE W3SERVMD, ONLY: NEXTLN, EXTCDE
-      USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21
-!
-      INCLUDE "mpif.h"
-
       INTEGER, INTENT(IN) :: MPI_COMM
-!/ ------------------------------------------------------------------- /
-!/ Local PARAMETER statements
-!/
+
+! Local parameters
       INTEGER, PARAMETER  :: NHMAX =    200
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
+
       INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
-                             NDSEN, IERR, J, I, ILOOP, IPTS, NPTS
-      INTEGER             :: NDSF(-7:9), NTRACE(2), &
-                             TIME0(2), TIMEN(2), TTIME(2),    &
-                             NH(-7:10), THO(2,-7:10,NHMAX),   &
-                             ODAT(40), IPRT(6) = 0
+                             NDSEN, IERR, J, I, ILOOP, IPTS
+      INTEGER             :: NDSF(-7:9), &
+                             NH(-7:10), THO(2,-7:10,NHMAX)
       INTEGER             :: jfirst, IERR_MPI
       REAL                :: FACTOR, DTTST, XX, YY, HA(NHMAX,-7:10), &
                              HD(NHMAX,-7:10), HS(NHMAX,-7:10)
-      REAL, ALLOCATABLE   :: X(:), Y(:)
 
       CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:10)
       CHARACTER(LEN=3)    :: IDSTR(-7:10), IDTST
       CHARACTER(LEN=6)    :: YESXNO
       CHARACTER(LEN=40)   :: PN
-      CHARACTER(LEN=40),                                               &
-              ALLOCATABLE :: PNAMES(:)
       CHARACTER(LEN=13)   :: IDFLDS(-7:10)
       CHARACTER(LEN=20)   :: STRNG
       CHARACTER(LEN=23)   :: DTME21
@@ -60,12 +58,7 @@ module wav_shel_inp
       CHARACTER(LEN=1024) :: FLDRST=''
       CHARACTER(LEN=80)   :: LINEIN
       CHARACTER(LEN=8)    :: WORDS(7)=''
-      LOGICAL             :: FLLSTL, FLLSTI, FLLSTR, FLFLG, FLHOM,     &
-                             TFLAGI, PRTFRM, FLAGSCI, FLGNML
-      LOGICAL             :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),          &
-                             FLGR2(NOGRP,NGRPP), FLG2(NOGRP),          &
-                             FLH(-7:10),    &
-                             FLLST_ALL(-7:10)
+      LOGICAL             :: FLFLG, FLHOM, TFLAGI, FLH(-7:10)
       INTEGER             :: THRLEV
 
       DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
@@ -91,12 +84,9 @@ module wav_shel_inp
                     'DT0', 'DT1', 'DT2', 'MOV' /
 !
       FLGR2 = .FALSE.
-      FLH(:)       = .FALSE.
-!
+      FLH(:)  = .FALSE.
+      iprt(:) = 0
 ! IO setup comes next---do we want to move it from initreal?
-
-      NTRACE(1) =  NDS(3)
-      NTRACE(2) =  10
 
       NDSI   = 10
       NDSS   = 90
@@ -134,19 +124,12 @@ module wav_shel_inp
 
 ! Default COMSTR to "$" (for when using nml input files)
       COMSTR = "$"
-! inferred from context: these flags (FL) are to indicate that the last (LST)
-!   field has been read from a file.
-      FLLSTL = .FALSE. ! This is associated with J.EQ.1 (wlev)
-      FLLSTI = .FALSE. ! This is associated with J.EQ.4 (ice)
-      FLLSTR = .FALSE. ! This is associated with J.EQ.6 (rhoa)
-      FLLST_ALL = .FALSE. ! For all
 ! If using experimental mud or ice physics, additional lines will
 !  be read in from ww3_shel.inp and applied, so JFIRST is changed from
 !  its initialization setting "JFIRST=1" to some lower value.
       JFIRST=1
 
 ! process old ww3_shel.inp format
-!      IF (.NOT. FLGNML) THEN
         OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
         REWIND (NDSI)
         READ (NDSI,'(A)') COMSTR
@@ -317,7 +300,7 @@ module wav_shel_inp
                   CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
                   OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
                   REWIND (NDSS)
-!
+
                   IF ( .NOT.ALLOCATED(X) ) THEN
                     IF ( NPTS.GT.0 ) THEN
                       ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
@@ -327,12 +310,11 @@ module wav_shel_inp
                     END IF
                   END IF
                 END IF
-!
+
                 NPTS   = 0
                 DO
                   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
                   READ (NDSI2,*) XX, YY, PN
-                  print *,'XXX ',j,xx,yy,pn
                   IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
                     BACKSPACE (NDSI)
                     READ (NDSI,'(A)') LINE
@@ -513,53 +495,7 @@ module wav_shel_inp
                ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
         END IF ! FLHOM
 
-       print *,'XXX end if not flgnml'
 !      END IF ! if not flgnml
-!
-! ----------------
-!
-
-! 2.1 input fields
-
-! 2.1.a Opening field and data files
-!
-!      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950)
-!      IF ( FLFLG ) THEN
-!        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
-!                                         'Preparing input files ...'
-!!
-!
-!        DO J=JFIRST, 6
-!          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
-!            IF ( FLH(J) ) THEN
-!              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-!            ELSE
-!              FLAGTIDE = 0
-!              CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
-!                            NDSEN, NX, NY, GTYPE,               &
-!                            IERR, FPRE=TRIM(FNMPRE), TIDEFLAGIN=FLAGTIDE )
-!              IF ( IERR .NE. 0 ) GOTO 2222
-!              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
-!            END IF
-!          ELSE
-!            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-!          END IF
-!        END DO
-!!
-!        DO J=7, 9
-!          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
-!            CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
-!                         RCLD(J), NY, NODATA(J),                 &
-!                         IERR, FPRE=TRIM(FNMPRE) )
-!            IF ( IERR .NE. 0 ) GOTO 2222
-!            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
-!                                             RCLD(J), NODATA(J)
-!          ELSE
-!            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-!          END IF
-!        END DO
-!!
-!      END IF ! FLFLG
 
 ! 2.2 Time setup
 
@@ -700,9 +636,8 @@ module wav_shel_inp
 
 !     End of shel
       GOTO 2222
-!
+
 ! Error escape locations
-!
  2001 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
       CALL EXTCDE ( 1001 )
