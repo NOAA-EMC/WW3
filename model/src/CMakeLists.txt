@@ -1,17 +1,6 @@
 
-
-# Parse switch file and add compile definitions
-if(EXISTS ${SWITCH})
-  set(switch_file ${SWITCH})
-else()
-  set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
-  if(NOT EXISTS ${switch_file})
-    message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
-  endif()
-endif()
-
 # Open switch file
-file(STRINGS ${switch_file} switch_strings)
+file(STRINGS ${CMAKE_BINARY_DIR}/switch switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
 # Put executables/libraries into a top-level bin/lib directory within the build directory
@@ -28,6 +17,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_switches.cmake)
 check_switches("${switches}" switch_files)
 
 add_library(ww3_lib STATIC ${ftn_src} ${c_src} ${switch_files})
+add_dependencies(ww3_lib switch)
 # Re-name library on disk to just libww3 instead of libww3_lib
 set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3")
 
@@ -139,10 +129,6 @@ endif()
 if("TIDE" IN_LIST switches)
   add_executable(ww3_prtide ww3_prtide.F90)
   target_link_libraries(ww3_prtide PRIVATE ww3_lib)
-
-  #target_sources(ww3_lib PRIVATE w3nmlprncmd.F90)
-  #add_executable(ww3_prnc ww3_prnc.F90)
-  #target_link_libraries(ww3_prnc PRIVATE ww3_lib)
 endif()
 
 foreach(program ${programs})

@@ -17,13 +17,37 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Set switch file on command line when running CMake
 set(SWITCH "" CACHE STRING "Switch file")
 
+# Parse switch file and add compile definitions
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/switch)
+  if(EXISTS ${SWITCH})
+    set(switch_file ${SWITCH})
+  else()
+    set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
+    if(NOT EXISTS ${switch_file})
+      message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
+    endif()
+  endif()
+
+  # Copy switch file to build dir
+  configure_file(${switch_file} ${CMAKE_BINARY_DIR}/switch COPYONLY)
+endif()
+
+# Re-configure CMake when switch changes
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/switch)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/switch
+  COMMAND touch ${CMAKE_BINARY_DIR}/switch
+)
+
+add_custom_target(switch
+  DEPENDS ${CMAKE_BINARY_DIR}/switch
+)
+
 if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
   message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE
-    "Release"
-    CACHE STRING "Choose the type of build." FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-    "MinSizeRel" "RelWithDebInfo")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 add_subdirectory(model)
