@@ -235,7 +235,7 @@ module wav_shel_inp
           IF (WORDS(6) .EQ. 'T') THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
-            WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
+          if(iaproc .eq. naproc) WRITE(*,*)'odat(j=4): ',(ODAT(I),I=5*(8-1)+1,5*8)
           END IF
           IF (WORDS(7) .EQ. 'T') THEN
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -277,7 +277,6 @@ module wav_shel_inp
           READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
         END IF
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
-
 ! 2.5 Output types
 
           IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN

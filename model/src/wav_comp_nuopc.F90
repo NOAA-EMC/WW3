@@ -594,6 +594,58 @@ contains
     end if
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
 
+    !--------------------------------------------------------------------
+    ! Set time frame
+    !--------------------------------------------------------------------
+
+    ! TIME0 = from ESMF clock
+    ! NOTE - are not setting TIMEN here
+
+    if ( iaproc == napout ) write (ndso,930)
+
+    ! Initial run or restart run
+    if ( runtype == "initial") then
+       call ESMF_ClockGet( clock, startTime=ETime, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       call ESMF_ClockGet( clock, currTime=ETime, rc=rc )
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    endif
+    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ymd2date(yy, mm, dd, start_ymd)
+
+    hh = start_tod/3600
+    mm = (start_tod - (hh * 3600))/60
+    ss = start_tod - (hh*3600) - (mm*60)
+
+    time0(1) = start_ymd
+    time0(2) = hh*10000 + mm*100 + ss
+
+    call ESMF_ClockGet( clock, stopTime=ETime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=stop_tod, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ymd2date(yy, mm, dd, stop_ymd)
+
+    hh = stop_tod/3600
+    mm = (stop_tod - (hh * 3600))/60
+    ss = stop_tod - (hh*3600) - (mm*60)
+
+    timen(1) = stop_ymd
+    timen(2) = hh*10000 + mm*100 + ss
+
+    call stme21 ( time0 , dtme21 )
+    !if ( mastertask ) write (ndso,931) dtme21
+    !if ( mastertask ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
+    time = time0
+
+    ! get coupling interval
+    call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
 #ifdef CESMCOUPLED
     !--------------------------------------------------------------------
     ! Define input fields inflags1 and inflags2 settings
@@ -819,61 +871,8 @@ contains
 #endif
 
     !--------------------------------------------------------------------
-    ! Set time frame
-    !--------------------------------------------------------------------
-
-    ! TIME0 = from ESMF clock
-    ! NOTE - are not setting TIMEN here
-
-    if ( iaproc == napout ) write (ndso,930)
-
-    ! Initial run or restart run
-    if ( runtype == "initial") then
-       call ESMF_ClockGet( clock, startTime=ETime, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else
-       call ESMF_ClockGet( clock, currTime=ETime, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ymd2date(yy, mm, dd, start_ymd)
-
-    hh = start_tod/3600
-    mm = (start_tod - (hh * 3600))/60
-    ss = start_tod - (hh*3600) - (mm*60)
-
-    time0(1) = start_ymd
-    time0(2) = hh*10000 + mm*100 + ss
-
-    call ESMF_ClockGet( clock, stopTime=ETime, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=stop_tod, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ymd2date(yy, mm, dd, stop_ymd)
-
-    hh = stop_tod/3600
-    mm = (stop_tod - (hh * 3600))/60
-    ss = stop_tod - (hh*3600) - (mm*60)
-
-    timen(1) = stop_ymd
-    timen(2) = hh*10000 + mm*100 + ss
-
-    call stme21 ( time0 , dtme21 )
-    if ( iaproc .eq. napout ) write (ndso,931) dtme21
-    if ( iaproc .eq. napout ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
-    time = time0
-
-    ! get coupling interval
-    call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    !--------------------------------------------------------------------
     ! Wave model initializations
     !--------------------------------------------------------------------
-
 #ifdef CESMCOUPLED
     ! Notes on ww3 initialization:
     ! ww3 read initialization occurs in w3iors (which is called by initmd)
@@ -953,7 +952,7 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
-    call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' calling into w3init', ESMF_LOGMSG_INFO)
 
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
