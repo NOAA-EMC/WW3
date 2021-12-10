@@ -10,7 +10,6 @@ module wav_shel_inp
   USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
-  USE W3IORSMD, ONLY: OARST
   USE W3SERVMD, ONLY: NEXTLN, EXTCDE
   USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21
   
@@ -29,9 +28,9 @@ module wav_shel_inp
   
   include "mpif.h"
 
- contains
+  contains
  
- subroutine read_shel_inp(mpi_comm)
+  subroutine read_shel_inp(mpi_comm)
  
       INTEGER, INTENT(IN) :: MPI_COMM
 
@@ -84,7 +83,7 @@ module wav_shel_inp
                     'DT0', 'DT1', 'DT2', 'MOV' /
 !
       FLGR2 = .FALSE.
-      FLH(:)  = .FALSE.
+      FLH(:) = .FALSE.
       iprt(:) = 0
 ! IO setup comes next---do we want to move it from initreal?
 
@@ -720,5 +719,5 @@ module wav_shel_inp
                '     IOSTAT =',I5/)
  1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
                '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
- end subroutine read_shel_inp
+  end subroutine read_shel_inp
 end module wav_shel_inp
