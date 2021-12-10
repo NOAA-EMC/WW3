@@ -1777,8 +1777,7 @@
 !/
       INTEGER :: I, J, ISN
       TYPE(PART_TMPL_T), POINTER :: P
-      CHARACTER(LEN=64) :: TMPL
-      CHARACTER(LEN=512) :: TMP
+      CHARACTER(LEN=512) :: TMPL
 
       ISN = IPART + 1
       IF(PTMETH .LE. 3) THEN
@@ -1791,8 +1790,8 @@
       I = INDEX(INSTR, IPART_TOKEN)
       J = I + LEN_TRIM(IPART_TOKEN)
       IF(I .GT. 0) THEN
-        WRITE(TMP, '(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
-        INSTR = TMP
+        WRITE(TMPL, '(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
+        INSTR = TMPL
       ENDIF
 
       ! Set standard name string (built-in SPART template)
