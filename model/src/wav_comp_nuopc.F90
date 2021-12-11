@@ -189,6 +189,10 @@ module wav_comp_nuopc
   use shr_nl_mod            , only : shr_nl_find_group_name
   use shr_file_mod          , only : shr_file_getunit
   use shr_mpi_mod           , only : shr_mpi_bcast     ! TODO: remove
+#else
+  use wav_shel_inp          , only : npts, odat, iprt, x, y, pnames, prtfrm
+  use wav_shel_inp          , only : flgrd, flgd, flgr2, flg2
+  use wav_shel_inp          , only : read_shel_inp
 #endif
 
   implicit none
@@ -202,7 +206,7 @@ module wav_comp_nuopc
   private :: ModelAdvance
   private :: ModelFinalize
 
-  integer :: stdout
+  integer :: stdout = 6
   include "mpif.h"
 
   !--------------------------------------------------------------------------
@@ -211,10 +215,7 @@ module wav_comp_nuopc
 
 #ifdef CESMCOUPLED
   integer :: odat(35)
-#else
-  integer :: odat(40)
 #endif
-
   character(len=CL)       :: flds_scalar_name = ''
   integer                 :: flds_scalar_num = 0
   integer                 :: flds_scalar_index_nx = 0
@@ -386,6 +387,7 @@ contains
        read(cvalue,*) profile_memory
        call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO, rc=rc)
     end if
+
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -397,6 +399,12 @@ contains
 
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
+    use w3odatmd,   only : nds
+    ! TODO: remove (used for debugging)
+    use w3adatmd,   only : charn,u10
+    use w3wdatmd,   only : ust
+    use w3gdatmd,   only : xgrd, ygrd
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState
@@ -405,8 +413,8 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    integer, parameter             :: nhmax = 200
-    real                           :: a(nhmax,4)
+    !integer, parameter             :: nhmax = 200
+    !real                           :: a(nhmax,4)
     type(ESMF_DistGrid)            :: distGrid
     type(ESMF_Mesh)                :: Emesh, EmeshTemp
     type(ESMF_VM)                  :: vm
@@ -423,12 +431,10 @@ contains
     integer                        :: ix, iy
     character(CL)                  :: starttype
     integer                        :: unitn            ! namelist unit number
-    integer                        :: ndso, ndse, nds(13), ntrace(2), time0(2)
-    integer                        :: timen(2), nh(4), iprt(6)
-    integer                        :: J0  ! CMB
-    integer                        :: i,j,npts
+    integer                        :: ndso, ndse, time0(2), ntrace(2)
+    integer                        :: timen(2)
+    integer                        :: i,j
     integer                        :: ierr
-    real, allocatable              :: x(:), y(:)
     integer                        :: n, jsea,isea, ncnt
     integer                        :: ntotal, nlnd
     integer                        :: nlnd_global, nlnd_local
@@ -438,16 +444,25 @@ contains
     integer, allocatable           :: gindex_lnd(:)
     integer, allocatable           :: gindex_sea(:)
     integer, allocatable           :: gindex(:)
-    logical                        :: prtfrm, flt
+    logical                        :: isPresent, isSet
+    character(len=23)              :: dtme21
+    integer                        :: iam, mpi_comm
+#ifdef CESMCOUPLED
+    integer                        :: J0  ! CMB
+    integer                        :: npts, iprt(6)
+    real, allocatable              :: x(:), y(:)
+    character(len=10), allocatable :: pnames(:)
+    logical                        :: flt
+    logical                        :: prtfrm
     logical                        :: flgrd(nogrp,ngrpp)  !flags for gridded output
     logical                        :: flgrd2(nogrp,ngrpp) !flags for coupling output
     logical                        :: flg(nogrp)          !flags for whole group?, probably eliminated now
     logical                        :: flg2(nogrp)         !flags for whole group?
-    logical                        :: isPresent, isSet
-    character(len=23)              :: dtme21
-    integer                        :: iam, mpi_comm
-    character(len=10), allocatable :: pnames(:)
-    character(len=*),parameter :: subname = '(wav_comp_nuopc:InitializeRealize)'
+#endif
+    character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
+    character(len=1024)            :: msgString
+    integer :: lb,ub
+
     ! -------------------------------------------------------------------
 
     namelist /ww3_inparm/ initfile, outfreq
@@ -478,8 +493,15 @@ contains
     call ESMF_VMGet(vm, mpiCommunicator=mpi_comm, peCount=naproc, localPet=iam, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     iaproc = iam + 1
+    napout = 1
+    naperr = 1
 
-#ifdef CESMCOUPLED
+    if (iaproc == napout) then
+       masterproc = .true.
+    else
+       masterproc = .false.
+    end if
+
     !--------------------------------------------------------------------
     ! IO set-up
     !--------------------------------------------------------------------
@@ -501,36 +523,11 @@ contains
     ! NDS( 8) ! unit for output for FLOUT(2) flag   point unformmatted output
     ! etc through 13
     !
-    !----------------------------------------------------------------------------
-    ! determine instance information
-    !----------------------------------------------------------------------------
-
-    call get_component_instance(gcomp, inst_suffix, inst_index, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    inst_name = "WAV"//trim(inst_suffix)
-    call set_component_logging(gcomp, masterproc, stdout, shrlogunit, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#endif
-
-    !----------------------------------------------------------------------------
-    ! reset shr logging to my log file
-    !----------------------------------------------------------------------------
-
-    napout = 1
-    naperr = 1
-
-    if (iaproc == napout) then
-       masterproc = .true.
-    else
-       masterproc = .false.
-    end if
-
     ! Identify available unit numbers
     ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
     ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
     ! the same unit.  After getting all the available unit numbers, close
     ! the units since they will be opened within W3INIT.
-
     nds(1) = stdout
     nds(2) = stdout
     nds(3) = stdout
@@ -548,13 +545,35 @@ contains
     ndse      =  stdout
     ntrace(1) =  nds(3)
     ntrace(2) =  10
+    if ( masterproc ) write (ndso,900)
+
+#ifdef CESMCOUPLED
+    !----------------------------------------------------------------------------
+    ! determine instance information
+    !----------------------------------------------------------------------------
+
+    call get_component_instance(gcomp, inst_suffix, inst_index, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    inst_name = "WAV"//trim(inst_suffix)
+
+    call set_component_logging(gcomp, masterproc, stdout, shrlogunit, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if ( masterproc ) then
+       write(ndso,*) trim(subname),' inst_name   = ',trim(inst_name)
+       write(ndso,*) trim(subname),' inst_index  = ',inst_index
+       write(ndso,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
+    endif
 
     ! Redirect share output to wav log
     call shr_file_getLogUnit (shrlogunit)
     call shr_file_setLogUnit (ndso)
-
-    if ( masterproc ) write (ndso,900)
-
+#else
+    inst_index = 1
+    inst_suffix = ''
+    inst_name = ''
+    casename = ''
+#endif
     !--------------------------------------------------------------------
     ! Initialize run type
     !--------------------------------------------------------------------
@@ -573,63 +592,7 @@ contains
        runtype = "branch"
        if(masterproc)write(ndso,*) 'starttype: branch'
     end if
-
-#ifdef CESMCOUPLED
-    if ( masterproc ) then
-       write(ndso,*) trim(subname),' inst_name   = ',trim(inst_name)
-       write(ndso,*) trim(subname),' inst_index  = ',inst_index
-       write(ndso,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
-    endif
-#else
-    inst_index = 1
-    inst_suffix = ''
-    inst_name = ''
-    casename = ''
-#endif
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
-
-    !--------------------------------------------------------------------
-    ! Define input fields inflags1 and inflags2 settings
-    !--------------------------------------------------------------------
-
-    !  fllev   inflags1(1)  flag for water level input.
-    !  flcur   inflags1(2)  flag for current input.
-    !  flwind  inflags1(3)  flag for wind input.
-    !  flice   inflags1(4)  flag for ice input (ice fraction)
-    !  flhml   inflags1(5)  flag for mixed layer depth input. ql, 150525 hk
-
-    !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
-    !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
-
-#ifdef CESMCOUPLED
-    ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth on
-    inflags1(:) = .false.
-    inflags1(1:5) = .true.
-#else
-   !TODO: in current code, inflags1(5) is expected to be momentum, inflags1(6) is the air density
-   !   FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
-   !   FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
-   !   FLWIND => INPUTS(IMOD)%INFLAGS1(3)
-   !   FLICE  => INPUTS(IMOD)%INFLAGS1(4)
-   !   FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
-   !   FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
-
-    inflags1(:) = .false.
-    inflags1(2:4) = .true.
-#endif
-
-    if (wav_coupling_to_cice) then
-       inflags1(-7) = .true. ! LR ice thickness
-       inflags1(-3) = .true. ! LR ice floe size
-
-       ! LR - I don't understand the difference between inflags1 and inflags2
-       ! I am setting them both here to get thickness and floe size import to waves
-       ! and to turn on attenuation
-       inflags2(-7) = .true. ! LR thickness
-       inflags2(-3) = .true. ! LR floe size
-
-       inflags2( 4) = .true. ! LR ????
-    end if
 
     !--------------------------------------------------------------------
     ! Set time frame
@@ -673,8 +636,8 @@ contains
     timen(2) = hh*10000 + mm*100 + ss
 
     call stme21 ( time0 , dtme21 )
-    if ( iaproc .eq. napout ) write (ndso,931) dtme21
-    if ( iaproc .eq. napout ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
+    !if ( mastertask ) write (ndso,931) dtme21
+    !if ( mastertask ) write (ndso,*) 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     time = time0
 
     ! get coupling interval
@@ -682,13 +645,44 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+#ifdef CESMCOUPLED
+    !--------------------------------------------------------------------
+    ! Define input fields inflags1 and inflags2 settings
+    !--------------------------------------------------------------------
+
+    !  fllev   inflags1(1)  flag for water level input.
+    !  flcur   inflags1(2)  flag for current input.
+    !  flwind  inflags1(3)  flag for wind input.
+    !  flice   inflags1(4)  flag for ice input (ice fraction)
+    !  flhml   inflags1(5)  flag for mixed layer depth input. ql, 150525 hk
+
+    !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
+    !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
+
+    ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth on
+    inflags1(:) = .false.
+    inflags1(1:5) = .true.
+
+    if (wav_coupling_to_cice) then
+       inflags1(-7) = .true. ! LR ice thickness
+       inflags1(-3) = .true. ! LR ice floe size
+
+       ! LR - I don't understand the difference between inflags1 and inflags2
+       ! I am setting them both here to get thickness and floe size import to waves
+       ! and to turn on attenuation
+       inflags2(-7) = .true. ! LR thickness
+       inflags2(-3) = .true. ! LR floe size
+
+       inflags2( 4) = .true. ! LR ????
+    end if
+
     !--------------------------------------------------------------------
     ! Define output type and fields
     !--------------------------------------------------------------------
 
     iostyp = 1        ! gridded field
     if (masterproc) write (ndso,940) 'no dedicated output process, any file system '
-#ifdef CESMCOUPLED
 
     ! Actually will need a new restart flag - since all of the ODAT
     ! should be set to 0 - since they are initializated in w3initmd
@@ -741,7 +735,6 @@ contains
 
     flgrd(:,:)  = .false.   ! gridded fields
     flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
-
     ! 1) Forcing fields
     flgrd( 1, 1)  = .false. ! Water depth
     flgrd( 1, 2)  = .false. ! Current vel.
@@ -853,25 +846,7 @@ contains
     flgrd( 9, 5)  = .false. !'Maximum k advect CFL'
 
     ! 10) is user defined
-#else
-    flgrd(:,:)  = .false.   ! gridded fields
-    flgrd2(:,:) = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
-!   !TODO: ????
-    !do j=1, 7
-    !   odat(5*(j-1)+3) = 0
-    !end do
 
-!    !TODO: ?odat is now 40
-    do J =1,8
-       J0 = (j-1)*5
-       odat(J0+1) = time(1)     ! YYYYMMDD for first output
-       odat(J0+2) = time(2)     ! HHMMSS for first output
-       !odat(J0+3) = dtime_sync  ! output interval in sec ! changed by Adrean
-       odat(J0+3) = 3*3600  ! output interval in sec, controls restart freq ? 
-       odat(J0+4) = 99990101    ! YYYYMMDD for last output
-       odat(J0+5) = 0           ! HHMMSS for last output
-    end do
-#endif
     !CMB document which fields to be output to first hist file in wav.log
     if ( iaproc .eq. napout ) then
        flt = .true.
@@ -894,7 +869,6 @@ contains
     ! Wave model initializations
     !--------------------------------------------------------------------
 
-#ifdef CESMCOUPLED
     ! Notes on ww3 initialization:
     ! ww3 read initialization occurs in w3iors (which is called by initmd)
     ! For a startup (including hybrid) or branch run the initial datafile is
@@ -909,7 +883,7 @@ contains
     if ( iaproc .eq. napout ) then
        write(ndso,*) 'Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
        open(newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
-       call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
+       !call shr_nl_find_group_name(unitn, 'ww3_inparm', status=ierr)
        if (ierr == 0) then
           read (unitn, ww3_inparm, iostat=ierr)
           if (ierr /= 0) then
@@ -973,23 +947,32 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
-    npts = 0
-    allocate ( x(1), y(1), pnames(1) )
-    pnames(1) = ' '
+    fnmpre = './'
+    call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
+    call read_shel_inp(mpi_comm)
 
-    call ESMF_LogWrite(trim(subname)//' calling = w3init', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' cal w3init', ESMF_LOGMSG_INFO)
 
-    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgrd2, flg, flg2, &
+    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-    ! TODO: do we need these, are they in eg ww3_grid.inp.glo_1deg_ori
-    !dtmax  = 1800.0000
-    !dtcfl  = 450.0000
-    !dtcfli = 900.0000
-    !dtmin  = 30.00000
 
-    call ESMF_LogWrite(trim(subname)//' done = w3init', ESMF_LOGMSG_INFO)
+    !lb = lbound(ust,1); ub = ubound(ust,1)
+    !!write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub,ust(2955:2964)
+    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    !lb = lbound(charn,1); ub = ubound(charn,1)
+    !!write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
+    !write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub,charn(2955:2964)
+    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    !lb = lbound(u10,1); ub = ubound(u10,1)
+    !write(msgString,'(A,2i7,10g14.7)')'w3init u10 ',lb,ub,u10(2955:2964)
+    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    !call ESMF_LogWrite(trim(subname)//' done = w3init', ESMF_LOGMSG_INFO)
 #endif
-
+    !TODO: ??
     call mpi_barrier ( mpi_comm, ierr )
 
     !--------------------------------------------------------------------
@@ -1163,6 +1146,7 @@ contains
 
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' entered', ESMF_LOGMSG_INFO)
+
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1306,8 +1290,10 @@ contains
     type(ESMF_Clock) :: clock
     type(ESMF_Alarm) :: alarm
     type(ESMF_TIME)  :: ETime
+
     type(ESMF_TimeInterval)    :: timeStep
     type(ESMF_Time)            :: currTime, startTime, stopTime
+
     integer          :: yy,mm,dd,hh,ss
     integer          :: ymd        ! current year-month-day
     integer          :: tod        ! current time of day (sec)
@@ -1340,10 +1326,10 @@ contains
     call ESMF_TimePrint(currTime + timeStep, preString="--------------------------------> to: ", &
        unit=msgString, rc=rc)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
     !------------
     ! Determine if time to write restart
     !------------
-
     !TODO: how is CESM controlling restarts inside of WW3?
     call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1392,7 +1378,6 @@ contains
        histwr = .true.
       endif
     endif
-
 #ifdef CESMCOUPLED
     if (.not. histwr) then
        call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
@@ -1559,7 +1544,6 @@ contains
 
        call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
 #ifdef CESMCOUPLED
        !TODO: Are these required? CMEPS writes history
        !----------------
@@ -1584,8 +1568,6 @@ contains
 
        call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-
 #endif
     end if
 
