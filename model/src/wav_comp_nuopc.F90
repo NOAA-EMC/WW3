@@ -864,16 +864,11 @@ contains
        end do
        if ( flt ) write (ndso,1945) 'no fields defined'
     end if
-#else
-    fnmpre = './'
-    call ESMF_LogWrite(trim(subname)//' call into wav_shel_inp', ESMF_LOGMSG_INFO)
-    call read_shel_inp(mpi_comm)
-#endif
 
     !--------------------------------------------------------------------
     ! Wave model initializations
     !--------------------------------------------------------------------
-#ifdef CESMCOUPLED
+
     ! Notes on ww3 initialization:
     ! ww3 read initialization occurs in w3iors (which is called by initmd)
     ! For a startup (including hybrid) or branch run the initial datafile is
@@ -952,7 +947,11 @@ contains
     dtcfli = 1800.0000
     dtmin  = 1800.00000
 #else
-    call ESMF_LogWrite(trim(subname)//' calling into w3init', ESMF_LOGMSG_INFO)
+    fnmpre = './'
+    call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
+    call read_shel_inp(mpi_comm)
+
+    call ESMF_LogWrite(trim(subname)//' cal w3init', ESMF_LOGMSG_INFO)
 
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
