@@ -1,17 +1,6 @@
 
-
-# Parse switch file and add compile definitions
-if(EXISTS ${SWITCH})
-  set(switch_file ${SWITCH})
-else()
-  set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
-  if(NOT EXISTS ${switch_file})
-    message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
-  endif()
-endif()
-
 # Open switch file
-file(STRINGS ${switch_file} switch_strings)
+file(STRINGS ${CMAKE_BINARY_DIR}/switch switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
 
 # Put executables/libraries into a top-level bin/lib directory within the build directory
@@ -28,6 +17,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_switches.cmake)
 check_switches("${switches}" switch_files)
 
 add_library(ww3_lib STATIC ${ftn_src} ${switch_files})
+add_dependencies(ww3_lib switch)
 # Re-name library on disk to just libww3 instead of libww3_lib
 set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3")
 
@@ -83,8 +73,11 @@ if(NetCDF_Fortran_FOUND)
   list(APPEND programs ${netcdf_programs})
 endif()
 
-#FIXME
-#target_compile_definitions(ww3_lib PUBLIC "-D__WW3_SWITCHES__=${switch_strings}")
+set_property(SOURCE w3initmd.F90
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS
+  "__WW3_SWITCHES__=\'${switch_strings}\'"
+  )
 
 if("OMPG" IN_LIST switches)
   find_package(OpenMP REQUIRED COMPONENTS Fortran)
@@ -112,6 +105,12 @@ if("SCRIP" IN_LIST switches)
     target_link_libraries(ww3_lib PUBLIC esmf)
   endif() 
 endif()
+
+if("OASIS" IN_LIST switches)
+  find_package(OASIS REQUIRED)
+  target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
+endif()
+
 
 if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
   if(NOT NetCDF_Fortran_FOUND)
@@ -145,6 +144,9 @@ install(
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
+
+install(FILES ${CMAKE_BINARY_DIR}/switch DESTINATION ${CMAKE_INSTALL_PREFIX})
+  
 
 export(EXPORT WW3Exports
   NAMESPACE WW3::
