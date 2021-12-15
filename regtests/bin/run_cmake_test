@@ -1074,25 +1074,6 @@ then
     echo '+-------------------------------+'
     echo ' '
 
-    runprog=$runcmd
-    if [ $pmpi ]
-    then
-      if [ $nproc ]
-      then
-        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
-        then
-          runprog="$runprog -n $nproc"
-
-        else
-          runprog="$runprog -np $nproc"
-        fi
-      fi
-    fi
-    #if [ -n "$(grep SHRD $path_b/switch)" ] 
-    #then
-    #  runprog=''
-    #fi
- 
     if [ ! -f $path_e/$prog ]
     then
       errmsg "$path_e/$prog not found"
@@ -1149,7 +1130,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $runprog $path_e/$prog > $ofile
+        if $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml
