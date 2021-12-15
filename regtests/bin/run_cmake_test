@@ -448,6 +448,7 @@ then
   cp $path_build/install/bin/ww3_shel $path_e/
   cp $path_build/install/bin/ww3_multi $path_e/
   cp $path_build/install/bin/ww3_systrk $path_e/
+  cp $path_build/install/bin/ww3_prtide $path_e/
 
 else
   path_build=$path_w/build
@@ -1073,25 +1074,6 @@ then
     echo '+-------------------------------+'
     echo ' '
 
-    runprog=$runcmd
-    if [ $pmpi ]
-    then
-      if [ $nproc ]
-      then
-        if [ $batchq = "slurm" ] || [ $batchq = "alps" ]
-        then
-          runprog="$runprog -n $nproc"
-
-        else
-          runprog="$runprog -np $nproc"
-        fi
-      fi
-    fi
-    if [ -n "$(grep SHRD $path_b/switch)" ] 
-    then
-      runprog=''
-    fi
- 
     if [ ! -f $path_e/$prog ]
     then
       errmsg "$path_e/$prog not found"
@@ -1148,7 +1130,7 @@ then
           Tstart=`date +"%s.%2N"`
         fi
 
-        if $runprog $path_e/$prog > $ofile
+        if $path_e/$prog > $ofile
         then
           \rm -f $prog.inp
           \rm -f $prog.nml

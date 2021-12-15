@@ -9,14 +9,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Include list of src files to make file more readable
-# defines variables "ftn_src", "c_src", "pdlib_src", "scrip_src", and "scripnc_src"
+# defines variables "ftn_src", "pdlib_src", "scrip_src", and "scripnc_src"
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src_list.cmake)
 # check_switches as a function for less verbosity in this CMakeLists.txt
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_switches.cmake)
 
 check_switches("${switches}" switch_files)
 
-add_library(ww3_lib STATIC ${ftn_src} ${c_src} ${switch_files})
+add_library(ww3_lib STATIC ${ftn_src} ${switch_files})
 add_dependencies(ww3_lib switch)
 # Re-name library on disk to just libww3 instead of libww3_lib
 set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3")
@@ -139,8 +139,7 @@ if("NCEP2" IN_LIST switches)
 endif()
 
 if("TIDE" IN_LIST switches)
-  add_executable(ww3_prtide ww3_prtide.F90)
-  target_link_libraries(ww3_prtide PRIVATE ww3_lib)
+  list(APPEND programs ww3_prtide)
 endif()
 
 foreach(program ${programs})
