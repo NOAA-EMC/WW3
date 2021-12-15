@@ -17,20 +17,18 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Set switch file on command line when running CMake
 set(SWITCH "" CACHE STRING "Switch file")
 
-# Parse switch file and add compile definitions
-if(NOT EXISTS ${CMAKE_BINARY_DIR}/switch)
-  if(EXISTS ${SWITCH})
-    set(switch_file ${SWITCH})
-  else()
-    set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
-    if(NOT EXISTS ${switch_file})
-      message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
-    endif()
+# Search for switch file as a full path or in model/bin
+if(EXISTS ${SWITCH})
+  set(switch_file ${SWITCH})
+else()
+  set(switch_file ${CMAKE_SOURCE_DIR}/model/bin/switch_${SWITCH})
+  if(NOT EXISTS ${switch_file})
+    message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
   endif()
-
-  # Copy switch file to build dir
-  configure_file(${switch_file} ${CMAKE_BINARY_DIR}/switch COPYONLY)
 endif()
+
+# Copy switch file to build dir
+configure_file(${switch_file} ${CMAKE_BINARY_DIR}/switch COPYONLY)
 
 # Re-configure CMake when switch changes
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/switch)
