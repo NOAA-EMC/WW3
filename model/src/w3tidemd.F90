@@ -1,3 +1,6 @@
+!> @file w3tidemd.F90
+!> @brief Contains MODULE W3TIDEMD for tidal analysis of time series.
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3TIDEMD
@@ -1251,10 +1254,18 @@
 49    continue
       return
       END SUBROUTINE dsvdcmp
-
 !/ ------------------------------------------------------------------- /
+!
+!> @param id day
+!> @param mm month
+!> @param iyyy year
+!> @returns JULDAYT Julian day
+!>      
+!> @brief Compute Julian day from day,month,year.
+!>      
+!> @attention See numerical recipes 2nd ed. The order of month and day have been swapped!
+!      
       FUNCTION JULDAYT(id,mm,iyyy)
-! See numerical recipes 2nd ed. The order of month and day have been swapped!
 !*********************************************************************
       IMPLICIT NONE
       INTEGER id,mm,iyyy

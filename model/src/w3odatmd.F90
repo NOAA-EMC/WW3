@@ -1,5 +1,20 @@
+!> @file w3odatmd.F90
+!> @ brief Define data structures to set up wave model grids and aliases
+!>         to use individual grids transparently.
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
+!> @brief Define data structures to set up wave model grids and aliases
+!>        to use individual grids transparently.
+!>
+!> @details Also includes subroutines to manage data structure and 
+!>          pointing to individual models. This module considers the
+!>          parameters required for model output.
+!>
+!
       MODULE W3ODATMD
 !/
 !/                  +-----------------------------------+
@@ -323,10 +338,10 @@
       INTEGER, PARAMETER      :: NOGRP = 10
       INTEGER, PARAMETER      :: NGRPP = 20
       INTEGER, PARAMETER      :: DIMP = 15
-      INTEGER                 :: NOGE(NOGRP)
+      INTEGER                 :: NOGE(NOGRP) !< identifier set in W3NOUT
       INTEGER                 :: NOTYPE
       INTEGER, PARAMETER      :: NOEXTR=  2
-      CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
+      CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP) !< identifier set in W3NOUT
       CHARACTER(LEN=80)       :: FNMPRE = './'
       !Moved UNDEF to constants and included above
       !REAL                    :: UNDEF = -999.9
@@ -364,7 +379,7 @@
 #endif
                                  CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
                                  ICEFO(:), SPCO(:,:)
-        REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
+        REAL, POINTER         :: ZET_SETO(:)  !< For the wave setup.
 
         CHARACTER(LEN=40), POINTER :: PTNME(:)
         CHARACTER(LEN=13), POINTER :: GRDID(:)
@@ -422,8 +437,8 @@
         REAL                  :: HSPMIN, WSMULT, WSCUT
         REAL, POINTER         :: DTPRT(:,:)
         LOGICAL               :: FLFORM, FLCOMB, O6INIT
-        INTEGER               :: PTMETH   ! C. Bunney; Partitioning method
-        REAL                  :: PTFCUT   ! C. Bunney; Part. 5 freq cut
+        INTEGER               :: PTMETH   !< C Bunney; Partitioning method
+        REAL                  :: PTFCUT   !< C Bunney; Part 5 freq cut
       END TYPE OTYPE6
 !/
       TYPE OUTPUT
@@ -552,8 +567,8 @@
                                  IY0, IYN, IYS, ICPRT(:,:)
       REAL, POINTER           :: HSPMIN, WSMULT, WSCUT, DTPRT(:,:)
       LOGICAL, POINTER        :: FLFORM, FLCOMB, O6INIT
-      INTEGER, POINTER        :: PTMETH   ! C. Bunney; Partitioning method
-      REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
+      INTEGER, POINTER        :: PTMETH   !< C Bunney; Partitioning method
+      REAL, POINTER           :: PTFCUT   !< C Bunney; Part 5 freq cut
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /

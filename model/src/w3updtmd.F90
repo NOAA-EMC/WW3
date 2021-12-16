@@ -1,5 +1,10 @@
+!> @file w3updtmd.F90
+!> @brief contains module W3UPDTMD with routines for input updates.
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @author H. L. Tolman @date 22-Mar-2021
+!> @brief Bundles all input updating routines for WAVEWATCH III.
       MODULE W3UPDTMD
 !/
 !/                  +-----------------------------------+
@@ -136,6 +141,15 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 15-Dec-2004
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @returns N/A
+!> @brief Interpolate the current field to the present time.
+!>
+!> @details Linear interpolation of speed and direction, with optionally
+!> a correction to get approximate quadratic interpolation of speed only.
+!        
       SUBROUTINE W3UCUR ( FLFRST )
 !/
 !/                  +-----------------------------------+
@@ -439,6 +453,17 @@
 !/
       END SUBROUTINE W3UCUR
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 27-May-2014
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @param[in] VGX X grid velocity
+!> @param[in] VGY Y grid velocity
+!> @returns N/A
+!> @brief Interpolate wind fields to the given time.
+!> 
+!> @details Linear interpolation of wind speed and direction, with a simple
+!>  correction to obtain quasi-conservation of energy.
+!      
       SUBROUTINE W3UWND ( FLFRST, VGX, VGY )
 !/
 !/                  +-----------------------------------+
@@ -768,6 +793,16 @@
 !/
       END SUBROUTINE W3UWND
 !/ ------------------------------------------------------------------- /
+!
+!> @author J. M. Castillo @date 22-Mar-2021
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @returns N/A
+!> @brief Interpolate atmosphere momentum fields to the given time.
+!> 
+!> @details Linear interpolation of momentum module and direction, with a simple
+!>  correction to obtain quasi-conservation of energy.
+!>
+!      
       SUBROUTINE W3UTAU ( FLFRST )
 !/
 !/                  +-----------------------------------+
@@ -974,6 +1009,17 @@
 !/
       END SUBROUTINE W3UTAU
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 06-Jun-2018
+!> @param[out] A Action density spectra
+!> @returns A Action density spectra
+!> @brief Initialize the wave field with fetch-limited spectra before the
+!>  actual calculation start.
+!> 
+!> @details (Named as an update routine due to placement in code.) Fetch-limited
+!>  JONSWAP spectra with a cosine^2 directional distribution and a mean direction
+!>  taken from the wind.
+!      
       SUBROUTINE W3UINI ( A )
 !/
 !/                  +-----------------------------------+
@@ -1229,6 +1275,14 @@
 !/
       END SUBROUTINE W3UINI
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 06-Jun-2018
+!> @returns N/A
+!> @brief Update spectra at the active boundary points.
+!> 
+!> @details Spectra are read and interpolated in space and time from the
+!>  data read by W3IOBC.
+!      
       SUBROUTINE W3UBPT
 !/
 !/                  +-----------------------------------+
@@ -1432,6 +1486,15 @@
 !/
       END SUBROUTINE W3UBPT
 !/ ------------------------------------------------------------------- /
+!
+!> @author C. Sevigny  @date 27-Aug-2015
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @returns N/A
+!> @brief Update ice thickness in the wave model.
+!>      
+!> @remark Parameter FLFRST is not used within the routine.
+!> @attention FLFRST description in header is not correct.
+!      
       SUBROUTINE W3UIC1( FLFRST )
 !/
 !/                  +-----------------------------------+
@@ -1533,7 +1596,19 @@
 !/ End of W3UIC1 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3UIC1
-!/ ------------------------------------------------------------------- /  
+!/ ------------------------------------------------------------------- /
+!
+!> @author C. Sevigny
+!> @author F. Ardhuin
+!> @date 13-Jan-2016
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @returns N/A
+!> @brief Update ice floe mean and max diameters in the wave model.
+!> 
+!> @remark Parameter FLFRST is not used within the routine.
+!> @attention FLFRST description in header is not correct. 
+!>  
+!           
       SUBROUTINE W3UIC5( FLFRST )
 !/
 !/                  +-----------------------------------+
@@ -1648,7 +1723,24 @@
 !/
       END SUBROUTINE W3UIC5
 !/ ------------------------------------------------------------------- /      
-      
+!
+!> @author H. L. Tolman @date 28-Mar-2014
+!> @param[inout] VA Spectra in 1-D or 2-D representation (points to same address).
+!> @returns VA Spectra in 1-D or 2-D representation (points to same address).
+!> @brief Update ice map in the wave model.
+!> 
+!> @details
+!> @parblock
+!>     Points with an ice concentration larger than FICEN are removed
+!>     from the sea map in the wave model. Such points are identified
+!>     by negative numbers is the grid status map MAPSTA. For ice
+!>     points spectra are set to zero. Points from wich ice disappears
+!>     are initialized with a "small" JONSWAP spectrum, based on the
+!>     frequency SIG(NK-1) and the local wind direction.
+!>
+!>     In the case of icebergs, the iceberg attenuation coefficient is
+!>     added to the subgrid obstruction map.      
+!          
       SUBROUTINE W3UICE ( VA )
 !/
 !/                  +-----------------------------------+
@@ -1886,6 +1978,16 @@
 !/
       END SUBROUTINE W3UICE
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 26-Sep-2012
+!> @param[inout] A 1-D represetation of the spectra.
+!> @param[inout] VA 2-D represetation of the spectra.
+!> @returns A, VA
+!> @brief Update the water level.
+!> 
+!> @details The wavenumber grid is modified without modyfying the spectrum
+!>  (conservative linear interpolation to new grid).
+!            
       SUBROUTINE W3ULEV ( A, VA )
 !/
 !/                  +-----------------------------------+
@@ -2448,6 +2550,15 @@
 !/
       END SUBROUTINE W3ULEV
 !/ ------------------------------------------------------------------- /
+!
+!> @author J. M. Castillo @date 13-Aug-2021
+!> @param[in] FLFRST Flag for first pass through routine.
+!> @returns N/A
+!> @brief Interpolate air density field to the given time.
+!> 
+!> @details Linear interpolation.
+!>  
+!            
       SUBROUTINE W3URHO ( FLFRST )
 !/
 !/                  +-----------------------------------+
@@ -2616,6 +2727,21 @@
 !/
       END SUBROUTINE W3URHO
 !/ ------------------------------------------------------------------- /
+!
+!> @author H. L. Tolman @date 30-Oct-2009
+!> @param[in] TRNX X transparencies from model defintion file.
+!> @param[in] TRNY Y transparencies from model defintion file.
+!> @returns N/A
+!> @brief Update cell boundary transparencies for general use in propagation
+!>  routines.
+!> 
+!> @details Two arrays are generated with the size (NY*NX,-1:1). The 
+!>  value at (IXY,-1) indicates the transparency to be used if the 
+!>  lower or left boundary is an inflow boundary. (IXY,1) is used if 
+!>  the upper or right boundary is an inflow boundary. (IXY,0) is 
+!>  used for all other cases (by definition full transparency).
+!>  
+!            
       SUBROUTINE W3UTRN ( TRNX, TRNY )
 !/
 !/                  +-----------------------------------+
@@ -3004,6 +3130,18 @@
 !/
       END SUBROUTINE W3UTRN
 !/ ------------------------------------------------------------------- /
+!
+!> @author W. E. Rogers, (NRL) @date 06-Dec-2010
+!> @param[in] ZZ Field to calculate derivatives of.
+!> @param[in] ZUNIT Units of ZZ (used for test output).
+!> @param[out] DZZDX Derivative in X-direction (W-E).
+!> @param[out] DZZDY Derivative in Y-direction (S-N).
+!> @returns DZZDX, DZZDY
+!> @brief Calculate derivatives of a field.
+!> 
+!> @details Derivatives are calculated in m/m from the longitude/latitude
+!>  grid, central in space for iternal points, one-sided for coastal points.
+!            
       SUBROUTINE W3DZXY( ZZ, ZUNIT, DZZDX, DZZDY )
 !/
 !/                  +-----------------------------------+
