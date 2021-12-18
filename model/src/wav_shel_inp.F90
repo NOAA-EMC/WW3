@@ -58,7 +58,7 @@ module wav_shel_inp
       CHARACTER(LEN=80)   :: LINEIN
       CHARACTER(LEN=8)    :: WORDS(7)=''
       LOGICAL             :: FLFLG, FLHOM, TFLAGI, FLH(-7:10)
-      INTEGER             :: THRLEV
+      INTEGER             :: THRLEV = 1
 
       DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
                     'ice param. 3 ' , 'ice param. 4 ' ,               &
