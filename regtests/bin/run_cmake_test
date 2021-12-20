@@ -506,7 +506,8 @@ fi
 
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
-  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr
+    ww3_dir=${path_s}/..
+  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
   then :
   else
     errmsg "Error occured during WW3 $prog build"
