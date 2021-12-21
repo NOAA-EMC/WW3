@@ -33,6 +33,12 @@ jobs:
             ~/.spack
           key: spack-${{matrix.os}}-intel
 
+      - name: checkout-ww3
+        if: steps.cache-spack.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with: 
+            path: ww3
+
       - name: install-spack-dependencies
         if: steps.cache-spack.outputs.cache-hit != 'true'
         run: |
