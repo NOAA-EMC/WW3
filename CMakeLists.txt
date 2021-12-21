@@ -34,15 +34,6 @@ configure_file(${switch_file} ${CMAKE_BINARY_DIR}/switch COPYONLY)
 # Re-configure CMake when switch changes
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/switch)
 
-add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/switch
-  COMMAND touch ${CMAKE_BINARY_DIR}/switch
-)
-
-add_custom_target(switch
-  DEPENDS ${CMAKE_BINARY_DIR}/switch
-)
-
 if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
