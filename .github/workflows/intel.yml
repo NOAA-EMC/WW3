@@ -45,7 +45,7 @@ jobs:
           # Install NetCDF, ESMF, g2, etc using Spack
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
-          spack env create ww3-intel ww3/model/ci/spack/spack.yaml
+          spack env create ww3-intel ww3/model/ci/spack.yaml
           spack env activate ww3-intel
           spack compiler find
           spack external find m4 cmake pkgconf openssl
@@ -97,7 +97,6 @@ jobs:
           cd ww3
           export CC=mpicc
           export FC=mpif90
-          cd regtests/
           mkdir build && cd build
           cmake .. -DSWITCH=${{matrix.switch}}
           make -j2
