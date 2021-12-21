@@ -57,8 +57,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install libnetcdf-dev libnetcdff-dev
           sudo apt-get install libmpich-dev
-          source spack/share/spack/setup-env.sh
-          spack env activate ww3-intel
+          #source spack/share/spack/setup-env.sh
+          #spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
           mkdir build && cd build
