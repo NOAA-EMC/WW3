@@ -2613,7 +2613,7 @@
 #endif
 !
 #ifdef W3_MPI
-              IF ( FLGRDALL( 1, 9) ) THEN
+              IF ( FLGRDALL( 1, 12) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
       CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC,    &
@@ -4021,7 +4021,7 @@
 #endif
 !
 #ifdef W3_MPI
-                IF ( FLGRDALL( 1, 9) ) THEN
+                IF ( FLGRDALL( 1, 12) ) THEN
                     IH     = IH + 1
                     IT     = IT + 1
       CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -5533,7 +5533,7 @@
 #endif
 !
 #ifdef W3_MPI
-              IF ( FLOGRR( 1, 9) ) THEN
+              IF ( FLOGRR( 1, 12) ) THEN
                 IH     = IH + 1
                 IT     = IT0 + 6
                 CALL MPI_SEND_INIT (ICEF(IAPROC), 1, WW3_FIELD_VEC, &
@@ -5930,7 +5930,7 @@
 #endif
 !
 #ifdef W3_MPI
-                  IF ( FLOGRR( 1, 9) ) THEN
+                  IF ( FLOGRR( 1, 12) ) THEN
                     IH     = IH + 1
                     IT     = IT0 + 6
                     CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, &
