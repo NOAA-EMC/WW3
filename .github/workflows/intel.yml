@@ -62,7 +62,7 @@ jobs:
       matrix:
         switch: [NCEP_st2, NCEP_st4]
         os: [ubuntu-20.04]
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     env:
       CC: icc
       FC: ifort
