@@ -984,7 +984,7 @@
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CX(1:NSEA)
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CY(1:NSEA)
                   ENDIF
-                  IF ( FLOGRR(1,9) )                                  &
+                  IF ( FLOGRR(1,12) )                                 &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) ICEF(1:NSEA)
                   IF ( FLOGRR(2,1) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) HS(1:NSEA)
@@ -1181,7 +1181,7 @@
 #ifdef W3_DEBUGINIT
          WRITE(740+IAPROC,*) 'Before reading ICEF'
 #endif
-              IF ( FLOGOA(1,9) ) THEN
+              IF ( FLOGOA(1,12) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
               ENDIF
 #ifdef W3_DEBUGINIT
