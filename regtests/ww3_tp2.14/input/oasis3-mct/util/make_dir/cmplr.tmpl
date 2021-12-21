@@ -34,7 +34,7 @@ NETCDF_INCLUDE  = $(shell @NETCDF_CONFIG@ --cflags)
 NETCDF_LIBRARY  = $(shell @NETCDF_CONFIG@ --flibs) $(shell @NETCDF_CONFIG@ --libs)
 #
 # Compilers and options
-MAKE        = gmake
+MAKE        = make
 F90         = @comp_mpi@
 F           = $(F90)
 f90         = $(F90)
