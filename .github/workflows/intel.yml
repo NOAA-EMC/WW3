@@ -15,14 +15,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: install-intel
-        run: |
-          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-          sudo apt-get update
-          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
-          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
       
       - name: cache-spack
         id: cache-spack
@@ -32,6 +24,16 @@ jobs:
             spack
             ~/.spack
           key: spack-${{ matrix.os }}-intel
+
+      - name: install-intel
+        if: steps.cache-spack.outputs.cache-hit != 'true'
+        run: |
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
 
       - name: checkout-ww3
         if: steps.cache-spack.outputs.cache-hit != 'true'
