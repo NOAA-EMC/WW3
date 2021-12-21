@@ -8,7 +8,51 @@ defaults:
     shell: bash -leo pipefail {0}
 
 jobs:
+  setup:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: install-intel
+        run: |
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
+      
+      - name: cache-spack
+        id: cache-spack
+        uses: actions/cache@v2
+        with:
+          path: |
+            spack
+            ~/.spack
+          key: spack1
+
+      - name: install-spack-dependencies
+        if: steps.cache-spack.outputs.cache-hit != 'true'
+        run: |
+          # Install NetCDF, ESMF, g2, etc using Spack
+          git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+          source spack/share/spack/setup-env.sh
+          spack env create ww3-intel ww3/model/ci/spack/spack.yaml
+          spack env activate ww3-intel
+          spack compiler find
+          spack external find m4 cmake pkgconf openssl
+          spack add intel-oneapi-mpi
+          spack concretize
+          spack install --dirty -v
+
   build:
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        switch: [NCEP_st2, NCEP_st4]
     runs-on: ubuntu-20.04
     env:
       CC: icc
@@ -16,7 +60,6 @@ jobs:
       CXX: icpc
       I_MPI_CC: icc
       I_MPI_F90: ifort
-
     steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
@@ -41,19 +84,6 @@ jobs:
             ~/.spack
           key: spack1
 
-      - name: install-dependencies
-        if: steps.cache-spack.outputs.cache-hit != 'true'
-        run: |
-          git clone -c feature.manyFiles=true https://github.com/spack/spack.git
-          source spack/share/spack/setup-env.sh
-          spack env create ww3-intel ww3/model/spack/spack.yaml
-          spack env activate ww3-intel
-          spack compiler find
-          spack external find m4 cmake pkgconf openssl
-          spack add intel-oneapi-mpi
-          spack concretize
-          spack install --dirty -v
-          
       - name: build-ww3
         run: |
           source spack/share/spack/setup-env.sh
@@ -61,8 +91,9 @@ jobs:
           cd ww3
           export CC=mpicc
           export FC=mpif90
+          cd regtests/
           mkdir build && cd build
-          cmake .. -DSWITCH=NCEP_st2
+          cmake .. -DSWITCH=${{matrix.switch}}
           make -j2
 
           
