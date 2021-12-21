@@ -27,6 +27,7 @@ else()
   endif()
 endif()
 
+message(STATUS "Build with switch: ${switch_file}")
 # Copy switch file to build dir
 configure_file(${switch_file} ${CMAKE_BINARY_DIR}/switch COPYONLY)
 
