@@ -13,7 +13,6 @@ env:
   CXX: icpc
   I_MPI_CC: icc
   I_MPI_F90: ifort
-  OASISDIR: ${{ env.GITHUB_WORKSPACE }}/work_oasis3-mct
 
 jobs:
   setup:
@@ -119,6 +118,7 @@ jobs:
           cd ww3
           export CC=mpicc
           export FC=mpif90
+          export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           cmake .. -DSWITCH=${{ matrix.switch }}
           make -j2
