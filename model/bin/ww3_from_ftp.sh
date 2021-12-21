@@ -22,7 +22,7 @@ cd $ww3dir
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
-wget https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.${ww3ver}.tar.gz
+wget --no-check-certificate https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.${ww3ver}.tar.gz
 tar -xvzf ww3_from_ftp.${ww3ver}.tar.gz
 
 #Move regtest info from data_regtests to regtests:
