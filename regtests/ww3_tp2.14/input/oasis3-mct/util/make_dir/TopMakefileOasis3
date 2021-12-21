@@ -63,6 +63,7 @@ makemct:
 # Rules for compiling the libraries scrip and psmile
 #
 makelibs:
+        echo "nc-config include ${NETCDF_INCLUDE}"
 	@echo "=> Compiling library scrip"
 	(cd $(ARCHDIR)/build/lib/scrip; cp -f $(LIBSRC)/scrip/src/Makefile .;\
          $(modifmakefile) ; $(MAKE) all )

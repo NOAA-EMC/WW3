@@ -70,6 +70,8 @@ jobs:
         run: |
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
+          which nc-config
+          nc-config --cflags
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
           mkdir build && cd build
