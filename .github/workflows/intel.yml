@@ -14,6 +14,9 @@ env:
   I_MPI_CC: icc
   I_MPI_F90: ifort
 
+# Split into a dependency build step and WW3 build step,
+# caching the dependencies in between so that multiple builds
+# of WW3 can share the same dependency builds.
 jobs:
   setup:
     strategy:
@@ -32,7 +35,7 @@ jobs:
             work_oasis3-mct
           key: spack-${{ matrix.os }}-intel
 
-      - name: install-intel
+      - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
@@ -48,7 +51,7 @@ jobs:
         with: 
             path: ww3
 
-      - name: install-spack-dependencies
+      - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
@@ -77,9 +80,8 @@ jobs:
   build:
     needs: setup
     strategy:
-      fail-fast: false
       matrix:
-        switch: [NCEP_st2, NCEP_st4]
+        switch: [ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
