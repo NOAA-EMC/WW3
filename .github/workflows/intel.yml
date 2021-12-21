@@ -35,8 +35,6 @@ jobs:
       - name: install-intel
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
-          pwd
-          ls
           wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
@@ -67,9 +65,9 @@ jobs:
       - name: build-oasis
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
-          pwd
-          ls
-          echo ${GITHUB_WORKSPACE}
+          source spack/share/spack/setup-env.sh
+          spack env activate ww3-intel
+          export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
           mkdir build && cd build
           cmake ..
