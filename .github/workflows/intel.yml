@@ -31,7 +31,7 @@ jobs:
           path: |
             spack
             ~/.spack
-          key: spack1
+          key: spack-${{matrix.os}}-intel
 
       - name: install-spack-dependencies
         if: steps.cache-spack.outputs.cache-hit != 'true'
