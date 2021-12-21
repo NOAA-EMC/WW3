@@ -7,6 +7,14 @@ defaults:
   run:
     shell: bash -leo pipefail {0}
 
+env:
+  CC: icc
+  FC: ifort
+  CXX: icpc
+  I_MPI_CC: icc
+  I_MPI_F90: ifort
+  OASISDIR: ${{ env.GITHUB_WORKSPACE }}/work_oasis3-mct
+
 jobs:
   setup:
     strategy:
@@ -15,19 +23,22 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      
-      - name: cache-spack
-        id: cache-spack
+      - name: cache-env
+        id: cache-env
         uses: actions/cache@v2
         with:
           path: |
             spack
             ~/.spack
+            work_oasis3-mct
+            
           key: spack-${{ matrix.os }}-intel
 
       - name: install-intel
         if: steps.cache-spack.outputs.cache-hit != 'true'
         run: |
+          pwd
+          ls
           wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
@@ -40,6 +51,18 @@ jobs:
         uses: actions/checkout@v2
         with: 
             path: ww3
+
+      - name: build-oasis
+        if: steps.cache-oasis.outputs.cache-hit != 'true'
+        run: |
+          pwd
+          ls
+          echo ${GITHUB_WORKSPACE}
+          cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
+          mkdir build && cd build
+          cmake ..
+          make
+          cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/work_oasis3-mct ${GITHUB_WORKSPACE}
 
       - name: install-spack-dependencies
         if: steps.cache-spack.outputs.cache-hit != 'true'
@@ -63,12 +86,7 @@ jobs:
         switch: [NCEP_st2, NCEP_st4]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
-    env:
-      CC: icc
-      FC: ifort
-      CXX: icpc
-      I_MPI_CC: icc
-      I_MPI_F90: ifort
+
     steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
@@ -91,6 +109,7 @@ jobs:
           path: |
             spack
             ~/.spack
+            work_oasis3-mct
           key: spack-${{ matrix.os }}-intel
 
       - name: build-ww3
