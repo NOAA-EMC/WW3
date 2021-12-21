@@ -857,10 +857,10 @@ cat >> $nmlfile << EOF
 !  T  T  1     6   ICE        ICE   Ice concentration.
 !  T  T  1     7   IBG        IBG   Iceberg-induced damping.
 !  T  T  1     8   D50        D50   Median sediment grain size.
-!  T  T  1     9   IC1        IC1   Ice thickness.
-!  T  T  1    10   IC5        IC5   Ice flow diameter.
-!  T  T  1    11   TAUA       TAU   Atm. momentum.
-!  T  T  1    12   RHOAIR     RHO   Air density.
+!  T  T  1     9   TAUA       TAU   Atm. momentum.
+!  T  T  1    10   RHOAIR     RHO   Air density.
+!  T  T  1    11   IC1        IC1   Ice thickness.
+!  T  T  1    12   IC5        IC5   Ice flow diameter.
 !   -------------------------------------------------
 !        2                          Standard mean wave Parameters
 !   -------------------------------------------------
