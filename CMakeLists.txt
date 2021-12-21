@@ -15,7 +15,7 @@ project(
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Set switch file on command line when running CMake
-set(SWITCH "" CACHE STRING "Switch file")
+set(SWITCH "" CACHE STRING "Switch file, either full path, relative path from location of top-level WW3/ dir, or a switch in model/bin")
 
 # Search for switch file as a full path or in model/bin
 if(EXISTS ${SWITCH})
