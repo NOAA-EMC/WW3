@@ -17,7 +17,9 @@ env:
 # Split into a dependency build step and WW3 build step,
 # caching the dependencies in between so that multiple builds
 # of WW3 can share the same dependency builds.
+
 jobs:
+  # Cache dependencies
   setup:
     strategy:
       matrix:
@@ -33,7 +35,8 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-intel1
+            /opt/intel
+          key: spack-${{ matrix.os }}-intel2
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -95,11 +98,6 @@ jobs:
 
       - name: install-intel
         run: |
-          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-          sudo apt-get update
-          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
           echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
 
       - name: cache-env
@@ -110,7 +108,8 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-intel1
+            /opt/intel
+          key: spack-${{ matrix.os }}-intel2
 
       - name: build-ww3
         run: |
