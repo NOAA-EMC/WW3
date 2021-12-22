@@ -33,7 +33,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-intel
+          key: spack-${{ matrix.os }}-intel1
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -83,7 +83,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
+        switch: [lfremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
@@ -110,7 +110,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-intel
+          key: spack-${{ matrix.os }}-intel1
 
       - name: build-ww3
         run: |
