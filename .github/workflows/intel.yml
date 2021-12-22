@@ -14,12 +14,11 @@ env:
   I_MPI_CC: icc
   I_MPI_F90: ifort
 
-# Split into a dependency build step and WW3 build step,
-# caching the dependencies in between so that multiple builds
-# of WW3 can share the same dependency builds.
+# Split into a dependency build step, and a WW3 build step which
+# builds multiple switches in a matrix. The setup is run once and 
+# the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
-  # Cache dependencies
   setup:
     strategy:
       matrix:
@@ -27,6 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      # Cache spack, OASIS, and compiler
       - name: cache-env
         id: cache-env
         uses: actions/cache@v2
@@ -54,6 +54,7 @@ jobs:
         with: 
             path: ww3
 
+      # Build WW3 spack environment
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
@@ -73,8 +74,6 @@ jobs:
         run: |
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
-          which nc-config
-          nc-config --cflags
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
           mkdir build && cd build
