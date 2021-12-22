@@ -83,7 +83,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [lfremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
+        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
