@@ -12,10 +12,7 @@ env:
 
 jobs:
   setup:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       # Cache spack, OASIS, and compiler
@@ -27,7 +24,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-gnu
+          key: spack-${{ runner.os }}-gnu
 
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -67,8 +64,7 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
-        os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       - name: checkout-ww3
@@ -84,7 +80,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ matrix.os }}-gnu
+          key: spack-${{ runner.os }}-gnu
 
       - name: build-ww3
         run: |
