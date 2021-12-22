@@ -2,9 +2,9 @@ name: GNU Linux Build
 on: [push, pull_request]
 
 env:
-  CC: gcc
-  FC: gfortran
-  CXX: g++
+  CC: gcc-10
+  FC: gfortran-10
+  CXX: g++-10
 
 # Split into a steup step, and a WW3 build step which
 # builds multiple switches in a matrix. The setup is run once and 
@@ -54,11 +54,8 @@ jobs:
           spack env activate ww3-gnu
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
-          gcc --version
-          gfortran --version
           mkdir build && cd build
           cmake ..
-          cat cmplr
           make VERBOSE=1
           cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/work_oasis3-mct ${GITHUB_WORKSPACE}
 

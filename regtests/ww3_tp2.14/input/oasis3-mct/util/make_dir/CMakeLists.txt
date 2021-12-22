@@ -11,7 +11,6 @@ find_package(NetCDF REQUIRED COMPONENTS Fortran)
 set(WWATCH3_DIR $ENV{WWATCH3_DIR})
 set(comp_mpi ${MPI_Fortran_COMPILER})
 set(wwatch3_cc ${CMAKE_C_COMPILER})
-set(NETCDF_CONFIG  ${NetCDF_C_CONFIG_EXECUTABLE})
 
 # Turn on this argument mismatch flag for gfortran10.
 if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
