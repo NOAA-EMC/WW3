@@ -59,6 +59,8 @@
 &INPUT_GRID_NML
   INPUT(1)%NAME                  = 'input'
   INPUT(1)%FORCING%WINDS         = T
+  INPUT(1)%ASSIM%SPEC1D          = 
+  INPUT(1)%ASSIM%SPEC2D          = 
 /
 
 ! -------------------------------------------------------------------- !
@@ -121,10 +123,6 @@
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'grd2'
   MODEL(1)%FORCING%WINDS         = 'input'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -219,7 +217,6 @@
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '19680606 000000' '1800' '19680607 000000'
   ALLDATE%POINT          = '19680606 000000' '1800' '19680607 000000'
-  ALLDATE%RESTART2       = ' ' '' '19680608 000000'
 /
 
 ! -------------------------------------------------------------------- !

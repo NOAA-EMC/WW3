@@ -115,19 +115,7 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'gbandd360'
-  MODEL(1)%FORCING%CURRENTS      = ''
-  MODEL(1)%FORCING%WINDS         = ''
-  MODEL(1)%RESOURCE%RANK_ID      = gbandd360
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(1)%RESOURCE%BOUND_FLAG   = no
   MODEL(2)%NAME                  = 'arcticsub'
-  MODEL(2)%FORCING%CURRENTS      = ''
-  MODEL(2)%FORCING%WINDS         = ''
-  MODEL(2)%RESOURCE%RANK_ID      = arcticsub
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(2)%RESOURCE%BOUND_FLAG   = no
 /
 
 ! -------------------------------------------------------------------- !

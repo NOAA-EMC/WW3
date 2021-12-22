@@ -124,10 +124,6 @@
   MODEL(1)%FORCING%CURRENTS      = 'glo_5deg'
   MODEL(1)%FORCING%WINDS         = 'glo_5deg'
   MODEL(1)%FORCING%ICE_CONC      = 'glo_5deg'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !

@@ -115,47 +115,22 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'low1'
-  MODEL(1)%FORCING%CURRENTS      = ''
-  MODEL(1)%FORCING%WINDS         = ''
-  MODEL(1)%RESOURCE%RANK_ID      = low1
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(1)%RESOURCE%BOUND_FLAG   = no
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.33
   MODEL(2)%NAME                  = 'low2'
-  MODEL(2)%FORCING%CURRENTS      = ''
-  MODEL(2)%FORCING%WINDS         = ''
-  MODEL(2)%RESOURCE%RANK_ID      = low2
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(2)%RESOURCE%BOUND_FLAG   = no
+  MODEL(2)%RESOURCE%RANK_ID      = 1
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.33,0.67
   MODEL(3)%NAME                  = 'low3'
-  MODEL(3)%FORCING%CURRENTS      = ''
-  MODEL(3)%FORCING%WINDS         = ''
-  MODEL(3)%RESOURCE%RANK_ID      = low3
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(3)%RESOURCE%BOUND_FLAG   = no
+  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.67,1.00
   MODEL(4)%NAME                  = 'hgh1'
-  MODEL(4)%FORCING%CURRENTS      = ''
-  MODEL(4)%FORCING%WINDS         = ''
-  MODEL(4)%RESOURCE%RANK_ID      = hgh1
-  MODEL(4)%RESOURCE%GROUP_ID     = no
-  MODEL(4)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(4)%RESOURCE%BOUND_FLAG   = no
+  MODEL(4)%RESOURCE%RANK_ID      = 2
+  MODEL(4)%RESOURCE%COMM_FRAC    = 0.00,0.33
   MODEL(5)%NAME                  = 'hgh2'
-  MODEL(5)%FORCING%CURRENTS      = ''
-  MODEL(5)%FORCING%WINDS         = ''
-  MODEL(5)%RESOURCE%RANK_ID      = hgh2
-  MODEL(5)%RESOURCE%GROUP_ID     = no
-  MODEL(5)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(5)%RESOURCE%BOUND_FLAG   = no
+  MODEL(5)%RESOURCE%RANK_ID      = 2
+  MODEL(5)%RESOURCE%COMM_FRAC    = 0.33,0.67
   MODEL(6)%NAME                  = 'hgh3'
-  MODEL(6)%FORCING%CURRENTS      = ''
-  MODEL(6)%FORCING%WINDS         = ''
-  MODEL(6)%RESOURCE%RANK_ID      = hgh3
-  MODEL(6)%RESOURCE%GROUP_ID     = no
-  MODEL(6)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(6)%RESOURCE%BOUND_FLAG   = no
+  MODEL(6)%RESOURCE%RANK_ID      = 2
+  MODEL(6)%RESOURCE%COMM_FRAC    = 0.67,1.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -250,7 +225,6 @@
   ALLDATE%FIELD          = '19680606 000000' '600' '19680608 000000'
   ALLDATE%POINT          = '19680606 000000' '600' '19680608 000000'
   ALLDATE%RESTART        = '19680606 001000' '1' '19680606 001000'
-  ALLDATE%RESTART2       = ' ' '' '19680606 001000'
 /
 
 ! -------------------------------------------------------------------- !

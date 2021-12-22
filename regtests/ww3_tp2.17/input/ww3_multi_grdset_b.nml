@@ -118,12 +118,8 @@
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'inlb'
   MODEL(1)%FORCING%WATER_LEVELS  = 'native'
-  MODEL(1)%FORCING%CURRENTS      = ''
-  MODEL(1)%FORCING%WINDS         = ''
-  MODEL(1)%RESOURCE%RANK_ID      = inlb
-  MODEL(1)%RESOURCE%GROUP_ID     = native
-  MODEL(1)%RESOURCE%COMM_FRAC    = native,native
-  MODEL(1)%RESOURCE%BOUND_FLAG   = no
+  MODEL(1)%FORCING%CURRENTS      = 'native'
+  MODEL(1)%FORCING%WINDS         = 'native'
 /
 
 ! -------------------------------------------------------------------- !
@@ -218,7 +214,6 @@
   ALLDATE%FIELD          = '20151214 020000' '3600' '20151214 040000'
   ALLDATE%POINT          = '20141214 020000' '3600' '20141214 040000'
   ALLDATE%RESTART        = '20151214 020000' '3600' '20151214 040000'
-  ALLDATE%RESTART2       = ' ' '' '20151214 040000'
 /
 
 ! -------------------------------------------------------------------- !

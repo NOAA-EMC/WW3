@@ -52,6 +52,7 @@ declare -A pointfiles
 declare -A trackdates
 declare -A trackflags
 declare -A restartdates
+declare -A restart2dates
 declare -A boundarydates
 declare -A partitiondates
 declare -A partfields
@@ -118,7 +119,6 @@ do
   il=$(($il+1))
   inpid[$irinp]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
   numvar="$(echo ${lines[$il]} | wc -w)"
-  if [ $numvar -eq 15 ]; then atmos=T; else atmos=F; fi
   for iflag in $(seq 2  $numvar)
   do
     ind=$(($iflag - 1))
@@ -143,26 +143,28 @@ do
   il=$(($il+1))
   echo ${lines[$il]}
   modid[$irgrd]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  numvar="$(echo ${lines[$il]} | wc -w)"
+  if [ $numvar -eq 15 ]; then atmos=T; else atmos=F; fi
   if [ "$atmos" = 'T' ]; then
-    numvar=10
+    numflag=10
   elif [ "$atmos" = 'F' ]; then
-    numvar=8
+    numflag=8
   fi
-  for iflag in $(seq 2 $numvar)
+  for iflag in $(seq 2 $numflag)
   do
     ind=$(($iflag - 1))
     flggrd[$irgrd,$ind]="$(echo ${lines[$il]} | awk -F' ' "{print \$$iflag}" | cut -d \" -f2  | cut -d \' -f2)"
     echo ${flggrd[$irgrd,$ind]}
   done
-  rank[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 1))}" | cut -d \" -f2  | cut -d \' -f2)"
+  rank[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numflag + 1))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${rank[$irgrd]}
-  group[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 2))}" | cut -d \" -f2  | cut -d \' -f2)"
+  group[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numflag + 2))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${group[$irgrd]}
-  comm0[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 3))}" | cut -d \" -f2  | cut -d \' -f2)"
+  comm0[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numflag + 3))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${comm0[$irgrd]}
-  comm1[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 4))}" | cut -d \" -f2  | cut -d \' -f2)"
+  comm1[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numflag + 4))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${comm1[$irgrd]}
-  bound[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 5))}" | cut -d \" -f2  | cut -d \' -f2)"
+  bound[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numflag + 5))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${bound[$irgrd]}
 done
 
@@ -284,9 +286,9 @@ echo 'restart date 2'
 il=$(($il+1))
 for i in $(seq 1 5)
 do
-  restartdate2[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
+  restart2date[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
 done
-echo ${restartdate2[@]}
+echo ${restart2date[@]}
 fi
 
 # boundary date
@@ -328,7 +330,7 @@ do
     pointdates[$j,$key]=${pointdate[$key]}
     trackdates[$j,$key]=${trackdate[$key]}
     restartdates[$j,$key]=${restartdate[$key]}
-    restartdates2[$j,$key]=${restartdate2[$key]}
+    restart2dates[$j,$key]=${restart2date[$key]}
     boundarydates[$j,$key]=${boundarydate[$key]}
     partitiondates[$j,$key]=${partitiondate[$key]}
   done
@@ -853,8 +855,10 @@ if [ "${trackdate[3]}" != '0' ]; then
 if [ "${restartdate[3]}" != '0' ]; then  
       echo "  ALLDATE%RESTART        = '${restartdate[1]} ${restartdate[2]}' '${restartdate[3]}' '${restartdate[4]} ${restartdate[5]}'" >> $nmlfile; fi
 
-if [ "${restartdate2[3]}" != '0' ]; then  
-      echo "  ALLDATE%RESTART2       = '${restartdate2[1]} ${restartdate2[2]}' '${restartdate2[3]}' '${restartdate[4]} ${restartdate[5]}'" >> $nmlfile; fi
+if [ "${restartdate[6]}" = 'T' ]; then
+  if [ "${restart2date[3]}" != '0' ]; then  
+        echo "  ALLDATE%RESTART2       = '${restart2date[1]} ${restart2date[2]}' '${restart2date[3]}' '${restartdate[4]} ${restartdate[5]}'" >> $nmlfile; fi
+fi
 
 if [ "${boundarydate[3]}" != '0' ]; then  
       echo "  ALLDATE%BOUNDARY       = '${boundarydate[1]} ${boundarydate[2]}' '${boundarydate[3]}' '${boundarydate[4]} ${boundarydate[5]}'" >> $nmlfile; fi
@@ -885,10 +889,10 @@ do
      [ "${restartdate[5]}" != "${restartdates[$irgrd,5]}" ]; then   
         echo "  IDATE($irgrd)%RESTART       = '${restartdates[$irgrd,1]} ${restartdates[$irgrd,2]}' '${restartdates[$irgrd,3]}' '${restartdates[$irgrd,4]} ${restartdates[$irgrd,5]}'" >> $nmlfile; fi
 
-  if [ "${restartdate2[1]}" != "${restartdates2[$irgrd,1]}" ] || [ "${restartdate2[2]}" != "${restartdates2[$irgrd,2]}" ] || \
-     [ "${restartdate2[3]}" != "${restartdates2[$irgrd,3]}" ] || [ "${restartdate2[4]}" != "${restartdates2[$irgrd,4]}" ] || \
-     [ "${restartdate2[5]}" != "${restartdates2[$irgrd,5]}" ]; then   
-        echo "  IDATE($irgrd)%RESTART2      = '${restartdates2[$irgrd,1]} ${restartdates2[$irgrd,2]}' '${restartdates2[$irgrd,3]}' '${restartdates2[$irgrd,4]} ${restartdates2[$irgrd,5]}'" >> $nmlfile; fi
+  if [ "${restart2date[1]}" != "${restart2dates[$irgrd,1]}" ] || [ "${restart2date[2]}" != "${restart2dates[$irgrd,2]}" ] || \
+     [ "${restart2date[3]}" != "${restart2dates[$irgrd,3]}" ] || [ "${restart2date[4]}" != "${restart2dates[$irgrd,4]}" ] || \
+     [ "${restart2date[5]}" != "${restart2dates[$irgrd,5]}" ]; then   
+        echo "  IDATE($irgrd)%RESTART2      = '${restart2dates[$irgrd,1]} ${restart2dates[$irgrd,2]}' '${restart2dates[$irgrd,3]}' '${restart2dates[$irgrd,4]} ${restart2dates[$irgrd,5]}'" >> $nmlfile; fi
 
   if [ "${boundarydate[1]}" != "${boundarydates[$irgrd,1]}" ] || [ "${boundarydate[2]}" != "${boundarydates[$irgrd,2]}" ] || \
      [ "${boundarydate[3]}" != "${boundarydates[$irgrd,3]}" ] || [ "${boundarydate[4]}" != "${boundarydates[$irgrd,4]}" ] || \

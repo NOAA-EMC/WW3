@@ -114,26 +114,13 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'Michi'
-  MODEL(1)%FORCING%CURRENTS      = ''
-  MODEL(1)%FORCING%WINDS         = ''
-  MODEL(1)%RESOURCE%RANK_ID      = Michi
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(1)%RESOURCE%BOUND_FLAG   = no
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.30
   MODEL(2)%NAME                  = 'Huron'
-  MODEL(2)%FORCING%CURRENTS      = ''
-  MODEL(2)%FORCING%WINDS         = ''
-  MODEL(2)%RESOURCE%RANK_ID      = Huron
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(2)%RESOURCE%BOUND_FLAG   = no
+  MODEL(2)%RESOURCE%RANK_ID      = 1
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.30,0.65
   MODEL(3)%NAME                  = 'Super'
-  MODEL(3)%FORCING%CURRENTS      = ''
-  MODEL(3)%FORCING%WINDS         = ''
-  MODEL(3)%RESOURCE%RANK_ID      = Super
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = no,no
-  MODEL(3)%RESOURCE%BOUND_FLAG   = no
+  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.65,1.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -227,7 +214,6 @@
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '20160809 000000' '3600' '20160809 060000'
   ALLDATE%POINT          = '20160809 000000' '900' '20160810 000000'
-  ALLDATE%RESTART2       = ' ' '' '20160809 000000'
 /
 
 ! -------------------------------------------------------------------- !

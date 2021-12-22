@@ -120,16 +120,8 @@
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'large'
   MODEL(1)%FORCING%WINDS         = 'wind'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(2)%NAME                  = 'nest'
   MODEL(2)%FORCING%WINDS         = 'wind'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -223,7 +215,6 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '20000101 000000' '3600' '20000103 000000'
-  ALLDATE%RESTART2       = ' ' '' '19680606 011200'
   IDATE(1)%POINT         = '20000101 000000' '3600' '20000103 000000'
   IDATE(2)%POINT         = '20000101 000000' '3600' '20000103 000000'
 /

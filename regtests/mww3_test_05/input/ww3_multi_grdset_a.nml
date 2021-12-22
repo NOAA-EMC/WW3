@@ -122,22 +122,10 @@
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'grd1'
   MODEL(1)%FORCING%WINDS         = 'input'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(2)%NAME                  = 'grd2'
   MODEL(2)%FORCING%WINDS         = 'input'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(3)%NAME                  = 'grd3'
   MODEL(3)%FORCING%WINDS         = 'input'
-  MODEL(3)%RESOURCE%RANK_ID      = no
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = 3,1
-  MODEL(3)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -232,7 +220,6 @@
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '19680606 000000' '1800' '19680607 000000'
   ALLDATE%POINT          = '19680606 000000' '1800' '19680607 000000'
-  ALLDATE%RESTART2       = ' ' '' '19680608 000000'
 /
 
 ! -------------------------------------------------------------------- !
