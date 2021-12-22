@@ -12,7 +12,11 @@ set(WWATCH3_DIR $ENV{WWATCH3_DIR})
 set(comp_mpi ${MPI_Fortran_COMPILER})
 set(wwatch3_cc ${CMAKE_C_COMPILER})
 set(NETCDF_CONFIG  ${NetCDF_C_CONFIG_EXECUTABLE})
-set(optc_short "")
+
+# Turn on this argument mismatch flag for gfortran10.
+if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+endif()
 set(optl_short "")
 
 configure_file(${CMAKE_SOURCE_DIR}/cmplr.tmpl ${CMAKE_SOURCE_DIR}/cmplr)

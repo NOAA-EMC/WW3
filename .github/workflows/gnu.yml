@@ -54,8 +54,11 @@ jobs:
           spack env activate ww3-gnu
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
+          gcc --version
+          gfortran --version
           mkdir build && cd build
           cmake ..
+          cat cmplr
           make VERBOSE=1
           cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/work_oasis3-mct ${GITHUB_WORKSPACE}
 

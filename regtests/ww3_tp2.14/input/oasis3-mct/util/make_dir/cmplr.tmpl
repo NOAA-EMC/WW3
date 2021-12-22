@@ -42,7 +42,7 @@ f           = $(F90)
 CC          = @wwatch3_cc@
 AR          = ar
 ARFLAGS     = -ruv
-F90COMP     = @optc_short@
+F90COMP     = @CMAKE_Fortran_FLAGS@
 F90LINK     = @optl_short@
 #
 # MPI library
