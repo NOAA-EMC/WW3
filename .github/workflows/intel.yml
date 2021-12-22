@@ -20,10 +20,7 @@ env:
 
 jobs:
   setup:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       # Cache spack, OASIS, and compiler
@@ -36,7 +33,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ matrix.os }}-intel2
+          key: spack-${{ runner.os }}-intel2
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -86,8 +83,7 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO]
-        os: [ubuntu-20.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       - name: checkout-ww3
@@ -108,7 +104,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ matrix.os }}-intel2
+          key: spack-${{ runner.os }}-intel2
 
       - name: build-ww3
         run: |
