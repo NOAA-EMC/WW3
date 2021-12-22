@@ -6,7 +6,7 @@ env:
   FC: gfortran
   CXX: g++
 
-# Split into a dependency build step, and a WW3 build step which
+# Split into a steup step, and a WW3 build step which
 # builds multiple switches in a matrix. The setup is run once and 
 # the environment is cached so each build of WW3 can share the dependencies.
 
@@ -56,7 +56,7 @@ jobs:
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
           mkdir build && cd build
           cmake ..
-          make
+          make VERBOSE=1
           cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/work_oasis3-mct ${GITHUB_WORKSPACE}
 
   build:
