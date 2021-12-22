@@ -43,9 +43,9 @@
 # 1. Set up
 
   export cmplOption='y'
-  export np='56'      #number of mpi tasks
-  export npl='56'     #number of mpi tasks for ufs applications and large setups
-  export npl1='40'    #number of mpi tasks for ufs/large setups (b4b check)
+  export np='28'      #number of mpi tasks
+  export npl='28'     #number of mpi tasks for ufs applications and large setups
+  export npl1='20'    #number of mpi tasks for ufs/large setups (b4b check)
   export nr='4'       #number of mpi tasks for hybrid
   export nth='7'      #number of threads
   export nth1='6'     #number of threads (b4b check)
@@ -54,8 +54,8 @@
 
   echo '#!/bin/bash'                                        > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -q mpi_2'                                      >> matrix.head
-  echo "#PBS -l select=2:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
+  echo '#PBS -q mpi_1'                                      >> matrix.head
+  echo "#PBS -l select=1:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
   echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
