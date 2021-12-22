@@ -54,8 +54,9 @@ makemct:
 	@echo "=> Compiling library mpeu and mct"
 	(cd $(ARCHDIR)/build/lib/mctdir; cp -f -r -p $(LIBSRC)/mct/* .;\
          ./configure MPIFC="$(F90)" FC="$(F90)" CC="$(CC)" \
-         CFLAGS="$(CFLAGS)" ;\
-         $(MAKE); \
+         CFLAGS="$(CFLAGS)" \
+         1>> $(LOG) 2>> $(ERR) ;\
+         $(MAKE) 1>> $(LOG) 2>> $(ERR) ; \
          cp -f ./*/lib*.a   $(ARCHDIR)/lib/; \
          cp -f ./*/*.o    $(ARCHDIR)/build/lib/mct/; \
          cp -f ./*/*.mod  $(ARCHDIR)/build/lib/mct/;)
@@ -63,16 +64,15 @@ makemct:
 # Rules for compiling the libraries scrip and psmile
 #
 makelibs:
-	echo "nc-config include ${NETCDF_INCLUDE}"
 	@echo "=> Compiling library scrip"
 	(cd $(ARCHDIR)/build/lib/scrip; cp -f $(LIBSRC)/scrip/src/Makefile .;\
-         $(modifmakefile) ; $(MAKE) all )
+         $(modifmakefile) ; $(MAKE) all 1>> $(LOG) 2>> $(ERR) )
 
 makepsmile:
 	@echo "=> Compiling library psmile"
 	(cd $(ARCHDIR)/build/lib/psmile.$(CHAN) ; \
          cp -f $(LIBSRC)/psmile/src/Makefile . ; $(modifmakefile) ; \
-         $(MAKE) all )
+         $(MAKE) all 1>> $(LOG) 2>> $(ERR) )
 #
 # Rules for cleaning
 #
