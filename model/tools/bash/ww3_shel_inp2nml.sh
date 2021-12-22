@@ -731,19 +731,19 @@ then
   if [ "$atmos" = "T" ]
   then
 # atm momentum
-    if [ "${forc[12,1]}" = "T" ] ; then
-      if [ "${forc[12,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
-      elif [ "${forc[12,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
-    elif [ "${forc[12,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
+    if [ "${forc[13,1]}" = "T" ] ; then
+      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
+      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
+    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
     fi
 # atm density
-    if [ "${forc[13,1]}" = "T" ] ; then
-      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
-      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
-    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
+    if [ "${forc[14,1]}" = "T" ] ; then
+      if [ "${forc[14,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[14,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[14,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
     fi
 # ice
-    if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+    if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
 # mean
     if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
 # spec1d
@@ -856,9 +856,9 @@ cat >> $nmlfile << EOF
 !  T  T  1     5   WLV        WLV   Water levels.
 !  T  T  1     6   ICE        ICE   Ice concentration.
 !  T  T  1     7   IBG        IBG   Iceberg-induced damping.
-!  T  T  1     8   D50        D50   Median sediment grain size.
-!  T  T  1     9   TAUA       TAU   Atm. momentum.
-!  T  T  1    10   RHOAIR     RHO   Air density.
+!  T  T  1     8   TAUA       TAU   Atm. momentum.
+!  T  T  1     9   RHOAIR     RHO   Air density.
+!  T  T  1    10   D50        D50   Median sediment grain size.
 !  T  T  1    11   IC1        IC1   Ice thickness.
 !  T  T  1    12   IC5        IC5   Ice flow diameter.
 !   -------------------------------------------------
