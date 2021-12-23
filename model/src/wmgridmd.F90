@@ -588,7 +588,7 @@
                 END DO ! "DO J=..."
 !
                 IF ( JS.EQ.0 .AND. IMPROC.EQ.NMPERR )                 &
-                                 WRITE (MDSE,*) I, IX, IY, XA, YA
+                                 WRITE (MDSE,1020) I, IX, IY, XA, YA
 !
               END IF ! If a boundary point...
 
@@ -606,11 +606,9 @@
                          OUTPTS(I)%OUT5%RDBPI, STAT=ISTAT )
             CHECK_DEALLOC_STATUS ( ISTAT )
             CYCLE
-        ELSE IF ( IBI .NE. OUTPTS(I)%OUT5%NBI ) THEN
-           WRITE(*,*) 'ERROR 1020 l. 610' 
-           STOP 
-             !CALL EXTCDE ( 1020 )
-        ENDIF
+          ELSE IF ( IBI .NE. OUTPTS(I)%OUT5%NBI ) THEN
+             CALL EXTCDE ( 1020 )
+          ENDIF
 !
 ! 2.e Sort spectra by grid, fill IPBPI, and get NBI2 and ....
 !
@@ -2969,7 +2967,7 @@
                               NLOC_OM   = NLOC_OM + 1
 ! Notes: check here that we are sufficiently dimensioned.
                               IF ( NLOC_OM .GT. NLMAX ) THEN
-                                 IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,*)
+                                 IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,1020)
                                  CALL EXTCDE(1020)
                               END IF
                               TMPINT_OM(NRTOT,NLOC_OM) =  &
@@ -4142,8 +4140,7 @@
                      MAPODI(IY,IX) = 0.
 #ifdef W3_O13
                     IF ( IMPROC.EQ.NMPERR )                      &
-                         !WRITE (MDSE,1020) I, IX, 1
-                         WRITE(*,*) 'ERROR 1020 at line 4148', I, IX, 1
+                         WRITE (MDSE,1020) I, IX, 1
 #endif
                   END IF
               ELSE
@@ -4170,9 +4167,7 @@
                           MAPODI(IY  ,IX+1) .GE. 0. ) ) THEN
                 MASKI(IY,IX) = .TRUE.
 #ifdef W3_O12
-                IF ( IMPROC.EQ.NMPERR ) THEN
-                  WRITE (MDSE,1020) I, IX, IY
-                ENDIF
+                IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,1020) I, IX, IY
 #endif
               END IF
             END DO
