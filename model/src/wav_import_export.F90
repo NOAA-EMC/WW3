@@ -7,7 +7,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset
-  use wav_shr_mod  , only : wav_coupling_to_cice
+  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import
   use constants    , only : grav, tpi, dwat
 
   implicit none
@@ -194,7 +194,7 @@ contains
   end subroutine realize_fields
 
   !===============================================================================
-  subroutine import_fields( gcomp, rc )
+  subroutine import_fields( gcomp, time0, timen, rc )
 
     !---------------------------------------------------------------------------
     ! Obtain the wave input from the mediator
@@ -203,7 +203,6 @@ contains
     use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
-    use w3odatmd    , only: naproc, iaproc, napout
     use w3wdatmd    , only: time
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
@@ -213,26 +212,28 @@ contains
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
+    integer, intent(in)  :: time0(2), timen(2)
     integer, intent(out) :: rc
 
     ! Local variables
     type(ESMF_State)  :: importState
     type(ESMF_VM)     :: vm
     type(ESMF_Clock)  :: clock
-    type(ESMF_Time)   :: ETime
-    integer           :: ymd, tod
-    integer           :: yy, mm, dd, hh, ss
-    integer           :: n, ix, iy, isea
+    type(ESMF_Time)   :: currTime
+    type(ESMF_Time)   :: startTime
+
+    integer           :: n, ix, iy
     real(r4)          :: def_value
-    integer           :: time0(2) ! starting time of the run interval
-    integer           :: timen(2) ! ending time of the run interval
     real(r4)          :: data_global(nx*ny)
     real(r4), allocatable :: data_global2(:)
 #ifdef CESMCOUPLED
     character(len=10) :: uwnd = 'Sa_u', vwnd = 'Sa_v'
 #else
+    real(r4)          :: fillValue = 9.99e20
+    real(r4)          :: wxdata(nx,ny), wydata(nx,ny)
     character(len=10) :: uwnd = 'Sa_u10m', vwnd = 'Sa_v10m'
 #endif
+    character(len=256) :: msgString
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
@@ -246,29 +247,8 @@ contains
     call state_diagnose(importState, 'at import ', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Determine time0 and timen - note have not advanced the model clock yet with nuopc
-    call ESMF_ClockGetNextTime( clock, Etime, rc=rc )
+    call ESMF_ClockGet(clock, startTime=startTime, currTime=currTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ymd2date(yy, mm, dd, ymd)
-    hh = tod/3600
-    mm = (tod - (hh * 3600))/60
-    ss = tod - (hh*3600) - (mm*60)
-    timen(1) = ymd
-    timen(2) = hh*10000 + mm*100 + ss
-
-    call ESMF_ClockGet( clock, currTime=ETime, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ymd2date(yy, mm, dd, ymd)
-    hh = tod/3600
-    mm = (tod - (hh * 3600))/60
-    ss = tod - (hh*3600) - (mm*60)
-    time0(1) = ymd
-    time0(2) = hh*10000 + mm*100 + ss
-    time = time0
 
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
     ! these arrays are global, just fill the local cells for use later
@@ -367,6 +347,36 @@ contains
              WYN(ix,iy)  = data_global(n)
           end do
        end do
+
+       !TODO: wmesmf code creates a mask for each field using the
+       ! fillvalue and then blends via mask
+       if (merge_import) then
+          call readfromfile('WND', wxdata, wydata, time0, timen, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (currTime == startTime) then
+            !replace entire wx0,wy0 w/ values from file
+            wx0 = wxdata
+            wy0 = wydata
+            write(msgString,'(A,5g14.7)')'init post read wx0 ',wx0(776:780,25)
+            call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+            write(msgString,'(A,5g14.7)')'init post read wy0 ',wy0(776:780,25)
+            call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+          else
+            !replace missing import values with values from file
+            do iy = 1,NY
+              do ix = 1,NX
+                if (wx0(ix,iy) .eq. fillValue) wx0(ix,iy) = wxdata(ix,iy)
+                if (wy0(ix,iy) .eq. fillValue) wy0(ix,iy) = wydata(ix,iy)
+               end do
+            end do
+            write(msgString,'(A,5g14.7)')'post read wx0 ',wx0(776:780,25)
+            call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+            write(msgString,'(A,5g14.7)')'post read wy0 ',wy0(776:780,25)
+            call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+          end if
+         wxn = wx0
+         wyn = wy0
+       end if
 
        DT0(:,:) = def_value   ! air temp - ocn temp
        DTN(:,:) = def_value
@@ -1432,4 +1442,81 @@ contains
 
   end subroutine SetGlobalInput
 
+  !========================================================================
+
+  subroutine readfromfile (idfld, wxdata, wydata, time0, timen, rc)
+
+    use w3gdatmd, only: gtype, nx, ny
+    use w3fldsmd, only: w3fldo, w3fldg
+
+    !arguments
+    character(len=3), intent(in)              :: idfld
+    integer, intent(in)                       :: time0(2)
+    integer, intent(in)                       :: timen(2)
+    real(r4), dimension(nx,ny), intent(out)   :: wxdata, wydata
+    integer, intent(inout), optional          :: rc
+
+    integer        :: ierr, tw0l(2), twnl(2)
+    integer        :: ix, iy
+    integer        :: nxt, nyt, gtypet, filler(3), tideflag
+    integer        :: mdse = 6
+    integer        :: mdst = 10
+    real           :: wx0l(nx,ny), wy0l(nx,ny)
+    real           :: wxnl(nx,ny), wynl(nx,ny)
+    real           :: dt0l(nx,ny), dtnl(nx,ny)
+    logical        :: flagsc = .false.
+    integer, save  :: mdsf
+    logical, save  :: firstCall = .true.
+    character(len=13) :: tsstr
+    character(len=3)  :: tsfld, lstring
+    character(256)    :: logmsg
+
+    rc = ESMF_SUCCESS
+
+    lstring = trim(idfld)
+    if (firstCall) then
+      ! assign unit number for input file
+      call ESMF_UtilIOUnitGet(mdsf) ; open(unit=mdsf, status='scratch'); close(mdsf)
+      ! open file
+      call w3fldo('READ', lstring, mdsf, mdst, mdse, nx, ny, gtype, ierr)
+      if (ierr.ne.0) then
+        write(logmsg,*) "Error in opening "//lstring//", iostat = ", ierr
+        call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+        return
+      endif
+      firstCall = .false.
+    end if
+
+    ! init variables
+    wx0l = 0.0
+    wy0l = 0.0
+    dt0l = 0.0
+    wxnl = 0.0
+    wynl = 0.0
+    dtnl = 0.0
+
+    ! need to rewind to the begining of the file to access
+    ! data of requested date correctly
+    rewind(mdsf)
+
+    ! read header information
+    ! this was inside of w3fldo call but since we are opening file
+    ! once and rewinding, the header need to be read
+    read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, &
+      gtypet, filler(1:2), tideflag
+
+    ! read input
+    call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, &
+           nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
+           wxnl, wynl, dtnl, ierr, flagsc)
+
+    do iy = 1,NY
+       do ix = 1,NX
+          wxdata(ix,iy) = wx0l(ix,iy)
+          wydata(ix,iy) = wy0l(ix,iy)
+       end do
+    end do
+
+  end subroutine readfromfile
 end module wav_import_export

@@ -57,6 +57,7 @@ module wav_shr_mod
   character(len=16)  , public :: inst_suffix ! char string associated with instance
   logical            , public :: wav_coupling_to_mom  = .false. ! TODO: generalize this
 #endif
+  logical            , public :: merge_import  = .false.
   logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
 
   interface ymd2date
