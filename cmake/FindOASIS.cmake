@@ -67,6 +67,7 @@ add_library(OASIS::OASIS INTERFACE IMPORTED)
 target_link_libraries(OASIS::OASIS INTERFACE PSMILE::PSMILE MCT::MCT MPEU::MPEU SCRIP::SCRIP)
 target_include_directories(OASIS::OASIS INTERFACE ${oasis_inc})
 
+include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   ${CMAKE_FIND_PACKAGE_NAME}
   REQUIRED_VARS psmile_lib mct_lib mpeu_lib scrip_lib oasis_inc)
