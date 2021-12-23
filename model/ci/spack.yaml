@@ -3,8 +3,13 @@ spack:
     all:
       compiler: [intel, gcc]
   specs:
+  - metis@5.1.0~shared
+  - parmetis@4.0.3~shared
   - netcdf-c@4.7.4~dap
   - netcdf-fortran@4.5.3
   - jasper@2.0.32
+  - g2@3.4.5
+  - bacio@2.4.1
+  - w3nco@2.4.1
   view: true
   concretization: together
