@@ -1,4 +1,4 @@
-module wav_shr_methods
+module wav_shr_mod
 
   use ESMF            , only : operator(<), operator(/=), operator(+)
   use ESMF            , only : operator(-), operator(*) , operator(>=)
@@ -21,16 +21,10 @@ module wav_shr_methods
   use NUOPC           , only : NUOPC_CompAttributeGet
   use NUOPC_Model     , only : NUOPC_ModelGet
   use wav_kind_mod    , only : r8 => shr_kind_r8, i8 => shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use wav_wrapper_mod , only : shr_file_setlogunit, shr_file_getLogUnit
 
   implicit none
   private
 
-  !TODO:
-  !public  :: memcheck
-  public  :: get_component_instance
-  public  :: set_component_logging
-  public  :: log_clock_advance
   public  :: state_getscalar
   public  :: state_setscalar
   public  :: state_reset
@@ -40,6 +34,30 @@ module wav_shr_methods
   public  :: ymd2date
   private :: timeInit
   private :: field_getfldptr
+
+  ! used by both CESM and UFS
+  ! runtype is used by W3SRCE (values are startup, branch, continue)
+  logical           , public :: root_task
+  integer           , public :: stdout
+  character(len=cs) , public :: runtype
+
+#ifdef CESMCOUPLED
+  ! if a run is a startup or branch run, then initfile is used
+  ! to construct the initial file and used in W3IORSMD
+  character(len=256) , public :: initfile
+
+  ! if a run is a continue run, then casename is used to construct
+  ! the restart filename in W3IORSMD
+  character(len=256) , public :: casename
+  logical            , public :: rstwr       ! true => write restart
+  logical            , public :: histwr      ! true => write history file (snapshot)
+  integer            , public :: outfreq     ! output frequency in hours
+  integer            , public :: inst_index  ! number of current instance (ie. 1)
+  character(len=16)  , public :: inst_name   ! fullname of current instance (ie. "wav_0001")
+  character(len=16)  , public :: inst_suffix ! char string associated with instance
+#endif
+  logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
+  logical            , public :: wav_coupling_to_mom  = .false. ! TODO: generalize this
 
   interface ymd2date
      module procedure ymd2date_int
@@ -70,129 +88,14 @@ module wav_shr_methods
        optIfdays0        = "ifdays0"
 
   ! Module data
-  integer, parameter :: SecPerDay = 86400 ! Seconds per day
-  integer, parameter :: memdebug_level=1
-  character(len=1024)                   :: msgString
+  integer, parameter          :: SecPerDay = 86400 ! Seconds per day
+  integer, parameter          :: memdebug_level=1
+  character(len=ESMF_MAXSTR)  :: msgString
   character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
 contains
-!===============================================================================
-
-  !subroutine memcheck(string, level, mastertask)
-
-  !  ! input/output variables
-  !  character(len=*) , intent(in) :: string
-  !  integer          , intent(in) :: level
-  !  logical          , intent(in) :: mastertask
-
-  !  ! local variables
-  !  integer :: ierr
-  !  integer, external :: GPTLprint_memusage
-  !  !-----------------------------------------------------------------------
-
-  !  if ((mastertask .and. memdebug_level > level) .or. memdebug_level > level+1) then
-  !     ierr = GPTLprint_memusage(string)
-  !  endif
-
-  !end subroutine memcheck
-
-!===============================================================================
-
-  subroutine get_component_instance(gcomp, inst_suffix, inst_index, rc)
-
-    ! input/output variables
-    type(ESMF_GridComp)            :: gcomp
-    character(len=*) , intent(out) :: inst_suffix
-    integer          , intent(out) :: inst_index
-    integer          , intent(out) :: rc
-
-    ! local variables
-    logical          :: isPresent
-    character(len=4) :: cvalue
-    !-----------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-    if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", value=inst_suffix, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       cvalue = inst_suffix(2:)
-       read(cvalue, *) inst_index
-    else
-       inst_suffix = ""
-       inst_index=1
-    endif
-
-  end subroutine get_component_instance
-
-!===============================================================================
-
-  subroutine set_component_logging(gcomp, mastertask, logunit, shrlogunit, rc)
-
-    ! input/output variables
-    type(ESMF_GridComp)  :: gcomp
-    logical, intent(in)  :: mastertask
-    integer, intent(out) :: logunit
-    integer, intent(out) :: shrlogunit
-    integer, intent(out) :: rc
-
-    ! local variables
-    character(len=CL) :: diro
-    character(len=CL) :: logfile
-    !-----------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    shrlogunit = 6
-
-    if (mastertask) then
-       call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-       open(newunit=logunit,file=trim(diro)//"/"//trim(logfile))
-    else
-       logUnit = 6
-    endif
-
-    call shr_file_setLogUnit (logunit)
-
-  end subroutine set_component_logging
-
-!===============================================================================
-
-  subroutine log_clock_advance(clock, component, logunit, rc)
-
-    ! input/output variables
-    type(ESMF_Clock)               :: clock
-    character(len=*) , intent(in)  :: component
-    integer          , intent(in)  :: logunit
-    integer          , intent(out) :: rc
-
-    ! local variables
-    character(len=CL) :: cvalue, prestring
-    !-----------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    write(prestring, *) "------>Advancing ",trim(component)," from: "
-    call ESMF_ClockPrint(clock, options="currTime", unit=cvalue, preString=trim(prestring), rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    write(logunit, *) trim(cvalue)
-
-    call ESMF_ClockPrint(clock, options="stopTime", unit=cvalue, &
-         preString="--------------------------------> to: ", rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    write(logunit, *) trim(cvalue)
-
-  end subroutine log_clock_advance
-
 !===============================================================================
 
   subroutine state_getscalar(state, scalar_id, scalar_value, flds_scalar_name, flds_scalar_num, rc)
@@ -1016,4 +919,4 @@ contains
     endif
   end function chkerr
 
-end module wav_shr_methods
+end module wav_shr_mod

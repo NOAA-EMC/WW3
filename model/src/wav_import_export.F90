@@ -3,12 +3,12 @@ module wav_import_export
   use ESMF
   use NUOPC
   use NUOPC_Model
-  use wav_kind_mod    , only : r8 => shr_kind_r8
-  use wav_shr_methods , only : ymd2date
-  use wav_shr_methods , only : chkerr
-  use wav_shr_methods , only : state_diagnose, state_reset
-  use constants       , only : grav, tpi, dwat
-  use w3cesmmd        , only : runtype
+  use wav_kind_mod , only : r8 => shr_kind_r8, r4 => shr_kind_r4
+  use wav_shr_mod  , only : ymd2date
+  use wav_shr_mod  , only : chkerr
+  use wav_shr_mod  , only : state_diagnose, state_reset
+  use wav_shr_mod  , only : wav_coupling_to_cice, wav_coupling_to_mom
+  use constants    , only : grav, tpi, dwat
 
   implicit none
   private ! except
@@ -39,10 +39,6 @@ module wav_import_export
   integer     ,parameter :: dbug_flag = 0 ! internal debug level
   character(*),parameter :: u_FILE_u = &
        __FILE__
-
-  ! TODO: generalize this
-  logical, public :: wav_coupling_to_cice = .false.
-  logical, public :: wav_coupling_to_mom  = .false.
 
   real(r8), parameter :: zero  = 0.0_r8
 
@@ -227,11 +223,11 @@ contains
     integer           :: ymd, tod
     integer           :: yy, mm, dd, hh, ss
     integer           :: n, ix, iy, isea
-    real(r8)          :: def_value
+    real(r4)          :: def_value
     integer           :: time0(2) ! starting time of the run interval
     integer           :: timen(2) ! ending time of the run interval
-    real(r8)          :: data_global(nx*ny)
-    real(r8), allocatable :: data_global2(:)
+    real(r4)          :: data_global(nx*ny)
+    real(r4), allocatable :: data_global2(:)
 #ifdef CESMCOUPLED
     character(len=10) :: uwnd = 'Sa_u', vwnd = 'Sa_v'
 #else
@@ -281,7 +277,7 @@ contains
     ! set time for input data to time0 and timen (shouldn't matter)
 
     ! note that INFLAGS(1-5) is true for CESM, for UWM INFLAGS(2:4) is true
-    def_value = 0.0
+    def_value = 0.0_r4
 
     ! ---------------
     ! INFLAGS1(1)
@@ -528,8 +524,8 @@ contains
     use w3iogomd      , only : CALC_U3STOKES
 
     ! input/output/variables
-    type(ESMF_GridComp)  :: gcomp
-    integer, intent(out) :: rc
+    type(ESMF_GridComp)            :: gcomp
+    integer          , intent(out) :: rc
 
     ! Local variables
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
@@ -613,7 +609,6 @@ contains
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
           if (mapsta(iy,ix) == 1) then
-             write(6,*)'DEBUG: jsea,LAMULT = ',jsea,LAMULT(jsea)
              sw_lamult(jsea) = LAMULT(jsea)
           else
              sw_lamult(jsea)  = 1.
@@ -1205,7 +1200,7 @@ contains
   end subroutine CalcCharnk
 
   !===============================================================================
-  subroutine CalcRoughl ( wrln )
+  subroutine CalcRoughl ( wrln)
 
     ! Calculate 2D wave roughness length for export
 
@@ -1219,9 +1214,10 @@ contains
 #ifdef W3_ST4
     use w3src4md,   only : w3spr4
 #endif
+    use wav_shr_mod, only : runtype
 
     ! input/output variables
-    real(r8), pointer     :: wrln(:) ! 2D roughness length export field ponter
+    real(r8)         , pointer    :: wrln(:) ! 2D roughness length export field ponter
 
     ! local variables
     integer       :: isea, jsea, ix, iy
@@ -1246,10 +1242,8 @@ contains
              llws(:) = .true.
              ustar = zero
              ustdr = zero
-             tauwx = zero 
+             tauwx = zero
              tauwy = zero
-             cd = zero 
-             z0 = zero
 #ifdef W3_ST3
              call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
                           emean, fmean, fmean1, wnmean, amax,         &
@@ -1265,10 +1259,10 @@ contains
 #endif
           end if
        endif !firstCall
-          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+       wrln(jsea) = charn(jsea)*ust(isea)**2/grav
     enddo jsea_loop
 
-!if(ix .eq. 86 .and. iy .eq. 230),index= on 194 index 2958
+    !if(ix .eq. 86 .and. iy .eq. 230),index= on 194 index 2958
     write(msgString,'(A18,g14.7)')'CalcRoughl mapsta ',mapsta(230,86)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     !write(msgString,'(A,10g14.7)')'CalcRoughl mapsta ',mapsta(230,83:92)
@@ -1439,12 +1433,12 @@ contains
     type(ESMF_State) , intent(in)  :: importState
     character(len=*) , intent(in)  :: fldname
     type(ESMF_VM)    , intent(in)  :: vm
-    real(r8)         , intent(out) :: global_output(nx*ny)
+    real(r4)         , intent(out) :: global_output(nx*ny)
     integer          , intent(out) :: rc
 
     ! local variables
     integer           :: n, isea, ix, iy
-    real(r8)          :: global_input(nx*ny)
+    real(r4)          :: global_input(nx*ny)
     real(r8), pointer :: dataptr(:)
 
     !---------------------------------------------------------------------------
@@ -1453,13 +1447,13 @@ contains
 
     call state_getfldptr(importState, trim(fldname), fldptr1d=dataptr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    global_output(:) = 0._r8
-    global_input(:) = 0._r8
+    global_output(:) = 0._r4
+    global_input(:) = 0._r4
     do n = 1, nseal
        isea = iaproc + (n-1)*naproc
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       global_input(ix + (iy-1)*nx) = dataptr(n)
+       global_input(ix + (iy-1)*nx) = real(dataptr(n),4)
     end do
     call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
