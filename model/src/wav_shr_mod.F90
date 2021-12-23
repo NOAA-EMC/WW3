@@ -55,9 +55,9 @@ module wav_shr_mod
   integer            , public :: inst_index  ! number of current instance (ie. 1)
   character(len=16)  , public :: inst_name   ! fullname of current instance (ie. "wav_0001")
   character(len=16)  , public :: inst_suffix ! char string associated with instance
+  logical            , public :: wav_coupling_to_mom  = .false. ! TODO: generalize this
 #endif
   logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
-  logical            , public :: wav_coupling_to_mom  = .false. ! TODO: generalize this
 
   interface ymd2date
      module procedure ymd2date_int

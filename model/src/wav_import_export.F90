@@ -1226,9 +1226,6 @@ contains
     logical       :: llws(nspec)
     logical, save :: firstCall = .true.
 
-    integer               :: lb, ub
-    character(len=1024)   :: msgString
-
     !----------------------------------------------------------------------
 
     jsea_loop: do jsea = 1,nseal
@@ -1261,31 +1258,6 @@ contains
        endif !firstCall
        wrln(jsea) = charn(jsea)*ust(isea)**2/grav
     enddo jsea_loop
-
-    !if(ix .eq. 86 .and. iy .eq. 230),index= on 194 index 2958
-    write(msgString,'(A18,g14.7)')'CalcRoughl mapsta ',mapsta(230,86)
-    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-    !write(msgString,'(A,10g14.7)')'CalcRoughl mapsta ',mapsta(230,83:92)
-    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    lb = lbound(ust,1); ub = ubound(ust,1)
-    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
-    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl ust ',lb,ub, ust(2955:2964)
-    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    lb = lbound(charn,1); ub = ubound(charn,1)
-    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
-    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl charn ',lb,ub, charn(2955:2964)
-    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    lb = lbound(wrln,1); ub = ubound(wrln,1)
-    !write(msgString,'(A,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln((ub-lb)/2:9+(ub-lb)/2)
-    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl wrln ',lb,ub, wrln(2955:2964)
-    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    lb = lbound(u10,1); ub = ubound(u10,1)
-    write(msgString,'(A18,2i7,10g14.7)')'CalcRoughl u10 ',lb,ub, u10(2955:2964)
-    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     firstCall = .false.
 

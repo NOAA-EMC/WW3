@@ -674,7 +674,7 @@ contains
 
     use wav_import_export, only : state_getfldptr, state_fldchk
     use wav_import_export, only : calcRoughl 
-    use wav_shr_mod      , only : wav_coupling_to_cice, wav_coupling_to_mom
+    use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 
     ! input/output variables
