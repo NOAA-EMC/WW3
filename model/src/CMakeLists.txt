@@ -80,6 +80,13 @@ if("OASIS" IN_LIST switches)
   target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
 endif()
 
+if(MULTI_ESMF)
+  find_package(ESMF MODULE REQUIRED)
+  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+  target_link_libraries(ww3_lib PUBLIC esmf)
+  set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
+endif() 
+
 find_package(NetCDF COMPONENTS Fortran)
 if(NetCDF_Fortran_FOUND)
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
@@ -112,12 +119,6 @@ endif()
 
 if("SCRIP" IN_LIST switches)
   target_sources(ww3_lib PRIVATE ${scrip_src})
-
-  find_package(ESMF)
-  if(ESMF_FOUND)
-    target_sources(ww3_lib PRIVATE wmesmfmd.F90)
-    target_link_libraries(ww3_lib PUBLIC esmf)
-  endif() 
 endif()
 
 
