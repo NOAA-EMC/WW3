@@ -7,7 +7,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset
-  use wav_shr_mod  , only : wav_coupling_to_cice, wav_coupling_to_mom
+  use wav_shr_mod  , only : wav_coupling_to_cice
   use constants    , only : grav, tpi, dwat
 
   implicit none

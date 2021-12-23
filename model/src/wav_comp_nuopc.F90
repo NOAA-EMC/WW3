@@ -1318,9 +1318,6 @@ contains
     ! Initialize ww3 for ufs (called from InitializeRealize)
 
     use w3odatmd     , only : nds, fnmpre
-    use w3adatmd     , only : charn,u10  ! TODO: remove (used for debugging)
-    use w3wdatmd     , only : ust        ! TODO: remove (used for debugging)
-    use w3gdatmd     , only : xgrd, ygrd ! TODO: remove (used for debugging)
     use w3initmd     , only : w3init
     use wav_shel_inp , only : read_shel_inp
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
@@ -1333,7 +1330,6 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    integer :: lb,ub
     character(len=*), parameter :: subname = '(wavinit_ufs)'
     ! -------------------------------------------------------------------
 
@@ -1346,22 +1342,6 @@ contains
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-
-    !lb = lbound(ust,1); ub = ubound(ust,1)
-    !!write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub, ust((ub-lb)/2:9+(ub-lb)/2)
-    !write(msgString,'(A,2i7,10g14.7)')'w3init ust ',lb,ub,ust(2955:2964)
-    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    !lb = lbound(charn,1); ub = ubound(charn,1)
-    !!write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub, charn((ub-lb)/2:9+(ub-lb)/2)
-    !write(msgString,'(A,2i7,10g14.7)')'w3init charn ',lb,ub,charn(2955:2964)
-    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    !lb = lbound(u10,1); ub = ubound(u10,1)
-    !write(msgString,'(A,2i7,10g14.7)')'w3init u10 ',lb,ub,u10(2955:2964)
-    !call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-    !call ESMF_LogWrite(trim(subname)//' done = w3init', ESMF_LOGMSG_INFO)
 
   end subroutine waveinit_ufs
 #endif
