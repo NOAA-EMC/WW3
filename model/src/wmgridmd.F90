@@ -2970,9 +2970,7 @@
 ! Notes: check here that we are sufficiently dimensioned.
                               IF ( NLOC_OM .GT. NLMAX ) THEN
                                  IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,*)
-                                 WRITE(*,*) 'Error 1020 Line 2973'
-                                 STOP 
-                                 !CALL EXTCDE(1020)
+                                 CALL EXTCDE(1020)
                               END IF
                               TMPINT_OM(NRTOT,NLOC_OM) =  &
                                  GRIDS(GSRC)%MAPFS(JSRC,ISRC)
@@ -4174,7 +4172,6 @@
 #ifdef W3_O12
                 IF ( IMPROC.EQ.NMPERR ) THEN
                   WRITE (MDSE,1020) I, IX, IY
-                  WRITE (*,*) 'TESTING 4177 ERROR 1020', I, IX, IY
                 ENDIF
 #endif
               END IF

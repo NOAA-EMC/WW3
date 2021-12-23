@@ -3411,7 +3411,6 @@
       DEALLOCATE(MX1, MXX, MYY, MXY, MAPOUT)
       DEALLOCATE(MX1R, MXXR, MYYR, MXYR)
       DEALLOCATE(AUX1)
-!AR: This needs to be cleaned for the scalability part ..
       IF (ALLOCATED(LON)) DEALLOCATE(LON, LAT)
       IF (ALLOCATED(LON2D)) DEALLOCATE(LON2D, LAT2D)
 #ifdef W3_RTD

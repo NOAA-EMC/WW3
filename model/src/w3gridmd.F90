@@ -4949,8 +4949,7 @@
           DEALLOCATE ( XGRDIN, YGRDIN )   
           CALL W3GNTX ( 1, 6, 6 )  
       ELSE 
-!AR: This is already done in readmsh
-        END IF   ! GTYPE
+      END IF   ! GTYPE
 !      
 #ifdef W3_SMC
  !!Li  Shelter MAPSTA LLG definition for SMC 
