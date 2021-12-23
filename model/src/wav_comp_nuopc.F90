@@ -141,7 +141,7 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
-  use wav_shr_mod           , only : root_task, stdout, runtype
+  use wav_shr_mod           , only : root_task, stdout, runtype, merge_import
 
   implicit none
   private ! except
@@ -332,6 +332,14 @@ contains
        call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO, rc=rc)
     end if
 
+    call NUOPC_CompAttributeGet(gcomp, name="merge_import", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       if (trim(cvalue) .eq. '.true.') then
+          merge_import = .true.
+       end if
+    end if
+
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -361,7 +369,7 @@ contains
     type(ESMF_DistGrid)            :: distGrid
     type(ESMF_Mesh)                :: Emesh, EmeshTemp
     type(ESMF_VM)                  :: vm
-    type(ESMF_Time)                :: ETime
+    type(ESMF_Time)                :: esmfTime, stopTime
     type(ESMF_TimeInterval)        :: TimeStep
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
@@ -523,13 +531,13 @@ contains
 
     ! Initial run or restart run
     if ( runtype == "initial") then
-       call ESMF_ClockGet( clock, startTime=ETime, rc=rc)
+       call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_ClockGet( clock, currTime=ETime, rc=rc )
+       call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
+    call ESMF_TimeGet( esmfTime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ymd2date(yy, mm, dd, start_ymd)
 
@@ -540,9 +548,9 @@ contains
     time0(1) = start_ymd
     time0(2) = hh*10000 + mm*100 + ss
 
-    call ESMF_ClockGet( clock, stopTime=ETime, rc=rc)
+    call ESMF_ClockGet( clock, stopTime=stopTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=stop_tod, rc=rc )
+    call ESMF_TimeGet( stopTime, yy=yy, mm=mm, dd=dd, s=stop_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ymd2date(yy, mm, dd, stop_ymd)
 
@@ -874,10 +882,9 @@ contains
     type(ESMF_State) :: exportState
     type(ESMF_Clock) :: clock
     type(ESMF_Alarm) :: alarm
-    type(ESMF_TIME)  :: ETime
 
     type(ESMF_TimeInterval)    :: timeStep
-    type(ESMF_Time)            :: currTime, startTime, stopTime
+    type(ESMF_Time)            :: currTime, nextTime, startTime, stopTime
 
     integer          :: yy,mm,dd,hh,ss
     integer          :: ymd        ! current year-month-day
@@ -914,30 +921,40 @@ contains
     !------------
     ! Determine time info
     !------------
-    ! use current time for next time step the NUOPC clock is not updated
-    ! until the end of the time interval
-    call ESMF_ClockGetNextTime(clock, nextTime=ETime, rc=rc)
+    call ESMF_ClockGet( clock, currTime=currTime, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet( ETime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
+    call ESMF_TimeGet( currTime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ymd2date(yy, mm, dd, ymd)
     hh = tod/3600
     mm = (tod - (hh * 3600))/60
     ss = tod - (hh*3600) - (mm*60)
-    if (root_task) then
-       write(stdout,*) 'ymd2date wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
-    end if
-    timen(1) = ymd
-    timen(2) = hh*10000 + mm*100 + ss
     time0(1) = ymd
     time0(2) = hh*10000 + mm*100 + ss
+    if (root_task) write(stdout,'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+
+    ! use next time; the NUOPC clock is not updated
+    ! until the end of the time interval
+    call ESMF_ClockGetNextTime(clock, nextTime=nextTime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_TimeGet( nextTime, yy=yy, mm=mm, dd=dd, s=tod, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ymd2date(yy, mm, dd, ymd)
+    hh = tod/3600
+    mm = (tod - (hh * 3600))/60
+    ss = tod - (hh*3600) - (mm*60)
+
+    timen(1) = ymd
+    timen(2) = hh*10000 + mm*100 + ss
+
     time = time0
 
     !------------
     ! Obtain import data from import state
     !------------
-    call import_fields(gcomp, rc)
+    call import_fields(gcomp, time0, timen, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     !------------
