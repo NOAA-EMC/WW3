@@ -75,6 +75,11 @@ set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
 # Executables to build if NetCDF is found
 set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc ww3_prnc)
 
+if("OASIS" IN_LIST switches)
+  find_package(OASIS REQUIRED)
+  target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
+endif()
+
 find_package(NetCDF COMPONENTS Fortran)
 if(NetCDF_Fortran_FOUND)
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
@@ -113,11 +118,6 @@ if("SCRIP" IN_LIST switches)
     target_sources(ww3_lib PRIVATE wmesmfmd.F90)
     target_link_libraries(ww3_lib PUBLIC esmf)
   endif() 
-endif()
-
-if("OASIS" IN_LIST switches)
-  find_package(OASIS REQUIRED)
-  target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
 endif()
 
 
