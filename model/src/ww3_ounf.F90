@@ -2494,7 +2494,6 @@
 
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
-!AR: for what do we need the array LON and LAT?!?!!?
                 IRET=NF90_PUT_VAR(NCID,VARID(1),LON(IX1:IXN))
                 CALL CHECK_ERR(IRET)
                 IRET=NF90_PUT_VAR(NCID,VARID(2),LAT(IX1:IXN))

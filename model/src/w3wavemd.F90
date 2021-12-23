@@ -428,7 +428,6 @@
 #ifdef W3_SETUP
       USE W3WAVSET, only : WAVE_SETUP_COMPUTATION
 #endif
-!/NETCDF_QAD      USE W3NETCDF, only : OUTPUT_NETCDF_QUICK_AND_DIRTY
 
 #ifdef W3_OASIS
       USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
@@ -1477,7 +1476,7 @@
                 END IF
 !
               IF ( IDACT(13:13).NE.' ' ) THEN
-                  CALL W3UICE ( VA, VA )
+                  CALL W3UICE ( VA )
                   DTI0   = 0.
                   FLACT  = .TRUE.
                   FLMAP  = .TRUE.
@@ -2209,8 +2208,6 @@
         WRITE(740+IAPROC,*) 'FLCX=', FLCX, ' FLCY=', FLCY
         FLUSH(740+IAPROC)
 #endif
-!
-!/NETCDF_QAD      CALL OUTPUT_NETCDF_QUICK_AND_DIRTY(IMOD, DTG)
 !
         IF (GTYPE .EQ. UNGTYPE) THEN
           IF (FLAGLL) THEN
