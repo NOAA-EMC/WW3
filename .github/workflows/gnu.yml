@@ -16,6 +16,7 @@ jobs:
 
     steps:
       # Cache spack, OASIS, and compiler
+      # No way to flush Action cache, so key may have # appended
       - name: cache-env
         id: cache-env
         uses: actions/cache@v2
@@ -24,7 +25,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-gnu
+          key: spack-${{ runner.os }}-gnu2
 
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -80,7 +81,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-gnu
+          key: spack-${{ runner.os }}-gnu2
 
       - name: build-ww3
         run: |

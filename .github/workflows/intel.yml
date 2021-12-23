@@ -25,6 +25,7 @@ jobs:
 
     steps:
       # Cache spack, OASIS, and compiler
+      # No way to flush Action cache, so key may have # appended
       - name: cache-env
         id: cache-env
         uses: actions/cache@v2
@@ -34,7 +35,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-intel2
+          key: spack-${{ runner.os }}-intel3
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -105,7 +106,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-intel2
+          key: spack-${{ runner.os }}-intel3
 
       - name: build-ww3
         run: |
