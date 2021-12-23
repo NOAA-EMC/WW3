@@ -2,6 +2,7 @@ name: GNU Linux Build
 on: [push, pull_request]
 
 env:
+  cache_key: gnu3
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
@@ -25,7 +26,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-gnu2
+          key: spack-${{ runner.os }}-${{ env.cache_key }}
 
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -81,7 +82,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-gnu2
+          key: spack-${{ runner.os }}-${{ env.cache_key }}
 
       - name: build-ww3
         run: |

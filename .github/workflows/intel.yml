@@ -9,6 +9,7 @@ defaults:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
+  cache_key: intel4
   CC: icc
   FC: ifort
   CXX: icpc
@@ -35,7 +36,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-intel3
+          key: spack-${{ runner.os }}-${{ env.cache_key }}
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -106,7 +107,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-intel3
+          key: spack-${{ runner.os }}-${{ env.cache_key }}
 
       - name: build-ww3
         run: |
