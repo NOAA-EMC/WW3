@@ -93,6 +93,6 @@ jobs:
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           cmake .. -DSWITCH=${{ matrix.switch }}
-          make -j2
+          make -j2 VERBOSE=1
 
           
