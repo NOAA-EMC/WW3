@@ -609,8 +609,6 @@
           ELSE IF ( IBI .NE. OUTPTS(I)%OUT5%NBI ) THEN
              CALL EXTCDE ( 1020 )
           ENDIF
-             CALL EXTCDE ( 1020 )
-        ENDIF
 !
 ! 2.e Sort spectra by grid, fill IPBPI, and get NBI2 and ....
 !
