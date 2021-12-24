@@ -40,6 +40,7 @@ module wav_shr_mod
   logical           , public :: root_task
   integer           , public :: stdout
   character(len=cs) , public :: runtype
+  integer           , public :: dbug_flag
 
 #ifdef CESMCOUPLED
   ! if a run is a startup or branch run, then initfile is used
@@ -119,7 +120,7 @@ contains
     type(ESMF_Field)  :: field
     real(r8), pointer :: farrayptr(:,:)
     real(r8)          :: tmp(1)
-    character(len=*), parameter :: subname='(state_getscalar)'
+    character(len=*), parameter :: subname = '(wav_shr_mod:state_getscalar)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -170,7 +171,7 @@ contains
     type(ESMF_Field)  :: lfield
     type(ESMF_VM)     :: vm
     real(r8), pointer :: farrayptr(:,:)
-    character(len=*), parameter :: subname='(state_setscalar)'
+    character(len=*), parameter :: subname = '(wav_shr_mod:state_setscalar)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -219,7 +220,7 @@ contains
     real(R8), pointer                   :: fldptr1(:)
     real(R8), pointer                   :: fldptr2(:,:)
     real(R8), parameter                 :: czero = 0.0_R8
-    character(len=*),parameter          :: subname='(state_reset)'
+    character(len=*), parameter         :: subname = '(wav_shr_mod:state_reset)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -230,8 +231,6 @@ contains
     call ESMF_StateGet(State, itemNameList=lfieldnamelist, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
-!print*, 'HK inside state_reset'
 
     do n = 1, fieldCount
        call ESMF_StateGet(State, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
@@ -276,7 +275,7 @@ contains
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
     real(r8), pointer               :: dataPtr1d(:)
     real(r8), pointer               :: dataPtr2d(:,:)
-    character(len=*),parameter      :: subname='(state_diagnose)'
+    character(len=*), parameter     :: subname = '(wav_shr_mod:state_diagnose)'
     ! ----------------------------------------------
 
 
@@ -347,11 +346,8 @@ contains
     type(ESMF_Mesh)             :: lmesh
     integer                     :: lrank, nnodes, nelements
     logical                     :: labort
-    character(len=*), parameter :: subname='(field_getfldptr)'
+    character(len=*), parameter :: subname = '(wav_shr_mod:field_getfldptr)'
     ! ----------------------------------------------
-
-
-!print*, 'HK inside field_getfldptr'
 
     if (.not.present(rc)) then
        call ESMF_LogWrite(trim(subname)//": ERROR rc not present ", &
@@ -477,7 +473,7 @@ contains
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
     integer                 :: sec
-    character(len=*), parameter :: subname = '(set_alarmInit): '
+    character(len=*), parameter :: subname = '(wav_shr_mod:set_alarmInit): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -848,7 +844,7 @@ contains
     integer :: year, mon, day ! year, month, day as integers
     integer :: tdate          ! temporary date
     integer :: date           ! coded-date (yyyymmdd)
-    character(len=*), parameter :: subname='(timeInit)'
+    character(len=*), parameter :: subname = '(wav_shr_mod:timeInit)'
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

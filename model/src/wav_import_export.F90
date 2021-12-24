@@ -7,7 +7,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import
+  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag
   use constants    , only : grav, tpi, dwat
 
   implicit none
@@ -30,14 +30,13 @@ module wav_import_export
      integer :: ungridded_ubound = 0
   end type fld_list_type
 
-  integer, parameter     :: fldsMax = 100
-  integer                :: fldsToWav_num = 0
-  integer                :: fldsFrWav_num = 0
-  type (fld_list_type)   :: fldsToWav(fldsMax)
-  type (fld_list_type)   :: fldsFrWav(fldsMax)
+  integer, parameter      :: fldsMax = 100
+  integer                 :: fldsToWav_num = 0
+  integer                 :: fldsFrWav_num = 0
+  type (fld_list_type)    :: fldsToWav(fldsMax)
+  type (fld_list_type)    :: fldsFrWav(fldsMax)
 
-  integer     ,parameter :: dbug_flag = 0 ! internal debug level
-  character(*),parameter :: u_FILE_u = &
+  character(*), parameter :: u_FILE_u = &
        __FILE__
 
   real(r8), parameter :: zero  = 0.0_r8
@@ -56,10 +55,11 @@ contains
     ! local variables
     integer          :: n, num
     character(len=2) :: fvalue
-    character(len=*), parameter :: subname='(wav_import_export:advertise_fields)'
+    character(len=*), parameter :: subname = '(wav_import_export:advertise_fields)'
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     !--------------------------------
     ! Advertise import fields
@@ -135,7 +135,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
-    call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5)call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine advertise_fields
 
@@ -152,11 +152,12 @@ contains
     ! local variables
     type(ESMF_State)     :: importState
     type(ESMF_State)     :: exportState
-    character(len=*), parameter :: subname='(wav_import_export:realize_fields)'
+    character(len=*), parameter :: subname = '(wav_import_export:realize_fields)'
     integer :: ii
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     call NUOPC_ModelGet(gcomp, importState=importState, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -186,10 +187,12 @@ contains
     call state_reset(ImportState, zero, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call state_diagnose(exportState, 'after state_reset', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (dbug_flag > 5) then
+       call state_diagnose(exportState, 'after state_reset', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
-    call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine realize_fields
 
@@ -234,18 +237,19 @@ contains
     character(len=10) :: uwnd = 'Sa_u10m', vwnd = 'Sa_v10m'
 #endif
     character(len=256) :: msgString
-    character(len=*), parameter :: subname='(wav_import_export:import_fields)'
+    character(len=*), parameter :: subname = '(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     ! Get import state, clock and vm
     call ESMF_GridCompGet(gcomp, clock=clock, importState=importState, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_diagnose(importState, 'at import ', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (dbug_flag > 5) then
+       call state_diagnose(importState, 'at import ', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     call ESMF_ClockGet(clock, startTime=startTime, currTime=currTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -511,7 +515,7 @@ contains
        end if
     end if
 
-    call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname))//' done', ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
 
@@ -598,12 +602,11 @@ contains
     real(r8), pointer :: sw_ustokes3(:)
     real(r8), pointer :: sw_vstokes3(:)
 #endif
-
-    character(len=*), parameter :: subname='(wav_import_export:export_fields)'
+    character(len=*), parameter :: subname = '(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     ! Get export state
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
@@ -921,9 +924,10 @@ contains
 
    end if
 #endif
-
-    call state_diagnose(exportState, 'at export ', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (dbug_flag > 5) then
+       call state_diagnose(exportState, 'at export ', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
   end subroutine export_fields
 
@@ -938,14 +942,16 @@ contains
 
     ! local variables
     integer :: rc
-    character(len=*), parameter :: subname='(wav_import_export:fldlist_add)'
+    character(len=*), parameter :: subname = '(wav_import_export:fldlist_add)'
     !-------------------------------------------------------------------------------
 
     ! Set up a list of field information
+    rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     num = num + 1
     if (num > fldsMax) then
-       call ESMF_LogWrite(trim(subname)//": ERROR num > fldsMax "//trim(stdname), &
+       call ESMF_LogWrite(subname//": ERROR num > fldsMax "//trim(stdname), &
             ESMF_LOGMSG_ERROR, line=__LINE__, file=__FILE__)
        return
     endif
@@ -982,10 +988,11 @@ contains
     integer                :: n
     type(ESMF_Field)       :: field
     character(len=80)      :: stdname
-    character(len=*),parameter  :: subname='(wav_import_export:fldlist_realize)'
+    character(len=*), parameter  :: subname = '(wav_import_export:fldlist_realize)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     do n = 1, numflds
        stdname = fldList(n)%stdname
@@ -1045,7 +1052,7 @@ contains
       ! local variables
       type(ESMF_Distgrid) :: distgrid
       type(ESMF_Grid)     :: grid
-      character(len=*), parameter :: subname='(wav_import_export:SetScalarField)'
+      character(len=*), parameter :: subname = '(wav_import_export:SetScalarField)'
       ! ----------------------------------------------
 
       rc = ESMF_SUCCESS
@@ -1086,14 +1093,11 @@ contains
     type(ESMF_Field)            :: lfield
     type(ESMF_Mesh)             :: lmesh
     integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
+    character(len=*), parameter :: subname = '(wav_import_export:state_getfldptr)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
-
-    if (dbug_flag > 5) then
-       call ESMF_LogWrite(trim(subname)//": called", ESMF_LOGMSG_INFO)
-    end if
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1127,9 +1131,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif  ! status
 
-    if (dbug_flag > 5) then
-       call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
-    end if
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine state_getfldptr
 
@@ -1422,10 +1424,12 @@ contains
     integer           :: n, isea, ix, iy
     real(r4)          :: global_input(nx*ny)
     real(r8), pointer :: dataptr(:)
+    character(len=*), parameter :: subname = '(wav_import_export:setGlobalInput)'
 
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     call state_getfldptr(importState, trim(fldname), fldptr1d=dataptr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1470,8 +1474,11 @@ contains
     character(len=13) :: tsstr
     character(len=3)  :: tsfld, lstring
     character(256)    :: logmsg
+    character(len=*), parameter :: subname = '(wav_import_export:readfromfile)'
+    !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     lstring = trim(idfld)
     if (firstCall) then
