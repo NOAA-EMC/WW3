@@ -40,7 +40,6 @@ module wav_shr_mod
   logical           , public :: root_task
   integer           , public :: stdout
   character(len=cs) , public :: runtype
-  integer           , public :: dbug_flag
 
 #ifdef CESMCOUPLED
   ! if a run is a startup or branch run, then initfile is used
@@ -60,6 +59,7 @@ module wav_shr_mod
 #endif
   logical            , public :: merge_import  = .false.
   logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
+  integer            , public :: dbug_flag = 0
 
   interface ymd2date
      module procedure ymd2date_int

@@ -141,7 +141,7 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
-  use wav_shr_mod           , only : root_task, stdout, runtype, merge_import
+  use wav_shr_mod           , only : root_task, stdout, runtype, merge_import, dbug_flag
 
   implicit none
   private ! except
@@ -167,7 +167,6 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0
   integer                 :: flds_scalar_index_ny = 0
   logical                 :: profile_memory = .false.
-  integer                 :: dbug_flag = 0
 
   integer     , parameter :: debug = 1
   character(*), parameter :: modName =  "(wav_comp_nuopc)"
@@ -185,7 +184,8 @@ contains
     character(len=*), parameter  :: subname = trim(modName)//':(SetServices) '
 
     rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     ! the NUOPC gcomp component will register the generic methods
     call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
@@ -225,7 +225,8 @@ contains
          specRoutine=ModelFinalize, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine SetServices
 
@@ -265,7 +266,8 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     !----------------------------------------------------------------------------
     ! advertise fields
@@ -352,7 +354,8 @@ contains
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine InitializeAdvertise
 
@@ -695,7 +698,7 @@ contains
   subroutine DataInitialize(gcomp, rc)
 
     use wav_import_export, only : state_getfldptr, state_fldchk
-    use wav_import_export, only : calcRoughl 
+    use wav_import_export, only : calcRoughl
     use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 
@@ -999,7 +1002,7 @@ contains
     if (outfreq .gt. 0) then
        ! output every outfreq hours if appropriate
       if( mod(hh, outfreq) == 0 ) then
-       histwr = .true. 
+       histwr = .true.
       endif
     endif
     if (.not. histwr) then
@@ -1247,13 +1250,13 @@ contains
 
     ! input/output variables
     type(ESMF_GridComp)   :: gcomp
-    integer , intent(in)  :: ntrace(:) 
+    integer , intent(in)  :: ntrace(:)
     integer , intent(in)  :: mpi_comm
     integer , intent(in)  :: dtime_sync
     integer , intent(out) :: rc
 
     ! local variables
-    integer                        :: ierr 
+    integer                        :: ierr
     integer                        :: unitn  ! namelist unit number
     integer                        :: shrlogunit
     logical                        :: isPresent, isSet
@@ -1338,7 +1341,7 @@ contains
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
     ! ww3 always starts up from a 'restart' file type
     ! For a startup (including hybrid) or branch run the restart file is obtained from 'initfile'
-    ! For a continue run, the restart filename upon read is created from the time(1:2) array 
+    ! For a continue run, the restart filename upon read is created from the time(1:2) array
     ! flgr2 is flags for coupling output, not ready yet so keep .false.
     ! 1 is model number
     ! IsMulti does not appear to be used, setting to .false.
