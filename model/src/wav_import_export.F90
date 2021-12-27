@@ -251,7 +251,7 @@ contains
 
     if (.not.allocated(import_mask))allocate(import_mask(nx*ny))
     ! set mask using u-wind field if merge_import; all import fields will have same missing overlap region
-    call set_importmask(importState, clock, trim(uwnd), import_mask, vm, rc)
+    if (merge_import) call set_importmask(importState, clock, trim(uwnd), import_mask, vm, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
@@ -1471,9 +1471,6 @@ contains
 
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    ! return if not merge_import
-    if (.not. merge_import) return
 
     call ESMF_ClockGet(clock, startTime=startTime, currTime=currTime, timeStep=timeStep, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
