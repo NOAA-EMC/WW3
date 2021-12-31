@@ -1493,14 +1493,14 @@ contains
     ! no valid import at firstCall, use all data
     if (firstCall) then
        import_mask(:) = 0.0_r4
-       call ESMF_ClockPrint(clock, options='currTime', preString='Setting initial import_mask at time : ', &
+       call ESMF_ClockPrint(clock, options='currTime', preString='Setting initial import_mask at currTime : ', &
           unit=msgString, rc=rc)
        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     end if
 
     ! set merge mask where import field has fillvalue due to non-overlapping model domains
     if (secondCall) then
-       call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at time : ', &
+       call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at currTime : ', &
           unit=msgString, rc=rc)
        call state_getfldptr(importState, trim(fldname), fldptr1d=dataptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1622,11 +1622,11 @@ contains
     integer        :: nxt, nyt, gtypet, filler(3), tideflag
     integer        :: mdse = 6
     integer        :: mdst = 10
+    integer        :: mdsf = 13   ! same as ndsf(3) in ww3_shel
     real           :: wx0l(nx,ny), wy0l(nx,ny)
     real           :: wxnl(nx,ny), wynl(nx,ny)
     real           :: dt0l(nx,ny), dtnl(nx,ny)
     logical        :: flagsc = .false.
-    integer, save  :: mdsf
     logical, save  :: firstCall = .true.
     character(len=13) :: tsstr
     character(len=3)  :: tsfld, lstring
@@ -1639,10 +1639,6 @@ contains
 
     lstring = trim(idfld)
     if (firstCall) then
-      ! assign unit number for input file
-      mdsf = 12345
-      !call ESMF_UtilIOUnitGet(mdsf,rc=rc) ; open(unit=mdsf, status='scratch'); close(mdsf)
-      !if (ChkErr(rc,__LINE__,u_FILE_u)) return
       ! open file
       call w3fldo('READ', lstring, mdsf, mdst, mdse, nx, ny, gtype, ierr)
       write(logmsg,*) "Opening "//lstring//", iostat = ", ierr

@@ -492,7 +492,8 @@ contains
     ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
     ! the same unit.  After getting all the available unit numbers, close
     ! the units since they will be opened within W3INIT.
-
+    ! By default, unit numbers between 50 and 99 are scanned to find an
+    ! unopened unit number
     nds(1) = stdout
     nds(2) = stdout
     nds(3) = stdout
