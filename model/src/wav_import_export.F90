@@ -324,7 +324,7 @@ contains
        if (merge_import) then
           call readfromfile('WND', wxdata, wydata, time0, timen, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          if (dbug_flag > 5) then
+          if (dbug_flag > 10) then
              call check_globaldata(gcomp, 'wxdata', wxdata, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              call check_globaldata(gcomp, 'wydata', wydata, rc)
@@ -349,7 +349,7 @@ contains
                 WXN(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
              end do
           end do
-          if (dbug_flag > 5) then
+          if (dbug_flag > 10) then
              call check_globaldata(gcomp, 'import_mask', import_mask, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              call check_globaldata(gcomp, 'wx0', wx0, rc)
@@ -371,7 +371,7 @@ contains
                 WYN(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
              end do
           end do
-          if (dbug_flag > 5) then
+          if (dbug_flag > 10) then
              call check_globaldata(gcomp, 'wy0', wy0, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
