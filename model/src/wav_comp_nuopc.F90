@@ -181,10 +181,9 @@ contains
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
 
-    character(len=*), parameter  :: subname = trim(modName)//':(SetServices) '
+    character(len=*),parameter  :: subname=trim(modName)//':(SetServices) '
 
     rc = ESMF_SUCCESS
-    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     ! the NUOPC gcomp component will register the generic methods
@@ -225,7 +224,6 @@ contains
          specRoutine=ModelFinalize, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine SetServices
@@ -262,11 +260,10 @@ contains
     character(len=CL) :: logmsg
     logical           :: isPresent, isSet
     character(len=CL) :: cvalue
-    character(len=*), parameter :: subname = trim(modName)//':(InitializeAdvertise) '
+    character(len=*), parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     !----------------------------------------------------------------------------
@@ -338,7 +335,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name="merge_import", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       if (trim(cvalue) .eq. '.true.') then
+       if (trim(cvalue) == '.true.') then
           merge_import = .true.
        end if
     end if
@@ -354,7 +351,6 @@ contains
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine InitializeAdvertise
@@ -741,7 +737,7 @@ contains
     real(r8), pointer :: wave_elevation_spectrum23(:)
     real(r8), pointer :: wave_elevation_spectrum24(:)
     real(r8), pointer :: wave_elevation_spectrum25(:)
-    character(len=*), parameter :: subname = '(wav_comp_nuopc:DataInitialize)'
+    character(len=*),parameter :: subname = '(wav_comp_nuopc:DataInitialize)'
     ! -------------------------------------------------------------------
 
     !--------------------------------------------------------------------
@@ -868,8 +864,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if ( dbug_flag > 5) then
-      call state_diagnose(exportState, 'at DataInitialize ', rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_diagnose(exportState, 'at DataInitialize ', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -898,22 +894,20 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    type(ESMF_State) :: importState
-    type(ESMF_State) :: exportState
-    type(ESMF_Clock) :: clock
-    type(ESMF_Alarm) :: alarm
-
-    type(ESMF_TimeInterval)    :: timeStep
-    type(ESMF_Time)            :: currTime, nextTime, startTime, stopTime
-
-    integer          :: yy,mm,dd,hh,ss
-    integer          :: ymd        ! current year-month-day
-    integer          :: tod        ! current time of day (sec)
-    integer          :: time0(2)
-    integer          :: timen(2)
-    integer          :: shrlogunit ! original log unit and level
-    character(ESMF_MAXSTR)      :: msgString
-    character(len=*), parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
+    type(ESMF_State)        :: importState
+    type(ESMF_State)        :: exportState
+    type(ESMF_Clock)        :: clock
+    type(ESMF_Alarm)        :: alarm
+    type(ESMF_TimeInterval) :: timeStep
+    type(ESMF_Time)         :: currTime, nextTime, startTime, stopTime
+    integer                 :: yy,mm,dd,hh,ss
+    integer                 :: ymd        ! current year-month-day
+    integer                 :: tod        ! current time of day (sec)
+    integer                 :: time0(2)
+    integer                 :: timen(2)
+    integer                 :: shrlogunit ! original log unit and level
+    character(ESMF_MAXSTR)  :: msgString
+    character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
     !-------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -953,7 +947,9 @@ contains
     ss = tod - (hh*3600) - (mm*60)
     time0(1) = ymd
     time0(2) = hh*10000 + mm*100 + ss
-    if (root_task) write(stdout,'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+    if (root_task) then
+       write(stdout,'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+    end if
 
     ! use next time; the NUOPC clock is not updated
     ! until the end of the time interval
@@ -1077,7 +1073,7 @@ contains
     type(ESMF_ALARM)         :: history_alarm
     character(len=128)       :: name
     integer                  :: alarmcount
-    character(len=*), parameter :: subname = trim(modName)//':(ModelSetRunClock) '
+    character(len=*),parameter :: subname=trim(modName)//':(ModelSetRunClock) '
 
     !-------------------------------------------------------------------------------
 
@@ -1217,7 +1213,7 @@ contains
     ! local variables
     character(*), parameter :: F00   = "('(ww3_comp_nuopc) ',8a)"
     character(*), parameter :: F91   = "('(ww3_comp_nuopc) ',73('-'))"
-    character(len=*), parameter  :: subname = trim(modName)//':(ModelFinalize) '
+    character(len=*),parameter  :: subname=trim(modName)//':(ModelFinalize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1373,7 +1369,7 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=*), parameter    :: subname = '(wav_comp_nuopc:wavinit_ufs)'
+    character(len=*), parameter :: subname = '(wav_comp_nuopc:wavinit_ufs)'
     ! -------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

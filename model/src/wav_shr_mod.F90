@@ -55,7 +55,6 @@ module wav_shr_mod
   integer            , public :: inst_index  ! number of current instance (ie. 1)
   character(len=16)  , public :: inst_name   ! fullname of current instance (ie. "wav_0001")
   character(len=16)  , public :: inst_suffix ! char string associated with instance
-  logical            , public :: wav_coupling_to_mom  = .false. ! TODO: generalize this
 #endif
   logical            , public :: merge_import  = .false.
   logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
@@ -120,7 +119,7 @@ contains
     type(ESMF_Field)  :: field
     real(r8), pointer :: farrayptr(:,:)
     real(r8)          :: tmp(1)
-    character(len=*), parameter :: subname = '(wav_shr_mod:state_getscalar)'
+    character(len=*), parameter :: subname = ' (wav_shr_mod:state_getscalar) '
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -171,7 +170,7 @@ contains
     type(ESMF_Field)  :: lfield
     type(ESMF_VM)     :: vm
     real(r8), pointer :: farrayptr(:,:)
-    character(len=*), parameter :: subname = '(wav_shr_mod:state_setscalar)'
+    character(len=*), parameter :: subname = ' (wav_shr_mod:state_setscalar) '
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -219,8 +218,7 @@ contains
     character(ESMF_MAXSTR), allocatable :: lfieldnamelist(:)
     real(R8), pointer                   :: fldptr1(:)
     real(R8), pointer                   :: fldptr2(:,:)
-    real(R8), parameter                 :: czero = 0.0_R8
-    character(len=*), parameter         :: subname = '(wav_shr_mod:state_reset)'
+    character(len=*), parameter         :: subname = ' (wav_shr_mod:state_reset) '
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -275,7 +273,7 @@ contains
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
     real(r8), pointer               :: dataPtr1d(:)
     real(r8), pointer               :: dataPtr2d(:,:)
-    character(len=*), parameter     :: subname = '(wav_shr_mod:state_diagnose)'
+    character(len=*), parameter     :: subname = ' (wav_shr_mod:state_diagnose) '
     ! ----------------------------------------------
 
 
@@ -346,7 +344,7 @@ contains
     type(ESMF_Mesh)             :: lmesh
     integer                     :: lrank, nnodes, nelements
     logical                     :: labort
-    character(len=*), parameter :: subname = '(wav_shr_mod:field_getfldptr)'
+    character(len=*), parameter :: subname = ' (wav_shr_mod:field_getfldptr) '
     ! ----------------------------------------------
 
     if (.not.present(rc)) then
@@ -473,7 +471,7 @@ contains
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
     integer                 :: sec
-    character(len=*), parameter :: subname = '(wav_shr_mod:set_alarmInit): '
+    character(len=*), parameter :: subname = ' (wav_shr_mod:set_alarmInit) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -844,7 +842,7 @@ contains
     integer :: year, mon, day ! year, month, day as integers
     integer :: tdate          ! temporary date
     integer :: date           ! coded-date (yyyymmdd)
-    character(len=*), parameter :: subname = '(wav_shr_mod:timeInit)'
+    character(len=*), parameter :: subname = ' (wav_shr_mod:timeInit) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

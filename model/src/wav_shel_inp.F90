@@ -40,7 +40,7 @@ contains
     use w3idatmd    , only : inflags1, inflags2
     use w3odatmd    , only : noge, idout, nds, notype
     use w3wdatmd    , only : time
-    use wav_shr_mod , only : wav_coupling_to_cice, wav_coupling_to_mom
+    use wav_shr_mod , only : wav_coupling_to_cice
     use wav_shr_mod , only : root_task, stdout
 
     ! Input parameter
@@ -75,13 +75,16 @@ contains
     ! ice fields        : inflags1(4)
     ! mixed layer depth : inflags1(5)
 
-    inflags1(:) = .false.
+    inflags1(:)   = .false.
     inflags1(1:5) = .true.
+    inflags2(:)   = .false.
     if (wav_coupling_to_cice) then
        inflags1(-7) = .true. ! ice thickness
        inflags1(-3) = .true. ! ice floe size
+       inflags2(-7) = .true. ! thickness
+       inflags2(-3) = .true. ! floe size
+       inflags2( 4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
     end if
-    inflags2 = inflags1
 
     !--------------------------------------------------------------------
     ! Define output type and fields

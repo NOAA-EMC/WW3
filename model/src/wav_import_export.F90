@@ -24,6 +24,9 @@ module wav_import_export
 
   private :: fldlist_add
   private :: fldlist_realize
+  private :: set_importmask
+  private :: check_globaldata
+  private :: readfromfile
 
   type fld_list_type
      character(len=128) :: stdname
@@ -31,17 +34,17 @@ module wav_import_export
      integer :: ungridded_ubound = 0
   end type fld_list_type
 
-  integer, parameter      :: fldsMax = 100
-  integer                 :: fldsToWav_num = 0
-  integer                 :: fldsFrWav_num = 0
-  type (fld_list_type)    :: fldsToWav(fldsMax)
-  type (fld_list_type)    :: fldsFrWav(fldsMax)
+  integer, parameter     :: fldsMax = 100
+  integer                :: fldsToWav_num = 0
+  integer                :: fldsFrWav_num = 0
+  type (fld_list_type)   :: fldsToWav(fldsMax)
+  type (fld_list_type)   :: fldsFrWav(fldsMax)
 
-  character(*), parameter :: u_FILE_u = &
+  real(r4), allocatable  :: import_mask(:) ! mask for valid import data
+  real(r8), parameter    :: zero  = 0.0_r8
+
+  character(*),parameter :: u_FILE_u = &
        __FILE__
-
-  real(r8), parameter :: zero  = 0.0_r8
-  real(r4), allocatable  :: import_mask(:)       ! mask for valid import data
 
 !===============================================================================
 contains
@@ -57,7 +60,7 @@ contains
     ! local variables
     integer          :: n, num
     character(len=2) :: fvalue
-    character(len=*), parameter :: subname = '(wav_import_export:advertise_fields)'
+    character(len=*), parameter :: subname='(wav_import_export:advertise_fields)'
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -67,7 +70,7 @@ contains
     ! Advertise import fields
     !--------------------------------
 
-    !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
+   !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
@@ -135,7 +138,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
-    if (dbug_flag > 5)call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine advertise_fields
 
@@ -150,10 +153,9 @@ contains
     integer          , intent(out) :: rc
 
     ! local variables
-    type(ESMF_State)     :: importState
-    type(ESMF_State)     :: exportState
-    character(len=*), parameter :: subname = '(wav_import_export:realize_fields)'
-    integer :: ii
+    type(ESMF_State) :: importState
+    type(ESMF_State) :: exportState
+    character(len=*), parameter :: subname='(wav_import_export:realize_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -214,27 +216,29 @@ contains
 #endif
 
     ! input/output variables
-    type(ESMF_GridComp)  :: gcomp
-    integer, intent(in)  :: time0(2), timen(2)
-    integer, intent(out) :: rc
+    type(ESMF_GridComp) , intent(inout) :: gcomp
+    integer             , intent(in)    :: time0(2), timen(2)
+    integer             , intent(out)   :: rc
 
     ! Local variables
-    type(ESMF_State)  :: importState
-    type(ESMF_VM)     :: vm
-    type(ESMF_Clock)  :: clock
-
-    integer           :: n, ix, iy
-    real(r4)          :: def_value
-    real(r4)          :: data_global(nx*ny)
-    real(r4)          :: wxdata(nx*ny), wydata(nx*ny)
-    real(r4), allocatable :: data_global2(:)
+    type(ESMF_State)        :: importState
+    type(ESMF_VM)           :: vm
+    type(ESMF_Clock)        :: clock
+    integer                 :: n, ix, iy
+    real(r4)                :: data_global(nx*ny)
+    real(r4), allocatable   :: data_global2(:)
+    real(r4)                :: def_value
 #ifdef CESMCOUPLED
-    character(len=10) :: uwnd = 'Sa_u', vwnd = 'Sa_v'
+    character(len=10)       :: uwnd = 'Sa_u'
+    character(len=10)       :: vwnd = 'Sa_v'
 #else
-    character(len=10) :: uwnd = 'Sa_u10m', vwnd = 'Sa_v10m'
+    character(len=10)       :: uwnd = 'Sa_u10m'
+    character(len=10)       :: vwnd = 'Sa_v10m'
 #endif
-    character(len=CL) :: msgString
-    character(len=*), parameter :: subname = '(wav_import_export:import_fields)'
+    real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
+    real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
+    character(len=CL)       :: msgString
+    character(len=*), parameter :: subname='(wav_import_export:import_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -248,11 +252,6 @@ contains
        call state_diagnose(importState, 'at import ', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    if (.not.allocated(import_mask))allocate(import_mask(nx*ny))
-    ! set mask using u-wind field if merge_import; all import fields will have same missing overlap region
-    if (merge_import) call set_importmask(importState, clock, trim(uwnd), import_mask, vm, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
     ! these arrays are global, just fill the local cells for use later
@@ -322,6 +321,13 @@ contains
        TWN  = timen
 
        if (merge_import) then
+          ! set mask using u-wind field if merge_import; all import fields
+          ! will have same missing overlap region
+          ! import_mask memory will be allocate in set_importmask
+          call set_importmask(importState, clock, trim(uwnd), import_mask, vm, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          allocate(wxdata(nx*ny))
+          allocate(wydata(nx*ny))
           call readfromfile('WND', wxdata, wydata, time0, timen, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (dbug_flag > 10) then
@@ -329,14 +335,13 @@ contains
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              call check_globaldata(gcomp, 'wydata', wydata, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             call check_globaldata(gcomp, 'import_mask', import_mask, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
-       else
-          wxdata = def_value
-          wydata = def_value
-          import_mask = 1.0_r4
        end if
 
-       WX0(:,:) = def_value   ! atm u wind
+       ! atm u wind
+       WX0(:,:) = def_value
        WXN(:,:) = def_value
        if (state_fldchk(importState, trim(uwnd))) then
           call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
@@ -345,19 +350,23 @@ contains
           do iy = 1,NY
              do ix = 1,NX
                 n = n + 1
-                WX0(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
-                WXN(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
+                if (merge_import) then
+                   WX0(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
+                   WXN(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
+                else
+                   WX0(ix,iy) = data_global(n)
+                   WXN(ix,iy) = data_global(n)
+                end if
              end do
           end do
           if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'import_mask', import_mask, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
              call check_globaldata(gcomp, 'wx0', wx0, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
        end if
 
-       WY0(:,:) = def_value   ! atm v wind
+       ! atm v wind
+       WY0(:,:) = def_value
        WYN(:,:) = def_value
        if (state_fldchk(importState, trim(vwnd))) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -367,8 +376,13 @@ contains
           do iy = 1,NY
              do ix = 1,NX
                 n = n + 1
-                WY0(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
-                WYN(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
+                if (merge_import) then
+                   WY0(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
+                   WYN(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
+                else
+                   WY0(ix,iy)  = data_global(n)
+                   WYN(ix,iy)  = data_global(n)
+                end if
              end do
           end do
           if (dbug_flag > 10) then
@@ -377,7 +391,8 @@ contains
           end if
        end if
 
-       DT0(:,:) = def_value   ! air temp - ocn temp
+       ! air temp - ocn temp
+       DT0(:,:) = def_value
        DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
           allocate(data_global2(nx*ny))
@@ -394,6 +409,11 @@ contains
              end do
           end do
           deallocate(data_global2)
+       end if
+       ! Deallocate memory for merge_import
+       if (merge_import) then
+          deallocate(wxdata)
+          deallocate(wydata)
        end if
     end if
 
@@ -546,8 +566,8 @@ contains
     real(r8), pointer :: wbcuru(:)
     real(r8), pointer :: wbcurv(:)
     real(r8), pointer :: wbcurp(:)
-    !real(r8), pointer :: uscurr(:)
-    !real(r8), pointer :: vscurr(:)
+   !real(r8), pointer :: uscurr(:)
+   !real(r8), pointer :: vscurr(:)
     real(r8), pointer :: sxxn(:)
     real(r8), pointer :: sxyn(:)
     real(r8), pointer :: syyn(:)
@@ -597,7 +617,7 @@ contains
     real(r8), pointer :: sw_ustokes3(:)
     real(r8), pointer :: sw_vstokes3(:)
 #endif
-    character(len=*), parameter :: subname = '(wav_import_export:export_fields)'
+    character(len=*), parameter :: subname='(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -936,17 +956,15 @@ contains
     integer, optional,          intent(in)    :: ungridded_ubound
 
     ! local variables
-    integer :: rc
-    character(len=*), parameter :: subname = '(wav_import_export:fldlist_add)'
+    character(len=*), parameter :: subname='(wav_import_export:fldlist_add)'
     !-------------------------------------------------------------------------------
 
-    ! Set up a list of field information
-    rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
+    ! Set up a list of field information
     num = num + 1
     if (num > fldsMax) then
-       call ESMF_LogWrite(subname//": ERROR num > fldsMax "//trim(stdname), &
+       call ESMF_LogWrite(trim(subname)//": ERROR num > fldsMax "//trim(stdname), &
             ESMF_LOGMSG_ERROR, line=__LINE__, file=__FILE__)
        return
     endif
@@ -983,7 +1001,7 @@ contains
     integer                :: n
     type(ESMF_Field)       :: field
     character(len=80)      :: stdname
-    character(len=*), parameter  :: subname = '(wav_import_export:fldlist_realize)'
+    character(len=*),parameter  :: subname='(wav_import_export:fldlist_realize)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1047,7 +1065,7 @@ contains
       ! local variables
       type(ESMF_Distgrid) :: distgrid
       type(ESMF_Grid)     :: grid
-      character(len=*), parameter :: subname = '(wav_import_export:SetScalarField)'
+      character(len=*), parameter :: subname='(wav_import_export:SetScalarField)'
       ! ----------------------------------------------
 
       rc = ESMF_SUCCESS
@@ -1077,18 +1095,18 @@ contains
     use ESMF , only : ESMF_FIELDSTATUS_COMPLETE, ESMF_FAILURE
 
     ! input/output variables
-    type(ESMF_State),  intent(in)    :: State
-    character(len=*),  intent(in)    :: fldname
+    type(ESMF_State),            intent(in)    :: State
+    character(len=*),            intent(in)    :: fldname
     real(R8), pointer, optional, intent(out)   :: fldptr1d(:)
     real(R8), pointer, optional, intent(out)   :: fldptr2d(:,:)
-    integer,           intent(out)   :: rc
+    integer,                     intent(out)   :: rc
 
     ! local variables
     type(ESMF_FieldStatus_Flag) :: status
     type(ESMF_Field)            :: lfield
     type(ESMF_Mesh)             :: lmesh
     integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname = '(wav_import_export:state_getfldptr)'
+    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1224,7 +1242,7 @@ contains
     use wav_shr_mod, only : runtype
 
     ! input/output variables
-    real(r8)         , pointer    :: wrln(:) ! 2D roughness length export field ponter
+    real(r8), pointer :: wrln(:) ! 2D roughness length export field ponter
 
     ! local variables
     integer       :: isea, jsea, ix, iy
@@ -1456,16 +1474,15 @@ contains
     integer          , intent(out) :: rc
 
     ! local variables
-    type(ESMF_Time)          :: currTime, startTime
-    type(ESMF_TimeInterval)  :: timeStep
-
-    logical           :: firstCall, secondCall
-    !integer           :: n
-    real(r4)          :: fillValue = 9.99e20
-    integer           :: isea, n, ix, iy
-    real(r8), pointer :: dataptr(:)
-    real(r4)          :: mask_local(nx*ny), mask_global(nx*ny)
-    character(len=CL) :: msgString
+    type(ESMF_Time)         :: currTime, startTime
+    type(ESMF_TimeInterval) :: timeStep
+    logical                 :: firstCall, secondCall
+    real(r4)                :: fillValue = 9.99e20
+    integer                 :: isea, n, ix, iy
+    real(r8), pointer       :: dataptr(:)
+    real(r4)                :: mask_local(nx*ny)
+    real(r4)                :: mask_global(nx*ny)
+    character(len=CL)       :: msgString
     character(len=*), parameter :: subname = '(wav_import_export:set_importmask)'
     !---------------------------------------------------------------------------
 
@@ -1486,7 +1503,10 @@ contains
      firstCall  = .false.
      secondCall = .false.
     end if
-    
+    if (firstcall) then
+       allocate(import_mask(nx*ny))
+    end if
+
     ! return if not the first or second call, mask has already been set
     if (.not. firstCall .and. .not. secondCall) return
 
@@ -1530,29 +1550,27 @@ contains
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
-    type(ESMF_GridComp)  :: gcomp
-
-    character(len=*) , intent(in)  :: fldname
-    real(r4)         , intent(in)  :: global_data(nx*ny)
-    integer          , intent(out) :: rc
+    type(ESMF_GridComp) , intent(inout) :: gcomp
+    character(len=*)    , intent(in)    :: fldname
+    real(r4)            , intent(in)    :: global_data(nx*ny)
+    integer             , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_Clock)   :: clock
-    type(ESMF_State)   :: importState
-    type(ESMF_Time)    :: currtime, nexttime
-    type(ESMF_Field)   :: lfield
-    type(ESMF_Field)   :: newfield
-    type(ESMF_MeshLoc) :: meshloc
-    type(ESMF_Mesh)    :: lmesh
-
-    character(len=CS) :: timestr
+    type(ESMF_Clock)                :: clock
+    type(ESMF_State)                :: importState
+    type(ESMF_Time)                 :: currtime, nexttime
+    type(ESMF_Field)                :: lfield
+    type(ESMF_Field)                :: newfield
+    type(ESMF_MeshLoc)              :: meshloc
+    type(ESMF_Mesh)                 :: lmesh
+    character(len=CS)               :: timestr
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-    integer           :: fieldCount
-    integer           :: lrank
-    integer           :: yr,mon,day,sec    ! time units
-    integer           :: n, nn, isea, ix, iy
-    real(r8), pointer :: dataptr1d(:)
-    real(r8)          :: fillValue = 9.99e20
+    integer                         :: fieldCount
+    integer                         :: lrank
+    integer                         :: yr,mon,day,sec    ! time units
+    integer                         :: n, nn, isea, ix, iy
+    real(r8), pointer               :: dataptr1d(:)
+    real(r8)                        :: fillValue = 9.99e20
     character(len=*), parameter :: subname = '(wav_import_export:check_globaldata)'
 
     !---------------------------------------------------------------------------
@@ -1599,38 +1617,39 @@ contains
       variableName=trim(fldname), overwrite=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldDestroy(newfield, rc=rc, noGarbage=.true.)
-    
+
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine check_globaldata
   !========================================================================
   subroutine readfromfile (idfld, wxdata, wydata, time0, timen, rc)
 
-    !use w3odatmd, only: nds
     use w3gdatmd, only: gtype, nx, ny
     use w3fldsmd, only: w3fldo, w3fldg
 
-    !arguments
-    character(len=3), intent(in)              :: idfld
-    integer, intent(in)                       :: time0(2)
-    integer, intent(in)                       :: timen(2)
-    real(r4), dimension(nx*ny), intent(out)   :: wxdata, wydata
-    integer, intent(inout), optional          :: rc
+    ! input/output variables
+    character(len=*) , intent(in)    :: idfld
+    integer          , intent(in)    :: time0(2)
+    integer          , intent(in)    :: timen(2)
+    real(r4)         , intent(out)   :: wxdata(nx*ny)
+    real(r4)         , intent(out)   :: wydata(nx*ny)
+    integer, optional, intent(out)   :: rc
 
-    integer        :: ierr, tw0l(2), twnl(2)
-    integer        :: ix, iy, n
-    integer        :: nxt, nyt, gtypet, filler(3), tideflag
-    integer        :: mdse = 6
-    integer        :: mdst = 10
-    integer        :: mdsf = 13   ! same as ndsf(3) in ww3_shel
-    real           :: wx0l(nx,ny), wy0l(nx,ny)
-    real           :: wxnl(nx,ny), wynl(nx,ny)
-    real           :: dt0l(nx,ny), dtnl(nx,ny)
-    logical        :: flagsc = .false.
-    logical, save  :: firstCall = .true.
-    character(len=13) :: tsstr
-    character(len=3)  :: tsfld, lstring
-    character(256)    :: logmsg
+    ! local variables
+    integer                     :: ierr, tw0l(2), twnl(2)
+    integer                     :: ix, iy, n
+    integer                     :: nxt, nyt, gtypet, filler(3), tideflag
+    integer                     :: mdse = 6
+    integer                     :: mdst = 10
+    integer                     :: mdsf = 13   ! same as ndsf(3) in ww3_shel
+    real                        :: wx0l(nx,ny), wy0l(nx,ny)
+    real                        :: wxnl(nx,ny), wynl(nx,ny)
+    real                        :: dt0l(nx,ny), dtnl(nx,ny)
+    logical                     :: flagsc = .false.
+    logical, save               :: firstCall = .true.
+    character(len=13)           :: tsstr
+    character(len=3)            :: tsfld, lstring
+    character(CL)               :: logmsg
     character(len=*), parameter :: subname = '(wav_import_export:readfromfile)'
     !---------------------------------------------------------------------------
 
