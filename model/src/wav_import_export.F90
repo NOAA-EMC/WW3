@@ -324,7 +324,7 @@ contains
           ! set mask using u-wind field if merge_import; all import fields
           ! will have same missing overlap region
           ! import_mask memory will be allocate in set_importmask
-          call set_importmask(importState, clock, trim(uwnd), import_mask, vm, rc)
+          call set_importmask(importState, clock, trim(uwnd), vm, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           allocate(wxdata(nx*ny))
           allocate(wydata(nx*ny))
@@ -1460,7 +1460,7 @@ contains
   end subroutine SetGlobalInput
 
   !====================================================================================
-  subroutine set_importmask(importState, clock, fldname, import_mask, vm, rc)
+  subroutine set_importmask(importState, clock, fldname, vm, rc)
 
     use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
     use w3odatmd, only: naproc, iaproc
@@ -1470,7 +1470,6 @@ contains
     type(ESMF_Clock) , intent(in)  :: clock
     character(len=*) , intent(in)  :: fldname
     type(ESMF_VM)    , intent(in)  :: vm
-    real(r4)         , intent(out) :: import_mask(nx*ny)
     integer          , intent(out) :: rc
 
     ! local variables
