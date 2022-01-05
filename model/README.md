@@ -2,7 +2,7 @@
 
 A CMake build is provided with WW3 to standardize and simplify the WW3 build process.
 
-WW3 uses #ifdef directives to configure model options. These options are specified in a 'switch file' passed to CMake with `-DSWITCH=/switch/file` during the build. CMake parses the switch options and copies it into the build to determine which files to build, and what values to pass to the pre-processor.
+WW3 uses `#ifdef` directives to configure model options. These options are specified in a 'switch file' passed to CMake with `-DSWITCH=/switch/file` during the build. CMake parses the switch options and copies it into the build to determine which files to build, and what values to pass to the pre-processor.
 
 Switch setting configurations are stored in [switches.json](./bin/switches.json). This file is read by CMake to check the validity of input switches.
 
