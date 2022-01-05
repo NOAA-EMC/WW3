@@ -13,10 +13,12 @@ Requires CMake 3.19+
 ## Quick Start
 
 ```
+# Optionally set compiler and env vars to locate libraries
 export CC=icc
 export FC=ifort
 export NetCDF_DIR=/path/to/netcdf
 
+# Clone and build WW3
 git clone https://github.com/kgerheiser/WW3.git -b feature/cmake
 cd WW3
 mkdir build && cd build
