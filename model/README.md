@@ -1,6 +1,6 @@
 # CMake Build
 
-A CMake build is provided with WW3 to standardize and simplify the WW3 build process.
+A CMake build is provided with WW3 to standardize and simplify the WW3 build process. CMake uses an out-of-source build which separates the build directory from the source directory.
 
 WW3 uses `#ifdef` directives to configure model options. These options are specified in a 'switch file' passed to CMake with `-DSWITCH=/switch/file` during the build. CMake parses the switch options and copies it into the build to determine which files to build, and what values to pass to the pre-processor.
 
@@ -24,6 +24,9 @@ cmake .. -DSWITCH=/path/to/switch_NCEP_st2 -DCMAKE_INSTALL_PREFIX=install
 make
 make install
 ```
+
+Note `cmake ..` is pointing to the directory containing the top-level CMakeLists.txt (just above the build dir in this case). The build directory can be located anywhere, and then the CMake command would be `cmake /path/to/WW3 -DSWITCH=/path/to/switch_NCEP_st2`.
+
 
 ## CMake Options
 
