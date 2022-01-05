@@ -29,11 +29,11 @@ make install
 
 Options can be passed to CMake with `-D<option>`.
 
-* SWITCH (required) - Absolute path to a switch file, or a switch file located in model/bin. CMake will detect changes to the source switch file and re-trigger the whole build if changed.
+* `SWITCH` (required) - Absolute path to a switch file, or a switch file located in model/bin. CMake will detect changes to the source switch file and re-trigger the whole build if changed.
 
-* MULTI_ESMF (optional) - Build the ww3_multi_esmf library. Requires ESMF.
+* `MULTI_ESMF` (optional) - Build the ww3_multi_esmf library. Requires ESMF.
 
-* CMAKE_INSTALL_PREFIX (optional) - Standard CMake variable for install location when running `make install`. Executables/libraries are also located in build/bin if not running `make install`.
+* `CMAKE_INSTALL_PREFIX` (optional) - Standard CMake variable for install location when running `make install`. Executables/libraries are also located in build/bin if not running `make install`.
 
 ## Setting Compiler
 
@@ -57,7 +57,7 @@ WW3 has dependent libraries depending on switch configuration.
 
 * MPI - Required when `MPI` in switch list
 
-* NetCDF - Optionally searched for.
+* NetCDF - Optionally searched for to build NetCDF executables. Required when `SCRIPNC`, `TRKNC`, or `OASIS` are in switch list.
 
 * OASIS3-MCT - Required when `OASIS` in switch list. CMake searches `OASISDIR` for library path.
 
