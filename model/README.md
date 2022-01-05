@@ -31,7 +31,7 @@ Options can be passed to CMake with `-D<option>`.
 
 * `SWITCH` (required) - Absolute path to a switch file, or a switch file located in model/bin. CMake will detect changes to the source switch file and re-trigger the whole build if changed.
 
-* `MULTI_ESMF` (optional) - Build the ww3_multi_esmf library. Requires ESMF.
+* `MULTI_ESMF=ON/OFF` (optional) - Build the ww3_multi_esmf library (off by default). Requires ESMF.
 
 * `CMAKE_INSTALL_PREFIX` (optional) - Standard CMake variable for install location when running `make install`. Executables/libraries are also located in build/bin if not running `make install`.
 
