@@ -665,12 +665,9 @@
 
 
 ! 5.2 Creates filename listing
-      WRITE(EXT,'(A)') ''
       SEP = '_'
-      IF(S3 .EQ. 0) THEN
-        ! Don't add "_" separator if there is no datetime string.
-        SEP = ''
-      ENDIF
+      IF(S3 .EQ. 0) SEP = '' ! No "_" separator if no datetime string.
+      WRITE(EXT,'(A)') ''
       IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
       IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'spec.nc'
       IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
