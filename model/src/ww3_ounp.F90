@@ -55,7 +55,7 @@
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/    06-Sep-2021 : scale factor on spectra output      ( version 7.12 )
-!/    05-Jan-2022 : Added S3=0 support                  ( version 7.13 )
+!/    05-Jan-2022 : Added TIMESPLIT=0 (nodate) support  ( version 7.14 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
