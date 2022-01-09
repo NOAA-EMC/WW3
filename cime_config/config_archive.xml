@@ -1,0 +1,20 @@
+<components version="2.0">
+
+  <comp_archive_spec compname="ww3dev" compclass="wav">
+    <rest_file_extension>r</rest_file_extension>
+    <hist_file_extension>hi.*\.nc$</hist_file_extension>
+    <rest_history_varname>unset</rest_history_varname>
+    <rpointer>
+      <rpointer_file>rpointer.wav$NINST_STRING</rpointer_file>
+      <rpointer_content>unset</rpointer_content>
+    </rpointer>
+    <test_file_names>
+      <tfile disposition="copy">rpointer.wav</tfile>
+      <tfile disposition="copy">rpointer.wav_9999</tfile>
+      <tfile disposition="copy">casename.ww3.r.1976-01-01-00000.nc</tfile>
+      <tfile disposition="move">casename.ww3.hi.1976-01-01-00000.nc</tfile>
+      <tfile disposition="ignore">casename.ww3.hi.1976-01-01-00000.nc.base</tfile>
+    </test_file_names>
+  </comp_archive_spec>
+
+</components>

@@ -135,8 +135,6 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : model_label_SetRunClock    => label_SetRunClock
   use NUOPC_Model           , only : model_label_Finalize       => label_Finalize
   use NUOPC_Model           , only : NUOPC_ModelGet
-  use wav_wrapper_mod       , only : t_startf, t_stopf, t_barrierf
-  use wav_wrapper_mod       , only : shr_file_getlogunit, shr_file_setlogunit
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
@@ -464,7 +462,6 @@ contains
     else
        stdout = 6
     endif
-    call shr_file_setLogUnit (stdout)
 #else
     stdout = 6
 #endif
@@ -681,11 +678,6 @@ contains
     call realize_fields(gcomp, mesh=Emesh, flds_scalar_name=flds_scalar_name, flds_scalar_num=flds_scalar_num, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !--------------------------------------------------------------------
-    ! end redirection of share output to wav log
-    !--------------------------------------------------------------------
-    call shr_file_setlogunit (shrlogunit)
-
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine InitializeRealize
@@ -883,10 +875,9 @@ contains
     use w3wavemd          , only : w3wave
     use w3wdatmd          , only : time
     use wav_import_export , only : import_fields, export_fields
+    use wav_shel_inp      , only : odat
 #ifdef CESMCOUPLED
     use wav_shr_mod       , only : rstwr, histwr, outfreq
-#else
-    use wav_shel_inp      , only : odat
 #endif
 
     ! arguments:
@@ -912,12 +903,6 @@ contains
 
     rc = ESMF_SUCCESS
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    !------------
-    ! Reset shr logging to my log file
-    !------------
-    call shr_file_getLogUnit (shrlogunit)
-    call shr_file_setLogUnit (stdout)
 
     !------------
     ! query the Component for its importState, exportState and clock
@@ -1015,16 +1000,12 @@ contains
        endif
     end if
     if (root_task) then
-       !  write(stdout,*) 'CMB wav_comp_nuopc time', time, timen
+       !  write(stdout,*) 'wav_comp_nuopc time', time, timen
        !  write(stdout,*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
     end if
-
-    ! Advance the wave model
-    call w3wave ( 1, timen )
-#else
+#endif
     ! Advance the wave model
     call w3wave ( 1, odat, timen )
-#endif
     if(profile_memory) call ESMF_VMLogMemInfo("Exiting  WW3 Run : ")
 
     !------------
@@ -1033,12 +1014,6 @@ contains
 
     call export_fields(gcomp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    !------------
-    ! Reset shr logging to original values
-    !------------
-
-    call shr_file_setLogUnit (shrlogunit)
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
@@ -1265,10 +1240,6 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     namelist /ww3_inparm/ initfile, outfreq, dtcfl, dtcfli, dtmax, dtmin
-
-    ! Redirect share output to wav log
-    call shr_file_getLogUnit (shrlogunit)
-    call shr_file_setLogUnit (stdout)
 
     ! Get component instance
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)

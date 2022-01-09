@@ -11,13 +11,9 @@ module wav_shel_inp
   public  :: read_shel_inp
 #endif
 
-#ifdef CESMCOUPLED
-  integer, public :: odat(35)
-  character(len=10), allocatable, public :: pnames(:)
-#else
   integer, public :: odat(40)
   character(len=40), allocatable, public :: pnames(:)
-#endif
+
   integer, public           :: npts
   integer, public           :: iprt(6)
   logical, public           :: prtfrm

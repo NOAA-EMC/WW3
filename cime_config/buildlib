@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+"""
+build ww3 library
+"""
+import sys, os
+
+_CIMEROOT = os.environ.get("CIMEROOT")
+if _CIMEROOT is None:
+    raise SystemExit("ERROR: must set CIMEROOT environment variable")
+
+_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+sys.path.append(_LIBDIR)
+
+from standard_script_setup import *
+from CIME.buildlib import parse_input
+from CIME.build import get_standard_cmake_args
+from CIME.case import Case
+from CIME.utils import run_cmd, expect
+
+logger = logging.getLogger(__name__)
+
+def buildlib(bldroot, libroot, case, compname=None):
+
+    if case.get_value("DEBUG"):
+        strdebug = "debug"
+    else:
+        strdebug = "nodebug"
+    if case.get_value("BUILD_THREADED"):
+        strthread = "threads"
+    else:
+        strthread = "nothreads"
+    mpilib = case.get_value("MPILIB")
+    exe_root = case.get_value("EXEROOT")
+    srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "model", "src"))
+
+    # Determine cmake flags
+    sharedpath = os.path.join(case.get_value("COMPILER"), mpilib, strdebug, strthread, "nuopc")
+    cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath), shared_lib=True)
+    # note: base path of install to be completed by setting DESTDIR in make install
+    cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"     
+    cmake_flags += " -DLIBROOT={} ".format(libroot)
+    cmake_flags += " -DMPILIB={} ".format(mpilib)
+    cmake_flags += srcpath
+
+    # run cmake
+    logger.info("Running cmake for WW3")
+    logger.info("wav sharedpath is {}".format(sharedpath))
+    logger.info("wav cmake_flags are {}".format(cmake_flags))
+    logger.info("wav srcpath is {}".format(srcpath))
+    logger.info("wav bldroot is {}".format(bldroot))
+    logger.info("wav libroot is {}".format(libroot))
+    logger.info("cmake_flags {}".format(cmake_flags))
+    s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
+    expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
+
+    # run make
+    # Note that cmake will add a lib/ director to the destdir so need to strip this out of libroot
+    destdir = os.path.join(libroot, os.pardir)
+    logger.info("Running make install for WW3")
+    s,o,e = run_cmd("make install VERBOSE=1 DESTDIR={}".format(destdir), from_dir=bldroot, verbose=True)
+    expect(not s,"ERROR from make output={}, error={}".format(o,e))
+
+def _main_func(args):
+    caseroot, libroot, bldroot = parse_input(args)
+    with Case(caseroot) as case:
+        buildlib(bldroot, libroot, case)
+
+if __name__ == "__main__":
+    _main_func(sys.argv)

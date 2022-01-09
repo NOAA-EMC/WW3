@@ -892,7 +892,7 @@
 !
 ! 1.e Ice floe interval
 !
-#if defined(W3_IS) || defined(CESMCOUPLED)
+#if defined(W3_IS2) || defined(CESMCOUPLED)
       IF ( FLIC5 ) THEN
           IF ( TIC5(1) .GE. 0 ) THEN
               DTI50   = DSEC21 ( TIC5 , TI5 )
@@ -3272,7 +3272,7 @@
 #ifdef CESMCOUPLED
                         ! add restart flag
                         ELSE IF ( J .EQ. 4 .AND. rstwr ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD )
+                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
 #else
                         ELSE IF ( J .EQ. 4 ) THEN
                           CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
@@ -3558,7 +3558,7 @@
                '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
  1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
-#ifdef W3_IS2
+#if defined(W3_IS2) || defined(CESMCOUPLED)
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
 #endif
