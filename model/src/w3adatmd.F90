@@ -468,6 +468,12 @@
 !
         REAL, POINTER         ::  USERO(:,:)
         REAL, POINTER         :: XUSERO(:,:)
+#ifdef CESMCOUPLED
+        ! output fileds for Langmuir mixing
+        REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
+                                 LASLPJ(:), LAMULT(:), ALPHAL(:),     &
+                                 ALPHALS(:), USSXH(:), USSYH(:)
+#endif
 !
 ! Spatial derivatives
 !
@@ -548,6 +554,11 @@
 !/
 !/ Data aliases for structure WADAT(S)
 !/
+#ifdef CESMCOUPLED
+     REAL, POINTER           :: LANGMT(:), LAPROJ(:), ALPHAL(:),      &
+                                ALPHALS(:), LAMULT(:), LASL(:),       &
+                                LASLPJ(:), USSXH(:), USSYH(:) 
+#endif
       REAL, POINTER           :: CG(:,:), WN(:,:)
       REAL, POINTER           :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
 !
@@ -1025,7 +1036,18 @@
                  WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
                  WADATS(IMOD)%WBT(NSEALM),                              &
                  WADATS(IMOD)%WNMEAN(NSEALM),                           &
+#ifdef CESMCOUPLED
+                 WADATS(IMOD)%USSXH(NSEALM)                           , &
+                 WADATS(IMOD)%USSYH(NSEALM)                           , &
+                 WADATS(IMOD)%LANGMT(NSEALM)                          , &
+                 WADATS(IMOD)%LAPROJ(NSEALM)                          , &
+                 WADATS(IMOD)%LASL(NSEALM)                            , &
+                 WADATS(IMOD)%LASLPJ(NSEALM)                          , &
+                 WADATS(IMOD)%ALPHAL(NSEALM)                          , &
+                 WADATS(IMOD)%ALPHALS(NSEALM)                         , &
+                 WADATS(IMOD)%LAMULT(NSEALM)                          , &
                  STAT=ISTAT )
+#endif
       CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%HS     = UNDEF
@@ -2943,6 +2965,18 @@
           USERO  => WADATS(IMOD)%USERO
 !
           WN     => WADATS(IMOD)%WN
+#ifdef CESMCOUPLED
+          ! USSX and USSY are already set
+          LANGMT => WADATS(IMOD)%LANGMT
+          LAPROJ => WADATS(IMOD)%LAPROJ
+          LASL   => WADATS(IMOD)%LASL
+          LASLPJ => WADATS(IMOD)%LASLPJ
+          ALPHAL => WADATS(IMOD)%ALPHAL
+          ALPHALS=> WADATS(IMOD)%ALPHALS
+          USSXH  => WADATS(IMOD)%USSXH
+          USSYH  => WADATS(IMOD)%USSYH
+          LAMULT => WADATS(IMOD)%LAMULT
+#endif
 #ifdef W3_IC3
      IC3WN_R=> WADATS(IMOD)%IC3WN_R
      IC3WN_I=> WADATS(IMOD)%IC3WN_I

@@ -278,6 +278,10 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
+#ifdef CESMCOUPLED
+      USE W3ADATMD   , ONLY : LAMULT
+      USE WAV_SHR_MOD, ONLY : RUNTYPE
+#endif
 !!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
@@ -429,6 +433,20 @@
 !
 ! open file ---------------------------------------------------------- *
 !
+#ifdef CESMCOUPLED
+      call CESM_REST_FILENAME(WRITE, FNAME)
+      IFILE  = IFILE + 1
+
+      IF ( WRITE ) THEN
+          IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
+          OPEN (NDSR,FILE=FNAME,FORM='UNFORMATTED',       &
+                ACCESS='STREAM',ERR=800,IOSTAT=IERR)
+      ELSE  ! READ
+         OPEN (NDSR, FILE=FNAME, FORM='UNFORMATTED',          &
+               ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
+               STATUS='OLD',ACTION='READ')
+       END IF
+#else
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
@@ -450,7 +468,7 @@
                WRITE (FNAME(8:10),'(I3.3)') IFILE
         END IF
       END IF
-
+#endif
       IFILE  = IFILE + 1
 !
 #ifdef W3_T
@@ -569,11 +587,21 @@
               END IF
             ELSE
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
+#ifdef CESMCOUPLED
+              if (runtype == 'branch' .or. runtype == 'continue') then
+                IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
+                    IF ( IAPROC .EQ. NAPERR )                           &
+                        WRITE (NDSE,906) TTIME, TIME
+                    CALL EXTCDE ( 20 )
+                  END IF
+              end if
+#else
               IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
                   IF ( IAPROC .EQ. NAPERR )                           &
                       WRITE (NDSE,906) TTIME, TIME
                   CALL EXTCDE ( 20 )
                 END IF
+#endif
             END IF
 !
 #ifdef W3_T
@@ -1597,6 +1625,71 @@
 !/ End of W3IORS ----------------------------------------------------- /
 !/
       END SUBROUTINE W3IORS
+#ifdef CESMCOUPLED
+      SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME) 
+
+        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX 
+        USE WAV_SHR_MOD , ONLY : RUNTYPE, STDOUT, ROOT_TASK
+        USE W3WDATMD    , ONLY : TIME
+        USE W3SERVMD    , ONLY : EXTCDE
+
+        ! input/output variables
+        logical, intent(in)           :: lwrite
+        character(len=*), intent(out) :: fname
+
+        ! local variables
+        integer :: yy,mm,dd,hh,mn,ss,totsec
+        logical :: exists
+        logical :: lread
+        !----------------------------------------------
+
+        ! create local lread logical for clarity
+        if (lwrite) then
+           lread = .false.
+        else
+           lread = .true.
+        end if
+
+        ! determine restart filename
+        if (lread .and. runtype /= 'continue') then
+           fname = initfile
+        else
+           yy =  time(1)/10000
+           mm = (time(1)-yy*10000)/100
+           dd = (time(1)-yy*10000-mm*100)
+           hh = time(2)/10000
+           mn = (time(2)-hh*10000)/100
+           ss = (time(2)-hh*10000-mn*100)
+           totsec = hh*3600+mn*60+ss
+
+           if (len_trim(inst_suffix) > 0) then
+              write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5)') &
+                   trim(casename)//'.ww3'//trim(inst_suffix)//'.r.',yy,'-',mm,'-',dd,'-',totsec
+           else
+              write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5)') &
+                   trim(casename)//'.ww3.r.',yy,'-',mm,'-',dd,'-',totsec
+           endif
+        end if
+
+        ! check that if read the file exists
+        if (lread) then
+           inquire( file=fname, exist=exists)
+           if (.not. exists ) then
+              CALL EXTCDE (60, MSG="required initial/restart file " // trim(fname) // "does not exist")
+           end if
+        end if
+
+        ! write out filename to stdout
+        if ( root_task ) then
+           if (lwrite) then
+              write (stdout,'(a)') ' writing restart file '//trim(fname)
+           else
+              write (stdout,'(a)') ' reading initial/restart file '//trim(fname)
+           end if
+        end if
+
+      end subroutine cesm_rest_filename
+#endif
 !/
 !/ End of module W3IORSMD -------------------------------------------- /
 !/

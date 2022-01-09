@@ -444,7 +444,7 @@
 !
           TESTSTR=OUT_NAMES(IOUT+1)
           CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
-          
+
           IF(IFI .NE. -1) THEN
             FLG2D(IFI, IFJ) = .TRUE.
           ENDIF
@@ -642,7 +642,7 @@
 !
         TESTSTR=OUT_NAMES(IOUT+1)
         CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
-         
+
         IF(IFI .NE. -1) THEN
           FLG2D(IFI, IFJ) = .TRUE.
         ENDIF
@@ -653,7 +653,7 @@
 !
       FLT    = .TRUE.
       DO IFI=1, NOGRP
-        IF ( IAPROC .EQ. NAPOUT ) THEN 
+        IF ( IAPROC .EQ. NAPOUT ) THEN
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -667,7 +667,7 @@
         ENDIF
         IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
       END DO
-      IF ( IAPROC .EQ. NAPOUT ) THEN 
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       ENDIF
 !
@@ -1219,6 +1219,23 @@
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
       USE W3ADATMD, ONLY: NSEALM
+#ifdef CESMCOUPLED
+      ! USSX, USSY   : surface Stokes drift (SD)
+      ! USSXH, USSYH : surface layer (SL) averaged SD
+      ! LANGMT       : La_t
+      ! LAPROJ       : La_{Proj}
+      ! LASL         : La_{SL}
+      ! LASLPJ       : La_{SL,Proj}
+      ! ALPHAL       : angle between wind and Langmuir cells (SL averaged)
+      ! ALPHALS      : angle between wind and Langmuir cells (surface)
+      ! UD           : wind direction
+      ! LAMULT       : enhancement factor
+      ! HML          : mixing layer depth (from coupler)
+      USE W3ADATMD, ONLY: LAMULT, USSXH, USSYH, LANGMT, LAPROJ, &
+                          ALPHAL, ALPHALS, LASL, UD, LASLPJ
+      USE W3IDATMD, ONLY: HML
+      USE W3WDATMD, ONLY: ASF
+#endif
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -1278,6 +1295,17 @@
       REAL                       USSCO, FT1
       REAL, SAVE              :: HSMIN = 0.01
       LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
+#ifdef CESMCOUPLED
+      ! SWW: angle between wind and waves
+      ! HSL: surface layer depth (=0.2*HML)
+      REAL                    :: SWW !angle between wind and waves
+      REAL                    :: HSL !surface layer depth (=0.2*HML)
+      ! tmp variables for surface and SL averaged SD
+      REAL                    :: ETUSSX(NSEAL),        &
+                                 ETUSSY(NSEAL),        &
+                                 ETUSSXH(NSEAL),       &
+                                 ETUSSYH(NSEAL)
+#endif
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1398,6 +1426,25 @@
 !
       FP1    = UNDEF
       THP1   = UNDEF
+#ifdef CESMCOUPLED
+      ETUSSX  = 0.
+      ETUSSY  = 0.
+      ETUSCX  = 0.
+      ETUSCY  = 0.
+      ETUSSXH  = 0.
+      ETUSSYH  = 0
+      LANGMT = UNDEF
+      LAPROJ = UNDEF
+      LASL   = UNDEF
+      LASLPJ = UNDEF
+      ALPHAL = UNDEF
+      ALPHALS = UNDEF
+      USSX   = 0.
+      USSY   = 0.
+      USSXH  = 0.
+      USSYH  = 0.
+      LAMULT  = 1.
+#endif
 !
 ! 2.  Integral over discrete part of spectrum ------------------------ *
 !
@@ -1433,7 +1480,7 @@
             ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
             ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
 ! These are the integrals with cos^2 and sin^2
-            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)        
+            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)
             ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
 ! Using trig identities to represent cos2theta and sin2theta.
             AB2X(JSEA) = AB2X(JSEA) + A(ITH,IK,JSEA)*(2*EC2(ITH) - 1)
@@ -1523,6 +1570,13 @@
             TPMS(JSEA) = TPI/SIG(IK)
             END IF
 
+#ifdef CESMCOUPLED
+! Get surface layer depth
+          IX    = MAPSF(ISEA,1)
+          IY    = MAPSF(ISEA,2)
+          HSL   = HML(IX,IY)/5.     ! depth over which SD is averaged
+#endif
+
 !
 ! Directional moments in the last freq. band
 !
@@ -1562,8 +1616,39 @@
             USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
             BHD(JSEA) = BHD(JSEA) +                             &
                 GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
+#ifdef CESMCOUPLED
+            ! Surface Stokes Drift
+            ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
+                 *WN(IK,ISEA)*COSH(2*WN(IK,ISEA)*DW(ISEA))          &
+                 /(SINH(WN(IK,ISEA)*DW(ISEA)))**2
+            ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*FACTOR*SIG(IK) &
+                 *WN(IK,ISEA)*COSH(2*WN(IK,ISEA)*DW(ISEA))          &
+                 /(SINH(WN(IK,ISEA)*DW(ISEA)))**2
+            ! Depth averaged Stokes Drift
+            ETUSSXH(JSEA)  = ETUSSXH(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
+                 *(1.-EXP(-2.*WN(IK,ISEA)*HSL))/2./HSL                &
+                 *COSH(2*WN(IK,ISEA)*DW(ISEA))                        &
+                 /(SINH(WN(IK,ISEA)*DW(ISEA)))**2
+            ETUSSYH(JSEA)  = ETUSSYH(JSEA) + ABY(JSEA)*FACTOR*SIG(IK) &
+                 *(1.-EXP(-2.*WN(IK,ISEA)*HSL))/2./HSL                &
+                 *COSH(2*WN(IK,ISEA)*DW(ISEA))                        &
+                 /(SINH(WN(IK,ISEA)*DW(ISEA)))**2
+#endif
           ELSE
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
+#ifdef CESMCOUPLED
+            ! deep water limit
+            ! Surface Stokes Drift
+            ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
+                     *2.*WN(IK,ISEA)
+            ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*FACTOR*SIG(IK) &
+                     *2.*WN(IK,ISEA)
+            ! Depth averaged Stokes Drift
+            ETUSSXH(JSEA)  = ETUSSXH(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
+                     *(1.-EXP(-2.*WN(IK,ISEA)*HSL))/HSL
+            ETUSSYH(JSEA)  = ETUSSYH(JSEA) + ABY(JSEA)*FACTOR*SIG(IK) &
+                     *(1.-EXP(-2.*WN(IK,ISEA)*HSL))/HSL
+#endif
             END IF
 !
           ABXX(JSEA)   = MAX ( 0. , ABXX(JSEA) ) * FACTOR
@@ -1876,6 +1961,11 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
+#ifdef CESMCOUPLED
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
+        HS = HML(IX,IY)/5.     ! depth over which SD is averaged
+#endif
 !
 ! 3.a Directional mss parameters
 !     NB: the slope PDF is proportional to ell1=ETYY*EC2-2*ETXY*ECS+ETXX*ES2 = C*EC2-2*B*ECS+A*ES2
@@ -1905,6 +1995,11 @@
         SXX(JSEA) = SXX(JSEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
         SYY(JSEA) = SYY(JSEA) + FTE * ABYY(JSEA) / CG(NK,ISEA)
         SXY(JSEA) = SXY(JSEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
+#ifdef CESMCOUPLED
+        ! tail for SD
+        ETUSSX(JSEA)  = ETUSSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
+        ETUSSY(JSEA)  = ETUSSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
+#endif
 !
 ! Tail for surface stokes drift is commented out: very sensitive to tail power
 !
@@ -1978,6 +2073,87 @@
               T02(JSEA) = TPI / SIG(NK)
               T01(JSEA)= T02(JSEA)
               ENDIF
+#ifdef CESMCOUPLED
+            !TODO is this affected by the NXXX vs. NSEALM?
+            ! Should LAMULT, etc. be NSEAML length?
+            ! Output Stokes drift and Langmuir numbers
+            !USERO(JSEA,1) = HS(JSEA) / MAX ( 0.001 , DW(JSEA) )
+            !USERO(JSEA,2) = ASF(ISEA)
+            IF (ETUSSX(JSEA) .NE. 0. .OR. ETUSSY(JSEA) .NE. 0.) THEN
+
+               USSX(JSEA) = ETUSSX(JSEA)
+               USSY(JSEA) = ETUSSY(JSEA)
+               USSXH(JSEA) = ETUSSXH(JSEA)
+               USSYH(JSEA) = ETUSSYH(JSEA)
+
+               ! this check is to divide by zeror error with gx17
+               ! is there a better way to do this check?
+               IF( SQRT(USSX(JSEA)**2 + USSY(JSEA)**2) .GT. 0) THEN
+                  IF( SQRT(USSXH(JSEA)**2+USSYH(JSEA)**2) .GT. 0) THEN
+
+                     LANGMT(JSEA) = SQRT ( UST(ISEA) * ASF(ISEA)        &
+                          * SQRT ( DAIR / DWAT )                   &
+                          / SQRT ( USSX(JSEA)**2 + USSY(JSEA)**2 ) )
+                     ! Calculating Langmuir Number for misaligned wind and waves
+                     ! see Van Roekel et al., 2012
+                     ! take z1 = 4 * HS
+                     ! SWW: angle between Stokes drift and wind
+
+                     ! no Stokes depth
+                     SWW = ATAN2(USSY(JSEA),USSX(JSEA)) - UD(ISEA)
+                     ! ALPHALS: angle between wind and LC direction, Surface
+                     ! Stokes drift
+                     ! LR check for divide by zero
+                     if ((LANGMT(JSEA)**2  &
+                          /0.4*LOG(MAX(ABS(HML(IX,IY)/4./HS(JSEA)),1.0))+COS(SWW)).eq.0.) then
+                        print *, 'LR warning A denom 0.'
+                        ! This appears to be a decimal precision error
+                        ! The first term equals minus the second term to 6 decimal places
+                        ! The denominator should be a very small number (e-7)
+                        ! ATAN(sin(sww)/small number) tends to pi/2
+                        ! So I hardcoded this here.
+                        ALPHALS(JSEA) = -1.5707956594501575
+                     else
+
+                        ALPHALS(JSEA) = ATAN(SIN(SWW) / (LANGMT(JSEA)**2  &
+                             /0.4*LOG(MAX(ABS(HML(IX,IY)/4./HS(JSEA)),1.0))+COS(SWW)))
+                     end if
+
+
+                     ALPHALS(JSEA) = ATAN( SIN(SWW) / ( LANGMT(JSEA)**2  &
+                          /0.4*LOG(MAX(ABS(HML(IX,IY)/4./HS(JSEA)),1.0))+COS(SWW)))
+                     LAPROJ(JSEA) = LANGMT(JSEA) &
+                          * SQRT(ABS(COS(ALPHALS(JSEA))) &
+                          / ABS(COS(SWW-ALPHALS(JSEA))))
+                     ! Stokes depth
+                     SWW = ATAN2(USSYH(JSEA),USSXH(JSEA)) - UD(ISEA)
+                     ! ALPHAL: angle between wind and LC direction
+
+                     ! LR check for divide by zero (same as above)
+                     if ((LANGMT(JSEA)**2  &
+                          /0.4*LOG(MAX(ABS(HML(IX,IY)/4./HS(JSEA)),1.0))+COS(SWW)).eq.0.) then
+                        print *, 'LR warning B denom 0.'
+                        ALPHAL(JSEA) = -1.5707956594501575
+                     else
+
+                        ALPHAL(JSEA) = ATAN(SIN(SWW) / (LANGMT(JSEA)**2  &
+                             /0.4*LOG(MAX(ABS(HML(IX,IY)/4./HS(JSEA)),1.0))+COS(SWW)))
+                     end if
+                     LASL(JSEA) = SQRT(UST(ISEA)*ASF(ISEA)         &
+                          * SQRT(DAIR/DWAT)                       &
+                          / SQRT(USSXH(JSEA)**2+USSYH(JSEA)**2))
+                     LASLPJ(JSEA) = LASL(JSEA) * SQRT(ABS(COS(ALPHAL(JSEA))) &
+                          / ABS(COS(SWW-ALPHAL(JSEA))))
+                     ! LAMULT
+                     LAMULT(JSEA) = MIN(5.0, ABS(COS(ALPHAL(JSEA))) * &
+                          SQRT(1.0+(1.5*LASLPJ(JSEA))**(-2)+(5.4*real(LASLPJ(JSEA),kind=8))**(-4)))
+                     ! user defined output
+                     USERO(JSEA,1) = HML(IX,IY)
+                     !USERO(JSEA,2) = COS(ALPHAL(JSEA)
+                  END IF
+               END IF
+            END IF
+#endif
 !
 !  Add here USERO(JSEA,1) ...
 !

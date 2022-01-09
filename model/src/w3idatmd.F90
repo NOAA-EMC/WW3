@@ -81,6 +81,10 @@
 !      FLCUR     Log.  Public   Flag for current input.
 !      FLWIND    Log.  Public   Flag for wind input.
 !      FLICE     Log.  Public   Flag for ice input.
+#ifdef CESMCOUPLED
+!      HML       R.A.  Public   Mixed layer depth
+!      FLHML     Log.  Public   Flag for mixed layer depth input.
+#endif
 !      FLTAUA    Log.  Public   Flag for atmospheric momentum input
 !      FLRHOA    Log.  Public   Flag for air density input
 !      INFLAGS1  L.A.  Public   Array consolidating the above six 
@@ -171,6 +175,9 @@
                                  BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
                                  MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
                                  ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
+#ifdef CESMCOUPLED
+        REAL, POINTER         :: HML(:,:)
+#endif
 #ifdef W3_TIDE
  REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
                            WLTIDE(:,:,:,:)
@@ -223,6 +230,10 @@
 #ifdef W3_TIDE
       LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
                                   FLLEVRESI, FLCURRESI
+#endif
+#ifdef CESMCOUPLED
+      REAL   , POINTER        :: HML(:,:)
+      LOGICAL, POINTER        :: FLHML
 #endif
 !/
       CONTAINS
@@ -496,7 +507,10 @@
           FLAGSTIDE(:) = FLAGSTIDEIN(:)
         END IF
 #endif
-
+#ifdef CESMCOUPLED
+      ! ocean boundary layer depth
+      FLHML  => INPUTS(IMOD)%INFLAGS1(5)
+#endif
       FLIC1  => INPUTS(IMOD)%INFLAGS1(-7)
       FLIC2  => INPUTS(IMOD)%INFLAGS1(-6)
       FLIC3  => INPUTS(IMOD)%INFLAGS1(-5)
@@ -674,6 +688,10 @@
 #endif
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+!
+#ifdef CESMCOUPLED
+      IF ( FLHML  ) ALLOCATE ( INPUTS(IMOD)%HML(NX,NY) )
+#endif
 !
       INPUTS(IMOD)%IINIT  = .TRUE.
 !
@@ -910,6 +928,9 @@
 
       FLWIND => INPUTS(IMOD)%INFLAGS1(3)
       FLICE  => INPUTS(IMOD)%INFLAGS1(4)
+#ifdef CESMCOUPLED
+      FLHML  => INPUTS(IMOD)%INFLAGS1(5)
+#endif
       FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
       FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 !
@@ -979,6 +1000,11 @@
               ICEI   => INPUTS(IMOD)%ICEI
               BERGI  => INPUTS(IMOD)%BERGI
             END IF
+#ifdef CESMCOUPLED
+          IF ( FLHML  ) THEN
+              HML    => INPUTS(IMOD)%HML
+            END IF
+#endif
 !
           IF ( FLTAUA  ) THEN
               UX0    => INPUTS(IMOD)%UX0

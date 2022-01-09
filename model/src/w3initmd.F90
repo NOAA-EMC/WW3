@@ -663,6 +663,13 @@
 ! 1.d Dataset unit numbers
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 6")
+#ifdef CESMCOUPLED
+     ! CMB These four NDS files are all sent to stdout, according to wav_comp_nuop 
+     ! NDS(1) ! OUTPUT LOG: General output unit number ("log file") (NDS0)
+     ! NDS(2) ! OUTPUT LOG: Error output unit number (NDSE)
+     ! NDS(3) ! OUTPUT LOG: Test output unit number (NDST)
+     ! NDS(4) ! OUTPUT LOG: Unit for 'direct' output (SCREEN)
+#endif
       NDS    = MDS
       NDSO   = NDS(1)
       NDSE   = NDS(2)
@@ -1190,6 +1197,12 @@
         TOLAST(1,J) =        ODAT(J0+4) 
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
+#ifdef CESMCOUPLED
+      ! CMB, FYI NOTYPE=7 is hardwired in w3odatmd.F90
+      IF ( IAPROC .EQ. NAPLOG ) THEN
+         write(ndso,*) 'CMB distribute odat ', j, TONEXT(:,J), DTOUT (  J)
+      END IF
+#endif
 !
 ! J=8, second stream of restart files
         J=8
@@ -1236,6 +1249,9 @@
 !
       FLOUT(2) = NPT .GT. 0
 !
+#ifdef CESMCOUPLED
+     !CMB FLOUT(3) = .TRUE. ???
+#endif
       FLOUT(3) = .TRUE.
 !
       FLOUT(4) = .TRUE.
@@ -1401,6 +1417,16 @@
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
 #endif
+#endif
+#ifdef CESMCOUPLED
+      ! 1 & 4 are T, rest are F
+      ! 1 is supposed to be gridded
+      ! 4 is supposed to be restart
+      IF ( IAPROC .EQ. NAPLOG ) THEN
+         do J=1,NOTYPE
+           write(ndso,*) 'CMB hist out ', J, FLOUT(J), TONEXT(:,J)
+         end do
+      END IF
 #endif
 !
 ! 4.d Preprocessing for point output.
@@ -2469,6 +2495,11 @@
                           HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW, &
                           PTM1, PT1, PT2, PEP, WBT, CX, CY,      &
                           TAUOCX, TAUOCY, WNMEAN
+#endif
+
+#ifdef CESMCOUPLED
+      USE W3ADATMD, ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ,  &
+                          ALPHALS, LAMULT
 #endif
 
 #ifdef W3_MPI
@@ -3638,7 +3669,7 @@
 #ifdef W3_MPI
                 END IF
 #endif
-!
+
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 12) ) THEN
                   DO IK=1,2*NK
@@ -3654,7 +3685,7 @@
                     END DO
                 END IF 
 #endif
-!
+
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 13) ) THEN
                   IH     = IH + 1
@@ -3674,6 +3705,22 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/13', IROOT, IT, IRQGO(IH), IERR
 #endif
+
+
+#ifdef CESMCOUPLED
+#ifdef W3_MPI
+              IF ( FLGRDALL( 6, 14) ) THEN
+                  IH     = IH + 1
+                  IT     = IT + 1
+      CALL MPI_SEND_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
+                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+                END IF
+#endif
+#ifdef W3_MPIT
+      WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+#endif
+#endif
+
 #ifdef W3_MPI
                 END IF
 #endif
