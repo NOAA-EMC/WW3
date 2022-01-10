@@ -83,7 +83,6 @@
 !      FLICE     Log.  Public   Flag for ice input.
 #ifdef CESMCOUPLED
 !      HML       R.A.  Public   Mixed layer depth
-!      FLHML     Log.  Public   Flag for mixed layer depth input.
 #endif
 !      FLTAUA    Log.  Public   Flag for atmospheric momentum input
 !      FLRHOA    Log.  Public   Flag for air density input
@@ -233,7 +232,6 @@
 #endif
 #ifdef CESMCOUPLED
       REAL   , POINTER        :: HML(:,:)
-      LOGICAL, POINTER        :: FLHML
 #endif
 !/
       CONTAINS
@@ -507,10 +505,6 @@
           FLAGSTIDE(:) = FLAGSTIDEIN(:)
         END IF
 #endif
-#ifdef CESMCOUPLED
-      ! ocean boundary layer depth
-      FLHML  => INPUTS(IMOD)%INFLAGS1(5)
-#endif
       FLIC1  => INPUTS(IMOD)%INFLAGS1(-7)
       FLIC2  => INPUTS(IMOD)%INFLAGS1(-6)
       FLIC3  => INPUTS(IMOD)%INFLAGS1(-5)
@@ -690,7 +684,7 @@
         END IF
 !
 #ifdef CESMCOUPLED
-      IF ( FLHML  ) ALLOCATE ( INPUTS(IMOD)%HML(NX,NY) )
+        ALLOCATE ( INPUTS(IMOD)%HML(NX,NY) )
 #endif
 !
       INPUTS(IMOD)%IINIT  = .TRUE.
@@ -928,9 +922,6 @@
 
       FLWIND => INPUTS(IMOD)%INFLAGS1(3)
       FLICE  => INPUTS(IMOD)%INFLAGS1(4)
-#ifdef CESMCOUPLED
-      FLHML  => INPUTS(IMOD)%INFLAGS1(5)
-#endif
       FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
       FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 !
@@ -1001,9 +992,7 @@
               BERGI  => INPUTS(IMOD)%BERGI
             END IF
 #ifdef CESMCOUPLED
-          IF ( FLHML  ) THEN
-              HML    => INPUTS(IMOD)%HML
-            END IF
+          HML    => INPUTS(IMOD)%HML
 #endif
 !
           IF ( FLTAUA  ) THEN

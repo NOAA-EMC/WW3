@@ -334,8 +334,12 @@
       LOGICAL                 :: FLOGOA(NOGRP,NGRPP)
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
+#ifdef CESMCOUPLED
+      CHARACTER(LEN=512)       :: FNAME
+#else
 !      CHARACTER(LEN=21)       :: FNAME
       CHARACTER(LEN=40)       :: FNAME
+#endif
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG

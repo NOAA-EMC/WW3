@@ -2077,8 +2077,8 @@
             !TODO is this affected by the NXXX vs. NSEALM?
             ! Should LAMULT, etc. be NSEAML length?
             ! Output Stokes drift and Langmuir numbers
-            !USERO(JSEA,1) = HS(JSEA) / MAX ( 0.001 , DW(JSEA) )
-            !USERO(JSEA,2) = ASF(ISEA)
+            ! USERO(JSEA,1) = HS(JSEA) / MAX ( 0.001 , DW(JSEA) )
+            ! USERO(JSEA,2) = ASF(ISEA)
             IF (ETUSSX(JSEA) .NE. 0. .OR. ETUSSY(JSEA) .NE. 0.) THEN
 
                USSX(JSEA) = ETUSSX(JSEA)

@@ -1236,10 +1236,10 @@ contains
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:wavinit_cesm)'
     ! -------------------------------------------------------------------
 
+    namelist /ww3_inparm/ initfile, outfreq, dtcfl, dtcfli, dtmax, dtmin
+
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    namelist /ww3_inparm/ initfile, outfreq, dtcfl, dtcfli, dtmax, dtmin
 
     ! Get component instance
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
@@ -1255,17 +1255,13 @@ contains
     endif
     inst_name = "WAV"//trim(inst_suffix)
     if ( root_task ) then
-       write(stdout,*) trim(subname),' inst_name   = ',trim(inst_name)
-       write(stdout,*) trim(subname),' inst_index  = ',inst_index
-       write(stdout,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
+       write(stdout,'(a)') trim(subname),' inst_name   = ',trim(inst_name)
+       write(stdout,'(a)') trim(subname),' inst_index  = ',inst_index
+       write(stdout,'(a)') trim(subname),' inst_suffix = ',trim(inst_suffix)
     endif
 
     ! Read namelist (set initfile in wav_shr_mod)
     if ( root_task ) then
-       write (stdout,'(a)')'  Initializations : '
-       write (stdout,'(a)')' --------------------------------------------------'
-       write (stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write (stdout,*)
        open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
        read (unitn, ww3_inparm, iostat=ierr)
        if (ierr /= 0) then
@@ -1275,6 +1271,17 @@ contains
           return
        end if
        close (unitn)
+       ! Write out input namelists
+       write (stdout,'(a)')'  Initializations : '
+       write (stdout,'(a)')' --------------------------------------------------'
+       write (stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       write (stdout,'(a)')' initfile = '//trim(initfile)
+       write (stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+       write (stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+       write (stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
+       write (stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
+       write (stdout,'(a, 2x, i8)')' outfreq  = ',outfreq
+       write (stdout,*)
     end if
 
     ! ESMF does not have a broadcast for chars

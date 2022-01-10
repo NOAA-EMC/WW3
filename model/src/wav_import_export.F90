@@ -208,11 +208,10 @@ contains
     use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
+    use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
     use w3wdatmd    , only: time
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
-#else
-    use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
 #endif
 
     ! input/output variables
@@ -437,22 +436,18 @@ contains
     end if
 #ifdef CESMCOUPLED
     ! ---------------
-    ! INFLAGS1(5) - ocean boundary layer depth
+    ! ocean boundary layer depth - always assume that this is being imported for CESM
     ! ---------------
-    if (INFLAGS1(5)) then
-       if (state_fldchk(importState, 'So_bldepth')) then
-          call SetGlobalInput(importState, 'So_bldepth', vm, data_global, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                HML(ix,iy) = max(data_global(n), 5.) ! ocn mixing layer depth
-             end do
-          end do
-       end if
-    end if
-#else
+    call SetGlobalInput(importState, 'So_bldepth', vm, data_global, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    n = 0
+    do iy = 1,NY
+       do ix = 1,NX
+          n = n + 1
+          HML(ix,iy) = max(data_global(n), 5.) ! ocn mixing layer depth
+       end do
+    end do
+#endif
     ! ---------------
     ! INFLAGS1(5) - atm momentum fields
     ! ---------------
@@ -491,7 +486,6 @@ contains
           end do
        end do
     end if
-#endif
     ! ---------------
     ! INFLAGS1(-7)
     ! ---------------
@@ -510,7 +504,6 @@ contains
           end do
        end if
     end if
-
     ! ---------------
     ! INFLAGS1(-3)
     ! ---------------

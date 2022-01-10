@@ -54,9 +54,8 @@ contains
     !  flcur   inflags1(2)  flag for current input.
     !  flwind  inflags1(3)  flag for wind input.
     !  flice   inflags1(4)  flag for ice input (ice fraction)
-    !  flhml   inflags1(5)  flag for mixed layer depth input. ql, 150525 hk
 
-    !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
+    !  inflags1 array consolidating the above flags, as well as four additional data flags.
     !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
     !  inflags2 is just "initial value of INFLAGS1"
 
@@ -69,10 +68,10 @@ contains
     ! currents          : inflags1(2)
     ! winds             : inflags1(3)
     ! ice fields        : inflags1(4)
-    ! mixed layer depth : inflags1(5)
+    ! momentum fluxes   : inflags1(5)
 
     inflags1(:)   = .false.
-    inflags1(1:5) = .true.
+    inflags1(1:4) = .true.
     inflags2(:)   = .false.
     if (wav_coupling_to_cice) then
        inflags1(-7) = .true. ! ice thickness

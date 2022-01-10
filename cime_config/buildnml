@@ -170,7 +170,8 @@ def buildnml(case, caseroot, compname):
     elif wav_grid == "gx1v7":
         mod_def_in = os.path.join("/glade/scratch/hkershaw/wwatch3v6p07/IC4M3IS0k_gx17_steps180-180-180-15/", "mod_def.ww3")
     elif wav_grid == "wtx0.66v1":
-        mod_def_in = os.path.join(din_loc_root, "wav", "ww3", "wt061.mod_def.ww3.210917")
+        #mod_def_in = os.path.join(din_loc_root, "wav", "ww3", "wt061.mod_def.ww3.210917")
+        mod_def_in = "/glade/work/worthen/Wave_in3/moddefs/mod_def.wtx0.66v1"
     else:
         raise RuntimeError("Unknown WAV grid: {}".format(wav_grid))
 
