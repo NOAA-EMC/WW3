@@ -1,10 +1,13 @@
 !> @file w3updtmd.F90
-!> @brief contains module W3UPDTMD with routines for input updates.
+!> @brief Contains module W3UPDTMD with routines for input updates.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
 #include "w3macros.h"
 
 !/ ------------------------------------------------------------------- /
-!> @author H. L. Tolman @date 22-Mar-2021
 !> @brief Bundles all input updating routines for WAVEWATCH III.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
       MODULE W3UPDTMD
 !/
 !/                  +-----------------------------------+
@@ -1010,15 +1013,15 @@
       END SUBROUTINE W3UTAU
 !/ ------------------------------------------------------------------- /
 !
-!> @author H. L. Tolman @date 06-Jun-2018
-!> @param[out] A Action density spectra
-!> @returns A Action density spectra
 !> @brief Initialize the wave field with fetch-limited spectra before the
-!>  actual calculation start.
+!> actual calculation start.
 !> 
 !> @details (Named as an update routine due to placement in code.) Fetch-limited
-!>  JONSWAP spectra with a cosine^2 directional distribution and a mean direction
-!>  taken from the wind.
+!> JONSWAP spectra with a cosine^2 directional distribution and a mean direction
+!> taken from the wind.
+!>      
+!> @param[out] A Action density spectra
+!> @author H. L. Tolman @date 06-Jun-2018      
 !      
       SUBROUTINE W3UINI ( A )
 !/
@@ -1724,22 +1727,22 @@
       END SUBROUTINE W3UIC5
 !/ ------------------------------------------------------------------- /      
 !
-!> @author H. L. Tolman @date 28-Mar-2014
-!> @param[inout] VA Spectra in 1-D or 2-D representation (points to same address).
-!> @returns VA Spectra in 1-D or 2-D representation (points to same address).
 !> @brief Update ice map in the wave model.
 !> 
 !> @details
-!> @parblock
-!>     Points with an ice concentration larger than FICEN are removed
-!>     from the sea map in the wave model. Such points are identified
-!>     by negative numbers is the grid status map MAPSTA. For ice
-!>     points spectra are set to zero. Points from wich ice disappears
-!>     are initialized with a "small" JONSWAP spectrum, based on the
-!>     frequency SIG(NK-1) and the local wind direction.
+!> Points with an ice concentration larger than FICEN are removed
+!> from the sea map in the wave model. Such points are identified
+!> by negative numbers is the grid status map MAPSTA. For ice
+!> points spectra are set to zero. Points from wich ice disappears
+!> are initialized with a "small" JONSWAP spectrum, based on the
+!> frequency SIG(NK-1) and the local wind direction.
 !>
-!>     In the case of icebergs, the iceberg attenuation coefficient is
-!>     added to the subgrid obstruction map.      
+!> In the case of icebergs, the iceberg attenuation coefficient is
+!> added to the subgrid obstruction map.
+!>
+!> @param[inout] VA Spectra in 1-D or 2-D representation (points to same address).
+!> @returns VA Spectra in 1-D or 2-D representation (points to same address).
+!> @author H. L. Tolman @date 28-Mar-2014      
 !          
       SUBROUTINE W3UICE ( VA )
 !/
@@ -3131,16 +3134,16 @@
       END SUBROUTINE W3UTRN
 !/ ------------------------------------------------------------------- /
 !
-!> @author W. E. Rogers, (NRL) @date 06-Dec-2010
+!> @brief Calculate derivatives of a field.
+!> 
+!> @details Derivatives are calculated in m/m from the longitude/latitude
+!> grid, central in space for iternal points, one-sided for coastal points.
+!>      
 !> @param[in] ZZ Field to calculate derivatives of.
 !> @param[in] ZUNIT Units of ZZ (used for test output).
 !> @param[out] DZZDX Derivative in X-direction (W-E).
 !> @param[out] DZZDY Derivative in Y-direction (S-N).
-!> @returns DZZDX, DZZDY
-!> @brief Calculate derivatives of a field.
-!> 
-!> @details Derivatives are calculated in m/m from the longitude/latitude
-!>  grid, central in space for iternal points, one-sided for coastal points.
+!> @author W. E. Rogers, (NRL) @date 06-Dec-2010
 !            
       SUBROUTINE W3DZXY( ZZ, ZUNIT, DZZDX, DZZDY )
 !/

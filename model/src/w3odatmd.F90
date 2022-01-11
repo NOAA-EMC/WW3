@@ -1,19 +1,20 @@
 !> @file w3odatmd.F90
-!> @ brief Define data structures to set up wave model grids and aliases
-!>         to use individual grids transparently.
+!> @brief Define data structures to set up wave model grids and aliases
+!> to use individual grids transparently.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 !
-!> @author H. L. Tolman @date 22-Mar-2021
-!>
 !> @brief Define data structures to set up wave model grids and aliases
-!>        to use individual grids transparently.
+!> to use individual grids transparently.
 !>
 !> @details Also includes subroutines to manage data structure and 
-!>          pointing to individual models. This module considers the
-!>          parameters required for model output.
-!>
+!> pointing to individual models. This module considers the parameters
+!> required for model output.
+!>          
+!> @author H. L. Tolman @date 22-Mar-2021
 !
       MODULE W3ODATMD
 !/

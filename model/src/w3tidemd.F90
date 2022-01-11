@@ -1,5 +1,7 @@
 !> @file w3tidemd.F90
 !> @brief Contains MODULE W3TIDEMD for tidal analysis of time series.
+!>
+!> @author M. Foreman @date 21-Apr-2020
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
@@ -1256,12 +1258,12 @@
       END SUBROUTINE dsvdcmp
 !/ ------------------------------------------------------------------- /
 !
+!> @brief Compute Julian day from day,month,year.
+!>
 !> @param id day
 !> @param mm month
 !> @param iyyy year
 !> @returns JULDAYT Julian day
-!>      
-!> @brief Compute Julian day from day,month,year.
 !>      
 !> @attention See numerical recipes 2nd ed. The order of month and day have been swapped!
 !      

@@ -1,15 +1,19 @@
 !> @file w3swldmd.F90
-!> @brief contains MODULE W3SWLDMD for swell dissipation source term.
+!> @brief Contains MODULE W3SWLDMD for swell dissipation source term.
+!>
+!> @author H. L. Tolman @date 21-Nov-2011
+
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 !
-!> @author H. L. Tolman @date 21-Nov-2011
 !> @brief Source term module for swell dissipation.
 !>
-!> @details swell dissipation based on different
-!>     physics that can be independently selected form the input
-!>     and whitecapping dissipation terms in the model setup.
+!> @details Swell dissipation based on different physics that can be 
+!> independently selected form the input and whitecapping dissipation 
+!> terms in the model setup.
+!>
+!> @author H. L. Tolman @date 21-Nov-2011
 !
       MODULE W3SWLDMD
 !/
@@ -223,24 +227,25 @@
       END SUBROUTINE W3SWL4
 !/ ------------------------------------------------------------------- /
 !
-!> @author H. L. Tolman @date 16-Feb-2012
+!      
+!>
+!> @brief Turbulent dissipation of narrow-banded swell
+!> 
+!> @details
+!> Turbulent dissipation of narrow-banded swell as described in
+!> Babanin (2011, Section 7.5). 
+!>
+!> Babanin 2011: Cambridge Press, 295-321, 463pp.
+!>
+!> S = D * A
+!>
 !> @param[in] A Action density spectrum (1-D, NTH*NK)
 !> @param[in] CG Group velocities
 !> @param[in] WN Wavenumbers
 !> @param[out] S Source term (1-D, NTH*NK)
 !> @param[out] D Diagonal term of derivative (1-D, NTH*NK)
-!> @returns S,D        
-!> @brief Turbulent dissipation of narrow-banded swell
-!> 
-!> @details
-!> @parblock
-!>     Turbulent dissipation of narrow-banded swell as described in
-!>     Babanin (2011, Section 7.5). 
-!>
-!>     Babanin 2011: Cambridge Press, 295-321, 463pp.
-!>
-!>     S = D * A
-!>
+!> @author H. L. Tolman @date 16-Feb-2012
+!>    
 !        
       SUBROUTINE W3SWL6 (A, CG, WN, S, D)
 !/
@@ -407,7 +412,6 @@
       END SUBROUTINE W3SWL6
 !/ ------------------------------------------------------------------- /
 !
-!> @private
 !> @author H. L. Tolman
 !> @author S. Zieger
 !> @date 15-Feb-2011
