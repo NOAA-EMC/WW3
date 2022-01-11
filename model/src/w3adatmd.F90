@@ -1046,8 +1046,8 @@
                  WADATS(IMOD)%ALPHAL(NSEALM)                          , &
                  WADATS(IMOD)%ALPHALS(NSEALM)                         , &
                  WADATS(IMOD)%LAMULT(NSEALM)                          , &
-                 STAT=ISTAT )
 #endif
+                 STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%HS     = UNDEF

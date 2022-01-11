@@ -449,7 +449,6 @@
          'W3OUNFMETAMD' ) modtest=w3ounfmetamd.o ;;
          'W3METAMD'     ) modtest=w3metamd.o ;;
          'W3GRIDMD'     ) modtest=w3gridmd.o ;;
-         'wav_wrapper_mod'   ) modtest=wav_wrapper_mod.o ;;
          'wav_kind_mod'      ) modtest=wav_kind_mod.o ;;
          'wav_shr_mod'       ) modtest=wav_shr_mod.o ;;
          'wav_shel_inp'      ) modtest=wav_shel_inp.o ;;
