@@ -34,12 +34,13 @@
     <category>setup</category>
     <input_pathname>abs</input_pathname>
     <values>
-      <value runtype="startup" wav_grid="ww3a">/glade/work/altuntas/ww3.input/init/ww3a/restart.ww3</value>
-      <value runtype="hybrid" wav_grid="ww3a">/glade/work/altuntas/ww3.input/init/ww3a/restart.ww3</value>
-      <value runtype="startup" wav_grid="gx1v7">/glade/scratch/hkershaw/wwatch3v6p07/IC4M3IS0k_gx17/restart.ww3</value>
-      <value runtype="hybrid" wav_grid="gx1v7">/glade/scratch/hkershaw/wwatch3v6p07/IC4M3IS0k_gx17/restart.ww3</value>
-      <value runtype="startup" wav_grid="wtx0.66v1">$DIN_LOC_ROOT/wav/ww3/wt061.restart.ww3.calm.210917</value>
-      <value runtype="hybrid" wav_grid="wtx0.66v1">$DIN_LOC_ROOT/wav/ww3/wt061.restart.ww3.calm.210917</value>
+      <!-- The following four files are for wwver 6.07 and will not be compatible with wwver 7.14 -->
+      <!-- <value runtype="startup" wav_grid="ww3a">/glade/work/altuntas/ww3.input/init/ww3a/restart.ww3</value> -->
+      <!-- <value runtype="hybrid" wav_grid="ww3a">/glade/work/altuntas/ww3.input/init/ww3a/restart.ww3</value> -->
+      <!-- <value runtype="startup" wav_grid="gx1v7">/glade/scratch/hkershaw/wwatch3v6p07/IC4M3IS0k_gx17/restart.ww3</value> -->
+      <!-- <value runtype="hybrid" wav_grid="gx1v7">/glade/scratch/hkershaw/wwatch3v6p07/IC4M3IS0k_gx17/restart.ww3</value> -->
+      <value runtype="startup" wav_grid="wtx0.66v1">$DIN_LOC_ROOT/wav/ww3/wt061.restart.ww3.calm.wwver7.14.220110</value>
+      <value runtype="hybrid" wav_grid="wtx0.66v1">$DIN_LOC_ROOT/wav/ww3/wt061.restart.ww3.calm.wwver7.14.220110</value>
     </values>
     <desc>
       Initial condition file.
@@ -73,7 +74,6 @@
       can be obtained by check_input_data if need be
     </desc>
   </entry>
-
 
   <entry id="prestage_mod_def">
     <type>char</type>
