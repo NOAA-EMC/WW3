@@ -197,7 +197,7 @@
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, MAPSTA, GRIDS,            &
                           FLAGLL, ICLOSE, ICLOSE_NONE, GTYPE, UNGTYPE,  &
                           CLGTYPE, GSU
-      USE W3GDATMD, ONLY: XYB, TRIGP, MAXX, MAXY, DXYMAX  ! unstructured grids
+      USE W3GDATMD, ONLY: TRIGP, MAXX, MAXY, DXYMAX  ! unstructured grids
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 #ifdef W3_MPI
       USE W3ODATMD, ONLY: O2IRQI
@@ -321,7 +321,7 @@
               CYCLE
               END IF
           ELSE
-            CALL IS_IN_UNGRID(J, XPT(IPT), YPT(IPT), itout, IX, IY, RD )
+            CALL IS_IN_UNGRID(J, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD )
             IF (itout.eq.0) THEN
               INGRID(J,IPT)=.FALSE.
               END IF

@@ -110,7 +110,7 @@
 
       USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, DTH, TH, FACHFE,           &
                           GNAME, W3NMOD, W3SETG,&
-                          NSEA, MAPSTA, XYB, GTYPE, XGRD, YGRD, X0, Y0, &
+                          NSEA, MAPSTA, GTYPE, XGRD, YGRD, X0, Y0, &
                           SX, SY, MAPSF, UNGTYPE, CLGTYPE, RLGTYPE, FLAGLL
 #ifdef W3_RTD
       USE W3GDATMD, ONLY : POLAT, POLON
@@ -407,8 +407,8 @@
               XBPO(IBO)= XGRD(IY,IX)
               YBPO(IBO)= YGRD(IY,IX)
             CASE (UNGTYPE) 
-              XBPO(IBO)= XYB(IX,1)
-              YBPO(IBO)= XYB(IX,2)
+              XBPO(IBO)= XGRD(1,IX)
+              YBPO(IBO)= YGRD(1,IX)
             END SELECT !GTYPE
           END IF
         END DO

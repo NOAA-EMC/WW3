@@ -3984,7 +3984,7 @@
 !
         CALL READMSH(NDSG,FNAME)
         ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
-        ZBIN(:,1) = VSC*XYB(:,3)
+        ZBIN(:,1) = VSC * ZB(:)
 #ifdef W3_DEBUGSTP
         WRITE(740,*) 'VSC=', VSC
         WRITE(740,*) 'Printing ZBIN 1'
@@ -4885,8 +4885,8 @@
                 X = FACTOR * ( XGRDIN(IX,IY) )
                 Y = FACTOR * ( YGRDIN(IX,IY) )
               ELSE
-                X = FACTOR * XYB(IX,1)
-                Y = FACTOR * XYB(IX,2)
+                X = FACTOR * XGRD(1,IX)
+                Y = FACTOR * YGRD(1,IX)
                 END IF
             IF ( TMPSTA(IY,IX).EQ.2 ) THEN
                   IF ( FLAGLL ) THEN
@@ -4949,15 +4949,7 @@
           DEALLOCATE ( XGRDIN, YGRDIN )   
           CALL W3GNTX ( 1, 6, 6 )  
       ELSE 
-!
-!FA:  This distinction  between structured and unstructured
-! should be removed when XYB is replaced by XGRD and YGRD
-!
-        DO IX=1, NX
-          XGRD(:,IX) = XYB(IX,1)
-          YGRD(:,IX) = XYB(IX,2)
-          END DO
-        END IF   ! GTYPE
+      END IF   ! GTYPE
 !      
 #ifdef W3_SMC
  !!Li  Shelter MAPSTA LLG definition for SMC 

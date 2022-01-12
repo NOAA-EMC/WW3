@@ -669,7 +669,7 @@
         REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
 #endif
         REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
-        REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+        DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
         REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
@@ -727,7 +727,6 @@
 ! unstructured data
 !
         INTEGER               :: NTRI
-        DOUBLE PRECISION, POINTER         :: XYB(:,:)
         INTEGER, POINTER      :: TRIGP(:,:)
 #ifdef W3_PDLIB
         INTEGER               :: NBND_MAP
@@ -1078,9 +1077,6 @@
 !
       INTEGER, POINTER        :: NTRI,COUNTRI,COUNTOT,NNZ
       INTEGER                 :: optionCall = 3 ! take care all other options are basically wrong
-!  XYB may not be necessary now that we have XGRD and YGRD
-!  but these XGRD and YGRD should probably be double precision
-      DOUBLE PRECISION, POINTER  ::     XYB(:,:)   
       INTEGER, POINTER        :: TRIGP(:,:)
 #ifdef W3_PDLIB
       INTEGER, POINTER        :: NBND_MAP
@@ -1153,7 +1149,8 @@
         REAL, POINTER         :: AnglD(:)
         LOGICAL, POINTER      :: FLAGUNR
 #endif
-      REAL   , POINTER :: ZB(:), CLATS(:)
+      REAL   , POINTER :: ZB(:)
+      REAL   , POINTER :: CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
 
@@ -1162,7 +1159,7 @@
         REAL, POINTER :: CTRNX(:), CTRNY(:), CLATF(:)
 #endif
       REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
-      REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+      DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
       REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
@@ -1680,6 +1677,14 @@
 !
 ! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
 !
+      IF (GTYPE .NE. UNGTYPE) THEN
+        ALLOCATE ( GRIDS(IMOD)%ZB(MSEA),  &
+                 GRIDS(IMOD)%XGRD(MY,MX),    &
+                 GRIDS(IMOD)%YGRD(MY,MX),    &
+                 STAT=ISTAT                  )
+        CHECK_ALLOC_STATUS ( ISTAT )
+      ENDIF
+
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                  GRIDS(IMOD)%MAPST2(MY,MX),  &
                  GRIDS(IMOD)%MAPFS(MY,MX),   &
@@ -1688,14 +1693,11 @@
 #ifdef W3_RTD
                  GRIDS(IMOD)%AnglD(MSEA),    &
 #endif
-                 GRIDS(IMOD)%ZB(MSEA),       &
                  GRIDS(IMOD)%CLATS(0:MSEA),  &
                  GRIDS(IMOD)%CLATIS(0:MSEA), &
                  GRIDS(IMOD)%CTHG0S(0:MSEA), &
                  GRIDS(IMOD)%TRNX(MY,MX),    &
                  GRIDS(IMOD)%TRNY(MY,MX),    &
-                 GRIDS(IMOD)%XGRD(MY,MX),    &
-                 GRIDS(IMOD)%YGRD(MY,MX),    &
                  GRIDS(IMOD)%DXDP(MY,MX),    &
                  GRIDS(IMOD)%DXDQ(MY,MX),    &
                  GRIDS(IMOD)%DYDP(MY,MX),    &
@@ -2350,7 +2352,6 @@
 !
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT
-      XYB    => GRIDS(IMOD)%XYB
       TRIGP  => GRIDS(IMOD)%TRIGP
 #ifdef W3_PDLIB
       NBND_MAP => GRIDS(IMOD)%NBND_MAP
@@ -2392,7 +2393,9 @@
       MAXX     => GRIDS(IMOD)%MAXX
       MAXY     => GRIDS(IMOD)%MAXY
       DXYMAX   => GRIDS(IMOD)%DXYMAX      
-
+      XGRD   => GRIDS(IMOD)%XGRD
+      YGRD   => GRIDS(IMOD)%YGRD
+      ZB     => GRIDS(IMOD)%ZB
 !
       IF ( GINIT ) THEN
 !
@@ -2405,15 +2408,12 @@
 #ifdef W3_RTD
           AnglD  => GRIDS(IMOD)%AnglD
 #endif
-          ZB     => GRIDS(IMOD)%ZB
           CLATS  => GRIDS(IMOD)%CLATS
           CLATIS => GRIDS(IMOD)%CLATIS
           CTHG0S => GRIDS(IMOD)%CTHG0S
           TRNX   => GRIDS(IMOD)%TRNX
           TRNY   => GRIDS(IMOD)%TRNY
 !
-          XGRD   => GRIDS(IMOD)%XGRD
-          YGRD   => GRIDS(IMOD)%YGRD
           DXDP   => GRIDS(IMOD)%DXDP
           DXDQ   => GRIDS(IMOD)%DXDQ
           DYDP   => GRIDS(IMOD)%DYDP
@@ -2990,7 +2990,7 @@
 !!Li  SMC grid shares the settings with rectilinear grid. JGLi12Oct2020
         CASE ( RLGTYPE, SMCTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
                        NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
@@ -3005,7 +3005,7 @@
             END IF
         CASE ( CLGTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
                        NFD=NFD, SPHERE=SPHERE,                         &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
@@ -3191,8 +3191,10 @@
 ! 2.  Allocate arrays
 !
       ALLOCATE ( GRIDS(IMOD)%TRIGP(MTRI,3),                         &
-                 GRIDS(IMOD)%XYB(MX,3),                             &
                  GRIDS(IMOD)%SI(MX),                                &
+                 GRIDS(IMOD)%XGRD(1,MX),                            &
+                 GRIDS(IMOD)%YGRD(1,MX),                            &
+                 GRIDS(IMOD)%ZB(MX),                                &
                  GRIDS(IMOD)%TRIA(MTRI),                            & 
                  GRIDS(IMOD)%CROSSDIFF(6,MTRI),                     &
                  GRIDS(IMOD)%IEN(MTRI,6),                           &

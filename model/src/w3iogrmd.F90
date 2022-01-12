@@ -318,6 +318,8 @@
       CHARACTER(LEN=35)       :: IDTST
       CHARACTER(LEN=60)      :: MESSAGE(5)
       LOGICAL                 :: GLOBAL
+
+      REAL, ALLOCATABLE       :: XGRD4(:,:), YGRD4(:,:) 
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -731,7 +733,7 @@
                    SX, SY, X0, Y0
             CASE ( CLGTYPE )
               WRITE (NDSM)                                            &
-                   XGRD, YGRD
+                   REAL(XGRD), REAL(YGRD)
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
                 FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
@@ -754,7 +756,7 @@
               !removed
               COUNTCON=0
               WRITE (NDSM)                                            &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
                 LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
@@ -836,14 +838,18 @@
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                    SX, SY, X0, Y0
               DO IX=1,NX
-                XGRD(:,IX) = X0 + REAL(IX-1)*SX
+                XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
                 END DO
               DO IY=1,NY
-                YGRD(IY,:) = Y0 + REAL(IY-1)*SY
+                YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
                 END DO
             CASE ( CLGTYPE )
+              ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0. 
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-                   XGRD, YGRD
+                   XGRD4, YGRD4
+              XGRD = XGRD4
+              YGRD = YGRD4
+              DEALLOCATE(XGRD4, YGRD4)
               !Set SX, SY, X0, Y0 to large values if curvilinear grid
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
@@ -890,7 +896,7 @@
      FLUSH(740+IAPROC)
 #endif
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
                 LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
@@ -905,8 +911,7 @@
        call printMallInfo(IAPROC,mallInfos)
 #endif
 
-                XGRD(1,:)=XYB(:,1)
-                YGRD(1,:)=XYB(:,2)
+
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.7'
      FLUSH(740+IAPROC)
