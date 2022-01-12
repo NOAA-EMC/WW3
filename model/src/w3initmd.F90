@@ -646,11 +646,15 @@
       IFT    = LEN_TRIM(TFILE)
       J      = LEN_TRIM(FNMPRE)
 !
-      IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
+
+#ifndef CESMCOUPLED
 #ifdef W3_DEBUGINIT
+      IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
        WRITE(*,*) '1: w3initmd f=', TRIM(FNMPRE(:J)//LFILE(:IFL))
 #endif
-          OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
+      IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
+       OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
+#endif
 !
       IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
           INQUIRE (MDS(3),OPENED=OPENED)
@@ -664,13 +668,6 @@
 ! 1.d Dataset unit numbers
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 6")
-#ifdef CESMCOUPLED
-     ! CMB These four NDS files are all sent to stdout, according to wav_comp_nuop 
-     ! NDS(1) ! OUTPUT LOG: General output unit number ("log file") (NDS0)
-     ! NDS(2) ! OUTPUT LOG: Error output unit number (NDSE)
-     ! NDS(3) ! OUTPUT LOG: Test output unit number (NDST)
-     ! NDS(4) ! OUTPUT LOG: Unit for 'direct' output (SCREEN)
-#endif
       NDS    = MDS
       NDSO   = NDS(1)
       NDSE   = NDS(2)

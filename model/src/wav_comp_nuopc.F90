@@ -46,18 +46,14 @@ module wav_comp_nuopc
   !      W3SETO    Subr.   Id.    Point to data structure.
   !      W3NINP    Subr. W3IDATMD Set nummber of data structures
   !      W3SETI    Subr.   Id.    Point to data structure.
-  !
   !      STME21    Subr. W3TIMEMD Print date and time readable.
-  !      DSEC21    Func.   Id.    Difference between times.
-  !      TICK21    Subr.   Id.    Increment time.
-  !
   !      W3INIT    Subr. W3INITMD Wave model initialization.
   !      W3WAVE    Subr. W3WAVEMD Wave model.
   !     ----------------------------------------------------------------
   !
   !  5. Called by :
   !
-  !     None, stand-alone program.
+  !     NUOPC run seqence 
   !
   !  6. Error messages :
   !
@@ -67,8 +63,6 @@ module wav_comp_nuopc
   !  7. Remarks :
   !
   !     - A rigourous input check is made in W3INIT.
-  !     - See W3WDAS for documentation on the set-up of the data
-  !       assimilation.
   !
   !  8. Structure :
   !
@@ -98,7 +92,8 @@ module wav_comp_nuopc
   !
   !     wav_comp_run
   !
-  !        7.   Run model with input
+  !        7.   Run model for one time step with input from cmeps
+  !             Return output to cmeps
   !             Do until end time is reached
   !        +--------------------------------------------------------+
   !        | a  Determine next time interval and input fields.      |
@@ -109,7 +104,6 @@ module wav_comp_nuopc
   !        | | 4  Update next ending time                           |
   !        | +------------------------------------------------------|
   !        | b  Run wave model.                          ( W3WAVE ) |
-  !        | c  If requested, data assimilation.         ( W3WDAS ) |
   !        | d  Final output if needed.                  ( W3WAVE ) |
   !        | e  Check time                                          |
   !        +--------------------------------------------------------+
@@ -357,7 +351,7 @@ contains
 
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
-    use w3odatmd     , only : w3nout, w3seto, naproc, iaproc, naperr, napout, nds
+    use w3odatmd     , only : w3nout, w3seto, naproc, iaproc, naperr, napout
     use w3timemd     , only : stme21
     use w3adatmd     , only : w3naux, w3seta
     use w3idatmd     , only : w3seti, w3ninp
@@ -406,6 +400,7 @@ contains
     character(ESMF_MAXSTR)         :: msgString
     character(ESMF_MAXSTR)         :: diro
     character(CL)                  :: logfile
+    integer                        :: mds(13) ! Note that nds is set to this in w3initmod
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
     ! -------------------------------------------------------------------
 
@@ -473,13 +468,18 @@ contains
     ! NDS(4) ! OUTPUT LOG: Unit for 'direct' output (SCREEN)
     ! NDS(5) ! INPUT: mod_def.ww3 file (model definition) unit number
     ! NDS(9) ! INPUT: unit for read in boundary conditions (based on FLBPI)
-    !
+
     ! The following units are referenced in module w3wavemd for output
     ! NDS( 6) ! OUTPUT DATA: restart(N).ww3 file (model restart) unit number
     ! NDS( 7) ! OUTPUT DATA: unit for output for FLOUT(1) flag grid unformmatted output
     ! NDS( 8) ! OUTPUT DATA: unit for output for FLOUT(2) flag point unformmatted output
     ! etc through 13
-    !
+
+    mds(1) = stdout
+    mds(2) = stdout
+    mds(3) = stdout
+    mds(4) = stdout
+
     ! Identify available unit numbers
     ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
     ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
@@ -487,21 +487,19 @@ contains
     ! the units since they will be opened within W3INIT.
     ! By default, unit numbers between 50 and 99 are scanned to find an
     ! unopened unit number
-    nds(1) = stdout
-    nds(2) = stdout
-    nds(3) = stdout
-    nds(4) = stdout
-    call ESMF_UtilIOUnitGet(nds(5)) ; open(unit=nds(5)  , status='scratch'); close(nds(5))
-    call ESMF_UtilIOUnitGet(nds(6)) ; open(unit=nds(6)  , status='scratch'); close(nds(6))
-    call ESMF_UtilIOUnitGet(nds(7)) ; open(unit=nds(7)  , status='scratch'); close(nds(7))
-    call ESMF_UtilIOUnitGet(nds(8)) ; open(unit=nds(8)  , status='scratch'); close(nds(8))
-    call ESMF_UtilIOUnitGet(nds(9)) ; open(unit=nds(9)  , status='scratch'); close(nds(9))
-    call ESMF_UtilIOUnitGet(nds(10)); open(unit=nds(10) , status='scratch'); close(nds(10))
-    call ESMF_UtilIOUnitGet(nds(11)); open(unit=nds(11) , status='scratch'); close(nds(11))
-    call ESMF_UtilIOUnitGet(nds(12)); open(unit=nds(12) , status='scratch'); close(nds(12))
-    call ESMF_UtilIOUnitGet(nds(13)); open(unit=nds(13) , status='scratch'); close(nds(13))
-    ntrace(1) =  nds(3)
-    ntrace(2) =  10
+
+    call ESMF_UtilIOUnitGet(mds(5)) ; open(unit=mds(5)  , status='scratch'); close(mds(5))
+    call ESMF_UtilIOUnitGet(mds(6)) ; open(unit=mds(6)  , status='scratch'); close(mds(6))
+    call ESMF_UtilIOUnitGet(mds(7)) ; open(unit=mds(7)  , status='scratch'); close(mds(7))
+    call ESMF_UtilIOUnitGet(mds(8)) ; open(unit=mds(8)  , status='scratch'); close(mds(8))
+    call ESMF_UtilIOUnitGet(mds(9)) ; open(unit=mds(9)  , status='scratch'); close(mds(9))
+    call ESMF_UtilIOUnitGet(mds(10)); open(unit=mds(10) , status='scratch'); close(mds(10))
+    call ESMF_UtilIOUnitGet(mds(11)); open(unit=mds(11) , status='scratch'); close(mds(11))
+    call ESMF_UtilIOUnitGet(mds(12)); open(unit=mds(12) , status='scratch'); close(mds(12))
+    call ESMF_UtilIOUnitGet(mds(13)); open(unit=mds(13) , status='scratch'); close(mds(13))
+
+    ntrace(1) = mds(3)
+    ntrace(2) = 10
 
     if ( root_task ) then
        write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
@@ -586,10 +584,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, rc)
+    call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #else
-    call waveinit_ufs(gcomp, ntrace, mpi_comm, rc)
+    call waveinit_ufs(gcomp, ntrace, mpi_comm, mds, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #endif
     !call mpi_barrier ( mpi_comm, ierr )
@@ -1206,14 +1204,12 @@ contains
 
 !===============================================================================
 #ifdef CESMCOUPLED
-  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, rc)
+  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
 
     ! Initialize ww3 for cesm (called from InitializeRealize)
 
+    use w3initmd     , only : w3init
     use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
-    use w3initmd     , only : w3init
-    use w3odatmd     , only : nds
-    use w3initmd     , only : w3init
     use wav_shr_mod  , only : casename, initfile, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
     use wav_shel_inp , only : set_shel_inp
@@ -1225,6 +1221,7 @@ contains
     integer , intent(in)  :: ntrace(:)
     integer , intent(in)  :: mpi_comm
     integer , intent(in)  :: dtime_sync
+    integer , intent(in)  :: mds(:)
     integer , intent(out) :: rc
 
     ! local variables
@@ -1255,9 +1252,6 @@ contains
     endif
     inst_name = "WAV"//trim(inst_suffix)
     if ( root_task ) then
-       write(stdout,'(a)') trim(subname),' inst_name   = ',trim(inst_name)
-       write(stdout,'(a)') trim(subname),' inst_index  = ',inst_index
-       write(stdout,'(a)') trim(subname),' inst_suffix = ',trim(inst_suffix)
     endif
 
     ! Read namelist (set initfile in wav_shr_mod)
@@ -1271,17 +1265,22 @@ contains
           return
        end if
        close (unitn)
-       ! Write out input namelists
-       write (stdout,'(a)')'  Initializations : '
-       write (stdout,'(a)')' --------------------------------------------------'
-       write (stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write (stdout,'(a)')' initfile = '//trim(initfile)
-       write (stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
-       write (stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
-       write (stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
-       write (stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
-       write (stdout,'(a, 2x, i8)')' outfreq  = ',outfreq
-       write (stdout,*)
+
+       ! Write out input 
+       write(stdout,'(a)'   ) trim(subname)//' inst_name   = '//trim(inst_name)
+       write(stdout,'(a)'   ) trim(subname)//' inst_suffix = '//trim(inst_suffix)
+       write(stdout,'(a,i4)') trim(subname)//' inst_index  = ',inst_index
+       write(stdout,*)
+       write(stdout,'(a)')'  Initializations : '
+       write(stdout,'(a)')' --------------------------------------------------'
+       write(stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       write(stdout,'(a)')' initfile = '//trim(initfile)
+       write(stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+       write(stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+       write(stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
+       write(stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
+       write(stdout,'(a, 2x, i8)'   )' outfreq  = ',outfreq
+       write(stdout,*)
     end if
 
     ! ESMF does not have a broadcast for chars
@@ -1321,7 +1320,7 @@ contains
     ! 1 is model number
     ! IsMulti does not appear to be used, setting to .false.
 
-    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
+    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -1330,11 +1329,11 @@ contains
 
 !===============================================================================
 #ifndef CESMCOUPLED
-  subroutine waveinit_ufs( gcomp, ntrace, mpi_comm, rc)
+  subroutine waveinit_ufs( gcomp, ntrace, mpi_comm, mds, rc)
 
     ! Initialize ww3 for ufs (called from InitializeRealize)
 
-    use w3odatmd     , only : nds, fnmpre
+    use w3odatmd     , only : fnmpre
     use w3initmd     , only : w3init
     use wav_shel_inp , only : read_shel_inp
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
@@ -1344,6 +1343,7 @@ contains
     type(ESMF_GridComp)  :: gcomp
     integer, intent(in)  :: ntrace(:)
     integer, intent(in)  :: mpi_comm
+    integer, intent(in)  :: mds(:)
     integer, intent(out) :: rc
 
     ! local variables
@@ -1354,11 +1354,12 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     fnmpre = './'
+
     call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
     call read_shel_inp(mpi_comm)
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
-    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
+    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)

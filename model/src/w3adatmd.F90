@@ -469,7 +469,7 @@
         REAL, POINTER         ::  USERO(:,:)
         REAL, POINTER         :: XUSERO(:,:)
 #ifdef CESMCOUPLED
-        ! output fileds for Langmuir mixing
+        ! Output fileds for Langmuir mixing in group 
         REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
                                  LASLPJ(:), LAMULT(:), ALPHAL(:),     &
                                  ALPHALS(:), USSXH(:), USSYH(:)
@@ -1036,19 +1036,22 @@
                  WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
                  WADATS(IMOD)%WBT(NSEALM),                              &
                  WADATS(IMOD)%WNMEAN(NSEALM),                           &
-#ifdef CESMCOUPLED
-                 WADATS(IMOD)%USSXH(NSEALM)                           , &
-                 WADATS(IMOD)%USSYH(NSEALM)                           , &
-                 WADATS(IMOD)%LANGMT(NSEALM)                          , &
-                 WADATS(IMOD)%LAPROJ(NSEALM)                          , &
-                 WADATS(IMOD)%LASL(NSEALM)                            , &
-                 WADATS(IMOD)%LASLPJ(NSEALM)                          , &
-                 WADATS(IMOD)%ALPHAL(NSEALM)                          , &
-                 WADATS(IMOD)%ALPHALS(NSEALM)                         , &
-                 WADATS(IMOD)%LAMULT(NSEALM)                          , &
-#endif
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
+
+#ifdef CESMCOUPLED
+      ALLOCATE ( WADATS(IMOD)%USSXH(NSEALM)   , &
+                 WADATS(IMOD)%USSYH(NSEALM)   , &
+                 WADATS(IMOD)%LANGMT(NSEALM)  , &
+                 WADATS(IMOD)%LAPROJ(NSEALM)  , &
+                 WADATS(IMOD)%LASL(NSEALM)    , &
+                 WADATS(IMOD)%LASLPJ(NSEALM)  , &
+                 WADATS(IMOD)%ALPHAL(NSEALM)  , &
+                 WADATS(IMOD)%ALPHALS(NSEALM) , &
+                 WADATS(IMOD)%LAMULT(NSEALM)  , &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+#endif
 !
       WADATS(IMOD)%HS     = UNDEF
       WADATS(IMOD)%WLM    = UNDEF
