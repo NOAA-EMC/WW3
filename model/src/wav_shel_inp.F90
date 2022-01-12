@@ -5,11 +5,8 @@ module wav_shel_inp
   implicit none
   private ! except
 
-#ifdef CESMCOUPLED
   public  :: set_shel_inp
-#else
   public  :: read_shel_inp
-#endif
 
   integer, public :: odat(40)
   character(len=40), allocatable, public :: pnames(:)
@@ -25,13 +22,11 @@ module wav_shel_inp
 
   include "mpif.h"
 
-contains
-
 !===============================================================================
-#ifdef CESMCOUPLED
-  subroutine set_shel_inp(dtime_sync)
+contains
+!===============================================================================
 
-    ! Note that FLOGRR, FLGR and OFILES does not exist in the current cesm code base
+  subroutine set_shel_inp(dtime_sync)
 
     use w3idatmd    , only : inflags1, inflags2
     use w3odatmd    , only : noge, idout, nds, notype
@@ -45,6 +40,7 @@ contains
     ! Local parameters
     logical :: flt
     integer :: i,j,j0
+    !---------------------------------------------------
 
     !--------------------------------------------------------------------
     ! Define input fields inflags1 and inflags2 settings
@@ -275,9 +271,7 @@ contains
 
   end subroutine set_shel_inp
 
-!===============================================================================
-#else
-  
+  !===============================================================================
   subroutine read_shel_inp(mpi_comm)
 
     USE W3GDATMD, ONLY: FLAGLL
@@ -343,6 +337,7 @@ contains
     DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
                   'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
                   'DT0', 'DT1', 'DT2', 'MOV' /
+    !---------------------------------------------------
     !
     FLGR2 = .FALSE.
     FLH(:) = .FALSE.
@@ -976,7 +971,5 @@ contains
 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
          '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
   end subroutine read_shel_inp
-
-#endif
 
 end module wav_shel_inp

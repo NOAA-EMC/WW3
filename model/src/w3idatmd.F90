@@ -684,7 +684,8 @@
         END IF
 !
 #ifdef CESMCOUPLED
-        ALLOCATE ( INPUTS(IMOD)%HML(NX,NY) )
+        ALLOCATE ( INPUTS(IMOD)%HML(NX,NY), STAT=ISTAT )
+        CHECK_ALLOC_STATUS ( ISTAT )
 #endif
 !
       INPUTS(IMOD)%IINIT  = .TRUE.

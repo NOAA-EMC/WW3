@@ -40,8 +40,10 @@ module wav_shr_mod
   logical           , public :: root_task
   integer           , public :: stdout
   character(len=cs) , public :: runtype
+  logical           , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
+  integer           , public :: dbug_flag = 0
 
-#ifdef CESMCOUPLED
+  ! Only used by cesm
   ! if a run is a startup or branch run, then initfile is used
   ! to construct the initial file and used in W3IORSMD
   character(len=256) , public :: initfile
@@ -55,10 +57,9 @@ module wav_shr_mod
   integer            , public :: inst_index  ! number of current instance (ie. 1)
   character(len=16)  , public :: inst_name   ! fullname of current instance (ie. "wav_0001")
   character(len=16)  , public :: inst_suffix ! char string associated with instance
-#endif
+
+  ! Only used by ufs
   logical            , public :: merge_import  = .false.
-  logical            , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
-  integer            , public :: dbug_flag = 0
 
   interface ymd2date
      module procedure ymd2date_int

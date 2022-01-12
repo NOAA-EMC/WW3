@@ -43,6 +43,12 @@ module wav_import_export
   real(r4), allocatable  :: import_mask(:) ! mask for valid import data
   real(r8), parameter    :: zero  = 0.0_r8
 
+#ifdef CESMCOUPLED
+  logical :: cesmcoupled = .true.
+#else
+  logical :: cesmcoupled = .false.
+#endif
+
   character(*),parameter :: u_FILE_u = &
        __FILE__
 
@@ -76,14 +82,14 @@ contains
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_t'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_tbot'    )
-#ifdef CESMCOUPLED
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
-#else
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
-    call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
-#endif
+    if (cesmcoupled) then
+       call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u'       )
+       call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v'       )
+       call fldlist_add(fldsToWav_num, fldsToWav, 'So_bldepth' )
+    else
+       call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
+       call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
+    end if
 
     if (wav_coupling_to_cice) then
        call fldlist_add(fldsToWav_num, fldsToWav, 'Si_thick'   )
@@ -101,22 +107,22 @@ contains
     !--------------------------------
 
     call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
-#ifdef CESMCOUPLED
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
-   !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
-#else
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
-#endif
+    if (cesmcoupled) then
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
+       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
+    else
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
+    end if
 
     ! AA TODO: In the above fldlist_add calls, we are passing hardcoded ungridded_ubound values (3) because, USSPF(2)
     ! is not initialized yet. It is set during w3init which gets called at a later phase (realize). A permanent solution
@@ -227,13 +233,8 @@ contains
     real(r4)                :: data_global(nx*ny)
     real(r4), allocatable   :: data_global2(:)
     real(r4)                :: def_value
-#ifdef CESMCOUPLED
-    character(len=10)       :: uwnd = 'Sa_u'
-    character(len=10)       :: vwnd = 'Sa_v'
-#else
-    character(len=10)       :: uwnd = 'Sa_u10m'
-    character(len=10)       :: vwnd = 'Sa_v10m'
-#endif
+    character(len=10)       :: uwnd
+    character(len=10)       :: vwnd
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=CL)       :: msgString
@@ -242,6 +243,14 @@ contains
 
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    if (cesmcoupled) then
+       uwnd = 'Sa_u'
+       vwnd = 'Sa_v'
+    else
+       uwnd = 'Sa_u10m'
+       vwnd = 'Sa_v10m'
+    end if
 
     ! Get import state, clock and vm
     call ESMF_GridCompGet(gcomp, clock=clock, importState=importState, vm=vm, rc=rc)
@@ -535,10 +544,9 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-#ifdef CESMCOUPLED
-    use w3adatmd      , only : LAMULT, USSX, USSY, EF, TAUICE, USSP
-#else
     use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+#ifdef CESMCOUPLED
+    use w3adatmd      , only : LAMULT
 #endif
     use w3wdatmd      , only : va
     use w3odatmd      , only : naproc, iaproc
@@ -599,17 +607,14 @@ contains
     real(r8), pointer :: wave_elevation_spectrum25(:)
 
     ! Partitioned stokes drift
-#if CESMCOUPLED
-    real(r8), pointer :: sw_pstokes_x(:,:)
-    real(r8), pointer :: sw_pstokes_y(:,:)
-#else
-    real(r8), pointer :: sw_ustokes1(:)
-    real(r8), pointer :: sw_vstokes1(:)
-    real(r8), pointer :: sw_ustokes2(:)
-    real(r8), pointer :: sw_vstokes2(:)
-    real(r8), pointer :: sw_ustokes3(:)
-    real(r8), pointer :: sw_vstokes3(:)
-#endif
+    real(r8), pointer :: sw_pstokes_x(:,:) ! cesm
+    real(r8), pointer :: sw_pstokes_y(:,:) ! cesm
+    real(r8), pointer :: sw_ustokes1(:)    ! ufs
+    real(r8), pointer :: sw_vstokes1(:)    ! ufs
+    real(r8), pointer :: sw_ustokes2(:)    ! ufs
+    real(r8), pointer :: sw_vstokes2(:)    ! ufs
+    real(r8), pointer :: sw_ustokes3(:)    ! ufs
+    real(r8), pointer :: sw_vstokes3(:)    ! ufs
     character(len=*), parameter :: subname='(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
@@ -871,67 +876,62 @@ contains
        enddo
     end if
 
-#ifdef CESMCOUPLED
     if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
          state_fldchk(exportState, 'Sw_pstokes_y') )then
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_pstokes_y', fldptr2d=sw_pstokes_y, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_pstokes_y', fldptr2d=sw_pstokes_y, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       sw_pstokes_x(:,:) = fillvalue
+       sw_pstokes_y(:,:) = fillvalue
+       if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
+          call CALC_U3STOKES(va, 2)
+          do ib = 1, USSPF(2)
+             do jsea = 1, nseal
+                sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
+                sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
+             enddo
+          end do
+       end if
+    endif
 
-      sw_pstokes_x(:,:) = fillvalue
-      sw_pstokes_y(:,:) = fillvalue
-      if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
-         call CALC_U3STOKES(va, 2)
-         do ib = 1, USSPF(2)
-            do jsea = 1, nseal
-               sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
-               sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
-            enddo
-         end do
-      end if
-   endif
-#else
-   if ( state_fldchk(exportState, 'Sw_ustokes1') .and. &
-        state_fldchk(exportState, 'Sw_ustokes2') .and. &
-        state_fldchk(exportState, 'Sw_ustokes3') .and. &
-        state_fldchk(exportState, 'Sw_vstokes1') .and. &
-        state_fldchk(exportState, 'Sw_vstokes2') .and. &
-        state_fldchk(exportState, 'Sw_vstokes3') ) then
+    if ( state_fldchk(exportState, 'Sw_ustokes1') .and. &
+         state_fldchk(exportState, 'Sw_ustokes2') .and. &
+         state_fldchk(exportState, 'Sw_ustokes3') .and. &
+         state_fldchk(exportState, 'Sw_vstokes1') .and. &
+         state_fldchk(exportState, 'Sw_vstokes2') .and. &
+         state_fldchk(exportState, 'Sw_vstokes3') ) then
 
-      call state_getfldptr(exportState, 'Sw_ustokes1', fldptr1d=sw_ustokes1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_ustokes2', fldptr1d=sw_ustokes2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_ustokes3', fldptr1d=sw_ustokes3, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes1', fldptr1d=sw_vstokes1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes2', fldptr1d=sw_vstokes2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_ustokes1', fldptr1d=sw_ustokes1, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_ustokes2', fldptr1d=sw_ustokes2, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_ustokes3', fldptr1d=sw_ustokes3, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_vstokes1', fldptr1d=sw_vstokes1, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_vstokes2', fldptr1d=sw_vstokes2, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       sw_ustokes1(:)= zero
+       sw_vstokes1(:)= zero
+       sw_ustokes2(:)= zero
+       sw_vstokes2(:)= zero
+       sw_ustokes3(:)= zero
+       sw_vstokes3(:)= zero
+       call CALC_U3STOKES(va, 2)
+       do jsea = 1,nseal
+          sw_ustokes1(jsea)=ussp(jsea,1)
+          sw_vstokes1(jsea)=ussp(jsea,nk+1)
+          sw_ustokes2(jsea)=ussp(jsea,2)
+          sw_vstokes2(jsea)=ussp(jsea,nk+2)
+          sw_ustokes3(jsea)=ussp(jsea,3)
+          sw_vstokes3(jsea)=ussp(jsea,nk+3)
+       end do
+    end if
 
-      sw_ustokes1(:)= zero
-      sw_vstokes1(:)= zero
-      sw_ustokes2(:)= zero
-      sw_vstokes2(:)= zero
-      sw_ustokes3(:)= zero
-      sw_vstokes3(:)= zero
-      call CALC_U3STOKES(va, 2)
-
-      do jsea = 1,nseal
-         sw_ustokes1(jsea)=ussp(jsea,1)
-         sw_vstokes1(jsea)=ussp(jsea,nk+1)
-         sw_ustokes2(jsea)=ussp(jsea,2)
-         sw_vstokes2(jsea)=ussp(jsea,nk+2)
-         sw_ustokes3(jsea)=ussp(jsea,3)
-         sw_vstokes3(jsea)=ussp(jsea,nk+3)
-      end do
-
-   end if
-#endif
     if (dbug_flag > 5) then
        call state_diagnose(exportState, 'at export ', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
