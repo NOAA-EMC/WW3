@@ -154,7 +154,7 @@ do
   -G) grads=1 ;;
   -h) help=1 ;;
   -i) shift; inpdir="$1" ;;
-  -m) shift; grdset="$1" ;
+   -m) shift; grdset="$1" ;
       if [ $grdset = none ]
       then
         multi=1
@@ -364,6 +364,19 @@ then # Add time counter if -T
   cumult_run=0
 fi
 
+
+if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
+then
+    ww3_dir=${path_s}/..
+  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+  export OASISDIR=$path_i/../work_oasis3-mct
+fi
+
 # --------------------------------------------------------------------------- #
 # Build all executables 
 # --------------------------------------------------------------------------- #
@@ -502,18 +515,6 @@ fi
 if [ $time_count ]
 then # Add time counter if -T
   echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
-fi
-
-if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
-then
-    ww3_dir=${path_s}/..
-  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-  export OASISDIR=$path_i/../work_oasis3-mct
 fi
 
 # 3.b Header

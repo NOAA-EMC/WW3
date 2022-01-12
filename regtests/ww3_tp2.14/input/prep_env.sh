@@ -2,7 +2,7 @@
 
 if [ $# -ne 5 ]
 then
-  echo "need four arguments:"
+  echo "need five arguments:"
   echo '$1 : path_i'
   echo '$2 : path_w'
   echo '$3 : complr'
