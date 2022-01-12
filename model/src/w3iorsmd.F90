@@ -335,6 +335,8 @@
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
+
+      LOGICAL                 :: UNITOPEN
 !/
 !/ ------------------------------------------------------------------- /
 !/
