@@ -76,21 +76,25 @@ WW3 has dependent libraries depending on switch configuration.
 
 CMake has a standardized way of searching for external libraries including default system paths such as `/usr/local`. 
 
-If a library is located in a non-standard location CMake will search multiple locations including `CMAKE_PREFIX_PATH` (a semi-colon separated list), `<name>_DIR` or `<name>_ROOT`. 
+If a library is located in a non-standard location CMake will search
+multiple locations including `CMAKE_PREFIX_PATH` (a semi-colon
+separated list) or `<name>_ROOT`. 
 
+### Can set the compiler to MPI wrappers to find MPI
 ```
-# Can set the compiler to MPI wrappers to find MPI
 export CC=mpicc
 export FC=mpif90
+```
 
-# <name>_ROOT or <name>_DIR (case sensitive)
-export NetCDF_ROOT=/path/to/netcdf
-export ESMF_DIR=/path/to/esmf
+### <name>_ROOT
 
-# CMAKE_PREFIX_PATH is another option (can also be an env variable)
+### CMAKE_PREFIX_PATH is another option (can also be an env variable)
+```
 cmake .. -DCMAKE_PREFIX_PATH=/path/to/g2;/path/to/w3nco;/path/to/bacio
+```
 
-# OASIS is a special case and OASISDIR is used
+### OASIS is a special case and OASISDIR is used
+```
 export OASISDIR=/path/to/oasis
 ```
 
@@ -99,3 +103,25 @@ export OASISDIR=/path/to/oasis
 Running `make install` installs the WW3 executables, library, the switch file used to produce the executables in a standard configuration (`bin`, `lib`, etc). 
 
 Also installed is a CMake package config file to make WW3 more easily used within other CMake projects. To access the WW3 library/executables from another CMake project all that's needed is `find_package(WW3)`.
+
+# FAQ
+
+### How to add a new file to the CMake build?
+
+Append to [src_list.cmake](./src/cmake/src_list.cmake)
+
+### How to change compiler flags?
+
+Compiler flags are set per compiler in [CMakeLists.txt](./src/CMakeLists.txt)
+
+Supported compilers are Intel, GNU, and PGI.
+
+### How to build a single target?
+
+CMake will build all available executables by default. However, CMake
+offers an option to build single targets. Multiple targets may be given, separated by spaces.
+
+Run this (from the build directory, hence the `.`, or point it to the
+build dir).
+
+`cmake --build . --target ww3_shel`
