@@ -86,9 +86,17 @@ export CC=mpicc
 export FC=mpif90
 ```
 
-### <name>_ROOT
+### \<name\>_ROOT
 
-### CMAKE_PREFIX_PATH is another option (can also be an env variable)
+CMake will search _ROOT env variables.
+
+```
+export NetCDF_ROOT=<netcdf dir>
+```
+
+### CMAKE_PREFIX_PATH
+
+The CMAKE_PREFIX_PATH CMake variable, or env variable, can be used to pass a list of semi-colon separated paths.
 ```
 cmake .. -DCMAKE_PREFIX_PATH=/path/to/g2;/path/to/w3nco;/path/to/bacio
 ```
@@ -103,6 +111,16 @@ export OASISDIR=/path/to/oasis
 Running `make install` installs the WW3 executables, library, the switch file used to produce the executables in a standard configuration (`bin`, `lib`, etc). 
 
 Also installed is a CMake package config file to make WW3 more easily used within other CMake projects. To access the WW3 library/executables from another CMake project all that's needed is `find_package(WW3)`.
+  
+## Github Actions CI
+
+  The CMake build uses Github Actions to test the build on each push/PR to Github.
+  
+  The Action uses Spack to install dependencies in [spack.yaml](./ci/spack.yaml) and then caches them to avoid building the dependencies each time.
+  
+  It builds WW3 using Intel and GNU compilers with a set of switches meant to test various parts of the build (NetCDF, ESMF, OASIS, etc).
+  
+  The switches built are listed in [intel.yml](https://github.com/kgerheiser/WW3/blob/9aad5635a3dac194c59833df2c3ea7ff3f4173df/.github/workflows/intel.yml#L88) and [gnu.yml](https://github.com/kgerheiser/WW3/blob/9aad5635a3dac194c59833df2c3ea7ff3f4173df/.github/workflows/gnu.yml#L68)
 
 # FAQ
 
