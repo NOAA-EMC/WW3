@@ -350,7 +350,7 @@
                 !IF (ITOUT.GT.0) INGRID=.TRUE.
               END IF           
             ELSE
-              IF ( W3GRMP ( GRIDS(IG)%GSU, XGRD(IY,IX), YGRD(IY,IX), IS,        &
+              IF ( W3GRMP ( GRIDS(IG)%GSU, REAL(XGRD(IY,IX)), REAL(YGRD(IY,IX)), IS,        &
                    JS, RW ) ) INGRID=.TRUE.
               END IF
            IF (INGRID) THEN 

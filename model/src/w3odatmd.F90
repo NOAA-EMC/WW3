@@ -1464,6 +1464,7 @@
         RDBPO  => OUTPTS(IMOD)%OUT5%RDBPO
 !
         OUTPTS(IMOD)%OUT5%O5INI2 = .TRUE.
+        OUTPTS(IMOD)%OUT5%ISBPO = 0
 !
       CASE (3)
 !
