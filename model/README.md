@@ -143,3 +143,14 @@ Run this (from the build directory, hence the `.`, or point it to the
 build dir).
 
 `cmake --build . --target ww3_shel`
+
+### How to create a debug build?
+
+The CMake build type can set with the CMake variable `CMAKE_BUILD_TYPE`. Valid options are Release and Debug. The default is Release.
+
+```
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_BUILD_TYPE=Release
+```
+
+
