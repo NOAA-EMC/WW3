@@ -4115,7 +4115,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then 
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4127,7 +4131,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
@@ -4517,7 +4525,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4529,7 +4541,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif

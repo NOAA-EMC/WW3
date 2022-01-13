@@ -214,7 +214,7 @@
                           RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
                           ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
-      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX
+      USE W3GDATMD, ONLY: TRIGP,MAXX, MAXY, DXYMAX
 #ifdef W3_RTD
   !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
       USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR
@@ -330,7 +330,7 @@
         IF (GTYPE .NE. UNGTYPE) THEN
           INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
         ELSE
-          CALL IS_IN_UNGRID(IMOD, XPT(IPT), YPT(IPT), itout, IX, IY, RD)
+          CALL IS_IN_UNGRID(IMOD, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD)
           INGRID = (ITOUT.GT.0)
           END IF
 !

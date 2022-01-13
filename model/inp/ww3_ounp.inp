@@ -18,7 +18,7 @@ $ mandatory end of list
 $
 $--------------------------------------------------------------------- $
 $ file prefix
-$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
+$ number of characters in date [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 $ netCDF version [3,4]
 $ points in same file [T] or not [F] 
 $                    and max number of points to be processed in one pass

@@ -914,7 +914,7 @@
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
       USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2
       USE W3GDATMD, ONLY : NK, UNGTYPE, MAPSF, NTRI, CLGTYPE, RLGTYPE, &
-                           XGRD, YGRD, SX, SY, X0, Y0, XYB, TRIGP, USSP_WN
+                           XGRD, YGRD, SX, SY, X0, Y0, TRIGP, USSP_WN
 #ifdef W3_RTD
  ! Rotated pole data from the mod_def file
       USE W3GDATMD, ONLY : POLAT, POLON, FLAGUNR, AnglD
@@ -2364,8 +2364,8 @@
 
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
-                LON(:)=XYB(:,1)
-                LAT(:)=XYB(:,2)
+                LON(:)=XGRD(1,:)
+                LAT(:)=YGRD(1,:)
                 IF (.NOT.ALLOCATED(TRIGP2)) ALLOCATE(TRIGP2(3,NTRI))
                 DIMLN(2)=NX
                 DIMLN(3)=NTRI

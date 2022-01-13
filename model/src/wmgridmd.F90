@@ -407,8 +407,8 @@
 
 !notes : MAPSTA refers to GRIDS(I)%MAPSTA ...this is set in W3SETG
             IF ( ABS(MAPSTA(IY,IX)) .EQ. 2 ) THEN
-                XA     = XGRD(IY,IX) !old code: X0 + REAL(IX-1)*SX
-                YA     = YGRD(IY,IX) !old code: Y0 + REAL(IY-1)*SY
+                XA     = REAL(XGRD(IY,IX)) !old code: X0 + REAL(IX-1)*SX
+                YA     = REAL(YGRD(IY,IX)) !old code: Y0 + REAL(IY-1)*SY
 !
 ! ... Loop over previous (lower ranked) grids, going in order from highest 
 !          of lower ranked grids (I-1) to lowest of lower ranked grids (1)
@@ -442,7 +442,8 @@
 !        if not in grid, cycle (search next grid)
 !
         IF (GRIDS(J)%GTYPE .EQ. UNGTYPE) THEN
-          CALL IS_IN_UNGRID(J, XA, YA, ITOUT, IVER, JVER, RW)
+!AR: Here we need to take special care in the case that any problem occurs due to the XA, YA beeing 4 byte
+          CALL IS_IN_UNGRID(J, DBLE(XA), DBLE(YA), ITOUT, IVER, JVER, RW)
           IF (ITOUT.EQ.0) THEN
             INGRID=.FALSE.
           ELSE
@@ -825,9 +826,9 @@
                    END IF
                    IM1=GRIDS(I)%TRIGP(ITRI,IT)
                    IM2=GRIDS(I)%TRIGP(ITRI,JT)
-                   EDIST=W3DIST(FLAGLL, GRIDS(I)%XYB(IM1,1), &
-                         GRIDS(I)%XYB(IM1,2), GRIDS(I)%XYB(IM2,1), &
-                         GRIDS(I)%XYB(IM2,2))
+                   EDIST=W3DIST(FLAGLL, REAL(GRIDS(I)%XGRD(1,IM1)), &
+                         REAL(GRIDS(I)%YGRD(1,IM1)), REAL(GRIDS(I)%XGRD(1,IM2)), &
+                         REAL(GRIDS(I)%YGRD(1,IM2)))
                    IF (ISFIRST.EQ.1) THEN
                      DIST_MAX=EDIST
                      DIST_MIN=EDIST
@@ -875,9 +876,9 @@
                    END IF
                    IM1=GRIDS(J)%TRIGP(ITRI,IT)
                    IM2=GRIDS(J)%TRIGP(ITRI,JT)
-                   EDIST=W3DIST(FLAGLL, GRIDS(J)%XYB(IM1,1), &
-                         GRIDS(J)%XYB(IM1,2), GRIDS(J)%XYB(IM2,1), &
-                         GRIDS(J)%XYB(IM2,2))
+                   EDIST=W3DIST(FLAGLL, REAL(GRIDS(J)%XGRD(1,IM1)), &
+                         REAL(GRIDS(J)%YGRD(1,IM1)), REAL(GRIDS(J)%XGRD(1,IM2)), &
+                         REAL(GRIDS(J)%YGRD(1,IM2)))
                    IF (ISFIRST.EQ.1) THEN
                      DIST_MAX=EDIST
                      DIST_MIN=EDIST
@@ -1673,9 +1674,9 @@
                            DO JDST=1, NY
                               IF (ABS(MAPSTA(JDST,IDST)) .EQ. 1) THEN
                                  !....find distance to this boundary point.
-                                 DD=FACTOR*W3DIST(FLAGLL,XGRD(JDST,IDST), &
-                                    YGRD(JDST,IDST),XGRD(JBND,IBND), &
-                                    YGRD(JBND,IBND))
+                                 DD=FACTOR*W3DIST(FLAGLL,REAL(XGRD(JDST,IDST)), &
+                                    REAL(YGRD(JDST,IDST)),REAL(XGRD(JBND,IBND)), &
+                                    REAL(YGRD(JBND,IBND)))
 
 ! Notes: The origin of "0.58 * GRAV" is to translate from distance (in meters)
 ! to time (in seconds) required for a wave to travel from the boundary to point
@@ -2106,14 +2107,14 @@
                   DO JDST=1,NJDST
                      DO IDST=1,NIDST
                         KDST=(JDST-1)*NIDST+IDST
-                        XDST=GRIDS(GDST)%XGRD(JDST,IDST)
-                        YDST=GRIDS(GDST)%YGRD(JDST,IDST)
+                        XDST=REAL(GRIDS(GDST)%XGRD(JDST,IDST))
+                        YDST=REAL(GRIDS(GDST)%YGRD(JDST,IDST))
                         DO IPNT=1,ALLWGTS(GSRC)%WGTDATA(KDST)%N
                            KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
                            JSRC=INT((KSRC-1)/NISRC)+1
                            ISRC=KSRC-(JSRC-1)*NISRC
-                           XSRC=GRIDS(GSRC)%XGRD(JSRC,ISRC)
-                           YSRC=GRIDS(GSRC)%YGRD(JSRC,ISRC)
+                           XSRC=REAL(GRIDS(GSRC)%XGRD(JSRC,ISRC))
+                           YSRC=REAL(GRIDS(GSRC)%YGRD(JSRC,ISRC))
                            WXWY=ALLWGTS(GSRC)%WGTDATA(KDST)%W(IPNT)
                            WRITE(MDST,'(5(1X,F12.5))')XDST,YDST,XSRC, &
                            YSRC,WXWY
@@ -2286,10 +2287,10 @@
 !              offset by dx/2 dy/2, so we omit that sliver (thus we increase
 !              search area slightly).
 
-                     XL=MINVAL(GRIDS(GSRC)%XGRD)
-                     YL=MINVAL(GRIDS(GSRC)%YGRD)
-                     XH=MAXVAL(GRIDS(GSRC)%XGRD)
-                     YH=MAXVAL(GRIDS(GSRC)%YGRD)
+                     XL=REAL(MINVAL(GRIDS(GSRC)%XGRD))
+                     YL=REAL(MINVAL(GRIDS(GSRC)%YGRD))
+                     XH=REAL(MAXVAL(GRIDS(GSRC)%XGRD))
+                     YH=REAL(MAXVAL(GRIDS(GSRC)%YGRD))
 
                   ELSE
 
@@ -2387,9 +2388,9 @@
                      END IF
                      IM1=GRIDS(GDST)%TRIGP(ITRI,IT)
                      IM2=GRIDS(GDST)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, GRIDS(GDST)%XYB(IM1,1), &
-                           GRIDS(GDST)%XYB(IM1,2), &
-                           GRIDS(GDST)%XYB(IM2,1), GRIDS(GDST)%XYB(IM2,2))
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GDST)%XGRD(IM1,1)), &
+                           REAL(GRIDS(GDST)%YGRD(IM1,1)), &
+                           REAL(GRIDS(GDST)%XGRD(IM2,1)), REAL(GRIDS(GDST)%YGRD(IM2,1)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist
@@ -2427,9 +2428,9 @@
                      END IF
                      IM1=GRIDS(GSRC)%TRIGP(ITRI,IT)
                      IM2=GRIDS(GSRC)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, GRIDS(GSRC)%XYB(IM1,1), &
-                           GRIDS(GSRC)%XYB(IM1,2), &
-                           GRIDS(GSRC)%XYB(IM2,1), GRIDS(GSRC)%XYB(IM2,2))
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GSRC)%XGRD(IM1,1)), &
+                           REAL(GRIDS(GSRC)%YGRD(IM1,1)), &
+                           REAL(GRIDS(GSRC)%XGRD(IM2,1)), REAL(GRIDS(GSRC)%YGRD(IM2,1)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist
@@ -2555,8 +2556,8 @@
                   IF ( ABS(MAPSTA(JDST,IDST)) .NE. 1 ) CYCLE
  ! MAPTST: see Section 2.b.2 above
                   IF ( MAPTST(JDST,IDST) .LT. 0 ) CYCLE
-                  XA     = XGRD(JDST,IDST) ! old code: X0 + REAL(IDST-1)*SX
-                  YA     = YGRD(JDST,IDST) ! old code: Y0 + REAL(JDST-1)*SY 
+                  XA     = REAL(XGRD(JDST,IDST)) ! old code: X0 + REAL(IDST-1)*SX
+                  YA     = REAL(YGRD(JDST,IDST)) ! old code: Y0 + REAL(JDST-1)*SY 
 
 !!HT: For each point in the target grid, loop over all relevant high-res
 !!HT: grid (JJ loop).
@@ -5475,8 +5476,8 @@
                  IY = MAPSF(ISEA, 2)
                  IF( ABS(MAPSTA(IY,IX)) .EQ. 2 ) THEN
                      IXY = IXY + 1
-                     XLon (IXY) = XGRD(IY,IX) 
-                     YLat (IXY) = YGRD(IY,IX) 
+                     XLon (IXY) = REAL(XGRD(IY,IX)) 
+                     YLat (IXY) = REAL(YGRD(IY,IX))
                      IBPTS(IXY) = ISEA 
                      JBPTS(IXY) = 1 + (ISEA - 1)/NP
                      IPBPT(IXY) = ICROOT-1 + ISEA-(JBPTS(IXY)-1)*NP
