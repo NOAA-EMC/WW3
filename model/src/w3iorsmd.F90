@@ -335,7 +335,6 @@
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
-
       LOGICAL                 :: UNITOPEN
 !/
 !/ ------------------------------------------------------------------- /
@@ -608,15 +607,13 @@
 #ifdef W3_T
               WRITE (NDST,9005) TYPE
 #endif
+              ! Clean up file handles and allocated arrays                  
+              INQUIRE (UNIT=NDSR, OPENED=UNITOPEN)
+              IF (UNITOPEN)             CLOSE(NDSR)
+              IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
+              IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
+              IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
 
-!!!MTM0
-                  ! Clean up file handles and allocated arrays                  
-                  INQUIRE (UNIT=NDSR, OPENED=UNITOPEN)
-                  IF (UNITOPEN)             CLOSE(NDSR)
-                  IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
-                  IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
-                  IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
-!!!MTM0              
               RETURN
             ELSE IF ( IAPROC.LE.NAPROC .OR. IAPROC.EQ. NAPRST ) THEN
 #ifdef W3_DEBUGIO
@@ -1497,7 +1494,6 @@
   ELSE
      CLOSE ( NDSR )
   END IF
-  
 !
 #ifdef W3_DEBUGIO
         WRITE(740+IAPROC,*)  'W3IORS, step 9'
