@@ -133,7 +133,8 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
-  use wav_shr_mod           , only : root_task, stdout, runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : runtype, merge_import, dbug_flag
+  use w3odatmd              , only : nds, iaproc, napout
 
   implicit none
   private ! except
@@ -145,8 +146,6 @@ module wav_comp_nuopc
   private :: ModelSetRunClock
   private :: ModelAdvance
   private :: ModelFinalize
-
-  integer :: stdout
 
   include "mpif.h"
 
@@ -407,6 +406,7 @@ contains
     character(ESMF_MAXSTR)         :: diro
     character(CL)                  :: logfile
     integer                        :: mds(13) ! Note that nds is set to this in w3initmod
+    integer                        :: stdout
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
     ! -------------------------------------------------------------------
 
@@ -442,19 +442,13 @@ contains
     napout = 1
     naperr = 1
 
-    if (iaproc == napout) then
-       root_task = .true.
-    else
-       root_task = .false.
-    end if
-
     !--------------------------------------------------------------------
     ! IO set-up
     !--------------------------------------------------------------------
 
     if (cesmcoupled) then
        shrlogunit = 6
-       if (root_task) then
+       if (iaproc == napout) then  ! root task
           call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
@@ -508,7 +502,7 @@ contains
     ntrace(1) = mds(3)
     ntrace(2) = 10
 
-    if ( root_task ) then
+    if (iaproc == napout) then  ! root task
        write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
        write(stdout,'(a)')'==============================================='
     end if
@@ -526,7 +520,7 @@ contains
     else if (trim(starttype) == trim('branch')) then
        runtype = "branch"
     end if
-    if (root_task) then
+    if (iaproc == napout) then  ! root task
        write(stdout,*) 'WW3 runtype is '//trim(runtype)
     end if
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
@@ -538,7 +532,7 @@ contains
     ! TIME0 = from ESMF clock
     ! NOTE - are not setting TIMEN here
 
-    if ( root_task ) then
+    if (iaproc == napout) then  ! root task
        write(stdout,'(a)')'  Time interval : '
        write(stdout,'(a)')'--------------------------------------------------'
     end if
@@ -576,7 +570,7 @@ contains
     timen(2) = hh*10000 + mm*100 + ss
 
     call stme21 ( time0 , dtme21 )
-    if ( root_task ) then
+    if (iaproc == napout) then  ! root task
        write (stdout,'(a)')' Starting time : '//trim(dtme21)
        write (stdout,'(a,i8,2x,i8)') 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     end if
@@ -669,7 +663,7 @@ contains
     ! read in the mesh with an auto-generated distGrid
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (root_task) then
+    if (iaproc == napout) then  ! root task
        write(stdout,*)'mesh file for domain is ',trim(cvalue)
     end if
 
@@ -935,8 +929,8 @@ contains
     ss = tod - (hh*3600) - (mm*60)
     time0(1) = ymd
     time0(2) = hh*10000 + mm*100 + ss
-    if (root_task) then
-       write(stdout,'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+    if (iaproc == napout) then  ! root task
+       write(nds(1),'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
     end if
 
     ! use next time; the NUOPC clock is not updated
@@ -1002,9 +996,9 @@ contains
              histwr = .false.
           endif
        end if
-       if (root_task) then
-          !  write(stdout,*) 'wav_comp_nuopc time', time, timen
-          !  write(stdout,*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
+       if (iaproc == napout) then  ! root task
+          !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
+          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
        end if
     end if
 
@@ -1199,10 +1193,10 @@ contains
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
-    if (root_task) then
-       write(stdout,F91)
-       write(stdout,F00) 'WW3: end of main integration loop'
-       write(stdout,F91)
+    if (iaproc == napout) then  ! root task
+       write(nds(1),F91)
+       write(nds(1),F00) 'WW3: end of main integration loop'
+       write(nds(1),F91)
     end if
 
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -1210,6 +1204,7 @@ contains
   end subroutine ModelFinalize
 
   !===============================================================================
+
   subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
 
     ! Initialize ww3 for cesm (called from InitializeRealize)
@@ -1257,15 +1252,13 @@ contains
        inst_index=1
     endif
     inst_name = "WAV"//trim(inst_suffix)
-    if ( root_task ) then
-    endif
 
     ! Set casename (in wav_shr_mod)
     call NUOPC_CompAttributeGet(gcomp, name="case_name", value=casename, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read namelist (set initfile in wav_shr_mod)
-    if ( root_task ) then
+    if (iaproc == napout) then
        open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
        read (unitn, ww3_inparm, iostat=ierr)
        if (ierr /= 0) then
@@ -1277,22 +1270,22 @@ contains
        close (unitn)
 
        ! Write out input 
-       write(stdout,*)
-       write(stdout,'(a)')' --------------------------------------------------'
-       write(stdout,'(a)')'  Initializations : '
-       write(stdout,'(a)')' --------------------------------------------------'
-       write(stdout,'(a)')' Case Name is '//trim(casename)
-       write(stdout,'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
-       write(stdout,'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
-       write(stdout,'(a,i4)') trim(subname)//' inst_index  = ',inst_index
-       write(stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write(stdout,'(a)')' initfile = '//trim(initfile)
-       write(stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
-       write(stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
-       write(stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
-       write(stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
-       write(stdout,'(a, 2x, i8)'   )' outfreq  = ',outfreq
-       write(stdout,*)
+       write(nds(1),*)
+       write(nds(1),'(a)')' --------------------------------------------------'
+       write(nds(1),'(a)')'  Initializations : '
+       write(nds(1),'(a)')' --------------------------------------------------'
+       write(nds(1),'(a)')' Case Name is '//trim(casename)
+       write(nds(1),'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
+       write(nds(1),'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
+       write(nds(1),'(a,i4)') trim(subname)//' inst_index  = ',inst_index
+       write(nds(1),'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       write(nds(1),'(a)')' initfile = '//trim(initfile)
+       write(nds(1),'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+       write(nds(1),'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+       write(nds(1),'(a, 2x, f10.3)')' dtmax    = ',dtmax
+       write(nds(1),'(a, 2x, f10.3)')' dtmin    = ',dtmin
+       write(nds(1),'(a, 2x, i8)'   )' outfreq  = ',outfreq
+       write(nds(1),*)
     end if
 
     ! ESMF does not have a broadcast for chars
@@ -1329,7 +1322,8 @@ contains
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
 
-!===============================================================================
+  !===============================================================================
+
   subroutine waveinit_ufs( gcomp, ntrace, mpi_comm, mds, rc)
 
     ! Initialize ww3 for ufs (called from InitializeRealize)

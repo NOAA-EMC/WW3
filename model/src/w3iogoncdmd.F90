@@ -692,8 +692,9 @@ contains
 #ifdef CESMCOUPLED
   subroutine cesm_hist_filename(fname)
 
-    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX, ROOT_TASK, STDOUT
+    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
     USE W3WDATMD       , ONLY : TIME
+    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
 
     implicit none
 
@@ -701,7 +702,7 @@ contains
     character(len=*), intent(out) :: fname
 
     ! local variables
-    integer           :: yy,mm,dd,hh,mn,ss,totsec
+    integer :: yy,mm,dd,hh,mn,ss,totsec
     !----------------------------------------------
     
     yy =  time(1)/10000
@@ -720,8 +721,8 @@ contains
             trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
     endif
 
-    if (root_task) then
-        write(stdout,'(a)') 'w3iogomdncd: writing history '//trim(fname)
+    if (iaproc == napout) then
+        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
      end if
 
    end subroutine cesm_hist_filename

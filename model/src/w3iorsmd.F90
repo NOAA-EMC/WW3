@@ -472,7 +472,6 @@
                WRITE (FNAME(8:10),'(I3.3)') IFILE
         END IF
       END IF
-#endif
       IFILE  = IFILE + 1
 !
 #ifdef W3_T
@@ -500,6 +499,7 @@
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                 STATUS='OLD',ACTION='READ')
         END IF
+#endif
 !
 ! test info ---------------------------------------------------------- *
 !
@@ -1632,10 +1632,10 @@
 #ifdef CESMCOUPLED
       SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME) 
 
-        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX 
-        USE WAV_SHR_MOD , ONLY : RUNTYPE, STDOUT, ROOT_TASK
+        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX, RUNTYPE 
         USE W3WDATMD    , ONLY : TIME
         USE W3SERVMD    , ONLY : EXTCDE
+        USE W3ODATMD    , ONLY : NDS, IAPROC, NAPOUT
 
         ! input/output variables
         logical, intent(in)           :: lwrite
@@ -1683,12 +1683,12 @@
            end if
         end if
 
-        ! write out filename to stdout
-        if ( root_task ) then
+        ! write out filename 
+        if (iaproc == napout) then
            if (lwrite) then
-              write (stdout,'(a)') ' writing restart file '//trim(fname)
+              write (nds(1),'(a)') ' writing restart file '//trim(fname)
            else
-              write (stdout,'(a)') ' reading initial/restart file '//trim(fname)
+              write (nds(1),'(a)') ' reading initial/restart file '//trim(fname)
            end if
         end if
 

@@ -29,10 +29,9 @@ contains
   subroutine set_shel_inp(dtime_sync)
 
     use w3idatmd    , only : inflags1, inflags2
-    use w3odatmd    , only : noge, idout, nds, notype
+    use w3odatmd    , only : noge, idout, nds, notype, iaproc, napout
     use w3wdatmd    , only : time
     use wav_shr_mod , only : wav_coupling_to_cice
-    use wav_shr_mod , only : root_task, stdout
 
     ! Input parameter
     integer , intent(in)  :: dtime_sync
@@ -84,10 +83,10 @@ contains
     ! Set number of output types. This is nomally set in w3_shel, CMB made 7.
     notype = 7
 
-    if (root_task) then
-       write(stdout,'(a)') '  Output requests : '
-       write(stdout,'(a)')'--------------------------------------------------'
-       write(stdout,'(a)')' no dedicated output process on any file system '
+    if (iaproc == napout) then
+       write(nds(1),'(a)') '  Output requests : '
+       write(nds(1),'(a)')'--------------------------------------------------'
+       write(nds(1),'(a)')' no dedicated output process on any file system '
     end if
 
     ! Initialize ODAT. Normally set in w3_shel.
@@ -244,22 +243,22 @@ contains
     !   NOGRP = number of output field groups
     !   NGRPP = Max num of parameters per output
     !   NOGE(NOGRP) = number of output group elements
-    if ( root_task ) then
+    if (iaproc == napout) then
        flt = .true.
        do i=1, nogrp
           do j=1, noge(i)
              if ( flgrd(i,j) ) then
                 if ( flt ) then
-                   write (stdout,'(a)') '            Fields   : '//trim(idout(i,j))
+                   write (nds(1),'(a)') '            Fields   : '//trim(idout(i,j))
                    flt = .false.
                 else
-                   write (stdout,'(a)')'                       '//trim(idout(i,j))
+                   write (nds(1),'(a)')'                       '//trim(idout(i,j))
                 end if
              end if
           end do
        end do
        if ( flt ) then
-          write (stdout,'(a)') '            Fields   : '//'no fields defined'
+          write (nds(1),'(a)') '            Fields   : '//'no fields defined'
        end if
     end if
 

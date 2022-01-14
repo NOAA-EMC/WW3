@@ -37,8 +37,6 @@ module wav_shr_mod
 
   ! used by both CESM and UFS
   ! runtype is used by W3SRCE (values are startup, branch, continue)
-  logical           , public :: root_task
-  integer           , public :: stdout
   character(len=cs) , public :: runtype
   logical           , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
   integer           , public :: dbug_flag = 0
@@ -46,10 +44,9 @@ module wav_shr_mod
   ! Only used by cesm
   ! if a run is a startup or branch run, then initfile is used
   ! to construct the initial file and used in W3IORSMD
-  character(len=256) , public :: initfile
-
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD
+  character(len=256) , public :: initfile
   character(len=256) , public :: casename
   logical            , public :: rstwr       ! true => write restart
   logical            , public :: histwr      ! true => write history file (snapshot)
@@ -90,9 +87,6 @@ module wav_shr_mod
        optIfdays0        = "ifdays0"
 
   ! Module data
-  integer, parameter          :: SecPerDay = 86400 ! Seconds per day
-  integer, parameter          :: memdebug_level=1
-  character(len=ESMF_MAXSTR)  :: msgString
   character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
@@ -274,6 +268,7 @@ contains
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
     real(r8), pointer               :: dataPtr1d(:)
     real(r8), pointer               :: dataPtr2d(:,:)
+    character(len=ESMF_MAXSTR)      :: msgString
     character(len=*), parameter     :: subname = ' (wav_shr_mod:state_diagnose) '
     ! ----------------------------------------------
 
@@ -843,6 +838,7 @@ contains
     integer :: year, mon, day ! year, month, day as integers
     integer :: tdate          ! temporary date
     integer :: date           ! coded-date (yyyymmdd)
+    integer, parameter          :: SecPerDay = 86400 ! Seconds per day
     character(len=*), parameter :: subname = ' (wav_shr_mod:timeInit) '
     !-------------------------------------------------------------------------------
 
