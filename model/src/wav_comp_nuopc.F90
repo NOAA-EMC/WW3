@@ -135,7 +135,8 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : model_label_SetRunClock    => label_SetRunClock
   use NUOPC_Model           , only : model_label_Finalize       => label_Finalize
   use NUOPC_Model           , only : NUOPC_ModelGet
-  use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
+  use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
@@ -361,7 +362,7 @@ contains
     use w3timemd     , only : stme21
     use w3adatmd     , only : w3naux, w3seta
     use w3idatmd     , only : w3seti, w3ninp
-    use w3gdatmd     , only : nseal, nsea, nx, ny, mapsf, w3nmod, w3setg, nx, ny
+    use w3gdatmd     , only : nseal, nsea, nx, ny, mapsf, w3nmod, w3setg
     use w3wdatmd     , only : time, w3ndat, w3dimw, w3setw
 
     ! input/output variables
@@ -374,9 +375,11 @@ contains
     ! local variables
     type(ESMF_DistGrid)            :: distGrid
     type(ESMF_Mesh)                :: Emesh, EmeshTemp
+    type(ESMF_Array)               :: elemMaskArray
     type(ESMF_VM)                  :: vm
     type(ESMF_Time)                :: esmfTime, stopTime
     type(ESMF_TimeInterval)        :: TimeStep
+    logical                        :: elementMaskIsPresent
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
     integer                        :: yy,mm,dd,hh,ss
@@ -400,6 +403,8 @@ contains
     integer, allocatable           :: gindex_lnd(:)
     integer, allocatable           :: gindex_sea(:)
     integer, allocatable           :: gindex(:)
+    integer(i4)                    :: maskmin
+    integer(i4), pointer           :: meshmask(:)
     logical                        :: isPresent, isSet
     character(23)                  :: dtme21
     integer                        :: iam, mpi_comm
@@ -613,6 +618,7 @@ contains
     ! create a global index array for non-sea (i.e. land points)
     allocate(mask_global(nx*ny), mask_local(nx*ny))
     mask_local(:) = 0
+    mask_global(:) = 0
     do jsea=1, nseal
        isea = iaproc + (jsea-1)*naproc
        ix = mapsf(isea,1)
@@ -633,7 +639,7 @@ contains
     allocate(gindex_lnd(my_lnd_end - my_lnd_start + 1))
     ncnt = 0
     do n = 1,nx*ny
-       if (mask_global(n) == 0) then ! this is a land pont
+       if (mask_global(n) == 0) then ! this is a land point
           ncnt = ncnt + 1
           if (ncnt >= my_lnd_start .and. ncnt <= my_lnd_end) then
              gindex_lnd(ncnt - my_lnd_start + 1) = n
@@ -641,6 +647,7 @@ contains
        end if
     end do
     deallocate(mask_global)
+    deallocate(mask_local)
 
     ! create a global index that includes both sea and land - but put land at the end
     nlnd = (my_lnd_end - my_lnd_start + 1)
@@ -652,6 +659,8 @@ contains
           gindex(ncnt) = gindex_lnd(ncnt-nseal)
        end if
     end do
+    deallocate(gindex_sea)
+    deallocate(gindex_lnd)
 
     ! create distGrid from global index array
     DistGrid = ESMF_DistGridCreate(arbSeqIndexList=gindex, rc=rc)
@@ -671,6 +680,42 @@ contains
     ! recreate the mesh using the above distGrid
     EMesh = ESMF_MeshCreate(EMeshTemp, elementDistgrid=Distgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! check if element masking is present in the provided mesh
+    call ESMF_MeshGet(Emesh, elementMaskIsPresent=elementMaskIsPresent, elementCount=ncnt,rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (elementMaskIsPresent) then
+       if (root_task) then
+          write(stdout,*)'mesh contains element mask, element count ',ncnt
+       end if
+       ! obtain the mesh mask and find the minimum value across all PEs
+       call ESMF_DistGridGet(Distgrid, localDe=0, elementCount=ncnt, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(meshmask(ncnt))
+       elemMaskArray = ESMF_ArrayCreate(Distgrid, farrayPtr=meshmask, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_MeshGet(Emesh, elemMaskArray=elemMaskArray, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_VMAllFullReduce(vm, sendData=meshmask, recvData=maskmin, count=ncnt, &
+            reduceflag=ESMF_REDUCE_MIN, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       if (maskmin == 1) then
+          ! replace mesh mask with internal mask
+          meshmask(:) = 0
+          meshmask(1:nseal) = 1
+          call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       if (dbug_flag > 5) then
+          call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
+               overwrite=.true., rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+       deallocate(meshmask)
+    end if
+    deallocate(gindex)
 
     !--------------------------------------------------------------------
     ! Realize the actively coupled fields

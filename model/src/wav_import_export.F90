@@ -1480,7 +1480,6 @@ contains
     integer                 :: isea, n, ix, iy
     real(r8), pointer       :: dataptr(:)
     real(r4)                :: mask_local(nx*ny)
-    real(r4)                :: mask_global(nx*ny)
     character(len=CL)       :: msgString
     character(len=*), parameter :: subname = '(wav_import_export:set_importmask)'
     !---------------------------------------------------------------------------
