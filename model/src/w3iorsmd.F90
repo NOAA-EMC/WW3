@@ -328,6 +328,7 @@
 
       LOGICAL                 :: WRITE, IOSFLG
       LOGICAL                 :: FLOGOA(NOGRP,NGRPP)
+      LOGICAL                 :: NDSROPN      
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
 !      CHARACTER(LEN=21)       :: FNAME
@@ -335,7 +336,6 @@
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
-      LOGICAL                 :: UNITOPEN
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -608,8 +608,8 @@
               WRITE (NDST,9005) TYPE
 #endif
               ! Clean up file handles and allocated arrays                  
-              INQUIRE (UNIT=NDSR, OPENED=UNITOPEN)
-              IF (UNITOPEN)             CLOSE(NDSR)
+              INQUIRE (UNIT=NDSR, OPENED=NDSROPN)
+              IF (NDSROPN)              CLOSE(NDSR)
               IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
               IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
               IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
