@@ -2424,10 +2424,6 @@
 #ifdef W3_BT1
                     CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 #endif
-#ifdef W3_BT2
-                    SBTC2 = 2. * -0.067 / GRAV
-                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
-#endif
 #ifdef W3_BT4
                     IX=1    ! to be fixed later
                     IY=1    ! to be fixed later

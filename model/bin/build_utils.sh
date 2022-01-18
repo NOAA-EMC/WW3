@@ -583,7 +583,7 @@ switch_files()
   esac
 
   case $stress in
-   FLX0) flx='w3flx1md'
+   FLX0) flx=$NULL
          flxx=$NULL ;;
    FLX1) flx='w3flx1md'
          flxx=$NULL ;;
@@ -651,7 +651,6 @@ switch_files()
   case $s_bt in
    BT0) bt=$NULL ;;
    BT1) bt='w3sbt1md' ;;
-   BT2) bt='w3sbt2md mod_btffac' ;;
    BT4) bt='w3sbt4md' ;;
    BT8) bt='w3sbt8md' ;;
    BT9) bt='w3sbt9md' ;;
