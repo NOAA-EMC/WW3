@@ -26,9 +26,8 @@ cd $path_i/oasis3-mct/util/make_dir
 export WWATCH3_DIR=${ww3_dir}/model
 
 # Build OASIS with CMake wrapper
-rm -rf build
-mkdir build && cd build
-cmake ..
+rm -rf Makefile CMakeCache.txt  CMakeFiles  cmake_install.cmake cmplr src tmp
+cmake .
 make
 
 echo '   compile toy model'
