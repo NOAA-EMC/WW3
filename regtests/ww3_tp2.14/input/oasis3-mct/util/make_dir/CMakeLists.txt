@@ -6,7 +6,7 @@ project(oasis3-mct
 list(APPEND CMAKE_MODULE_PATH "$ENV{WWATCH3_DIR}/../cmake")
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
-find_package(NetCDF REQUIRED COMPONENTS Fortran)
+find_package(NetCDF MODULE REQUIRED COMPONENTS Fortran)
 
 set(WWATCH3_DIR $ENV{WWATCH3_DIR})
 set(comp_mpi ${MPI_Fortran_COMPILER})
