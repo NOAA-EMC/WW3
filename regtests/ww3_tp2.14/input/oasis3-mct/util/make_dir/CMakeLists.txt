@@ -13,7 +13,7 @@ set(comp_mpi ${MPI_Fortran_COMPILER})
 set(wwatch3_cc ${CMAKE_C_COMPILER})
 
 # Turn on this argument mismatch flag for gfortran10.
-if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$" AND CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
 endif()
 set(optl_short "")
