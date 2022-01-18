@@ -365,6 +365,8 @@ then # Add time counter if -T
 fi
 
 
+mkdir -p $path_w
+
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
     ww3_dir=${path_s}/..
@@ -499,7 +501,6 @@ echo "   Build log is in $ofile"
 # 3. Execute Test                                                             #
 # --------------------------------------------------------------------------- #
 # 3.a Go to work directory and clean-up
-mkdir -p $path_w
 cd $path_w
 if [ $exec_p = "none" ]
 then
