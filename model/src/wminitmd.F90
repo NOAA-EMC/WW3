@@ -2517,9 +2517,9 @@
         TSYNC(:,I) = TIME(:)
 !
 #ifdef W3_SMC
- !!Li   Check GTYPE values after initialization.  JGLi08Apr2021
-        IF( IMPROC .EQ. CROOT ) WRITE(MDSE,*) " GRID CROOT GTYPE", &
-            I, CROOT, GRIDS(I)%GTYPE
+! Check GTYPE values after initialization
+        IF ( IMPROC .EQ. NMPERR ) WRITE(MDSE,*) "GRID IMPROC GTYPE", &
+            I, IMPROC, GRIDS(I)%GTYPE
 #endif
 !
 #ifdef W3_T

@@ -2558,7 +2558,9 @@
             call w3setw ( imod, mdse, mdst )
             call w3seti ( imod, mdse, mdst )
             call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
             if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
             INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
             INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
             wxn = WXNwrst !replace with values from restart
