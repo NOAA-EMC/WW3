@@ -17,17 +17,26 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_switches.cmake)
 check_switches("${switches}" switch_files)
 
 add_library(ww3_lib STATIC ${ftn_src} ${switch_files})
+# Create alias with same name as exported target
+# so that WW3 can be usead with add_subdirectory
+add_library(WW3::WW3 ALIAS ww3_lib)
 
 # Re-name library on disk to just libww3 instead of libww3_lib
 set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3")
+set_target_properties(ww3_lib PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/mod")
 
 foreach(switch ${switches})
   target_compile_definitions(ww3_lib PUBLIC W3_${switch})
 endforeach()
 
+target_include_directories(ww3_lib
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mod>
+  $<INSTALL_INTERFACE:mod>)
+
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
-  set(compile_flags -no-fma -ip -g -traceback -i4 -real-size 32 -fp-model precise -assume byterecl -convert big_endian -fno-alias -fno-fnalias)
+  set(compile_flags -no-fma -ip -g -traceback -i4 -real-size 32 -fp-model precise
+    -assume byterecl -convert big_endian -fno-alias -fno-fnalias)
   # -sox only works on Linux
   if(LINUX)
     list(APPEND compile_flags -sox)
@@ -81,7 +90,11 @@ if("OASIS" IN_LIST switches)
 endif()
 
 if(MULTI_ESMF)
-  find_package(ESMF MODULE REQUIRED)
+  # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
+  if (NOT TARGET esmf)
+    find_package(ESMF MODULE REQUIRED)
+  endif()
+  
   target_sources(ww3_lib PRIVATE wmesmfmd.F90)
   target_link_libraries(ww3_lib PUBLIC esmf)
   set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
@@ -156,6 +169,7 @@ install(
   ARCHIVE DESTINATION lib)
 
 install(FILES ${CMAKE_BINARY_DIR}/switch DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX})
   
 
 export(EXPORT WW3Exports
@@ -167,7 +181,7 @@ export(EXPORT WW3Exports
 include(CMakePackageConfigHelpers)
 set(CONFIG_INSTALL_DESTINATION lib/cmake/WW3)
 
-configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/WW3-package-config.cmake.in
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/WW3-package-config.cmake.in
   ${CMAKE_BINARY_DIR}/WW3-config.cmake
   INSTALL_DESTINATION ${CONFIG_INSTALL_DESTINATION})
 
