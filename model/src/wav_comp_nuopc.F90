@@ -681,40 +681,32 @@ contains
     EMesh = ESMF_MeshCreate(EMeshTemp, elementDistgrid=Distgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! check if element masking is present in the provided mesh
-    call ESMF_MeshGet(Emesh, elementMaskIsPresent=elementMaskIsPresent, elementCount=ncnt,rc=rc)
+    ! obtain the mesh mask and find the minimum value across all PEs
+    call ESMF_DistGridGet(Distgrid, localDe=0, elementCount=ncnt, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (elementMaskIsPresent) then
-       if (root_task) then
-          write(stdout,*)'mesh contains element mask, element count ',ncnt
-       end if
-       ! obtain the mesh mask and find the minimum value across all PEs
-       call ESMF_DistGridGet(Distgrid, localDe=0, elementCount=ncnt, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       allocate(meshmask(ncnt))
-       elemMaskArray = ESMF_ArrayCreate(Distgrid, farrayPtr=meshmask, rc=rc)
+    allocate(meshmask(ncnt))
+    elemMaskArray = ESMF_ArrayCreate(Distgrid, farrayPtr=meshmask, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_MeshGet(Emesh, elemMaskArray=elemMaskArray, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMAllFullReduce(vm, sendData=meshmask, recvData=maskmin, count=ncnt, &
+         reduceflag=ESMF_REDUCE_MIN, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (maskmin == 1) then
+       ! replace mesh mask with internal mask
+       meshmask(:) = 0
+       meshmask(1:nseal) = 1
+       call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_MeshGet(Emesh, elemMaskArray=elemMaskArray, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_VMAllFullReduce(vm, sendData=meshmask, recvData=maskmin, count=ncnt, &
-            reduceflag=ESMF_REDUCE_MIN, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       if (maskmin == 1) then
-          ! replace mesh mask with internal mask
-          meshmask(:) = 0
-          meshmask(1:nseal) = 1
-          call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       end if
-
-       if (dbug_flag > 5) then
-          call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
-               overwrite=.true., rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-       deallocate(meshmask)
     end if
+
+    if (dbug_flag > 5) then
+       call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
+            overwrite=.true., rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+    deallocate(meshmask)
     deallocate(gindex)
 
     !--------------------------------------------------------------------
