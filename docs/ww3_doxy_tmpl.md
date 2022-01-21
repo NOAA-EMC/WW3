@@ -45,14 +45,19 @@ _Doxygen markup headers to be placed directly above the respective Fortran code 
 ### FUNCTION
 ```
 !> @brief  <one sentence description>
+!>
+!> @details <extended description>
+!>
 !> @param <param name>
 !> @returns <return variable name>
+!>
+!> @author <author name> @date <dd-Mon-yyyy>
 ```
 
 
-### Inline documentation
+### Inline documentation (variables)
 ```
-!<  <inline comment>
+!<  <inline variable description>
 ```
 
 
