@@ -354,7 +354,7 @@
 ! VUF should only be updated in latitude changes significantly ...
           IX        = MAPSF(ISEA,1)
           IY        = MAPSF(ISEA,2)
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
           WCURTIDEX = CXTIDE(IX,IY,1,1)
           WCURTIDEY = CYTIDE(IX,IY,1,1)
  
@@ -377,7 +377,7 @@
             TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
 
               WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
+                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
 
               DO J=1,TIDE_MF
                 WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
@@ -2122,7 +2122,7 @@
 #ifdef W3_TIDE
         IF (FLLEVTIDE) THEN 
 ! VUF should be updated only if latitude changes significantly ...
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
           WLEVTIDE = WLTIDE(IX,IY,1,1)
  !Verification 
  !          IF (ISEA.EQ.1) THEN 

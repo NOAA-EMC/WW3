@@ -2558,7 +2558,9 @@
             call w3setw ( imod, mdse, mdst )
             call w3seti ( imod, mdse, mdst )
             call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
             if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
             INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
             INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
             wxn = WXNwrst !replace with values from restart
@@ -4115,7 +4117,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then 
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4127,7 +4133,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
@@ -4517,7 +4527,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4529,7 +4543,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif

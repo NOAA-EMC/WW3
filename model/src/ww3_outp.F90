@@ -231,9 +231,6 @@
                                  TABNME*9, TFNAME*16
       CHARACTER(LEN=25)       :: IDSRCE(7)
       CHARACTER               :: HSTR*6, HTYPE*3
-#ifdef W3_BT2
-      REAL                    :: SBTC2
-#endif
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1198,9 +1195,6 @@
 #ifdef W3_BT1
       USE W3SBT1MD
 #endif
-#ifdef W3_BT2
-      USE W3SBT2MD
-#endif
 #ifdef W3_BT4
       USE W3SBT4MD
 #endif
@@ -1980,10 +1974,6 @@
                 IF ( FLSRCE(5) ) THEN
 #ifdef W3_BT1
                     CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
-#endif
-#ifdef W3_BT2
-                    SBTC2 = 2. * -0.067 / GRAV
-                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
 #endif
 #ifdef W3_BT4
                     IX=1    ! to be fixed later

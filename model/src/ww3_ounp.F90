@@ -55,6 +55,7 @@
 !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/    06-Sep-2021 : scale factor on spectra output      ( version 7.12 )
+!/    05-Jan-2022 : Added TIMESPLIT=0 (nodate) support  ( version 7.14 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -249,6 +250,7 @@
       CHARACTER(LEN=8)             :: EXT
       CHARACTER(LEN=128)           :: NCNAME
       CHARACTER(LEN=25)            :: IDSRCE(7)
+      CHARACTER                    :: SEP
 !
       CHARACTER(LEN=100),ALLOCATABLE      :: POINTLIST(:)
       CHARACTER(LEN=128),ALLOCATABLE      :: NCFILE(:)
@@ -600,16 +602,18 @@
 ! 4.3 Output type
 !
       ! S3 defines the number of characters in the date for the filename
-      ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
+      ! S3=0 -> empty, S3=4 -> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
 !
       ! Setups min and max date format
-      IF (S3.LT.4) S3=4
+      IF (S3.GT.0 .AND. S3.LT.4) S3=4
       IF (S3.GT.10) S3=10
 !
       ! Defines the format of FILETIME as ISO8601 convention
       S5=S3-8
       ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
-      IF (S3.EQ.10) THEN
+      IF (S3.EQ.0) THEN
+        FILETIME = ''
+      ELSE IF (S3.EQ.10) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
@@ -661,14 +665,16 @@
 
 
 ! 5.2 Creates filename listing
+      SEP = '_'
+      IF(S3 .EQ. 0) SEP = '' ! No "_" separator if no datetime string.
       WRITE(EXT,'(A)') ''
-      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A)') '_tab.nc'
-      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_spec.nc'
-      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_tab.nc'
-      IF  (ITYPE .EQ. 2)                     WRITE(EXT,'(A)') '_tab.nc'
-      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A)') '_tab.nc'
-      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_tab.nc'
-      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_src.nc'
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'spec.nc'
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+      IF  (ITYPE .EQ. 2)                     WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A,A)') TRIM(SEP), 'tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A,A)') TRIM(SEP), 'src.nc'
       ! checks if extension exists
       IF (LEN_TRIM(EXT).EQ.0) THEN
         WRITE (NDSE,1006)
@@ -720,7 +726,9 @@
 
 ! 5.6.1 Redefines the filetime when it's a new date defined by the date division S3
         ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
-        IF (S3.EQ.10) THEN
+        IF (S3.EQ.0) THEN
+          FILETIME = ''
+        ELSE IF (S3.EQ.10) THEN
           WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
           WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                  NINT(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
@@ -2415,10 +2423,6 @@
             IF ( FLSRCE(5) ) THEN
 #ifdef W3_BT1
                     CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
-#endif
-#ifdef W3_BT2
-                    SBTC2 = 2. * -0.067 / GRAV
-                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
 #endif
 #ifdef W3_BT4
                     IX=1    ! to be fixed later

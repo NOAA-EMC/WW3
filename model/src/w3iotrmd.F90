@@ -193,7 +193,7 @@
 #ifdef W3_T
       USE W3GSRUMD, ONLY: W3GSUP      
 #endif
-      USE W3GDATMD, ONLY: XYB, MAXX, MAXY, GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: MAXX, MAXY, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME, UST
       USE W3ADATMD, ONLY: CG, DW, CX, CY, UA, UD, AS
 #ifdef W3_MPI
@@ -530,9 +530,9 @@
           IX     = IXX(J)
           IY     = IYY(J)
           IF(GTYPE .EQ. UNGTYPE) THEN
-            X = XYB(IX,1)
-            Y = XYB(IX,2)
-            ENDIF
+            X = XGRD(1,IX)
+            Y = YGRD(1,IX)
+          ENDIF
           MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
           MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
           TRCKID(IY,IX) = TRCKT
@@ -617,8 +617,8 @@
           IF ( MASK1(IY,IX) ) THEN
 !
             IF(GTYPE .EQ. UNGTYPE) THEN
-                X = XYB(IX,1)
-                Y = XYB(IX,2)
+                X = XGRD(1,IX)
+                Y = YGRD(1,IX) 
               ELSE
                 X = XGRD(IY,IX)
                 Y = YGRD(IY,IX)

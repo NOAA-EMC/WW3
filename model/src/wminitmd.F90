@@ -2517,9 +2517,9 @@
         TSYNC(:,I) = TIME(:)
 !
 #ifdef W3_SMC
- !!Li   Check GTYPE values after initialization.  JGLi08Apr2021
-        IF( IMPROC .EQ. CROOT ) WRITE(MDSE,*) " GRID CROOT GTYPE", &
-            I, CROOT, GRIDS(I)%GTYPE
+! Check GTYPE values after initialization
+        IF ( IMPROC .EQ. NMPERR ) WRITE(MDSE,*) "GRID IMPROC GTYPE", &
+            I, IMPROC, GRIDS(I)%GTYPE
 #endif
 !
 #ifdef W3_T
@@ -2592,9 +2592,9 @@
                              MPI_COMM_BCT, IERR_MPI )
             CALL MPI_BCAST ( HPFAC, NX*NY, MPI_REAL, 0,          &
                              MPI_COMM_BCT, IERR_MPI )
-            CALL MPI_BCAST ( XGRD, NX*NY, MPI_REAL, 0,           &
+            CALL MPI_BCAST ( XGRD, NX*NY, MPI_DOUBLE_PRECISION, 0,           &
                              MPI_COMM_BCT, IERR_MPI )
-            CALL MPI_BCAST ( YGRD, NX*NY, MPI_REAL, 0,           &
+            CALL MPI_BCAST ( YGRD, NX*NY, MPI_DOUBLE_PRECISION, 0,           &
                              MPI_COMM_BCT, IERR_MPI )
             IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
                  GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE,          &
@@ -5697,13 +5697,13 @@
                              MPI_COMM_BCT, IERR_MPI )
             CALL MPI_BCAST ( HPFAC, NX*NY, MPI_REAL, 0,          &
                              MPI_COMM_BCT, IERR_MPI )
-            CALL MPI_BCAST ( XGRD, NX*NY, MPI_REAL, 0,           &
+            CALL MPI_BCAST ( XGRD, NX*NY, MPI_DOUBLE_PRECISION, 0,           &
                              MPI_COMM_BCT, IERR_MPI )
-            CALL MPI_BCAST ( YGRD, NX*NY, MPI_REAL, 0,           &
+            CALL MPI_BCAST ( YGRD, NX*NY, MPI_DOUBLE_PRECISION, 0,           &
                              MPI_COMM_BCT, IERR_MPI )
             IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
                  GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE,          &
-                               XGRD, YGRD )
+                               XGRD, YGRD)
             CALL MPI_BCAST ( DXDP, NX*NY, MPI_REAL, 0,           &
                              MPI_COMM_BCT, IERR_MPI )
             CALL MPI_BCAST ( DXDQ, NX*NY, MPI_REAL, 0,           &

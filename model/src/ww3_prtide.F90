@@ -620,7 +620,7 @@
 #ifdef W3_SHRD
             DO IX=1,NX
 #endif
-              CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
+              CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
               WCURTIDEX = 0.
               WCURTIDEY = 0.
               DO I=1,TIDE_PRMF
@@ -707,7 +707,7 @@
 #ifdef W3_SHRD
             DO IX=1,NX
 #endif
-              CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
+              CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
 !
 ! Removes unlikely values ... 
 !
