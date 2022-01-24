@@ -187,7 +187,7 @@
 !/
 !/ Public module methods
 !/
-      public SetServices
+      public SetServices, SetVM
 !/
 !/ Private module parameters
 !/
