@@ -774,6 +774,34 @@
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           end if
         end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="mask_value_water", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          maskvaluewater = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) maskvaluewater
+            call ESMF_LogWrite(trim(cname)//': mask_value_water = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="mask_value_land", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          maskvalueland = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) maskvalueland
+            call ESMF_LogWrite(trim(cname)//': mask_value_land = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
+        end if
       end if
 !
 ! -------------------------------------------------------------------- /
