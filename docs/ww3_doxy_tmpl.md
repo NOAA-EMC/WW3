@@ -5,7 +5,7 @@ _Doxygen markup headers to be placed directly above the respective Fortran code 
 
 ### FILE
 ```
-!> @file  <file name>
+!> @file
 !> @brief  <one sentence description>
 !> 
 !> @author <author name> @date <dd-Mon-yyyy>
@@ -57,12 +57,11 @@ _Doxygen markup headers to be placed directly above the respective Fortran code 
 
 ### Inline documentation (variables)
 ```
-!<  <inline variable description>
+!<  <inline variable description>                 # '!>' is equally valid here as well
 ```
 
 
 ### Optional tags
-* Some of the more relevant tags that might be included:  `@todo`, `@remark`, `@attention`, `@warning`, `@bug`, `@example`,
+* Some of the more relevant tags that might be included:  `@remark`, `@attention`, `@warning`, `@example`,
   `@code`, `@cite`, `@copyright`.
 * The complete list of tags: [Doxygen Special Commands](https://www.doxygen.nl/manual/commands.html). 
-
