@@ -12,7 +12,7 @@
 !     POINT%TIMESTART            = '19000101 000000'  ! Stop date for the output field
 !     POINT%TIMESTRIDE           = '0'                ! Time stride for the output field
 !     POINT%TIMECOUNT            = '1000000000'       ! Number of time steps
-!     POINT%TIMESPLIT            = 6                  ! [4(yearly),6(monthly),8(daily),10(hourly)]
+!     POINT%TIMESPLIT            = 6                  ! [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 !     POINT%LIST                 = 'all'              ! List of points index ['all'|'1 2 3']
 !     POINT%SAMEFILE             = T                  ! All the points in the same file
 !     POINT%BUFFER               = 150                ! Number of points to process per pass
@@ -73,6 +73,8 @@
 !   - dpt, wnd, wnddir, cur, curdir : mean parameters
 !
 !
+! * SCALE_FAC and OUTPUT_FAC are only applied to print plots (OUTPUT=1)
+!
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     SPECTRA%OUTPUT        = 3            ! 1: Print plots
@@ -81,6 +83,7 @@
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 /

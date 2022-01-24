@@ -1,0 +1,95 @@
+#!/bin/bash
+# --------------------------------------------------------------------------- #
+# test.comp Compares output of two runs to check b4b reproducivlity (i.e. for #
+# mpi, thread, restart) with the same version of the code.                    #
+#                                                                             #
+#                                                                             #
+#                                                     Ali Abdolali            #
+#                                                     April 2021 	      #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# This script takes in three arguments: the name of the test and two work     #
+# directories                                                                 #
+# --------------------------------------------------------------------------- #
+# 1. Check input command                                                      #
+# --------------------------------------------------------------------------- #
+
+  if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+  then     
+    printf "\n ERROR ABORTING \n"
+    printf "\n test.comp requires 3 arguments: "
+    printf "   1: test type (eg, test-name), 2: base directory and 3: reference directory. \n"
+    printf "\n Usage:"
+    printf "  example:  ./bin/test.comp ww3_ufs1.2 work_a work_b \n\n"
+    exit
+  fi
+
+  ctest=$1
+  base_dir=$2
+  comp_dir=$3
+  home_dir=`pwd`
+
+# Check if the base and comp directories exist.
+  if [ ! -d $ctest/$base_dir ] ; then
+    echo "       directory $ctest/$base_dir not found." ; exit 2 ; fi
+
+  if [ ! -d $ctest/$comp_dir ] ; then
+    echo "       directory $ctest/$comp_dir not found." ; exit 2 ; fi
+
+
+# --------------------------------------------------------------------------- #
+# 2.  Check for files, generate lists of files and compare                    #
+# --------------------------------------------------------------------------- #
+  echo ' '                                                                 
+  echo '       *****************************************************************'     
+  echo "     ***  compare WAVEWATCH III $ctest/$base_dir and $ctest/$comp_dir  ***"   
+  echo '       *****************************************************************'    
+  echo ' '                                                                
+
+  cd $home_dir/$ctest
+# list the common files in two directories 
+file_list0=`( ls $base_dir ; ls $comp_dir ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+# check the suvdirectories
+for file in $file_list0
+  do
+    if [[ -d $base_dir/$file ]]; then
+    file_list1=`( ls $base_dir/$file ; ls $comp_dir/$file ) | awk 'A[$0]++' | awk '!/finished|log|mod_def|time|ST4|rmp|scrip|.inp|.out|wind|current|ice|level/'`
+       for file1 in $file_list1
+         do
+           file_list0="$file_list0 $file/$file1"
+       done
+    fi
+done
+# remove directories from the list
+for file in $file_list0
+ do
+    if [[ -f $base_dir/$file ]]; then
+    file_list="$file_list $file"
+    fi
+done
+
+cd $home_dir
+# check if the files are identical or different
+  for file in $file_list
+  do
+    if cmp --silent $ctest/$base_dir/$file $ctest/$comp_dir/$file; then
+      echo "$file is identical"
+    else
+     echo "Warning: $file is different"
+    fi
+ done
+
+  echo ' '
+  echo '   ****************************************************************************'
+  echo ' ***  end of WAVEWATCH III compare tests with the same version of the code   ***'
+  echo '   ****************************************************************************'
+  echo ' '
+
+# --------------------------------------------------------------------------- #
+# End to test.comp                                                            #
+# --------------------------------------------------------------------------- #

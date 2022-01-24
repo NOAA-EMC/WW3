@@ -18,7 +18,7 @@ $ mandatory end of list
 $
 $--------------------------------------------------------------------- $
 $ file prefix
-$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
+$ number of characters in date [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 $ netCDF version [3,4]
 $ points in same file [T] or not [F] 
 $                    and max number of points to be processed in one pass
@@ -46,8 +46,9 @@ $                              3 : Transfer file.
 $                              4 : Spectral partitioning.
 $          - Scaling factors for 1-D and 2-D spectra Negative factor
 $            disables, output, factor = 0. gives normalized spectrum.
+$          - Netcdf variable type [2=SHORT, 3=it depends, 4=REAL]
 $
-  3  1  0
+  3  1  0  4
 $
 $ The transfer file contains records with the following contents.
 $

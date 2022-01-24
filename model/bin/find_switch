@@ -48,7 +48,8 @@
 
 # 1.d Raw data file  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  cd $main_dir/ftn
+### TO DO: This needs to be improved for CPP transition 
+  cd $main_dir/src
   grep "$switch" * | sed 's/\:/ /' | awk '{ print $1}' > ../.switch.files
 
 # 1.e Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
