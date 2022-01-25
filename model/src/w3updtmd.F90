@@ -354,7 +354,7 @@
 ! VUF should only be updated in latitude changes significantly ...
           IX        = MAPSF(ISEA,1)
           IY        = MAPSF(ISEA,2)
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
           WCURTIDEX = CXTIDE(IX,IY,1,1)
           WCURTIDEY = CYTIDE(IX,IY,1,1)
  
@@ -377,7 +377,7 @@
             TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
 
               WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
+                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
 
               DO J=1,TIDE_MF
                 WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
@@ -1649,7 +1649,7 @@
       END SUBROUTINE W3UIC5
 !/ ------------------------------------------------------------------- /      
       
-      SUBROUTINE W3UICE ( A, VA )
+      SUBROUTINE W3UICE ( VA )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1691,7 +1691,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!      (V)A     R.A.  I/O   Spectra in 1-D or 2-D representation
+!      VA       R.A.  I/O   Spectra in 1-D or 2-D representation
 !                           (points to same address).
 !     ----------------------------------------------------------------
 !
@@ -1727,26 +1727,25 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
-                          NTH, NK, NSPEC, SIG, TH, DTH, FICEN
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPSTA, MAPST2, &
+                          NSPEC, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
-!!    USE W3ADATMD, ONLY: U10, U10D, CG
-      USE W3ADATMD, ONLY: CG
+      USE W3ADATMD, ONLY: NSEALM
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
-      USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(INOUT)     :: A(NTH,NK,0:NSEAL), VA(NSPEC,0:NSEAL)
+      REAL, INTENT(INOUT)     :: VA(NSPEC,0:NSEALM)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      INTEGER                 :: IK, ITH, ISEA, JSEA, IX, IY, ISP
+      INTEGER                 :: ISEA, JSEA, IX, IY
 #ifdef W3_S
-      INTEGER, SAVE            :: IENT = 0
+      INTEGER, SAVE           :: IENT = 0
 #endif
       INTEGER                 :: MAPICE(NY,NX), ISPROC
       LOGICAL                 :: LOCAL
@@ -1797,102 +1796,69 @@
         IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
             MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
             MAPICE(IY,IX) = 1
-#endif
-!AR: Take care here situation is not totally clear!
-#ifdef W3_IC0
             CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
             IF (LOCAL .AND. (IAPROC .eq. ISPROC)) THEN
-#endif
 #ifdef W3_T
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'ICE (NEW)'
 #endif
-#ifdef W3_IC0
                 VA(:,JSEA) = 0.
-              ELSE
-#endif
 #ifdef W3_T
+            ELSE
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'ICE (NEW X)'
 #endif
-#ifdef W3_IC0
-              END IF
-#endif
+            END IF
 !
-#ifdef W3_IC0
-          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
-#endif
 #ifdef W3_T
+        ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
                               ICEI(IX,IY), 'ICE'
 #endif
-#ifdef W3_IC0
-          END IF
-#endif
+        END IF
 !
 ! 2.b Ice point to be re-activated.
 !
-#ifdef W3_IC0
         IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
-#endif
 !
-#ifdef W3_IC0
             MAPICE(IY,IX) = 0
             UST(ISEA)     = 0.05
-#endif
 !
-#ifdef W3_IC0
             IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
                 MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
-#endif
 !
-#ifdef W3_IC0
                 CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
                 IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
-#endif
 #ifdef W3_T
                     WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                                       ICEI(IX,IY), 'SEA (NEW)'
 #endif
-#ifdef W3_IC0
                     VA(:,JSEA) = 0.
-#endif
 !
-#ifdef W3_IC0
-                  ELSE
-#endif
 #ifdef W3_T
+                ELSE
                     WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                                       ICEI(IX,IY), 'SEA (NEW X)'
 #endif
-#ifdef W3_IC0
-                  END IF
-#endif
+                END IF
 !
-#ifdef W3_IC0
-              ELSE
-#endif
 #ifdef W3_T
+            ELSE
                 WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'DIS'
 #endif
-#ifdef W3_IC0
-              END IF
-#endif
+            END IF
 !
-#ifdef W3_IC0
-             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
-#endif
 #ifdef W3_T
-                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
+        ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
+             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                                   ICEI(IX,IY), 'SEA'
 #endif
 !
-#ifdef W3_IC0
-          END IF
+        END IF
 #endif
 !
-        END DO
+      END DO
 !
 ! 3.  Update MAPST2 -------------------------------------------------- *
 !
@@ -1907,15 +1873,11 @@
 #ifdef W3_T
  9000 FORMAT ( ' TEST W3UICE : FICEN    :',F9.3)
  9001 FORMAT ( ' TEST W3UICE : NO LOCAL SPECTRA')
-#endif
 !
-#ifdef W3_T
  9010 FORMAT ( ' TEST W3UICE : TIME     :',I9.8,I7.6/              &
                '               OLD TICE :',I9.8,I7.6/              &
                '               NEW TICE :',I9.8,I7.6)
-#endif
 !
-#ifdef W3_T
  9020 FORMAT ( ' TEST W3UICE : ISEA, IX, IY, MAP, ICE, STATUS :')
  9021 FORMAT ( '           ',I8,3I4,F6.2,2X,A)
 #endif
@@ -2160,7 +2122,7 @@
 #ifdef W3_TIDE
         IF (FLLEVTIDE) THEN 
 ! VUF should be updated only if latitude changes significantly ...
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
           WLEVTIDE = WLTIDE(IX,IY,1,1)
  !Verification 
  !          IF (ISEA.EQ.1) THEN 

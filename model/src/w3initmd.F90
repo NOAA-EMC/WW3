@@ -388,7 +388,7 @@
      USE W3GDATMD, ONLY: GTYPE, UNGTYPE
 #ifdef W3_PDLIB
       USE PDLIB_W3PROFSMD, ONLY : PDLIB_MAPSTA_INIT, VA_SETUP_IOBPD
-      USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, PDLIB_STYLE_INIT
+      USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, PDLIB_INIT
       use yowDatapool, only: istatus
 #endif
 #ifdef W3_SETUP
@@ -720,23 +720,23 @@
 #ifdef W3_PDLIB
     ELSE
 #ifdef W3_DEBUGINIT
-      WRITE(*,*) 'Before PDLIB_STYLE_INIT, IMOD=', IMOD
+      WRITE(*,*) 'Before PDLIB_INIT, IMOD=', IMOD
 #endif
-      CALL PDLIB_STYLE_INIT(IMOD)
+      CALL PDLIB_INIT(IMOD)
 #ifdef W3_DEBUGINIT
      WRITE(740+IAPROC,*) 'After set up of NSEAL, NSEALM=', NSEALM
-     WRITE(740+IAPROC,*) 'After PDLIB_STYLE_INIT'
+     WRITE(740+IAPROC,*) 'After PDLIB_INIT'
      WRITE(740+IAPROC,*) 'allocated(ISEA_TO_JSEA)=', allocated(ISEA_TO_JSEA)
      FLUSH(740+IAPROC)
 #endif
 #endif
 #ifdef W3_TIMINGS
-       CALL PRINT_MY_TIME("After PDLIB_STYLE_INIT")
+       CALL PRINT_MY_TIME("After PDLIB_INIT")
 #endif
 
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGINIT
-      WRITE(*,*) 'After PDLIB_STYLE_INIT, IMOD=', IMOD
+      WRITE(*,*) 'After PDLIB_INIT, IMOD=', IMOD
 #endif
       CALL SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
     END IF
@@ -2613,7 +2613,7 @@
 #endif
 !
 #ifdef W3_MPI
-              IF ( FLGRDALL( 1, 9) ) THEN
+              IF ( FLGRDALL( 1, 12) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
       CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC,    &
@@ -4021,7 +4021,7 @@
 #endif
 !
 #ifdef W3_MPI
-                IF ( FLGRDALL( 1, 9) ) THEN
+                IF ( FLGRDALL( 1, 12) ) THEN
                     IH     = IH + 1
                     IT     = IT + 1
       CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -5533,7 +5533,7 @@
 #endif
 !
 #ifdef W3_MPI
-              IF ( FLOGRR( 1, 9) ) THEN
+              IF ( FLOGRR( 1, 12) ) THEN
                 IH     = IH + 1
                 IT     = IT0 + 6
                 CALL MPI_SEND_INIT (ICEF(IAPROC), 1, WW3_FIELD_VEC, &
@@ -5930,7 +5930,7 @@
 #endif
 !
 #ifdef W3_MPI
-                  IF ( FLOGRR( 1, 9) ) THEN
+                  IF ( FLOGRR( 1, 12) ) THEN
                     IH     = IH + 1
                     IT     = IT0 + 6
                     CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, &

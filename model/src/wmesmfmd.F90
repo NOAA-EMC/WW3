@@ -166,7 +166,9 @@
       use W3SRC4MD, only: W3SPR4
 #endif
       use W3IOGOMD, only: W3OUTG
+#ifdef W3_SCRIP
       use WMSCRPMD, only: get_scrip_info_structured 
+#endif
 !/
 !/ Specify default data typing
 !/
@@ -2584,7 +2586,9 @@
             call w3setw ( imod, mdse, mdst )
             call w3seti ( imod, mdse, mdst )
             call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
             if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
             INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
             INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
             wxn = WXNwrst !replace with values from restart
@@ -3154,6 +3158,7 @@
 !
 ! 2.h Set ESMF import grid corner coordinates
 !
+#ifdef W3_SCRIP
       call ESMF_GridAddCoord( impGrid, &
         staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3225,6 +3230,7 @@
             rptry(grid_dims(1),grid_dims(2)+1)
         end if
       endif      
+#endif 
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create import field mask and routeHandle halo update
@@ -3634,6 +3640,7 @@
 !
 ! 2.h Set ESMF export grid corner coordinates
 !
+#ifdef W3_SCRIP
       call ESMF_GridAddCoord( expGrid, &
         staggerLoc=ESMF_STAGGERLOC_CORNER, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3705,6 +3712,7 @@
             rptry(grid_dims(1),grid_dims(2)+1)
         end if
       end if
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create export field mask and routeHandle halo update
@@ -4137,7 +4145,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then 
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4149,7 +4161,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
@@ -4539,7 +4555,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4551,7 +4571,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
