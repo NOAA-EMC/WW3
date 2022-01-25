@@ -187,7 +187,7 @@
 !/
 !/ Public module methods
 !/
-      public SetServices
+      public SetServices, SetVM
 !/
 !/ Private module parameters
 !/
@@ -770,6 +770,34 @@
           if (verbosity.gt.0) then
             write(logmsg,*) flds_scalar_index_ny
             call ESMF_LogWrite(trim(cname)//': flds_scalar_index_ny = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="mask_value_water", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          maskvaluewater = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) maskvaluewater
+            call ESMF_LogWrite(trim(cname)//': mask_value_water = '// &
+              trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          end if
+        end if
+
+        call NUOPC_CompAttributeGet(gcomp, name="mask_value_land", &
+          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (isPresent .and. isSet) then
+          maskvalueland = ESMF_UtilString2Int(cvalue, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (verbosity.gt.0) then
+            write(logmsg,*) maskvalueland
+            call ESMF_LogWrite(trim(cname)//': mask_value_land = '// &
               trim(logmsg), ESMF_LOGMSG_INFO, rc=rc)
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           end if
@@ -2558,7 +2586,9 @@
             call w3setw ( imod, mdse, mdst )
             call w3seti ( imod, mdse, mdst )
             call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
             if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
             INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
             INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
             wxn = WXNwrst !replace with values from restart
@@ -4115,7 +4145,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then 
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4127,7 +4161,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
@@ -4517,7 +4555,11 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(i,j)
+               if (j == 1) then
+                 nodeCoords(pos) = xgrd(1,i)
+               else
+                 nodeCoords(pos) = ygrd(1,i)
+               endif
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4529,7 +4571,11 @@
          do i = 1,npa
             do j = 1,2
                pos=2*(i-1)+j
-               nodeCoords(pos)=XYB(iplg(i),j)
+               if ( j == 1) then
+                 nodeCoords(pos) = xgrd(1,iplg(i))
+               else
+                 nodeCoords(pos) = ygrd(1,iplg(i))
+               endif
             enddo
          enddo
       endif
