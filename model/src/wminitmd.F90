@@ -4843,9 +4843,7 @@
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !  Checkpoint
         J=8
-            !OUTPTS(I)%FLOUT(8)=.FALSE.
           IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
-             !OUTPTS(I)%FLOUT(8)=.TRUE.
               IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                   WRITE (MDSS,951) J, IDOTYP(J)
               TTIME(1) = ODAT(5*(J-1)+1,I)
@@ -4875,8 +4873,6 @@
                     END DO
                   WRITE (MDSS,954) DTME21(1:19)
                 END IF
-            !ELSE
-            !OUTPTS(I)%FLOUT(8) = .FALSE.
           END IF
 !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 !
@@ -5607,13 +5603,6 @@
 !
 ! Checkpoint
         J=8
-            OUTPTS(I)%FLOUT(8)=.FALSE.
-          IF ( ODAT(5*(J-1)+3,I) .NE. 0 ) THEN
-             OUTPTS(I)%FLOUT(8)=.TRUE.
-          ELSE
-              OUTPTS(I)%FLOUT(8)=.FALSE.
-          ENDIF
-
           IF ( FLOUT(J) ) THEN
               IF ( TOUTP(1,I) .EQ. -1 ) THEN
                   TOUTP(:,I) = TONEXT(:,J)
