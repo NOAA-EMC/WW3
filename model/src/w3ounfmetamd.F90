@@ -150,7 +150,7 @@
 !>         comment "space seperated strings should be quoted" c
 !>         version = 1.0 r
 !>    @endcode
-!>    
+!>
 !> @param DEBUG Control debug output to screen
 !> @param FN_META Meta-data input filename
 !> @param IPART_TOKEN String token for integer partition number
@@ -168,25 +168,25 @@
 !?!>     @param         CHARACTER(LEN=120) :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
 !?!>     @param         CHARACTER(LEN=512) :: VARNC = UNSETC
 !?!>     @param         TYPE(META_LIST_T) :: EXTRA
-!?!>     @param 
+!?!>     @param
 !?!>     @param         ! For updating meta only:
 !?!>     @param         INTEGER :: IFI = 0, IFJ = 0, IFC = 1
 !?!>     @param         CHARACTER(LEN=6) :: FLDID = ''
 !?!>     @param       ENDTYPE META_T
-!?!>     @param 
+!?!>     @param
 !?!>     @param       ! Storage for meta data aggregated by component (NFIELD) ...
 !?!>     @param       TYPE FIELD_T
 !?!>     @param         TYPE(META_T), POINTER :: META(:)
 !?!>     @param       END TYPE FIELD_T
-!?!>     @param 
+!?!>     @param
 !?!>     @param       ! ... field (IFJ) ...
 !?!>     @param       TYPE GROUP_T
 !?!>     @param         TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
 !?!>     @param       END TYPE GROUP_T
-!?!>     @param 
+!?!>     @param
 !?!>     @param       ! ... and group (IFI).
 !?!>     @param       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
-!?!>     @param 
+!?!>     @param
 !?!>     @param       ! Storage for the Global meta data (free form):
 !?!>     @param       TYPE(META_LIST_T) :: GLOBAL_META
 !>     @param FL_DEFAULT_GBL_META Flag to include the default global meta data
@@ -202,7 +202,7 @@
 !?!>     @param         INTEGER(KIND=2)                 :: NP           ! Num parts (max NOSWLL)
 !?!>     @param         TYPE(PART_TMPL_T), POINTER      :: NEXT         ! LinkedList pointer
 !?!>     @param       END TYPE PART_TMPL_T
-!?!>     @param 
+!?!>     @param
 !>     @param PART_TMPL List of user defined partitioned parameter template
 !>            strings
 !>     @param NCVARTYPE NetCDF variable type.
@@ -226,6 +226,147 @@
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
 !/
+!  1. Purpose :
+!
+!     Manages user configurable netCDF meta-data for ww3_ounf program.
+!
+!  2. Method :
+!
+!     Default netCDF meta data is provided for each WW3 output variable
+!     and is stored intentally via the META_T type. The meta values are
+!     grouped by component (max 3), field (IFI) and group (IFJ).
+!
+!     The user can override this meta data via an input text file
+!     with the filename `ounfmeta.inp`.
+!
+!     Entries in the file are formatted as follows:
+!
+!       META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
+!         attr_name = attr_value
+!         attr_name = attr_value
+!         extra_attr = extra_value [type]
+!       ... repeated as many times as required.
+!
+!     An output field is selected using the META keyword followed by
+!     either an [IFI, IFJ] integer pair or a FieldID string. Optionally,
+!     either form may be followed by an integer value to select the
+!     component in multi-component fields (such as wind).
+!
+!     Blank lines and comments lines (starting with $) are ignored.
+!
+!     attr_name is the netCDF attribute name that you wish to override.
+!     This can be one of the following:
+!         -  "varnm"
+!         -  "ename"
+!         -  "standard_name", or "varns"
+!         -  "long_name" or "varnl"
+!         -  "globwave_name" or "varng"
+!         -  "direction_reference", "dir_ref" or "varnd"
+!         -  "comment" or "varnc"
+!         -  "units"
+!         -  "valid_min" or "vmin"
+!         -  "valid_max" or "vmax"
+!         -  "scale_factor" or "fsc"
+!
+!     Any other attribute name is assumed to be an optional "extra"
+!     attribute. This extra attribute can take an optional "type"
+!     keyworkd to specify the variable tpye of the metadata. If
+!     no type is supplied, it defaults to a characer type. Valid
+!     types are one of ["c", "r", "i"] for character/string,
+!     real/float or integer values respectively.
+!
+!     Global meta data can be specified with a special "META global" line:
+!
+!       META global
+!         extra_attr = extra_value [type]
+!         extra_attr = extra_value [type]
+!
+!     A "coordinate reference system" (CRS) can be specified for all output
+!     fields using the "CRS" keyword. As a minimum, the "grid_mapping_name"
+!     attribute must be specified. If the CRS section is defined, all output
+!     fields will have a "grid_mapping" attribute added referencing the
+!     CRS variable. "crs_vaname" will be created as a scalar NF90_CHAR
+!     variable in the output file.
+!
+!       CRS <crs_varname>
+!         grid_mapping_name = <mapping name>
+!         attr = value
+!         attr = value
+!
+!     Note: ALL keywords and "Field Name ID" strings (e.g. HS) are
+!     case insensitive. All netCDF attribute names are case sensitive.
+!
+!     Partitioned outputs are handles slightly differently; one meta data
+!     entry is used for all partitions of a field. The metadata is made
+!     specific to a particular partition via template strings. There are
+!     two built-in template strings: SPART and IPART. These provide a
+!     "string" description (e.g. "wind sea", "primary swell", etc) or an
+!     integer partition number. These can be references in the meta data
+!     using the template name surrounded by < .. >, e.g. <SPART>
+!
+!     It is also possible to supply user defined partitioned parameter
+!     template strings in the ounfmeta.inp file using the TEMPLATE
+!     keyword, as below:
+!
+!       TEMPLATE <template-name>
+!         String for partition 0
+!         String for partition 1
+!         String for partition 2
+!         String for partition 3
+!         ... etc
+!
+!     Specifying the <template-name> with a trailing underscore will
+!     provide an underscore seperated (_) string, rather than space
+!     seperated.
+!
+!
+!     Example ounfmeta.inp file:
+!     ==========================
+!
+!        $ Lines starting with dollars are comments.
+!        $ The line starts a meta-data section for the depth field
+!        META DPT
+!          standard_name = depth
+!          long_name = "can be quoted string"
+!          comment = or an unquoted string
+!          vmax = 999.9
+!
+!        $ Next one is HSig (group 2, field 1)
+!        META 2 1
+!          varns = "sig. wave height"
+!          varnl = "this is long name"
+!
+!        $ Next one is second component of wind. It also sets an
+!        $ "extra" meta data value (height - a float)
+!        META WND 2
+!          standard_name = "v-wind"
+!          height = 10.0 "r"
+!
+!        $ User defined partitioned parameters template strings:
+!        TEMPLATE PARTSTR
+!          wind wave
+!          primary swell
+!          secondary swell
+!
+!        $ Use partition templates in partitioned Hs field:
+!        $ (SPART and IPART are built-in)
+!        META PHS
+!          standard_name = "<SPART_>_sigificant_wave_height"
+!          long_name = "<PARTSTR>"
+!          partition_number = "<IPART>"
+!
+!        $ Coordinate reference system:
+!        CRS crs
+!          grid_mapping_name = "latitude_longitude"
+!          semi_major_axis = 6371000.0 f
+!          inverse_flattening = 0 f
+!
+!        $ Global metadata:
+!        META global
+!          institution = UKMO
+!          comment "space seperated strings should be quoted" c
+!          version = 1.0 r
+!
 !/ ------------------------------------------------------------------- /
 !/
       USE NETCDF
@@ -322,11 +463,12 @@
 !>
 !> @details By default, directional fields will be set up to output
 !>    a magnitude and direction field. Alternatively, if VEC is set to
-!>    True, then u/v vectors will be generated instead. @note - this is
+!>    True, then u/v vectors will be generated instead.
 !>
-!>    currently only implemented for "current" and "wind" fields.
+!> @note - vector output is currently only implemented for the
+!>    "current" and "wind" fields.
 !>
-!> @param VEC Outut vectors for directional fields rather than 
+!> @param VEC Output vectors for directional fields rather than
 !>    direction/magnitude.
 !>
 !> @author Chris the Bunney @date 09-Mar-2020
@@ -343,6 +485,12 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    22-Mar-2021 : Added vector flag                   ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Allocates space for the META_T arrays and sets some constants.
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -457,6 +605,12 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     De-allocates memory used for the META_T arrays
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/
@@ -511,6 +665,35 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads the next valid line from the user meta input file.
+!
+!  2. Method :
+!     Lines are repeatedly read in from the input file until
+!     a valid input line is reached. Blank lines and comment lines
+!     (starting with $) are skipped.
+!
+!     If the end of file is reached before any valid line is read
+!     then EOF is set to true.
+!
+!     If the next valid line is a new section marker (META or TEMPLATE)
+!     then the NEW_SECTION flag is set to true.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI    Int.  I  Unit number of input file
+!       BUF    Char.  O  Next input line read from file
+!       ILINE   Int. I/O Line number of file
+!       EOF    Bool.  O  True if end-of-file is reached.
+!       NEW_SECTION
+!              Bool.  O  True if new section marker found
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -623,6 +806,22 @@
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/
+!
+!  1. Purpose :
+!
+!     Replaces tab characters in a string with a space.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       STR    Char.  I/O  Character string to process
+!     ----------------------------------------------------------------
+!
+!  3. Remarks :
+!
+!     Assumes ASCII encoding! Tab character is ASCII value 9.
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       CHARACTER(*), INTENT(INOUT) :: STR
@@ -665,6 +864,21 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Feb-2021 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Replaces single characters in a string. Returns a new string,
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       STR    CharArr  I  Character string to process
+!       C      Char     I  Character to search for
+!       REP    Char     I  Character to substitute
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       CHARACTER(*)        :: STR
@@ -707,6 +921,13 @@
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
 !/                  metadata for directional fields.
+!/
+!
+!  1. Purpose :
+!
+!     Reads meta data entries from the ountmeta.inp file and update
+!     default values set via the DEFAULT_META subroutine.
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -848,7 +1069,7 @@
 !/ ------------------------------------------------------------------- /
 !> @brief Decode the META header line.
 !>
-!> @details The internal WW3 field can be specified either as an 
+!> @details The internal WW3 field can be specified either as an
 !>    [IFI, IFJ] integer combination, or a field ID tag (such as "HS").
 !>
 !>    Both forms can also specify an optional component (IFC) integer
@@ -876,6 +1097,33 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    02-Feb-2021 : NODEFAULT option for Global meta    ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Decode the META header line.
+!
+!  2. Method:
+!
+!     The internal WW3 field can be specified either as an [IFI, IFJ]
+!     integer combination, or a field ID tag (such as "HS").
+!
+!     Both forms can also specify an optional component (IFC) integer
+!     value for multi-component fields (defaults to 1).
+!
+!     Field name ID tags are case-insensitive, HS == hs == Hs.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       BUF    Char.  I  Input header string (without leading META tag)
+!       ILINE   Int.  I  Line number (for error reporting)
+!       IFI     Int.  O  Output group number
+!       IFJ     Int.  O  Output field number
+!       IFC     Int.  O  Component number (defaults to 1)
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       USE W3IOGOMD, ONLY: W3FLDTOIJ
 
@@ -986,6 +1234,29 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/
+!
+!  1. Purpose :
+!
+!     Reads in attribute name/value pairs and updates the relevant
+!     values in the META type.
+!
+!  2. Method:
+!
+!     Keeps looping over input lines in file until next META section
+!     or EOF is found. Splits meta pairs on the = character.
+!
+!     Note - the "extra" metadata pair can also provide a variable
+!     type ("c", "i", or "r"; for character, int or real respectively)
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI      Int.   I  Unit number of metadata input file
+!       META  Int.Ptr.   O  Pointer to META type
+!       ILINE     Int. I/O  Current line number in file
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)                  :: NDMI
@@ -1144,6 +1415,34 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Gets the attribute value and optional variable type from
+!     the passed in string.
+!
+!  2. Method:
+!
+!     If two freeform values can be read from the input string, it is
+!     assumed to be a value and type, otherwise if only one value can
+!     be read the type is assumed to be "character".
+!
+!     It is important to quote strings if they contain spaces.
+!
+!     Valid types are "c" "r/f", and "i" for character, real/float and
+!     integer values.
+
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       BUF      Char.   I  Input string to process
+!       ILINE    Int.    I  Line number (for error reporting)
+!       ATTV     Char.   O  Attribute value
+!       ATT_TYPE Char.   O  Attribute type
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1229,6 +1528,30 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads in freeform attribute name/value pairs.
+!
+!  2. Method:
+!
+!     Keeps looping over input lines in file until next section
+!     or EOF is found. Splits meta pairs on the = character.
+!
+!     Freeform metadata pairs can also provide a variable type
+!     ("c", "i", or "r"; for character, int or real respectively).
+!     String values with spaces should be quoted.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI     Char.   I  Unit number of metadata input file
+!       ILINE     Int. I/O  Current line number in file
+!       METALIST Type. I/O  A META_LIST_T object to append to
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)               :: NDMI
@@ -1318,6 +1641,22 @@
 !/                  +-----------------------------------+
 !/
 !/    07-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads in metadata for the coordinate reference system (CRS)
+!     scalar variable. The "grid_mapping_name" must be supplied as
+!     an attribute.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI     Char.   I  Unit number of metadata input file
+!       ILINE     Int. I/O  Current line number in file
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)     :: NDMI
@@ -1461,6 +1800,29 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Returns a META_T type containig the netCDF matadata for the
+!     requested field
+!
+!  2. Method :
+!
+!     A copy of the meta-data is returned, rather than a pointer. This
+!     is because in the case of paritioned parameters, the metadata
+!     will be updated with the partition number.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IFI     Int.  I  Output group number
+!       IFJ     Int.  I  Output field number
+!       ICOMP   Int.  I  Component number (defaults to 1)
+!       IPART   Int.  I  Partition number (defaults to 1)
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: IFI, IFJ
@@ -1545,6 +1907,32 @@
 !/                  +-----------------------------------+
 !/
 !/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Reads in a TEMPLATE section from file.
+!     This section defines a list of text strings that will be used
+!     to replace a "placeholder string" when generating metadata for
+!     partitioned parameters.
+!
+!     Format of section is:
+!
+!       TEMPLATE <placeholder_string>
+!         Value for partition IPART=0
+!         Value for partition IPART=1
+!         Value for partition IPART=2
+!         ...
+!         Value for partition IPART=N
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDMI    Int.  I/O  Unit number
+!       ILINE   Int.  I/O  Line number
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)               :: NDMI
@@ -1646,6 +2034,12 @@
 !/                  +-----------------------------------+
 !/
 !/    04-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Prints the patition templates to screen (for debug use).
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -1694,6 +2088,25 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Adds partition number to meta-data.
+!
+!  2. Method :
+!
+!     Replaces all instances of "<IPART>" in the provided meta data with
+!     the partition number IPART.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       META  META_T  I  Meta data type
+!       IPART   Int.  I  Partition number
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1729,7 +2142,7 @@
       END SUBROUTINE ADD_PARTNO
 
 !/ ------------------------------------------------------------------- /
-!> @brief Performs string substition of placeholder strings with 
+!> @brief Performs string substition of placeholder strings with
 !>    partition number specfic values.
 !>
 !> @details The placeholder <IPART> is automatically replaced with the
@@ -1754,6 +2167,27 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Performs string substition of placeholder strings with partition
+!     number specfic values.
+!
+!     The placeholder <IPART> is automatically replaced with the
+!     partition number (0, 1, 2, etc).
+!
+!     Other template placeholders can be defined in the ounfmeta.inp
+!     file by the user.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       INSTR  Char.  I/O  Input string
+!       IPART   Int.  I    Partition number
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1871,6 +2305,22 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Writes the meta-data entries for a variable.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID    Int.  I/O  NetCDF file ID
+!       VARID   Int.  I/O  NetCDF variable ID
+!       META    Int.  I    Meta data type
+!       ERR     Int.  O    Error value
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1986,6 +2436,20 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Writes the user meta-data entries for the global attributes
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID    Int.  I/O  NetCDF file ID
+!       ERR     Int.  O    Error value
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -2019,6 +2483,22 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Writes the freeform user meta-data entries for a NetCDF variable
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NCID      Int.  I/O  NetCDF file ID
+!       VARID     Int.  I/O  NetCDF file ID
+!       METALIST  Type. I    META_LIST_T object to write
+!       ERR       Int.  O    Error value
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -2093,6 +2573,19 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
+!/
+!
+!  1. Purpose :
+!
+!     Writes meta-data to the screen - for debugging purposes.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       VARID   Int.  I/O  NetCDF variable ID
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
@@ -2122,7 +2615,7 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Performs "deep" copy of a META_T type.
-!> 
+!>
 !> @details A "deep" copy ensures that the linked list data in the EXTRA
 !> field is copied, rather than just copying the pointer.
 !>
@@ -2146,6 +2639,20 @@
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
 !/
+!
+!  1. Purpose :
+!
+!     Performs "Deep" copy of a META_T type. This ensures that the
+!     linked list data in the EXTRA field is copied, rather than just
+!     copying the pointer.
+!
+!  2. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       META   META_T.  I   META data structure to copy
+!     ----------------------------------------------------------------
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
@@ -2184,6 +2691,22 @@
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
+!/
+!
+!  1. Purpose :
+!
+!     Populates the default meta data for ww3_ounf.
+!
+!  2. Remarks :
+!
+!     VMIN and VMAX are now set in the units of the output field.
+!     Previously, they were set with scaled values based on the scaling
+!     factor FSC. The scaling is now performed (if necessary) in the
+!     WRITE_META subroutine.
+!
+!     FSC (scale factor) is only applied to data and valid_min/max if
+!     the netCDF variable type is NF90_SHORT.
+!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), POINTER :: META(:)
