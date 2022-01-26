@@ -6,8 +6,6 @@
 !/ ------------------------------------------------------------------- /
 !> @brief Manages user configurable netCDF meta-data for ww3_ounf program.
 !>
-!> @author Chris Bunney @date 02-Nov-202
-!>
 !> @details Default netCDF meta data is provided for each WW3 output variable
 !>    and is stored intentally via the META_T type. The meta values are
 !>    grouped by component (max 3), field (IFI) and group (IFJ).
@@ -17,7 +15,7 @@
 !>
 !>    Entries in the file are formatted as follows:
 !>
-!>    @code
+!>    @code{.txt}
 !>      META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
 !>        attr_name = attr_value
 !>        attr_name = attr_value
@@ -55,7 +53,7 @@
 !>
 !>    Global meta data can be specified with a special "META global" line:
 !>
-!>    @code
+!>    @code{.txt}
 !>      META global
 !>        extra_attr = extra_value [type]
 !>        extra_attr = extra_value [type]
@@ -68,7 +66,7 @@
 !>    CRS variable. "crs_vaname" will be created as a scalar NF90_CHAR
 !>    variable in the output file.
 !>
-!>    @code
+!>    @code{.txt}
 !>      CRS <crs_varname>
 !>        grid_mapping_name = <mapping name>
 !>        attr = value
@@ -90,7 +88,7 @@
 !>    template strings in the ounfmeta.inp file using the TEMPLATE
 !>    keyword, as below:
 !>
-!>    @code
+!>    @code{.txt}
 !>      TEMPLATE <template-name>
 !>        String for partition 0
 !>        String for partition 1
@@ -105,7 +103,7 @@
 !>
 !>    Example ounfmeta.inp file:
 !>
-!>    @code
+!>    @code{.txt}
 !>       $ Lines starting with dollars are comments.
 !>       $ The line starts a meta-data section for the depth field
 !>       META DPT
@@ -151,68 +149,8 @@
 !>         version = 1.0 r
 !>    @endcode
 !>
-!> @param DEBUG Control debug output to screen
-!> @param FN_META Meta-data input filename
-!> @param IPART_TOKEN String token for integer partition number
-!> @param SPART_TOKEN String token for partition descriptive string
-!>                        (space separated).
-!>     @param SPART_TOKEN_ String token for partition descriptive string
-!>                        (underscore separated).
-!?!> TODO: How do we document TYPE declarations in doxygen?
-!?!>     @param       ! Type for storing WW3 netCDF metadata for a variable
-!?!>     @param       TYPE META_T
-!?!>     @param         REAL :: FSC, VMIN, VMAX = UNSETR
-!?!>     @param         CHARACTER(LEN=24)  :: UNITS = UNSETC
-!?!>     @param         CHARACTER(LEN=50)  :: ENAME = UNSETC
-!?!>     @param         CHARACTER(LEN=80)  :: VARNM = UNSETC, VARNL = UNSETC
-!?!>     @param         CHARACTER(LEN=120) :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
-!?!>     @param         CHARACTER(LEN=512) :: VARNC = UNSETC
-!?!>     @param         TYPE(META_LIST_T) :: EXTRA
-!?!>     @param
-!?!>     @param         ! For updating meta only:
-!?!>     @param         INTEGER :: IFI = 0, IFJ = 0, IFC = 1
-!?!>     @param         CHARACTER(LEN=6) :: FLDID = ''
-!?!>     @param       ENDTYPE META_T
-!?!>     @param
-!?!>     @param       ! Storage for meta data aggregated by component (NFIELD) ...
-!?!>     @param       TYPE FIELD_T
-!?!>     @param         TYPE(META_T), POINTER :: META(:)
-!?!>     @param       END TYPE FIELD_T
-!?!>     @param
-!?!>     @param       ! ... field (IFJ) ...
-!?!>     @param       TYPE GROUP_T
-!?!>     @param         TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
-!?!>     @param       END TYPE GROUP_T
-!?!>     @param
-!?!>     @param       ! ... and group (IFI).
-!?!>     @param       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
-!?!>     @param
-!?!>     @param       ! Storage for the Global meta data (free form):
-!?!>     @param       TYPE(META_LIST_T) :: GLOBAL_META
-!>     @param FL_DEFAULT_GBL_META Flag to include the default global meta data
-!>            geneated by main ww3_ounf program.
-!>     @param CRS_NAME Coordinate reference system (CRS) name
-!>     @param CRS_META Attribute pair list for coordinate reference system meta
-!>            data.
-!>     @param CRS_IS_DEFAULT True if CRS is default, false if user supplied.
-!>     @param COORDS_ATTR Value for `coordinates` attribute.
-!?!>     @param       TYPE PART_TMPL_T
-!?!>     @param         CHARACTER(LEN=128)              :: TMPL         ! Placeholder
-!?!>     @param         CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) ! Partition description
-!?!>     @param         INTEGER(KIND=2)                 :: NP           ! Num parts (max NOSWLL)
-!?!>     @param         TYPE(PART_TMPL_T), POINTER      :: NEXT         ! LinkedList pointer
-!?!>     @param       END TYPE PART_TMPL_T
-!?!>     @param
-!>     @param PART_TMPL List of user defined partitioned parameter template
-!>            strings
-!>     @param NCVARTYPE NetCDF variable type.
-!>     @param DIRCOM Directional convention comment string
-!>     @param PARTCOM Partitioning method comment string
-!>     @param SNAMEP Partition standard name templates
-!>     @param VECTOR Vector (true) or direction/magnitude (false) for
-!>            directional fields
-!>     @param FLRTD Is grid on a rotated pole?
-
+!> @author Chris Bunney @date 02-Nov-202
+!!
       MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -226,147 +164,6 @@
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
 !/
-!  1. Purpose :
-!
-!     Manages user configurable netCDF meta-data for ww3_ounf program.
-!
-!  2. Method :
-!
-!     Default netCDF meta data is provided for each WW3 output variable
-!     and is stored intentally via the META_T type. The meta values are
-!     grouped by component (max 3), field (IFI) and group (IFJ).
-!
-!     The user can override this meta data via an input text file
-!     with the filename `ounfmeta.inp`.
-!
-!     Entries in the file are formatted as follows:
-!
-!       META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
-!         attr_name = attr_value
-!         attr_name = attr_value
-!         extra_attr = extra_value [type]
-!       ... repeated as many times as required.
-!
-!     An output field is selected using the META keyword followed by
-!     either an [IFI, IFJ] integer pair or a FieldID string. Optionally,
-!     either form may be followed by an integer value to select the
-!     component in multi-component fields (such as wind).
-!
-!     Blank lines and comments lines (starting with $) are ignored.
-!
-!     attr_name is the netCDF attribute name that you wish to override.
-!     This can be one of the following:
-!         -  "varnm"
-!         -  "ename"
-!         -  "standard_name", or "varns"
-!         -  "long_name" or "varnl"
-!         -  "globwave_name" or "varng"
-!         -  "direction_reference", "dir_ref" or "varnd"
-!         -  "comment" or "varnc"
-!         -  "units"
-!         -  "valid_min" or "vmin"
-!         -  "valid_max" or "vmax"
-!         -  "scale_factor" or "fsc"
-!
-!     Any other attribute name is assumed to be an optional "extra"
-!     attribute. This extra attribute can take an optional "type"
-!     keyworkd to specify the variable tpye of the metadata. If
-!     no type is supplied, it defaults to a characer type. Valid
-!     types are one of ["c", "r", "i"] for character/string,
-!     real/float or integer values respectively.
-!
-!     Global meta data can be specified with a special "META global" line:
-!
-!       META global
-!         extra_attr = extra_value [type]
-!         extra_attr = extra_value [type]
-!
-!     A "coordinate reference system" (CRS) can be specified for all output
-!     fields using the "CRS" keyword. As a minimum, the "grid_mapping_name"
-!     attribute must be specified. If the CRS section is defined, all output
-!     fields will have a "grid_mapping" attribute added referencing the
-!     CRS variable. "crs_vaname" will be created as a scalar NF90_CHAR
-!     variable in the output file.
-!
-!       CRS <crs_varname>
-!         grid_mapping_name = <mapping name>
-!         attr = value
-!         attr = value
-!
-!     Note: ALL keywords and "Field Name ID" strings (e.g. HS) are
-!     case insensitive. All netCDF attribute names are case sensitive.
-!
-!     Partitioned outputs are handles slightly differently; one meta data
-!     entry is used for all partitions of a field. The metadata is made
-!     specific to a particular partition via template strings. There are
-!     two built-in template strings: SPART and IPART. These provide a
-!     "string" description (e.g. "wind sea", "primary swell", etc) or an
-!     integer partition number. These can be references in the meta data
-!     using the template name surrounded by < .. >, e.g. <SPART>
-!
-!     It is also possible to supply user defined partitioned parameter
-!     template strings in the ounfmeta.inp file using the TEMPLATE
-!     keyword, as below:
-!
-!       TEMPLATE <template-name>
-!         String for partition 0
-!         String for partition 1
-!         String for partition 2
-!         String for partition 3
-!         ... etc
-!
-!     Specifying the <template-name> with a trailing underscore will
-!     provide an underscore seperated (_) string, rather than space
-!     seperated.
-!
-!
-!     Example ounfmeta.inp file:
-!     ==========================
-!
-!        $ Lines starting with dollars are comments.
-!        $ The line starts a meta-data section for the depth field
-!        META DPT
-!          standard_name = depth
-!          long_name = "can be quoted string"
-!          comment = or an unquoted string
-!          vmax = 999.9
-!
-!        $ Next one is HSig (group 2, field 1)
-!        META 2 1
-!          varns = "sig. wave height"
-!          varnl = "this is long name"
-!
-!        $ Next one is second component of wind. It also sets an
-!        $ "extra" meta data value (height - a float)
-!        META WND 2
-!          standard_name = "v-wind"
-!          height = 10.0 "r"
-!
-!        $ User defined partitioned parameters template strings:
-!        TEMPLATE PARTSTR
-!          wind wave
-!          primary swell
-!          secondary swell
-!
-!        $ Use partition templates in partitioned Hs field:
-!        $ (SPART and IPART are built-in)
-!        META PHS
-!          standard_name = "<SPART_>_sigificant_wave_height"
-!          long_name = "<PARTSTR>"
-!          partition_number = "<IPART>"
-!
-!        $ Coordinate reference system:
-!        CRS crs
-!          grid_mapping_name = "latitude_longitude"
-!          semi_major_axis = 6371000.0 f
-!          inverse_flattening = 0 f
-!
-!        $ Global metadata:
-!        META global
-!          institution = UKMO
-!          comment "space seperated strings should be quoted" c
-!          version = 1.0 r
-!
 !/ ------------------------------------------------------------------- /
 !/
       USE NETCDF
@@ -388,73 +185,90 @@
 
       PUBLIC
 
-      LOGICAL, PRIVATE :: DEBUG = .FALSE.
+      LOGICAL, PRIVATE :: DEBUG = .FALSE. !< Control debug output to screen
 
+      !> Meta-data input filename
       CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
 
-      ! String token used to merge in partition number:
+      !> String token for integer partition number
       CHARACTER(LEN=*), PARAMETER :: IPART_TOKEN  = "<IPART>"
+
+      !> String token for partition descriptive string (space separated)
       CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN  = "<SPART>"
+
+      !> String token for partition descriptive string (underscore separated)
       CHARACTER(LEN=*), PARAMETER :: SPART_TOKEN_ = "<SPART_>"
 
-      ! Type for storing WW3 netCDF metadata for a variable
+      !> Type for storing WW3 netCDF metadata for a variable
       TYPE META_T
-        REAL :: FSC, VMIN, VMAX = UNSETR
-        CHARACTER(LEN=24)  :: UNITS = UNSETC
-        CHARACTER(LEN=50)  :: ENAME = UNSETC
-        CHARACTER(LEN=80)  :: VARNM = UNSETC, VARNL = UNSETC
-        CHARACTER(LEN=120) :: VARNS = UNSETC ,VARNG = UNSETC, VARND = UNSETC
-        CHARACTER(LEN=512) :: VARNC = UNSETC
-        TYPE(META_LIST_T) :: EXTRA
+        REAL :: FSC                             !< Scaling factor for data
+        REAL :: VMIN                            !< "valid_min" attribute
+        REAL :: VMAX = UNSETR                   !< "valid_max" attribute
+        CHARACTER(LEN=24)  :: UNITS = UNSETC    !< SI units for field
+        CHARACTER(LEN=50)  :: ENAME = UNSETC    !< Field name used in output filename
+        CHARACTER(LEN=80)  :: VARNM = UNSETC, & !< netCDF variable name
+                              VARNL = UNSETC    !< "long_name" attibute
+        CHARACTER(LEN=120) :: VARNS = UNSETC, & !< "standard_name" attribute
+                              VARNG = UNSETC, & !< "globwave_name" attribute
+                              VARND = UNSETC    !< "direction_convention" attribute
+        CHARACTER(LEN=512) :: VARNC = UNSETC    !< "comment attribute
+        TYPE(META_LIST_T) :: EXTRA              !< List of user defined meta data
 
         ! For updating meta only:
-        INTEGER :: IFI = 0, IFJ = 0, IFC = 1
-        CHARACTER(LEN=6) :: FLDID = ''
+        INTEGER :: IFI = 0, &           !< Group index to update
+                   IFJ = 0, &           !< Field index to update
+                   IFC = 1              !< Component index to update
+        CHARACTER(LEN=6) :: FLDID = ''  !< Field ID to update
       ENDTYPE META_T
 
-      ! Storage for meta data aggregated by component (NFIELD) ...
+      !> Type for storage of meta data aggregated by component (NFIELD)
       TYPE FIELD_T
-        TYPE(META_T), POINTER :: META(:)
+        TYPE(META_T), POINTER :: META(:) !< Pointer to meta data for field
       END TYPE FIELD_T
 
-      ! ... field (IFJ) ...
+      !> Type for storage of meta data aggregated by field (IFI)
       TYPE GROUP_T
-        TYPE(FIELD_T), ALLOCATABLE :: FIELD(:)
+        TYPE(FIELD_T), ALLOCATABLE :: FIELD(:) !< Pointer to fields in group
       END TYPE GROUP_T
 
-      ! ... and group (IFI).
+      !> Storage for meta data aggregated by group (IFJ)
       TYPE(GROUP_T), ALLOCATABLE :: GROUP(:)
 
-      ! Storage for the Global meta data (free form):
+      !> Storage for the Global meta data (free form)
       TYPE(META_LIST_T) :: GLOBAL_META
+
+      !> Flag for using default (true) or user-defined (false) global meta data
       LOGICAL           :: FL_DEFAULT_GBL_META = .TRUE.
 
       ! Storage for coordinate reference system (CRS) metadata:
-      CHARACTER(LEN=128) :: CRS_NAME = ''
-      TYPE(META_LIST_T)  :: CRS_META
-      LOGICAL            :: CRS_IS_DEFAULT = .FALSE. ! True if CRS set by this module
+      CHARACTER(LEN=128) :: CRS_NAME = '' !< Coordinate reference system (CRS) name
+      TYPE(META_LIST_T)  :: CRS_META !< Meta data list for CRS
+      LOGICAL            :: CRS_IS_DEFAULT = .FALSE. !< True if CRS set by this module
 
-      ! "coordinates" attribute - for defining auxiliary coordinates (for all variables)
+      !> "coordinates" attribute - for defining auxiliary coordinates (for all variables)
       CHARACTER(LEN=256) :: COORDS_ATTR = ''
 
-      ! Type for storing partitioned parameter template strings.
-      ! Defined as a linked-list
+      !> Type for storing partitioned parameter template strings.
+      !> Defined as a linked-list
       TYPE PART_TMPL_T
-        CHARACTER(LEN=128)              :: TMPL         ! Placeholder
-        CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) ! Partition description
-        INTEGER(KIND=2)                 :: NP           ! Num parts (max NOSWLL)
-        TYPE(PART_TMPL_T), POINTER      :: NEXT         ! LinkedList pointer
+        CHARACTER(LEN=128)              :: TMPL         !< Placeholder
+        CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) !< Partition description
+        INTEGER(KIND=2)                 :: NP           !< Num parts (max NOSWLL)
+        TYPE(PART_TMPL_T), POINTER      :: NEXT         !< LinkedList pointer
       END TYPE PART_TMPL_T
 
+      !> User-defined partitionted paratmeters template strings
       TYPE(PART_TMPL_T), POINTER :: PART_TMPL
 
-      INTEGER            :: NCVARTYPE   ! netCDF variable type
-      CHARACTER(LEN=30)  :: DIRCOM      ! Direction convention comment
-      CHARACTER(LEN=128) :: PARTCOM     ! Partitioning method comment
-      CHARACTER(LEN=15)  :: SNAMEP(5)   ! Part. standard name templates
+      INTEGER            :: NCVARTYPE   !< NetCDF variable type (2=int, 3=real, 4=depends)
+      CHARACTER(LEN=30)  :: DIRCOM      !< Directional convention comment
+      CHARACTER(LEN=128) :: PARTCOM     !< Partitioning method comment
+      CHARACTER(LEN=15)  :: SNAMEP(5)   !< Part. standard name templates
 
-      LOGICAL, PRIVATE   :: VECTOR      ! Vector or dir/mag for dir fields?
-      LOGICAL            :: FLRTD = .FALSE.
+      !> Flag for vector (true) or direction/magnitude (false) convention
+      !> for directional fields
+      LOGICAL, PRIVATE   :: VECTOR
+      LOGICAL            :: FLRTD = .FALSE. !< Flag for rototed pole grid
 
       CONTAINS
 
