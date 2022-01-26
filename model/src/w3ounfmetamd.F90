@@ -149,7 +149,11 @@
 !>         version = 1.0 r
 !>    @endcode
 !>
-!> @author Chris Bunney @date 02-Nov-202
+!> @author Chris Bunney @date 02-Nov-2020
+!>
+!! TODO - I NEED THIS DOUBLE BANG COMMENT HERE OTHERWISE DOXYGEN
+!!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
+!!        WHY???!!
 !!
       MODULE W3OUNFMETAMD
 !/
@@ -2234,8 +2238,8 @@
 !>    is essentially a convenience/legacy function that calls the
 !>    \link WRITE_FREEFORM_META_LIST \endlink subroutine.
 !>
-!> param[in]   NCID  NetCDF file ID
-!> param[out]  ERR   Error value
+!> @param[in]   NCID  NetCDF file ID
+!> @param[out]  ERR   Error value
 !>
 !> @author Chris Bunney @date 09-Nov-2020
 !/ ------------------------------------------------------------------- /
