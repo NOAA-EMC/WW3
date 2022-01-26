@@ -4,12 +4,11 @@
 !> @author Chris Bunney @date 02-Nov-2020
 
 !/ ------------------------------------------------------------------- /
-!> @brief Manages user configurable netCDF meta-data for
-!>           ww3_ounf program.
+!> @brief Manages user configurable netCDF meta-data for ww3_ounf program.
 !>
 !> @author Chris Bunney @date 02-Nov-202
 !>
-!> @details  Default netCDF meta data is provided for each WW3 output variable
+!> @details Default netCDF meta data is provided for each WW3 output variable
 !>    and is stored intentally via the META_T type. The meta values are
 !>    grouped by component (max 3), field (IFI) and group (IFJ).
 !>
@@ -320,13 +319,18 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Allocates space for the META_T arrays and sets some defaults.
+!>
 !> @details By default, directional fields will be set up to output
 !>    a magnitude and direction field. Alternatively, if VEC is set to
 !>    True, then u/v vectors will be generated instead. @note - this is
+!>
 !>    currently only implemented for "current" and "wind" fields.
-!> @author Chris the Bunney @date 09-Mar-2020
+!>
 !> @param VEC Outut vectors for directional fields rather than 
 !>    direction/magnitude.
+!>
+!> @author Chris the Bunney @date 09-Mar-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_META(VEC)
 !/
 !/                  +-----------------------------------+
@@ -339,7 +343,6 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    22-Mar-2021 : Added vector flag                   ( version 7.12 )
-!/
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -439,8 +442,10 @@
       END SUBROUTINE INIT_META
 !
 !/ ------------------------------------------------------------------- /
- !> @brief De-allocates memory used for the META_T arrays
- !> @author Chris Bunney @date 09-Nov-2020
+!> @brief De-allocates memory used for the META_T arrays
+!>
+!> @author Chris Bunney @date 09-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE TEARDOWN_META()
 !/
 !/                  +-----------------------------------+
@@ -452,7 +457,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/
@@ -476,6 +480,7 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Reads the next valid line from the user meta input file.
+!>
 !> @details Lines are repeatedly read in from the input file until
 !>    a valid input line is reached. Blank lines and comment lines
 !>    (starting with $) are skipped.
@@ -486,13 +491,14 @@
 !>    If the next valid line is a new section marker (META or TEMPLATE)
 !>    then the NEW_SECTION flag is set to true.
 !>
-!> @author Chris Bunney @date 09-Nov-2020
-!>
 !> @param[in]     NDMI   Unit number of input file
 !> @param[out]    BUF    Next input line read from file
 !> @param[in,out] ILINE  Line number of file
 !> @param[out]    EOF    True if end-of-file is reached.
 !> @param[out]    NEW_SECTION  True if new section marker found
+!>
+!> @author Chris Bunney @date 09-Nov-2020
+!/ ------------------------------------------------------------------- /
 
       SUBROUTINE NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION)
 !/
@@ -505,7 +511,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -600,10 +605,12 @@
 !/ ------------------------------------------------------------------- /
 !> @brief Replaces tab characters in a string with a space.
 !>
-!> @author Chris Bunney @date 02-Nov-2020
 !> @remark Assumes ASCII encoding (Tab character is ASCII value 9)
 !>
 !> @param[in,out] STR Character string to process
+!>
+!> @author Chris Bunney @date 02-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE NOTABS(STR)
 !/
 !/                  +-----------------------------------+
@@ -640,10 +647,13 @@
 !> @brief Replaces single characters in a string.
 !>
 !> @returns A new string
-!> @author Chris Bunney @date 02-Feb-2021
+!>
 !> @param[in]  STR  Character string to process
 !> @param[in]  C    Character to search for
 !> @param[in]  REP  Character to substitute
+!>
+!> @author Chris Bunney @date 02-Feb-2021
+!/ ------------------------------------------------------------------- /
       FUNCTION REPLACE_CHAR(STR, C, REP) RESULT(OSTR)
 !/
 !/                  +-----------------------------------+
@@ -676,11 +686,14 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Reads meta data entries from the ountmeta.inp file
+!>
 !> @details This is the main entry routine for parsing the ounfmeta.inp
 !>    file. Values read from the file will be used to update or add to
 !>    the default meta data values set in the \link DEFAULT_META \endlink
 !>    subroutine.
+!>
 !> @author Chris Bunney @date 26-Jan-2021
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META()
 !/
 !/                  +-----------------------------------+
@@ -694,7 +707,6 @@
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
 !/                  metadata for directional fields.
-!/
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -835,6 +847,7 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Decode the META header line.
+!>
 !> @details The internal WW3 field can be specified either as an 
 !>    [IFI, IFJ] integer combination, or a field ID tag (such as "HS").
 !>
@@ -843,13 +856,13 @@
 !>
 !>    Field name ID tags are case-insensitive, HS == hs == Hs.
 !>
-!> @author Chris Bunney @date 02-Feb-2021
-!>
 !> @param[in]  BUF    Input header string (without leading META tag)
 !> @param[in]  ILINE  Line number (for error reporting)
 !> @param[out] IFI    Output group number
 !> @param[out] IFJ    Output field number
 !> @param[out] IFC    Component number (defaults to 1)
+!>
+!> @author Chris Bunney @date 02-Feb-2021
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DECODE_HEADER(BUF, ILINE, IFI, IFJ, IFC)
 !/
@@ -863,7 +876,6 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    02-Feb-2021 : NODEFAULT option for Global meta    ( version 7.12 )
-!/
 !/ ------------------------------------------------------------------- /
       USE W3IOGOMD, ONLY: W3FLDTOIJ
 
@@ -953,14 +965,14 @@
 !> @details Keeps looping over input lines in file until next META section
 !>    or EOF is found. Splits meta pairs on the = character.
 !>
-!> @author Chris Bunney @date 09-11-2020
-!>
 !>    Note - the "extra" metadata pair can also provide a variable
 !>    type ("c", "i", or "r"; for character, int or real respectively)
 !>
-!> @param[in]      Unit number of metadata input file
-!> @param[out]     Pointer to META type
-!> @param[in,out]  Current line number in file
+!> @param[in]      NDMI  Unit number of metadata input file
+!> @param[out]     META  Pointer to META type
+!> @param[in,out]  ILINE Current line number in file
+!>
+!> @author Chris Bunney @date 09-11-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META_PAIRS(NDMI, META, ILINE)
 !/
@@ -1118,6 +1130,8 @@
 !> @param[in]   ILINE     Line number (for error reporting)
 !> @param[out]  ATTV      Attribute value
 !> @param[out]  ATT_TYPE  Attribute type
+!>
+!> @author Chris Bunney @date 09-Nov-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GET_ATTVAL_TYPE(BUF, ILINE, ATTV, ATT_TYPE)
 !/
@@ -1198,11 +1212,11 @@
 !>    ("c", "i", or "r"; for character, int or real respectively).
 !>    String values with spaces should be quoted.
 !>
-!> @author Chris Bunney @date 16-Dec-2020
-!>
 !> @param[in]      NDMI      Unit number of metadata input file
 !> @param[in,out]  ILINE     Current line number in file
 !> @param[in,out]  METALIST  A META_LIST_T object to append to
+!>
+!> @author Chris Bunney @date 16-Dec-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_FREEFORM_META_LIST(NDMI, ILINE, METALIST)
 !/
@@ -1285,12 +1299,13 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Reads in metadata for the coordinate reference system (CRS).
-!> @details The "grid_mapping_name" must be supplied as an attribute.
 !>
-!> @author Chris Bunney @date 07-Dec-2020
+!> @details The "grid_mapping_name" must be supplied as an attribute.
 !>
 !> @param[in]     NDMI   Unit number of metadata input file
 !> @param[in,out] ILINE  Current line number in file
+!>
+!> @author Chris Bunney @date 07-Dec-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_CRS_META(NDMI, ILINE)
 !/
@@ -1372,6 +1387,7 @@
 
 !/ ------------------------------------------------------------------- /
 !> @brief Set up a default coordinate reference system for the grid
+!>
 !> @details The default coordinate reference system (CRS) will be defined
 !>    based on the type of grid the model is formulated on, e.g.
 !>    regular lat-lon, rotated pole, etc.
@@ -1416,10 +1432,14 @@
       END SUBROUTINE DEFAULT_CRS_META
 
 !/ ------------------------------------------------------------------- /
-!> @brief Returns a META_T type containig the netCDF matadata for the
-!>    requested field.
+!> @brief Get the meta data for a particular field.
 !>
-!> @details A copy of the meta-data is returned, rather than a pointer.
+!> @details The required field is specified using the group (IFI) and
+!>    field (IFJ) index. Optionally, the component (ICOMP) and partition
+!>    (IPART) numbers can be specified for vector/tensor or partitioned
+!>    parameter fields. If not specified, these default to 1.
+
+!>    A copy of the meta-data is returned, rather than a pointer.
 !>    This is because in the case of paritioned parameters, the metadata
 !>    will be updated with the partition number.
 !>
@@ -2056,6 +2076,12 @@
       END SUBROUTINE WRITE_FREEFORM_META_LIST
 
 !/ ------------------------------------------------------------------- /
+!> @brief Writes meta-data to the screen - for debugging purposes.
+!>
+!> @param[in]  META   Meta data type
+!>
+!> @author Chris Bunney @date 09-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_META(META)
 !/
 !/                  +-----------------------------------+
@@ -2067,19 +2093,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Writes meta-data to the screen - for debugging purposes.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       VARID   Int.  I/O  NetCDF variable ID
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
@@ -2108,6 +2121,20 @@
       END SUBROUTINE PRINT_META
 
 !/ ------------------------------------------------------------------- /
+!> @brief Performs "deep" copy of a META_T type.
+!> 
+!> @details A "deep" copy ensures that the linked list data in the EXTRA
+!> field is copied, rather than just copying the pointer.
+!>
+!> Calls \link COPY_META_LIST \endlink internally to copy the EXTRA
+!> linked list.
+!>
+!> @returns A new META_T variable
+!>
+!> @param[in]  META   META data structure to copy
+!>
+!> @author Chris Bunney @date 16-Dec-2020
+!/ ------------------------------------------------------------------- /
       FUNCTION META_DEEP_COPY(META) RESULT(COPY)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2119,20 +2146,6 @@
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Performs "Deep" copy of a META_T type. This ensures that the
-!     linked list data in the EXTRA field is copied, rather than just
-!     copying the pointer.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       META   META_T.  I   META data structure to copy
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), INTENT(IN) :: META
@@ -2141,11 +2154,23 @@
       ! Shallow copy first:
       COPY = META
 
-      ! Now deep copy the EXTRA field (is pionter)
+      ! Now deep copy the EXTRA field (is pointer)
       COPY%EXTRA = COPY_META_LIST(META%EXTRA)
 
       END FUNCTION META_DEEP_COPY
 
+!/ ------------------------------------------------------------------- /
+!> @brief Populates the default meta data for ww3_ounf output fields.
+!>
+!> @remark VMIN and VMAX are now set in the units of the output field.
+!>    Previously, they were set with scaled values based on the scaling
+!>    factor FSC. The scaling is now performed (if necessary) in the
+!>    WRITE_META subroutine.
+!>
+!> @remark FSC (scale factor) is only applied to data and valid_min/max
+!>    if the netCDF variable type is NF90_SHORT.
+!>
+!> @author Chris Bunney @date 22-Mar-2021
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DEFAULT_META()
 !/
@@ -2159,22 +2184,6 @@
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
-!/
-!
-!  1. Purpose :
-!
-!     Populates the default meta data for ww3_ounf.
-!
-!  2. Remarks :
-!
-!     VMIN and VMAX are now set in the units of the output field.
-!     Previously, they were set with scaled values based on the scaling
-!     factor FSC. The scaling is now performed (if necessary) in the
-!     WRITE_META subroutine.
-!
-!     FSC (scale factor) is only applied to data and valid_min/max if
-!     the netCDF variable type is NF90_SHORT.
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       TYPE(META_T), POINTER :: META(:)
