@@ -105,7 +105,6 @@
 !>    seperated.
 !>
 !>    Example ounfmeta.inp file:
-!>    ==========================
 !>
 !>    @code
 !>       $ Lines starting with dollars are comments.
@@ -228,11 +227,6 @@
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
 !/
-!  1. Purpose :
-!
-!     Manages user configurable netCDF meta-data for ww3_ounf program.
-!
-!
 !/ ------------------------------------------------------------------- /
 !/
       USE NETCDF
@@ -325,10 +319,14 @@
       CONTAINS
 
 !/ ------------------------------------------------------------------- /
-!> @brief Initialise some data structures and variables.
-!> @details Do some stuff
+!> @brief Allocates space for the META_T arrays and sets some defaults.
+!> @details By default, directional fields will be set up to output
+!>    a magnitude and direction field. Alternatively, if VEC is set to
+!>    True, then u/v vectors will be generated instead. @note - this is
+!>    currently only implemented for "current" and "wind" fields.
 !> @author Chris the Bunney @date 09-Mar-2020
-!> @param VEC Use vectors for directional fields rather than dir/mag.
+!> @param VEC Outut vectors for directional fields rather than 
+!>    direction/magnitude.
       SUBROUTINE INIT_META(VEC)
 !/
 !/                  +-----------------------------------+
@@ -342,11 +340,6 @@
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    22-Mar-2021 : Added vector flag                   ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Allocates space for the META_T arrays and sets some constants.
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -446,6 +439,8 @@
       END SUBROUTINE INIT_META
 !
 !/ ------------------------------------------------------------------- /
+ !> @brief De-allocates memory used for the META_T arrays
+ !> @author Chris Bunney @date 09-Nov-2020
       SUBROUTINE TEARDOWN_META()
 !/
 !/                  +-----------------------------------+
@@ -458,11 +453,6 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     De-allocates memory used for the META_T arrays
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/
@@ -485,6 +475,25 @@
       END SUBROUTINE TEARDOWN_META
 
 !/ ------------------------------------------------------------------- /
+!> @brief Reads the next valid line from the user meta input file.
+!> @details Lines are repeatedly read in from the input file until
+!>    a valid input line is reached. Blank lines and comment lines
+!>    (starting with $) are skipped.
+!>
+!>    If the end of file is reached before any valid line is read
+!>    then EOF is set to true.
+!>
+!>    If the next valid line is a new section marker (META or TEMPLATE)
+!>    then the NEW_SECTION flag is set to true.
+!>
+!> @author Chris Bunney @date 09-Nov-2020
+!>
+!> @param[in]     NDMI   Unit number of input file
+!> @param[out]    BUF    Next input line read from file
+!> @param[in,out] ILINE  Line number of file
+!> @param[out]    EOF    True if end-of-file is reached.
+!> @param[out]    NEW_SECTION  True if new section marker found
+
       SUBROUTINE NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION)
 !/
 !/                  +-----------------------------------+
@@ -497,34 +506,6 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Reads the next valid line from the user meta input file.
-!
-!  2. Method :
-!     Lines are repeatedly read in from the input file until
-!     a valid input line is reached. Blank lines and comment lines
-!     (starting with $) are skipped.
-!
-!     If the end of file is reached before any valid line is read
-!     then EOF is set to true.
-!
-!     If the next valid line is a new section marker (META or TEMPLATE)
-!     then the NEW_SECTION flag is set to true.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI    Int.  I  Unit number of input file
-!       BUF    Char.  O  Next input line read from file
-!       ILINE   Int. I/O Line number of file
-!       EOF    Bool.  O  True if end-of-file is reached.
-!       NEW_SECTION
-!              Bool.  O  True if new section marker found
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -617,6 +598,12 @@
       END SUBROUTINE NEXT_LINE
 
 !/ ------------------------------------------------------------------- /
+!> @brief Replaces tab characters in a string with a space.
+!>
+!> @author Chris Bunney @date 02-Nov-2020
+!> @remark Assumes ASCII encoding (Tab character is ASCII value 9)
+!>
+!> @param[in,out] STR Character string to process
       SUBROUTINE NOTABS(STR)
 !/
 !/                  +-----------------------------------+
@@ -629,22 +616,6 @@
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Replaces tab characters in a string with a space.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       STR    Char.  I/O  Character string to process
-!     ----------------------------------------------------------------
-!
-!  3. Remarks :
-!
-!     Assumes ASCII encoding! Tab character is ASCII value 9.
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       CHARACTER(*), INTENT(INOUT) :: STR
@@ -666,6 +637,13 @@
       END SUBROUTINE NOTABS
 
 !/ ------------------------------------------------------------------- /
+!> @brief Replaces single characters in a string.
+!>
+!> @returns A new string
+!> @author Chris Bunney @date 02-Feb-2021
+!> @param[in]  STR  Character string to process
+!> @param[in]  C    Character to search for
+!> @param[in]  REP  Character to substitute
       FUNCTION REPLACE_CHAR(STR, C, REP) RESULT(OSTR)
 !/
 !/                  +-----------------------------------+
@@ -677,21 +655,6 @@
 !/                  +-----------------------------------+
 !/
 !/    02-Feb-2021 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Replaces single characters in a string. Returns a new string,
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       STR    CharArr  I  Character string to process
-!       C      Char     I  Character to search for
-!       REP    Char     I  Character to substitute
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       CHARACTER(*)        :: STR
@@ -712,6 +675,12 @@
       END FUNCTION REPLACE_CHAR
 
 !/ ------------------------------------------------------------------- /
+!> @brief Reads meta data entries from the ountmeta.inp file
+!> @details This is the main entry routine for parsing the ounfmeta.inp
+!>    file. Values read from the file will be used to update or add to
+!>    the default meta data values set in the \link DEFAULT_META \endlink
+!>    subroutine.
+!> @author Chris Bunney @date 26-Jan-2021
       SUBROUTINE READ_META()
 !/
 !/                  +-----------------------------------+
@@ -726,12 +695,6 @@
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
 !/                  metadata for directional fields.
 !/
-!
-!  1. Purpose :
-!
-!     Reads meta data entries from the ountmeta.inp file and update
-!     default values set via the DEFAULT_META subroutine.
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -871,6 +834,23 @@
       END SUBROUTINE READ_META
 
 !/ ------------------------------------------------------------------- /
+!> @brief Decode the META header line.
+!> @details The internal WW3 field can be specified either as an 
+!>    [IFI, IFJ] integer combination, or a field ID tag (such as "HS").
+!>
+!>    Both forms can also specify an optional component (IFC) integer
+!>    value for multi-component fields (defaults to 1).
+!>
+!>    Field name ID tags are case-insensitive, HS == hs == Hs.
+!>
+!> @author Chris Bunney @date 02-Feb-2021
+!>
+!> @param[in]  BUF    Input header string (without leading META tag)
+!> @param[in]  ILINE  Line number (for error reporting)
+!> @param[out] IFI    Output group number
+!> @param[out] IFJ    Output field number
+!> @param[out] IFC    Component number (defaults to 1)
+!/ ------------------------------------------------------------------- /
       SUBROUTINE DECODE_HEADER(BUF, ILINE, IFI, IFJ, IFC)
 !/
 !/                  +-----------------------------------+
@@ -884,32 +864,6 @@
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/    02-Feb-2021 : NODEFAULT option for Global meta    ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Decode the META header line.
-!
-!  2. Method:
-!
-!     The internal WW3 field can be specified either as an [IFI, IFJ]
-!     integer combination, or a field ID tag (such as "HS").
-!
-!     Both forms can also specify an optional component (IFC) integer
-!     value for multi-component fields (defaults to 1).
-!
-!     Field name ID tags are case-insensitive, HS == hs == Hs.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       BUF    Char.  I  Input header string (without leading META tag)
-!       ILINE   Int.  I  Line number (for error reporting)
-!       IFI     Int.  O  Output group number
-!       IFJ     Int.  O  Output field number
-!       IFC     Int.  O  Component number (defaults to 1)
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       USE W3IOGOMD, ONLY: W3FLDTOIJ
 
@@ -993,6 +947,21 @@
       END SUBROUTINE DECODE_HEADER
 
 !/ ------------------------------------------------------------------- /
+!> @brief Reads in attribute name/value pairs and updates the relevant
+!>    values in the META type.
+!>
+!> @details Keeps looping over input lines in file until next META section
+!>    or EOF is found. Splits meta pairs on the = character.
+!>
+!> @author Chris Bunney @date 09-11-2020
+!>
+!>    Note - the "extra" metadata pair can also provide a variable
+!>    type ("c", "i", or "r"; for character, int or real respectively)
+!>
+!> @param[in]      Unit number of metadata input file
+!> @param[out]     Pointer to META type
+!> @param[in,out]  Current line number in file
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_META_PAIRS(NDMI, META, ILINE)
 !/
 !/                  +-----------------------------------+
@@ -1005,29 +974,6 @@
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
 !/
-!
-!  1. Purpose :
-!
-!     Reads in attribute name/value pairs and updates the relevant
-!     values in the META type.
-!
-!  2. Method:
-!
-!     Keeps looping over input lines in file until next META section
-!     or EOF is found. Splits meta pairs on the = character.
-!
-!     Note - the "extra" metadata pair can also provide a variable
-!     type ("c", "i", or "r"; for character, int or real respectively)
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI      Int.   I  Unit number of metadata input file
-!       META  Int.Ptr.   O  Pointer to META type
-!       ILINE     Int. I/O  Current line number in file
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)                  :: NDMI
@@ -1156,6 +1102,23 @@
       END SUBROUTINE READ_META_PAIRS
 
 !/ ------------------------------------------------------------------- /
+!> @brief Gets the attribute value and optional variable type from
+!>    the passed in string.
+!>
+!> @details If two freeform values can be read from the input string,
+!>    it is assumed to be a value and type, otherwise if only one value
+!>    can be read the type is assumed to be "character".
+!>
+!>    It is important to quote strings if they contain spaces.
+!>
+!>    Valid types are "c" "r/f", and "i" for character, real/float and
+!>     integer values.
+!>
+!> @param[in]   BUF       Input string to process
+!> @param[in]   ILINE     Line number (for error reporting)
+!> @param[out]  ATTV      Attribute value
+!> @param[out]  ATT_TYPE  Attribute type
+!/ ------------------------------------------------------------------- /
       SUBROUTINE GET_ATTVAL_TYPE(BUF, ILINE, ATTV, ATT_TYPE)
 !/
 !/                  +-----------------------------------+
@@ -1167,34 +1130,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Gets the attribute value and optional variable type from
-!     the passed in string.
-!
-!  2. Method:
-!
-!     If two freeform values can be read from the input string, it is
-!     assumed to be a value and type, otherwise if only one value can
-!     be read the type is assumed to be "character".
-!
-!     It is important to quote strings if they contain spaces.
-!
-!     Valid types are "c" "r/f", and "i" for character, real/float and
-!     integer values.
-
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       BUF      Char.   I  Input string to process
-!       ILINE    Int.    I  Line number (for error reporting)
-!       ATTV     Char.   O  Attribute value
-!       ATT_TYPE Char.   O  Attribute type
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1253,7 +1188,21 @@
 !
       END SUBROUTINE GET_ATTVAL_TYPE
 
-
+!/ ------------------------------------------------------------------- /
+!> @brief Reads in freeform attribute name/value pairs.
+!>
+!> @details Keeps looping over input lines in file until next section
+!>    or EOF is found. Splits meta pairs on the `=` character.
+!>
+!>    Freeform metadata pairs can also provide a variable type
+!>    ("c", "i", or "r"; for character, int or real respectively).
+!>    String values with spaces should be quoted.
+!>
+!> @author Chris Bunney @date 16-Dec-2020
+!>
+!> @param[in]      NDMI      Unit number of metadata input file
+!> @param[in,out]  ILINE     Current line number in file
+!> @param[in,out]  METALIST  A META_LIST_T object to append to
 !/ ------------------------------------------------------------------- /
       SUBROUTINE READ_FREEFORM_META_LIST(NDMI, ILINE, METALIST)
 !/
@@ -1266,30 +1215,6 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Reads in freeform attribute name/value pairs.
-!
-!  2. Method:
-!
-!     Keeps looping over input lines in file until next section
-!     or EOF is found. Splits meta pairs on the = character.
-!
-!     Freeform metadata pairs can also provide a variable type
-!     ("c", "i", or "r"; for character, int or real respectively).
-!     String values with spaces should be quoted.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI     Char.   I  Unit number of metadata input file
-!       ILINE     Int. I/O  Current line number in file
-!       METALIST Type. I/O  A META_LIST_T object to append to
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)               :: NDMI
@@ -1359,6 +1284,14 @@
       END SUBROUTINE READ_FREEFORM_META_LIST
 
 !/ ------------------------------------------------------------------- /
+!> @brief Reads in metadata for the coordinate reference system (CRS).
+!> @details The "grid_mapping_name" must be supplied as an attribute.
+!>
+!> @author Chris Bunney @date 07-Dec-2020
+!>
+!> @param[in]     NDMI   Unit number of metadata input file
+!> @param[in,out] ILINE  Current line number in file
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_CRS_META(NDMI, ILINE)
 !/
 !/                  +-----------------------------------+
@@ -1370,22 +1303,6 @@
 !/                  +-----------------------------------+
 !/
 !/    07-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Reads in metadata for the coordinate reference system (CRS)
-!     scalar variable. The "grid_mapping_name" must be supplied as
-!     an attribute.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI     Char.   I  Unit number of metadata input file
-!       ILINE     Int. I/O  Current line number in file
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)     :: NDMI
@@ -1453,11 +1370,19 @@
 
       END SUBROUTINE READ_CRS_META
 
+!/ ------------------------------------------------------------------- /
+!> @brief Set up a default coordinate reference system for the grid
+!> @details The default coordinate reference system (CRS) will be defined
+!>    based on the type of grid the model is formulated on, e.g.
+!>    regular lat-lon, rotated pole, etc.
+!>
+!> @remark See "Grid Mappings" section of CF conventions:
+!>  - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/ch05s06.html
+!>  - https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/apf.html
+!>
+!> @author Chris Bunney @date 25-May-2021
+!/ ------------------------------------------------------------------- /
       SUBROUTINE DEFAULT_CRS_META()
-      ! Set up a default coordinate reference system for the grid
-      ! See "Grid Mappings" section of CF conventions:
-      ! https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/ch05s06.html
-      ! https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/apf.html
       IMPLICIT NONE
 
       TYPE(META_PAIR_T) :: META
@@ -1491,6 +1416,20 @@
       END SUBROUTINE DEFAULT_CRS_META
 
 !/ ------------------------------------------------------------------- /
+!> @brief Returns a META_T type containig the netCDF matadata for the
+!>    requested field.
+!>
+!> @details A copy of the meta-data is returned, rather than a pointer.
+!>    This is because in the case of paritioned parameters, the metadata
+!>    will be updated with the partition number.
+!>
+!> @param[in]  IFI    Output group number
+!> @param[in]  IFJ    Output field number
+!> @param[in]  ICOMP  Component number (defaults to 1)
+!> @param[in]  IPART  Partition number (defaults to 1)
+!>
+!> @author Chris Bunney @date 02-Nov-2020
+!/ ------------------------------------------------------------------- /
       FUNCTION GETMETA(IFI, IFJ, ICOMP, IPART) RESULT(META)
 !/
 !/                  +-----------------------------------+
@@ -1502,29 +1441,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Returns a META_T type containig the netCDF matadata for the
-!     requested field
-!
-!  2. Method :
-!
-!     A copy of the meta-data is returned, rather than a pointer. This
-!     is because in the case of paritioned parameters, the metadata
-!     will be updated with the partition number.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       IFI     Int.  I  Output group number
-!       IFJ     Int.  I  Output field number
-!       ICOMP   Int.  I  Component number (defaults to 1)
-!       IPART   Int.  I  Partition number (defaults to 1)
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: IFI, IFJ
@@ -1576,6 +1492,28 @@
       END FUNCTION GETMETA
 
 !/ ------------------------------------------------------------------- /
+!> @brief Reads in a TEMPLATE section from file.
+!>
+!> @details This section defines a list of text strings that will be
+!>    used to replace a "placeholder string" when generating metadata
+!>    for partitioned parameters.
+!>
+!>    Format of section is:
+!>
+!>    \code
+!>      TEMPLATE <placeholder_string>
+!>        Value for partition IPART=0
+!>        Value for partition IPART=1
+!>        Value for partition IPART=2
+!>        ...
+!>        Value for partition IPART=N
+!>    \endcode
+!>
+!> @param[in,out]  NDMI  Unit number
+!> @param[in,out]  ILINE Line number
+!>
+!> @author Chris Bunney @date 04-Dec-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE READ_PART_TMPL(NDMI, ILINE)
 !/
 !/                  +-----------------------------------+
@@ -1587,32 +1525,6 @@
 !/                  +-----------------------------------+
 !/
 !/    04-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Reads in a TEMPLATE section from file.
-!     This section defines a list of text strings that will be used
-!     to replace a "placeholder string" when generating metadata for
-!     partitioned parameters.
-!
-!     Format of section is:
-!
-!       TEMPLATE <placeholder_string>
-!         Value for partition IPART=0
-!         Value for partition IPART=1
-!         Value for partition IPART=2
-!         ...
-!         Value for partition IPART=N
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NDMI    Int.  I/O  Unit number
-!       ILINE   Int.  I/O  Line number
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
       INTEGER, INTENT(IN)               :: NDMI
@@ -1700,6 +1612,9 @@
 
 
 !/ ------------------------------------------------------------------- /
+!> @brief Prints the patition templates to screen (for debug use).
+!> @author Chris Bunney @date 04-Dec-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_PART_TMPL()
 !/
 !/                  +-----------------------------------+
@@ -1711,12 +1626,6 @@
 !/                  +-----------------------------------+
 !/
 !/    04-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Prints the patition templates to screen (for debug use).
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
@@ -1743,7 +1652,16 @@
       PRINT*,'=============='
       END SUBROUTINE PRINT_PART_TMPL
 
-
+!/ ------------------------------------------------------------------- /
+!> @brief Adds partition number to meta-data.
+!>
+!> @details Replaces all instances of "<IPART>" in the provided meta data
+!>     with the partition number IPART.
+!>
+!> @param[in]  META   Meta data type
+!> @param[in]  IPART  Partition number
+!>
+!> @author Chris Bunney @date 02-Nov-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_PARTNO(META, IPART)
 !/
@@ -1756,25 +1674,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Adds partition number to meta-data.
-!
-!  2. Method :
-!
-!     Replaces all instances of "<IPART>" in the provided meta data with
-!     the partition number IPART.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       META  META_T  I  Meta data type
-!       IPART   Int.  I  Partition number
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1810,6 +1709,20 @@
       END SUBROUTINE ADD_PARTNO
 
 !/ ------------------------------------------------------------------- /
+!> @brief Performs string substition of placeholder strings with 
+!>    partition number specfic values.
+!>
+!> @details The placeholder <IPART> is automatically replaced with the
+!>    partition number (0, 1, 2, etc).
+!>
+!>    Other template placeholders can be defined in the ounfmeta.inp
+!>    file by the user.
+!>
+!> @param[in,out]  INSTR  Input string
+!> @param[in]      IPART  Partition number
+!>
+!> @author Chris Bunney @date 02-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE PARTNO_STRING_SUB(INSTR, IPART)
 !/
 !/                  +-----------------------------------+
@@ -1821,27 +1734,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Performs string substition of placeholder strings with partition
-!     number specfic values.
-!
-!     The placeholder <IPART> is automatically replaced with the
-!     partition number (0, 1, 2, etc).
-!
-!     Other template placeholders can be defined in the ounfmeta.inp
-!     file by the user.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       INSTR  Char.  I/O  Input string
-!       IPART   Int.  I    Partition number
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -1930,6 +1822,24 @@
       END SUBROUTINE PARTNO_STRING_SUB
 
 !/ ------------------------------------------------------------------- /
+!> @brief Writes the meta-data entries for a variable.
+!>
+!> @details Attribute pairs defined in META are written to the netCDF
+!>    variable specificed in the VARID handle.
+!>
+!>    There are two stages to the write - first all "mandatory" or
+!>    "pre-defined" attributes are written out (those defined in the
+!>    META_T type). Secondly, if there is any user-defined "extra"
+!>    freeform meta data defined, this is written out via a separate
+!>    call to \link WRITE_FREEFORM_META_LIST \endlink
+!>
+!> @param[in,out]  NCID   NetCDF file ID
+!> @param[in,out]  VARID  NetCDF variable ID
+!> @param[in]      META   Meta data type
+!> @param[out]     ERR    Error value
+!>
+!> @author Chris Bunney @date 02-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_META(NCID, VARID, META, ERR)
 !/
 !/                  +-----------------------------------+
@@ -1941,22 +1851,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Writes the meta-data entries for a variable.
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NCID    Int.  I/O  NetCDF file ID
-!       VARID   Int.  I/O  NetCDF variable ID
-!       META    Int.  I    Meta data type
-!       ERR     Int.  O    Error value
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -2050,6 +1944,17 @@
       END SUBROUTINE WRITE_META
 
 !/ ------------------------------------------------------------------- /
+!> @brief Writes the user meta-data entries for the global attributes.
+!>
+!> @details Global meta-data is stored as a meta-data list, so this
+!>    is essentially a convenience/legacy function that calls the
+!>    \link WRITE_FREEFORM_META_LIST \endlink subroutine.
+!>
+!> param[in]   NCID  NetCDF file ID
+!> param[out]  ERR   Error value
+!>
+!> @author Chris Bunney @date 09-Nov-2020
+!/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_GLOBAL_META(NCID, ERR)
 !/
 !/                  +-----------------------------------+
@@ -2061,20 +1966,6 @@
 !/                  +-----------------------------------+
 !/
 !/    09-Nov-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Writes the user meta-data entries for the global attributes
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NCID    Int.  I/O  NetCDF file ID
-!       ERR     Int.  O    Error value
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
@@ -2087,7 +1978,15 @@
       CALL WRITE_FREEFORM_META_LIST(NCID, NF90_GLOBAL, GLOBAL_META, ERR)
       END SUBROUTINE WRITE_GLOBAL_META
 
-
+!/ ------------------------------------------------------------------- /
+!> @brief Writes the freeform user meta-data entries for a NetCDF variable
+!>
+!> @param[in,out]  NCID      NetCDF file ID
+!> @param[in,out]  VARID     NetCDF variable ID
+!> @param[in]      METALIST  META_LIST_T object to write
+!> @param[out]     ERR       Error value
+!>
+!> @author Chris Bunney @date 16-Dec-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_FREEFORM_META_LIST(NCID, VARID, METALIST, ERR)
 !/
@@ -2100,22 +1999,6 @@
 !/                  +-----------------------------------+
 !/
 !/    16-Dec-2020 : Creation                            ( version 7.12 )
-!/
-!
-!  1. Purpose :
-!
-!     Writes the freeform user meta-data entries for a NetCDF variable
-!
-!  2. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       NCID      Int.  I/O  NetCDF file ID
-!       VARID     Int.  I/O  NetCDF file ID
-!       METALIST  Type. I    META_LIST_T object to write
-!       ERR       Int.  O    Error value
-!     ----------------------------------------------------------------
-!
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
 
