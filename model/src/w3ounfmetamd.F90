@@ -4,14 +4,12 @@
 !> @author Chris Bunney @date 02-Nov-2020
 
 !/ ------------------------------------------------------------------- /
-      MODULE W3OUNFMETAMD
-!>    @brief Manages user configurable netCDF meta-data for
+!> @brief Manages user configurable netCDF meta-data for
 !>           ww3_ounf program.
 !>
-!>    @author Chris Bunney @date 02-Nov-202
+!> @author Chris Bunney @date 02-Nov-202
 !>
-!>    @details
-!>    Default netCDF meta data is provided for each WW3 output variable
+!> @details  Default netCDF meta data is provided for each WW3 output variable
 !>    and is stored intentally via the META_T type. The meta values are
 !>    grouped by component (max 3), field (IFI) and group (IFJ).
 !>
@@ -20,11 +18,13 @@
 !>
 !>    Entries in the file are formatted as follows:
 !>
+!>    @code
 !>      META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
 !>        attr_name = attr_value
 !>        attr_name = attr_value
 !>        extra_attr = extra_value [type]
 !>      ... repeated as many times as required.
+!>    @endcode
 !>
 !>    An output field is selected using the META keyword followed by
 !>    either an [IFI, IFJ] integer pair or a FieldID string. Optionally,
@@ -56,9 +56,11 @@
 !>
 !>    Global meta data can be specified with a special "META global" line:
 !>
+!>    @code
 !>      META global
 !>        extra_attr = extra_value [type]
 !>        extra_attr = extra_value [type]
+!>    @endcode
 !>
 !>    A "coordinate reference system" (CRS) can be specified for all output
 !>    fields using the "CRS" keyword. As a minimum, the "grid_mapping_name"
@@ -67,10 +69,12 @@
 !>    CRS variable. "crs_vaname" will be created as a scalar NF90_CHAR
 !>    variable in the output file.
 !>
+!>    @code
 !>      CRS <crs_varname>
 !>        grid_mapping_name = <mapping name>
 !>        attr = value
 !>        attr = value
+!>    @endcode
 !>
 !>    Note: ALL keywords and "Field Name ID" strings (e.g. HS) are
 !>    case insensitive. All netCDF attribute names are case sensitive.
@@ -87,12 +91,14 @@
 !>    template strings in the ounfmeta.inp file using the TEMPLATE
 !>    keyword, as below:
 !>
+!>    @code
 !>      TEMPLATE <template-name>
 !>        String for partition 0
 !>        String for partition 1
 !>        String for partition 2
 !>        String for partition 3
 !>        ... etc
+!>    @endcode
 !>
 !>    Specifying the <template-name> with a trailing underscore will
 !>    provide an underscore seperated (_) string, rather than space
@@ -101,6 +107,7 @@
 !>    Example ounfmeta.inp file:
 !>    ==========================
 !>
+!>    @code
 !>       $ Lines starting with dollars are comments.
 !>       $ The line starts a meta-data section for the depth field
 !>       META DPT
@@ -144,13 +151,12 @@
 !>         institution = UKMO
 !>         comment "space seperated strings should be quoted" c
 !>         version = 1.0 r
-!>
+!>    @endcode
 !>    
-!>     @param DEBUG Control debug output to screen
-!>     @param FN_META Meta-data input filename
-!>     @param       ! String token used to merge in partition number:
-!>     @param IPART_TOKEN String token for integer partition number
-!>     @param SPART_TOKEN String token for partition descriptive string
+!> @param DEBUG Control debug output to screen
+!> @param FN_META Meta-data input filename
+!> @param IPART_TOKEN String token for integer partition number
+!> @param SPART_TOKEN String token for partition descriptive string
 !>                        (space separated).
 !>     @param SPART_TOKEN_ String token for partition descriptive string
 !>                        (underscore separated).
@@ -209,6 +215,7 @@
 !>            directional fields
 !>     @param FLRTD Is grid on a rotated pole?
 
+      MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
 !/    26-Jan-2021 : Added TP and alternative dir/mag    ( version 7.12 )
@@ -220,6 +227,12 @@
 !/                  template string implementation.
 !/    22-Mar-2021 : Adds extra coupling fields          ( version 7.13 )
 !/    02-Sep-2021 : Add coordinates attribute           ( version 7.12 )
+!/
+!  1. Purpose :
+!
+!     Manages user configurable netCDF meta-data for ww3_ounf program.
+!
+!
 !/ ------------------------------------------------------------------- /
 !/
       USE NETCDF
@@ -312,6 +325,10 @@
       CONTAINS
 
 !/ ------------------------------------------------------------------- /
+!> @brief Initialise some data structures and variables.
+!> @details Do some stuff
+!> @author Chris the Bunney @date 09-Mar-2020
+!> @param VEC Use vectors for directional fields rather than dir/mag.
       SUBROUTINE INIT_META(VEC)
 !/
 !/                  +-----------------------------------+
