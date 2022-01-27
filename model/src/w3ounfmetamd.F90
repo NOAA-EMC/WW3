@@ -166,6 +166,7 @@
 !!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
 !!        WHY???!!
 !!
+!/ ------------------------------------------------------------------- /
       MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -300,7 +301,7 @@
 !> @param VEC Output vectors for directional fields rather than
 !>    direction/magnitude.
 !>
-!> @author Chris the Bunney @date 09-Mar-2020
+!> @author Chris Bunney @date 09-Mar-2020
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_META(VEC)
 !/
