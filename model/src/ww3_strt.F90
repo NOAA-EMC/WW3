@@ -521,8 +521,8 @@
 #endif
             IF (GTYPE .EQ. UNGTYPE) THEN 
                IX     = MAPSF(ISEA,1)
-               X      = XYB(IX,1)
-               Y      = XYB(IX,2)
+               X      = XGRD(1,IX)
+               Y      = YGRD(1,IX)
             ELSE
                IX     = MAPSF(ISEA,1)
                IY     = MAPSF(ISEA,2)
@@ -710,8 +710,8 @@
 #endif
             IF (GTYPE .EQ. UNGTYPE) THEN 
                IX     = MAPSF(ISEA,1)
-               X      = XYB(IX,1)
-               Y      = XYB(IX,2)
+               X      = XGRD(1,IX)
+               Y      = YGRD(1,IX)
             ELSE
                IX     = MAPSF(ISEA,1)
                IY     = MAPSF(ISEA,2)

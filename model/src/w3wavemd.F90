@@ -85,6 +85,7 @@
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx ) 
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -427,7 +428,6 @@
 #ifdef W3_SETUP
       USE W3WAVSET, only : WAVE_SETUP_COMPUTATION
 #endif
-!/NETCDF_QAD      USE W3NETCDF, only : OUTPUT_NETCDF_QUICK_AND_DIRTY
 
 #ifdef W3_OASIS
       USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
@@ -1476,7 +1476,7 @@
                 END IF
 !
               IF ( IDACT(13:13).NE.' ' ) THEN
-                  CALL W3UICE ( VA, VA )
+                  CALL W3UICE ( VA )
                   DTI0   = 0.
                   FLACT  = .TRUE.
                   FLMAP  = .TRUE.
@@ -2031,7 +2031,7 @@
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), xgrd(IX,1), ygrd(IX,2), zb(IX)
            END DO ! JSEA
            CLOSE(995)
          END IF
@@ -2208,8 +2208,6 @@
         WRITE(740+IAPROC,*) 'FLCX=', FLCX, ' FLCY=', FLCY
         FLUSH(740+IAPROC)
 #endif
-!
-!/NETCDF_QAD      CALL OUTPUT_NETCDF_QUICK_AND_DIRTY(IMOD, DTG)
 !
         IF (GTYPE .EQ. UNGTYPE) THEN
           IF (FLAGLL) THEN

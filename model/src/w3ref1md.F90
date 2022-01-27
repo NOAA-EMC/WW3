@@ -151,7 +151,7 @@
                           REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, FLAGLL, &
                           SIG2, DSII, IOBPD, GTYPE, UNGTYPE, MAPFS,    &
                           CLGTYPE, RLGTYPE, SMCTYPE
-      USE W3GDATMD, ONLY : XYB, CLATS, HPFAC, HQFAC, SX, SY, SI
+      USE W3GDATMD, ONLY : CLATS, HPFAC, HQFAC, SX, SY, SI
 #ifdef W3_IG1
  USE W3GDATMD, ONLY : IGPARS
   USE W3GIG1MD

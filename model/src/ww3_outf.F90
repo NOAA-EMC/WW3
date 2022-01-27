@@ -120,7 +120,8 @@
       USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST,      &
+                          USTDIR, RHOAIR
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
@@ -134,7 +135,7 @@
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
                           HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
-                          WNMEAN
+                          WNMEAN, TAUA, TAUADIR
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -879,8 +880,61 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BERG  , MAPSF, X1 )
                 ENDIF
 !
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+                !! Note - TAUA and TAUADIR read in from .ww3 file are TAUAX,TAUAY
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                ELSE
+                    FLDIR  = .TRUE.
+                END IF
+                FSC    = 0.01
+                UNITS  = 'Pa'
+                ENAME  = '.taua'
+#ifdef W3_RTD
+                ! Rotate x,y vector back to standard pole
+                IF ( FLAGUNR ) THEN
+                  CALL W3XYRTN(NSEA, TAUA(1:NSEA), TAUADIR(1:NSEA), AnglD)
+                ENDIF
+#endif
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1 = TAUA(1:NSEA)
+                   XS2 = TAUADIR(1:NSEA)
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUA(1:NSEA), MAPSF, XX )
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUADIR(1:NSEA), MAPSF, XY )
+                ENDIF
+
+                DO ISEA=1, NSEA
+                  UABS   = SQRT(TAUA(ISEA)**2+TAUADIR(ISEA)**2)
+                  IF ( UABS .GT. 0.01 ) THEN
+                      TAUADIR(ISEA) = MOD ( 630. -                     &
+                            RADE*ATAN2(TAUA(ISEA),TAUADIR(ISEA)), 360.)
+                    ELSE
+                      TAUADIR(ISEA) = UNDEF
+                    END IF
+                  UA(ISEA) = UABS
+                  END DO
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS3    = TAUA(1:NSEA)
+                   XS4    = TAUADIR(1:NSEA)
+                ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUA(1:NSEA), MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUADIR(1:NSEA), MAPSF, X2)
+              ENDIF
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.0001
+                UNITS  = 'kg m-3'
+                ENAME  = '.rhoa'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = RHOAIR
+                ELSE
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, RHOAIR, MAPSF, X1 )
+                ENDIF
+!                
 #ifdef W3_BT4
- ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+ ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 'Krumbein phi scale'
@@ -894,7 +948,7 @@
 #endif
 !
 #ifdef W3_IS2
- ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+ ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
                FLONE = .TRUE.
                FSC = 0.001
                UNITS = 'm'
@@ -907,7 +961,7 @@
 #endif
 !
 #ifdef W3_IS2
- ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10) THEN
+ ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 12) THEN
                FLONE = .TRUE.
                FSC = 0.001
                UNITS = 'm'
