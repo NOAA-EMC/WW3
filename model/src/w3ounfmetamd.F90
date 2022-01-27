@@ -1,6 +1,5 @@
 !> @file w3ounfmetamd.F90
 !> @brief User configurable netCDF meta-data for ww3_ounf.
-!>
 !> @author Chris Bunney @date 02-Nov-2020
 
 !/ ------------------------------------------------------------------- /
@@ -151,6 +150,18 @@
 !>
 !> @author Chris Bunney @date 02-Nov-2020
 !>
+!> ### Change log
+!>   Date      | Ver  | Comments  
+!> ------------|------|---------
+!> 02-Nov-2020 | 7.12 | Creation 
+!> 26-Jan-2021 | 7.12 | Added Tp and alternative dir/mag metadata for directional fields.
+!> 16-Dec-2020 | 7.12 | Added user partition templates and coordinate reference system. 
+!> 02-Feb-2021 | 7.12 | Improved partitioned parameter template string implementation.
+!> 22-Mar-2021 | 7.12 | Add extra coupling fields
+!> 02-Sep-2021 | 7.12 | Add coordinates attribute
+!>
+
+!!
 !! TODO - I NEED THIS DOUBLE BANG COMMENT HERE OTHERWISE DOXYGEN
 !!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
 !!        WHY???!!
