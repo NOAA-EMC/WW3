@@ -26,62 +26,53 @@ cp -r $path_i/../input/toy $path_w/
 cp -r $path_i/../input/oasis3-mct $path_w/
 
 
-echo '   compile oasis coupler'
+echo '   Setup oasis cmplr file'
 cd $path_w/oasis3-mct/util/make_dir
-if [ $cmplr ]
-then
-  echo ' '
-  echo '   Setup cmplr file'
-  if [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
-     [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
-     [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
-     [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
-     [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
-     [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
-     [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
-     [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
-     [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
-     [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
-     [ "$cmplr" == "s4.intel" ] || \
-     [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
-     [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
-     [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
-     [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
-     [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-     [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
-     source $WWATCH3_DIR/bin/cmplr.env
-     # shortlist optl
-     alloptl=( $optl )
-     for ioptl in $(seq 2 ${#alloptl[@]}); do
-       optls="${optls}${alloptl[$ioptl]} "
-     done
-     # shortlist optc
-     alloptc=( $optc )
-     for ioptc in $(seq 3 ${#alloptc[@]}); do
-       optcs="${optcs}${alloptc[$ioptc]} "
-     done
-     # shorten comp_mpi
-     comp_mpi_exe="$(echo $comp_mpi | awk -F' ' '{print $1}')"
-     # sed cmplr.tmpl
-     sed -e "s/<optc_short>/$optcs/" -e "s/<optl_short>/$optls/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<wwatch3_cc>/$WWATCH3_CC/" -e "s/<comp_mpi_exe>/$comp_mpi_exe/" cmplr.tmpl > cmplr
-    echo "      sed cmplr.tmpl => cmplr"
-  else
-    echo "ERROR: cmplr.$cmplr not found" 2>&1
-    exit 1
-  fi
-  chmod 775 cmplr
-fi
+source $WWATCH3_DIR/bin/cmplr.env
+# shortlist optl
+alloptl=( $optl )
+for ioptl in $(seq 2 ${#alloptl[@]}); do
+  optls="${optls}${alloptl[$ioptl]} "
+done
+# shortlist optc
+alloptc=( $optc )
+for ioptc in $(seq 3 ${#alloptc[@]}); do
+  optcs="${optcs}${alloptc[$ioptc]} "
+done
+# shorten comp_mpi
+comp_mpi_exe="$(echo $comp_mpi | awk -F' ' '{print $1}')"
+# sed cmplr.tmpl
+sed -e "s:<oasis_input_path>:$path_w/oasis3-mct:" \
+    -e "s:<oasis_work_path>:$path_w/work_oasis3-mct:" \
+    -e "s/<optc_short>/$optcs/" -e "s/<optl_short>/$optls/" \
+    -e "s/<comp_mpi>/$comp_mpi/" -e "s/<comp_mpi_exe>/$comp_mpi_exe/" \
+    -e "s/<wwatch3_cc>/$WWATCH3_CC/"  cmplr.tmpl > cmplr
+echo "      sed cmplr.tmpl => cmplr"
+chmod 775 cmplr
 
+
+echo '   setup oasis make.inc file'
+sed -e "s:<oasis_input_path>:$path_w/oasis3-mct:" make.inc.tmpl > make.inc
+
+
+echo '   compile oasis coupler'
 make realclean -f TopMakefileOasis3 > $path_w/oasis_clean.out
 make -f TopMakefileOasis3 > $path_w/oasis_make.out
 
-echo '   compile toy model'
+
+echo '   setup toy Makefile'
 cd $path_w/toy
+sed -e "s:<oasis_input_path>:$path_w/oasis3-mct:" Makefile.tmpl > Makefile
+
+
+echo '   compile toy model'
 make clean > $path_w/toy_clean.out
 make > $path_w/toy_make.out
 
+
 echo '   copy oasis coupler inputs'
 cp $path_i/namcouple $path_w/namcouple
+
 
 echo '   copy toy model inputs'
 if [ -f $path_w/toy/r-toy.nc.$swtstr ]; then
@@ -95,6 +86,7 @@ cp $path_w/toy/toy_coupled_field.nc.$swtstr $path_w/toy_coupled_field.nc
 cp $path_w/toy/toy_model $path_w/
 
 cp $path_i/TOYNAMELIST.nam $path_w/TOYNAMELIST.nam
+
 
 echo '   copy ww3 model inputs'
 cd $path_w

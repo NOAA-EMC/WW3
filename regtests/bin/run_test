@@ -442,7 +442,7 @@ then
     errmsg "Error occured during WW3 $prog build"
     exit 1
   fi
-  export OASISDIR=$path_w/../work_oasis3-mct
+  export OASISDIR=$path_w/work_oasis3-mct
 fi
 
 # 3.b Header
