@@ -332,6 +332,7 @@
 
       LOGICAL                 :: WRITE, IOSFLG
       LOGICAL                 :: FLOGOA(NOGRP,NGRPP)
+      LOGICAL                 :: NDSROPN      
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
 #ifdef CESMCOUPLED
@@ -638,6 +639,13 @@
 #ifdef W3_T
               WRITE (NDST,9005) TYPE
 #endif
+              ! Clean up file handles and allocated arrays                  
+              INQUIRE (UNIT=NDSR, OPENED=NDSROPN)
+              IF (NDSROPN)              CLOSE(NDSR)
+              IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
+              IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
+              IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
+
               RETURN
             ELSE IF ( IAPROC.LE.NAPROC .OR. IAPROC.EQ. NAPRST ) THEN
 #ifdef W3_DEBUGIO
@@ -1016,7 +1024,7 @@
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CX(1:NSEA)
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CY(1:NSEA)
                   ENDIF
-                  IF ( FLOGRR(1,9) )                                  &
+                  IF ( FLOGRR(1,12) )                                 &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) ICEF(1:NSEA)
                   IF ( FLOGRR(2,1) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) HS(1:NSEA)
@@ -1213,7 +1221,7 @@
 #ifdef W3_DEBUGINIT
          WRITE(740+IAPROC,*) 'Before reading ICEF'
 #endif
-              IF ( FLOGOA(1,9) ) THEN
+              IF ( FLOGOA(1,12) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
               ENDIF
 #ifdef W3_DEBUGINIT
@@ -1511,9 +1519,13 @@
 !
 ! Close file --------------------------------------------------------- *
 !
+  IF (WRITE) THEN        
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
         CLOSE ( NDSR )
       END IF
+  ELSE
+     CLOSE ( NDSR )
+  END IF
 !
 #ifdef W3_DEBUGIO
         WRITE(740+IAPROC,*)  'W3IORS, step 9'

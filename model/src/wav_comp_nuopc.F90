@@ -378,7 +378,6 @@ contains
     type(ESMF_VM)                  :: vm
     type(ESMF_Time)                :: esmfTime, stopTime
     type(ESMF_TimeInterval)        :: TimeStep
-    logical                        :: elementMaskIsPresent
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
     integer                        :: yy,mm,dd,hh,ss

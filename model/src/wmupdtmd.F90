@@ -1375,8 +1375,8 @@
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
       REAL, POINTER           :: X0I, Y0I, SXI, SYI !RP , HPFACI, HQFACI
 
-      REAL, POINTER           :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:),  &
-                                 YGRDC(:,:), HPFACI(:,:), HQFACI(:,:) !RP
+      REAL, POINTER           :: HPFACI(:,:), HQFACI(:,:)
+      DOUBLE PRECISION, POINTER :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:), YGRDC(:,:)
 
       INTEGER, POINTER        :: ICLOSE
       REAL, ALLOCATABLE       :: XGRTMP(:),YGRTMP(:)
@@ -1500,7 +1500,7 @@
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 
-        XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
+        XGRDI => GRIDS(JMOD)%XGRD   !LONS FOR INPUT FIELD
         YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
 
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
@@ -1524,17 +1524,17 @@
         DTOLER = 1E-5 
 ! 2.a.1  running over the curvilinear grid
         ALLOCATE (XGRTMP(NXI),YGRTMP(NYI))
-        XGRTMP=XGRDI(1,:)
-        YGRTMP=YGRDI(:,1)
+        XGRTMP=REAL(XGRDI(1,:))
+        YGRTMP=REAL(YGRDI(:,1))
 #ifdef W3_OMPH
 !$OMP PARALLEL DO PRIVATE(J,I,LONC,LATC,VALUEX,VALUEY)
 #endif
         DO J=1,NY
           DO I=1,NX
-            LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
-            LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
+            LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
+            LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
 
-            CALL INTERPOLATE2D(NXI,XGRTMP,NYI,YGRTMP, &
+            CALL INTERPOLATE2D(NXI,REAL(XGRTMP),NYI,REAL(YGRTMP), &
                        VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
             VX(I,J)=VALUEX
             VY(I,J)=VALUEY
@@ -2037,8 +2037,8 @@
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
 
-      REAL, POINTER           :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:),  &
-                                 YGRDC(:,:), HPFACI(:,:), HQFACI(:,:)  !RP
+      DOUBLE PRECISION, POINTER :: XGRDI(:,:), YGRDI(:,:), XGRDC(:,:), YGRDC(:,:)
+      REAL, POINTER             :: HPFACI(:,:), HQFACI(:,:)  !RP
 
       REAL, POINTER           :: X0I, Y0I, SXI, SYI !RPXXX , HPFACI, HQFACI
       INTEGER, POINTER        :: ICLOSE
@@ -2155,13 +2155,13 @@
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 
 ! 2.a.1    Getting the info for reg and curvi grids
-        XGRDI => GRIDS(JMOD)%XGRD    !LONS FOR INPUT FIELD
-        YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
+        XGRDI => GRIDS(JMOD)%XGRD !LONS FOR INPUT FIELD
+        YGRDI => GRIDS(JMOD)%YGRD !LATS FOR INPUT FIELD
 
 !       GETTING THE INFO FOR THE CURVILINEAR GRID 
         XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
         YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-        !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+        !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAYGRDC(:,:)YGRDC(:,:)YGRDC(:,:)YGRDC(:,:)S IN LON FOR CURVI GRID
         !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
 
 !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2 
@@ -2179,12 +2179,12 @@
 ! 2.a.2  running over the curvilinear grid
       DO J=1,NY
         DO I=1,NX
-          LONC=XGRDC(J,I)   !LON FOR EVERY CURVL GRID POINT
-          LATC=YGRDC(J,I)   !LAT FOR EVERY CURVL GRID POINT
+          LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
+          LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
           !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
           !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
-          VALUEINTER=INTERPOLATE(NXI,XGRDI(1,:),NYI,YGRDI(:,1),  &
+          VALUEINTER=INTERPOLATE(NXI,REAL(XGRDI(1,:)),NYI,REAL(YGRDI(:,1)),  &
                      FDI,LONC,LATC,DTOLER)
           FD(I,J)=VALUEINTER
         END DO  !END I
