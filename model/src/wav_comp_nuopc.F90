@@ -46,18 +46,14 @@ module wav_comp_nuopc
   !      W3SETO    Subr.   Id.    Point to data structure.
   !      W3NINP    Subr. W3IDATMD Set nummber of data structures
   !      W3SETI    Subr.   Id.    Point to data structure.
-  !
   !      STME21    Subr. W3TIMEMD Print date and time readable.
-  !      DSEC21    Func.   Id.    Difference between times.
-  !      TICK21    Subr.   Id.    Increment time.
-  !
   !      W3INIT    Subr. W3INITMD Wave model initialization.
   !      W3WAVE    Subr. W3WAVEMD Wave model.
   !     ----------------------------------------------------------------
   !
   !  5. Called by :
   !
-  !     None, stand-alone program.
+  !     NUOPC run seqence 
   !
   !  6. Error messages :
   !
@@ -67,8 +63,6 @@ module wav_comp_nuopc
   !  7. Remarks :
   !
   !     - A rigourous input check is made in W3INIT.
-  !     - See W3WDAS for documentation on the set-up of the data
-  !       assimilation.
   !
   !  8. Structure :
   !
@@ -98,7 +92,8 @@ module wav_comp_nuopc
   !
   !     wav_comp_run
   !
-  !        7.   Run model with input
+  !        7.   Run model for one time step with input from cmeps
+  !             Return output to cmeps
   !             Do until end time is reached
   !        +--------------------------------------------------------+
   !        | a  Determine next time interval and input fields.      |
@@ -109,7 +104,6 @@ module wav_comp_nuopc
   !        | | 4  Update next ending time                           |
   !        | +------------------------------------------------------|
   !        | b  Run wave model.                          ( W3WAVE ) |
-  !        | c  If requested, data assimilation.         ( W3WDAS ) |
   !        | d  Final output if needed.                  ( W3WAVE ) |
   !        | e  Check time                                          |
   !        +--------------------------------------------------------+
@@ -140,7 +134,8 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_import_export     , only : state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
-  use wav_shr_mod           , only : root_task, stdout, runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : runtype, merge_import, dbug_flag
+  use w3odatmd              , only : nds, iaproc, napout
 
   implicit none
   private ! except
@@ -153,8 +148,6 @@ module wav_comp_nuopc
   private :: ModelAdvance
   private :: ModelFinalize
 
-  integer :: stdout
-
   include "mpif.h"
 
   !--------------------------------------------------------------------------
@@ -166,6 +159,12 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0
   integer                 :: flds_scalar_index_ny = 0
   logical                 :: profile_memory = .false.
+
+#ifdef CESMCOUPLED
+  logical :: cesmcoupled = .true.
+#else
+  logical :: cesmcoupled = .false.
+#endif
 
   integer     , parameter :: debug = 1
   character(*), parameter :: modName =  "(wav_comp_nuopc)"
@@ -358,7 +357,7 @@ contains
 
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
-    use w3odatmd     , only : w3nout, w3seto, naproc, iaproc, naperr, napout, nds
+    use w3odatmd     , only : w3nout, w3seto, naproc, iaproc, naperr, napout
     use w3timemd     , only : stme21
     use w3adatmd     , only : w3naux, w3seta
     use w3idatmd     , only : w3seti, w3ninp
@@ -411,6 +410,8 @@ contains
     character(ESMF_MAXSTR)         :: msgString
     character(ESMF_MAXSTR)         :: diro
     character(CL)                  :: logfile
+    integer                        :: mds(13) ! Note that nds is set to this in w3initmod
+    integer                        :: stdout
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
     ! -------------------------------------------------------------------
 
@@ -446,31 +447,26 @@ contains
     napout = 1
     naperr = 1
 
-    if (iaproc == napout) then
-       root_task = .true.
-    else
-       root_task = .false.
-    end if
-
     !--------------------------------------------------------------------
     ! IO set-up
     !--------------------------------------------------------------------
 
-#ifdef CESMCOUPLED
-    shrlogunit = 6
-    if (root_task) then
-       call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       open (newunit=stdout, file=trim(diro)//"/"//trim(logfile))
+    if (cesmcoupled) then
+       shrlogunit = 6
+       if (iaproc == napout) then  ! root task
+          call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          open (newunit=stdout, file=trim(diro)//"/"//trim(logfile))
+       else
+          stdout = 6
+       endif
     else
        stdout = 6
-    endif
-#else
-    stdout = 6
-#endif
+    end if
 
+    ! Note that nds is set to mds in w3initmd.F90 - mds is a local array
     ! The following units are referenced in module w3initmd
     ! NDS(1) ! OUTPUT LOG: General output unit number ("log file")
     ! NDS(2) ! OUTPUT LOG: Error output unit number
@@ -478,13 +474,18 @@ contains
     ! NDS(4) ! OUTPUT LOG: Unit for 'direct' output (SCREEN)
     ! NDS(5) ! INPUT: mod_def.ww3 file (model definition) unit number
     ! NDS(9) ! INPUT: unit for read in boundary conditions (based on FLBPI)
-    !
+
     ! The following units are referenced in module w3wavemd for output
     ! NDS( 6) ! OUTPUT DATA: restart(N).ww3 file (model restart) unit number
     ! NDS( 7) ! OUTPUT DATA: unit for output for FLOUT(1) flag grid unformmatted output
     ! NDS( 8) ! OUTPUT DATA: unit for output for FLOUT(2) flag point unformmatted output
     ! etc through 13
-    !
+
+    mds(1) = stdout
+    mds(2) = stdout
+    mds(3) = stdout
+    mds(4) = stdout
+
     ! Identify available unit numbers
     ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
     ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
@@ -492,23 +493,21 @@ contains
     ! the units since they will be opened within W3INIT.
     ! By default, unit numbers between 50 and 99 are scanned to find an
     ! unopened unit number
-    nds(1) = stdout
-    nds(2) = stdout
-    nds(3) = stdout
-    nds(4) = stdout
-    call ESMF_UtilIOUnitGet(nds(5)) ; open(unit=nds(5)  , status='scratch'); close(nds(5))
-    call ESMF_UtilIOUnitGet(nds(6)) ; open(unit=nds(6)  , status='scratch'); close(nds(6))
-    call ESMF_UtilIOUnitGet(nds(7)) ; open(unit=nds(7)  , status='scratch'); close(nds(7))
-    call ESMF_UtilIOUnitGet(nds(8)) ; open(unit=nds(8)  , status='scratch'); close(nds(8))
-    call ESMF_UtilIOUnitGet(nds(9)) ; open(unit=nds(9)  , status='scratch'); close(nds(9))
-    call ESMF_UtilIOUnitGet(nds(10)); open(unit=nds(10) , status='scratch'); close(nds(10))
-    call ESMF_UtilIOUnitGet(nds(11)); open(unit=nds(11) , status='scratch'); close(nds(11))
-    call ESMF_UtilIOUnitGet(nds(12)); open(unit=nds(12) , status='scratch'); close(nds(12))
-    call ESMF_UtilIOUnitGet(nds(13)); open(unit=nds(13) , status='scratch'); close(nds(13))
-    ntrace(1) =  nds(3)
-    ntrace(2) =  10
 
-    if ( root_task ) then
+    call ESMF_UtilIOUnitGet(mds(5)) ; open(unit=mds(5)  , status='scratch'); close(mds(5))
+    call ESMF_UtilIOUnitGet(mds(6)) ; open(unit=mds(6)  , status='scratch'); close(mds(6))
+    call ESMF_UtilIOUnitGet(mds(7)) ; open(unit=mds(7)  , status='scratch'); close(mds(7))
+    call ESMF_UtilIOUnitGet(mds(8)) ; open(unit=mds(8)  , status='scratch'); close(mds(8))
+    call ESMF_UtilIOUnitGet(mds(9)) ; open(unit=mds(9)  , status='scratch'); close(mds(9))
+    call ESMF_UtilIOUnitGet(mds(10)); open(unit=mds(10) , status='scratch'); close(mds(10))
+    call ESMF_UtilIOUnitGet(mds(11)); open(unit=mds(11) , status='scratch'); close(mds(11))
+    call ESMF_UtilIOUnitGet(mds(12)); open(unit=mds(12) , status='scratch'); close(mds(12))
+    call ESMF_UtilIOUnitGet(mds(13)); open(unit=mds(13) , status='scratch'); close(mds(13))
+
+    ntrace(1) = mds(3)
+    ntrace(2) = 10
+
+    if (iaproc == napout) then  ! root task
        write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
        write(stdout,'(a)')'==============================================='
     end if
@@ -526,7 +525,7 @@ contains
     else if (trim(starttype) == trim('branch')) then
        runtype = "branch"
     end if
-    if (root_task) then
+    if (iaproc == napout) then  ! root task
        write(stdout,*) 'WW3 runtype is '//trim(runtype)
     end if
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
@@ -538,7 +537,7 @@ contains
     ! TIME0 = from ESMF clock
     ! NOTE - are not setting TIMEN here
 
-    if ( root_task ) then
+    if (iaproc == napout) then  ! root task
        write(stdout,'(a)')'  Time interval : '
        write(stdout,'(a)')'--------------------------------------------------'
     end if
@@ -576,7 +575,7 @@ contains
     timen(2) = hh*10000 + mm*100 + ss
 
     call stme21 ( time0 , dtme21 )
-    if ( root_task ) then
+    if (iaproc == napout) then  ! root task
        write (stdout,'(a)')' Starting time : '//trim(dtme21)
        write (stdout,'(a,i8,2x,i8)') 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     end if
@@ -586,18 +585,18 @@ contains
     ! Wave model initialization
     !--------------------------------------------------------------------
 
-#ifdef CESMCOUPLED
-    call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#else
-    call waveinit_ufs(gcomp, ntrace, mpi_comm, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#endif
-    !call mpi_barrier ( mpi_comm, ierr )
+    if (cesmcoupled) then
+       call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       call waveinit_ufs(gcomp, ntrace, mpi_comm, mds, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+    ! call mpi_barrier ( mpi_comm, ierr )
 
     !--------------------------------------------------------------------
     ! Mesh initialization
@@ -673,7 +672,7 @@ contains
     ! read in the mesh with an auto-generated distGrid
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (root_task) then
+    if (iaproc == napout) then  ! root task
        write(stdout,*)'mesh file for domain is ',trim(cvalue)
     end if
 
@@ -712,7 +711,8 @@ contains
     !--------------------------------------------------------------------
     ! Realize the actively coupled fields
     !--------------------------------------------------------------------
-    call realize_fields(gcomp, mesh=Emesh, flds_scalar_name=flds_scalar_name, flds_scalar_num=flds_scalar_num, rc=rc)
+    call realize_fields(gcomp, mesh=Emesh, flds_scalar_name=flds_scalar_name, &
+         flds_scalar_num=flds_scalar_num, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -888,7 +888,6 @@ contains
     ! Set global grid size scalars in export state
     call State_SetScalar(dble(nx), flds_scalar_index_nx, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call State_SetScalar(dble(ny), flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -913,9 +912,7 @@ contains
     use w3wdatmd          , only : time
     use wav_import_export , only : import_fields, export_fields
     use wav_shel_inp      , only : odat
-#ifdef CESMCOUPLED
-    use wav_shr_mod       , only : rstwr, histwr, outfreq
-#endif
+    use wav_shr_mod       , only : rstwr, histwr, outfreq ! only used by cesm
 
     ! arguments:
     type(ESMF_GridComp)  :: gcomp
@@ -969,8 +966,8 @@ contains
     ss = tod - (hh*3600) - (mm*60)
     time0(1) = ymd
     time0(2) = hh*10000 + mm*100 + ss
-    if (root_task) then
-       write(stdout,'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+    if (iaproc == napout) then  ! root task
+       write(nds(1),'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
     end if
 
     ! use next time; the NUOPC clock is not updated
@@ -1001,46 +998,47 @@ contains
     !------------
     if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
 
-#ifdef CESMCOUPLED
-    ! Determine if time to write cesm ww3 restart files
-    ! rstwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
-    call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       rstwr = .true.
-       call ESMF_AlarmRingerOff( alarm, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else
-       rstwr = .false.
-    endif
-
-    ! Determine if time to write cesm ww3 history files
-    ! histwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
-    histwr = .false.
-    if (outfreq .gt. 0) then
-       ! output every outfreq hours if appropriate
-      if( mod(hh, outfreq) == 0 ) then
-       histwr = .true.
-      endif
-    endif
-    if (.not. histwr) then
-       call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
+    if (cesmcoupled) then
+       ! Determine if time to write cesm ww3 restart files
+       ! rstwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
+       call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          histwr = .true.
+          rstwr = .true.
           call ESMF_AlarmRingerOff( alarm, rc=rc )
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else
-          histwr = .false.
+          rstwr = .false.
        endif
+
+       ! Determine if time to write cesm ww3 history files
+       ! histwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
+       histwr = .false.
+       if (outfreq .gt. 0) then
+          ! output every outfreq hours if appropriate
+          if( mod(hh, outfreq) == 0 ) then
+             histwr = .true.
+          endif
+       endif
+       if (.not. histwr) then
+          call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             histwr = .true.
+             call ESMF_AlarmRingerOff( alarm, rc=rc )
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          else
+             histwr = .false.
+          endif
+       end if
+       if (iaproc == napout) then  ! root task
+          !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
+          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
+       end if
     end if
-    if (root_task) then
-       !  write(stdout,*) 'wav_comp_nuopc time', time, timen
-       !  write(stdout,*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
-    end if
-#endif
+
     ! Advance the wave model
     call w3wave ( 1, odat, timen )
     if(profile_memory) call ESMF_VMLogMemInfo("Exiting  WW3 Run : ")
@@ -1174,30 +1172,31 @@ contains
        call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifdef CESMCOUPLED
-       !----------------
-       ! History alarm
-       !----------------
-       call NUOPC_CompAttributeGet(gcomp, name="history_option", value=history_option, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (cesmcoupled) then
+          !----------------
+          ! History alarm
+          !----------------
+          call NUOPC_CompAttributeGet(gcomp, name="history_option", value=history_option, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) history_n
-       call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) history_ymd
+          call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) history_n
+          call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) history_ymd
 
-       call alarmInit(mclock, history_alarm, history_option, &
-            opt_n   = history_n,           &
-            opt_ymd = history_ymd,         &
-            RefTime = mStartTime,          &
-            alarmname = 'alarm_history', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call alarmInit(mclock, history_alarm, history_option, &
+               opt_n   = history_n,           &
+               opt_ymd = history_ymd,         &
+               RefTime = mStartTime,          &
+               alarmname = 'alarm_history', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#endif
+          call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
     end if
 
     !--------------------------------
@@ -1231,26 +1230,24 @@ contains
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
-    if (root_task) then
-       write(stdout,F91)
-       write(stdout,F00) 'WW3: end of main integration loop'
-       write(stdout,F91)
+    if (iaproc == napout) then  ! root task
+       write(nds(1),F91)
+       write(nds(1),F00) 'WW3: end of main integration loop'
+       write(nds(1),F91)
     end if
 
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine ModelFinalize
 
-!===============================================================================
-#ifdef CESMCOUPLED
-  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, rc)
+  !===============================================================================
+
+  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
 
     ! Initialize ww3 for cesm (called from InitializeRealize)
 
+    use w3initmd     , only : w3init
     use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
-    use w3initmd     , only : w3init
-    use w3odatmd     , only : nds
-    use w3initmd     , only : w3init
     use wav_shr_mod  , only : casename, initfile, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
     use wav_shel_inp , only : set_shel_inp
@@ -1262,6 +1259,7 @@ contains
     integer , intent(in)  :: ntrace(:)
     integer , intent(in)  :: mpi_comm
     integer , intent(in)  :: dtime_sync
+    integer , intent(in)  :: mds(:)
     integer , intent(out) :: rc
 
     ! local variables
@@ -1273,10 +1271,10 @@ contains
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:wavinit_cesm)'
     ! -------------------------------------------------------------------
 
+    namelist /ww3_inparm/ initfile, outfreq, dtcfl, dtcfli, dtmax, dtmin
+
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    namelist /ww3_inparm/ initfile, outfreq, dtcfl, dtcfli, dtmax, dtmin
 
     ! Get component instance
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
@@ -1291,18 +1289,13 @@ contains
        inst_index=1
     endif
     inst_name = "WAV"//trim(inst_suffix)
-    if ( root_task ) then
-       write(stdout,*) trim(subname),' inst_name   = ',trim(inst_name)
-       write(stdout,*) trim(subname),' inst_index  = ',inst_index
-       write(stdout,*) trim(subname),' inst_suffix = ',trim(inst_suffix)
-    endif
+
+    ! Set casename (in wav_shr_mod)
+    call NUOPC_CompAttributeGet(gcomp, name="case_name", value=casename, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read namelist (set initfile in wav_shr_mod)
-    if ( root_task ) then
-       write (stdout,'(a)')'  Initializations : '
-       write (stdout,'(a)')' --------------------------------------------------'
-       write (stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write (stdout,*)
+    if (iaproc == napout) then
        open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
        read (unitn, ww3_inparm, iostat=ierr)
        if (ierr /= 0) then
@@ -1312,6 +1305,24 @@ contains
           return
        end if
        close (unitn)
+
+       ! Write out input 
+       write(nds(1),*)
+       write(nds(1),'(a)')' --------------------------------------------------'
+       write(nds(1),'(a)')'  Initializations : '
+       write(nds(1),'(a)')' --------------------------------------------------'
+       write(nds(1),'(a)')' Case Name is '//trim(casename)
+       write(nds(1),'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
+       write(nds(1),'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
+       write(nds(1),'(a,i4)') trim(subname)//' inst_index  = ',inst_index
+       write(nds(1),'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       write(nds(1),'(a)')' initfile = '//trim(initfile)
+       write(nds(1),'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+       write(nds(1),'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+       write(nds(1),'(a, 2x, f10.3)')' dtmax    = ',dtmax
+       write(nds(1),'(a, 2x, f10.3)')' dtmin    = ',dtmin
+       write(nds(1),'(a, 2x, i8)'   )' outfreq  = ',outfreq
+       write(nds(1),*)
     end if
 
     ! ESMF does not have a broadcast for chars
@@ -1330,15 +1341,6 @@ contains
        return
     end if
 
-    ! Set casename (in wav_shr_mod)
-    call NUOPC_CompAttributeGet(gcomp, name="case_name", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) then
-       read(cvalue,*) casename
-       call ESMF_LogWrite(trim(subname)//' case_name = '//trim(casename), ESMF_LOGMSG_INFO)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
-
     ! Determine module variables in wav_shel_inp that are used for call to w3init
     call set_shel_inp(dtime_sync)
 
@@ -1351,20 +1353,19 @@ contains
     ! 1 is model number
     ! IsMulti does not appear to be used, setting to .false.
 
-    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
+    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
-#endif
 
-!===============================================================================
-#ifndef CESMCOUPLED
-  subroutine waveinit_ufs( gcomp, ntrace, mpi_comm, rc)
+  !===============================================================================
+
+  subroutine waveinit_ufs( gcomp, ntrace, mpi_comm, mds, rc)
 
     ! Initialize ww3 for ufs (called from InitializeRealize)
 
-    use w3odatmd     , only : nds, fnmpre
+    use w3odatmd     , only : fnmpre
     use w3initmd     , only : w3init
     use wav_shel_inp , only : read_shel_inp
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
@@ -1374,6 +1375,7 @@ contains
     type(ESMF_GridComp)  :: gcomp
     integer, intent(in)  :: ntrace(:)
     integer, intent(in)  :: mpi_comm
+    integer, intent(in)  :: mds(:)
     integer, intent(out) :: rc
 
     ! local variables
@@ -1384,15 +1386,15 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     fnmpre = './'
+
     call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
     call read_shel_inp(mpi_comm)
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
-    call w3init ( 1, .false., 'ww3', nds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
+    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_ufs
-#endif
 
 end module wav_comp_nuopc

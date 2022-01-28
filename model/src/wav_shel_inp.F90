@@ -5,11 +5,8 @@ module wav_shel_inp
   implicit none
   private ! except
 
-#ifdef CESMCOUPLED
   public  :: set_shel_inp
-#else
   public  :: read_shel_inp
-#endif
 
   integer, public :: odat(40)
   character(len=40), allocatable, public :: pnames(:)
@@ -25,19 +22,16 @@ module wav_shel_inp
 
   include "mpif.h"
 
-contains
-
 !===============================================================================
-#ifdef CESMCOUPLED
+contains
+!===============================================================================
+
   subroutine set_shel_inp(dtime_sync)
 
-    ! Note that FLOGRR, FLGR and OFILES does not exist in the current cesm code base
-
     use w3idatmd    , only : inflags1, inflags2
-    use w3odatmd    , only : noge, idout, nds, notype
+    use w3odatmd    , only : noge, idout, nds, notype, iaproc, napout
     use w3wdatmd    , only : time
     use wav_shr_mod , only : wav_coupling_to_cice
-    use wav_shr_mod , only : root_task, stdout
 
     ! Input parameter
     integer , intent(in)  :: dtime_sync
@@ -45,6 +39,7 @@ contains
     ! Local parameters
     logical :: flt
     integer :: i,j,j0
+    !---------------------------------------------------
 
     !--------------------------------------------------------------------
     ! Define input fields inflags1 and inflags2 settings
@@ -54,9 +49,8 @@ contains
     !  flcur   inflags1(2)  flag for current input.
     !  flwind  inflags1(3)  flag for wind input.
     !  flice   inflags1(4)  flag for ice input (ice fraction)
-    !  flhml   inflags1(5)  flag for mixed layer depth input. ql, 150525 hk
 
-    !  inflags1 array consolidating the above four flags, as well asfour additional data flags.
+    !  inflags1 array consolidating the above flags, as well as four additional data flags.
     !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
     !  inflags2 is just "initial value of INFLAGS1"
 
@@ -69,10 +63,10 @@ contains
     ! currents          : inflags1(2)
     ! winds             : inflags1(3)
     ! ice fields        : inflags1(4)
-    ! mixed layer depth : inflags1(5)
+    ! momentum fluxes   : inflags1(5)
 
     inflags1(:)   = .false.
-    inflags1(1:5) = .true.
+    inflags1(1:4) = .true.
     inflags2(:)   = .false.
     if (wav_coupling_to_cice) then
        inflags1(-7) = .true. ! ice thickness
@@ -89,10 +83,10 @@ contains
     ! Set number of output types. This is nomally set in w3_shel, CMB made 7.
     notype = 7
 
-    if (root_task) then
-       write(stdout,'(a)') '  Output requests : '
-       write(stdout,'(a)')'--------------------------------------------------'
-       write(stdout,'(a)')' no dedicated output process on any file system '
+    if (iaproc == napout) then
+       write(nds(1),'(a)') '  Output requests : '
+       write(nds(1),'(a)')'--------------------------------------------------'
+       write(nds(1),'(a)')' no dedicated output process on any file system '
     end if
 
     ! Initialize ODAT. Normally set in w3_shel.
@@ -249,22 +243,22 @@ contains
     !   NOGRP = number of output field groups
     !   NGRPP = Max num of parameters per output
     !   NOGE(NOGRP) = number of output group elements
-    if ( root_task ) then
+    if (iaproc == napout) then
        flt = .true.
        do i=1, nogrp
           do j=1, noge(i)
              if ( flgrd(i,j) ) then
                 if ( flt ) then
-                   write (stdout,'(a)') '            Fields   : '//trim(idout(i,j))
+                   write (nds(1),'(a)') '            Fields   : '//trim(idout(i,j))
                    flt = .false.
                 else
-                   write (stdout,'(a)')'                       '//trim(idout(i,j))
+                   write (nds(1),'(a)')'                       '//trim(idout(i,j))
                 end if
              end if
           end do
        end do
        if ( flt ) then
-          write (stdout,'(a)') '            Fields   : '//'no fields defined'
+          write (nds(1),'(a)') '            Fields   : '//'no fields defined'
        end if
     end if
 
@@ -276,9 +270,7 @@ contains
 
   end subroutine set_shel_inp
 
-!===============================================================================
-#else
-  
+  !===============================================================================
   subroutine read_shel_inp(mpi_comm)
 
     USE W3GDATMD, ONLY: FLAGLL
@@ -344,6 +336,7 @@ contains
     DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
                   'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
                   'DT0', 'DT1', 'DT2', 'MOV' /
+    !---------------------------------------------------
     !
     FLGR2 = .FALSE.
     FLH(:) = .FALSE.
@@ -977,7 +970,5 @@ contains
 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
          '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
   end subroutine read_shel_inp
-
-#endif
 
 end module wav_shel_inp

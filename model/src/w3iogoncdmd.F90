@@ -57,9 +57,9 @@ contains
     IGRD   = 1
     CALL W3SETO ( IGRD, NDSE, NDST )
     CALL W3SETG ( IGRD, NDSE, NDST )
-    CALL W3SETA ( IGRD, NDSE, NDST )
-    CALL W3XETA ( IGRD, NDSE, NDST )
-    CALL W3SETW ( IGRD, NDSE, NDST )
+    CALL W3SETA ( IGRD, NDSE, NDST )  ! sets pointers into wadats in w3adatmd
+    CALL W3XETA ( IGRD, NDSE, NDST )  ! sets pointers into wadats in w3adatmd
+    CALL W3SETW ( IGRD, NDSE, NDST )  ! sets pointers into wdatas in w3wdatmd
 
     ! -------------------------------------------------------------
     ! Allocate fields needed for write
@@ -197,7 +197,7 @@ contains
           IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
           IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
           IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
-          IF ( FLOGRD( 6, 13) ) LANGMT(ISEA) = UNDEF  !cesm specific
+          IF ( FLOGRD( 6, 14) ) LANGMT(ISEA) = UNDEF  !cesm specific
           !
           IF ( FLOGRD( 7, 1) ) THEN
              ABA   (ISEA) = UNDEF
@@ -515,7 +515,9 @@ contains
                    UNITSTR2 = 'm/s'
                    LNSTR1 = 'Stokes drift at z=0'
                    LNSTR2 = 'Stokes drift at z=0'
-                else if ( IFI .eq. 6 .and. IFJ .eq. 13 ) then
+                else if ( IFI .eq. 6 .and. IFJ .eq. 14 ) then
+                   write(6,*)'DEBUG: nsea = ',nsea
+                   write(6,*)'DEBUG: size(langmt) = ',size(langmt)
                    AUX1(1:NSEA) = LANGMT(1:NSEA)
                    WAUX1 = .true.
                    FLDSTR1 = 'LANGMT'
@@ -692,8 +694,9 @@ contains
 #ifdef CESMCOUPLED
   subroutine cesm_hist_filename(fname)
 
-    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX, ROOT_TASK, STDOUT
+    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
     USE W3WDATMD       , ONLY : TIME
+    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
 
     implicit none
 
@@ -701,7 +704,7 @@ contains
     character(len=*), intent(out) :: fname
 
     ! local variables
-    integer           :: yy,mm,dd,hh,mn,ss,totsec
+    integer :: yy,mm,dd,hh,mn,ss,totsec
     !----------------------------------------------
     
     yy =  time(1)/10000
@@ -720,8 +723,8 @@ contains
             trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
     endif
 
-    if (root_task) then
-        write(stdout,'(a)') 'w3iogomdncd: writing history '//trim(fname)
+    if (iaproc == napout) then
+        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
      end if
 
    end subroutine cesm_hist_filename
