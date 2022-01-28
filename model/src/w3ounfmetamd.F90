@@ -1,7 +1,6 @@
 !> @file w3ounfmetamd.F90
 !> @brief User configurable netCDF meta-data for ww3_ounf.
 !> @author Chris Bunney @date 02-Nov-2020
-
 !/ ------------------------------------------------------------------- /
 !> @brief Manages user configurable netCDF meta-data for ww3_ounf program.
 !>
@@ -160,13 +159,11 @@
 !> 22-Mar-2021 | 7.12 | Add extra coupling fields
 !> 02-Sep-2021 | 7.12 | Add coordinates attribute
 !>
-
 !!
 !! TODO - I NEED THIS DOUBLE BANG COMMENT HERE OTHERWISE DOXYGEN
 !!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
 !!        WHY???!!
 !!
-!/ ------------------------------------------------------------------- /
       MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
@@ -733,7 +730,7 @@
 !>
 !> @details This is the main entry routine for parsing the ounfmeta.inp
 !>    file. Values read from the file will be used to update or add to
-!>    the default meta data values set in the \link DEFAULT_META \endlink
+!>    the default meta data values set in the default_meta()
 !>    subroutine.
 !>
 !> @author Chris Bunney @date 26-Jan-2021
@@ -2115,7 +2112,7 @@
 !>    "pre-defined" attributes are written out (those defined in the
 !>    META_T type). Secondly, if there is any user-defined "extra"
 !>    freeform meta data defined, this is written out via a separate
-!>    call to \link WRITE_FREEFORM_META_LIST \endlink
+!>    call to write_freeform_meta_list().
 !>
 !> @param[in,out]  NCID   NetCDF file ID
 !> @param[in,out]  VARID  NetCDF variable ID
@@ -2248,7 +2245,7 @@
 !>
 !> @details Global meta-data is stored as a meta-data list, so this
 !>    is essentially a convenience/legacy function that calls the
-!>    \link WRITE_FREEFORM_META_LIST \endlink subroutine.
+!>    write_freeform_meta_list() subroutine.
 !>
 !> @param[in]   NCID  NetCDF file ID
 !> @param[out]  ERR   Error value
@@ -2449,8 +2446,7 @@
 !> @details A "deep" copy ensures that the linked list data in the EXTRA
 !> field is copied, rather than just copying the pointer.
 !>
-!> Calls \link COPY_META_LIST \endlink internally to copy the EXTRA
-!> linked list.
+!> Calls copy_meta_list() internally to copy the EXTRA linked list.
 !>
 !> @returns A new META_T variable
 !>
