@@ -1652,7 +1652,7 @@ contains
       ! open file
       call w3fldo('READ', lstring, mdsf, mdst, mdse, nx, ny, gtype, ierr)
       write(logmsg,*) "Opening "//lstring//", iostat = ", ierr
-      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
       if (ierr.ne.0) then
         write(logmsg,*) "Error in opening "//lstring//", iostat = ", ierr
         call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)

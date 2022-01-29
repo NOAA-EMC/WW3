@@ -128,7 +128,7 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : model_label_DataInitialize => label_DataInitialize
   use NUOPC_Model           , only : model_label_SetRunClock    => label_SetRunClock
   use NUOPC_Model           , only : model_label_Finalize       => label_Finalize
-  use NUOPC_Model           , only : NUOPC_ModelGet
+  use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
   use wav_import_export     , only : advertise_fields, realize_fields
@@ -140,7 +140,7 @@ module wav_comp_nuopc
   implicit none
   private ! except
 
-  public  :: SetServices
+  public  :: SetServices, SetVM
   private :: InitializeP0
   private :: InitializeAdvertise
   private :: InitializeRealize
