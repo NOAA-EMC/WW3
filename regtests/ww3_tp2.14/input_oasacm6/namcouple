@@ -108,7 +108,7 @@ TOY_U10M WW3__U10 1 180 1 r-toy.nc EXPOUT
 80 80 2889 1 toyt ww3t
 R  0  R  0
 MAPPING
-../input/rmp_toyt_to_ww3t_NEARESTSTOD.nc
+../input_oasacm6/rmp_toyt_to_ww3t_NEARESTSTOD.nc
 #
 #~~~~~~~~~~~
 # Field 2 : 
@@ -117,7 +117,7 @@ TOY_V10M WW3__V10 1 180 1 r-toy.nc EXPOUT
 80 80 2889 1 toyt ww3t
 R  0  R  0
 MAPPING
-../input/rmp_toyt_to_ww3t_NEARESTSTOD.nc
+../input_oasacm6/rmp_toyt_to_ww3t_NEARESTSTOD.nc
 #
 #                     -----------------------------------------
 #                        WW3 (wwatch) ==> TOY (toyexe)
@@ -130,6 +130,6 @@ WW3_ACHA TOY__CHA 1 180 1 r-ww3.nc EXPOUT
 2889 1 80 80 ww3t toyt
 R  0  R  0
 MAPPING
-../input/rmp_ww3t_to_toyt_NEARESTSTOD.nc
+../input_oasacm6/rmp_ww3t_to_toyt_NEARESTSTOD.nc
 #
  $END
