@@ -7,12 +7,12 @@
 ! Define the output fields to postprocess via FIELD_NML namelist
 !
 ! * the detailed list of field names FIELD%LIST is given in ww3_shel.nml
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
-!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG
+!  DPT CUR WND AST WLV ICE TAU RHO IBG D50 IC1 IC5
+!  HS LM T02 T0M1 T01 FP DIR SPR DP HIG WNM
 !  EF TH1M STH1M TH2M STH2M WN
 !  PHS PTP PLP PDIR PSPR PWS PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR
 !  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS
-!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+!  SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC TOC
 !  ABR UBR BED FBB TBB
 !  MSS MSC WL02 AXT AYT AXY
 !  DTD FC CFX CFD CFK
@@ -30,6 +30,24 @@
 !     FIELD%VECTOR               = T                  ! Vector [T] or dir/magnitude [F] for
 !                                                     !   directional fields
 !     FIELD%TYPE                 = 3                  ! [2 = SHORT, 3 = it depends , 4 = REAL]
+!     FIELD%FCVARS               = F                  ! Generate auxiliary forecast variables
+!                                                     !   (forecast_period and forecast_reference_time)
+!     FIELD%TIMEREF              = 'unset'            ! "Forecast reference time" for calculating
+!                                                     !   forecast_period; defaults to TIMESTART
+!     FIELD%TIMEVAR              = 'D'                ! Time var type ['D' = DOUBLE, 'I' = INT64]
+!     FIELD%TIMEUNIT             = 'D'                ! Time units ['D' = days, 'I' = seconds]
+!     FIELD%TIMEEPOCH            = '19900101 000000'  ! Epoch used for encoding of NC time variables
+!     FIELD%NOVAL                = UNDEF              ! Value for wet cells that have an UNDEF value
+!     FIELD%MAPSTA               = .TRUE.             ! Output MAPSTA field in file?
+!
+! Note: If FCVARS = T, the following auxiliary variables will be generated
+! (see the manual entry for ww3_ounf for more information):
+!  
+!    - forecast_reference_time: The time associated with the "analysis" of
+!      the current forecast. Defaults to TIMESTART if TIMEREF not set.
+!
+!    - forecast_period: the time period elapsed (in seconds) since the
+!      associated "forecast_reference_time".
 ! -------------------------------------------------------------------- !
 &FIELD_NML
   FIELD%TIMESTART        =  '20100101 000000'
@@ -37,6 +55,7 @@
   FIELD%LIST             =  'DPT WND HS FP DIR SPR MSS'
   FIELD%SAMEFILE         =  F
   FIELD%TYPE             =  4
+  FIELD%FCVARS           =  F
 /
 
 

@@ -7,8 +7,8 @@
 # -netCDF4 librairies must be installed and NETCDF variables setup          #
 #                                                                           #
 # Remarks :                                                                 #
-# Requires NETCDF parameters to be exported                                 #
-# e.g., export WWATCH3_NETCDF=NC4; export NETCDF_CONFIG=`which nc-config`   #
+# Requires NETCDF parameter to be exported                                  #
+# e.g., export NETCDF_CONFIG=`which nc-config`                              #
 #                                                                           #
 # Description                                                               #
 #   Test case is for wind-wave growth in the Adriatic Sea near the ISMAR    #
@@ -25,7 +25,17 @@
 # Wind data for this test case was produced by the COSMO-ME model, and have #
 # been provided by CNMCA (National Meteorological Service, Rome, Italy).    #
 #                                                                           #
-# Model results are presented here for the purpose of testingi              #
+# Additionally, two wind stress-driven tests with variable air density      #
+# field are included. 1. The first test is wind-driven, but it is included  #
+# to check that the stress is properly read, interpolated, and written to   #
+# the output regardless of the FLX used. 2. The second test uses FLX5       #
+# switch. This is used to drive the wave model with atmospheric wind stress #
+# and density for consistency. FLX5 enables the direct use of atmospheric   #
+# wind stress by ST4 and ST6 source terms.                                  #
+# Wind stress and density data were provided by the Met Office by modifying #
+# the wind data used to run the wind-driven test.                           #
+#                                                                           #
+# Model results are presented here for the purpose of testing               #
 # the formulations of space-time extreme parameters. This regression test   #
 # oversimplifies real-case bathymetry and wind fields, thus comparison with #
 # measurements are merely qualitative.                                      #  
@@ -44,13 +54,17 @@
 #  ./bin/run_test -g 5km -n 16 -p mpirun -s MPI -f -w work_5km_MPI_NML \    #
 #                 -o netcdf -N ../model ww3_tp2.15                          #
 #                                                                           #
+#  Run using FLX5                                                           #
+#  ./bin/run_test -i input_rho -s ST6 -w work_ST6FLX5 ../model ww3_tp2.15  #
+#  ./bin/run_test -i input_rho -s ST4 -w work_ST4FLX5 ../model ww3_tp2.15  #
+#                                                                           #
 # A matlab script is provided in the input directory: extract_AA_STE.m      #
 #   which computes STE parameters at the location of the Acqua Alta         #
 #   platform in the Adriatic Sea. Reference values are given as part of     #
 #   the script output.                                                      #
 #                                                                           #
 #                       Francesco Barbariol, Jose-Henrique Alves, Sep 2016  #
-#                                                   Last Mod : Jan 2018     #
+#                                                   Last Mod : May 2021     #
 #                                                                           #
 #    Copyright 2009-2016 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

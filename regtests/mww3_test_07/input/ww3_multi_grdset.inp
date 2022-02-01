@@ -5,8 +5,8 @@ $
 $ 'wind_ncep'  F F T F F F F
 $ 'ice_cep2b'  F F F T F F F
  'points'
- 'rect1'   'no' 'no' 'no' 'no'   'no' 'no' 'no'  1 1  0.00 1.00  T
- 'refug'    'no' 'no' 'no' 'no'   'no' 'no' 'no'  2 1  0.00 1.00  T
+ 'rect1'   'no' 'no' 'no' 'no'   'no' 'no' 'no' 'no' 'no'  1 1  0.00 1.00  T
+ 'refug'    'no' 'no' 'no' 'no'   'no' 'no' 'no' 'no' 'no'  2 1  0.00 1.00  T
 $
    20030101 000000  20030102 120000
 $

@@ -50,6 +50,8 @@
 !     INPUT(I)%FORCING%WATER_LEVELS  = F
 !     INPUT(I)%FORCING%CURRENTS      = F
 !     INPUT(I)%FORCING%WINDS         = F
+!     INPUT(I)%FORCING%ATM_MOMENTUM  = F
+!     INPUT(I)%FORCING%AIR_DENSITY   = F
 !     INPUT(I)%FORCING%ICE_CONC      = F
 !     INPUT(I)%FORCING%ICE_PARAM1    = F
 !     INPUT(I)%FORCING%ICE_PARAM2    = F
@@ -117,6 +119,8 @@
 !     MODEL(I)%FORCING%WATER_LEVELS  = 'no'
 !     MODEL(I)%FORCING%CURRENTS      = 'no'
 !     MODEL(I)%FORCING%WINDS         = 'no'
+!     MODEL(I)%FORCING%ATM_MOMENTUM  = 'no'
+!     MODEL(I)%FORCING%AIR_DENSITY   = 'no'
 !     MODEL(I)%FORCING%ICE_CONC      = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM1    = 'no'
 !     MODEL(I)%FORCING%ICE_PARAM2    = 'no'
@@ -190,7 +194,7 @@
 !   longitude latitude 'name' (C*40)
 !
 ! * the detailed list of field names is given in model/nml/ww3_shel.nml :
-!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
+!  DPT CUR WND AST WLV ICE IBG TAU RHO D50 IC1 IC5
 !  HS LM T02 T0M1 T01 FP DIR SPR DP HIG
 !  EF TH1M STH1M TH2M STH2M WN
 !  PHS PTP PLP PDIR PSPR PWS PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP TWS PNR

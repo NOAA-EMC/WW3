@@ -5,7 +5,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLXn !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                  #
+#   !/FLXn !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0                        #
 #                        No source terms needed.                            #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7 !/O10 !/O11                     #
@@ -123,8 +123,15 @@
 #                                         ../model mww3_test_03             #
 #  ./bin/run_test ../ -m grdset_c -c gnu_debug -o netcdf mww3_test_03       #
 #                                                                           #
+#                                                                           #
+#  ./bin/run_test -m grdset_a0 -s PR3_UQ -w work_a0 -o netcdf          \    #
+#                                         ../model mww3_test_03             #
+#                                                                           #
+#  ./bin/run_test -m grdset_a  -s PR3_UQ -w work_a  -o netcdf          \    #
+#                                         ../model mww3_test_03             #
+#                                                                           #
 #                                              Hendrik Tolman, Feb 2006     #
-#                                                   Last Mod : Nov 2013     #
+#                                                   Last Mod : Jun 2021     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

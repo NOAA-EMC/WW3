@@ -7,7 +7,9 @@ $ as a homogeneous field (first three only); eight input lines. -------$
    F T     Water levels
    F T     Currents
    F T     Winds
-   F       Ice concentrations
+   F F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra.

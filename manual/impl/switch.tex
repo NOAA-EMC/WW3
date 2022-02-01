@@ -15,19 +15,7 @@ included in the source code files is described in \para\ref{sec:w3adc}.
 \subsubsection{~Mandatory switches} \label{sub:man_switch}
 \vsssub
 
-Of each of the below groups of switches exactly one has to be selected. The
-first group of switches controls the selection of machine-dependent code. With
-the introduction of \fortran-90 this set of switches should have become
-obsolete. Problems with some compilers have prompted the retention of the
-second switch.
-\begin{slist}
-\sit{f90} {\fortran-90 style date and time capturing and program
-           abort.}
-\sit{dum} {Dummy to be used if \ws\ is to be installed on
-           previously untried hardware.}
-\end{slist}
-
-\noindent
+Of each of the below groups of switches exactly one has to be selected. 
 Hardware model (first group) and message passing protocol (second group). Note
 that these two groups share a switch. This implies that the {\sc mpi} switch
 can only be used in combination with the {\sc dist} switch.
@@ -54,7 +42,6 @@ option.
 \sit{pr3} {Higher-order schemes with \cite{tol:OMOD02b} averaging technique.}
 %\sit{pr4} {\uq\ propagation scheme with \cite{tol:OMOD02b}
 %           divergence technique.}
-\sit{prx} {Experimental (user supplied).}
 \end{slist}
 
 \begin{slist}
@@ -72,7 +59,7 @@ Selection of flux computation:
 \sit{flx2} {Friction velocity from Tolman and Chalikov input.}
 \sit{flx3} {Idem, with cap of Eq.~(\ref{eq:Cd_cap_1}) or (\ref{eq:Cd_cap_2}).}
 \sit{flx4} {Friction velocity according to Eq.~(\ref{eq:ST607}).}
-\sit{flxx} {Experimental (user supplied).}
+\sit{flx5} {Friction velocity from atmospheric stress (stresses should be an input).}
 \end{slist}
 
 \noindent
@@ -81,7 +68,6 @@ Selection of linear input:
 \sit{ln0} {No linear input.}
 \sit{seed}{Spectral seeding of Eq.~(\ref{eq:seed}).}
 \sit{ln1} {Cavaleri and Malanotte-Rizzoli with filter.}
-\sit{lnx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -102,7 +88,6 @@ additional to corresponding {\F st{\it n}} switch:
 \sit{st4} {\cite{art:Aea10} source term package.}
 %\sit{st5} {UNSW source term package.}
 \sit{st6} {BYDRZ source term package.}
-\sit{stx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -113,7 +98,6 @@ Selection of nonlinear interactions:
 \sit{nl2} {Exact interaction approximation (\xnl).}
 \sit{nl3} {Generalized Multiple \dia\ (\gmd).}
 \sit{nl4} {Two-scale approximation (TSA).} 
-\sit{nlx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -126,7 +110,6 @@ Selection of bottom friction:
 \sit{bt4} {\showex\ bottom friction formulation.}
 \sit{bt8} {Dalrymple and Liu formulation (fluid mud seafloor).}
 \sit{bt9} {Ng formulation (fluid mud seafloor).}
-\sit{btx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -159,7 +142,6 @@ Selection depth-induced breaking of :
 \begin{slist}
 \sit{db0} {No depth-induced breaking used.}
 \sit{db1} {Battjes-Janssen.}
-\sit{dbx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -167,7 +149,6 @@ Selection of triad interactions:
 \begin{slist}
 \sit{tr0} {No triad interactions used.}
 \sit{tr1} {Lumped Triad Interaction (LTA) method.}
-\sit{trx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
@@ -175,18 +156,10 @@ Selection of bottom scattering:
 \begin{slist}
 \sit{bs0} {No bottom scattering used.}
 \sit{bs1} {Magne and Ardhuin.}
-\sit{bsx} {Experimental (user supplied).}
 \end{slist}
 
 \noindent
-Selection of supplemental source term:
-\begin{slist}
-\sit{xx0} {No supplemental source term used.}
-\sit{xxx} {Experimental (user supplied).}
-\end{slist}
-
-\noindent
-Selection of method of wind interpolation (time):
+Selection of method of wind/momentum/air density interpolation (time):
 \begin{slist}
 \sit{wnt0}{No interpolation.}
 \sit{wnt1}{Linear interpolation.}
@@ -194,7 +167,7 @@ Selection of method of wind interpolation (time):
 \end{slist}
 
 \noindent
-Selection of method of wind interpolation (space):
+Selection of method of wind/momentum interpolation (space):
 \begin{slist}
 \sit{wnx0}{Vector interpolation.}
 \sit{wnx1}{Approximately linear speed interpolation.}
@@ -221,7 +194,6 @@ Selection of method of current interpolation (space):
 Switch for user supplied GRIB package.
 \begin{slist}
 \sit{nogrb}{No package included.}
-\sit{ncep1}{\ncep\ GRIB1 package for IBM SP.}
 \sit{ncep2}{\ncep\ GRIB2 package for IBM SP.}
 \end{slist}
 
@@ -277,8 +249,6 @@ compatible with switches used in previous model versions.
 \begin{slist}
 \sit{ompg}{General loop parallelization directives used for both exclusive
     OpenMP parallelization and hybrid MPI-OpenMP parallelization.}
-\sit{ompx}{Idem, but for directives used only for exclusive OpenMP
-    parallelization.}  
 \sit{omph}{Idem, but for directives used only for hybrid MPI-OpenMP
     parallelization.}
 \sit{pdlib}{Domain Decomposition for Explicit and Implicit Solver on triangular unstructured grids. ({\code ParMetis} is required for this option)}
@@ -293,7 +263,7 @@ Currently only affects code compiled with the {\F smc} switch.}
 Note that these switches can only be used in certain combinations, as enforced
 in the model installation scripts (particularly {\file make\_makefile.sh}. A
 pure MPI approach requires the {\F dist} and {\F mpi} switches. A pure OpenMP
-approach requires the {\F shrd}, {\F ompg} and {\F ompx} switches, and the
+approach requires the {\F shrd},  and {\F ompg} switches, and the
 hybrid approach requires the {\F dist}, {\F mpi}, {\F ompg}, and {\F omph}
 switches.
 
@@ -311,17 +281,8 @@ additions.
 \end{slist}
 
 \noindent
-The following compiler dependent switches are available. They may not have
-been maintained for recent compiler versions.
-\begin{slist}
-\sit{c90} {Compiler directives for Cray C90 (vectorization).}
-\sit{nec} {Compiler directives for NEC SX6/SX8 (vectorization).}
-\end{slist}
-
-\noindent
 Furthermore the following miscellaneous switches are available:
 \begin{slist}
-\sit{arc} {Arctic grid option for SMC grid\footnote{~Not yet fully tested according to author.}.}
 \sit{cou} {Activates the calculation of variables required for coupling}
 \sit{dss0}{Switch off frequency dispersion in diffusive
            dispersion correction.}
@@ -332,9 +293,6 @@ Furthermore the following miscellaneous switches are available:
 \sit{mpibdi}{Experimental parallelization of multi-grid model initialization.}
 \sit{mpit}{Test output for \mpi\ initializations.}
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
-\sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
-           programs.}
-\sit{ncc} {NCEP coupler.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
@@ -368,9 +326,7 @@ Furthermore the following miscellaneous switches are available:
            with ww3\_prtide.}
 \sit{tidet}{test output for tidal analysis.}
 \sit{trknc} {Activates the NetCDF API in the wave system tracking
-           post-processing program. Selecting TRKNC alone will generate 
-           NetCDF-3 files. Selecting both TRKNC and NC4 will generate 
-           NetCDF-4 files.}
+           post-processing program.}
 \sit{uost}{Enable the unresolved obstacles source term.}
 \sit{wrst}{Save wind in restart and use in first time step in wmesmf.}
 \sit{xw0 }{Swell diffusion only in \uq\ scheme.}

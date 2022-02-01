@@ -79,12 +79,8 @@
   # netcdf include dir
   if [ "$netcdf_compile" = 'yes' ]
   then
-    case $WWATCH3_NETCDF in
-      NC3) opt="$opt -I$NETCDF_INCDIR" ;;
-      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           #opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
-           opt="$opt `$NETCDF_CONFIG --cflags`" ;;
-    esac
+    if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+    opt="$opt `$NETCDF_CONFIG --cflags`"
   fi
 
   # ftn include dir
@@ -138,16 +134,6 @@
   if [ -s $name.lst ] 
   then
     mv $name.lst $name.l
-  fi
-  # listing done by w3list
-  if [ ! -f $name.l ]
-  then
-    echo "w3list $name.$fext"
-    echo "$name.$fext" > w3list.inp
-    echo "T"          >> w3list.inp
-    w3list < w3list.inp 2> /dev/null
-    rm -f w3list.inp
-    mv w3list.out $name.l
   fi
   # add comp options, warnings and error to listing
   if [ -s $name.l ] 

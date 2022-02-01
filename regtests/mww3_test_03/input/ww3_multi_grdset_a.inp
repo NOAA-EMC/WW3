@@ -1,9 +1,9 @@
 $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
   3 0 F 1 F F
- 'low1'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
- 'low2'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
- 'low3'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'low1'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'low2'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
+ 'low3'  'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
 $
    19680606 000000   19680606 120000
 $
@@ -11,7 +11,7 @@ $
 $
    19680606 000000    600  19680608 000000
      N
-     DPT HS FP DP
+     DPT HS FP DP PT01 PT02 MSS MSC
    19680606 000000    600  19680608 000000
      200.E3 400.E3  'point_A'
        0.E3   0.E3  'STOPSTRING'

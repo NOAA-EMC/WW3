@@ -46,6 +46,8 @@
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -101,9 +103,11 @@
 !  T  T  1     5   WLV        WLV   Water levels.
 !  T  T  1     6   ICE        ICE   Ice concentration.
 !  T  T  1     7   IBG        IBG   Iceberg-induced damping.
-!  T  T  1     8   D50        D50   Median sediment grain size.
-!  T  T  1     9   IC1        IC1   Ice thickness.
-!  T  T  1    10   IC5        IC5   Ice flow diameter.
+!  T  T  1     8   TAUA       TAU   Atm. momentum.
+!  T  T  1     9   RHOAIR     RHO   Air density.
+!  T  T  1    10   D50        D50   Median sediment grain size.
+!  T  T  1    11   IC1        IC1   Ice thickness.
+!  T  T  1    12   IC5        IC5   Ice flow diameter.
 !   -------------------------------------------------
 !        2                          Standard mean wave Parameters
 !   -------------------------------------------------
@@ -228,7 +232,7 @@
 !       - Ice model : IC5 TWI
 !   - Received fields by ww3:
 !       - Ocean model : SSH CUR
-!       - Atmospheric model : WND
+!       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
 !
 ! * Coupling at T+0 (extra fields in the restart needed)
@@ -327,6 +331,8 @@
 !     - LEV is defined by height
 !     - CUR is defined by speed and direction
 !     - WND is defined by speed, direction and airseatemp
+!     - TAU is defined by stress magnitude, direction and airseatemp
+!     - RHO is defined by density
 !     - ICE is defined by concentration
 !     - MOV is defined by speed and direction
 !
@@ -344,6 +350,8 @@
 !     HOMOG_COUNT%N_CUR            =  0
 !     HOMOG_COUNT%N_WND            =  0
 !     HOMOG_COUNT%N_ICE            =  0
+!     HOMOG_COUNT%N_TAU            =  0
+!     HOMOG_COUNT%N_RHO            =  0
 !     HOMOG_COUNT%N_MOV            =  0
 !
 !     HOMOG_INPUT(I)%NAME           =  'unset'

@@ -112,7 +112,7 @@ then
   errmsg "$path_b not found"
   exit 1
 fi
-path_a="$path_s/aux"
+path_a="$path_s/tools"
 if [ ! -d $path_a ]
 then
   errmsg "$path_a not found"
@@ -155,21 +155,7 @@ fi
 # 2.b Check for existing environment and set defaults
 if [ -f $ww3_env ]
 then
-  sed -i "s/WWATCH3_F77/WWATCH3_F90/g" $ww3_env
-
   echo "   Setup file $ww3_env found"
-
-  set `grep WWATCH3_LPR $ww3_env` ; shift
-  prntr="$*"
-  echo "      Printer (listings)          : $prntr"
-
-  set `grep WWATCH3_F90 $ww3_env` ; shift
-  comp_fc="$*"
-  echo "      auxiliary FORTRAN compiler  : $comp_fc"
-
-  set `grep WWATCH3_CC $ww3_env` ; shift
-  comp_cc="$*"
-  echo "      auxiliary C compiler        : $comp_cc"
 
   echo "      Source directory            : $path_s"
 
@@ -193,14 +179,6 @@ then
 else
   echo "   Setup file $ww3_env not found"
 
-  if [ $PRINTER ]
-  then
-    prntr=$PRINTER
-  else
-    prntr=printer
-  fi
-  comp_fc=gfortran
-  comp_cc=gcc
   if [ $tdir ]
   then
     temp_dir=$tdir
@@ -212,9 +190,6 @@ else
 
     echo ' '
     echo "   Default set up :"
-    echo "      Printer (listings)       : $prntr"
-    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
-    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -251,27 +226,6 @@ then
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
   do
     echo ' '
-
-    echo -n "      Printer for listings [$prntr] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      prntr="$instr"
-    fi
-
-    echo -n "      Auxiliary FORTRAN compiler [$comp_fc] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      comp_fc="$instr"
-    fi
-
-    echo -n "      Auxiliary C compiler [$comp_cc] : "
-    instr="$NULL" ; read instr
-    if [ -n "$instr" ]
-    then
-      comp_cc="$instr"
-    fi
 
     OK="$NULL"
     until [ "$OK" = 'y' ]
@@ -323,9 +277,6 @@ then
 
     echo ' '
     echo "   Modified set up :"
-    echo "      Printer (listings)       : $prntr"
-    echo "      Auxiliary FORTRAN comp.  : $comp_fc"
-    echo "      Auxiliary C compiler     : $comp_cc"
     echo "      Scratch directory        : $temp_dir"
     echo "      Save sources             : $source"
     echo "      Save listings            : $list"
@@ -342,9 +293,6 @@ echo '# Environment variables for wavewatch III' >> $ww3_env
 echo '# ---------------------------------------' >> $ww3_env
 echo '#'                                         >> $ww3_env
 echo ' '                                         >> $ww3_env
-echo "WWATCH3_LPR      $prntr"                   >> $ww3_env
-echo "WWATCH3_F90      $comp_fc"                 >> $ww3_env
-echo "WWATCH3_CC       $comp_cc"                 >> $ww3_env
 echo "WWATCH3_DIR      $path_s"                  >> $ww3_env
 echo "WWATCH3_TMP      $temp_dir"                >> $ww3_env
 echo "WWATCH3_SOURCE   $source"                  >> $ww3_env
@@ -354,49 +302,6 @@ echo ' '                                         >> $ww3_env
 # --------------------------------------------------------------------------- #
 # 3. Set up other WWATCH3 files                                               #
 # --------------------------------------------------------------------------- #
-# 3.a Setup makefile for auxiliary programs
-echo ' '
-echo '   Setup makefile for auxiliary programs'
-cd $path_a
-cat > $path_a/makefile << 'EOF'
-############################################################
-# FC, CC & BIN must be defined when called
-############################################################
-
-BIN_LIST = $(BIN)/w3adc $(BIN)/w3list $(BIN)/w3prnt $(BIN)/w3split
-
-all: $(BIN_LIST)
-
-$(BIN)/w3adc: w3adc.f
-	$(FC) -o $(BIN)/w3adc w3adc.f
-
-$(BIN)/w3list: w3list.f
-	$(FC) -o $(BIN)/w3list w3list.f
-
-$(BIN)/w3prnt: w3prnt.f
-	$(FC) -o $(BIN)/w3prnt w3prnt.f
-
-$(BIN)/w3split: w3split.f
-	$(FC) -o $(BIN)/w3split w3split.f
-
-$(BIN)/w3xxx: w3xxx.c
-	$(CC) -o $(BIN)/w3xxx w3xxx.c
-
-clean:
-	rm -f $(BIN_LIST)
-EOF
-echo ' '
-
-# 3.b Compile auxiliary programs
-echo ' '
-echo '   Compile auxiliary programs'
-if make -C $path_a FC=$comp_fc CC=$comp_cc BIN=$path_b
-then :
-else
-  errmsg "Error occured during compile of auxiliary programs"
-  exit 1
-fi
-echo ' '
 
 # 3.c Setup comp & link files
 if [ $cmplr ]
@@ -417,13 +322,16 @@ then
        [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
        [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
        [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ]                       || \
+       [ "$cmplr" == "expanse.intel" ]                                              || \
        [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
        [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optc>/$optc/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<optomp>/$optomp/" -e "s/<err_pattern>/$err_pattern/" -e "s/<warn_pattern>/$warn_pattern/" $path_b/comp.tmpl > $path_b/comp
      echo "      sed $path_b/comp.tmpl => $path_b/comp"
@@ -445,13 +353,16 @@ then
        [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
        [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
        [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ]                       || \
+       [ "$cmplr" == "expanse.intel" ]                                              || \
        [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
        [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
        [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
        [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
        [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
        [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
-       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]; then
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
      source $path_b/cmplr.env
      sed -e "s/<optl>/$optl/" -e "s/<comp_seq>/$comp_seq/" -e "s/<comp_mpi>/$comp_mpi/" -e "s/<optomp>/$optomp/" $path_b/link.tmpl > $path_b/link
     echo "      sed $path_b/link.tmpl => $path_b/link"
@@ -459,7 +370,37 @@ then
     errmsg "$path_b/link.$cmplr not found"
     exit 1
   fi
-  chmod 775 $path_b/comp $path_b/link
+  if [ -f $path_b/ad3.$cmplr ]
+  then
+    rm -f $path_b/ad3
+    cp -f $path_b/ad3.$cmplr $path_b/ad3
+    echo "      copy $path_b/ad3.$cmplr => $path_b/ad3"
+  elif [ "$cmplr" == "mpt" ] || [ "$cmplr" == "mpt_debug" ]                         || \
+       [ "$cmplr" == "datarmor_mpt" ] || [ "$cmplr" == "datarmor_mpt_debug" ]       || \
+       [ "$cmplr" == "intel" ] || [ "$cmplr" == "intel_debug" ]                     || \
+       [ "$cmplr" == "so_intel" ] || [ "$cmplr" == "so_intel_debug" ]               || \
+       [ "$cmplr" == "datarmor_intel" ] || [ "$cmplr" == "datarmor_intel_debug" ]   || \
+       [ "$cmplr" == "gnu" ] || [ "$cmplr" == "gnu_debug" ]                         || \
+       [ "$cmplr" == "hera.intel" ] || [ "$cmplr" == "orion.intel" ]                || \
+       [ "$cmplr" == "hera.gnu" ]   || [ "$cmplr" == "jet.intel" ]                  || \
+       [ "$cmplr" == "stampede.intel" ] || [ "$cmplr" == "gaea.intel" ]             || \
+       [ "$cmplr" == "wcoss2" ] || [ "$cmplr" == "s4.intel" ] || \
+       [ "$cmplr" == "cheyenne.intel" ] || [ "$cmplr" == "cheyenne.gnu" ]           || \
+       [ "$cmplr" == "wcoss_cray" ] || [ "$cmplr" == "wcoss_dell_p3" ]              || \
+       [ "$cmplr" == "datarmor_gnu" ] || [ "$cmplr" == "datarmor_gnu_debug" ]       || \
+       [ "$cmplr" == "pgi" ] || [ "$cmplr" == "pgi_debug" ]                         || \
+       [ "$cmplr" == "datarmor_pgi" ] || [ "$cmplr" == "datarmor_pgi_debug" ]       || \
+       [ "$cmplr" == "ukmo_cray" ] || [ "$cmplr" == "ukmo_cray_debug" ]             || \
+       [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
+       [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
+     source $path_b/cmplr.env
+     sed -e "s/<comp_seq>/$comp_seq/" -e "s/<cppad3procflag>/$cppad3procflag/" -e "s/<cppad3flag2>/$cppad3flag2/" -e "s/<cppad3flag3>/$cppad3flag3/" -e "s/<cppad3flag4>/$cppad3flag4/" $path_b/ad3.tmpl > $path_b/ad3
+    echo "      sed $path_b/ad3.tmpl => $path_b/ad3"
+  else
+    errmsg "$path_b/ad3.$cmplr not found"
+    exit 1
+  fi
+  chmod 775 $path_b/comp $path_b/link $path_b/ad3
 fi
 # 3.d Setup switch file
 if [ $swtch ]

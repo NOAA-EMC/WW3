@@ -8,14 +8,12 @@ WW3_BINDIR := $(WW3_DIR)/bin
 WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP ?= gnu
-WW3_CC := gcc
 WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
-WWATCH3_NETCDF := NC4
 NETCDF_CONFIG := $(shell which nc-config)
-export WWATCH3_ENV WWATCH3_NETCDF NETCDF_CONFIG
+export WWATCH3_ENV NETCDF_CONFIG
 
 EXE := $(WW3_EXEDIR)/ww3_multi_esmf
 
@@ -35,12 +33,16 @@ ifeq ($(WW3_COMP),Portland)
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
 # intel
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel")) 
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel" "s4.intel")) 
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel"))
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel" "expanse.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss_cray" "wcoss_dell_p3" "gaea.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","wcoss2"))
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+ WW3_CC=cc
+ WW3_F90=ftn
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","intel" "datarmor_intel" "datarmor_intel_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 # mpt
@@ -62,8 +64,8 @@ DEP_FRONTS    := -DFRONT_ESM=ESM
 DEP_FRONTS    += -DFRONT_ATM=MDL
 DEP_FRONTS    += -DFRONT_OCN=MDL
 DEP_FRONTS    += -DFRONT_ICE=MDL
-DEP_CMPL_OBJS := utl.o con.o mdl.o dum.o
-DEP_LINK_OBJS := esm.o utl.o con.o mdl.o dum.o
+DEP_CMPL_OBJS := utl.o concomp.o mdl.o dum.o
+DEP_LINK_OBJS := esm.o utl.o concomp.o mdl.o dum.o
 
 ifeq ($(MAKECMDGOALS),ww3_multi_esmf)
 include $(WW3_DIR)/nuopc.mk
@@ -106,7 +108,7 @@ ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 esmApp.o: macros.h utl.o esm.o
 esm.o: macros.h $(DEP_CMPL_OBJS)
 utl.o: macros.h
-con.o: macros.h utl.o
+concomp.o: macros.h utl.o
 mdl.o: macros.h utl.o
 dum.o: macros.h
 
@@ -134,9 +136,7 @@ env:
 	@echo '# Environment variables for wavewatch III'      >> $(WWATCH3_ENV)
 	@echo '# ---------------------------------------'      >> $(WWATCH3_ENV)
 	@echo '#'                                              >> $(WWATCH3_ENV)
-	@echo 'WWATCH3_LPR      $(PRINTER)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_F90      $(WW3_F90)'                    >> $(WWATCH3_ENV)
-	@echo 'WWATCH3_CC       $(WW3_CC)'                     >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_DIR      $(WW3_DIR)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_TMP      $(WW3_TMPDIR)'                 >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_SOURCE   yes'                           >> $(WWATCH3_ENV)

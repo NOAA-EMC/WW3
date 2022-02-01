@@ -117,24 +117,22 @@
     exit 1
   fi
 
-  # ftn dir
-  makefile=$main_dir/ftn/makefile
-  if [ ! -d $main_dir/ftn ]
+  # src dir
+  makefile=$main_dir/src/makefile
+  if [ ! -d $main_dir/src ]
   then
     echo ' '
-    echo "[ERROR] Directory $main_dir/ftn not found"
+    echo "[ERROR] Directory $main_dir/src not found"
     echo '        Please check the content of your directory model'
     exit 1
   fi
   rm -f $makefile
 
-
-
-
 # 1.e Set regular and netCDF progs - - - - - - - - - - - - - - - - - - - - - -
+# reg_programs = non-NetCDF programs
+# cdf_programs = NetCDF programs
 
-# GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
-#  reg_programs = non-NetCDF programs
+  #STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR
   reg_programs="ww3_strt"
   reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_outf"
@@ -146,8 +144,7 @@
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_uprstr" 
 
-# PRNC OUNF OUNP BOUNC TRNC
-# cdf_programs = NetCDF programs
+  # PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
@@ -160,14 +157,7 @@
     cdf_programs="$cdf_programs ww3_prtide"
   fi
 
-  # NCEP GRIB
-  export ncep_grib_compile="no"
-  if [ -n "`grep NCEP $switch_file`" ]
-  then
-    export ncep_grib_compile="yes"
-  fi
-
-  # MULTI MULTI_ESMF SBS1
+  # MULTI MULTI_ESMF SBS1 LIBWW3
   if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_grid"
@@ -193,18 +183,11 @@
   if [ -n "`grep TRKNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
-    systrck_nc4notrknc=0
   else
-    if [ -n "`grep NC4 $switch_file`" ]
-    then
-      systrck_nc4notrknc=1
-    else
-      systrck_nc4notrknc=0
-      reg_programs="$reg_programs ww3_systrk"
-    fi
+    reg_programs="$reg_programs ww3_systrk"
   fi
 
-  # SHEL PREP GSPL
+  # PREP GSPL
   if [ -n "`grep OASIS $switch_file`" ] || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_gspl"
@@ -214,6 +197,7 @@
     reg_programs="$reg_programs ww3_prep"
   fi
 
+  #SHEL 
   if [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
@@ -221,6 +205,7 @@
     reg_programs="$reg_programs ww3_shel"
   fi
 
+  #Shared Object
   if [ -n "`grep -nri fPIC $comp_file`" ]
   then
     reg_programs="$reg_programs libww3.so"
@@ -228,31 +213,9 @@
     echo 'Shared Object     : No'
   fi
 
-  # if no progs in argument
-  if [ -z "$all_programs" ]
-  then
-    if [ -z "$WWATCH3_NETCDF" ]
-    then
-      all_programs="$reg_programs"
-    else
-      all_programs="$reg_programs $cdf_programs"
-    fi
-  fi
-  echo ' '
-  echo "[INFO] list of the programs selected : $all_programs"
-
-
-# 1.f sort sequential and parallel programs - - - - - - - - - - - - - - - - - -
-
-  # no filtering is done to distinguish sequential to parallel programs 
-  # see w3_automake for this feature
-  progs=$all_programs
-
-
-# 1.e Set sequential or parallel folders - - - - - - - - - - - - - - - - - - -
+# 1.f Set sequential or parallel folders - - - - - - - - - - - - - - - - - - -
 
   flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
-  flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
   flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
 
   switch_file_old=$main_dir/bin/switch.old
@@ -263,12 +226,12 @@
 
   if [ "$flag_SHRD" -gt '0' ]
   then
-    if [ "$flag_OMPX" -gt '0' ]
-    then
+    pres_type='SEQ'
+    flag_OMP=`grep OMP $switch_file | wc -l | awk '{ print $1}'`
+    if [ "$flag_OMP" -gt '0' ]
+    then 
       pres_type='OMP'
-    else
-      pres_type='SEQ'
-    fi
+    fi 
   else
     if [ "$flag_OMPH" -gt '0' ]
     then
@@ -294,149 +257,72 @@
 
 
 
-# 1.c Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.g Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# 1.c.1 NetCDF compile message function
+# 1.g.1 NetCDF compile message function
 
   netcdf_compile_message () {
 
   cat 2>&1 << 'EOF'
 
-*****************************************************************
-***         WAVEWATCH III NetCDF Compile Instructions         ***
-*****************************************************************
+***********************************************************************
+***         WAVEWATCH III NetCDF Compile Instructions               ***
+***********************************************************************
 
-Compile of WAVEWATCH III NetCDF enabled programs requires the
-environment variable WWATCH3_NETCDF be set to either NC3 (compile
-with NetCDF version 3.x) or NC4 (compile with NetCDF version 4.x).
-
-If WWATCH3_NETCDF = NC3, then the following environment variables
-are required.
-
-    NETCDF_LIBDIR = <path to NetCDF-3 libraries>
-    NETCDF_INCDIR = <path to NetCDF-3 include>
-
-If WWATCH3_NETCDF = NC4, then the following environment variables
-are required.
+For compiling with NetCDF, the following environment variable
+is required:
 
     NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
 
 The nc-config utility (part of the NetCDF-4 install) is used to
-determine the appropriate compile and link flags for the
-WWATCH3_NETCDF=NC4 compile.
+determine the appropriate compile and link flags.
 
-The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
-Use "nc-config --version" to check the version of the installed
-NetCDF.
+For NetCDF routines to compile, WAVEWATCH III requires 
+NetCDF version 4.1.1 or higher. Use "nc-config --version" to check 
+the version of the installed NetCDF. It is also required for NetCDF 
+to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4" 
+to check if the installed NetCDF has the NetCDF-4 API enabled.
 
-Compiling with the NC4 switch requires WWATCH3_NETCDF=NC4 and the
-NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "nc-config --has-nc4" to check if the installed NetCDF has
-the NetCDF-4 API enabled.
-
-*****************************************************************
+***********************************************************************
 
 EOF
 
   }
 
-# 1.c.2 NetCDF check compile environment function
+# 1.g.2 NetCDF check compile environment function
 
   netcdf_check_compile () {
 
   mode=$1 #must be ERROR or WARNING
 
-  if [ -z "$WWATCH3_NETCDF" ]
+  if [ -z "$NETCDF_CONFIG" ]
   then
     netcdf_compile_message
-    echo "$mode: WWATCH3_NETCDF not defined"; echo ' '
+    echo "$mode: NETCDF_CONFIG not defined"; echo ' '
     return 1
-  else
-    case $WWATCH3_NETCDF in
-      NC3)
-        if [ -z "$NETCDF_LIBDIR" ]
-        then
-          netcdf_compile_message
-          echo "$mode: NETCDF_LIBDIR not defined"; echo ' '
-          return 1
-        fi
-        if [ -z "$NETCDF_INCDIR" ]
-        then
-          netcdf_compile_message
-          echo "$mode: NETCDF_INCDIR not defined"; echo ' '
-          return 1
-        fi
-      ;;
-      NC4)
-        if [ ! -n "`grep NC4 $switch_file`" ]
-        then
-          echo "WARNING: NC4 is set in WWATCH3_NETCDF but not in the switch file"; echo ' '
-#          return 1
-        fi
-        if [ -z "$NETCDF_CONFIG" ]
-        then
-          netcdf_compile_message
-          echo "$mode: NETCDF_CONFIG not defined"; echo ' '
-          return 1
-        fi
-        if [ ! -x "$NETCDF_CONFIG" ]
-        then
-          netcdf_compile_message
-          echo "$mode: $NETCDF_CONFIG does not exist or is not executable"; echo ' '
-          return 1
-        fi
-        netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
-        if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
-        then
-          netcdf_version="$netcdf_version.0"
-        fi
-        if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
-        then
-          netcdf_compile_message
-          echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
-          return 1
-        fi
-      ;;
-      *)
-        netcdf_compile_message
-        echo "$mode: WWATCH3_NETCDF=$WWATCH3_NETCDF not supported"; echo ' '
-        return 1
-      ;;
-    esac
   fi
-
-  return 0
-  }
-
-# 1.c.3 NetCDF check api function
-
-  netcdf_check_api () {
-
-  mode=$1 #must be ERROR or WARNING
-
-  if [ -n "`grep NC4 $switch_file`" ]
+  if [ ! -x "$NETCDF_CONFIG" ]
   then
-    case $WWATCH3_NETCDF in
-      NC3)
-        netcdf_compile_message
-        echo "$mode: WWATCH3_NETCDF=NC3 incompatible with NC4 switch"; echo ' '
-        return 1
-      ;;
-      NC4)
-        if [ "`$NETCDF_CONFIG --has-nc4`" = 'no' ]
-        then
-          netcdf_compile_message
-          echo "$mode: NetCDF-4 API not enabled (required by NC4 switch)"; echo ' '
-          return 1
-        fi
-      ;;
-    esac
+    netcdf_compile_message
+    echo "$mode: $NETCDF_CONFIG does not exist or is not executable"; echo ' '
+    return 1
+  fi
+  netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+  if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
+  then
+    netcdf_version="$netcdf_version.0"
+  fi
+  if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -lt 411 ]
+  then
+    netcdf_compile_message
+    echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
+    return 1
   fi
 
   return 0
   }
 
-# 1.c.4 Check for NetCDF compile
+# 1.g.3 Check for NetCDF compile
 
   if [ $default_mode -eq 1 ]
   then
@@ -444,13 +330,10 @@ EOF
     then
       echo "NetCDF enabled programs ($cdf_programs)"
       echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
-      if [ $systrck_nc4notrknc -eq 1 ] 
-      then 
-         echo "WARNING: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
-         echo "TRKNC switch is also required with NC4."; echo ' '
-      fi 
       echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
-      progs="$reg_programs"
+      all_programs="$reg_programs"
+    else 
+      all_programs="$reg_programs $cdf_programs"
     fi
   else
     nc_compile=0
@@ -471,23 +354,18 @@ EOF
         exit 1
       fi
     fi
-    systrkprog="ww3_systrk"
-    for prog in $systrkprog
-    do
-      if [ -n "`echo $progs | grep $prog`" ]
-      then   
-        if [ $systrck_nc4notrknc -eq 1 ]
-        then
-          echo "ERROR: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
-          echo "TRKNC switch is also required with NC4."; echo ' '
-          echo "Now exiting ..."; echo ' '
-          exit 1
-        fi
-      fi
-    done
   fi
 
-# 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
+  echo ' '
+  echo "[INFO] list of the programs selected : $all_programs"
+
+
+# 1.h set progs list   - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  # no filtering is done to distinguish sequential to parallel programs 
+  progs=$all_programs
+
+# 1.i Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
 
   if test ! -d $temp_dir
   then
@@ -507,14 +385,14 @@ EOF
   then
     rm -f *.l
   fi
-  cd $main_dir/ftn
+  cd $main_dir/src
 
-# 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.j Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   make_make='y'
   if test -f $switch_file_old
   then
-    if test -f $main_dir/ftn/makefile && \
+    if test -f $main_dir/src/makefile && \
        test -z "`diff $switch_file $switch_file_old`"
     then
       make_make='n'
@@ -528,11 +406,11 @@ EOF
     then
       if [ "$flag_SHRD" -gt '0' ]
       then
-        if [ "$flag_OMPX" -gt '0' ]
+        if [ "$flag_OMP" -gt '0' ]
         then
           cp $switch_file ${switch_file_old}_OMP
           cp $makefile ${makefile}_OMP
-        else
+        else 
           cp $switch_file ${switch_file_old}_SEQ
           cp $makefile ${makefile}_SEQ
         fi
@@ -552,7 +430,7 @@ EOF
   fi
   echo ' '
 
-# 1.f Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.k Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   aPb="$main_dir/bin"     # path containing shell scripts
   aPo="$main_dir/obj"     # path containing .o files
@@ -628,7 +506,17 @@ EOF
       fi
       export pdlib_mod
 
-
+      # NCEP GRIB
+      export ncep_grib_compile="no"
+      #check for switch file: 
+      if [ -n "`grep NCEP $switch_file`" ]
+      then
+        #only set to yes if compiling ww3_grib: 
+        if [ -n "`echo $prog | grep ww3_grib`" ]
+        then
+          export ncep_grib_compile="yes"
+        fi 
+      fi
 
       # if esmf is included in program name, then the compile
       # requires DIST switch and the ESMFMKFILE is

@@ -226,7 +226,7 @@ narrowness parameter is set to unity $A(k)\approx 1$ in Eqs.
 \footnotesize
 \begin{threeparttable}
 \begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers.\,\WWver \\
+Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers.\,6.07 \\
 \hline
   $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         & T          \\
   $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    & 4.75E-6    \\
@@ -239,7 +239,7 @@ Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers
   $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       & 0.09       \\
   $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         & F          \\
   $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     & 0.0041     \\
-  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    & 1.0        \\
+  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    & 1.0\tnote{\textdaggerdbl}        \\
 \hline
   $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    & 3.00E7    \\
  \hline \hline
@@ -247,6 +247,9 @@ Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,5.16 & vers
 \begin{tablenotes}
 	\item[\textdagger] In WW3 version 4.18 and 5.16, $\Upsilon = 28.0$
             and $N_{hf} = 6.0$ were hard-coded in {\code ST6} module.
+    \item[\textdaggerdbl] For the CFS winds from 2011 onwards, $\mathrm{CDFAC} \sim 1.0$
+            is recommended for global simulations; for the ERA5 reanalysis winds,
+            $\mathrm{CDFAC} \sim 1.08$ is suggested \citep{Liu2019, Liu2021}.
 \end{tablenotes}
 \end{threeparttable} \end{center}
 \caption{Summary of calibration parameters for {\code ST6} when it is applied with
@@ -296,7 +299,7 @@ is customizable through the {\F SWL6} namelist parameter {\code SWLB1}
 (see Table~\ref{tab:ST601}).
 
 \noindent
-\paragraph{Updates since vers.\,\WWver} Following \citet{art:RBW12}, the
+\paragraph{Updates since vers.\,6.07} Following \citet{art:RBW12}, the
 scaling wind speed $U_s = 28u_{\ast}$ (\ref{eq:Upsilon}) were adopted in
 vers. 4.18 and vers. 5.16 (Table~\ref{tab:ST601}). Such configurations of {\code ST6} have been proven
 skillful for different spatial scales and under different weather
@@ -337,7 +340,7 @@ about $f^{-5}$, comparable to previous field studies \citep{Forristall1981}.
             \hline \hline
 	\end{tabular}
 	\end{center}
-        \caption{Summary of calibration parameters for {\code ST6} when it is applied with the {\code GMD} nonlinear solver (or specifically, {\code G35})}
+        \caption{Summary of calibration parameters for {\code ST6} when it is applied with the {\code GMD} nonlinear solver \citep[or specifically, {\code G35};][]{Liu2019}}
 	\label{tab:ST602}
 	\botline
 \end{table}
@@ -348,9 +351,9 @@ also made an attempt to run {\code ST6} with the {\code GMD} parameterization of
 (section~\ref{sec:NL3}). As a first step, only the {\code GMD} configuration with
 5 quadruplets and a three-parameter quadruplet definition
 \citep[i.e., {\code G35} in][]{tol:OMOD13d} was adopted. The tunable parameters
-of the {\code GMD} which were specifically optimized for {\code ST6} by using the holistic
+of the {\code GMD} which were specifically optimized for the {\code ST6} by using the holistic
 genetic optimization technique designed by \citet{tol:OMOD13e}, and the
-corresponding tunable parameters of {\code ST6} are summarized in
+corresponding tunable parameters of the {\code ST6} are summarized in
 Table~\ref{tab:ST602}\footnote{For the fifth quadruplet layout of {\code GMD} shown
 in Table~\ref{tab:ST602}, the three-parameter $(\lambda,\ \mu,\ \theta_{12})$
 quadruplet definition degrades to a two-parameter $(\lambda,\ \mu)$ form, and
@@ -364,7 +367,7 @@ Table~\ref{tab:ST601}, here we only show important parameters of {\code ST6} and
 set up of namelist variables for this specific model configuration.}.
 \citet{Liu2019} demonstrated that in the duration-limited test, the
 {\code GMD}-simulated $E(f)$ is in excellent agreement with that from the exact
- solutions of $S_{nl}$(e.g., {\code WRT}; section~\ref{sec:NL2}) \citep[see also][]{tol:OMOD13d}]. In a 1-yr global
+ solutions of $S_{nl}$ (e.g., {\code WRT}; section~\ref{sec:NL2}) \citep[see also][]{tol:OMOD13d}]. In a 1-yr global
 hindcast, the {\code DIA}-based model overestimates the low-frequency wave energy
 (wave period $T > 16$ s) by 90\%. Such model errors are reduced significantly
 by the {\code GMD} to $\sim$20\%. It is noteworthy that the computational expense
@@ -376,7 +379,7 @@ region, we introduced
 \begin{equation}
 f_{hf} = N_{hf}/T_{m0, -1}
 \end{equation}
-in vers.\,\WWver, where $f_{hf}$ is the cut-off high-frequency limit
+in vers.\,6.07, where $f_{hf}$ is the cut-off high-frequency limit
 (\ref{eq:tail_E_f}), $T_{m0,-1}$ is the mean wave period defined in
 (\ref{eq:Tm0m1}). $N_{hf}$ is set through a namelist parameter SINFC
 (Table~\ref{tab:ST601}), and a negative $N_{hf}$ (say, $N_{hf} = -1$)
@@ -412,7 +415,7 @@ where $c(k)$ is the phase velocity, $U_{10}$ is the wind speed at 10 m above the
 {\code ST6} has been calibrated with flux parameterization {\code FLX4}.
 Bulk adjustment to the wind filed can be achieved by re-scaling the drag
 parameterization {\code FLX4} through the {\F FLX4} namelist parameter {\code
- CDFAC=1.0E-4}\footnote{This was changed to {\code CDFAC=1.0} since vers.\,\WWver\ as the magnitude $10^{-4}$ was hard-coded
+ CDFAC=1.0E-4}\footnote{This was changed to {\code CDFAC=1.0} since vers.\,6.07\ as the magnitude $10^{-4}$ was hard-coded
 in {\code FLX4} module. (Table~\ref{tab:ST601})}. This has a similar effect to tuning variable
 $\beta_{max}$ in {\code ST4} source term package, equations
 (\ref{eq:SinWAM4}) and (\ref{eq:tauhfint}), which is customizable
@@ -422,7 +425,7 @@ listed different sets of values that allow us to adjust to different
 wind fields. When optimizing the wave model, it is recommended to
 only re-tune parameters $a_0$, $b_1$ and $\mathrm{FAC}$. Again, $\mathrm{FAC}$
 can potentially eliminate a bias in the wind field, which typically changes
-with the selection of the reanalysis product. This reduction was tested
+with the selection of the reanalysis product \citep[][see Table~\ref{tab:ST601}]{Liu2021}. This reduction was tested
 for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In
 a global hindcast, the coefficient for the negative input can be used to tune
 the bulk of the wave heights in scatter comparisons, whereas the scaling
@@ -434,4 +437,4 @@ $C=3.00\times10^7$.
 \textrm{\textit{\underline{Limitations of the code:}}} For vers. 4.18 and
 vers. 5.16, in cases where the minimum time step for the dynamical source term
 integration is much smaller than the overall time step (i.e. less than
-1/15th), the model becomes unstable. The issue has been solved since vers.\,\WWver.
+1/15th), the model becomes unstable. The issue has been solved since vers.\,6.07.

@@ -54,7 +54,6 @@
 
   echo '  source /usr/share/Modules/3.2.10/init/bash'                                 >> matrix.head
   echo '  module purge'                                                               >> matrix.head
-  echo '  export WWATCH3_NETCDF=NC4'                                                  >> matrix.head
   echo "  export WW3_PARCOMPN=4"                                                      >> matrix.head
 
   if [ $cmplr = "datarmor_intel_debug" ] || [ $cmplr = "datarmor_intel" ]
@@ -64,7 +63,7 @@
     echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/INTEL/bin'             >> matrix.head
     echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/INTEL/include'       >> matrix.head
     echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/INTEL/lib'  >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/INTEL/bin/nf-config'  >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/INTEL/bin/nc-config'  >> matrix.head
     echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/INTEL'                 >> matrix.head
 
   elif [ $cmplr = "datarmor_mpt_debug" ] || [ $cmplr = "datarmor_mpt" ]
@@ -74,7 +73,7 @@
     echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/MPT/bin'               >> matrix.head
     echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/MPT/include'          >> matrix.head
     echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/MPT/lib'    >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/MPT/bin/nf-config'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/MPT/bin/nc-config'    >> matrix.head
     echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/MPT'                   >> matrix.head
 
   elif [ $cmplr = "datarmor_gnu_debug" ] || [ $cmplr = "datarmor_gnu" ]
@@ -83,7 +82,7 @@
     echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/GNU/bin'               >> matrix.head
     echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/GNU/include'          >> matrix.head
     echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/GNU/lib'    >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/GNU/bin/nf-config'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/GNU/bin/nc-config'    >> matrix.head
     echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/GNU'                   >> matrix.head
 
   elif [ $cmplr = "datarmor_pgi_debug" ] || [ $cmplr = "datarmor_pgi" ]
@@ -92,7 +91,7 @@
     echo '  export PATH=${PATH}:/home/datawork-wave/NETCDF2019/PGI/bin'               >> matrix.head
     echo '  export CPATH=${CPATH}:/home/datawork-wave/NETCDF2019/PGI/include'          >> matrix.head
     echo '  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/PGI/lib'    >> matrix.head
-    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/PGI/bin/nf-config'    >> matrix.head
+    echo '  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/PGI/bin/nc-config'    >> matrix.head
     echo '  export METIS_PATH=/home/datawork-wave/PARMETIS2019/PGI'                   >> matrix.head
   fi
 
@@ -120,38 +119,45 @@
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 #     Addition selection by commenting out lines as below
 
-  export     shrd='y' # Do shared architecture tests
-  export     dist='y' # Do distributed architecture (MPI) tests
-  export      omp='y' # Threaded (OpenMP) tests
-  export     hybd='n' # Hybrid options
+  export       shrd='y' # Do shared architecture tests
+  export       dist='y' # Do distributed architecture (MPI) tests
+  export        omp='y' # Threaded (OpenMP) tests
+  export       hybd='n' # Hybrid options
 
-  export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
-  export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
-  export     time='y' # time linmited growth
-  export    fetch='y' # fetch linmited growth
-  export   hur1mg='y' # Hurricane with one moving grid
-  export    shwtr='y' # shallow water tests
-  export    unstr='y' # unstructured grid tests
-  export    pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
-  export    smcgr='y' # SMC grid test
-  export      rtd='y' # Rotated pole test
-  export   mudice='y' # Mud/Ice and wave interaction tests 
-  export   infgrv='y' # Second harmonic generation tests
-  export     uost='y' # ww3_ts4 Unresolved Obstacles Source Term (UOST)
-  export    assim='y' # Restart spectra update
-  export    oasis='y' # Atmosphere, ocean, and ice coupling using oasis
-  export calendar='y' # Calendar type
-  export confignc='y' # Configurable netCDF meta data (ww3_ounf)
+  export     prop1D='y' # 1-D propagation tests (ww3_tp1.X)
+  export     prop2D='y' # 2-D propagation tests (ww3_tp2.X)
+  export       time='y' # time linmited growth
+  export      fetch='y' # fetch linmited growth
+  export     hur1mg='y' # Hurricane with one moving grid
+  export      shwtr='y' # shallow water tests
+  export      unstr='y' # unstructured grid tests
+  export      pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
+  export      smcgr='y' # SMC grid test
+  export        rtd='y' # Rotated pole test
+  export     mudice='y' # Mud/Ice and wave interaction tests 
+  export     infgrv='y' # Second harmonic generation tests
+  export       uost='y' # ww3_ts4 Unresolved Obstacles Source Term (UOST)
+  export      assim='y' # Restart spectra update
+  export      oasis='y' # Atmosphere, ocean, and ice coupling using oasis
+  export   calendar='y' # Calendar type
+  export   confignc='y' # Configurable netCDF meta data (ww3_ounf)
 
-  export  multi01='y' # mww3_test_01 (wetting and drying)
-  export  multi02='y' # mww3_test_02 (basic two-way nesting test))
-  export  multi03='y' # mww3_test_03 (three high and three low res grids).
-  export  multi04='y' # mww3_test_04 (swell on sea mount and/or current)
-  export  multi05='y' # mww3_test_05 (three-grid moving hurricane)
-  export  multi06='y' # mww3_test_06 (curvilinear grid tests)
-  export  multi07='y' # mww3_test_07 (unstructured grid tests)
-  export  multi08='y' # mww3_test_08 (wind and ice tests)
-
+  export    multi01='y' # mww3_test_01 (wetting and drying)
+  export    multi02='y' # mww3_test_02 (basic two-way nesting test))
+  export    multi03='y' # mww3_test_03 (three high and three low res grids).
+  export    multi04='y' # mww3_test_04 (swell on sea mount and/or current)
+  export    multi05='y' # mww3_test_05 (three-grid moving hurricane)
+  export    multi06='y' # mww3_test_06 (curvilinear grid tests)
+  export    multi07='y' # mww3_test_07 (unstructured grid tests)
+  export    multi08='y' # mww3_test_08 (wind and ice tests)
+  export    multi09='y' # mww3_test_09 (SMC multi grid test)
+  export        ufs='n' # The Unified Forecast System
+  export  ufscoarse='n' # Option for small PCs
+  export       grib='n' # grib file field output
+  export  rstrt_b4b='y' # Restart Reproducibility
+  export    npl_b4b='y' # MPI task Reproducibility
+  export    nth_b4b='y' # Thread Reproducibility
+  export       esmf='n' # ESMF coupling
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 
                       # command lines generated by filter.base with the above
