@@ -1,7 +1,7 @@
 # WAVEWATCH III Doxygen Header Reference
 <br>
 
-_Doxygen markup headers to be placed directly above the respective Fortran code units._
+_Doxygen markup headers to be placed **directly above** the respective Fortran code units._
 
 ### FILE
 ```
@@ -17,10 +17,15 @@ _Doxygen markup headers to be placed directly above the respective Fortran code 
 !> 
 !> @details <extended description>
 !>
-!> @param <module var 1>               # ALL module variables documented
-!> ...
-!> @param <module var N>
 !> @author <author name> @date <dd-Mon-yyyy>
+                                                    # ALL module variables documented
+module_var_1       !<  <module_var_1 description>
+ ...
+!>  <module_var_i description>                      # multiples lines can be used
+!>  <module_var_i description cont.>                # if needed.
+module_var_i
+ ...
+module_var_N       !<  <module_var_N description>
 ```
 
 ### PROGRAM
