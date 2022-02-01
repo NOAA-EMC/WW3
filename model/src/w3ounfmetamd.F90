@@ -159,11 +159,6 @@
 !> 22-Mar-2021 | 7.12 | Add extra coupling fields
 !> 02-Sep-2021 | 7.12 | Add coordinates attribute
 !>
-!!
-!! TODO - I NEED THIS DOUBLE BANG COMMENT HERE OTHERWISE DOXYGEN
-!!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
-!!        WHY???!!
-!!
       MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
