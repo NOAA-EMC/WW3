@@ -33,7 +33,7 @@
   FIELD%TIMESTART        =  '20080310 000000'
   FIELD%TIMESTRIDE       =  '180'
   FIELD%TIMECOUNT        =  '100'
-  FIELD%LIST             =  'HS FP DIR DP CHA UST DPT CUR WND ICE IC1 IC5 TWI'
+  FIELD%LIST             =  'HS FP DIR DP CHA UST DPT CUR WND'
   FIELD%PARTITION        =  '0'
   FIELD%TYPE             =  4
 /
