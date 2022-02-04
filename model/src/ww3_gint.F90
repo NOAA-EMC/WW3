@@ -1,5 +1,24 @@
+!> @file
+!> @brief Contains program W3GRID_INTERP for binary output regridding.
+!>
+!> @author A. Chawla @date 02-Jun-2021
+!
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Re-gridding binary output (out_grd.\ * files) to another grid.
+!>
+!> @details Data is interpolated from a combination of base grids to the
+!>  target grid. For each grid, if resolution is coarser or similar to 
+!>  targetgrid then a linear interpolation approach is used. On the other
+!>  hand if resolution is much higher then an averaging technique based on 
+!>  cell areas. 
+!>  Total number of base grids to be used for interpolation together with
+!>  their (and target grid) file extns are read from 'ww3_gint.inp'. 
+!>  Base grids can be arranged in any order but the target grid should 
+!>  always be the last grid.
+!>
+!> @author A. Chawla @date 02-Jun-2021
+!
       PROGRAM W3GRID_INTERP
 !/
 !/                  +-----------------------------------+
@@ -913,6 +932,14 @@
 !/
         CONTAINS
 !/ -----------------------------------------------------------------------/
+!> @brief Perform actual output of interpolated data.
+!>
+!> @param[in] NGRD
+!> @param[in] NSEA
+!> @param[in] NOSWLL_MIN
+!> @param[in] INTMETHOD
+!> @author A. Chawla @date 22-Mar-2021
+!
         SUBROUTINE W3EXGI ( NGRD, NSEA, NOSWLL_MIN, INTMETHOD )
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
