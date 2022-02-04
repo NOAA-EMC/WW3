@@ -1416,7 +1416,7 @@ contains
   !====================================================================================
   subroutine SetGlobalInput(importState, fldname, vm, global_output, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nsea, nseal, mapsf, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
@@ -1427,8 +1427,9 @@ contains
     integer          , intent(out) :: rc
 
     ! local variables
-    integer           :: n, isea, ix, iy
-    real(r4)          :: global_input(nx*ny)
+    integer           :: jsea, isea, ix, iy
+    real(r4)          :: global_input(nsea)
+    real(r4)          :: global_reduc(nsea)
     real(r8), pointer :: dataptr(:)
     character(len=*), parameter :: subname = '(wav_import_export:setGlobalInput)'
 
@@ -1441,14 +1442,19 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do n = 1, nseal
-       isea = iaproc + (n-1)*naproc
+    global_reduc(:) = 0._r4
+    do jsea = 1, nseal
+       isea = iaproc + (jsea-1)*naproc
+       global_input(isea) = real(dataptr(jsea),4)
+    end do
+    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_reduc, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    do isea = 1,nsea
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       global_input(ix + (iy-1)*nx) = real(dataptr(n),4)
+       global_output(ix + (iy-1)*nx) = global_reduc(isea)
     end do
-    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine SetGlobalInput
 
