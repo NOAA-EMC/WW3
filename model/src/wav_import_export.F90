@@ -30,8 +30,8 @@ module wav_import_export
 
   interface FillGlobalInput
      module procedure fillglobal_with_import
-     module procedure fillglobal_with_mergeimport
-     !module procedure fillglobal_with_blendimport
+     module procedure fillglobal_with_merge_import
+     !module procedure fillglobal_with_blend_import
   end interface
 
   type fld_list_type
@@ -217,7 +217,7 @@ contains
     ! Obtain the wave input from the mediator
     !---------------------------------------------------------------------------
 
-    use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
+    use w3gdatmd    , only: nsea, nseal, MAPSTA, NX, NY
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
@@ -236,7 +236,7 @@ contains
     type(ESMF_VM)           :: vm
     type(ESMF_Clock)        :: clock
     integer                 :: n, ix, iy
-    real(r4)                :: data_global(nx*ny)
+    real(r4)                :: data_global(nsea)
     real(r4), allocatable   :: data_global2(:)
     real(r4)                :: def_value
     character(len=10)       :: uwnd
@@ -328,16 +328,16 @@ contains
           ! import_mask memory will be allocate in set_importmask
           call set_importmask(importState, clock, trim(uwnd), vm, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          allocate(wxdata(nx*ny))
-          allocate(wydata(nx*ny))
+          allocate(wxdata(nsea))
+          allocate(wydata(nsea))
           call readfromfile('WND', wxdata, wydata, time0, timen, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wxdata', wxdata, rc)
+             call check_globaldata(gcomp, 'wxdata', wxdata, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             call check_globaldata(gcomp, 'wydata', wydata, rc)
+             call check_globaldata(gcomp, 'wydata', wydata, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             call check_globaldata(gcomp, 'import_mask', import_mask, rc)
+             call check_globaldata(gcomp, 'import_mask', import_mask, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
        end if
@@ -352,7 +352,7 @@ contains
              call FillGlobalInput(data_global, import_mask, wxdata, WX0)
              call FillGlobalInput(data_global, import_mask, wxdata, WXN)
              if (dbug_flag > 10) then
-                call check_globaldata(gcomp, 'wx0', wx0, rc)
+                call check_globaldata(gcomp, 'wx0', wx0, nx*ny, rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
              end if
           else
@@ -372,7 +372,7 @@ contains
              call FillGlobalInput(data_global, import_mask, wydata, WY0)
              call FillGlobalInput(data_global, import_mask, wydata, WYN)
              if (dbug_flag > 10) then
-                call check_globaldata(gcomp, 'wy0', wy0, rc)
+                call check_globaldata(gcomp, 'wy0', wy0, nx*ny, rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
              end if
           else
@@ -385,7 +385,7 @@ contains
        DT0(:,:) = def_value
        DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
-          allocate(data_global2(nx*ny))
+          allocate(data_global2(nsea))
           call SetGlobalInput(importState, 'Sa_tbot', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call SetGlobalInput(importState, 'So_t', vm, data_global2, rc)
@@ -496,7 +496,7 @@ contains
 #endif
     use w3wdatmd      , only : va
     use w3odatmd      , only : naproc, iaproc
-    use w3gdatmd      , only : nseal, MAPSTA, MAPFS, MAPSF, USSPF, NK
+    use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK
     use w3iogomd      , only : CALC_U3STOKES
 
     ! input/output/variables
@@ -886,7 +886,6 @@ contains
   end subroutine export_fields
 
   !===============================================================================
-
   subroutine fldlist_add(num, fldlist, stdname, ungridded_lbound, ungridded_ubound)
     integer,                    intent(inout) :: num
     type(fld_list_type),        intent(inout) :: fldlist(:)
@@ -916,7 +915,6 @@ contains
   end subroutine fldlist_add
 
   !===============================================================================
-
   subroutine fldlist_realize(state, fldList, numflds, flds_scalar_name, flds_scalar_num, mesh, tag, rc)
 
     use NUOPC, only : NUOPC_IsConnected, NUOPC_Realize
@@ -1362,20 +1360,19 @@ contains
   !====================================================================================
   subroutine SetGlobalInput(importState, fldname, vm, global_output, rc)
 
-    use w3gdatmd, only: nsea, nseal, mapsf, nx, ny
+    use w3gdatmd, only: nsea, nseal, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
     type(ESMF_State) , intent(in)  :: importState
     character(len=*) , intent(in)  :: fldname
     type(ESMF_VM)    , intent(in)  :: vm
-    real(r4)         , intent(out) :: global_output(nx*ny)
+    real(r4)         , intent(out) :: global_output(nsea)
     integer          , intent(out) :: rc
 
     ! local variables
     integer           :: jsea, isea, ix, iy
     real(r4)          :: global_input(nsea)
-    real(r4)          :: global_reduc(nsea)
     real(r8), pointer :: dataptr(:)
     character(len=*), parameter :: subname = '(wav_import_export:setGlobalInput)'
 
@@ -1388,73 +1385,59 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    global_reduc(:) = 0._r4
     do jsea = 1, nseal
        isea = iaproc + (jsea-1)*naproc
        global_input(isea) = real(dataptr(jsea),4)
     end do
-    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_reduc, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    do isea = 1,nsea
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       global_output(ix + (iy-1)*nx) = global_reduc(isea)
-    end do
 
   end subroutine SetGlobalInput
 
   !====================================================================================
-
   subroutine fillglobal_with_import(data_global, globalfield)
 
-    use w3gdatmd, only: nx, ny
+    use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    real(r4), intent(in)  :: data_global(nx*ny)
+    real(r4), intent(in)  :: data_global(nsea)
     real(r4), intent(out) :: globalfield(nx,ny)
 
     ! local variables
-    integer           :: n, ix, iy
+    integer           :: isea, ix, iy
 
-    n = 0
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          globalfield(ix,iy) = data_global(n)
-       end do
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       globalfield(ix,iy) = data_global(isea)
     end do
 
   end subroutine fillglobal_with_import
 
   !====================================================================================
+  subroutine fillglobal_with_merge_import(data_global, global_mask, filedata, globalfield)
 
-  subroutine fillglobal_with_mergeimport(data_global, global_mask, filedata, globalfield)
+    use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    use w3gdatmd, only: nx, ny
-
-    real(r4), intent(in)  :: data_global(nx*ny)
-    real(r4), intent(in)  :: global_mask(nx*ny)
-    real(r4), intent(in)  :: filedata(nx*ny)
+    real(r4), intent(in)  :: data_global(nsea)
+    real(r4), intent(in)  :: global_mask(nsea)
+    real(r4), intent(in)  :: filedata(nsea)
     real(r4), intent(out) :: globalfield(nx,ny)
 
     ! local variables
-    integer           :: n, ix, iy
+    integer           :: isea, ix, iy
 
-    n = 0
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          globalfield(ix,iy) =  data_global(n)*global_mask(n) + (1.0_r4 - global_mask(n))*filedata(n)
-       end do
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       globalfield(ix,iy) = data_global(isea)*global_mask(isea) + (1.0_r4 - global_mask(isea))*filedata(isea)
     end do
 
-  end subroutine fillglobal_with_mergeimport
+  end subroutine fillglobal_with_merge_import
 
   !====================================================================================
-
   subroutine set_importmask(importState, clock, fldname, vm, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nsea, nseal, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
@@ -1469,9 +1452,9 @@ contains
     type(ESMF_TimeInterval) :: timeStep
     logical                 :: firstCall, secondCall
     real(r4)                :: fillValue = 9.99e20
-    integer                 :: isea, n, ix, iy
+    integer                 :: isea, jsea, ix, iy
     real(r8), pointer       :: dataptr(:)
-    real(r4)                :: mask_local(nx*ny)
+    real(r4)                :: mask_local(nsea)
     character(len=CL)       :: msgString
     character(len=*), parameter :: subname = '(wav_import_export:set_importmask)'
     !---------------------------------------------------------------------------
@@ -1494,7 +1477,7 @@ contains
      secondCall = .false.
     end if
     if (firstcall) then
-       allocate(import_mask(nx*ny))
+       allocate(import_mask(nsea))
     end if
 
     ! return if not the first or second call, mask has already been set
@@ -1517,15 +1500,13 @@ contains
 
        import_mask(:) = 0.0_r4
        mask_local(:) = 1.0_r4
-       do n = 1, nseal
-          isea = iaproc + (n-1)*naproc
-          ix = mapsf(isea,1)
-          iy = mapsf(isea,2)
-          if (real(dataptr(n),4) .ge. fillValue) then
-             mask_local(ix + (iy-1)*nx) = 0.0_r4
+       do jsea = 1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          if (real(dataptr(jsea),4) .ge. fillValue) then
+             mask_local(isea) = 0.0_r4
           end if
        end do
-       call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=import_mask, count=nx*ny, reduceflag=ESMF_REDUCE_MIN, rc=rc)
+       call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=import_mask, count=nsea, reduceflag=ESMF_REDUCE_MIN, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -1534,15 +1515,16 @@ contains
   end subroutine set_importmask
 
   !====================================================================================
-  subroutine check_globaldata(gcomp, fldname, global_data, rc)
+  subroutine check_globaldata(gcomp, fldname, global_data, nvals, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nseal, nsea, mapsf, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
     type(ESMF_GridComp) , intent(inout) :: gcomp
     character(len=*)    , intent(in)    :: fldname
-    real(r4)            , intent(in)    :: global_data(nx*ny)
+    integer             , intent(in)    :: nvals
+    real(r4)            , intent(in)    :: global_data(nvals)
     integer             , intent(out)   :: rc
 
     ! local variables
@@ -1558,7 +1540,7 @@ contains
     integer                         :: fieldCount
     integer                         :: lrank
     integer                         :: yr,mon,day,sec    ! time units
-    integer                         :: n, nn, isea, ix, iy
+    integer                         :: jsea, isea, ix, iy
     real(r8), pointer               :: dataptr1d(:)
     real(r8)                        :: fillValue = 9.99e20
     character(len=*), parameter :: subname = '(wav_import_export:check_globaldata)'
@@ -1596,12 +1578,19 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dataptr1d(:) = fillValue
 
-    do n = 1, nseal
-       isea = iaproc + (n-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       dataptr1d(n) = global_data(ix + (iy-1)*nx)
-    end do
+    if (nvals .eq. nx*ny) then
+       do jsea = 1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          ix = mapsf(isea,1)
+          iy = mapsf(isea,2)
+          dataptr1d(jsea) = global_data(ix + (iy-1)*nx)
+       end do
+    else
+       do jsea = 1,nseal
+          isea = iaproc + (jsea-1)*naproc
+          dataptr1d(jsea) = global_data(isea)
+       end do
+    end if
 
     call ESMF_FieldWrite(newfield, filename=trim(fldname)//'.'//trim(timestr)//'.nc', &
       variableName=trim(fldname), overwrite=.true., rc=rc)
@@ -1611,23 +1600,24 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine check_globaldata
+
   !========================================================================
   subroutine readfromfile (idfld, wxdata, wydata, time0, timen, rc)
 
-    use w3gdatmd, only: gtype, nx, ny
+    use w3gdatmd, only: nsea, mapsf, gtype, nx, ny
     use w3fldsmd, only: w3fldo, w3fldg
 
     ! input/output variables
     character(len=*) , intent(in)    :: idfld
     integer          , intent(in)    :: time0(2)
     integer          , intent(in)    :: timen(2)
-    real(r4)         , intent(out)   :: wxdata(nx*ny)
-    real(r4)         , intent(out)   :: wydata(nx*ny)
+    real(r4)         , intent(out)   :: wxdata(nsea)
+    real(r4)         , intent(out)   :: wydata(nsea)
     integer, optional, intent(out)   :: rc
 
     ! local variables
     integer                     :: ierr, tw0l(2), twnl(2)
-    integer                     :: ix, iy, n
+    integer                     :: ix, iy, isea
     integer                     :: nxt, nyt, gtypet, filler(3), tideflag
     integer                     :: mdse = 6
     integer                     :: mdst = 10
@@ -1684,15 +1674,13 @@ contains
            nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
            wxnl, wynl, dtnl, ierr, flagsc)
 
-    n = 0
     wxdata(:) = 0.0_r4
     wydata(:) = 0.0_r4
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          wxdata(n) = wx0l(ix,iy)
-          wydata(n) = wy0l(ix,iy)
-       end do
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       wxdata(isea) = wx0l(ix,iy)
+       wydata(isea) = wy0l(ix,iy)
     end do
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
