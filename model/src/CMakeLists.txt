@@ -87,7 +87,10 @@ if(MULTI_ESMF)
   set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
 endif() 
 
-find_package(NetCDF COMPONENTS Fortran)
+if(NETCDF)
+  find_package(NetCDF REQUIRED COMPONENTS Fortran)
+endif()
+
 if(NetCDF_Fortran_FOUND)
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
   target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
