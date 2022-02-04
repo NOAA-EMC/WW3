@@ -1,6 +1,6 @@
 function(check_switches switches switch_files)
   # Read JSON file
-  file(READ ${CMAKE_SOURCE_DIR}/model/bin/switches.json json_str)
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/cmake/switches.json json_str)
   # Get length of top-level array of all switch categories
   string(JSON len LENGTH ${json_str})
   # CMake's foreach RANGE is inclusive, so subtract 1 when looping

@@ -19,7 +19,7 @@ export FC=ifort
 export NetCDF_ROOT=/path/to/netcdf
 
 # Clone and build WW3
-git clone https://github.com/kgerheiser/WW3.git -b feature/cmake
+git clone https://github.com/NOAA-EMC/WW3.git
 cd WW3
 mkdir build && cd build
 cmake .. -DSWITCH=/path/to/switch_NCEP_st2 -DCMAKE_INSTALL_PREFIX=install

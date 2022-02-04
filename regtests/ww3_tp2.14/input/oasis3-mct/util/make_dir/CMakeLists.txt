@@ -8,6 +8,9 @@ list(APPEND CMAKE_MODULE_PATH "$ENV{WWATCH3_DIR}/../cmake")
 find_package(MPI REQUIRED COMPONENTS Fortran)
 find_package(NetCDF MODULE REQUIRED COMPONENTS Fortran)
 
+list(REVERSE NetCDF_LIBRARIES)
+string(REPLACE ";" " " NetCDF_LIBRARIES_STR "${NetCDF_LIBRARIES}")
+
 set(WWATCH3_DIR $ENV{WWATCH3_DIR})
 set(comp_mpi ${MPI_Fortran_COMPILER})
 set(wwatch3_cc ${CMAKE_C_COMPILER})
