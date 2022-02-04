@@ -40,6 +40,8 @@ Options can be passed to CMake with `-D<option>`.
 
 * `CMAKE_INSTALL_PREFIX` (optional) - Standard CMake variable for install location when running `make install`. Executables/libraries are also located in build/bin if not running `make install`.
 
+* `NETCDF=ON/OFF` (optional) - Build NetCDF programs (ww3_ounf, ww3_ounp, ww3_bounc, ww3_trnc, and ww3_prnc). Requires NetCDF. Enabled by default.
+
 ## Setting Compiler
 
 CMake uses the standard `CC`, `FC`, and `CXX` envrionment variables for compiler detection. May need to set if CMake picks up the wrong compiler (system GCC instead of Intel, for example).
@@ -152,5 +154,3 @@ The CMake build type can set with the CMake variable `CMAKE_BUILD_TYPE`. Valid o
 cmake .. -DCMAKE_BUILD_TYPE=Debug
 cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
-
-
