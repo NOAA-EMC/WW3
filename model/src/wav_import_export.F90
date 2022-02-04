@@ -28,6 +28,12 @@ module wav_import_export
   private :: check_globaldata
   private :: readfromfile
 
+  interface FillGlobalInput
+     module procedure fillglobal_with_import
+     module procedure fillglobal_with_mergeimport
+     !module procedure fillglobal_with_blendimport
+  end interface
+
   type fld_list_type
      character(len=128) :: stdname
      integer :: ungridded_lbound = 0
@@ -295,14 +301,8 @@ contains
        if (state_fldchk(importState, 'So_u')) then
           call SetGlobalInput(importState, 'So_u', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                CX0(ix,iy) = data_global(n)
-                CXN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(data_global, CX0)
+          call FillGlobalInput(data_global, CXN)
        end if
 
        CY0(:,:) = def_value   ! ocn v current
@@ -310,14 +310,8 @@ contains
        if (state_fldchk(importState, 'So_v')) then
           call SetGlobalInput(importState, 'So_v', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                CY0(ix,iy) = data_global(n)
-                CYN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(data_global, CY0)
+          call FillGlobalInput(data_global, CYN)
        end if
     end if
 
@@ -354,22 +348,16 @@ contains
        if (state_fldchk(importState, trim(uwnd))) then
           call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                if (merge_import) then
-                   WX0(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
-                   WXN(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
-                else
-                   WX0(ix,iy) = data_global(n)
-                   WXN(ix,iy) = data_global(n)
-                end if
-             end do
-          end do
-          if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wx0', wx0, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (merge_import) then
+             call FillGlobalInput(data_global, import_mask, wxdata, WX0)
+             call FillGlobalInput(data_global, import_mask, wxdata, WXN)
+             if (dbug_flag > 10) then
+                call check_globaldata(gcomp, 'wx0', wx0, rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end if
+          else
+             call FillGlobalInput(data_global, WX0)
+             call FillGlobalInput(data_global, WXN)
           end if
        end if
 
@@ -380,22 +368,16 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call SetGlobalInput(importState, trim(vwnd), vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                if (merge_import) then
-                   WY0(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
-                   WYN(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
-                else
-                   WY0(ix,iy)  = data_global(n)
-                   WYN(ix,iy)  = data_global(n)
-                end if
-             end do
-          end do
-          if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wy0', wy0, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (merge_import) then
+             call FillGlobalInput(data_global, import_mask, wydata, WY0)
+             call FillGlobalInput(data_global, import_mask, wydata, WYN)
+             if (dbug_flag > 10) then
+                call check_globaldata(gcomp, 'wy0', wy0, rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end if
+          else
+             call FillGlobalInput(data_global, WY0)
+             call FillGlobalInput(data_global, WYN)
           end if
        end if
 
@@ -408,14 +390,11 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call SetGlobalInput(importState, 'So_t', vm, data_global2, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                DT0(ix,iy)  = data_global(n) - data_global2(n)
-                DTN(ix,iy)  = data_global(n) - data_global2(n)
-             end do
-          end do
+
+          ! So_tbot - So_t
+          data_global = data_global - data_global2
+          call FillGlobalInput(data_global, DT0)
+          call FillGlobalInput(data_global, DTN)
           deallocate(data_global2)
        end if
        ! Deallocate memory for merge_import
@@ -434,13 +413,7 @@ contains
        if (state_fldchk(importState, 'Si_ifrac')) then
           call SetGlobalInput(importState, 'Si_ifrac', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEI(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(data_global, ICEI)
        end if
     end if
 #ifdef CESMCOUPLED
@@ -449,13 +422,10 @@ contains
     ! ---------------
     call SetGlobalInput(importState, 'So_bldepth', vm, data_global, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    n = 0
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          HML(ix,iy) = max(data_global(n), 5.) ! ocn mixing layer depth
-       end do
-    end do
+
+    ! ocn mixing layer depth
+    data_global = max(data_global, 5.)
+    call FillGlobalInput(data_global, HML)
 #endif
     ! ---------------
     ! INFLAGS1(5) - atm momentum fields
@@ -469,14 +439,8 @@ contains
        if (state_fldchk(importState, 'Faxa_taux')) then
           call SetGlobalInput(importState, 'Faxa_taux', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                UX0(ix,iy) = data_global(n)
-                UXN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(data_global, UX0)
+          call FillGlobalInput(data_global, UXN)
        end if
 
        UY0(:,:) = def_value   ! atm v momentum
@@ -485,15 +449,9 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call SetGlobalInput(importState, 'Faxa_tauy', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call FillGlobalInput(data_global, UY0)
+          call FillGlobalInput(data_global, UYN)
        end if
-       n = 0
-       do iy = 1,NY
-          do ix = 1,NX
-             n = n + 1
-             UY0(ix,iy)  = data_global(n)
-             UYN(ix,iy)  = data_global(n)
-          end do
-       end do
     end if
     ! ---------------
     ! INFLAGS1(-7)
@@ -504,13 +462,7 @@ contains
        if (state_fldchk(importState, 'Si_thick')) then
           call SetGlobalInput(importState, 'Si_thick', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEP1(ix,iy) = data_global(n) ! ice thickness
-             end do
-          end do
+          call FillGlobalInput(data_global, ICEP1)
        end if
     end if
     ! ---------------
@@ -522,13 +474,7 @@ contains
        if (state_fldchk(importState, 'Si_floediam')) then
           call SetGlobalInput(importState, 'Si_floediam', vm, data_global, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEP5(ix,iy) = data_global(n) ! ice floe diameter
-             end do
-          end do
+          call FillGlobalInput(data_global, ICEP5)
        end if
     end if
 
@@ -1459,6 +1405,53 @@ contains
   end subroutine SetGlobalInput
 
   !====================================================================================
+
+  subroutine fillglobal_with_import(data_global, globalfield)
+
+    use w3gdatmd, only: nx, ny
+
+    real(r4), intent(in)  :: data_global(nx*ny)
+    real(r4), intent(out) :: globalfield(nx,ny)
+
+    ! local variables
+    integer           :: n, ix, iy
+
+    n = 0
+    do iy = 1,NY
+       do ix = 1,NX
+          n = n + 1
+          globalfield(ix,iy) = data_global(n)
+       end do
+    end do
+
+  end subroutine fillglobal_with_import
+
+  !====================================================================================
+
+  subroutine fillglobal_with_mergeimport(data_global, global_mask, filedata, globalfield)
+
+    use w3gdatmd, only: nx, ny
+
+    real(r4), intent(in)  :: data_global(nx*ny)
+    real(r4), intent(in)  :: global_mask(nx*ny)
+    real(r4), intent(in)  :: filedata(nx*ny)
+    real(r4), intent(out) :: globalfield(nx,ny)
+
+    ! local variables
+    integer           :: n, ix, iy
+
+    n = 0
+    do iy = 1,NY
+       do ix = 1,NX
+          n = n + 1
+          globalfield(ix,iy) =  data_global(n)*global_mask(n) + (1.0_r4 - global_mask(n))*filedata(n)
+       end do
+    end do
+
+  end subroutine fillglobal_with_mergeimport
+
+  !====================================================================================
+
   subroutine set_importmask(importState, clock, fldname, vm, rc)
 
     use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
