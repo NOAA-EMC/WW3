@@ -236,8 +236,8 @@ contains
     type(ESMF_VM)           :: vm
     type(ESMF_Clock)        :: clock
     integer                 :: n, ix, iy
-    real(r4)                :: data_global(nsea)
-    real(r4), allocatable   :: data_global2(:)
+    real(r4)                :: global_data(nsea)
+    real(r4), allocatable   :: global_data2(:)
     real(r4)                :: def_value
     character(len=10)       :: uwnd
     character(len=10)       :: vwnd
@@ -299,19 +299,19 @@ contains
        CX0(:,:) = def_value   ! ocn u current
        CXN(:,:) = def_value
        if (state_fldchk(importState, 'So_u')) then
-          call SetGlobalInput(importState, 'So_u', vm, data_global, rc)
+          call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, CX0)
-          call FillGlobalInput(data_global, CXN)
+          call FillGlobalInput(global_data, CX0)
+          call FillGlobalInput(global_data, CXN)
        end if
 
        CY0(:,:) = def_value   ! ocn v current
        CYN(:,:) = def_value
        if (state_fldchk(importState, 'So_v')) then
-          call SetGlobalInput(importState, 'So_v', vm, data_global, rc)
+          call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, CY0)
-          call FillGlobalInput(data_global, CYN)
+          call FillGlobalInput(global_data, CY0)
+          call FillGlobalInput(global_data, CYN)
        end if
     end if
 
@@ -346,18 +346,18 @@ contains
        WX0(:,:) = def_value
        WXN(:,:) = def_value
        if (state_fldchk(importState, trim(uwnd))) then
-          call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
+          call SetGlobalInput(importState, trim(uwnd), vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (merge_import) then
-             call FillGlobalInput(data_global, import_mask, wxdata, WX0)
-             call FillGlobalInput(data_global, import_mask, wxdata, WXN)
+             call FillGlobalInput(global_data, import_mask, wxdata, WX0)
+             call FillGlobalInput(global_data, import_mask, wxdata, WXN)
              if (dbug_flag > 10) then
                 call check_globaldata(gcomp, 'wx0', wx0, nx*ny, rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
              end if
           else
-             call FillGlobalInput(data_global, WX0)
-             call FillGlobalInput(data_global, WXN)
+             call FillGlobalInput(global_data, WX0)
+             call FillGlobalInput(global_data, WXN)
           end if
        end if
 
@@ -366,18 +366,18 @@ contains
        WYN(:,:) = def_value
        if (state_fldchk(importState, trim(vwnd))) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, trim(vwnd), vm, data_global, rc)
+          call SetGlobalInput(importState, trim(vwnd), vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (merge_import) then
-             call FillGlobalInput(data_global, import_mask, wydata, WY0)
-             call FillGlobalInput(data_global, import_mask, wydata, WYN)
+             call FillGlobalInput(global_data, import_mask, wydata, WY0)
+             call FillGlobalInput(global_data, import_mask, wydata, WYN)
              if (dbug_flag > 10) then
                 call check_globaldata(gcomp, 'wy0', wy0, nx*ny, rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
              end if
           else
-             call FillGlobalInput(data_global, WY0)
-             call FillGlobalInput(data_global, WYN)
+             call FillGlobalInput(global_data, WY0)
+             call FillGlobalInput(global_data, WYN)
           end if
        end if
 
@@ -385,17 +385,17 @@ contains
        DT0(:,:) = def_value
        DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
-          allocate(data_global2(nsea))
-          call SetGlobalInput(importState, 'Sa_tbot', vm, data_global, rc)
+          allocate(global_data2(nsea))
+          call SetGlobalInput(importState, 'Sa_tbot', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'So_t', vm, data_global2, rc)
+          call SetGlobalInput(importState, 'So_t', vm, global_data2, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           ! So_tbot - So_t
-          data_global = data_global - data_global2
-          call FillGlobalInput(data_global, DT0)
-          call FillGlobalInput(data_global, DTN)
-          deallocate(data_global2)
+          global_data = global_data - global_data2
+          call FillGlobalInput(global_data, DT0)
+          call FillGlobalInput(global_data, DTN)
+          deallocate(global_data2)
        end if
        ! Deallocate memory for merge_import
        if (merge_import) then
@@ -411,21 +411,21 @@ contains
        TIN       = timen       ! time for ice field
        ICEI(:,:) = def_value   ! ice frac
        if (state_fldchk(importState, 'Si_ifrac')) then
-          call SetGlobalInput(importState, 'Si_ifrac', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_ifrac', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, ICEI)
+          call FillGlobalInput(global_data, ICEI)
        end if
     end if
 #ifdef CESMCOUPLED
     ! ---------------
     ! ocean boundary layer depth - always assume that this is being imported for CESM
     ! ---------------
-    call SetGlobalInput(importState, 'So_bldepth', vm, data_global, rc)
+    call SetGlobalInput(importState, 'So_bldepth', vm, global_data, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! ocn mixing layer depth
-    data_global = max(data_global, 5.)
-    call FillGlobalInput(data_global, HML)
+    global_data = max(global_data, 5.)
+    call FillGlobalInput(global_data, HML)
 #endif
     ! ---------------
     ! INFLAGS1(5) - atm momentum fields
@@ -437,20 +437,20 @@ contains
        UX0(:,:) = def_value   ! atm u momentum
        UXN(:,:) = def_value
        if (state_fldchk(importState, 'Faxa_taux')) then
-          call SetGlobalInput(importState, 'Faxa_taux', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Faxa_taux', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, UX0)
-          call FillGlobalInput(data_global, UXN)
+          call FillGlobalInput(global_data, UX0)
+          call FillGlobalInput(global_data, UXN)
        end if
 
        UY0(:,:) = def_value   ! atm v momentum
        UYN(:,:) = def_value
        if (state_fldchk(importState, 'Faxa_tauy')) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'Faxa_tauy', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Faxa_tauy', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, UY0)
-          call FillGlobalInput(data_global, UYN)
+          call FillGlobalInput(global_data, UY0)
+          call FillGlobalInput(global_data, UYN)
        end if
     end if
     ! ---------------
@@ -460,9 +460,9 @@ contains
        TI1  = timen       ! time for ice field
        ICEP1(:,:) = def_value   ! ice thickness
        if (state_fldchk(importState, 'Si_thick')) then
-          call SetGlobalInput(importState, 'Si_thick', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_thick', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, ICEP1)
+          call FillGlobalInput(global_data, ICEP1)
        end if
     end if
     ! ---------------
@@ -472,9 +472,9 @@ contains
        TI5  = timen        ! time for ice field
        ICEP5(:,:) = def_value   ! ice floe size
        if (state_fldchk(importState, 'Si_floediam')) then
-          call SetGlobalInput(importState, 'Si_floediam', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_floediam', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call FillGlobalInput(data_global, ICEP5)
+          call FillGlobalInput(global_data, ICEP5)
        end if
     end if
 
@@ -1395,11 +1395,11 @@ contains
   end subroutine SetGlobalInput
 
   !====================================================================================
-  subroutine fillglobal_with_import(data_global, globalfield)
+  subroutine fillglobal_with_import(global_data, globalfield)
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    real(r4), intent(in)  :: data_global(nsea)
+    real(r4), intent(in)  :: global_data(nsea)
     real(r4), intent(out) :: globalfield(nx,ny)
 
     ! local variables
@@ -1408,17 +1408,17 @@ contains
     do isea = 1,nsea
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       globalfield(ix,iy) = data_global(isea)
+       globalfield(ix,iy) = global_data(isea)
     end do
 
   end subroutine fillglobal_with_import
 
   !====================================================================================
-  subroutine fillglobal_with_merge_import(data_global, global_mask, filedata, globalfield)
+  subroutine fillglobal_with_merge_import(global_data, global_mask, filedata, globalfield)
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    real(r4), intent(in)  :: data_global(nsea)
+    real(r4), intent(in)  :: global_data(nsea)
     real(r4), intent(in)  :: global_mask(nsea)
     real(r4), intent(in)  :: filedata(nsea)
     real(r4), intent(out) :: globalfield(nx,ny)
@@ -1429,7 +1429,7 @@ contains
     do isea = 1,nsea
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
-       globalfield(ix,iy) = data_global(isea)*global_mask(isea) + (1.0_r4 - global_mask(isea))*filedata(isea)
+       globalfield(ix,iy) = global_data(isea)*global_mask(isea) + (1.0_r4 - global_mask(isea))*filedata(isea)
     end do
 
   end subroutine fillglobal_with_merge_import
