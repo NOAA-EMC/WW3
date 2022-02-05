@@ -57,6 +57,7 @@
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/    22-Mar-2021 : Add new coupling fields             ( version 7.13 )
 !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
+!/    02-Feb-2022 : Scalability local                   ( version 7.14 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
