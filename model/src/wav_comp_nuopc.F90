@@ -132,8 +132,8 @@ module wav_comp_nuopc
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
   use wav_import_export     , only : advertise_fields, realize_fields
-  use wav_import_export     , only : state_getfldptr, state_fldchk
-  use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, state_diagnose, alarmInit, ymd2date
+  use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
+  use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : runtype, merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
 
@@ -722,8 +722,8 @@ contains
 
   subroutine DataInitialize(gcomp, rc)
 
-    use wav_import_export, only : state_getfldptr, state_fldchk
     use wav_import_export, only : calcRoughl
+    !use wav_shr_mod      , only : state_getfldptr, state_fldchk
     use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 

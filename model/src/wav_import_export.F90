@@ -7,7 +7,7 @@ module wav_import_export
   use wav_kind_mod , only : CL => shr_kind_cl, CS => shr_kind_cs
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
-  use wav_shr_mod  , only : state_diagnose, state_reset
+  use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
   use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag
   use constants    , only : grav, tpi, dwat
 
@@ -18,8 +18,6 @@ module wav_import_export
   public  :: realize_fields
   public  :: import_fields
   public  :: export_fields
-  public  :: state_getfldptr
-  public  :: state_fldchk
   public  :: CalcRoughl
 
   private :: fldlist_add
@@ -54,7 +52,7 @@ module wav_import_export
   logical :: cesmcoupled = .false.
 #endif
 
-  integer, parameter :: nwav_elevation_spectrum = 25
+  integer, parameter :: nwav_elev_spectrum = 25
 
   character(*),parameter :: u_FILE_u = &
        __FILE__
@@ -266,12 +264,10 @@ contains
     end if
 
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
-    ! these arrays are global, just fill the local cells for use later
     ! fill both the lower (0) and upper (N) bound data with the same values
     ! fill with special values as default, these should not be used in practice
     ! set time for input data to time0 and timen (shouldn't matter)
 
-    ! note that INFLAGS(1-5) is true for CESM, for UWM INFLAGS(2:4) is true
     def_value = 0.0_r4
 
     ! ---------------
@@ -280,8 +276,12 @@ contains
     if (INFLAGS1(1)) then
        TLN  = timen
 
-       global_data = def_value
-       call FillGlobalInput(global_data, WLEV)
+       WLEV(:,:) = def_value   ! water level
+       if (state_fldchk(importState, 'So_h')) then
+          call SetGlobalInput(importState, 'So_h', vm, global_data, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call FillGlobalInput(global_data, WLEV)
+       end if
     endif
 
     ! ---------------
@@ -318,7 +318,7 @@ contains
        TWN  = timen
 
        if (merge_import) then
-          ! set mask using u-wind field if merge_import; all import fields
+          ! set mask using u-wind field if merge_import; assume all import fields
           ! will have same missing overlap region
           ! import_mask memory will be allocate in set_importmask
           call set_importmask(importState, clock, trim(uwnd), vm, rc)
@@ -669,7 +669,7 @@ contains
           else
              wav_tauice1(jsea) = 0.
              wav_tauice2(jsea) = 0.
-             wave_elevation_spectrum1(:,jsea) = 0.
+             wave_elevation_spectrum(:,jsea) = 0.
           endif
        enddo
     end if
@@ -873,88 +873,6 @@ contains
     end subroutine SetScalarField
 
   end subroutine fldlist_realize
-
-  !===============================================================================
-  subroutine state_getfldptr(State, fldname, fldptr1d, fldptr2d, rc)
-    ! ----------------------------------------------
-    ! Get pointer to a state field
-    ! ----------------------------------------------
-    use ESMF , only : ESMF_State, ESMF_Field, ESMF_Mesh, ESMF_FieldStatus_Flag
-    use ESMF , only : ESMF_StateGet, ESMF_FieldGet, ESMF_MeshGet
-    use ESMF , only : ESMF_FIELDSTATUS_COMPLETE, ESMF_FAILURE
-
-    ! input/output variables
-    type(ESMF_State),            intent(in)    :: State
-    character(len=*),            intent(in)    :: fldname
-    real(R8), pointer, optional, intent(out)   :: fldptr1d(:)
-    real(R8), pointer, optional, intent(out)   :: fldptr2d(:,:)
-    integer,                     intent(out)   :: rc
-
-    ! local variables
-    type(ESMF_FieldStatus_Flag) :: status
-    type(ESMF_Field)            :: lfield
-    type(ESMF_Mesh)             :: lmesh
-    integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_FieldGet(lfield, status=status, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-       rc = ESMF_FAILURE
-       return
-    else
-       call ESMF_FieldGet(lfield, mesh=lmesh, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       if (nnodes == 0 .and. nelements == 0) then
-          call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", ESMF_LOGMSG_INFO)
-          rc = ESMF_FAILURE
-          return
-       end if
-
-       if (present(fldptr1d)) then
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
-       else ! 2D
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr2d, rc=rc)
-       endif
-
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif  ! status
-
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine state_getfldptr
-
-  !===============================================================================
-  logical function state_fldchk(State, fldname)
-    ! ----------------------------------------------
-    ! Determine if field is in state
-    ! ----------------------------------------------
-
-    ! input/output variables
-    type(ESMF_State) , intent(in)  :: State
-    character(len=*) , intent(in)  :: fldname
-
-    ! local variables
-    type(ESMF_StateItem_Flag) :: itemType
-    ! ----------------------------------------------
-
-    call ESMF_StateGet(State, trim(fldname), itemType)
-    State_FldChk = (itemType /= ESMF_STATEITEM_NOTFOUND)
-
-  end function state_fldchk
 
   !===============================================================================
   subroutine CalcCharnk ( chkn )
@@ -1251,8 +1169,8 @@ contains
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    real(r4), intent(in)  :: global_data(nsea)
-    real(r4), intent(out) :: globalfield(nx,ny)
+    real(r4), intent(in)    :: global_data(nsea)
+    real(r4), intent(inout) :: globalfield(nx,ny)
 
     ! local variables
     integer           :: isea, ix, iy
@@ -1270,10 +1188,10 @@ contains
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
 
-    real(r4), intent(in)  :: global_data(nsea)
-    real(r4), intent(in)  :: global_mask(nsea)
-    real(r4), intent(in)  :: filedata(nsea)
-    real(r4), intent(out) :: globalfield(nx,ny)
+    real(r4), intent(in)    :: global_data(nsea)
+    real(r4), intent(in)    :: global_mask(nsea)
+    real(r4), intent(in)    :: filedata(nsea)
+    real(r4), intent(inout) :: globalfield(nx,ny)
 
     ! local variables
     integer           :: isea, ix, iy
@@ -1344,6 +1262,7 @@ contains
     end if
 
     ! set merge mask where import field has fillvalue due to non-overlapping model domains
+    ! import_mask will be 1 where valid import exists and 0 where no valid import exists
     if (secondCall) then
        call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at currTime : ', &
           unit=msgString, rc=rc)
