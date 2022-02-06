@@ -878,6 +878,14 @@
 ! 2.3 Domain setup
 
         IOSTYP = NML_DOMAIN%IOSTYP
+
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
         CALL W3IOGR ( 'GRID', NDSF(7) )
         IF ( FLAGLL ) THEN
           FACTOR = 1.
@@ -1389,6 +1397,12 @@
       write(740+IAPROC,*), 'Before read 2002, case 6'
 #endif
         READ (NDSI,*) IOSTYP
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
 #ifdef W3_DEBUGINIT
       write(740+IAPROC,*), ' After read 2002, case 6'
 #endif
@@ -1930,6 +1944,13 @@
 ! 2.3 Domain setup
 
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
       IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( IOSTYP .EQ. 0 ) THEN
           WRITE (NDSO,940) 'No dedicated output process, ' //   &

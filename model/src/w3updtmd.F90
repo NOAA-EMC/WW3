@@ -2157,7 +2157,8 @@
 #endif
 !
         WLV(ISEA) = WLEV(IX,IY)
-        WLVeff=WLV(ISEA)
+        WLVeff    = WLV(ISEA)
+
 #ifdef W3_SETUP
      IF (DO_CHANGE_WLV) THEN
        WLVeff=WLVeff + ZETA_SETUP(ISEA)
@@ -2167,7 +2168,9 @@
           ENDIF 
 #endif
         DW (ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
-        END DO
+
+      END DO ! NSEA 
+
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 6'
            FLUSH(740+IAPROC)
@@ -2353,17 +2356,17 @@
 !
             DO ISPEC=1, NSPEC
               VA(ISPEC,JSEA) = VA(ISPEC,JSEA) / DWN(MAPWN(ISPEC))
-              END DO
+            END DO
 !
 ! 2.f Add tail if necessary
 !
             IF ( I2.LE.NK .AND. RD2.LE.0.95 ) THEN
-                DO IK=MAX(I2,2), NK
-                  DO ITH=1, NTH
-                    A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
-                    END DO
-                  END DO
-              END IF
+              DO IK=MAX(I2,2), NK
+                DO ITH=1, NTH
+                  A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
+                END DO
+              END DO
+            END IF
 !
 #ifdef W3_T3
             DO ISPEC=1, NSPEC
@@ -2384,7 +2387,7 @@
 #endif
           END IF
 !
-        END DO
+      END DO ! NSEA 
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 7'
            FLUSH(740+IAPROC)
@@ -2405,7 +2408,10 @@
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 9'
            FLUSH(740+IAPROC)
 #endif
-        CALL SETUGIOBP
+        !CALL SET_UG_IOBP
+#ifdef W3_PDLIB
+         CALL SET_IOBDP_PDLIB
+#endif
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 10'
            FLUSH(740+IAPROC)
