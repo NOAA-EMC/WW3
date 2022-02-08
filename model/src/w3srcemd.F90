@@ -49,9 +49,10 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SRCE ( srce_call, IT, JSEA, IX, IY, IMOD,          &
+      SUBROUTINE W3SRCE ( srce_call, IT, ISEA, JSEA, IX, IY, IMOD,          &
                           SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
-                          ALPHA, WN1, CG1, D_INP, U10ABS, U10DIR,     &
+                          ALPHA, WN1, CG1, CLATSL,                    &
+                          D_INP, U10ABS, U10DIR,                      &
 #ifdef W3_FLX5
                           TAUA, TAUADIR,                              &
 #endif
@@ -355,7 +356,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
-                           srce_direct, GRAV, TPI, TPIINV
+                           srce_direct, GRAV, TPI, TPIINV, LPDLIB
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
@@ -500,11 +501,11 @@
       USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
 #endif
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES
-    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
-    USE W3GDATMD, ONLY: CLATS
+    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL 
+    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P, PDLIB_SI
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE W3WDATMD, ONLY: VA
-    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM
+    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
 #endif
 !/
       IMPLICIT NONE
@@ -512,8 +513,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: srce_call, IT, JSEA, IX, IY, IMOD
-      REAL, intent(in)        :: SPECOLD(NSPEC)
+      INTEGER, INTENT(IN)     :: srce_call, IT, ISEA, JSEA, IX, IY, IMOD
+      REAL, intent(in)        :: SPECOLD(NSPEC), CLATSL
       REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
       LOGICAL, INTENT(OUT)    :: SHAVEIO
       REAL, INTENT(IN)        :: D_INP, U10ABS,     &
@@ -540,7 +541,8 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, IS, IS0, NSTEPS,  NKH, NKH1,&
-                                 IKS1, IS1, NSPECH, IDT, IERR, NKI, NKD
+                                 IKS1, IS1, NSPECH, IDT, IERR, NKD, ISP
+      INTEGER                 :: IOBPIP, IOBPDIP, IOBDPIP
 #ifdef W3_S
       INTEGER, SAVE           :: IENT = 0
 #endif
@@ -592,8 +594,8 @@
                                  FACTOR, FACTOR2, DRAT, TAUWAX, TAUWAY,    &
                                  MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
                                  COSI(2)
-      REAL                    :: SPECINIT(NSPEC), SPEC2(NSPEC)
-      REAL                    :: DAM (NSPEC), WN2 (NSPEC),            &
+      REAL                    :: SPECINIT(NSPEC), SPEC2(NSPEC), FRLOCAL, JAC2
+      REAL                    :: DAM (NSPEC), DAM2(NSPEC), WN2 (NSPEC),            &
                                  VSLN(NSPEC),                         &
                                  VSIN(NSPEC), VDIN(NSPEC),            &
                                  VSNL(NSPEC), VDNL(NSPEC),            &
@@ -638,7 +640,7 @@
 #ifdef W3_UOST
                                  VSUO(NSPEC), VDUO(NSPEC),            &
 #endif
-                                 VS  (NSPEC), VD  (NSPEC), EB(NK)
+                                 VS(NSPEC), VD(NSPEC), EB(NK)
 #ifdef W3_ST3
       LOGICAL                 :: LLWS(NSPEC)
 #endif
@@ -665,11 +667,12 @@
 !$omp threadprivate( FIRST ) 
 #endif
       LOGICAL                 :: PrintDeltaSmDA
-      REAL                    :: eInc1, eInc2
-      REAL                    :: DeltaSRC(NSPEC), MAXDAC(NSPEC)
+      REAL                    :: eInc1, eInc2, eVS, eVD, JAC
+      REAL                    :: DeltaSRC(NSPEC)
+      REAL, PARAMETER         :: DTMINTOT = 0.01
+      LOGICAL                 :: LNEWLIMITER = .TRUE.
 #ifdef W3_PDLIB
-  REAL                 :: PreVS, eVS, eVD, FAK, DVS, SIDT
-  INTEGER              :: ISP, IP, ISEA
+  REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
 
 #ifdef W3_NNT
@@ -686,7 +689,10 @@
       FLTEST = .TRUE.
 #endif
 !
+      VDIO   = 0.
+      VSIO   = 0.
       DEPTH  = MAX ( DMIN , D_INP )
+
       IKS1 = 1
       ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1)))
       ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2)))
@@ -1110,7 +1116,7 @@
 #endif
 !
 #ifdef W3_PDLIB
-    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
+    IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
         CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
@@ -1151,15 +1157,13 @@
 #endif
 !
 #ifdef W3_PDLIB
-    IF (.NOT. FSSOURCE) THEN
-      IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
+    IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_DB1
           CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
                                                    LBREAK, VSDB, VDDB )
 #endif
 #ifdef W3_PDLIB
-      ENDIF
     ENDIF
 #endif
 !
@@ -1173,9 +1177,6 @@
 !
 ! 2.d Bottom interactions.
 !
-#ifdef W3_PDLIB
-    IF (.NOT. B_JGS_SOURCE_NONLINEAR) THEN
-#endif
 #ifdef W3_BT1
         CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
 #endif
