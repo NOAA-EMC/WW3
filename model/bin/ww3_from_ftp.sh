@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 #                                                                             #
 # Script for downloading data from ftp                                        #
@@ -10,19 +10,32 @@ curr_dir=`pwd`
 # Set WW3 code version
 ww3ver=v7.12.6
 
+interactive='y'
+if [ $# -eq 3 ] ; then
+  interactive='n'
+  ww3dir=$1  # [ '../../']
+  wnew=$2    # ['y']
+  wnew2=$3   # ['y']
+fi
+
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
 echo -e "Enter the relative path to the main/top level directory, this would "
 echo -e "be '../../' if in the model/bin directory or '.' if already in the "
 echo -e "top/main directory:"
-read ww3dir 
+if [ "$interactive" = "n" ]
+then
+  echo $ww3dir
+else
+  read ww3dir 
+fi
 
 #Move to top level directory of ww3: 
 cd $ww3dir 
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
-wget https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.${ww3ver}.tar.gz
+wget --no-check-certificate https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.${ww3ver}.tar.gz
 tar -xvzf ww3_from_ftp.${ww3ver}.tar.gz
 
 #Move regtest info from data_regtests to regtests:
@@ -60,7 +73,12 @@ cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.3/input/*nc   regtests/ww3_ufs1.3/input/
 #Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
 echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "
-read wnew
+if [ "$interactive" = "n" ]
+then
+  echo $wnew
+else
+  read wnew
+fi
 if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
 then
   echo -e '\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz'
@@ -71,7 +89,12 @@ fi
 
 echo -e "\n\n Files were copied from the data_regtests to the regtests folder."
 echo -e "Do you want to delete the data_regtests folder? [y|n]: "
-read wnew2
+if [ "$interactive" = "n" ]
+then
+  echo $wnew2
+else
+  read wnew2
+fi
 if [ "${wnew2}" = "Y" ] || [ "${wnew2}" = "y" ]
 then
   echo -e '\n Deleting the data_regtests folder'
