@@ -297,23 +297,20 @@
       TAUW = SQRT(TAUWX**2+TAUWY**2)
 !
 #ifdef W3_FLX5
-      IF (.TRUE.) THEN
-        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
-                                          USTAR, USDIR, Z0, CD )
-        IF (USTAR.GT.0.001) THEN
-          CHARN = GRAV*Z0/USTAR**2 
-        ELSE
-          CHARN = AALPHA
-          END IF
-        ELSE
-#endif
-        Z0=0.
-        CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
-        UNZ    = MAX ( 0.01 , U )
-        CD     = (USTAR/UNZ)**2
-        USDIR = UDIR
-#ifdef W3_FLX5
+      CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
+                                        USTAR, USDIR, Z0, CD )
+      IF (U.GT.2.5) THEN
+        CHARN = (Z0 - 0.11 * NU_AIR / USTAR) * GRAV / USTAR**
+        CHARN = MIN( 0.035 , CHARN ) 
+      ELSE
+        CHARN = AALPHA
         END IF
+#else
+      Z0=0.
+      CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
+      UNZ    = MAX ( 0.01 , U )
+      CD     = (USTAR/UNZ)**2
+      USDIR = UDIR
 #endif
 !
 ! 6.  Final test output ---------------------------------------------- *
