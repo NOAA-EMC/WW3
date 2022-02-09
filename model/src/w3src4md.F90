@@ -169,7 +169,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: IAPROC
-      USE CONSTANTS, ONLY: TPIINV, GRAV
+      USE CONSTANTS, ONLY: TPIINV, GRAV, nu_air
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF, ESIN, ECOS, AAIRCMIN, &
@@ -300,7 +300,7 @@
       CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
                                         USTAR, USDIR, Z0, CD )
       IF (U.GT.2.5) THEN
-        CHARN = (Z0 - 0.11 * NU_AIR / USTAR) * GRAV / USTAR**
+        CHARN = (Z0 - 0.11 * NU_AIR / USTAR) * GRAV / USTAR**2
         CHARN = MIN( 0.035 , CHARN ) 
       ELSE
         CHARN = AALPHA
