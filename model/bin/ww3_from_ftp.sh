@@ -43,23 +43,23 @@ elif [ $# -gt 1 ] ; then
   exit 1
 fi
 
-model_dir=$(cd $(dirname $(dirname $0)) > /dev/null && pwd -P)
-echo $model_dir
-
+dir0=$(cd $(dirname $0) > /dev/null && pwd -P)
+ww3dir=$(dirname $(dirname $dir0))
+ 
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
 if [ "$interactive" = "n" ]
 then
-  echo $model_dir
+  echo $ww3dir
 else
-echo -e "Enter the absolute or relative path to the model directory, "
+echo -e "Enter the absolute or relative path to the main/top directory, "
 echo -e "this would be '../../' if in the model/bin directory "
 echo -e "or './' if already in the top/main directory:"
-  read model_dir 
+  read ww3dir 
 fi
 
 #Move to top level directory of ww3: 
-cd $model_dir 
+cd $ww3dir 
 
 #Download from ftp and uptar: 
 echo -e "Downloading and untaring file from ftp:" 
@@ -107,7 +107,7 @@ then
 else
   read keep
 fi
-if [ "${keep}" = "Y" ] || [ "${keep}" = "y" ]
+if [ "${keep}" = "N" ] || [ "${keep}" = "n" ]
 then
   echo -e '\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz'
   rm ww3_from_ftp.${ww3ver}.tar.gz
@@ -123,7 +123,7 @@ then
 else
   read keep
 fi
-if [ "${keep}" = "Y" ] || [ "${keep}" = "y" ]
+if [ "${keep}" = "N" ] || [ "${keep}" = "n" ]
 then
   echo -e '\n Deleting the data_regtests folder'
   rm -rf data_regtests
