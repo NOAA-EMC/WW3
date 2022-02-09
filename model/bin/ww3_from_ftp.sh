@@ -5,6 +5,18 @@
 #                                                    Created 0ct 10, 2017     #
 # --------------------------------------------------------------------------- #
 
+usage()
+{
+    echo ''
+    echo ' Usage : ./ww3_from_ftp.sh [options]'
+    echo ''
+    echo ' Options : '
+    echo '           -h : print usage'
+    echo '           -i : interactive mode'
+    echo '           -k : keep tar files'
+    echo ''
+}
+
 curr_dir=`pwd`
 
 # Set WW3 code version
@@ -13,20 +25,21 @@ ww3ver=v7.12.6
 interactive='n'
 keep='n'
 if [ $# -eq 1 ] ; then
-  if [ "$1" = "-i" ] ; then
+  if [ "$1" = "-h" ] ; then
+    usage
+    exit 0
+  elif [ "$1" = "-i" ] ; then
     interactive='y'
   elif [ "$1" = "-k" ] ; then
     keep='y'
   else
     echo '[ERROR] input argument not recognized'
-    echo '        use -i for interactive mode'
-    echo '        use -k to keep tar files'
+    usage
     exit 1
   fi
 elif [ $# -gt 1 ] ; then
   echo '[ERROR] only one input argument accepted'
-  echo '        use -i for interactive mode'
-  echo '        use -k to keep tar files'
+  usage
   exit 1
 fi
 
