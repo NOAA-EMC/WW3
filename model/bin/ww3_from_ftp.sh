@@ -35,13 +35,13 @@ echo $model_dir
 
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
-echo -e "Enter the relative path to the main/top level directory, this would "
-echo -e "be '../../' if in the model/bin directory or '.' if already in the "
-echo -e "top/main directory:"
 if [ "$interactive" = "n" ]
 then
   echo $model_dir
 else
+echo -e "Enter the absolute or relative path to the model directory, "
+echo -e "this would be '../../' if in the model/bin directory "
+echo -e "or './' if already in the top/main directory:"
   read model_dir 
 fi
 
