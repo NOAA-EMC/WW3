@@ -1407,16 +1407,20 @@
 !            END DO
             WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
           END IF
-
-            IF (optionCall .eq. 1) THEN
-              CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
-            ELSE IF (optionCall .eq. 2) THEN
-              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-            ELSE IF (optionCall .eq. 3) THEN
-              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-            ENDIF
-            VSIO=VS
-            VDIO=VD
+    
+#ifdef W3_PDLIB
+          IF (.not. LSLOC) THEN 
+             IF (optionCall .eq. 1) THEN
+               CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
+             ELSE IF (optionCall .eq. 2) THEN
+               CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+             ELSE IF (optionCall .eq. 3) THEN
+               CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+             ENDIF
+             VSIO = VS
+             VDIO = VD
+           ENDIF
+#endif
 !!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
 #ifdef W3_DEBUGSRC
           IF (IX == DEBUG_NODE) THEN
@@ -1523,8 +1527,8 @@
              / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
            IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
            HSTOT = HSTOT + SPEC(IS) * FACTOR
-           END DO
          END DO
+       END DO
        WHITECAP(3)=4.*SQRT(WHITECAP(3))
        HSTOT=4.*SQRT(HSTOT)
        TAUWIX= TAUWIX+ TAUWX * DRAT *DT

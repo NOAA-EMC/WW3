@@ -1875,8 +1875,12 @@
                    VAold(:,JSEA), VA(:,JSEA),                        &
                    VSioDummy, VDioDummy, SHAVETOT(JSEA),  &
                    ALPHA(1:NK,JSEA), WN(1:NK,ISEA),               &
-                   CG(1:NK,ISEA), DW(ISEA), U10(ISEA),            &
-                   U10D(ISEA), AS(ISEA), UST(ISEA),               &
+                   CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),            &
+                   U10D(ISEA),                                    & 
+#ifdef W3_FLX5
+                   TAUA(ISEA), TAUADIR(ISEA),                  &
+#endif
+                   AS(ISEA), UST(ISEA),               &
                    USTDIR(ISEA), CX(ISEA), CY(ISEA),              &
                    ICE(ISEA), ICEH(ISEA), ICEF(ISEA),             &
                    ICEDMAX(ISEA),                                 &
@@ -2716,8 +2720,12 @@
                       VAOLD(:,JSEA), VA(:,JSEA),                  &
                       VSioDummy,VDioDummy,SHAVETOT(JSEA), &
                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                      CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
-                      U10D(ISEA), AS(ISEA), UST(ISEA),            &
+                      CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
+                      U10D(ISEA),                                 &
+#ifdef W3_FLX5
+                      TAUA(ISEA), TAUADIR(ISEA),                  &
+#endif
+                      AS(ISEA), UST(ISEA),                        &
                       USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
                       ICEDMAX(ISEA),                              &
@@ -2738,7 +2746,7 @@
                             VAoldDummy, VA(:,JSEA),                     &
                             VSioDummy, VDioDummy, SHAVETOTioDummy,      &
                             ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                            CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
+                            CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),         &
                             U10D(ISEA),                                 &
 #ifdef W3_FLX5
                             TAUA(ISEA), TAUADIR(ISEA),                  &

@@ -903,13 +903,13 @@
 #ifdef W3_PR3
       REAL                    :: WDTHCG, WDTHTH
 #endif
-           LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
-           LOGICAL :: JGS_TERMINATE_DIFFERENCE = .TRUE.
-           LOGICAL :: JGS_TERMINATE_NORM = .TRUE.
-           LOGICAL :: JGS_LIMITER = .FALSE.
-           LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
-           LOGICAL :: JGS_USE_JACOBI = .TRUE.
-           LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
+           LOGICAL :: JGS_TERMINATE_MAXITER    =  .TRUE.
+           LOGICAL :: JGS_TERMINATE_DIFFERENCE =  .TRUE.
+           LOGICAL :: JGS_TERMINATE_NORM       = .FALSE.
+           LOGICAL :: JGS_LIMITER              = .FALSE.
+           LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL   = .TRUE.
+           LOGICAL :: JGS_USE_JACOBI           = .TRUE.
+           LOGICAL :: JGS_SOURCE_NONLINEAR     = .FALSE.
            LOGICAL :: UGOBCAUTO = .FALSE.
            LOGICAL :: UGBCCFL   = .FALSE.
            LOGICAL :: EXPFSN    = .TRUE.
@@ -924,13 +924,13 @@
            LOGICAL :: SETUP_APPLY_WLV = .FALSE.
            INTEGER :: JGS_MAXITER=100
            INTEGER :: nbSel
-           INTEGER :: UNSTSCHEMES(4)
+           INTEGER :: UNSTSCHEMES(6)
            INTEGER :: UNSTSCHEME
            INTEGER :: JGS_NLEVEL = 0
            REAL*8  :: JGS_PMIN = 0.
            REAL*8  :: JGS_DIFF_THR = 1.E-10
-           REAL*8  :: JGS_NORM_THR = 1.E-20
-           REAL*8  :: SOLVERTHR_SETUP = 1.E-20
+           REAL*8  :: JGS_NORM_THR = 1.E-12
+           REAL*8  :: SOLVERTHR_SETUP = 1.E-12
            REAL*8  :: CRIT_DEP_SETUP = 0.
 !
            CHARACTER               :: UGOBCFILE*60
@@ -2415,17 +2415,17 @@
 !
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
-       UGOBCAUTO = .TRUE.
-       UGBCCFL = .TRUE.
-       UGOBCDEPTH= -10.
-       UGOBCOK = .FALSE.
-       UGOBCFILE = 'unset'
-       EXPFSN    = .TRUE.
-       EXPFSPSI  = .FALSE.
-       EXPFSFCT  = .FALSE.
-       IMPFSN    = .FALSE.
-       IMPTOTAL  = .FALSE.
-       EXPTOTAL  = .FALSE. 
+       UGOBCAUTO  = .TRUE.
+       UGBCCFL    = .FALSE.
+       UGOBCDEPTH = -10.
+       UGOBCOK    = .FALSE.
+       UGOBCFILE  = 'unset'
+       EXPFSN     = .FALSE.
+       EXPFSPSI   = .FALSE.
+       EXPFSFCT   = .FALSE.
+       IMPFSN     = .FALSE.
+       IMPTOTAL   = .FALSE.
+       EXPTOTAL   = .FALSE. 
        IMPREFRACTION = .FALSE.
        IMPFREQSHIFT = .FALSE.
        IMPSOURCE = .FALSE.
@@ -2460,33 +2460,25 @@
        B_JGS_NLEVEL = JGS_NLEVEL
        B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
 
-       IF ((EXPFSN .eqv. .FALSE.).and.(EXPFSPSI .eqv. .FALSE.)     &
-           .and.(EXPFSFCT .eqv. .FALSE.)                           &
-           .and.(IMPFSN .eqv. .FALSE.)                             &
-           .and.(EXPTOTAL .eqv. .FALSE.)                           &
-           .and.(IMPTOTAL .eqv. .FALSE.)) THEN
-         EXPFSN=.TRUE. ! This is the default scheme ...
-       END IF
        nbSel=0
 
-       IF (EXPFSN) nbSel=nbSel+1
-       IF (EXPFSPSI) nbSel=nbSel+1
-       IF (EXPFSFCT) nbSel=nbSel+1
-       IF (IMPFSN) nbSel=nbSel+1
-       IF (IMPTOTAL) nbSel=nbSel+1
-       IF (EXPTOTAL) nbSel=nbSel+1
+       IF (EXPFSN)   nbSel = nbSel+1
+       IF (EXPFSPSI) nbSel = nbSel+1
+       IF (EXPFSFCT) nbSel = nbSel+1
+       IF (IMPFSN)   nbSel = nbSel+1
+       IF (IMPTOTAL) nbSel = nbSel+1
+       IF (EXPTOTAL) nbSel = nbSel+1
 
        IF (GTYPE .EQ. UNGTYPE) THEN
          IF (nbSel .ne. 1) THEN
            WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN WW3_GRID:'
            IF (nbSel .gt. 1) THEN
-             WRITE (NDSE,*) 'More than one scheme selected'
+             WRITE (*,*) 'MORE THAN ONE UNSTRUCTURED SCHEME SELECTED'
+             CALL EXTCDE ( 19 )
            ELSE IF (nbSel .eq. 0) THEN
-             WRITE (NDSE,*) 'no scheme selected'
+             WRITE (*,*) 'NOTHING SELECTED FROM THE UNSTRUCTURED PART'
+             CALL EXTCDE ( 19 )
            END IF
-           WRITE (NDSE,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
-           WRITE (NDSE,*)'IMPFSN, IMPTOTAL'
-           CALL EXTCDE ( 30 )
          END IF
        END IF
 !
@@ -3316,7 +3308,7 @@
           WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 #endif
 !
-        WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
+               WRITE (NDSO,*) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,UGOBCFILE, &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
                           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
                           IMPSOURCE, SETUP_APPLY_WLV,                 &
@@ -3613,13 +3605,24 @@
 !
       DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-        UNSTSCHEMES(:)=0
-        IF (EXPFSN)   UNSTSCHEMES(1)=1
-        IF (EXPFSPSI) UNSTSCHEMES(2)=1
-        IF (EXPFSFCT) UNSTSCHEMES(3)=1
-        IF (IMPFSN)   UNSTSCHEMES(4)=1
+        UNSTSCHEMES = 0
+        IF (EXPFSN)   UNSTSCHEMES(1) = 1
+        IF (EXPFSPSI) UNSTSCHEMES(2) = 1
+        IF (EXPFSFCT) UNSTSCHEMES(3) = 1
+        IF (IMPFSN)   UNSTSCHEMES(4) = 1
+        IF (IMPTOTAL) UNSTSCHEMES(5) = 1
+        IF (EXPTOTAL) UNSTSCHEMES(6) = 1
+
+        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
+          WRITE(*,*) 'NO UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
+          WRITE(*,*) 'MORE THAN ONE UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ENDIF 
+
         UNSTSCHEME=-1
-        DO IX=1,4
+        DO IX=1,6
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
             UNSTSCHEME=IX
             EXIT
@@ -3630,27 +3633,27 @@
         SELECT CASE (UNSTSCHEME)
         CASE (1) 
           FSN = EXPFSN
-          PNAME2 = 'N Explicit (Fluctuation Splitting) '
+          PNAME2 = 'N Explicit'
         CASE (2) 
           FSPSI = EXPFSPSI
-          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
+          PNAME2 = 'PSI Explicit'
         CASE (3) 
           FSFCT = EXPFSFCT
-          PNAME2 = ' Flux Corrected Transport Explicit'
+          PNAME2 = 'Flux Corrected Transport Explicit'
         CASE (4) 
           FSNIMP = IMPFSN 
-          PNAME2 = 'N Implicit (Fluctuation Splitting) '
-          END SELECT
+          PNAME2 = 'N Implicit fractional step'
+        END SELECT
 !
         IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
-        WRITE (NDSO,2951) PNAME2
         IF (IMPTOTAL) THEN
           FSTOTALIMP = IMPTOTAL
           PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
         END IF
         IF (EXPTOTAL) THEN
           FSTOTALEXP = EXPTOTAL 
-          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
+          PNAME2 = 'N Block Explicit'
+          WRITE (NDSO,2951) PNAME2
         END IF
         IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
           FSREFRACTION = .TRUE.
@@ -3995,8 +3998,8 @@
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
-        OBSX(:,:)=0.
-        OBSY(:,:)=0.
+        OBSX(:,:) = 0.
+        OBSY(:,:) = 0.
 
       END IF
 !
@@ -4946,9 +4949,12 @@
             YGRD(IY,IX) = YGRDIN(IX,IY)
             END DO
           END DO
-          DEALLOCATE ( XGRDIN, YGRDIN )   
-          CALL W3GNTX ( 1, 6, 6 )  
-      ELSE 
+          DEALLOCATE ( XGRDIN, YGRDIN )
+          CALL W3GNTX ( 1, 6, 6 )
+      ELSE
+
+!
+!AR: This is already done in readmsh
       END IF   ! GTYPE
 !      
 #ifdef W3_SMC
@@ -5033,7 +5039,7 @@
         END DO
         FLUSH(740)
 #endif
-!
+
 #ifdef W3_SMC
  !!Li SMC grid definition of mapping arrays.
       ELSE 
@@ -5464,7 +5470,12 @@
 ! AR: this is not anymore needed and will be deleted ...
 !
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        CALL SETUGIOBP 
+        !WRITE(*,*) MAPSTA
+        !WRITE(*,*) '-----------------------'
+        !WRITE(*,*) TMPSTA 
+        !STOP
+        CALL SET_UG_IOBP 
+
 #ifdef W3_REF1
       ELSE
         CALL W3SETREF
