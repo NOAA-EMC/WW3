@@ -561,7 +561,7 @@ then
     fi
 
     # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -689,7 +689,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -824,7 +824,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -959,7 +959,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -1097,7 +1097,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1269,7 +1269,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1418,7 +1418,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1618,7 +1618,7 @@ then
     ofile="$path_w/$prog.out"
   
 # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -1809,7 +1809,7 @@ then
     fi
 
 # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -1992,7 +1992,7 @@ do
          ifile=`( ls ${path_i}/${prog}${gu}.??? )`
 
 # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $path_i/$prog${gu}.nml $prog.nml
@@ -2050,7 +2050,7 @@ do
         do
 
 # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $ifile $prog.nml
@@ -2275,7 +2275,7 @@ do
         do
     
           # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $ifile $prog.nml
@@ -2450,7 +2450,7 @@ do
         fi
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -2583,7 +2583,7 @@ then
 
 
 # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -2721,7 +2721,7 @@ then
     fi
   
 # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
