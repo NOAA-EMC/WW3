@@ -252,7 +252,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
-  TYPE%RESTART%EXTRA       = 'CHA RHO'
+  TYPE%RESTART%EXTRA       = 'CHA'
 /
 
 ! -------------------------------------------------------------------- !
