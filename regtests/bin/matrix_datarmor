@@ -108,9 +108,9 @@
 # Compile option
   if [ "$cmplOption" = 'y' ]
   then
-     export opt="-o both -f -c $cmplr -N -S -T"
+     export opt="-o all -N -f -c $cmplr -S -T"
   else
-     export opt="-o both -f -N -S -T"
+     export opt="-o all -N -f -S -T"
   fi
 
 # Base run_test command line

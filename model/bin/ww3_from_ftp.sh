@@ -5,28 +5,56 @@
 #                                                    Created 0ct 10, 2017     #
 # --------------------------------------------------------------------------- #
 
+usage()
+{
+    echo ''
+    echo ' Usage : ./ww3_from_ftp.sh [options]'
+    echo ''
+    echo ' Options : '
+    echo '           -h : print usage'
+    echo '           -i : interactive mode'
+    echo '           -k : keep tar files'
+    echo ''
+}
+
 curr_dir=`pwd`
 
 # Set WW3 code version
 ww3ver=v7.12.6
 
-interactive='y'
-if [ $# -eq 3 ] ; then
-  interactive='n'
-  ww3dir=$1  # [ '../../']
-  wnew=$2    # ['y']
-  wnew2=$3   # ['y']
+interactive='n'
+keep='n'
+if [ $# -eq 1 ] ; then
+  if [ "$1" = "-h" ] ; then
+    usage
+    exit 0
+  elif [ "$1" = "-i" ] ; then
+    interactive='y'
+  elif [ "$1" = "-k" ] ; then
+    keep='y'
+  else
+    echo '[ERROR] input argument not recognized'
+    usage
+    exit 1
+  fi
+elif [ $# -gt 1 ] ; then
+  echo '[ERROR] only one input argument accepted'
+  usage
+  exit 1
 fi
 
+dir0=$(cd $(dirname $0) > /dev/null && pwd -P)
+ww3dir=$(dirname $(dirname $dir0))
+ 
 #Get top level directory of ww3 from user: 
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
-echo -e "Enter the relative path to the main/top level directory, this would "
-echo -e "be '../../' if in the model/bin directory or '.' if already in the "
-echo -e "top/main directory:"
 if [ "$interactive" = "n" ]
 then
   echo $ww3dir
 else
+echo -e "Enter the absolute or relative path to the main/top directory, "
+echo -e "this would be '../../' if in the model/bin directory "
+echo -e "or './' if already in the top/main directory:"
   read ww3dir 
 fi
 
@@ -83,11 +111,11 @@ cp -r data_regtests/ww3_ufs1.3/input/*nc   regtests/ww3_ufs1.3/input/
 echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "
 if [ "$interactive" = "n" ]
 then
-  echo $wnew
+  echo $keep
 else
-  read wnew
+  read keep
 fi
-if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
+if [ "${keep}" = "N" ] || [ "${keep}" = "n" ]
 then
   echo -e '\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz'
   rm ww3_from_ftp.${ww3ver}.tar.gz
@@ -99,11 +127,11 @@ echo -e "\n\n Files were copied from the data_regtests to the regtests folder."
 echo -e "Do you want to delete the data_regtests folder? [y|n]: "
 if [ "$interactive" = "n" ]
 then
-  echo $wnew2
+  echo $keep
 else
-  read wnew2
+  read keep
 fi
-if [ "${wnew2}" = "Y" ] || [ "${wnew2}" = "y" ]
+if [ "${keep}" = "N" ] || [ "${keep}" = "n" ]
 then
   echo -e '\n Deleting the data_regtests folder'
   rm -rf data_regtests
