@@ -60,6 +60,7 @@
 !     INPUT%ASSIM%SPEC2D          = 'F'
 ! -------------------------------------------------------------------- !
 &INPUT_NML
+  INPUT%FORCING%ICE_CONC      = 'C'
   INPUT%FORCING%ICE_PARAM1    = 'C'
   INPUT%FORCING%ICE_PARAM5    = 'C'
 /
