@@ -443,17 +443,19 @@ contains
     ! Set up data structures
     !--------------------------------------------------------------------
 
-    call w3nmod ( 1, 6, 6 )
-    call w3ndat (    6, 6 )
-    call w3naux (    6, 6 )
-    call w3nout (    6, 6 )
-    call w3ninp (    6, 6 )
+    if (.not. multigrid) then
+       call w3nmod ( 1, 6, 6 )
+       call w3ndat (    6, 6 )
+       call w3naux (    6, 6 )
+       call w3nout (    6, 6 )
+       call w3ninp (    6, 6 )
 
-    call w3setg ( 1, 6, 6 )
-    call w3setw ( 1, 6, 6 )
-    call w3seta ( 1, 6, 6 )
-    call w3seto ( 1, 6, 6 )
-    call w3seti ( 1, 6, 6 )
+       call w3setg ( 1, 6, 6 )
+       call w3setw ( 1, 6, 6 )
+       call w3seta ( 1, 6, 6 )
+       call w3seto ( 1, 6, 6 )
+       call w3seti ( 1, 6, 6 )
+    end if
 
     !----------------------------------------------------------------------------
     ! Generate local mpi comm
