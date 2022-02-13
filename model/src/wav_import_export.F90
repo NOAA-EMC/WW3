@@ -495,6 +495,7 @@ contains
 #ifdef W3_MPI
                 if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
 #endif
+                !TODO: when is this active? jmod = -999
                 jmod = inpmap(imod,j)
                 if ( jmod.lt.0 .and. jmod.ne.-999 ) then
                   call wmupd2( imod, j, jmod, rc )

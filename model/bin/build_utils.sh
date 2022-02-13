@@ -832,13 +832,15 @@ create_file_list()
                  core='wav_kind_mod wav_shr_mod wav_shel_inp wav_comp_nuopc wav_import_export'
                fi
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
+               core="$core wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd"
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop="$pr $smcm"
             sourcet="$pdlibcode $setupcode w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic"
             sourcet="$sourcet $is $db $tr $bs $refcode $igcode w3parall $uostmd"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $oasismd $agcmmd $ogcmmd $igcmmd"
-                 IO="$IO w3iosfmd w3partmd"
+                 IO="$IO w3iosfmd w3partmd wmiopomd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="$aux wmunitmd w3nmlmultimd"
                 aux="$aux w3nmlshelmd $pdlibyow" ;;
       ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]
