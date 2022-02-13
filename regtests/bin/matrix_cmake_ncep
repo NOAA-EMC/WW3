@@ -49,6 +49,17 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   cmplr=intel
   export cmplOption='y'
 
+  #Module Versions from HPC-Stack that are common for all platforms 
+  modnetcdf='netcdf/4.7.4'
+  modjasper='jasper/2.0.25'
+  modzlib='zlib/1.2.11'
+  modpng='png/1.6.35'
+  modhdf5='hdf5/1.10.6'
+  modbacio='bacio/2.4.1'
+  modg2='g2/3.4.2'
+  modw3nco='w3nco/2.4.1'
+  modesmf='esmf/8_2_0'
+
 # Set batchq queue, choose modules and other custom variables to fit system and 
 # to define headers etc (default to original version if empty)
   ishera=`hostname | grep hfe`
@@ -62,16 +73,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
     hpcstackversion='hpc/1.1.0'
     modcomp='hpc-intel/18.0.5.274'
     modmpi='hpc-impi/2018.0.4'
-    modnetcdf='netcdf/4.7.4'
     metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-    modjasper='jasper/2.0.25'
-    modzlib='zlib/1.2.11'
-    modpng='png/1.6.35'
-    modhdf5='hdf5/1.10.6'
-    modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
-    modw3nco='w3nco/2.4.1'
-    modesmf='esmf/8_1_1'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
@@ -81,17 +83,8 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
     hpcstackversion='hpc/1.1.0'
     modcomp='hpc-intel/2018.4'
     modmpi='hpc-impi/2018.4'
-    modnetcdf='netcdf/4.7.4'
     metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
-    modjasper='jasper/2.0.25'
-    modzlib='zlib/1.2.11'
-    modpng='png/1.6.35'
-    modhdf5='hdf5/1.10.6'
-    modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
-    modw3nco='w3nco/2.4.1'
-    modesmf='esmf/8_1_1'
-    modcmake='cmake/3.18.1'
+    modcmake='cmake/3.22.1'
   else
     batchq=
   fi
