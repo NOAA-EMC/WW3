@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # matrix.comp Compare output of matrix for two model versions.                #
 #                                                                             #
@@ -111,13 +111,7 @@
 # 3.  Looping over work directories                                           #
 # --------------------------------------------------------------------------- #
 
-        cases=$(find . -maxdepth 1 -type d -name "work*" | grep -v work_oasis)
-        # skip to next tst if no work directory
-        echo 'run : ' $cases
-        if [ -z "$cases" ] ; then 
-          echo "skip"
-          continue
-        fi
+        cases=$(find . -maxdepth 1 -type d -name "work*" )
 
         for run in $cases
         do
