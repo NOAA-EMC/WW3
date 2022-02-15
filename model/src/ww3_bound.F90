@@ -131,43 +131,93 @@
 !/
       TYPE(NML_BOUND_T)       :: NML_BOUND
 !
-      INTEGER                 :: TIME1(2),TIME2(2)
-      INTEGER                 :: IX, IY, ISEA, I,JJ,IP,IP1,J,K,ITIME,        &
-                                 NDSI,NDSM, NDSI2,NDSS,NDSB, NDSTRC, NTRACE, &
-                                 NK1,NTH1,NSPEC1, NBI, NBI2,                 &
-                                 NKI, NTHI, NBO, NBO2, IERR, INTERP, ILOOP,  &
-                                 IFMIN, IFMIN2, IFMAX, VERBOSE, NDSL
+      INTEGER                 :: TIME1(2)      !< initial time
+      INTEGER                 :: TIME2(2)      !< next time
+      INTEGER                 :: IX            !< x index
+      INTEGER                 :: IY            !< y index
+      INTEGER                 :: ISEA          !< isea index
+      INTEGER                 :: I             !< i index
+      INTEGER                 :: JJ            !< jj index
+      INTEGER                 :: IP            !< boundary index
+      INTEGER                 :: IP1           !< boundary index
+      INTEGER                 :: J             !< j index
+      INTEGER                 :: K             !< k index
+      INTEGER                 :: ITIME         !< time index
+      INTEGER                 :: NDSI          !< input file unit
+      INTEGER                 :: NDSM          !< mod_def file unit
+      INTEGER                 :: NDSI2         !< tmp input file unit
+      INTEGER                 :: NDSS          !< scratch file unit
+      INTEGER                 :: NDSB          !< nest file unit
+      INTEGER                 :: NDSTRC        !< trace file unit
+      INTEGER                 :: NTRACE        !< trace file unit
+      INTEGER                 :: NK1           !< frequency bins number 
+      INTEGER                 :: NTH1          !< direction bins number
+      INTEGER                 :: NSPEC1        !< spectral bins number
+      INTEGER                 :: NBI           !< number of input boundary points
+      INTEGER                 :: NBI2          !< number of input boundary points
+      INTEGER                 :: NKI           !< frequency bins number from input spec file
+      INTEGER                 :: NTHI          !< direction bins number from input spec file
+      INTEGER                 :: NBO           !< number of boundary outputs
+      INTEGER                 :: NBO2          !< number of boundary outputs
+      INTEGER                 :: IERR          !< error flag
+      INTEGER                 :: INTERP        !< interpolation method
+      INTEGER                 :: ILOOP         !< loop indice
+      INTEGER                 :: IFMIN         !< min freq value from input spec file
+      INTEGER                 :: IFMIN2        !< min freq value for output spectra
+      INTEGER                 :: IFMAX         !< max freq value from input spec file
+      INTEGER                 :: VERBOSE       !< verbose flag
+      INTEGER                 :: NDSL          !< input spec listing file unit
 #ifdef W3_S
-      INTEGER, SAVE           :: IENT = 0
+      INTEGER, SAVE           :: IENT = 0      !< strace flag
 #endif
-      INTEGER                    :: IBO
-      INTEGER,  ALLOCATABLE :: IPBPI(:,:),   IPBPO(:,:)
+      INTEGER                 :: IBO           !< indice of boundary output
+      INTEGER,  ALLOCATABLE   :: IPBPI(:,:)    !< interp. data input bound. point 
+      INTEGER,  ALLOCATABLE   :: IPBPO(:,:)    !< interp. data output bound. point
 !
-      REAL                       :: FR1I, TH1I
-      REAL                       :: depth,U10,Udir,Curr,Currdir, &
-                                    DMIN, DIST, DMIN2, COS1 !, COS2
+      REAL                    :: FR1I          !< first freq from mod_def
+      REAL                    :: TH1I          !< first dir. from mod_def
+      REAL                    :: depth         !< depth from input spec
+      REAL                    :: U10           !< wind speed from input spec
+      REAL                    :: Udir          !< wind dir. from input spec
+      REAL                    :: Curr          !< cur. speed from input spec
+      REAL                    :: Currdir       !< cur. dir. from input spec
+      REAL                    :: DMIN          !< min. dist from grid point to spec
+      REAL                    :: DIST          !< dist from grid point to spec
+      REAL                    :: DMIN2         !< second min. dist from grid point to spec
+      REAL                    :: COS1          !< cosine for linear interpolation
 !
-      REAL, DIMENSION(:), ALLOCATABLE   :: LATS, LONS
-      REAL, DIMENSION(:,:), ALLOCATABLE :: SPEC2D
-      REAL, DIMENSION(:), ALLOCATABLE   :: FREQ, THETA
-      REAL, ALLOCATABLE          :: XBPI(:), YBPI(:), RDBPI(:,:),        &
-                                    XBPO(:), YBPO(:), RDBPO(:,:),        &
-                                    ABPIN(:,:) 
+      REAL, ALLOCATABLE       :: LATS(:)       !< latitude coordinates of spec
+      REAL, ALLOCATABLE       :: LONS(:)       !< longitude coordiantes of spec
+      REAL, ALLOCATABLE       :: SPEC2D(:,:)   !< spectrum from input spec
+      REAL, ALLOCATABLE       :: FREQ(:)       !< frequency array from input spec
+      REAL, ALLOCATABLE       :: THETA(:)      !< direction array from input spec
+      REAL, ALLOCATABLE       :: XBPI(:)       !< x position of input boundary
+      REAL, ALLOCATABLE       :: YBPI(:)       !< y position of input boundary
+      REAL, ALLOCATABLE       :: RDBPI(:,:)    !< interpolation factor input boundray point
+      REAL, ALLOCATABLE       :: XBPO(:)       !< x position of output bound. point
+      REAL, ALLOCATABLE       :: YBPO(:)       !< y position of output bound. point
+      REAL, ALLOCATABLE       :: RDBPO(:,:)    !< interp. factor output bound. point
+      REAL, ALLOCATABLE       :: ABPIN(:,:)    !< intepolated spectrum
 #ifdef W3_RTD
-      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
-      LOGICAL               :: ISRTD
+      REAL, ALLOCATABLE       :: XTMP(:)       !< temporary x position
+      REAL, ALLOCATABLE       :: YTMP(:)       !< temporary y position
+      REAL, ALLOCATABLE       :: ANGTMP(:)     !< temporary angle
+      LOGICAL                 :: ISRTD         !< rotated grid flag
 #endif
-      CHARACTER                  :: COMSTR*1, LINE*80, BNDFILE*128
-      CHARACTER*5                :: INXOUT
-      CHARACTER*10               :: VERTEST  ! = '2018-03-01'
-      CHARACTER*32               :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
-      CHARACTER*120              :: FILENAME
-      CHARACTER(120)             :: string1,buoyname
-      CHARACTER                  :: space
+      CHARACTER               :: COMSTR        !< comment character
+      CHARACTER(LEN=80)       :: LINE          !< input file line
+      CHARACTER(LEN=128)      :: BNDFILE       !< input boundary file name
+      CHARACTER(LEN=5)        :: INXOUT        !< read/write mode
+      CHARACTER(LEN=10)       :: VERTEST       !< date of last nest.ww3 change
+      CHARACTER(LEN=32)       :: IDTST         !< 'WAVEWATCH III BOUNDARY DATA FILE'
+      CHARACTER(LEN=120)      :: FILENAME      !< input boundary file name
+      CHARACTER(LEN=120)      :: string1       !< temporary string
+      CHARACTER(LEN=120)      :: buoyname      !< input boundary point name
+      CHARACTER               :: space         !< space character
 !
-      CHARACTER*120, ALLOCATABLE :: SPECFILES(:)
+      CHARACTER(LEN=120), ALLOCATABLE :: SPECFILES(:)  !< list of input boundary points file names
 !
-      LOGICAL                    :: FLGNML
+      LOGICAL                  :: FLGNML       !< flag for namelist use
 !/
 !/ ------------------------------------------------------------------- /
 
@@ -548,21 +598,21 @@
             IF(DIST.LT.DMIN) THEN 
               IPBPO(IP1,1)=IP
               DMIN=DIST
-              END IF
+            END IF
           ELSE
             IF(DIST.LT.DMIN2) THEN 
               IF(DIST.LT.DMIN) THEN 
-             IPBPO(IP1,2)=IPBPO(IP1,1)
-             DMIN2=DMIN
+                IPBPO(IP1,2)=IPBPO(IP1,1)
+                DMIN2=DMIN
                 IPBPO(IP1,1)=IP
-             DMIN=DIST
-           ELSE
+                DMIN=DIST
+              ELSE
                 IPBPO(IP1,2)=IP
-             DMIN2=DIST
-                END IF
-                 ENDIF
-            END IF
-          END DO
+                DMIN2=DIST
+              END IF
+            ENDIF
+          END IF
+        END DO
          !IF (VERBOSE.EQ.1)  WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
          !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
          !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
