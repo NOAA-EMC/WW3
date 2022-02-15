@@ -469,8 +469,7 @@ fi
 
 # 3.b2 Preprocess cdl files into nc files ----------------------------------- #
 
-filescdl=$path_i/*.cdl
-for f in $filescdl
+for f in $(find $path_i/ -type f -name "*.cdl")
 do
   echo "Converting $f to NetCDF"
   # take action on each file.  Note that converted file is in $path_w
