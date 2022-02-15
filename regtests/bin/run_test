@@ -2090,6 +2090,7 @@ do
           then
             \rm -f $prog.inp
             \rm -f $prog.nml
+            \rm -f ounfmeta.inp
             if [ $multi -eq 2 ]
             then
               \rm -f mod_def.ww3
