@@ -159,7 +159,7 @@
       INTEGER                 :: NTHI          !< direction bins number from input spec file
       INTEGER                 :: NBO           !< number of boundary outputs
       INTEGER                 :: NBO2          !< number of boundary outputs
-      INTEGER                 :: IERR          !< error flag
+      INTEGER                 :: IERR          !< error code
       INTEGER                 :: INTERP        !< interpolation method
       INTEGER                 :: ILOOP         !< loop indice
       INTEGER                 :: IFMIN         !< min freq value from input spec file
@@ -168,7 +168,7 @@
       INTEGER                 :: VERBOSE       !< verbose flag
       INTEGER                 :: NDSL          !< input spec listing file unit
 #ifdef W3_S
-      INTEGER, SAVE           :: IENT = 0      !< strace flag
+      INTEGER, SAVE           :: IENT = 0      !< strace error code
 #endif
       INTEGER                 :: IBO           !< indice of boundary output
       INTEGER,  ALLOCATABLE   :: IPBPI(:,:)    !< interp. data input bound. point 

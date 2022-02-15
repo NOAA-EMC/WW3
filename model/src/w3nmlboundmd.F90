@@ -25,16 +25,16 @@
 
   ! bound structure
   TYPE NML_BOUND_T
-    CHARACTER(5)                :: MODE
-    INTEGER                     :: INTERP
-    INTEGER                     :: VERBOSE
-    CHARACTER(128)              :: FILE
+    CHARACTER(5)                :: MODE      !< read/write mode
+    INTEGER                     :: INTERP    !< interpolation mode
+    INTEGER                     :: VERBOSE   !< verbose flag
+    CHARACTER(128)              :: FILE      !< listing spec file unit
   END TYPE NML_BOUND_T
 
 
   ! miscellaneous
-  CHARACTER(256)                :: MSG
-  INTEGER                       :: NDSN
+  CHARACTER(256)                :: MSG      !< report message
+  INTEGER                       :: NDSN     !< namelist file unit
 
 
 
@@ -106,11 +106,11 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(IN)                         :: NDSI
-    CHARACTER*(*), INTENT(IN)                   :: INFILE
-    TYPE(NML_BOUND_T), INTENT(INOUT)            :: NML_BOUND
-    INTEGER, INTENT(OUT)                        :: IERR
-!/S      INTEGER, SAVE                             :: IENT = 0
+    INTEGER, INTENT(IN)                         :: NDSI       !< input file unit
+    CHARACTER*(*), INTENT(IN)                   :: INFILE     !< input file name
+    TYPE(NML_BOUND_T), INTENT(INOUT)            :: NML_BOUND  !< bound structure
+    INTEGER, INTENT(OUT)                        :: IERR       !< error code
+!/S      INTEGER, SAVE                             :: IENT = 0   !< strace error code
 
     IERR = 0
 !/S      CALL STRACE (IENT, 'W3NMLBOUND')
@@ -211,14 +211,14 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(IN)                 :: NDSI
-    TYPE(NML_BOUND_T), INTENT(INOUT)    :: NML_BOUND
+    INTEGER, INTENT(IN)                 :: NDSI        !< namelist file unit
+    TYPE(NML_BOUND_T), INTENT(INOUT)    :: NML_BOUND   !< bound structure
 
     ! locals
-    INTEGER                   :: IERR
-    TYPE(NML_BOUND_T) :: BOUND
-    NAMELIST /BOUND_NML/ BOUND
-!/S      INTEGER, SAVE                           :: IENT = 0
+    INTEGER                   :: IERR                  !< error code
+    TYPE(NML_BOUND_T) :: BOUND                         !< bound structure
+    NAMELIST /BOUND_NML/ BOUND                         !< boudn namelist
+!/S      INTEGER, SAVE                           :: IENT = 0       !< strace error code
 
     IERR = 0
 !/S      CALL STRACE (IENT, 'READ_BOUND_NML')
@@ -313,8 +313,8 @@
 
     IMPLICIT NONE
 
-    TYPE(NML_BOUND_T), INTENT(IN) :: NML_BOUND
-!/S      INTEGER, SAVE                           :: IENT = 0
+    TYPE(NML_BOUND_T), INTENT(IN) :: NML_BOUND                  !< bound structure
+!/S      INTEGER, SAVE                           :: IENT = 0            ! strace error code
 
 !/S      CALL STRACE (IENT, 'REPORT_BOUND_NML')
 
