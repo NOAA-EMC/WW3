@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Jul-2020 |
+!/                  | Last update :         27-May-2021 |
 !/                  +-----------------------------------+
 !/
 !/    28-Aug-2012 : adaptation from SHOM/Ifremer code   ( version 4.08 )
@@ -14,6 +14,7 @@
 !/    20-Oct-2016 : Error statement updates             ( version 5.15 ) 
 !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
 !/                                  Chris Bunney, UKMO.
+!/    27-May-2021 : Add namelist feature                ( version 7.XX )
 !/
 !/    Copyright 2012-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -36,7 +37,7 @@
 !
 !     Local parameters.
 !     ----------------------------------------------------------------
-!       NDSI    Int.  Input unit number ("ww3_assm.inp").
+!       NDSI    Int.  Input unit number ("ww3_bound.inp").
 !       ITYPE   Int.  Type of data
 !     ----------------------------------------------------------------
 !
@@ -106,10 +107,11 @@
 #ifdef W3_RTD
       USE W3GDATMD, ONLY : POLAT, POLON
 #endif
-      USE W3ODATMD, ONLY: NDSO, NDSE
+      USE W3ODATMD, ONLY: NDSO, NDSE, FNMPRE
       USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3TIMEMD
+      USE W3NMLBOUNDMD
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
 #ifdef W3_RTD
      USE W3SERVMD, ONLY: W3EQTOLL
@@ -127,41 +129,95 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER        :: TIME1(2),TIME2(2)
-      CHARACTER               :: COMSTR*1, LINE*80
-      CHARACTER*5   :: INXOUT
-      CHARACTER*10  :: VERTEST  ! = '2018-03-01'
-      CHARACTER*32  :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
-      CHARACTER*120,     ALLOCATABLE  :: SPECFILES(:)
-      CHARACTER*120 :: FILENAME
-
-      INTEGER   IX, IY, ISEA, I,JJ,IP,IP1,J,K,ITIME,          &
-                NDSI,NDSM, NDSI2,NDSS,NDSB, NDSTRC, NTRACE, &
-                NK1,NTH1,NSPEC1, NBI, NBI2,           &
-                NKI, NTHI, NBO, NBO2, IERR, INTERP, ILOOP, &
-               IFMIN, IFMIN2, IFMAX, VERBOSE
+      TYPE(NML_BOUND_T)       :: NML_BOUND
+!
+      INTEGER                 :: TIME1(2)      !< initial time
+      INTEGER                 :: TIME2(2)      !< next time
+      INTEGER                 :: IX            !< x index
+      INTEGER                 :: IY            !< y index
+      INTEGER                 :: ISEA          !< isea index
+      INTEGER                 :: I             !< i index
+      INTEGER                 :: JJ            !< jj index
+      INTEGER                 :: IP            !< boundary index
+      INTEGER                 :: IP1           !< boundary index
+      INTEGER                 :: J             !< j index
+      INTEGER                 :: K             !< k index
+      INTEGER                 :: ITIME         !< time index
+      INTEGER                 :: NDSI          !< input file unit
+      INTEGER                 :: NDSM          !< mod_def file unit
+      INTEGER                 :: NDSI2         !< tmp input file unit
+      INTEGER                 :: NDSS          !< scratch file unit
+      INTEGER                 :: NDSB          !< nest file unit
+      INTEGER                 :: NDSTRC        !< trace file unit
+      INTEGER                 :: NTRACE        !< trace file unit
+      INTEGER                 :: NK1           !< frequency bins number 
+      INTEGER                 :: NTH1          !< direction bins number
+      INTEGER                 :: NSPEC1        !< spectral bins number
+      INTEGER                 :: NBI           !< number of input boundary points
+      INTEGER                 :: NBI2          !< number of input boundary points
+      INTEGER                 :: NKI           !< frequency bins number from input spec file
+      INTEGER                 :: NTHI          !< direction bins number from input spec file
+      INTEGER                 :: NBO           !< number of boundary outputs
+      INTEGER                 :: NBO2          !< number of boundary outputs
+      INTEGER                 :: IERR          !< error code
+      INTEGER                 :: INTERP        !< interpolation method
+      INTEGER                 :: ILOOP         !< loop indice
+      INTEGER                 :: IFMIN         !< min freq value from input spec file
+      INTEGER                 :: IFMIN2        !< min freq value for output spectra
+      INTEGER                 :: IFMAX         !< max freq value from input spec file
+      INTEGER                 :: VERBOSE       !< verbose flag
+      INTEGER                 :: NDSL          !< input spec listing file unit
 #ifdef W3_S
-      INTEGER, SAVE           :: IENT = 0
+      INTEGER, SAVE           :: IENT = 0      !< strace error code
 #endif
-      INTEGER     IBO
-      !REAL   , DIMENSION(:),     ALLOCATABLE :: SPEC
-      REAL   , DIMENSION(:),     ALLOCATABLE :: LATS, LONS
-      REAL   , DIMENSION(:,:),   ALLOCATABLE :: SPEC2D
-      REAL   , DIMENSION(:),     ALLOCATABLE :: FREQ, THETA
-      REAL   FR1I, TH1I
-      REAL, ALLOCATABLE     :: XBPI(:), YBPI(:), RDBPI(:,:),        &
-                               XBPO(:), YBPO(:), RDBPO(:,:),        &
-                               ABPIN(:,:) 
+      INTEGER                 :: IBO           !< indice of boundary output
+      INTEGER,  ALLOCATABLE   :: IPBPI(:,:)    !< interp. data input bound. point 
+      INTEGER,  ALLOCATABLE   :: IPBPO(:,:)    !< interp. data output bound. point
+!
+      REAL                    :: FR1I          !< first freq from mod_def
+      REAL                    :: TH1I          !< first dir. from mod_def
+      REAL                    :: depth         !< depth from input spec
+      REAL                    :: U10           !< wind speed from input spec
+      REAL                    :: Udir          !< wind dir. from input spec
+      REAL                    :: Curr          !< cur. speed from input spec
+      REAL                    :: Currdir       !< cur. dir. from input spec
+      REAL                    :: DMIN          !< min. dist from grid point to spec
+      REAL                    :: DIST          !< dist from grid point to spec
+      REAL                    :: DMIN2         !< second min. dist from grid point to spec
+      REAL                    :: COS1          !< cosine for linear interpolation
+!
+      REAL, ALLOCATABLE       :: LATS(:)       !< latitude coordinates of spec
+      REAL, ALLOCATABLE       :: LONS(:)       !< longitude coordiantes of spec
+      REAL, ALLOCATABLE       :: SPEC2D(:,:)   !< spectrum from input spec
+      REAL, ALLOCATABLE       :: FREQ(:)       !< frequency array from input spec
+      REAL, ALLOCATABLE       :: THETA(:)      !< direction array from input spec
+      REAL, ALLOCATABLE       :: XBPI(:)       !< x position of input boundary
+      REAL, ALLOCATABLE       :: YBPI(:)       !< y position of input boundary
+      REAL, ALLOCATABLE       :: RDBPI(:,:)    !< interpolation factor input boundray point
+      REAL, ALLOCATABLE       :: XBPO(:)       !< x position of output bound. point
+      REAL, ALLOCATABLE       :: YBPO(:)       !< y position of output bound. point
+      REAL, ALLOCATABLE       :: RDBPO(:,:)    !< interp. factor output bound. point
+      REAL, ALLOCATABLE       :: ABPIN(:,:)    !< intepolated spectrum
 #ifdef W3_RTD
-      REAL, ALLOCATABLE     :: XTMP(:), YTMP(:), ANGTMP(:)
-      LOGICAL               :: ISRTD
+      REAL, ALLOCATABLE       :: XTMP(:)       !< temporary x position
+      REAL, ALLOCATABLE       :: YTMP(:)       !< temporary y position
+      REAL, ALLOCATABLE       :: ANGTMP(:)     !< temporary angle
+      LOGICAL                 :: ISRTD         !< rotated grid flag
 #endif
-             
-      INTEGER,  ALLOCATABLE :: IPBPI(:,:),   IPBPO(:,:)
-
-      CHARACTER(120) string1,buoyname
-      CHARACTER space
-      REAL depth,U10,Udir,Curr,Currdir,DMIN, DIST, DMIN2, COS1 !, COS2
+      CHARACTER               :: COMSTR        !< comment character
+      CHARACTER(LEN=80)       :: LINE          !< input file line
+      CHARACTER(LEN=128)      :: BNDFILE       !< input boundary file name
+      CHARACTER(LEN=5)        :: INXOUT        !< read/write mode
+      CHARACTER(LEN=10)       :: VERTEST       !< date of last nest.ww3 change
+      CHARACTER(LEN=32)       :: IDTST         !< 'WAVEWATCH III BOUNDARY DATA FILE'
+      CHARACTER(LEN=120)      :: FILENAME      !< input boundary file name
+      CHARACTER(LEN=120)      :: string1       !< temporary string
+      CHARACTER(LEN=120)      :: buoyname      !< input boundary point name
+      CHARACTER               :: space         !< space character
+!
+      CHARACTER(LEN=120), ALLOCATABLE :: SPECFILES(:)  !< list of input boundary points file names
+!
+      LOGICAL                  :: FLGNML       !< flag for namelist use
 !/
 !/ ------------------------------------------------------------------- /
 
@@ -182,6 +238,7 @@
       NDSB   = 33
       NDSM   = 20
       NDSS   = 40
+      NDSL   = 50
 !
       NDSTRC =  6
       NTRACE = 10
@@ -206,60 +263,98 @@
 !
 ! 3. Read input file
 !
-      OPEN(NDSI,FILE='ww3_bound.inp',status='old')
-      READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
-      IF (COMSTR.EQ.' ') COMSTR = '$'
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) INXOUT
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) INTERP
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*) VERBOSE
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+! process ww3_bound namelist
 !
-      NBO2 = 0          
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_bound.nml", EXIST=FLGNML) 
+      IF (FLGNML) THEN
+        ! Read namelist
+        CALL W3NMLBOUND (NDSI, TRIM(FNMPRE)//'ww3_bound.nml', NML_BOUND, IERR)
+
+        INXOUT = NML_BOUND%MODE
+        INTERP = NML_BOUND%INTERP
+        VERBOSE = NML_BOUND%VERBOSE
+        BNDFILE = NML_BOUND%FILE
+
+        NBO2 = 0          
+        OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+        REWIND (NDSL)
+        DO
+          READ (NDSL,*,END=400,ERR=802)
+          NBO2 = NBO2 + 1
+        END DO
+        400 CONTINUE
+        ALLOCATE(SPECFILES(NBO2))
+        REWIND (NDSL)
+        DO I=1,NBO2
+          READ (NDSL,'(A120)',END=801,ERR=802) SPECFILES(I)
+        END DO
+        CLOSE(NDSL)
+
+      END IF ! FLGNML
+
 !
-!     ILOOP = 1 to count NBO2
-!     ILOOP = 2 to read the file names
+! process old ww3_bound.inp format
 !
-      DO ILOOP = 1, 2
-        OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED',          &
-              status='UNKNOWN')
-        IF ( ILOOP .EQ. 1 ) THEN
-          NDSI2 = NDSI
-        ELSE
-          NDSI2 = NDSS
-          ALLOCATE(SPECFILES(NBO2))
-          NBO2=0
+      IF (.NOT. FLGNML) THEN
+        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bound.inp',STATUS='OLD',ERR=803,IOSTAT=IERR)
+        REWIND (NDSI)
+
+        READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+        IF (COMSTR.EQ.' ') COMSTR = '$'
+
+
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*) INXOUT
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*) INTERP
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*) VERBOSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!
+        NBO2 = 0          
+!
+!       ILOOP = 1 to count NBO2
+!       ILOOP = 2 to read the file names
+!
+        DO ILOOP = 1, 2
+          OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED',          &
+                status='UNKNOWN')
+          IF ( ILOOP .EQ. 1 ) THEN
+            NDSI2 = NDSI
+          ELSE
+            NDSI2 = NDSS
+            ALLOCATE(SPECFILES(NBO2))
+            NBO2=0
           ENDIF
  
-        NBO2=0
-! Read input file names
-        DO 
-          CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-          READ (NDSI2,'(A120)') FILENAME
-          JJ     = LEN_TRIM(FILENAME)
-            IF ( ILOOP .EQ. 1 ) THEN
-              BACKSPACE (NDSI)
-              READ (NDSI,'(A)') LINE
-              WRITE (NDSS,'(A)') LINE
-            END IF
-          IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT 
-          NBO2=NBO2+1
-          IF (ILOOP.EQ.1) CYCLE 
-          SPECFILES(NBO2)=FILENAME
+          NBO2=0
+!         Read input file names
+          DO 
+            CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
+            READ (NDSI2,'(A120)') FILENAME
+            JJ     = LEN_TRIM(FILENAME)
+              IF ( ILOOP .EQ. 1 ) THEN
+                BACKSPACE (NDSI)
+                READ (NDSI,'(A)') LINE
+                WRITE (NDSS,'(A)') LINE
+              END IF
+            IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT 
+            NBO2=NBO2+1
+            IF (ILOOP.EQ.1) CYCLE 
+            SPECFILES(NBO2)=FILENAME
           END DO 
-!
-! ... End of ILOOP loop
-!
-        IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS) 
 
-        IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
-       END DO
-      CLOSE(NDSI)
+          IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS) 
+
+          IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
+       END DO ! ILOOP = 1, 2
+       CLOSE(NDSI)
+     END IF ! .NOT. FLGNML
+
 
 !
-! 3. Tests the reading of the file
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 4. Tests the reading of the file
 !
       IF ( INXOUT.EQ.'READ') THEN 
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='old')
@@ -341,7 +436,6 @@
             END IF
           END DO
 #ifdef W3_RTD
-!
         ! Convert grid boundary cell locations to standard pole
         IF( ISRTD ) THEN
           XTMP = XBPO
@@ -349,15 +443,15 @@
           CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
           DEALLOCATE(XTMP, YTMP, ANGTMP)
         ENDIF
-!
 #endif
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') 'IP, file, I/O stat:',IP,', ',       &
-                                  TRIM(SPECFILES(IP)),', ',IERR
-          IF (IERR.NE.0) WRITE(NDSE,*) 'File do not exist:',SPECFILES(IP)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') &
+                           'IP, file, I/O stat:',IP,', ', &
+                           TRIM(SPECFILES(IP)), ', ',IERR
+          IF (IERR.NE.0) GOTO 810
           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
              space,string1,space,NKI,NTHI
           IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
@@ -388,7 +482,7 @@
 !
 
       ! Checks consistency of NK
-      IF (NKI.GT.NK) GOTO 2008
+      IF (NKI.GT.NK) GOTO 808
 !
       ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
       ! such that source spec SPEC (read in input) links with output spec
@@ -400,14 +494,14 @@
 !        IFMAX2=NK ! index of last freq. in output spectrum
 !
       ! Checks consistency of XFR
-      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
+      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 806
 !
       ! Checks consistency of NTH
       ! WARNING: check is only done on number of directions, no check 
       ! is done on the relative offset of first direction in terms of 
       ! the directional increment [-0.5,0.5] (last parameter of the 
       ! spectral definition in ww3_grid.inp, on second active line) 
-      IF (NTHI.NE.NTH) GOTO 2007
+      IF (NTHI.NE.NTH) GOTO 807
 
       IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
         DO J=1,MIN(NK1,NK)
@@ -454,13 +548,11 @@
             READ(200+IP,'(A1,A10,A1,2F7.2,F10.1,F7.2,F6.1,F7.2,F6.1)') &
               space,buoyname,space,LATS(IP),LONS(IP),depth,U10,Udir,Curr,Currdir
 #ifdef W3_RTD
-!
             IF (ISRTD) THEN
               ! Rotated coordinates are scaled in range 0 - 360
               IF(LONS(IP) .LT. 0) LONS(IP) = LONS(IP) + 360.0
               IF(LONS(IP) .GT. 360) LONS(IP) = LONS(IP) - 360.0
             ENDIF
-!
 #endif
             READ(200+IP,*,IOSTAT=IERR) SPEC2D 
               IF (IFMIN2.GT.1) THEN 
@@ -506,21 +598,21 @@
             IF(DIST.LT.DMIN) THEN 
               IPBPO(IP1,1)=IP
               DMIN=DIST
-              END IF
+            END IF
           ELSE
             IF(DIST.LT.DMIN2) THEN 
               IF(DIST.LT.DMIN) THEN 
-             IPBPO(IP1,2)=IPBPO(IP1,1)
-             DMIN2=DMIN
+                IPBPO(IP1,2)=IPBPO(IP1,1)
+                DMIN2=DMIN
                 IPBPO(IP1,1)=IP
-             DMIN=DIST
-           ELSE
+                DMIN=DIST
+              ELSE
                 IPBPO(IP1,2)=IP
-             DMIN2=DIST
-                END IF
-                 ENDIF
-            END IF
-          END DO
+                DMIN2=DIST
+              END IF
+            ENDIF
+          END IF
+        END DO
          !IF (VERBOSE.EQ.1)  WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
          !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
          !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
@@ -569,25 +661,40 @@ STOP
 ! Escape locations read errors :
 !
 
- 2001 CONTINUE
+ 801  CONTINUE
       WRITE (NDSE,1001)
       CALL EXTCDE ( 61 )
 !
- 2002 CONTINUE
+ 802  CONTINUE
       WRITE (NDSE,1002) IERR
       CALL EXTCDE ( 62 )
 !
- 2006 CONTINUE
+ 803 CONTINUE
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 63 )
+!
+ 806  CONTINUE
       WRITE (NDSE,1006) XFR
       CALL EXTCDE ( 66 )
 !
- 2007 CONTINUE
+ 807  CONTINUE
       WRITE (NDSE,1007) NTH, NTHI
       CALL EXTCDE ( 67 )
 !
- 2008 CONTINUE
+ 808  CONTINUE
       WRITE (NDSE,1008) NK, NKI
       CALL EXTCDE ( 68 )
+!
+ 809 CONTINUE
+      WRITE (NDSE,1009) BNDFILE, IERR
+      CALL EXTCDE ( 69 )
+!
+ 810 CONTINUE
+      WRITE (NDSE,1010) SPECFILES(IP)
+      CALL EXTCDE ( 70 )
+
+!
+! Formats
 !
   901 FORMAT (/' *** WAVEWATCH-III ERROR IN W3IOBC :'/                &
                '     ILEGAL IDSTR, READ : ',A/                        &
@@ -602,6 +709,10 @@ STOP
                '     ERROR IN READING ',A,' FROM INPUT FILE'/         &
                '     IOSTAT =',I5/)
 !
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC : '/              &
+               '     ERROR IN OPENING INPUT FILE: ', A/               &
+               '     IOSTAT =',I5/)
+!
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
                '     ILLEGAL XFR, XFR =',F12.6/)
 !
@@ -611,6 +722,15 @@ STOP
  1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
                '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
                '     IT WILL BE MANAGED SOON BY SPCONV')
+!
+ 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
+               '     ERROR IN OPENING SPEC FILE: ', A/                &
+               '     IOSTAT =',I5/)
+!
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND : '/              &
+               '     SPEC FILE NOT EXISTING: ', A/)
+
+
 !
 !/
 !/ End of W3BOUND ---------------------------------------------------- /
