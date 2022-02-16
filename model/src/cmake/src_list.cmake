@@ -24,6 +24,7 @@ set(ftn_src
   w3macros.h
   w3metamd.F90
   w3nmlbouncmd.F90
+  w3nmlboundmd.F90
   w3nmlgridmd.F90
   w3nmlmultimd.F90
   w3nmlounfmd.F90
