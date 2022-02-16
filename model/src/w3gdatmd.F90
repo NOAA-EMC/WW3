@@ -643,6 +643,11 @@
         INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:) 
         INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
         INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
+
+!/ Data duplicated for better performance
+        INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
+                            IJKVFc5(:), IJKVFc6(:), &
+                            IJKUFc5(:), IJKUFc6(:)
 #endif
 !
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
@@ -1132,6 +1137,12 @@
         INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:)
         INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
         INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
+
+!/ Data duplicated for better performance
+        INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
+                            IJKVFc5(:), IJKVFc6(:), &
+                            IJKUFc5(:), IJKUFc6(:)
+!/
 #endif
 !
 #ifdef W3_SEC1
@@ -1378,13 +1389,6 @@
       REAL, POINTER           :: IS1C1, IS1C2
 #endif
 !/
-#ifdef W3_SMC
-!/ Data duplicated for better performance
-      INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
-                          IJKVFc5(:), IJKVFc6(:), &
-                          IJKUFc5(:), IJKUFc6(:)
-!/
-#endif
 
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -1741,9 +1745,12 @@
                  STAT=ISTAT                      )
       CHECK_ALLOC_STATUS ( ISTAT )
 
-      ALLOCATE ( IJKCel3(-9:MCel), IJKCel4(-9:MCel), &
-                 IJKVFc5(MVFc), IJKVFc6(MVFc),  &
-                 IJKUFc5(MUFc), IJKUFc6(MUFc),  &
+      ALLOCATE ( GRIDS(IMOD)%IJKCel3(-9:MCel),  &
+                 GRIDS(IMOD)%IJKCel4(-9:MCel),  &
+                 GRIDS(IMOD)%IJKVFc5(MVFc),     &
+                 GRIDS(IMOD)%IJKVFc6(MVFc),     &
+                 GRIDS(IMOD)%IJKUFc5(MUFc),     &
+                 GRIDS(IMOD)%IJKUFc6(MUFc),     &
                  STAT=ISTAT)
 #endif
 !
@@ -2455,6 +2462,14 @@
           CTRNX  => GRIDS(IMOD)%CTRNX
           CTRNY  => GRIDS(IMOD)%CTRNY
           CLATF  => GRIDS(IMOD)%CLATF
+
+          IJKCel3 => GRIDS(IMOD)%IJKCel3
+          IJKCel4 => GRIDS(IMOD)%IJKCel4
+          IJKVFc5 => GRIDS(IMOD)%IJKVFc5
+          IJKVFc6 => GRIDS(IMOD)%IJKVFc6
+          IJKUFc5 => GRIDS(IMOD)%IJKUFc5
+          IJKUFc6 => GRIDS(IMOD)%IJKUFc6
+
 #endif
 !
 #ifdef W3_SMC
