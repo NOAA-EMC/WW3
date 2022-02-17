@@ -77,9 +77,17 @@ cp -r data_regtests/ww3_tp2.8/input/*.nc   regtests/ww3_tp2.8/input/
 cp -r data_regtests/ww3_tp2.12/input/*     regtests/ww3_tp2.12/input/
 cp -r data_regtests/ww3_tp2.12/input_be/*  regtests/ww3_tp2.12/input_be/
 cp -r data_regtests/ww3_tp2.12/input_le/*  regtests/ww3_tp2.12/input_le/
-cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OAS*CM regtests/ww3_tp2.14/input/
-cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input/r-ww3.nc.OASACM2
-cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input/
+cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASOCM regtests/ww3_tp2.14/input_oasocm/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASICM regtests/ww3_tp2.14/input_oasicm/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm2/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasocm/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasicm/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm2/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm4/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm5/
+cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm6/
 if [ ! -d regtests/ww3_tp2.14/input/oasis3-mct/doc ]
 then
   mkdir regtests/ww3_tp2.14/input/oasis3-mct/doc
