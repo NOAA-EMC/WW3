@@ -2075,28 +2075,19 @@
  if [ "$oasis" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst             -s OASACM  -w work_OASACM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst             -s OASACM2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "mkdir -p ww3_tp2.14/work_OASACM3"                                                                    >> matrix.body
-   echo "cp ww3_tp2.14/input/ww3_shel_OASACM3.nml ww3_tp2.14/work_OASACM3/ww3_shel.nml"                       >> matrix.body
+   echo "$rtst             -s OASACM  -i input_oasacm -w work_OASACM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst             -s OASACM2 -i input_oasacm2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
    halfnp=$(($np / 2))
-   echo "$rtst             -s OASACM3 -w work_OASACM3          -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst             -s OASACM3 -i input_oasacm3 -w work_OASACM3          -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
    echo "mkdir -p ww3_tp2.14/work_OASACM4"                                                                    >> matrix.body
    echo "ln -sf ../work_OASACM3/restart001.ww3 ww3_tp2.14/work_OASACM4/restart.ww3"                           >> matrix.body
-   echo "$rtst -r ww3_grid -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -r ww3_shel -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -r ww3_ounf -s OASACM4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM4 -i input_oasacm4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
    echo "mkdir -p ww3_tp2.14/work_OASACM5"                                                                    >> matrix.body
    echo "ln -sf ../work_OASACM4/restart001.ww3 ww3_tp2.14/work_OASACM5/restart.ww3"                           >> matrix.body
-   echo "$rtst -r ww3_grid -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -r ww3_shel -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -r ww3_ounf -s OASACM5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "mv ww3_tp2.14/input/ww3_ounf.inp ww3_tp2.14/input/ww3_ounf.inp.bak"                                  >> matrix.body
-   echo "cp ww3_tp2.14/input/ww3_ounf.inp-OASACM6 ww3_tp2.14/input/ww3_ounf.inp"                              >> matrix.body
-   echo "$rtst -g OASACM6  -s OASACM6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "mv ww3_tp2.14/input/ww3_ounf.inp.bak ww3_tp2.14/input/ww3_ounf.inp"                                  >> matrix.body
-   echo "$rtst             -s OASOCM  -w work_OASOCM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst             -s OASICM  -w work_OASICM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+    echo "$rtst -s OASACM5 -i input_oasacm5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM6 -i input_oasacm6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASOCM  -i input_oasocm -w work_OASOCM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASICM  -i input_oasicm -w work_OASICM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
  fi
 
  #Test of UFS applications with ww3_multi and grib2 output
