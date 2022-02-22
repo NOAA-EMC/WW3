@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # matrix.comp Compare output of matrix for two model versions.                #
 #                                                                             #
