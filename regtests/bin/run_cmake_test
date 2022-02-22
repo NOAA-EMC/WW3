@@ -369,14 +369,14 @@ mkdir -p $path_w
 
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
-    ww3_dir=${path_s}/..
+  ww3_dir=${path_s}/..
   if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
   then :
   else
     errmsg "Error occured during WW3 $prog build"
     exit 1
   fi
-  export OASISDIR=$path_i/../work_oasis3-mct
+  export OASISDIR=$path_w/work_oasis3-mct
 fi
 
 # --------------------------------------------------------------------------- #
@@ -702,7 +702,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -801,7 +801,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -900,7 +900,7 @@ then
       fi
   
       # link conf file
-      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         \rm -f $prog.nml
         \ln -s $ifile $prog.nml
@@ -1002,7 +1002,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1119,7 +1119,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1240,7 +1240,7 @@ then
       do
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -1411,7 +1411,7 @@ then
   
     ofile="$path_w/$prog.out"
   
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -1565,7 +1565,7 @@ then
     echo '+-------------------------+'
     echo ' '
 
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -1699,7 +1699,7 @@ do
          ifile=`( ls ${path_i}/${prog}${gu}.??? )`
 
 # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $path_i/$prog${gu}.nml $prog.nml
@@ -1757,7 +1757,7 @@ do
         do
 
 # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $ifile $prog.nml
@@ -1798,6 +1798,7 @@ do
           then
             \rm -f $prog.inp
             \rm -f $prog.nml
+            \rm -f ounfmeta.inp
             if [ $multi -eq 2 ]
             then
               \rm -f mod_def.ww3
@@ -1946,7 +1947,7 @@ do
         do
     
           # link conf file
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             \rm -f $prog.nml
             \ln -s $ifile $prog.nml
@@ -2085,7 +2086,7 @@ do
         fi
 
 # link conf file
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           \rm -f $prog.nml
           \ln -s $ifile $prog.nml
@@ -2180,7 +2181,7 @@ then
     echo '+-------------------------+'
     echo ' '
 
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -2290,7 +2291,7 @@ then
     echo ' '
   
 # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ] 
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
