@@ -403,10 +403,19 @@ then
   path_build=$path_w/build_SHRD
   mkdir -p $path_build
   cd $path_build
-  cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                sed 's/OMPG //'    | \
-                sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                sed 's/B4B //' > $path_build/switch
+  if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
+  then 
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                  sed 's/OMPG //'    | sed 's/NOGRB/NCEP2/' \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_build/switch
+  else 
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
+                  sed 's/OMPG //'    | \
+                  sed 's/OMPH //'    | sed 's/PDLIB //' | \
+                  sed 's/B4B //' > $path_build/switch
+  fi
+
   echo "Switch file is $path_build/switch with switches:" >> $ofile 
   cat $path_build/switch >> $ofile
   cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1  
@@ -469,7 +478,12 @@ else
   path_build=$path_w/build
   mkdir -p $path_build
   cd $path_build
-  \cp -f $file_c $path_build/switch
+  if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
+  then
+    cat $file_c | sed 's/NOGRB/NCEP2/' > $path_build/switch 
+  else 
+    \cp -f $file_c $path_build/switch
+  fi
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
   cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1 
