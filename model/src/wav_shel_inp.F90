@@ -5,6 +5,7 @@ module wav_shel_inp
   implicit none
   private ! except
 
+  public  :: set_shel_io
   public  :: set_shel_inp
   public  :: read_shel_inp
 
@@ -25,6 +26,58 @@ module wav_shel_inp
 !===============================================================================
 contains
 !===============================================================================
+  subroutine set_shel_io(stdout,mds,ntrace)
+
+    use ESMF, only : ESMF_UtilIOUnitGet
+
+    ! Input parameter
+    integer , intent(in)   :: stdout
+    integer , intent(out)  :: mds(13), ntrace(2)
+
+    ! Note that nds is set to mds in w3initmd.F90 - mds is a local array
+    ! The following units are referenced in module w3initmd
+    ! NDS(1) ! OUTPUT LOG: General output unit number ("log file")
+    ! NDS(2) ! OUTPUT LOG: Error output unit number
+    ! NDS(3) ! OUTPUT LOG: Test output unit number
+    ! NDS(4) ! OUTPUT LOG: Unit for 'direct' output (SCREEN)
+    ! NDS(5) ! INPUT: mod_def.ww3 file (model definition) unit number
+    ! NDS(9) ! INPUT: unit for read in boundary conditions (based on FLBPI)
+
+    ! The following units are referenced in module w3wavemd for output
+    ! NDS( 6) ! OUTPUT DATA: restart(N).ww3 file (model restart) unit number
+    ! NDS( 7) ! OUTPUT DATA: unit for output for FLOUT(1) flag grid unformmatted output
+    ! NDS( 8) ! OUTPUT DATA: unit for output for FLOUT(2) flag point unformmatted output
+    ! etc through 13
+
+    mds(1) = stdout
+    mds(2) = stdout
+    mds(3) = stdout
+    mds(4) = stdout
+
+    ! Identify available unit numbers
+    ! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
+    ! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
+    ! the same unit.  After getting all the available unit numbers, close
+    ! the units since they will be opened within W3INIT.
+    ! By default, unit numbers between 50 and 99 are scanned to find an
+    ! unopened unit number
+
+    call ESMF_UtilIOUnitGet(mds(5)) ; open(unit=mds(5)  , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(6)) ; open(unit=mds(6)  , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(7)) ; open(unit=mds(7)  , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(8)) ; open(unit=mds(8)  , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(9)) ; open(unit=mds(9)  , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(10)); open(unit=mds(10) , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(11)); open(unit=mds(11) , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(12)); open(unit=mds(12) , status='scratch')
+    call ESMF_UtilIOUnitGet(mds(13)); open(unit=mds(13) , status='scratch')
+    close(mds(5)); close(mds(6)); close(mds(7)); close(mds(8)); close(mds(9)); close(mds(10))
+    close(mds(11)); close(mds(12)); close(mds(13))
+
+    ntrace(1) = mds(3)
+    ntrace(2) = 10
+
+  end subroutine set_shel_io
 
   subroutine set_shel_inp(dtime_sync)
 

@@ -13,7 +13,6 @@ contains
     USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF
     USE W3GDATMD, ONLY: NX, NY, E3DF, MAPSF, MAPSTA, NSEA, W3SETG
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
-    USE W3ADATMD, ONLY: LANGMT
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
     USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
     USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT
@@ -29,6 +28,10 @@ contains
     USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D
     USE W3ADATMD, ONLY: TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE
     USE W3ADATMD, ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD, USSP
+#ifdef CESMCOUPLED
+    USE W3ADATMD, ONLY: LANGMT
+#endif
+    use wav_shr_mod, only: time_origin, calendar_name, elapsed_secs
     USE NETCDF
 
     IMPLICIT NONE
@@ -42,12 +45,12 @@ contains
     REAL,    ALLOCATABLE    :: AUX2D1(:,:), AUX2D2(:,:), AUX2D3(:,:)
     REAL,    ALLOCATABLE    :: AUX3DEF(:,:,:), AUX3DE(:,:,:)
     LOGICAL                 :: WAUX1, WAUX2, WAUX3, WAUXE, WAUXEF
-    INTEGER                 :: VARID1, VARID2, VARID3, VARIDE, NCLOOP
+    INTEGER                 :: VARID, NCLOOP
     CHARACTER(LEN=16)       :: FLDSTR1, FLDSTR2, FLDSTR3, FLDSTRE
     CHARACTER(LEN=16)       :: UNITSTR1, UNITSTR2, UNITSTR3, UNITSTRE
     CHARACTER(LEN=128)      :: LNSTR1, LNSTR2, LNSTR3, LNSTRE
     INTEGER                 :: EF_LEN
-    INTEGER                 :: NCID, DIMID(4)
+    INTEGER                 :: NCID, DIMID(5)
     CHARACTER(len=1024)     :: FNAME
     LOGICAL                 :: EXISTS
 !/
@@ -71,11 +74,7 @@ contains
     ! -------------------------------------------------------------
     ! Create the netcdf file and return the ncid and dimid
     ! -------------------------------------------------------------
-#ifdef CESMCOUPLED
-    call cesm_hist_filename(fname)
-#else
-    ! fill this in for ufs
-#endif
+    call hist_filename(fname)
 
     ef_len = e3df(3,1) - e3df(2,1) + 1
     inquire(file=trim(fname),exist=exists)
@@ -90,17 +89,18 @@ contains
        call handle_err(ierr,'def_dimid3')
        ierr = nf90_def_dim(ncid,'freq', ef_len, dimid(4)) !ef_len=25
        call handle_err(ierr,'def_dimid4')
+       ierr = nf90_def_dim(ncid,'time', nf90_unlimited, dimid(5))
+       call handle_err(ierr,'def_dimid5')
+       ! define time axis
+       ierr = nf90_def_var(ncid, 'time', nf90_double, (/dimid(5)/), varid)
+       call handle_err(ierr,'def_timevar')
+       ierr = nf90_put_att(ncid, varid, 'units', trim(time_origin))
+       call handle_err(ierr,'def_time_units')
+       ierr = nf90_put_att(ncid, varid, 'calendar', trim(calendar_name))
+       call handle_err(ierr,'def_time_calendar')
     else
        ierr = nf90_open(trim(fname),nf90_write,ncid)
        call handle_err(ierr,'open')
-       ierr = nf90_inq_dimid(ncid,'nx',dimid(1))
-       call handle_err(ierr,'inq_dimid1')
-       ierr = nf90_inq_dimid(ncid,'ny',dimid(2))
-       call handle_err(ierr,'inq_dimid2')
-       ierr = nf90_inq_dimid(ncid,'noswll',dimid(3))
-       call handle_err(ierr,'inq_dimid3')
-       ierr = nf90_inq_dimid(ncid,'freq',dimid(4)) !ef_len=25
-       call handle_err(ierr,'inq_dimid4')
     endif
 
     ! -------------------------------------------------------------
@@ -197,7 +197,9 @@ contains
           IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
           IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
           IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
+#ifdef CESMCOUPLED
           IF ( FLOGRD( 6, 14) ) LANGMT(ISEA) = UNDEF  !cesm specific
+#endif
           !
           IF ( FLOGRD( 7, 1) ) THEN
              ABA   (ISEA) = UNDEF
@@ -515,6 +517,7 @@ contains
                    UNITSTR2 = 'm/s'
                    LNSTR1 = 'Stokes drift at z=0'
                    LNSTR2 = 'Stokes drift at z=0'
+#ifdef CESMCOUPLED
                 else if ( IFI .eq. 6 .and. IFJ .eq. 14 ) then
                    write(6,*)'DEBUG: nsea = ',nsea
                    write(6,*)'DEBUG: size(langmt) = ',size(langmt)
@@ -523,6 +526,7 @@ contains
                    FLDSTR1 = 'LANGMT'
                    UNITSTR1 = ''
                    LNSTR1 = 'Turbulent Langmuir number (La_t)'
+#endif
                 !
                 !     Section 7)
                 !
@@ -584,94 +588,100 @@ contains
                    ! write(ndse,*) 'w3iogo NCLOOP=',NCLOOP, WAUX1, WAUX2, WAUX3,WAUXE,WAUXEF
                    !--- no error checking here in case file/vars exists already ---
                    if (WAUX1) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX1=T, FLDSTR1, VARID1', TRIM(FLDSTR1), VARID1
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR1),NF90_FLOAT,DIMID(1:2),VARID1)
-                      IERR = NF90_PUT_ATT(NCID,VARID1,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID1,"units",UNITSTR1)
-                      IERR = NF90_PUT_ATT(NCID,VARID1,"long_name",LNSTR1)
+                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX1=T, FLDSTR1, VARID', TRIM(FLDSTR1), VARID
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR1),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR1)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR1)
                    endif
                    if (WAUX2) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX2=T, FLDSTR2, VARID2', TRIM(FLDSTR2), VARID2
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR2),NF90_FLOAT,DIMID(1:2),VARID2)
-                      IERR = NF90_PUT_ATT(NCID,VARID2,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID2,"units",UNITSTR2)
-                      IERR = NF90_PUT_ATT(NCID,VARID2,"long_name",LNSTR2)
+                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX2=T, FLDSTR2, VARID', TRIM(FLDSTR2), VARID
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR2),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR2)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR2)
                    endif
                    if (WAUX3) then
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR3),NF90_FLOAT,DIMID(1:2),VARID3)
-                      IERR = NF90_PUT_ATT(NCID,VARID3,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID3,"units",UNITSTR3)
-                      IERR = NF90_PUT_ATT(NCID,VARID3,"long_name",LNSTR3)
+                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX3=T, FLDSTR3, VARID ', TRIM(FLDSTR3), VARID
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR3),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR3)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR3)
                    endif
                    if (WAUXE) then
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,DIMID(1:3),VARIDE)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"units",UNITSTRE)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"long_name",LNSTRE)
+                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXE=T, FLDSTRE, VARID ', TRIM(FLDSTRE), VARID
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(3),dimid(5)/),VARID)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTRE)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTRE)
                    endif
                    if (WAUXEF) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXEF=T, FLDSTRE, VARIDE', TRIM(FLDSTRE), VARIDE
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(4)/),VARIDE)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"units",UNITSTRE)
-                      IERR = NF90_PUT_ATT(NCID,VARIDE,"long_name",LNSTRE)
+                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXEF=T, FLDSTRE, VARID', TRIM(FLDSTRE), VARID
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(3),DIMID(4),dimid(5)/),VARID)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTRE)
+                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTRE)
                    endif
 
                 elseif (NCLOOP == 2) then
+                   IERR = nf90_inq_varid(ncid, 'time', varid)
+                   call HANDLE_ERR(IERR,'INQ_VARID_TIME'//trim('time'))
+                   IERR = nf90_put_var(ncid, varid, elapsed_secs)
+                   call HANDLE_ERR(IERR,'PUT_VAR_TIME'//trim('time'))
                    ! write(ndse,*) ' w3iogo write NCLOOP=',NCLOOP, WAUX1, WAUX2, WAUX3,WAUXE,WAUXEF
                    if (WAUX1) then
-                      ! write(ndso,*) 'w3iogo write ',trim(fldstr1)
+                      ! write(ndse,*) 'w3iogo write ',trim(fldstr1)
                       AUX2D1 = UNDEF
                       do ISEA=1, NSEA
                          AUX2D1(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX1(ISEA)
                       enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR1),VARID1)
+                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR1),VARID)
                       call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTR1))
-                      IERR = NF90_PUT_VAR(NCID,VARID1,AUX2D1)
+                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D1)
                       call HANDLE_ERR(IERR,'PUT_VAR_AUX2D1_'//trim(FLDSTR1))
                    endif
                    if (WAUX2) then
-                      ! write(ndso,*) 'w3iogo write ',trim(fldstr2)
+                      ! write(ndse,*) 'w3iogo write ',trim(fldstr2)
                       AUX2D2 = UNDEF
                       do ISEA=1, NSEA
                          AUX2D2(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX2(ISEA)
                       enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR2),VARID2)
+                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR2),VARID)
                       call HANDLE_ERR(IERR,'INQ_VARID_AUX2D2_'//trim(FLDSTR2))
-                      IERR = NF90_PUT_VAR(NCID,VARID2,AUX2D2)
+                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D2)
                       call HANDLE_ERR(IERR,'PUT_VAR_AUX2D2_'//trim(FLDSTR2))
                    endif
                    if (WAUX3) then
-                      ! write(ndso,*) 'w3iogo write ',trim(fldstr3)
+                      ! write(ndse,*) 'w3iogo write ',trim(fldstr3)
                       AUX2D3 = UNDEF
                       do ISEA=1, NSEA
                          AUX2D3(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX3(ISEA)
                       enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR3),VARID3)
+                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR3),VARID)
                       call HANDLE_ERR(IERR,'INQ_VARID_AUX2D3_'//trim(FLDSTR3))
-                      IERR = NF90_PUT_VAR(NCID,VARID3,AUX2D3)
+                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D3)
                       call HANDLE_ERR(IERR,'PUT_VAR_AUX2D3_'//trim(FLDSTR3))
                    endif
                    if (WAUXE) then
-                      ! write(ndso,*) 'w3iogo write ',trim(fldstre)
+                      ! write(ndse,*) 'w3iogo write ',trim(fldstre)
                       AUX3DE = UNDEF
                       do ISEA=1, NSEA
                          AUX3DE(MAPSF(ISEA,1),MAPSF(ISEA,2),0:NOSWLL) = AUXE(ISEA,0:NOSWLL)
                       enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARIDE)
+                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARID)
                       call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTRE))
-                      IERR = NF90_PUT_VAR(NCID,VARIDE,AUX3DE)
+                      IERR = NF90_PUT_VAR(NCID,VARID,AUX3DE)
                       call HANDLE_ERR(IERR,'PUT_VAR_AUX3DE_'//trim(FLDSTRE))
                    endif
                    if (WAUXEF) then
-                      ! write(ndso,*) 'w3iogo write ',trim(fldstre)
+                      ! write(ndse,*) 'w3iogo write ',trim(fldstre)
                       AUX3DEF = UNDEF
                       do ISEA=1, NSEA
                          AUX3DEF(MAPSF(ISEA,1),MAPSF(ISEA,2),E3DF(2,1):E3DF(3,1)) = AUXEF(ISEA,E3DF(2,1):E3DF(3,1))
                       enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARIDE)
+                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARID)
                       call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTRE))
-                      IERR = NF90_PUT_VAR(NCID,VARIDE,AUX3DEF)
+                      IERR = NF90_PUT_VAR(NCID,VARID,AUX3DEF)
                       call HANDLE_ERR(IERR,'PUT_VAR_AUX3DE_'//trim(FLDSTRE))
                    endif
                 endif !NC
@@ -691,8 +701,7 @@ contains
   end subroutine W3IOGONCD
 
 !/ ------------------------------------------------------------------- /
-#ifdef CESMCOUPLED
-  subroutine cesm_hist_filename(fname)
+  subroutine hist_filename(fname)
 
     USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
     USE W3WDATMD       , ONLY : TIME
@@ -727,8 +736,7 @@ contains
         write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
      end if
 
-   end subroutine cesm_hist_filename
-#endif
+   end subroutine hist_filename
 
 !/ ------------------------------------------------------------------- /
   SUBROUTINE HANDLE_ERR(IERR,STRING)

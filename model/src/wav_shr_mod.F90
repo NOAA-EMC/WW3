@@ -42,6 +42,10 @@ module wav_shr_mod
   character(len=cs) , public :: runtype
   logical           , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
   integer           , public :: dbug_flag = 0
+  character(len=256) , public :: casename
+  character(len= 36) , public :: time_origin
+  character(len= 36) , public :: calendar_name
+  integer(i8)        , public :: elapsed_secs
 
   ! Only used by cesm
   ! if a run is a startup or branch run, then initfile is used

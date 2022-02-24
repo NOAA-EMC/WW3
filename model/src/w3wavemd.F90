@@ -448,7 +448,7 @@
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
       ! flags for restart and history writes
       USE WAV_SHR_MOD , only : RSTWR, HISTWR
       USE W3IOGONCDMD , ONLY : W3IOGONCD
@@ -2962,14 +2962,17 @@
 #endif
 !
 #ifdef W3_MPI
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
           ! CMB: dsec21 computes the difference between time1, time2 in sec
           ! pretty sure tonext always equal to time on the hour
           ! so this is getting called every hour
           ! seems like it only needs to be done when histwr=T though
           ! so am chaning
-     IF (  histwr .and.  &
-          (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+     IF (  (histwr .and.  (FLOUT(1) .OR.  FLOUT(7)) ) .OR. &
+           (  .not. histwr .and. &
+             ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
+             (    (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
+                  SBSED ) ) ) ) THEN
 #else
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
@@ -2985,8 +2988,8 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#ifdef CESMCOUPLED
-           write(*,*) 'CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#if defined(W3_UWM) || defined(CESMCOUPLED)
+           write(*,*) 'UWM/CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
 #endif
 #endif
 #ifdef W3_DEBUGRUN
@@ -3015,8 +3018,8 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
-#ifdef CESMCOUPLED
-           write(*,*) 'CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#if defined(W3_UWM) || defined(CESMCOUPLED)
+           write(*,*) 'UWM/CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
 #endif
 #endif
 #ifdef W3_DEBUGRUN
@@ -3204,18 +3207,24 @@
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
                   IF ( DTTST .EQ. 0. ) THEN
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
                       ! This assumes that W3_SBS is not defined
-                      IF ( ( J .EQ. 1 ) .AND. histwr) THEN
+                      IF ( ( J .EQ. 1 ) ) THEN
+                          if ( histwr ) then
                           CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                           FLGMPI(0) = .FALSE.
+                          end if
                           write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
                           IF ( IAPROC .EQ. NAPFLD ) THEN
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
                                  ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                               FLGMPI(1) = .FALSE.
                               write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
+                              if ( histwr ) then
                               CALL W3IOGONCD ()
+                              else
+                                 CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
+                              end if
                           END IF
 #else
                       IF ( ( J .EQ. 1 )              &
@@ -3251,7 +3260,7 @@
 #endif
                             END IF
 !
-! end of CESMCOUPLED cppif-block
+! end of UWM/CESMCOUPLED cppif-block
 #endif
                         ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -3413,7 +3422,7 @@
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
                              ( NRQGO, IRQGO , STATIO, IERR_MPI )
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
             IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) CALL MPI_WAITALL   &
                              ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
 #endif
