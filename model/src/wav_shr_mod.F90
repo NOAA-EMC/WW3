@@ -53,7 +53,6 @@ module wav_shr_mod
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD
   character(len=256) , public :: initfile
-  character(len=256) , public :: casename
   logical            , public :: rstwr       ! true => write restart
   logical            , public :: histwr      ! true => write history file (snapshot)
   integer            , public :: outfreq     ! output frequency in hours

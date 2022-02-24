@@ -136,7 +136,7 @@ module wav_comp_nuopc
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : runtype, merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
-  use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
+  use wav_shr_mod           , only : casename, inst_suffix, inst_index
   use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
 
   implicit none
