@@ -1,0 +1,22 @@
+@PACKAGE_INIT@
+
+#@PROJECT_NAME@-config.cmake
+#
+# Imported interface targets provided:
+#  * @PROJECT_NAME@::@PROJECT_NAME@_4 - real32 library target
+#  * @PROJECT_NAME@::@PROJECT_NAME@_d - mixed library target
+
+# Include targets file.  This will create IMPORTED target @PROJECT_NAME@
+include("${CMAKE_CURRENT_LIST_DIR}/WW3-targets.cmake")
+
+include(CMakeFindDependencyMacro)
+
+#find_dependency(PNG)
+#find_dependency(bacio)
+
+#get_target_property(@PROJECT_NAME@_BUILD_TYPES @PROJECT_NAME@::@PROJECT_NAME@_4 IMPORTED_CONFIGURATIONS)
+
+#check_required_components("WW3")
+
+#get_target_property(location @PROJECT_NAME@::@PROJECT_NAME@_4 LOCATION)
+#message(STATUS "Found @PROJECT_NAME@: ${location} (found version \"@PROJECT_VERSION@\")")
