@@ -159,10 +159,13 @@ if("TIDE" IN_LIST switches)
   list(APPEND programs ww3_prtide)
 endif()
 
-foreach(program ${programs})
-  add_executable(${program} ${program}.F90)
-  target_link_libraries(${program} PRIVATE ww3_lib)
-endforeach()
+# Executables are not needed when building ww3_multi_esmf library
+if(NOT MULTI_ESMF)
+  foreach(program ${programs})
+    add_executable(${program} ${program}.F90)
+    target_link_libraries(${program} PRIVATE ww3_lib)
+  endforeach()
+endif()
 
 install(
   TARGETS ${programs} ww3_lib
