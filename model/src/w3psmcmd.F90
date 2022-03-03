@@ -400,7 +400,7 @@
 !$OMP Parallel DO Private(ISEA)
 #endif
       DO ISEA=1, NSEA
-!Li  Transported variable is divided by CG as in WW3 (???)
+!Li  Transported variable is divided by CG as in WW3.
            CQ(ISEA) = VQ(ISEA)/CG(IK,ISEA) 
 !Li  Resetting NaNQ VQ to zero if any.   JGLi18Mar2013
          IF( .NOT. (CQ(ISEA) .EQ. CQ(ISEA)) )  CQ(ISEA) = 0.0
@@ -1278,20 +1278,20 @@
       END SUBROUTINE W3KRTN
 
 
-!> @brief Calculate mid-flux values for x dimension 
+!> @brief Calculate mid-flux values for x dimension
 !>
-!> @param[in]   NUA      <TODO>
-!> @param[in]   NUB      <TODO>
-!> @param[in]   CF       <TODO>
-!> @param[in]   UC       <TODO>
-!> @param[out]  UFLX     <TODO>
-!> @param[in]   AKDif    <TODO>
-!> @param[out]  FU       <TODO>
-!> @param[out]  FX       <TODO>
-!> @param[in]   FTS      <TODO>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCxUNO2(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
@@ -1409,20 +1409,20 @@
       END SUBROUTINE SMCxUNO2
 
 
-!> @brief Calculate mid-flux values for y dimension 
+!> @brief Calculate mid-flux values for y dimension
 !>
-!> param[in]   NVA     <TODO>
-!> param[in]   NVB     <TODO>
-!> param[in]   CF      <TODO>
-!> param[in]   VC      <TODO>
-!> param[out]  VFLY    <TODO>
-!> param[in]   AKDif   <TODO>
-!> param[out]  FV      <TODO>
-!> param[out]  FY      <TODO>
-!> param[in]   FTS     <TODO>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCyUNO2(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
 
@@ -1545,19 +1545,19 @@
       END SUBROUTINE SMCyUNO2
 
 
-!> @brief Calculate mid-flux values for x dimension 
+!> @brief Calculate mid-flux values for x dimension
 !>
-!> @param[in]   NUA       <TODO>
-!> @param[in]   NUB       <TODO>
-!> @param[in]   CF        <TODO>
-!> @param[in]   UC        <TODO>
-!> @param[out]  UFLX      <TODO>
-!> @param[in]   AKDif     <TODO>
-!> @param[out]  FU        <TODO>
-!> @param[out]  FX        <TODO>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
        SUBROUTINE SMCxUNO2r(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX)
 
@@ -1662,20 +1662,19 @@
       END SUBROUTINE SMCxUNO2r
 
 
-!> @brief Calculate mid-flux values for y dimension 
+!> @brief Calculate mid-flux values for y dimension
 !>
-!> 
-!> @param[in]   NVA      <TODO>
-!> @param[in]   NVB      <TODO>
-!> @param[in]   CF       <TODO>
-!> @param[in]   VC       <TODO>
-!> @param[out]  VFLY     <TODO>
-!> @param[in]   AKDif    <TODO>
-!> @param[out]  FV       <TODO>
-!> @param[out]  FY       <TODO>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCyUNO2r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
 
@@ -1773,21 +1772,21 @@
       END SUBROUTINE SMCyUNO2r
 
 
-!> @brief Calculate mid-flux values for x dimension with UNO3 scheme 
+!> @brief Calculate mid-flux values for x dimension with UNO3 scheme
 !>
-!> @param[in]   NUA     <TODO>
-!> @param[in]   NUB     <TODO>
-!> @param[in]   CF      <TODO>
-!> @param[in]   UC      <TODO>
-!> @param[out]  UFLX    <TODO>
-!> @param[in]   AKDif   <TODO>
-!> @param[out]  FU      <TODO>
-!> @param[out]  FX      <TODO>
-!> @param[in]   FTS     <TODO>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
 !>
 !> @author Jian-Guo Li
-!> @date ??
-
+!> @date 03-Mar-2022
+!>
        SUBROUTINE SMCxUNO3(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
        USE CONSTANTS
@@ -1936,19 +1935,19 @@
 
 !> @brief Calculate mid-flux values for y dimension with UNO3 scheme
 !>
-!> 
-!> @param[in]   NVA       <TODO>
-!> @param[in]   NVB       <TODO>
-!> @param[in]   CF        <TODO>
-!> @param[in]   VC        <TODO>
-!> @param[out]  VFLY      <TODO>
-!> @param[in]   AKDif     <TODO>
-!> @param[out]  FV        <TODO>
-!> @param[out]  FY        <TODO>
-!> @param[in]   FTS       <TODO>
+!>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
 !>
 !> @author Jian-Guo Li
-!> @date ???
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCyUNO3(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
 
@@ -2104,19 +2103,19 @@
       END SUBROUTINE SMCyUNO3
 
 
-!> @brief Calculate mid-flux values for x dimension with UNO3 
+!> @brief Calculate mid-flux values for x dimension with UNO3
 !>
-!> @param[in]   NUA      <TODO>
-!> @param[in]   NUB      <TODO>
-!> @param[in]   CF       <TODO>
-!> @param[in]   UC       <TODO>
-!> @param[out]  UFLX     <TODO>
-!> @param[in]   AKDif    <TODO>
-!> @param[out]  FU       <TODO>
-!> @param[out]  FX       <TODO>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
        SUBROUTINE SMCxUNO3r(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX)
 
@@ -2242,18 +2241,17 @@
 
 !> @brief Calculate mid-flux values for y dimension with UNO3
 !>
-!> 
-!> @param[in]   NVA         <TODO> 
-!> @param[in]   NVB         <TODO>
-!> @param[in]   CF          <TODO>
-!> @param[in]   VC          <TODO>
-!> @param[out]  VFLY        <TODO>
-!> @param[in]   AKDif       <TODO>
-!> @param[out]  FV          <TODO>
-!> @param[out]  FY          <TODO>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCyUNO3r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
 
@@ -2377,16 +2375,16 @@
 !
 !> @brief Evaluate local gradient for sea points.
 !>
-!> @details 
+!> @details
 !>  Calculate cell centre gradient for any input variable.
-!>  Nemerical average is applied to size-changing faces and the gradients 
-!>  are along the lat-lon local east-north directions.    JGLi18Aug2015
+!>  Nemerical average is applied to size-changing faces and the gradients
+!>  are along the lat-lon local east-north directions.
 !>
 !>
-!> @param[in]   CVQ      <TODO>
-!> @param[out]  GrdX     <TODO>
-!> @param[out]  GrdY     <TODO>
-!> @param[in]   L0r1     <TODO>
+!> @param[in]   CVQ      Input cell values.
+!> @param[out]  GrdX     Gradient along x-axis.
+!> @param[out]  GrdY     Gradient along y-axis.
+!> @param[in]   L0r1     Zero or 1st-order boundary condiiton.
 !>
 !> @author Jian-Guo Li
 !> @date 08 Aug 2017
@@ -2613,7 +2611,7 @@
       END SUBROUTINE SMCGradn
 
 
-!> @brief Average sea point values with a 1-2-1 scheme. 
+!> @brief Average sea point values with a 1-2-1 scheme.
 !>
 !> @param[inout]  CVQ  Input field.
 !>
@@ -2788,13 +2786,13 @@
 !> @brief Calculate great circle turning (GCT) and refraction.
 !>
 !> @details
-!>  The refraction and GCT terms are equivalent to a simgle rotation by each 
+!>  The refraction and GCT terms are equivalent to a simgle rotation by each
 !>  element and does not need to be calculated as advection.  A simple rotation
 !>  scheme similar to the 1st order upstream scheme but without any restriction
-!>  on the rotation angle or the CFL limit by an Eulerian advection scheme. 
+!>  on the rotation angle or the CFL limit by an Eulerian advection scheme.
 !>
-!> @param[in]  CoRfr   <TODO>
-!> @param[in]  SpeTHK  <TODO>
+!> @param[in]  CoRfr   Courant number for refraction and GCT rotation.
+!> @param[in]  SpeTHK  Wave spectrum to be rotated and output.
 !>
 !> @author Jian-Guo Li
 !> @date 12 Nov 2010
@@ -2876,11 +2874,11 @@
 
 
 !>
-!> @brief Calculates refraction induced shift in k-space. 
+!> @brief Calculates refraction induced shift in k-space.
 !>
 !> @details
 !>  The term is equivalent to advection on an irregular k-space grid.
-!>  The UNO2 scheme on irregular grid is used for this term. 
+!>  The UNO2 scheme on irregular grid is used for this term.
 !>
 !>  Cell and side indices for k-dimension are arranged as:
 !>  @verbatim
@@ -2892,10 +2890,10 @@
 !>  boundary conditions.  Outside low-wavenumber (frequncy) end, wave
 !>  action is assumed to be zero.
 !>
-!> @param[in]    CoRfr      <TODO>
-!> @param[inout] SpeTHK     <TODO>
-!> @param[in]    DKC        <TODO>
-!> @param[in]    DKS        <TODO>
+!> @param[in]    CoRfr      Courant number for refraction k-shift.
+!> @param[inout] SpeTHK     Spectrum to be shifted and output.
+!> @param[in]    DKC        Wave number increment at k-bin centre.
+!> @param[in]    DKS        Wave number increment at k-bin edges.
 !>
 !>
 !> @author Jian-Guo Li
@@ -2983,7 +2981,7 @@
 !>  It has to be rotated to map-east system in the Arctic part.
 !>
 !> @author Jian-Guo Li
-!> @date ??
+!> @date 03-Mar-2022
 !>
       SUBROUTINE SMCDHXY
       USE CONSTANTS
@@ -3254,7 +3252,7 @@
 
 !/
 !/ ------------------------------------------------------------------- /
-!> @brief SMC version of W3GATH 
+!> @brief SMC version of W3GATH
 !>
 !> @details
 !>  Gather spectral bin information into a propagation field array.
@@ -3517,9 +3515,9 @@
       END SUBROUTINE W3GATHSMC
 !
 !/ ------------------------------------------------------------------- /
-!> @brief SMC version of W3GATH 
+!> @brief SMC version of W3GATH
 !>
-!> @details 
+!> @details
 !> 'Scatter' data back to spectral storage after propagation.
 !>  Direct copy or communication calls (MPP version).
 !>  See also W3GATH.
@@ -3535,7 +3533,7 @@
 !>    buffering.
 !>
 !> @author Jian-Guo Li
-!> @date 16 Jan 2012 
+!> @date 16 Jan 2012
 !>
       SUBROUTINE W3SCATSMC ( ISPEC, MAPSTA, FIELD )
 !/
@@ -3785,11 +3783,11 @@
 !>  Calculate the cell centre longitude and latitude in degree for a given
 !>  list of cell identity or sequential numbers in the IMOD sub-grid.
 !>
-!>  Regular grid SX, SY, X0, Y0 and SMC grid MRFct and IJKCel arrays 
-!>  in W3GDATMD are used to work out SMC grid origin and increments. 
-!>  Then given cell centre coordinates are calculated.  Longitude is 
-!>  wrapped into [0, 360) range, latitude in in (-90, 90) range.  
-!>  The polar cell centre is off the N-Pole to avoid singularity but 
+!>  Regular grid SX, SY, X0, Y0 and SMC grid MRFct and IJKCel arrays
+!>  in W3GDATMD are used to work out SMC grid origin and increments.
+!>  Then given cell centre coordinates are calculated.  Longitude is
+!>  wrapped into [0, 360) range, latitude in in (-90, 90) range.
+!>  The polar cell centre is off the N-Pole to avoid singularity but
 !>  its centre values are not used for propagation schemes.
 !>
 !> @param[in]   IMOD   Model number to point to
@@ -3925,15 +3923,15 @@
 !!
  
 !!
-!> @brief Map lat-lon points to SMC grid cells 
+!> @brief Map lat-lon points to SMC grid cells
 !>
 !> @details
-!>  Determine whether a list of points are inside the IMOD SMC sub-grid 
-!>  and return the IMOD sub-grid cell indexes, if any. 
+!>  Determine whether a list of points are inside the IMOD SMC sub-grid
+!>  and return the IMOD sub-grid cell indexes, if any.
 !>
-!>  Convert point XLon and YLat values into cell indices i, j. 
-!>  Match with cell ranges (i,i+di) and (j,j+dj) to see i,j in 
-!>  which cell.  Return the matched cell number.  Otherwide, 
+!>  Convert point XLon and YLat values into cell indices i, j.
+!>  Match with cell ranges (i,i+di) and (j,j+dj) to see i,j in
+!>  which cell.  Return the matched cell number.  Otherwise,
 !>  return an index of 0, or no matching cell found.
 !>
 !> @param[in]   IMOD    Model number to point to
