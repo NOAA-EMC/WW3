@@ -2786,7 +2786,7 @@
 !> @brief Calculate great circle turning (GCT) and refraction.
 !>
 !> @details
-!>  The refraction and GCT terms are equivalent to a simgle rotation by each
+!>  The refraction and GCT terms are equivalent to a single rotation by each
 !>  element and does not need to be calculated as advection.  A simple rotation
 !>  scheme similar to the 1st order upstream scheme but without any restriction
 !>  on the rotation angle or the CFL limit by an Eulerian advection scheme.
