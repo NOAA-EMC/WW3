@@ -1,0 +1,802 @@
+[
+    {
+        "name": "nco",
+        "num_switches": "upto1",
+        "description": "NCO modifications",
+        "valid-options": [
+            {
+                "name": "NCO"
+            }
+        ]
+    },
+    {
+        "name": "grib",
+        "num_switches": "one",
+        "description": "GRIB package",
+        "valid-options": [
+            {
+                "name": "NOGRB"
+            },
+            {
+                "name": "NCEP2"
+            }
+        ]
+    },
+    {
+        "name": "scrip",
+        "num_switches": "upto1",
+        "description": "Grid to grid interpolation",
+        "valid-options": [
+            {
+                "name": "SCRIP",
+                "build_files": ["wmscrpmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "scripnc",
+        "num_switches": "upto1",
+        "description": "",
+        "valid-options": [
+            {
+                "name": "SCRIPNC"
+            }
+        ]
+    },
+    {
+        "name": "shared",
+        "num_switches": "one",
+        "description": "'shared / distributed memory",
+        "valid-options": [
+            {
+                "name": "SHRD"
+            },
+            {
+                "name": "DIST"
+            }
+        ]
+    },
+    {
+        "name": "mpp",
+        "num_switches": "one",
+        "description": "message passing protocol",
+        "valid-options": [
+            {
+                "name": "SHRD"
+            },
+            {
+                "name": "MPI"
+            }
+        ]
+    },
+    {
+        "name": "mpiexp",
+        "num_switches": "upto1",
+        "description": "experimental MPI option",
+        "valid-options": [
+            {
+                "name": "MPIBDI"
+            }
+        ]
+    },
+    {
+        "name": "thread",
+        "num_switches": "upto2",
+        "description": "directive controlled threading'",
+        "valid-options": [
+            {
+                "name": "OMPG"
+            },
+            {
+                "name": "OMPH",
+                "requires": ["MPI", "OMPG"]
+            }
+        ]
+    },
+    {
+        "name": "GSE",
+        "num_switches": "one",
+        "description": "GSE aleviation",
+        "valid-options": [
+            {
+                "name": "PR0"
+            },
+            {
+                "name": "PR1",
+                "build_files": ["w3profsmd.F90", "w3pro1md.F90"]
+            },
+            {
+                "name": "PR2",
+                "build_files": ["w3profsmd.F90", "w3pro2md.F90"]
+            },
+            {
+                "name": "PR3",
+                "build_files": ["w3profsmd.F90", "w3pro3md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "prop",
+        "num_switches": "one",
+        "description": "propagation scheme",
+        "valid-options": [
+            {
+                "name": "PR0"
+            },
+            {
+                "name": "PR1"
+            },
+            {
+                "name": "UQ",
+                "build_files": ["w3uqckmd.F90"]
+            },
+            {
+                "name": "UNO",
+                "build_files": ["w3uno2md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "smcg",
+        "num_switches": "upto1",
+        "description": "SMC grid",
+        "valid-options": [
+            {
+                "name": "SMC",
+                "build_files": ["w3smcomd.F90", "w3psmcmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "stress",
+        "num_switches": "one",
+        "description": "stress computation",
+        "valid-options": [
+            {
+                "name": "FLX0"
+            },
+            {
+                "name": "FLX1",
+                "build_files": ["w3flx1md.F90"]
+            },
+            {
+                "name": "FLX2",
+                "build_files": ["w3flx2md.F90"]
+            },
+            {
+                "name": "FLX3",
+                "build_files": ["w3flx3md.F90"]
+            },
+            {
+                "name": "FLX4",
+                "build_files": ["w3flx4md.F90"]
+            },
+            {
+                "name": "FLX5",
+                "build_files": ["w3flx5md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "dstress",
+        "num_switches": "upto1",
+        "description": "Diagnostic stress comp",
+        "valid-options": [
+            {
+                "name": "FLD0"
+            },
+            {
+                "name": "FLD1",
+                "build_files": ["w3fld1md.F90"]
+            },
+            {
+                "name": "FLD2",
+                "build_files": ["w3fld1md.F90", "w3fld2md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "s_ln",
+        "num_switches": "one",
+        "description": "linear input",
+        "valid-options": [
+            {
+                "name": "LN0"
+            },
+            {
+                "name": "SEED"
+            },
+            {
+                "name": "LN1",
+                "build_files": ["w3sln1md.F90"]
+            }   
+        ]
+    },
+    {
+        "name": "sterm",
+        "num_switches": "one",
+        "description": "input/whitecapping",
+        "valid-options": [
+            {
+                "name": "ST0",
+                "build_files": ["w3src0md.F90"]
+            },
+            {
+                "name": "ST1",
+                "build_files": ["w3src1md.F90"],
+                "conflicts": ["FLX0", "FLX5"]
+
+            },
+            {
+                "name": "ST2",
+                "build_files": ["w3src2md.F90"],
+                "conflicts": ["FLX0", "FLX1", "FLX4", "FLX5"]
+            },
+            {
+                "name": "ST3",
+                "build_files": ["w3src3md.F90"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
+            },
+            {
+                "name": "ST4",
+                "build_files": ["w3src4md.F90"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
+            },
+            {
+                "name": "ST6",
+                "build_files": ["w3src6md.F90", "w3swldmd.F90"],
+                "conflicts": ["FLX0"]
+            }
+        ]
+    },
+    {
+        "name": "stab",
+        "num_switches": "upto1",
+        "description": "stability correction",
+        "valid-options": [
+            {
+                "name": "STAB0"
+            },
+            {
+                "name": "STAB2",
+                "requires": ["ST2"]
+                
+            },
+            {
+                "name": "STAB3",
+                "requires": [["ST3", "ST4"]]
+            }
+        ]
+    },
+    {
+        "name": "s_nl",
+        "num_switches": "one",
+        "description": "quadruplet interactions",
+        "valid-options": [
+            {
+                "name": "NL0"
+            },
+            {
+                "name": "NL1",
+                "build_files": ["w3snl1md.F90"]
+            },
+            {
+                "name": "NL2",
+                "build_files": ["w3snl2md.F90", "mod_xnl4v5.f90", "serv_xnl4v5.f90", "mod_fileio.f90", "mod_constants.f90"],
+                "conflicts": ["OMPG", "OMPH"]
+            },
+            {
+                "name": "NL3",
+                "build_files": ["w3snl3md.F90"]
+            },
+            {
+                "name": "NL4",
+                "build_files": ["w3snl4md.F90"]
+            },
+            {
+                "name": "NL5",
+                "build_files": ["w3snl5md.F90", "w3gkemd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "snls",
+        "num_switches": "upto1",
+        "description": "quadruplet smoother",
+        "valid-options": [
+            {
+                "name": "NLS",
+                "build_files": ["w3snlsmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "s_bot",
+        "num_switches": "one",
+        "description": "bottom friction",
+        "valid-options": [
+            {
+                "name": "BT0"
+            },
+            {
+                "name": "BT1",
+                "build_files": ["w3sbt1md.F90"]
+            },
+            {
+                "name": "BT4",
+                "build_files": ["w3sbt4md.F90"]
+            },
+            {
+                "name": "BT8",
+                "build_files": ["w3sbt8md.F90"]
+            },
+            {
+                "name": "BT9",
+                "build_files": ["w3sbt9md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "s_db",
+        "num_switches": "one",
+        "description": "depth-induced breaking",
+        "valid-options": [
+            {
+                "name": "DB0"
+            },
+            {
+                "name": "DB1",
+                "build_files": ["w3sdb1md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "miche",
+        "num_switches": "upto1",
+        "description": "Miche style limiter",
+        "valid-options": [
+            {
+                "name": "MLIM"
+            }   
+        ]
+    },
+    {
+        "name": "s_tr",
+        "num_switches": "one",
+        "description": "triad interactions",
+        "valid-options": [
+            {
+                "name": "TR0"
+            },
+            {
+                "name": "TR1",
+                "build_files": ["w3str1md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "s_bs",
+        "num_switches": "one",
+        "description": "bottom scattering",
+        "valid-options": [
+            {
+                "name": "BS0"
+            },
+            {
+                "name": "BS1",
+                "build_files": ["w3sbs1md.F90"]
+            }   
+        ]
+    },
+    {
+        "name": "s_ice",
+        "num_switches": "one",
+        "description": "ice sink term",
+        "valid-options": [
+            {
+                "name": "IC0"
+            },
+            {
+                "name": "IC1",
+                "build_files": ["w3sic1md.F90"]
+            },
+            {
+                "name": "IC2",
+                "build_files": ["w3sic2md.F90"]
+            },
+            {
+                "name": "IC3",
+                "build_files": ["w3sic3md.F90"]
+            },
+            {
+                "name": "IC4",
+                "build_files": ["w3sic4md.F90"]
+            },
+            {
+                "name": "IC5",
+                "build_files": ["w3sic5md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "s_is",
+        "num_switches": "one",
+        "description": "ice scattering term",
+        "valid-options": [
+            {
+                "name": "IS0"
+            },
+            {
+                "name": "IS1",
+                "build_files": ["w3sis1md.F90"]
+            },
+            {
+                "name": "IS2",
+                "build_files": ["w3sis2md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "reflection",
+        "num_switches": "one",
+        "description": "wave reflections",
+        "valid-options": [
+            {
+                "name": "REF0"
+            },
+            {
+                "name": "REF1",
+                "build_files": ["w3ref1md.F90"]
+            }
+        ]
+    },
+    {
+        "name": "wind",
+        "num_switches": "one",
+        "description": "wind interpolation in time",
+        "valid-options": [
+            {
+                "name": "WNT0"
+            },
+            {
+                "name": "WNT1"
+            },
+            {
+                "name": "WNT2"
+            }
+        ]
+    },
+    {
+        "name": "windx",
+        "num_switches": "one",
+        "description": "wind interpolation in space",
+        "valid-options": [
+            {
+                "name": "WNX0"
+            },
+            {
+                "name": "WNX1"
+            },
+            {
+                "name": "WNX2"
+            }
+        ]
+    },
+    {
+        "name": "wcor",
+        "num_switches": "upto1",
+        "description": "wind speed correction",
+        "valid-options": [
+            {
+                "name": "WCOR"
+            }
+        ]
+    },
+    {
+        "name": "rwind",
+        "num_switches": "upto1",
+        "description": "wind vs. current definition",
+        "valid-options": [
+            {
+                "name": "RWND"
+            }
+        ]
+    },
+    {
+        "name": "rstwind",
+        "num_switches": "upto1",
+        "description": "wind in restart for wmesmf",
+        "valid-options": [
+            {
+                "name": "WRST"
+            }
+        ]
+    },
+    {
+        "name": "curr",
+        "num_switches": "one",
+        "description": "current interpolation in time",
+        "valid-options": [
+            {
+                "name": "CRT0"
+            },
+            {
+                "name": "CRT1"
+            },
+            {
+                "name": "CRT2"
+            }
+        ]
+    },
+    {
+        "name": "currx",
+        "num_switches": "one",
+        "description": "current interpolation in space",
+        "valid-options": [
+            {
+                "name": "CRX0"
+            },
+            {
+                "name": "CRX1"
+            },
+            {
+                "name": "CRX2"
+            }
+        ]
+    },
+    {
+        "name": "mgwind",
+        "num_switches": "upto1",
+        "description": "moving grid wind correction",
+        "valid-options": [
+            {
+                "name": "MGWIND"
+            }
+        ]
+    },
+    {
+        "name": "mgprop",
+        "num_switches": "upto1",
+        "description": "moving grid propagation correction",
+        "valid-options": [
+            {
+                "name": "MGP"
+            }   
+        ]
+    },
+    {
+        "name": "mggse",
+        "num_switches": "upto1",
+        "description": "moving grid GSE correction",
+        "valid-options": [
+            {
+                "name": "MGG"
+            }
+        ]
+    },
+    {
+        "name": "subsec",
+        "num_switches": "upto1",
+        "description": "sub-second time stepping",
+        "valid-options": [
+            {
+                "name": "SEC1"
+            }
+        ]
+    },
+    {
+        "name": "tdyn",
+        "num_switches": "upto1",
+        "description": "dynamic diffusion time",
+        "valid-options": [
+            {
+                "name": "TDYN"
+            }
+        ]
+    },
+    {
+        "name": "dss0",
+        "num_switches": "upto1",
+        "description": "diffusion tensor",
+        "valid-options": [
+            {
+                "name": "DSS0"
+            }
+        ]
+    },
+    {
+        "name": "pdif",
+        "num_switches": "upto1",
+        "description": "propagation diffusion",
+        "valid-options": [
+            {
+                "name": "XW0"
+            },
+            {
+                "name": "XW1"
+            }
+        ]
+    },
+    {
+        "name": "tide",
+        "num_switches": "upto1",
+        "description": "use of tidal analysis",
+        "valid-options": [
+            {
+                "name": "TIDE"
+            }
+        ]
+    },
+    {
+        "name": "refrx",
+        "num_switches": "upto1",
+        "description": "use of spectral refraction @C/@x",
+        "valid-options": [
+            {
+                "name": "REFRX"
+            }
+        ]
+    },
+    {
+        "name": "ig",
+        "num_switches": "upto1",
+        "description": "infragravity waves",
+        "valid-options": [
+            {
+                "name": "IG1",
+                "build_files": ["w3gig1md.F90", "w3canomd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "rotag",
+        "num_switches": "upto1",
+        "description": "rotated grid",
+        "valid-options": [
+            {
+                "name": "RTD"
+            }
+        ]
+    },
+    {
+        "name": "nnt",
+        "num_switches": "upto1",
+        "description": "NN training/test data generation",
+        "valid-options": [
+            {
+                "name": "NNT"
+            }
+        ]
+    },
+    {
+        "name": "mprf",
+        "num_switches": "upto1",
+        "description": "multi-grid model profiling",
+        "valid-options": [
+            {
+                "name": "MPRF",
+                "build_files": ["w3getmem.c"]
+            }
+        ]
+    },
+    {
+        "name": "agcm",
+        "num_switches": "upto1",
+        "description": "atmospheric circulation model",
+        "valid-options": [
+            {
+                "name": "OASACM",
+                "build_files": ["w3agcmmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "ogcm",
+        "num_switches": "upto1",
+        "description": "ocean circulation model",
+        "valid-options": [
+            {
+                "name": "OASOCM",
+                "build_files": ["w3ogcmmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "igcm",
+        "num_switches": "upto1",
+        "description": "ice model",
+        "valid-options": [
+            {
+                "name": "OASICM",
+                "build_files": ["w3igcmmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "cou",
+        "num_switches": "upto1",
+        "description": "use of the coupler",
+        "valid-options": [
+            {
+                "name": "COU"
+            }
+        ]
+    },
+    {
+        "name": "oasis",
+        "num_switches": "upto1",
+        "description": "type of coupler",
+        "valid-options": [
+            {
+                "name": "OASIS",
+                "build_files": ["w3oacpmd.F90"],
+                "conflicts": ["FLX1", "FLX2", "FLX3", "FLX4"]
+
+            }
+        ]
+    },
+    {
+        "name": "trknc",
+        "num_switches": "upto1",
+        "description": "use of netcdf for tracking of wave systems",
+        "valid-options": [
+            {
+                "name": "TRKNC"
+            }
+        ]
+    },
+    {
+        "name": "pdlib",
+        "num_switches": "upto1",
+        "description": "use pdlib",
+        "valid-options": [
+            {
+                "name": "PDLIB",
+                "requires": ["MPI"]
+            }
+        ]
+    },
+    {
+        "name": "memck",
+        "num_switches": "upto1",
+        "description": "check memory use",
+        "valid-options": [
+            {
+                "name": "MEMCHECK",
+                "build_files": ["w3meminfo.F90"]
+            }
+        ]
+    },
+    {
+        "name": "setup",
+        "num_switches": "upto1",
+        "description": "switch to zeta setup",
+        "valid-options": [
+            {
+                "name": "SETUP",
+                "build_files": ["w3wavset.F90"]
+            }
+        ]
+    },
+    {
+        "name": "uost",
+        "num_switches": "unresolved obstacles source term",
+        "description": "upto1",
+        "valid-options": [
+            {
+                "name": "UOST",
+                "build_files": ["w3uostmd.F90"]
+            }
+        ]
+    },
+    {
+        "name": "b4b",
+        "num_switches": "upto1",
+        "description": "bit-for-bit reproducability",
+        "valid-options": [
+            {
+                "name": "B4B"
+            }
+        ]
+    }
+]

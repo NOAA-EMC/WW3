@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # matrix.comp Compare output of matrix for two model versions.                #
 #                                                                             #
@@ -160,7 +160,7 @@
                     files_dir=`ls $file`
                     for file1 in $files_dir 
                     do 
-                      files_1="$files_1 $file1"
+                      files_1="$files_1 $file/$file1"
                     done 
                   fi 
                 else
@@ -192,7 +192,7 @@
                     files_dir=`ls $file`
                     for file1 in $files_dir
                     do
-                      files_2="$files_1 $file1"
+                      files_2="$files_1 $file/$file1"
                     done
                   fi
                 else
