@@ -68,7 +68,7 @@
 #       - fields are I/O coupling between the two models                    #
 #       - remark : these fields must also be defined in type 1              #
 #   * prep_env.sh :                                                         #
-#     + compile the toy model, the oasis coupler and coy the inputs         #
+#     + compile the toy model, the oasis coupler and copy the inputs        #
 #   * namcouple :                                                           #
 #     + defines the configuration for the oasis coupler                     #
 #       - remark : grid dimensions for ww3 must be -2 to remove the halo    #
@@ -86,45 +86,31 @@
 #  Sample run_test commands :                                               #
 #(Note: Altix and mpirun commands differ by local system)                   #
 #                                                                           #
-#  ./bin/run_test -C OASIS -c Altix -s OASACM -f -o netcdf -w work_OASACM   #
-#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
-#  ./bin/run_test -C OASIS -c Altix -s OASOCM -f -o netcdf -w work_OASOCM   # 
-#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
-#  ./bin/run_test -C OASIS -c Altix -s OASICM -f -o netcdf -w work_OASICM   #
-#                 -p mpirun -n 4 ../model ww3_tp2.14                        #
-#  ./bin/run_rest -s OASACM2 -w work_OASACM2 -C OASIS -f -p mpirun -n 4     #
-#                 -o netcdf ../model ww3_tp2.14                             #
-#  mkdir -p ww3_tp2.14/work_OASACM3                                         #
-#  cp ww3_tp2.14/input/ww3_shel_OASACM3.nml                                 #
-#                 ww3_tp2.14/work_OASACM3/ww3_shel.nml                      #
-#  ./bin/run_test -s OASACM3 -w work_OASACM3 -f -p mpirun -n 2 -o netcdf    #
-#                 ../model ww3_tp2.14                                       #
+#  ./bin/run_test -C OASIS -s OASACM -f -o netcdf -w work_OASACM            #
+#                 -i input_oasacm -p mpirun -n 4 ../model ww3_tp2.14        #
+#  ./bin/run_test -C OASIS -s OASOCM -f -o netcdf -w work_OASOCM            # 
+#                 -i input_oasocm -p mpirun -n 4 ../model ww3_tp2.14        #
+#  ./bin/run_test -C OASIS -s OASICM -f -o netcdf -w work_OASICM            #
+#                 -i input_oasicm -p mpirun -n 4 ../model ww3_tp2.14        #
+#  ./bin/run_rest -C OASIS -s OASACM2 -f -o netcdf -w work_OASACM2          #
+#                 -i input_oasacm2 -p mpirun -n 4 ../model ww3_tp2.14       #
+#  ./bin/run_test          -s OASACM3 -f -o netcdf -w work_OASACM3          #
+#                 -i input_oasacm3 -p mpirun -n 2 ../model ww3_tp2.14       #
 #  mkdir -p ww3_tp2.14/work_OASACM4                                         #
 #  ln -sf ../work_OASACM3/restart001.ww3                                    #
 #                 ww3_tp2.14/work_OASACM4/restart.ww3                       #
-#  ./bin/run_test -r ww3_grid -s OASACM4 -w work_OASACM4 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  ./bin/run_test -r ww3_shel -s OASACM4 -w work_OASACM4 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  ./bin/run_test -r ww3_ounf -s OASACM4 -w work_OASACM4 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
+#  ./bin/run_test -C OASIS -s OASACM4 -f -o netcdf -w work_OASACM4          #
+#                 -i input_oasacm4 -p mpirun -n 4 ../model ww3_tp2.14       #
 #  mkdir -p ww3_tp2.14/work_OASACM5                                         #
 #  ln -sf ../work_OASACM4/restart001.ww3                                    #
-#                 ww3_tp2.14/work_OASACM5/restart.ww3"                      #
-#  ./bin/run_test -r ww3_grid -s OASACM5 -w work_OASACM5 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  ./bin/run_test -r ww3_shel -s OASACM5 -w work_OASACM5 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  ./bin/run_test -r ww3_ounf -s OASACM5 -w work_OASACM5 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  mv ww3_tp2.14/input/ww3_ounf.inp ww3_tp2.14/input/ww3_ounf.inp.bak       #
-#  cp ww3_tp2.14/input/ww3_ounf.inp-OASACM6 ww3_tp2.14/input/ww3_ounf.inp   #
-#  ./bin/run_test -g OASACM6  -s OASACM6 -w work_OASACM6 -C OASIS -f        #
-#                 -p mpirun -n 4 -o netcdf ../model ww3_tp2.14              #
-#  mv ww3_tp2.14/input/ww3_ounf.inp.bak ww3_tp2.14/input/ww3_ounf.inp       #
+#                 ww3_tp2.14/work_OASACM5/restart.ww3                       #
+#  ./bin/run_test -C OASIS -s OASACM5 -f -o netcdf -w work_OASACM5          #
+#                 -i input_oasacm5 -p mpirun -n 4 ../model ww3_tp2.14       #
+#  ./bin/run_test -C OASIS -s OASACM6 -f -o netcdf -w work_OASACM6          #
+#                 -i input_oasacm6 -p mpirun -n 4 ../model ww3_tp2.14       #
 #                                                                           #
 #                                             M. Accensi, Feb 2015          #
 #                                             Ifremer Institute             #
-#                                                   Last Mod : Oct 2020     #
+#                                                   Last Mod : Oct 2021     #
 #                                                                           #
 #############################################################################

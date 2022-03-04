@@ -328,6 +328,7 @@
 
       LOGICAL                 :: WRITE, IOSFLG
       LOGICAL                 :: FLOGOA(NOGRP,NGRPP)
+      LOGICAL                 :: NDSROPN      
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
 !      CHARACTER(LEN=21)       :: FNAME
@@ -606,6 +607,13 @@
 #ifdef W3_T
               WRITE (NDST,9005) TYPE
 #endif
+              ! Clean up file handles and allocated arrays                  
+              INQUIRE (UNIT=NDSR, OPENED=NDSROPN)
+              IF (NDSROPN)              CLOSE(NDSR)
+              IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
+              IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
+              IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
+
               RETURN
             ELSE IF ( IAPROC.LE.NAPROC .OR. IAPROC.EQ. NAPRST ) THEN
 #ifdef W3_DEBUGIO
@@ -1478,9 +1486,13 @@
 !
 ! Close file --------------------------------------------------------- *
 !
+  IF (WRITE) THEN        
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
         CLOSE ( NDSR )
       END IF
+  ELSE
+     CLOSE ( NDSR )
+  END IF
 !
 #ifdef W3_DEBUGIO
         WRITE(740+IAPROC,*)  'W3IORS, step 9'
