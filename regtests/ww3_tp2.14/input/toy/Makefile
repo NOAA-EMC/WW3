@@ -1,5 +1,5 @@
 #
-include <oasis_input_path>/util/make_dir/make.inc
+include $(OASIS_INPUT_PATH)/util/make_dir/make.inc
 #
 LIBPSMILE = $(ARCHDIR)/lib/libpsmile.${CHAN}.a $(ARCHDIR)/lib/libmct.a $(ARCHDIR)/lib/libmpeu.a $(ARCHDIR)/lib/libscrip.a
 #

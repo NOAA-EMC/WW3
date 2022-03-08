@@ -9,7 +9,7 @@ defaults:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel4
+  cache_key: intel5
   CC: icc
   FC: ifort
   CXX: icpc
@@ -64,7 +64,7 @@ jobs:
           spack env create ww3-intel ww3/model/ci/spack.yaml
           spack env activate ww3-intel
           spack compiler find
-          spack external find m4 cmake pkgconf openssl
+          spack external find
           spack add intel-oneapi-mpi
           spack concretize
           spack install --dirty -v
@@ -75,11 +75,12 @@ jobs:
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
+          export OASIS_INPUT_PATH=${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/oasis3-mct
+          export OASIS_WORK_PATH=${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct
           cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
-          mkdir build && cd build
-          cmake ..
+          cmake .
           make
-          cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/work_oasis3-mct ${GITHUB_WORKSPACE}
+          cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct ${GITHUB_WORKSPACE}
 
   build:
     needs: setup
