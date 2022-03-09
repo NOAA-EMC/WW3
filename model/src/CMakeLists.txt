@@ -89,17 +89,6 @@ if("OASIS" IN_LIST switches)
   target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
 endif()
 
-if(MULTI_ESMF)
-  # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
-  if (NOT TARGET esmf)
-    find_package(ESMF MODULE REQUIRED)
-  endif()
-  
-  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
-  target_link_libraries(ww3_lib PUBLIC esmf)
-  set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
-endif() 
-
 if(NETCDF)
   find_package(NetCDF REQUIRED COMPONENTS Fortran)
 endif()
@@ -109,6 +98,19 @@ if(NetCDF_Fortran_FOUND)
   target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
   list(APPEND programs ${netcdf_programs})
 endif()
+
+if(MULTI_ESMF)
+  # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
+  if (NOT TARGET esmf)
+    find_package(ESMF MODULE REQUIRED)
+  endif()
+  
+  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+  target_link_libraries(ww3_lib PUBLIC esmf)
+  set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
+  # Don't build executables when building WW3 ESMF library
+  set(programs "")
+endif() 
 
 set_property(SOURCE w3initmd.F90
   APPEND
@@ -159,6 +161,7 @@ if("TIDE" IN_LIST switches)
   list(APPEND programs ww3_prtide)
 endif()
 
+# Executables are not needed when building ww3_multi_esmf library
 foreach(program ${programs})
   add_executable(${program} ${program}.F90)
   target_link_libraries(${program} PRIVATE ww3_lib)
