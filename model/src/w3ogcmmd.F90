@@ -147,7 +147,9 @@
          ! Mask - wet-drying
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ODRY') THEN
-            RLA_OASIS_SND(:,1) = DBLE(MASK(1:NSEAL))
+            TMP(1:NSEAL) = 0.0
+            WHERE(MASK(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=MASK(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -181,14 +183,18 @@
          ! Charnock coefficient  (-)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OCHA') THEN
-            RLA_OASIS_SND(:,1) = DBLE(CHARN(1:NSEAL))
+            TMP(1:NSEAL) = 0.0
+            WHERE(CHARN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=CHARN(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
          ! Wave height (hs in m)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__OHS') THEN
-            RLA_OASIS_SND(:,1) = DBLE(HS(1:NSEAL))
+            TMP(1:NSEAL) = 0.0
+            WHERE(HS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=HS(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -198,7 +204,7 @@
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=COS(THM(1:NSEAL))
-            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -208,7 +214,7 @@
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=SIN(THM(1:NSEAL))
-            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -217,7 +223,7 @@
          ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east 
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__DIR') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(THM /= UNDEF) TMP=THM
+            WHERE(THM /= UNDEF) TMP(1:NSEAL)=THM(1:NSEAL)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -225,7 +231,9 @@
          ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__BHD') THEN
-            RLA_OASIS_SND(:,1) = DBLE(BHD(1:NSEAL))
+            TMP(1:NSEAL) = 0.0
+            WHERE(BHD(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=BHD(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -304,7 +312,9 @@
          ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__UBR') THEN
-            RLA_OASIS_SND(:,1) = DBLE(UBA(1:NSEAL))
+            TMP(1:NSEAL) = 0.0
+            WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
