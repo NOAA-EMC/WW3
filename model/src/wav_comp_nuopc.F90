@@ -605,6 +605,7 @@ contains
        call ESMF_LogWrite(trim(subname)//' done = wminit', ESMF_LOGMSG_INFO)
     else
        if (cesmcoupled) then
+          time = time0
           call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
