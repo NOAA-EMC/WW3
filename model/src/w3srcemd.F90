@@ -1195,9 +1195,6 @@
         CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
                            TAUSCX, TAUSCY, VSBS, VDBS )
 #endif
-#ifdef W3_PDLIB
-      ENDIF
-#endif
 !
 ! 2.e Unresolved Obstacles Source Term
 !
@@ -1267,7 +1264,7 @@
           VDIN(1:NSPECH) = ICESCALEIN * VDIN(1:NSPECH)
           VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
           VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
-          END IF
+        END IF
 !
         VS = 0
         VD = 0

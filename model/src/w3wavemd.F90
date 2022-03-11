@@ -408,7 +408,6 @@
       USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
       USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
       USE yowNodepool, only: npa, iplg, np
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
 #endif
 !/
       USE W3SERVMD
@@ -1907,7 +1906,6 @@
       FLUSH(740+IAPROC)
 #endif
 #endif
-              ENDIF
             ELSE
               UST   (ISEA) = UNDEF
               USTDIR(ISEA) = UNDEF
@@ -2716,7 +2714,7 @@
                      TMP4   = TAUICE(JSEA,1:2)
 #ifdef W3_PDLIB
               IF (FSSOURCE) THEN
-                   CALL W3SRCE(srce_imp_post,IT,JSEA,IX,IY,IMOD,  &
+                   CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,  &
                       VAOLD(:,JSEA), VA(:,JSEA),                  &
                       VSioDummy,VDioDummy,SHAVETOT(JSEA), &
                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
@@ -3731,7 +3729,7 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !/
-      USE W3GDATMD, ONLY: NSPEC, NX, NY, NSEA, NSEAL, MAPSF, DMIN
+      USE W3GDATMD!, ONLY: NSEAL, NSEA, MAPFS, NSPEC, NX, NY
       USE W3PARALL, ONLY: INIT_GET_ISEA
       USE W3WDATMD, ONLY: A => VA
 #ifdef W3_MPI
@@ -4031,11 +4029,11 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: NSEA, NSEAL, MAPSF, NSPEC, NX, NY
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
 !/
-      USE W3GDATMD, ONLY: NSPEC, NX, NY, NSEA, NSEAL, MAPSF
       USE W3WDATMD, ONLY: A => VA
 #ifdef W3_MPI
       USE W3ADATMD, ONLY: MPIBUF, BSTAT, IBFLOC, ISPLOC, BISPL, &
@@ -4327,7 +4325,7 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !/
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+      USE W3GDATMD, ONLY: NSEA, MAPSF, NX, NY
       USE W3ODATMD, ONLY: NDST, NAPROC
       USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/
