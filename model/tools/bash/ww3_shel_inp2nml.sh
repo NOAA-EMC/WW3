@@ -2,13 +2,16 @@
 
 prog="ww3_shel"
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-  echo "  [ERROR] need ${prog} input filename in argument [${prog}.inp]"
+  echo '[ERROR] need 2 arguments : '
+  echo "\$1 : ${prog} input filename in argument [${prog}.inp]"
+  echo '$2 : include header or full comments [header|full]' 
   exit 1
 fi
 
 inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
+comment="$2"
 
 # check filename extension
 ext=$(echo $inp | awk -F '.' '{print $NF}')
@@ -16,18 +19,6 @@ if [ "$(echo $ext)" != 'inp' ] ; then
   echo "[ERROR] input file has no .inp extension. Please rename it before conversion"  
   exit 1
 fi
-
-# commented because it is not working in all cases
-# link to temporary inp with regtest format
-#ext=$(echo $inp | awk -F"${prog}.inp." '{print $2}' || awk -F"${prog}.inp_" '{print $2}')
-#base=$(echo $inp | awk -F"${prog}\\..inp\\.." '{print $1}' | awk -F".inp.$ext" '{print $1}' || awk -F"${prog}\\..inp_" '{print $1}' | awk -F".inp_$ext" '{print $1}')
-#if [ ! -z $(echo $ext) ] ; then
-# new_inp=${base}_${ext}.inp
-# echo "link $inp to $new_inp"
-# ln -sfn $inp $new_inp
-# old_inp=$inp
-# inp=$new_inp
-#fi
 
 cd $( dirname $inp)
 cur_dir="../$(basename $(dirname $inp))"
@@ -101,6 +92,13 @@ done
 # get all values from clean inp file
 
 readarray -t lines < "$cleaninp"
+numlines=${#lines[@]}
+
+# remove carriage return characters
+for il in $(seq 0 $numlines)
+do
+  lines[$il]=$(echo "$(echo ${lines[$il]} | sed 's/\r$//')")
+done
 il=0
 
 # forcing
@@ -530,6 +528,7 @@ cat > $nmlfile << EOF
 EOF
 
 # domain namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 ! Define top-level model parameters via DOMAIN_NML namelist
@@ -551,6 +550,14 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
 EOF
+else
+cat >> $nmlfile << EOF
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+EOF
+fi
 
 if [ "$iostyp" != 1 ];                          then  echo "  DOMAIN%IOSTYP  = $iostyp" >> $nmlfile; fi
 if [ "${timestart[*]}" != "19680606 000000" ];  then  echo "  DOMAIN%START   = '${timestart[@]}'" >> $nmlfile; fi
@@ -560,6 +567,7 @@ if [ "${timestop[*]}" != "19680607 000000" ];   then  echo "  DOMAIN%STOP    = '
 
 
 # forcing namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -596,7 +604,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &INPUT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
 
+! -------------------------------------------------------------------- !
+! Define each forcing via the INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_NML
+EOF
+fi
 
 if [ "$mudice" = "T" ]
 then
@@ -713,6 +730,7 @@ fi
 
 
 # output type namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -895,6 +913,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+EOF
+fi
 
 if [ "${fielddate[3]}" != 0 ]; then  echo "  TYPE%FIELD%LIST          = '$fieldlist'" >> $nmlfile; fi
 
@@ -926,6 +954,7 @@ fi
 
 
 # output date namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -964,6 +993,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+EOF
+fi
 
 if [ "${fielddate[3]}" != '0' ]; then
   echo "  DATE%FIELD          = '${fielddate[1]} ${fielddate[2]}' '${fielddate[3]}' '${fielddate[4]} ${fielddate[5]}'" >> $nmlfile; fi
@@ -990,6 +1029,7 @@ fi
 
 
 # homogeneous input namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1040,6 +1080,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+EOF
+fi
 
 if [ $ntot -gt 0 ] ; then
 
@@ -1268,14 +1318,6 @@ EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 
-# commented because it is not working in all cases
-#if [ ! -z $(echo $ext) ] ; then
-#  unlink $new_inp
-#  addon="$(echo $(basename $nmlfile) | awk -F"${prog}_" '{print $2}' | awk -F'.nml' '{print $1}'  )"
-#  new_nmlfile="${prog}.nml.$addon"
-#  mv $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile) $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)
-#  echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
-#fi
 #------------------------------
 
 

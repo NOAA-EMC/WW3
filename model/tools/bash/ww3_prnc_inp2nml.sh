@@ -2,13 +2,16 @@
 
 prog="ww3_prnc"
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-  echo "  [ERROR] need ${prog} input filename in argument [${prog}.inp]"
+  echo '[ERROR] need 2 arguments : '
+  echo "\$1 : ${prog} input filename in argument [${prog}.inp]"
+  echo '$2 : include header or full comments [header|full]' 
   exit 1
 fi
 
 inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
+comment="$2"
 
 # check filename extension
 ext=$(echo $inp | awk -F '.' '{print $NF}')
@@ -16,18 +19,6 @@ if [ "$(echo $ext)" != 'inp' ] ; then
   echo "[ERROR] input file has no .inp extension. Please rename it before conversion"  
   exit 1
 fi
-
-# commented because it is not working in all cases
-# link to temporary inp with regtest format
-#ext=$(echo $inp | awk -F"${prog}.inp." '{print $2}' || awk -F"${prog}.inp_" '{print $2}')
-#base=$(echo $inp | awk -F"${prog}\\..inp\\.." '{print $1}' | awk -F".inp.$ext" '{print $1}' || awk -F"${prog}\\..inp_" '{print $1}' | awk -F".inp_$ext" '{print $1}')
-#if [ ! -z $(echo $ext) ] ; then
-# new_inp=${base}_${ext}.inp
-# echo "link $inp to $new_inp"
-# ln -sfn $inp $new_inp
-# old_inp=$inp
-# inp=$new_inp
-#fi
 
 cd $( dirname $inp)
 cur_dir="../$(basename $(dirname $inp))"
@@ -75,6 +66,13 @@ done
 # get all values from clean inp file
 
 readarray -t lines < "$cleaninp"
+numlines=${#lines[@]}
+
+# remove carriage return characters
+for il in $(seq 0 $numlines)
+do
+  lines[$il]=$(echo "$(echo ${lines[$il]} | sed 's/\r$//')")
+done
 il=0
 
 field="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
@@ -144,6 +142,7 @@ cat > $nmlfile << EOF
 EOF
 
 # forcing namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 ! Define the forcing fields to preprocess via FORCING_NML namelist
@@ -180,6 +179,14 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &FORCING_NML
 EOF
+else
+cat >> $nmlfile << EOF
+! -------------------------------------------------------------------- !
+! Define the forcing fields to preprocess via FORCING_NML namelist
+! -------------------------------------------------------------------- !
+&FORCING_NML
+EOF
+fi
 
 if [ "$field" = "IC1" ]; then echo "  FORCING%FIELD%ICE_PARAM1     = T" >> $nmlfile; fi
 if [ "$field" = "IC2" ]; then echo "  FORCING%FIELD%ICE_PARAM2     = T" >> $nmlfile; fi
@@ -211,6 +218,7 @@ fi
 
 
 # file namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -239,6 +247,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &FILE_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the content of the input file via FILE_NML namelist
+! -------------------------------------------------------------------- !
+&FILE_NML
+EOF
+fi
 
 if [ "$filename" != "unset" ];  then  echo "  FILE%FILENAME      = $filename" >> $nmlfile; fi
 if [ "$lon" != "unset" ];  then  echo "  FILE%LONGITUDE     = '$lon'" >> $nmlfile; fi
@@ -260,14 +278,6 @@ EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 
-# commented because it is not working in all cases
-#if [ ! -z $(echo $ext) ] ; then
-#  unlink $new_inp
-#  addon="$(echo $(basename $nmlfile) | awk -F"${prog}_" '{print $2}' | awk -F'.nml' '{print $1}'  )"
-#  new_nmlfile="${prog}.nml.$addon"
-#  mv $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile) $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)
-#  echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
-#fi
 #------------------------------
 
 

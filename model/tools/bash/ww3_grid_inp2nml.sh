@@ -2,13 +2,16 @@
 
 prog="ww3_grid"
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-  echo "  [ERROR] need ${prog} input filename in argument [${prog}.inp]"
+  echo '[ERROR] need 2 arguments : '
+  echo "\$1 : ${prog} input filename in argument [${prog}.inp]"
+  echo '$2 : include header or full comments [header|full]' 
   exit 1
 fi
 
 inp="$( cd "$( dirname "$1" )" && pwd )/$(basename $1)"
+comment="$2"
 
 # check filename extension
 ext=$(echo $inp | awk -F '.' '{print $NF}')
@@ -16,18 +19,6 @@ if [ "$(echo $ext)" != 'inp' ] ; then
   echo "[ERROR] input file has no .inp extension. Please rename it before conversion"  
   exit 1
 fi
-
-# commented because it is not working in all cases
-# link to temporary inp with regtest format
-#ext=$(echo $inp | awk -F"${prog}.inp." '{print $2}' || awk -F"${prog}.inp_" '{print $2}')
-#base=$(echo $inp | awk -F"${prog}\\..inp\\.." '{print $1}' | awk -F".inp.$ext" '{print $1}' || awk -F"${prog}\\..inp_" '{print $1}' | awk -F".inp_$ext" '{print $1}')
-#if [ ! -z $(echo $ext) ] ; then
-# new_inp=${base}_${ext}.inp
-# echo "link $inp to $new_inp"
-# ln -sfn $inp $new_inp
-# old_inp=$inp
-# inp=$new_inp
-#fi
 
 cd $( dirname $inp)
 cur_dir="../$(basename $(dirname $inp))"
@@ -92,6 +83,13 @@ done
 # get all values from clean inp file
 
 readarray -t lines < "$cleaninp"
+numlines=${#lines[@]}
+
+# remove carriage return characters
+for il in $(seq 0 $numlines)
+do
+  lines[$il]=$(echo "$(echo ${lines[$il]} | sed 's/\r$//')")
+done
 il=0
 
 # grid name
@@ -965,6 +963,7 @@ cat > $nmlfile << EOF
 EOF
 
 # spectrum namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 ! Define the spectrum parameterization via SPECTRUM_NML namelist
@@ -979,6 +978,13 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &SPECTRUM_NML
 EOF
+else
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+EOF
+fi
 
 if [ "$xfr" != 0. ];    then  echo "  SPECTRUM%XFR       =  $xfr" >> $nmlfile; fi
 if [ "$freq1" != 0. ];  then  echo "  SPECTRUM%FREQ1     =  $freq1" >> $nmlfile; fi
@@ -989,6 +995,7 @@ if [ "$thoff" != 0. ];  then  echo "  SPECTRUM%THOFF     =  $thoff" >> $nmlfile;
 
 
 # run namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1006,6 +1013,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &RUN_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+EOF
+fi
 
 if [ "$fldry" != F ];    then  echo "  RUN%FLDRY        =  $fldry" >> $nmlfile; fi
 if [ "$flcx" != F ];     then  echo "  RUN%FLCX         =  $flcx" >> $nmlfile; fi
@@ -1017,6 +1034,7 @@ if [ "$flsou" != F ];    then  echo "  RUN%FLSOU        =  $flsou" >> $nmlfile; 
 
 
 # timesteps namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1053,6 +1071,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+EOF
+fi
 
 if [ "$dtmax" != 0. ];    then  echo "  TIMESTEPS%DTMAX        =  $dtmax" >> $nmlfile; fi
 if [ "$dtxy" != 0. ];     then  echo "  TIMESTEPS%DTXY         =  $dtxy" >> $nmlfile; fi
@@ -1060,6 +1088,7 @@ if [ "$dtkth" != 0. ];    then  echo "  TIMESTEPS%DTKTH        =  $dtkth" >> $nm
 if [ "$dtmin" != 0. ];    then  echo "  TIMESTEPS%DTMIN        =  $dtmin" >> $nmlfile; fi
 
 # grid namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1122,6 +1151,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &GRID_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+EOF
+fi
 
 if [ "$gridname" != 'unset' ];               then  echo "  GRID%NAME         =  '$gridname'" >> $nmlfile; fi
 if [ "$nml_filename" != 'namelists.nml' ];   then  echo "  GRID%NML          =  '$nml_filename'" >> $nmlfile; fi
@@ -1135,6 +1174,7 @@ if [ "$depth_dmin" != 0. ];                  then  echo "  GRID%DMIN         =  
 if [ "$type" == 'RECT' ]; then
 
 # rect namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1166,6 +1206,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &RECT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+EOF
+fi
 
   if [ "$nx" != 0 ];           then  echo "  RECT%NX           =  $nx" >> $nmlfile; fi
   if [ "$ny" != 0 ];           then  echo "  RECT%NY           =  $ny" >> $nmlfile; fi
@@ -1181,6 +1231,7 @@ fi # RECT
 if [ "$type" == 'CURV' ]; then
 
 # curv namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1235,6 +1286,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &CURV_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the curvilinear grid type via CURV_NML namelist
+! -------------------------------------------------------------------- !
+&CURV_NML
+EOF
+fi
 
   if [ "$nx" != 0. ];                   then  echo "  CURV%NX              =  $nx" >> $nmlfile; fi
   if [ "$ny" != 0. ];                   then  echo "  CURV%NY              =  $ny" >> $nmlfile; fi
@@ -1262,6 +1323,7 @@ fi # CURV
 if [ "$type" == 'UNST' ]; then
 
 # unst namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1321,6 +1383,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &UNST_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the unstructured grid type via UNST_NML namelist
+! -------------------------------------------------------------------- !
+&UNST_NML
+EOF
+fi
 
   if [ "$depth_sf" != 1. ];             then  echo "  UNST%SF          =  $depth_sf" >> $nmlfile; fi
   if [ "$depth_filename" != 'unset' ];  then  echo "  UNST%FILENAME    =  '$depth_filename'" >> $nmlfile; fi
@@ -1337,6 +1409,7 @@ fi # UNST
 if [ "$mcels_filename" != 'unset' ]; then
 
 # smc namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1417,6 +1490,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &SMC_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+EOF
+fi
 
   if [ "$mcels_filename" != 'unset' ];   then  echo "  SMC%MCELS%FILENAME        =  '$mcels_filename'" >> $nmlfile; fi
 #  if [ "$mcels_idf" != 31 ];             then  echo "  SMC%MCELS%IDF             =  $mcels_idf" >> $nmlfile; fi
@@ -1479,6 +1562,7 @@ if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then
   if [ $SMC == 0 ]; then
 
 # depth namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1520,6 +1604,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &DEPTH_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+EOF
+fi
 
   if [ "$depth_sf" != 1. ];            then  echo "  DEPTH%SF        =  $depth_sf" >> $nmlfile; fi
   if [ "$depth_filename" != 'unset' ]; then  echo "  DEPTH%FILENAME  =  '$depth_filename'" >> $nmlfile; fi
@@ -1537,6 +1631,7 @@ if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then
   if [ $SMC == 0 ]; then
     if [ "$mask_filename" != 'unset' ]; then
 # mask namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1582,6 +1677,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &MASK_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the point status map via MASK_NML namelist
+! -------------------------------------------------------------------- !
+&MASK_NML
+EOF
+fi
 
   if [ "$mask_from" == 'NAME' ]; then
     if [ "$mask_filename" != 'unset' ]; then  echo "  MASK%FILENAME  =  '$mask_filename'" >> $nmlfile; fi
@@ -1602,6 +1707,7 @@ if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then
       if [ $flagtr -gt 0 ]; then
 
 # obst namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1654,6 +1760,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &OBST_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the obstruction map via OBST_NML namelist
+! -------------------------------------------------------------------- !
+&OBST_NML
+EOF
+fi
 
       if [ "$obst_sf" != 1. ];            then  echo "  OBST%SF        =  $obst_sf" >> $nmlfile; fi
       if [ "$obst_filename" != 'unset' ]; then  echo "  OBST%FILENAME  =  '$obst_filename'" >> $nmlfile; fi
@@ -1673,6 +1789,7 @@ if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then
     if [ $(echo "$refmap == 2" | bc -l) -eq 1 ]; then
 
 # slope namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1714,6 +1831,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &SLOPE_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the reflexion slope map via SLOPE_NML namelist
+! -------------------------------------------------------------------- !
+&SLOPE_NML
+EOF
+fi
 
       if [ "$slope_sf" != 1. ];            then  echo "  SLOPE%SF        =  $slope_sf" >> $nmlfile; fi
       if [ "$slope_filename" != 'unset' ]; then  echo "  SLOPE%FILENAME  =  '$slope_filename'" >> $nmlfile; fi
@@ -1731,6 +1858,7 @@ if [ ! -z "$(grep 'SEDMAPD50' $forinamelist)" ]; then
   if [ $sedmapd50 ]; then
 
 # sed namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1771,6 +1899,16 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &SED_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the sedimentary bottom map via SED_NML namelist
+! -------------------------------------------------------------------- !
+&SED_NML
+EOF
+fi
 
       if [ "$sed_sf" != 1. ];            then  echo "  SED%SF        =  $sed_sf" >> $nmlfile; fi
       if [ "$sed_filename" != 'unset' ]; then  echo "  SED%FILENAME  =  '$sed_filename'" >> $nmlfile; fi
@@ -1787,6 +1925,7 @@ fi # SEDMAPD50
 if [ "$mask_filename" == 'unset' ] && [ $n_inpt -gt 0 ]; then 
 
 # inbound namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1828,6 +1967,17 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &INBND_COUNT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! -------------------------------------------------------------------- !
+&INBND_COUNT_NML
+EOF
+fi
 
   if [ $n_inpt -gt 0 ]; then  echo "  INBND_COUNT%N_POINT    =  $n_inpt" >> $nmlfile; fi
 
@@ -1849,6 +1999,7 @@ fi # PART
 if [ "$mask_filename" != 'unset' ] && ( [ $n_expt -gt 0 ] || [ $n_exbd -gt 0 ] ); then 
 
 # excluded namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1895,6 +2046,17 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &EXCL_COUNT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the excluded points and bodies via EXCL_COUNT_NML, EXCL_POINT_NML 
+!                                           and EXCL_BODY_NML namelist
+! -------------------------------------------------------------------- !
+&EXCL_COUNT_NML
+EOF
+fi
 
   if [ $n_expt -gt 0 ]; then  echo "  EXCL_COUNT%N_POINT    =  $n_expt" >> $nmlfile; fi
   if [ $n_exbd -gt 0 ]; then  echo "  EXCL_COUNT%N_BODY     =  $n_exbd" >> $nmlfile; fi
@@ -1931,6 +2093,7 @@ fi # PART
 if ( [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] ) && [ $n_ouln -gt 0 ]; then 
 
 # outbound namelist
+if [ "$comment" = "full" ]; then
 cat >> $nmlfile << EOF
 /
 
@@ -1972,6 +2135,17 @@ cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 &OUTBND_COUNT_NML
 EOF
+else
+cat >> $nmlfile << EOF
+/
+
+! -------------------------------------------------------------------- !
+! Define the output boundary points via OUTBND_COUNT_NML and
+!                                       OUTBND_LINE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTBND_COUNT_NML
+EOF
+fi
 
   if [ $n_ouln -gt 0 ]; then  echo "  OUTBND_COUNT%N_LINE   =  $n_ouln" >> $nmlfile; fi
 
@@ -2001,14 +2175,6 @@ EOF
 echo "DONE : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile)"
 rm -f $cleaninp
 
-# commented because it is not working in all cases
-#if [ ! -z $(echo $ext) ] ; then
-#  unlink $new_inp
-#  addon="$(echo $(basename $nmlfile) | awk -F"${prog}_" '{print $2}' | awk -F'.nml' '{print $1}'  )"
-#  new_nmlfile="${prog}.nml.$addon"
-#  mv $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $nmlfile) $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)
-#  echo "RENAMED  : $( cd "$( dirname "$nmlfile" )" && pwd )/$(basename $new_nmlfile)"
-#fi
 #------------------------------
 
 
