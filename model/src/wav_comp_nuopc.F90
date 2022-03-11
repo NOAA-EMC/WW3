@@ -626,7 +626,6 @@ contains
     else
        call waveinit_ufs(gcomp, ntrace, mpi_comm, mds, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
     end if
 #else
     time = time0
