@@ -686,7 +686,7 @@ contains
                    endif
                 endif !NC
 
-             end if ! end of if ( FLOGRD(IFI,IFJ) ) 
+             end if ! end of if ( FLOGRD(IFI,IFJ) )
           end do IFJ_LOOP
        end do IFI_LOOP
     end do NC_LOOP
@@ -740,7 +740,7 @@ contains
 
 !/ ------------------------------------------------------------------- /
   SUBROUTINE HANDLE_ERR(IERR,STRING)
-    USE W3ODATMD, ONLY: NDSE 
+    USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
     USE NETCDF
 
@@ -750,7 +750,7 @@ contains
     integer         ,intent(in) :: ierr
     character(len=*),intent(in) :: string
 
-    IF (IERR /= NF90_NOERR) then 
+    IF (IERR /= NF90_NOERR) then
          WRITE(NDSE,*) "*** WAVEWATCH III netCDF error: ",trim(string),':',trim(nf90_strerror(IERR))
          CALL EXTCDE ( 49 )
     END IF

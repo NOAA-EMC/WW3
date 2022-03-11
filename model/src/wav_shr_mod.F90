@@ -62,6 +62,7 @@ module wav_shr_mod
 
   ! Only used by ufs
   logical            , public :: merge_import  = .false.
+  logical           , public :: multigrid = .false.
 
   interface ymd2date
      module procedure ymd2date_int

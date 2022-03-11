@@ -8,7 +8,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag
+  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid
   use constants    , only : grav, tpi, dwat
 
   implicit none
@@ -214,13 +214,19 @@ contains
     ! Obtain the wave input from the mediator
     !---------------------------------------------------------------------------
 
-    use w3gdatmd    , only: nsea, nseal, MAPSTA, NX, NY
+    use w3gdatmd    , only: nsea, nseal, MAPSTA, NX, NY, w3setg
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
-    use w3wdatmd    , only: time
+    use w3idatmd    , only: tfn, w3seti
+    use w3odatmd    , only: w3seto
+    use w3wdatmd    , only: time, w3setw
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
+#else
+    use wmupdtmd    , only: wmupd2
+    use wmmdatmd    , only: wmsetm, mpi_comm_grd
+    use wmmdatmd    , only: mdse, mdst, nrgrd, inpmap
 #endif
 
     ! input/output variables
@@ -237,6 +243,8 @@ contains
     real(r4)                :: def_value
     character(len=10)       :: uwnd
     character(len=10)       :: vwnd
+    integer                 :: imod, j, jmod
+    integer                 :: mpi_comm_null = -1
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=CL)       :: msgString
@@ -269,6 +277,11 @@ contains
     ! set time for input data to time0 and timen (shouldn't matter)
 
     def_value = 0.0_r4
+
+#ifndef CESMCOUPLED
+    call w3setg ( 1, mdse, mdst )
+    call w3seti ( 1, mdse, mdst )
+#endif
 
     ! ---------------
     ! INFLAGS1(1)
@@ -473,6 +486,31 @@ contains
        end if
     end if
 
+#ifndef CESMCOUPLED
+    if (multigrid) then
+       do j = lbound(inflags1,1),ubound(inflags1,1)
+          if (inflags1(j)) then
+             do imod = 1,nrgrd
+                tfn(:,j) = timen(:)
+                call w3setg ( imod, mdse, mdst )
+                call w3setw ( imod, mdse, mdst )
+                call w3seti ( imod, mdse, mdst )
+                call w3seto ( imod, mdse, mdst )
+                call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
+                if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
+                !TODO: when is this active? jmod = -999
+                jmod = inpmap(imod,j)
+                if ( jmod.lt.0 .and. jmod.ne.-999 ) then
+                  call wmupd2( imod, j, jmod, rc )
+                  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                endif
+             end do
+          end if
+       end do
+    end if
+#endif
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
@@ -486,13 +524,17 @@ contains
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
     use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : w3seta
+    use w3idatmd      , only : w3seti
+    use w3wdatmd      , only : va, w3setw
+    use w3odatmd      , only : w3seto, naproc, iaproc
+    use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK, w3setg
+    use w3iogomd      , only : CALC_U3STOKES
 #ifdef CESMCOUPLED
     use w3adatmd      , only : LAMULT
+#else
+    use wmmdatmd      , only : mdse, mdst, wmsetm
 #endif
-    use w3wdatmd      , only : va
-    use w3odatmd      , only : naproc, iaproc
-    use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK
-    use w3iogomd      , only : CALC_U3STOKES
 
     ! input/output/variables
     type(ESMF_GridComp)            :: gcomp
@@ -542,7 +584,16 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifdef CESMCOUPLED
+#ifndef CESMCOUPLED
+    call w3setg ( 1, mdse, mdst )
+    call w3setw ( 1, mdse, mdst )
+    call w3seta ( 1, mdse, mdst )
+    call w3seti ( 1, mdse, mdst )
+    call w3seto ( 1, mdse, mdst )
+    if (multigrid) then
+       call wmsetm ( 1, mdse, mdst )
+    end if
+#else
     if (state_fldchk(exportState, 'Sw_lamult')) then
        call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
