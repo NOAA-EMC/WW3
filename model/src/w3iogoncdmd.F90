@@ -617,7 +617,7 @@ contains
                    endif
                    if (WAUXEF) then
                       ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXEF=T, FLDSTRE, VARID', TRIM(FLDSTRE), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(3),DIMID(4),dimid(5)/),VARID)
+                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(4),dimid(5)/),VARID)
                       IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
                       IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTRE)
                       IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTRE)
