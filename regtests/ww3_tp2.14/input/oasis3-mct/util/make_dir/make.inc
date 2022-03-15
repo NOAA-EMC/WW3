@@ -10,6 +10,6 @@
 # Note: Choose one of these includes files and modify it according to your
 #       local settings. Replace the currently active file with your own.
 #
-include  <oasis_input_path>/util/make_dir/cmplr
+include  $(OASIS_INPUT_PATH)/util/make_dir/cmplr
 #
 ### End User configurable options ###

@@ -11,6 +11,14 @@ project(
   VERSION ${pVersion}
   LANGUAGES C Fortran)
 
+get_directory_property(hasParent PARENT_DIRECTORY)
+if(hasParent)
+  # Unset flags that come from UFS because they (-r8/-r4) conflict
+  # with Ww3
+  set(CMAKE_Fortran_FLAGS "")
+  set(CMAKE_C_FLAGS "")
+endif()
+
 set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
 

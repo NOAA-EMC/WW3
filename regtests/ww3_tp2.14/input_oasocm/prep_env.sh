@@ -34,7 +34,6 @@ echo '   Setup oasis cmplr file'
 cd $path_w/oasis3-mct/util/make_dir
 
 echo '   setup oasis make.inc file'
-sed -e "s:<oasis_input_path>:$path_w/oasis3-mct:" make.inc.tmpl > make.inc
 
 echo '   compile oasis coupler'
 # Build OASIS with CMake wrapper
@@ -44,8 +43,6 @@ make
 
 echo '   setup toy Makefile'
 cd $path_w/toy
-sed -e "s:<oasis_input_path>:$path_w/oasis3-mct:" Makefile.tmpl > Makefile
-
 
 echo '   compile toy model'
 make clean > $path_w/toy_clean.out
