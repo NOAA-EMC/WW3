@@ -165,9 +165,21 @@ then
   forc[15,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
   forc[15,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
   echo ${forc[15,1]} ${forc[15,2]}
+  il=$(($il+1))
+  forc[16,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo ${forc[16,1]}
+  il=$(($il+1))
+  forc[17,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo ${forc[17,1]}
 else
   mudice=F
   echo 'no mudice'
+  il=$(($il+1))
+  forc[8,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo ${forc[8,1]}
+  il=$(($il+1))
+  forc[9,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo ${forc[9,1]}
 fi
 
 

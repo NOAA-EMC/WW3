@@ -979,6 +979,7 @@ cat >> $nmlfile << EOF
 &SPECTRUM_NML
 EOF
 else
+cat >> $nmlfile << EOF
 ! -------------------------------------------------------------------- !
 ! Define the spectrum parameterization via SPECTRUM_NML namelist
 ! -------------------------------------------------------------------- !
