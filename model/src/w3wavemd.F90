@@ -1773,9 +1773,9 @@
 #endif
 
 !!AR: This OpenMP statement is wrong
-!!#ifdef W3_OMP0
-!!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
-!!#endif
+#ifdef W3_OMP0
+!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
+#endif
 
 #ifdef W3_PDLIB
           D50=0.0002
