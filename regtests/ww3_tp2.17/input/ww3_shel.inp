@@ -54,7 +54,7 @@ $                               see w3iogo.ftn for additional doc.
 $          
 $          
 $
-   20151214 020000 150 20151214 040000
+   20151214 020000 3600 20151214 040000
   N
  WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR
 $
@@ -102,7 +102,7 @@ $ Type 4 : Restart files (no additional data required).
 $                               The data file is restartN.ww3, see
 $                               w3iors.ftn for additional doc.
 $
-   20151214 020000 150  20151215 000000
+   20151214 020000 3600  20151215 000000
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
