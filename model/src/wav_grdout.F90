@@ -1,6 +1,10 @@
 module wav_grdout
 
+  use w3odatmd    , only: nogrp, ngrpp
+
   implicit none
+
+  integer, parameter   :: maxvars = 24         ! maximum number of variables/group
 
   private ! except
 
@@ -17,39 +21,43 @@ module wav_grdout
      logical           :: validout
   end type
 
+  type(varatts), dimension(nogrp,maxvars) :: gridoutdefs
+
   type(varatts), dimension(:), allocatable :: outvars
 
 !===============================================================================
 contains
 !===============================================================================
 
-
   !====================================================================================
   subroutine wavinit_grdout
 
     use w3odatmd    , only: nds, iaproc, napout
-    use w3idatmd    , only: nogrp, ngrpp
     use w3iogomd    , only: fldout
     use w3servmd    , only: strsplit
 
     ! local variables
-    integer, parameter      :: maxvars = 24         ! maximum number of variables/group
     character(len=100)      :: inptags(100) = ''
     integer                 :: j,k,n,nout
-
-    type(varatts), dimension(nogrp,maxvars) :: gridoutdefs
 
     ! obtain all possible output variable tags and attributes
     call initialize_gridout
 
     ! obtain the tags for the requested output variables
     call strsplit(fldout,inptags)
+    do n = 1,len(inptags)
+      !print *,'inptags split ',n,' ',trim(inptags(n)),' ',len_trim(inptags(n))
+    end do
 
     ! determine which variables are tagged for output
     do k = 1,nogrp
        do j = 1,maxvars
           if (len_trim(gridoutdefs(k,j)%tag) > 0) then
-             if (scan(trim(inptags), trim(gridoutdefs(k,j)%tag)) > 0) gridoutdefs(k,j)%validout = .true.
+             do n = 1,len(inptags)
+                if (len_trim(inptags(n)) > 0) then
+                   if (trim(inptags(n)) == trim(gridoutdefs(k,j)%tag)) gridoutdefs(k,j)%validout = .true.
+                end if
+             end do
           end if
        end do
     end do
@@ -81,10 +89,12 @@ contains
        write(nds(1),'(a)')' --------------------------------------------------'
        write(nds(1),'(a)')'  Requested gridded output variables : '
        write(nds(1),'(a)')' --------------------------------------------------'
+       write(nds(1),*)
        do n = 1,nout
-          write(nds(1),'(i5,a)') *,n,'  ',trim(outvars(n)%tag),' ',trim(outvars(n)%var_name),'  ', &
-             trim(outvars(n)%dims)
+          write(nds(1),'(i5,a)')n,'  '//trim(outvars(n)%tag)//' '//trim(outvars(n)%var_name)//'  '// &
+             trim(outvars(n)%long_name)
        end do
+       write(nds(1),*)
     end if
 
   end subroutine wavinit_grdout
@@ -249,4 +259,4 @@ contains
     varatts( "U2   ", "U2        ", "User defined 2                                  ", "nd   ", "x y   ", .false.)  &
                         ]
   end subroutine initialize_gridout
-end module wav_grdout_defs
+end module wav_grdout
