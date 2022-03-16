@@ -45,9 +45,6 @@ contains
 
     ! obtain the tags for the requested output variables
     call strsplit(fldout,inptags)
-    do n = 1,len(inptags)
-      !print *,'inptags split ',n,' ',trim(inptags(n)),' ',len_trim(inptags(n))
-    end do
 
     ! determine which variables are tagged for output
     do k = 1,nogrp
@@ -100,7 +97,6 @@ contains
   end subroutine wavinit_grdout
 
   !====================================================================================
-
   subroutine initialize_gridout
 
     gridoutdefs(:,:)%tag = ""
