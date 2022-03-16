@@ -31,7 +31,9 @@ contains
 #ifdef CESMCOUPLED
     USE W3ADATMD, ONLY: LANGMT
 #endif
-    use wav_shr_mod, only: time_origin, calendar_name, elapsed_secs
+    use wav_grdout_defs, only: varatts, outvars
+    use wav_shr_mod    , only: time_origin, calendar_name, elapsed_secs
+
     USE NETCDF
 
     IMPLICIT NONE
@@ -40,19 +42,39 @@ contains
 !/ Local parameters
 !/
     INTEGER                 :: IGRD, IERR, I, J, IX, IY, ISEA, IFI, IFJ
-    REAL                    :: AUX1(NSEA), AUX2(NSEA), AUX3(NSEA), AUX4(NSEA)
-    REAL                    :: AUXE(NSEA,0:NOSWLL), AUXEF(NSEA,E3DF(2,1):E3DF(3,1))
-    REAL,    ALLOCATABLE    :: AUX2D1(:,:), AUX2D2(:,:), AUX2D3(:,:)
-    REAL,    ALLOCATABLE    :: AUX3DEF(:,:,:), AUX3DE(:,:,:)
-    LOGICAL                 :: WAUX1, WAUX2, WAUX3, WAUXE, WAUXEF
-    INTEGER                 :: VARID, NCLOOP
-    CHARACTER(LEN=16)       :: FLDSTR1, FLDSTR2, FLDSTR3, FLDSTRE
-    CHARACTER(LEN=16)       :: UNITSTR1, UNITSTR2, UNITSTR3, UNITSTRE
-    CHARACTER(LEN=128)      :: LNSTR1, LNSTR2, LNSTR3, LNSTRE
-    INTEGER                 :: EF_LEN
-    INTEGER                 :: NCID, DIMID(5)
+    !REAL                    :: AUX1(NSEA), AUX2(NSEA), AUX3(NSEA), AUX4(NSEA)
+    !REAL                    :: AUXE(NSEA,0:NOSWLL), AUXEF(NSEA,E3DF(2,1):E3DF(3,1))
+    !REAL,    ALLOCATABLE    :: AUX2D1(:,:), AUX2D2(:,:), AUX2D3(:,:)
+    !REAL,    ALLOCATABLE    :: AUX3DEF(:,:,:), AUX3DE(:,:,:)
+    !LOGICAL                 :: WAUX1, WAUX2, WAUX3, WAUXE, WAUXEF
+    !INTEGER                 :: VARID, NCLOOP
+    !CHARACTER(LEN=16)       :: FLDSTR1, FLDSTR2, FLDSTR3, FLDSTRE
+    !CHARACTER(LEN=16)       :: UNITSTR1, UNITSTR2, UNITSTR3, UNITSTRE
+    !CHARACTER(LEN=128)      :: LNSTR1, LNSTR2, LNSTR3, LNSTRE
+    !INTEGER                 :: EF_LEN
+    !INTEGER                 :: NCID, DIMID(5)
+    integer    ,target       :: dimid3(3)
+    integer    ,target       :: dimid4(4)
+    integer    ,pointer      :: dimid(:)
+
     CHARACTER(len=1024)     :: FNAME
     LOGICAL                 :: EXISTS
+
+    integer :: ncid, ierr, xtid, ytid, stid, btid, mtid, ptid, ktid, timid, varid
+    integer :: i,j,n,nt,ii
+    logical :: s_axis = .false., b_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
+
+    integer, parameter :: len_s = noswll + 1
+    integer, parameter :: len_b = 3 ! currently hardwired to 3 bedform variables
+    integer, parameter :: len_m = P2MSF(3)-P2MSF(2) + 1
+    integer, parameter :: len_p = usspf(2)
+    integer, parameter :: len_k = e3df(3,1) - e3df(2,1) + 1
+
+    interface writevar
+       module procedure write_var
+       module procedure write_var_s
+    end interface
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -68,40 +90,35 @@ contains
     ! Allocate fields needed for write
     ! -------------------------------------------------------------
 
-    ALLOCATE ( AUX2D1(NX,NY), AUX2D2(NX,NY), AUX2D3(NX,NY), AUX3DE(NX,NY,0:NOSWLL) )
-    ALLOCATE ( AUX3DEF(NX,NY,E3DF(2,1):E3DF(3,1)) )
-    !
-    ! -------------------------------------------------------------
-    ! Create the netcdf file and return the ncid and dimid
-    ! -------------------------------------------------------------
-    call hist_filename(fname)
+    !ALLOCATE ( AUX2D1(NX,NY), AUX2D2(NX,NY), AUX2D3(NX,NY), AUX3DE(NX,NY,0:NOSWLL) )
+    !ALLOCATE ( AUX3DEF(NX,NY,E3DF(2,1):E3DF(3,1)) )
 
-    ef_len = e3df(3,1) - e3df(2,1) + 1
-    inquire(file=trim(fname),exist=exists)
-    if (.not. exists) then
-       ierr = nf90_create(trim(fname),nf90_clobber,ncid)
-       call handle_err(ierr,'create')
-       ierr = nf90_def_dim(ncid,'nx',nx,dimid(1))
-       call handle_err(ierr,'def_dimid1')
-       ierr = nf90_def_dim(ncid,'ny',ny,dimid(2))
-       call handle_err(ierr,'def_dimid2')
-       ierr = nf90_def_dim(ncid,'noswll',noswll+1,dimid(3))
-       call handle_err(ierr,'def_dimid3')
-       ierr = nf90_def_dim(ncid,'freq', ef_len, dimid(4)) !ef_len=25
-       call handle_err(ierr,'def_dimid4')
-       ierr = nf90_def_dim(ncid,'time', nf90_unlimited, dimid(5))
-       call handle_err(ierr,'def_dimid5')
-       ! define time axis
-       ierr = nf90_def_var(ncid, 'time', nf90_double, (/dimid(5)/), varid)
-       call handle_err(ierr,'def_timevar')
-       ierr = nf90_put_att(ncid, varid, 'units', trim(time_origin))
-       call handle_err(ierr,'def_time_units')
-       ierr = nf90_put_att(ncid, varid, 'calendar', trim(calendar_name))
-       call handle_err(ierr,'def_time_calendar')
-    else
-       ierr = nf90_open(trim(fname),nf90_write,ncid)
-       call handle_err(ierr,'open')
-    endif
+    !ef_len = e3df(3,1) - e3df(2,1) + 1
+    !inquire(file=trim(fname),exist=exists)
+    !if (.not. exists) then
+    !   ierr = nf90_create(trim(fname),nf90_clobber,ncid)
+    !   call handle_err(ierr,'create')
+    !   ierr = nf90_def_dim(ncid,'nx',nx,dimid(1))
+    !   call handle_err(ierr,'def_dimid1')
+    !   ierr = nf90_def_dim(ncid,'ny',ny,dimid(2))
+    !   call handle_err(ierr,'def_dimid2')
+    !   ierr = nf90_def_dim(ncid,'noswll',noswll+1,dimid(3))
+    !   call handle_err(ierr,'def_dimid3')
+    !   ierr = nf90_def_dim(ncid,'freq', ef_len, dimid(4)) !ef_len=25
+    !   call handle_err(ierr,'def_dimid4')
+    !   ierr = nf90_def_dim(ncid,'time', nf90_unlimited, dimid(5))
+    !   call handle_err(ierr,'def_dimid5')
+    !   ! define time axis
+    !   ierr = nf90_def_var(ncid, 'time', nf90_double, (/dimid(5)/), varid)
+    !   call handle_err(ierr,'def_timevar')
+    !   ierr = nf90_put_att(ncid, varid, 'units', trim(time_origin))
+    !   call handle_err(ierr,'def_time_units')
+    !   ierr = nf90_put_att(ncid, varid, 'calendar', trim(calendar_name))
+    !   call handle_err(ierr,'def_time_calendar')
+    !else
+    !   ierr = nf90_open(trim(fname),nf90_write,ncid)
+    !   call handle_err(ierr,'open')
+    !endif
 
     ! -------------------------------------------------------------
     ! Initialization
@@ -260,445 +277,135 @@ contains
           IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
        end IF
     END DO
-    !
+
     ! -------------------------------------------------------------
-    ! Actual output
+    ! Create the netcdf file
     ! -------------------------------------------------------------
-    !
-    ! 1st loop step  define the netcdf variables and attributes
-    ! 2nd loop step, write the variables
+    call hist_filename(fname)
 
-    NC_LOOP: do NCLOOP = 1,2
-       if (NCLOOP == 1) then
-          IERR = NF90_REDEF(NCID)
-       else if (NCLOOP == 2) then
-          IERR = NF90_ENDDEF(NCID)
-       endif
-       IFI_LOOP: do IFI=1, NOGRP
-          IFJ_LOOP: do IFJ=1, NGRPP
-             if ( FLOGRD(IFI,IFJ) ) then
-                WAUX1 = .false.  ! vars with dims (nx,ny) shoved into AUX1
-                WAUX2 = .false.  ! y-component of vars with dims (nx,ny) shoved into AUX2
-                WAUX3 = .false.  ! unused
-                WAUXE = .false.  ! wave height of partition vars with dims of NOSWLL, a mess
-                WAUXEF = .false. ! for vars with dims of (Freq,nx,ny) shoved into AUXEF
-                !
-                !     Section 1)
-                !
-                if ( IFI .eq. 1 .and. IFJ .eq. 1 ) then
-                   AUX1(1:NSEA) = DW(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'DW'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Water depth'  !CMB should use IDOUT here, see w3odatmd
-                else if ( IFI .eq. 1 .and. IFJ .eq. 2 ) then
-                   AUX1(1:NSEA) = CX(1:NSEA)
-                   AUX2(1:NSEA) = CY(1:NSEA)
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'CX'
-                   FLDSTR2 = 'CY'
-                   UNITSTR1 = 'm/s'
-                   UNITSTR2 = 'm/s'
-                   LNSTR1 = 'Mean current, x-component'
-                   LNSTR2 = 'Mean current, y-component'
-                else if ( IFI .eq. 1 .and. IFJ .eq. 3 ) then
-                   do ISEA=1, NSEA
-                      if (UA(ISEA) .ne.UNDEF) then
-                         AUX1(ISEA) = UA(ISEA)*cos(UD(ISEA))
-                         AUX2(ISEA) = UA(ISEA)*sin(UD(ISEA))
-                      else
-                         AUX1(ISEA) = UNDEF
-                         AUX2(ISEA) = UNDEF
-                      end if
-                   end do
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'UAX'
-                   FLDSTR2 = 'UAY'
-                   UNITSTR1 = 'm/s'
-                   UNITSTR2 = 'm/s'
-                   LNSTR1 = 'Mean wind, x-component'
-                   LNSTR2 = 'Mean wind, y-component'
-                else if ( IFI .eq. 1 .and. IFJ .eq. 4 ) then
-                   AUX1(1:NSEA) = AS(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'AS'
-                   UNITSTR1 = 'deg C'
-                   LNSTR1 = 'Air-sea temperature difference'
-                else if ( IFI .eq. 1 .and. IFJ .eq. 5 ) then
-                   AUX1(1:NSEA) = WLV(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'WLV'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Water levels'
-                else if ( IFI .eq. 1 .and. IFJ .eq. 6 ) then
-                   AUX1(1:NSEA) = ICE(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'ICE'
-                   UNITSTR1 = '1'
-                   LNSTR1 = 'Ice coverage'
-                else if ( IFI .eq. 1 .and. IFJ .eq. 7 ) then
-                   AUX1(1:NSEA) = BERG(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'BERG'
-                   UNITSTR1 = '1'
-                   LNSTR1 = ''
-                !
-                !     Section 2)
-                !
-                else if ( IFI .eq. 2 .and. IFJ .eq. 1 ) then
-                   AUX1(1:NSEA) = HS(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HS'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Significant wave height'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 2 ) then
-                   WAUX1 = .true.
-                   FLDSTR1 = 'WLM'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Mean wave length'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 3 ) then
-                   AUX1(1:NSEA) = T02(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'T02'
-                   UNITSTR1 = 's'
-                   LNSTR1 = 'Mean wave period'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 4 ) then
-                   AUX1(1:NSEA) = T0M1(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'T0M1'
-                   UNITSTR1 = 's'
-                   LNSTR1 = 'Mean wave period'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 5 ) then
-                   AUX1(1:NSEA) = T01(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'T01'
-                   UNITSTR1 = 's'
-                   LNSTR1 = 'Mean wave period'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 6 ) then
-                   AUX1(1:NSEA) = FP0(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'FP0'
-                   UNITSTR1 = 'Hz'
-                   LNSTR1 = 'Peak frequency'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 7 ) then
-                   AUX1(1:NSEA) = THM(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'THM'
-                   UNITSTR1 = 'rad'
-                   LNSTR1 = 'Mean wave direction'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 8 ) then
-                   AUX1(1:NSEA) = THS(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'THS'
-                   UNITSTR1 = 'rad'
-                   LNSTR1 = 'Mean directional spread'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 9 ) then
-                   AUX1(1:NSEA) = THP0(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'THP0'
-                   UNITSTR1 = 'rad'
-                   LNSTR1 = 'Peak direction'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 10 ) then
-                   AUX1(1:NSEA) = HSIG(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HSIG'
-                   UNITSTR1 = '1'
-                   LNSTR1 = ''
-                else if ( IFI .eq. 2 .and. IFJ .eq. 11 ) then
-                   AUX1(1:NSEA) = STMAXE(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'STMAXE'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Max surface elev STE'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 12 ) then
-                   AUX1(1:NSEA) = STMAXD(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'STMAXD'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'St Dev Max surface elev STE'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 13 ) then
-                   AUX1(1:NSEA) = HMAXE(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HMAXE'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Max wave height STE'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 14 ) then
-                   AUX1(1:NSEA) = HCMAXE(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HCMAXE'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Max wave height from crest STE'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 15 ) then
-                   AUX1(1:NSEA) = HMAXD(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HMAXD'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'St Dev of MXC (STE)'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 16 ) then
-                   AUX1(1:NSEA) = HCMAXD(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'HCMAXD'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'St Dev of MXHC (STE)'
-                else if ( IFI .eq. 2 .and. IFJ .eq. 17 ) then
-                   AUX1(1:NSEA) = WBT(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'WBT'
-                   UNITSTR1 = 'm'
-                   LNSTR1 = 'Dominant wave breaking probability b'
-                !
-                ! Section 3)
-                !
-                else if ( IFI .eq. 3 .and. IFJ .eq. 1 ) then
-                   AUXEF(1:NSEA,E3DF(2,1):E3DF(3,1)) = EF(1:NSEA,E3DF(2,1):E3DF(3,1))
-                   WAUXEF = .true.
-                   FLDSTRE = 'EF'
-                   UNITSTRE = '1'
-                   LNSTRE = '1D spectral density'
-                !
-                ! Section 4)
-                !
-                else if ( IFI .eq. 4 .and. IFJ .eq. 1 ) then
-                   AUXE(1:NSEA,0:NOSWLL) = PHS(1:NSEA,0:NOSWLL)
-                   WAUXE = .true.
-                   FLDSTRE = 'PHS'
-                   UNITSTRE = 'm'
-                   LNSTRE = 'Wave height of partitions'
-                else if ( IFI .eq. 4 .and. IFJ .eq. 2 ) then
-                   AUXE(1:NSEA,0:NOSWLL) = PTP(1:NSEA,0:NOSWLL)
-                   WAUXE = .true.
-                   FLDSTRE = 'PTP'
-                   UNITSTRE = 's'
-                   LNSTRE = 'Peak wave period of partitions'
-                else if ( IFI .eq. 4 .and. IFJ .eq. 3 ) then
-                   AUXE(1:NSEA,0:NOSWLL) = PLP(1:NSEA,0:NOSWLL)
-                   WAUXE = .true.
-                   FLDSTRE = 'PLP'
-                   UNITSTRE = 'm'
-                   LNSTRE = 'Peak wave length of partitions'
-                !
-                !  Section 5)
-                !
-                else if ( IFI .eq. 5 .and. IFJ .eq. 1 ) then
-                   do ISEA=1, NSEA
-                      IX     = MAPSF(ISEA,1)
-                      IY     = MAPSF(ISEA,2)
-                      if ( MAPSTA(IY,IX) .eq. 1 ) then
-                         AUX1(ISEA) = UST(ISEA) * ASF(ISEA) *        &
-                              cos(USTDIR(ISEA))
-                         AUX2(ISEA) = UST(ISEA) * ASF(ISEA) *        &
-                              sin(USTDIR(ISEA))
-                      else
-                         AUX1(ISEA) = UNDEF
-                         AUX2(ISEA) = UNDEF
-                      end if
-                   end do
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'ASFX'
-                   FLDSTR2 = 'ASFY'
-                   UNITSTR1 = 'm/s'
-                   UNITSTR2 = 'm/s'
-                   LNSTR1 = 'Skin friction velocity, x-component'
-                   LNSTR2 = 'Skin friction velocity, y-component'
-                !
-                !     Section 6)
-                !
-                else if ( IFI .eq. 6 .and. IFJ .eq. 6 ) then
-                   AUX1(1:NSEA) = USSX(1:NSEA)
-                   AUX2(1:NSEA) = USSY(1:NSEA)
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'USSX'
-                   FLDSTR2 = 'USSY'
-                   UNITSTR1 = 'm/s'
-                   UNITSTR2 = 'm/s'
-                   LNSTR1 = 'Stokes drift at z=0'
-                   LNSTR2 = 'Stokes drift at z=0'
-#ifdef CESMCOUPLED
-                else if ( IFI .eq. 6 .and. IFJ .eq. 14 ) then
-                   write(6,*)'DEBUG: nsea = ',nsea
-                   write(6,*)'DEBUG: size(langmt) = ',size(langmt)
-                   AUX1(1:NSEA) = LANGMT(1:NSEA)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'LANGMT'
-                   UNITSTR1 = ''
-                   LNSTR1 = 'Turbulent Langmuir number (La_t)'
-#endif
-                !
-                !     Section 7)
-                !
-                else if ( IFI .eq. 7 .and. IFJ .eq. 1 ) then
-                   do ISEA=1, NSEA
-                      if ( ABA(ISEA) .ne. UNDEF ) then
-                         AUX1(ISEA) = ABA(ISEA)*cos(ABD(ISEA))
-                         AUX2(ISEA) = ABA(ISEA)*sin(ABD(ISEA))
-                      else
-                         AUX1(ISEA) = UNDEF
-                         AUX2(ISEA) = UNDEF
-                      end if
-                   end do
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'ABAX'
-                   FLDSTR2 = 'ABAY'
-                   UNITSTR1 = 'm'
-                   UNITSTR2 = 'm'
-                   LNSTR1 = 'Near bottom rms wave excursion amplitude, x-component'
-                   LNSTR2 = 'Near bottom rms wave excursion amplitude, y-component'
-                else if ( IFI .eq. 7 .and. IFJ .eq. 2 ) then
-                   do ISEA=1, NSEA
-                      if ( UBA(ISEA) .ne. UNDEF ) then
-                         AUX1(ISEA) = UBA(ISEA)*cos(UBD(ISEA))
-                         AUX2(ISEA) = UBA(ISEA)*sin(UBD(ISEA))
-                      else
-                         AUX1(ISEA) = UNDEF
-                         AUX2(ISEA) = UNDEF
-                      end if
-                   end do
-                   WAUX1 = .true.
-                   WAUX2 = .true.
-                   FLDSTR1 = 'UBAX'
-                   FLDSTR2 = 'UBAY'
-                   UNITSTR1 = 'm/s'
-                   UNITSTR2 = 'm/s'
-                   LNSTR1 = 'Near bottom rms wave velocity, x-component'
-                   LNSTR2 = 'Near bottom rms wave velocity, y-component'
-                   !
-                   !     Section 8)
-                   !
-                   !
-                   !     Section 9)
-                   !
-                   !
-                   !     Section 10)
-                   !
-                else if ( IFI .eq. 10 ) then
-                   AUX1(1:NSEA) = USERO(1:NSEA,2)
-                   WAUX1 = .true.
-                   FLDSTR1 = 'USERO'
-                   UNITSTR1 = '1'
-                   LNSTR1 = 'User defined variable'
-                end if
+    ! define the dimensions required for the requested gridded fields
+    do n = 1,len(outvars)
+       if (outvars(n)%validout) then
+          if(scan(trim(outvars(n)%dims),'s') > 0)s_axis = .true.
+          if(scan(trim(outvars(n)%dims),'b') > 0)b_axis = .true.
+          if(scan(trim(outvars(n)%dims),'m') > 0)m_axis = .true.
+          if(scan(trim(outvars(n)%dims),'p') > 0)p_axis = .true.
+          if(scan(trim(outvars(n)%dims),'k') > 0)k_axis = .true.
+       end if
+     end do
 
-                ! netcdf history
-                if (NCLOOP == 1) then
-                   ! write(ndse,*) 'w3iogo NCLOOP=',NCLOOP, WAUX1, WAUX2, WAUX3,WAUXE,WAUXEF
-                   !--- no error checking here in case file/vars exists already ---
-                   if (WAUX1) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX1=T, FLDSTR1, VARID', TRIM(FLDSTR1), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR1),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR1)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR1)
-                   endif
-                   if (WAUX2) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX2=T, FLDSTR2, VARID', TRIM(FLDSTR2), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR2),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR2)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR2)
-                   endif
-                   if (WAUX3) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUX3=T, FLDSTR3, VARID ', TRIM(FLDSTR3), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTR3),NF90_FLOAT,(/DIMID(1),DIMID(2),dimid(5)/),VARID)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTR3)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTR3)
-                   endif
-                   if (WAUXE) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXE=T, FLDSTRE, VARID ', TRIM(FLDSTRE), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(3),dimid(5)/),VARID)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTRE)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTRE)
-                   endif
-                   if (WAUXEF) then
-                      ! write(ndse,*) ' w3iogo NCLOOP=1, WAUXEF=T, FLDSTRE, VARID', TRIM(FLDSTRE), VARID
-                      IERR = NF90_DEF_VAR(NCID,trim(FLDSTRE),NF90_FLOAT,(/DIMID(1),DIMID(2),DIMID(4),dimid(5)/),VARID)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"_FillValue",UNDEF)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"units",UNITSTRE)
-                      IERR = NF90_PUT_ATT(NCID,VARID,"long_name",LNSTRE)
-                   endif
+    ierr = nf90_create(trim(fname),nf90_clobber,ncid)
+    ierr = nf90_def_dim(ncid,'nx',nx,xtid)
+    ierr = nf90_def_dim(ncid,'ny',ny,ytid)
+    ierr = nf90_def_dim(ncid,'time', nf90_unlimited, timid)
 
-                elseif (NCLOOP == 2) then
-                   IERR = nf90_inq_varid(ncid, 'time', varid)
-                   call HANDLE_ERR(IERR,'INQ_VARID_TIME'//trim('time'))
-                   IERR = nf90_put_var(ncid, varid, elapsed_secs)
-                   call HANDLE_ERR(IERR,'PUT_VAR_TIME'//trim('time'))
-                   ! write(ndse,*) ' w3iogo write NCLOOP=',NCLOOP, WAUX1, WAUX2, WAUX3,WAUXE,WAUXEF
-                   if (WAUX1) then
-                      ! write(ndse,*) 'w3iogo write ',trim(fldstr1)
-                      AUX2D1 = UNDEF
-                      do ISEA=1, NSEA
-                         AUX2D1(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX1(ISEA)
-                      enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR1),VARID)
-                      call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTR1))
-                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D1)
-                      call HANDLE_ERR(IERR,'PUT_VAR_AUX2D1_'//trim(FLDSTR1))
-                   endif
-                   if (WAUX2) then
-                      ! write(ndse,*) 'w3iogo write ',trim(fldstr2)
-                      AUX2D2 = UNDEF
-                      do ISEA=1, NSEA
-                         AUX2D2(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX2(ISEA)
-                      enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR2),VARID)
-                      call HANDLE_ERR(IERR,'INQ_VARID_AUX2D2_'//trim(FLDSTR2))
-                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D2)
-                      call HANDLE_ERR(IERR,'PUT_VAR_AUX2D2_'//trim(FLDSTR2))
-                   endif
-                   if (WAUX3) then
-                      ! write(ndse,*) 'w3iogo write ',trim(fldstr3)
-                      AUX2D3 = UNDEF
-                      do ISEA=1, NSEA
-                         AUX2D3(MAPSF(ISEA,1),MAPSF(ISEA,2)) = AUX3(ISEA)
-                      enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTR3),VARID)
-                      call HANDLE_ERR(IERR,'INQ_VARID_AUX2D3_'//trim(FLDSTR3))
-                      IERR = NF90_PUT_VAR(NCID,VARID,AUX2D3)
-                      call HANDLE_ERR(IERR,'PUT_VAR_AUX2D3_'//trim(FLDSTR3))
-                   endif
-                   if (WAUXE) then
-                      ! write(ndse,*) 'w3iogo write ',trim(fldstre)
-                      AUX3DE = UNDEF
-                      do ISEA=1, NSEA
-                         AUX3DE(MAPSF(ISEA,1),MAPSF(ISEA,2),0:NOSWLL) = AUXE(ISEA,0:NOSWLL)
-                      enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARID)
-                      call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTRE))
-                      IERR = NF90_PUT_VAR(NCID,VARID,AUX3DE)
-                      call HANDLE_ERR(IERR,'PUT_VAR_AUX3DE_'//trim(FLDSTRE))
-                   endif
-                   if (WAUXEF) then
-                      ! write(ndse,*) 'w3iogo write ',trim(fldstre)
-                      AUX3DEF = UNDEF
-                      do ISEA=1, NSEA
-                         AUX3DEF(MAPSF(ISEA,1),MAPSF(ISEA,2),E3DF(2,1):E3DF(3,1)) = AUXEF(ISEA,E3DF(2,1):E3DF(3,1))
-                      enddo
-                      IERR = NF90_INQ_VARID(NCID,trim(FLDSTRE),VARID)
-                      call HANDLE_ERR(IERR,'INQ_VARID_AUX2D1_'//trim(FLDSTRE))
-                      IERR = NF90_PUT_VAR(NCID,VARID,AUX3DEF)
-                      call HANDLE_ERR(IERR,'PUT_VAR_AUX3DE_'//trim(FLDSTRE))
-                   endif
-                endif !NC
+    if (s_axis) ierr = nf90_def_dim(ncid,'noswll',len_s,stid)
+    if (b_axis) ierr = nf90_def_dim(ncid,'nb'    ,len_b,btid)
+    if (m_axis) ierr = nf90_def_dim(ncid,'nm'    ,len_m,mtid)
+    if (p_axis) ierr = nf90_def_dim(ncid,'np'    ,len_p,ptid)
+    if (k_axis) ierr = nf90_def_dim(ncid,'freq'  ,len_k,ktid)
 
-             end if ! end of if ( FLOGRD(IFI,IFJ) )
-          end do IFJ_LOOP
-       end do IFI_LOOP
-    end do NC_LOOP
+    ! define time axis
+    ierr = nf90_put_att(ncid, timid, 'units'   , trim(time_origin))
+    ierr = nf90_put_att(ncid, timid, 'calendar', trim(calendar_name))
 
-    ierr = NF90_CLOSE(NCID)
-    call handle_err(IERR,'CLOSE')
-    deallocate(AUX2D1,AUX2D2,AUX2D3,AUX3DE,AUX3DEF)
+    ! define the variables
+    dimid3(1:2) = (/xtid, ytid/)
+    dimid4(1:2) = (/xtid, ytid/)
+    do n = 1,len(outvars)
+       if (scan(trim(outvars(n)%dims),'s') > 0) then
+        dimid4(3:4) = (/stid, timid/)
+        dimid => dimid4
+       else if (scan(trim(outvars(n)%dims),'b') > 0) then
+        dimid4(3:4) = (/btid, timid/)
+        dimid => dimid4
+       else if (scan(trim(outvars(n)%dims),'m') > 0) then
+        dimid4(3:4) = (/mtid, timid/)
+        dimid => dimid4
+       else if (scan(trim(outvars(n)%dims),'p') > 0) then
+        dimid4(3:4) = (/ptid, timid/)
+        dimid => dimid4
+       else if (scan(trim(outvars(n)%dims),'k') > 0) then
+        dimid4(3:4) = (/ktid, timid/)
+        dimid => dimid4
+       else
+        dimid3(3) = timid
+        dimid => dimid3
+       end if
+
+       ierr = nf90_def_var(ncid, trim(outvars(n)%var_name), nf90_float, dimid, varid)
+       ierr = nf90_put_att(ncid, varid, 'units'     , trim(outvars(n)%unit_name))
+       ierr = nf90_put_att(ncid, varid, 'long_name' , trim(outvars(n)%long_name))
+       ierr = nf90_put_att(ncid, varid, '_FillValue', undef)
+     end do
+       ierr = nf90_enddef(ncid)
+
+     ! write the requested variables
+     ierr = nf90_put_var(ncid, timid, elapsed_secs)
+
+     do n = 1,len(outvars)
+      vname = trim(outvars(n)%var_name)
+      if(vname .eq.  'CX')call write_var(trim(fname), vname,  CX)
+      if(vname .eq.  'CY')call write_var(trim(fname), vname,  CY)
+      if(vname .eq. 'PHS')call write_var(trim(fname), vname, PHS)
+     end do
 
     ! Flush the buffers for write
     call W3SETA ( IGRD, NDSE, NDST )
 
   end subroutine W3IOGONCD
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var(fname, vname, var)
+
+    USE W3GDATMD, ONLY: MAPSF, NSEA
+    USE W3ODATMD, ONLY: UNDEF
+
+    character(len=*),      intent(in) :: fname
+    character(len=*),      intent(in) :: vname
+    real, dimension(nsea), intent(in) :: var
+
+    ! local variables
+    integer                :: i
+    real, dimension(nx,ny) :: var2d
+
+    var2d = undef
+    do i = 1,nsea
+     var2d(mapsf(isea,1),mapsf(isea,2)) = var(i)
+    end do
+
+    ierr = nf90_open(trim(fname),   nc_write,  ncid)
+    ierr = nf90_inq_varid(ncid,  trim(vname), varid)
+    ierr = nf90_put_varid(ncid, varid, var2d)
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var_s(fname, vname, var)
+
+    USE W3GDATMD, ONLY: MAPSF, NSEA
+    USE W3ODATMD, ONLY: NOSWLL, UNDEF
+
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: vname
+    real, dimension(nsea,0:noswll), intent(in) :: var
+
+    ! local variables
+    integer                :: i
+    real, dimension(nx,ny,0:nswll) :: var3d
+
+    var3d = undef
+    do i = 1,nsea
+     var3d(mapsf(isea,1),mapsf(isea,2),0:noswll) = var(i,0:nswll)
+    end do
+
+    ierr = nf90_open(trim(fname),  nc_write,  ncid)
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    ierr = nf90_put_varid(ncid, varid, var3d)
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var_s
 
 !/ ------------------------------------------------------------------- /
   subroutine hist_filename(fname)
