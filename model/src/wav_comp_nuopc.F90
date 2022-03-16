@@ -408,6 +408,7 @@ contains
     use wmunitmd     , only : wmuget, wmuset
 #endif
     use wav_shel_inp , only : set_shel_io
+    use wav_grdout   , only : wavinit_grdout
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -670,6 +671,12 @@ contains
     call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #endif
+
+    !--------------------------------------------------------------------
+    ! Intialize the requested output variables
+    !--------------------------------------------------------------------
+
+    call wavinit_grdout
 
     ! call mpi_barrier ( mpi_comm, ierr )
 
