@@ -57,6 +57,18 @@ set(ftn_src
   w3tidemd.F90
   )
 
+set(nuopc_mesh_cap_src
+  wav_kind_mod.F90
+  wav_shr_mod.F90
+  wav_shel_inp.F90
+  wav_comp_nuopc.F90
+  wav_import_export.F90
+  )
+
+set(esmf_multi_cap_src
+  wmesmfmd.F90
+  )
+
 # Built when PDLIB is enabled
 set(pdlib_src
   ${CMAKE_CURRENT_SOURCE_DIR}/pdlib_field_vec.F90
