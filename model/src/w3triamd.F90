@@ -916,7 +916,6 @@ CONTAINS
          I2 = TRIGP(2,K)
          I3 = TRIGP(3,K)
          TRIA(K) = -1.d0*TRIA(K)
-!AR: Todo: Check what is going on there ...
          !WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, XYB(I2,2)-XYB(I1,2), &
          !                 XYB(I1,1)-XYB(I3,1),XYB(I3,2)-XYB(I1,2), XYB(I2,1)-XYB(I1,1)
          !STOP 
@@ -2840,7 +2839,6 @@ END SUBROUTINE
 #endif
       ITMP = MAPSTA(1,:)
       CALL SET_IOBP(ITMP, IOBP) 
-!AR: what would be the right unit number? 
       FNAME = 'meshbnd.msh'
       CALL READMSH_IOBP(23456,FNAME) 
 #ifdef W3_DEBUGSETUGIOBP

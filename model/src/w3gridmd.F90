@@ -5470,12 +5470,7 @@
 ! AR: this is not anymore needed and will be deleted ...
 !
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        !WRITE(*,*) MAPSTA
-        !WRITE(*,*) '-----------------------'
-        !WRITE(*,*) TMPSTA 
-        !STOP
         CALL SET_UG_IOBP 
-
 #ifdef W3_REF1
       ELSE
         CALL W3SETREF

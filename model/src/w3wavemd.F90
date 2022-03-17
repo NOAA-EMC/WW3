@@ -1772,7 +1772,6 @@
         IF ( FLSOU .and. LPDLIB .and. FSSOURCE) THEN
 #endif
 
-!!AR: This OpenMP statement is wrong
 !!#ifdef W3_OMP0
 !!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
 !!#endif
@@ -2395,7 +2394,6 @@
 #endif
 !
                 END IF   !! GTYPE
-!AR: This sections is super dynamic, which means it is not well coded. It changes all the time
 !
                 IF( GTYPE .EQ. SMCTYPE ) THEN
                   IX = 1
