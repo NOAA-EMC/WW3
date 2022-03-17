@@ -106,16 +106,16 @@ if(UFS_CAP)
   endif()
 
   if(UFS_CAP STREQUAL "MULTI_ESMF")
-    set(cap_src ${nuopc_mesh_cap_src})
-  elseif(UFS_CAP STREQUAL "NUOPC_MESH")
     set(cap_src ${esmf_multi_cap_src})
+  elseif(UFS_CAP STREQUAL "NUOPC_MESH")
+    set(cap_src ${nuopc_mesh_cap_src})
   endif()
   
   target_sources(ww3_lib PRIVATE ${cap_src})
   target_link_libraries(ww3_lib PUBLIC esmf)
   # Don't build executables when building WW3 ESMF library
   set(programs "")
-endif() 
+endif()
 
 set_property(SOURCE w3initmd.F90
   APPEND
