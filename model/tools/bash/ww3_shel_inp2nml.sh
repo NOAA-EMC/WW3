@@ -829,6 +829,8 @@ cat >> $nmlfile << EOF
 !  F  F  6     9   P2SMS      P2L   Micro seism  source term
 !  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 !  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
+!  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
+!  F  F  6    13   TAUOC[X,Y] TOC   Total momentum to the ocean
 !   -------------------------------------------------
 !        7                          Wave-bottom layer
 !   -------------------------------------------------
@@ -869,7 +871,7 @@ cat >> $nmlfile << EOF
 !
 ! * coupling fields exchanged list is :
 !   - Sent fields by ww3:
-!       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
+!       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY TOC
 !       - Atmospheric model : ACHA AHS TP (or FP) FWS
 !       - Ice model : IC5 TWI
 !   - Received fields by ww3:

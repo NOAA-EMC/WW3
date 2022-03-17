@@ -155,34 +155,64 @@
 !/
 !/ Data structure INPUT
 !/
-      TYPE INPUT
-        INTEGER               :: TFN(2,-7:10), TC0(2), TW0(2),        &
-                                 TU0(2), TR0(2), TDN(2), TG0(2)
-        REAL                  :: GA0, GD0, GAN, GDN
+      TYPE, PUBLIC :: INPUT
+         INTEGER               :: TFN(2,-7:10)
+         INTEGER               :: TC0(2)
+         INTEGER               :: TW0(2)
+         INTEGER               :: TU0(2)
+         INTEGER               :: TR0(2)
+         INTEGER               :: TDN(2)
+         INTEGER               :: TG0(2)
+         REAL                  :: GA0
+         REAL                  :: GD0
+         REAL                  :: GAN
+         REAL                  :: GDN
 #ifdef W3_WRST
-        REAL, POINTER         :: WXNwrst(:,:),WYNwrst(:,:)
+         REAL, POINTER         :: WXNwrst(:,:)
+         REAL, POINTER         :: WYNwrst(:,:)
 #endif
-        REAL, POINTER         :: WX0(:,:), WY0(:,:), DT0(:,:),        &
-                                 WXN(:,:), WYN(:,:), DTN(:,:),        &
-                                 CX0(:,:), CY0(:,:), CXN(:,:),        &
-                                 CYN(:,:), WLEV(:,:), ICEI(:,:),      &
-                                 UX0(:,:), UY0(:,:), UXN(:,:),        &
-                                 UYN(:,:), RH0(:,:), RHN(:,:),        &
-                                 BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
-                                 MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
-                                 ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
+         REAL, POINTER         :: WX0(:,:)
+         REAL, POINTER         :: WY0(:,:)
+         REAL, POINTER         :: DT0(:,:)
+         REAL, POINTER         :: WXN(:,:)
+         REAL, POINTER         :: WYN(:,:)
+         REAL, POINTER         :: DTN(:,:)
+         REAL, POINTER         :: CX0(:,:)
+         REAL, POINTER         :: CY0(:,:)
+         REAL, POINTER         :: CXN(:,:)
+         REAL, POINTER         :: CYN(:,:)
+         REAL, POINTER         :: WLEV(:,:)
+         REAL, POINTER         :: ICEI(:,:)
+         REAL, POINTER         :: UX0(:,:)
+         REAL, POINTER         :: UY0(:,:)
+         REAL, POINTER         :: UXN(:,:)
+         REAL, POINTER         :: UYN(:,:)
+         REAL, POINTER         :: RH0(:,:)
+         REAL, POINTER         :: RHN(:,:)
+         REAL, POINTER         :: BERGI(:,:)
+         REAL, POINTER         :: MUDT(:,:)
+         REAL, POINTER         :: MUDV(:,:)
+         REAL, POINTER         :: MUDD(:,:)
+         REAL, POINTER         :: ICEP1(:,:)
+         REAL, POINTER         :: ICEP2(:,:)
+         REAL, POINTER         :: ICEP3(:,:)
+         REAL, POINTER         :: ICEP4(:,:)
+         REAL, POINTER         :: ICEP5(:,:)
+                                 
 #ifdef W3_TIDE
- REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
-                           WLTIDE(:,:,:,:)
+         REAL, POINTER         :: CXTIDE(:,:,:,:)
+         REAL, POINTER         :: CYTIDE(:,:,:,:)
+         REAL, POINTER         :: WLTIDE(:,:,:,:)
 #endif
-        LOGICAL               :: IINIT
+         LOGICAL               :: IINIT
 #ifdef W3_WRST
-        LOGICAL               :: WRSTIINIT=.FALSE.
+         LOGICAL               :: WRSTIINIT=.FALSE.
 #endif
 ! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
-        LOGICAL               :: INFLAGS1(-7:14), FLAGSC(-7:14),      &
-                                 INFLAGS2(-7:14)
+         LOGICAL               :: INFLAGS1(-7:14)
+         LOGICAL               :: FLAGSC(-7:14)
+         LOGICAL               :: INFLAGS2(-7:14)
       END TYPE INPUT
 !/
 !/ Data storage
