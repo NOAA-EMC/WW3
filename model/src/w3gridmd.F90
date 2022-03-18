@@ -3308,7 +3308,7 @@
           WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 #endif
 !
-               WRITE (NDSO,*) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,UGOBCFILE, &
+               WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,UGOBCFILE, &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
                           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
                           IMPSOURCE, SETUP_APPLY_WLV,                 &
