@@ -2,6 +2,19 @@
 
 module W3IOGONCDMD
 
+  USE W3GDATMD, ONLY: NK, NX, NY, MAPSF, MAPSTA, NSEA
+  USE W3ODATMD, ONLY: NOSWLL, UNDEF
+  USE NETCDF
+
+  implicit none
+
+  private
+
+  ! used/reused in module
+ 
+  integer :: isea, ierr, ncid, varid
+  integer :: len_s, len_b, len_m, len_p, len_k
+
 contains
 
 !/ ------------------------------------------------------------------- /
@@ -10,11 +23,11 @@ contains
     ! Write netcdf ww3 history output
 
     USE CONSTANTS
-    USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF
-    USE W3GDATMD, ONLY: NX, NY, E3DF, P2MSF, USSPF, MAPSF, MAPSTA, NSEA, W3SETG
-    USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
+    USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF, RHOAIR
+    USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, W3SETG
+    USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
-    USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
+    USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN, TAUA, TAUADIR
     USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT
     USE W3ADATMD, ONLY: FP1, THP1, DTDYN
     USE W3ADATMD, ONLY: FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY
@@ -27,35 +40,27 @@ contains
     USE W3ADATMD, ONLY: PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF
     USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D
     USE W3ADATMD, ONLY: TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE
-    USE W3ADATMD, ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD, USSP
+    USE W3ADATMD, ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD, USSP, TAUOCX, TAUOCY
 #ifdef CESMCOUPLED
     USE W3ADATMD, ONLY: LANGMT
 #endif
     use wav_grdout     , only: varatts, outvars
     use wav_shr_mod    , only: time_origin, calendar_name, elapsed_secs
 
-    USE NETCDF
-
     IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-    INTEGER                 :: IGRD, IERR, I, J, IX, IY, ISEA, IFI, IFJ
+    INTEGER                  :: IGRD, I, J, IX, IY, IFI, IFJ
     integer    ,target       :: dimid3(3)
     integer    ,target       :: dimid4(4)
     integer    ,pointer      :: dimid(:)
     character(len=12)        :: vname
     CHARACTER(len=1024)      :: FNAME
 
-    integer :: n, ncid, xtid, ytid, stid, btid, mtid, ptid, ktid, timid, varid
-    integer :: len_s, len_b, len_m, len_p, len_k
+    integer :: n, xtid, ytid, stid, btid, mtid, ptid, ktid, timid, varid
     logical :: s_axis = .false., b_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
-
-    interface write_var
-       module procedure write_var_2d
-       module procedure write_var_3ds
-    end interface
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -231,11 +236,11 @@ contains
     ! -------------------------------------------------------------
     call hist_filename(fname)
 
-    len_s = noswll + 1
-    len_b = 3 ! currently hardwired to 3 bedform variables
-    len_m = P2MSF(3)-P2MSF(2) + 1
-    len_p = usspf(2)
-    len_k = e3df(3,1) - e3df(2,1) + 1
+    len_s = noswll + 1                  ! 0:noswll
+    len_b = 3                           ! currently hardwired to 3 bedform variables
+    len_m = P2MSF(3)-P2MSF(2) + 1       ! ?
+    len_p = usspf(2)                    ! partitions
+    len_k = e3df(3,1) - e3df(2,1) + 1   ! frequencies
 
     ! define the dimensions required for the requested gridded fields
     do n = 1,size(outvars)
@@ -249,15 +254,16 @@ contains
      end do
 
     ierr = nf90_create(trim(fname), nf90_clobber, ncid)
-    ierr = nf90_def_dim(ncid,'nx',nx,xtid)
-    ierr = nf90_def_dim(ncid,'ny',ny,ytid)
-    ierr = nf90_def_dim(ncid,'time', nf90_unlimited, timid)
+    call handle_err(ierr, 'nf90_create')
+    ierr = nf90_def_dim(ncid, 'nx', nx, xtid)
+    ierr = nf90_def_dim(ncid, 'ny', ny, ytid)
+    ierr = nf90_def_dim(ncid, 'time', nf90_unlimited, timid)
 
-    if (s_axis) ierr = nf90_def_dim(ncid,'noswll',len_s,stid)
-    if (b_axis) ierr = nf90_def_dim(ncid,'nb'    ,len_b,btid)
-    if (m_axis) ierr = nf90_def_dim(ncid,'nm'    ,len_m,mtid)
-    if (p_axis) ierr = nf90_def_dim(ncid,'np'    ,len_p,ptid)
-    if (k_axis) ierr = nf90_def_dim(ncid,'freq'  ,len_k,ktid)
+    if (s_axis) ierr = nf90_def_dim(ncid, 'noswll', len_s, stid)
+    if (b_axis) ierr = nf90_def_dim(ncid, 'nb'    , len_b, btid)
+    if (m_axis) ierr = nf90_def_dim(ncid, 'nm'    , len_m, mtid)
+    if (p_axis) ierr = nf90_def_dim(ncid, 'np'    , len_p, ptid)
+    if (k_axis) ierr = nf90_def_dim(ncid, 'freq'  , len_k, ktid)
 
     ! define time axis
     ierr = nf90_put_att(ncid, timid, 'units'   , trim(time_origin))
@@ -288,21 +294,41 @@ contains
        end if
 
        ierr = nf90_def_var(ncid, trim(outvars(n)%var_name), nf90_float, dimid, varid)
+       call handle_err(ierr, 'define variable '//trim((outvars(n)%var_name)))
        ierr = nf90_put_att(ncid, varid, 'units'     , trim(outvars(n)%unit_name))
        ierr = nf90_put_att(ncid, varid, 'long_name' , trim(outvars(n)%long_name))
        ierr = nf90_put_att(ncid, varid, '_FillValue', undef)
      end do
        ierr = nf90_enddef(ncid)
+       call handle_err(ierr, 'end variable definition')
 
      ! write the time axis
      ierr = nf90_put_var(ncid, timid, elapsed_secs)
+     call handle_err(ierr, 'put time')
      ierr = nf90_close(ncid)
+
      ! write the requested variables
      do n = 1,size(outvars)
       vname = trim(outvars(n)%var_name)
-      if(vname .eq.  'CX')call write_var(trim(fname), vname,  CX)
-      if(vname .eq.  'CY')call write_var(trim(fname), vname,  CY)
-      if(vname .eq. 'PHS')call write_var(trim(fname), vname, PHS)
+
+      if (vname .eq.  'UAX') call write_var(trim(fname), vname, ua, dir=cos(ud))
+      if (vname .eq.  'UAY') call write_var(trim(fname), vname, ua, dir=sin(ud))
+      if (vname .eq.   'HS') call write_var(trim(fname), vname, hs)
+
+      !len_k
+      !if(vname .eq.    'EF')call write_var(trim(fname), vname, ef(:,E3DF(2,1):E3DF(3,1)))
+
+      !len_s
+      if(vname .eq.   'PHS')call write_var_s(trim(fname), vname, phs)
+
+      !len_m
+      !if (vname .eq.   'P2SMS') call write_var(trim(fname), vname, p2sms(:,P2MSF(2):P2MSF(3)))
+
+      !len_p
+      if (vname .eq.   'USSPX') call write_var(trim(fname), vname, ussp)
+ 
+      !len_b
+      !if (vname .eq. 'Bedforms') call write_var(trim(fname), vname, bedforms(:,3))
      end do
 
     ! Flush the buffers for write
@@ -311,58 +337,167 @@ contains
   end subroutine W3IOGONCD
 
 !/ ------------------------------------------------------------------- /
-  subroutine write_var_2d(fname, vname, var)
+  subroutine write_var(fname, vname, var, dir)
+    ! write (nsea) array as (nx,ny)
+    ! if dir is present, write x or y component of (nsea) array as (nx,ny)
 
-    USE W3GDATMD, ONLY: NX, NY, MAPSF, NSEA
-    USE W3ODATMD, ONLY: UNDEF
-    USE NETCDF
-
-    character(len=*),      intent(in) :: fname
-    character(len=*),      intent(in) :: vname
-    real, dimension(nsea), intent(in) :: var
+    character(len=*),  intent(in) :: fname
+    character(len=*),  intent(in) :: vname
+    real            ,  intent(in) :: var(nsea)
+    real, optional  ,  intent(in) :: dir(nsea)
 
     ! local variables
-    integer   :: isea,ierr,ncid,varid
     real, dimension(nx,ny) :: var2d
 
     var2d = undef
     do isea = 1,nsea
-     var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)
+       if (var(isea) .ne. undef) then
+          if (present(dir)) then
+             var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
+          else
+             var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)
+          end if
+       end if
     end do
 
     ierr = nf90_open(trim(fname),   nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
     ierr = nf90_inq_varid(ncid,  trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
     ierr = nf90_put_var(ncid, varid, var2d)
+    call handle_err(ierr, 'put variable '//trim(vname))
     ierr = nf90_close(ncid)
 
-  end subroutine write_var_2d
+  end subroutine write_var
 
 !/ ------------------------------------------------------------------- /
-  subroutine write_var_3ds(fname, vname, var)
-
-    USE W3GDATMD, ONLY: NX, NY, MAPSF, NSEA
-    USE W3ODATMD, ONLY: NOSWLL, UNDEF
-    USE NETCDF
+  subroutine write_var_s(fname, vname, var)
+    ! write (nsea,0:noswll) array as (nx,ny,0:noswll)
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real, dimension(nsea,0:noswll), intent(in) :: var
+    real            , intent(in) :: var(nsea,0:noswll)
 
     ! local variables
-    integer   :: isea,ierr,ncid,varid
     real, dimension(nx,ny,0:noswll) :: var3d
 
     var3d = undef
     do isea = 1,nsea
-     var3d(mapsf(isea,1),mapsf(isea,2),0:noswll) = var(isea,0:noswll)
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
     end do
 
     ierr = nf90_open(trim(fname),  nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
     ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
     ierr = nf90_put_var(ncid, varid, var3d)
+    call handle_err(ierr, 'put variable '//trim(vname))
     ierr = nf90_close(ncid)
 
-  end subroutine write_var_3ds
+  end subroutine write_var_s
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var_k(fname, vname, var)
+    ! write (nsea,nk) array as (nx,ny,nk)
+
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: vname
+    real            , intent(in) :: var(nsea,len_k)
+ 
+    ! local variables
+    real, dimension(nx,ny,len_k) :: var3d
+
+    var3d = undef
+    do isea = 1,nsea
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
+    end do
+
+    ierr = nf90_open(trim(fname),  nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = nf90_put_var(ncid, varid, var3d)
+    call handle_err(ierr, 'put variable '//trim(vname))
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var_k
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var_m(fname, vname, var)
+
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: vname
+    real, dimension(nsea,len_m), intent(in) :: var
+
+    ! local variables
+    real, dimension(nx,ny,len_m) :: var3d
+
+    var3d = undef
+    do isea = 1,nsea
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
+    end do
+
+    ierr = nf90_open(trim(fname),  nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = nf90_put_var(ncid, varid, var3d)
+    call handle_err(ierr, 'put variable '//trim(vname))
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var_m
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var_p(fname, vname, var)
+    ! write (nsea,npartitions) array as (nx,ny,npartitions)
+
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: vname
+    real            , intent(in) :: var(nsea,len_p)
+
+    ! local variables
+    real, dimension(nx,ny,len_p) :: var3d
+
+    var3d = undef
+    do isea = 1,nsea
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
+    end do
+
+    ierr = nf90_open(trim(fname),  nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = nf90_put_var(ncid, varid, var3d)
+    call handle_err(ierr, 'put variable '//trim(vname))
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var_p
+
+!/ ------------------------------------------------------------------- /
+  subroutine write_var_b(fname, vname, var)
+    ! write (nsea,3) array as (nx,ny,3)
+
+    character(len=*), intent(in) :: fname
+    character(len=*), intent(in) :: vname
+    real            , intent(in) :: var(nsea,3)
+
+    ! local variables
+    real, dimension(nx,ny,3) :: var3d
+
+    var3d = undef
+    do isea = 1,nsea
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
+    end do
+
+    ierr = nf90_open(trim(fname),  nf90_write,  ncid)
+    call handle_err(ierr, 'open '//trim(fname)//' for writing')
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = nf90_put_var(ncid, varid, var3d)
+    call handle_err(ierr, 'put variable '//trim(vname))
+    ierr = nf90_close(ncid)
+
+  end subroutine write_var_b
 
 !/ ------------------------------------------------------------------- /
   subroutine hist_filename(fname)
@@ -406,7 +541,6 @@ contains
   SUBROUTINE HANDLE_ERR(IERR,STRING)
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
-    USE NETCDF
 
     IMPLICIT NONE
 
