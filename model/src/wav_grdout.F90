@@ -107,6 +107,7 @@ contains
     gridoutdefs(:,:)%validout = .false.
 
     ! TODO: replace nd units w/ correct values
+    !  1   Forcing Fields
     gridoutdefs(1,1:15) = [ &
     varatts( "DPT  ", "DW        ", "Water depth                                     ", "m    ", "x y   ", .false.) , &
     varatts( "CUR  ", "CX        ", "Mean current, x-component                       ", "m/s  ", "x y   ", .false.) , &
@@ -117,14 +118,15 @@ contains
     varatts( "WLV  ", "WLV       ", "Water levels                                    ", "m    ", "x y   ", .false.) , &
     varatts( "ICE  ", "ICE       ", "Ice coverage                                    ", "nd   ", "x y   ", .false.) , &
     varatts( "IBG  ", "BERG      ", "Iceberg-induced damping                         ", "nd   ", "x y   ", .false.) , &
-    varatts( "TAU  ", "TAUAX     ", "Atm momentum x                                  ", "nd   ", "x y   ", .false.) , &
-    varatts( "TAU  ", "TAUAY     ", "Atm momentum y                                  ", "nd   ", "x y   ", .false.) , &
+    varatts( "TAUA ", "TAUAX     ", "Atm momentum x                                  ", "nd   ", "x y   ", .false.) , &
+    varatts( "TAUA ", "TAUAY     ", "Atm momentum y                                  ", "nd   ", "x y   ", .false.) , &
     varatts( "RHO  ", "RHOAIR    ", "Air density                                     ", "nd   ", "x y   ", .false.) , &
     varatts( "D50  ", "SED_D50   ", "Median sediment grain size                      ", "nd   ", "x y   ", .false.) , &
-    varatts( "IC1  ", "ICH       ", "Ice thickness                                   ", "nd   ", "x y   ", .false.) , &
-    varatts( "IC5  ", "ICF       ", "Ice floe diameter                               ", "nd   ", "x y   ", .false.)   &
+    varatts( "IC1  ", "ICEH      ", "Ice thickness                                   ", "nd   ", "x y   ", .false.) , &
+    varatts( "IC5  ", "ICEF      ", "Ice floe diameter                               ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  2   Standard mean wave Parameters
     gridoutdefs(2,1:18) = [ &
     varatts( "HS   ", "HS        ", "Significant wave height                         ", "m    ", "x y   ", .false.) , &
     varatts( "LM   ", "WLM       ", "Mean wave length                                ", "m    ", "x y   ", .false.) , &
@@ -142,10 +144,11 @@ contains
     varatts( "MXHC ", "HCMAXE    ", "Max wave height from crest (STE)                ", "m    ", "x y   ", .false.) , &
     varatts( "SDMH ", "HMAXD     ", "St Dev of MXC (STE)                             ", "m    ", "x y   ", .false.) , &
     varatts( "SDMHC", "HCMAXD    ", "St Dev of MXHC (STE)                            ", "m    ", "x y   ", .false.) , &
-    varatts( "WBT  ", "WBT       ", "Dominant wave breaking probability bT           ", "m    ", "x y   ", .false.) , &
-    varatts( "TP   ", "FP0p      ", "Peak period (from peak freq)                    ", "Hz   ", "x y   ", .false.)   &
+    varatts( "WBT  ", "WBT       ", "Dominant wave breaking probability (b_T)        ", "nd   ", "x y   ", .false.) , &
+    varatts( "WNM  ", "WNMEAN    ", "Mean wave number                                ", "nd   ", "x y   ", .false.) , &
                        ]
 
+    !  3   Spectral Parameters
     gridoutdefs(3,1:6) = [ &
     varatts( "EF   ", "EF        ", "1D spectral density                             ", "nd   ", "x y k ", .false.) , &
     varatts( "TH1M ", "TH1M      ", "Mean wave direction from a1,b2                  ", "nd   ", "x y k ", .false.) , &
@@ -155,6 +158,7 @@ contains
     varatts( "WN   ", "WN        ", "Wavenumber array                                ", "nd   ", "x y k ", .false.)   &
                        ]
 
+    !  4   Spectral Partition Parameters
     gridoutdefs(4,1:17) = [ &
     varatts( "PHS  ", "PHS       ", "Partitioned wave heights                        ", "m    ", "x y s ", .false.) , &
     varatts( "PTP  ", "PTP       ", "Partitioned peak period                         ", "s    ", "x y s ", .false.) , &
@@ -162,7 +166,7 @@ contains
     varatts( "PDIR ", "PDIR      ", "Partitioned mean direction                      ", "nd   ", "x y s ", .false.) , &
     varatts( "PSPR ", "PSI       ", "Partitioned mean directional spread             ", "nd   ", "x y s ", .false.) , &
     varatts( "PWS  ", "PWS       ", "Partitioned wind sea fraction                   ", "nd   ", "x y s ", .false.) , &
-    varatts( "PDP  ", "PDP       ", "Peak wave direction of partition                ", "nd   ", "x y s ", .false.) , &
+    varatts( "PDP  ", "PTHP0     ", "Peak wave direction of partition                ", "nd   ", "x y s ", .false.) , &
     varatts( "PQP  ", "PQP       ", "Goda peakdedness parameter of partition         ", "nd   ", "x y s ", .false.) , &
     varatts( "PPE  ", "PPE       ", "JONSWAP peak enhancement factor of partition    ", "nd   ", "x y s ", .false.) , &
     varatts( "PGW  ", "PGW       ", "Gaussian frequency width of partition           ", "nd   ", "x y s ", .false.) , &
@@ -175,10 +179,11 @@ contains
     varatts( "PNR  ", "PNR       ", "Number of partitions                            ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  5   Atmosphere-waves layer
     gridoutdefs(5,1:14) = [ &
     varatts( "UST  ", "USTX      ", "Friction velocity x                             ", "m/s  ", "x y   ", .false.) , &
     varatts( "UST  ", "USTY      ", "Friction velocity y                             ", "m/s  ", "x y   ", .false.) , &
-    varatts( "CHA  ", "CHA       ", "Charnock parameter                              ", "nd   ", "x y   ", .false.) , &
+    varatts( "CHA  ", "CHARN     ", "Charnock parameter                              ", "nd   ", "x y   ", .false.) , &
     varatts( "CGE  ", "CGE       ", "Energy flux                                     ", "nd   ", "x y   ", .false.) , &
     varatts( "FAW  ", "PHIAW     ", "Air-sea energy flux                             ", "nd   ", "x y   ", .false.) , &
     varatts( "TAW  ", "TAUWIX    ", "Net wave-supported stress x                     ", "nd   ", "x y   ", .false.) , &
@@ -189,9 +194,10 @@ contains
     varatts( "WCF  ", "WCF       ", "Whitecap thickness                              ", "nd   ", "x y   ", .false.) , &
     varatts( "WCH  ", "WCH       ", "Mean breaking height                            ", "nd   ", "x y   ", .false.) , &
     varatts( "WCM  ", "WCM       ", "Whitecap moment                                 ", "nd   ", "x y   ", .false.) , &
-    varatts( "FW   ", "FWS       ", "Wind sea mean period                            ", "nd   ", "x y   ", .false.)   &
+    varatts( "FWS  ", "TWS       ", "Wind sea mean period                            ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  6   Wave-ocean layer
     gridoutdefs(6,1:24) = [ &
     varatts( "SXY  ", "SXX       ", "Radiation stresses xx                           ", "nd   ", "x y   ", .false.) , &
     varatts( "SXY  ", "SYY       ", "Radiation stresses yy                           ", "nd   ", "x y   ", .false.) , &
@@ -219,6 +225,7 @@ contains
     varatts( "LAN  ", "LANGMT    ", "Turbulent Langmuir number (La_t)                ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  7   Wave-bottom layer
     gridoutdefs(7,1:8) = [ &
     varatts( "ABR  ", "ABAX      ", "Near bottom rms wave excursion amplitudes x     ", "m    ", "x y   ", .false.) , &
     varatts( "ABR  ", "ABAY      ", "Near bottom rms wave excursion amplitudes y     ", "m    ", "x y   ", .false.) , &
@@ -230,9 +237,10 @@ contains
     varatts( "TBB  ", "TAUBBLY   ", "Momentum flux due to bottom friction y          ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  8   Spectrum parameters
     gridoutdefs(8,1:9) = [ &
-    varatts( "MSS  ", "MSSX      ", "Mean square slope x                             ", "nd   ", "x y   ", .false.) , &
-    varatts( "MSS  ", "MSSY      ", "Mean square slope y                             ", "nd   ", "x y   ", .false.) , &
+    varatts( "MSS  ", "MSSX      ", "Surface mean square slope x                     ", "nd   ", "x y   ", .false.) , &
+    varatts( "MSS  ", "MSSY      ", "Surface mean square slope y                     ", "nd   ", "x y   ", .false.) , &
     varatts( "MSC  ", "MSCX      ", "Spectral level at high frequency tail x         ", "nd   ", "x y   ", .false.) , &
     varatts( "MSC  ", "MSCY      ", "Spectral level at high frequency tail y         ", "nd   ", "x y   ", .false.) , &
     varatts( "WL02 ", "WL02X     ", "East/X North/Y mean wavelength component        ", "nd   ", "x y   ", .false.) , &
@@ -242,6 +250,7 @@ contains
     varatts( "AXY  ", "ALPXY     ", "Correl sea surface gradients (x,y)              ", "nd   ", "x y   ", .false.)   &
                        ]
 
+    !  9   Numerical diagnostics
     gridoutdefs(9,1:5) = [ &
     varatts( "DTD  ", "DTDYN     ", "Average time step in integration                ", "nd   ", "x y   ", .false.) , &
     varatts( "FC   ", "FCUT      ", "Cut-off frequency                               ", "nd   ", "x y   ", .false.) , &
@@ -250,6 +259,7 @@ contains
     varatts( "CFK  ", "CFLKMAX   ", "Max. CFL number for k-advection                 ", "nd   ", "x y   ", .false.)  &
                        ]
 
+    !  10   User defined
     gridoutdefs(10,1:2) = [ &
     varatts( "U1   ", "U1        ", "User defined 1                                  ", "nd   ", "x y   ", .false.) , &
     varatts( "U2   ", "U2        ", "User defined 2                                  ", "nd   ", "x y   ", .false.)  &
