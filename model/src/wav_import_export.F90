@@ -7,8 +7,8 @@ module wav_import_export
   use wav_kind_mod , only : CL => shr_kind_cl, CS => shr_kind_cs
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
-  use wav_shr_mod  , only : state_diagnose, state_reset
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag
+  use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
+  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid
   use constants    , only : grav, tpi, dwat
 
   implicit none
@@ -18,8 +18,6 @@ module wav_import_export
   public  :: realize_fields
   public  :: import_fields
   public  :: export_fields
-  public  :: state_getfldptr
-  public  :: state_fldchk
   public  :: CalcRoughl
 
   private :: fldlist_add
@@ -27,6 +25,11 @@ module wav_import_export
   private :: set_importmask
   private :: check_globaldata
   private :: readfromfile
+
+  interface FillGlobalInput
+     module procedure fillglobal_with_import
+     module procedure fillglobal_with_merge_import
+  end interface
 
   type fld_list_type
      character(len=128) :: stdname
@@ -48,6 +51,8 @@ module wav_import_export
 #else
   logical :: cesmcoupled = .false.
 #endif
+
+  integer, parameter :: nwav_elev_spectrum = 25
 
   character(*),parameter :: u_FILE_u = &
        __FILE__
@@ -111,7 +116,7 @@ contains
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
-       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
+      !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
     else
@@ -132,10 +137,8 @@ contains
     if (wav_coupling_to_cice) then
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice1')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice2')
-       do n = 1, 25
-          write(fvalue,'(I2)') n
-          call fldlist_add(fldsFrWav_num, fldsFrWav,'wave_elevation_spectrum'//trim(adjustl(fvalue)))
-       enddo
+       call fldlist_add(fldsFrWav_num, fldsFrWav, 'wave_elevation_spectrum', &
+            ungridded_lbound=1, ungridded_ubound=nwav_elev_spectrum)
     end if
 
     do n = 1,fldsFrWav_num
@@ -211,13 +214,19 @@ contains
     ! Obtain the wave input from the mediator
     !---------------------------------------------------------------------------
 
-    use w3gdatmd    , only: nseal, MAPSTA, MAPFS, MAPSF, NX, NY
+    use w3gdatmd    , only: nsea, nseal, MAPSTA, NX, NY, w3setg
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
-    use w3wdatmd    , only: time
+    use w3idatmd    , only: tfn, w3seti
+    use w3odatmd    , only: w3seto
+    use w3wdatmd    , only: time, w3setw
 #ifdef CESMCOUPLED
     use w3idatmd    , only: HML
+#else
+    use wmupdtmd    , only: wmupd2
+    use wmmdatmd    , only: wmsetm, mpi_comm_grd
+    use wmmdatmd    , only: mdse, mdst, nrgrd, inpmap
 #endif
 
     ! input/output variables
@@ -229,12 +238,13 @@ contains
     type(ESMF_State)        :: importState
     type(ESMF_VM)           :: vm
     type(ESMF_Clock)        :: clock
-    integer                 :: n, ix, iy
-    real(r4)                :: data_global(nx*ny)
-    real(r4), allocatable   :: data_global2(:)
+    real(r4)                :: global_data(nsea)
+    real(r4), allocatable   :: global_data2(:)
     real(r4)                :: def_value
     character(len=10)       :: uwnd
     character(len=10)       :: vwnd
+    integer                 :: imod, j, jmod
+    integer                 :: mpi_comm_null = -1
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=CL)       :: msgString
@@ -262,27 +272,31 @@ contains
     end if
 
     ! input fields associated with W3FLDG calls in ww3_shel.ftn
-    ! these arrays are global, just fill the local cells for use later
     ! fill both the lower (0) and upper (N) bound data with the same values
     ! fill with special values as default, these should not be used in practice
     ! set time for input data to time0 and timen (shouldn't matter)
 
-    ! note that INFLAGS(1-5) is true for CESM, for UWM INFLAGS(2:4) is true
     def_value = 0.0_r4
+
+#ifndef CESMCOUPLED
+    call w3setg ( 1, mdse, mdst )
+    call w3seti ( 1, mdse, mdst )
+#endif
 
     ! ---------------
     ! INFLAGS1(1)
     ! ---------------
     if (INFLAGS1(1)) then
        TLN  = timen
-       n = 0
-       do iy = 1,NY
-          do ix = 1,NX
-             n = n + 1
-             WLEV(ix,iy) = 0.0
-          end do
-       end do
+
+       WLEV(:,:) = def_value   ! water level
+       if (state_fldchk(importState, 'So_h')) then
+          call SetGlobalInput(importState, 'So_h', vm, global_data, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call FillGlobalInput(global_data, WLEV)
+       end if
     endif
+
     ! ---------------
     ! INFLAGS1(2) - ocn current fields
     ! ---------------
@@ -293,31 +307,19 @@ contains
        CX0(:,:) = def_value   ! ocn u current
        CXN(:,:) = def_value
        if (state_fldchk(importState, 'So_u')) then
-          call SetGlobalInput(importState, 'So_u', vm, data_global, rc)
+          call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                CX0(ix,iy) = data_global(n)
-                CXN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(global_data, CX0)
+          call FillGlobalInput(global_data, CXN)
        end if
 
        CY0(:,:) = def_value   ! ocn v current
        CYN(:,:) = def_value
        if (state_fldchk(importState, 'So_v')) then
-          call SetGlobalInput(importState, 'So_v', vm, data_global, rc)
+          call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                CY0(ix,iy) = data_global(n)
-                CYN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(global_data, CY0)
+          call FillGlobalInput(global_data, CYN)
        end if
     end if
 
@@ -329,21 +331,21 @@ contains
        TWN  = timen
 
        if (merge_import) then
-          ! set mask using u-wind field if merge_import; all import fields
+          ! set mask using u-wind field if merge_import; assume all import fields
           ! will have same missing overlap region
           ! import_mask memory will be allocate in set_importmask
           call set_importmask(importState, clock, trim(uwnd), vm, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          allocate(wxdata(nx*ny))
-          allocate(wydata(nx*ny))
+          allocate(wxdata(nsea))
+          allocate(wydata(nsea))
           call readfromfile('WND', wxdata, wydata, time0, timen, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wxdata', wxdata, rc)
+             call check_globaldata(gcomp, 'wxdata', wxdata, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             call check_globaldata(gcomp, 'wydata', wydata, rc)
+             call check_globaldata(gcomp, 'wydata', wydata, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             call check_globaldata(gcomp, 'import_mask', import_mask, rc)
+             call check_globaldata(gcomp, 'import_mask', import_mask, nsea, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
        end if
@@ -352,24 +354,18 @@ contains
        WX0(:,:) = def_value
        WXN(:,:) = def_value
        if (state_fldchk(importState, trim(uwnd))) then
-          call SetGlobalInput(importState, trim(uwnd), vm, data_global, rc)
+          call SetGlobalInput(importState, trim(uwnd), vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                if (merge_import) then
-                   WX0(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
-                   WXN(ix,iy) = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wxdata(n)
-                else
-                   WX0(ix,iy) = data_global(n)
-                   WXN(ix,iy) = data_global(n)
-                end if
-             end do
-          end do
-          if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wx0', wx0, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (merge_import) then
+             call FillGlobalInput(global_data, import_mask, wxdata, WX0)
+             call FillGlobalInput(global_data, import_mask, wxdata, WXN)
+             if (dbug_flag > 10) then
+                call check_globaldata(gcomp, 'wx0', wx0, nx*ny, rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end if
+          else
+             call FillGlobalInput(global_data, WX0)
+             call FillGlobalInput(global_data, WXN)
           end if
        end if
 
@@ -378,24 +374,18 @@ contains
        WYN(:,:) = def_value
        if (state_fldchk(importState, trim(vwnd))) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, trim(vwnd), vm, data_global, rc)
+          call SetGlobalInput(importState, trim(vwnd), vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                if (merge_import) then
-                   WY0(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
-                   WYN(ix,iy)  = data_global(n)*import_mask(n) + (1.0_r4 - import_mask(n))*wydata(n)
-                else
-                   WY0(ix,iy)  = data_global(n)
-                   WYN(ix,iy)  = data_global(n)
-                end if
-             end do
-          end do
-          if (dbug_flag > 10) then
-             call check_globaldata(gcomp, 'wy0', wy0, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (merge_import) then
+             call FillGlobalInput(global_data, import_mask, wydata, WY0)
+             call FillGlobalInput(global_data, import_mask, wydata, WYN)
+             if (dbug_flag > 10) then
+                call check_globaldata(gcomp, 'wy0', wy0, nx*ny, rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end if
+          else
+             call FillGlobalInput(global_data, WY0)
+             call FillGlobalInput(global_data, WYN)
           end if
        end if
 
@@ -403,20 +393,17 @@ contains
        DT0(:,:) = def_value
        DTN(:,:) = def_value
        if ((state_fldchk(importState, 'So_t')) .and. (state_fldchk(importState, 'Sa_tbot'))) then
-          allocate(data_global2(nx*ny))
-          call SetGlobalInput(importState, 'Sa_tbot', vm, data_global, rc)
+          allocate(global_data2(nsea))
+          call SetGlobalInput(importState, 'Sa_tbot', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'So_t', vm, data_global2, rc)
+          call SetGlobalInput(importState, 'So_t', vm, global_data2, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                DT0(ix,iy)  = data_global(n) - data_global2(n)
-                DTN(ix,iy)  = data_global(n) - data_global2(n)
-             end do
-          end do
-          deallocate(data_global2)
+
+          ! So_tbot - So_t
+          global_data = global_data - global_data2
+          call FillGlobalInput(global_data, DT0)
+          call FillGlobalInput(global_data, DTN)
+          deallocate(global_data2)
        end if
        ! Deallocate memory for merge_import
        if (merge_import) then
@@ -432,30 +419,21 @@ contains
        TIN       = timen       ! time for ice field
        ICEI(:,:) = def_value   ! ice frac
        if (state_fldchk(importState, 'Si_ifrac')) then
-          call SetGlobalInput(importState, 'Si_ifrac', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_ifrac', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEI(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(global_data, ICEI)
        end if
     end if
 #ifdef CESMCOUPLED
     ! ---------------
     ! ocean boundary layer depth - always assume that this is being imported for CESM
     ! ---------------
-    call SetGlobalInput(importState, 'So_bldepth', vm, data_global, rc)
+    call SetGlobalInput(importState, 'So_bldepth', vm, global_data, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    n = 0
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          HML(ix,iy) = max(data_global(n), 5.) ! ocn mixing layer depth
-       end do
-    end do
+
+    ! ocn mixing layer depth
+    global_data = max(global_data, 5.)
+    call FillGlobalInput(global_data, HML)
 #endif
     ! ---------------
     ! INFLAGS1(5) - atm momentum fields
@@ -467,33 +445,21 @@ contains
        UX0(:,:) = def_value   ! atm u momentum
        UXN(:,:) = def_value
        if (state_fldchk(importState, 'Faxa_taux')) then
-          call SetGlobalInput(importState, 'Faxa_taux', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Faxa_taux', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                UX0(ix,iy) = data_global(n)
-                UXN(ix,iy) = data_global(n)
-             end do
-          end do
+          call FillGlobalInput(global_data, UX0)
+          call FillGlobalInput(global_data, UXN)
        end if
 
        UY0(:,:) = def_value   ! atm v momentum
        UYN(:,:) = def_value
        if (state_fldchk(importState, 'Faxa_tauy')) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call SetGlobalInput(importState, 'Faxa_tauy', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Faxa_tauy', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call FillGlobalInput(global_data, UY0)
+          call FillGlobalInput(global_data, UYN)
        end if
-       n = 0
-       do iy = 1,NY
-          do ix = 1,NX
-             n = n + 1
-             UY0(ix,iy)  = data_global(n)
-             UYN(ix,iy)  = data_global(n)
-          end do
-       end do
     end if
     ! ---------------
     ! INFLAGS1(-7)
@@ -502,15 +468,9 @@ contains
        TI1  = timen       ! time for ice field
        ICEP1(:,:) = def_value   ! ice thickness
        if (state_fldchk(importState, 'Si_thick')) then
-          call SetGlobalInput(importState, 'Si_thick', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_thick', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEP1(ix,iy) = data_global(n) ! ice thickness
-             end do
-          end do
+          call FillGlobalInput(global_data, ICEP1)
        end if
     end if
     ! ---------------
@@ -520,18 +480,37 @@ contains
        TI5  = timen        ! time for ice field
        ICEP5(:,:) = def_value   ! ice floe size
        if (state_fldchk(importState, 'Si_floediam')) then
-          call SetGlobalInput(importState, 'Si_floediam', vm, data_global, rc)
+          call SetGlobalInput(importState, 'Si_floediam', vm, global_data, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          n = 0
-          do iy = 1,NY
-             do ix = 1,NX
-                n = n + 1
-                ICEP5(ix,iy) = data_global(n) ! ice floe diameter
-             end do
-          end do
+          call FillGlobalInput(global_data, ICEP5)
        end if
     end if
 
+#ifndef CESMCOUPLED
+    if (multigrid) then
+       do j = lbound(inflags1,1),ubound(inflags1,1)
+          if (inflags1(j)) then
+             do imod = 1,nrgrd
+                tfn(:,j) = timen(:)
+                call w3setg ( imod, mdse, mdst )
+                call w3setw ( imod, mdse, mdst )
+                call w3seti ( imod, mdse, mdst )
+                call w3seto ( imod, mdse, mdst )
+                call wmsetm ( imod, mdse, mdst )
+#ifdef W3_MPI
+                if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
+#endif
+                !TODO: when is this active? jmod = -999
+                jmod = inpmap(imod,j)
+                if ( jmod.lt.0 .and. jmod.ne.-999 ) then
+                  call wmupd2( imod, j, jmod, rc )
+                  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                endif
+             end do
+          end if
+       end do
+    end if
+#endif
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
@@ -545,13 +524,17 @@ contains
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
     use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : w3seta
+    use w3idatmd      , only : w3seti
+    use w3wdatmd      , only : va, w3setw
+    use w3odatmd      , only : w3seto, naproc, iaproc
+    use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK, w3setg
+    use w3iogomd      , only : CALC_U3STOKES
 #ifdef CESMCOUPLED
     use w3adatmd      , only : LAMULT
+#else
+    use wmmdatmd      , only : mdse, mdst, wmsetm
 #endif
-    use w3wdatmd      , only : va
-    use w3odatmd      , only : naproc, iaproc
-    use w3gdatmd      , only : nseal, MAPSTA, MAPFS, MAPSF, USSPF, NK
-    use w3iogomd      , only : CALC_U3STOKES
 
     ! input/output/variables
     type(ESMF_GridComp)            :: gcomp
@@ -579,32 +562,8 @@ contains
     real(r8), pointer :: wav_tauice1(:)
     real(r8), pointer :: wav_tauice2(:)
 
-    ! d2 is location, d1 is frequency  - 25 1d variables
-    real(r8), pointer :: wave_elevation_spectrum1(:)
-    real(r8), pointer :: wave_elevation_spectrum2(:)
-    real(r8), pointer :: wave_elevation_spectrum3(:)
-    real(r8), pointer :: wave_elevation_spectrum4(:)
-    real(r8), pointer :: wave_elevation_spectrum5(:)
-    real(r8), pointer :: wave_elevation_spectrum6(:)
-    real(r8), pointer :: wave_elevation_spectrum7(:)
-    real(r8), pointer :: wave_elevation_spectrum8(:)
-    real(r8), pointer :: wave_elevation_spectrum9(:)
-    real(r8), pointer :: wave_elevation_spectrum10(:)
-    real(r8), pointer :: wave_elevation_spectrum11(:)
-    real(r8), pointer :: wave_elevation_spectrum12(:)
-    real(r8), pointer :: wave_elevation_spectrum13(:)
-    real(r8), pointer :: wave_elevation_spectrum14(:)
-    real(r8), pointer :: wave_elevation_spectrum15(:)
-    real(r8), pointer :: wave_elevation_spectrum16(:)
-    real(r8), pointer :: wave_elevation_spectrum17(:)
-    real(r8), pointer :: wave_elevation_spectrum18(:)
-    real(r8), pointer :: wave_elevation_spectrum19(:)
-    real(r8), pointer :: wave_elevation_spectrum20(:)
-    real(r8), pointer :: wave_elevation_spectrum21(:)
-    real(r8), pointer :: wave_elevation_spectrum22(:)
-    real(r8), pointer :: wave_elevation_spectrum23(:)
-    real(r8), pointer :: wave_elevation_spectrum24(:)
-    real(r8), pointer :: wave_elevation_spectrum25(:)
+    ! d2 is location, d1 is frequency  - nwav_elev_spectrum frequencies will be used
+    real(r8), pointer :: wave_elevation_spectrum(:,:)
 
     ! Partitioned stokes drift
     real(r8), pointer :: sw_pstokes_x(:,:) ! cesm
@@ -625,7 +584,16 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifdef CESMCOUPLED
+#ifndef CESMCOUPLED
+    call w3setg ( 1, mdse, mdst )
+    call w3setw ( 1, mdse, mdst )
+    call w3seta ( 1, mdse, mdst )
+    call w3seti ( 1, mdse, mdst )
+    call w3seto ( 1, mdse, mdst )
+    if (multigrid) then
+       call wmsetm ( 1, mdse, mdst )
+    end if
+#else
     if (state_fldchk(exportState, 'Sw_lamult')) then
        call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -729,85 +697,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wav_tauice2', fldptr1d=wav_tauice2, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum1', fldptr1d=wave_elevation_spectrum1, rc=rc)
+       call state_getfldptr(exportState, 'wave_elevation_spectrum', fldptr2d=wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum2', fldptr1d=wave_elevation_spectrum2, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum3', fldptr1d=wave_elevation_spectrum3, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum4', fldptr1d=wave_elevation_spectrum4, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum5', fldptr1d=wave_elevation_spectrum5, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum6', fldptr1d=wave_elevation_spectrum6, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum7', fldptr1d=wave_elevation_spectrum7, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum8', fldptr1d=wave_elevation_spectrum8, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum9', fldptr1d=wave_elevation_spectrum9, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum10', fldptr1d=wave_elevation_spectrum10, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum11', fldptr1d=wave_elevation_spectrum11, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum12', fldptr1d=wave_elevation_spectrum12, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum13', fldptr1d=wave_elevation_spectrum13, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum14', fldptr1d=wave_elevation_spectrum14, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum15', fldptr1d=wave_elevation_spectrum15, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum16', fldptr1d=wave_elevation_spectrum16, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum17', fldptr1d=wave_elevation_spectrum17, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum18', fldptr1d=wave_elevation_spectrum18, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum19', fldptr1d=wave_elevation_spectrum19, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum20', fldptr1d=wave_elevation_spectrum20, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum21', fldptr1d=wave_elevation_spectrum21, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum22', fldptr1d=wave_elevation_spectrum22, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum23', fldptr1d=wave_elevation_spectrum23, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum24', fldptr1d=wave_elevation_spectrum24, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum25', fldptr1d=wave_elevation_spectrum25, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
 
        ! Initialize wave elevation spectrum
        wav_tauice1(:) = fillvalue
        wav_tauice2(:) = fillvalue
-       wave_elevation_spectrum1 (:) = fillvalue
-       wave_elevation_spectrum2 (:) = fillvalue
-       wave_elevation_spectrum3 (:) = fillvalue
-       wave_elevation_spectrum4 (:) = fillvalue
-       wave_elevation_spectrum5 (:) = fillvalue
-       wave_elevation_spectrum6 (:) = fillvalue
-       wave_elevation_spectrum7 (:) = fillvalue
-       wave_elevation_spectrum8 (:) = fillvalue
-       wave_elevation_spectrum9 (:) = fillvalue
-       wave_elevation_spectrum10(:) = fillvalue
-       wave_elevation_spectrum11(:) = fillvalue
-       wave_elevation_spectrum12(:) = fillvalue
-       wave_elevation_spectrum13(:) = fillvalue
-       wave_elevation_spectrum14(:) = fillvalue
-       wave_elevation_spectrum15(:) = fillvalue
-       wave_elevation_spectrum16(:) = fillvalue
-       wave_elevation_spectrum17(:) = fillvalue
-       wave_elevation_spectrum18(:) = fillvalue
-       wave_elevation_spectrum19(:) = fillvalue
-       wave_elevation_spectrum20(:) = fillvalue
-       wave_elevation_spectrum21(:) = fillvalue
-       wave_elevation_spectrum22(:) = fillvalue
-       wave_elevation_spectrum23(:) = fillvalue
-       wave_elevation_spectrum24(:) = fillvalue
-       wave_elevation_spectrum25(:) = fillvalue
+       wave_elevation_spectrum(:,:) = fillvalue
 
        do jsea=1, nseal                         ! jsea is local
           isea = iaproc + (jsea-1)*naproc       ! isea is global
@@ -819,59 +716,11 @@ contains
 
              ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
              ! wave_elevation_spectrum as 25 variables
-             wave_elevation_spectrum1(jsea)  = EF(jsea,1)
-             wave_elevation_spectrum2(jsea)  = EF(jsea,2)
-             wave_elevation_spectrum3(jsea)  = EF(jsea,3)
-             wave_elevation_spectrum4(jsea)  = EF(jsea,4)
-             wave_elevation_spectrum5(jsea)  = EF(jsea,5)
-             wave_elevation_spectrum6(jsea)  = EF(jsea,6)
-             wave_elevation_spectrum7(jsea)  = EF(jsea,7)
-             wave_elevation_spectrum8(jsea)  = EF(jsea,8)
-             wave_elevation_spectrum9(jsea)  = EF(jsea,9)
-             wave_elevation_spectrum10(jsea) = EF(jsea,10)
-             wave_elevation_spectrum11(jsea) = EF(jsea,11)
-             wave_elevation_spectrum12(jsea) = EF(jsea,12)
-             wave_elevation_spectrum13(jsea) = EF(jsea,13)
-             wave_elevation_spectrum14(jsea) = EF(jsea,14)
-             wave_elevation_spectrum15(jsea) = EF(jsea,15)
-             wave_elevation_spectrum16(jsea) = EF(jsea,16)
-             wave_elevation_spectrum17(jsea) = EF(jsea,18)
-             wave_elevation_spectrum18(jsea) = EF(jsea,18)
-             wave_elevation_spectrum19(jsea) = EF(jsea,19)
-             wave_elevation_spectrum20(jsea) = EF(jsea,20)
-             wave_elevation_spectrum21(jsea) = EF(jsea,21)
-             wave_elevation_spectrum22(jsea) = EF(jsea,22)
-             wave_elevation_spectrum23(jsea) = EF(jsea,23)
-             wave_elevation_spectrum24(jsea) = EF(jsea,24)
-             wave_elevation_spectrum25(jsea) = EF(jsea,25)
+             wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = EF(jsea,1:nwav_elev_spectrum)
           else
              wav_tauice1(jsea) = 0.
              wav_tauice2(jsea) = 0.
-             wave_elevation_spectrum1(jsea)  = 0.
-             wave_elevation_spectrum2(jsea)  = 0.
-             wave_elevation_spectrum3(jsea)  = 0.
-             wave_elevation_spectrum4(jsea)  = 0.
-             wave_elevation_spectrum5(jsea)  = 0.
-             wave_elevation_spectrum6(jsea)  = 0.
-             wave_elevation_spectrum7(jsea)  = 0.
-             wave_elevation_spectrum8(jsea)  = 0.
-             wave_elevation_spectrum9(jsea)  = 0.
-             wave_elevation_spectrum10(jsea) = 0.
-             wave_elevation_spectrum11(jsea) = 0.
-             wave_elevation_spectrum12(jsea) = 0.
-             wave_elevation_spectrum13(jsea) = 0.
-             wave_elevation_spectrum14(jsea) = 0.
-             wave_elevation_spectrum15(jsea) = 0.
-             wave_elevation_spectrum16(jsea) = 0.
-             wave_elevation_spectrum17(jsea) = 0.
-             wave_elevation_spectrum18(jsea) = 0.
-             wave_elevation_spectrum19(jsea) = 0.
-             wave_elevation_spectrum20(jsea) = 0.
-             wave_elevation_spectrum21(jsea) = 0.
-             wave_elevation_spectrum22(jsea) = 0.
-             wave_elevation_spectrum23(jsea) = 0.
-             wave_elevation_spectrum24(jsea) = 0.
-             wave_elevation_spectrum25(jsea) = 0.
+             wave_elevation_spectrum(:,jsea) = 0.
           endif
        enddo
     end if
@@ -940,7 +789,6 @@ contains
   end subroutine export_fields
 
   !===============================================================================
-
   subroutine fldlist_add(num, fldlist, stdname, ungridded_lbound, ungridded_ubound)
     integer,                    intent(inout) :: num
     type(fld_list_type),        intent(inout) :: fldlist(:)
@@ -970,7 +818,6 @@ contains
   end subroutine fldlist_add
 
   !===============================================================================
-
   subroutine fldlist_realize(state, fldList, numflds, flds_scalar_name, flds_scalar_num, mesh, tag, rc)
 
     use NUOPC, only : NUOPC_IsConnected, NUOPC_Realize
@@ -1077,88 +924,6 @@ contains
     end subroutine SetScalarField
 
   end subroutine fldlist_realize
-
-  !===============================================================================
-  subroutine state_getfldptr(State, fldname, fldptr1d, fldptr2d, rc)
-    ! ----------------------------------------------
-    ! Get pointer to a state field
-    ! ----------------------------------------------
-    use ESMF , only : ESMF_State, ESMF_Field, ESMF_Mesh, ESMF_FieldStatus_Flag
-    use ESMF , only : ESMF_StateGet, ESMF_FieldGet, ESMF_MeshGet
-    use ESMF , only : ESMF_FIELDSTATUS_COMPLETE, ESMF_FAILURE
-
-    ! input/output variables
-    type(ESMF_State),            intent(in)    :: State
-    character(len=*),            intent(in)    :: fldname
-    real(R8), pointer, optional, intent(out)   :: fldptr1d(:)
-    real(R8), pointer, optional, intent(out)   :: fldptr2d(:,:)
-    integer,                     intent(out)   :: rc
-
-    ! local variables
-    type(ESMF_FieldStatus_Flag) :: status
-    type(ESMF_Field)            :: lfield
-    type(ESMF_Mesh)             :: lmesh
-    integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_FieldGet(lfield, status=status, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-       rc = ESMF_FAILURE
-       return
-    else
-       call ESMF_FieldGet(lfield, mesh=lmesh, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       if (nnodes == 0 .and. nelements == 0) then
-          call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", ESMF_LOGMSG_INFO)
-          rc = ESMF_FAILURE
-          return
-       end if
-
-       if (present(fldptr1d)) then
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
-       else ! 2D
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr2d, rc=rc)
-       endif
-
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif  ! status
-
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine state_getfldptr
-
-  !===============================================================================
-  logical function state_fldchk(State, fldname)
-    ! ----------------------------------------------
-    ! Determine if field is in state
-    ! ----------------------------------------------
-
-    ! input/output variables
-    type(ESMF_State) , intent(in)  :: State
-    character(len=*) , intent(in)  :: fldname
-
-    ! local variables
-    type(ESMF_StateItem_Flag) :: itemType
-    ! ----------------------------------------------
-
-    call ESMF_StateGet(State, trim(fldname), itemType)
-    State_FldChk = (itemType /= ESMF_STATEITEM_NOTFOUND)
-
-  end function state_fldchk
 
   !===============================================================================
   subroutine CalcCharnk ( chkn )
@@ -1416,19 +1181,19 @@ contains
   !====================================================================================
   subroutine SetGlobalInput(importState, fldname, vm, global_output, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nsea, nseal, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
     type(ESMF_State) , intent(in)  :: importState
     character(len=*) , intent(in)  :: fldname
     type(ESMF_VM)    , intent(in)  :: vm
-    real(r4)         , intent(out) :: global_output(nx*ny)
+    real(r4)         , intent(out) :: global_output(nsea)
     integer          , intent(out) :: rc
 
     ! local variables
-    integer           :: n, isea, ix, iy
-    real(r4)          :: global_input(nx*ny)
+    integer           :: jsea, isea, ix, iy
+    real(r4)          :: global_input(nsea)
     real(r8), pointer :: dataptr(:)
     character(len=*), parameter :: subname = '(wav_import_export:setGlobalInput)'
 
@@ -1441,21 +1206,59 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do n = 1, nseal
-       isea = iaproc + (n-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       global_input(ix + (iy-1)*nx) = real(dataptr(n),4)
+    do jsea = 1, nseal
+       isea = iaproc + (jsea-1)*naproc
+       global_input(isea) = real(dataptr(jsea),4)
     end do
-    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nx*ny, reduceflag=ESMF_REDUCE_SUM, rc=rc)
+    call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine SetGlobalInput
 
   !====================================================================================
+  subroutine fillglobal_with_import(global_data, globalfield)
+
+    use w3gdatmd, only: nsea, mapsf, nx, ny
+
+    real(r4), intent(in)    :: global_data(nsea)
+    real(r4), intent(inout) :: globalfield(nx,ny)
+
+    ! local variables
+    integer           :: isea, ix, iy
+
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       globalfield(ix,iy) = global_data(isea)
+    end do
+
+  end subroutine fillglobal_with_import
+
+  !====================================================================================
+  subroutine fillglobal_with_merge_import(global_data, global_mask, filedata, globalfield)
+
+    use w3gdatmd, only: nsea, mapsf, nx, ny
+
+    real(r4), intent(in)    :: global_data(nsea)
+    real(r4), intent(in)    :: global_mask(nsea)
+    real(r4), intent(in)    :: filedata(nsea)
+    real(r4), intent(inout) :: globalfield(nx,ny)
+
+    ! local variables
+    integer           :: isea, ix, iy
+
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       globalfield(ix,iy) = global_data(isea)*global_mask(isea) + (1.0_r4 - global_mask(isea))*filedata(isea)
+    end do
+
+  end subroutine fillglobal_with_merge_import
+
+  !====================================================================================
   subroutine set_importmask(importState, clock, fldname, vm, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nsea, nseal, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
@@ -1470,9 +1273,9 @@ contains
     type(ESMF_TimeInterval) :: timeStep
     logical                 :: firstCall, secondCall
     real(r4)                :: fillValue = 9.99e20
-    integer                 :: isea, n, ix, iy
+    integer                 :: isea, jsea, ix, iy
     real(r8), pointer       :: dataptr(:)
-    real(r4)                :: mask_local(nx*ny)
+    real(r4)                :: mask_local(nsea)
     character(len=CL)       :: msgString
     character(len=*), parameter :: subname = '(wav_import_export:set_importmask)'
     !---------------------------------------------------------------------------
@@ -1495,7 +1298,7 @@ contains
      secondCall = .false.
     end if
     if (firstcall) then
-       allocate(import_mask(nx*ny))
+       allocate(import_mask(nsea))
     end if
 
     ! return if not the first or second call, mask has already been set
@@ -1510,6 +1313,7 @@ contains
     end if
 
     ! set merge mask where import field has fillvalue due to non-overlapping model domains
+    ! import_mask will be 1 where valid import exists and 0 where no valid import exists
     if (secondCall) then
        call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at currTime : ', &
           unit=msgString, rc=rc)
@@ -1518,15 +1322,13 @@ contains
 
        import_mask(:) = 0.0_r4
        mask_local(:) = 1.0_r4
-       do n = 1, nseal
-          isea = iaproc + (n-1)*naproc
-          ix = mapsf(isea,1)
-          iy = mapsf(isea,2)
-          if (real(dataptr(n),4) .ge. fillValue) then
-             mask_local(ix + (iy-1)*nx) = 0.0_r4
+       do jsea = 1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          if (real(dataptr(jsea),4) .ge. fillValue) then
+             mask_local(isea) = 0.0_r4
           end if
        end do
-       call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=import_mask, count=nx*ny, reduceflag=ESMF_REDUCE_MIN, rc=rc)
+       call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=import_mask, count=nsea, reduceflag=ESMF_REDUCE_MIN, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -1535,15 +1337,16 @@ contains
   end subroutine set_importmask
 
   !====================================================================================
-  subroutine check_globaldata(gcomp, fldname, global_data, rc)
+  subroutine check_globaldata(gcomp, fldname, global_data, nvals, rc)
 
-    use w3gdatmd, only: nseal, mapsta, mapfs, mapsf, nx, ny
+    use w3gdatmd, only: nseal, nsea, mapsf, nx, ny
     use w3odatmd, only: naproc, iaproc
 
     ! input/output variables
     type(ESMF_GridComp) , intent(inout) :: gcomp
     character(len=*)    , intent(in)    :: fldname
-    real(r4)            , intent(in)    :: global_data(nx*ny)
+    integer             , intent(in)    :: nvals
+    real(r4)            , intent(in)    :: global_data(nvals)
     integer             , intent(out)   :: rc
 
     ! local variables
@@ -1559,7 +1362,7 @@ contains
     integer                         :: fieldCount
     integer                         :: lrank
     integer                         :: yr,mon,day,sec    ! time units
-    integer                         :: n, nn, isea, ix, iy
+    integer                         :: jsea, isea, ix, iy
     real(r8), pointer               :: dataptr1d(:)
     real(r8)                        :: fillValue = 9.99e20
     character(len=*), parameter :: subname = '(wav_import_export:check_globaldata)'
@@ -1597,12 +1400,19 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dataptr1d(:) = fillValue
 
-    do n = 1, nseal
-       isea = iaproc + (n-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       dataptr1d(n) = global_data(ix + (iy-1)*nx)
-    end do
+    if (nvals .eq. nx*ny) then
+       do jsea = 1, nseal
+          isea = iaproc + (jsea-1)*naproc
+          ix = mapsf(isea,1)
+          iy = mapsf(isea,2)
+          dataptr1d(jsea) = global_data(ix + (iy-1)*nx)
+       end do
+    else
+       do jsea = 1,nseal
+          isea = iaproc + (jsea-1)*naproc
+          dataptr1d(jsea) = global_data(isea)
+       end do
+    end if
 
     call ESMF_FieldWrite(newfield, filename=trim(fldname)//'.'//trim(timestr)//'.nc', &
       variableName=trim(fldname), overwrite=.true., rc=rc)
@@ -1612,23 +1422,24 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine check_globaldata
+
   !========================================================================
   subroutine readfromfile (idfld, wxdata, wydata, time0, timen, rc)
 
-    use w3gdatmd, only: gtype, nx, ny
+    use w3gdatmd, only: nsea, mapsf, gtype, nx, ny
     use w3fldsmd, only: w3fldo, w3fldg
 
     ! input/output variables
     character(len=*) , intent(in)    :: idfld
     integer          , intent(in)    :: time0(2)
     integer          , intent(in)    :: timen(2)
-    real(r4)         , intent(out)   :: wxdata(nx*ny)
-    real(r4)         , intent(out)   :: wydata(nx*ny)
+    real(r4)         , intent(out)   :: wxdata(nsea)
+    real(r4)         , intent(out)   :: wydata(nsea)
     integer, optional, intent(out)   :: rc
 
     ! local variables
     integer                     :: ierr, tw0l(2), twnl(2)
-    integer                     :: ix, iy, n
+    integer                     :: ix, iy, isea
     integer                     :: nxt, nyt, gtypet, filler(3), tideflag
     integer                     :: mdse = 6
     integer                     :: mdst = 10
@@ -1685,15 +1496,13 @@ contains
            nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
            wxnl, wynl, dtnl, ierr, flagsc)
 
-    n = 0
     wxdata(:) = 0.0_r4
     wydata(:) = 0.0_r4
-    do iy = 1,NY
-       do ix = 1,NX
-          n = n + 1
-          wxdata(n) = wx0l(ix,iy)
-          wydata(n) = wy0l(ix,iy)
-       end do
+    do isea = 1,nsea
+       ix = mapsf(isea,1)
+       iy = mapsf(isea,2)
+       wxdata(isea) = wx0l(ix,iy)
+       wydata(isea) = wy0l(ix,iy)
     end do
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)

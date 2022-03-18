@@ -63,6 +63,7 @@ set(nuopc_mesh_cap_src
   wav_shel_inp.F90
   wav_comp_nuopc.F90
   wav_import_export.F90
+  w3iogoncdmd.F90
   )
 
 set(esmf_multi_cap_src
