@@ -12,6 +12,8 @@ module wav_grdout
   public :: outvars
   public :: wavinit_grdout
 
+  ! tag read from inp file and is used to set flogrd flags
+  ! var_name is the name of the variable
   type :: varatts
      character(len= 5) :: tag
      character(len=10) :: var_name
@@ -108,7 +110,7 @@ contains
 
     ! TODO: replace nd units w/ correct values
     !  1   Forcing Fields
-    gridoutdefs(1,1:15) = [ &
+    gridoutdefs(1,1:14) = [ &
     varatts( "DPT  ", "DW        ", "Water depth                                     ", "m    ", "x y   ", .false.) , &
     varatts( "CUR  ", "CX        ", "Mean current, x-component                       ", "m/s  ", "x y   ", .false.) , &
     varatts( "CUR  ", "CY        ", "Mean current, y-component                       ", "m/s  ", "x y   ", .false.) , &
@@ -121,7 +123,6 @@ contains
     varatts( "TAUA ", "TAUAX     ", "Atm momentum x                                  ", "nd   ", "x y   ", .false.) , &
     varatts( "TAUA ", "TAUAY     ", "Atm momentum y                                  ", "nd   ", "x y   ", .false.) , &
     varatts( "RHO  ", "RHOAIR    ", "Air density                                     ", "nd   ", "x y   ", .false.) , &
-    varatts( "D50  ", "SED_D50   ", "Median sediment grain size                      ", "nd   ", "x y   ", .false.) , &
     varatts( "IC1  ", "ICEH      ", "Ice thickness                                   ", "nd   ", "x y   ", .false.) , &
     varatts( "IC5  ", "ICEF      ", "Ice floe diameter                               ", "nd   ", "x y   ", .false.)   &
                        ]
@@ -145,7 +146,7 @@ contains
     varatts( "SDMH ", "HMAXD     ", "St Dev of MXC (STE)                             ", "m    ", "x y   ", .false.) , &
     varatts( "SDMHC", "HCMAXD    ", "St Dev of MXHC (STE)                            ", "m    ", "x y   ", .false.) , &
     varatts( "WBT  ", "WBT       ", "Dominant wave breaking probability (b_T)        ", "nd   ", "x y   ", .false.) , &
-    varatts( "WNM  ", "WNMEAN    ", "Mean wave number                                ", "nd   ", "x y   ", .false.) , &
+    varatts( "WNM  ", "WNMEAN    ", "Mean wave number                                ", "nd   ", "x y   ", .false.)   &
                        ]
 
     !  3   Spectral Parameters

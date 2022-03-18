@@ -28,7 +28,7 @@ contains
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
     USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN, TAUA, TAUADIR
-    USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT
+    USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT, WNMEAN
     USE W3ADATMD, ONLY: FP1, THP1, DTDYN
     USE W3ADATMD, ONLY: FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY
     USE W3ADATMD, ONLY: PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR
@@ -324,7 +324,6 @@ contains
       if (vname .eq.    'TAUX') call write_var(trim(fname), vname, taua, dir=cos(tauadir))
       if (vname .eq.    'TAUY') call write_var(trim(fname), vname, taua, dir=sin(tauadir))
       if (vname .eq.  'RHOAIR') call write_var(trim(fname), vname, rhoair)
-      if (vname .eq. 'SED_D50') call write_var(trim(fname), vname, sed_d50)
       if (vname .eq.    'ICEH') call write_var(trim(fname), vname, iceh)
       if (vname .eq.    'ICEF') call write_var(trim(fname), vname, icef)
 
@@ -372,13 +371,13 @@ contains
       if(vname .eq.   'PT1') call write_var_s(trim(fname), vname, pt1)
       if(vname .eq.   'PT2') call write_var_s(trim(fname), vname, pt2)
       if(vname .eq.   'PEP') call write_var_s(trim(fname), vname, pep)
-      if(vname .eq.  'PWST') call write_var(trim(fname), vname, pwst)
-      if(vname .eq.   'PNR') call write_var(trim(fname), vname, pnr)
+      if(vname .eq.  'PWST') call   write_var(trim(fname), vname, pwst)
+      if(vname .eq.   'PNR') call   write_var(trim(fname), vname, pnr)
 
       ! Group 5
       !TODO: need mapsta
-      !if (vname .eq. 'USTX') call write_var(trim(fname), vname, ust*asf, dir=cos(ustdir), usemask=.true.)
-      !if (vname .eq. 'USTY') call write_var(trim(fname), vname, ust*asf, dir=sin(ustdir), usemask=.true.)
+      if (vname .eq.   'USTX') call write_var(trim(fname), vname, ust*asf, dir=cos(ustdir), usemask='true')
+      if (vname .eq.   'USTY') call write_var(trim(fname), vname, ust*asf, dir=sin(ustdir), usemask='true')
       if (vname .eq.    'CHA') call write_var(trim(fname), vname, charn)
       if (vname .eq.    'CGE') call write_var(trim(fname), vname, cge)
       if (vname .eq.  'PHIAW') call write_var(trim(fname), vname, phiaw)
@@ -393,42 +392,41 @@ contains
       if (vname .eq.    'TWS') call write_var(trim(fname), vname, tws)
 
       ! Group 6
-      if (vname .eq.     'SXX') call write_var(trim(fname), vname, sxx)
-      if (vname .eq.     'SYY') call write_var(trim(fname), vname, syy)
-      if (vname .eq.     'SXY') call write_var(trim(fname), vname, sxy)
-      if (vname .eq.   'TAUOX') call write_var(trim(fname), vname, tauox)
-      if (vname .eq.   'TAUOY') call write_var(trim(fname), vname, tauoy)
-      if (vname .eq.     'BHD') call write_var(trim(fname), vname, bhd)
-      if (vname .eq.   'PHIOC') call write_var(trim(fname), vname, phioc)
-      if (vname .eq.    'TUSX') call write_var(trim(fname), vname, tusx)
-      if (vname .eq.    'TUSY') call write_var(trim(fname), vname, tusy)
-      if (vname .eq.    'USSX') call write_var(trim(fname), vname, ussx)
-      if (vname .eq.    'USSY') call write_var(trim(fname), vname, ussy)
-      if (vname .eq.    'PRMS') call write_var(trim(fname), vname, prms)
-      if (vname .eq.    'TPMS') call write_var(trim(fname), vname, tpms)
+      if (vname .eq.     'SXX')   call write_var(trim(fname), vname, sxx)
+      if (vname .eq.     'SYY')   call write_var(trim(fname), vname, syy)
+      if (vname .eq.     'SXY')   call write_var(trim(fname), vname, sxy)
+      if (vname .eq.   'TAUOX')   call write_var(trim(fname), vname, tauox)
+      if (vname .eq.   'TAUOY')   call write_var(trim(fname), vname, tauoy)
+      if (vname .eq.     'BHD')   call write_var(trim(fname), vname, bhd)
+      if (vname .eq.   'PHIOC')   call write_var(trim(fname), vname, phioc)
+      if (vname .eq.    'TUSX')   call write_var(trim(fname), vname, tusx)
+      if (vname .eq.    'TUSY')   call write_var(trim(fname), vname, tusy)
+      if (vname .eq.    'USSX')   call write_var(trim(fname), vname, ussx)
+      if (vname .eq.    'USSY')   call write_var(trim(fname), vname, ussy)
+      if (vname .eq.    'PRMS')   call write_var(trim(fname), vname, prms)
+      if (vname .eq.    'TPMS')   call write_var(trim(fname), vname, tpms)
       if (vname .eq.   'US3DX') call write_var_k(trim(fname), vname, us3d(1:nsea,   US3DF(2):US3DF(3)) )
       if (vname .eq.   'US3DY') call write_var_k(trim(fname), vname, us3d(1:nsea,NK+US3DF(2):NK+US3DF(3)) )
       if (vname .eq.   'P2SMS') call write_var_m(trim(fname), vname, p2sms(1:nsea,P2MSF(2):P2MSF(3)) )
-      if (vname .eq. 'TAUICEX') call write_var(trim(fname), vname, tauice(:,1))
-      if (vname .eq. 'TAUICEY') call write_var(trim(fname), vname, tauice(:,2))
-      if (vname .eq.   'PHICE') call write_var(trim(fname), vname, phice)
+      if (vname .eq. 'TAUICEX')   call write_var(trim(fname), vname, tauice(:,1))
+      if (vname .eq. 'TAUICEY')   call write_var(trim(fname), vname, tauice(:,2))
+      if (vname .eq.   'PHICE')   call write_var(trim(fname), vname, phice)
       if (vname .eq.   'USSPX') call write_var_p(trim(fname), vname, ussp(1:nsea,   1:USSPF(2)) )
       if (vname .eq.   'USSPY') call write_var_p(trim(fname), vname, ussp(1:nsea,NK+1:NK+USSPF(2)) )
-      if (vname .eq.  'TAUOCX') call write_var(trim(fname), vname, tauocx(:,1))
-      if (vname .eq.  'TAUOCY') call write_var(trim(fname), vname, tauocy(:,2))
+      if (vname .eq.  'TAUOCX')   call write_var(trim(fname), vname, tauocx)
+      if (vname .eq.  'TAUOCY')   call write_var(trim(fname), vname, tauocy)
 #ifdef CESMCOUPLED
-      if (vname .eq. 'LANGMT') call write_var(trim(fname), vname, langmt)
+      if (vname .eq.  'LANGMT')   call write_var(trim(fname), vname, langmt)
 #endif
-
       ! Group 7
-      if (vname .eq.     'ABAX') call write_var(trim(fname), vname, aba, cos(abd))
-      if (vname .eq.     'ABAY') call write_var(trim(fname), vname, aba, sin(abd))
-      if (vname .eq.     'UBAX') call write_var(trim(fname), vname, uba, cos(ubd))
-      if (vname .eq.     'UBAY') call write_var(trim(fname), vname, uba, sin(ubd))
+      if (vname .eq.     'ABAX')   call write_var(trim(fname), vname, aba, cos(abd))
+      if (vname .eq.     'ABAY')   call write_var(trim(fname), vname, aba, sin(abd))
+      if (vname .eq.     'UBAX')   call write_var(trim(fname), vname, uba, cos(ubd))
+      if (vname .eq.     'UBAY')   call write_var(trim(fname), vname, uba, sin(ubd))
       if (vname .eq. 'Bedforms') call write_var_b(trim(fname), vname, bedforms)
-      if (vname .eq.   'PHIBBL') call write_var(trim(fname), vname, phibbl)
-      if (vname .eq.  'TAUBBLX') call write_var(trim(fname), vname, taubbl(:,1))
-      if (vname .eq.  'TAUBBLY') call write_var(trim(fname), vname, taubbl(:,2))
+      if (vname .eq.   'PHIBBL')   call write_var(trim(fname), vname, phibbl)
+      if (vname .eq.  'TAUBBLX')   call write_var(trim(fname), vname, taubbl(:,1))
+      if (vname .eq.  'TAUBBLY')   call write_var(trim(fname), vname, taubbl(:,2))
 
       ! Group 8
       if (vname .eq.   'MSSX') call write_var(trim(fname), vname, mssx)
@@ -445,7 +443,6 @@ contains
       if (vname .eq.  'CFLKMAX') call write_var(trim(fname), vname, cflkmax)
 
       ! Group 10
-
      end do
 
     ! Flush the buffers for write
@@ -459,21 +456,27 @@ contains
     ! if dir is present, write x or y component of (nsea) array as (nx,ny)
     ! if mask is present and true, use mapsta=1 to mask values
 
-    character(len=*),  intent(in) :: fname
-    character(len=*),  intent(in) :: vname
-    real            ,  intent(in) :: var(nsea)
-    real, optional  ,  intent(in) :: dir(nsea)
-    logical, optional, intent(in) :: usemask
+    character(len=*),  intent(in)          :: fname
+    character(len=*),  intent(in)          :: vname
+    real            ,  intent(in)          :: var(nsea)
+    real, optional  ,  intent(in)          :: dir(nsea)
+    character(len=*), optional, intent(in) :: usemask
 
     ! local variables
     real, dimension(nx,ny) :: var2d
+    logical                :: lmask
+
+    lmask = .false.
+    if (present(usemask)) then
+     lmask = (trim(usemask) == "true")
+    end if
 
     var2d = undef
     do isea = 1,nsea
        if (var(isea) .ne. undef) then
           if (present(dir)) then
-             if (usemask) then
-                if (mapsta((isea,1),mapsf(isea,2)) == 1) then
+             if (lmask) then
+                if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 1) then
                    var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
                 end if
              else

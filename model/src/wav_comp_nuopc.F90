@@ -673,7 +673,7 @@ contains
 #endif
 
     !--------------------------------------------------------------------
-    ! Intialize the requested output variables
+    ! Intialize the list of requested output variables
     !--------------------------------------------------------------------
 
     call wavinit_grdout
