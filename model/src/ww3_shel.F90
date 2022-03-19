@@ -2622,7 +2622,7 @@
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                              TR0, XXX, XXX, RH0, TRN, XXX, XXX, RHN,    &
                              IERR, FLAGSC(J)                            &
-#ifdef W3_OASASCM
+#ifdef W3_OASACM
                              , COUPL_COMM                               &
 #endif
                              )

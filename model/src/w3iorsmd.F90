@@ -101,7 +101,7 @@
 !/    05-Jun-2018 : Add PDLIB/TIMINGS/DEBUGIO           ( version 6.04 )
 !/                  DEBUGINIT/MPI
 !/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
-!/                  restart files 
+!/                  restart files
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
 !/    22-Mar-2021 : Add new coupling fields in restart  ( version 7.13 )
@@ -109,7 +109,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -172,7 +172,7 @@
 !      W3INIT    Subr. W3INITMD Wave model initialization routine.
 !      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
 !      WW3_STRT  Prog.   N/A    Initial conditions program.
-!     ---------------------------------------------------------------- 
+!     ----------------------------------------------------------------
 !
 !  6. Error messages :
 !
@@ -260,11 +260,11 @@
       USE W3WDATMD
 #ifdef W3_WRST
       USE W3IDATMD, ONLY: WXN, WYN, W3SETI
-      USE W3IDATMD, ONLY: WXNwrst, WYNwrst 
+      USE W3IDATMD, ONLY: WXNwrst, WYNwrst
 #endif
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP,    &
-                          FLOGRR, NOGRP, NGRPP, SCREEN 
+                          FLOGRR, NOGRP, NGRPP, SCREEN
 #ifdef W3_MPI
       USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
                                VAAUX
@@ -332,6 +332,7 @@
 
       LOGICAL                 :: WRITE, IOSFLG
       LOGICAL                 :: FLOGOA(NOGRP,NGRPP)
+      LOGICAL                 :: NDSROPN
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
 #ifdef CESMCOUPLED
@@ -351,7 +352,7 @@
 #endif
 !
 !
-! Constant NDSR for using mpiifort in ZEUS ... paralell runs crashing 
+! Constant NDSR for using mpiifort in ZEUS ... paralell runs crashing
 !  because compiler doesn't accept reciclyng of UNIT for FORMATTED or
 !  UNFORMATTED files in OPEN
 !
@@ -454,15 +455,15 @@
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
 !
-!CHECKPOINT RESTART FILE 
+!CHECKPOINT RESTART FILE
       ITMP=0
-      IF ( PRESENT(FLRSTRT) ) THEN 
+      IF ( PRESENT(FLRSTRT) ) THEN
         IF (FLRSTRT) THEN
           WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
           FNAME=TIMETAG//'.restart.'//FILEXT(:I)
-          ITMP=1 
-        END IF 
-      END IF 
+          ITMP=1
+        END IF
+      END IF
       IF(ITMP.NE.1)THEN ! FNAME is not set above, so do it here
          IF ( IFILE.EQ.0 ) THEN
             FNAME  = 'restart.'//FILEXT(:I)
@@ -560,7 +561,7 @@
             DO I=1, NOGRP
               DO J=1, NGRPP
                 IF (FLOGRR(I,J) .AND. .NOT. FLOGOA(I,J)) THEN
-                  WRITE(SCREEN,1000) I, J 
+                  WRITE(SCREEN,1000) I, J
                 ENDIF
               ENDDO
             ENDDO
@@ -638,6 +639,13 @@
 #ifdef W3_T
               WRITE (NDST,9005) TYPE
 #endif
+              ! Clean up file handles and allocated arrays
+              INQUIRE (UNIT=NDSR, OPENED=NDSROPN)
+              IF (NDSROPN)              CLOSE(NDSR)
+              IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
+              IF (ALLOCATED(TMP))       DEALLOCATE(TMP)
+              IF (ALLOCATED(TMP2))      DEALLOCATE(TMP2)
+
               RETURN
             ELSE IF ( IAPROC.LE.NAPROC .OR. IAPROC.EQ. NAPRST ) THEN
 #ifdef W3_DEBUGIO
@@ -912,8 +920,8 @@
                   RPOS  = 1_8 + LRECL*(NREC-1_8)
                   WRITEBUFF(:) = 0.
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-                  WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           & 
-                          TLEV, TICE, TRHO 
+                  WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           &
+                          TLEV, TICE, TRHO
                   DO IPART=1,NPART
                     NREC  = NREC + 1
                     RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -948,7 +956,7 @@
                       WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
                           (WXN(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
                                          MIN(NY,IPART*NSIZE))
-                    END DO        
+                    END DO
                   END DO
                   DO IX=1, NX
                     DO IPART=1,NPRTY2
@@ -958,7 +966,7 @@
                       WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
                           (WYN(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
                                          MIN(NY,IPART*NSIZE))
-                    END DO        
+                    END DO
                   END DO
 #endif
                   ALLOCATE ( MAPTMP(NY,NX) )
@@ -1016,7 +1024,7 @@
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CX(1:NSEA)
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) CY(1:NSEA)
                   ENDIF
-                  IF ( FLOGRR(1,9) )                                  &
+                  IF ( FLOGRR(1,12) )                                 &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) ICEF(1:NSEA)
                   IF ( FLOGRR(2,1) )                                  &
                     WRITE(NDSR,ERR=803,IOSTAT=IERR) HS(1:NSEA)
@@ -1078,7 +1086,7 @@
 #ifdef W3_MPI
                   CALL W3SETA ( IGRD, NDSE, NDST )
 #endif
-                ENDIF 
+                ENDIF
 #ifdef W3_T
                   WRITE (NDST,9007)
                 ELSE
@@ -1152,15 +1160,15 @@
               MAPST2 = (MAPTMP-MAPSTA) / 8
               DEALLOCATE ( MAPTMP )
 !
-! Updates reflections maps: 
+! Updates reflections maps:
 !
-              IF (GTYPE.EQ.UNGTYPE) THEN 
+              IF (GTYPE.EQ.UNGTYPE) THEN
                 CALL SETUGIOBP
 #ifdef W3_REF1
-              ELSE 
+              ELSE
                 CALL W3SETREF
 #endif
-                ENDIF 
+                ENDIF
 !
 #ifdef W3_DEBUGINIT
          WRITE(740+IAPROC,*) 'Before reading UST'
@@ -1213,7 +1221,7 @@
 #ifdef W3_DEBUGINIT
          WRITE(740+IAPROC,*) 'Before reading ICEF'
 #endif
-              IF ( FLOGOA(1,9) ) THEN
+              IF ( FLOGOA(1,12) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
               ENDIF
 #ifdef W3_DEBUGINIT
@@ -1463,8 +1471,8 @@
               TIC5(1) = -1
               TIC5(2) =  0
 #ifdef W3_WRST
-              WXNwrst =  0. 
-              WYNwrst =  0. 
+              WXNwrst =  0.
+              WYNwrst =  0.
 #endif
               WLV     =  0.
               ICE     =  0.
@@ -1511,9 +1519,13 @@
 !
 ! Close file --------------------------------------------------------- *
 !
+  IF (WRITE) THEN
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
         CLOSE ( NDSR )
       END IF
+  ELSE
+     CLOSE ( NDSR )
+  END IF
 !
 #ifdef W3_DEBUGIO
         WRITE(740+IAPROC,*)  'W3IORS, step 9'
@@ -1630,9 +1642,9 @@
 !/
       END SUBROUTINE W3IORS
 #ifdef CESMCOUPLED
-      SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME) 
+      SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME)
 
-        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX, RUNTYPE 
+        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX, RUNTYPE
         USE W3WDATMD    , ONLY : TIME
         USE W3SERVMD    , ONLY : EXTCDE
         USE W3ODATMD    , ONLY : NDS, IAPROC, NAPOUT
@@ -1683,7 +1695,7 @@
            end if
         end if
 
-        ! write out filename 
+        ! write out filename
         if (iaproc == napout) then
            if (lwrite) then
               write (nds(1),'(a)') ' writing restart file '//trim(fname)

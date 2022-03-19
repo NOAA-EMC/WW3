@@ -85,6 +85,7 @@
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx ) 
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -447,7 +448,7 @@
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
       ! flags for restart and history writes
       USE WAV_SHR_MOD , only : RSTWR, HISTWR
       USE W3IOGONCDMD , ONLY : W3IOGONCD
@@ -2029,7 +2030,7 @@
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), xgrd(IX,1), ygrd(IX,2), zb(IX)
            END DO ! JSEA
            CLOSE(995)
          END IF
@@ -2961,7 +2962,7 @@
 #endif
 !
 #ifdef W3_MPI
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
           ! CMB: dsec21 computes the difference between time1, time2 in sec
           ! pretty sure tonext always equal to time on the hour
           ! so this is getting called every hour
@@ -2984,8 +2985,8 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#ifdef CESMCOUPLED
-           write(*,*) 'CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#if defined(W3_UWM) || defined(CESMCOUPLED)
+           write(*,*) 'UWM/CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
 #endif
 #endif
 #ifdef W3_DEBUGRUN
@@ -3014,8 +3015,8 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
-#ifdef CESMCOUPLED
-           write(*,*) 'CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#if defined(W3_UWM) || defined(CESMCOUPLED)
+           write(*,*) 'UWM/CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
 #endif
 #endif
 #ifdef W3_DEBUGRUN
@@ -3203,7 +3204,7 @@
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
                   IF ( DTTST .EQ. 0. ) THEN
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
                       ! This assumes that W3_SBS is not defined
                       IF ( ( J .EQ. 1 ) .AND. histwr) THEN
                           CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
@@ -3250,7 +3251,7 @@
 #endif
                             END IF
 !
-! end of CESMCOUPLED cppif-block
+! end of UWM/CESMCOUPLED cppif-block
 #endif
                         ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -3412,7 +3413,7 @@
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
                              ( NRQGO, IRQGO , STATIO, IERR_MPI )
-#ifdef CESMCOUPLED
+#if defined(W3_UWM) || defined(CESMCOUPLED)
             IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) CALL MPI_WAITALL   &
                              ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
 #endif

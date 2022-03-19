@@ -53,8 +53,8 @@
 !     The only point index which is needed is IX and NX stands for the total number of grid point.
 !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
 !     Some noticeable arrays are:
-!                     XYB    : give the 2D coordinates of all grid points
-!                     TRIGP  : give the vertices of each triangle
+!                     XGRD, YGRD : give the 2D coordinates of all grid points
+!                     TRIGP      : give the vertices of each triangle
 !  8. Structure :
 !
 !  9. Switches :
@@ -164,7 +164,7 @@ CONTAINS
 !     The only point index which is needed is IX and NX stands for the total number of grid point.
 !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
 !     Some noticeable arrays are:
-!                     XYB    : give the 2D coordinates of all grid points
+!                     XGRD,YGRD : give the 2D coordinates of all grid points
 !                     TRIGP  : give the vertices of each triangle
 !     GMSH file gives too much information that is not necessarily required so data processing is needed (data sort and nesting).
 !  8. Structure :
@@ -175,7 +175,7 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-      USE W3GDATMD
+      USE W3GDATMD, ONLY: ZB, XGRD, YGRD, NTRI, NX, COUNTOT, TRIGP, NNZ, W3DIMUG
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
       USE CONSTANTS, only: LPDLIB
       USE W3ODATMD, ONLY: IAPROC
@@ -325,15 +325,15 @@ CONTAINS
 ! fills arrays
 !
       DO I = 1, NX
-        XYB(I,1) = XYBTMP2(I,1) 
-        XYB(I,2) = XYBTMP2(I,2) 
-        XYB(I,3) = XYBTMP2(I,3)
+        XGRD(1,I) = XYBTMP2(I,1) 
+        YGRD(1,I) = XYBTMP2(I,2) 
+        ZB(I)     = XYBTMP2(I,3)
         END DO
 !
 #ifdef W3_DEBUGSTP
-    WRITE(740,*) 'Writing XYB(:,3)'
+    WRITE(740,*) 'Writing ZB(:)'
     DO I=1,NX
-      WRITE(740,*) 'I,XYB(I,3)=', I, XYB(I,3)
+      WRITE(740,*) 'I, ZB(I) = ', I, ZB(I)
     END DO
     FLUSH(740)
 #endif
@@ -780,7 +780,7 @@ CONTAINS
                    I2 = TRIGP(K,2)
                    I3 = TRIGP(K,3)
 
-                   CALL FIX_PERIODCITY(I1,I2,I3,XYB,PT) 
+                   CALL FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT) 
 !
 ! cross product of edge-vector  (orientated anticlockwise)
 !                                   
@@ -800,8 +800,8 @@ CONTAINS
          I2 = TRIGP(K,2)
          I3 = TRIGP(K,3)
          TRIA(K) = -1.d0*TRIA(K)
-         WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, XYB(I2,2)-XYB(I1,2), &
-                          XYB(I1,1)-XYB(I3,1),XYB(I3,2)-XYB(I1,2), XYB(I2,1)-XYB(I1,1)
+         WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, YGRD(1,I2)-YGRD(1,I1), &
+                          XGRD(1,I1)-XGRD(1,I3),YGRD(1,I3)-YGRD(1,I1), XGRD(1,I2)-XGRD(1,I1)
          STOP 
          END IF    
        END DO
@@ -863,6 +863,7 @@ CONTAINS
 !	 
          INTEGER :: IP, IE
          INTEGER :: I1, I2, I3, I11, I22, I33
+!
          REAL*8    :: P1(2), P2(2), P3(2)
          REAL*8    :: R1(2), R2(2), R3(2)
          REAL*8    :: N1(2), N2(2), N3(2)
@@ -876,8 +877,7 @@ CONTAINS
 #ifdef W3_S
       CALL STRACE (IENT, 'NVECTRI')   
 #endif
-
-    
+!
          DO IE = 1, NTRI
 !
 ! vertices
@@ -886,7 +886,7 @@ CONTAINS
             I2 = TRIGP(IE,2)
             I3 = TRIGP(IE,3)
                            
-            CALL FIX_PERIODCITY(I1,I2,I3,XYB,PT) 
+            CALL FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT) 
 
             P1(1) = PT(1,1)
             P1(2) = PT(1,2)
@@ -924,7 +924,7 @@ CONTAINS
             IEN(IE,6) = N3(2)
     
          END DO
- 
+
      END SUBROUTINE
 !/---------------------------------------------------------------------------
 
@@ -1092,13 +1092,13 @@ END SUBROUTINE
 !     
 ! maximum of coordinates s
 !
-    MAXX = MAXVAL(XYB(:,1))
-    MAXY = MAXVAL(XYB(:,2))
+    MAXX = MAXVAL(XGRD(1,:))
+    MAXY = MAXVAL(YGRD(1,:))
 ! 
 ! minimum of coordinates 
 !
-    X0 = MINVAL(XYB(:,1))
-    Y0 = MINVAL(XYB(:,2))
+    X0 = MINVAL(XGRD(1,:))
+    Y0 = MINVAL(YGRD(1,:))
 ! 
 !maximum and minimum length of edges
 !
@@ -1202,14 +1202,14 @@ END SUBROUTINE
            SI(I1) = SI(I1) + TRIA03
            SI(I2) = SI(I2) + TRIA03
            SI(I3) = SI(I3) + TRIA03
-           ENDDO
+         ENDDO
 
          CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
-                               ! and the Position of the position of the Node in the Element Index
+                               ! and the Position of the Node in the Element Index
 
          WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
 
-         CHILF             = 0
+         CHILF = 0
 
          DO IE = 1, NTRI 
            DO J=1,3
@@ -1225,7 +1225,6 @@ END SUBROUTINE
 ! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
 ! the global index is J . From now, all the computation step based on these arrays must
 ! abide by the conservation of the 2 loop algorithm (points + connected triangles)
-! AR: I will change this now to pointers in order to omit fix loop structure for the LTS stuff ...
 !	   
          INDEX_CELL(1)=1
          J = 0
@@ -1424,8 +1423,6 @@ END SUBROUTINE
 !
 ! 10. Source code :
 !
-
-
 !  2. Method :
 !
 !     Using barycentric coordinates. Each coefficient depends on the mass of its related point in the interpolation.
@@ -1471,7 +1468,7 @@ END SUBROUTINE
 ! Parameter list
 
      INTEGER, INTENT(IN)            :: IMOD
-     REAL   , INTENT(IN)            :: XTIN, YTIN
+     DOUBLE PRECISION, INTENT(IN)   :: XTIN, YTIN
      INTEGER, INTENT(OUT)           :: itout
      INTEGER, INTENT(OUT)           :: IS(4), JS(4)
      REAL, INTENT(OUT)              :: RW(4)
@@ -1500,7 +1497,7 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 
-       CALL FIX_PERIODCITY(I1,I2,I3,GRIDS(IMOD)%XYB,PT)
+       CALL FIX_PERIODCITY(I1,I2,I3,GRIDS(IMOD)%XGRD,GRIDS(IMOD)%YGRD,PT)
 ! coordinates of the first vertex A
        x1 = PT(1,1)
        y1 = PT(1,2)
@@ -1649,7 +1646,7 @@ END SUBROUTINE
 ! Parameter list
 
      INTEGER, INTENT(IN)            :: IMOD, FORCE
-     REAL   , INTENT(IN)            :: XTIN, YTIN
+     DOUBLE PRECISION, INTENT(IN)            :: XTIN, YTIN
      INTEGER, INTENT(OUT)           :: itout
      INTEGER, INTENT(OUT)           :: IS(4), JS(4)
      REAL, INTENT(OUT)              :: RW(4)
@@ -1681,14 +1678,14 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XYB(I1,1)
-       y1=GRIDS(IMOD)%XYB(I1,2)
+       x1=GRIDS(IMOD)%XGRD(1,I1)
+       y1=GRIDS(IMOD)%YGRD(1,I1)
 ! coordinates of the 2nd vertex B
-       x2=GRIDS(IMOD)%XYB(I2,1)
-       y2=GRIDS(IMOD)%XYB(I2,2)
+       x2=GRIDS(IMOD)%XGRD(1,I2)
+       y2=GRIDS(IMOD)%XGRD(1,I2)
 !coordinates of the 3rd vertex C
-       x3=GRIDS(IMOD)%XYB(I3,1)
-       y3=GRIDS(IMOD)%XYB(I3,2)
+       x3=GRIDS(IMOD)%XGRD(1,I3)
+       y3=GRIDS(IMOD)%YGRD(1,I3)
 !with M = (XTIN,YTIN) the target point ... 
 !vector product of AB and AC
        sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
@@ -1733,14 +1730,14 @@ END SUBROUTINE
        I2=GRIDS(IMOD)%TRIGP(ITRI,2)
        I3=GRIDS(IMOD)%TRIGP(ITRI,3)
 ! coordinates of the first vertex A
-       x1=GRIDS(IMOD)%XYB(I1,1)
-       y1=GRIDS(IMOD)%XYB(I1,2)
+       x1=GRIDS(IMOD)%XGRD(1,I1)
+       y1=GRIDS(IMOD)%YGRD(1,I1)
 ! coordinates of the 2nd vertex B
-       x2=GRIDS(IMOD)%XYB(I2,1)
-       y2=GRIDS(IMOD)%XYB(I2,2)
+       x2=GRIDS(IMOD)%XGRD(1,I2)
+       y2=GRIDS(IMOD)%YGRD(1,I2)
 !coordinates of the 3rd vertex C
-       x3=GRIDS(IMOD)%XYB(I3,1)
-       y3=GRIDS(IMOD)%XYB(I3,2)
+       x3=GRIDS(IMOD)%XGRD(1,I3)
+       y3=GRIDS(IMOD)%YGRD(1,I3)
        D1=(XTIN-X1)**2+(YTIN-Y1)**2
        D2=(XTIN-X2)**2+(YTIN-Y2)**2
        D3=(XTIN-X3)**2+(YTIN-Y3)**2
@@ -1948,7 +1945,7 @@ END SUBROUTINE
 #endif
 !
     USE W3ODATMD, ONLY: NBI, NDSE, ISBPI, XBPI, YBPI
-    USE W3GDATMD, ONLY: NX, XYB, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
+    USE W3GDATMD, ONLY: NX, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
 
 
     REAL, INTENT(IN)         :: DISTMIN
@@ -1976,18 +1973,18 @@ END SUBROUTINE
 #ifdef W3_T
         WRITE(NDSE ,*)'ADDING BOUNDARY POINT:',N,IX
 #endif
-        END IF
-      END DO
+      END IF
+    END DO
 !
 !2. Matches the model grid points (where MAPSTA = 2) with the points in nest.ww3
 !   For this, we use the nearest point in the nest file.
-!
+! 
     DO I = 1, NBI 
 !FA: This will not work with FLAGLL=.F.  (XY grid)
       DIST0 = 360**2
       IS=1
       DO J = 1, N
-        DIST=(XBPI(I)-XYB(IX1(J),1))**2+(YBPI(I)-XYB(IX1(J),2))**2
+        DIST = (XBPI(I) - XGRD(1,IX1(J)))**2 + (YBPI(I) - YGRD(1,IX1(J)))**2
         IF (DIST.LT.DIST0) THEN 
           IS = MAPFS(1,IX1(J))
           DIST0=DIST
@@ -2742,7 +2739,7 @@ END SUBROUTINE
 ! 3. Defines directions pointing into land or sea 
 ! 
       IOBPD(:,:) = 0
-      IOBPA(:) = 0
+      IOBPA(:)   = 0
 !
       DO IP=1,NX 
         IF ((MAPSTA(1,IP).EQ.2).AND.(IOBP(IP).EQ.0)) IOBPA(IP)=1
@@ -2880,7 +2877,7 @@ END SUBROUTINE
       END SUBROUTINE SETUGIOBP
 !/ ------------------------------------------------------------------- /
 
-      SUBROUTINE FIX_PERIODCITY(I1,I2,I3,XYB,PT)
+      SUBROUTINE FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2909,8 +2906,8 @@ END SUBROUTINE
 !     ----------------------------------------------------------------
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: I1, I2, I3
-      DOUBLE PRECISION, INTENT(IN) :: XYB(:,:)
-      REAL*8, INTENT(OUT) :: PT(3,2)
+      DOUBLE PRECISION, INTENT(IN) :: XGRD(:,:), YGRD(:,:)
+      DOUBLE PRECISION, INTENT(OUT) :: PT(3,2)
 !     ----------------------------------------------------------------
 !
 !     Local variables.
@@ -2944,12 +2941,12 @@ END SUBROUTINE
 ! 10. Source code :     
 !/ ------------------------------------------------------------------- /
 
-      PT(1,1) = XYB(I1,1)
-      PT(1,2) = XYB(I1,2)
-      PT(2,1) = XYB(I2,1)
-      PT(2,2) = XYB(I2,2)
-      PT(3,1) = XYB(I3,1)
-      PT(3,2) = XYB(I3,2)
+      PT(1,1) = XGRD(1,I1)
+      PT(1,2) = YGRD(1,I1)
+      PT(2,1) = XGRD(1,I2)
+      PT(2,2) = YGRD(1,I2)
+      PT(3,1) = XGRD(1,I3)
+      PT(3,2) = YGRD(1,I3)
 
 
        R1GT180 = MERGE(1, 0, ABS(PT(3,1)-PT(2,1)).GT.180)
