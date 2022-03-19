@@ -113,9 +113,8 @@
 !/
       REAL, PARAMETER                :: CRITOS = 15.
       CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
-! MV: the following is not allowed by CMake - claim is that __WW3_SWITCHES is not defined
-!      CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
-!                    __WW3_SWITCHES__ 
+      CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
+           __WW3_SWITCHES__
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /

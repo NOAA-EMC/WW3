@@ -795,7 +795,7 @@ create_file_list()
                prop="$smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $tr $trx $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux="constants w3servmd w3timemd w3arrymd w3cspcmd" ;;
+                aux="constants w3servmd w3timemd w3arrymd w3cspcmd w3nmlboundmd" ;;
       ww3_bounc)
                core=
                data="w3adatmd $memcode w3gdatmd w3wdatmd w3idatmd w3odatmd"

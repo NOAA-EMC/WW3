@@ -1728,10 +1728,13 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPSTA, MAPST2, &
-                          NSPEC, FICEN,aalpha
+                          NSPEC, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
-      USE W3ADATMD, ONLY: NSEALM, charn
-
+      USE W3ADATMD, ONLY: NSEALM
+#if defined(W3_UWM) || defined(CESMCOUPLED)
+      USE W3GDATMD, ONLY: aalpha
+      USE W3ADATMD, ONLY: charn
+#endif
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
       USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 !/
