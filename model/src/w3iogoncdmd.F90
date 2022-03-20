@@ -2,8 +2,10 @@
 
 module W3IOGONCDMD
 
-  USE W3GDATMD, ONLY: NK, NX, NY, MAPSF, MAPSTA, NSEA
-  USE W3ODATMD, ONLY: NOSWLL, UNDEF
+  USE W3GDATMD      , ONLY: NK, NX, NY, MAPSF, MAPSTA, NSEA
+  USE W3ODATMD      , ONLY: NOSWLL, UNDEF
+  use w3odatmd      , only : nds, iaproc, napout
+  use wav_shr_mod   , only : dbug_flag
   USE NETCDF
 
   implicit none
@@ -310,6 +312,14 @@ contains
      call handle_err(ierr, 'put time')
      ierr = nf90_close(ncid)
 
+     !print *,'XXX thm ',minval(thm),maxval(thm)
+     !print *,'XXX hsig ',minval(hsig),maxval(hsig)
+     !print *,'XXX stmaxe ',minval(stmaxe),maxval(stmaxe)
+     !print *,'XXX stmaxd ',minval(stmaxd),maxval(stmaxd)
+     !print *,'XXX hmaxe ',minval(hmaxe),maxval(hmaxe)
+     !print *,'XXX hcmaxe ',minval(hcmaxe),maxval(hcmaxe)
+     !print *,'XXX hcmaxd ',minval(hcmaxd),maxval(hcmaxd)
+
      ! write the requested variables
      do n = 1,size(outvars)
       vname = trim(outvars(n)%var_name)
@@ -337,7 +347,7 @@ contains
       if (vname .eq.   'T0M1') call write_var(trim(fname), vname, t0m1)
       if (vname .eq.    'T01') call write_var(trim(fname), vname, t01)
       if (vname .eq.    'FP0') call write_var(trim(fname), vname, fp0)
-      if (vname .eq.    'TMM') call write_var(trim(fname), vname, thm)
+      if (vname .eq.    'THM') call write_var(trim(fname), vname, thm)
       if (vname .eq.    'THS') call write_var(trim(fname), vname, ths)
       if (vname .eq.   'THP0') call write_var(trim(fname), vname, thp0)
       if (vname .eq.   'HSIG') call write_var(trim(fname), vname, hsig)
@@ -378,7 +388,6 @@ contains
       if(vname .eq.   'PNR') call   write_var(trim(fname), vname, pnr)
 
       ! Group 5
-      !TODO: need mapsta
       if (vname .eq.   'USTX') call write_var(trim(fname), vname, ust*asf, dir=cos(ustdir), usemask='true')
       if (vname .eq.   'USTY') call write_var(trim(fname), vname, ust*asf, dir=sin(ustdir), usemask='true')
       if (vname .eq.    'CHA') call write_var(trim(fname), vname, charn)
@@ -410,7 +419,7 @@ contains
       if (vname .eq.    'TPMS') call write_var(trim(fname), vname, tpms)
       if (vname .eq.   'US3DX') call write_var_k(trim(fname), vname, us3d(1:nsea,   US3DF(2):US3DF(3)) )     !freq axis
       if (vname .eq.   'US3DY') call write_var_k(trim(fname), vname, us3d(1:nsea,NK+US3DF(2):NK+US3DF(3)) )  !freq axis
-      if (vname .eq.   'P2SMS') call write_var_m(trim(fname), vname, p2sms(1:nsea,P2MSF(2):P2MSF(3)) )       !freq axis
+      if (vname .eq.   'P2SMS') call write_var_m(trim(fname), vname, p2sms(1:nsea,P2MSF(2):P2MSF(3)) )       !m axis
       if (vname .eq. 'TAUICEX') call write_var(trim(fname), vname, tauice(:,1))
       if (vname .eq. 'TAUICEY') call write_var(trim(fname), vname, tauice(:,2))
       if (vname .eq.   'PHICE') call write_var(trim(fname), vname, phice)
@@ -474,10 +483,18 @@ contains
      lmask = (trim(usemask) == "true")
     end if
 
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea) = undef
+    !end do
+
     var2d = undef
     do isea = 1,nsea
-       if (var(isea) .ne. undef) then
-          if (present(dir)) then
+       if (present(dir)) then
+          if (var(isea) .ne. undef) then
              if (lmask) then
                 if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 1) then
                    var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
@@ -485,9 +502,9 @@ contains
              else
                 var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
              end if
-          else
-             var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)
           end if
+       else
+         var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)
        end if
     end do
 
@@ -511,6 +528,14 @@ contains
 
     ! local variables
     real, dimension(nx,ny,0:noswll) :: var3d
+
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
+    !end do
 
     var3d = undef
     do isea = 1,nsea
@@ -538,6 +563,14 @@ contains
     ! local variables
     real, dimension(nx,ny,len_k) :: var3d
 
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
+    !end do
+
     var3d = undef
     do isea = 1,nsea
        var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
@@ -562,6 +595,14 @@ contains
 
     ! local variables
     real, dimension(nx,ny,len_m) :: var3d
+
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
+    !end do
 
     var3d = undef
     do isea = 1,nsea
@@ -589,6 +630,14 @@ contains
     ! local variables
     real, dimension(nx,ny,len_p) :: var3d
 
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
+    !end do
+
     var3d = undef
     do isea = 1,nsea
        var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
@@ -614,6 +663,14 @@ contains
 
     ! local variables
     real, dimension(nx,ny,3) :: var3d
+
+    if (dbug_flag > 5 ) then
+     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    end if
+    ! initialization
+    !do isea = 1,nsea
+    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
+    !end do
 
     var3d = undef
     do isea = 1,nsea

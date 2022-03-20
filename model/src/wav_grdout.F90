@@ -138,7 +138,7 @@ contains
     varatts( "DIR  ", "THM       ", "Mean wave direction                             ", "rad  ", "x y   ", .false.) , &
     varatts( "SPR  ", "THS       ", "Mean directional spread                         ", "rad  ", "x y   ", .false.) , &
     varatts( "DP   ", "THP0      ", "Peak direction                                  ", "rad  ", "x y   ", .false.) , &
-    varatts( "HSIG ", "HSIG      ", "Infragravity height                             ", "nd   ", "x y   ", .false.) , &
+    varatts( "HIG  ", "HSIG      ", "Infragravity height                             ", "nd   ", "x y   ", .false.) , &
     varatts( "MXE  ", "STMAXE    ", "Max surface elev (STE)                          ", "m    ", "x y   ", .false.) , &
     varatts( "MXES ", "STMAXD    ", "St Dev Max surface elev (STE)                   ", "m    ", "x y   ", .false.) , &
     varatts( "MXH  ", "HMAXE     ", "Max wave height (S.)                            ", "m    ", "x y   ", .false.) , &
@@ -156,6 +156,7 @@ contains
     varatts( "STH1M", "STH1M     ", "Directional spreading from a1,b2                ", "nd   ", "x y k ", .false.) , &
     varatts( "TH2M ", "TH2M      ", "Mean wave direction from a2,b2                  ", "nd   ", "x y k ", .false.) , &
     varatts( "STH2M", "STH2M     ", "Directional spreading from a2,b2                ", "nd   ", "x y k ", .false.) , &
+    !TODO: has reverse indices (nk,nsea)
     varatts( "WN   ", "WN        ", "Wavenumber array                                ", "nd   ", "x y k ", .false.)   &
                        ]
 
