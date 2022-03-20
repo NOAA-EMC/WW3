@@ -182,7 +182,7 @@
 
       PUBLIC
 
-      LOGICAL, PRIVATE :: DEBUG = .FALSE.
+      LOGICAL, PRIVATE :: wDEBUG = .FALSE.
 
       CHARACTER(LEN=*), PARAMETER :: FN_META = "ounfmeta.inp"
 
@@ -479,19 +479,19 @@
 
         ! Empty line?
         IF(TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank line]'
+          IF(wDEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank line]'
           CYCLE
         ENDIF
 
         IF(TRIM(BUF) == "$ DEBUG ON") THEN
           WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG ON]'
-          DEBUG = .TRUE.
+          wDEBUG = .TRUE.
           CYCLE
         ENDIF
 
         IF(TRIM(BUF) == "$ DEBUG OFF") THEN
           WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG OFF]'
-          DEBUG = .FALSE.
+          wDEBUG = .FALSE.
           CYCLE
         ENDIF
 
@@ -500,7 +500,7 @@
 
         ! Check for comment:
         IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
+          IF(wDEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
           CYCLE
         ENDIF
 
@@ -697,7 +697,7 @@
         IF(TESTU == "META") THEN
            MCNT = MCNT + 1
 
-           IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
+           IF(wDEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
 
            ! Get the IFI, IFJ, IFC values from the header:
            I = INDEX(BUF, TRIM(TEST)) + 4 ! Handles lower/mixed-case META keyword
@@ -884,7 +884,7 @@
       IF(FLD /= '') THEN
         ! Special case for "global" attributes
         IF(TRIM(FLD) == "GLOBAL") THEN
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
+          IF(wDEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
           IFI = 999  ! Marker for global section
 
           ! check for any options:
@@ -896,17 +896,17 @@
               CONTINUE ! no option
             CASE("NODEFAULT")
               FL_DEFAULT_GBL_META = .FALSE.
-              IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
+              IF(wDEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
             CASE DEFAULT
               WRITE(NDSE, *) "Unknown GLOBAL extra option: [", TRIM(OPT), "]"
           END SELECT
         ELSE
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
+          IF(wDEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
           CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
         ENDIF
       ENDIF
 
-      IF(DEBUG) WRITE(*,'(6X,A20,1X,I4,2I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
+      IF(wDEBUG) WRITE(*,'(6X,A20,1X,I4,2I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
 !
  6000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '/           &
                '     SYNTAX ERROR IN SECTION HEADER. ' /              &
@@ -977,13 +977,13 @@
         ENDIF
 
         IF(NEW) THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          IF(wDEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
           BACKSPACE(NDMI)
           EXIT
         ENDIF
 
-        IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
+        IF(wDEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
 
         ! Meta data should be formatted as "attr_name = attr_value"
         I = INDEX(BUF, "=")
@@ -1043,7 +1043,7 @@
              TMP = ATTV
              CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
-             IF(DEBUG) THEN
+             IF(wDEBUG) THEN
                WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
                  TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
              ENDIF
@@ -1240,7 +1240,7 @@
         ENDIF
 
         IF(NEW) THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          IF(wDEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
           BACKSPACE(NDMI)
           EXIT
@@ -1259,7 +1259,7 @@
         ! Get type, if set:
         CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
-        IF(DEBUG) THEN
+        IF(wDEBUG) THEN
           WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[FREEFORM meta]', &
             TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
         ENDIF
@@ -1331,7 +1331,7 @@
         WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
         CALL EXTCDE(10)
       ENDIF
-      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[CRS id]', TRIM(CRS_NAME)
+      IF(wDEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[CRS id]', TRIM(CRS_NAME)
 
       IF(CRS_META%N .NE. 0) THEN
         IF(CRS_IS_DEFAULT) THEN
@@ -1559,7 +1559,7 @@
       ENDIF
       ID = "<" // TRIM(ID) // ">"
 
-      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(ID)
+      IF(wDEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[template id]', TRIM(ID)
 
       ! Extend list of partition template types:
       IF(ASSOCIATED(PART_TMPL)) THEN
@@ -1590,7 +1590,7 @@
 
         IF(NEW) THEN
           ! Start of new meta data entry
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+          IF(wDEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
           ILINE = ILINE - 1
           BACKSPACE(NDMI)
           EXIT
@@ -1603,7 +1603,7 @@
         ENDIF
 
         ! Add string to array of partition text
-        IF(DEBUG) THEN
+        IF(wDEBUG) THEN
            WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]', &
                                              P%NP, TRIM(BUF)
         ENDIF
