@@ -670,7 +670,7 @@
       REAL                    :: eInc1, eInc2, eVS, eVD, JAC
       REAL                    :: DeltaSRC(NSPEC)
       REAL, PARAMETER         :: DTMINTOT = 0.01
-      LOGICAL                 :: LNEWLIMITER = .TRUE.
+      LOGICAL                 :: LNEWLIMITER = .FALSE.
 #ifdef W3_PDLIB
   REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -709,8 +709,11 @@
 #ifdef W3_LN0
       VSLN = 0.
 #endif
-#ifdef W3_SEED
+#ifdef W3_LN1
       VSLN = 0.
+#endif
+#ifdef W3_SEED
+     VSLN = 0.
 #endif
 #ifdef W3_ST0
       VSIN = 0.
@@ -729,13 +732,29 @@
       VSNL = 0.
       VDNL = 0.
 #endif
+#ifdef W3_NL1
+      VSNL = 0.
+      VDNL = 0.
+#endif
+#ifdef W3_TR1
+      VSTR = 0.
+      VDTR = 0. 
+#endif
 #ifdef W3_ST0
+      VSDS = 0.
+      VDDS = 0.
+#endif
+#ifdef W3_ST4
       VSDS = 0.
       VDDS = 0.
 #endif
       VSBT = 0.
       VDBT = 0.
 #ifdef W3_DB1
+      VSDB = 0.
+      VDDB = 0.
+#endif
+#ifdef W3_DB2
       VSDB = 0.
       VDDB = 0.
 #endif
@@ -1376,9 +1395,143 @@
                WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
         END IF
 #endif
+         IF (srce_call .eq. srce_imp_pre) THEN
+#ifdef W3_PDLIB
+      IF (LSLOC) THEN
+        IF (IMEM == 1) THEN
+          SIDT  = PDLIB_SI(JSEA) * DTG 
+          DO IK = 1, NK
+            JAC = CLATSL/CG1(IK) 
+            DO ITH = 1, NTH
+              ISP = ITH + (IK-1)*NTH
+#endif
+                     !if (vs(isp) .gt. thr) write(*,*) isp, vs(isp), vd(isp)
+#ifdef W3_PDLIB
+              VD(ISP) = MIN(0., VD(ISP))
+              IF (LNEWLIMITER) THEN
+                MAXDAC = MAX(DAM(ISP),DAM2(ISP))
+              ELSE
+                MAXDAC = DAM(ISP)
+              ENDIF
+              FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
+              DVS    = VS(ISP) * FAKS
+              DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+              PreVS  = DVS / FAKS
+              eVS    = PreVS / CG1(IK) * CLATSL
+              eVD    = MIN(0.,VD(ISP))
+              B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
+              ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
+!        IF (JSEA .eq. 100 .and. IT .gt. 0) THEN
+!          WRITE(*,*) 'A and B', ISP, eVS, eVD, SPEC(ISP)*JAC, B_JAC(ISP,JSEA), ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA))
+!        ENDIF
+#ifdef W3_DB1
+                eVS = VSDB(ISP) * JAC
+                eVD = MIN(0.,VDDB(ISP))
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD 
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
+#endif
+#ifdef W3_DB2
+                eVS = VSDB(ISP) * JAC
+                eVD = MIN(0.,VDDB(ISP))
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD 
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
+#endif
+#ifdef W3_PDLIB
+              B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
+              ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
+#ifdef W3_TR1
+                eVS = VSTR(ISP) * JAC 
+                eVD = VDTR(ISP)
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD 
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
+#endif
+#ifdef W3_PDLIB
+              B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
+              ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
+                     !IF (IX == 1232) write(740+IAPROC,*) IX, ISP, B_JAC(ISP,JSEA), ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)), &
+                     !                         & VSLN(ISP), VSIN(ISP), VDIN(ISP), VSDS(ISP), VDDS(ISP), &
+                     !                         !& VSTR(ISP), VDTR(ISP), VSDB(ISP), VDDB(ISP), VSNL(ISP), VDNL(ISP), &
+                     !                         & SPEC(ISP), U10ABS, U10DIR, USTAR 
+                     
+!!/VEG1              eVS = eVS + VSVG(ISP) * JAC 
+!!/VEG1              eVD = evD + MIN(0.,VDVG(ISP))
+!!/PDLIB              B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA)*JAC)
+!!/PDLIB              ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#ifdef W3_PDLIB
+            END DO
+#endif
 
+#ifdef W3_PDLIB
+          END DO
+#endif
+!                 IF (IT .gt. 0 .and. JSEA .eq. 100) THEN
+!                    WRITE(*,*) 'SUM A and B', JSEA, SUM(B_JAC(:,JSEA)), SUM(ASPAR_JAC(:,PDLIB_I_DIAG(JSEA)))
+!                 ENDIF
+                 !IF (ISEA == 32) THEN
+                 !  write(740+IAPROC,*) IX, ISEA, JSEA, IT, SUM(B_JAC(1:NSPEC,JSEA)), &
+                 !                    SUM(ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(JSEA))), & 
+                 !     &       SUM(VS), SUM(VD), SUM(SPEC), 4*SQRT(EMEAN), DEPTH, & 
+                 !             IOBP_LOC(JSEA), IOBDP_LOC(JSEA), IOBPA_LOC(JSEA)
+                 !ENDIF
+#ifdef W3_PDLIB
+        ELSEIF (IMEM == 2) THEN
+          SIDT   = PDLIB_SI(JSEA) * DTG
+          DO IK=1,NK
+            JAC = CLATSL/CG1(IK)
+            DO ITH=1,NTH
+              ISP=ITH + (IK-1)*NTH
+              VD(ISP) = MIN(0., VD(ISP))
+              IF (LNEWLIMITER) THEN
+                MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
+              ELSE
+                MAXDAC    = DAM(ISP)
+              ENDIF
+              FAKS      = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
+              DVS       = VS(ISP) * FAKS
+              DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+              PreVS     = DVS / FAKS
+              eVS = PreVS / CG1(IK) * CLATSL
+              eVD = VD(ISP)
+#endif
+#ifdef W3_DB1
+                eVS = eVS + DBLE(VSDB(ISP)) * JAC
+                eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
+#endif
+#ifdef W3_DB2
+                eVS = eVS + DBLE(VSDB(ISP)) * JAC
+                eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
+#endif
+!!/TR1                eVS = eVS + DBLE(VSTR(ISP)) * JAC
+!!/TR1                eVD = evD + MIN(0.,DBLE(VDTR(ISP)))
+!!/VEG1              eVS = eVS + DBLE(VSVG(ISP)) * JAC
+!!/VEG1              eVD = evD + MIN(0.,DBLE(VDVG(ISP)))
+#ifdef W3_PDLIB
+              B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
+              ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
+            END DO
+          END DO
+        ENDIF
+      ENDIF 
+#endif
 
-        IF (srce_call .eq. srce_imp_pre) THEN
           PrintDeltaSmDA=.FALSE.
           IF (PrintDeltaSmDA .eqv. .TRUE.) THEN
             DO IS=1,NSPEC
@@ -1471,6 +1624,19 @@
        SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
      END DO
 #endif
+#ifdef W3_DB2
+     DO IS=IS1, NSPECH
+       eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
+       SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+     END DO
+#endif
+#ifdef W3_TR1
+     DO IS=IS1, NSPECH
+       eInc1 = VSTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
+       SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+     END DO
+#endif
+
 !          IF (IX == DEBUG_NODE) THEN
 !            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'AFTER', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
 !          ENDIF
