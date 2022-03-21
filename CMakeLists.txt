@@ -17,6 +17,7 @@ if(hasParent)
   # with Ww3
   set(CMAKE_Fortran_FLAGS "")
   set(CMAKE_C_FLAGS "")
+  remove_definitions(-DDEBUG)
 endif()
 
 set(valid_caps "MULTI_ESMF" "NUOPC_MESH")
