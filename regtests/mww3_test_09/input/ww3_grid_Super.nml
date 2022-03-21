@@ -1,67 +1,51 @@
 ! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
 ! Define the spectrum parameterization via SPECTRUM_NML namelist
 ! -------------------------------------------------------------------- !
 &SPECTRUM_NML
-  SPECTRUM%XFR       =  1.1
-  SPECTRUM%FREQ1     =  0.04118
-  SPECTRUM%NK        =  25
-  SPECTRUM%NTH       =  24
+  SPECTRUM%XFR       =  F
+  SPECTRUM%FREQ1     =  T
+  SPECTRUM%NK        =  T
+  SPECTRUM%NTH       =  T
+  SPECTRUM%THOFF     =  F
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the run parameterization via RUN_NML namelist
 ! -------------------------------------------------------------------- !
 &RUN_NML
-  RUN%FLCX         =  T
-  RUN%FLCY         =  T
-  RUN%FLCTH        =  T
-  RUN%FLSOU        =  F
+  RUN%FLDRY        =  600.
+  RUN%FLCX         =  120.
+  RUN%FLCY         =  120.
+  RUN%FLCTH        =  120.
+  RUN%FLCK         =  
+  RUN%FLSOU        =  
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the timesteps parameterization via TIMESTEPS_NML namelist
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  600.0
-  TIMESTEPS%DTXY         =  120.0
-  TIMESTEPS%DTKTH        =  120.0
-  TIMESTEPS%DTMIN        =  120.0
+  TIMESTEPS%DTMAX        =  &PSMC
+  TIMESTEPS%DTXY         =  DTIMS=3600.,NBISMC=67,LvSMC=4,AVERG=.TRUE.,SEAWND=.TRUE./
+  TIMESTEPS%DTKTH        =  
+  TIMESTEPS%DTMIN        =  
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the grid to preprocess via GRID_NML namelist
 ! -------------------------------------------------------------------- !
 &GRID_NML
-  GRID%NAME         =  'Super'
-  GRID%NML          =  '../input/namelists_super.nml'
+  GRID%NAME         =  '1.1 0.04118 25 24 0.'
+  GRID%NML          =  '../input/namelists_Super.nml'
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  -0.1
-  GRID%DMIN         =  10.0
-/
-
-! -------------------------------------------------------------------- !
-! Define the rectilinear grid type via RECT_NML namelist
-! -------------------------------------------------------------------- !
-&RECT_NML
-  RECT%NX           =  384
-  RECT%NY           =  256
-  RECT%SX           =  0.0448
-  RECT%SY           =  0.0320
-  RECT%X0           =  267.2996
-  RECT%Y0           =  41.174
-/
-
-! -------------------------------------------------------------------- !
-! Define the SMC grid input files
-! -------------------------------------------------------------------- !
-&SMC_NML
-  SMC%MCELS%FILENAME = '../input/GtLkSuperCels.dat' 
-  SMC%ISIDE%FILENAME = '../input/GtLkSuperISid.dat'
-  SMC%JSIDE%FILENAME = '../input/GtLkSuperJSid.dat'
-  SMC%SUBTR%FILENAME = '../input/GtLkSuperObst.dat'
-  SMC%BUNDY%FILENAME = '../input/GtLkSuperBlst.dat'
+  GRID%ZLIM         =  384
+  GRID%DMIN         =  256
 /
 
 ! -------------------------------------------------------------------- !

@@ -1,0 +1,8 @@
+-5. 5.75 10 -2500. 4 1 '(....)' 'UNIT' 'input'
+1521*1
+F T T T F T
+800. 400. 400. 40.
+&MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+&SBT1 GAMMA = -0.038 /
+10 1 4 1 '(....)' 'UNIT' 'input'
+END OF NAMELISTS

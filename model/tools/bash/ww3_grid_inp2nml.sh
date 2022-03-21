@@ -293,7 +293,7 @@ then
   # save file
   if [ -f $foridepth ]
   then
-    if [ -z "$(diff $foridepth $fdepth)" ]
+    if [ -z "$(diff -b $foridepth $fdepth)" ]
     then
       echo $foridepth ' and ' $fdepth 'are same.'
       echo 'delete ' $fdepth
