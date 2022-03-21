@@ -232,7 +232,7 @@ The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
       where
       \begin{equation} n = \frac{1}{2} + \frac{kd}{\sinh 2kd}
       \: . \label{eq:n} \end{equation}
-\item \textbf{TWO} Wave to ocean momentum flux
+\item \textbf{TWO} Wave to ocean momentum flux (m$^2$/s$^2$)
 \item \textbf{BHD} Bernoulli head (m$^2$/s$^2$)
       \begin{equation} J =  g \int \!\!\!\! \int  \frac{k}
         {\sinh 2kd}  \: F(k,\theta) \: dk d\theta
@@ -265,6 +265,9 @@ Note that US3D=1 must be set in the ww3\_grid.inp OUTS namelist in order to acti
         {\sinh^2 kd}  \: F(k,\theta) \: dk d\theta
       \: . \label{eq:Ussp} \end{equation}
 The number $n$ and the central wavenumbers for the partitions $k_n$ are `run-time' in the sense that they are defined in the model definition file generated from ww3\_grid.inp (see the sample input file for details on setting these quantities).  The wavenumber integral bounds for each $n$ partition divide the model wave spectra to accomodate the prescribed values of $k_n$.
+\item \textbf{TOC} Total ocean stress (Pa)
+      \begin{equation} \tau_{oc} = \tau_a - \tau_{aw} + \tau_{woc}
+      \: . \label{eq:Toc} \end{equation}
 \end{list}
 
 \item{Wave-bottom layer}
