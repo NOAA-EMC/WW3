@@ -48,7 +48,6 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
   cmplr=intel
   export cmplOption='y'
-  export o_opt='y'
 
   #Module Versions from HPC-Stack that are common for all platforms 
   modnetcdf='netcdf/4.7.4'
@@ -163,25 +162,19 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
     export  mpi='mpirun'
   fi
 
-# output option
-  if [ "$o_opt" = 'y' ]
-  then
-     opt="-o all"
-  fi
-
 # Compile option
   if [ "$cmplOption" = 'y' ]
   then
-     opt="-c $cmplr -S -T $opt"
+     opt="-o all -c $cmplr -S -T"
   else
-     opt="-S $opt"
+     opt="-o all -S"
   fi
+
 # Batch queue option
   if [ "$batchq" = 'slurm' ]
   then
      opt="-b $batchq $opt"
   fi
-
 
 # Base run_test command line
   export rtst="./bin/run_cmake_test $opt"
