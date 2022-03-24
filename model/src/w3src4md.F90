@@ -301,6 +301,7 @@
                                         USTAR, USDIR, Z0, CD )
       IF (U.GT.2.5) THEN
         CHARN = (Z0 - 0.11 * NU_AIR / USTAR) * GRAV / USTAR**2
+        CHARN = MAX( CHARN , AALPHA )
         CHARN = MIN( 0.035 , CHARN ) 
       ELSE
         CHARN = AALPHA
