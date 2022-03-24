@@ -367,6 +367,15 @@ fi
 
 mkdir -p $path_w
 
+cd $path_w
+
+if [ $stub ] && [ -f finished ]
+then
+  echo " Test already finished, skipping ..."
+  echo ' '
+  exit 0
+fi
+
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
   ww3_dir=${path_s}/..
@@ -546,13 +555,6 @@ echo ' '
 echo " Input directory: $path_i"
 echo " Switch file: $file_c"
 echo ' '
-
-if [ $stub ] && [ -f finished ]
-then
-  echo " Test already finished, skipping ..."
-  echo ' '
-  exit 0
-fi
 
 # 3.b2 Preprocess cdl files into nc files ----------------------------------- #
 
