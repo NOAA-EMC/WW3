@@ -595,7 +595,7 @@ contains
     end if
 #else
     if (state_fldchk(exportState, 'Sw_lamult')) then
-       call state_getfldptr(exportState, 'Sw_lamult', fldptr1d=sw_lamult, rc=rc)
+       call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_lamult(:) = fillvalue
        do jsea=1, nseal
@@ -613,7 +613,7 @@ contains
 
     ! surface stokes drift
     if (state_fldchk(exportState, 'Sw_ustokes')) then
-       call state_getfldptr(exportState, 'Sw_ustokes', fldptr1d=sw_ustokes, rc=rc)
+       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_ustokes(:) = fillvalue
        do jsea=1, nseal
@@ -628,7 +628,7 @@ contains
        enddo
     end if
     if (state_fldchk(exportState, 'Sw_vstokes')) then
-       call state_getfldptr(exportState, 'Sw_vstokes', fldptr1d=sw_vstokes, rc=rc)
+       call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_vstokes(:) = fillvalue
        do jsea=1, nseal
@@ -644,13 +644,13 @@ contains
     end if
 
     if (state_fldchk(exportState, 'Sw_ch')) then
-       call state_getfldptr(exportState, 'charno', fldptr1d=charno, rc=rc)
+       call state_getfldptr(exportState, 'charno', charno, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcCharnk(charno)
     endif
 
     if (state_fldchk(exportState, 'Sw_z0')) then
-       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
+       call state_getfldptr(exportState, 'Sw_z0', z0rlen, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
@@ -661,9 +661,9 @@ contains
     ! in fd_nems.yaml but this seems to be calculated a (:,:) value
     !if ( state_fldchk(exportState, 'uscurr') .and. &
     !     state_fldchk(exportState, 'vscurr')) then
-    !   call state_getfldptr(exportState, 'uscurr', fldptr1d=uscurr, rc=rc)
+    !   call state_getfldptr(exportState, 'uscurr', uscurr, rc=rc)
     !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !   call state_getfldptr(exportState, 'vscurr', fldptr1d=vscurr, rc=rc)
+    !   call state_getfldptr(exportState, 'vscurr', vscurr, rc=rc)
     !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
     !   call CalcStokes3D( va, uscurr, vscurr )
     !endif
@@ -671,11 +671,11 @@ contains
     if ( state_fldchk(exportState, 'wbcuru') .and. &
          state_fldchk(exportState, 'wbcurv') .and. &
          state_fldchk(exportState, 'wbcurp')) then
-       call state_getfldptr(exportState, 'wbcuru', fldptr1d=wbcuru, rc=rc)
+       call state_getfldptr(exportState, 'wbcuru', wbcuru, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wbcurv', fldptr1d=wbcurv, rc=rc)
+       call state_getfldptr(exportState, 'wbcurv', wbcurv, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wbcurp', fldptr1d=wbcurp, rc=rc)
+       call state_getfldptr(exportState, 'wbcurp', wbcurp, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
     end if
@@ -683,21 +683,21 @@ contains
     if ( state_fldchk(exportState, 'wavsuu') .and. &
          state_fldchk(exportState, 'wavsuv') .and. &
          state_fldchk(exportState, 'wavsvv')) then
-       call state_getfldptr(exportState, 'sxxn', fldptr1d=sxxn, rc=rc)
+       call state_getfldptr(exportState, 'sxxn', sxxn, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'sxyn', fldptr1d=sxyn, rc=rc)
+       call state_getfldptr(exportState, 'sxyn', sxyn, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'syyn', fldptr1d=syyn, rc=rc)
+       call state_getfldptr(exportState, 'syyn', syyn, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRadstr2D( va, sxxn, sxyn, syyn)
     end if
 
     if (wav_coupling_to_cice) then
-       call state_getfldptr(exportState, 'wav_tauice1', fldptr1d=wav_tauice1, rc=rc)
+       call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wav_tauice2', fldptr1d=wav_tauice2, rc=rc)
+       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wave_elevation_spectrum', fldptr2d=wave_elevation_spectrum, rc=rc)
+       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
 
@@ -728,9 +728,9 @@ contains
     if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
          state_fldchk(exportState, 'Sw_pstokes_y') )then
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_pstokes_x', fldptr2d=sw_pstokes_x, rc=rc)
+       call state_getfldptr(exportState, 'Sw_pstokes_x', sw_pstokes_x, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_pstokes_y', fldptr2d=sw_pstokes_y, rc=rc)
+       call state_getfldptr(exportState, 'Sw_pstokes_y', sw_pstokes_y, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_pstokes_x(:,:) = fillvalue
        sw_pstokes_y(:,:) = fillvalue
@@ -752,17 +752,17 @@ contains
          state_fldchk(exportState, 'Sw_vstokes2') .and. &
          state_fldchk(exportState, 'Sw_vstokes3') ) then
 
-       call state_getfldptr(exportState, 'Sw_ustokes1', fldptr1d=sw_ustokes1, rc=rc)
+       call state_getfldptr(exportState, 'Sw_ustokes1', sw_ustokes1, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_ustokes2', fldptr1d=sw_ustokes2, rc=rc)
+       call state_getfldptr(exportState, 'Sw_ustokes2', sw_ustokes2, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_ustokes3', fldptr1d=sw_ustokes3, rc=rc)
+       call state_getfldptr(exportState, 'Sw_ustokes3', sw_ustokes3, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_vstokes1', fldptr1d=sw_vstokes1, rc=rc)
+       call state_getfldptr(exportState, 'Sw_vstokes1', sw_vstokes1, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_vstokes2', fldptr1d=sw_vstokes2, rc=rc)
+       call state_getfldptr(exportState, 'Sw_vstokes2', sw_vstokes2, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'Sw_vstokes3', fldptr1d=sw_vstokes3, rc=rc)
+       call state_getfldptr(exportState, 'Sw_vstokes3', sw_vstokes3, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_ustokes1(:)= zero
        sw_vstokes1(:)= zero
@@ -1202,7 +1202,7 @@ contains
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
-    call state_getfldptr(importState, trim(fldname), fldptr1d=dataptr, rc=rc)
+    call state_getfldptr(importState, trim(fldname), dataptr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
@@ -1317,7 +1317,7 @@ contains
     if (secondCall) then
        call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at currTime : ', &
           unit=msgString, rc=rc)
-       call state_getfldptr(importState, trim(fldname), fldptr1d=dataptr, rc=rc)
+       call state_getfldptr(importState, trim(fldname), dataptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        import_mask(:) = 0.0_r4
