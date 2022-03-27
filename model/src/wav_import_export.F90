@@ -820,13 +820,6 @@ contains
   !===============================================================================
   subroutine fldlist_realize(state, fldList, numflds, flds_scalar_name, flds_scalar_num, mesh, tag, rc)
 
-    use NUOPC, only : NUOPC_IsConnected, NUOPC_Realize
-    use ESMF , only : ESMF_MeshLoc_Element, ESMF_FieldCreate, ESMF_TYPEKIND_R8
-    use ESMF , only : ESMF_MAXSTR, ESMF_Field, ESMF_State, ESMF_Mesh, ESMF_StateRemove
-    use ESMF , only : ESMF_LogFoundError, ESMF_LOGMSG_INFO, ESMF_SUCCESS
-    use ESMF , only : ESMF_LogWrite, ESMF_LOGMSG_ERROR, ESMF_LOGERR_PASSTHRU
-    use ESMF , only : ESMF_VM
-
     ! input/output variables
     type(ESMF_State)          , intent(inout) :: state
     type(fld_list_type)       , intent(in)    :: fldList(:)
@@ -893,9 +886,6 @@ contains
       ! ----------------------------------------------
       ! create a field with scalar data on the root pe
       ! ----------------------------------------------
-      use ESMF, only : ESMF_Field, ESMF_DistGrid, ESMF_Grid
-      use ESMF, only : ESMF_DistGridCreate, ESMF_GridCreate, ESMF_LogFoundError, ESMF_LOGERR_PASSTHRU
-      use ESMF, only : ESMF_FieldCreate, ESMF_GridCreate, ESMF_TYPEKIND_R8
 
       type(ESMF_Field) , intent(inout) :: field
       character(len=*) , intent(in)    :: flds_scalar_name
