@@ -1407,12 +1407,6 @@ contains
 
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-    ! NOTE: these need to be set again AFTER w3init is run - since these values will be overwritten
-    ! by the read of mod_def.ww3
-    dtmax  = dtmax_in
-    dtcfl  = dtcfl_in
-    dtcfli = dtcfli_in
-    dtmin  = dtmin_in
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
