@@ -298,14 +298,7 @@
 !
 #ifdef W3_FLX5
       CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
-                                        USTAR, USDIR, Z0, CD )
-      IF (U.GT.2.5) THEN
-        CHARN = (Z0 - 0.11 * NU_AIR / USTAR) * GRAV / USTAR**2
-        CHARN = MAX( CHARN , AALPHA )
-        CHARN = MIN( 0.035 , CHARN ) 
-      ELSE
-        CHARN = AALPHA
-        END IF
+                                        USTAR, USDIR, Z0, CD, CHARN )
 #else
       Z0=0.
       CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 

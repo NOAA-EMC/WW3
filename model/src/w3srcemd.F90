@@ -988,7 +988,7 @@
 #endif
 #ifdef W3_FLX5
       CALL W3FLX5 ( ZWND, U10ABS, U10DIR, TAUA, TAUADIR, DAIR,  &
-                                          USTAR, USTDIR, Z0, CD )
+                                          USTAR, USTDIR, Z0, CD, CHARN )
 #endif
 !
 ! 1.e Prepare cut-off beyond which the tail is imposed with a power law
