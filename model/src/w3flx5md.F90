@@ -140,7 +140,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: KAPPA
+      USE CONSTANTS, ONLY: KAPPA, GRAV, nu_air
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
 !     USE W3GDATMD, ONLY: FLX5A0
       USE W3SERVMD, ONLY: EXTCDE
