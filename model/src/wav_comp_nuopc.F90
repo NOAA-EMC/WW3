@@ -861,7 +861,7 @@ contains
       sw_vstokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_z0')) then
-       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
+       call state_getfldptr(exportState, 'Sw_z0', z0rlen, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
@@ -871,7 +871,7 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'wave_elevation_spectrum', fldptr2d=wave_elevation_spectrum, rc=rc)
+      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        wav_tauice1(:) = 0.
