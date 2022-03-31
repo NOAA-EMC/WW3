@@ -3623,12 +3623,12 @@
           WRITE(*,*) 'NO UNST SCHEME SELECTED'
           CALL EXTCDE ( 19 )
         ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
-          WRITE(*,*) 'MORE THAN ONE UNST SCHEME SELECTED'
+          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
           CALL EXTCDE ( 19 )
         ENDIF 
 
         UNSTSCHEME=-1
-        DO IX=1,6
+        DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
             UNSTSCHEME=IX
             EXIT
