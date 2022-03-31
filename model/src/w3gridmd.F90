@@ -903,13 +903,13 @@
 #ifdef W3_PR3
       REAL                    :: WDTHCG, WDTHTH
 #endif
-           LOGICAL :: JGS_TERMINATE_MAXITER    =  .TRUE.
-           LOGICAL :: JGS_TERMINATE_DIFFERENCE =  .TRUE.
-           LOGICAL :: JGS_TERMINATE_NORM       = .FALSE.
-           LOGICAL :: JGS_LIMITER              = .FALSE.
-           LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL   = .TRUE.
-           LOGICAL :: JGS_USE_JACOBI           = .TRUE.
-           LOGICAL :: JGS_SOURCE_NONLINEAR     = .FALSE.
+           LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
+           LOGICAL :: JGS_TERMINATE_DIFFERENCE = .TRUE.
+           LOGICAL :: JGS_TERMINATE_NORM = .TRUE.
+           LOGICAL :: JGS_LIMITER = .FALSE.
+           LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
+           LOGICAL :: JGS_USE_JACOBI = .TRUE.
+           LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
            LOGICAL :: UGOBCAUTO = .FALSE.
            LOGICAL :: UGBCCFL   = .FALSE.
            LOGICAL :: EXPFSN    = .TRUE.
@@ -924,13 +924,13 @@
            LOGICAL :: SETUP_APPLY_WLV = .FALSE.
            INTEGER :: JGS_MAXITER=100
            INTEGER :: nbSel
-           INTEGER :: UNSTSCHEMES(6)
+           INTEGER :: UNSTSCHEMES(4)
            INTEGER :: UNSTSCHEME
            INTEGER :: JGS_NLEVEL = 0
            REAL*8  :: JGS_PMIN = 0.
            REAL*8  :: JGS_DIFF_THR = 1.E-10
-           REAL*8  :: JGS_NORM_THR = 1.E-12
-           REAL*8  :: SOLVERTHR_SETUP = 1.E-12
+           REAL*8  :: JGS_NORM_THR = 1.E-20
+           REAL*8  :: SOLVERTHR_SETUP = 1.E-20
            REAL*8  :: CRIT_DEP_SETUP = 0.
 !
            CHARACTER               :: UGOBCFILE*60
@@ -2415,17 +2415,17 @@
 !
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
-       UGOBCAUTO  = .TRUE.
-       UGBCCFL    = .FALSE.
-       UGOBCDEPTH = -10.
-       UGOBCOK    = .FALSE.
-       UGOBCFILE  = 'unset'
-       EXPFSN     = .FALSE.
-       EXPFSPSI   = .FALSE.
-       EXPFSFCT   = .FALSE.
-       IMPFSN     = .FALSE.
-       IMPTOTAL   = .FALSE.
-       EXPTOTAL   = .FALSE. 
+       UGOBCAUTO = .TRUE.
+       UGBCCFL = .TRUE.
+       UGOBCDEPTH= -10.
+       UGOBCOK = .FALSE.
+       UGOBCFILE = 'unset'
+       EXPFSN    = .TRUE.
+       EXPFSPSI  = .FALSE.
+       EXPFSFCT  = .FALSE.
+       IMPFSN    = .FALSE.
+       IMPTOTAL  = .FALSE.
+       EXPTOTAL  = .FALSE. 
        IMPREFRACTION = .FALSE.
        IMPFREQSHIFT = .FALSE.
        IMPSOURCE = .FALSE.
@@ -2460,6 +2460,13 @@
        B_JGS_NLEVEL = JGS_NLEVEL
        B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
 
+       IF ((EXPFSN .eqv. .FALSE.).and.(EXPFSPSI .eqv. .FALSE.)     &
+           .and.(EXPFSFCT .eqv. .FALSE.)                           &
+           .and.(IMPFSN .eqv. .FALSE.)                             &
+           .and.(EXPTOTAL .eqv. .FALSE.)                           &
+           .and.(IMPTOTAL .eqv. .FALSE.)) THEN
+         EXPFSN=.TRUE. ! This is the default scheme ...
+       END IF
        nbSel=0
 
        IF (EXPFSN)   nbSel = nbSel+1
@@ -2473,12 +2480,13 @@
          IF (nbSel .ne. 1) THEN
            WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN WW3_GRID:'
            IF (nbSel .gt. 1) THEN
-             WRITE (*,*) 'MORE THAN ONE UNSTRUCTURED SCHEME SELECTED'
-             CALL EXTCDE ( 19 )
+             WRITE (NDSE,*) 'More than one scheme selected'
            ELSE IF (nbSel .eq. 0) THEN
-             WRITE (*,*) 'NOTHING SELECTED FROM THE UNSTRUCTURED PART'
-             CALL EXTCDE ( 19 )
+             WRITE (NDSE,*) 'no scheme selected'
            END IF
+           WRITE (NDSE,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
+           WRITE (NDSE,*)'IMPFSN, IMPTOTAL'
+           CALL EXTCDE ( 30 )
          END IF
        END IF
 !
@@ -3308,7 +3316,7 @@
           WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 #endif
 !
-               WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,UGOBCFILE, &
+        WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
                           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
                           IMPSOURCE, SETUP_APPLY_WLV,                 &
