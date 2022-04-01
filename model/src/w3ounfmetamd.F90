@@ -13,13 +13,13 @@
 !>
 !>    Entries in the file are formatted as follows:
 !>
-!>    @code{.txt}
-!>      META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
-!>        attr_name = attr_value
-!>        attr_name = attr_value
-!>        extra_attr = extra_value [type]
-!>      ... repeated as many times as required.
-!>    @endcode
+!>    @verbatim
+!>    META [ IFI [ IFJ ]  |  FLDID ]   [ IFC ]
+!>      attr_name = attr_value
+!>      attr_name = attr_value
+!>      extra_attr = extra_value [type]
+!>    ... repeated as many times as required.
+!>    @endverbatim
 !>
 !>    An output field is selected using the META keyword followed by
 !>    either an [IFI, IFJ] integer pair or a FieldID string. Optionally,
@@ -51,11 +51,11 @@
 !>
 !>    Global meta data can be specified with a special "META global" line:
 !>
-!>    @code{.txt}
-!>      META global
-!>        extra_attr = extra_value [type]
-!>        extra_attr = extra_value [type]
-!>    @endcode
+!>    @verbatim
+!>    META global
+!>      extra_attr = extra_value [type]
+!>      extra_attr = extra_value [type]
+!>    @endverbatim
 !>
 !>    A "coordinate reference system" (CRS) can be specified for all output
 !>    fields using the "CRS" keyword. As a minimum, the "grid_mapping_name"
@@ -64,12 +64,12 @@
 !>    CRS variable. "crs_vaname" will be created as a scalar NF90_CHAR
 !>    variable in the output file.
 !>
-!>    @code{.txt}
-!>      CRS <crs_varname>
-!>        grid_mapping_name = <mapping name>
-!>        attr = value
-!>        attr = value
-!>    @endcode
+!>    @verbatim
+!>    CRS <crs_varname>
+!>      grid_mapping_name = <mapping name>
+!>      attr = value
+!>      attr = value
+!>    @endverbatim
 !>
 !>    Note: ALL keywords and "Field Name ID" strings (e.g. HS) are
 !>    case insensitive. All netCDF attribute names are case sensitive.
@@ -86,14 +86,14 @@
 !>    template strings in the ounfmeta.inp file using the TEMPLATE
 !>    keyword, as below:
 !>
-!>    @code{.txt}
-!>      TEMPLATE <template-name>
-!>        String for partition 0
-!>        String for partition 1
-!>        String for partition 2
-!>        String for partition 3
-!>        ... etc
-!>    @endcode
+!>    @verbatim
+!>    TEMPLATE <template-name>
+!>      String for partition 0
+!>      String for partition 1
+!>      String for partition 2
+!>      String for partition 3
+!>      ... etc
+!>    @endverbatim
 !>
 !>    Specifying the <template-name> with a trailing underscore will
 !>    provide an underscore seperated (_) string, rather than space
@@ -101,51 +101,51 @@
 !>
 !>    Example ounfmeta.inp file:
 !>
-!>    @code{.txt}
-!>       $ Lines starting with dollars are comments.
-!>       $ The line starts a meta-data section for the depth field
-!>       META DPT
-!>         standard_name = depth
-!>         long_name = "can be quoted string"
-!>         comment = or an unquoted string
-!>         vmax = 999.9
+!>    @verbatim
+!>    $ Lines starting with dollars are comments.
+!>    $ The line starts a meta-data section for the depth field
+!>    META DPT
+!>      standard_name = depth
+!>      long_name = "can be quoted string"
+!>      comment = or an unquoted string
+!>      vmax = 999.9
 !>
-!>       $ Next one is HSig (group 2, field 1)
-!>       META 2 1
-!>         varns = "sig. wave height"
-!>         varnl = "this is long name"
+!>    $ Next one is HSig (group 2, field 1)
+!>    META 2 1
+!>      varns = "sig. wave height"
+!>      varnl = "this is long name"
 !>
-!>       $ Next one is second component of wind. It also sets an
-!>       $ "extra" meta data value (height - a float)
-!>       META WND 2
-!>         standard_name = "v-wind"
-!>         height = 10.0 "r"
+!>    $ Next one is second component of wind. It also sets an
+!>    $ "extra" meta data value (height - a float)
+!>    META WND 2
+!>      standard_name = "v-wind"
+!>      height = 10.0 "r"
 !>
-!>       $ User defined partitioned parameters template strings:
-!>       TEMPLATE PARTSTR
-!>         wind wave
-!>         primary swell
-!>         secondary swell
+!>    $ User defined partitioned parameters template strings:
+!>    TEMPLATE PARTSTR
+!>      wind wave
+!>      primary swell
+!>      secondary swell
 !>
-!>       $ Use partition templates in partitioned Hs field:
-!>       $ (SPART and IPART are built-in)
-!>       META PHS
-!>         standard_name = "<SPART_>_sigificant_wave_height"
-!>         long_name = "<PARTSTR>"
-!>         partition_number = "<IPART>"
+!>    $ Use partition templates in partitioned Hs field:
+!>    $ (SPART and IPART are built-in)
+!>    META PHS
+!>      standard_name = "<SPART_>_sigificant_wave_height"
+!>      long_name = "<PARTSTR>"
+!>      partition_number = "<IPART>"
 !>
-!>       $ Coordinate reference system:
-!>       CRS crs
-!>         grid_mapping_name = "latitude_longitude"
-!>         semi_major_axis = 6371000.0 f
-!>         inverse_flattening = 0 f
+!>    $ Coordinate reference system:
+!>    CRS crs
+!>      grid_mapping_name = "latitude_longitude"
+!>      semi_major_axis = 6371000.0 f
+!>      inverse_flattening = 0 f
 !>
-!>       $ Global metadata:
-!>       META global
-!>         institution = UKMO
-!>         comment "space seperated strings should be quoted" c
-!>         version = 1.0 r
-!>    @endcode
+!>    $ Global metadata:
+!>    META global
+!>      institution = UKMO
+!>      comment "space seperated strings should be quoted" c
+!>      version = 1.0 r
+!>    @endverbatim
 !>
 !> @author Chris Bunney @date 02-Nov-2020
 !>
@@ -159,11 +159,6 @@
 !> 22-Mar-2021 | 7.12 | Add extra coupling fields
 !> 02-Sep-2021 | 7.12 | Add coordinates attribute
 !>
-!!
-!! TODO - I NEED THIS DOUBLE BANG COMMENT HERE OTHERWISE DOXYGEN
-!!        THROWS AN ERROR FOR THIS FILE: "State 22(String)"
-!!        WHY???!!
-!!
       MODULE W3OUNFMETAMD
 !/
 !/    02-Nov-2020 : Creation                            ( version 7.12 )
