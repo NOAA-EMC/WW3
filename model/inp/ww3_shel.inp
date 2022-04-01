@@ -197,6 +197,7 @@ $  F  F  6     9   P2SMS      P2L   Micro seism  source term
 $  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 $  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
 $  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
+$  F  F  6    13   TAUOC[X,Y] TOC   Total momentum to the ocean
 $   -------------------------------------------------
 $        7                          Wave-bottom layer 
 $   -------------------------------------------------
