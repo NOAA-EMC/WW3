@@ -3613,24 +3613,13 @@
 !
       DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-        UNSTSCHEMES = 0
-        IF (EXPFSN)   UNSTSCHEMES(1) = 1
-        IF (EXPFSPSI) UNSTSCHEMES(2) = 1
-        IF (EXPFSFCT) UNSTSCHEMES(3) = 1
-        IF (IMPFSN)   UNSTSCHEMES(4) = 1
-        IF (IMPTOTAL) UNSTSCHEMES(5) = 1
-        IF (EXPTOTAL) UNSTSCHEMES(6) = 1
-
-        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
-          WRITE(*,*) 'NO UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
-          WRITE(*,*) 'MORE THAN ONE UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ENDIF 
-
+        UNSTSCHEMES(:)=0
+        IF (EXPFSN)   UNSTSCHEMES(1)=1
+        IF (EXPFSPSI) UNSTSCHEMES(2)=1
+        IF (EXPFSFCT) UNSTSCHEMES(3)=1
+        IF (IMPFSN)   UNSTSCHEMES(4)=1
         UNSTSCHEME=-1
-        DO IX=1,6
+        DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
             UNSTSCHEME=IX
             EXIT
@@ -3641,27 +3630,27 @@
         SELECT CASE (UNSTSCHEME)
         CASE (1) 
           FSN = EXPFSN
-          PNAME2 = 'N Explicit'
+          PNAME2 = 'N Explicit (Fluctuation Splitting) '
         CASE (2) 
           FSPSI = EXPFSPSI
-          PNAME2 = 'PSI Explicit'
+          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
         CASE (3) 
           FSFCT = EXPFSFCT
-          PNAME2 = 'Flux Corrected Transport Explicit'
+          PNAME2 = ' Flux Corrected Transport Explicit'
         CASE (4) 
           FSNIMP = IMPFSN 
-          PNAME2 = 'N Implicit fractional step'
-        END SELECT
+          PNAME2 = 'N Implicit (Fluctuation Splitting) '
+          END SELECT
 !
         IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
+        WRITE (NDSO,2951) PNAME2
         IF (IMPTOTAL) THEN
           FSTOTALIMP = IMPTOTAL
           PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
         END IF
         IF (EXPTOTAL) THEN
           FSTOTALEXP = EXPTOTAL 
-          PNAME2 = 'N Block Explicit'
-          WRITE (NDSO,2951) PNAME2
+          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
         END IF
         IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
           FSREFRACTION = .TRUE.
