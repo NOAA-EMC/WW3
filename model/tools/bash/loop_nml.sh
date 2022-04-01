@@ -3,7 +3,7 @@
 #############################################################################
 # how to run it over regtests : 
 #
-# for dir in $(find $PWD/../../../regtests/ -mindepth 1 -maxdepth 1 -type d -name "*t*"); do echo $dir; qsub -l walltime=04:00:00 -l mem=1G -v rpath="$dir",prog="ww3_grid",comment="header" loop_nml.sh; done
+# for dir in $(find $PWD/../../../regtests/ -mindepth 1 -maxdepth 1 -type d -name "*t*"); do echo $dir; qsub -l walltime=04:00:00 -l mem=1G -v rpath="$dir",prog="ww3_grid",comment="header" -N grid loop_nml.sh; done
 #############################################################################
 
 #shell argument

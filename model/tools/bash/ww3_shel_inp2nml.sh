@@ -37,16 +37,17 @@ fi
 declare -A forc
 declare -A flginp
 declare -A flggrd
-declare -A fielddates
-declare -A fieldlists
-declare -A pointdates
-declare -A pointfiles
-declare -A trackdates
-declare -A trackflags
-declare -A restartdates
-declare -A boundarydates
-declare -A partitiondates
-declare -A partfields
+declare -A fielddate
+declare -A fieldlist
+declare -A pointdate
+declare -A pointfile
+declare -A trackdate
+declare -A trackflag
+declare -A restartdate
+declare -A restart2date
+declare -A boundarydate
+declare -A partitiondate
+declare -A partfield
 declare -A homogic1
 declare -A homogic2
 declare -A homogic3
@@ -76,7 +77,7 @@ do
     continue
   fi
 
-  cleanline="$(echo $line | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"  
+  cleanline="$(echo $line | awk -F' ' '{print $1}' | sed -e "s/\*//g" -e "s/\"//g" -e "s/\'//g")"  
   if [ -z "$cleanline" ]
   then
     continue
@@ -165,21 +166,41 @@ then
   forc[15,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
   forc[15,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
   echo ${forc[15,1]} ${forc[15,2]}
-  il=$(($il+1))
-  forc[16,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${forc[16,1]}
-  il=$(($il+1))
-  forc[17,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${forc[17,1]}
+  if [ "${forc[13,2]}" = "T" ] || [ "${forc[13,2]}" = "F" ] || [ "${forc[13,2]}" = "C" ]
+  then
+    atmos=T
+    echo 'atmos'
+    il=$(($il+1))
+    forc[16,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[16,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[16,1]} ${forc[16,2]}
+    il=$(($il+1))
+    forc[17,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[17,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[17,1]} ${forc[17,2]}
+  else
+    atmos=F
+    echo 'no atmos'
+  fi
 else
   mudice=F
   echo 'no mudice'
-  il=$(($il+1))
-  forc[8,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${forc[8,1]}
-  il=$(($il+1))
-  forc[9,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${forc[9,1]}
+  if [ "${forc[5,2]}" = "T" ] || [ "${forc[5,2]}" = "F" ] || [ "${forc[5,2]}" = "C" ]
+  then
+    atmos=T
+    echo 'atmos'
+    il=$(($il+1))
+    forc[8,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[8,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[8,1]} ${forc[8,2]}
+    il=$(($il+1))
+    forc[9,1]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
+    forc[9,2]="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
+    echo ${forc[9,1]} ${forc[9,2]}
+  else
+    atmos=F
+    echo 'no atmos'
+  fi
 fi
 
 
@@ -297,7 +318,23 @@ do
   restartdate[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
 done
 echo ${restartdate[@]}
-
+restart2="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
+echo $restart2
+extra="$(echo ${lines[$il]} | awk -F' ' '{print $7}' | cut -d \" -f2  | cut -d \' -f2)"
+echo $extra
+if [ "$restart2" = 'T' ]; then
+  il=$(($il+1))
+  for i in $(seq 1 5)
+  do
+    restart2date[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
+  done
+  echo ${restart2date[@]}
+fi
+if [ "$extra" = 'T' ]; then
+  il=$(($il+1))
+  extrafields="$(echo ${lines[$il]} | cut -d \" -f2  | cut -d \' -f2)"
+  echo $extrafields
+fi
 
 # boundary date
 echo 'boundary date'
@@ -340,6 +377,8 @@ then
     couplingdate[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
   done
   echo ${couplingdate[@]}
+  couplet0="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
+  echo 'couplet0 : ' $couplet0
   il=$(($il+1))
   nml="$(echo ${lines[$il]} | cut -d \" -f2  | cut -d \' -f2)"
   il=$(($il+1))
@@ -601,6 +640,8 @@ cat >> $nmlfile << EOF
 !     INPUT%FORCING%WATER_LEVELS  = 'F'
 !     INPUT%FORCING%CURRENTS      = 'F'
 !     INPUT%FORCING%WINDS         = 'F'
+!     INPUT%FORCING%ATM_MOMENTUM  = 'F'
+!     INPUT%FORCING%AIR_DENSITY   = 'F'
 !     INPUT%FORCING%ICE_CONC      = 'F'
 !     INPUT%FORCING%ICE_PARAM1    = 'F'
 !     INPUT%FORCING%ICE_PARAM2    = 'F'
@@ -697,15 +738,39 @@ then
     elif [ "${forc[11,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = 'T'" >> $nmlfile; fi
   elif [ "${forc[11,1]}" = "C" ] ; then    echo "  INPUT%FORCING%WINDS         = 'C'" >> $nmlfile
   fi
+  if [ "$atmos" = "T" ]
+  then
+# atm momentum
+    if [ "${forc[13,1]}" = "T" ] ; then
+      if [ "${forc[13,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
+      elif [ "${forc[13,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
+    elif [ "${forc[13,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
+    fi
+# atm density
+    if [ "${forc[14,1]}" = "T" ] ; then
+      if [ "${forc[14,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[14,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[14,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
+    fi
 # ice
-  if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+    if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
 # mean
-  if [ "${forc[13,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+    if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
 # spec1d
-  if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+    if [ "${forc[16,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
 # spec2d
-  if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
-
+    if [ "${forc[17,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  elif [ "$atmos" = 'F' ]
+  then
+# ice
+    if [ "${forc[12,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+# mean
+    if [ "${forc[13,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+# spec1d
+    if [ "${forc[14,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+# spec2d
+    if [ "${forc[15,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  fi
 
 elif [ "$mudice" = "F" ]
 then
@@ -728,15 +793,38 @@ then
     elif [ "${forc[3,2]}" = "F" ] ; then  echo "  INPUT%FORCING%WINDS         = 'T'" >> $nmlfile
     elif [ "${forc[3,2]}" = "C" ] ; then  echo "  INPUT%FORCING%WINDS         = 'C'" >> $nmlfile; fi
   fi
+  if [ "$atmos" = "T" ]
+  then
+# atm momentum
+    if [ "${forc[5,1]}" = "T" ] ; then
+      if [ "${forc[5,2]}" = "T" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'H'" >> $nmlfile
+      elif [ "${forc[5,2]}" = "F" ] ; then  echo "  INPUT%FORCING%ATM_MOMENTUM  = 'T'" >> $nmlfile; fi
+    elif [ "${forc[5,1]}" = "C" ] ; then    echo "  INPUT%FORCING%ATM_MOMENTUM  = 'C'" >> $nmlfile
+    fi
+# atm density
+    if [ "${forc[6,1]}" = "T" ] ; then
+      if [ "${forc[6,2]}" = "T" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'H'" >> $nmlfile
+      elif [ "${forc[6,2]}" = "F" ] ; then  echo "  INPUT%FORCING%AIR_DENSITY   = 'T'" >> $nmlfile; fi
+    elif [ "${forc[6,1]}" = "C" ] ; then    echo "  INPUT%FORCING%AIR_DENSITY   = 'C'" >> $nmlfile
+    fi
 # ice
-  if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+    if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
 # mean
-  if [ "${forc[5,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+    if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
 # spec1d
-  if [ "${forc[6,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+    if [ "${forc[8,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
 # spec2d
-  if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
-
+    if [ "${forc[9,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  else
+# ice
+    if [ "${forc[4,1]}" = "T" ] ; then      echo "  INPUT%FORCING%ICE_CONC      = 'T'" >> $nmlfile; fi
+# mean
+    if [ "${forc[5,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%MEAN            = 'T'" >> $nmlfile; fi
+# spec1d
+    if [ "${forc[6,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC1D          = 'T'" >> $nmlfile; fi
+# spec2d
+    if [ "${forc[7,1]}" = "T" ] ; then      echo "  INPUT%ASSIM%SPEC2D          = 'T'" >> $nmlfile; fi
+  fi
 fi
 
 
@@ -779,9 +867,11 @@ cat >> $nmlfile << EOF
 !  T  T  1     5   WLV        WLV   Water levels.
 !  T  T  1     6   ICE        ICE   Ice concentration.
 !  T  T  1     7   IBG        IBG   Iceberg-induced damping.
-!  T  T  1     8   D50        D50   Median sediment grain size.
-!  T  T  1     9   IC1        IC1   Ice thickness.
-!  T  T  1    10   IC5        IC5   Ice flow diameter.
+!  T  T  1     8   TAUA       TAU   Atm. momentum.
+!  T  T  1     9   RHOAIR     RHO   Air density.
+!  T  T  1    10   D50        D50   Median sediment grain size.
+!  T  T  1    11   IC1        IC1   Ice thickness.
+!  T  T  1    12   IC5        IC5   Ice flow diameter.
 !   -------------------------------------------------
 !        2                          Standard mean wave Parameters
 !   -------------------------------------------------
@@ -802,6 +892,7 @@ cat >> $nmlfile << EOF
 !  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 !  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 !  F  T  2    17   WBT        WBT   Domiant wave breaking probability bT
+!  F  F  2    18   FP0        TP    Peak period (from peak freq)
 !   -------------------------------------------------
 !        3                          Spectral Parameters (first 5)
 !   -------------------------------------------------
@@ -906,8 +997,13 @@ cat >> $nmlfile << EOF
 !       - Ice model : IC5 TWI
 !   - Received fields by ww3:
 !       - Ocean model : SSH CUR
-!       - Atmospheric model : WND
+!       - Atmospheric model : WND TAU RHO
 !       - Ice model : ICE IC1 IC5
+!
+! * Coupling flag (T) or (F) at T+0 (extra fields in the restart needed)
+!
+! * extra fields to be written to the restart:
+!   - The list includes all fields sent by coupling exchange only
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
@@ -923,6 +1019,8 @@ cat >> $nmlfile << EOF
 !     TYPE%PARTITION%FORMAT   =  T
 !     TYPE%COUPLING%SENT      = 'unset'
 !     TYPE%COUPLING%RECEIVED  = 'unset'
+!     TYPE%COUPLING%COUPLET0  =  F
+!     TYPE%RESTART%EXTRA      = 'unset'
 !
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
@@ -961,9 +1059,14 @@ then
 fi
 
 if [ "$coupling" = T ]; then
-  if [ "${couplingdate[3]}" != 0 ]; then  echo "  TYPE%COUPLING%SENT       = '$sent'" >> $nmlfile
-                                          echo "  TYPE%COUPLING%RECEIVED   = '$received'" >> $nmlfile; fi
+  if [ "${couplingdate[3]}" != 0 ]; then  
+    echo "  TYPE%COUPLING%SENT       = '$sent'" >> $nmlfile
+    echo "  TYPE%COUPLING%RECEIVED   = '$received'" >> $nmlfile
+    if [ "$couplet0" = 'T' ] ; then echo "  TYPE%COUPLING%COUPLET0   =  T" >> $nmlfile; fi
+  fi
 fi
+
+if [ "$extra" = 'T' ] ; then echo "  TYPE%RESTART%EXTRA       = '$extrafields'" >> $nmlfile; fi
 
 
 
@@ -1029,6 +1132,11 @@ if [ "${trackdate[3]}" != '0' ]; then
 
 if [ "${restartdate[3]}" != '0' ]; then
   echo "  DATE%RESTART        = '${restartdate[1]} ${restartdate[2]}' '${restartdate[3]}' '${restartdate[4]} ${restartdate[5]}'" >> $nmlfile; fi
+
+if [ "$restart2" = 'T' ]; then
+  if [ "${restart2date[3]}" != '0' ]; then
+    echo "  DATE%RESTART2       = '${restart2date[1]} ${restart2date[2]}' '${restart2date[3]}' '${restart2date[4]} ${restart2date[5]}'" >> $nmlfile; fi
+fi
 
 if [ "${boundarydate[3]}" != '0' ]; then
   echo "  DATE%BOUNDARY       = '${boundarydate[1]} ${boundarydate[2]}' '${boundarydate[3]}' '${boundarydate[4]} ${boundarydate[5]}'" >> $nmlfile; fi

@@ -16,8 +16,8 @@
 ! -------------------------------------------------------------------- !
 &INPUT_NML
   INPUT%FORCING%WINDS         = 'T'
-  INPUT%ASSIM%MEAN            = 'T'
-  INPUT%ASSIM%SPEC1D          = 'T'
+  INPUT%FORCING%ATM_MOMENTUM  = 'T'
+  INPUT%FORCING%AIR_DENSITY   = 'T'
 /
 
 ! -------------------------------------------------------------------- !

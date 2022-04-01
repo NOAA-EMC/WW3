@@ -1163,7 +1163,7 @@ cat >> $nmlfile << EOF
 EOF
 fi
 
-if [ "$grdname" != 'unset' ];                then  echo "  GRID%NAME         =  '$grdname'" >> $nmlfile; fi
+if [ "$gridnameinp" != 'unset' ];            then  echo "  GRID%NAME         =  '$gridnameinp'" >> $nmlfile; fi
 if [ "$nml_filename" != 'namelists.nml' ];   then  echo "  GRID%NML          =  '$nml_filename'" >> $nmlfile; fi
 if [ "$type" != 'unset' ];                   then  echo "  GRID%TYPE         =  '$type'" >> $nmlfile; fi
 if [ "$coord" != 'unset' ];                  then  echo "  GRID%COORD        =  '$coord'" >> $nmlfile; fi

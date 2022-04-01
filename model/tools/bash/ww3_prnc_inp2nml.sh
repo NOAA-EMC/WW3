@@ -50,7 +50,7 @@ do
     continue
   fi
 
-  cleanline="$(echo $line | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"  
+  cleanline="$(echo $line | awk -F' ' '{print $1}' | sed -e "s/\*//g" -e "s/\"//g" -e "s/\'//g")"  
   if [ -z "$cleanline" ]
   then
     continue
