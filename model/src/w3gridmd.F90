@@ -3613,11 +3613,28 @@
 !
       DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
+<<<<<<< HEAD
         UNSTSCHEMES(:)=0
         IF (EXPFSN)   UNSTSCHEMES(1)=1
         IF (EXPFSPSI) UNSTSCHEMES(2)=1
         IF (EXPFSFCT) UNSTSCHEMES(3)=1
         IF (IMPFSN)   UNSTSCHEMES(4)=1
+=======
+        UNSTSCHEMES = 0
+        IF (EXPFSN)   UNSTSCHEMES(1) = 1
+        IF (EXPFSPSI) UNSTSCHEMES(2) = 1
+        IF (EXPFSFCT) UNSTSCHEMES(3) = 1
+        IF (IMPFSN)   UNSTSCHEMES(4) = 1
+
+        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
+          WRITE(*,*) 'NO UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
+          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ENDIF 
+
+>>>>>>> 23a5557c7ee3e4d8a6f7fde2b828e016c88b964c
         UNSTSCHEME=-1
         DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
