@@ -41,8 +41,30 @@
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  256
-  GRID%DMIN         =  128
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  256
+  RECT%NY           =  128
+  RECT%SX           =  0.02000
+  RECT%SY           =  0.01600
+  RECT%X0           =  276.41000
+  RECT%Y0           =  41.02800
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME        =  '../input/ErieSMCel.dat'
+  SMC%ISIDE%FILENAME        =  '../input/ErieISide.dat'
+  SMC%JSIDE%FILENAME        =  '../input/ErieJSide.dat'
+  SMC%SUBTR%FILENAME        =  '../input/ErieObstr.dat'
 /
 
 ! -------------------------------------------------------------------- !

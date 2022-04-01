@@ -40,8 +40,31 @@
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  384
-  GRID%DMIN         =  256
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  384
+  RECT%NY           =  256
+  RECT%SX           =  0.04480000
+  RECT%SY           =  0.03200000
+  RECT%X0           =  267.29960
+  RECT%Y0           =  41.17400
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME        =  '../input/GtLkHuronCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input/GtLkHuronISid.dat'
+  SMC%JSIDE%FILENAME        =  '../input/GtLkHuronJSid.dat'
+  SMC%SUBTR%FILENAME        =  '../input/GtLkHuronObst.dat'
+  SMC%BUNDY%FILENAME        =  '../input/GtLkHuronBlst.dat'
 /
 
 ! -------------------------------------------------------------------- !

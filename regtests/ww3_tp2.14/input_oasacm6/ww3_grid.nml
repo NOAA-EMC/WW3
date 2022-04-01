@@ -37,13 +37,35 @@
 ! Define the grid to preprocess via GRID_NML namelist
 ! -------------------------------------------------------------------- !
 &GRID_NML
-  GRID%NAME         =  'WW3 Brest3km Grid BrestISides.dat BrestJSides.dat BrestObstrs.dat BrestSMCels.dat namcouple namelists_BREST.nml namelists_WW3.nml prep_env.sh rmp_toyt_to_ww3t_NEARESTSTOD.nc rmp_ww3t_to_toyt_NEARESTSTOD.nc switch_OASACM6 TOYNAMELIST.nam ww3_grid_clean.inp ww3_grid.inp ww3_grid.nml ww3_ounf.inp ww3_ounf.nml ww3_shel.inp ww3_shel.nml ww3_strt.inp'
-  GRID%NML          =  '../input_oasacm6/namelists_WW3.nml'
+  GRID%NAME         =  'BREST 3km Grid'
+  GRID%NML          =  '../input_oasacm6/namelists_BREST.nml'
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
-  GRID%ZLIM         =  52
-  GRID%DMIN         =  60
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  52
+  RECT%NY           =  60
+  RECT%SX           =  0.0380
+  RECT%SY           =  0.0250
+  RECT%X0           =  -6.1285
+  RECT%Y0           =  47.6313
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME        =  '../input_oasacm6/BrestSMCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input_oasacm6/BrestISides.dat'
+  SMC%JSIDE%FILENAME        =  '../input_oasacm6/BrestJSides.dat'
+  SMC%SUBTR%FILENAME        =  '../input_oasacm6/BrestObstrs.dat'
 /
 
 ! -------------------------------------------------------------------- !

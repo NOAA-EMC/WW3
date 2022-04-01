@@ -67,7 +67,7 @@ do
     continue
   fi
 
-  cleanline="$(echo $line | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"  
+  cleanline="$(echo $line | awk -F' ' '{print $1}' | sed -e "s/\*//g" -e "s/\"//g" -e "s/\'//g")"  
   if [ -z "$cleanline" ]
   then
     continue
@@ -93,12 +93,12 @@ done
 il=0
 
 # grid name
-gridname=$(echo $(echo "${lines[$il]}" | sed -e "s/\*//g" | cut -d \" -f2  | cut -d \' -f2))
-echo $gridname
+gridnameinp=$(echo $(echo "${lines[$il]}" | sed -e "s/\*//g" -e "s/\"//g" -e "s/'//g"))
+echo $gridnameinp
 
 if [ "$(basename $inp)" == "ww3_grid.inp" ]
 then
-  grdname="$(echo $gridname | awk -F' ' '{print $1}')"
+  grdname="$(echo $gridnameinp | awk -F' ' '{print $1}')"
   echo 'grdname from grid name : ' "$grdname"
 else
   baseinp=$(basename $inp)
@@ -113,7 +113,7 @@ freq1="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \
 nk="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
 nth="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
 thoff="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
-echo $xfr $freq1 $nk $nth $thoff
+echo 'spec : ' $xfr $freq1 $nk $nth $thoff
 
 # run
 il=$(($il+1))
@@ -123,7 +123,7 @@ flcy="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \'
 flcth="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
 flck="$(echo ${lines[$il]} | awk -F' ' '{print $5}' | cut -d \" -f2  | cut -d \' -f2)"
 flsou="$(echo ${lines[$il]} | awk -F' ' '{print $6}' | cut -d \" -f2  | cut -d \' -f2)"
-echo $fldry $flcx $flcy $flcth $flck $flsou
+echo 'flags : ' $fldry $flcx $flcy $flcth $flck $flsou
 
 # timesteps
 il=$(($il+1))
@@ -131,7 +131,7 @@ dtmax="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \
 dtxy="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
 dtkth="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \' -f2)"
 dtmin="$(echo ${lines[$il]} | awk -F' ' '{print $4}' | cut -d \" -f2  | cut -d \' -f2)"
-echo $dtmax $dtxy $dtkth $dtmin
+echo 'timesteps : ' $dtmax $dtxy $dtkth $dtmin
 
 # namelists
 forinamelist="$cur_dir/namelists_${grdname}.nml"
@@ -189,7 +189,7 @@ clos="$(echo ${lines[$il]} | awk -F' ' '{print $3}' | cut -d \" -f2  | cut -d \'
 echo $type $coord $clos
 
 # nx/ny
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]
+if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ]
 then
   il=$(($il+1))
   nx=$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2 | sed 's/0*//')
@@ -199,7 +199,7 @@ then
 fi
 
 #rect
-if [ "$type" == 'RECT' ]
+if [ "$type" == 'RECT' ] || [ "$type" == 'SMCG' ]
 then
   il=$(($il+1))
   rect_sx="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
@@ -320,7 +320,7 @@ mbarc_idf=36; mbarc_idla=1; mbarc_idfm=1; mbarc_format='(....)'; mbarc_filename=
 aisid_idf=37; aisid_idla=1; aisid_idfm=1; aisid_format='(....)'; aisid_filename='unset';
 ajsid_idf=38; ajsid_idla=1; ajsid_idfm=1; ajsid_format='(....)'; ajsid_filename='unset';
 obst_idf=70; obst_sf=1.; obst_idla=1; obst_idfm=1; obst_format='(....)'; obst_from='NAME'; obst_filename='unset';
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]
+if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ]
 then
   il=$(($il+1))
   # smc
@@ -353,12 +353,12 @@ then
 
     # obst
     obst_idf=34; obst_sf=1.; obst_idla=1; obst_idfm=1; obst_format='(....)'; obst_from='NAME'; obst_filename='unset';
-    if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]
-    then
-      flagtr=$(grep FLAGTR $forinamelist | awk -F'FLAGTR' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}')
-      echo 'flagtr : ' $flagtr
-      if [ $flagtr -gt 0 ]
-      then
+    #if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]
+    #then
+    #  flagtr=$(grep FLAGTR $forinamelist | awk -F'FLAGTR' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}')
+    #  echo 'flagtr : ' $flagtr
+    #  if [ $flagtr -gt 0 ]
+    #  then
         il=$(($il+1))
         obst_idf="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
         obst_idla="$(echo ${lines[$il]} | awk -F' ' '{print $2}' | cut -d \" -f2  | cut -d \' -f2)"
@@ -452,15 +452,15 @@ then
             mv $fobst $foriobst
           fi
         fi
-      fi
-    fi
+    #  fi
+    #fi
 
     # smc bundy
     bundy_idf=35; bundy_idla=1; bundy_idfm=1; bundy_format='(....)'; bundy_filename='unset';
     il=$(($il+1))
     if [ $(echo ${lines[$il]} | awk -F' ' '{print NF}') -eq 5 ] && [ ! -z "$(echo ${lines[$il]} | awk -F' ' '{print $4}' | grep '(')" ]
     then
-      if [ ! -z $(grep 'NBISMC' $forinamelist) ]
+      if [ ! -z "$(grep 'NBISMC' $forinamelist)" ]
       then
         if [ $(grep NBISMC $forinamelist | awk -F'NBISMC' '{print $2}' | awk -F'=' '{print $2}' | awk -F',' '{print $1}' | awk -F'/' '{print $1}' | awk -F' ' '{print $1}') -gt 0 ]
         then
@@ -1163,7 +1163,7 @@ cat >> $nmlfile << EOF
 EOF
 fi
 
-if [ "$gridname" != 'unset' ];               then  echo "  GRID%NAME         =  '$gridname'" >> $nmlfile; fi
+if [ "$grdname" != 'unset' ];                then  echo "  GRID%NAME         =  '$grdname'" >> $nmlfile; fi
 if [ "$nml_filename" != 'namelists.nml' ];   then  echo "  GRID%NML          =  '$nml_filename'" >> $nmlfile; fi
 if [ "$type" != 'unset' ];                   then  echo "  GRID%TYPE         =  '$type'" >> $nmlfile; fi
 if [ "$coord" != 'unset' ];                  then  echo "  GRID%COORD        =  '$coord'" >> $nmlfile; fi
@@ -1172,7 +1172,7 @@ if [ "$depth_zlim" != 0. ];                  then  echo "  GRID%ZLIM         =  
 if [ "$depth_dmin" != 0. ];                  then  echo "  GRID%DMIN         =  $depth_dmin" >> $nmlfile; fi
 
 
-if [ "$type" == 'RECT' ]; then
+if [ "$type" == 'RECT' ] || [ "$type" == 'SMCG' ]; then
 
 # rect namelist
 if [ "$comment" = "full" ]; then
@@ -1559,7 +1559,7 @@ fi
 fi # SMC
 
 
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
+if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ]; then 
   if [ $SMC == 0 ]; then
 
 # depth namelist
@@ -1628,7 +1628,7 @@ fi
 fi # RECT or CURV
 
 
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
+if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ]; then 
   if [ $SMC == 0 ]; then
     if [ "$mask_filename" != 'unset' ]; then
 # mask namelist
@@ -1702,7 +1702,7 @@ fi
 fi # RECT or CURV
 
 
-if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ]; then 
+if [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ]; then 
   if [ $SMC == 0 ]; then
     if [ ! -z "$(grep 'FLAGTR' $forinamelist)" ]; then
       if [ $flagtr -gt 0 ]; then
@@ -2091,7 +2091,7 @@ EOF
 fi # PART
 
 
-if ( [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] ) && [ $n_ouln -gt 0 ]; then 
+if ( [ "$type" == 'RECT' ] || [ "$type" == 'CURV' ] || [ "$type" == 'SMCG' ] ) && [ $n_ouln -gt 0 ]; then 
 
 # outbound namelist
 if [ "$comment" = "full" ]; then

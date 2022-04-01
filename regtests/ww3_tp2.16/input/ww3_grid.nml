@@ -41,8 +41,33 @@
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'SMPL'
-  GRID%ZLIM         =  512
-  GRID%DMIN         =  54
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  512
+  RECT%NY           =  54
+  RECT%SX           =  0.7031250
+  RECT%SY           =  0.4687500
+  RECT%X0           =  0.3515625
+  RECT%Y0           =  64.921875
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME        =  '../input/A50SMCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input/A50GISide.dat'
+  SMC%JSIDE%FILENAME        =  '../input/A50GJSide.dat'
+  SMC%SUBTR%FILENAME        =  '../input/A50GObstr.dat'
+  SMC%MBARC%FILENAME        =  '../input/A50SMCBAr.dat'
+  SMC%AISID%FILENAME        =  '../input/A50AISide.dat'
+  SMC%AJSID%FILENAME        =  '../input/A50AJSide.dat'
 /
 
 ! -------------------------------------------------------------------- !
