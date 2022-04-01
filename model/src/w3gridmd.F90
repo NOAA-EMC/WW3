@@ -3613,20 +3613,11 @@
 !
       DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-        UNSTSCHEMES = 0
-        IF (EXPFSN)   UNSTSCHEMES(1) = 1
-        IF (EXPFSPSI) UNSTSCHEMES(2) = 1
-        IF (EXPFSFCT) UNSTSCHEMES(3) = 1
-        IF (IMPFSN)   UNSTSCHEMES(4) = 1
-
-        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
-          WRITE(*,*) 'NO UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
-          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ENDIF 
-
+        UNSTSCHEMES(:)=0
+        IF (EXPFSN)   UNSTSCHEMES(1)=1
+        IF (EXPFSPSI) UNSTSCHEMES(2)=1
+        IF (EXPFSFCT) UNSTSCHEMES(3)=1
+        IF (IMPFSN)   UNSTSCHEMES(4)=1
         UNSTSCHEME=-1
         DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
@@ -4955,12 +4946,9 @@
             YGRD(IY,IX) = YGRDIN(IX,IY)
             END DO
           END DO
-          DEALLOCATE ( XGRDIN, YGRDIN )
-          CALL W3GNTX ( 1, 6, 6 )
-      ELSE
-
-!
-!AR: This is already done in readmsh
+          DEALLOCATE ( XGRDIN, YGRDIN )   
+          CALL W3GNTX ( 1, 6, 6 )  
+      ELSE 
       END IF   ! GTYPE
 !      
 #ifdef W3_SMC
@@ -5045,7 +5033,7 @@
         END DO
         FLUSH(740)
 #endif
-
+!
 #ifdef W3_SMC
  !!Li SMC grid definition of mapping arrays.
       ELSE 
