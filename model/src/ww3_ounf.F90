@@ -1,6 +1,23 @@
+!> @file
+!> @brief Contains program for NetCDF grid output.
+!> @author F. Ardhuin
+!> @author M. Accensi
+!> @date 02-Sep-2021
+
 #include "w3macros.h"
 #define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
 !/ ------------------------------------------------------------------- /
+
+!> @brief Post-processing of grid output to NetCDF files.
+!>
+!> @details Data is read from the grid output file out_grd.ww3
+!>  (raw data)  and from the file ww3_ounf.nml or ww3_ounf.inp (NDSI)
+!>  Model definition and raw data files are read using WAVEWATCH III
+!>  subroutines. Extra global NetCDF attributes may be read from
+!>  ASCII file NC_globatt.inp.
+!> @author F. Ardhuin
+!> @author M. Accensi
+!> @date 02-Sep-2021
       PROGRAM W3OUNF
 !/
 !/                  +-----------------------------------+
@@ -822,6 +839,31 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!> @brief Perform actual grid output in NetCDF file.
+!>
+!> @param[in] NX Grid dimension X
+!> @param[in] NY Grid dimension Y
+!> @param[in] IX1 Grid index along X
+!> @param[in] IXN Grid index along X
+!> @param[in] IY1 Grid index along Y
+!> @param[in] IYN Grid index along Y
+!> @param[in] NSEA Number of sea points
+!> @param[inout] FILEPREFIX 
+!> @param[in] E3DF
+!> @param[in] P2MSF
+!> @param[in] US3DF
+!> @param[in] USSPF
+!> @param[in] NCTYPE
+!> @param[in] TOGETHER
+!> @param[in] NCVARTYPEI
+!> @param[in] FLG2D
+!> @param[inout] NCIDS
+!> @param[inout] S3
+!> @param[in] STRSTOPDATE     
+!> @author F. Ardhuin
+!> @author M. Accensi
+!> @date 22-Mar-2021
+!>        
       SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,             &
                           FILEPREFIX, E3DF, P2MSF, US3DF, USSPF,NCTYPE, &
                           TOGETHER, NCVARTYPEI, FLG2D, NCIDS, S3, STRSTOPDATE )
@@ -3457,6 +3499,19 @@
 
 
 !--------------------------------------------------------------------------
+!>
+!> @brief Desc not available.
+!>
+!> @param[in] NCFILE
+!> @param[out] NCID
+!> @param[out] DIMID
+!> @param[in] DIMLN
+!> @param[out] VARID
+!> @param[in] EXTRADIM
+!> @param[in] NCTYPE
+!> @param[in] MAPSTAOUT
+!>      
+!> @author NA @date NA
       SUBROUTINE W3CRNC (NCFILE, NCID, DIMID, DIMLN, VARID,  &
                          EXTRADIM, NCTYPE, MAPSTAOUT )
 !
@@ -3946,6 +4001,19 @@
 
 
 !/ ------------------------------------------------------------------- /
+
+!> @brief Exapand the seapoint array to full grid with handling of
+!>  SMC regridding.
+!>
+!> @details The FLDIRN flag should be set to true for
+!>  directional fields. In this case, they will be decomposed
+!>  into U/V components for SMC grid interpolation and converted
+!>  to oceanograhic convention.
+!>
+!> @param[inout] S Sea point array
+!> @param[out] X Gridded array     
+!> @param[in] FLDIRN Directional field flag
+!> @author C Bunney  @date 03-Nov-2021
       SUBROUTINE S2GRID(S, X, FLDIRN)
 !/
 !/                  +-----------------------------------+
@@ -4012,6 +4080,18 @@
      END SUBROUTINE S2GRID
 
 
+!> @brief Converts fields formulated as U/V vectors into
+!>  magnitude and direction fields.
+!>
+!> @details Conversion is
+!>  done in-place. U becomes magnitude, V becomes
+!>  direction. Optional TOLERANCE sets minimum
+!>  magnitude.
+!>
+!> @param[inout] U
+!> @param[inout] V
+!> @param[in]    Tolerance
+!> @author NA  @date NA
      SUBROUTINE UV_TO_MAG_DIR(U, V, TOLERANCE)
      ! Converts fields formulated as U/V vectors into
      ! magnitude and direction fields. Conversion is
@@ -4045,6 +4125,11 @@
 
 !==============================================================================
 
+!> @brief Desc not available.
+!>
+!> @param IRET
+!> @param ILINE
+!> @author NA  @date NA
       SUBROUTINE CHECK_ERROR(IRET, ILINE)
 
       USE NETCDF

@@ -1,6 +1,24 @@
+!> @file
+!> @brief Contains program W3PRNC.
+!> 
+!> @author M. Accensi
+!> @author F. Ardhuin
+!> @date 22-Mar-2021
+
 #include "w3macros.h"
 #define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
 !/ ------------------------------------------------------------------- /
+
+!> @brief Pre-processing of input fields.
+!>
+!> @details Pre-processing of the input water level, current, wind, ice
+!>  fields, momentum and air density, as well as assimilation data
+!>  ... from NetCDF input.
+!>
+!> @author M. Accensi
+!> @author F. Ardhuin
+!> @date 22-Mar-2021
+!>
       PROGRAM W3PRNC
 !/
 !/                  +-----------------------------------+
@@ -2491,7 +2509,39 @@
       END PROGRAM W3PRNC
 
 !==============================================================================
-
+!>
+!> @brief Interpolate from a field read from file to the wave grid.
+!>
+!> @details Invalid points are identified by the fill value read from the
+!>     netcdf input, and interpolation does not take into account
+!>     these points. The valid interpolation coefficients are scaled
+!>     so that the sum is one, otherwise unphysical values can be
+!>     generated.
+!>
+!>     When one point is on the boundary but is not an ocean grid point,
+!>     the interpolation coefficients are zero, and in this case we
+!>     provide a sensible value - the value as read, not interpolated
+!>
+!> @param[in] MXM  Dimension X of XC variable 
+!> @param[in] MYM  Dimension Y of XC variable 
+!> @param[in] XC   Field to be interpolated, as read from the
+!>                    input netcdf
+!> @param[in] IX21 List of x-index to convert from the original
+!>                    field to the model grid
+!> @param[in] IX22 List of x-index to convert from the original
+!>                    field to the model grid
+!> @param[in] IY21 List of y-index to convert from the original
+!>                    field to the model grid
+!> @param[in] IY22 List of x-index to convert from the original
+!>                    field to the model grid
+!> @param[in] RD11 Interpolation factor
+!> @param[in] RD12 Interpolation factor
+!> @param[in] RD21 Interpolation factor
+!> @param[in] RD22 Interpolation factor
+!> @param[in] FILLVALUE Fill value identifying non valid input
+!> @param[out] FA Result of the interpolation
+!>      
+!> @author J. M. Castillo  @date 23-Feb-2021
       SUBROUTINE INTERP(MXM, MYM, XC, IX21, IX22, IY21, IY22,       &
                                RD11, RD12, RD21, RD22, FILLVALUE, FA)
 !/
@@ -2630,7 +2680,11 @@
       END SUBROUTINE INTERP
 
 !==============================================================================
-
+!> @brief Desc not available.
+!>
+!> @param IRET
+!> @param ILINE
+!> @author NA  @date NA
       SUBROUTINE CHECK_ERROR(IRET, ILINE)
 
       USE NETCDF
