@@ -1,5 +1,17 @@
+!> @file
+!> @brief Running the multi-grid version of WAVEWATCH III up to a
+!>  given ending time for each grid.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Running the multi-grid version of WAVEWATCH III up to a
+!>  given ending time for each grid.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
       MODULE WMWAVEMD
 !/
 !/                  +-----------------------------------+
@@ -69,6 +81,13 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Run multi-grid version of WAVEWATCH III.
+!>
+!> @param[in] TEND Ending time for calculations for each grid.
+!> @author H. L. Tolman @date 22-Mar-2021
+!>        
+        
       SUBROUTINE WMWAVE ( TEND )
 !/
 !/                  +-----------------------------------+
@@ -1727,6 +1746,16 @@
 !/
       END SUBROUTINE WMWAVE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Print out action table in the log file log\. ww3m.
+!>
+!> @param[in] MDSO
+!> @param[in] NRGRD Number of grids.
+!> @param[in] TSYNC Synchronization time.
+!> @param[in] GRSTAT Status array per grid.
+!>    
+!> @author H. L. Tolman  @date 22-Feb-2005
+!>     
       SUBROUTINE WMPRNT ( MDSO, NRGRD, TSYNC, GRSTAT )
 !/
 !/                  +-----------------------------------+
@@ -1884,6 +1913,24 @@
 !/
       END SUBROUTINE WMPRNT
 !/ ------------------------------------------------------------------- /
+!>     
+!> @brief Non-blocking broadcast for integer arrays.
+!>
+!> @details Non-blocking broadcast, initially for times only, 
+!>  but made for any integer array. Sending data from first process
+!>  in the model cummunicator to all processes that are in the overall 
+!>  communicator but not in the model communicator.
+!> 
+!>  Standard send and recieves using defined communicator. Send
+!>  form first processor in communicator.    
+!>
+!> @param[inout] DATA Data to be send/received.
+!> @param[in] NR Size of array.
+!> @param[in] IMOD Model number.
+!> @param[in] NMOD Number of models.
+!> @param[in] ID ID number, used with NMOD for ITAG.
+!> @author H. L. Tolman  @date 02-Feb-2007
+!>      
       SUBROUTINE WMBCST ( DATA, NR, IMOD, NMOD, ID )
 !/
 !/                  +-----------------------------------+
@@ -2059,6 +2106,21 @@
 !/
       END SUBROUTINE WMBCST
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Non-blocking broadcast using dummy parameter to have output.
+!>
+!> @details Processes wait for computations on first node to be finished.
+!>  Needed for profiling purposes only.
+!>
+!>  Standard send and recieves using defined communicator. Send
+!>  form first processor in communicator.
+!>
+!> @param[in] IMOD Model number.
+!> @param[in] NMOD Number of models.
+!> @param[in] ID ID number, used with NMOD for ITAG.
+!>      
+!> @author H. L. Tolman  @date 21-Jun-2007
+!>      
       SUBROUTINE WMWOUT ( IMOD, NMOD, ID )
 !/
 !/                  +-----------------------------------+
