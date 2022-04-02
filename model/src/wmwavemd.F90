@@ -1,6 +1,5 @@
 !> @file
-!> @brief Running the multi-grid version of WAVEWATCH III up to a
-!>  given ending time for each grid.
+!> @brief Contains module WMWAVEMD.
 !> 
 !> @author H. L. Tolman @date 22-Mar-2021
 
