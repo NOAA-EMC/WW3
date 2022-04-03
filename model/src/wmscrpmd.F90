@@ -1,5 +1,25 @@
+!> @file
+!> @brief Contains module WMSCRPMD.
+!> 
+!> @author E. Rogers
+!> @author M. Dutour
+!> @author A. Roland
+!> @author F. Ardhuin
+!> @date 10-Dec-2014
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Routines to determine and process grid dependencies in the 
+!>  multi-grid wave model.
+!> 
+!> @author E. Rogers
+!> @author M. Dutour
+!> @author A. Roland
+!> @author F. Ardhuin
+!> @date 10-Dec-2014
+!>
       MODULE WMSCRPMD
 !/
 !/                  +-----------------------------------+
@@ -67,10 +87,28 @@
 !/
 !/ Module private variable for checking error returns
 !/
-      INTEGER, PRIVATE        :: ISTAT
+      INTEGER, PRIVATE        :: ISTAT  !< ISTAT Check error returns
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute grid information required by SCRIP.
+!>
+!> @param[in] ID_SRC
+!> @param[in] ID_DST
+!> @param[in] MAPSTA_SRC
+!> @param[in] MAPSTA2_SRC
+!> @param[in] FLAGLL
+!> @param[in] GRIDSHIFT
+!> @param[in] L_MASTER
+!> @param[in] L_READ
+!> @param[in] L_TEST
+!>
+!> @author E. Rogers
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 10-Dec-2014
+!>        
       SUBROUTINE SCRIP_WRAPPER (ID_SRC, ID_DST,                         &
                     MAPSTA_SRC,MAPST2_SRC,FLAGLL,GRIDSHIFT,L_MASTER,    &
                     L_READ,L_TEST)
@@ -472,6 +510,40 @@
       END SUBROUTINE SCRIP_WRAPPER
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute grid arrays for scrip for a specific unstructured grid.
+!>
+!> @details For interior vertices, we select for every triangle the barycenter
+!>  of the triangle. So to every node contained in N triangles we associate
+!>  a domain with N corners. Every one of those corners is contained
+!>  in 3 different domains.
+!>      
+!>  For nodes that are on the boundary, we have to proceed differently.
+!>  For every such node, we have NEIGHBOR_PREV and NEIGHBOR_NEXT which
+!>  are the neighbor on each side of the boundary.
+!>  We put a corner on the middle of the edge. We also put a corner
+!>  on the node itself.
+!>      
+!>  Note that instead of taking barycenters, we could have taken
+!>  Voronoi vertices, but this carries danger since Voronoi vertices
+!>  can be outside of the triangle. And it leaves open how to treat
+!>  the boundary.
+!>
+!> @param[in]  ID_GRD
+!> @param[out] GRID_CENTER_LON
+!> @param[out] GRID_CENTER_LAT
+!> @param[out] GRID_MASK
+!> @param[out] GRID_CORNER_LON
+!> @param[out] GRID_CORNER_LAT
+!> @param[out] GRID_DIMS
+!> @param[out] GRID_SIZE
+!> @param[out] GRID_CORNER
+!> @param[out] GRID_RANK
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 10-Dec-2014 
+!>
       SUBROUTINE GET_SCRIP_INFO_UNSTRUCTURED (ID_GRD,                  &
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                             &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                  &
@@ -874,6 +946,28 @@
       END SUBROUTINE GET_SCRIP_INFO_UNSTRUCTURED
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute grid arrays needed for scrip for a specific
+!>  structured grid.      
+!>
+!> @details This is adapted from Erick Rogers original code by
+!>  splitting the original scrip_wrapper function.
+!>
+!> @param[in]  ID_GRD
+!> @param[out] GRID_CENTER_LON
+!> @param[out] GRID_CENTER_LAT
+!> @param[out] GRID_CORNER_LON
+!> @param[out] GRID_CORNER_LAT
+!> @param[out] GRID_MASK
+!> @param[out] GRID_DIMS
+!> @param[out] GRID_SIZE
+!> @param[out] GRID_CORNERS
+!> @param[out] GRID_RANK
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 10-Dec-2014 
+!>
       SUBROUTINE GET_SCRIP_INFO_STRUCTURED (ID_GRD,                     &
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
@@ -1045,6 +1139,26 @@
       END SUBROUTINE GET_SCRIP_INFO_STRUCTURED
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute grid for scrip for a specific structured grid.
+!>
+!> @details This is adapted from Erick Rogers code by making it cleaner.
+!>
+!> @param[in]  ID_GRD
+!> @param[out] GRID_CENTER_LON
+!> @param[out] GRID_CENTER_LAT
+!> @param[out] GRID_CORNER_LON
+!> @param[out] GRID_CORNER_LAT
+!> @param[out] GRID_MASK
+!> @param[out] GRID_DIMS
+!> @param[out] GRID_SIZE
+!> @param[out] GRID_CORNERS
+!> @param[out] GRID_RANK
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 20-Feb-2012
+!>
       SUBROUTINE GET_SCRIP_INFO(ID_GRD,                                 &
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
@@ -1161,6 +1275,37 @@
       END SUBROUTINE GET_SCRIP_INFO
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Rescale according to whether the grid is spherical or not.
+!>
+!> @details This is adapted from Erick Rogers scrip_wrapper.
+!>      
+!>  Purpose is to rescale according to whether the grid is spherical
+!>  or not and to adjust by some small shift to keep SCRIP happy
+!>  in situations where nodes of different grids overlay.
+!>
+!>  We apply various transformations to the longitude latitude
+!>  following here the transformations that were done only in
+!>  finite difference meshes.
+!>
+!> @param[inout] GRID_CENTER_LON 
+!> @param[inout] GRID_CENTER_LAT
+!> @param[inout] GRID_CORNER_LON
+!> @param[inout] GRID_CORNER_LAT
+!> @param[in] GRID_MASK
+!> @param[in] GRID_DIMS
+!> @param[in] GRID_SIZE
+!> @param[in] GRID_CORNERS
+!> @param[in] GRID_RANK
+!> @param CONV_DX
+!> @param CONV_DY
+!> @param OFFSET
+!> @param GRIDSHIFT
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 20-Feb-2012
+!>      
       SUBROUTINE SCRIP_INFO_RENORMALIZATION(                            &
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
@@ -1254,6 +1399,17 @@
       END SUBROUTINE SCRIP_INFO_RENORMALIZATION
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Desc not available.
+!>
+!> @param[in]  I
+!> @param[out] INEXT
+!> @param[out] IPREV 
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date NA 
+!>
       SUBROUTINE TRIANG_INDEXES(I, INEXT, IPREV)
 !  1. Original author :
 !
@@ -1274,6 +1430,20 @@
       END SUBROUTINE
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief This function returns the list of incidences.
+!>
+!> @details Output: TrigIncd - number of triangles contained by vertices.
+!>
+!> @param[in] MNP Number of nodes
+!> @param[in] MNE List of nodes
+!> @param[in] TRIGP Number of triangles
+!> @param[out] TRIGINCD Number of triangles contained by vertices.
+!>
+!> @author M. Dutour  
+!> @author A. Roland
+!> @date 20-Feb-2012
+!>
       SUBROUTINE GET_UNSTRUCTURED_VERTEX_DEGREE (MNP, MNE, TRIGP,         &
      &          TRIGINCD)
 !  Written:
@@ -1310,6 +1480,24 @@
       END SUBROUTINE GET_UNSTRUCTURED_VERTEX_DEGREE
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Returns neighbor of a boundary node.
+!>
+!> @details If a node belong to a boundary, the function
+!>  returns the neighbor of this point on one side.
+!>  If the point is interior then the value 0 is set.
+!>
+!> @param[in]    MNP Number of nodes.
+!> @param[in]    MNE Number of triangles.
+!> @param[in]    TRIGP  List of nodes.
+!> @param[inout] IOBP
+!> @param[inout] NEIGHBOR_PREV
+!> @param[inout] NEIGHBOR_NEXT
+!>
+!> @author M. Dutour
+!> @author A. Roland
+!> @date 10-Dec-2014
+!>
       SUBROUTINE GET_BOUNDARY(MNP, MNE, TRIGP, IOBP, NEIGHBOR_PREV,       &
      &   NEIGHBOR_NEXT)
 !/                  +-----------------------------------+
@@ -1507,6 +1695,19 @@
         
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Adjust element longitude coordinates for elements straddling the
+!>  dateline with distance of ~360 degrees.
+!>
+!> @details Detect if element has nodes on both sides of dateline and adjust
+!>  coordinates so that all nodes have the same sign.
+!>
+!> @param[inout] PT
+!>
+!> @author Steven Brus
+!> @author Ali Abdolali
+!> @date 21-May-2020
+!>
       SUBROUTINE FIX_PERIODCITY(PT)
 
 !/
