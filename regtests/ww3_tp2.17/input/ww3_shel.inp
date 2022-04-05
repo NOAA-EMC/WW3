@@ -54,7 +54,7 @@ $                               see w3iogo.ftn for additional doc.
 $          
 $          
 $
- 20151214 000000 150 20151214 040000
+ 20151214 000000 3600 20151214 040000
  N
  WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR
 $
@@ -74,7 +74,7 @@ $          advised, because it will break the GrADS utility to
 $          plots spectra and source terms, and will make it more
 $          difficult to use point names in data files.
 $
-   20151214 000000 150  20151214 040000
+   20151214 000000 3600  20151214 040000
 $                                          
 $output points for Inlet 
 $
