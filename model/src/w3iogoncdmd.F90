@@ -312,53 +312,45 @@ contains
      call handle_err(ierr, 'put time')
      ierr = nf90_close(ncid)
 
-     !print *,'XXX thm ',minval(thm),maxval(thm)
-     !print *,'XXX hsig ',minval(hsig),maxval(hsig)
-     !print *,'XXX stmaxe ',minval(stmaxe),maxval(stmaxe)
-     !print *,'XXX stmaxd ',minval(stmaxd),maxval(stmaxd)
-     !print *,'XXX hmaxe ',minval(hmaxe),maxval(hmaxe)
-     !print *,'XXX hcmaxe ',minval(hcmaxe),maxval(hcmaxe)
-     !print *,'XXX hcmaxd ',minval(hcmaxd),maxval(hcmaxd)
-
      ! write the requested variables
      do n = 1,size(outvars)
       vname = trim(outvars(n)%var_name)
 
       ! Group 1
-      if (vname .eq.      'DW') call write_var(trim(fname), vname, dw)
-      if (vname .eq.      'CX') call write_var(trim(fname), vname, cx)
-      if (vname .eq.      'CY') call write_var(trim(fname), vname, cy)
-      if (vname .eq.     'UAX') call write_var(trim(fname), vname, ua, dir=cos(ud))
-      if (vname .eq.     'UAY') call write_var(trim(fname), vname, ua, dir=sin(ud))
-      if (vname .eq.      'AS') call write_var(trim(fname), vname, as)
-      if (vname .eq.     'WLV') call write_var(trim(fname), vname, wlv)
-      if (vname .eq.     'ICE') call write_var(trim(fname), vname, ice)
-      if (vname .eq.    'BERG') call write_var(trim(fname), vname, berg)
-      if (vname .eq.    'TAUX') call write_var(trim(fname), vname, taua, dir=cos(tauadir))
-      if (vname .eq.    'TAUY') call write_var(trim(fname), vname, taua, dir=sin(tauadir))
-      if (vname .eq.  'RHOAIR') call write_var(trim(fname), vname, rhoair)
-      if (vname .eq.    'ICEH') call write_var(trim(fname), vname, iceh)
-      if (vname .eq.    'ICEF') call write_var(trim(fname), vname, icef)
+      if (vname .eq.      'DW') call write_var(trim(fname), vname, dw(1:nsea))
+      if (vname .eq.      'CX') call write_var(trim(fname), vname, cx(1:nsea))
+      if (vname .eq.      'CY') call write_var(trim(fname), vname, cy(1:nsea))
+      if (vname .eq.     'UAX') call write_var(trim(fname), vname, ua(1:nsea), dir=cos(ud(1:nsea)))
+      if (vname .eq.     'UAY') call write_var(trim(fname), vname, ua(1:nsea), dir=sin(ud(1:nsea)))
+      if (vname .eq.      'AS') call write_var(trim(fname), vname, as(1:nsea))
+      if (vname .eq.     'WLV') call write_var(trim(fname), vname, wlv(1:nsea))
+      if (vname .eq.     'ICE') call write_var(trim(fname), vname, ice(1:nsea))
+      if (vname .eq.    'BERG') call write_var(trim(fname), vname, berg(1:nsea))
+      if (vname .eq.    'TAUX') call write_var(trim(fname), vname, taua(1:nsea), dir=cos(tauadir(1:nsea)))
+      if (vname .eq.    'TAUY') call write_var(trim(fname), vname, taua(1:nsea), dir=sin(tauadir(1:nsea)))
+      if (vname .eq.  'RHOAIR') call write_var(trim(fname), vname, rhoair(1:nsea))
+      if (vname .eq.    'ICEH') call write_var(trim(fname), vname, iceh(1:nsea))
+      if (vname .eq.    'ICEF') call write_var(trim(fname), vname, icef(1:nsea))
 
       ! Group 2
-      if (vname .eq.     'HS') call write_var(trim(fname), vname, hs)
-      if (vname .eq.    'WLM') call write_var(trim(fname), vname, wlm)
-      if (vname .eq.    'T02') call write_var(trim(fname), vname, t02)
-      if (vname .eq.   'T0M1') call write_var(trim(fname), vname, t0m1)
-      if (vname .eq.    'T01') call write_var(trim(fname), vname, t01)
-      if (vname .eq.    'FP0') call write_var(trim(fname), vname, fp0)
-      if (vname .eq.    'THM') call write_var(trim(fname), vname, thm)
-      if (vname .eq.    'THS') call write_var(trim(fname), vname, ths)
-      if (vname .eq.   'THP0') call write_var(trim(fname), vname, thp0)
-      if (vname .eq.   'HSIG') call write_var(trim(fname), vname, hsig)
-      if (vname .eq. 'STMAXE') call write_var(trim(fname), vname, stmaxe)
-      if (vname .eq. 'STMAXD') call write_var(trim(fname), vname, stmaxd)
-      if (vname .eq.  'HMAXE') call write_var(trim(fname), vname, hmaxe)
-      if (vname .eq. 'HCMAXE') call write_var(trim(fname), vname, hcmaxe)
-      if (vname .eq.  'HMAXD') call write_var(trim(fname), vname, hmaxd)
-      if (vname .eq. 'HCMAXD') call write_var(trim(fname), vname, hcmaxd)
-      if (vname .eq.    'WBT') call write_var(trim(fname), vname, wbt)
-      if (vname .eq. 'WNMEAN') call write_var(trim(fname), vname, wnmean)
+      if (vname .eq.     'HS') call write_var(trim(fname), vname, hs(1:nsea))
+      if (vname .eq.    'WLM') call write_var(trim(fname), vname, wlm(1:nsea))
+      if (vname .eq.    'T02') call write_var(trim(fname), vname, t02(1:nsea))
+      if (vname .eq.   'T0M1') call write_var(trim(fname), vname, t0m1(1:nsea))
+      if (vname .eq.    'T01') call write_var(trim(fname), vname, t01(1:nsea))
+      if (vname .eq.    'FP0') call write_var(trim(fname), vname, fp0(1:nsea))
+      if (vname .eq.    'THM') call write_var(trim(fname), vname, thm(1:nsea))
+      if (vname .eq.    'THS') call write_var(trim(fname), vname, ths(1:nsea))
+      if (vname .eq.   'THP0') call write_var(trim(fname), vname, thp0(1:nsea))
+      if (vname .eq.   'HSIG') call write_var(trim(fname), vname, hsig(1:nsea))
+      if (vname .eq. 'STMAXE') call write_var(trim(fname), vname, stmaxe(1:nsea))
+      if (vname .eq. 'STMAXD') call write_var(trim(fname), vname, stmaxd(1:nsea))
+      if (vname .eq.  'HMAXE') call write_var(trim(fname), vname, hmaxe(1:nsea))
+      if (vname .eq. 'HCMAXE') call write_var(trim(fname), vname, hcmaxe(1:nsea))
+      if (vname .eq.  'HMAXD') call write_var(trim(fname), vname, hmaxd(1:nsea))
+      if (vname .eq. 'HCMAXD') call write_var(trim(fname), vname, hcmaxd(1:nsea))
+      if (vname .eq.    'WBT') call write_var(trim(fname), vname, wbt(1:nsea))
+      if (vname .eq. 'WNMEAN') call write_var(trim(fname), vname, wnmean(1:nsea))
 
       ! Group 3
       if(vname .eq.    'EF') call write_var_k(trim(fname), vname, ef(1:nsea,E3DF(2,1):E3DF(3,1)) )   ! freq axis
@@ -369,90 +361,90 @@ contains
       !TODO: wn has reversed indices (1:nk, 1:nsea)
 
       ! Group 4
-      if(vname .eq.   'PHS') call write_var_s(trim(fname), vname, phs)     ! noswll axis
-      if(vname .eq.   'PTP') call write_var_s(trim(fname), vname, ptp)
-      if(vname .eq.   'PLP') call write_var_s(trim(fname), vname, plp)
-      if(vname .eq.  'PDIR') call write_var_s(trim(fname), vname, pdir)
-      if(vname .eq.   'PSI') call write_var_s(trim(fname), vname, psi)
-      if(vname .eq.   'PWS') call write_var_s(trim(fname), vname, pws)
-      if(vname .eq.   'PDP') call write_var_s(trim(fname), vname, pthp0)
-      if(vname .eq.   'PQP') call write_var_s(trim(fname), vname, pqp)
-      if(vname .eq.   'PPE') call write_var_s(trim(fname), vname, ppe)
-      if(vname .eq.   'PGW') call write_var_s(trim(fname), vname, pgw)
-      if(vname .eq.   'PSW') call write_var_s(trim(fname), vname, psw)
-      if(vname .eq.  'PTM1') call write_var_s(trim(fname), vname, ptm1)
-      if(vname .eq.   'PT1') call write_var_s(trim(fname), vname, pt1)
-      if(vname .eq.   'PT2') call write_var_s(trim(fname), vname, pt2)
-      if(vname .eq.   'PEP') call write_var_s(trim(fname), vname, pep)
-      if(vname .eq.  'PWST') call   write_var(trim(fname), vname, pwst)
-      if(vname .eq.   'PNR') call   write_var(trim(fname), vname, pnr)
+      if(vname .eq.   'PHS') call write_var_s(trim(fname), vname, phs(1:nsea,0:noswll))     ! noswll axis
+      if(vname .eq.   'PTP') call write_var_s(trim(fname), vname, ptp(1:nsea,0:noswll))
+      if(vname .eq.   'PLP') call write_var_s(trim(fname), vname, plp(1:nsea,0:noswll))
+      if(vname .eq.  'PDIR') call write_var_s(trim(fname), vname, pdir(1:nsea,0:noswll))
+      if(vname .eq.   'PSI') call write_var_s(trim(fname), vname, psi(1:nsea,0:noswll))
+      if(vname .eq.   'PWS') call write_var_s(trim(fname), vname, pws(1:nsea,0:noswll))
+      if(vname .eq.   'PDP') call write_var_s(trim(fname), vname, pthp0(1:nsea,0:noswll))
+      if(vname .eq.   'PQP') call write_var_s(trim(fname), vname, pqp(1:nsea,0:noswll))
+      if(vname .eq.   'PPE') call write_var_s(trim(fname), vname, ppe(1:nsea,0:noswll))
+      if(vname .eq.   'PGW') call write_var_s(trim(fname), vname, pgw(1:nsea,0:noswll))
+      if(vname .eq.   'PSW') call write_var_s(trim(fname), vname, psw(1:nsea,0:noswll))
+      if(vname .eq.  'PTM1') call write_var_s(trim(fname), vname, ptm1(1:nsea,0:noswll))
+      if(vname .eq.   'PT1') call write_var_s(trim(fname), vname, pt1(1:nsea,0:noswll))
+      if(vname .eq.   'PT2') call write_var_s(trim(fname), vname, pt2(1:nsea,0:noswll))
+      if(vname .eq.   'PEP') call write_var_s(trim(fname), vname, pep(1:nsea,0:noswll))
+      if(vname .eq.  'PWST') call   write_var(trim(fname), vname, pwst(1:nsea))
+      if(vname .eq.   'PNR') call   write_var(trim(fname), vname, pnr(1:nsea))
 
       ! Group 5
-      if (vname .eq.   'USTX') call write_var(trim(fname), vname, ust*asf, dir=cos(ustdir), usemask='true')
-      if (vname .eq.   'USTY') call write_var(trim(fname), vname, ust*asf, dir=sin(ustdir), usemask='true')
-      if (vname .eq.    'CHA') call write_var(trim(fname), vname, charn)
-      if (vname .eq.    'CGE') call write_var(trim(fname), vname, cge)
-      if (vname .eq.  'PHIAW') call write_var(trim(fname), vname, phiaw)
-      if (vname .eq. 'TAUWIX') call write_var(trim(fname), vname, tauwix)
-      if (vname .eq. 'TAUWIY') call write_var(trim(fname), vname, tauwiy)
-      if (vname .eq. 'TAUWNX') call write_var(trim(fname), vname, tauwnx)
-      if (vname .eq. 'TAUWNY') call write_var(trim(fname), vname, tauwny)
-      if (vname .eq.    'WCC') call write_var(trim(fname), vname, whitecap(:,1))
-      if (vname .eq.    'WCF') call write_var(trim(fname), vname, whitecap(:,2))
-      if (vname .eq.    'WCH') call write_var(trim(fname), vname, whitecap(:,3))
-      if (vname .eq.    'WCM') call write_var(trim(fname), vname, whitecap(:,4))
-      if (vname .eq.    'TWS') call write_var(trim(fname), vname, tws)
+      if (vname .eq.   'USTX') call write_var(trim(fname), vname, ust(1:nsea)*asf(1:nsea), dir=cos(ustdir(1:nsea)), usemask='true')
+      if (vname .eq.   'USTY') call write_var(trim(fname), vname, ust(1:nsea)*asf(1:nsea), dir=sin(ustdir(1:nsea)), usemask='true')
+      if (vname .eq.    'CHA') call write_var(trim(fname), vname, charn(1:nsea))
+      if (vname .eq.    'CGE') call write_var(trim(fname), vname, cge(1:nsea))
+      if (vname .eq.  'PHIAW') call write_var(trim(fname), vname, phiaw(1:nsea))
+      if (vname .eq. 'TAUWIX') call write_var(trim(fname), vname, tauwix(1:nsea))
+      if (vname .eq. 'TAUWIY') call write_var(trim(fname), vname, tauwiy(1:nsea))
+      if (vname .eq. 'TAUWNX') call write_var(trim(fname), vname, tauwnx(1:nsea))
+      if (vname .eq. 'TAUWNY') call write_var(trim(fname), vname, tauwny(1:nsea))
+      if (vname .eq.    'WCC') call write_var(trim(fname), vname, whitecap(1:nsea,1))
+      if (vname .eq.    'WCF') call write_var(trim(fname), vname, whitecap(1:nsea,2))
+      if (vname .eq.    'WCH') call write_var(trim(fname), vname, whitecap(1:nsea,3))
+      if (vname .eq.    'WCM') call write_var(trim(fname), vname, whitecap(1:nsea,4))
+      if (vname .eq.    'TWS') call write_var(trim(fname), vname, tws(1:nsea))
 
       ! Group 6
-      if (vname .eq.     'SXX') call write_var(trim(fname), vname, sxx)
-      if (vname .eq.     'SYY') call write_var(trim(fname), vname, syy)
-      if (vname .eq.     'SXY') call write_var(trim(fname), vname, sxy)
-      if (vname .eq.   'TAUOX') call write_var(trim(fname), vname, tauox)
-      if (vname .eq.   'TAUOY') call write_var(trim(fname), vname, tauoy)
-      if (vname .eq.     'BHD') call write_var(trim(fname), vname, bhd)
-      if (vname .eq.   'PHIOC') call write_var(trim(fname), vname, phioc)
-      if (vname .eq.    'TUSX') call write_var(trim(fname), vname, tusx)
-      if (vname .eq.    'TUSY') call write_var(trim(fname), vname, tusy)
-      if (vname .eq.    'USSX') call write_var(trim(fname), vname, ussx)
-      if (vname .eq.    'USSY') call write_var(trim(fname), vname, ussy)
-      if (vname .eq.    'PRMS') call write_var(trim(fname), vname, prms)
-      if (vname .eq.    'TPMS') call write_var(trim(fname), vname, tpms)
+      if (vname .eq.     'SXX') call write_var(trim(fname), vname, sxx(1:nsea))
+      if (vname .eq.     'SYY') call write_var(trim(fname), vname, syy(1:nsea))
+      if (vname .eq.     'SXY') call write_var(trim(fname), vname, sxy(1:nsea))
+      if (vname .eq.   'TAUOX') call write_var(trim(fname), vname, tauox(1:nsea))
+      if (vname .eq.   'TAUOY') call write_var(trim(fname), vname, tauoy(1:nsea))
+      if (vname .eq.     'BHD') call write_var(trim(fname), vname, bhd(1:nsea))
+      if (vname .eq.   'PHIOC') call write_var(trim(fname), vname, phioc(1:nsea))
+      if (vname .eq.    'TUSX') call write_var(trim(fname), vname, tusx(1:nsea))
+      if (vname .eq.    'TUSY') call write_var(trim(fname), vname, tusy(1:nsea))
+      if (vname .eq.    'USSX') call write_var(trim(fname), vname, ussx(1:nsea))
+      if (vname .eq.    'USSY') call write_var(trim(fname), vname, ussy(1:nsea))
+      if (vname .eq.    'PRMS') call write_var(trim(fname), vname, prms(1:nsea))
+      if (vname .eq.    'TPMS') call write_var(trim(fname), vname, tpms(1:nsea))
       if (vname .eq.   'US3DX') call write_var_k(trim(fname), vname, us3d(1:nsea,   US3DF(2):US3DF(3)) )     !freq axis
       if (vname .eq.   'US3DY') call write_var_k(trim(fname), vname, us3d(1:nsea,NK+US3DF(2):NK+US3DF(3)) )  !freq axis
       if (vname .eq.   'P2SMS') call write_var_m(trim(fname), vname, p2sms(1:nsea,P2MSF(2):P2MSF(3)) )       !m axis
-      if (vname .eq. 'TAUICEX') call write_var(trim(fname), vname, tauice(:,1))
-      if (vname .eq. 'TAUICEY') call write_var(trim(fname), vname, tauice(:,2))
-      if (vname .eq.   'PHICE') call write_var(trim(fname), vname, phice)
+      if (vname .eq. 'TAUICEX') call write_var(trim(fname), vname, tauice(1:nsea,1))
+      if (vname .eq. 'TAUICEY') call write_var(trim(fname), vname, tauice(1:nsea,2))
+      if (vname .eq.   'PHICE') call write_var(trim(fname), vname, phice(1:nsea))
       if (vname .eq.   'USSPX') call write_var_p(trim(fname), vname, ussp(1:nsea,   1:USSPF(2)) )     ! partition axis
       if (vname .eq.   'USSPY') call write_var_p(trim(fname), vname, ussp(1:nsea,NK+1:NK+USSPF(2)) )  ! partition axis
-      if (vname .eq.  'TAUOCX') call write_var(trim(fname), vname, tauocx)
-      if (vname .eq.  'TAUOCY') call write_var(trim(fname), vname, tauocy)
+      if (vname .eq.  'TAUOCX') call write_var(trim(fname), vname, tauocx(1:nsea))
+      if (vname .eq.  'TAUOCY') call write_var(trim(fname), vname, tauocy(1:nsea))
 #ifdef CESMCOUPLED
-      if (vname .eq.  'LANGMT') call write_var(trim(fname), vname, langmt)
+      if (vname .eq.  'LANGMT') call write_var(trim(fname), vname, langmt(1:nsea))
 #endif
       ! Group 7
-      if (vname .eq.     'ABAX') call write_var(trim(fname), vname, aba, cos(abd))
-      if (vname .eq.     'ABAY') call write_var(trim(fname), vname, aba, sin(abd))
-      if (vname .eq.     'UBAX') call write_var(trim(fname), vname, uba, cos(ubd))
-      if (vname .eq.     'UBAY') call write_var(trim(fname), vname, uba, sin(ubd))
-      if (vname .eq. 'Bedforms') call write_var_b(trim(fname), vname, bedforms)         ! bedform axis
-      if (vname .eq.   'PHIBBL') call write_var(trim(fname), vname, phibbl)
-      if (vname .eq.  'TAUBBLX') call write_var(trim(fname), vname, taubbl(:,1))
-      if (vname .eq.  'TAUBBLY') call write_var(trim(fname), vname, taubbl(:,2))
+      if (vname .eq.     'ABAX') call write_var(trim(fname), vname, aba(1:nsea), cos(abd(1:nsea)))
+      if (vname .eq.     'ABAY') call write_var(trim(fname), vname, aba(1:nsea), sin(abd(1:nsea)))
+      if (vname .eq.     'UBAX') call write_var(trim(fname), vname, uba(1:nsea), cos(ubd(1:nsea)))
+      if (vname .eq.     'UBAY') call write_var(trim(fname), vname, uba(1:nsea), sin(ubd(1:nsea)))
+      if (vname .eq. 'Bedforms') call write_var_b(trim(fname), vname, bedforms(1:nsea,1:3))         ! bedform axis
+      if (vname .eq.   'PHIBBL') call write_var(trim(fname), vname, phibbl(1:nsea))
+      if (vname .eq.  'TAUBBLX') call write_var(trim(fname), vname, taubbl(1:nsea,1))
+      if (vname .eq.  'TAUBBLY') call write_var(trim(fname), vname, taubbl(1:nsea,2))
 
       ! Group 8
-      if (vname .eq.   'MSSX') call write_var(trim(fname), vname, mssx)
-      if (vname .eq.   'MSSY') call write_var(trim(fname), vname, mssy)
-      if (vname .eq.   'MSCX') call write_var(trim(fname), vname, mscx)
-      if (vname .eq.   'MSCY') call write_var(trim(fname), vname, mscy)
+      if (vname .eq.   'MSSX') call write_var(trim(fname), vname, mssx(1:nsea))
+      if (vname .eq.   'MSSY') call write_var(trim(fname), vname, mssy(1:nsea))
+      if (vname .eq.   'MSCX') call write_var(trim(fname), vname, mscx(1:nsea))
+      if (vname .eq.   'MSCY') call write_var(trim(fname), vname, mscy(1:nsea))
       !TODO: remaining variables have inconsistency between shel_inp listing and iogo code
 
       ! Group 9
-      if (vname .eq.    'DTDYN') call write_var(trim(fname), vname, dtdyn)
-      if (vname .eq.     'FCUT') call write_var(trim(fname), vname, fcut)
-      if (vname .eq. 'CFLXYMAX') call write_var(trim(fname), vname, cflxymax)
-      if (vname .eq. 'CFLTHMAX') call write_var(trim(fname), vname, cflthmax)
-      if (vname .eq.  'CFLKMAX') call write_var(trim(fname), vname, cflkmax)
+      if (vname .eq.    'DTDYN') call write_var(trim(fname), vname, dtdyn(1:nsea))
+      if (vname .eq.     'FCUT') call write_var(trim(fname), vname, fcut(1:nsea))
+      if (vname .eq. 'CFLXYMAX') call write_var(trim(fname), vname, cflxymax(1:nsea))
+      if (vname .eq. 'CFLTHMAX') call write_var(trim(fname), vname, cflthmax(1:nsea))
+      if (vname .eq.  'CFLKMAX') call write_var(trim(fname), vname, cflkmax(1:nsea))
 
       ! Group 10
      end do
@@ -470,8 +462,8 @@ contains
 
     character(len=*),  intent(in)          :: fname
     character(len=*),  intent(in)          :: vname
-    real            ,  intent(in)          :: var(nsea)
-    real, optional  ,  intent(in)          :: dir(nsea)
+    real            ,  intent(in)          :: var(:)
+    real, optional  ,  intent(in)          :: dir(:)
     character(len=*), optional, intent(in) :: usemask
 
     ! local variables
@@ -524,7 +516,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real            , intent(in) :: var(nsea,0:noswll)
+    real            , intent(in) :: var(:,:)
 
     ! local variables
     real, dimension(nx,ny,0:noswll) :: var3d
@@ -558,7 +550,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real            , intent(in) :: var(nsea,len_k)
+    real            , intent(in) :: var(:,:)
  
     ! local variables
     real, dimension(nx,ny,len_k) :: var3d
@@ -591,7 +583,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real, dimension(nsea,len_m), intent(in) :: var
+    real            , intent(in) :: var(:,:)
 
     ! local variables
     real, dimension(nx,ny,len_m) :: var3d
@@ -625,7 +617,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real            , intent(in) :: var(nsea,len_p)
+    real            , intent(in) :: var(:,:)
 
     ! local variables
     real, dimension(nx,ny,len_p) :: var3d
@@ -659,7 +651,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real            , intent(in) :: var(nsea,3)
+    real            , intent(in) :: var(1:nsea,3)
 
     ! local variables
     real, dimension(nx,ny,3) :: var3d
