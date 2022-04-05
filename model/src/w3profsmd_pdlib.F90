@@ -364,7 +364,7 @@
       ALLOCATE(IS0_pdlib(NSPEC))
       DO ISP=1, NSPEC
         IS0_pdlib(ISP) = ISP - 1
-1      END DO
+      END DO
       DO ISP=1, NSPEC, NTH
         IS0_pdlib(ISP) = IS0_pdlib(ISP) + NTH
       END DO
