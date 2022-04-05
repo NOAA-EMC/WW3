@@ -2469,12 +2469,12 @@
        END IF
        nbSel=0
 
-       IF (EXPFSN)   nbSel = nbSel+1
-       IF (EXPFSPSI) nbSel = nbSel+1
-       IF (EXPFSFCT) nbSel = nbSel+1
-       IF (IMPFSN)   nbSel = nbSel+1
-       IF (IMPTOTAL) nbSel = nbSel+1
-       IF (EXPTOTAL) nbSel = nbSel+1
+       IF (EXPFSN) nbSel=nbSel+1
+       IF (EXPFSPSI) nbSel=nbSel+1
+       IF (EXPFSFCT) nbSel=nbSel+1
+       IF (IMPFSN) nbSel=nbSel+1
+       IF (IMPTOTAL) nbSel=nbSel+1
+       IF (EXPTOTAL) nbSel=nbSel+1
 
        IF (GTYPE .EQ. UNGTYPE) THEN
          IF (nbSel .ne. 1) THEN
@@ -3618,16 +3618,6 @@
         IF (EXPFSPSI) UNSTSCHEMES(2)=1
         IF (EXPFSFCT) UNSTSCHEMES(3)=1
         IF (IMPFSN)   UNSTSCHEMES(4)=1
-
-        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
-          WRITE(NDSE,*) 'NO UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
-          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-        ENDIF 
-
->>>>>>> 79490997f25b60a61cdd407710b80f959e39446d
         UNSTSCHEME=-1
         DO IX=1,4
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
@@ -4005,8 +3995,8 @@
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
-        OBSX(:,:) = 0.
-        OBSY(:,:) = 0.
+        OBSX(:,:)=0.
+        OBSY(:,:)=0.
 
       END IF
 !

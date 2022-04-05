@@ -307,7 +307,6 @@
                                  FLSNL2 = .FALSE.
       LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.,  &
                                  FLIS  = .FALSE. 
-      LOGICAL                 :: itsopen
       CHARACTER(LEN=10)       :: VERTST
       CHARACTER(LEN=13)       :: TEMPXT
       CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
@@ -550,14 +549,6 @@
       J      = LEN_TRIM(FNMPRE)
 !
 !AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:J)//'mod_def.'//FILEXT(:I)
-      inquire(unit=NDSM, opened=itsopen) 
-      if ( itsopen ) then
-        write(*,*) 'Its open already', NDSM
-      else
-        write(*,*) 'Its free', NDSM
-      end if
-
-      WRITE(*,*) 'TEST BEFORE OPEN', NDSM, FNMPRE(:J)//'mod_def.'//FILEXT(:I)
       IF ( WRITE ) THEN
           OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
                 FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
@@ -597,19 +588,11 @@
           WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
 #endif
         ELSE
-          WRITE(*,*) 'TEST BEFORE THE READ'
-          !READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-          READ (NDSM)                     &
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
                 FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
                 FNAMEF, FNAMEI
-          WRITE (*,*)                     &
-                IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
-                NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-                FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
-                FNAMEF, FNAMEI
-          WRITE(*,*) 'TEST AFTER READ'
 !
 #ifdef W3_SMC
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
@@ -708,11 +691,8 @@
                CALL EXTCDE ( 24 )
             END IF
 !
-          WRITE(*,*) 'BEFORE READ NBO', NFBPO
-          !READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-          READ (NDSM)                     &
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
-          WRITE(*,*) 'AFTER READ NBO' 
 #ifdef W3_T
           WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
           WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)

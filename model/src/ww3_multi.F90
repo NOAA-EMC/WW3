@@ -155,10 +155,6 @@
 ! ... Separate test output file
 !
       INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML) 
-
-      WRITE(*,*) 'FILE HANDLES', MDSI, MDSO, MDSS, 10, MDSE
-      STOP 'MULIT HANDLES' 
-
       IF (FLGNML) THEN
         CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
       ELSE
