@@ -24,8 +24,8 @@
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
   TIMESTEPS%DTMAX        =  1800.
-  TIMESTEPS%DTXY         =  1800.
-  TIMESTEPS%DTKTH        =  60.
+  TIMESTEPS%DTXY         =  60.
+  TIMESTEPS%DTKTH        =  1800.
   TIMESTEPS%DTMIN        =  15.
 /
 
@@ -67,8 +67,6 @@
 ! Define the point status map via MASK_NML namelist
 ! -------------------------------------------------------------------- !
 &MASK_NML
-  MASK%FILENAME  =  '../input/grid.mask'
-  MASK%IDLA      =  2
 /
 
 ! -------------------------------------------------------------------- !
