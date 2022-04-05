@@ -1405,7 +1405,6 @@
             DO ITH = 1, NTH
               ISP = ITH + (IK-1)*NTH
 #endif
-                     !if (vs(isp) .gt. thr) write(*,*) isp, vs(isp), vd(isp)
 #ifdef W3_PDLIB
               VD(ISP) = MIN(0., VD(ISP))
               IF (LNEWLIMITER) THEN
@@ -1422,46 +1421,27 @@
               B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
               ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #endif
-!        IF (JSEA .eq. 100 .and. IT .gt. 0) THEN
-!          WRITE(*,*) 'A and B', ISP, eVS, eVD, SPEC(ISP)*JAC, B_JAC(ISP,JSEA), ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA))
-!        ENDIF
+
 #ifdef W3_DB1
                 eVS = VSDB(ISP) * JAC
                 eVD = MIN(0.,VDDB(ISP))
-                IF (eVS .gt. 0.) THEN
-                  evS = 2*evS
-                  evD = -evD 
-                ELSE
-                  evS = -evS
-                  evD = 2*evD
-                ENDIF
 #endif
+
 #ifdef W3_DB2
                 eVS = VSDB(ISP) * JAC
                 eVD = MIN(0.,VDDB(ISP))
-                IF (eVS .gt. 0.) THEN
-                  evS = 2*evS
-                  evD = -evD 
-                ELSE
-                  evS = -evS
-                  evD = 2*evD
-                ENDIF
 #endif
+
 #ifdef W3_PDLIB
               B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
               ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #endif
+
 #ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC 
                 eVD = VDTR(ISP)
-                IF (eVS .gt. 0.) THEN
-                  evS = 2*evS
-                  evD = -evD 
-                ELSE
-                  evS = -evS
-                  evD = 2*evD
-                ENDIF
 #endif
+
 #ifdef W3_PDLIB
               B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
               ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
@@ -1471,10 +1451,10 @@
                      !                         !& VSTR(ISP), VDTR(ISP), VSDB(ISP), VDDB(ISP), VSNL(ISP), VDNL(ISP), &
                      !                         & SPEC(ISP), U10ABS, U10DIR, USTAR 
                      
-!!/VEG1              eVS = eVS + VSVG(ISP) * JAC 
-!!/VEG1              eVD = evD + MIN(0.,VDVG(ISP))
-!!/PDLIB              B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA)*JAC)
-!!/PDLIB              ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+!/VEG1              eVS = eVS + VSVG(ISP) * JAC 
+!/VEG1              eVD = evD + MIN(0.,VDVG(ISP))
+!/PDLIB             B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA)*JAC)
+!/PDLIB             ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_PDLIB
             END DO
 #endif
