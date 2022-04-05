@@ -2046,7 +2046,7 @@
 !
               NNBR = NNBR_MAX
               INGRID = W3GRMP( GSU, X, Y, II, JJ, RR, &
-                       MASK=LMSK, MSKC=MSKC, NNBR=NNBR, wDEBUG=LDBG )
+                       MASK=LMSK, MSKC=MSKC, NNBR=NNBR, DEBUG=LDBG )
 !
               IF ( INGRID ) THEN
 !
