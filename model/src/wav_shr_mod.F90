@@ -37,6 +37,11 @@ module wav_shr_mod
   private :: timeInit
   private :: field_getfldptr
 
+  interface state_getfldptr
+     module procedure state_getfldptr_1d
+     module procedure state_getfldptr_2d
+  end interface state_getfldptr
+
   ! used by both CESM and UFS
   ! runtype is used by W3SRCE (values are startup, branch, continue)
   character(len=cs) , public :: runtype
@@ -256,31 +261,25 @@ contains
   end subroutine state_reset
 
   !===============================================================================
-  subroutine state_getfldptr(State, fldname, fldptr1d, fldptr2d, rc)
+
+  subroutine state_getfldptr_1d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
     ! ----------------------------------------------
-    use ESMF , only : ESMF_State, ESMF_Field, ESMF_Mesh, ESMF_FieldStatus_Flag
-    use ESMF , only : ESMF_StateGet, ESMF_FieldGet, ESMF_MeshGet
-    use ESMF , only : ESMF_FIELDSTATUS_COMPLETE, ESMF_FAILURE
 
     ! input/output variables
-    type(ESMF_State),            intent(in)    :: State
-    character(len=*),            intent(in)    :: fldname
-    real(R8), pointer, optional, intent(out)   :: fldptr1d(:)
-    real(R8), pointer, optional, intent(out)   :: fldptr2d(:,:)
-    integer,                     intent(out)   :: rc
+    type(ESMF_State)              , intent(in)     :: State
+    character(len=*)              , intent(in)     :: fldname
+    real(R8)            , pointer , intent(inout)  :: fldptr(:)
+    integer, optional             , intent(out)    :: rc
 
     ! local variables
+    type(ESMF_Field) :: lfield
     type(ESMF_FieldStatus_Flag) :: status
-    type(ESMF_Field)            :: lfield
-    type(ESMF_Mesh)             :: lmesh
-    integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
+    character(len=*),parameter :: subname='(wav_import_export:state_getfldptr_1d)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -293,30 +292,48 @@ contains
        rc = ESMF_FAILURE
        return
     else
-       call ESMF_FieldGet(lfield, mesh=lmesh, rc=rc)
+       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
-       call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
+  end subroutine state_getfldptr_1d
+
+  !===============================================================================
+
+  subroutine state_getfldptr_2d(State, fldname, fldptr, rc)
+    ! ----------------------------------------------
+    ! Get pointer to a state field
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_State)    ,            intent(in)     :: State
+    character(len=*)    ,            intent(in)     :: fldname
+    real(R8)            , pointer  , intent(inout)  :: fldptr(:,:)
+    integer             , optional , intent(out)    :: rc
+
+    ! local variables
+    type(ESMF_Field) :: lfield
+    type(ESMF_FieldStatus_Flag) :: status
+    character(len=*),parameter :: subname='(wav_import_export:state_getfldptr_2d)'
+    ! ----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_FieldGet(lfield, status=status, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (status /= ESMF_FIELDSTATUS_COMPLETE) then
+       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+       rc = ESMF_FAILURE
+       return
+    else
+       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       if (nnodes == 0 .and. nelements == 0) then
-          call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", ESMF_LOGMSG_INFO)
-          rc = ESMF_FAILURE
-          return
-       end if
-
-       if (present(fldptr1d)) then
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
-       else ! 2D
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr2d, rc=rc)
-       endif
-
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif  ! status
-
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine state_getfldptr
+    end if
+  end subroutine state_getfldptr_2d
 
   !===============================================================================
   logical function state_fldchk(State, fldname)

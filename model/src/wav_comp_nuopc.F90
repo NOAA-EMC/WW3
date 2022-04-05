@@ -541,7 +541,7 @@ contains
     else
        stdout = 6
     end if
-    
+
     if (.not. multigrid) call set_shel_io(stdout,mds,ntrace)
 
     if ( root_task ) then
@@ -868,7 +868,7 @@ contains
       sw_vstokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_z0')) then
-       call state_getfldptr(exportState, 'Sw_z0', fldptr1d=z0rlen, rc=rc)
+       call state_getfldptr(exportState, 'Sw_z0', z0rlen, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
@@ -878,7 +878,7 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'wave_elevation_spectrum', fldptr2d=wave_elevation_spectrum, rc=rc)
+      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        wav_tauice1(:) = 0.
@@ -1301,11 +1301,16 @@ contains
     integer , intent(out) :: rc
 
     ! local variables
-    integer                        :: ierr
-    integer                        :: unitn  ! namelist unit number
-    integer                        :: shrlogunit
-    logical                        :: isPresent, isSet
-    character(len=CL)              :: cvalue
+    integer           :: ierr
+    integer           :: unitn  ! namelist unit number
+    integer           :: shrlogunit
+    logical           :: isPresent, isSet
+    real(r8)          :: dtmax_in  ! Maximum overall time step.
+    real(r8)          :: dtmin_in  ! Minimum dynamic time step for source
+    real(r8)          :: dtcfl_in  ! Maximum CFL time step X-Y propagation.
+    real(r8)          :: dtcfli_in ! Maximum CFL time step X-Y propagation intra-spectral
+    integer           :: stdout
+    character(len=CL) :: cvalue
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:wavinit_cesm)'
     ! -------------------------------------------------------------------
 
@@ -1328,22 +1333,23 @@ contains
        close (unitn)
 
        ! Write out input
-       write(nds(1),*)
-       write(nds(1),'(a)')' --------------------------------------------------'
-       write(nds(1),'(a)')'  Initializations : '
-       write(nds(1),'(a)')' --------------------------------------------------'
-       write(nds(1),'(a)')' Case Name is '//trim(casename)
-       write(nds(1),'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
-       write(nds(1),'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
-       write(nds(1),'(a,i4)') trim(subname)//' inst_index  = ',inst_index
-       write(nds(1),'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write(nds(1),'(a)')' initfile = '//trim(initfile)
-       write(nds(1),'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
-       write(nds(1),'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
-       write(nds(1),'(a, 2x, f10.3)')' dtmax    = ',dtmax
-       write(nds(1),'(a, 2x, f10.3)')' dtmin    = ',dtmin
-       write(nds(1),'(a, 2x, i8)'   )' outfreq  = ',outfreq
-       write(nds(1),*)
+       stdout = mds(1)
+       write(stdout,*)
+       write(stdout,'(a)')' --------------------------------------------------'
+       write(stdout,'(a)')'  Initializations : '
+       write(stdout,'(a)')' --------------------------------------------------'
+       write(stdout,'(a)')' Case Name is '//trim(casename)
+       write(stdout,'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
+       write(stdout,'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
+       write(stdout,'(a,i4)') trim(subname)//' inst_index  = ',inst_index
+       write(stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+       write(stdout,'(a)')' initfile = '//trim(initfile)
+       write(stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+       write(stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+       write(stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
+       write(stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
+       write(stdout,'(a, 2x, i8)'   )' outfreq  = ',outfreq
+       write(stdout,*)
     end if
 
     ! ESMF does not have a broadcast for chars
@@ -1361,6 +1367,38 @@ contains
        rc = ESMF_FAILURE
        return
     end if
+    call mpi_bcast(dtcfl, 1, MPI_INTEGER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfl ',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+    call mpi_bcast(dtcfli, 1, MPI_INTEGER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfli ',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+    call mpi_bcast(dtmax, 1, MPI_INTEGER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+    call mpi_bcast(dtmin, 1, MPI_INTEGER, 0, mpi_comm, ierr)
+    if (ierr /= MPI_SUCCESS) then
+       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
+            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+       rc = ESMF_FAILURE
+       return
+    end if
+    dtmax_in  = dtmax
+    dtcfl_in  = dtcfl
+    dtcfli_in = dtcfli
+    dtmin_in  = dtmin
 
     ! Determine module variables in wav_shel_inp that are used for call to w3init
     call set_shel_inp(dtime_sync)
@@ -1376,6 +1414,13 @@ contains
 
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
+
+    ! NOTE: these need to be set again AFTER w3init is run - since these values will be overwritten
+    ! by the read of mod_def.ww3
+    dtmax  = dtmax_in
+    dtcfl  = dtcfl_in
+    dtcfli = dtcfli_in
+    dtmin  = dtmin_in
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
