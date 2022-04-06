@@ -231,7 +231,6 @@
       C(1:NX,1)  = VLCFLX(1:NX)   * IOBDP(1:NX)
       C(1:NX,2)  = VLCFLY(1:NX)   * IOBDP(1:NX)
 
-      !WRITE(*,*) 'CHECK NODE VEL', C(6674,1), C(6674,2), CCURX, CX(ISEA), CCURY, CY(ISEA), DW(6674)
 !
 ! 4. Prepares boundary update
 !

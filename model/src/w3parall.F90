@@ -1112,9 +1112,6 @@
        IF (GTYPE .eq. UNGTYPE) THEN
          NSEALout  = PDLIB_NSEAL
          NSEALMout = PDLIB_NSEALM
-#endif
-!!/PDLIB         WRITE(*,*) 'PDLIB_NSEAL=', PDLIB_NSEAL, ' PDLIB_NSEALM=', PDLIB_NSEALM
-#ifdef W3_PDLIB
        ELSE
          IF ( IAPROC .LE. NAPROC ) THEN
            NSEALout  = 1 + (NSEA-IAPROC)/NAPROC

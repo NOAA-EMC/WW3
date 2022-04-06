@@ -615,9 +615,6 @@
       IOBPD => NULL()
       DEALLOCATE(GRIDS(IMOD)%IOBP,GRIDS(IMOD)%IOBPD)
 !
-!AR: the new stuff does not work still correct in parallel due to the wrong halo for this kind of problem.
-!    Can be corrected by adding the new version of PDLIB 
-     !CALL SET_UG_IOBP_PDLIB_INIT
      CALL SET_IOBPA_PDLIB
 
 !/
