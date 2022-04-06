@@ -1446,15 +1446,7 @@
             END DO
           END DO
 #endif
-!                 IF (IT .gt. 0 .and. JSEA .eq. 100) THEN
-!                    WRITE(*,*) 'SUM A and B', JSEA, SUM(B_JAC(:,JSEA)), SUM(ASPAR_JAC(:,PDLIB_I_DIAG(JSEA)))
-!                 ENDIF
-                 !IF (ISEA == 32) THEN
-                 !  write(740+IAPROC,*) IX, ISEA, JSEA, IT, SUM(B_JAC(1:NSPEC,JSEA)), &
-                 !                    SUM(ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(JSEA))), & 
-                 !     &       SUM(VS), SUM(VD), SUM(SPEC), 4*SQRT(EMEAN), DEPTH, & 
-                 !             IOBP_LOC(JSEA), IOBDP_LOC(JSEA), IOBPA_LOC(JSEA)
-                 !ENDIF
+
 #ifdef W3_PDLIB
         ELSEIF (IMEM == 2) THEN
           SIDT   = PDLIB_SI(JSEA) * DTG
