@@ -1443,12 +1443,7 @@
 #ifdef W3_PDLIB
               B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
               ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
-#endif
-#ifdef W3_PDLIB
             END DO
-#endif
-
-#ifdef W3_PDLIB
           END DO
 #endif
 !                 IF (IT .gt. 0 .and. JSEA .eq. 100) THEN
