@@ -169,7 +169,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: IAPROC
-      USE CONSTANTS, ONLY: TPIINV, GRAV
+      USE CONSTANTS, ONLY: TPIINV, GRAV, nu_air
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF, ESIN, ECOS, AAIRCMIN, &
@@ -297,23 +297,14 @@
       TAUW = SQRT(TAUWX**2+TAUWY**2)
 !
 #ifdef W3_FLX5
-      IF (.TRUE.) THEN
-        CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
-                                          USTAR, USDIR, Z0, CD )
-        IF (USTAR.GT.0.001) THEN
-          CHARN = GRAV*Z0/USTAR**2 
-        ELSE
-          CHARN = AALPHA
-          END IF
-        ELSE
-#endif
-        Z0=0.
-        CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
-        UNZ    = MAX ( 0.01 , U )
-        CD     = (USTAR/UNZ)**2
-        USDIR = UDIR
-#ifdef W3_FLX5
-        END IF
+      CALL W3FLX5 ( ZZWND, U, UDIR, TAUA, TAUADIR, DAIR,  & 
+                                        USTAR, USDIR, Z0, CD, CHARN )
+#else
+      Z0=0.
+      CALL CALC_USTAR(U,TAUW,USTAR,Z0,CHARN) 
+      UNZ    = MAX ( 0.01 , U )
+      CD     = (USTAR/UNZ)**2
+      USDIR = UDIR
 #endif
 !
 ! 6.  Final test output ---------------------------------------------- *
