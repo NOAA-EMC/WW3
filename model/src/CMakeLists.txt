@@ -71,6 +71,12 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
   if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10)
     target_compile_options(ww3_lib PUBLIC -fallow-argument-mismatch -fallow-invalid-boz)
   endif()
+
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Cray")
+  # TODO: Where do we set -homp for OpenMP compiles?
+  set(compile_flags -g -sdefault32 -eg)
+  set(compile_flags_release -O3)
+  set(compile_flags_debug -O0 -Rbcps -Ktrap=fp)
 endif()
 
 target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
@@ -90,12 +96,21 @@ if("OASIS" IN_LIST switches)
 endif()
 
 if(NETCDF)
-  find_package(NetCDF REQUIRED COMPONENTS Fortran)
+  if("netcdf" IN_LIST EXCLUDE_FIND)
+    # NetCDF library flags provided by compiler or wrapper script: don't search
+    set(NetCDF_Fortran_FOUND TRUE)
+	message(WARNING "Not searching for NetCDF library - please ensure correct flags are provided by your compiler/wrapper")
+  else()
+    find_package(NetCDF REQUIRED COMPONENTS Fortran)
+  endif()
 endif()
 
 if(NetCDF_Fortran_FOUND)
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
-  target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+  if(NOT "netcdf" IN_LIST EXCLUDE_FIND)
+    # NetCDF library flags provided by compiler or wrapper script: don't add as dependency
+    target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
+  endif()
   list(APPEND programs ${netcdf_programs})
 endif()
 
