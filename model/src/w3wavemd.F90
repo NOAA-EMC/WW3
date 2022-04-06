@@ -2449,7 +2449,8 @@
             ISPEC = 0 
              JSEA = IY 
 #endif
-#endif ! W3_SMC ... 
+#endif 
+! W3_SMC ... 
 !
 #ifdef W3_SMC
  !!Li   Assign boundary cell spectra. 
@@ -2464,7 +2465,7 @@
          CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WAVE,IERR_MPI)
          CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
 #endif
-#endif ! AR: ahh ...
+#endif
 !
 #ifdef W3_SMC
         END DO   !! Loop IK ends.
