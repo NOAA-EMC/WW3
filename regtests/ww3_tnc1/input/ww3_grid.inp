@@ -25,9 +25,12 @@ $ Define grid -------------------------------------------------------- $
     -0.5   -0.5     1.
      -0.1 2.50  20  -100. 2 1 '(....)' 'NAME' '../input/grid.bot'
 $
+  10  1 1 '(....)' 'PART' 'input'
 $ Input boundary points and excluded points -------------------------- $
 $
      0   0   F
+     0   0   F
+     0   0
 $
 $ Output boundary points --------------------------------------------- $
 $  Close list by defining line with 0 points (mandatory)
