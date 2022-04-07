@@ -107,7 +107,7 @@ endif()
 
 if(NetCDF_Fortran_FOUND)
   target_sources(ww3_lib PRIVATE w3ounfmetamd.F90)
-  if(NOT "netcdf" IN_LIST EXCLUDE_FIND)
+  if(TARGET NetCDF::NetCDF_Fortran)
     # NetCDF library flags provided by compiler or wrapper script: don't add as dependency
     target_link_libraries(ww3_lib PUBLIC NetCDF::NetCDF_Fortran)
   endif()
