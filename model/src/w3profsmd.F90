@@ -127,23 +127,23 @@
 !
       USE CONSTANTS
 !
-      USE W3TIMEMD, ONLY: DSEC21
+      USE W3TIMEMD, only: DSEC21
 !
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL, CLATS,   &
+      USE W3GDATMD, only: NX, NY, NSEA, MAPSF, MAPFS, DTCFL, CLATS,   &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN,               &
                           NTRI, TRIGP, CCON ,                         &
                           IE_CELL, POS_CELL, IOBP, IOBPD, IOBDP,      &
                           FSN, FSPSI, FSFCT, FSNIMP, GTYPE, UNGTYPE
 
-      USE W3WDATMD, ONLY: TIME
-      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX, DW
-      USE W3IDATMD, ONLY: FLCUR
-!      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+      USE W3WDATMD, only: TIME
+      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+      USE W3ADATMD, only: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX, DW
+      USE W3IDATMD, only: FLCUR
+!      USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !                          ISBPI, BBPI0, BBPIN
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
       
       IMPLICIT NONE
@@ -338,22 +338,22 @@
 !
       USE CONSTANTS
 !
-      USE W3TIMEMD, ONLY: DSEC21
+      USE W3TIMEMD, only: DSEC21
 !
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
+      USE W3GDATMD, only: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
                           NTRI, TRIGP, CCON ,                         &
                           IE_CELL, POS_CELL, COUNTRI, SI, IOBP
 
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, DW
-      USE W3IDATMD, ONLY: FLCUR
+      USE W3ADATMD, only: CG, CX, CY, ATRNX, ATRNY, ITIME, DW
+      USE W3IDATMD, only: FLCUR
 #ifdef W3_T
-      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+      USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
                           ISBPI, BBPI0, BBPIN
 #endif
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
       
       IMPLICIT NONE
@@ -524,18 +524,18 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-       USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
+       USE W3GDATMD, only : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBDP,  &
                             IOBPA, FSBCCFL
 #ifdef W3_REF1
-   USE W3GDATMD, ONLY : REFPARS
+   USE W3GDATMD, only : REFPARS
 #endif
-       USE W3WDATMD, ONLY: TIME      
-       USE W3ADATMD, ONLY: CG, ITER, DW
-       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
-       USE W3TIMEMD, ONLY: DSEC21
+       USE W3WDATMD, only: TIME      
+       USE W3ADATMD, only: CG, ITER, DW
+       USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+       USE W3TIMEMD, only: DSEC21
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
        IMPLICIT NONE  
      
@@ -768,17 +768,17 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-       USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
+       USE W3GDATMD, only : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ, IOBDP
 #ifdef W3_REF1
-   USE W3GDATMD, ONLY :  REFPARS
+   USE W3GDATMD, only :  REFPARS
 #endif
-       USE W3WDATMD, ONLY: TIME     
-       USE W3ADATMD, ONLY: CG, ITER    
-       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
-       USE W3TIMEMD, ONLY: DSEC21
+       USE W3WDATMD, only: TIME     
+       USE W3ADATMD, only: CG, ITER    
+       USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+       USE W3TIMEMD, only: DSEC21
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
        IMPLICIT NONE  
      
@@ -1022,18 +1022,18 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-       USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
+       USE W3GDATMD, only : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
                             TRIA, NNZ
 #ifdef W3_REF1
-  USE W3GDATMD, ONLY : REFPARS
+  USE W3GDATMD, only : REFPARS
 #endif
-       USE W3WDATMD, ONLY: TIME      
-       USE W3ADATMD, ONLY: CG, ITER    
-       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
-       USE W3TIMEMD, ONLY: DSEC21
+       USE W3WDATMD, only: TIME      
+       USE W3ADATMD, only: CG, ITER    
+       USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+       USE W3TIMEMD, only: DSEC21
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
        IMPLICIT NONE  
      
@@ -1324,17 +1324,17 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-       USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
+       USE W3GDATMD, only : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA, IOBDP
 #ifdef W3_REF1
-  USE W3GDATMD, ONLY : REFPARS
+  USE W3GDATMD, only : REFPARS
 #endif
-       USE W3WDATMD, ONLY: TIME               
-       USE W3ADATMD, ONLY: CG, ITER    
-       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
-       USE W3TIMEMD, ONLY: DSEC21
+       USE W3WDATMD, only: TIME               
+       USE W3ADATMD, only: CG, ITER    
+       USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+       USE W3TIMEMD, only: DSEC21
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
        IMPLICIT NONE  
      
@@ -1626,12 +1626,12 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE CONSTANTS, ONLY : LPDLIB
-      USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
-      USE W3ADATMD, ONLY: DW
+      USE CONSTANTS, only : LPDLIB
+      USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+      USE W3ADATMD, only: DW
 
       IMPLICIT NONE
 !/
