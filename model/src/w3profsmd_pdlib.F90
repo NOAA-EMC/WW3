@@ -39,7 +39,7 @@
 !               We supply the N-scheme, PSI-scheme and Lax-FCT-scheme
 !               as explicit methods ranging from 1st order time space
 !               to most optimal PSI method up to 2nd order Lax-FCT-scheme.
-!               For the implicit implementation we used up to now ONLY 
+!               For the implicit implementation we used up to now only 
 !               the N-Scheme. Higher order schemes are up to now rather
 !               a research feature than for practical application. The 
 !               reason is given in Cavalleri et al. 2018, we do not 
@@ -84,7 +84,7 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !/
 !/ ------------------------------------------------------------------- /
@@ -173,31 +173,31 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: FLCX, FLCY
+      USE W3GDATMD, only: FLCX, FLCY
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
-      USE CONSTANTS, ONLY : GRAV, TPI
-      USE W3GDATMD, ONLY: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC, NSEAL
-      USE W3GDATMD, ONLY: MAPSTA, MAPFS, GRIDS, NTH, SIG, NK
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: CCON, COUNTCON, INDEX_CELL, IE_CELL
-      USE W3GDATMD, ONLY: IOBP, IOBPA, IOBPD, IOBDP, SI 
+      USE CONSTANTS, only : GRAV, TPI
+      USE W3GDATMD, only: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC, NSEAL
+      USE W3GDATMD, only: MAPSTA, MAPFS, GRIDS, NTH, SIG, NK
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: CCON, COUNTCON, INDEX_CELL, IE_CELL
+      USE W3GDATMD, only: IOBP, IOBPA, IOBPD, IOBDP, SI 
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
 
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP, MPI_COMM_WAVE
-      USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC
-      USE yowDatapool, ONLY: istatus
-      USE yowpdlibMain, ONLY: initFromGridDim
-      USE YOWNODEPOOL, ONLY: npa, iplg
-      USE W3PARALL, ONLY : PDLIB_NSEAL, PDLIB_NSEALM
-      USE W3PARALL, ONLY : JX_TO_JSEA, ISEA_TO_JSEA
-      USE yowfunction, ONLY : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
+      USE W3ADATMD, only: MPI_COMM_WCMP, MPI_COMM_WAVE
+      USE W3ODATMD, only: IAPROC, NAPROC, NTPROC
+      USE yowDatapool, only: istatus
+      USE yowpdlibMain, only: initFromGridDim
+      USE YOWNODEPOOL, only: npa, iplg
+      USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
+      USE W3PARALL, only : JX_TO_JSEA, ISEA_TO_JSEA
+      USE yowfunction, only : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
 !/
       IMPLICIT NONE
       INCLUDE "mpif.h"
@@ -268,7 +268,7 @@
         END DO
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'npa is augmented domain over NX'
-     WRITE(740+IAPROC,*) 'PDLIB_NSEAL is basicall npa but ONLY over the wet points'
+     WRITE(740+IAPROC,*) 'PDLIB_NSEAL is basicall npa but only over the wet points'
      WRITE(740+IAPROC,*) 'NSEAL is set to PDLIB_NSEAL'
      WRITE(740+IAPROC,*) 'PDLIB_NSEAL=', PDLIB_NSEAL
      WRITE(740+IAPROC,*) 'npa=', npa
@@ -432,16 +432,16 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY : INDEX_MAP, NBND_MAP, NSEA, NSEAL, MAPSTA, GRIDS, NX, NTH
-      USE W3GDATMD, ONLY : MAPSTA_LOC, NBND_MAP, INDEX_MAP
-      USE W3ODATMD, ONLY : IAPROC, NAPROC
-      USE YOWNODEPOOL, ONLY: iplg, npa
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
-      USE yowfunction, ONLY: pdlib_abort
-      USE W3ODATMD, ONLY: IAPROC
+      USE W3GDATMD, only : INDEX_MAP, NBND_MAP, NSEA, NSEAL, MAPSTA, GRIDS, NX, NTH
+      USE W3GDATMD, only : MAPSTA_LOC, NBND_MAP, INDEX_MAP
+      USE W3ODATMD, only : IAPROC, NAPROC
+      USE YOWNODEPOOL, only: iplg, npa
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
+      USE yowfunction, only: pdlib_abort
+      USE W3ODATMD, only: IAPROC
 !/
       IMPLICIT NONE
 !/
@@ -549,17 +549,17 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY : INDEX_MAP, NBND_MAP, NSEA, NSEAL, GRIDS, NX, NTH
-      USE W3GDATMD, ONLY : IOBP, IOBDP, IOBPA, IOBPD, NBND_MAP, INDEX_MAP
-      USE W3GDATMD, ONLY : IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC 
-      USE W3ODATMD, ONLY : IAPROC, NAPROC
-      USE YOWNODEPOOL, ONLY: iplg, npa
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
-      USE yowfunction, ONLY: pdlib_abort
-      USE W3ODATMD, ONLY: IAPROC
+      USE W3GDATMD, only : INDEX_MAP, NBND_MAP, NSEA, NSEAL, GRIDS, NX, NTH
+      USE W3GDATMD, only : IOBP, IOBDP, IOBPA, IOBPD, NBND_MAP, INDEX_MAP
+      USE W3GDATMD, only : IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC 
+      USE W3ODATMD, only : IAPROC, NAPROC
+      USE YOWNODEPOOL, only: iplg, npa
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
+      USE yowfunction, only: pdlib_abort
+      USE W3ODATMD, only: IAPROC
 !/
       IMPLICIT NONE
 !/
@@ -683,24 +683,24 @@
 !
       USE CONSTANTS
 !
-      USE W3TIMEMD, ONLY: DSEC21
+      USE W3TIMEMD, only: DSEC21
 !
-      USE W3GDATMD, ONLY: NX, NY, MAPFS, CLATS,                       &
+      USE W3GDATMD, only: NX, NY, MAPFS, CLATS,                       &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,                   &
                           IOBP, IOBPD,                                &
                           FSN, FSPSI, FSFCT, FSNIMP,                  &
                           GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP
-      USE YOWNODEPOOL, ONLY: PDLIB_IEN, PDLIB_TRIA
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE YOWNODEPOOL, ONLY: iplg, npa
-      USE W3WDATMD, ONLY: TIME, VA
-      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, ONLY: CG, CX, CY, ITIME, DW
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: NSEAL
-      USE W3ODATMD, ONLY: IAPROC
-      USE W3DISPMD, ONLY : WAVNU_LOCAL
+      USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE YOWNODEPOOL, only: iplg, npa
+      USE W3WDATMD, only: TIME, VA
+      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+      USE W3ADATMD, only: CG, CX, CY, ITIME, DW
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: NSEAL
+      USE W3ODATMD, only: IAPROC
+      USE W3DISPMD, only : WAVNU_LOCAL
       IMPLICIT NONE
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -916,29 +916,29 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: NK, NTH, NX,  IEN, CLATS, MAPSF
-      USE W3GDATMD, ONLY: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
-      USE W3WDATMD, ONLY: TIME
-      USE W3ADATMD, ONLY: CG, ITER, DW , CFLXYMAX, NSEALM
-      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPIN, ISBPI, BBPI0, BBPIN
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP
-      USE W3GDATMD, ONLY: NSEAL, DMIN, NSEA
+      USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF
+      USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
+      USE W3WDATMD, only: TIME
+      USE W3ADATMD, only: CG, ITER, DW , CFLXYMAX, NSEALM
+      USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, TBPIN, ISBPI, BBPI0, BBPIN
+      USE W3TIMEMD, only: DSEC21
+      USE W3ADATMD, only: MPI_COMM_WCMP
+      USE W3GDATMD, only: NSEAL, DMIN, NSEA
 #ifdef W3_REF1
-      USE W3GDATMD, ONLY: REFPARS
+      USE W3GDATMD, only: REFPARS
 #endif
-      USE YOWNODEPOOL,    ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
-      use yowElementpool, ONLY: ne, INE
-      use yowDatapool, ONLY: rtype
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
-      USE W3ODATMD, ONLY : IAPROC
-      USE MPI, ONLY : MPI_MIN
-      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR
-      USE yowRankModule, ONLY : IPGL_npa
+      USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
+      use yowElementpool, only: ne, INE
+      use yowDatapool, only: rtype
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
+      USE W3ODATMD, only : IAPROC
+      USE MPI, only : MPI_MIN
+      USE W3PARALL, only : INIT_GET_JSEA_ISPROC
+      USE W3PARALL, only : ONESIXTH, ZERO, THR
+      USE yowRankModule, only : IPGL_npa
       IMPLICIT NONE
       INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
                                      ! actual Wave Direction
@@ -1248,29 +1248,29 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY : NK, NTH, NX, IEN, CLATS, MAPSF, IOBPA, NNZ
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3WDATMD, ONLY: TIME     
-      USE W3ADATMD, ONLY: CG, ITER, CFLXYMAX
-      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, DMIN
+      USE W3GDATMD, only : NK, NTH, NX, IEN, CLATS, MAPSF, IOBPA, NNZ
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3WDATMD, only: TIME     
+      USE W3ADATMD, only: CG, ITER, CFLXYMAX
+      USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
+      USE W3TIMEMD, only: DSEC21
+      USE W3GDATMD, only: NSEAL, DMIN
 #ifdef W3_REF1
-      USE W3GDATMD, ONLY: REFPARS
+      USE W3GDATMD, only: REFPARS
 #endif
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP
-      use yowElementpool, ONLY: ne, INE
-      use YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA, PDLIB_SI, iplg, npa
-      USE W3ODATMD, ONLY : IAPROC
-      use yowDatapool, ONLY: rtype
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
-      USE MPI, ONLY : MPI_MIN
-      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
-      USE W3PARALL, ONLY : ONESIXTH, THR, ZERO
-      USE yowRankModule, ONLY : IPGL_npa
+      USE W3ADATMD, only: MPI_COMM_WCMP
+      use yowElementpool, only: ne, INE
+      use YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA, PDLIB_SI, iplg, npa
+      USE W3ODATMD, only : IAPROC
+      use yowDatapool, only: rtype
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
+      USE MPI, only : MPI_MIN
+      USE W3PARALL, only : INIT_GET_JSEA_ISPROC
+      USE W3PARALL, only : ONESIXTH, THR, ZERO
+      USE yowRankModule, only : IPGL_npa
       IMPLICIT NONE  
      
       INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
@@ -1482,10 +1482,10 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3ADATMD, ONLY : MPI_COMM_WCMP
-      USE W3GDATMD, ONLY : GTYPE, UNGTYPE
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
-      use yowDatapool, ONLY: rtype, istatus
+      USE W3ADATMD, only : MPI_COMM_WCMP
+      USE W3GDATMD, only : GTYPE, UNGTYPE
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+      use yowDatapool, only: rtype, istatus
       IMPLICIT NONE
       INCLUDE "mpif.h"
       CHARACTER(*), INTENT(in) :: string
@@ -1559,12 +1559,12 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE W3GDATMD, ONLY : NK, NTH
-      USE W3WDATMD, ONLY : VA
-      USE W3GDATMD, ONLY : NSPEC, NX, NY, NSEAL
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
+      USE W3GDATMD, only : NK, NTH
+      USE W3WDATMD, only : VA
+      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       IMPLICIT NONE
       CHARACTER(*), INTENT(in) :: string
       INTEGER ITH_F, IK
@@ -1652,14 +1652,14 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3GDATMD, ONLY : NK, NTH, FTE
-      USE W3GDATMD, ONLY : NSPEC, NX, NY, NSEAL, MAPFS
-      USE W3ADATMD, ONLY : MPI_COMM_WCMP
-      USE W3GDATMD, ONLY : GTYPE, UNGTYPE
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
-      use yowDatapool, ONLY: rtype, istatus
-      USE YOWNODEPOOL, ONLY: npa, iplg
-      USE W3PARALL, ONLY: INIT_GET_ISEA
+      USE W3GDATMD, only : NK, NTH, FTE
+      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
+      USE W3ADATMD, only : MPI_COMM_WCMP
+      USE W3GDATMD, only : GTYPE, UNGTYPE
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+      use yowDatapool, only: rtype, istatus
+      USE YOWNODEPOOL, only: npa, iplg
+      USE W3PARALL, only: INIT_GET_ISEA
       IMPLICIT NONE
       INCLUDE "mpif.h"
       !
@@ -1811,7 +1811,7 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSEAL
+      USE W3GDATMD, only : NSEAL
       IMPLICIT NONE
       REAL*8, INTENT(in) :: V(NSEAL)
       CHARACTER(*), INTENT(in) :: string
@@ -1868,7 +1868,7 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSEAL
+      USE W3GDATMD, only : NSEAL
       IMPLICIT NONE
       REAL, INTENT(in) :: V(NSEAL)
       CHARACTER(*), INTENT(in) :: string
@@ -1927,19 +1927,19 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : CLATS, SIG
-      USE W3ADATMD, ONLY : CG
-      USE W3GDATMD, ONLY : NK, NTH, FTE
-      USE W3WDATMD, ONLY : VA
-      USE W3GDATMD, ONLY : NSPEC, NX, NY, NSEAL, MAPFS
-      USE W3ADATMD, ONLY : MPI_COMM_WCMP
-      USE W3GDATMD, ONLY : GTYPE, UNGTYPE
-      USE W3GDATMD, ONLY : DTH, DSII
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
-      USE CONSTANTS, ONLY: TPIINV
-      use yowDatapool, ONLY: rtype, istatus
-      USE YOWNODEPOOL, ONLY: npa, iplg
-      USE W3PARALL, ONLY: INIT_GET_ISEA
+      USE W3GDATMD, only : CLATS, SIG
+      USE W3ADATMD, only : CG
+      USE W3GDATMD, only : NK, NTH, FTE
+      USE W3WDATMD, only : VA
+      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
+      USE W3ADATMD, only : MPI_COMM_WCMP
+      USE W3GDATMD, only : GTYPE, UNGTYPE
+      USE W3GDATMD, only : DTH, DSII
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+      USE CONSTANTS, only: TPIINV
+      use yowDatapool, only: rtype, istatus
+      USE YOWNODEPOOL, only: npa, iplg
+      USE W3PARALL, only: INIT_GET_ISEA
       IMPLICIT NONE
       INCLUDE "mpif.h"
       REAL sumHS, avgHS, maxHS
@@ -2148,10 +2148,10 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSEAL
-      USE W3WDATMD, ONLY : VAOLD
-      USE W3ODATMD, ONLY : IAPROC
-      USE W3GDATMD, ONLY : NSPEC
+      USE W3GDATMD, only : NSEAL
+      USE W3WDATMD, only : VAOLD
+      USE W3ODATMD, only : IAPROC
+      USE W3GDATMD, only : NSPEC
       IMPLICIT NONE
       REAL :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
@@ -2213,10 +2213,10 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSEAL, NSEA, NX, NY
-      USE W3WDATMD, ONLY : VA
-      USE W3ODATMD, ONLY : IAPROC, NAPROC
-      USE W3GDATMD, ONLY : NSPEC, GRIDS, GTYPE, UNGTYPE
+      USE W3GDATMD, only : NSEAL, NSEA, NX, NY
+      USE W3WDATMD, only : VA
+      USE W3ODATMD, only : IAPROC, NAPROC
+      USE W3GDATMD, only : NSPEC, GRIDS, GTYPE, UNGTYPE
       IMPLICIT NONE
       REAL :: FIELD(NSPEC,NSEAL)
       INTEGER, INTENT(in) :: IMOD
@@ -2297,10 +2297,10 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSEAL
-      USE W3WDATMD, ONLY : VA
-      USE W3ODATMD, ONLY : IAPROC
-      USE W3GDATMD, ONLY : NSPEC
+      USE W3GDATMD, only : NSEAL
+      USE W3WDATMD, only : VA
+      USE W3ODATMD, only : IAPROC
+      USE W3GDATMD, only : NSPEC
       IMPLICIT NONE
       REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
@@ -2359,15 +2359,15 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NK, NTH
-      USE W3WDATMD, ONLY : VA
-      USE W3GDATMD, ONLY : NSPEC, NX, NY, NSEAL, MAPFS
-      USE W3ADATMD, ONLY : MPI_COMM_WCMP
-      USE W3GDATMD, ONLY : GTYPE, UNGTYPE
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
-      use yowDatapool, ONLY: rtype, istatus
-      USE YOWNODEPOOL, ONLY: npa, iplg
-      USE W3PARALL, ONLY: INIT_GET_ISEA
+      USE W3GDATMD, only : NK, NTH
+      USE W3WDATMD, only : VA
+      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
+      USE W3ADATMD, only : MPI_COMM_WCMP
+      USE W3GDATMD, only : GTYPE, UNGTYPE
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+      use yowDatapool, only: rtype, istatus
+      USE YOWNODEPOOL, only: npa, iplg
+      USE W3PARALL, only: INIT_GET_ISEA
       IMPLICIT NONE
       INCLUDE "mpif.h"
       CHARACTER(*), INTENT(in) :: string
@@ -2549,8 +2549,8 @@
 !
 !/ ------------------------------------------------------------------- /
 
-      USE W3GDATMD, ONLY : NSPEC
-      USE YOWNODEPOOL, ONLY: npa
+      USE W3GDATMD, only : NSPEC
+      USE YOWNODEPOOL, only: npa
       CHARACTER(*), INTENT(in) :: string
       INTEGER, INTENT(in) :: maxidx
       REAL, INTENT(in) :: TheARR(NSPEC, npa)
@@ -2618,30 +2618,30 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY :NK, NTH, NX, IEN, CLATS, MAPSF, TRIA
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3WDATMD, ONLY: TIME
-      USE W3ADATMD, ONLY: CG, ITER, CFLXYMAX
-      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, IOBPA
+      USE W3GDATMD, only :NK, NTH, NX, IEN, CLATS, MAPSF, TRIA
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3WDATMD, only: TIME
+      USE W3ADATMD, only: CG, ITER, CFLXYMAX
+      USE W3ODATMD, only: NDSE, NDST, FLBPI, NBI, ISBPI, BBPI0, BBPIN
+      USE W3TIMEMD, only: DSEC21
+      USE W3GDATMD, only: NSEAL, IOBPA
 #ifdef W3_REF1
-    USE W3GDATMD, ONLY: REFPARS
+    USE W3GDATMD, only: REFPARS
 #endif
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP
-      use yowElementpool, ONLY: ne, INE
-      use YOWNODEPOOL,    ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA
-      use YOWNODEPOOL,    ONLY: iplg, npa
-      use yowDatapool, ONLY: rtype
-      USE W3ODATMD, ONLY : IAPROC
-      USE MPI, ONLY : MPI_MIN
-      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC, ONESIXTH, ZERO
-      USE W3PARALL, ONLY : THR
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
-      USE yowRankModule, ONLY : IPGL_npa
+      USE W3ADATMD, only: MPI_COMM_WCMP
+      use yowElementpool, only: ne, INE
+      use YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA
+      use YOWNODEPOOL,    only: iplg, npa
+      use yowDatapool, only: rtype
+      USE W3ODATMD, only : IAPROC
+      USE MPI, only : MPI_MIN
+      USE W3PARALL, only : INIT_GET_JSEA_ISPROC, ONESIXTH, ZERO
+      USE W3PARALL, only : THR
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
+      USE yowRankModule, only : IPGL_npa
       IMPLICIT NONE  
      
       INTEGER, INTENT(IN)    :: ISP   ! Actual Frequency/Wavenumber,
@@ -2904,11 +2904,11 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3ODATMD, ONLY: IAPROC
-      USE W3GDATMD, ONLY: B_JGS_USE_JACOBI
+      USE W3ODATMD, only: IAPROC
+      USE W3GDATMD, only: B_JGS_USE_JACOBI
       IMPLICIT NONE
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
       INTEGER DoSomething
@@ -2976,11 +2976,11 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3ODATMD, ONLY: IAPROC
-      USE W3GDATMD, ONLY: B_JGS_USE_JACOBI
+      USE W3ODATMD, only: IAPROC
+      USE W3GDATMD, only: B_JGS_USE_JACOBI
         IMPLICIT NONE
         REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
         CALL PDLIB_EXPLICIT_BLOCK(FACX, FACY, DTG, VGX, VGY)
@@ -3035,15 +3035,15 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
 
-      USE W3ODATMD, ONLY : IAPROC
-      USE W3GDATMD, ONLY: NK
-      USE W3ADATMD, ONLY: WN
-      USE W3GDATMD, ONLY: NSEAL
-      USE YOWNODEPOOL, ONLY: NP
+      USE W3ODATMD, only : IAPROC
+      USE W3GDATMD, only: NK
+      USE W3ADATMD, only: WN
+      USE W3GDATMD, only: NSEAL
+      USE YOWNODEPOOL, only: NP
       IMPLICIT NONE
       CHARACTER(*), INTENT(in) :: string
       REAL TotalSumDMM, eDMM, sumDMM
@@ -3116,18 +3116,18 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY : NK, NTH
-      USE W3WDATMD, ONLY : VA
-      USE W3GDATMD, ONLY : NSPEC, NX, NY, NSEAL, MAPFS
-      USE W3ADATMD, ONLY : MPI_COMM_WCMP
-      USE W3GDATMD, ONLY : GTYPE, UNGTYPE
-      USE W3ODATMD, ONLY : IAPROC, NAPROC, NTPROC
-      use yowDatapool, ONLY: rtype, istatus
-      USE YOWNODEPOOL, ONLY: npa, iplg, np
-      USE W3PARALL, ONLY: INIT_GET_ISEA
+      USE W3GDATMD, only : NK, NTH
+      USE W3WDATMD, only : VA
+      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
+      USE W3ADATMD, only : MPI_COMM_WCMP
+      USE W3GDATMD, only : GTYPE, UNGTYPE
+      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
+      use yowDatapool, only: rtype, istatus
+      USE YOWNODEPOOL, only: npa, iplg, np
+      USE W3PARALL, only: INIT_GET_ISEA
       IMPLICIT NONE
       INCLUDE "mpif.h"
       CHARACTER(*), INTENT(in) :: eFile
@@ -3249,12 +3249,12 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE YOWNODEPOOL,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
-      USE W3GDATMD, ONLY: NSPEC
-      USE W3ODATMD, ONLY : IAPROC
+      USE YOWNODEPOOL,    only: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
+      USE W3GDATMD, only: NSPEC
+      USE W3ODATMD, only : IAPROC
       IMPLICIT NONE
       CHARACTER(*), INTENT(in) :: string
       INTEGER J, IP, JP, I, ISP
@@ -3336,16 +3336,16 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, SIG, DDEN, FTE, FTF, FTWN
+      USE W3GDATMD, only: NK, NTH, SIG, DDEN, FTE, FTF, FTWN
 #ifdef W3_T
-      USE W3ODATMD, ONLY: NDST
+      USE W3ODATMD, only: NDST
 #endif
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
       IMPLICIT NONE
@@ -3459,34 +3459,34 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3GDATMD, ONLY: MAPSTA
-      USE W3WDATMD, ONLY: VA
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3GDATMD, only: MAPSTA
+      USE W3WDATMD, only: VA
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,          &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA
-      USE W3ODATMD, ONLY : IAPROC
-      USE W3PARALL, ONLY : ZERO
+      USE W3ODATMD, only : IAPROC
+      USE W3PARALL, only : ZERO
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -3697,35 +3697,35 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3GDATMD, ONLY: MAPSTA, SIG
-      USE W3WDATMD, ONLY: VA
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3GDATMD, only: MAPSTA, SIG
+      USE W3WDATMD, only: VA
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_IE_CELL2, PDLIB_POS_CELL2, PDLIB_CCON, NP, NPA,          &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA, PDLIB_TRIA03, PDLIB_SI
-      USE W3ODATMD, ONLY : IAPROC
-      USE W3PARALL, ONLY : ZERO
-      USE W3DISPMD, ONLY : WAVNU_LOCAL
+      USE W3ODATMD, only : IAPROC
+      USE W3PARALL, only : ZERO
+      USE W3DISPMD, only : WAVNU_LOCAL
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -3954,32 +3954,32 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
 
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3GDATMD, ONLY: MAPSTA
-      USE W3WDATMD, ONLY: VA, VAOLD
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3GDATMD, only: MAPSTA
+      USE W3WDATMD, only: VA, VAOLD
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
-      USE W3ADATMD, ONLY: MALLINFOS
+      USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR, IMEM
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR, IMEM
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,          &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA
-      USE W3ODATMD, ONLY : IAPROC
+      USE W3ODATMD, only : IAPROC
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -4169,34 +4169,34 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3GDATMD, ONLY: MAPSTA
-      USE W3WDATMD, ONLY: VA, VAOLD
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3GDATMD, only: MAPSTA
+      USE W3WDATMD, only: VA, VAOLD
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR, ONETHIRD
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_CCON, NP, NPA, PDLIB_POS_CELL2, PDLIB_IE_CELL2,        &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA
-      USE W3GDATMD, ONLY: IOBP
-      USE W3ODATMD, ONLY : IAPROC
+      USE W3GDATMD, only: IOBP
+      USE W3ODATMD, only : IAPROC
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -4379,33 +4379,33 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 ! 
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL,CLATS
-      USE W3GDATMD, ONLY: MAPSTA, NK
-      USE W3WDATMD, ONLY: VA, VAOLD
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL,CLATS
+      USE W3GDATMD, only: MAPSTA, NK
+      USE W3WDATMD, only: VA, VAOLD
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR, ONETHIRD
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_IE_CELL2, PDLIB_POS_CELL2, PDLIB_CCON, NP, NPA,          &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA
-      USE W3ODATMD, ONLY : IAPROC
+      USE W3ODATMD, only : IAPROC
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -4622,34 +4622,34 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
 
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3GDATMD, ONLY: MAPSTA, NK
-      USE W3WDATMD, ONLY: VA, VAOLD
-      USE W3ADATMD, ONLY: CG, DW, WN, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3GDATMD, only: MAPSTA, NK
+      USE W3WDATMD, only: VA, VAOLD
+      USE W3ADATMD, only: CG, DW, WN, CX, CY
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3GDATMD, ONLY: ECOS, ESIN, MAPFS
-      USE W3PARALL, ONLY : ONESIXTH, ZERO, THR, ONETHIRD
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL,    ONLY: PDLIB_IEN, PDLIB_TRIA,                  &
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3GDATMD, only: ECOS, ESIN, MAPFS
+      USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
            PDLIB_CCON, NP, NPA,          &
            PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
            PDLIB_I_DIAG, PDLIB_JA
-      USE W3ODATMD, ONLY : IAPROC
+      USE W3ODATMD, only : IAPROC
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_BT1
       USE W3SBT1MD
@@ -4836,17 +4836,17 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: FSREFRACTION, FSFREQSHIFT, FACHFA
-      USE W3ODATMD, ONLY : IAPROC
-      USE YOWNODEPOOL, ONLY: np, iplg, PDLIB_SI, PDLIB_I_DIAG
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3IDATMD, ONLY: FLLEV, FLCUR
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL
-      USE W3PARALL, ONLY : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
-      USE W3ADATMD, ONLY: CG, DW
+      USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FACHFA
+      USE W3ODATMD, only : IAPROC
+      USE YOWNODEPOOL, only: np, iplg, PDLIB_SI, PDLIB_I_DIAG
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3IDATMD, only: FLLEV, FLCUR
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL
+      USE W3PARALL, only : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
+      USE W3ADATMD, only: CG, DW
       IMPLICIT NONE
       REAL, INTENT(in) :: DTG
       INTEGER IP, IP_glob, ITH, IK
@@ -4992,17 +4992,17 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3GDATMD, ONLY: FSREFRACTION, FSFREQSHIFT, FACHFA
-      USE W3ODATMD, ONLY : IAPROC
-      USE YOWNODEPOOL, ONLY: np, iplg, PDLIB_SI, PDLIB_I_DIAG
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3IDATMD, ONLY: FLLEV, FLCUR
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL, MAPSTA
-      USE W3PARALL, ONLY : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
-      USE W3ADATMD, ONLY: CG, DW
+      USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FACHFA
+      USE W3ODATMD, only : IAPROC
+      USE YOWNODEPOOL, only: np, iplg, PDLIB_SI, PDLIB_I_DIAG
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3IDATMD, only: FLLEV, FLCUR
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL, MAPSTA
+      USE W3PARALL, only : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
+      USE W3ADATMD, only: CG, DW
       IMPLICIT NONE
       REAL, INTENT(in) :: DTG
       REAL, INTENT(inout) :: ASPAR_DIAG_LOCAL(nspec,NSEAL)
@@ -5154,27 +5154,27 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3ODATMD, ONLY : IAPROC
-      USE YOWNODEPOOL, ONLY: iplg, PDLIB_SI, PDLIB_I_DIAG, NPA, NP
-      USE W3ADATMD, ONLY: CG, DW, WN
-      USE W3WDATMD, ONLY: UST, USTDIR
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
-      USE W3GDATMD, ONLY: MAPSTA, FACP, SIG
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3PARALL, ONLY: IMEM
-      USE W3GDATMD, ONLY: NSEAL, CLATS
+      USE W3ODATMD, only : IAPROC
+      USE YOWNODEPOOL, only: iplg, PDLIB_SI, PDLIB_I_DIAG, NPA, NP
+      USE W3ADATMD, only: CG, DW, WN
+      USE W3WDATMD, only: UST, USTDIR
+      USE W3GDATMD, only: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
+      USE W3GDATMD, only: MAPSTA, FACP, SIG
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3PARALL, only: IMEM
+      USE W3GDATMD, only: NSEAL, CLATS
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_DB2
       USE W3SDB2MD
 #endif
-      USE W3WDATMD, ONLY: VA, VSTOT, VDTOT, SHAVETOT
-      USE constants, ONLY : TPI, TPIINV, GRAV
+      USE W3WDATMD, only: VA, VSTOT, VDTOT, SHAVETOT
+      USE constants, only : TPI, TPIINV, GRAV
       IMPLICIT NONE
       REAL, INTENT(in) :: DTG
       REAL, PARAMETER :: COEF4 = 5.0E-07
@@ -5245,7 +5245,7 @@
           DO IK=1,NK
             DO ITH=1,NTH
               ISP=ITH + (IK-1)*NTH
-              IF (SHAVETOT(JSEA)) THEN ! Limit ONLY the source term part ...
+              IF (SHAVETOT(JSEA)) THEN ! Limit only the source term part ...
                 MAXDAC    = FACDAM * DAM(ISP)
                 TheFactor = DTG / MAX ( 1. , (1.-DTG*VDTOT(ISP,JSEA)))
                 DVS       = VSTOT(ISP,JSEA) * TheFactor
@@ -5325,26 +5325,26 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE W3ODATMD, ONLY : IAPROC
-      USE YOWNODEPOOL, ONLY: iplg, PDLIB_SI, PDLIB_I_DIAG, NPA, NP
-      USE W3ADATMD, ONLY: CG, DW, WN
-      USE W3WDATMD, ONLY: UST, USTDIR
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
-      USE W3GDATMD, ONLY: IOBP, MAPSTA, FACP, SIG, IOBPD, IOBPA, IOBDP
-      USE W3PARALL, ONLY: IMEM
-      USE W3GDATMD, ONLY: NSEAL, CLATS
+      USE W3ODATMD, only : IAPROC
+      USE YOWNODEPOOL, only: iplg, PDLIB_SI, PDLIB_I_DIAG, NPA, NP
+      USE W3ADATMD, only: CG, DW, WN
+      USE W3WDATMD, only: UST, USTDIR
+      USE W3GDATMD, only: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
+      USE W3GDATMD, only: IOBP, MAPSTA, FACP, SIG, IOBPD, IOBPA, IOBDP
+      USE W3PARALL, only: IMEM
+      USE W3GDATMD, only: NSEAL, CLATS
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_DB2
       USE W3SDB2MD
 #endif
-      USE W3WDATMD, ONLY: VA, VSTOT, VDTOT, SHAVETOT
-      USE constants, ONLY : TPI, TPIINV, GRAV
+      USE W3WDATMD, only: VA, VSTOT, VDTOT, SHAVETOT
+      USE constants, only : TPI, TPIINV, GRAV
       IMPLICIT NONE
       REAL, INTENT(in) :: DTG
       REAL, INTENT(inout) :: ASPAR_DIAG_LOCAL(:,:)
@@ -5414,7 +5414,7 @@
           DO IK=1,NK
             DO ITH=1,NTH
               ISP=ITH + (IK-1)*NTH
-              IF (SHAVETOT(JSEA)) THEN ! Limit ONLY the source term part ...
+              IF (SHAVETOT(JSEA)) THEN ! Limit only the source term part ...
                 MAXDAC    = FACDAM * DAM(ISP)
                 TheFactor = DTG / MAX ( 1. , (1.-DTG*VDTOT(ISP,JSEA)))
                 DVS       = VSTOT(ISP,JSEA) * TheFactor
@@ -5490,21 +5490,21 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE W3ODATMD, ONLY : IAPROC
-      USE YOWNODEPOOL, ONLY: iplg, PDLIB_SI, PDLIB_I_DIAG
-      USE W3ADATMD, ONLY: CG, DW, WN, BEDFORMS, TAUBBL
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
-      USE W3GDATMD, ONLY: IOBP, MAPSTA, IOBDP, IOBPA
+      USE W3ODATMD, only : IAPROC
+      USE YOWNODEPOOL, only: iplg, PDLIB_SI, PDLIB_I_DIAG
+      USE W3ADATMD, only: CG, DW, WN, BEDFORMS, TAUBBL
+      USE W3GDATMD, only: NK, NTH, NSPEC, MAPFS, optionCall, DMIN
+      USE W3GDATMD, only: IOBP, MAPSTA, IOBDP, IOBPA
 #ifdef W3_BT4
-  USE W3GDATMD, ONLY: SED_D50, SED_PSIC
+  USE W3GDATMD, only: SED_D50, SED_PSIC
 #endif
-      USE W3GDATMD, ONLY: NSEAL, CLATS
-      USE W3WDATMD, ONLY: VA, VSTOT, VDTOT, SHAVETOT
+      USE W3GDATMD, only: NSEAL, CLATS
+      USE W3WDATMD, only: VA, VSTOT, VDTOT, SHAVETOT
 #ifdef W3_DB1
       USE W3SDB1MD
-      USE W3GDATMD, ONLY: SDBSC
+      USE W3GDATMD, only: SDBSC
 #endif
 #ifdef W3_DB2
       USE W3SDB2MD
@@ -5766,17 +5766,17 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE yowRankModule, ONLY : IPGL_npa
-      USE W3GDATMD, ONLY: NSEAL, CLATS, GTYPE, UNGTYPE
-      USE W3WDATMD, ONLY: TIME
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3ADATMD, ONLY: CG, CX, CY
-      USE W3WDATMD, ONLY: VA
-      USE W3GDATMD, ONLY: NK, NK2, NTH, ECOS, ESIN, NSPEC
-      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI, IAPROC, NAPROC, BBPI0, BBPIN, ISBPI, NBI
-      USE W3PARALL, ONLY : ISEA_TO_JSEA
+      USE yowRankModule, only : IPGL_npa
+      USE W3GDATMD, only: NSEAL, CLATS, GTYPE, UNGTYPE
+      USE W3WDATMD, only: TIME
+      USE W3TIMEMD, only: DSEC21
+      USE W3ADATMD, only: CG, CX, CY
+      USE W3WDATMD, only: VA
+      USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC
+      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI, IAPROC, NAPROC, BBPI0, BBPIN, ISBPI, NBI
+      USE W3PARALL, only : ISEA_TO_JSEA
 !/
       IMPLICIT NONE
 !/
@@ -5882,20 +5882,20 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE YOWNODEPOOL, ONLY: npa, np
-      USE yowRankModule, ONLY : IPGL_npa
-      USE W3GDATMD, ONLY: NSEAL, CLATS, MAPSF
-      USE W3WDATMD, ONLY: TIME
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3WDATMD, ONLY : VA
-      USE W3ADATMD, ONLY: CG, CX, CY
-      USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC
-      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI, IAPROC, BBPI0, BBPIN, ISBPI, NBI
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
+      USE YOWNODEPOOL, only: npa, np
+      USE yowRankModule, only : IPGL_npa
+      USE W3GDATMD, only: NSEAL, CLATS, MAPSF
+      USE W3WDATMD, only: TIME
+      USE W3TIMEMD, only: DSEC21
+      USE W3WDATMD, only : VA
+      USE W3ADATMD, only: CG, CX, CY
+      USE W3GDATMD, only: NK, NK2, NTH, NSPEC
+      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI, IAPROC, BBPI0, BBPIN, ISBPI, NBI
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
 #ifdef W3_DEBUGIOBC
-      USE W3GDATMD, ONLY: DDEN
+      USE W3GDATMD, only: DDEN
 #endif
 !/
       IMPLICIT NONE
@@ -6062,12 +6062,12 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      use YOWNODEPOOL, ONLY: iplg
-      USE CONSTANTS, ONLY : GRAV, TPI
-      USE W3ADATMD, ONLY : WN, CG
-      USE W3GDATMD, ONLY : NTH, NK, NSPEC, MAPFS, SIG, FACP
+      use YOWNODEPOOL, only: iplg
+      USE CONSTANTS, only : GRAV, TPI
+      USE W3ADATMD, only : WN, CG
+      USE W3GDATMD, only : NTH, NK, NSPEC, MAPFS, SIG, FACP
 !/
       IMPLICIT NONE
 !/
@@ -6189,48 +6189,48 @@
 !/ ------------------------------------------------------------------- /
 !
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !/
-      USE W3GDATMD, ONLY: MAPSTA
-      USE W3GDATMD, ONLY: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
-      USE W3GDATMD, ONLY: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN
-      USE W3GDATMD, ONLY: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
-      USE W3GDATMD, ONLY: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
-      USE W3GDATMD, ONLY: MAPWN
+      USE W3GDATMD, only: MAPSTA
+      USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
+      USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN
+      USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
+      USE W3GDATMD, only: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
+      USE W3GDATMD, only: MAPWN
 #ifdef W3_DEBUGSRC
-      USE W3GDATMD, ONLY: optionCall
-      USE W3WDATMD, ONLY: SHAVETOT
+      USE W3GDATMD, only: optionCall
+      USE W3WDATMD, only: SHAVETOT
 #endif
-      USE YOWNODEPOOL, ONLY: PDLIB_I_DIAG, PDLIB_IA_P, PDLIB_JA, np
-      USE YOWNODEPOOL, ONLY: PDLIB_SI, PDLIB_NNZ, PDLIB_CCON
-      use yowDatapool, ONLY: rtype
-      use YOWNODEPOOL, ONLY: npa, iplg
-      use yowExchangeModule, ONLY : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
-      USE MPI, ONLY : MPI_SUM, MPI_INT
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP
+      USE YOWNODEPOOL, only: PDLIB_I_DIAG, PDLIB_IA_P, PDLIB_JA, np
+      USE YOWNODEPOOL, only: PDLIB_SI, PDLIB_NNZ, PDLIB_CCON
+      use yowDatapool, only: rtype
+      use YOWNODEPOOL, only: npa, iplg
+      use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
+      USE MPI, only : MPI_SUM, MPI_INT
+      USE W3ADATMD, only: MPI_COMM_WCMP
 #ifdef W3_MEMCHECK
- USE W3ADATMD, ONLY: MALLINFOS
+ USE W3ADATMD, only: MALLINFOS
 #endif
-      USE W3GDATMD, ONLY: NSEA, SIG
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
-      USE W3GDATMD, ONLY: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS, NSEA, SIG
-      USE W3WDATMD, ONLY: TIME
-      USE W3ODATMD, ONLY: NBI
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, CLATS, FACHFA
-      USE W3IDATMD, ONLY: FLCUR, FLLEV
-      USE W3WDATMD, ONLY: VA, VAOLD, VSTOT, VDTOT
-      USE W3ADATMD, ONLY: CG, CX, CY, WN, DW
-      USE W3ODATMD, ONLY: TBPIN, FLBPI, IAPROC
-      USE W3PARALL, ONLY : IMEM 
-      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC, ZERO, THR8, LSLOC
-      USE W3PARALL, ONLY : ListISPprevDir, ListISPnextDir
-      USE W3PARALL, ONLY : JX_TO_JSEA
-      USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
-      USE yowfunction, ONLY : pdlib_abort
+      USE W3GDATMD, only: NSEA, SIG
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
+      USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS, NSEA, SIG
+      USE W3WDATMD, only: TIME
+      USE W3ODATMD, only: NBI
+      USE W3TIMEMD, only: DSEC21
+      USE W3GDATMD, only: NSEAL, CLATS, FACHFA
+      USE W3IDATMD, only: FLCUR, FLLEV
+      USE W3WDATMD, only: VA, VAOLD, VSTOT, VDTOT
+      USE W3ADATMD, only: CG, CX, CY, WN, DW
+      USE W3ODATMD, only: TBPIN, FLBPI, IAPROC
+      USE W3PARALL, only : IMEM 
+      USE W3PARALL, only : INIT_GET_JSEA_ISPROC, ZERO, THR8, LSLOC
+      USE W3PARALL, only : ListISPprevDir, ListISPnextDir
+      USE W3PARALL, only : JX_TO_JSEA
+      USE W3GDATMD, only: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+      USE yowfunction, only : pdlib_abort
       USE yowNodepool, only: np_global
-      USE W3DISPMD, ONLY : WAVNU_LOCAL
+      USE W3DISPMD, only : WAVNU_LOCAL
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
@@ -7153,42 +7153,42 @@
 !/ ------------------------------------------------------------------- /
 !
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !/
-      !USE W3GDATMD, ONLY: MAPSTA
-      USE W3GDATMD, ONLY: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3GDATMD, ONLY: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN, NTRI
-      USE W3GDATMD, ONLY: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
-      USE W3GDATMD, ONLY: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
-      USE W3GDATMD, ONLY: MAPWN
-      USE MPI, ONLY : MPI_MIN
-      use yowElementpool, ONLY: ne, INE
-      USE YOWNODEPOOL, ONLY: PDLIB_I_DIAG, PDLIB_IA_P, PDLIB_JA, np
-      USE YOWNODEPOOL, ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
-      use yowDatapool, ONLY: rtype
-      use YOWNODEPOOL, ONLY: npa, iplg
-      use yowExchangeModule, ONLY : PDLIB_exchange2Dreal_zero 
-      USE W3ADATMD, ONLY: WN
-      USE MPI, ONLY : MPI_SUM, MPI_INT
-      USE W3ADATMD, ONLY: MPI_COMM_WCMP, CFLXYMAX
-      USE W3GDATMD, ONLY: IOBP, IOBPD, NSEA, SIG, IOBDP
-      USE W3GDATMD, ONLY: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS
-      USE W3WDATMD, ONLY: TIME
-      USE W3TIMEMD, ONLY: DSEC21
-      USE W3GDATMD, ONLY: NSEAL, CLATS, FACHFA
-      USE W3IDATMD, ONLY: FLCUR
+      !USE W3GDATMD, only: MAPSTA
+      USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN, NTRI
+      USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
+      USE W3GDATMD, only: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
+      USE W3GDATMD, only: MAPWN
+      USE MPI, only : MPI_MIN
+      use yowElementpool, only: ne, INE
+      USE YOWNODEPOOL, only: PDLIB_I_DIAG, PDLIB_IA_P, PDLIB_JA, np
+      USE YOWNODEPOOL, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
+      use yowDatapool, only: rtype
+      use YOWNODEPOOL, only: npa, iplg
+      use yowExchangeModule, only : PDLIB_exchange2Dreal_zero 
+      USE W3ADATMD, only: WN
+      USE MPI, only : MPI_SUM, MPI_INT
+      USE W3ADATMD, only: MPI_COMM_WCMP, CFLXYMAX
+      USE W3GDATMD, only: IOBP, IOBPD, NSEA, SIG, IOBDP
+      USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS
+      USE W3WDATMD, only: TIME
+      USE W3TIMEMD, only: DSEC21
+      USE W3GDATMD, only: NSEAL, CLATS, FACHFA
+      USE W3IDATMD, only: FLCUR
 #ifdef W3_DEBUGSRC
-      USE W3WDATMD, ONLY: SHAVETOT
+      USE W3WDATMD, only: SHAVETOT
 #endif
-      USE W3WDATMD, ONLY: VA, VSTOT, VDTOT
-      USE W3ADATMD, ONLY: CG, CX, CY, MPI_COMM_WCMP
-      USE W3ODATMD, ONLY: TBPIN, FLBPI, IAPROC
-      USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC, ZERO, THR8
-      USE W3PARALL, ONLY : ListISPprevDir, ListISPnextDir
-      USE W3PARALL, ONLY : JX_TO_JSEA
-      USE W3GDATMD, ONLY: B_JGS_NLEVEL
+      USE W3WDATMD, only: VA, VSTOT, VDTOT
+      USE W3ADATMD, only: CG, CX, CY, MPI_COMM_WCMP
+      USE W3ODATMD, only: TBPIN, FLBPI, IAPROC
+      USE W3PARALL, only : INIT_GET_JSEA_ISPROC, ZERO, THR8
+      USE W3PARALL, only : ListISPprevDir, ListISPnextDir
+      USE W3PARALL, only : JX_TO_JSEA
+      USE W3GDATMD, only: B_JGS_NLEVEL
 !
       implicit none
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
@@ -7514,22 +7514,22 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !
-      USE CONSTANTS, ONLY : LPDLIB
-      USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
-      USE W3ADATMD, ONLY: DW
-      USE W3PARALL, ONLY: INIT_GET_ISEA
-      USE YOWNODEPOOL, ONLY: iplg, np
-      USE yowfunction, ONLY: pdlib_abort
-      use YOWNODEPOOL, ONLY: npa
-      USE W3GDATMD, ONLY: B_JGS_USE_JACOBI
-      USE W3PARALL, ONLY : ListISPprevDir, ListISPnextDir
-      USE W3PARALL, ONLY : ListISPprevFreq, ListISPnextFreq
-      USE W3GDATMD, ONLY: NSPEC, NTH, NK
-      USE W3GDATMD, ONLY: FSTOTALIMP
-      USE W3ODATMD, ONLY: IAPROC
+      USE CONSTANTS, only : LPDLIB
+      USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+      USE W3ADATMD, only: DW
+      USE W3PARALL, only: INIT_GET_ISEA
+      USE YOWNODEPOOL, only: iplg, np
+      USE yowfunction, only: pdlib_abort
+      use YOWNODEPOOL, only: npa
+      USE W3GDATMD, only: B_JGS_USE_JACOBI
+      USE W3PARALL, only : ListISPprevDir, ListISPnextDir
+      USE W3PARALL, only : ListISPprevFreq, ListISPnextFreq
+      USE W3GDATMD, only: NSPEC, NTH, NK
+      USE W3GDATMD, only: FSTOTALIMP
+      USE W3ODATMD, only: IAPROC
 !/
       IMPLICIT NONE
 
@@ -7655,14 +7655,14 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE CONSTANTS, ONLY : LPDLIB
-      USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, MAPSTA, NX
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3ADATMD, ONLY: DW
-      USE W3PARALL, ONLY: INIT_GET_ISEA
-      USE YOWNODEPOOL, ONLY: iplg, np, npa
+      USE CONSTANTS, only : LPDLIB
+      USE W3GDATMD, only: MAPSF, NSEAL, DMIN, MAPSTA, NX
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3ADATMD, only: DW
+      USE W3PARALL, only: INIT_GET_ISEA
+      USE YOWNODEPOOL, only: iplg, np, npa
 !/
       IMPLICIT NONE
 !/
@@ -7746,14 +7746,14 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE CONSTANTS, ONLY : LPDLIB
-      USE W3GDATMD, ONLY: MAPSF, NSEAL, DMIN, MAPSTA, NX
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3ADATMD, ONLY: DW
-      USE W3PARALL, ONLY: INIT_GET_ISEA
-      USE YOWNODEPOOL, ONLY: iplg, np
+      USE CONSTANTS, only : LPDLIB
+      USE W3GDATMD, only: MAPSF, NSEAL, DMIN, MAPSTA, NX
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3ADATMD, only: DW
+      USE W3PARALL, only: INIT_GET_ISEA
+      USE YOWNODEPOOL, only: iplg, np
 !/
       IMPLICIT NONE
 !/
@@ -7853,7 +7853,7 @@
       USE CONSTANTS
 !
 !
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPFS,                        &
+      USE W3GDATMD, only: NX, NY, NSEA, MAPFS,                        &
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, IEN, NTRI, TRIGP,               &
                           IOBP,IOBPD, IOBPA,                          &
@@ -7862,16 +7862,16 @@
 #endif
                           ANGLE0, ANGLE, NSEAL
 
-      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
-      USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+      USE W3ADATMD, only: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
+      USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE W3IDATMD, only: FLCUR
       USE W3ODATMD, only : IAPROC
-      USE YOWNODEPOOL,    ONLY: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
-      use yowElementpool, ONLY: NE, INE
-      use yowExchangeModule, ONLY : PDLIB_exchange1DREAL
+      USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
+      use yowElementpool, only: NE, INE
+      use yowExchangeModule, only : PDLIB_exchange1DREAL
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
       
       IMPLICIT NONE
@@ -8084,9 +8084,9 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE W3GDATMD, ONLY: B_JGS_USE_JACOBI
+      USE W3GDATMD, only: B_JGS_USE_JACOBI
 !/
       IMPLICIT NONE
 !/
@@ -8160,15 +8160,15 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE W3GDATMD, ONLY: NSPEC, B_JGS_BLOCK_GAUSS_SEIDEL, GRIDS
-      use YOWNODEPOOL, ONLY: PDLIB_NNZ, npa, np
-      USE yowfunction, ONLY: pdlib_abort
-      USE W3GDATMD, ONLY: NTH, NK, NSEAL
-      USE W3PARALL, ONLY: IMEM
+      USE W3GDATMD, only: NSPEC, B_JGS_BLOCK_GAUSS_SEIDEL, GRIDS
+      use YOWNODEPOOL, only: PDLIB_NNZ, npa, np
+      USE yowfunction, only: pdlib_abort
+      USE W3GDATMD, only: NTH, NK, NSEAL
+      USE W3PARALL, only: IMEM
 #ifdef W3_DEBUGINIT
-    USE W3ODATMD, ONLY : IAPROC
+    USE W3ODATMD, only : IAPROC
 #endif
 !/
       IMPLICIT NONE
@@ -8261,15 +8261,15 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
-      USE W3GDATMD, ONLY: NSPEC, B_JGS_BLOCK_GAUSS_SEIDEL, GRIDS
-      use YOWNODEPOOL, ONLY: PDLIB_NNZ, npa, np
-      USE yowfunction, ONLY: pdlib_abort
-      USE W3GDATMD, ONLY: NTH, NK, NSEAL
-      USE W3PARALL, ONLY: IMEM
+      USE W3GDATMD, only: NSPEC, B_JGS_BLOCK_GAUSS_SEIDEL, GRIDS
+      use YOWNODEPOOL, only: PDLIB_NNZ, npa, np
+      USE yowfunction, only: pdlib_abort
+      USE W3GDATMD, only: NTH, NK, NSEAL
+      USE W3PARALL, only: IMEM
 #ifdef W3_DEBUGINIT
-    USE W3ODATMD, ONLY : IAPROC
+    USE W3ODATMD, only : IAPROC
 #endif
 !/
       IMPLICIT NONE
@@ -8410,7 +8410,7 @@
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, only: STRACE
 #endif
 !/
       IMPLICIT NONE
