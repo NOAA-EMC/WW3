@@ -651,7 +651,7 @@ contains
 
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: vname
-    real            , intent(in) :: var(1:nsea,3)
+    real            , intent(in) :: var(:,:)
 
     ! local variables
     real, dimension(nx,ny,3) :: var3d
