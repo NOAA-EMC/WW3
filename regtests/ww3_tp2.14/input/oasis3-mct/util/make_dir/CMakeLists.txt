@@ -3,10 +3,17 @@ cmake_minimum_required(VERSION 3.15)
 project(oasis3-mct
   LANGUAGES C Fortran)
 
+set(EXCLUDE_FIND "" CACHE STRING "Don't try and search for these libraries (assumd to be handled by the compiler/wrapper)")
+list(TRANSFORM EXCLUDE_FIND TOLOWER)
+
 list(APPEND CMAKE_MODULE_PATH "$ENV{WWATCH3_DIR}/../cmake")
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
-find_package(NetCDF MODULE REQUIRED COMPONENTS Fortran)
+if("netcdf" IN_LIST EXCLUDE_FIND)
+  message(WARNING "Not seaching for NetCDF library")
+else()
+  find_package(NetCDF MODULE REQUIRED COMPONENTS Fortran)
+endif()
 
 list(REVERSE NetCDF_LIBRARIES)
 string(REPLACE ";" " " NetCDF_LIBRARIES_STR "${NetCDF_LIBRARIES}")
