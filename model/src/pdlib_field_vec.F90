@@ -96,12 +96,12 @@ MODULE PDLIB_FIELD_VEC
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      USE W3ODATMD, only: FLOGRD, FLOGR2, NOSWLL, NOEXTR,              &
+      USE W3ODATMD, ONLY: FLOGRD, FLOGR2, NOSWLL, NOEXTR,              &
                           NOGRP, NGRPP
-      USE W3GDATMD, only: E3DF, P2MSF, NK
+      USE W3GDATMD, ONLY: E3DF, P2MSF, NK
       IMPLICIT NONE
       INTEGER, INTENT(OUT)    :: TheSize
       LOGICAL                 :: FLGRDALL(NOGRP,NGRPP)
@@ -433,7 +433,7 @@ MODULE PDLIB_FIELD_VEC
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
 
@@ -442,12 +442,12 @@ MODULE PDLIB_FIELD_VEC
       USE W3ODATMD, only : NAPROC, NTPROC, IAPROC
       USE W3ADATMD, only : MPI_COMM_WAVE
       USE W3PARALL, only : GET_JSEA_IBELONG
-      USE W3WDATMD, only : VA
-      USE W3GDATMD, only: NSEAL
-      USE W3ADATMD, only: NSEALM
-      USE W3SERVMD, only : EXTCDE
+      USE W3WDATMD, ONLY : VA
+      USE W3GDATMD, ONLY: NSEAL
+      USE W3ADATMD, ONLY: NSEALM
+      USE W3SERVMD, ONLY : EXTCDE
 #ifdef W3_TIMINGS
-      USE W3PARALL, only: PRINT_MY_TIME
+      USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
       use yowNodepool, only: ListNP, ListNPA, ListIPLG
       IMPLICIT NONE
@@ -685,18 +685,18 @@ MODULE PDLIB_FIELD_VEC
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
       use yowDatapool, only: istatus
       USE yowNodepool, only: ListNP, ListNPA, ListIPLG
-      USE W3PARALL, only: INIT_GET_ISEA
+      USE W3PARALL, ONLY: INIT_GET_ISEA
       USE W3GDATMD, only : NSEA, NSPEC
       USE W3ODATMD, only : NAPROC, NTPROC, NAPRST, IAPROC
       USE W3ADATMD, only : MPI_COMM_WAVE
       USE W3PARALL, only : GET_JSEA_IBELONG
-      USE W3WDATMD, only : VA
-      USE W3GDATMD, only: NSEAL, NX, NY
+      USE W3WDATMD, ONLY : VA
+      USE W3GDATMD, ONLY: NSEAL, NX, NY
       IMPLICIT NONE
       INCLUDE "mpif.h"
 !/
@@ -955,14 +955,14 @@ MODULE PDLIB_FIELD_VEC
 !
 !  4. Subroutines used :
 !
-      USE W3ADATMD, only: W3XDMA, W3SETA, W3XETA
-      USE W3SERVMD, only: EXTCDE
-      USE W3GDATMD, only: NSEA
-      USE W3GDATMD, only: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF
-      USE W3WDATMD, only: VA, UST, USTDIR, ASF, FPIS
-      USE W3ADATMD, only: MPI_COMM_WAVE, WW3_FIELD_VEC
-      USE W3ADATMD, only: HS, WLM, T02
-      USE W3ADATMD, only: T0M1, THM, THS, FP0, THP0, FP1, THP1,  &
+      USE W3ADATMD, ONLY: W3XDMA, W3SETA, W3XETA
+      USE W3SERVMD, ONLY: EXTCDE
+      USE W3GDATMD, ONLY: NSEA
+      USE W3GDATMD, ONLY: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF
+      USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
+      USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC
+      USE W3ADATMD, ONLY: HS, WLM, T02
+      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,  &
                           DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
                           SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
                           PDIR, PSI, PWS, PWST, PNR, PHIAW,      &
@@ -978,11 +978,11 @@ MODULE PDLIB_FIELD_VEC
                           PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
                           QP, MSSD, MSCD, STMAXE, STMAXD, HMAXE, &
                           HCMAXE, HMAXD, HCMAXD, WBT
-      USE W3GDATMD, only: NK, NSEAL
-      USE W3ODATMD, only: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
+      USE W3GDATMD, ONLY: NK, NSEAL
+      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
                           NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK,&
                           NOGRP, NGRPP
-      USE W3ODATMD, only: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2,  &
+      USE W3ODATMD, ONLY: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2,  &
                           FLOGRD, NRQPO, NRQPO2, IRQPO1, IRQPO2, &
                           NOPTS, IPTINT, NRQRS, IRQRS, NBLKRS,   &
                           RSBLKS, IRQRSS, VAAUX, NRQBP, NRQBP2,  &
@@ -990,9 +990,9 @@ MODULE PDLIB_FIELD_VEC
                           ABPOS, NRQTR, IRQTR, IT0PNT, IT0TRK,   &
                           IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP,  &
                           FLOGR2
-      USE W3ADATMD, only: MPI_COMM_WCMP
-      USE W3PARALL, only: INIT_GET_JSEA_ISPROC
-      USE W3PARALL, only: INIT_GET_ISEA
+      USE W3ADATMD, ONLY: MPI_COMM_WCMP
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
+      USE W3PARALL, ONLY: INIT_GET_ISEA
       use yowDatapool, only: istatus
 !/
       IMPLICIT NONE

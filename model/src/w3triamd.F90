@@ -63,17 +63,17 @@
 !/ ------------------------------------------------------------------- /
  PUBLIC
 !      USE CONSTANTS
-!      USE W3GDATMD, only: W3NMOD, W3SETG
-!      USE W3ODATMD, only: W3NOUT, W3SETO, W3DMO5
-!      USE W3IOGRMD, only: W3IOGR
-!     USE W3SERVMD, only: ITRACE, NEXTLN, EXTCDE
-!!/S      USE W3SERVMD, only: STRACE
-!      USE W3ARRYMD, only: INA2R, INA2I
-!!/T      USE W3ARRYMD, only: PRTBLK
-!      USE W3DISPMD, only: DISTAB
+!      USE W3GDATMD, ONLY: W3NMOD, W3SETG
+!      USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
+!      USE W3IOGRMD, ONLY: W3IOGR
+!     USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+!!/S      USE W3SERVMD, ONLY: STRACE
+!      USE W3ARRYMD, ONLY: INA2R, INA2I
+!!/T      USE W3ARRYMD, ONLY: PRTBLK
+!      USE W3DISPMD, ONLY: DISTAB
 !      USE W3GDATMD
-!      USE W3ODATMD, only: NDSE, NDST, NDSO
-!      USE W3ODATMD, only: NBI, NBI2, NFBPO, NBO, NBO2, FLBPI, FLBPO,  &
+!      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+!      USE W3ODATMD, ONLY: NBI, NBI2, NFBPO, NBO, NBO2, FLBPI, FLBPO,  &
 !                         IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE
 !--------------------------------------------------------------------- 
 ! 
@@ -171,11 +171,11 @@ CONTAINS
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3ODATMD, only: NDSE, NDST, NDSO
-      USE W3GDATMD, only: ZB, XGRD, YGRD, NTRI, NX, COUNTOT, TRIGP, NNZ, W3DIMUG
-      USE W3SERVMD, only: ITRACE, NEXTLN, EXTCDE
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+      USE W3GDATMD, ONLY: ZB, XGRD, YGRD, NTRI, NX, COUNTOT, TRIGP, NNZ, W3DIMUG
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
       USE CONSTANTS, only: LPDLIB
-      USE W3ODATMD, only: IAPROC
+      USE W3ODATMD, ONLY: IAPROC
 !
       IMPLICIT NONE
 !/
@@ -430,11 +430,11 @@ CONTAINS
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3ODATMD, only: NDSE, NDST, NDSO
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
       USE W3GDATMD
-      USE W3SERVMD, only: ITRACE, NEXTLN, EXTCDE
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
       USE CONSTANTS, only: LPDLIB
-      USE W3ODATMD, only: IAPROC
+      USE W3ODATMD, ONLY: IAPROC
 !
       IMPLICIT NONE
 !/
@@ -521,7 +521,7 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
 
@@ -529,7 +529,7 @@ CONTAINS
       use yowElementpool, only: ne_global
       use yowNodepool, only: np_global
 #endif
-      USE W3GDATMD, only : TRIGP, NTRI, NX
+      USE W3GDATMD, ONLY : TRIGP, NTRI, NX
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -670,11 +670,11 @@ CONTAINS
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, only: NX, NY, CCON , COUNTCON
-      USE W3ODATMD, only: NDSE, NDST, NDSO
-      USE W3SERVMD, only: ITRACE, NEXTLN, EXTCDE
+      USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
       
       IMPLICIT NONE
@@ -774,10 +774,10 @@ CONTAINS
 !  9. Switches :
 !
 ! 10. Source code :
-      USE W3GDATMD, only: NX, NY, CCON, COUNTCON, IOBP
+      USE W3GDATMD, ONLY: NX, NY, CCON, COUNTCON, IOBP
 
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
       
       IMPLICIT NONE
@@ -869,9 +869,9 @@ CONTAINS
 !/ ------------------------------------------------------------------- /   
          USE W3GDATMD  
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
-         USE W3ODATMD, only: NDSE
+         USE W3ODATMD, ONLY: NDSE
 
          IMPLICIT NONE
 !	 
@@ -969,7 +969,7 @@ CONTAINS
 !/ ------------------------------------------------------------------- /       
     USE W3GDATMD
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
     USE CONSTANTS
 
@@ -1098,7 +1098,7 @@ CONTAINS
 !/ ------------------------------------------------------------------- /  
         USE W3GDATMD
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
         IMPLICIT NONE
 
@@ -1194,7 +1194,7 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- / 
           USE W3GDATMD
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
           IMPLICIT NONE
 #ifdef W3_S
@@ -1275,7 +1275,7 @@ END SUBROUTINE
 
          USE W3GDATMD
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
          IMPLICIT NONE
 !/ input 
@@ -1572,11 +1572,11 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD
-      USE W3SERVMD, only: EXTCDE
+      USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
-      USE W3ODATMD, only: NDSE
+      USE W3ODATMD, ONLY: NDSE
       IMPLICIT NONE
 
 !/ ------------------------------------------------------------------- /
@@ -1750,11 +1750,11 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD
-      USE W3SERVMD, only: EXTCDE
+      USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
-      USE W3ODATMD, only: NDSE
+      USE W3ODATMD, ONLY: NDSE
       IMPLICIT NONE
 
 !/ ------------------------------------------------------------------- /
@@ -1914,9 +1914,9 @@ END SUBROUTINE
 !
 ! 10. Source code :     
       USE CONSTANTS
-      USE W3GDATMD, only : TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
+      USE W3GDATMD, ONLY : TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
                            MAPSTA, ANGLE, FLAGLL,  IOBP, IEN, TRIA, NSEAL, NTRI 
-      USE W3ADATMD, only : NSEALM
+      USE W3ADATMD, ONLY : NSEALM
 #ifdef W3_PDLIB
      USE yowElementpool
      use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
@@ -2048,11 +2048,11 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
-    USE W3ODATMD, only: NBI, NDSE, ISBPI, XBPI, YBPI
-    USE W3GDATMD, only: NX, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
+    USE W3ODATMD, ONLY: NBI, NDSE, ISBPI, XBPI, YBPI
+    USE W3GDATMD, ONLY: NX, XGRD, YGRD, MAPSTA, MAPFS, MAPSF
 
 
     REAL, INTENT(IN)         :: DISTMIN
@@ -2172,7 +2172,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
 !/
@@ -2180,8 +2180,8 @@ END SUBROUTINE
       USE CONSTANTS
 !
 !
-      USE W3GDATMD, only: NX, NTRI, TRIGP 
-      USE W3ODATMD, only: IAPROC
+      USE W3GDATMD, ONLY: NX, NTRI, TRIGP 
+      USE W3ODATMD, ONLY: IAPROC
 
 
       IMPLICIT NONE
@@ -2347,10 +2347,10 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
-        USE W3SERVMD, only: EXTCDE
+        USE W3SERVMD, ONLY: EXTCDE
         IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -2575,7 +2575,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
          IMPLICIT NONE
 !
@@ -2656,11 +2656,11 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
 !
-        USE CONSTANTS, only : LPDLIB
-        USE W3GDATMD, only : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
+        USE CONSTANTS, ONLY : LPDLIB
+        USE W3GDATMD, ONLY : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
 #ifdef W3_PDLIB
      USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
      USE yowElementpool, only: INE
@@ -2779,7 +2779,7 @@ END SUBROUTINE
       USE CONSTANTS
 !
 !
-      USE W3GDATMD, only: NX, NY, NSEA, MAPFS,                        &
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPFS,                        &
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, IEN, NTRI, TRIGP,               &
                           IOBP,IOBPD, IOBPA,                          &
@@ -2788,12 +2788,12 @@ END SUBROUTINE
 #endif
                           ANGLE0, ANGLE
 
-      USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, only: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
-      USE W3IDATMD, only: FLCUR
+      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
+      USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, only : IAPROC
 #ifdef W3_S
-      USE W3SERVMD, only: STRACE
+      USE W3SERVMD, ONLY: STRACE
 #endif
       
       IMPLICIT NONE
