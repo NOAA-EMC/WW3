@@ -276,9 +276,13 @@ contains
     if (p_axis) ierr = nf90_def_dim(ncid, 'np'    , len_p, ptid)
     if (k_axis) ierr = nf90_def_dim(ncid, 'freq'  , len_k, ktid)
 
-    ! define time axis
-    ierr = nf90_put_att(ncid, timid, 'units'   , trim(time_origin))
-    ierr = nf90_put_att(ncid, timid, 'calendar', trim(calendar_name))
+    ! define the time variable
+    ierr = nf90_def_var(ncid, 'time', nf90_double, timid, varid)
+    call handle_err(ierr,'def_timevar')
+    ierr = nf90_put_att(ncid, varid, 'units', trim(time_origin))
+    call handle_err(ierr,'def_time_units')
+    ierr = nf90_put_att(ncid, varid, 'calendar', trim(calendar_name))
+    call handle_err(ierr,'def_time_calendar')
 
     ! define the variables
     dimid3(1:2) = (/xtid, ytid/)
@@ -310,11 +314,14 @@ contains
        ierr = nf90_put_att(ncid, varid, 'long_name' , trim(outvars(n)%long_name))
        ierr = nf90_put_att(ncid, varid, '_FillValue', undef)
      end do
-       ierr = nf90_enddef(ncid)
-       call handle_err(ierr, 'end variable definition')
+     ! end variable definitions
+     ierr = nf90_enddef(ncid)
+     call handle_err(ierr, 'end variable definition')
 
-     ! write the time axis
-     ierr = nf90_put_var(ncid, timid, elapsed_secs)
+     ! write the time axis value
+     ierr = nf90_inq_varid(ncid,  'time', varid)
+     call handle_err(ierr, 'inquire variable time ')
+     ierr = nf90_put_var(ncid, varid, elapsed_secs)
      call handle_err(ierr, 'put time')
      ierr = nf90_close(ncid)
 
