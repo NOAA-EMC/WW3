@@ -1,3 +1,9 @@
+!> @file w3iogoncmd
+!!
+!> @brief Write gridded model output as netCDF
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
 #include "w3macros.h"
 
 module W3IOGONCDMD
