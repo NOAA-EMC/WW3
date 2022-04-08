@@ -34,6 +34,7 @@ contains
 
     USE CONSTANTS
     USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF, RHOAIR
+    USE W3GDATMD, ONLY: XGRD, YGRD
     USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, W3SETG
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
@@ -89,131 +90,6 @@ contains
     !TODO: remove flogrd dependence and use actual output variables
     ! this will remove dependence on list ordering/numbering
     DO ISEA=1, NSEA
-       IF ( MAPSTA(MAPSF(ISEA,2),MAPSF(ISEA,1)) .LT. 0 ) THEN
-          !
-          IF ( FLOGRD( 2, 2) ) WLM   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 3) ) T02   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 4) ) T0M1  (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 5) ) T01   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 6) ) FP0   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 7) ) THM   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 8) ) THS   (ISEA) = UNDEF
-          IF ( FLOGRD( 2, 9) ) THP0  (ISEA) = UNDEF
-                               UST   (ISEA) = UNDEF
-                               USTDIR(ISEA) = UNDEF
-          IF ( FLOGRD( 2,10) ) HSIG  (ISEA) = UNDEF
-          IF ( FLOGRD( 2,11) ) STMAXE(ISEA) = UNDEF
-          IF ( FLOGRD( 2,12) ) STMAXD(ISEA) = UNDEF
-          IF ( FLOGRD( 2,13) ) HMAXE (ISEA) = UNDEF
-          IF ( FLOGRD( 2,14) ) HCMAXE(ISEA) = UNDEF
-          IF ( FLOGRD( 2,15) ) HMAXD (ISEA) = UNDEF
-          IF ( FLOGRD( 2,16) ) HCMAXD(ISEA) = UNDEF
-          IF ( FLOGRD( 2,17) ) WBT   (ISEA) = UNDEF
-          !
-          IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
-          IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
-          IF ( FLOGRD( 3, 3) ) STH1M(ISEA,:) = UNDEF
-          IF ( FLOGRD( 3, 4) ) TH2M (ISEA,:) = UNDEF
-          IF ( FLOGRD( 3, 5) ) STH2M(ISEA,:) = UNDEF
-          !
-          IF ( FLOGRD( 4, 1) ) PHS (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 2) ) PTP (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 3) ) PLP (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 4) ) PDIR (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 5) ) PSI (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 6) ) PWS (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 7) ) PTHP0(ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 8) ) PQP (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4, 9) ) PPE(ISEA,:)  = UNDEF
-          IF ( FLOGRD( 4,10) ) PGW(ISEA,:)  = UNDEF
-          IF ( FLOGRD( 4,11) ) PSW (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4,12) ) PTM1(ISEA,:) = UNDEF
-          IF ( FLOGRD( 4,13) ) PT1 (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4,14) ) PT2 (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4,15) ) PEP (ISEA,:) = UNDEF
-          IF ( FLOGRD( 4,16) ) PWST(ISEA  ) = UNDEF
-          IF ( FLOGRD( 4,17) ) PNR (ISEA  ) = UNDEF
-          !
-          IF ( FLOGRD( 5, 2) ) CHARN (ISEA) = UNDEF
-          IF ( FLOGRD( 5, 3) ) CGE   (ISEA) = UNDEF
-          IF ( FLOGRD( 5, 4) ) PHIAW (ISEA) = UNDEF
-          IF ( FLOGRD( 5, 5) ) THEN
-             TAUWIX(ISEA) = UNDEF
-             TAUWIY(ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 5, 6) ) THEN
-             TAUWNX(ISEA) = UNDEF
-             TAUWNY(ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
-          IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
-          IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
-          IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
-          !
-          IF ( FLOGRD( 6, 1) ) THEN
-             SXX   (ISEA) = UNDEF
-             SYY   (ISEA) = UNDEF
-             SXY   (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 6, 2) ) THEN
-             TAUOX (ISEA) = UNDEF
-             TAUOY (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 6, 3) ) BHD(ISEA) = UNDEF
-          IF ( FLOGRD( 6, 4) ) PHIOC (ISEA) = UNDEF
-          IF ( FLOGRD( 6, 5) ) THEN
-             TUSX  (ISEA) = UNDEF
-             TUSY  (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 6, 6) ) THEN
-             USSX  (ISEA) = UNDEF
-             USSY  (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 6, 7) ) THEN
-             PRMS  (ISEA) = UNDEF
-             TPMS  (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
-          IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
-          IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
-          IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
-          IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
-#ifdef CESMCOUPLED
-          IF ( FLOGRD( 6, 14) ) LANGMT(ISEA) = UNDEF  !cesm specific
-#endif
-          !
-          IF ( FLOGRD( 7, 1) ) THEN
-             ABA   (ISEA) = UNDEF
-             ABD   (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 7, 2) ) THEN
-             UBA   (ISEA) = UNDEF
-             UBD   (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
-          IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
-          IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
-          !
-          IF ( FLOGRD( 8, 1) ) THEN
-             MSSX  (ISEA) = UNDEF
-             MSSY  (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 8, 2) ) THEN
-             MSCX  (ISEA) = UNDEF
-             MSCY  (ISEA) = UNDEF
-          END IF
-          IF ( FLOGRD( 8, 3) ) MSSD (ISEA) = UNDEF
-          IF ( FLOGRD( 8, 4) ) MSCD (ISEA) = UNDEF
-          IF ( FLOGRD( 8, 5) ) QP   (ISEA) = UNDEF
-          !
-          IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
-          IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
-          IF ( FLOGRD( 9, 3) ) CFLXYMAX(ISEA) = UNDEF
-          IF ( FLOGRD( 9, 4) ) CFLTHMAX(ISEA) = UNDEF
-          IF ( FLOGRD( 9, 5) ) CFLKMAX(ISEA) = UNDEF
-          !
-       END IF
-       !
        IF ( MAPSTA(MAPSF(ISEA,2),MAPSF(ISEA,1)) == 2 ) THEN
           !
           IF ( FLOGRD( 5, 4) ) PHIAW (ISEA) = UNDEF
@@ -284,6 +160,14 @@ contains
     ierr = nf90_put_att(ncid, varid, 'calendar', trim(calendar_name))
     call handle_err(ierr,'def_time_calendar')
 
+    ! define the spatial axis variables (lat,lon)
+    ierr = nf90_def_var(ncid, 'lon', nf90_double, (/xtid,ytid/), varid)
+    call handle_err(ierr,'def_lonvar')
+    ierr = nf90_put_att(ncid, varid, 'units', 'degrees_east')
+    ierr = nf90_def_var(ncid, 'lat', nf90_double, (/xtid,ytid/), varid)
+    call handle_err(ierr,'def_latvar')
+    ierr = nf90_put_att(ncid, varid, 'units', 'degrees_north')
+
     ! define the variables
     dimid3(1:2) = (/xtid, ytid/)
     dimid4(1:2) = (/xtid, ytid/)
@@ -318,7 +202,17 @@ contains
      ierr = nf90_enddef(ncid)
      call handle_err(ierr, 'end variable definition')
 
-     ! write the time axis value
+     ! write the time and spatial axis values (lat,lon,time)
+     ierr = nf90_inq_varid(ncid,  'lat', varid)
+     call handle_err(ierr, 'inquire variable lat ')
+     ierr = nf90_put_var(ncid, varid, transpose(ygrd))
+     call handle_err(ierr, 'put lat')
+
+     ierr = nf90_inq_varid(ncid,  'lon', varid)
+     call handle_err(ierr, 'inquire variable lon ')
+     ierr = nf90_put_var(ncid, varid, transpose(xgrd))
+     call handle_err(ierr, 'put lon')
+
      ierr = nf90_inq_varid(ncid,  'time', varid)
      call handle_err(ierr, 'inquire variable time ')
      ierr = nf90_put_var(ncid, varid, elapsed_secs)
@@ -330,20 +224,20 @@ contains
       vname = trim(outvars(n)%var_name)
 
       ! Group 1
-      if (vname .eq.      'DW') call write_var2d(trim(fname), vname, dw(1:nsea))
-      if (vname .eq.      'CX') call write_var2d(trim(fname), vname, cx(1:nsea))
-      if (vname .eq.      'CY') call write_var2d(trim(fname), vname, cy(1:nsea))
-      if (vname .eq.     'UAX') call write_var2d(trim(fname), vname, ua(1:nsea), dir=cos(ud(1:nsea)))
-      if (vname .eq.     'UAY') call write_var2d(trim(fname), vname, ua(1:nsea), dir=sin(ud(1:nsea)))
-      if (vname .eq.      'AS') call write_var2d(trim(fname), vname, as(1:nsea))
-      if (vname .eq.     'WLV') call write_var2d(trim(fname), vname, wlv(1:nsea))
-      if (vname .eq.     'ICE') call write_var2d(trim(fname), vname, ice(1:nsea))
-      if (vname .eq.    'BERG') call write_var2d(trim(fname), vname, berg(1:nsea))
-      if (vname .eq.    'TAUX') call write_var2d(trim(fname), vname, taua(1:nsea), dir=cos(tauadir(1:nsea)))
-      if (vname .eq.    'TAUY') call write_var2d(trim(fname), vname, taua(1:nsea), dir=sin(tauadir(1:nsea)))
-      if (vname .eq.  'RHOAIR') call write_var2d(trim(fname), vname, rhoair(1:nsea))
-      if (vname .eq.    'ICEH') call write_var2d(trim(fname), vname, iceh(1:nsea))
-      if (vname .eq.    'ICEF') call write_var2d(trim(fname), vname, icef(1:nsea))
+      if (vname .eq.      'DW') call write_var2d(trim(fname), vname, dw(1:nsea), initialize='false')
+      if (vname .eq.      'CX') call write_var2d(trim(fname), vname, cx(1:nsea), initialize='false')
+      if (vname .eq.      'CY') call write_var2d(trim(fname), vname, cy(1:nsea), initialize='false')
+      if (vname .eq.     'UAX') call write_var2d(trim(fname), vname, ua(1:nsea), dir=cos(ud(1:nsea)), initialize='false')
+      if (vname .eq.     'UAY') call write_var2d(trim(fname), vname, ua(1:nsea), dir=sin(ud(1:nsea)), initialize='false')
+      if (vname .eq.      'AS') call write_var2d(trim(fname), vname, as(1:nsea), initialize='false')
+      if (vname .eq.     'WLV') call write_var2d(trim(fname), vname, wlv(1:nsea), initialize='false')
+      if (vname .eq.     'ICE') call write_var2d(trim(fname), vname, ice(1:nsea), initialize='false')
+      if (vname .eq.    'BERG') call write_var2d(trim(fname), vname, berg(1:nsea), initialize='false')
+      if (vname .eq.    'TAUX') call write_var2d(trim(fname), vname, taua(1:nsea), dir=cos(tauadir(1:nsea)), initialize='false')
+      if (vname .eq.    'TAUY') call write_var2d(trim(fname), vname, taua(1:nsea), dir=sin(tauadir(1:nsea)), initialize='false')
+      if (vname .eq.  'RHOAIR') call write_var2d(trim(fname), vname, rhoair(1:nsea), initialize='false')
+      if (vname .eq.    'ICEH') call write_var2d(trim(fname), vname, iceh(1:nsea), initialize='false')
+      if (vname .eq.    'ICEF') call write_var2d(trim(fname), vname, icef(1:nsea), initialize='false')
 
       ! Group 2
       if (vname .eq.     'HS') call write_var2d(trim(fname), vname, hs(1:nsea))
@@ -363,7 +257,7 @@ contains
       if (vname .eq.  'HMAXD') call write_var2d(trim(fname), vname, hmaxd(1:nsea))
       if (vname .eq. 'HCMAXD') call write_var2d(trim(fname), vname, hcmaxd(1:nsea))
       if (vname .eq.    'WBT') call write_var2d(trim(fname), vname, wbt(1:nsea))
-      if (vname .eq. 'WNMEAN') call write_var2d(trim(fname), vname, wnmean(1:nsea))
+      if (vname .eq. 'WNMEAN') call write_var2d(trim(fname), vname, wnmean(1:nsea), initialize='false')
 
       ! Group 3
       if(vname .eq.    'EF') call write_var3d(trim(fname), vname, ef(1:nsea,E3DF(2,1):E3DF(3,1)) )   ! freq axis
@@ -468,48 +362,57 @@ contains
   end subroutine W3IOGONCD
 
 !/ ------------------------------------------------------------------- /
-  subroutine write_var2d(fname, vname, var, dir, usemask)
+  subroutine write_var2d(fname, vname, var, dir, usemask, initialize)
     ! write (nsea) array as (nx,ny)
     ! if dir is present, write x or y component of (nsea) array as (nx,ny)
     ! if mask is present and true, use mapsta=1 to mask values
-
+    ! if initialize is present and false, do not initialize values
+    ! for mapsta<0. this prevents group 1 variables being set undef over
+    ! ice
+    
     character(len=*),  intent(in)          :: fname
     character(len=*),  intent(in)          :: vname
     real            ,  intent(in)          :: var(:)
     real, optional  ,  intent(in)          :: dir(:)
     character(len=*), optional, intent(in) :: usemask
+    character(len=*), optional, intent(in) :: initialize
 
     ! local variables
     real, dimension(nx,ny) :: var2d
-    logical                :: lmask
+    logical                :: lmask, linit
+    real                   :: varloc
 
     lmask = .false.
     if (present(usemask)) then
      lmask = (trim(usemask) == "true")
     end if
+    linit = .true.
+    if (present(initialize)) then
+     linit = (trim(initialize) == "true")
+    end if
 
     if (dbug_flag > 5 ) then
      write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
     end if
-    ! initialization
-    !do isea = 1,nsea
-    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea) = undef
-    !end do
 
     var2d = undef
     do isea = 1,nsea
+       varloc = var(isea)
+       if (linit) then
+          if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) varloc = undef
+       end if
        if (present(dir)) then
-          if (var(isea) .ne. undef) then
+          if (varloc .ne. undef) then
              if (lmask) then
                 if (mapsta(mapsf(isea,2),mapsf(isea,1)) == 1) then
-                   var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
+                   var2d(mapsf(isea,1),mapsf(isea,2)) = varloc*dir(isea)
                 end if
              else
-                var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)*dir(isea)
+                var2d(mapsf(isea,1),mapsf(isea,2)) = varloc*dir(isea)
              end if
           end if
        else
-         var2d(mapsf(isea,1),mapsf(isea,2)) = var(isea)
+         var2d(mapsf(isea,1),mapsf(isea,2)) = varloc
        end if
     end do
 
@@ -533,24 +436,24 @@ contains
 
     ! local variables
     real, allocatable, dimension(:,:,:) :: var3d
+    real, allocatable, dimension(:)     :: varloc
     integer :: lb, ub
 
     lb = lbound(var,2)
     ub = ubound(var,2)
     allocate(var3d(1:nx,1:ny,lb:ub))
+    allocate(varloc(lb:ub))
 
     if (dbug_flag > 5 ) then
      write(nds(1),'(a,2i6)')' writing variable ' //trim(vname)//' to history file ' &
         //trim(fname)//' with bounds ',lb,ub
     end if
-    ! initialization
-    !do isea = 1,nsea
-    !   if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) var(isea,:) = undef
-    !end do
 
     var3d = undef
     do isea = 1,nsea
-       var3d(mapsf(isea,1),mapsf(isea,2),:) = var(isea,:)
+       varloc(:) = var(isea,:)
+       if (mapsta(mapsf(isea,2),mapsf(isea,1)) < 0) varloc(:) = undef
+       var3d(mapsf(isea,1),mapsf(isea,2),:) = varloc(:)
     end do
 
     ierr = nf90_open(trim(fname),  nf90_write,  ncid)
@@ -562,6 +465,7 @@ contains
     ierr = nf90_close(ncid)
 
     deallocate(var3d)
+    deallocate(varloc)
   end subroutine write_var3d
 
 !/ ------------------------------------------------------------------- /
