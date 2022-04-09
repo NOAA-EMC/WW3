@@ -3209,12 +3209,12 @@
                       IF ( ( J .EQ. 1 ) .AND. histwr) THEN
                           CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                           FLGMPI(0) = .FALSE.
-                          write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
+                          !write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
                           IF ( IAPROC .EQ. NAPFLD ) THEN
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
                                  ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                               FLGMPI(1) = .FALSE.
-                              write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
+                              !write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
                               CALL W3IOGONCD ()
                           END IF
 #else
