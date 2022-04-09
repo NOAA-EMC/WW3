@@ -101,11 +101,11 @@ contains
     ! define the dimensions required for the requested gridded fields
     do n = 1,size(outvars)
        if (outvars(n)%validout) then
-          if(scan(trim(outvars(n)%dims),'s') > 0)s_axis = .true.
-          if(scan(trim(outvars(n)%dims),'b') > 0)b_axis = .true.
-          if(scan(trim(outvars(n)%dims),'m') > 0)m_axis = .true.
-          if(scan(trim(outvars(n)%dims),'p') > 0)p_axis = .true.
-          if(scan(trim(outvars(n)%dims),'k') > 0)k_axis = .true.
+          if(trim(outvars(n)%dims) == 's')s_axis = .true.
+          if(trim(outvars(n)%dims) == 'b')b_axis = .true.
+          if(trim(outvars(n)%dims) == 'm')m_axis = .true.
+          if(trim(outvars(n)%dims) == 'p')p_axis = .true.
+          if(trim(outvars(n)%dims) == 'k')k_axis = .true.
        end if
      end do
 
@@ -149,19 +149,19 @@ contains
     dimid3(1:2) = (/xtid, ytid/)
     dimid4(1:2) = (/xtid, ytid/)
     do n = 1,size(outvars)
-       if (scan(trim(outvars(n)%dims),'s') > 0) then
+       if (trim(outvars(n)%dims) == 's') then
           dimid4(3:4) = (/stid, timid/)
           dimid => dimid4
-       else if (scan(trim(outvars(n)%dims),'b') > 0) then
+       else if (trim(outvars(n)%dims) == 'b') then
           dimid4(3:4) = (/btid, timid/)
           dimid => dimid4
-       else if (scan(trim(outvars(n)%dims),'m') > 0) then
+       else if (trim(outvars(n)%dims) == 'm') then
           dimid4(3:4) = (/mtid, timid/)
           dimid => dimid4
-       else if (scan(trim(outvars(n)%dims),'p') > 0) then
+       else if (trim(outvars(n)%dims) == 'p') then
           dimid4(3:4) = (/ptid, timid/)
           dimid => dimid4
-       else if (scan(trim(outvars(n)%dims),'k') > 0) then
+       else if (trim(outvars(n)%dims) == 'k') then
           dimid4(3:4) = (/ktid, timid/)
           dimid => dimid4
        else
@@ -200,7 +200,7 @@ contains
      ! write the requested variables
      do n = 1,size(outvars)
         vname = trim(outvars(n)%var_name)
-        if (scan(trim(outvars(n)%dims),'s') > 0) then                               ! noswll axis
+        if (trim(outvars(n)%dims) == 's') then
            var3d => var3ds
            ! Group 4
            if(vname .eq.   'PHS') call write_var3d(vname, phs(1:nsea,0:noswll))
@@ -219,23 +219,23 @@ contains
            if(vname .eq.   'PT2') call write_var3d(vname, pt2(1:nsea,0:noswll))
            if(vname .eq.   'PEP') call write_var3d(vname, pep(1:nsea,0:noswll))
 
-        else if (scan(trim(outvars(n)%dims),'b') > 0) then                          ! bedform axis
+        else if (trim(outvars(n)%dims) == 'b') then                          ! bedform axis
            var3d => var3db
            ! Group 7
            if (vname .eq. 'Bedforms') call write_var3d(vname, bedforms(1:nsea,1:3), init2='true')
 
-        else if (scan(trim(outvars(n)%dims),'m') > 0) then                          ! m axis
+        else if (trim(outvars(n)%dims) == 'm') then                          ! m axis
            var3d => var3dm
            ! Group 6
            if (vname .eq.   'P2SMS') call write_var3d(vname, p2sms(1:nsea,P2MSF(2):P2MSF(3)) )
 
-        else if (scan(trim(outvars(n)%dims),'p') > 0) then                          ! partition axis
+        else if (trim(outvars(n)%dims) == 'p') then                          ! partition axis
            var3d => var3dp
            ! Group 6
            if (vname .eq.   'USSPX') call write_var3d(vname, ussp(1:nsea,   1:USSPF(2)) )
            if (vname .eq.   'USSPY') call write_var3d(vname, ussp(1:nsea,NK+1:NK+USSPF(2)) )
 
-        else if (scan(trim(outvars(n)%dims),'k') > 0) then                           ! freq axis
+        else if (trim(outvars(n)%dims) == 'k') then                           ! freq axis
            var3d => var3dk
            ! Group 3
            if(vname .eq.    'EF') call write_var3d(vname, ef(1:nsea,E3DF(2,1):E3DF(3,1)) )
