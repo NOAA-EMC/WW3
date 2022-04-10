@@ -72,8 +72,8 @@ contains
     integer    ,pointer      :: dimid(:)
     character(len=12)        :: vname
 
-    integer :: n, xtid, ytid, stid, btid, mtid, ptid, ktid, timid, varid
-    logical :: s_axis = .false., b_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
+    integer :: n, xtid, ytid, stid, mtid, ptid, ktid, timid, varid
+    logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -100,7 +100,6 @@ contains
     do n = 1,size(outvars)
        if (outvars(n)%validout) then
           if(trim(outvars(n)%dims) == 's')s_axis = .true.
-          if(trim(outvars(n)%dims) == 'b')b_axis = .true.
           if(trim(outvars(n)%dims) == 'm')m_axis = .true.
           if(trim(outvars(n)%dims) == 'p')p_axis = .true.
           if(trim(outvars(n)%dims) == 'k')k_axis = .true.
@@ -147,9 +146,6 @@ contains
     do n = 1,size(outvars)
        if (trim(outvars(n)%dims) == 's') then
           dimid4(3:4) = (/stid, timid/)
-          dimid => dimid4
-       else if (trim(outvars(n)%dims) == 'b') then
-          dimid4(3:4) = (/btid, timid/)
           dimid => dimid4
        else if (trim(outvars(n)%dims) == 'm') then
           dimid4(3:4) = (/mtid, timid/)

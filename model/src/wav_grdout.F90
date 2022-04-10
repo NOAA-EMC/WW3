@@ -90,8 +90,9 @@ contains
        write(nds(1),'(a)')' --------------------------------------------------'
        write(nds(1),*)
        do n = 1,nout
-          write(nds(1),'(i5,a)')n,'  '//trim(outvars(n)%tag)//' '//trim(outvars(n)%var_name)//'  '// &
-             trim(outvars(n)%long_name)
+          write(nds(1),'(i5,2a12,a50)')n,'  '//trim(outvars(n)%tag), &
+                                         '  '//trim(outvars(n)%var_name), &
+                                         '  '//trim(outvars(n)%long_name)
        end do
        write(nds(1),*)
     end if
