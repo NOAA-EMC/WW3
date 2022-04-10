@@ -228,12 +228,14 @@ contains
                        ]
 
     !  7   Wave-bottom layer
-    gridoutdefs(7,1:8) = [ &
+    gridoutdefs(7,1:10) = [ &
     varatts( "ABR  ", "ABAX      ", "Near bottom rms wave excursion amplitudes x     ", "m         ", "  ", .false.) , &
     varatts( "ABR  ", "ABAY      ", "Near bottom rms wave excursion amplitudes y     ", "m         ", "  ", .false.) , &
     varatts( "UBR  ", "UBAX      ", "Near bottom rms wave velocities x               ", "m s-1     ", "  ", .false.) , &
     varatts( "UBR  ", "UBAY      ", "Near bottom rms wave velocities y               ", "m s-1     ", "  ", .false.) , &
-    varatts( "BED  ", "Bedforms  ", "Bedforms                                        ", "m         ", "b ", .false.) , &
+    varatts( "BED  ", "BED       ", "Bottom roughness                                ", "m         ", "  ", .false.) , &
+    varatts( "BED  ", "RIPPLEX   ", "Sea bottom ripple wavelength x                  ", "m         ", "  ", .false.) , &
+    varatts( "BED  ", "RIPPLEY   ", "Sea bottom ripple wavelength y                  ", "m         ", "  ", .false.) , &
     varatts( "FBB  ", "PHIBBL    ", "Energy flux due to bottom friction              ", "W m-2     ", "  ", .false.) , &
     varatts( "TBB  ", "TAUBBLX   ", "Momentum flux due to bottom friction x          ", "m2 s-2    ", "  ", .false.) , &
     varatts( "TBB  ", "TAUBBLY   ", "Momentum flux due to bottom friction y          ", "m2 s-2    ", "  ", .false.)   &

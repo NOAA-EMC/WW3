@@ -23,11 +23,10 @@ module W3IOGONCDMD
   ! used/reused in module
  
   integer               :: isea, ierr, ncid, varid
-  integer               :: len_s, len_b, len_m, len_p, len_k
+  integer               :: len_s, len_m, len_p, len_k
   character(len=1024)   :: fname
 
   real, allocatable, target :: var3ds(:,:,:)
-  real, allocatable, target :: var3db(:,:,:)
   real, allocatable, target :: var3dm(:,:,:)
   real, allocatable, target :: var3dp(:,:,:)
   real, allocatable, target :: var3dk(:,:,:)
@@ -93,7 +92,6 @@ contains
     call hist_filename(fname)
 
     len_s = noswll + 1                  ! 0:noswll
-    len_b = 3                           ! currently hardwired to 3 bedform variables
     len_m = P2MSF(3)-P2MSF(2) + 1       ! ?
     len_p = usspf(2)                    ! partitions
     len_k = e3df(3,1) - e3df(2,1) + 1   ! frequencies
@@ -111,7 +109,6 @@ contains
 
     ! allocate arrays if needed
     if (s_axis) allocate(var3ds(1:nx,1:ny,len_s))
-    if (b_axis) allocate(var3db(1:nx,1:ny,len_b))
     if (m_axis) allocate(var3dm(1:nx,1:ny,len_m))
     if (p_axis) allocate(var3dp(1:nx,1:ny,len_p))
     if (k_axis) allocate(var3dk(1:nx,1:ny,len_k))
@@ -124,7 +121,6 @@ contains
     ierr = nf90_def_dim(ncid, 'time', nf90_unlimited, timid)
 
     if (s_axis) ierr = nf90_def_dim(ncid, 'noswll', len_s, stid)
-    if (b_axis) ierr = nf90_def_dim(ncid, 'nb'    , len_b, btid)
     if (m_axis) ierr = nf90_def_dim(ncid, 'nm'    , len_m, mtid)
     if (p_axis) ierr = nf90_def_dim(ncid, 'np'    , len_p, ptid)
     if (k_axis) ierr = nf90_def_dim(ncid, 'freq'  , len_k, ktid)
@@ -218,11 +214,6 @@ contains
            if(vname .eq.   'PT1') call write_var3d(vname, pt1(1:nsea,0:noswll))
            if(vname .eq.   'PT2') call write_var3d(vname, pt2(1:nsea,0:noswll))
            if(vname .eq.   'PEP') call write_var3d(vname, pep(1:nsea,0:noswll))
-
-        else if (trim(outvars(n)%dims) == 'b') then                          ! bedform axis
-           var3d => var3db
-           ! Group 7
-           if (vname .eq. 'Bedforms') call write_var3d(vname, bedforms(1:nsea,1:3), init2='true')
 
         else if (trim(outvars(n)%dims) == 'm') then                          ! m axis
            var3d => var3dm
@@ -332,6 +323,9 @@ contains
            if (vname .eq.     'ABAY') call write_var2d(vname, aba(1:nsea), sin(abd(1:nsea)))
            if (vname .eq.     'UBAX') call write_var2d(vname, uba(1:nsea), cos(ubd(1:nsea)))
            if (vname .eq.     'UBAY') call write_var2d(vname, uba(1:nsea), sin(ubd(1:nsea)))
+           if (vname .eq.      'BED') call write_var2d(vname, bedforms(1:nsea,1), init2='true')
+           if (vname .eq.  'RIPPLEX') call write_var2d(vname, bedforms(1:nsea,2), init2='true')
+           if (vname .eq.  'RIPPLEY') call write_var2d(vname, bedforms(1:nsea,3), init2='true')
            if (vname .eq.   'PHIBBL') call write_var2d(vname, phibbl(1:nsea), init2='true')
            if (vname .eq.  'TAUBBLX') call write_var2d(vname, taubbl(1:nsea,1), init2='true')
            if (vname .eq.  'TAUBBLY') call write_var2d(vname, taubbl(1:nsea,2), init2='true')
@@ -355,7 +349,6 @@ contains
     end do
 
     if (s_axis) deallocate(var3ds)
-    if (b_axis) deallocate(var3db)
     if (m_axis) deallocate(var3dm)
     if (p_axis) deallocate(var3dp)
     if (k_axis) deallocate(var3dk)
