@@ -99,7 +99,7 @@ if(NETCDF)
   if("netcdf" IN_LIST EXCLUDE_FIND)
     # NetCDF library flags provided by compiler or wrapper script: don't search
     set(NetCDF_Fortran_FOUND TRUE)
-	message(WARNING "Not searching for NetCDF library - please ensure correct flags are provided by your compiler/wrapper")
+    message(WARNING "Not searching for NetCDF library - please ensure correct flags are provided by your compiler/wrapper")
   else()
     find_package(NetCDF REQUIRED COMPONENTS Fortran)
   endif()
