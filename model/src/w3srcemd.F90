@@ -754,10 +754,6 @@
       VSDB = 0.
       VDDB = 0.
 #endif
-#ifdef W3_DB2
-      VSDB = 0.
-      VDDB = 0.
-#endif
 #ifdef W3_IC1
       VSIC = 0.
       VDIC = 0.
@@ -1329,24 +1325,19 @@
 #ifdef W3_NL5
           ENDIF
 #endif
-!          IF (IX == DEBUG_NODE) THEN
-!            WRITE(*,'(A20,I10,10F30.10)') 'TIME STEP COMP', IS, DAMAX, DAM(IS), XREL*SPECINIT(IS), AFILT, AFAC, DT
-!          ENDIF
         END DO  ! end of loop on IS
 !
-!        WRITE(*,*) 'NODE_NUMBER', IX
-!        IF (IX == DEBUG_NODE) WRITE(*,*) 'TIMINGS 1', DT
-        DT     = MAX ( 0.5, DT )                   ! Here we have a hardlimit, which is not too usefull, at least not as a fixed constant
+        DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems. 
 !
         DTDYN  = DTDYN + DT
 #ifdef W3_T
         DTRAW  = DT
 #endif
-        IDT    = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
-        DT     = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
-        SHAVE  = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
+        IDT     = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
+        DT      = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
+        SHAVE   = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
         SHAVEIO = SHAVE
-        DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
+        DT      = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
 !
 #ifdef W3_NL5
        DT     = INT(DT) * 1.0
@@ -1419,18 +1410,10 @@
                    eVD    = MIN(0.,VD(ISP))
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
-#endif
-
 #ifdef W3_DB1
                    eVS = VSDB(ISP) * JAC
                    eVD = MIN(0.,VDDB(ISP))
 #endif
-
-#ifdef W3_DB2
-                   eVS = VSDB(ISP) * JAC
-                   eVD = MIN(0.,VDDB(ISP))
-#endif
-
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 
@@ -1438,7 +1421,6 @@
                    eVS = VSTR(ISP) * JAC 
                    eVD = VDTR(ISP)
 #endif
-
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
                  END DO
@@ -1467,11 +1449,6 @@
                    eVS = eVS + DBLE(VSDB(ISP)) * JAC
                    eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
 #endif
-#ifdef W3_DB2
-                   eVS = eVS + DBLE(VSDB(ISP)) * JAC
-                   eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
-#endif
-
                    B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
                    ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
                  END DO
@@ -1506,17 +1483,17 @@
           END IF
     
           IF (.not. LSLOC) THEN 
-             IF (optionCall .eq. 1) THEN
-               CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
-             ELSE IF (optionCall .eq. 2) THEN
-               CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-             ELSE IF (optionCall .eq. 3) THEN
-               CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-             ENDIF
-             VSIO = VS
-             VDIO = VD
-           ENDIF
-!#ifdef W3_DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
+            IF (optionCall .eq. 1) THEN
+              CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
+            ELSE IF (optionCall .eq. 2) THEN
+              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+            ELSE IF (optionCall .eq. 3) THEN
+              CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+            ENDIF
+            VSIO = VS
+            VDIO = VD
+          ENDIF
+
 #ifdef W3_DEBUGSRC
           IF (IX == DEBUG_NODE) THEN
             WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
@@ -1525,6 +1502,7 @@
             WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS)
             WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. , VD))
           END IF
+
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
@@ -1537,7 +1515,9 @@
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
 #endif
           RETURN ! return everything is done for the implicit ...
+
         END IF ! srce_imp_pre
+#endif W3_PDLIB
 !
 #ifdef W3_T
         WRITE (NDST,9040) DTRAW, DT, SHAVE
@@ -1546,10 +1526,6 @@
 ! 5.  Increment spectrum --------------------------------------------- *
 !
         IF (srce_call .eq. srce_direct) THEN
-!          SHAVE = .FALSE.
-!         IF (IX == DEBUG_NODE) THEN
-!            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'BEFORE', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
-!          ENDIF
           IF ( SHAVE ) THEN
             DO IS=IS1, NSPECH
               eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
@@ -1563,29 +1539,14 @@
               SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
             END DO
           END IF
+!
 #ifdef W3_DB1
      DO IS=IS1, NSPECH
        eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
        SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
      END DO
 #endif
-#ifdef W3_DB2
-     DO IS=IS1, NSPECH
-       eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
-       SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
-     END DO
-#endif
-#ifdef W3_TR1
-     DO IS=IS1, NSPECH
-       eInc1 = VSTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
-       SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
-     END DO
-#endif
 
-!          IF (IX == DEBUG_NODE) THEN
-!            WRITE(*,'(A20,I20,F20.10,L20,4F20.10)') 'AFTER', IX, DEPTH, SHAVE, SUM(VS), SUM(VD), SUM(SPEC)
-!          ENDIF
-!!/DEBUGSRC          IF (IX == DEBUG_NODE) WRITE(44,'(10EN15.4)') SUM(VS), SUM(VD), SUM(VSIN), SUM(VDIN), SUM(VSDS), SUM(VDDS), SUM(VSNL), SUM(VDNL)
 #ifdef W3_DEBUGSRC
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
