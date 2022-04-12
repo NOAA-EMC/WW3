@@ -5466,7 +5466,7 @@
 ! AR: this is not anymore needed and will be deleted ...
 !
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        CALL SET_UG_IOBP 
+        CALL SETUGIOBP 
 
 #ifdef W3_REF1
       ELSE
