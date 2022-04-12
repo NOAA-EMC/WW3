@@ -13,10 +13,10 @@ if("netcdf" IN_LIST EXCLUDE_FIND)
   message(WARNING "Not seaching for NetCDF library")
 else()
   find_package(NetCDF MODULE REQUIRED COMPONENTS Fortran)
+  list(REVERSE NetCDF_LIBRARIES)
+  string(REPLACE ";" " " NetCDF_LIBRARIES_STR "${NetCDF_LIBRARIES}")
+  set(NetCDF_INCLUDES_STR "-I${NetCDF_C_INCLUDE_DIRS} -I${NetCDF_Fortran_INCLUDE_DIRS}")
 endif()
-
-list(REVERSE NetCDF_LIBRARIES)
-string(REPLACE ";" " " NetCDF_LIBRARIES_STR "${NetCDF_LIBRARIES}")
 
 set(WWATCH3_DIR $ENV{WWATCH3_DIR})
 set(comp_mpi ${MPI_Fortran_COMPILER})
