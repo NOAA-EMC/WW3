@@ -5133,8 +5133,6 @@
 !>
 !> @details Test of parameters as introduced before in W3IOBC.
 !>
-!> @param[inout] 
-!>
 !> @author H. L. Tolman  @date 10-Dec-2014
 !>
       SUBROUTINE WMRSPC
