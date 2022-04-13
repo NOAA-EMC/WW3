@@ -1746,7 +1746,7 @@
       END SUBROUTINE WMWAVE
 !/ ------------------------------------------------------------------- /
 !>
-!> @brief Print out action table in the log file log\. ww3m.
+!> @brief Print out action table in the log file log.\ mww3.
 !>
 !> @param[in] MDSO
 !> @param[in] NRGRD Number of grids.
