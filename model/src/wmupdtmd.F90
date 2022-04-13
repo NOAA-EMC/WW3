@@ -826,10 +826,10 @@
         CASE ( 10 )
 ! notes: 
 ! SUBROUTINE W3FLDM in w3fldsmd.ftn : 
-!<       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
-!>       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
-!<       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
-!>       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
+!       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
+!       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
+!       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
+!       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
 ! Arguments #
 !   THO     8
 !   HA      9
