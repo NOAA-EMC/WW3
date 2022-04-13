@@ -13,8 +13,8 @@ project(
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
-  # Unset flags that come from UFS because they (-r8/-r4) conflict
-  # with Ww3
+  # Unset flags that come from Parent (ie UFS or other coupled build) 
+  # for potential (-r8/-r4) conflict
   set(CMAKE_Fortran_FLAGS "")
   set(CMAKE_C_FLAGS "")
   remove_definitions(-DDEBUG)
