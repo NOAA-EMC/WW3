@@ -167,6 +167,8 @@ def buildnml(case, caseroot, compname):
     # currently only ww3a and wtx0.66v1 are supported
     if wav_grid == "ww3a":
         mod_def_in = os.path.join(din_loc_root, "wav", "ww3", "ww3a.mod_def.wwver7.14.220119")
+    elif wav_grid == "gx1v7":
+        mod_def_in = os.path.join(din_loc_root, "wav", "ww3", "gx1v7.mod_def.ww3.wwver7.14.220328")
     elif wav_grid == "wtx0.66v1":
         mod_def_in = os.path.join(din_loc_root, "wav", "ww3", "wt061.mod_def.ww3.wwver7.14.220110")
     else:
