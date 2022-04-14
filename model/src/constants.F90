@@ -96,10 +96,11 @@
       INTEGER, PARAMETER       :: srce_direct = 0
       INTEGER, PARAMETER       :: srce_imp_post = 1
       INTEGER, PARAMETER       :: srce_imp_pre = 2
-      INTEGER, PARAMETER       :: DEBUG_NODE = 1014
+      INTEGER, PARAMETER       :: DEBUG_NODE = 1104
       INTEGER, PARAMETER       :: DEBUG_ELEMENT = 50
-      LOGICAL                  :: LPDLIB = .FALSE. 
-      LOGICAL                  :: LSETUP
+
+      LOGICAL                  :: LPDLIB      = .FALSE. 
+      LOGICAL                  :: LSETUP      = .FALSE. 
 !
 ! Parameters in support of running as ESMF component
 !

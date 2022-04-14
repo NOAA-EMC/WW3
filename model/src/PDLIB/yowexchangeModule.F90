@@ -43,7 +43,7 @@ module yowExchangeModule
   private
   public :: initNbrDomains, createMPITypes, setDimSize
   public :: finalizeExchangeModule, PDLIB_exchange1Dreal
-  public :: PDLIB_exchange2Dreal
+  public :: PDLIB_exchange2Dreal, PDLIB_exchange2Dreal_zero
 
   !> Holds some data belong to a neighbor Domain
   type, public :: t_neighborDomain
@@ -69,6 +69,17 @@ module yowExchangeModule
     !> global node IDs to send
     integer, allocatable :: nodesToSend(:)
 
+    ! MPI datatypes for size(U) == npa+1  U(0:npa)
+    
+    !> MPI datatypes for 1D exchange
+    integer :: p1DRsendType_zero = MPI_DATATYPE_NULL
+    integer :: p1DRrecvType_zero = MPI_DATATYPE_NULL
+
+    !> MPI datatypes for 2D exchange
+    integer :: p2DRsendType_zero = MPI_DATATYPE_NULL
+    integer :: p2DRrecvType_zero = MPI_DATATYPE_NULL
+    
+    ! MPI datatypes for size(U) == npa  U(1:npa)
     !> MPI datatypes for 1D exchange
     integer :: p1DRsendType = MPI_DATATYPE_NULL
     integer :: p1DRrecvType = MPI_DATATYPE_NULL
@@ -110,6 +121,14 @@ module yowExchangeModule
     if(allocated(this%nodesToSend))    deallocate(this%nodesToSend)
     if(allocated(this%nodesToReceive)) deallocate(this%nodesToReceive)
 
+    call mpi_type_free(this%p1DRsendType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
+    call mpi_type_free(this%p1DRrecvType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
+    call mpi_type_free(this%p2DRsendType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
+    call mpi_type_free(this%p2DRrecvType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p1DRsendType, ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p1DRrecvType, ierr)
@@ -137,9 +156,24 @@ module yowExchangeModule
     integer :: dsplSend(this%numNodesToSend)
     integer :: dsplRecv(this%numNodesToReceive)
 
+    ! MPI datatypes for size(U) == npa+1  U(0:npa)
+    dsplSend = ipgl(this%nodesToSend)
+    dsplRecv = ghostgl(this%nodesToReceive) + np
 
-    dsplSend = ipgl(this%nodesToSend)-1
-    dsplRecv = ghostgl(this%nodesToReceive) + np -1
+    ! p1D real
+    call mpi_type_create_indexed_block(this%numNodesToSend, 1, dsplSend, rtype, this%p1DRsendType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+    call mpi_type_commit(this%p1DRsendType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+
+    call mpi_type_create_indexed_block(this%numNodesToReceive, 1, dsplRecv, rtype, this%p1DRrecvType_zero, ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+    call mpi_type_commit(this%p1DRrecvType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+
+    ! MPI datatypes for size(U) == npa  U(1:npa)
+    dsplSend(:) = dsplSend(:) - 1 ! C count from 0; FORTRAN count from 1
+    dsplRecv(:) = dsplRecv(:) - 1
 
     ! p1D real
     call mpi_type_create_indexed_block(this%numNodesToSend, 1, dsplSend, rtype, this%p1DRsendType,ierr)
@@ -152,7 +186,22 @@ module yowExchangeModule
     call mpi_type_commit(this%p1DRrecvType,ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
 
-    ! p2D real
+    ! MPI datatypes for size(U) == npa+1  U(0:npa)
+    ! p2D real second dim is n2ndDim long
+    dsplSend = (ipgl(this%nodesToSend)) * n2ndDim
+    dsplRecv = (ghostgl(this%nodesToReceive) + np) * n2ndDim
+    call mpi_type_create_indexed_block(this%numNodesToSend, n2ndDim, dsplSend, rtype, this%p2DRsendType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+    call mpi_type_commit(this%p2DRsendType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+
+    call mpi_type_create_indexed_block(this%numNodesToReceive, n2ndDim, dsplRecv, rtype, this%p2DRrecvType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+    call mpi_type_commit(this%p2DRrecvType_zero,ierr)
+    if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
+
+    ! MPI datatypes for size(U) == npa  U(1:npa)
+    ! p2D real second dim is n2ndDim long
     dsplSend = (ipgl(this%nodesToSend)-1) * n2ndDim
     dsplRecv = (ghostgl(this%nodesToReceive) + np -1) * n2ndDim
     call mpi_type_create_indexed_block(this%numNodesToSend, n2ndDim, dsplSend, rtype, this%p2DRsendType1,ierr)
@@ -336,4 +385,155 @@ module yowExchangeModule
       deallocate(neighborDomains)
     endif
   end subroutine
+!> exchange values in U.
+  !> \param[inout] U array with values to exchange. np+ng+1 long.
+  !> U[0:npa] Send values from U(1:np) to other threads.
+  !> Receive values from other threads and updates U(np+1:np+ng)
+  !> \note MPI recv tag: 10001 + MPI rank
+  !> \note MPI send tag: 10001 + neighbor MPI rank
+  subroutine PDLIB_exchange1Dreal_zero(U)
+    use yowDatapool, only: comm, myrank, rkind
+    use yowNodepool, only: npa
+    use yowErr
+    use Mpi
+    implicit none
+    real(kind=rkind), intent(inout) :: U(0:npa)
+
+    integer :: i, ierr, tag
+    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    character(len=200) errstr
+
+    ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
+
+!     if(size(U) /= npa+1) then
+!       write(errstr, *) "size(U) /= npa+1", size(U), "should be", npa+1
+!       ABORT(errstr)
+!     endif
+!
+!     if(ubound(U,1) /= npa) then
+!       write(errstr, *) "ubound(U) /= npa", ubound(U), "should be", npa
+!       ABORT(errstr)
+!     endif
+!
+!     if(lbound(U,1) /= 0) then
+!       write(errstr, *) "lbound(U) /= 0", lbound(U), "should be 0"
+!       ABORT(errstr)
+!     endif
+
+    ! post receives
+    do i=1, nConnDomains
+      tag = 10001 + myrank
+      call MPI_IRecv(U, &
+                    1, &
+                    neighborDomains(i)%p1DRrecvType_zero, &
+                    neighborDomains(i)%domainID-1, &
+                    tag, &
+                    comm, &
+                    recvRqst(i), &
+                    ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
+    enddo
+
+    ! post sends
+    do i=1, nConnDomains
+      tag = 10001 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, &
+                    1, &
+                    neighborDomains(i)%p1DRsendType_zero, &
+                    neighborDomains(i)%domainID-1, &
+                    tag, &
+                    comm, &
+                    sendRqst(i), &
+                    ierr);
+        if(ierr/=MPI_SUCCESS) then
+          CALL PARALLEL_ABORT("MPI_ISend", ierr)
+        endif
+    end do
+
+    ! Wait for completion
+    call mpi_waitall(nConnDomains, recvRqst, recvStat,ierr)
+    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
+    call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
+    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
+  end subroutine
+  !> \note MPI recv tag: 30001 + MPI rank
+  !> \note MPI send tag: 30001 + neighbor MPI rank
+  subroutine PDLIB_exchange2Dreal_zero(U)
+    use yowDatapool, only: comm, myrank, rkind
+    use yowNodepool, only: npa
+    use yowErr
+    use Mpi
+    implicit none
+    real(kind=rkind), intent(inout) :: U(n2ndDim,0:npa)
+
+    integer :: i, ierr, tag
+    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    character(len=200) errstr
+
+! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
+!     if(size(U,2) /= npa+1) then
+!       write(errstr, *) "size(U,2) /= npa+1", size(U,2), "should be", npa+1
+!       ABORT(errstr)
+!     endif
+!
+!     if(ubound(U,2) /= npa) then
+!       write(errstr, *) "ubound(U,2) /= npa", ubound(U,2), "should be", npa
+!       ABORT(errstr)
+!     endif
+!
+!     if(lbound(U,2) /= 0) then
+!       write(errstr, *) "lbound(U,2) /= 0", lbound(U,2), "should be 0"
+!       ABORT(errstr)
+!     endif
+    
+!    if((size(U,1) /= n2ndDim) ) then
+!        write(errstr, *) "size(U,1) /= n2ndDim size(U,1)=", size(U,1), " n2ndDim=", n2ndDim
+!        ABORT(errstr)
+!    endif
+
+    ! post receives
+    do i=1, nConnDomains
+      tag = 30001 + myrank
+      call MPI_IRecv(U, &
+                    1, &
+                    neighborDomains(i)%p2DRrecvType_zero, &
+                    neighborDomains(i)%domainID-1, &
+                    tag, &
+                    comm, &
+                    recvRqst(i), &
+                    ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
+    enddo
+
+    ! post sends
+    do i=1, nConnDomains
+      tag = 30001 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, &
+                    1, &
+                    neighborDomains(i)%p2DRsendType_zero, &
+                    neighborDomains(i)%domainID-1, &
+                    tag, &
+                    comm, &
+                    sendRqst(i), &
+                    ierr);
+        if(ierr/=MPI_SUCCESS) then
+          CALL PARALLEL_ABORT("MPI_ISend", ierr)
+        endif
+    end do
+    
+
+    ! Wait for completion
+    call mpi_waitall(nConnDomains, recvRqst, recvStat,ierr)
+    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
+    call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
+    if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
+  end subroutine 
+
+
 end module yowExchangeModule

@@ -1,4 +1,3 @@
-#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3REF1MD
 !/
@@ -147,11 +146,14 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN,  &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN,  SMCTYPE, &
                           REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, FLAGLL, &
-                          SIG2, DSII, IOBPD, GTYPE, UNGTYPE, MAPFS,    &
-                          CLGTYPE, RLGTYPE, SMCTYPE
+                          SIG2, DSII, IOBPD, GTYPE, UNGTYPE, MAPFS, CLGTYPE, RLGTYPE
       USE W3GDATMD, ONLY : CLATS, HPFAC, HQFAC, SX, SY, SI
+#ifdef W3_PDLIB
+ USE YOWNODEPOOL, ONLY: PDLIB_SI
+ USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+#endif
 #ifdef W3_IG1
  USE W3GDATMD, ONLY : IGPARS
   USE W3GIG1MD
@@ -181,7 +183,7 @@
 !/ 
       INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, ITH2X, ITH2Y, &
                          NRS, IK1
-      INTEGER         :: ISEA, ICALC
+      INTEGER         :: ISEA, ICALC, IOBPDIP(NTH)
 #ifdef W3_S
       INTEGER, SAVE           :: IENT = 0
 #endif
@@ -234,17 +236,25 @@
       IF (GTYPE.EQ.RLGTYPE .OR. GTYPE.EQ.SMCTYPE) THEN 
         DELX=SX*CLATS(ISEA)/FACX
         DELY=SY/FACX
-        END IF
+      END IF
+
       IF (GTYPE.EQ.CLGTYPE) THEN 
       ! Maybe what follows works also for RLGTYPE ... to be verified
         DELX=HPFAC(IY,IX)/ FACX
         DELY=HQFAC(IY,IX)/ FACX 
-        END IF
+      END IF
 
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        DELX=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
-        DELY=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
-        END IF
+        IF (LPDLIB) THEN
+#ifdef W3_PDLIB
+          DELX=5.*SQRT(PDLIB_SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+          DELY=5.*SQRT(PDLIB_SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+#endif
+        ELSE
+          DELX=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+          DELY=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ... 
+        ENDIF
+      END IF
 
       IK1=1
 #ifdef W3_IG1
@@ -434,14 +444,21 @@
 ! Special treatment for unstructured grids when not using source term 
 !
           IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN 
+            IF (LPDLIB) THEN
+#ifdef W3_PDLIB
+              IOBPDIP = IOBPD_LOC(:,IX)
+#endif
+            ELSE
+              IOBPDIP = IOBPD(:,IX)
+            ENDIF
             DO ITH=1, NTH
               ISPECI=ITH+(IK-1)*NTH
-              A(ISPECI)=A(ISPECI)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
+              A(ISPECI)=A(ISPECI)*IOBPDIP(ITH) !puts to zero the energy not going to coast
               END DO
 !
             DO ITH=1, NTH
               R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
-              R1=IOBPD(ITH,IX)
+              R1=IOBPDIP(ITH)
               ISPECI=ITH+(IK-1)*NTH
               R2=RAMP1*A(ISPECI)
               IF (R1.GT.0.AND.R2.GT.0) THEN 
@@ -456,7 +473,7 @@
                   ISPEC=ITH2+(IK-1)*NTH
                   R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
                   IF (R3.LT.0) THEN 
-                    R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))*(1-IOBPD(ITH2,IX))
+                    R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))*(1-IOBPDIP(ITH2))
                     IF (R4.GT.0.) THEN 
 !
 ! Tests the type of shoreline geometry
