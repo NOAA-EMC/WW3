@@ -47,6 +47,8 @@ module yowElementpool
   !> number of local elements
   integer, public :: ne = 0
 
+  !> number of elements of the augmented domain 
+
   !> local element array. it stores the local node IDs
   !> first index from 1 to 3.
   !> second index from 1 to ne.
@@ -56,7 +58,7 @@ module yowElementpool
   !> global element array. it stored the global node IDs
   !> first index from 1 to 3.
   !> second index from 1 to ne_global
-  integer, public, allocatable :: INE_global(:,:)
+  !integer, public, allocatable :: INE_global(:,:)
 
   !> Element local to global mapping
   !> ne long. give the global element id
@@ -100,7 +102,7 @@ module yowElementpool
     implicit none
 
     if(allocated(INE))        deallocate(INE)
-    if(allocated(INE_global)) deallocate(INE_global)
+    !if(allocated(INE_global)) deallocate(INE_global)
     if(allocated(ielg))       deallocate(ielg)
   end subroutine
 end module yowElementpool
